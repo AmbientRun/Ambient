@@ -204,6 +204,7 @@ impl<'a> Hooks<'a> {
         x
     }
 
+    #[profiling::function]
     pub fn use_frame<F: Fn(&mut World) + Sync + Send + 'static>(&mut self, on_frame: F) {
         let mut env = self.environment.lock();
         let listeners = env.frame_listeners.entry(self.element.clone()).or_insert_with(Vec::new);
@@ -215,6 +216,7 @@ impl<'a> Hooks<'a> {
         self.use_state_with(|| Arc::new(Mutex::new(init()))).0
     }
 
+    #[profiling::function]
     pub fn use_memo_with<T: Clone + ComponentValue + Debug, F: FnOnce() -> T, D: PartialEq + Clone + Sync + Send + Debug + 'static>(
         &mut self,
         dependencies: D,
@@ -239,6 +241,7 @@ impl<'a> Hooks<'a> {
     ///
     /// The provided functions returns a function which is run when the part is
     /// removed or `use_effect` is run again.
+    #[profiling::function]
     pub fn use_effect<
         F: FnOnce(&mut World) -> Box<dyn FnOnce(&mut World) + Sync + Send> + Sync + Send,
         D: PartialEq + ComponentValue + Debug,
@@ -274,6 +277,7 @@ impl<'a> Hooks<'a> {
             if let Some(cleanup_prev) = std::mem::replace(&mut *cleanup_prev, None) {
                 cleanup_prev.0(world);
             }
+            profiling::scope!("us_effect_run");
             *cleanup_prev = Some(Cleanup(run(world)));
             *prev_deps = dependencies;
         }

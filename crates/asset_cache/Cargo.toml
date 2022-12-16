@@ -18,7 +18,7 @@ parking_lot.workspace = true
 chrono.workspace = true
 tracing.workspace = true
 pin-project = "1.0"
-abort-on-drop = "0.2"
+abort-on-drop.workspace = true
 
 [dev-dependencies]
 pretty_assertions = "1.0"
