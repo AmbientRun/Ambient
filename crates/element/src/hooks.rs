@@ -63,7 +63,7 @@ impl<'a> Hooks<'a> {
     /// conditionals.
     pub fn provide_context<T: Clone + Debug + ComponentValue>(&mut self, default_value: impl FnOnce() -> T) -> Setter<T> {
         let instance = self.tree.instances.get_mut(&self.element).unwrap();
-        let type_id = std::any::TypeId::of::<T>();
+        let type_id = TypeId::of::<T>();
         instance
             .hooks_context_state
             .entry(type_id)
@@ -71,12 +71,17 @@ impl<'a> Hooks<'a> {
         let environment = self.environment.clone();
         let element = self.element.clone();
         Arc::new(move |new_value| {
-            environment.lock().set_contexts.push((element.clone(), std::any::TypeId::of::<T>(), Box::new(new_value)));
+            environment.lock().set_contexts.push(ContextUpdate {
+                instance_id: element.clone(),
+                type_id: TypeId::of::<T>(),
+                name: type_name::<T>(),
+                value: Box::new(new_value),
+            });
         })
     }
     #[allow(clippy::type_complexity)]
     pub fn consume_context<T: Clone + Debug + ComponentValue>(&mut self) -> Option<(T, Setter<T>)> {
-        let type_id = std::any::TypeId::of::<T>();
+        let type_id = TypeId::of::<T>();
         if let Some(provider) = self.tree.get_context_provider(&self.element, type_id) {
             let value = {
                 let instance = self.tree.instances.get_mut(&provider).unwrap();
@@ -92,7 +97,12 @@ impl<'a> Hooks<'a> {
             Some((
                 value,
                 Arc::new(move |new_value| {
-                    environment.lock().set_contexts.push((provider.clone(), type_id, Box::new(new_value)));
+                    environment.lock().set_contexts.push(ContextUpdate {
+                        instance_id: provider.clone(),
+                        type_id,
+                        name: type_name::<T>(),
+                        value: Box::new(new_value),
+                    });
                 }),
             ))
         } else {
@@ -308,10 +318,21 @@ impl Debug for FrameListener {
     }
 }
 
+#[derive(Debug, Clone)]
+pub(crate) struct ContextUpdate {
+    pub instance_id: InstanceId,
+    pub type_id: TypeId,
+    pub name: &'static str,
+    pub value: Box<dyn AnyCloneable + Sync + Send>,
+}
+
 #[derive(Debug)]
 pub(crate) struct HooksEnvironment {
     pub(crate) set_states: Vec<(InstanceId, usize, Box<dyn AnyCloneable + Send>)>,
-    pub(crate) set_contexts: Vec<(InstanceId, TypeId, Box<dyn AnyCloneable + Sync + Send>)>,
+    /// Pending updates to contexts.
+    ///
+    /// This is modified through the returned `Setter` closure
+    pub(crate) set_contexts: Vec<ContextUpdate>,
     pub(crate) frame_listeners: HashMap<InstanceId, Vec<FrameListener>>,
 }
 impl HooksEnvironment {

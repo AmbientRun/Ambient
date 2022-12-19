@@ -6,9 +6,10 @@ use elements_core::hierarchy::{children, parent};
 use elements_ecs::{query, Component, EntityData, EntityId, SystemGroup, World};
 use itertools::Itertools;
 use parking_lot::Mutex;
+use tracing::debug_span;
 
 use crate::{
-    element_tree, element_unmanaged_children, AnyCloneable, DespawnFn, Element, ElementConfig, Hooks, HooksEnvironment, InstanceId
+    element_tree, element_unmanaged_children, AnyCloneable, ContextUpdate, DespawnFn, Element, ElementConfig, Hooks, HooksEnvironment, InstanceId
 };
 
 #[derive(Debug)]
@@ -129,20 +130,24 @@ impl ElementTree {
             ElementParent::None => Some(instance.id.clone()),
         }
     }
+
     pub fn n_instances(&self) -> usize {
         self.instances.len()
     }
+
     pub fn migrate_root(&mut self, world: &mut World, element: Element) {
         if let Some((_, new_root)) = self.migrate(world, self.root.clone(), None, ElementParent::None, Some(element)) {
             self.root = Some(new_root);
         }
     }
+
     pub fn remove_root(&mut self, world: &mut World) {
         if let Some(root) = self.root.clone() {
             self.remove(world, &root);
         }
         self.root = None;
     }
+
     fn create(
         &mut self,
         world: &mut World,
@@ -167,11 +172,17 @@ impl ElementTree {
         self.instances.get_mut(&id).unwrap().children = children;
         (entity, id)
     }
+
     fn render_instance(&mut self, world: &mut World, instance_id: &str, creating: bool) -> EntityId {
-        let part = self.instances.get(instance_id).unwrap().config.part.clone();
+        let instance = self.instances.get(instance_id).unwrap();
+        let key = instance.config.get_element_key(true);
+
+        let part = instance.config.part.clone();
+
         let entity = if let Some(part) = part {
             // Clear frame listeners as they are rebuilt during render
             self.hooks_env.lock().frame_listeners.remove(instance_id);
+            let _span = debug_span!("render_instance with part", key).entered();
             let (on_spawn, new_super, super_, parent_entity) = {
                 let mut hooks = Hooks {
                     environment: self.hooks_env.clone(),
@@ -191,6 +202,7 @@ impl ElementTree {
 
             let (ent, new_super) =
                 self.migrate(world, super_, parent_entity, ElementParent::Super(instance_id.to_string()), Some(new_super)).unwrap();
+
             let instance = self.instances.get_mut(instance_id).unwrap();
             instance.super_ = Some(new_super);
             if creating {
@@ -349,6 +361,7 @@ impl ElementTree {
         }
     }
 
+    #[profiling::function]
     pub fn update(&mut self, world: &mut World) {
         let frame_listeners = self.hooks_env.lock().frame_listeners.clone();
         for listeners in frame_listeners.values() {
@@ -361,13 +374,20 @@ impl ElementTree {
         let context_updates = std::mem::take(&mut self.hooks_env.lock().set_contexts);
         let mut to_update = HashSet::new();
         for (instance_id, index, value) in state_updates.into_iter() {
+            profiling::scope!("state_updates");
             if let Some(instance) = self.instances.get_mut(&instance_id) {
+                let key = &instance.config.get_element_key(true);
+                tracing::debug!(key, "updated state");
                 instance.hooks_state[index] = value;
                 to_update.insert(instance_id);
             }
         }
-        for (instance_id, type_id, value) in context_updates.into_iter() {
+        for ContextUpdate { instance_id, type_id, name, value } in context_updates.into_iter() {
+            profiling::scope!("state_updates");
+
             if let Some(instance) = self.instances.get_mut(&instance_id) {
+                let key = &instance.config.get_element_key(true);
+                tracing::debug!(key, "Subscribed context {name:?} was updated");
                 let entry = instance.hooks_context_state.get_mut(&type_id).unwrap();
                 entry.value = value;
                 to_update.extend(entry.listeners.iter().cloned());
