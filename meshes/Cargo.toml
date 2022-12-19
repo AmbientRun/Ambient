@@ -1,0 +1,12 @@
+
+[package]
+name = "elements_meshes"
+version.workspace = true
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+elements_std = { path = "../std" }
+elements_gpu = { path = "../gpu" }
+glam.workspace = true

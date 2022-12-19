@@ -1,0 +1,36 @@
+[package]
+name = "elements"
+version.workspace = true
+authors = ["Fredrik Norén <fredrik.jw.noren@gmail.com>"]
+edition = "2021"
+
+[dependencies]
+elements_audio = { path = "audio" }
+elements_editor_derive = { path = "editor_derive" }
+elements_std = { path = "std" }
+elements_ecs = { path = "ecs" }
+elements_core = { path = "core" }
+elements_gpu = { path = "gpu" }
+elements_element = { path = "element" }
+elements_meshes = { path = "meshes" }
+elements_renderer = { path = "renderer" }
+elements_gizmos = { path = "gizmos" }
+elements_input = { path = "input" }
+elements_ui = { path = "ui" }
+elements_cameras = { path = "cameras" }
+elements_primitives = { path = "primitives" }
+elements_model = { path = "model" }
+elements_animation = { path = "animation" }
+elements_app = { path = "app" }
+
+[dev-dependencies]
+glam.workspace = true
+
+[features]
+bundle-includes = [
+    "elements_std/bundle-includes",
+    'elements_gpu/bundle-includes',
+    'elements_renderer/bundle-includes',
+    'elements_gizmos/bundle-includes',
+    'elements_ui/bundle-includes',
+]

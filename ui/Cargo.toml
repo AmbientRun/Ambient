@@ -1,0 +1,50 @@
+[package]
+name = "elements_ui"
+version.workspace = true
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+elements_std = { path = "../std" }
+elements_ecs = { path = "../ecs" }
+elements_gpu = { path = "../gpu" }
+elements_core = { path = "../core" }
+elements_meshes = { path = "../meshes" }
+elements_element = { path = "../element" }
+elements_input = { path = "../input" }
+elements_renderer = { path = "../renderer" }
+elements_editor_derive = { path = "../editor_derive/" }
+glyph_brush.workspace = true
+glam.workspace = true
+winit.workspace = true
+itertools.workspace = true
+futures.workspace = true
+closure.workspace = true
+log.workspace = true
+wgpu.workspace = true
+clipboard.workspace = true
+indexmap.workspace = true
+serde.workspace = true
+async-trait.workspace = true
+parking_lot.workspace = true
+thiserror.workspace = true
+ordered-float.workspace = true
+tokio.workspace = true
+friendly_id.workspace = true
+bytemuck.workspace = true
+convert_case.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+elements = { path = ".." }
+fixed-vec-deque.workspace = true
+tokio.workspace = true
+itertools.workspace = true
+rand.workspace = true
+env_logger.workspace = true
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[features]
+bundle-includes = ['elements_std/bundle-includes']

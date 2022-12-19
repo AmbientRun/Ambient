@@ -1,0 +1,318 @@
+use std::sync::Arc;
+
+use async_trait::async_trait;
+use elements_gpu::{
+    gpu::{Gpu, GpuKey}, shader_module::{BindGroupDesc, ShaderModule}, std_assets::{get_default_sampler, DefaultNormalMapViewKey, PixelTextureViewKey}, texture::{Texture, TextureView}, texture_loaders::{SplitTextureFromUrl, TextureFromUrl}
+};
+use elements_std::{
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AssetUrl, ImageAssetType}, download_asset::AssetError, include_file
+};
+use glam::Vec4;
+use serde::{Deserialize, Serialize};
+use wgpu::{util::DeviceExt, BindGroup};
+
+use super::super::{Material, MaterialShader, RendererShader, MATERIAL_BIND_GROUP};
+use crate::StandardShaderKey;
+
+#[derive(Debug)]
+pub struct PbrMaterialShaderKey;
+impl SyncAssetKey<Arc<MaterialShader>> for PbrMaterialShaderKey {
+    fn load(&self, _assets: AssetCache) -> Arc<MaterialShader> {
+        Arc::new(MaterialShader {
+            id: "pbr_material_shader".to_string(),
+            shader: ShaderModule::new(
+                "PbrMaterial",
+                include_file!("pbr_material.wgsl"),
+                vec![BindGroupDesc {
+                    entries: vec![
+                        wgpu::BindGroupLayoutEntry {
+                            binding: 0,
+                            visibility: wgpu::ShaderStages::FRAGMENT,
+                            ty: wgpu::BindingType::Buffer {
+                                ty: wgpu::BufferBindingType::Uniform,
+                                has_dynamic_offset: false,
+                                min_binding_size: None,
+                            },
+                            count: None,
+                        },
+                        wgpu::BindGroupLayoutEntry {
+                            binding: 1,
+                            visibility: wgpu::ShaderStages::FRAGMENT,
+                            ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+                            count: None,
+                        },
+                        wgpu::BindGroupLayoutEntry {
+                            binding: 2,
+                            visibility: wgpu::ShaderStages::FRAGMENT,
+                            ty: wgpu::BindingType::Texture {
+                                sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                                view_dimension: wgpu::TextureViewDimension::D2,
+                                multisampled: false,
+                            },
+                            count: None,
+                        },
+                        wgpu::BindGroupLayoutEntry {
+                            binding: 3,
+                            visibility: wgpu::ShaderStages::FRAGMENT,
+                            ty: wgpu::BindingType::Texture {
+                                sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                                view_dimension: wgpu::TextureViewDimension::D2,
+                                multisampled: false,
+                            },
+                            count: None,
+                        },
+                        wgpu::BindGroupLayoutEntry {
+                            binding: 4,
+                            visibility: wgpu::ShaderStages::FRAGMENT,
+                            ty: wgpu::BindingType::Texture {
+                                sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                                view_dimension: wgpu::TextureViewDimension::D2,
+                                multisampled: false,
+                            },
+                            count: None,
+                        },
+                    ],
+                    label: MATERIAL_BIND_GROUP.into(),
+                }
+                .into()],
+            ),
+        })
+    }
+}
+
+pub fn get_pbr_shader(assets: &AssetCache) -> Arc<RendererShader> {
+    StandardShaderKey { material_shader: PbrMaterialShaderKey.get(assets), lit: true }.get(assets)
+}
+
+pub fn get_pbr_shader_unlit(assets: &AssetCache) -> Arc<RendererShader> {
+    StandardShaderKey { material_shader: PbrMaterialShaderKey.get(assets), lit: false }.get(assets)
+}
+
+#[repr(C)]
+#[derive(Debug, Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
+pub struct PbrMaterialParams {
+    pub base_color_factor: Vec4,
+    pub emissive_factor: Vec4,
+    pub alpha_cutoff: f32,
+    pub metallic: f32,
+    pub roughness: f32,
+    pub _padding: u32,
+}
+impl Default for PbrMaterialParams {
+    fn default() -> Self {
+        Self {
+            base_color_factor: Vec4::ONE,
+            emissive_factor: Vec4::ZERO,
+            alpha_cutoff: 0.5,
+            metallic: 1.,
+            roughness: 1.,
+            _padding: Default::default(),
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub struct PbrMaterialConfig {
+    pub source: String,
+    pub name: String,
+    pub params: PbrMaterialParams,
+    pub base_color: Arc<TextureView>,
+    pub normalmap: Arc<TextureView>,
+    /// r: Metallic
+    /// g: Roughness
+    pub metallic_roughness: Arc<TextureView>,
+    pub transparent: Option<bool>,
+    pub double_sided: Option<bool>,
+    pub depth_write_enabled: Option<bool>,
+}
+pub struct PbrMaterial {
+    gpu: Arc<Gpu>,
+    id: String,
+    pub config: PbrMaterialConfig,
+    buffer: wgpu::Buffer,
+    bind_group: wgpu::BindGroup,
+}
+impl PbrMaterial {
+    pub fn new(assets: AssetCache, config: PbrMaterialConfig) -> Self {
+        let gpu = GpuKey.get(&assets);
+        let layout = PbrMaterialShaderKey.get(&assets).shader.first_layout(&assets);
+
+        let buffer = gpu.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("PbrMaterial.buffer"),
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+            contents: bytemuck::cast_slice(&[config.params]),
+        });
+        let sampler = get_default_sampler(assets);
+        Self {
+            id: friendly_id::create(),
+            bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
+                layout: &layout,
+                entries: &[
+                    wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::Buffer(buffer.as_entire_buffer_binding()) },
+                    wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(&sampler) },
+                    wgpu::BindGroupEntry { binding: 2, resource: wgpu::BindingResource::TextureView(&config.base_color.handle) },
+                    wgpu::BindGroupEntry { binding: 3, resource: wgpu::BindingResource::TextureView(&config.normalmap.handle) },
+                    wgpu::BindGroupEntry { binding: 4, resource: wgpu::BindingResource::TextureView(&config.metallic_roughness.handle) },
+                ],
+                label: Some("PbrMaterial.bind_group"),
+            }),
+            buffer,
+            gpu: gpu.clone(),
+            config,
+        }
+    }
+    pub fn base_color_from_file(assets: &AssetCache, url: &str) -> Self {
+        let texture = Arc::new(
+            Arc::new(Texture::from_file(GpuKey.get(assets), url, wgpu::TextureFormat::Rgba8UnormSrgb))
+                .create_view(&wgpu::TextureViewDescriptor::default()),
+        );
+        PbrMaterial::new(
+            assets.clone(),
+            PbrMaterialConfig {
+                source: url.to_string(),
+                name: url.to_string(),
+                params: PbrMaterialParams::default(),
+                base_color: texture,
+                normalmap: DefaultNormalMapViewKey.get(assets),
+                metallic_roughness: PixelTextureViewKey::white().get(assets),
+                transparent: None,
+                double_sided: None,
+                depth_write_enabled: None,
+            },
+        )
+    }
+    pub fn upload_params(&self) {
+        self.gpu.queue.write_buffer(&self.buffer, 0, bytemuck::cast_slice(&[self.config.params]));
+    }
+    pub fn gpu_size(&self) -> usize {
+        self.config.base_color.texture.size_in_bytes
+            + self.config.normalmap.texture.size_in_bytes
+            + self.config.metallic_roughness.texture.size_in_bytes
+    }
+}
+impl std::fmt::Debug for PbrMaterial {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PbrMaterial").field("id", &self.id).field("source", &self.config.source).field("name", &self.config.name).finish()
+    }
+}
+impl Material for PbrMaterial {
+    fn bind(&self) -> &BindGroup {
+        &self.bind_group
+    }
+
+    fn id(&self) -> &str {
+        &self.id
+    }
+    fn name(&self) -> &str {
+        &self.config.name
+    }
+    fn transparent(&self) -> Option<bool> {
+        self.config.transparent
+    }
+    fn double_sided(&self) -> Option<bool> {
+        self.config.double_sided
+    }
+    fn depth_write_enabled(&self) -> Option<bool> {
+        self.config.depth_write_enabled
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u32)]
+pub enum AlphaMode {
+    Opaque,
+    Mask,
+    Blend,
+}
+
+impl Default for AlphaMode {
+    fn default() -> Self {
+        Self::Opaque
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+pub struct PbrMaterialFromUrl {
+    pub name: Option<String>,
+    pub source: Option<String>,
+    pub base_color: Option<AssetUrl<ImageAssetType>>,
+    pub opacity: Option<AssetUrl<ImageAssetType>>,
+    pub base_color_factor: Option<Vec4>,
+    pub emissive_factor: Option<Vec4>,
+    pub normalmap: Option<AssetUrl<ImageAssetType>>,
+    pub transparent: Option<bool>,
+    pub alpha_cutoff: Option<f32>,
+    pub double_sided: Option<bool>,
+    pub metallic_roughness: Option<AssetUrl<ImageAssetType>>,
+    #[serde(default)]
+    pub metallic: f32,
+    #[serde(default)]
+    pub roughness: f32,
+}
+
+#[async_trait]
+impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialFromUrl {
+    async fn load(self, assets: AssetCache) -> Result<Arc<PbrMaterial>, AssetError> {
+        let color = if let (Some(opacity), Some(albedo)) = (&self.opacity, &self.base_color) {
+            Some(
+                SplitTextureFromUrl { color: albedo.url.clone(), alpha: opacity.url.clone(), format: wgpu::TextureFormat::Rgba8UnormSrgb }
+                    .get(&assets)
+                    .await?,
+            )
+        } else if let Some(albedo) = &self.base_color {
+            Some(TextureFromUrl { url: albedo.url.clone(), format: wgpu::TextureFormat::Rgba8UnormSrgb }.get(&assets).await?)
+        } else {
+            None
+        };
+        let color_view = match color {
+            Some(color) => Arc::new(color.create_view(&wgpu::TextureViewDescriptor::default())),
+            None => PixelTextureViewKey::white().get(&assets),
+        };
+        let normalmap = if let Some(normalmap) = &self.normalmap {
+            Arc::new(
+                TextureFromUrl { url: normalmap.url.clone(), format: wgpu::TextureFormat::Rgba8Unorm }
+                    .get(&assets)
+                    .await?
+                    .create_view(&Default::default()),
+            )
+        } else {
+            DefaultNormalMapViewKey.get(&assets)
+        };
+
+        let metallic_roughness = if let Some(metallic_roughness) = self.metallic_roughness {
+            println!("Found metallic roughness map at: {:?}", metallic_roughness);
+            Arc::new(
+                TextureFromUrl { url: metallic_roughness.url, format: wgpu::TextureFormat::Rgba8Unorm }
+                    .get(&assets)
+                    .await?
+                    .create_view(&Default::default()),
+            )
+        } else {
+            PixelTextureViewKey::white().get(&assets)
+        };
+
+        let params = PbrMaterialParams {
+            base_color_factor: self.base_color_factor.unwrap_or(Vec4::ONE),
+            emissive_factor: self.emissive_factor.unwrap_or(Vec4::ZERO),
+            alpha_cutoff: self.alpha_cutoff.unwrap_or(0.01),
+            metallic: self.metallic,
+            roughness: self.roughness,
+            _padding: Default::default(),
+        };
+
+        let name = self.name.or(self.base_color.map(|x| x.url)).unwrap_or_default();
+        Ok(Arc::new(PbrMaterial::new(
+            assets.clone(),
+            PbrMaterialConfig {
+                source: self.source.unwrap_or_default(),
+                name,
+                params,
+                base_color: color_view.clone(),
+                normalmap,
+                metallic_roughness,
+                transparent: self.transparent,
+                double_sided: self.double_sided,
+                depth_write_enabled: None,
+            },
+        )))
+    }
+}

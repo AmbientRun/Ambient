@@ -1,0 +1,28 @@
+
+[package]
+name = "elements_element"
+version.workspace = true
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+elements_ecs = { path = "../ecs" }
+elements_std = { path = "../std" }
+elements_core = { path = "../core" }
+elements_element_component = { path = "../element_component" }
+itertools.workspace = true
+as-any.workspace = true
+dyn-clonable.workspace = true
+closure.workspace = true
+derivative.workspace = true
+friendly_id.workspace = true
+parking_lot.workspace = true
+tracing.workspace = true
+profiling.workspace = true
+atomic_refcell.workspace = true
+tokio.workspace = true
+futures.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true
