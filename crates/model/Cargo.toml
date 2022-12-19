@@ -1,0 +1,27 @@
+[package]
+name = "elements_model"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+elements_std = { path = "../std" }
+elements_core = { path = "../core" }
+elements_ecs = { path = "../ecs" }
+elements_renderer = { path = "../renderer" }
+elements_meshes = { path = "../meshes" }
+elements_gpu = { path = "../gpu" }
+elements_editor_derive = { path = "../editor_derive" }
+elements_ui = { path = "../ui" }
+futures.workspace = true
+glam.workspace = true
+itertools.workspace = true
+serde.workspace = true
+anyhow.workspace = true
+wgpu.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+bytemuck.workspace = true
+friendly_id.workspace = true
+async-trait.workspace = true

@@ -1,0 +1,40 @@
+
+[package]
+name = "elements_physics"
+version.workspace = true
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+elements_ecs = { path = "../ecs" }
+elements_element = { path = "../element" }
+elements_ui = { path = "../ui" }
+elements_std = { path = "../std" }
+elements_editor_derive = { path = "../editor_derive" }
+elements_core = { path = "../core" }
+elements_meshes = { path = "../meshes" }
+elements_network = { path = "../network" }
+elements_gizmos = { path = "../gizmos" }
+elements_model = { path = "../model" }
+physxx = { path = "../../libs/physxx" }
+serde.workspace = true
+serde_json.workspace = true
+glam.workspace = true
+itertools.workspace = true
+futures.workspace = true
+rand.workspace = true
+async-trait.workspace = true
+parking_lot.workspace = true
+tracing.workspace = true
+anyhow.workspace = true
+profiling.workspace = true
+ordered-float.workspace = true
+once_cell.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+elements_app = { path = "../app" }
+elements_renderer = { path = "../renderer" }
+elements_primitives = { path = "../primitives" }
+elements_cameras = { path = "../cameras" }

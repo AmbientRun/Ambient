@@ -1,0 +1,23 @@
+[package]
+name = "elements_animation"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+elements_model = { path = "../model" }
+elements_std = { path = "../std" }
+elements_ecs = { path = "../ecs" }
+elements_element = { path = "../element" }
+elements_editor_derive = { path = "../editor_derive" }
+elements_ui = { path = "../ui" }
+elements_core = { path = "../core" }
+glam.workspace = true
+ordered-float.workspace = true
+serde.workspace = true
+async-trait.workspace = true
+derive_more.workspace = true
+convert_case.workspace = true
+itertools.workspace = true
+anyhow.workspace = true

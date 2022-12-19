@@ -1,0 +1,21 @@
+[package]
+name = "elements_ecs_editor"
+version.workspace = true
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+elements_ecs = { path = "../ecs" }
+elements_std = { path = "../std" }
+elements_ui = { path = "../ui" }
+elements_core = { path = "../core" }
+elements_element = { path = "../element" }
+elements_renderer = { path = "../renderer" }
+env_logger.workspace = true
+itertools.workspace = true
+glam.workspace = true
+
+[dev-dependencies]
+elements_app = { path = "../app", features = ["profile"] }
+elements_cameras = { path = "../cameras" }

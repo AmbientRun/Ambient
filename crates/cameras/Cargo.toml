@@ -1,0 +1,15 @@
+[package]
+name = "elements_cameras"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+elements_std = { path = "../std" }
+elements_ecs = { path = "../ecs" }
+elements_core = { path = "../core" }
+elements_element = { path = "../element" }
+winit.workspace = true
+derive_more.workspace = true
+glam.workspace = true

@@ -1,0 +1,7 @@
+{
+  "example-audio": {
+    "cmd": "cargo run --example audio",
+    "interactive": true,
+    "keep_open": true
+  }
+}

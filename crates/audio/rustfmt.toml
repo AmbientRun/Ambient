@@ -1,0 +1,5 @@
+max_width = 100
+use_small_heuristics = "Default"
+imports_layout = "Horizontal"
+imports_granularity = "Crate"
+group_imports = "StdExternalCrate"

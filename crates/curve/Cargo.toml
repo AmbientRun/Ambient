@@ -1,0 +1,12 @@
+[package]
+name = "elements_curve"
+version.workspace = true
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+elements_std = { path = "../std" }
+
+[dev-dependencies]
+glam.workspace = true

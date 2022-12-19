@@ -1,0 +1,45 @@
+[package]
+name = "elements_audio"
+version.workspace = true
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+flume.workspace = true
+derive_more.workspace = true
+log.workspace = true
+thiserror.workspace = true
+parking_lot.workspace = true
+tokio.workspace = true
+async-trait.workspace = true
+slotmap.workspace = true
+rand.workspace = true
+glam.workspace = true
+itertools.workspace = true
+tracing.workspace = true
+ordered-float.workspace = true
+dashmap.workspace = true
+derivative.workspace = true
+
+elements_ui = { path = "../ui/" }
+cpal = "0.14.1"
+lewton = "0.10.2"
+hound = "3.4.0"
+elements_std = { path = "../std" }
+serde = { workspace = true, features = ["derive"] }
+rand_chacha = "0.3.1"
+static_assertions = "1.1"
+tween = "1.0"
+circular-queue = "0.2"
+num = "0.4"
+byteorder = "1.4"
+rayon = "1.6"
+rustfft = { version = "6.1.0" }
+
+[dev-dependencies]
+color-eyre = "0.6.2"
+pretty_assertions = "1.3"
+macroquad = { version = "=0.3.24", default_features = false, features = [] }
+lyon = "1.0"
+approx = "0.5"

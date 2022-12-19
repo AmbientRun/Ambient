@@ -1,0 +1,43 @@
+[package]
+name = "elements_std"
+version.workspace = true
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+elements_asset_cache = { path = "../asset_cache/" }
+wgpu.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+glam.workspace = true
+ordered-float.workspace = true
+rand.workspace = true
+tokio.workspace = true
+as-any.workspace = true
+async-trait.workspace = true
+futures.workspace = true
+itertools.workspace = true
+bytemuck.workspace = true
+log.workspace = true
+reqwest.workspace = true
+thiserror.workspace = true
+yaml-rust.workspace = true
+anyhow.workspace = true
+sentry-anyhow.workspace = true
+parking_lot.workspace = true
+hex.workspace = true
+profiling.workspace = true
+tracing.workspace = true
+ring.workspace = true
+data-encoding.workspace = true
+chrono.workspace = true
+bincode.workspace = true
+convert_case.workspace = true
+once_cell.workspace = true
+pin-project = "1.0"
+
+[features]
+bundle-includes = []
+sentry = []

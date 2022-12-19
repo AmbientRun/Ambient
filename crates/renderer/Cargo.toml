@@ -1,0 +1,40 @@
+[package]
+name = "elements_renderer"
+version.workspace = true
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+elements_std = { path = "../std" }
+elements_ecs = { path = "../ecs" }
+elements_gpu = { path = "../gpu" }
+elements_core = { path = "../core" }
+elements_meshes = { path = "../meshes" }
+wgpu.workspace = true
+glam.workspace = true
+itertools.workspace = true
+ordered-float.workspace = true
+serde.workspace = true
+derive_more.workspace = true
+downcast-rs.workspace = true
+profiling.workspace = true
+bytemuck.workspace = true
+smallvec.workspace = true
+log.workspace = true
+friendly_id.workspace = true
+parking_lot.workspace = true
+async-trait.workspace = true
+
+[dev-dependencies]
+elements_app = { path = "../app" }
+elements_element = { path = "../element" }
+elements_gizmos = { path = "../gizmos" }
+elements_model_import = { path = "../model_import" }
+elements_cameras = { path = "../cameras" }
+elements_primitives = { path = "../primitives" }
+env_logger.workspace = true
+winit.workspace = true
+
+[features]
+bundle-includes = ['elements_std/bundle-includes']
