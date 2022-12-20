@@ -1,0 +1,43 @@
+[package]
+name = "elements_app"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+elements_std = { path = "../std" }
+elements_core = { path = "../core" }
+elements_gizmos = { path = "../gizmos" }
+elements_gpu = { path = "../gpu" }
+elements_renderer = { path = "../renderer" }
+elements_cameras = { path = "../cameras" }
+elements_ecs = { path = "../ecs" }
+elements_element = { path = "../element" }
+elements_ui = { path = "../ui" }
+elements_input = { path = "../input" }
+elements_model = { path = "../model" }
+elements_animation = { path = "../animation" }
+winit.workspace = true
+glam.workspace = true
+tokio.workspace = true
+profiling.workspace = true
+anyhow.workspace = true
+thread-priority.workspace = true
+wgpu.workspace = true
+puffin = { workspace = true, optional = true }
+puffin_http = { workspace = true, optional = true }
+tracing.workspace = true
+
+[dev-dependencies]
+elements_primitives = { path = "../primitives" }
+
+[features]
+profile = ["puffin", "puffin_http", "profiling/profile-with-puffin"]
+bundle-includes = [
+    "elements_std/bundle-includes",
+    'elements_gpu/bundle-includes',
+    'elements_renderer/bundle-includes',
+    'elements_gizmos/bundle-includes',
+    'elements_ui/bundle-includes',
+]
