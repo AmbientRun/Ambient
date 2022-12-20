@@ -87,6 +87,16 @@ pub fn sync_ecs_physics() -> SystemGroup {
     SystemGroup::new(
         "sync_ecs_physics",
         vec![
+            query(()).incl(physics_controlled()).excl(translation()).to_system(|q, world, qs, _| {
+                for (id, _) in q.collect_cloned(world, qs) {
+                    world.add_component(id, translation(), Vec3::ZERO).unwrap();
+                }
+            }),
+            query(()).incl(physics_controlled()).excl(rotation()).to_system(|q, world, qs, _| {
+                for (id, _) in q.collect_cloned(world, qs) {
+                    world.add_component(id, rotation(), Quat::IDENTITY).unwrap();
+                }
+            }),
             // Updates ecs position from physx
             query((rigid_dynamic(), translation(), rotation())).incl(physics_controlled()).to_system(|q, world, qs, _| {
                 for (id, (rigid_dynamic, pos, rot)) in q.collect_cloned(world, qs) {
