@@ -139,7 +139,7 @@
                 "args": [
                     "build",
                     "--example=gizmos",
-                    "--package=elements"
+                    "--package=elements_gizmos"
                 ],
                 "filter": {
                     "name": "gizmos",

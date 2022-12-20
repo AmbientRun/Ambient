@@ -2,19 +2,20 @@ use elements_app::{gpu, App};
 use elements_core::{asset_cache, camera::active_camera, main_scene, transform::scale, FixedTimestepSystem};
 use elements_ecs::{FnSystem, World};
 use elements_element::ElementComponentExt;
-use elements_physics::physx::{physics, rigid_dynamic, rigid_static, sync_ecs_physics};
+use elements_physics::physx::{physics, rigid_dynamic, rigid_static, sync_ecs_physics, PhysicsKey};
 use elements_primitives::{Cube, Quad};
 use elements_renderer::color;
-use elements_std::math::SphericalCoords;
+use elements_std::{asset_cache::SyncAssetKeyExt, math::SphericalCoords};
 use glam::*;
 use physxx::*;
 use rand::random;
 
 async fn init(world: &mut World) -> PxSceneRef {
     let _gpu = world.resource(gpu()).clone();
-    let _assets = world.resource(asset_cache()).clone();
+    let assets = world.resource(asset_cache()).clone();
+    let physics = PhysicsKey.get(&assets);
+    world.add_resource(elements_physics::physx::physics(), (*physics).clone());
 
-    let physics = world.resource(physics()).clone();
     let scene = {
         let mut scene_desc = PxSceneDesc::new(&physics.physics);
         scene_desc.set_cpu_dispatcher(&physics.dispatcher);
@@ -53,6 +54,7 @@ async fn init(world: &mut World) -> PxSceneRef {
 fn main() {
     // wgpu_subscriber::initialize_default_subscriber(None);
     App::run_debug_app(|app, runtime| {
+        elements_physics::init_all_components();
         let scene = runtime.block_on(async { init(&mut app.world).await });
 
         app.systems.add(Box::new(FixedTimestepSystem::new(1. / 60., Box::new(sync_ecs_physics()))));
