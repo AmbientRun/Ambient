@@ -1,17 +1,13 @@
-
-
 use elements_app::App;
 use elements_core::{
     asset_cache, camera::{active_camera, far}, main_scene, transform::*
 };
 use elements_ecs::World;
 use elements_element::ElementComponentExt;
-use elements_model_import::{model_crate::ModelCrate};
+use elements_model_import::model_crate::ModelCrate;
 use elements_primitives::Quad;
 use elements_std::math::SphericalCoords;
-
 use glam::*;
-
 
 async fn init(world: &mut World) {
     let assets = world.resource(asset_cache()).clone();
@@ -20,11 +16,7 @@ async fn init(world: &mut World) {
 
     let model = ModelCrate::local_import(
         &assets,
-        // "elements/assets/Soldier.fbx",
-        // "/Users/fredrik/Downloads/Vanguard By T. Choonyung 7.4.fbx",
-        // "/Users/fredrik/Downloads/Props/Benches/Blend/Benches.blend",
-        // "/Users/fredrik/My project/Assets/PBR_Weapons_Pack/Models/Armored_box/Mesh/Armored_Box_Mesh.FBX",
-        "/Users/fredrik/My project/Assets/PBR_Weapons_Pack/Models/Gun/Mesh/Gun_Mesh.FBX",
+        "https://dims-content.fra1.digitaloceanspaces.com/assets/models/MixamoCharacters/Vanguard By T. Choonyung.fbx",
         true,
         true,
     )

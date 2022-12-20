@@ -18,7 +18,7 @@ fn init(world: &mut World) {
     let assets = world.resource(asset_cache()).clone();
 
     let texture = Arc::new(
-        Arc::new(Texture::from_file(gpu, "elements/assets/checkerboard.png", wgpu::TextureFormat::Rgba8UnormSrgb))
+        Arc::new(Texture::from_file(gpu, "assets/checkerboard.png", wgpu::TextureFormat::Rgba8UnormSrgb))
             .create_view(&wgpu::TextureViewDescriptor::default()),
     );
     let mat = SharedMaterial::new(PbrMaterial::new(

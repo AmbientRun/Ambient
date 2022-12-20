@@ -25,7 +25,7 @@ fn init(world: &mut World) {
         .set(scale(), vec3(2., 2., 4.))
         .set(rotation(), Quat::from_rotation_y(PI / 4.) * Quat::from_rotation_z(PI / 4.))
         .init(renderer_shader(), DecalShaderKey { material_shader: PbrMaterialShaderKey.get(&assets), lit: true }.get(&assets))
-        .init(material(), PbrMaterial::base_color_from_file(&assets, "elements/assets/checkerboard.png").into())
+        .init(material(), PbrMaterial::base_color_from_file(&assets, "assets/checkerboard.png").into())
         .spawn_static(world);
 
     let transparent = SharedMaterial::new(FlatMaterial::new(assets, vec4(0., 1., 0., 0.5), Some(true)));

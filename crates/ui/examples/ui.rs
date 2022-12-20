@@ -8,8 +8,7 @@ use elements_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use elements_renderer::color;
 use elements_std::color::Color;
 use elements_ui::{
-    layout::{height, width},
-    Throbber, *,
+    layout::{height, width}, Throbber, *
 };
 use glam::*;
 
@@ -23,10 +22,7 @@ impl ElementComponent for WobbleRect {
             .set(width(), 150.)
             .set(height(), 30. + (state as f32 * 0.01).sin() * 20.)
             .with_background(Color::rgba(1., 0., (state as f32 * 0.01).sin(), 1.))
-            .listener(
-                on_frame(),
-                Arc::new(move |_world, _, _| set_state(state + 1.)),
-            )
+            .listener(on_frame(), Arc::new(move |_world, _, _| set_state(state + 1.)))
     }
 }
 
@@ -51,10 +47,7 @@ impl ElementComponent for Two {
     fn render(self: Box<Self>, _world: &mut World, _hooks: &mut Hooks) -> Element {
         Element::from(UIBase)
             .init_default(children())
-            .children(vec![
-                self.first.set(translation(), vec3(100., 0., 0.)),
-                self.second.set(translation(), vec3(0., 100., 0.)),
-            ])
+            .children(vec![self.first.set(translation(), vec3(100., 0., 0.)), self.second.set(translation(), vec3(0., 100., 0.))])
     }
 }
 
@@ -76,11 +69,7 @@ impl ElementComponent for Example {
         println!("Render example {}", count);
         if count < 5 {
             Two {
-                first: UIBase
-                    .el()
-                    .set(width(), 150.)
-                    .set(height(), 30.)
-                    .with_background(Color::rgba(0.5, 1., 0.5, 1.)),
+                first: UIBase.el().set(width(), 150.).set(height(), 30.).with_background(Color::rgba(0.5, 1., 0.5, 1.)),
                 second: FlowColumn(vec![
                     InputTest.el(),
                     Text::el(format!("You clicked {} times", count)),
@@ -94,11 +83,7 @@ impl ElementComponent for Example {
                     //     set_count(count + 1);
                     // }))
                     WobbleRect.into(),
-                    UIBase
-                        .el()
-                        .set(width(), 250.)
-                        .set(height(), 60.)
-                        .with_background(Color::rgba(0.1, 0.1, 1.0, 1.)),
+                    UIBase.el().set(width(), 250.).set(height(), 60.).with_background(Color::rgba(0.1, 0.1, 1.0, 1.)),
                     ContextUser.into(),
                 ])
                 .into(),
@@ -111,17 +96,14 @@ impl ElementComponent for Example {
 }
 
 fn init(world: &mut World) {
-    Example.el().spawn_interactive(world);
+    FocusRoot::el([Example.el()]).spawn_interactive(world);
     // ElementNode::from(UIRect {
     //     color: vec3(0.5, 0.5, 0.5),
     //     size: vec2(150., 30.),
     // }).create(world, None);
     world.dump_to_tmp_file();
 
-    UICamera
-        .el()
-        .set(active_camera(), 0.)
-        .spawn_interactive(world);
+    UICamera.el().set(active_camera(), 0.).spawn_interactive(world);
 }
 
 fn main() {

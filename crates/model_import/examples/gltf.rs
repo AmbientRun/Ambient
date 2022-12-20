@@ -4,7 +4,7 @@ use elements_core::{
 };
 use elements_ecs::World;
 use elements_element::ElementComponentExt;
-use elements_model_import::{model_crate::ModelCrate};
+use elements_model_import::model_crate::ModelCrate;
 use elements_primitives::Quad;
 use elements_std::math::SphericalCoords;
 use glam::*;
@@ -14,13 +14,17 @@ async fn init(world: &mut World) {
 
     Quad.el().set(scale(), Vec3::ONE * 30.).spawn_static(world);
 
-    let model =
-        ModelCrate::local_import(&assets, "https://dims-content.fra1.digitaloceanspaces.com/assets/models/Misc/Cube.glb", true, false)
-            .await
-            .unwrap()
-            .produce_local_model(&assets)
-            .await
-            .unwrap();
+    let model = ModelCrate::local_import(
+        &assets,
+        "https://dims-content.fra1.digitaloceanspaces.com/assets/models/MixamoCharacters/Vanguard.glb",
+        true,
+        false,
+    )
+    .await
+    .unwrap()
+    .produce_local_model(&assets)
+    .await
+    .unwrap();
 
     model.spawn(world, &Default::default());
 

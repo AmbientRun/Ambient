@@ -6,7 +6,7 @@ use elements_ecs::World;
 use elements_element::ElementComponentExt;
 use elements_gizmos::{gizmos, GizmoPrimitive};
 use elements_model::bones_to_lines;
-use elements_model_import::{model_crate::ModelCrate};
+use elements_model_import::model_crate::ModelCrate;
 use elements_primitives::Quad;
 use elements_std::{line_hash, math::SphericalCoords};
 use glam::*;
@@ -18,8 +18,8 @@ async fn init(world: &mut World) {
 
     let model = ModelCrate::local_import(
         &assets,
-        "/Users/fredrik/My project/Assets/NatureManufacture Assets/Dynamic Nature - Mountain Tree Pack/Models/Fir_01_Plant.FBX",
-        false,
+        "https://dims-content.fra1.digitaloceanspaces.com/assets/models/MixamoCharacters/Vanguard By T. Choonyung.fbx",
+        true,
         false,
     )
     .await
