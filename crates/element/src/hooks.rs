@@ -1,5 +1,5 @@
 use std::{
-    any::{type_name, TypeId}, collections::{HashMap, HashSet}, fmt::Debug, future::Future, sync::Arc
+    any::{type_name, TypeId}, collections::{HashMap, HashSet}, fmt::Debug, future::Future, sync::Arc, time::Duration
 };
 
 use as_any::Downcast;
@@ -46,7 +46,17 @@ impl<'a> Hooks<'a> {
         };
         let environment = self.environment.clone();
         let element = self.element.clone();
-        (value, Arc::new(move |new_value| environment.lock().set_states.push((element.clone(), index, Box::new(new_value)))))
+        (
+            value,
+            Arc::new(move |new_value| {
+                environment.lock().set_states.push(StateUpdate {
+                    instance_id: element.clone(),
+                    index,
+                    value: Box::new(new_value),
+                    name: type_name::<T>(),
+                })
+            }),
+        )
     }
 
     /// Provides a function that, when called, will cause this [Element] to be re-rendered.
@@ -221,6 +231,25 @@ impl<'a> Hooks<'a> {
         listeners.push(FrameListener(Arc::new(on_frame)));
     }
 
+    /// Execute `func` at the specified interval for the lifetime of element.
+    ///
+    /// `func` is executed in a multithreaded context.
+    ///
+    /// The interval is only started once when first spawned, extra invocations are ignored.
+    pub fn use_interval<F>(&mut self, period: Duration, mut func: F)
+    where
+        F: 'static + Sync + Send + FnMut(),
+    {
+        self.use_task(move |_| async move {
+            let mut interval = tokio::time::interval(period);
+            loop {
+                interval.tick().await;
+
+                func()
+            }
+        });
+    }
+
     // Helpers
     pub fn use_ref_with<T: Send + Debug + 'static, F: FnOnce() -> T + Send>(&mut self, init: F) -> Arc<Mutex<T>> {
         self.use_state_with(|| Arc::new(Mutex::new(init()))).0
@@ -326,9 +355,17 @@ pub(crate) struct ContextUpdate {
     pub value: Box<dyn AnyCloneable + Sync + Send>,
 }
 
+#[derive(Debug, Clone)]
+pub(crate) struct StateUpdate {
+    pub instance_id: InstanceId,
+    pub index: usize,
+    pub name: &'static str,
+    pub value: Box<dyn AnyCloneable + Send>,
+}
+
 #[derive(Debug)]
 pub(crate) struct HooksEnvironment {
-    pub(crate) set_states: Vec<(InstanceId, usize, Box<dyn AnyCloneable + Send>)>,
+    pub(crate) set_states: Vec<StateUpdate>,
     /// Pending updates to contexts.
     ///
     /// This is modified through the returned `Setter` closure
