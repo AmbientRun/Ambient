@@ -177,6 +177,7 @@ impl ElementTree {
         let instance = self.instances.get(instance_id).unwrap();
         let key = instance.config.get_element_key(true);
 
+        profiling::scope!("render_instance", key.clone());
         let part = instance.config.part.clone();
 
         let entity = if let Some(part) = part {
@@ -252,6 +253,7 @@ impl ElementTree {
         } else {
             return;
         };
+
         self.render_instance(world, instance_id, false);
         let instance = self.instances.get_mut(instance_id).unwrap();
         if instance.entity != old_entity {
@@ -395,6 +397,7 @@ impl ElementTree {
             }
         }
         for instance_id in to_update.into_iter() {
+            profiling::scope!("rerender_instance", &instance_id);
             self.rerender_instance(world, &instance_id);
         }
     }
