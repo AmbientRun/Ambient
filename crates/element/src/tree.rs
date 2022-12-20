@@ -9,7 +9,7 @@ use parking_lot::Mutex;
 use tracing::debug_span;
 
 use crate::{
-    element_tree, element_unmanaged_children, AnyCloneable, ContextUpdate, DespawnFn, Element, ElementConfig, Hooks, HooksEnvironment, InstanceId
+    element_tree, element_unmanaged_children, AnyCloneable, ContextUpdate, DespawnFn, Element, ElementConfig, Hooks, HooksEnvironment, InstanceId, StateUpdate
 };
 
 #[derive(Debug)]
@@ -194,6 +194,7 @@ impl ElementTree {
                 };
 
                 // eprintln!("Calling part::render on: {key}");
+
                 let new_super = part.render(world, &mut hooks);
                 let on_spawn = std::mem::take(&mut hooks.on_spawn);
 
@@ -376,11 +377,11 @@ impl ElementTree {
         let state_updates = std::mem::take(&mut self.hooks_env.lock().set_states);
         let context_updates = std::mem::take(&mut self.hooks_env.lock().set_contexts);
         let mut to_update = HashSet::new();
-        for (instance_id, index, value) in state_updates.into_iter() {
+        for StateUpdate { instance_id, index, value, name } in state_updates.into_iter() {
             profiling::scope!("state_updates");
             if let Some(instance) = self.instances.get_mut(&instance_id) {
                 let key = &instance.config.get_element_key(true);
-                tracing::debug!(key, "updated state");
+                tracing::debug!(key, name, "updated state");
                 instance.hooks_state[index] = value;
                 to_update.insert(instance_id);
             }
@@ -390,7 +391,7 @@ impl ElementTree {
 
             if let Some(instance) = self.instances.get_mut(&instance_id) {
                 let key = &instance.config.get_element_key(true);
-                tracing::debug!(key, "Subscribed context {name:?} was updated");
+                tracing::debug!(root = key, "Subscribed context {name:?} was updated");
                 let entry = instance.hooks_context_state.get_mut(&type_id).unwrap();
                 entry.value = value;
                 to_update.extend(entry.listeners.iter().cloned());
