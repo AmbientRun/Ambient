@@ -49,9 +49,9 @@ pub fn new(lookat: glam::Vec3, orientation: SphericalCoords) -> EntityData {
 pub fn spherical_camera_system() -> SystemGroup<Event<'static, ()>> {
     SystemGroup::new(
         "spherical_camera_system",
-        vec![query_mut((spherical_camera(), translation(), lookat_center(), camera_movement_speed(), far()), ()).to_system(
+        vec![query_mut((spherical_camera(), translation(), lookat_center(), camera_movement_speed()), ()).to_system(
             |q, world, qs, event| {
-                for (_, (spherical_camera, translation, lookat_center, speed, far), ()) in q.iter(world, qs) {
+                for (_, (spherical_camera, translation, lookat_center, speed), ()) in q.iter(world, qs) {
                     match event {
                         Event::DeviceEvent { event: DeviceEvent::MouseMotion { delta }, .. } => {
                             if spherical_camera.is_rotating {
@@ -74,8 +74,6 @@ pub fn spherical_camera_system() -> SystemGroup<Event<'static, ()>> {
                                             VirtualKeyCode::D | VirtualKeyCode::Right => spherical_camera.is_right_pressed = is_pressed,
                                             VirtualKeyCode::R => *speed *= 2.0,
                                             VirtualKeyCode::F => *speed /= 2.0,
-                                            VirtualKeyCode::T => *far *= 2.0,
-                                            VirtualKeyCode::G => *far /= 2.0,
                                             VirtualKeyCode::Space => spherical_camera.is_rotating = is_pressed,
                                             _ => {}
                                         }
