@@ -70,6 +70,7 @@ pub trait ServerWorldExt {
     fn persisted_resource_mut<T: ComponentValue>(&mut self, component: Component<T>) -> Option<&mut T>;
     fn synced_resource_entity(&self) -> Option<EntityId>;
     fn synced_resource<T: ComponentValue>(&self, component: Component<T>) -> Option<&T>;
+    fn synced_resource_mut<T: ComponentValue>(&mut self, component: Component<T>) -> Option<&mut T>;
 }
 impl ServerWorldExt for World {
     fn persisted_resource_entity(&self) -> Option<EntityId> {
@@ -87,6 +88,9 @@ impl ServerWorldExt for World {
     }
     fn synced_resource<T: ComponentValue>(&self, component: Component<T>) -> Option<&T> {
         self.synced_resource_entity().and_then(|id| self.get_ref(id, component).ok())
+    }
+    fn synced_resource_mut<T: ComponentValue>(&mut self, component: Component<T>) -> Option<&mut T> {
+        self.synced_resource_entity().and_then(|id| self.get_mut(id, component).ok())
     }
 }
 
