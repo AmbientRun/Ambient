@@ -1,8 +1,7 @@
-use elements_app::App;
+use elements_app::{App, AppBuilder};
 use elements_cameras::UICamera;
 use elements_core::{async_ecs::async_run, camera::active_camera};
-use elements_ecs::EntityData;
-use elements_ecs::World;
+use elements_ecs::{EntityData, World};
 use elements_ecs_editor::ECSEditor;
 use elements_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
 use elements_std::Cb;
@@ -29,11 +28,7 @@ impl ElementComponent for ECSEditorUIWorld {
 fn init(world: &mut World) {
     Group(vec![
         UICamera.el().set(active_camera(), 0.),
-        FocusRoot(vec![WindowSized(vec![ScrollArea::el(
-            ECSEditorUIWorld.el().memoize_subtree(""),
-        )])
-        .el()])
-        .el(),
+        FocusRoot(vec![WindowSized(vec![ScrollArea::el(ECSEditorUIWorld.el().memoize_subtree(""))]).el()]).el(),
     ])
     .el()
     .spawn_interactive(world);
@@ -41,5 +36,5 @@ fn init(world: &mut World) {
 
 fn main() {
     env_logger::init();
-    App::run_ui(init);
+    AppBuilder::simple_ui().run_world(init);
 }

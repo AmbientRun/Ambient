@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use elements_app::App;
+use elements_app::{App, AppBuilder};
 use elements_cameras::UICamera;
 use elements_core::camera::active_camera;
 use elements_ecs::World;
@@ -115,5 +115,5 @@ fn init(world: &mut World) {
 fn main() {
     tracing_subscriber::fmt().with_env_filter(EnvFilter::from_default_env()).init();
 
-    App::run_ui(init)
+    AppBuilder::simple_ui().run_world(init)
 }

@@ -1,11 +1,11 @@
 use elements_animation::{animation_controller, AnimationController};
-use elements_app::App;
+use elements_app::{App, AppBuilder};
 use elements_core::{
     asset_cache, camera::{active_camera, far}, main_scene, transform::*
 };
 use elements_ecs::{EntityId, FnSystem, World};
 use elements_element::ElementComponentExt;
-use elements_model_import::{model_crate::ModelCrate};
+use elements_model_import::model_crate::ModelCrate;
 use elements_primitives::{Cube, Quad};
 use elements_renderer::color;
 use elements_std::math::SphericalCoords;
@@ -52,7 +52,7 @@ async fn init(world: &mut World) -> EntityId {
 
 fn main() {
     // wgpu_subscriber::initialize_default_subscriber(None);
-    App::run_debug_app(|app, runtime| {
+    AppBuilder::simple().run(|app, runtime| {
         let entity = runtime.block_on(async { init(&mut app.world).await });
         app.window_event_systems.add(Box::new(FnSystem::new(move |world, event| {
             if let Event::WindowEvent { event: WindowEvent::KeyboardInput { input, .. }, .. } = event {

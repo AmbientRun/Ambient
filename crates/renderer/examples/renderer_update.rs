@@ -1,8 +1,7 @@
-use elements_app::{gpu, App};
+use elements_app::{gpu, App, AppBuilder};
 use elements_core::{asset_cache, camera::active_camera, main_scene, transform::*};
 use elements_ecs::{EntityData, EntityId, FnSystem, World};
 use elements_meshes::{CubeMeshKey, QuadMeshKey};
-
 use elements_renderer::{
     gpu_primitives, materials::flat_material::{get_flat_shader, FlatMaterial}, primitives, RenderPrimitive, SharedMaterial
 };
@@ -51,7 +50,7 @@ fn init(world: &mut World) -> (EntityId, EntityId, SharedMaterial, SharedMateria
 
 fn main() {
     env_logger::init();
-    App::run_debug_app(|app, _| {
+    AppBuilder::simple().run(|app, _| {
         let assets = app.world.resource(asset_cache()).clone();
         let (entity1, entity2, material1, material2) = init(&mut app.world);
         app.window_event_systems.add(Box::new(FnSystem::new(move |world, event| {

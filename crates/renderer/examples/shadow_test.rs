@@ -1,4 +1,4 @@
-use elements_app::App;
+use elements_app::{App, AppBuilder};
 use elements_core::{
     asset_cache, bounding::world_bounding_sphere, camera::{active_camera, far, near, Camera, Projection}, main_scene, transform::*
 };
@@ -138,7 +138,7 @@ fn main() {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     SimpleComponentRegistry::install();
     init_components();
-    App::run_debug_app(|app, _| {
+    AppBuilder::simple().run(|app, _| {
         init(&mut app.world);
         app.world.add_component(app.world.resource_entity(), gizmo_state(), GizmoState::default()).unwrap();
         app.systems.add(Box::new(FnSystem::new(|world, _| world.resource(gizmo_state()).update(world))));

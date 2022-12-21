@@ -1,4 +1,4 @@
-use elements_app::App;
+use elements_app::{App, AppBuilder};
 use elements_core::{
     camera::active_camera, main_scene, transform::{scale, translation}
 };
@@ -26,5 +26,5 @@ fn init(world: &mut World) {
 
 fn main() {
     // wgpu_subscriber::initialize_default_subscriber(None);
-    App::run_world(init);
+    AppBuilder::simple().run_world(init);
 }

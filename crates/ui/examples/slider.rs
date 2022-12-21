@@ -1,4 +1,4 @@
-use elements_app::App;
+use elements_app::{App, AppBuilder};
 use elements_cameras::UICamera;
 use elements_core::camera::active_camera;
 use elements_ecs::World;
@@ -53,12 +53,10 @@ impl ElementComponent for Example {
 }
 
 fn init(world: &mut World) {
-    Group(vec![UICamera.el().set(active_camera(), 0.), Example.el()])
-        .el()
-        .spawn_interactive(world);
+    Group(vec![UICamera.el().set(active_camera(), 0.), Example.el()]).el().spawn_interactive(world);
 }
 
 fn main() {
     env_logger::init();
-    App::run_ui(init);
+    AppBuilder::simple_ui().run_world(init);
 }

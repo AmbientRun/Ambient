@@ -1,13 +1,12 @@
 use std::{sync::Arc, time::Duration};
 
 use async_trait::async_trait;
-use elements_app::App;
+use elements_app::{App, AppBuilder};
 use elements_asset_timeline::LocalAssetTimelineVisualizer;
 use elements_cameras::UICamera;
 use elements_core::{asset_cache, camera::active_camera, runtime};
 use elements_ecs::World;
 use elements_element::{ElementComponentExt, Group};
-
 use elements_std::asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt};
 use elements_ui::{Button, FocusRoot, WindowSized};
 use tokio::task::JoinHandle;
@@ -109,5 +108,5 @@ fn init(world: &mut World) {
 
 fn main() {
     tracing_subscriber::fmt().init();
-    App::run_ui(init);
+    AppBuilder::simple_ui().run_world(init);
 }

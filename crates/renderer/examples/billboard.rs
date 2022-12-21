@@ -1,4 +1,4 @@
-use elements_app::App;
+use elements_app::{App, AppBuilder};
 use elements_core::{asset_cache, camera::active_camera, main_scene, transform::*};
 use elements_ecs::World;
 use elements_element::ElementComponentExt;
@@ -30,5 +30,5 @@ fn init(world: &mut World) {
 }
 
 fn main() {
-    App::run_world(init);
+    AppBuilder::simple().run_world(init);
 }

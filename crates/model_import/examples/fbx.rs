@@ -1,4 +1,4 @@
-use elements_app::App;
+use elements_app::{App, AppBuilder};
 use elements_core::{
     asset_cache, camera::{active_camera, far}, hierarchy::dump_world_hierarchy_to_tmp_file, main_scene, transform::*
 };
@@ -46,7 +46,7 @@ async fn init(world: &mut World) {
 
 fn main() {
     env_logger::init();
-    App::run_debug_app_with_config(false, true, true, |app, runtime| {
+    AppBuilder::simple().run(|app, runtime| {
         runtime.block_on(async { init(&mut app.world).await });
     });
 }

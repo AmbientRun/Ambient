@@ -1,12 +1,10 @@
-use elements_app::App;
+use elements_app::{App, AppBuilder};
 use elements_cameras::UICamera;
 use elements_core::camera::active_camera;
 use elements_ecs::World;
 use elements_element::{ElementComponentExt, Group};
 use elements_renderer::color;
-use elements_ui::{
-    font_size, padding, space_between_items, Borders, FlowColumn, Separator, StylesExt, Text,
-};
+use elements_ui::{font_size, padding, space_between_items, Borders, FlowColumn, Separator, StylesExt, Text};
 use glam::vec4;
 
 fn init(world: &mut World) {
@@ -32,5 +30,5 @@ fn init(world: &mut World) {
 
 fn main() {
     env_logger::init();
-    App::run_ui(init);
+    AppBuilder::simple_ui().run_world(init);
 }

@@ -131,6 +131,134 @@ pub fn get_time_since_app_start(world: &World) -> Duration {
     *world.resource(time()) - *world.resource(app_start_time())
 }
 
+pub struct AppBuilder {
+    pub runtime: Option<Runtime>,
+    pub window_builder: Option<WindowBuilder>,
+    pub install_component_registry: bool,
+    pub ui_renderer: bool,
+    pub main_renderer: bool,
+}
+impl AppBuilder {
+    pub fn new() -> Self {
+        Self { runtime: None, window_builder: None, install_component_registry: false, ui_renderer: false, main_renderer: true }
+    }
+    pub fn simple() -> Self {
+        Self::new().install_component_registry(true)
+    }
+    pub fn simple_ui() -> Self {
+        Self::new().install_component_registry(true).ui_renderer(true).main_renderer(false)
+    }
+    pub fn simple_dual() -> Self {
+        Self::new().install_component_registry(true).ui_renderer(true).main_renderer(true)
+    }
+    pub fn with_runtime(mut self, runtime: Runtime) -> Self {
+        self.runtime = Some(runtime);
+        self
+    }
+    pub fn with_window_builder(mut self, window_builder: WindowBuilder) -> Self {
+        self.window_builder = Some(window_builder);
+        self
+    }
+    pub fn install_component_registry(mut self, value: bool) -> Self {
+        self.install_component_registry = value;
+        self
+    }
+    pub fn ui_renderer(mut self, value: bool) -> Self {
+        self.ui_renderer = value;
+        self
+    }
+    pub fn main_renderer(mut self, value: bool) -> Self {
+        self.main_renderer = value;
+        self
+    }
+    pub fn build(self, event_loop: &EventLoop<()>) -> anyhow::Result<App> {
+        if self.install_component_registry {
+            SimpleComponentRegistry::install();
+        }
+        crate::init_all_components();
+        let window = self.window_builder.unwrap_or_default();
+        let window = Arc::new(window.build(event_loop).unwrap());
+
+        #[cfg(feature = "profile")]
+        let puffin_server = {
+            let puffin_addr = format!(
+                "0.0.0.0:{}",
+                std::env::var("PUFFIN_PORT").ok().and_then(|port| port.parse::<u16>().ok()).unwrap_or(puffin_http::DEFAULT_PORT)
+            );
+            let server = puffin_http::Server::new(&puffin_addr)?;
+            tracing::info!("Puffin server running on {}", puffin_addr);
+            puffin::set_scopes_on(true);
+            server
+        };
+
+        let _ = thread_priority::set_current_thread_priority(thread_priority::ThreadPriority::Max);
+        let runtime = self.runtime.unwrap_or_else(|| tokio::runtime::Builder::new_multi_thread().enable_all().build().unwrap());
+
+        let mut world = World::new("main_app");
+        let gpu = Arc::new(runtime.block_on(async { Gpu::with_config(Some(&window), true).await }));
+        let assets = AssetCache::new(runtime.handle().clone());
+        RuntimeKey.insert(&assets, runtime.handle().clone());
+        GpuKey.insert(&assets, gpu.clone());
+        WindowKey.insert(&assets, window.clone());
+
+        let app_resources =
+            AppResources { gpu: gpu.clone(), runtime: runtime.handle().clone(), assets: assets.clone(), window: Some(window.clone()) };
+
+        let resources = world_instance_resources(app_resources);
+        world.add_components(world.resource_entity(), resources).unwrap();
+        let wind_size = {
+            let size = world.resource(elements_core::window()).inner_size();
+            uvec2(size.width, size.height)
+        };
+        set_screen_render_target(assets, RenderTarget::new(gpu, wind_size, None));
+
+        Ok(App {
+            window_focused: true,
+            window,
+            runtime,
+            systems: SystemGroup::new("app", vec![Box::new(MeshBufferUpdate), Box::new(world_instance_systems(true))]),
+            world,
+            gpu_world_sync_systems: gpu_world_sync_systems(),
+            window_event_systems: SystemGroup::new(
+                "window_event_systems",
+                vec![Box::new(assets_camera_systems()), Box::new(WinitEventsSystem::new()), Box::new(elements_input::event_systems())],
+            ),
+
+            fps: FpsCounter::new(),
+            #[cfg(feature = "profile")]
+            _puffin: puffin_server,
+            modifiers: Default::default(),
+        })
+    }
+    pub fn run(self, init: impl FnOnce(&mut App, tokio::runtime::Handle)) {
+        let ui_renderer = self.ui_renderer;
+        let main_renderer = self.main_renderer;
+
+        let event_loop = EventLoop::new();
+        let mut app = self.build(&event_loop).unwrap();
+        let examples_system = ExamplesSystem::new(&mut app, ui_renderer, main_renderer);
+        app.window_event_systems.add(Box::new(examples_system));
+        let runtime = app.runtime.handle().clone();
+        init(&mut app, runtime);
+        event_loop.run(move |event, _, control_flow| {
+            // HACK(mithun): treat dpi changes as resize events. ideally we'd handle this in handle_event proper,
+            // but https://github.com/rust-windowing/winit/issues/1968 restricts us
+            if let Event::WindowEvent { window_id, event: WindowEvent::ScaleFactorChanged { new_inner_size, scale_factor } } = &event {
+                *app.world.resource_mut(window_scale_factor()) = *scale_factor;
+                app.handle_event(
+                    &Event::WindowEvent { window_id: *window_id, event: WindowEvent::Resized(**new_inner_size) },
+                    control_flow,
+                );
+            } else if let Some(event) = event.to_static() {
+                app.handle_event(&event, control_flow);
+            }
+        });
+    }
+    pub fn run_world(self, init: impl FnOnce(&mut World)) {
+        self.run(|app, _| init(&mut app.world))
+    }
+}
+
 pub struct App {
     pub world: World,
     pub systems: SystemGroup,
@@ -167,104 +295,30 @@ impl std::fmt::Debug for App {
     }
 }
 impl App {
-    pub fn run_debug_app(init: impl FnOnce(&mut App, tokio::runtime::Handle)) {
-        Self::run_debug_app_with_config(false, true, true, init)
+    pub fn builder() -> AppBuilder {
+        AppBuilder::new()
     }
-    pub fn run_debug_app_with_config(
-        ui_renderer: bool,
-        main_renderer: bool,
-        install_component_registry: bool,
-        init: impl FnOnce(&mut App, tokio::runtime::Handle),
-    ) {
-        if install_component_registry {
-            SimpleComponentRegistry::install();
-        }
+    // pub fn run_debug_app(init: impl FnOnce(&mut App, tokio::runtime::Handle)) {
+    //     Self::run_debug_app_with_config(false, true, true, init)
+    // }
+    // pub fn run_debug_app_with_config(
+    //     ui_renderer: bool,
+    //     main_renderer: bool,
+    //     install_component_registry: bool,
+    //     init: impl FnOnce(&mut App, tokio::runtime::Handle),
+    // ) {
 
-        let event_loop = EventLoop::new();
-        let mut app = App::new(&event_loop, Default::default()).unwrap();
-        let examples_system = ExamplesSystem::new(&mut app, ui_renderer, main_renderer);
-        app.window_event_systems.add(Box::new(examples_system));
-        let runtime = app.runtime.handle().clone();
-        init(&mut app, runtime);
-        event_loop.run(move |event, _, control_flow| {
-            // HACK(mithun): treat dpi changes as resize events. ideally we'd handle this in handle_event proper,
-            // but https://github.com/rust-windowing/winit/issues/1968 restricts us
-            if let Event::WindowEvent { window_id, event: WindowEvent::ScaleFactorChanged { new_inner_size, scale_factor } } = &event {
-                *app.world.resource_mut(window_scale_factor()) = *scale_factor;
-                app.handle_event(
-                    &Event::WindowEvent { window_id: *window_id, event: WindowEvent::Resized(**new_inner_size) },
-                    control_flow,
-                );
-            } else if let Some(event) = event.to_static() {
-                app.handle_event(&event, control_flow);
-            }
-        });
-    }
+    // }
 
-    pub fn run_world(init: impl FnOnce(&mut World)) {
-        Self::run_debug_app(|app, _| init(&mut app.world))
-    }
-    pub fn run_ui(init: impl FnOnce(&mut World)) {
-        Self::run_debug_app_with_config(true, false, true, |app, _| init(&mut app.world))
-    }
+    // pub fn run_world(init: impl FnOnce(&mut World)) {
+    //     Self::run_debug_app(|app, _| init(&mut app.world))
+    // }
+    // pub fn run_ui(init: impl FnOnce(&mut World)) {
+    //     Self::run_debug_app_with_config(true, false, true, |app, _| init(&mut app.world))
+    // }
     // pub fn run_world<F: Future + Sync + Send>(init: impl FnOnce(&mut World) -> F + Sync + Send) {
     //     Self::run_app(|app| init(&mut app.world));
     // }
-    pub fn new(event_loop: &EventLoop<()>, window: WindowBuilder) -> anyhow::Result<Self> {
-        crate::init_all_components();
-        let window = Arc::new(window.build(event_loop).unwrap());
-
-        #[cfg(feature = "profile")]
-        let puffin_server = {
-            let puffin_addr = format!(
-                "0.0.0.0:{}",
-                std::env::var("PUFFIN_PORT").ok().and_then(|port| port.parse::<u16>().ok()).unwrap_or(puffin_http::DEFAULT_PORT)
-            );
-            let server = puffin_http::Server::new(&puffin_addr)?;
-            tracing::info!("Puffin server running on {}", puffin_addr);
-            puffin::set_scopes_on(true);
-            server
-        };
-
-        let _ = thread_priority::set_current_thread_priority(thread_priority::ThreadPriority::Max);
-        let runtime = tokio::runtime::Builder::new_multi_thread().enable_all().build().unwrap();
-
-        let mut world = World::new("main_app");
-        let gpu = Arc::new(runtime.block_on(async { Gpu::with_config(Some(&window), true).await }));
-        let assets = AssetCache::new(runtime.handle().clone());
-        RuntimeKey.insert(&assets, runtime.handle().clone());
-        GpuKey.insert(&assets, gpu.clone());
-        WindowKey.insert(&assets, window.clone());
-
-        let app_resources =
-            AppResources { gpu: gpu.clone(), runtime: runtime.handle().clone(), assets: assets.clone(), window: Some(window.clone()) };
-
-        let resources = world_instance_resources(app_resources);
-        world.add_components(world.resource_entity(), resources).unwrap();
-        let wind_size = {
-            let size = world.resource(elements_core::window()).inner_size();
-            uvec2(size.width, size.height)
-        };
-        set_screen_render_target(assets, RenderTarget::new(gpu, wind_size, None));
-
-        Ok(Self {
-            window_focused: true,
-            window,
-            runtime,
-            systems: SystemGroup::new("app", vec![Box::new(MeshBufferUpdate), Box::new(world_instance_systems(true))]),
-            world,
-            gpu_world_sync_systems: gpu_world_sync_systems(),
-            window_event_systems: SystemGroup::new(
-                "window_event_systems",
-                vec![Box::new(assets_camera_systems()), Box::new(WinitEventsSystem::new()), Box::new(elements_input::event_systems())],
-            ),
-
-            fps: FpsCounter::new(),
-            #[cfg(feature = "profile")]
-            _puffin: puffin_server,
-            modifiers: Default::default(),
-        })
-    }
     pub fn handle_event(&mut self, event: &Event<'static, ()>, control_flow: &mut ControlFlow) {
         *control_flow = ControlFlow::Poll;
 

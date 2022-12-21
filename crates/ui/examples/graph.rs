@@ -1,15 +1,13 @@
 use std::f32::consts::TAU;
 
-use elements_app::App;
+use elements_app::{App, AppBuilder};
 use elements_cameras::UICamera;
 use elements_core::{camera::active_camera, runtime};
 use elements_ecs::World;
 use elements_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use elements_std::{time::Clock, IntoDuration};
 use elements_ui::{
-    self,
-    graph::{Graph, GraphScaleKind, GraphStyle},
-    *,
+    self, graph::{Graph, GraphScaleKind, GraphStyle}, *
 };
 use fixed_vec_deque::FixedVecDeque;
 use glam::{vec2, vec4, Vec2};
@@ -82,10 +80,7 @@ impl ElementComponent for Example {
                     points: points.0,
                     width: 800.0,
                     height: 200.0,
-                    style: GraphStyle {
-                        color: vec4(1.0, 0.0, 0.0, 1.0),
-                        ..Default::default()
-                    },
+                    style: GraphStyle { color: vec4(1.0, 0.0, 0.0, 1.0), ..Default::default() },
                     x_scale: GraphScaleKind::Fixed { count: 8 },
                     y_bounds: Some((-2.0, 2.0)),
                     ..Default::default()
@@ -95,10 +90,7 @@ impl ElementComponent for Example {
                     points: points.1,
                     width: 600.0,
                     height: 200.0,
-                    style: GraphStyle {
-                        color: vec4(1.0, 1.0, 0.0, 1.0),
-                        ..Default::default()
-                    },
+                    style: GraphStyle { color: vec4(1.0, 1.0, 0.0, 1.0), ..Default::default() },
                     ..Default::default()
                 }
                 .el(),
@@ -106,10 +98,7 @@ impl ElementComponent for Example {
                     points: points.2,
                     width: 400.0,
                     height: 200.0,
-                    style: GraphStyle {
-                        color: vec4(0.5, 0.0, 1.0, 1.0),
-                        ..Default::default()
-                    },
+                    style: GraphStyle { color: vec4(0.5, 0.0, 1.0, 1.0), ..Default::default() },
                     ..Default::default()
                 }
                 .el(),
@@ -117,10 +106,7 @@ impl ElementComponent for Example {
                     points: history.iter().copied().collect_vec(),
                     width: 800.0,
                     height: 300.0,
-                    x_scale: GraphScaleKind::Dynamic {
-                        spacing: 64.0,
-                        snap: false,
-                    },
+                    x_scale: GraphScaleKind::Dynamic { spacing: 64.0, snap: false },
                     ..Default::default()
                 }
                 .el(),
@@ -135,13 +121,10 @@ impl ElementComponent for Example {
 
 fn init(world: &mut World) {
     Example.el().spawn_interactive(world);
-    UICamera
-        .el()
-        .set(active_camera(), 0.)
-        .spawn_interactive(world);
+    UICamera.el().set(active_camera(), 0.).spawn_interactive(world);
 }
 
 fn main() {
     env_logger::init();
-    App::run_ui(init);
+    AppBuilder::simple_ui().run_world(init);
 }

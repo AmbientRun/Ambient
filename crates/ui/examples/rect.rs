@@ -1,12 +1,11 @@
-use elements_app::App;
+use elements_app::{App, AppBuilder};
 use elements_cameras::UICamera;
 use elements_core::camera::active_camera;
 use elements_ecs::World;
 use elements_element::{ElementComponentExt, Group};
 use elements_std::color::Color;
 use elements_ui::{
-    layout::{height, width},
-    *,
+    layout::{height, width}, *
 };
 
 fn init(world: &mut World) {
@@ -32,5 +31,5 @@ fn init(world: &mut World) {
 
 fn main() {
     env_logger::init();
-    App::run_ui(init);
+    AppBuilder::simple_ui().run_world(init);
 }

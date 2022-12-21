@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use elements_app::App;
+use elements_app::{App, AppBuilder};
 use elements_ecs::World;
 
 #[derive(Parser)]
@@ -19,5 +19,9 @@ enum Commands {
 fn init(world: &mut World) {}
 
 fn main() {
-    App::run_world(init);
+    let runtime = tokio::runtime::Builder::new_multi_thread().enable_all().build().unwrap();
+
+    AppBuilder::simple().run(|app, runtime| {
+        runtime.spawn(async move {});
+    });
 }

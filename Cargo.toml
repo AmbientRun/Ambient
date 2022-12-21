@@ -24,6 +24,7 @@ elements_model = { path = "crates/model" }
 elements_animation = { path = "crates/animation" }
 elements_app = { path = "crates/app" }
 clap.workspace = true
+tokio.workspace = true
 
 [dev-dependencies]
 glam.workspace = true

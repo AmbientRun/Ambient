@@ -1,4 +1,4 @@
-use elements_app::App;
+use elements_app::{App, AppBuilder};
 use elements_core::{camera::active_camera, main_scene, transform::*};
 use elements_ecs::World;
 use elements_element::ElementComponentExt;
@@ -32,5 +32,5 @@ fn init(world: &mut World) {
 fn main() {
     // wgpu_subscriber::initialize_default_subscriber(None);
     env_logger::init();
-    App::run_world(init);
+    AppBuilder::simple().run_world(init);
 }

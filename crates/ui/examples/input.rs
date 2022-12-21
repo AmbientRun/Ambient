@@ -1,4 +1,4 @@
-use elements_app::App;
+use elements_app::{App, AppBuilder};
 use elements_cameras::UICamera;
 use elements_core::camera::active_camera;
 use elements_ecs::World;
@@ -13,14 +13,10 @@ impl ElementComponent for Example {
     fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
         let (text, set_text) = hooks.use_state("Enter some text".to_string());
         let (vector3, set_vector3) = hooks.use_state(Vec3::ZERO);
-        let (index_map, set_index_map) = hooks.use_state(
-            vec![("First".to_string(), "Second".to_string())]
-                .into_iter()
-                .collect::<IndexMap<String, String>>(),
-        );
+        let (index_map, set_index_map) =
+            hooks.use_state(vec![("First".to_string(), "Second".to_string())].into_iter().collect::<IndexMap<String, String>>());
         let (list, set_list) = hooks.use_state(vec!["First".to_string(), "Second".to_string()]);
-        let (minimal_list, set_minimal_list) =
-            hooks.use_state(vec!["First".to_string(), "Second".to_string()]);
+        let (minimal_list, set_minimal_list) = hooks.use_state(vec!["First".to_string(), "Second".to_string()]);
         let row = |name, editor| FlowRow(vec![Text::el(name).set(min_width(), 110.), editor]).el();
         FocusRoot(vec![FlowColumn(vec![
             row("TextInput", TextInput::new(text, Cb(set_text)).el()),
@@ -35,22 +31,9 @@ impl ElementComponent for Example {
                 }
                 .el(),
             ),
-            row(
-                "Vec3",
-                Vec3::editor(vector3, Some(Cb(set_vector3)), Default::default()),
-            ),
-            row(
-                "IndexMap",
-                IndexMap::editor(index_map, Some(Cb(set_index_map)), Default::default()),
-            ),
-            row(
-                "ListEditor",
-                ListEditor {
-                    value: list,
-                    on_change: Some(Cb(set_list)),
-                }
-                .el(),
-            ),
+            row("Vec3", Vec3::editor(vector3, Some(Cb(set_vector3)), Default::default())),
+            row("IndexMap", IndexMap::editor(index_map, Some(Cb(set_index_map)), Default::default())),
+            row("ListEditor", ListEditor { value: list, on_change: Some(Cb(set_list)) }.el()),
             row(
                 "MinimalListEditor",
                 MinimalListEditor {
@@ -72,12 +55,10 @@ impl ElementComponent for Example {
 }
 
 fn init(world: &mut World) {
-    Group(vec![UICamera.el().set(active_camera(), 0.), Example.el()])
-        .el()
-        .spawn_interactive(world);
+    Group(vec![UICamera.el().set(active_camera(), 0.), Example.el()]).el().spawn_interactive(world);
 }
 
 fn main() {
     env_logger::init();
-    App::run_ui(init);
+    AppBuilder::simple_ui().run_world(init);
 }

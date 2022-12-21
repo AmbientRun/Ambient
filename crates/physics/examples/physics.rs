@@ -1,4 +1,4 @@
-use elements_app::{gpu, App};
+use elements_app::{gpu, App, AppBuilder};
 use elements_core::{asset_cache, camera::active_camera, main_scene, transform::scale, FixedTimestepSystem};
 use elements_ecs::{FnSystem, World};
 use elements_element::ElementComponentExt;
@@ -53,7 +53,7 @@ async fn init(world: &mut World) -> PxSceneRef {
 
 fn main() {
     // wgpu_subscriber::initialize_default_subscriber(None);
-    App::run_debug_app(|app, runtime| {
+    AppBuilder::simple().run(|app, runtime| {
         elements_physics::init_all_components();
         let scene = runtime.block_on(async { init(&mut app.world).await });
 

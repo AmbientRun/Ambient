@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use elements_app::{gpu, App};
+use elements_app::{gpu, App, AppBuilder};
 use elements_core::{asset_cache, camera::active_camera, main_scene, transform::*};
 use elements_ecs::{EntityData, World};
 use elements_gpu::{
@@ -52,5 +52,5 @@ fn init(world: &mut World) {
 
 fn main() {
     env_logger::init();
-    App::run_world(init);
+    AppBuilder::simple().run_world(init);
 }

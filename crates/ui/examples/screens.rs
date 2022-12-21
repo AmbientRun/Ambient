@@ -1,4 +1,4 @@
-use elements_app::App;
+use elements_app::{App, AppBuilder};
 use elements_cameras::UICamera;
 use elements_core::camera::active_camera;
 use elements_ecs::World;
@@ -66,22 +66,12 @@ impl ElementComponent for SubScreen {
             Button::new("Prompt", {
                 let set_screen = set_screen.clone();
                 move |_| {
-                    set_screen(Some(
-                        Prompt::new("Testy", Cb(set_screen.clone()), |_, _| {}).el(),
-                    ));
+                    set_screen(Some(Prompt::new("Testy", Cb(set_screen.clone()), |_, _| {}).el()));
                 }
             })
             .el(),
             Button::new("Editor Prompt", move |_| {
-                set_screen(Some(
-                    EditorPrompt::new(
-                        "Testy",
-                        "Something".to_string(),
-                        Cb(set_screen.clone()),
-                        |_, _| {},
-                    )
-                    .el(),
-                ));
+                set_screen(Some(EditorPrompt::new("Testy", "Something".to_string(), Cb(set_screen.clone()), |_, _| {}).el()));
             })
             .el(),
         ])
@@ -90,15 +80,10 @@ impl ElementComponent for SubScreen {
 }
 
 fn init(world: &mut World) {
-    Group(vec![
-        UICamera.el().set(active_camera(), 0.),
-        RootScreen.el(),
-    ])
-    .el()
-    .spawn_interactive(world);
+    Group(vec![UICamera.el().set(active_camera(), 0.), RootScreen.el()]).el().spawn_interactive(world);
 }
 
 fn main() {
     env_logger::init();
-    App::run_ui(init);
+    AppBuilder::simple_ui().run_world(init);
 }
