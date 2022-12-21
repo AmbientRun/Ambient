@@ -23,6 +23,7 @@ elements_primitives = { path = "crates/primitives" }
 elements_model = { path = "crates/model" }
 elements_animation = { path = "crates/animation" }
 elements_app = { path = "crates/app" }
+clap.workspace = true
 
 [dev-dependencies]
 glam.workspace = true
@@ -111,7 +112,7 @@ quinn = "0.8.5"
 rustls = { version = "0.20.6", features = ["dangerous_configuration", "quic"] }
 webpki = "0.22.0"
 parking_lot = { version = "0.12.0", features = ["deadlock_detection", "serde"] }
-clap = { version = "3.0.14", features = ["derive"] }
+clap = { version = "4.0", features = ["derive"] }
 zip = "0.5.13"
 rand_core = { version = "0.6", features = ["std"] }
 git-version = { git = "https://github.com/fusion-engineering/rust-git-version" }
