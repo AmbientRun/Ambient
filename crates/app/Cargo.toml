@@ -40,4 +40,5 @@ bundle-includes = [
     'elements_renderer/bundle-includes',
     'elements_gizmos/bundle-includes',
     'elements_ui/bundle-includes',
+    'elements_model/bundle-includes',
 ]
