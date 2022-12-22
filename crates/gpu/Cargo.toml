@@ -27,4 +27,4 @@ anyhow.workspace = true
 tracing.workspace = true
 
 [features]
-bundle-includes = ['elements_std/bundle-includes']
+hotload-includes = ['elements_std/hotload-includes']

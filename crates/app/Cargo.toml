@@ -34,11 +34,11 @@ elements_primitives = { path = "../primitives" }
 
 [features]
 profile = ["puffin", "puffin_http", "profiling/profile-with-puffin"]
-bundle-includes = [
-    "elements_std/bundle-includes",
-    'elements_gpu/bundle-includes',
-    'elements_renderer/bundle-includes',
-    'elements_gizmos/bundle-includes',
-    'elements_ui/bundle-includes',
-    'elements_model/bundle-includes',
+hotload-includes = [
+    "elements_std/hotload-includes",
+    'elements_gpu/hotload-includes',
+    'elements_renderer/hotload-includes',
+    'elements_gizmos/hotload-includes',
+    'elements_ui/hotload-includes',
+    'elements_model/hotload-includes',
 ]

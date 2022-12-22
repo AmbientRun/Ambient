@@ -30,7 +30,7 @@ pub use time::{FromDuration, IntoDuration};
 #[macro_export]
 macro_rules! include_file {
     ($f:expr) => {{
-        #[cfg(not(feature = "bundle-includes"))]
+        #[cfg(feature = "hotload-includes")]
         {
             let mut path = std::path::PathBuf::from(file!());
             path.pop();
@@ -38,7 +38,7 @@ macro_rules! include_file {
             let content = std::fs::read_to_string(&path).expect(&format!("Failed to read file {:?}", path));
             content
         }
-        #[cfg(feature = "bundle-includes")]
+        #[cfg(not(feature = "hotload-includes"))]
         {
             let content = include_str!($f);
             content.to_string()
@@ -52,7 +52,7 @@ macro_rules! include_file {
 #[macro_export]
 macro_rules! include_file_bytes {
     ($f:expr) => {{
-        #[cfg(not(feature = "bundle-includes"))]
+        #[cfg(feature = "hotload-includes")]
         {
             let mut path = std::path::PathBuf::from(file!());
             path.pop();
@@ -60,7 +60,7 @@ macro_rules! include_file_bytes {
             let content = std::fs::read(&path).expect(&format!("Failed to read file {:?}", path));
             content
         }
-        #[cfg(feature = "bundle-includes")]
+        #[cfg(not(feature = "hotload-includes"))]
         {
             let content = include_bytes!($f);
             content.to_vec()

@@ -39,5 +39,5 @@ once_cell.workspace = true
 pin-project = "1.0"
 
 [features]
-bundle-includes = []
+hotload-includes = []
 sentry = []

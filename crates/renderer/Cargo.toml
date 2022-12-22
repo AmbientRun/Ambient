@@ -37,4 +37,4 @@ env_logger.workspace = true
 winit.workspace = true
 
 [features]
-bundle-includes = ['elements_std/bundle-includes']
+hotload-includes = ['elements_std/hotload-includes']

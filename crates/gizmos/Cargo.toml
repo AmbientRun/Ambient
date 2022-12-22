@@ -26,4 +26,4 @@ elements_app = { path = "../app" }
 elements_cameras = { path = "../cameras" }
 
 [features]
-bundle-includes = ['elements_std/bundle-includes']
+hotload-includes = ['elements_std/hotload-includes']
