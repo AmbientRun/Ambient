@@ -48,7 +48,7 @@ wgpu-subscriber = "0.1.0"
 futures = { version = "0.3", default-features = false, features = ["std"] }
 tokio = { version = "1.20", features = ["full"] }
 bytemuck = { version = "1.10", features = ["derive"] }
-glam = { version = "0.21", features = ["bytemuck", "serde", "rand"] }
+glam = { version = "0.22", features = ["bytemuck", "serde", "rand"] }
 nalgebra = { version = "0.29.0", features = ["convert-glam017"] }
 # TODO(fred): gltf hasn't bumped their version with the latest image dependency (0.24), so using git version for now
 gltf = { git = "https://github.com/gltf-rs/gltf.git", rev = "55480254efb4b1f55c87187210149b80e3c29f16" }
