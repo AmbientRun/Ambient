@@ -24,6 +24,7 @@ pub struct Hooks<'a> {
     pub(crate) on_spawn: Option<Vec<SpawnFn>>,
     pub(crate) environment: Arc<Mutex<HooksEnvironment>>,
 }
+
 impl<'a> Hooks<'a> {
     pub fn use_state<T: Clone + Debug + ComponentValue>(&mut self, init: T) -> (T, Setter<T>) {
         self.use_state_with(|| init)
@@ -231,23 +232,51 @@ impl<'a> Hooks<'a> {
         listeners.push(FrameListener(Arc::new(on_frame)));
     }
 
-    /// Execute `func` at the specified interval for the lifetime of element.
+    /// Execute `func` at the specified interval, refreshing when dependencies change.
     ///
     /// `func` is executed in a multithreaded context.
     ///
-    /// The interval is only started once when first spawned, extra invocations are ignored.
-    pub fn use_interval<F>(&mut self, period: Duration, mut func: F)
+    /// The interval is only started once when first spawned and then each time `deps` change
+    /// **Note**: There exists another *similar* function [`elements_ui::ui::hooks::use_interval`]
+    /// which is slightly different.
+    ///
+    /// This version:
+    /// - `func` is executed immediately, and then every `period`
+    /// - uses `FnMut`
+    /// - Allows to restart when dependencies change
+    pub fn use_memo_interval<D, F>(&mut self, world: &World, period: Duration, deps: D, mut func: F)
     where
-        F: 'static + Sync + Send + FnMut(),
+        D: 'static + Send + Sync + Clone + Debug + PartialEq,
+        F: 'static + Send + Sync + FnMut(&D),
     {
-        self.use_task(move |_| async move {
-            let mut interval = tokio::time::interval(period);
-            loop {
-                interval.tick().await;
+        let runtime = world.resource(runtime()).clone();
 
-                func()
+        let task = self.use_ref_with::<Option<JoinHandle<_>>, _>(|| None);
+        let prev_deps = self.use_ref_with(|| None);
+
+        let mut prev_deps = prev_deps.lock();
+
+        // First run or dependencies have changed
+        if Some(&deps) != prev_deps.as_ref() {
+            // Abort the previous task
+            let mut task = task.lock();
+            if let Some(task) = task.take() {
+                tracing::debug!("Aborting task in favor {prev_deps:?} => {deps:?}");
+                task.abort();
             }
-        });
+
+            *prev_deps = Some(deps.clone());
+
+            // Start the task anew
+            *task = Some(runtime.spawn(async move {
+                let mut interval = tokio::time::interval(period);
+
+                loop {
+                    interval.tick().await;
+                    func(&deps);
+                }
+            }));
+        }
     }
 
     // Helpers
