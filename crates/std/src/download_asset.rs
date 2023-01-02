@@ -63,6 +63,16 @@ impl ContentUrl {
             Err(err) => Err(err),
         }
     }
+    pub fn to_file_path(&self) -> anyhow::Result<Option<PathBuf>> {
+        if self.0.scheme() == "file" {
+            match self.0.to_file_path() {
+                Ok(path) => Ok(Some(path)),
+                Err(_) => Err(anyhow::anyhow!("Invalid file url: {:?}", self)),
+            }
+        } else {
+            Ok(None)
+        }
+    }
 }
 impl From<PathBuf> for ContentUrl {
     fn from(value: PathBuf) -> Self {
@@ -173,8 +183,8 @@ impl AsyncAssetKey<AssetResult<Arc<Vec<u8>>>> for BytesFromUrl {
             return Ok(Arc::new(tokio::fs::read(&*path).await.context(format!("Failed to read file: {:?}", path))?));
         }
 
-        if self.url.0.scheme() == "file" {
-            return Ok(Arc::new(tokio::fs::read(&self.url.0.path()).await.context(format!("Failed to read file at: {:}", self.url.0))?));
+        if let Some(path) = self.url.to_file_path()? {
+            return Ok(Arc::new(tokio::fs::read(path).await.context(format!("Failed to read file at: {:}", self.url.0))?));
         }
 
         let body = download(&assets, self.url.0.clone(), |resp| async { Ok(resp.bytes().await?) }).await?.to_vec();
@@ -203,8 +213,8 @@ impl AsyncAssetKey<AssetResult<Arc<PathBuf>>> for BytesFromUrlCachedPath {
     }
     async fn load(self, assets: AssetCache) -> AssetResult<Arc<PathBuf>> {
         use tokio::io::AsyncWriteExt;
-        if self.url.0.scheme() == "file" {
-            return Ok(Arc::new(self.url.0.path().into()));
+        if let Some(path) = self.url.to_file_path()? {
+            return Ok(Arc::new(path));
         }
         let path = self.url.absolute_cache_path(&assets);
         if !path.exists() {

@@ -341,7 +341,7 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialFromReso
             _padding: Default::default(),
         };
 
-        let name = self.name.or(self.base_color.map(|x| x.0.to_string())).unwrap_or_default();
+        let name = self.name.or(self.base_color.map(|x| x.to_string())).unwrap_or_default();
         Ok(Arc::new(PbrMaterial::new(
             assets.clone(),
             PbrMaterialConfig {

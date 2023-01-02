@@ -303,8 +303,8 @@ impl Default for ModelTextureSize {
 // }
 
 pub async fn download_bytes(assets: &AssetCache, url: &ContentUrl) -> anyhow::Result<Vec<u8>> {
-    if url.0.scheme() == "file" {
-        Ok(tokio::fs::read(url.0.path()).await?)
+    if let Some(path) = url.to_file_path()? {
+        Ok(tokio::fs::read(path).await?)
     } else {
         Ok(download(assets, url.0.clone(), |resp| async move { Ok(resp.bytes().await?) }).await?.into())
     }

@@ -20,7 +20,7 @@ mod gltf_import;
 
 pub async fn import_url(assets: &AssetCache, url: &ContentUrl, asset_crate: &mut ModelCrate) -> anyhow::Result<RelativePathBuf> {
     let content = download_bytes(assets, url).await?;
-    let gltf = GltfImport::from_slice(url.0.to_string(), true, &content)?;
+    let gltf = GltfImport::from_slice(url.to_string(), true, &content)?;
     import(&gltf, asset_crate).await
 }
 

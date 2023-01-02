@@ -258,7 +258,7 @@ impl ColliderDef {
         match self {
             ColliderDef::FromModel => Ok(ColliderDef::Asset {
                 collider: AssetUrl::<ModelAssetType>::from_url(
-                    world.get_ref(owner, model_def()).clone().context("No model_def on entity")?.0 .0.as_str(),
+                    world.get_ref(owner, model_def()).clone().context("No model_def on entity")?.0.to_string(),
                 )
                 .asset_crate()
                 .context("Can't get asset crate from model2_def")?
