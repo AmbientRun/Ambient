@@ -251,7 +251,7 @@ impl<'a> Hooks<'a> {
     {
         let runtime = world.resource(runtime()).clone();
 
-        let task = self.use_ref_with::<Option<JoinHandle<_>>, _>(|| None);
+        let task = self.use_ref_with::<Option<JoinHandle<_>>>(|| None);
         let prev_deps = self.use_ref_with(|| None);
 
         let mut prev_deps = prev_deps.lock();
@@ -268,9 +268,15 @@ impl<'a> Hooks<'a> {
             *prev_deps = Some(deps.clone());
 
             // Start the task anew
+            tracing::info!("Starting memo task for {deps:?}");
+
+            // Don't rely on the executor for running instantly
+            func(&deps);
+
             *task = Some(runtime.spawn(async move {
                 let mut interval = tokio::time::interval(period);
 
+                interval.tick().await;
                 loop {
                     interval.tick().await;
                     func(&deps);
@@ -280,7 +286,7 @@ impl<'a> Hooks<'a> {
     }
 
     // Helpers
-    pub fn use_ref_with<T: Send + Debug + 'static, F: FnOnce() -> T + Send>(&mut self, init: F) -> Arc<Mutex<T>> {
+    pub fn use_ref_with<T: Send + Debug + 'static>(&mut self, init: impl FnOnce() -> T) -> Arc<Mutex<T>> {
         self.use_state_with(|| Arc::new(Mutex::new(init()))).0
     }
 
