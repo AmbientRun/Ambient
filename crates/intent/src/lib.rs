@@ -3,20 +3,18 @@ mod registry;
 
 use std::{fmt::Debug, sync::Arc, time::SystemTime};
 
-
 use elements_ecs::{
     components, index_system, query, ArchetypeFilter, Component, ComponentValue, EntityData, EntityId, Index, IndexColumns, QueryState, SystemGroup, World
 };
 use elements_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use elements_network::{
-    client::{GameClient, GameRpcArgs}, hooks::{use_remote_component, use_remote_world_system}, server::{SharedServerState}, unwrap_log_network_err
+    client::{GameClient, GameRpcArgs}, hooks::{use_remote_component, use_remote_world_system}, server::SharedServerState, unwrap_log_network_err
 };
 use elements_rpc::RpcRegistry;
 use elements_ui::{FlowColumn, StylesExt, Text};
 use itertools::Itertools;
 use logic::{create_intent, push_intent, redo_intent, undo_head, undo_head_exact};
 pub use registry::*;
-
 
 components!("intent", {
     /// The component type of the intent
@@ -77,11 +75,11 @@ pub async fn server_push_intent<T: ComponentValue>(
     user_id: String,
     collapse_id: Option<String>,
 ) {
-    push_intent(state, user_id, create_intent(intent_arg, arg, collapse_id)).await;
+    push_intent(state, user_id, create_intent(intent_arg, arg, collapse_id));
 }
 
 pub async fn rpc_push_intent(args: GameRpcArgs, intent: EntityData) -> Option<EntityId> {
-    Some(push_intent(args.state, args.user_id, intent).await)
+    Some(push_intent(args.state, args.user_id, intent))
 }
 
 pub async fn rpc_undo_head(args: GameRpcArgs, _: ()) -> Option<()> {

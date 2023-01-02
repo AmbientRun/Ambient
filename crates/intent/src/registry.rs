@@ -272,7 +272,7 @@ impl IntentRegistry {
         Some(self.handlers.get(&intent)?.name().to_string())
     }
 
-    pub async fn apply_intent(&self, state: SharedServerState, intent_arg: usize, user_id: &str, id: EntityId) {
+    pub fn apply_intent(&self, state: SharedServerState, intent_arg: usize, user_id: &str, id: EntityId) {
         let mut guard = state.lock();
         let ctx = IntentContext::from_guard(&mut guard, user_id);
 

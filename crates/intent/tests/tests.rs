@@ -119,7 +119,7 @@ async fn simple() {
     // Create test entities
     let mut values = create_test_entities(&state, &user_id).await;
 
-    push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 2.0, None)).await;
+    push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 2.0, None));
 
     {
         let guard = state.lock();
@@ -165,8 +165,8 @@ async fn enqueued() {
     // Create test entities
     let mut values = create_test_entities(&state, &user_id).await;
 
-    push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 2.0, None)).await;
-    push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 0.5, None)).await;
+    push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 2.0, None));
+    push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 0.5, None));
 
     {
         let guard = state.lock();
@@ -209,9 +209,9 @@ async fn enqueued_collapse() {
 
     let collapse_id = friendly_id::create();
 
-    let x = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 2.0, Some(collapse_id.clone()))).await;
-    let y = push_intent(state.clone(), user_id.clone(), create_intent(intent_mul(), 0.5, None)).await;
-    let z = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 2.0, Some(collapse_id.clone()))).await;
+    let x = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 2.0, Some(collapse_id.clone())));
+    let y = push_intent(state.clone(), user_id.clone(), create_intent(intent_mul(), 0.5, None));
+    let z = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 2.0, Some(collapse_id.clone())));
 
     values.values_mut().for_each(|v| *v = (*v + 2.0) * 0.5 + 2.0);
 
@@ -249,7 +249,7 @@ async fn enqueued_collapse() {
 
         dbg!(x, y, z);
     }
-    let w = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), -4.0, Some(collapse_id))).await;
+    let w = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), -4.0, Some(collapse_id)));
 
     {
         let guard = state.lock();
@@ -286,9 +286,9 @@ async fn enqueue2() {
     // Create test entities
     let mut values = create_test_entities(&state, &user_id).await;
 
-    push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 2.0, None)).await;
-    push_intent(state.clone(), user_id.clone(), create_intent(intent_mul(), 0.5, None)).await;
-    push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 2.0, None)).await;
+    push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 2.0, None));
+    push_intent(state.clone(), user_id.clone(), create_intent(intent_mul(), 0.5, None));
+    push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 2.0, None));
 
     {
         let guard = state.lock();
@@ -333,9 +333,9 @@ async fn enqueue2_redo() {
     // Create test entities
     let mut values = create_test_entities(&state, &user_id).await;
 
-    let x = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 2.0, Some(collapse_id.clone()))).await;
-    push_intent(state.clone(), user_id.clone(), create_intent(intent_mul(), 0.5, None)).await;
-    let z = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 2.0, Some(collapse_id))).await;
+    let x = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 2.0, Some(collapse_id.clone())));
+    push_intent(state.clone(), user_id.clone(), create_intent(intent_mul(), 0.5, None));
+    let z = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 2.0, Some(collapse_id)));
 
     values.values_mut().for_each(|v| *v = (*v + 2.0) * 0.5 + 2.0);
 
@@ -391,12 +391,12 @@ async fn undo_push() {
     // Create test entities
     let mut values = create_test_entities(&state, &user_id).await;
 
-    let x = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 1.0, Some(collapse_id.clone()))).await;
+    let x = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 1.0, Some(collapse_id.clone())));
 
-    let y = push_intent(state.clone(), user_id.clone(), create_intent(intent_mul(), 5.0, Some(collapse_id.clone()))).await;
+    let y = push_intent(state.clone(), user_id.clone(), create_intent(intent_mul(), 5.0, Some(collapse_id.clone())));
 
-    let z = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 0.5, Some(collapse_id.clone()))).await;
-    let w = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 0.5, Some(collapse_id.clone()))).await;
+    let z = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 0.5, Some(collapse_id.clone())));
+    let w = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 0.5, Some(collapse_id.clone())));
 
     {
         let guard = state.lock();
@@ -406,6 +406,7 @@ async fn undo_push() {
 
         assert!(!world.exists(z));
     }
+
     assert_eq!(undo_head(state.clone(), &user_id).await, Some(w));
     {
         let guard = state.lock();
@@ -416,7 +417,7 @@ async fn undo_push() {
         assert_eq!(values, as_map(world));
     }
 
-    let a = push_intent(state.clone(), user_id.clone(), create_intent(intent_mul(), 0.5, Some(collapse_id))).await;
+    let a = push_intent(state.clone(), user_id.clone(), create_intent(intent_mul(), 0.5, Some(collapse_id)));
 
     {
         let guard = state.lock();
@@ -456,10 +457,10 @@ async fn redo_collapsed() {
     // Create test entities
     let mut values = create_test_entities(&state, &user_id).await;
 
-    let x = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 2.0, Some(collapse_id.clone()))).await;
-    let y = push_intent(state.clone(), user_id.clone(), create_intent(intent_mul(), 0.5, Some(collapse_id.clone()))).await;
-    let z = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 1.0, Some(collapse_id.clone()))).await;
-    let w = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 1.0, Some(collapse_id))).await;
+    let x = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 2.0, Some(collapse_id.clone())));
+    let y = push_intent(state.clone(), user_id.clone(), create_intent(intent_mul(), 0.5, Some(collapse_id.clone())));
+    let z = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 1.0, Some(collapse_id.clone())));
+    let w = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 1.0, Some(collapse_id)));
 
     {
         let guard = state.lock();
@@ -521,8 +522,8 @@ async fn collapse() {
 
     // Create test entities
     let mut values = create_test_entities(&state, &user_id).await;
-    let x = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 2.0, Some(collapse_id.clone()))).await;
-    let y = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 1.0, Some(collapse_id))).await;
+    let x = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 2.0, Some(collapse_id.clone())));
+    let y = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 1.0, Some(collapse_id)));
 
     {
         let mut guard = state.lock();
