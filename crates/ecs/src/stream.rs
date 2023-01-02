@@ -186,7 +186,11 @@ impl WorldChange {
             Self::Spawn(id, data) => {
                 if let Some(id) = id {
                     if !world.spawn_mirrored(id, data.append(spanwed_extra_data.clone())) {
-                        panic!("WorldChange::apply spawn_mirror entity already exists: {:?}", id);
+                        if panic_on_error {
+                            panic!("WorldChange::apply spawn_mirror entity already exists: {:?}", id);
+                        } else {
+                            log::error!("WorldChange::apply spawn_mirror entity already exists: {:?}", id);
+                        }
                     }
                     if create_revert {
                         return Some(Self::Despawn(id));
