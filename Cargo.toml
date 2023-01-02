@@ -21,10 +21,12 @@ elements_ui = { path = "crates/ui" }
 elements_cameras = { path = "crates/cameras" }
 elements_primitives = { path = "crates/primitives" }
 elements_model = { path = "crates/model" }
+elements_model_import = { path = "crates/model_import" }
 elements_animation = { path = "crates/animation" }
 elements_app = { path = "crates/app" }
 clap.workspace = true
 tokio.workspace = true
+walkdir.workspace = true
 
 [dev-dependencies]
 glam.workspace = true
@@ -177,4 +179,7 @@ bit-vec = "0.6.3"
 semver = "1.0.14"
 glob = "0.3.0"
 tokio-stream = "0.1.9"
+walkdir = "2"
+relative-path = "1.7"
+pin-project = "1.0"
 abort-on-drop = "0.2"
