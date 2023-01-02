@@ -30,7 +30,7 @@ elements_std = { path = "../std" }
 serde = { workspace = true, features = ["derive"] }
 rand_chacha = "0.3.1"
 static_assertions = "1.1"
-tween = "1.0"
+
 circular-queue = "0.2"
 num = "0.4"
 byteorder = "1.4"

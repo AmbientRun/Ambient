@@ -1,22 +1,18 @@
-use std::{
-    time::{Duration, Instant}
-};
+use std::time::{Duration, Instant};
 
-use elements_audio::{AudioStream, SineWave, Source, TweenSineWave};
+use elements_audio::{AudioStream, SineWave, Source};
 
 fn main() {
     let stream = AudioStream::new().unwrap();
 
     let mixer = stream.mixer();
 
-    // let source = SineWave { freq: 440.0 }.take(Duration::from_secs(2));
-    let bsine =
-        TweenSineWave::new(tween::CubicOut::new(200.0..=440.0, 4.0)).take(Duration::from_secs(4));
+    let source = SineWave::new(440.0).take(Duration::from_secs(4));
 
     let source = SineWave::new(440.0)
         .gain(0.5)
         .take(Duration::from_millis(1500))
-        .chain(bsine);
+        .chain(source);
 
     let start = Instant::now();
     let sound = mixer.play(source);

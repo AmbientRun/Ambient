@@ -14,7 +14,6 @@ mod sample_rate;
 mod slice;
 mod spatial;
 pub mod streaming_source;
-mod tweenable;
 mod uniform;
 use std::{
     self, f32::consts::TAU, fmt::Debug, ops::{Deref, DerefMut, RangeBounds}, sync::Arc, time::Duration
@@ -32,12 +31,9 @@ pub use repeat::*;
 pub use sample_rate::*;
 pub use slice::*;
 pub use spatial::*;
-use tween::Tween;
 pub use uniform::*;
 
-use self::{
-    history::History, mix::Mix, oscilloscope::Oscilloscope, pad_to::PadTo, tweenable::Tweenable
-};
+use self::{history::History, mix::Mix, oscilloscope::Oscilloscope, pad_to::PadTo};
 use crate::{
     blt::{BilinearTransform, Hpf, Lpf, TransferFunction}, hrtf::HrtfLib, value::{Constant, Value}, AudioEmitter, AudioListener, Frame, SampleRate
 };
@@ -241,48 +237,6 @@ impl SineWave {
 impl Source for SineWave {
     fn next_sample(&mut self) -> Option<Frame> {
         let t = self.freq * self.cursor as f32 * TAU / DEFAULT_HZ as f32;
-        let v = t.sin();
-        self.cursor += 1;
-        Some(Frame::splat(v))
-    }
-
-    fn sample_rate(&self) -> SampleRate {
-        DEFAULT_HZ
-    }
-
-    fn sample_count(&self) -> Option<u64> {
-        None
-    }
-
-    fn duration(&self) -> Option<Duration> {
-        None
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct TweenSineWave<T> {
-    freq: Tweenable<T>,
-    cursor: usize,
-}
-
-impl<T> TweenSineWave<T>
-where
-    T: Tween<Value = f32, Time = f32>,
-{
-    pub fn new(freq: T) -> Self {
-        Self {
-            freq: Tweenable::new(freq, DEFAULT_HZ),
-            cursor: 0,
-        }
-    }
-}
-
-impl<T> Source for TweenSineWave<T>
-where
-    T: Debug + Send + Sync + Tween<Value = f32, Time = f32>,
-{
-    fn next_sample(&mut self) -> Option<Frame> {
-        let t = self.freq.next_value() * self.cursor as f32 * TAU / DEFAULT_HZ as f32;
         let v = t.sin();
         self.cursor += 1;
         Some(Frame::splat(v))
