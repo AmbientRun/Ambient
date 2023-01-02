@@ -21,9 +21,6 @@ async fn init(world: &mut World) {
         true,
     )
     .await
-    .unwrap()
-    .produce_local_model(&assets)
-    .await
     .unwrap();
 
     model.spawn(world, &Default::default());

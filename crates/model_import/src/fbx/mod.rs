@@ -9,13 +9,14 @@ use elements_core::{
 use elements_ecs::World;
 use elements_model::{model_skins, Model, ModelSkin};
 use elements_renderer::skinning;
-use elements_std::asset_cache::AssetCache;
+use elements_std::{asset_cache::AssetCache, download_asset::ContentUrl};
 use fbxcel::tree::{
     any::AnyTree, v7400::{NodeHandle, Tree}
 };
 use glam::{Mat4, Vec3};
 use indexmap::IndexMap;
 use itertools::Itertools;
+use relative_path::{RelativePath, RelativePathBuf};
 
 use self::{
     animation::{FbxAnimationCurve, FbxAnimationCurveNode, FbxAnimationLayer, FbxAnimationStack}, material::{FbxMaterial, FbxTexture, FbxVideo}, mesh::{FbxCluster, FbxGeometry, FbxSkin}, model::FbxModel
@@ -27,7 +28,7 @@ mod material;
 mod mesh;
 mod model;
 
-pub async fn import_url(assets: &AssetCache, url: &str, asset_crate: &mut ModelCrate) -> anyhow::Result<String> {
+pub async fn import_url(assets: &AssetCache, url: &ContentUrl, asset_crate: &mut ModelCrate) -> anyhow::Result<RelativePathBuf> {
     let content = download_bytes(assets, url).await?;
     let cursor = Cursor::new(&*content);
     import_from_fbx_reader(asset_crate, url.to_string(), true, cursor)
@@ -38,7 +39,7 @@ pub fn import_from_fbx_reader(
     name: String,
     load_images: bool,
     reader: impl Read + Seek,
-) -> anyhow::Result<String> {
+) -> anyhow::Result<RelativePathBuf> {
     match AnyTree::from_seekable_reader(reader).context("Failed to load tree")? {
         AnyTree::V7400(_, tree, _) => {
             let mut doc = FbxDoc::from_tree(tree);
@@ -104,7 +105,7 @@ pub fn import_from_fbx_reader(
 
             world.add_resource(local_to_parent(), Mat4::from_scale(Vec3::ONE * doc.global_settings.unit_scale_factor));
 
-            Ok(asset_crate.models.insert(ModelCrate::MAIN, Model(world)).url)
+            Ok(asset_crate.models.insert(ModelCrate::MAIN, Model(world)).path)
         }
         _ => Err(anyhow::anyhow!("Got FBX tree of unsupported version")),
     }
@@ -131,7 +132,7 @@ pub struct FbxDoc {
     pub poses: HashMap<i64, FbxPose>,
 }
 impl FbxDoc {
-    pub async fn from_url(assets: &AssetCache, url: &str) -> anyhow::Result<Self> {
+    pub async fn from_url(assets: &AssetCache, url: &ContentUrl) -> anyhow::Result<Self> {
         let content = download_bytes(assets, url).await?;
         let cursor = Cursor::new(&*content);
         match AnyTree::from_seekable_reader(cursor).context("Failed to load tree")? {

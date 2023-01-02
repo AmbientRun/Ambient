@@ -9,7 +9,7 @@ use elements_ecs::{components, query, EntityData, EntityId, SystemGroup, World};
 use elements_editor_derive::ElementEditor;
 use elements_model::model_def;
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AssetUrl, ColliderAssetType, ModelAssetType}, download_asset::{AssetError, JsonFromUrl}, events::EventDispatcher
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AssetUrl, ColliderAssetType, ModelAssetType}, download_asset::{AssetError, ContentUrl, JsonFromUrl}, events::EventDispatcher
 };
 use futures::future::try_join_all;
 use glam::{vec3, Mat4, Vec3};
@@ -20,7 +20,7 @@ use physxx::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    main_controller_manager, make_physics_static, mesh::{PhysxGeometry, PhysxGeometryFromUrl}, physx::{character_controller, physics, physics_controlled, physics_shape, rigid_actor, Physics}, wood_physics_material, ColliderScene, PxActorUserData, PxShapeUserData, PxWoodMaterialKey
+    main_controller_manager, make_physics_static, mesh::{PhysxGeometry, PhysxGeometryFromResolvedUrl, PhysxGeometryFromUrl}, physx::{character_controller, physics, physics_controlled, physics_shape, rigid_actor, Physics}, wood_physics_material, ColliderScene, PxActorUserData, PxShapeUserData, PxWoodMaterialKey
 };
 
 components!("physics", {
@@ -258,7 +258,7 @@ impl ColliderDef {
         match self {
             ColliderDef::FromModel => Ok(ColliderDef::Asset {
                 collider: AssetUrl::<ModelAssetType>::from_url(
-                    world.get_ref(owner, model_def()).clone().context("No model_def on entity")?.0.clone(),
+                    world.get_ref(owner, model_def()).clone().context("No model_def on entity")?.0 .0.as_str(),
                 )
                 .asset_crate()
                 .context("Can't get asset crate from model2_def")?
@@ -298,8 +298,8 @@ impl ColliderDef {
                 (vec![shape.clone()], vec![shape])
             })),
             ColliderDef::Asset { collider } => {
-                let collider: Arc<ColliderFromUrls> = JsonFromUrl::cached(&collider.url).get(&assets).await?;
-                let collider = collider.get(&assets).await?;
+                let collider_from_urls: Arc<ColliderFromUrls> = JsonFromUrl::new(&collider.url, true)?.get(&assets).await?;
+                let collider = collider_from_urls.resolve(&ContentUrl::parse(&collider.url)?)?.get(&assets).await?;
 
                 Ok(Box::new(move |physics, scale| {
                     (
@@ -324,9 +324,22 @@ pub struct ColliderFromUrls {
     pub concave: Vec<(Mat4, PhysxGeometryFromUrl)>,
     pub convex: Vec<(Mat4, PhysxGeometryFromUrl)>,
 }
+impl ColliderFromUrls {
+    pub fn resolve(&self, base_url: &ContentUrl) -> anyhow::Result<ColliderFromResolvedUrls> {
+        Ok(ColliderFromResolvedUrls {
+            concave: self.concave.iter().map(|(mat, url)| Ok((*mat, url.resolve(base_url)?))).collect::<anyhow::Result<Vec<_>>>()?,
+            convex: self.convex.iter().map(|(mat, url)| Ok((*mat, url.resolve(base_url)?))).collect::<anyhow::Result<Vec<_>>>()?,
+        })
+    }
+}
 
+#[derive(Debug, Clone)]
+pub struct ColliderFromResolvedUrls {
+    pub concave: Vec<(Mat4, PhysxGeometryFromResolvedUrl)>,
+    pub convex: Vec<(Mat4, PhysxGeometryFromResolvedUrl)>,
+}
 #[async_trait]
-impl AsyncAssetKey<Result<Arc<Collider>, AssetError>> for ColliderFromUrls {
+impl AsyncAssetKey<Result<Arc<Collider>, AssetError>> for ColliderFromResolvedUrls {
     async fn load(self, assets: AssetCache) -> Result<Arc<Collider>, AssetError> {
         let mut res: Vec<_> = try_join_all([self.concave, self.convex].into_iter().map(|list| async {
             let iter = list.into_iter().map(|(transform, mesh)| {

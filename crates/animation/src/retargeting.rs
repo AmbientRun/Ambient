@@ -2,18 +2,13 @@ use std::sync::Arc;
 
 use anyhow::Context;
 use async_trait::async_trait;
-use elements_core::{
-    transform::{rotation, translation}
-};
+use elements_core::transform::{rotation, translation};
 use elements_editor_derive::ElementEditor;
-use elements_element::{ElementComponentExt};
+use elements_element::ElementComponentExt;
 use elements_model::{Model, ModelDef};
 use elements_std::{
-    asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt}, asset_url::{AnimationAssetType, AssetUrl, ModelAssetType}, download_asset::AssetError
+    asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt}, asset_url::{AnimationAssetType, AssetUrl, ModelAssetType}, download_asset::{AssetError, ContentUrl}
 };
-
-
-
 use serde::{Deserialize, Serialize};
 
 use super::{AnimationClip, AnimationClipFromUrl, AnimationOutputs, AnimationTrack};
@@ -53,11 +48,11 @@ impl AsyncAssetKey<Result<Arc<AnimationClip>, AssetError>> for AnimationClipReta
         AssetKeepalive::Forever
     }
     async fn load(self, assets: AssetCache) -> Result<Arc<AnimationClip>, AssetError> {
-        let anim_model = ModelDef(self.clip.asset_crate().context("Invalid clip url")?.model().url)
+        let anim_model = ModelDef::new(&self.clip.asset_crate().context("Invalid clip url")?.model().url)?
             .get(&assets)
             .await
             .context("Failed to load model")?;
-        let clip = AnimationClipFromUrl::cached(self.clip.url.clone()).get(&assets).await.context("No such clip")?;
+        let clip = AnimationClipFromUrl::new(self.clip.url.clone(), true)?.get(&assets).await.context("No such clip")?;
         match self.translation_retargeting {
             AnimationRetargeting::None => Ok(clip),
             AnimationRetargeting::Skeleton => {
@@ -66,7 +61,7 @@ impl AsyncAssetKey<Result<Arc<AnimationClip>, AssetError>> for AnimationClipReta
                 Ok(Arc::new(clip))
             }
             AnimationRetargeting::AnimationScaled { normalize_hip } => {
-                let retarget_model = ModelDef(self.retarget_model.context("No retarget_model specified")?.url.clone())
+                let retarget_model = ModelDef::new(&self.retarget_model.context("No retarget_model specified")?.url)?
                     .get(&assets)
                     .await
                     .context("Failed to load retarget model")?;

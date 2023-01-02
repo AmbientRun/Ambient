@@ -5,7 +5,7 @@ use elements_gpu::{
     gpu::{Gpu, GpuKey}, shader_module::{BindGroupDesc, ShaderModule}, std_assets::{get_default_sampler, DefaultNormalMapViewKey, PixelTextureViewKey}, texture::{Texture, TextureView}, texture_loaders::{SplitTextureFromUrl, TextureFromUrl}
 };
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AssetUrl, ImageAssetType}, download_asset::AssetError, include_file
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AssetUrl, ImageAssetType}, download_asset::{AssetError, ContentUrl, UrlString}, include_file
 };
 use glam::Vec4;
 use serde::{Deserialize, Serialize};
@@ -234,32 +234,74 @@ impl Default for AlphaMode {
 pub struct PbrMaterialFromUrl {
     pub name: Option<String>,
     pub source: Option<String>,
-    pub base_color: Option<AssetUrl<ImageAssetType>>,
-    pub opacity: Option<AssetUrl<ImageAssetType>>,
+
+    pub base_color: Option<UrlString>,
+    pub opacity: Option<UrlString>,
+    pub normalmap: Option<UrlString>,
+    pub metallic_roughness: Option<UrlString>,
+
     pub base_color_factor: Option<Vec4>,
     pub emissive_factor: Option<Vec4>,
-    pub normalmap: Option<AssetUrl<ImageAssetType>>,
     pub transparent: Option<bool>,
     pub alpha_cutoff: Option<f32>,
     pub double_sided: Option<bool>,
-    pub metallic_roughness: Option<AssetUrl<ImageAssetType>>,
     #[serde(default)]
     pub metallic: f32,
     #[serde(default)]
     pub roughness: f32,
 }
+impl PbrMaterialFromUrl {
+    pub fn resolve(&self, base_url: &ContentUrl) -> anyhow::Result<PbrMaterialFromResolvedUrl> {
+        Ok(PbrMaterialFromResolvedUrl {
+            name: self.name.clone(),
+            source: self.source.clone(),
+
+            base_color: if let Some(x) = &self.base_color { Some(base_url.resolve(x)?) } else { None },
+            opacity: if let Some(x) = &self.opacity { Some(base_url.resolve(x)?) } else { None },
+            normalmap: if let Some(x) = &self.normalmap { Some(base_url.resolve(x)?) } else { None },
+            metallic_roughness: if let Some(x) = &self.metallic_roughness { Some(base_url.resolve(x)?) } else { None },
+
+            base_color_factor: self.base_color_factor.clone(),
+            emissive_factor: self.emissive_factor.clone(),
+            transparent: self.transparent.clone(),
+            alpha_cutoff: self.alpha_cutoff.clone(),
+            double_sided: self.double_sided.clone(),
+            metallic: self.metallic.clone(),
+            roughness: self.roughness.clone(),
+        })
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct PbrMaterialFromResolvedUrl {
+    pub name: Option<String>,
+    pub source: Option<String>,
+
+    pub base_color: Option<ContentUrl>,
+    pub opacity: Option<ContentUrl>,
+    pub normalmap: Option<ContentUrl>,
+    pub metallic_roughness: Option<ContentUrl>,
+
+    pub base_color_factor: Option<Vec4>,
+    pub emissive_factor: Option<Vec4>,
+    pub transparent: Option<bool>,
+    pub alpha_cutoff: Option<f32>,
+    pub double_sided: Option<bool>,
+    pub metallic: f32,
+    pub roughness: f32,
+}
 
 #[async_trait]
-impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialFromUrl {
+impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialFromResolvedUrl {
     async fn load(self, assets: AssetCache) -> Result<Arc<PbrMaterial>, AssetError> {
         let color = if let (Some(opacity), Some(albedo)) = (&self.opacity, &self.base_color) {
             Some(
-                SplitTextureFromUrl { color: albedo.url.clone(), alpha: opacity.url.clone(), format: wgpu::TextureFormat::Rgba8UnormSrgb }
+                SplitTextureFromUrl { color: albedo.clone(), alpha: opacity.clone(), format: wgpu::TextureFormat::Rgba8UnormSrgb }
                     .get(&assets)
                     .await?,
             )
         } else if let Some(albedo) = &self.base_color {
-            Some(TextureFromUrl { url: albedo.url.clone(), format: wgpu::TextureFormat::Rgba8UnormSrgb }.get(&assets).await?)
+            Some(TextureFromUrl { url: albedo.clone(), format: wgpu::TextureFormat::Rgba8UnormSrgb }.get(&assets).await?)
         } else {
             None
         };
@@ -269,7 +311,7 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialFromUrl 
         };
         let normalmap = if let Some(normalmap) = &self.normalmap {
             Arc::new(
-                TextureFromUrl { url: normalmap.url.clone(), format: wgpu::TextureFormat::Rgba8Unorm }
+                TextureFromUrl { url: normalmap.clone(), format: wgpu::TextureFormat::Rgba8Unorm }
                     .get(&assets)
                     .await?
                     .create_view(&Default::default()),
@@ -281,7 +323,7 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialFromUrl 
         let metallic_roughness = if let Some(metallic_roughness) = self.metallic_roughness {
             println!("Found metallic roughness map at: {:?}", metallic_roughness);
             Arc::new(
-                TextureFromUrl { url: metallic_roughness.url, format: wgpu::TextureFormat::Rgba8Unorm }
+                TextureFromUrl { url: metallic_roughness, format: wgpu::TextureFormat::Rgba8Unorm }
                     .get(&assets)
                     .await?
                     .create_view(&Default::default()),
@@ -299,7 +341,7 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialFromUrl 
             _padding: Default::default(),
         };
 
-        let name = self.name.or(self.base_color.map(|x| x.url)).unwrap_or_default();
+        let name = self.name.or(self.base_color.map(|x| x.0.to_string())).unwrap_or_default();
         Ok(Arc::new(PbrMaterial::new(
             assets.clone(),
             PbrMaterialConfig {

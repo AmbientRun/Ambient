@@ -1,23 +1,17 @@
-use std::{sync::Arc};
-
+use std::sync::Arc;
 
 use async_trait::async_trait;
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, download_asset::{AssetError, BytesFromUrlCachedPath, UrlString}
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, download_asset::{AssetError, BytesFromUrlCachedPath, ContentUrl, UrlString}
 };
-
 use itertools::Itertools;
-
-
-use physxx::{
-    PxConvexMesh, PxDefaultFileInputData, PxTriangleMesh
-};
+use physxx::{PxConvexMesh, PxDefaultFileInputData, PxTriangleMesh};
 use serde::{Deserialize, Serialize};
 
 use crate::{physx::PhysicsKey, rc_asset::PxRcAsset};
 
-pub const PHYSX_TRIANGLE_MESH_EXTENSION: &str = ".pxtm";
-pub const PHYSX_CONVEX_MESH_EXTENSION: &str = ".pxcm";
+pub const PHYSX_TRIANGLE_MESH_EXTENSION: &str = "pxtm";
+pub const PHYSX_CONVEX_MESH_EXTENSION: &str = "pxcm";
 
 #[derive(Debug, Clone)]
 pub enum PhysxGeometry {
@@ -27,24 +21,40 @@ pub enum PhysxGeometry {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PhysxGeometryFromUrl(pub UrlString);
+pub struct PhysxGeometryFromUrl(pub String);
+impl PhysxGeometryFromUrl {
+    pub fn resolve(&self, base_url: &ContentUrl) -> anyhow::Result<PhysxGeometryFromResolvedUrl> {
+        Ok(PhysxGeometryFromResolvedUrl(base_url.resolve(&self.0)?))
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct PhysxGeometryFromResolvedUrl(pub ContentUrl);
 #[async_trait]
-impl AsyncAssetKey<Result<Arc<PhysxGeometry>, AssetError>> for PhysxGeometryFromUrl {
+impl AsyncAssetKey<Result<Arc<PhysxGeometry>, AssetError>> for PhysxGeometryFromResolvedUrl {
     async fn load(self, assets: AssetCache) -> Result<Arc<PhysxGeometry>, AssetError> {
-        if self.0.contains(PHYSX_TRIANGLE_MESH_EXTENSION) {
-            Ok(Arc::new(PhysxGeometry::TriangleMesh(PhysxTriangleMeshFromUrl(self.0).get(&assets).await?.0)))
+        if self.0.extension().unwrap_or_default().to_lowercase() == PHYSX_TRIANGLE_MESH_EXTENSION {
+            Ok(Arc::new(PhysxGeometry::TriangleMesh(PhysxTriangleMeshFromResolvedUrl(self.0).get(&assets).await?.0)))
         } else {
-            Ok(Arc::new(PhysxGeometry::ConvexMesh(PhysxConvexMeshFromUrl(self.0).get(&assets).await?.0)))
+            Ok(Arc::new(PhysxGeometry::ConvexMesh(PhysxConvexMeshFromResolvedUrl(self.0).get(&assets).await?.0)))
         }
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PhysxTriangleMeshFromUrl(pub UrlString);
+pub struct PhysxTriangleMeshFromUrl(pub String);
+impl PhysxTriangleMeshFromUrl {
+    pub fn resolve(&self, base_url: &ContentUrl) -> anyhow::Result<PhysxTriangleMeshFromResolvedUrl> {
+        Ok(PhysxTriangleMeshFromResolvedUrl(base_url.resolve(&self.0)?))
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PhysxTriangleMeshFromResolvedUrl(pub ContentUrl);
 #[async_trait]
-impl AsyncAssetKey<Result<PxRcAsset<PxTriangleMesh>, AssetError>> for PhysxTriangleMeshFromUrl {
+impl AsyncAssetKey<Result<PxRcAsset<PxTriangleMesh>, AssetError>> for PhysxTriangleMeshFromResolvedUrl {
     async fn load(self, assets: AssetCache) -> Result<PxRcAsset<PxTriangleMesh>, AssetError> {
-        let file = BytesFromUrlCachedPath(self.0.clone()).get(&assets).await?;
+        let file = BytesFromUrlCachedPath { url: self.0.clone() }.get(&assets).await?;
         tokio::task::block_in_place(|| {
             let mem = PxDefaultFileInputData::new(&*file);
             let physics = PhysicsKey.get(&assets);
@@ -61,11 +71,19 @@ impl AsyncAssetKey<Result<PxRcAsset<PxTriangleMesh>, AssetError>> for PhysxTrian
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PhysxConvexMeshFromUrl(pub UrlString);
+pub struct PhysxConvexMeshFromUrl(pub String);
+impl PhysxConvexMeshFromUrl {
+    pub fn resolve(&self, base_url: &ContentUrl) -> anyhow::Result<PhysxConvexMeshFromResolvedUrl> {
+        Ok(PhysxConvexMeshFromResolvedUrl(base_url.resolve(&self.0)?))
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PhysxConvexMeshFromResolvedUrl(pub ContentUrl);
 #[async_trait]
-impl AsyncAssetKey<Result<PxRcAsset<PxConvexMesh>, AssetError>> for PhysxConvexMeshFromUrl {
+impl AsyncAssetKey<Result<PxRcAsset<PxConvexMesh>, AssetError>> for PhysxConvexMeshFromResolvedUrl {
     async fn load(self, assets: AssetCache) -> Result<PxRcAsset<PxConvexMesh>, AssetError> {
-        let file = BytesFromUrlCachedPath(self.0.clone()).get(&assets).await?;
+        let file = BytesFromUrlCachedPath { url: self.0.clone() }.get(&assets).await?;
         tokio::task::block_in_place(|| {
             let mem = PxDefaultFileInputData::new(&*file);
             let physics = PhysicsKey.get(&assets);

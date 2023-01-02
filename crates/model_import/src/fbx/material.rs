@@ -5,7 +5,9 @@ use elements_std::asset_url::AssetUrl;
 use fbxcel::tree::v7400::NodeHandle;
 use glam::{vec3, Vec3};
 
-use crate::model_crate::{AssetLoc, ModelCrate};
+use crate::{
+    dotdot_path, model_crate::{AssetLoc, ModelCrate}
+};
 
 #[derive(Debug)]
 pub struct FbxMaterial {
@@ -123,7 +125,7 @@ impl FbxMaterial {
             }
             None
         };
-        let img_to_asset = |(image, _id): (AssetLoc, i64)| AssetUrl::from_url(&image.url);
+        let img_to_asset = |(image, _id): (AssetLoc, i64)| dotdot_path(&image.path).to_string();
         PbrMaterialFromUrl {
             name: Some(self.name.to_string()),
             source: Some(source),

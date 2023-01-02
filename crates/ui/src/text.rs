@@ -1,5 +1,6 @@
 use std::{num::NonZeroU32, ops::Deref, sync::Arc};
 
+use anyhow::Context;
 use async_trait::async_trait;
 use elements_core::{asset_cache, async_ecs::async_run, gpu, mesh, name, runtime, transform::*, ui_scene, window_scale_factor};
 use elements_ecs::{components, query, query_mut, EntityData, SystemGroup, World};
@@ -7,7 +8,7 @@ use elements_element::{element_component, Element, ElementComponentExt, Hooks};
 use elements_gpu::{mesh_buffer::GpuMesh, texture::Texture};
 use elements_renderer::{color, gpu_primitives, material, primitives, renderer_shader, SharedMaterial};
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, download_asset::{AssetError, BytesFromUrl, UrlString}, mesh::*, shapes::AABB, CowStr
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, download_asset::{AssetError, AssetResult, BytesFromUrl, UrlString}, mesh::*, shapes::AABB, CowStr
 };
 use glam::*;
 use glyph_brush::{
@@ -399,23 +400,15 @@ fn mesh_from_glyph_vertices(vertices: Vec<GlyphVertex>) -> Mesh {
     }
 }
 
-#[derive(Debug, Clone, Error)]
-pub enum FontError {
-    #[error("Font is invalid")]
-    Font(#[from] InvalidFont),
-    #[error("Failed to download font content")]
-    ContentDownload(#[from] AssetError),
-}
-
 #[derive(Debug, Clone)]
 pub struct FontFromUrl(CowStr);
 
 #[async_trait]
-impl AsyncAssetKey<Result<Arc<FontArc>, FontError>> for FontFromUrl {
-    async fn load(self, assets: elements_std::asset_cache::AssetCache) -> Result<Arc<FontArc>, FontError> {
+impl AsyncAssetKey<AssetResult<Arc<FontArc>>> for FontFromUrl {
+    async fn load(self, assets: elements_std::asset_cache::AssetCache) -> AssetResult<Arc<FontArc>> {
         info!("Downloading font: {}", self.0);
-        let data = BytesFromUrl::cached(self.0.to_string()).get(&assets).await?;
-        let brush = FontArc::try_from_vec(data.deref().clone())?;
+        let data = BytesFromUrl::new(&self.0, true)?.get(&assets).await?;
+        let brush = FontArc::try_from_vec(data.deref().clone()).context("Failed to parse font")?;
         Ok(Arc::new(brush))
     }
 }

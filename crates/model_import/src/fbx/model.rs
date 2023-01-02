@@ -1,4 +1,4 @@
-use std::{collections::HashMap};
+use std::collections::HashMap;
 
 use elements_core::{
     hierarchy::children, name, transform::{
@@ -7,13 +7,13 @@ use elements_core::{
 };
 use elements_ecs::{EntityData, EntityId, World};
 use elements_model::{model_skin_ix, pbr_renderer_primitives_from_url, PbrRenderPrimitiveFromUrl};
-use elements_renderer::{double_sided};
+use elements_renderer::double_sided;
 use fbxcel::tree::v7400::NodeHandle;
 use glam::{vec3, EulerRot, Mat4, Quat, Vec3};
 use itertools::Itertools;
 
 use super::FbxDoc;
-use crate::model_crate::ModelCrate;
+use crate::{dotdot_path, model_crate::ModelCrate};
 
 #[derive(Debug)]
 pub struct FbxModel {
@@ -163,8 +163,8 @@ impl FbxModel {
             if let Some(n_meshes) = n_meshes.get(&geo) {
                 let prims = (0..*n_meshes)
                     .map(|mi| PbrRenderPrimitiveFromUrl {
-                        mesh: asset_crate.meshes.loc.url(format!("{}_{}", geo, mi)),
-                        material: self.materials.get(mi).map(|x| asset_crate.materials.loc.url(x.to_string())),
+                        mesh: dotdot_path(asset_crate.meshes.loc.path(format!("{}_{}", geo, mi))).to_string(),
+                        material: self.materials.get(mi).map(|x| dotdot_path(asset_crate.materials.loc.path(x.to_string())).to_string()),
                         lod: 0,
                     })
                     .collect_vec();

@@ -12,7 +12,7 @@ use elements_renderer::{
     }, primitives, RenderPrimitive, StandardShaderKey
 };
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, download_asset::{AssetError, BytesFromUrl, JsonFromUrl, UrlString}, log_result, math::Line
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, download_asset::{AssetError, BytesFromUrl, ContentUrl, JsonFromUrl, UrlString}, log_result, math::Line
 };
 use futures::StreamExt;
 use glam::{vec4, Vec3};
@@ -197,16 +197,21 @@ fn remove_model(world: &mut World, entity: EntityId) {
     world.remove_components(entity, components).ok();
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize, ElementEditor)]
-pub struct ModelDef(pub UrlString);
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ModelDef(pub ContentUrl);
+impl ModelDef {
+    pub fn new(url: impl AsRef<str>) -> anyhow::Result<Self> {
+        Ok(Self(ContentUrl::parse(url)?))
+    }
+}
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<Model>, AssetError>> for ModelDef {
     async fn load(self, assets: AssetCache) -> Result<Arc<Model>, AssetError> {
-        let data = BytesFromUrl::cached(self.0.clone()).get(&assets).await?;
+        let data = BytesFromUrl { url: self.0.clone(), cache_on_disk: true }.get(&assets).await?;
         let semaphore = ModelLoadSemaphore.get(&assets);
         let _permit = semaphore.acquire().await;
         let mut model = tokio::task::block_in_place(|| Model::from_slice(&data))?;
-        model.load(&assets).await?;
+        model.load(&assets, &self.0).await?;
         Ok(Arc::new(model))
     }
 }
@@ -226,13 +231,28 @@ pub struct PbrRenderPrimitiveFromUrl {
     pub material: Option<UrlString>,
     pub lod: usize,
 }
+impl PbrRenderPrimitiveFromUrl {
+    pub fn resolve(&self, base_url: &ContentUrl) -> anyhow::Result<PbrRenderPrimitiveFromResolvedUrl> {
+        Ok(PbrRenderPrimitiveFromResolvedUrl {
+            mesh: base_url.resolve(&self.mesh)?,
+            material: if let Some(x) = &self.material { Some(base_url.resolve(&x)?) } else { None },
+            lod: self.lod,
+        })
+    }
+}
+#[derive(Debug, Clone)]
+pub struct PbrRenderPrimitiveFromResolvedUrl {
+    pub mesh: ContentUrl,
+    pub material: Option<ContentUrl>,
+    pub lod: usize,
+}
 #[async_trait]
-impl AsyncAssetKey<Result<Arc<RenderPrimitive>, AssetError>> for PbrRenderPrimitiveFromUrl {
+impl AsyncAssetKey<Result<Arc<RenderPrimitive>, AssetError>> for PbrRenderPrimitiveFromResolvedUrl {
     async fn load(self, assets: AssetCache) -> Result<Arc<RenderPrimitive>, AssetError> {
-        let mesh = GpuMeshFromUrl::new(&self.mesh).get(&assets).await?;
-        if let Some(mat_url) = &self.material {
-            let mat_def = JsonFromUrl::<PbrMaterialFromUrl>::cached(mat_url).get(&assets).await?;
-            let mat = mat_def.get(&assets).await?;
+        let mesh = GpuMeshFromUrl { url: self.mesh, cache_on_disk: true }.get(&assets).await?;
+        if let Some(mat_url) = self.material {
+            let mat_def = JsonFromUrl::<PbrMaterialFromUrl>::from_url(mat_url.clone(), true).get(&assets).await?;
+            let mat = mat_def.resolve(&mat_url)?.get(&assets).await?;
             Ok(Arc::new(RenderPrimitive { material: mat.into(), shader: get_pbr_shader(&assets), mesh, lod: self.lod }))
         } else {
             Ok(Arc::new(RenderPrimitive {

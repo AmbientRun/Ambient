@@ -4,14 +4,14 @@ use elements_core::{asset_cache, mesh, transform::*, ui_scene};
 use elements_ecs::World;
 use elements_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use elements_gpu::{
-    std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey}, texture::{TextureView}, texture_loaders::{TextureFromBytes, TextureFromUrl}
+    std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey}, texture::TextureView, texture_loaders::{TextureFromBytes, TextureFromUrl}
 };
 use elements_meshes::UIRectMeshKey;
 use elements_renderer::{
     color, gpu_primitives, material, materials::pbr_material::{get_pbr_shader_unlit, PbrMaterial, PbrMaterialConfig, PbrMaterialParams}, primitives, renderer_shader, SharedMaterial
 };
 use elements_std::{
-    asset_cache::{AsyncAssetKeyExt, SyncAssetKeyExt}, CowStr
+    asset_cache::{AsyncAssetKeyExt, SyncAssetKeyExt}, download_asset::ContentUrl, CowStr
 };
 use glam::*;
 
@@ -104,7 +104,7 @@ impl ElementComponent for ImageFromUrl {
             .use_async(|w| {
                 let assets = w.resource(asset_cache()).clone();
                 async move {
-                    TextureFromUrl { url, format: wgpu::TextureFormat::Rgba8UnormSrgb }
+                    TextureFromUrl { url: ContentUrl::parse(url)?, format: wgpu::TextureFormat::Rgba8UnormSrgb }
                         .get(&assets)
                         .await
                         .map(|x| Arc::new(x.create_view(&Default::default())))

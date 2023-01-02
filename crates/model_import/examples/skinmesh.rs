@@ -26,9 +26,6 @@ async fn init(world: &mut World) -> EntityId {
         false,
     )
     .await
-    .unwrap()
-    .produce_local_model(&assets)
-    .await
     .unwrap();
 
     let entities = model.batch_spawn(world, &Default::default(), 2);

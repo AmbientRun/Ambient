@@ -23,9 +23,6 @@ async fn init(world: &mut World) {
         false,
     )
     .await
-    .unwrap()
-    .produce_local_model(&assets)
-    .await
     .unwrap();
     dump_world_hierarchy_to_tmp_file(&model.0);
 

@@ -25,6 +25,7 @@ log.workspace = true
 friendly_id.workspace = true
 parking_lot.workspace = true
 async-trait.workspace = true
+anyhow.workspace = true
 
 [dev-dependencies]
 elements_app = { path = "../app" }

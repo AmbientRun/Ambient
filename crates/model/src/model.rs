@@ -1,6 +1,5 @@
 use std::{collections::HashMap, path::Path, sync::Arc};
 
-
 use elements_core::{
     asset_cache, bounding::{local_bounding_aabb, visibility_from, world_bounding_aabb, world_bounding_sphere}, hierarchy::{children, parent}, main_scene, name, transform::{
         fbx_complex_transform, fbx_post_rotation, fbx_pre_rotation, fbx_rotation_offset, fbx_rotation_pivot, fbx_scaling_offset, fbx_scaling_pivot, inv_local_to_world, local_to_parent, local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation
@@ -8,15 +7,16 @@ use elements_core::{
 };
 use elements_ecs::{query, EntityData, EntityId, IComponent, World};
 use elements_renderer::{
-    cast_shadows, color, gpu_primitives, lod::{cpu_lod_visible}, primitives, skinning::{self, Skin, SkinsBuffer, SkinsBufferKey}
+    cast_shadows, color, gpu_primitives, lod::cpu_lod_visible, primitives, skinning::{self, Skin, SkinsBuffer, SkinsBufferKey}
 };
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt}, download_asset::AssetError, shapes::AABB
+    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt}, download_asset::{AssetError, ContentUrl}, shapes::AABB
 };
 use futures::future::join_all;
 use glam::{Mat4, Vec3, Vec4};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
+use url::Url;
 
 use super::{
     animation_bind_id, animation_binder, is_model_node, model_animatable, model_loaded, model_skin_ix, model_skins, pbr_renderer_primitives_from_url
@@ -65,16 +65,17 @@ impl Model {
     pub fn from_slice(content: &[u8]) -> anyhow::Result<Self> {
         Ok(Self(World::from_slice(content)?))
     }
-    pub async fn load(&mut self, assets: &AssetCache) -> anyhow::Result<()> {
+    pub async fn load(&mut self, assets: &AssetCache, model_url: &ContentUrl) -> anyhow::Result<()> {
         for (id, prims) in query(pbr_renderer_primitives_from_url()).collect_cloned(&self.0, None) {
             self.0.remove_component(id, pbr_renderer_primitives_from_url()).unwrap();
-            let prims = join_all(prims.iter().map(|prim| prim.get(assets)).collect_vec())
-                .await
-                .into_iter()
-                .collect::<Result<Vec<_>, AssetError>>()?
-                .into_iter()
-                .map(|x| (*x).clone())
-                .collect_vec();
+            let prims =
+                join_all(prims.into_iter().map(|prim| async move { Ok(prim.resolve(model_url)?.get(assets).await?) }).collect_vec())
+                    .await
+                    .into_iter()
+                    .collect::<Result<Vec<_>, AssetError>>()?
+                    .into_iter()
+                    .map(|x| (*x).clone())
+                    .collect_vec();
             self.0.add_component(id, primitives(), prims).unwrap();
         }
         Ok(())

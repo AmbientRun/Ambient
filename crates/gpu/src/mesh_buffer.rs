@@ -6,7 +6,7 @@ use std::{
 
 use async_trait::async_trait;
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, download_asset::{AssetResult, MeshFromUrl, UrlString}, mesh::Mesh
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, download_asset::{AssetResult, ContentUrl, MeshFromUrl, UrlString}, mesh::Mesh
 };
 use glam::{UVec4, Vec2, Vec4};
 use itertools::Itertools;
@@ -67,18 +67,18 @@ impl SyncAssetKey<Arc<Mutex<MeshBuffer>>> for MeshBufferKey {
 
 #[derive(Clone, Debug)]
 pub struct GpuMeshFromUrl {
-    pub url: UrlString,
+    pub url: ContentUrl,
     pub cache_on_disk: bool,
 }
 impl GpuMeshFromUrl {
-    pub fn new(url: impl Into<String>) -> Self {
-        Self { url: url.into(), cache_on_disk: true }
+    pub fn new(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
+        Ok(Self { url: ContentUrl::parse(url)?, cache_on_disk })
     }
 }
 #[async_trait]
 impl AsyncAssetKey<AssetResult<Arc<GpuMesh>>> for GpuMeshFromUrl {
     async fn load(self, assets: AssetCache) -> AssetResult<Arc<GpuMesh>> {
-        let mesh = MeshFromUrl::new(self.url, self.cache_on_disk).get(&assets).await?;
+        let mesh = MeshFromUrl::from_url(self.url, self.cache_on_disk).get(&assets).await?;
         Ok(GpuMesh::from_mesh(assets, &mesh))
     }
 }

@@ -31,7 +31,7 @@ impl AsyncAssetKey<Result<Arc<Track>, Arc<Error>>> for AudioFromUrl {
                 )))
             }
         };
-        let bytes: Arc<[u8]> = BytesFromUrl::cached(self.url.clone())
+        let bytes: Arc<[u8]> = BytesFromUrl::new(self.url.clone(), true)?
             .get(&assets)
             .await
             .map(|v| Arc::from(&v[..]))

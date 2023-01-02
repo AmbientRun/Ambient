@@ -1,4 +1,6 @@
-use std::{borrow::BorrowMut, marker::PhantomData, path::PathBuf, sync::Arc, time::Duration};
+use std::{
+    borrow::BorrowMut, marker::PhantomData, path::{Path, PathBuf}, sync::Arc, time::Duration
+};
 
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
@@ -14,6 +16,60 @@ use crate::{
 };
 
 pub type UrlString = String;
+
+/// This is a thin wrapper around Url, which is guaranteed to always
+/// be an absolute url (also when pointing to local file content).
+///
+/// It's got a custom Debug implementation which just prints the url,
+/// which makes it useful in asset keys
+#[derive(Clone, Serialize, Deserialize, PartialEq)]
+pub struct ContentUrl(pub Url);
+impl std::fmt::Debug for ContentUrl {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0.as_str())
+    }
+}
+impl std::fmt::Display for ContentUrl {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0.as_str())
+    }
+}
+impl ContentUrl {
+    /// This will also resolve relative local paths
+    pub fn parse(url: impl AsRef<str>) -> anyhow::Result<Self> {
+        match Url::parse(url.as_ref()) {
+            Ok(url) => Ok(Self(url)),
+            Err(url::ParseError::RelativeUrlWithoutBase) => {
+                Ok(Self(Url::parse(&format!("file://{}/{}", std::env::current_dir().unwrap().to_str().unwrap(), url.as_ref()))?))
+            }
+            Err(err) => Err(err.into()),
+        }
+    }
+    pub fn relative_cache_path(&self) -> String {
+        self.0.to_string().replace("://", "/")
+    }
+    pub fn absolute_cache_path(&self, assets: &AssetCache) -> PathBuf {
+        AssetsCacheDir.get(assets).join(self.relative_cache_path()).into()
+    }
+    /// This is always lowercase
+    pub fn extension(&self) -> Option<String> {
+        self.0.path().rsplit_once('.').map(|(_, ext)| ext.to_string().to_lowercase())
+    }
+    /// Resolves a potentially relative url, using self as the base url
+    pub fn resolve(&self, url_or_relative_path: &str) -> Result<Self, url::ParseError> {
+        match Url::parse(url_or_relative_path) {
+            Ok(url) => Ok(Self(url)),
+            Err(url::ParseError::RelativeUrlWithoutBase) => Ok(Self(self.0.join(url_or_relative_path)?)),
+            Err(err) => Err(err),
+        }
+    }
+}
+impl From<PathBuf> for ContentUrl {
+    fn from(value: PathBuf) -> Self {
+        let value = if value.is_absolute() { value } else { std::env::current_dir().unwrap().join(value) };
+        Self(Url::from_file_path(value).unwrap())
+    }
+}
 
 pub type AssetResult<T> = Result<T, AssetError>;
 
@@ -99,35 +155,29 @@ pub async fn download<T, F: Future<Output = anyhow::Result<T>>>(
 
 #[derive(Clone, Debug)]
 pub struct BytesFromUrl {
-    pub url: UrlString,
+    pub url: ContentUrl,
     pub cache_on_disk: bool,
 }
 impl BytesFromUrl {
-    pub fn cached(url: impl Into<String>) -> Self {
-        Self { url: url.into(), cache_on_disk: true }
-    }
-    pub fn uncached(url: impl Into<String>) -> Self {
-        Self { url: url.into(), cache_on_disk: false }
+    pub fn new(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
+        Ok(Self { url: ContentUrl::parse(url)?, cache_on_disk })
     }
 }
 #[async_trait]
 impl AsyncAssetKey<AssetResult<Arc<Vec<u8>>>> for BytesFromUrl {
     async fn load(self, assets: AssetCache) -> AssetResult<Arc<Vec<u8>>> {
         if self.cache_on_disk {
-            let path = BytesFromUrlCachedPath(self.url).get(&assets).await?;
+            let path = BytesFromUrlCachedPath { url: self.url.clone() }.get(&assets).await?;
             let semaphore = FileReadSemaphore.get(&assets);
             let _permit = semaphore.acquire().await;
             return Ok(Arc::new(tokio::fs::read(&*path).await.context(format!("Failed to read file: {:?}", path))?));
         }
 
-        let parsed_url = match ContentLoc::parse(&self.url)? {
-            ContentLoc::RelativePath(path) => {
-                return Ok(Arc::new(tokio::fs::read(&path).await.context(format!("Failed to read file at: {:?}", path))?));
-            }
-            ContentLoc::Url(url) => url,
-        };
+        if self.url.0.scheme() == "file" {
+            return Ok(Arc::new(tokio::fs::read(&self.url.0.path()).await.context(format!("Failed to read file at: {:}", self.url.0))?));
+        }
 
-        let body = download(&assets, parsed_url.clone(), |resp| async { Ok(resp.bytes().await?) }).await?.to_vec();
+        let body = download(&assets, self.url.0.clone(), |resp| async { Ok(resp.bytes().await?) }).await?.to_vec();
         assert!(!body.is_empty());
         Ok(Arc::new(body))
     }
@@ -138,7 +188,14 @@ impl AsyncAssetKey<AssetResult<Arc<Vec<u8>>>> for BytesFromUrl {
 
 /// Get the local cache file location of a resource, and ensure the resource is downloaded to that cache file
 #[derive(Clone, Debug)]
-pub struct BytesFromUrlCachedPath(pub UrlString);
+pub struct BytesFromUrlCachedPath {
+    pub url: ContentUrl,
+}
+impl BytesFromUrlCachedPath {
+    pub fn new(url: impl AsRef<str>) -> anyhow::Result<Self> {
+        Ok(Self { url: ContentUrl::parse(url)? })
+    }
+}
 #[async_trait]
 impl AsyncAssetKey<AssetResult<Arc<PathBuf>>> for BytesFromUrlCachedPath {
     fn keepalive(&self) -> AssetKeepalive {
@@ -146,26 +203,16 @@ impl AsyncAssetKey<AssetResult<Arc<PathBuf>>> for BytesFromUrlCachedPath {
     }
     async fn load(self, assets: AssetCache) -> AssetResult<Arc<PathBuf>> {
         use tokio::io::AsyncWriteExt;
-        let Self(url) = self;
-        let parsed_url = match ContentLoc::parse(&url)? {
-            ContentLoc::RelativePath(path) => {
-                return Ok(Arc::new(path));
-            }
-            ContentLoc::Url(url) => url,
-        };
-        if parsed_url.scheme() == "file" {
-            let path = parsed_url.path();
-            let path = if let Some(path) = path.strip_prefix("/CWD/") { path } else { path };
-            return Ok(Arc::new(path.into()));
+        if self.url.0.scheme() == "file" {
+            return Ok(Arc::new(self.url.0.path().into()));
         }
-        let cache_dir = AssetsCacheDir.try_get(&assets).unwrap_or_else(|| PathBuf::from("tmp"));
-        let path = cache_dir.join(&parsed_url.path()[1..]);
+        let path = self.url.absolute_cache_path(&assets);
         if !path.exists() {
             let mut dir = path.clone();
             dir.pop();
             std::fs::create_dir_all(&dir).context(format!("Failed to create asset dir: {:?}", dir))?;
             let tmp_path = path.with_extension(".downloading");
-            download(&assets, parsed_url.clone(), {
+            download(&assets, self.url.0.clone(), {
                 let tmp_path = tmp_path.clone();
                 move |mut resp| {
                     let tmp_path = tmp_path.clone();
@@ -206,54 +253,8 @@ impl SyncAssetKey<Arc<Semaphore>> for DownloadSemaphore {
     }
 }
 
-pub enum ContentLoc {
-    Url(Url),
-    RelativePath(PathBuf),
-}
-impl ContentLoc {
-    pub fn parse(url: &str) -> AssetResult<ContentLoc> {
-        if !url.starts_with("http://") && !url.starts_with("https://") && !url.starts_with("file://") {
-            Ok(ContentLoc::RelativePath(url.into()))
-        } else {
-            Ok(Url::parse(url).map(ContentLoc::Url).context(format!("Failed to parse url: {:?}", url))?)
-        }
-    }
-    pub fn ends_with_caseless(&self, end: &str) -> bool {
-        match self {
-            ContentLoc::Url(url) => url.path().to_lowercase().ends_with(end),
-            ContentLoc::RelativePath(path) => path.to_str().unwrap().to_lowercase().ends_with(end),
-        }
-    }
-    pub fn cache_path_buf(&self) -> PathBuf {
-        match self {
-            ContentLoc::Url(..) => PathBuf::from(self.cache_path_string()),
-            ContentLoc::RelativePath(path) => path.clone(),
-        }
-    }
-    pub fn cache_path_string(&self) -> String {
-        match self {
-            ContentLoc::Url(url) => {
-                let path = url.path().to_string();
-                if let Some(sub) = path.strip_prefix('/') {
-                    sub.to_string()
-                } else {
-                    path
-                }
-            }
-            ContentLoc::RelativePath(path) => {
-                let path = path.as_os_str().to_str().unwrap().to_string();
-                if let Some(path) = path.strip_prefix('/') {
-                    path.to_string()
-                } else {
-                    path
-                }
-            }
-        }
-    }
-}
-
 pub struct JsonFromUrl<T> {
-    url: UrlString,
+    url: ContentUrl,
     cache_on_disk: bool,
     _type: PhantomData<T>,
 }
@@ -265,11 +266,11 @@ impl<T> Clone for JsonFromUrl<T> {
 }
 
 impl<T> JsonFromUrl<T> {
-    pub fn cached(url: impl Into<String>) -> Self {
-        Self { url: url.into(), cache_on_disk: true, _type: PhantomData }
+    pub fn new(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
+        Ok(Self { url: ContentUrl::parse(url)?, cache_on_disk, _type: PhantomData })
     }
-    pub fn uncached(url: impl Into<String>) -> Self {
-        Self { url: url.into(), cache_on_disk: false, _type: PhantomData }
+    pub fn from_url(url: ContentUrl, cache_on_disk: bool) -> Self {
+        Self { url, cache_on_disk, _type: PhantomData }
     }
 }
 impl<T> std::fmt::Debug for JsonFromUrl<T> {
@@ -287,12 +288,12 @@ impl<T: DeserializeOwned + Sync + Send + 'static> AsyncAssetKey<AssetResult<Arc<
 
 #[derive(Clone, Debug)]
 pub struct YamlFromUrl {
-    pub url: UrlString,
+    pub url: ContentUrl,
     pub cache_on_disk: bool,
 }
 impl YamlFromUrl {
-    pub fn new(url: impl Into<String>) -> Self {
-        Self { url: url.into(), cache_on_disk: true }
+    pub fn new(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
+        Ok(Self { url: ContentUrl::parse(url)?, cache_on_disk })
     }
 }
 #[async_trait]
@@ -310,7 +311,7 @@ impl AsyncAssetKey<AssetResult<Arc<Vec<yaml_rust::Yaml>>>> for YamlFromUrl {
 
 #[derive(Debug)]
 pub struct BincodeFromUrl<T> {
-    pub url: UrlString,
+    pub url: ContentUrl,
     pub cache_on_disk: bool,
     type_: PhantomData<T>,
 }
@@ -321,11 +322,11 @@ impl<T> Clone for BincodeFromUrl<T> {
     }
 }
 impl<T> BincodeFromUrl<T> {
-    pub fn new(url: impl Into<String>, cache_on_disk: bool) -> Self {
-        Self { url: url.into(), cache_on_disk, type_: PhantomData }
+    pub fn new(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
+        Ok(Self { url: ContentUrl::parse(url)?, cache_on_disk, type_: PhantomData })
     }
-    pub fn cached(url: impl Into<String>) -> Self {
-        Self::new(url, true)
+    pub fn from_url(url: ContentUrl, cache_on_disk: bool) -> Self {
+        Self { url, cache_on_disk, type_: PhantomData }
     }
 }
 #[async_trait]

@@ -6,29 +6,28 @@ use elements_core::{
 };
 use elements_ecs::{EntityData, World};
 use elements_model::{model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, ModelSkin, PbrRenderPrimitiveFromUrl};
-use elements_renderer::{
-    materials::pbr_material::PbrMaterialFromUrl
-};
-use elements_std::{asset_cache::AssetCache, asset_url::AssetUrl, mesh::Mesh, shapes::AABB};
+use elements_renderer::materials::pbr_material::PbrMaterialFromUrl;
+use elements_std::{asset_cache::AssetCache, asset_url::AssetUrl, download_asset::ContentUrl, mesh::Mesh, shapes::AABB};
 use glam::{uvec4, Mat4, Quat, UVec4, Vec2, Vec3, Vec4, Vec4Swizzles};
 use gltf::animation::util::ReadOutputs;
 use itertools::Itertools;
+use relative_path::{RelativePath, RelativePathBuf};
 
 use self::gltf_import::GltfImport;
-use crate::{download_bytes, model_crate::ModelCrate};
+use crate::{dotdot_path, download_bytes, model_crate::ModelCrate};
 
 mod gltf_import;
 
-pub async fn import_url(assets: &AssetCache, url: &str, asset_crate: &mut ModelCrate) -> anyhow::Result<String> {
+pub async fn import_url(assets: &AssetCache, url: &ContentUrl, asset_crate: &mut ModelCrate) -> anyhow::Result<RelativePathBuf> {
     let content = download_bytes(assets, url).await?;
-    let gltf = GltfImport::from_slice(url.to_string(), true, &content)?;
+    let gltf = GltfImport::from_slice(url.0.to_string(), true, &content)?;
     import(&gltf, asset_crate).await
 }
 
-pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow::Result<String> {
+pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow::Result<RelativePathBuf> {
     let name_ = |name: Option<&str>| name.map(|x| format!("{}_", x)).unwrap_or_default();
 
-    let mut meshes = import.document.meshes().map(|mesh| mesh.primitives().map(|_| String::new()).collect_vec()).collect_vec();
+    let mut meshes = import.document.meshes().map(|mesh| mesh.primitives().map(|_| RelativePathBuf::new()).collect_vec()).collect_vec();
     for (mesh_i, mesh) in import.document.meshes().enumerate() {
         for (prim_i, primitive) in mesh.primitives().enumerate() {
             let reader = primitive.reader(|buffer| Some(&import.buffers[buffer.index()]));
@@ -67,8 +66,8 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
                 }),
             };
             cpu_mesh.try_ensure_tangents();
-            let url = asset_crate.meshes.insert(&format!("{}{}_{}", name_(mesh.name()), mesh.index(), primitive.index()), cpu_mesh).url;
-            meshes[mesh_i][prim_i] = url;
+            let path = asset_crate.meshes.insert(&format!("{}{}_{}", name_(mesh.name()), mesh.index(), primitive.index()), cpu_mesh).path;
+            meshes[mesh_i][prim_i] = path;
         }
     }
 
@@ -153,8 +152,8 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
             gltf::image::Format::R32G32B32FLOAT => todo!(),
             gltf::image::Format::R32G32B32A32FLOAT => todo!(),
         };
-        let url = asset_crate.images.insert(&format!("{}", index), img).url;
-        images.push(url);
+        let path = asset_crate.images.insert(&format!("{}", index), img).path;
+        images.push(path);
     }
 
     let mut materials = Vec::new();
@@ -172,13 +171,16 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
             alpha_cutoff: mat.alpha_cutoff(),
             metallic: if has_mr { 1.0 } else { pbr.metallic_factor() },
             roughness: if has_mr { 1.0 } else { pbr.roughness_factor() },
-            base_color: pbr.base_color_texture().and_then(|x| images.get(x.texture().index())).map(AssetUrl::from_url),
-            normalmap: mat.normal_texture().and_then(|x| images.get(x.texture().index())).map(AssetUrl::from_url),
-            metallic_roughness: pbr.metallic_roughness_texture().and_then(|x| images.get(x.texture().index())).map(AssetUrl::from_url),
+            base_color: pbr.base_color_texture().and_then(|x| images.get(x.texture().index())).map(|x| dotdot_path(x).to_string()),
+            normalmap: mat.normal_texture().and_then(|x| images.get(x.texture().index())).map(|x| dotdot_path(x).to_string()),
+            metallic_roughness: pbr
+                .metallic_roughness_texture()
+                .and_then(|x| images.get(x.texture().index()))
+                .map(|x| dotdot_path(x).to_string()),
             double_sided: Some(mat.double_sided()),
             opacity: None,
         };
-        materials.push(asset_crate.materials.insert(&format!("{}{}", name_(mat.name()), index), mat_def).url);
+        materials.push(asset_crate.materials.insert(&format!("{}{}", name_(mat.name()), index), mat_def).path);
     }
 
     let mut world = World::new("gltf");
@@ -202,8 +204,8 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
                 let primitive_defs = mesh_
                     .primitives()
                     .map(|primitive| PbrRenderPrimitiveFromUrl {
-                        mesh: meshes[mesh_.index()][primitive.index()].clone(),
-                        material: primitive.material().index().map(|material_index| materials[material_index].clone()),
+                        mesh: dotdot_path(&meshes[mesh_.index()][primitive.index()]).to_string(),
+                        material: primitive.material().index().map(|material_index| dotdot_path(&materials[material_index]).to_string()),
                         lod: 0,
                     })
                     .collect_vec();
@@ -257,5 +259,5 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
     world.add_resource(children(), roots);
     world.add_resource(name(), import.name.to_string());
 
-    Ok(asset_crate.models.insert(ModelCrate::MAIN, Model(world)).url)
+    Ok(asset_crate.models.insert(ModelCrate::MAIN, Model(world)).path)
 }

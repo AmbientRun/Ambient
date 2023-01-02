@@ -37,6 +37,7 @@ fbxcel.workspace = true
 ordered-float.workspace = true
 indexmap.workspace = true
 log.workspace = true
+relative-path.workspace = true
 
 [target.'cfg(target_os = "linux")'.dependencies]
 russimp = { git = "https://github.com/FredrikNoren/russimp.git", features = [

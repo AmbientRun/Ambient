@@ -8,7 +8,7 @@ use elements_core::{asset_cache, hierarchy::children, time};
 use elements_ecs::{components, query, EntityId, SystemGroup};
 use elements_model::{animation_binder, model, model_def, ModelDef};
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKeyExt}, asset_url::{AnimationAssetType, AssetUrl, ModelAssetType}
+    asset_cache::{AssetCache, AsyncAssetKeyExt}, asset_url::{AnimationAssetType, AssetUrl, ModelAssetType}, download_asset::ContentUrl
 };
 use serde::{Deserialize, Serialize};
 
@@ -168,7 +168,13 @@ pub fn animation_systems() -> SystemGroup {
                         if let Some(action) = ctrlr.actions.get(0) {
                             if let AnimationClipRef::FromModelAsset(def) = &action.clip {
                                 if let Some(asset_crate) = def.asset_crate() {
-                                    world.add_component(id, animation_apply_base_pose(), ModelDef(asset_crate.model().url)).unwrap();
+                                    world
+                                        .add_component(
+                                            id,
+                                            animation_apply_base_pose(),
+                                            ModelDef(ContentUrl::parse(asset_crate.model().url).unwrap()),
+                                        )
+                                        .unwrap();
                                 }
                             }
                         }
@@ -196,7 +202,7 @@ pub fn animation_systems() -> SystemGroup {
                 let mut in_error = Vec::new();
                 for (id, (controller, binder)) in q.iter(world, qs) {
                     let retaget = world.get(id, animation_retargeting()).unwrap_or(AnimationRetargeting::None);
-                    let model = world.get_ref(id, model_def()).map(|def| AssetUrl::<ModelAssetType>::from_url(&def.0)).ok();
+                    let model = world.get_ref(id, model_def()).map(|def| AssetUrl::<ModelAssetType>::from_url(&def.0 .0.to_string())).ok();
                     // Calc
                     for action in controller.actions.iter() {
                         match action.clip.get_clip(assets.clone(), retaget, model.clone()) {

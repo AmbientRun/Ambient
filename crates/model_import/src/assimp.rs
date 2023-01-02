@@ -6,30 +6,24 @@ use elements_core::{
 use elements_ecs::{EntityData, EntityId, World};
 use elements_model::{pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl};
 use elements_renderer::materials::pbr_material::PbrMaterialFromUrl;
-use elements_std::{asset_cache::AssetCache, download_asset::ContentLoc, mesh::Mesh};
+use elements_std::{asset_cache::AssetCache, download_asset::ContentUrl, mesh::Mesh};
 use glam::{vec2, vec3, vec4, Mat4};
-
 use itertools::Itertools;
-
+use relative_path::{RelativePath, RelativePathBuf};
 use russimp::{
     material::{Material, PropertyTypeInfo}, node::Node, scene::{PostProcess, Scene}, texture::TextureType
 };
 
-use crate::{download_bytes, model_crate::ModelCrate, TextureResolver};
+use crate::{dotdot_path, download_bytes, model_crate::ModelCrate, TextureResolver};
 
 pub async fn import_url(
     assets: &AssetCache,
-    url: &str,
+    url: &ContentUrl,
     model_crate: &mut ModelCrate,
     resolve_texture: TextureResolver,
-) -> anyhow::Result<String> {
+) -> anyhow::Result<RelativePathBuf> {
     let content = download_bytes(assets, url).await?;
-    let extension = match ContentLoc::parse(url) {
-        Ok(ContentLoc::RelativePath(path)) => path.extension().map(|x| x.to_str().unwrap().to_string()),
-        Ok(ContentLoc::Url(url)) => url.path().rsplit_once(".").map(|(_a, b)| b.to_string()),
-        Err(_) => None,
-    }
-    .unwrap_or_default();
+    let extension = url.extension().unwrap_or_default();
     import(&content, model_crate, &extension, resolve_texture).await
 }
 
@@ -38,8 +32,8 @@ pub async fn import<'a>(
     model_crate: &'a mut ModelCrate,
     extension: &'a str,
     resolve_texture: TextureResolver,
-) -> anyhow::Result<String> {
-    let (url, materials) = import_sync(buffer, model_crate, extension)?;
+) -> anyhow::Result<RelativePathBuf> {
+    let (path, materials) = import_sync(buffer, model_crate, extension)?;
     for (i, material) in materials.iter().enumerate() {
         let mut textures = HashMap::new();
         for (key, texs) in &material.textures {
@@ -61,14 +55,14 @@ pub async fn import<'a>(
         let mut out_material = PbrMaterialFromUrl {
             // source: todo!(),
             base_color: if let Some(tex) = textures.remove(&TextureType::BaseColor).or_else(|| textures.remove(&TextureType::Diffuse)) {
-                Some(model_crate.images.insert("base_color", tex).url.into())
+                Some(dotdot_path(model_crate.images.insert("base_color", tex).path).into())
             } else {
                 None
             },
-            opacity: textures.remove(&TextureType::Opacity).map(|img| model_crate.images.insert("opacity", img).url.into()),
+            opacity: textures.remove(&TextureType::Opacity).map(|img| dotdot_path(model_crate.images.insert("opacity", img).path).into()),
             // base_color_factor: todo!(),
             // emissive_factor: todo!(),
-            normalmap: textures.remove(&TextureType::Normals).map(|img| model_crate.images.insert("normals", img).url.into()),
+            normalmap: textures.remove(&TextureType::Normals).map(|img| dotdot_path(model_crate.images.insert("normals", img).path).into()),
             // transparent: todo!(),
             // alpha_cutoff: todo!(),
             // double_sided: todo!(),
@@ -77,19 +71,19 @@ pub async fn import<'a>(
                     for (m, r) in metal.pixels_mut().zip(rough.pixels()) {
                         m[1] = r[0];
                     }
-                    Some(model_crate.images.insert("metallic_roughness", metal).url.into())
+                    Some(dotdot_path(model_crate.images.insert("metallic_roughness", metal).path).into())
                 }
                 (Some(mut metal), None) => {
                     for p in metal.pixels_mut() {
                         p[1] = 255;
                     }
-                    Some(model_crate.images.insert("metallic_roughness", metal).url.into())
+                    Some(dotdot_path(model_crate.images.insert("metallic_roughness", metal).path).into())
                 }
                 (None, Some(mut rough)) => {
                     for p in rough.pixels_mut() {
                         p[0] = 255;
                     }
-                    Some(model_crate.images.insert("metallic_roughness", rough).url.into())
+                    Some(dotdot_path(model_crate.images.insert("metallic_roughness", rough).path).into())
                 }
                 (None, None) => None,
             },
@@ -110,10 +104,10 @@ pub async fn import<'a>(
         }
         model_crate.materials.insert(i.to_string(), out_material);
     }
-    Ok(url)
+    Ok(path)
 }
 
-fn import_sync(buffer: &[u8], model_crate: &mut ModelCrate, extension: &str) -> anyhow::Result<(String, Vec<Material>)> {
+fn import_sync(buffer: &[u8], model_crate: &mut ModelCrate, extension: &str) -> anyhow::Result<(RelativePathBuf, Vec<Material>)> {
     let scene = Scene::from_buffer(
         buffer,
         vec![
@@ -174,8 +168,8 @@ fn import_sync(buffer: &[u8], model_crate: &mut ModelCrate, extension: &str) -> 
                     .flat_map(|mesh_i| {
                         scene.meshes.get(*mesh_i as usize).map(|mesh| PbrRenderPrimitiveFromUrl {
                             lod: 0,
-                            material: Some(model_crate.materials.loc.url(mesh.material_index.to_string())),
-                            mesh: model_crate.meshes.loc.url(mesh_i.to_string()),
+                            material: Some(dotdot_path(model_crate.materials.loc.path(mesh.material_index.to_string())).to_string()),
+                            mesh: dotdot_path(model_crate.meshes.loc.path(mesh_i.to_string())).to_string(),
                         })
                     })
                     .collect(),
@@ -196,5 +190,5 @@ fn import_sync(buffer: &[u8], model_crate: &mut ModelCrate, extension: &str) -> 
         // world.add_resource(name(), scene.name.to_string());
     }
     dump_world_hierarchy_to_tmp_file(&world);
-    Ok((model_crate.models.insert(ModelCrate::MAIN, Model(world)).url, scene.materials.clone()))
+    Ok((model_crate.models.insert(ModelCrate::MAIN, Model(world)).path, scene.materials.clone()))
 }

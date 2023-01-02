@@ -2,7 +2,7 @@ use std::{any::type_name, borrow::Cow, fmt, io::Cursor, sync::Arc};
 
 use async_trait::async_trait;
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, download_asset::{AssetError, AssetResult, BytesFromUrl, ContentLoc, UrlString}, CowStr
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, download_asset::{AssetError, AssetResult, BytesFromUrl, ContentUrl, UrlString}, CowStr
 };
 use futures::future::join_all;
 use image::{DynamicImage, ImageFormat, Rgba, RgbaImage};
@@ -11,7 +11,7 @@ use crate::texture::Texture;
 
 #[derive(Debug, Clone)]
 pub struct ImageFromUrl {
-    pub url: UrlString,
+    pub url: ContentUrl,
 }
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<DynamicImage>, AssetError>> for ImageFromUrl {
@@ -22,7 +22,7 @@ impl AsyncAssetKey<Result<Arc<DynamicImage>, AssetError>> for ImageFromUrl {
 
 #[derive(Debug, Clone)]
 pub struct Rgba8ImageFromUrl {
-    pub url: UrlString,
+    pub url: ContentUrl,
 }
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<image::RgbaImage>, AssetError>> for Rgba8ImageFromUrl {
@@ -31,12 +31,11 @@ impl AsyncAssetKey<Result<Arc<image::RgbaImage>, AssetError>> for Rgba8ImageFrom
     }
 }
 
-async fn image_from_url(assets: AssetCache, url: UrlString) -> Result<DynamicImage, AssetError> {
-    let data = BytesFromUrl::cached(url.clone()).get(&assets).await?;
-    let parsed_url = ContentLoc::parse(&url)?;
-    let path_buf = parsed_url.cache_path_buf();
+async fn image_from_url(assets: AssetCache, url: ContentUrl) -> Result<DynamicImage, AssetError> {
+    let data = BytesFromUrl { url: url.clone(), cache_on_disk: true }.get(&assets).await?;
+
+    let extension = url.extension().context("No extension")?;
     Ok(tokio::task::block_in_place(move || -> anyhow::Result<DynamicImage> {
-        let extension = path_buf.extension().context("No extension")?.to_str().context("Can't turn extension into string")?;
         let format = ImageFormat::from_extension(extension).context("Invalid extension")?;
         Ok(image::io::Reader::with_format(Cursor::new(&*data), format).decode()?)
     })
@@ -46,7 +45,7 @@ async fn image_from_url(assets: AssetCache, url: UrlString) -> Result<DynamicIma
 
 #[derive(Debug, Clone)]
 pub struct TextureFromUrl {
-    pub url: UrlString,
+    pub url: ContentUrl,
     pub format: wgpu::TextureFormat,
 }
 #[async_trait]
@@ -129,8 +128,8 @@ impl std::fmt::Debug for Rgba8ImageInMemory {
 
 #[derive(Debug, Clone)]
 pub struct SplitImageFromUrl {
-    pub color: UrlString,
-    pub alpha: UrlString,
+    pub color: ContentUrl,
+    pub alpha: ContentUrl,
 }
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<image::RgbaImage>, AssetError>> for SplitImageFromUrl {
@@ -150,8 +149,8 @@ impl AsyncAssetKey<Result<Arc<image::RgbaImage>, AssetError>> for SplitImageFrom
 
 #[derive(Debug, Clone)]
 pub struct SplitTextureFromUrl {
-    pub color: UrlString,
-    pub alpha: UrlString,
+    pub color: ContentUrl,
+    pub alpha: ContentUrl,
     pub format: wgpu::TextureFormat,
 }
 #[async_trait]
@@ -248,7 +247,7 @@ where
 
 #[derive(Debug, Clone)]
 pub struct TextureArrayFromUrls {
-    pub urls: Vec<UrlString>,
+    pub urls: Vec<ContentUrl>,
     pub format: wgpu::TextureFormat,
     pub label: Option<String>,
 }
@@ -264,7 +263,7 @@ impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for TextureArrayFromUrls {
                 .map(|url| {
                     let assets = assets.clone();
                     async move {
-                        let data = BytesFromUrl::cached(&url).get(&assets).await?;
+                        let data = BytesFromUrl { url: url.clone(), cache_on_disk: true }.get(&assets).await?;
                         tokio::task::block_in_place(|| -> anyhow::Result<RgbaImage> {
                             Ok(image::io::Reader::new(Cursor::new(&*data))
                                 .with_guessed_format()
