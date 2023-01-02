@@ -83,13 +83,13 @@ pub async fn rpc_push_intent(args: GameRpcArgs, intent: EntityData) -> Option<En
 }
 
 pub async fn rpc_undo_head(args: GameRpcArgs, _: ()) -> Option<()> {
-    undo_head(args.state, &args.user_id).await?;
+    undo_head(args.state, &args.user_id)?;
     Some(())
 }
 
 /// Reverts the head intent iff it is the specified intent
 pub async fn rpc_undo_head_exact(args: GameRpcArgs, id: String) -> Option<()> {
-    undo_head_exact(args.state, &args.user_id, &id).await?;
+    undo_head_exact(args.state, &args.user_id, &id)?;
 
     Some(())
 }

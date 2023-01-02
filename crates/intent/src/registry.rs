@@ -161,9 +161,12 @@ where
     fn revert(&'a self, mut ctx: IntentContext<'a>, id: EntityId) {
         let world = &mut ctx.world;
 
-        let revert_state = world.get_ref(id, self.intent_revert).expect("Missing revert state for intent").clone();
-
-        let result = (self.revert)(IntentContext { world: ctx.world, user_id: ctx.user_id }, revert_state);
+        // Undoing a failed intent is always a success
+        let result = if let Ok(revert_state) = world.get_cloned(id, self.intent_revert) {
+            (self.revert)(IntentContext { world: ctx.world, user_id: ctx.user_id }, revert_state)
+        } else {
+            Ok(())
+        };
 
         let name = &self.name;
         let world = &mut ctx.world;
@@ -173,7 +176,7 @@ where
             }
             Err(err) => {
                 tracing::error!("Failed to revert intent: {name} {err:?}");
-                world.add_components(id, EntityData::new().set(intent_reverted(), ()).set(intent_failed(), format!("{:#}", err))).unwrap();
+                world.add_components(id, EntityData::new().set(intent_reverted(), ()).set(intent_failed(), format!("{err:#}"))).unwrap();
             }
         }
 
@@ -297,7 +300,7 @@ impl IntentRegistry {
     /// Reverts an intent
     ///
     /// Intent must be previously applied
-    pub async fn revert_intent(&self, state: SharedServerState, intent_arg: usize, user_id: &str, id: EntityId) {
+    pub fn revert_intent(&self, state: SharedServerState, intent_arg: usize, user_id: &str, id: EntityId) {
         let mut guard = state.lock();
         let ctx = IntentContext::from_guard(&mut guard, user_id);
 

@@ -45,7 +45,7 @@ pub fn create_intent<T: ComponentValue>(intent_arg: Component<T>, arg: T, collap
 }
 
 /// Reverts the head intent iff it is the specified intent
-pub async fn undo_head_exact(state: SharedServerState, user_id: &str, intent: &str) -> Option<EntityId> {
+pub fn undo_head_exact(state: SharedServerState, user_id: &str, intent: &str) -> Option<EntityId> {
     let (reg, id, intent) = {
         let mut guard = state.lock();
         let world = guard.get_player_world_mut(user_id).unwrap();
@@ -66,11 +66,11 @@ pub async fn undo_head_exact(state: SharedServerState, user_id: &str, intent: &s
         (reg, id, intent)
     };
 
-    reg.revert_intent(state, intent, user_id, id).await;
+    reg.revert_intent(state, intent, user_id, id);
 
     Some(id)
 }
-pub async fn undo_head(state: SharedServerState, user_id: &str) -> Option<EntityId> {
+pub fn undo_head(state: SharedServerState, user_id: &str) -> Option<EntityId> {
     let (reg, id, intent) = {
         let mut guard = state.lock();
         let world = guard.get_player_world_mut(user_id).unwrap();
@@ -86,7 +86,7 @@ pub async fn undo_head(state: SharedServerState, user_id: &str) -> Option<Entity
         }
     }?;
 
-    reg.revert_intent(state, intent, user_id, id).await;
+    reg.revert_intent(state, intent, user_id, id);
     Some(id)
 }
 
