@@ -78,7 +78,7 @@ impl GpuMeshFromUrl {
 #[async_trait]
 impl AsyncAssetKey<AssetResult<Arc<GpuMesh>>> for GpuMeshFromUrl {
     async fn load(self, assets: AssetCache) -> AssetResult<Arc<GpuMesh>> {
-        let mesh = MeshFromUrl::from_url(self.url, self.cache_on_disk).get(&assets).await?;
+        let mesh = MeshFromUrl::new(self.url, self.cache_on_disk).get(&assets).await?;
         Ok(GpuMesh::from_mesh(assets, &mesh))
     }
 }

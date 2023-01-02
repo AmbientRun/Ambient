@@ -32,7 +32,7 @@ impl AsyncAssetKey<Result<Arc<image::RgbaImage>, AssetError>> for Rgba8ImageFrom
 }
 
 async fn image_from_url(assets: AssetCache, url: ContentUrl) -> Result<DynamicImage, AssetError> {
-    let data = BytesFromUrl { url: url.clone(), cache_on_disk: true }.get(&assets).await?;
+    let data = BytesFromUrl::new(url.clone(), true).get(&assets).await?;
 
     let extension = url.extension().context("No extension")?;
     Ok(tokio::task::block_in_place(move || -> anyhow::Result<DynamicImage> {
@@ -263,7 +263,7 @@ impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for TextureArrayFromUrls {
                 .map(|url| {
                     let assets = assets.clone();
                     async move {
-                        let data = BytesFromUrl { url: url.clone(), cache_on_disk: true }.get(&assets).await?;
+                        let data = BytesFromUrl::new(url.clone(), true).get(&assets).await?;
                         tokio::task::block_in_place(|| -> anyhow::Result<RgbaImage> {
                             Ok(image::io::Reader::new(Cursor::new(&*data))
                                 .with_guessed_format()

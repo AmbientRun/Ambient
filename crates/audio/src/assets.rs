@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use async_trait::*;
 use elements_std::{
-    asset_cache::{AsyncAssetKey, AsyncAssetKeyExt}, asset_url::{AssetType, GetAssetType}, download_asset::{BytesFromUrl, UrlString}
+    asset_cache::{AsyncAssetKey, AsyncAssetKeyExt}, asset_url::{AssetType, GetAssetType}, download_asset::{BytesFromUrl, ContentUrl, UrlString}
 };
 
 use crate::{
@@ -10,7 +10,7 @@ use crate::{
 };
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct AudioFromUrl {
-    pub url: UrlString,
+    pub url: ContentUrl,
 }
 
 #[async_trait]
@@ -22,7 +22,7 @@ impl AsyncAssetKey<Result<Arc<Track>, Arc<Error>>> for AudioFromUrl {
     where
         Self: 'async_trait,
     {
-        let format = match self.url.rsplit('.').next() {
+        let format = match self.url.extension().as_ref().map(|x| x as &str) {
             Some("wav") => AudioFormat::Wav,
             Some("ogg") => AudioFormat::Vorbis,
             v => {
@@ -31,7 +31,7 @@ impl AsyncAssetKey<Result<Arc<Track>, Arc<Error>>> for AudioFromUrl {
                 )))
             }
         };
-        let bytes: Arc<[u8]> = BytesFromUrl::new(self.url.clone(), true)?
+        let bytes: Arc<[u8]> = BytesFromUrl::new(self.url.clone(), true)
             .get(&assets)
             .await
             .map(|v| Arc::from(&v[..]))
@@ -43,7 +43,7 @@ impl AsyncAssetKey<Result<Arc<Track>, Arc<Error>>> for AudioFromUrl {
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct VorbisFromUrl {
-    pub url: UrlString,
+    pub url: ContentUrl,
 }
 
 #[async_trait]
@@ -55,7 +55,7 @@ impl AsyncAssetKey<Result<Arc<VorbisTrack>, Arc<Error>>> for VorbisFromUrl {
     where
         Self: 'async_trait,
     {
-        let bytes: Arc<[u8]> = BytesFromUrl::cached(self.url.clone())
+        let bytes: Arc<[u8]> = BytesFromUrl::new(self.url.clone(), true)
             .get(&assets)
             .await
             .map(|v| Arc::from(&v[..]))

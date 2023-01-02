@@ -298,7 +298,7 @@ impl ColliderDef {
                 (vec![shape.clone()], vec![shape])
             })),
             ColliderDef::Asset { collider } => {
-                let collider_from_urls: Arc<ColliderFromUrls> = JsonFromUrl::new(&collider.url, true)?.get(&assets).await?;
+                let collider_from_urls: Arc<ColliderFromUrls> = JsonFromUrl::parse_url(&collider.url, true)?.get(&assets).await?;
                 let collider = collider_from_urls.resolve(&ContentUrl::parse(&collider.url)?)?.get(&assets).await?;
 
                 Ok(Box::new(move |physics, scale| {

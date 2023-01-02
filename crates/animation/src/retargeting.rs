@@ -52,7 +52,7 @@ impl AsyncAssetKey<Result<Arc<AnimationClip>, AssetError>> for AnimationClipReta
             .get(&assets)
             .await
             .context("Failed to load model")?;
-        let clip = AnimationClipFromUrl::new(self.clip.url.clone(), true)?.get(&assets).await.context("No such clip")?;
+        let clip = AnimationClipFromUrl::parse_url(self.clip.url.clone(), true)?.get(&assets).await.context("No such clip")?;
         match self.translation_retargeting {
             AnimationRetargeting::None => Ok(clip),
             AnimationRetargeting::Skeleton => {

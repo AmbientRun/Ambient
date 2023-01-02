@@ -22,7 +22,7 @@ pub type UrlString = String;
 ///
 /// It's got a custom Debug implementation which just prints the url,
 /// which makes it useful in asset keys
-#[derive(Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct ContentUrl(pub Url);
 impl std::fmt::Debug for ContentUrl {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -169,7 +169,10 @@ pub struct BytesFromUrl {
     pub cache_on_disk: bool,
 }
 impl BytesFromUrl {
-    pub fn new(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
+    pub fn new(url: ContentUrl, cache_on_disk: bool) -> Self {
+        Self { url, cache_on_disk }
+    }
+    pub fn parse_url(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
         Ok(Self { url: ContentUrl::parse(url)?, cache_on_disk })
     }
 }
@@ -202,7 +205,7 @@ pub struct BytesFromUrlCachedPath {
     pub url: ContentUrl,
 }
 impl BytesFromUrlCachedPath {
-    pub fn new(url: impl AsRef<str>) -> anyhow::Result<Self> {
+    pub fn parse_url(url: impl AsRef<str>) -> anyhow::Result<Self> {
         Ok(Self { url: ContentUrl::parse(url)? })
     }
 }
@@ -276,11 +279,11 @@ impl<T> Clone for JsonFromUrl<T> {
 }
 
 impl<T> JsonFromUrl<T> {
-    pub fn new(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
-        Ok(Self { url: ContentUrl::parse(url)?, cache_on_disk, _type: PhantomData })
-    }
-    pub fn from_url(url: ContentUrl, cache_on_disk: bool) -> Self {
+    pub fn new(url: ContentUrl, cache_on_disk: bool) -> Self {
         Self { url, cache_on_disk, _type: PhantomData }
+    }
+    pub fn parse_url(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
+        Ok(Self { url: ContentUrl::parse(url)?, cache_on_disk, _type: PhantomData })
     }
 }
 impl<T> std::fmt::Debug for JsonFromUrl<T> {
@@ -302,7 +305,7 @@ pub struct YamlFromUrl {
     pub cache_on_disk: bool,
 }
 impl YamlFromUrl {
-    pub fn new(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
+    pub fn parse_url(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
         Ok(Self { url: ContentUrl::parse(url)?, cache_on_disk })
     }
 }
@@ -332,11 +335,11 @@ impl<T> Clone for BincodeFromUrl<T> {
     }
 }
 impl<T> BincodeFromUrl<T> {
-    pub fn new(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
-        Ok(Self { url: ContentUrl::parse(url)?, cache_on_disk, type_: PhantomData })
-    }
-    pub fn from_url(url: ContentUrl, cache_on_disk: bool) -> Self {
+    pub fn new(url: ContentUrl, cache_on_disk: bool) -> Self {
         Self { url, cache_on_disk, type_: PhantomData }
+    }
+    pub fn parse_url(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
+        Ok(Self { url: ContentUrl::parse(url)?, cache_on_disk, type_: PhantomData })
     }
 }
 #[async_trait]

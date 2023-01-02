@@ -207,7 +207,7 @@ impl ModelDef {
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<Model>, AssetError>> for ModelDef {
     async fn load(self, assets: AssetCache) -> Result<Arc<Model>, AssetError> {
-        let data = BytesFromUrl { url: self.0.clone(), cache_on_disk: true }.get(&assets).await?;
+        let data = BytesFromUrl::new(self.0.clone(), true).get(&assets).await?;
         let semaphore = ModelLoadSemaphore.get(&assets);
         let _permit = semaphore.acquire().await;
         let mut model = tokio::task::block_in_place(|| Model::from_slice(&data))?;
@@ -251,7 +251,7 @@ impl AsyncAssetKey<Result<Arc<RenderPrimitive>, AssetError>> for PbrRenderPrimit
     async fn load(self, assets: AssetCache) -> Result<Arc<RenderPrimitive>, AssetError> {
         let mesh = GpuMeshFromUrl { url: self.mesh, cache_on_disk: true }.get(&assets).await?;
         if let Some(mat_url) = self.material {
-            let mat_def = JsonFromUrl::<PbrMaterialFromUrl>::from_url(mat_url.clone(), true).get(&assets).await?;
+            let mat_def = JsonFromUrl::<PbrMaterialFromUrl>::new(mat_url.clone(), true).get(&assets).await?;
             let mat = mat_def.resolve(&mat_url)?.get(&assets).await?;
             Ok(Arc::new(RenderPrimitive { material: mat.into(), shader: get_pbr_shader(&assets), mesh, lod: self.lod }))
         } else {

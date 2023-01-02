@@ -407,7 +407,7 @@ pub struct FontFromUrl(CowStr);
 impl AsyncAssetKey<AssetResult<Arc<FontArc>>> for FontFromUrl {
     async fn load(self, assets: elements_std::asset_cache::AssetCache) -> AssetResult<Arc<FontArc>> {
         info!("Downloading font: {}", self.0);
-        let data = BytesFromUrl::new(&self.0, true)?.get(&assets).await?;
+        let data = BytesFromUrl::parse_url(&self.0, true)?.get(&assets).await?;
         let brush = FontArc::try_from_vec(data.deref().clone()).context("Failed to parse font")?;
         Ok(Arc::new(brush))
     }
