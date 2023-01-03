@@ -2,7 +2,7 @@ use std::{any::type_name, borrow::Cow, fmt, io::Cursor, sync::Arc};
 
 use async_trait::async_trait;
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, asset_url::ContentUrl, download_asset::{AssetError, AssetResult, BytesFromUrl}, CowStr
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, asset_url::AbsAssetUrl, download_asset::{AssetError, AssetResult, BytesFromUrl}, CowStr
 };
 use futures::future::join_all;
 use image::{DynamicImage, ImageFormat, Rgba, RgbaImage};
@@ -11,7 +11,7 @@ use crate::texture::Texture;
 
 #[derive(Debug, Clone)]
 pub struct ImageFromUrl {
-    pub url: ContentUrl,
+    pub url: AbsAssetUrl,
 }
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<DynamicImage>, AssetError>> for ImageFromUrl {
@@ -22,7 +22,7 @@ impl AsyncAssetKey<Result<Arc<DynamicImage>, AssetError>> for ImageFromUrl {
 
 #[derive(Debug, Clone)]
 pub struct Rgba8ImageFromUrl {
-    pub url: ContentUrl,
+    pub url: AbsAssetUrl,
 }
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<image::RgbaImage>, AssetError>> for Rgba8ImageFromUrl {
@@ -31,7 +31,7 @@ impl AsyncAssetKey<Result<Arc<image::RgbaImage>, AssetError>> for Rgba8ImageFrom
     }
 }
 
-async fn image_from_url(assets: AssetCache, url: ContentUrl) -> Result<DynamicImage, AssetError> {
+async fn image_from_url(assets: AssetCache, url: AbsAssetUrl) -> Result<DynamicImage, AssetError> {
     let data = BytesFromUrl::new(url.clone(), true).get(&assets).await?;
 
     let extension = url.extension().context("No extension")?;
@@ -45,7 +45,7 @@ async fn image_from_url(assets: AssetCache, url: ContentUrl) -> Result<DynamicIm
 
 #[derive(Debug, Clone)]
 pub struct TextureFromUrl {
-    pub url: ContentUrl,
+    pub url: AbsAssetUrl,
     pub format: wgpu::TextureFormat,
 }
 #[async_trait]
@@ -128,8 +128,8 @@ impl std::fmt::Debug for Rgba8ImageInMemory {
 
 #[derive(Debug, Clone)]
 pub struct SplitImageFromUrl {
-    pub color: ContentUrl,
-    pub alpha: ContentUrl,
+    pub color: AbsAssetUrl,
+    pub alpha: AbsAssetUrl,
 }
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<image::RgbaImage>, AssetError>> for SplitImageFromUrl {
@@ -149,8 +149,8 @@ impl AsyncAssetKey<Result<Arc<image::RgbaImage>, AssetError>> for SplitImageFrom
 
 #[derive(Debug, Clone)]
 pub struct SplitTextureFromUrl {
-    pub color: ContentUrl,
-    pub alpha: ContentUrl,
+    pub color: AbsAssetUrl,
+    pub alpha: AbsAssetUrl,
     pub format: wgpu::TextureFormat,
 }
 #[async_trait]
@@ -247,7 +247,7 @@ where
 
 #[derive(Debug, Clone)]
 pub struct TextureArrayFromUrls {
-    pub urls: Vec<ContentUrl>,
+    pub urls: Vec<AbsAssetUrl>,
     pub format: wgpu::TextureFormat,
     pub label: Option<String>,
 }

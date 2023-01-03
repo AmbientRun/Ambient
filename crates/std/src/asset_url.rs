@@ -16,18 +16,18 @@ use crate::{
 /// It's got a custom Debug implementation which just prints the url,
 /// which makes it useful in asset keys
 #[derive(Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
-pub struct ContentUrl(pub Url);
-impl std::fmt::Debug for ContentUrl {
+pub struct AbsAssetUrl(pub Url);
+impl std::fmt::Debug for AbsAssetUrl {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0.as_str())
     }
 }
-impl std::fmt::Display for ContentUrl {
+impl std::fmt::Display for AbsAssetUrl {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0.as_str())
     }
 }
-impl ContentUrl {
+impl AbsAssetUrl {
     /// This will also resolve relative local paths
     pub fn parse(url: impl AsRef<str>) -> anyhow::Result<Self> {
         match Url::parse(url.as_ref()) {
@@ -59,10 +59,10 @@ impl ContentUrl {
         }
     }
     pub fn resolve(&self, url_or_relative_path: impl AsRef<str>) -> Result<Self, url::ParseError> {
-        ContentUrlOrRelativePath::parse(url_or_relative_path)?.resolve(self)
+        AbsAssetUrlOrRelativePath::parse(url_or_relative_path)?.resolve(self)
     }
 }
-impl From<PathBuf> for ContentUrl {
+impl From<PathBuf> for AbsAssetUrl {
     fn from(value: PathBuf) -> Self {
         let value = if value.is_absolute() { value } else { std::env::current_dir().unwrap().join(value) };
         Self(Url::from_file_path(value).unwrap())
@@ -71,11 +71,11 @@ impl From<PathBuf> for ContentUrl {
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
 #[serde(untagged)]
-pub enum ContentUrlOrRelativePath {
+pub enum AbsAssetUrlOrRelativePath {
     Url(Url),
     RelativePath(String),
 }
-impl ContentUrlOrRelativePath {
+impl AbsAssetUrlOrRelativePath {
     pub fn parse(url_or_relative_path: impl AsRef<str>) -> Result<Self, url::ParseError> {
         match Url::parse(url_or_relative_path.as_ref()) {
             Ok(url) => Ok(Self::Url(url)),
@@ -83,25 +83,25 @@ impl ContentUrlOrRelativePath {
             Err(err) => Err(err),
         }
     }
-    pub fn resolve(&self, base_url: &ContentUrl) -> Result<ContentUrl, url::ParseError> {
+    pub fn resolve(&self, base_url: &AbsAssetUrl) -> Result<AbsAssetUrl, url::ParseError> {
         match self {
-            ContentUrlOrRelativePath::Url(url) => Ok(ContentUrl(url.clone())),
-            ContentUrlOrRelativePath::RelativePath(path) => Ok(ContentUrl(base_url.0.join(path)?)),
+            AbsAssetUrlOrRelativePath::Url(url) => Ok(AbsAssetUrl(url.clone())),
+            AbsAssetUrlOrRelativePath::RelativePath(path) => Ok(AbsAssetUrl(base_url.0.join(path)?)),
         }
     }
     pub fn path(&self) -> &str {
         match self {
-            ContentUrlOrRelativePath::Url(url) => url.path(),
-            ContentUrlOrRelativePath::RelativePath(path) => path,
+            AbsAssetUrlOrRelativePath::Url(url) => url.path(),
+            AbsAssetUrlOrRelativePath::RelativePath(path) => path,
         }
     }
 }
-impl From<RelativePathBuf> for ContentUrlOrRelativePath {
+impl From<RelativePathBuf> for AbsAssetUrlOrRelativePath {
     fn from(value: RelativePathBuf) -> Self {
         Self::RelativePath(value.to_string())
     }
 }
-impl std::fmt::Debug for ContentUrlOrRelativePath {
+impl std::fmt::Debug for AbsAssetUrlOrRelativePath {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Url(arg0) => write!(f, "{}", arg0),
@@ -109,7 +109,7 @@ impl std::fmt::Debug for ContentUrlOrRelativePath {
         }
     }
 }
-impl std::fmt::Display for ContentUrlOrRelativePath {
+impl std::fmt::Display for AbsAssetUrlOrRelativePath {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Url(arg0) => write!(f, "{}", arg0),

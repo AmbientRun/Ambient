@@ -5,7 +5,7 @@ use elements_gpu::{
     gpu::{Gpu, GpuKey}, shader_module::{BindGroupDesc, ShaderModule}, std_assets::{get_default_sampler, DefaultNormalMapViewKey, PixelTextureViewKey}, texture::{Texture, TextureView}, texture_loaders::{SplitTextureFromUrl, TextureFromUrl}
 };
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AssetUrl, ContentUrl, ContentUrlOrRelativePath, ImageAssetType}, download_asset::AssetError, include_file
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AbsAssetUrlOrRelativePath, AssetUrl, ImageAssetType}, download_asset::AssetError, include_file
 };
 use glam::Vec4;
 use serde::{Deserialize, Serialize};
@@ -235,10 +235,10 @@ pub struct PbrMaterialFromUrl {
     pub name: Option<String>,
     pub source: Option<String>,
 
-    pub base_color: Option<ContentUrlOrRelativePath>,
-    pub opacity: Option<ContentUrlOrRelativePath>,
-    pub normalmap: Option<ContentUrlOrRelativePath>,
-    pub metallic_roughness: Option<ContentUrlOrRelativePath>,
+    pub base_color: Option<AbsAssetUrlOrRelativePath>,
+    pub opacity: Option<AbsAssetUrlOrRelativePath>,
+    pub normalmap: Option<AbsAssetUrlOrRelativePath>,
+    pub metallic_roughness: Option<AbsAssetUrlOrRelativePath>,
 
     pub base_color_factor: Option<Vec4>,
     pub emissive_factor: Option<Vec4>,
@@ -251,7 +251,7 @@ pub struct PbrMaterialFromUrl {
     pub roughness: f32,
 }
 impl PbrMaterialFromUrl {
-    pub fn resolve(&self, base_url: &ContentUrl) -> anyhow::Result<PbrMaterialFromResolvedUrl> {
+    pub fn resolve(&self, base_url: &AbsAssetUrl) -> anyhow::Result<PbrMaterialFromResolvedUrl> {
         Ok(PbrMaterialFromResolvedUrl {
             name: self.name.clone(),
             source: self.source.clone(),
@@ -277,10 +277,10 @@ pub struct PbrMaterialFromResolvedUrl {
     pub name: Option<String>,
     pub source: Option<String>,
 
-    pub base_color: Option<ContentUrl>,
-    pub opacity: Option<ContentUrl>,
-    pub normalmap: Option<ContentUrl>,
-    pub metallic_roughness: Option<ContentUrl>,
+    pub base_color: Option<AbsAssetUrl>,
+    pub opacity: Option<AbsAssetUrl>,
+    pub normalmap: Option<AbsAssetUrl>,
+    pub metallic_roughness: Option<AbsAssetUrl>,
 
     pub base_color_factor: Option<Vec4>,
     pub emissive_factor: Option<Vec4>,

@@ -9,7 +9,7 @@ use elements_core::{
 use elements_ecs::World;
 use elements_model::{model_skins, Model, ModelSkin};
 use elements_renderer::skinning;
-use elements_std::{asset_cache::AssetCache, asset_url::ContentUrl};
+use elements_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use fbxcel::tree::{
     any::AnyTree, v7400::{NodeHandle, Tree}
 };
@@ -28,7 +28,7 @@ mod material;
 mod mesh;
 mod model;
 
-pub async fn import_url(assets: &AssetCache, url: &ContentUrl, asset_crate: &mut ModelCrate) -> anyhow::Result<RelativePathBuf> {
+pub async fn import_url(assets: &AssetCache, url: &AbsAssetUrl, asset_crate: &mut ModelCrate) -> anyhow::Result<RelativePathBuf> {
     let content = download_bytes(assets, url).await?;
     let cursor = Cursor::new(&*content);
     import_from_fbx_reader(asset_crate, url.to_string(), true, cursor)
@@ -132,7 +132,7 @@ pub struct FbxDoc {
     pub poses: HashMap<i64, FbxPose>,
 }
 impl FbxDoc {
-    pub async fn from_url(assets: &AssetCache, url: &ContentUrl) -> anyhow::Result<Self> {
+    pub async fn from_url(assets: &AssetCache, url: &AbsAssetUrl) -> anyhow::Result<Self> {
         let content = download_bytes(assets, url).await?;
         let cursor = Cursor::new(&*content);
         match AnyTree::from_seekable_reader(cursor).context("Failed to load tree")? {

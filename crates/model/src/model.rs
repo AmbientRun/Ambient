@@ -10,7 +10,7 @@ use elements_renderer::{
     cast_shadows, color, gpu_primitives, lod::cpu_lod_visible, primitives, skinning::{self, Skin, SkinsBuffer, SkinsBufferKey}
 };
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::ContentUrl, download_asset::AssetError, shapes::AABB
+    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::AbsAssetUrl, download_asset::AssetError, shapes::AABB
 };
 use futures::future::join_all;
 use glam::{Mat4, Vec3, Vec4};
@@ -65,7 +65,7 @@ impl Model {
     pub fn from_slice(content: &[u8]) -> anyhow::Result<Self> {
         Ok(Self(World::from_slice(content)?))
     }
-    pub async fn load(&mut self, assets: &AssetCache, model_url: &ContentUrl) -> anyhow::Result<()> {
+    pub async fn load(&mut self, assets: &AssetCache, model_url: &AbsAssetUrl) -> anyhow::Result<()> {
         for (id, prims) in query(pbr_renderer_primitives_from_url()).collect_cloned(&self.0, None) {
             self.0.remove_component(id, pbr_renderer_primitives_from_url()).unwrap();
             let prims =

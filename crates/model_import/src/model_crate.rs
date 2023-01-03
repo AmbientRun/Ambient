@@ -16,7 +16,7 @@ use elements_renderer::{
     double_sided, lod::{gpu_lod, lod_cutoffs}, materials::pbr_material::PbrMaterialFromUrl
 };
 use elements_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt}, asset_url::{AssetUrl, ContentUrl}, download_asset::AssetsCacheDir, mesh::Mesh, shapes::AABB
+    asset_cache::{AssetCache, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetUrl}, download_asset::AssetsCacheDir, mesh::Mesh, shapes::AABB
 };
 use futures::FutureExt;
 use glam::{Mat4, Vec3};
@@ -115,7 +115,7 @@ impl ModelCrate {
             colliders: AssetMap::new("colliders", "json", |v| serde_json::to_vec(v).unwrap()),
         }
     }
-    pub async fn local_import(assets: &AssetCache, url: &ContentUrl, normalize: bool, force_assimp: bool) -> anyhow::Result<Model> {
+    pub async fn local_import(assets: &AssetCache, url: &AbsAssetUrl, normalize: bool, force_assimp: bool) -> anyhow::Result<Model> {
         let cache_path = AssetsCacheDir.get(assets).join("pipelines").join(&url.relative_cache_path());
         let mut model = Self::new();
         model
@@ -199,7 +199,7 @@ impl ModelCrate {
     pub async fn import(
         &mut self,
         assets: &AssetCache,
-        url: &ContentUrl,
+        url: &AbsAssetUrl,
         normalize: bool,
         force_assimp: bool,
         resolve_texture: TextureResolver,

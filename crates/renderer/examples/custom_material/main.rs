@@ -12,7 +12,7 @@ use elements_renderer::{
     gpu_primitives, material, materials::flat_material::{get_flat_shader, FlatMaterial}, primitives, renderer_shader, Material, MaterialShader, SharedMaterial, StandardShaderKey, MATERIAL_BIND_GROUP
 };
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::ContentUrl, math::SphericalCoords
+    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::AbsAssetUrl, math::SphericalCoords
 };
 use glam::*;
 use wgpu::BindGroup;
@@ -68,7 +68,7 @@ async fn init(world: &mut World) {
     let assets = world.resource(asset_cache()).clone();
     let custom_shader = StandardShaderKey { material_shader: CustomMaterialShaderKey.get(&assets), lit: true }.get(&assets);
 
-    let model = ModelCrate::local_import(&assets, &ContentUrl::parse("elements/assets/Soldier.glb").unwrap(), true, false).await.unwrap();
+    let model = ModelCrate::local_import(&assets, &AbsAssetUrl::parse("elements/assets/Soldier.glb").unwrap(), true, false).await.unwrap();
     let entity = model.spawn(world, &Default::default());
     set_component_recursive(world, entity, renderer_shader(), custom_shader);
     set_component_recursive(world, entity, material(), SharedMaterial::new(CustomMaterial::new(assets.clone())));

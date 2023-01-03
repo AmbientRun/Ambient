@@ -8,7 +8,7 @@ use elements_element::{element_component, Element, ElementComponentExt, Hooks};
 use elements_gpu::{mesh_buffer::GpuMesh, texture::Texture};
 use elements_renderer::{color, gpu_primitives, material, primitives, renderer_shader, SharedMaterial};
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, asset_url::ContentUrl, download_asset::{AssetError, AssetResult, BytesFromUrl}, mesh::*, shapes::AABB, CowStr
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, asset_url::AbsAssetUrl, download_asset::{AssetError, AssetResult, BytesFromUrl}, mesh::*, shapes::AABB, CowStr
 };
 use glam::*;
 use glyph_brush::{
@@ -115,7 +115,7 @@ impl Default for FontStyle {
 #[derive(Debug, Clone)]
 pub enum FontFamily {
     Default,
-    Custom(ContentUrl),
+    Custom(AbsAssetUrl),
     FontAwesome { solid: bool },
     SourceSansPro,
 }
@@ -401,7 +401,7 @@ fn mesh_from_glyph_vertices(vertices: Vec<GlyphVertex>) -> Mesh {
 }
 
 #[derive(Debug, Clone)]
-pub struct FontFromUrl(ContentUrl);
+pub struct FontFromUrl(AbsAssetUrl);
 
 #[async_trait]
 impl AsyncAssetKey<AssetResult<Arc<FontArc>>> for FontFromUrl {

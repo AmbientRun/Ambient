@@ -9,7 +9,7 @@ use elements_ecs::{components, query, EntityData, EntityId, SystemGroup, World};
 use elements_editor_derive::ElementEditor;
 use elements_model::model_def;
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AssetUrl, ColliderAssetType, ContentUrl, ModelAssetType}, download_asset::{AssetError, JsonFromUrl}, events::EventDispatcher
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetUrl, ColliderAssetType, ModelAssetType}, download_asset::{AssetError, JsonFromUrl}, events::EventDispatcher
 };
 use futures::future::try_join_all;
 use glam::{vec3, Mat4, Vec3};
@@ -299,7 +299,7 @@ impl ColliderDef {
             })),
             ColliderDef::Asset { collider } => {
                 let collider_from_urls: Arc<ColliderFromUrls> = JsonFromUrl::parse_url(&collider.url, true)?.get(&assets).await?;
-                let collider = collider_from_urls.resolve(&ContentUrl::parse(&collider.url)?)?.get(&assets).await?;
+                let collider = collider_from_urls.resolve(&AbsAssetUrl::parse(&collider.url)?)?.get(&assets).await?;
 
                 Ok(Box::new(move |physics, scale| {
                     (
@@ -325,7 +325,7 @@ pub struct ColliderFromUrls {
     pub convex: Vec<(Mat4, PhysxGeometryFromUrl)>,
 }
 impl ColliderFromUrls {
-    pub fn resolve(&self, base_url: &ContentUrl) -> anyhow::Result<ColliderFromResolvedUrls> {
+    pub fn resolve(&self, base_url: &AbsAssetUrl) -> anyhow::Result<ColliderFromResolvedUrls> {
         Ok(ColliderFromResolvedUrls {
             concave: self.concave.iter().map(|(mat, url)| Ok((*mat, url.resolve(base_url)?))).collect::<anyhow::Result<Vec<_>>>()?,
             convex: self.convex.iter().map(|(mat, url)| Ok((*mat, url.resolve(base_url)?))).collect::<anyhow::Result<Vec<_>>>()?,

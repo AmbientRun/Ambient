@@ -6,7 +6,7 @@ use elements_ecs::World;
 use elements_element::ElementComponentExt;
 use elements_model_import::model_crate::ModelCrate;
 use elements_primitives::Quad;
-use elements_std::{asset_url::ContentUrl, math::SphericalCoords};
+use elements_std::{asset_url::AbsAssetUrl, math::SphericalCoords};
 use glam::*;
 
 async fn init(world: &mut World) {
@@ -16,7 +16,7 @@ async fn init(world: &mut World) {
 
     let model = ModelCrate::local_import(
         &assets,
-        &ContentUrl::parse("https://dims-content.fra1.digitaloceanspaces.com/assets/models/MixamoCharacters/Vanguard.glb").unwrap(),
+        &AbsAssetUrl::parse("https://dims-content.fra1.digitaloceanspaces.com/assets/models/MixamoCharacters/Vanguard.glb").unwrap(),
         true,
         false,
     )

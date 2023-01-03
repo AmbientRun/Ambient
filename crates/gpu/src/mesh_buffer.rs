@@ -6,7 +6,7 @@ use std::{
 
 use async_trait::async_trait;
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::ContentUrl, download_asset::{AssetResult, MeshFromUrl}, mesh::Mesh
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::AbsAssetUrl, download_asset::{AssetResult, MeshFromUrl}, mesh::Mesh
 };
 use glam::{UVec4, Vec2, Vec4};
 use itertools::Itertools;
@@ -67,12 +67,12 @@ impl SyncAssetKey<Arc<Mutex<MeshBuffer>>> for MeshBufferKey {
 
 #[derive(Clone, Debug)]
 pub struct GpuMeshFromUrl {
-    pub url: ContentUrl,
+    pub url: AbsAssetUrl,
     pub cache_on_disk: bool,
 }
 impl GpuMeshFromUrl {
     pub fn new(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
-        Ok(Self { url: ContentUrl::parse(url)?, cache_on_disk })
+        Ok(Self { url: AbsAssetUrl::parse(url)?, cache_on_disk })
     }
 }
 #[async_trait]

@@ -11,7 +11,7 @@ use elements_renderer::{
     color, gpu_primitives, material, materials::pbr_material::{get_pbr_shader_unlit, PbrMaterial, PbrMaterialConfig, PbrMaterialParams}, primitives, renderer_shader, SharedMaterial
 };
 use elements_std::{
-    asset_cache::{AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::ContentUrl, CowStr
+    asset_cache::{AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::AbsAssetUrl, CowStr
 };
 use glam::*;
 
@@ -104,7 +104,7 @@ impl ElementComponent for ImageFromUrl {
             .use_async(|w| {
                 let assets = w.resource(asset_cache()).clone();
                 async move {
-                    TextureFromUrl { url: ContentUrl::parse(url)?, format: wgpu::TextureFormat::Rgba8UnormSrgb }
+                    TextureFromUrl { url: AbsAssetUrl::parse(url)?, format: wgpu::TextureFormat::Rgba8UnormSrgb }
                         .get(&assets)
                         .await
                         .map(|x| Arc::new(x.create_view(&Default::default())))

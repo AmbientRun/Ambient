@@ -8,7 +8,7 @@ use elements_core::{asset_cache, hierarchy::children, time};
 use elements_ecs::{components, query, EntityId, SystemGroup};
 use elements_model::{animation_binder, model, model_def, ModelDef};
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKeyExt}, asset_url::{AnimationAssetType, AssetUrl, ContentUrl, ModelAssetType}
+    asset_cache::{AssetCache, AsyncAssetKeyExt}, asset_url::{AbsAssetUrl, AnimationAssetType, AssetUrl, ModelAssetType}
 };
 use serde::{Deserialize, Serialize};
 
@@ -172,7 +172,7 @@ pub fn animation_systems() -> SystemGroup {
                                         .add_component(
                                             id,
                                             animation_apply_base_pose(),
-                                            ModelDef(ContentUrl::parse(asset_crate.model().url).unwrap()),
+                                            ModelDef(AbsAssetUrl::parse(asset_crate.model().url).unwrap()),
                                         )
                                         .unwrap();
                                 }

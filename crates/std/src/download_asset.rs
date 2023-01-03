@@ -13,7 +13,7 @@ use tokio::sync::Semaphore;
 use yaml_rust::YamlLoader;
 
 use crate::{
-    asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::ContentUrl, mesh::Mesh
+    asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::AbsAssetUrl, mesh::Mesh
 };
 
 pub type AssetResult<T> = Result<T, AssetError>;
@@ -100,15 +100,15 @@ pub async fn download<T, F: Future<Output = anyhow::Result<T>>>(
 
 #[derive(Clone, Debug)]
 pub struct BytesFromUrl {
-    pub url: ContentUrl,
+    pub url: AbsAssetUrl,
     pub cache_on_disk: bool,
 }
 impl BytesFromUrl {
-    pub fn new(url: ContentUrl, cache_on_disk: bool) -> Self {
+    pub fn new(url: AbsAssetUrl, cache_on_disk: bool) -> Self {
         Self { url, cache_on_disk }
     }
     pub fn parse_url(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
-        Ok(Self { url: ContentUrl::parse(url)?, cache_on_disk })
+        Ok(Self { url: AbsAssetUrl::parse(url)?, cache_on_disk })
     }
 }
 #[async_trait]
@@ -137,11 +137,11 @@ impl AsyncAssetKey<AssetResult<Arc<Vec<u8>>>> for BytesFromUrl {
 /// Get the local cache file location of a resource, and ensure the resource is downloaded to that cache file
 #[derive(Clone, Debug)]
 pub struct BytesFromUrlCachedPath {
-    pub url: ContentUrl,
+    pub url: AbsAssetUrl,
 }
 impl BytesFromUrlCachedPath {
     pub fn parse_url(url: impl AsRef<str>) -> anyhow::Result<Self> {
-        Ok(Self { url: ContentUrl::parse(url)? })
+        Ok(Self { url: AbsAssetUrl::parse(url)? })
     }
 }
 #[async_trait]
@@ -202,7 +202,7 @@ impl SyncAssetKey<Arc<Semaphore>> for DownloadSemaphore {
 }
 
 pub struct JsonFromUrl<T> {
-    url: ContentUrl,
+    url: AbsAssetUrl,
     cache_on_disk: bool,
     _type: PhantomData<T>,
 }
@@ -214,11 +214,11 @@ impl<T> Clone for JsonFromUrl<T> {
 }
 
 impl<T> JsonFromUrl<T> {
-    pub fn new(url: ContentUrl, cache_on_disk: bool) -> Self {
+    pub fn new(url: AbsAssetUrl, cache_on_disk: bool) -> Self {
         Self { url, cache_on_disk, _type: PhantomData }
     }
     pub fn parse_url(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
-        Ok(Self { url: ContentUrl::parse(url)?, cache_on_disk, _type: PhantomData })
+        Ok(Self { url: AbsAssetUrl::parse(url)?, cache_on_disk, _type: PhantomData })
     }
 }
 impl<T> std::fmt::Debug for JsonFromUrl<T> {
@@ -236,12 +236,12 @@ impl<T: DeserializeOwned + Sync + Send + 'static> AsyncAssetKey<AssetResult<Arc<
 
 #[derive(Clone, Debug)]
 pub struct YamlFromUrl {
-    pub url: ContentUrl,
+    pub url: AbsAssetUrl,
     pub cache_on_disk: bool,
 }
 impl YamlFromUrl {
     pub fn parse_url(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
-        Ok(Self { url: ContentUrl::parse(url)?, cache_on_disk })
+        Ok(Self { url: AbsAssetUrl::parse(url)?, cache_on_disk })
     }
 }
 #[async_trait]
@@ -259,7 +259,7 @@ impl AsyncAssetKey<AssetResult<Arc<Vec<yaml_rust::Yaml>>>> for YamlFromUrl {
 
 #[derive(Debug)]
 pub struct BincodeFromUrl<T> {
-    pub url: ContentUrl,
+    pub url: AbsAssetUrl,
     pub cache_on_disk: bool,
     type_: PhantomData<T>,
 }
@@ -270,11 +270,11 @@ impl<T> Clone for BincodeFromUrl<T> {
     }
 }
 impl<T> BincodeFromUrl<T> {
-    pub fn new(url: ContentUrl, cache_on_disk: bool) -> Self {
+    pub fn new(url: AbsAssetUrl, cache_on_disk: bool) -> Self {
         Self { url, cache_on_disk, type_: PhantomData }
     }
     pub fn parse_url(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
-        Ok(Self { url: ContentUrl::parse(url)?, cache_on_disk, type_: PhantomData })
+        Ok(Self { url: AbsAssetUrl::parse(url)?, cache_on_disk, type_: PhantomData })
     }
 }
 #[async_trait]

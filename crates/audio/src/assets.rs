@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use async_trait::*;
 use elements_std::{
-    asset_cache::{AsyncAssetKey, AsyncAssetKeyExt}, asset_url::{AssetType, ContentUrl, GetAssetType}, download_asset::BytesFromUrl
+    asset_cache::{AsyncAssetKey, AsyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetType, GetAssetType}, download_asset::BytesFromUrl
 };
 
 use crate::{
@@ -10,7 +10,7 @@ use crate::{
 };
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct AudioFromUrl {
-    pub url: ContentUrl,
+    pub url: AbsAssetUrl,
 }
 
 #[async_trait]
@@ -43,7 +43,7 @@ impl AsyncAssetKey<Result<Arc<Track>, Arc<Error>>> for AudioFromUrl {
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct VorbisFromUrl {
-    pub url: ContentUrl,
+    pub url: AbsAssetUrl,
 }
 
 #[async_trait]

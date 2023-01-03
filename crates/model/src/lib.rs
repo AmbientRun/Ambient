@@ -12,7 +12,7 @@ use elements_renderer::{
     }, primitives, RenderPrimitive, StandardShaderKey
 };
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::{ContentUrl, ContentUrlOrRelativePath}, download_asset::{AssetError, BytesFromUrl, JsonFromUrl}, log_result, math::Line
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AbsAssetUrlOrRelativePath}, download_asset::{AssetError, BytesFromUrl, JsonFromUrl}, log_result, math::Line
 };
 use futures::StreamExt;
 use glam::{vec4, Vec3};
@@ -35,7 +35,7 @@ components!("model", {
 
     model: Arc<Model>,
     model_def: ModelDef,
-    model_url: ContentUrlOrRelativePath,
+    model_url: AbsAssetUrlOrRelativePath,
 
     pbr_renderer_primitives_from_url: Vec<PbrRenderPrimitiveFromUrl>,
     model_animatable: bool,
@@ -199,10 +199,10 @@ fn remove_model(world: &mut World, entity: EntityId) {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ModelDef(pub ContentUrl);
+pub struct ModelDef(pub AbsAssetUrl);
 impl ModelDef {
     pub fn new(url: impl AsRef<str>) -> anyhow::Result<Self> {
-        Ok(Self(ContentUrl::parse(url)?))
+        Ok(Self(AbsAssetUrl::parse(url)?))
     }
 }
 #[async_trait]
@@ -228,12 +228,12 @@ impl SyncAssetKey<Arc<Semaphore>> for ModelLoadSemaphore {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct PbrRenderPrimitiveFromUrl {
-    pub mesh: ContentUrlOrRelativePath,
-    pub material: Option<ContentUrlOrRelativePath>,
+    pub mesh: AbsAssetUrlOrRelativePath,
+    pub material: Option<AbsAssetUrlOrRelativePath>,
     pub lod: usize,
 }
 impl PbrRenderPrimitiveFromUrl {
-    pub fn resolve(&self, base_url: &ContentUrl) -> anyhow::Result<PbrRenderPrimitiveFromResolvedUrl> {
+    pub fn resolve(&self, base_url: &AbsAssetUrl) -> anyhow::Result<PbrRenderPrimitiveFromResolvedUrl> {
         Ok(PbrRenderPrimitiveFromResolvedUrl {
             mesh: self.mesh.resolve(base_url)?,
             material: if let Some(x) = &self.material { Some(x.resolve(base_url)?) } else { None },
@@ -243,8 +243,8 @@ impl PbrRenderPrimitiveFromUrl {
 }
 #[derive(Debug, Clone)]
 pub struct PbrRenderPrimitiveFromResolvedUrl {
-    pub mesh: ContentUrl,
-    pub material: Option<ContentUrl>,
+    pub mesh: AbsAssetUrl,
+    pub material: Option<AbsAssetUrl>,
     pub lod: usize,
 }
 #[async_trait]

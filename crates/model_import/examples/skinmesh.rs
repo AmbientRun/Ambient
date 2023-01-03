@@ -8,7 +8,7 @@ use elements_element::ElementComponentExt;
 use elements_model_import::model_crate::ModelCrate;
 use elements_primitives::{Cube, Quad};
 use elements_renderer::color;
-use elements_std::{asset_url::ContentUrl, math::SphericalCoords};
+use elements_std::{asset_url::AbsAssetUrl, math::SphericalCoords};
 use glam::*;
 use winit::event::{Event, VirtualKeyCode, WindowEvent};
 
@@ -21,7 +21,7 @@ async fn init(world: &mut World) -> EntityId {
 
     let model = ModelCrate::local_import(
         &assets,
-        &ContentUrl::parse("https://playdims.com/api/v1/assetdb/packs/OzYr8KHH0OKtFamZLB8U/content/Vanguard By T. Choonyung.fbx").unwrap(),
+        &AbsAssetUrl::parse("https://playdims.com/api/v1/assetdb/packs/OzYr8KHH0OKtFamZLB8U/content/Vanguard By T. Choonyung.fbx").unwrap(),
         true,
         false,
     )

@@ -6,7 +6,7 @@ use elements_core::{
 use elements_ecs::{EntityData, EntityId, World};
 use elements_model::{pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl};
 use elements_renderer::materials::pbr_material::PbrMaterialFromUrl;
-use elements_std::{asset_cache::AssetCache, asset_url::ContentUrl, mesh::Mesh};
+use elements_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl, mesh::Mesh};
 use glam::{vec2, vec3, vec4, Mat4};
 use itertools::Itertools;
 use relative_path::{RelativePath, RelativePathBuf};
@@ -18,7 +18,7 @@ use crate::{dotdot_path, download_bytes, model_crate::ModelCrate, TextureResolve
 
 pub async fn import_url(
     assets: &AssetCache,
-    url: &ContentUrl,
+    url: &AbsAssetUrl,
     model_crate: &mut ModelCrate,
     resolve_texture: TextureResolver,
 ) -> anyhow::Result<RelativePathBuf> {

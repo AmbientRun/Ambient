@@ -9,7 +9,7 @@ use elements_editor_derive::ElementEditor;
 use elements_model::Model;
 use elements_renderer::materials::pbr_material::PbrMaterialFromUrl;
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::ContentUrl, download_asset::{download, AssetResult, AssetsCacheDir}
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::AbsAssetUrl, download_asset::{download, AssetResult, AssetsCacheDir}
 };
 use futures::FutureExt;
 use glam::{Mat4, Vec3, Vec4};
@@ -33,10 +33,10 @@ impl ModelImportPipeline {
     pub fn new() -> Self {
         Self::default()
     }
-    pub fn model(url: ContentUrl) -> Self {
+    pub fn model(url: AbsAssetUrl) -> Self {
         ModelImportPipeline::new().add_step(ModelImportTransform::ImportModelFromUrl { url, normalize: true, force_assimp: false })
     }
-    pub fn model_raw(url: ContentUrl) -> Self {
+    pub fn model_raw(url: AbsAssetUrl) -> Self {
         ModelImportPipeline::new().add_step(ModelImportTransform::ImportModelFromUrl { url, normalize: false, force_assimp: false })
     }
     pub fn add_step(mut self, step: ModelImportTransform) -> Self {
@@ -103,9 +103,9 @@ impl Default for MaterialFilter {
 
 #[derive(Clone, Debug)]
 pub enum ModelImportTransform {
-    ImportModelFromUrl { url: ContentUrl, normalize: bool, force_assimp: bool },
+    ImportModelFromUrl { url: AbsAssetUrl, normalize: bool, force_assimp: bool },
     MergeMeshLods { lods: Vec<ModelImportPipeline>, lod_cutoffs: Option<Vec<f32>> },
-    MergeUnityMeshLods { url: ContentUrl, lod_cutoffs: Option<Vec<f32>> },
+    MergeUnityMeshLods { url: AbsAssetUrl, lod_cutoffs: Option<Vec<f32>> },
     SetName { name: String },
     Transform(ModelTransform),
     OverrideMaterial { filter: MaterialFilter, material: Box<PbrMaterialFromUrl> },
@@ -292,7 +292,7 @@ impl Default for ModelTextureSize {
 //     }
 // }
 
-pub async fn download_bytes(assets: &AssetCache, url: &ContentUrl) -> anyhow::Result<Vec<u8>> {
+pub async fn download_bytes(assets: &AssetCache, url: &AbsAssetUrl) -> anyhow::Result<Vec<u8>> {
     if let Some(path) = url.to_file_path()? {
         Ok(tokio::fs::read(path).await?)
     } else {

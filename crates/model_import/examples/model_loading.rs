@@ -9,7 +9,7 @@ use elements_model_import::{MaterialFilter, ModelImportPipeline, ModelImportTran
 use elements_primitives::{Cube, Quad};
 use elements_renderer::{color, materials::pbr_material::PbrMaterialFromUrl};
 use elements_std::{
-    asset_cache::AsyncAssetKeyExt, asset_url::{ContentUrl, ContentUrlOrRelativePath}, math::SphericalCoords
+    asset_cache::AsyncAssetKeyExt, asset_url::{AbsAssetUrl, AbsAssetUrlOrRelativePath}, math::SphericalCoords
 };
 use glam::*;
 use reqwest::Url;
@@ -26,13 +26,13 @@ async fn init(world: &mut World) {
 
             ModelImportPipeline::new()
                 .add_step(ModelImportTransform::MergeUnityMeshLods {
-                    url: ContentUrl::parse(format!("{fir_base}Fir_02_Small.FBX")).unwrap(),
+                    url: AbsAssetUrl::parse(format!("{fir_base}Fir_02_Small.FBX")).unwrap(),
                     lod_cutoffs: None,
                 })
                 .add_step(ModelImportTransform::OverrideMaterial {
                     filter: MaterialFilter::by_name("M_leaves_Fir"),
                     material: Box::new(PbrMaterialFromUrl {
-                        base_color: Some(ContentUrlOrRelativePath::parse(format!("{fir_base}Textures/T_Fir_leaves_BC_T.TGA")).unwrap()),
+                        base_color: Some(AbsAssetUrlOrRelativePath::parse(format!("{fir_base}Textures/T_Fir_leaves_BC_T.TGA")).unwrap()),
                         ..Default::default()
                     }),
                 })
@@ -40,16 +40,18 @@ async fn init(world: &mut World) {
         {
             let grass_base = "https://dims-content.fra1.digitaloceanspaces.com/assets/models/Quixel/Grass_vlkhcbxia_2K_3dplant_ms/";
             let grass_atlas = PbrMaterialFromUrl {
-                base_color: Some(ContentUrlOrRelativePath::parse(format!("{grass_base}Textures/Atlas/vlkhcbxia_2K_Albedo.jpg")).unwrap()),
-                opacity: Some(ContentUrlOrRelativePath::parse(format!("{grass_base}Textures/Atlas/vlkhcbxia_2K_Opacity.jpg")).unwrap()),
+                base_color: Some(AbsAssetUrlOrRelativePath::parse(format!("{grass_base}Textures/Atlas/vlkhcbxia_2K_Albedo.jpg")).unwrap()),
+                opacity: Some(AbsAssetUrlOrRelativePath::parse(format!("{grass_base}Textures/Atlas/vlkhcbxia_2K_Opacity.jpg")).unwrap()),
                 double_sided: Some(true),
                 ..Default::default()
             };
             let grass_billboard = PbrMaterialFromUrl {
                 base_color: Some(
-                    ContentUrlOrRelativePath::parse(format!("{grass_base}Textures/Billboard/Billboard_2K_Albedo.jpg")).unwrap(),
+                    AbsAssetUrlOrRelativePath::parse(format!("{grass_base}Textures/Billboard/Billboard_2K_Albedo.jpg")).unwrap(),
                 ),
-                opacity: Some(ContentUrlOrRelativePath::parse(format!("{grass_base}Textures/Billboard/Billboard_2K_Opacity.jpg")).unwrap()),
+                opacity: Some(
+                    AbsAssetUrlOrRelativePath::parse(format!("{grass_base}Textures/Billboard/Billboard_2K_Opacity.jpg")).unwrap(),
+                ),
                 alpha_cutoff: Some(0.1),
                 double_sided: Some(true),
                 ..Default::default()
@@ -57,19 +59,19 @@ async fn init(world: &mut World) {
             ModelImportPipeline::new()
                 .add_step(ModelImportTransform::MergeMeshLods {
                     lods: vec![
-                        ModelImportPipeline::model(ContentUrl::parse(format!("{grass_base}Var11/Var11_LOD0.fbx")).unwrap()).add_step(
+                        ModelImportPipeline::model(AbsAssetUrl::parse(format!("{grass_base}Var11/Var11_LOD0.fbx")).unwrap()).add_step(
                             ModelImportTransform::OverrideMaterial { filter: MaterialFilter::All, material: Box::new(grass_atlas.clone()) },
                         ),
-                        ModelImportPipeline::model(ContentUrl::parse(format!("{grass_base}Var11/Var11_LOD1.fbx")).unwrap()).add_step(
+                        ModelImportPipeline::model(AbsAssetUrl::parse(format!("{grass_base}Var11/Var11_LOD1.fbx")).unwrap()).add_step(
                             ModelImportTransform::OverrideMaterial { filter: MaterialFilter::All, material: Box::new(grass_atlas.clone()) },
                         ),
-                        ModelImportPipeline::model(ContentUrl::parse(format!("{grass_base}Var11/Var11_LOD2.fbx")).unwrap()).add_step(
+                        ModelImportPipeline::model(AbsAssetUrl::parse(format!("{grass_base}Var11/Var11_LOD2.fbx")).unwrap()).add_step(
                             ModelImportTransform::OverrideMaterial { filter: MaterialFilter::All, material: Box::new(grass_atlas.clone()) },
                         ),
-                        ModelImportPipeline::model(ContentUrl::parse(format!("{grass_base}Var11/Var11_LOD3.fbx")).unwrap()).add_step(
+                        ModelImportPipeline::model(AbsAssetUrl::parse(format!("{grass_base}Var11/Var11_LOD3.fbx")).unwrap()).add_step(
                             ModelImportTransform::OverrideMaterial { filter: MaterialFilter::All, material: Box::new(grass_atlas) },
                         ),
-                        ModelImportPipeline::model(ContentUrl::parse(format!("{grass_base}Var11/Var11_LOD4.fbx")).unwrap()).add_step(
+                        ModelImportPipeline::model(AbsAssetUrl::parse(format!("{grass_base}Var11/Var11_LOD4.fbx")).unwrap()).add_step(
                             ModelImportTransform::OverrideMaterial { filter: MaterialFilter::All, material: Box::new(grass_billboard) },
                         ),
                     ],
@@ -78,19 +80,19 @@ async fn init(world: &mut World) {
                 .add_step(ModelImportTransform::Transform(ModelTransform::Scale { scale: 5. }))
         },
         ModelImportPipeline::model(
-            ContentUrl::parse("https://dims-content.fra1.digitaloceanspaces.com/assets/models/Misc/Soldier.glb").unwrap(),
+            AbsAssetUrl::parse("https://dims-content.fra1.digitaloceanspaces.com/assets/models/Misc/Soldier.glb").unwrap(),
         ),
         ModelImportPipeline::model_raw(
-            ContentUrl::parse("https://dims-content.fra1.digitaloceanspaces.com/assets/models/PolyHaven/Barrel_01_4k.glb").unwrap(),
+            AbsAssetUrl::parse("https://dims-content.fra1.digitaloceanspaces.com/assets/models/PolyHaven/Barrel_01_4k.glb").unwrap(),
         ),
         ModelImportPipeline::model(
-            ContentUrl::parse("https://dims-content.fra1.digitaloceanspaces.com/assets/models/PolyHaven/Barrel_01_4k.glb").unwrap(),
+            AbsAssetUrl::parse("https://dims-content.fra1.digitaloceanspaces.com/assets/models/PolyHaven/Barrel_01_4k.glb").unwrap(),
         ),
     ];
     let mut model_defs = Vec::new();
     for pipeline in asset_pipelines.iter() {
         let model_url = pipeline.produce_local_model_url(&assets).await.unwrap();
-        model_defs.push(ModelDef(ContentUrl(Url::from_file_path(model_url).unwrap())));
+        model_defs.push(ModelDef(AbsAssetUrl(Url::from_file_path(model_url).unwrap())));
     }
 
     // "Regular" spawning

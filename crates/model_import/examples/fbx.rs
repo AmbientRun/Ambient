@@ -8,7 +8,7 @@ use elements_gizmos::{gizmos, GizmoPrimitive};
 use elements_model::bones_to_lines;
 use elements_model_import::model_crate::ModelCrate;
 use elements_primitives::Quad;
-use elements_std::{asset_url::ContentUrl, line_hash, math::SphericalCoords};
+use elements_std::{asset_url::AbsAssetUrl, line_hash, math::SphericalCoords};
 use glam::*;
 
 async fn init(world: &mut World) {
@@ -18,7 +18,7 @@ async fn init(world: &mut World) {
 
     let model = ModelCrate::local_import(
         &assets,
-        &ContentUrl::parse("https://dims-content.fra1.digitaloceanspaces.com/assets/models/MixamoCharacters/Vanguard By T. Choonyung.fbx")
+        &AbsAssetUrl::parse("https://dims-content.fra1.digitaloceanspaces.com/assets/models/MixamoCharacters/Vanguard By T. Choonyung.fbx")
             .unwrap(),
         true,
         false,
