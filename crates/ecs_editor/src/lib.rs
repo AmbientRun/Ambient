@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
 
 use elements_ecs::{with_component_registry, EntityData, EntityId, IComponent, IComponentRegistryExt, Query, World, WorldDiff};
 use elements_element::{Element, ElementComponent, ElementComponentExt, Hooks};
@@ -21,12 +21,11 @@ impl ElementComponent for ECSEditor {
         let (components, set_components) = hooks.use_state(HashMap::<Box<dyn IComponent>, bool>::new());
         let (entity_datas, set_entity_datas) = hooks.use_state(Vec::new());
         let (entities, set_entities) = hooks.use_state(Vec::new());
-        use_interval_deps(world, hooks, components.clone(), 0.5, {
-            let components = components.clone();
+        use_interval_deps(world, hooks, Duration::from_millis(500), components.clone(), {
             let get_world = get_world.clone();
-            move || {
+            move |components| {
                 let mut query = Query::all();
-                for (comp, incl) in &components {
+                for (comp, incl) in components {
                     if *incl {
                         query = query.incl_ref(comp.as_ref());
                     } else {

@@ -1,4 +1,4 @@
-use std::time::{SystemTime};
+use std::time::SystemTime;
 
 use elements_ecs::{query, Component, ComponentValue, EntityData, EntityId, IComponent, IndexField, IndexKey, World};
 use elements_network::server::SharedServerState;
@@ -16,7 +16,7 @@ fn despawn_reverted_intents(world: &mut World, user_id: &str) {
 }
 
 /// Pushes and applied the intent
-pub async fn push_intent(state: SharedServerState, user_id: String, mut data: EntityData) -> elements_ecs::EntityId {
+pub fn push_intent(state: SharedServerState, user_id: String, mut data: EntityData) -> elements_ecs::EntityId {
     let (reg, id, intent) = {
         let mut guard = state.lock();
         let world = guard.get_player_world_mut(&user_id).unwrap();
@@ -32,38 +32,8 @@ pub async fn push_intent(state: SharedServerState, user_id: String, mut data: En
         (reg, id, intent)
     };
 
-    #[cfg(feature = "intent_block_detection")]
-    {
-        let name = reg.get_intent_name(intent);
-        let start = Instant::now();
-        let timeout = || {
-            let name = name.clone();
-            async move {
-                tokio::time::sleep(Duration::from_millis(500)).await;
-                tracing::error!("Intent: {name:?} has been running for more than {:?}", start.elapsed());
-            }
-        };
-
-        let fut = tokio::spawn(async move { reg.apply_intent(state, intent, &user_id, id).await });
-        tokio::pin!(fut);
-
-        loop {
-            tracing::info!("Polling intent");
-            tokio::select! {
-                    _ = tokio::spawn(timeout()) => {
-                }
-                _ = &mut fut => {
-                    tracing::info!("Completed: {name:?}");
-                    return id
-                }
-            }
-        }
-    }
-    #[cfg(not(feature = "intent_block_detection"))]
-    {
-        reg.apply_intent(state, intent, &user_id, id).await;
-        id
-    }
+    reg.apply_intent(state, intent, &user_id, id);
+    id
 }
 
 pub fn create_intent<T: ComponentValue>(intent_arg: Component<T>, arg: T, collapse_id: Option<String>) -> EntityData {
@@ -75,7 +45,7 @@ pub fn create_intent<T: ComponentValue>(intent_arg: Component<T>, arg: T, collap
 }
 
 /// Reverts the head intent iff it is the specified intent
-pub async fn undo_head_exact(state: SharedServerState, user_id: &str, intent: &str) -> Option<EntityId> {
+pub fn undo_head_exact(state: SharedServerState, user_id: &str, intent: &str) -> Option<EntityId> {
     let (reg, id, intent) = {
         let mut guard = state.lock();
         let world = guard.get_player_world_mut(user_id).unwrap();
@@ -96,11 +66,11 @@ pub async fn undo_head_exact(state: SharedServerState, user_id: &str, intent: &s
         (reg, id, intent)
     };
 
-    reg.revert_intent(state, intent, user_id, id).await;
+    reg.revert_intent(state, intent, user_id, id);
 
     Some(id)
 }
-pub async fn undo_head(state: SharedServerState, user_id: &str) -> Option<EntityId> {
+pub fn undo_head(state: SharedServerState, user_id: &str) -> Option<EntityId> {
     let (reg, id, intent) = {
         let mut guard = state.lock();
         let world = guard.get_player_world_mut(user_id).unwrap();
@@ -116,7 +86,7 @@ pub async fn undo_head(state: SharedServerState, user_id: &str) -> Option<Entity
         }
     }?;
 
-    reg.revert_intent(state, intent, user_id, id).await;
+    reg.revert_intent(state, intent, user_id, id);
     Some(id)
 }
 
@@ -137,7 +107,7 @@ pub async fn redo_intent(state: SharedServerState, user_id: &str) -> Option<Enti
         (reg, id, intent)
     };
 
-    reg.apply_intent(state, intent, user_id, id).await;
+    reg.apply_intent(state, intent, user_id, id);
 
     Some(id)
 }

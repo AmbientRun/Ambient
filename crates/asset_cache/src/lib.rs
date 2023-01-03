@@ -266,11 +266,11 @@ impl AssetCache {
         let asset_key = AssetKey::new(key.key());
 
         let load = || {
-            tracing::info!("Loading asset: {asset_key:?}");
+            tracing::debug!("Loading asset: {asset_key:?}");
+
             // No future loading the value was found.
             //
             // Initiate the loading
-
             timeline.lock().start_load(asset_key.clone(), key.long_name(), self.stack.clone(), keepalive.is_active());
 
             let fork = self.fork(asset_key.clone());
@@ -382,7 +382,8 @@ impl AssetCache {
         // This is after all what RAII is all about
         //
         // Always get a fresh guard
-        let guard = loc.keepalive_guard.upgrade().unwrap_or_else(|| Arc::new(KeepaliveGuard::begin(asset_key, self.timeline.clone())));
+        let guard =
+            loc.keepalive_guard.upgrade().unwrap_or_else(|| Arc::new(KeepaliveGuard::begin(asset_key.clone(), self.timeline.clone())));
         loc.keepalive_guard = Arc::downgrade(&guard);
 
         match keepalive {
@@ -393,7 +394,7 @@ impl AssetCache {
 
                 let task = self.runtime.spawn(async move {
                     tokio::time::sleep(dur).await;
-                    tracing::info!("Keepalive timed out");
+                    tracing::debug!("Keepalive timed out for {asset_key:?}");
                     drop((keepalive_ref, guard));
                 });
 

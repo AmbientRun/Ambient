@@ -1,5 +1,5 @@
 use std::{
-    any::{type_name, TypeId}, collections::{HashMap, HashSet}, fmt::Debug, future::Future, sync::Arc
+    any::{type_name, TypeId}, collections::{HashMap, HashSet}, fmt::Debug, future::Future, sync::Arc, time::Duration
 };
 
 use as_any::Downcast;
@@ -24,6 +24,7 @@ pub struct Hooks<'a> {
     pub(crate) on_spawn: Option<Vec<SpawnFn>>,
     pub(crate) environment: Arc<Mutex<HooksEnvironment>>,
 }
+
 impl<'a> Hooks<'a> {
     pub fn use_state<T: Clone + Debug + ComponentValue>(&mut self, init: T) -> (T, Setter<T>) {
         self.use_state_with(|| init)
@@ -46,7 +47,17 @@ impl<'a> Hooks<'a> {
         };
         let environment = self.environment.clone();
         let element = self.element.clone();
-        (value, Arc::new(move |new_value| environment.lock().set_states.push((element.clone(), index, Box::new(new_value)))))
+        (
+            value,
+            Arc::new(move |new_value| {
+                environment.lock().set_states.push(StateUpdate {
+                    instance_id: element.clone(),
+                    index,
+                    value: Box::new(new_value),
+                    name: type_name::<T>(),
+                })
+            }),
+        )
     }
 
     /// Provides a function that, when called, will cause this [Element] to be re-rendered.
@@ -63,7 +74,7 @@ impl<'a> Hooks<'a> {
     /// conditionals.
     pub fn provide_context<T: Clone + Debug + ComponentValue>(&mut self, default_value: impl FnOnce() -> T) -> Setter<T> {
         let instance = self.tree.instances.get_mut(&self.element).unwrap();
-        let type_id = std::any::TypeId::of::<T>();
+        let type_id = TypeId::of::<T>();
         instance
             .hooks_context_state
             .entry(type_id)
@@ -71,12 +82,17 @@ impl<'a> Hooks<'a> {
         let environment = self.environment.clone();
         let element = self.element.clone();
         Arc::new(move |new_value| {
-            environment.lock().set_contexts.push((element.clone(), std::any::TypeId::of::<T>(), Box::new(new_value)));
+            environment.lock().set_contexts.push(ContextUpdate {
+                instance_id: element.clone(),
+                type_id: TypeId::of::<T>(),
+                name: type_name::<T>(),
+                value: Box::new(new_value),
+            });
         })
     }
     #[allow(clippy::type_complexity)]
     pub fn consume_context<T: Clone + Debug + ComponentValue>(&mut self) -> Option<(T, Setter<T>)> {
-        let type_id = std::any::TypeId::of::<T>();
+        let type_id = TypeId::of::<T>();
         if let Some(provider) = self.tree.get_context_provider(&self.element, type_id) {
             let value = {
                 let instance = self.tree.instances.get_mut(&provider).unwrap();
@@ -92,7 +108,12 @@ impl<'a> Hooks<'a> {
             Some((
                 value,
                 Arc::new(move |new_value| {
-                    environment.lock().set_contexts.push((provider.clone(), type_id, Box::new(new_value)));
+                    environment.lock().set_contexts.push(ContextUpdate {
+                        instance_id: provider.clone(),
+                        type_id,
+                        name: type_name::<T>(),
+                        value: Box::new(new_value),
+                    });
                 }),
             ))
         } else {
@@ -204,6 +225,7 @@ impl<'a> Hooks<'a> {
         x
     }
 
+    #[profiling::function]
     pub fn use_frame<F: Fn(&mut World) + Sync + Send + 'static>(&mut self, on_frame: F) {
         let mut env = self.environment.lock();
         let listeners = env.frame_listeners.entry(self.element.clone()).or_insert_with(Vec::new);
@@ -211,10 +233,11 @@ impl<'a> Hooks<'a> {
     }
 
     // Helpers
-    pub fn use_ref_with<T: Send + Debug + 'static, F: FnOnce() -> T + Send>(&mut self, init: F) -> Arc<Mutex<T>> {
+    pub fn use_ref_with<T: Send + Debug + 'static>(&mut self, init: impl FnOnce() -> T) -> Arc<Mutex<T>> {
         self.use_state_with(|| Arc::new(Mutex::new(init()))).0
     }
 
+    #[profiling::function]
     pub fn use_memo_with<T: Clone + ComponentValue + Debug, F: FnOnce() -> T, D: PartialEq + Clone + Sync + Send + Debug + 'static>(
         &mut self,
         dependencies: D,
@@ -239,14 +262,12 @@ impl<'a> Hooks<'a> {
     ///
     /// The provided functions returns a function which is run when the part is
     /// removed or `use_effect` is run again.
-    pub fn use_effect<
-        F: FnOnce(&mut World) -> Box<dyn FnOnce(&mut World) + Sync + Send> + Sync + Send,
-        D: PartialEq + ComponentValue + Debug,
-    >(
+    #[profiling::function]
+    pub fn use_effect<D: PartialEq + ComponentValue + Debug>(
         &mut self,
         world: &mut World,
         dependencies: D,
-        run: F,
+        run: impl FnOnce(&mut World) -> Box<dyn FnOnce(&mut World) + Sync + Send> + Sync + Send,
     ) {
         struct Cleanup(Box<dyn FnOnce(&mut World) + Sync + Send>);
         impl Debug for Cleanup {
@@ -255,7 +276,7 @@ impl<'a> Hooks<'a> {
             }
         }
         let cleanup_prev: Arc<Mutex<Option<Cleanup>>> = self.use_ref_with(|| None);
-        let prev_deps = self.use_ref_with(|| None);
+        let prev_deps = self.use_ref_with::<Option<D>>(|| None);
         {
             let cleanup_prev = cleanup_prev.clone();
             self.use_spawn(move |_| {
@@ -267,6 +288,7 @@ impl<'a> Hooks<'a> {
                 })
             });
         }
+
         let dependencies = Some(dependencies);
         let mut prev_deps = prev_deps.lock();
         if *prev_deps != dependencies {
@@ -274,6 +296,7 @@ impl<'a> Hooks<'a> {
             if let Some(cleanup_prev) = std::mem::replace(&mut *cleanup_prev, None) {
                 cleanup_prev.0(world);
             }
+            profiling::scope!("use_effect_run");
             *cleanup_prev = Some(Cleanup(run(world)));
             *prev_deps = dependencies;
         }
@@ -304,10 +327,29 @@ impl Debug for FrameListener {
     }
 }
 
+#[derive(Debug, Clone)]
+pub(crate) struct ContextUpdate {
+    pub instance_id: InstanceId,
+    pub type_id: TypeId,
+    pub name: &'static str,
+    pub value: Box<dyn AnyCloneable + Sync + Send>,
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct StateUpdate {
+    pub instance_id: InstanceId,
+    pub index: usize,
+    pub name: &'static str,
+    pub value: Box<dyn AnyCloneable + Send>,
+}
+
 #[derive(Debug)]
 pub(crate) struct HooksEnvironment {
-    pub(crate) set_states: Vec<(InstanceId, usize, Box<dyn AnyCloneable + Send>)>,
-    pub(crate) set_contexts: Vec<(InstanceId, TypeId, Box<dyn AnyCloneable + Sync + Send>)>,
+    pub(crate) set_states: Vec<StateUpdate>,
+    /// Pending updates to contexts.
+    ///
+    /// This is modified through the returned `Setter` closure
+    pub(crate) set_contexts: Vec<ContextUpdate>,
     pub(crate) frame_listeners: HashMap<InstanceId, Vec<FrameListener>>,
 }
 impl HooksEnvironment {

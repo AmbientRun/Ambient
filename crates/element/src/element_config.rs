@@ -45,8 +45,10 @@ impl ElementConfig {
         let name = if short { name.split("::").last().unwrap() } else { name };
         if !self.key.is_empty() {
             format!("{}_{}", name, self.key)
+        } else if !name.is_empty() {
+            name.into()
         } else {
-            name.to_string()
+            "unknown".into()
         }
     }
 }
