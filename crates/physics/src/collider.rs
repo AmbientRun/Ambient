@@ -257,12 +257,14 @@ impl ColliderDef {
     pub fn resolve(self, world: &World, owner: EntityId) -> anyhow::Result<Self> {
         match self {
             ColliderDef::FromModel => Ok(ColliderDef::Asset {
-                collider: TypedAssetUrl::<ModelAssetType>::from_url(
-                    world.get_ref(owner, model_def()).clone().context("No model_def on entity")?.0.to_string(),
-                )
-                .asset_crate()
-                .context("Can't get asset crate from model2_def")?
-                .collider(),
+                collider: world
+                    .get_ref(owner, model_def())
+                    .clone()
+                    .context("No model_def on entity")?
+                    .0
+                    .asset_crate()
+                    .context("Can't get asset crate from model2_def")?
+                    .collider(),
             }),
             x => Ok(x),
         }
@@ -298,8 +300,9 @@ impl ColliderDef {
                 (vec![shape.clone()], vec![shape])
             })),
             ColliderDef::Asset { collider } => {
-                let collider_from_urls: Arc<ColliderFromUrls> = JsonFromUrl::parse_url(&collider.url, true)?.get(&assets).await?;
-                let collider = collider_from_urls.resolve(&AbsAssetUrl::parse(&collider.url)?)?.get(&assets).await?;
+                let collider = collider.expect_abs();
+                let collider_from_urls: Arc<ColliderFromUrls> = JsonFromUrl::new(collider.clone(), true).get(&assets).await?;
+                let collider = collider_from_urls.resolve(&collider)?.get(&assets).await?;
 
                 Ok(Box::new(move |physics, scale| {
                     (

@@ -2,7 +2,7 @@ use elements_core::asset_cache;
 use elements_ecs::World;
 use elements_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use elements_std::{
-    asset_url::{select_asset, AssetUrlCollection, GetAssetType, TypedAssetUrl}, Cb
+    asset_url::{select_asset, AssetUrl, AssetUrlCollection, GetAssetType, TypedAssetUrl}, Cb
 };
 
 use crate::{align_vertical, space_between_items, Align, Button, ButtonStyle, Editor, EditorOpts, FlowRow, Text, STREET};
@@ -22,16 +22,12 @@ impl<T: GetAssetType + 'static> ElementComponent for AssetUrlEditor<T> {
         let Self { value, on_change } = *self;
         if let Some(on_change) = on_change {
             FlowRow::el([
-                Text::el(value.display_name.as_ref().unwrap_or(&value.url)),
+                Text::el(value.0.to_string()),
                 Button::new("\u{f74e} Browse", move |world| {
                     let on_change = on_change.clone();
                     select_asset(world.resource(asset_cache()), T::asset_type(), move |asset_url| {
                         if let Some(url) = asset_url.random() {
-                            on_change(TypedAssetUrl {
-                                url: url.to_string(),
-                                display_name: asset_url.name().map(|x| x.to_string()),
-                                asset_type: std::marker::PhantomData,
-                            });
+                            on_change(TypedAssetUrl::parse(url).unwrap());
                         }
                     });
                 })
@@ -41,7 +37,7 @@ impl<T: GetAssetType + 'static> ElementComponent for AssetUrlEditor<T> {
             .set(align_vertical(), Align::Center)
             .set(space_between_items(), STREET)
         } else {
-            Text::el(value.url)
+            Text::el(value.0.to_string())
         }
     }
 }
@@ -61,15 +57,11 @@ impl<T: GetAssetType + 'static> ElementComponent for AssetUrlCollectionEditor<T>
         let Self { value, on_change } = *self;
         if let Some(on_change) = on_change {
             FlowRow::el([
-                Text::el(value.display_name.as_ref().cloned().unwrap_or_else(|| format!("{:?}", value.urls))),
+                Text::el(format!("{:?}", value.0)),
                 Button::new("\u{f74e} Browse", move |world| {
                     let on_change = on_change.clone();
                     select_asset(world.resource(asset_cache()), T::asset_type(), move |asset_url| {
-                        on_change(AssetUrlCollection {
-                            urls: asset_url.all().into_iter().cloned().collect(),
-                            display_name: asset_url.name().map(|x| x.to_string()),
-                            asset_type: std::marker::PhantomData,
-                        });
+                        on_change(AssetUrlCollection::new(asset_url.all().into_iter().map(|x| AssetUrl::parse(x).unwrap()).collect()));
                     });
                 })
                 .style(ButtonStyle::Flat)
@@ -78,7 +70,7 @@ impl<T: GetAssetType + 'static> ElementComponent for AssetUrlCollectionEditor<T>
             .set(align_vertical(), Align::Center)
             .set(space_between_items(), STREET)
         } else {
-            Text::el(format!("{:?}", value.urls))
+            Text::el(format!("{:?}", value.0))
         }
     }
 }

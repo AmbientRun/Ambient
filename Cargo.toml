@@ -180,6 +180,6 @@ semver = "1.0.14"
 glob = "0.3.0"
 tokio-stream = "0.1.9"
 walkdir = "2"
-relative-path = "1.7"
+relative-path = { version = "1.7", features = ["serde"] }
 pin-project = "1.0"
 abort-on-drop = "0.2"

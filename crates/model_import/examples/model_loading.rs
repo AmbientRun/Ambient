@@ -9,7 +9,7 @@ use elements_model_import::{MaterialFilter, ModelImportPipeline, ModelImportTran
 use elements_primitives::{Cube, Quad};
 use elements_renderer::{color, materials::pbr_material::PbrMaterialFromUrl};
 use elements_std::{
-    asset_cache::AsyncAssetKeyExt, asset_url::{AbsAssetUrl, AssetUrl}, math::SphericalCoords
+    asset_cache::AsyncAssetKeyExt, asset_url::{AbsAssetUrl, AssetUrl, TypedAssetUrl}, math::SphericalCoords
 };
 use glam::*;
 use reqwest::Url;
@@ -88,7 +88,7 @@ async fn init(world: &mut World) {
     let mut model_defs = Vec::new();
     for pipeline in asset_pipelines.iter() {
         let model_url = pipeline.produce_local_model_url(&assets).await.unwrap();
-        model_defs.push(ModelDef(AbsAssetUrl(Url::from_file_path(model_url).unwrap())));
+        model_defs.push(ModelDef(TypedAssetUrl::new(Url::from_file_path(model_url).unwrap())));
     }
 
     // "Regular" spawning

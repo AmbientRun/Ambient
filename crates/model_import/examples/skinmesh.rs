@@ -8,7 +8,9 @@ use elements_element::ElementComponentExt;
 use elements_model_import::model_crate::ModelCrate;
 use elements_primitives::{Cube, Quad};
 use elements_renderer::color;
-use elements_std::{asset_url::AbsAssetUrl, math::SphericalCoords};
+use elements_std::{
+    asset_url::{AbsAssetUrl, TypedAssetUrl}, math::SphericalCoords
+};
 use glam::*;
 use winit::event::{Event, VirtualKeyCode, WindowEvent};
 
@@ -35,7 +37,7 @@ async fn init(world: &mut World) -> EntityId {
         .add_component(
             entities[0],
             animation_controller(),
-            AnimationController::looping("https://playdims.com/api/v1/assetdb/crates/Y3FxdwvLWHBtJMsQTNbt/1.0.0/Y3FxdwvLWHBtJMsQTNbt-bae68692bdaf9a5fcef953945904bd74f2b21fd1d8cadc789b410ec8a559f0f6/animations/mixamo.com.anim"),
+            AnimationController::looping(TypedAssetUrl::parse("https://playdims.com/api/v1/assetdb/crates/Y3FxdwvLWHBtJMsQTNbt/1.0.0/Y3FxdwvLWHBtJMsQTNbt-bae68692bdaf9a5fcef953945904bd74f2b21fd1d8cadc789b410ec8a559f0f6/animations/mixamo.com.anim").unwrap()),
         )
         .unwrap();
 
@@ -61,7 +63,7 @@ fn main() {
                                 .set(
                                     entity,
                                     animation_controller(),
-                                    AnimationController::looping("https://playdims.com/api/v1/assetdb/crates/Y3FxdwvLWHBtJMsQTNbt/1.0.0/Y3FxdwvLWHBtJMsQTNbt-0104f92c03b53349f19f365cfaccd0a92a18a4d13c7c262fc52b84347eda4fe0/animations/mixamo.com.anim"),
+                                    AnimationController::looping(TypedAssetUrl::parse("https://playdims.com/api/v1/assetdb/crates/Y3FxdwvLWHBtJMsQTNbt/1.0.0/Y3FxdwvLWHBtJMsQTNbt-0104f92c03b53349f19f365cfaccd0a92a18a4d13c7c262fc52b84347eda4fe0/animations/mixamo.com.anim").unwrap()),
                                 )
                                 .unwrap();
                         }
@@ -70,7 +72,7 @@ fn main() {
                                 .set(
                                     entity,
                                     animation_controller(),
-                                    AnimationController::looping("https://playdims.com/api/v1/assetdb/crates/Y3FxdwvLWHBtJMsQTNbt/1.0.0/Y3FxdwvLWHBtJMsQTNbt-bae68692bdaf9a5fcef953945904bd74f2b21fd1d8cadc789b410ec8a559f0f6/animations/mixamo.com.anim"),
+                                    AnimationController::looping(TypedAssetUrl::parse("https://playdims.com/api/v1/assetdb/crates/Y3FxdwvLWHBtJMsQTNbt/1.0.0/Y3FxdwvLWHBtJMsQTNbt-bae68692bdaf9a5fcef953945904bd74f2b21fd1d8cadc789b410ec8a559f0f6/animations/mixamo.com.anim").unwrap()),
                                 )
                                 .unwrap();
                         }
@@ -79,7 +81,7 @@ fn main() {
                                 .set(
                                     entity,
                                     animation_controller(),
-                                    AnimationController::looping("https://playdims.com/api/v1/assetdb/crates/Y3FxdwvLWHBtJMsQTNbt/1.0.0/Y3FxdwvLWHBtJMsQTNbt-70b97a74b6d43492295ae55bd621b51d04d8e86c5e73e172f68a82e9b56daaa0/animations/mixamo.com.anim"),
+                                    AnimationController::looping(TypedAssetUrl::parse("https://playdims.com/api/v1/assetdb/crates/Y3FxdwvLWHBtJMsQTNbt/1.0.0/Y3FxdwvLWHBtJMsQTNbt-70b97a74b6d43492295ae55bd621b51d04d8e86c5e73e172f68a82e9b56daaa0/animations/mixamo.com.anim").unwrap()),
                                 )
                                 .unwrap();
                         }

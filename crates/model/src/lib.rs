@@ -12,7 +12,7 @@ use elements_renderer::{
     }, primitives, RenderPrimitive, StandardShaderKey
 };
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetUrl}, download_asset::{AssetError, BytesFromUrl, JsonFromUrl}, log_result, math::Line
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetUrl, ModelAssetType, TypedAssetUrl}, download_asset::{AssetError, BytesFromUrl, JsonFromUrl}, log_result, math::Line
 };
 use futures::StreamExt;
 use glam::{vec4, Vec3};
@@ -35,7 +35,6 @@ components!("model", {
 
     model: Arc<Model>,
     model_def: ModelDef,
-    model_url: AssetUrl,
 
     pbr_renderer_primitives_from_url: Vec<PbrRenderPrimitiveFromUrl>,
     model_animatable: bool,
@@ -199,20 +198,20 @@ fn remove_model(world: &mut World, entity: EntityId) {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ModelDef(pub AbsAssetUrl);
+pub struct ModelDef(pub TypedAssetUrl<ModelAssetType>);
 impl ModelDef {
     pub fn new(url: impl AsRef<str>) -> anyhow::Result<Self> {
-        Ok(Self(AbsAssetUrl::parse(url)?))
+        Ok(Self(TypedAssetUrl::parse(url)?))
     }
 }
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<Model>, AssetError>> for ModelDef {
     async fn load(self, assets: AssetCache) -> Result<Arc<Model>, AssetError> {
-        let data = BytesFromUrl::new(self.0.clone(), true).get(&assets).await?;
+        let data = BytesFromUrl::new(self.0.clone().expect_abs(), true).get(&assets).await?;
         let semaphore = ModelLoadSemaphore.get(&assets);
         let _permit = semaphore.acquire().await;
         let mut model = tokio::task::block_in_place(|| Model::from_slice(&data))?;
-        model.load(&assets, &self.0).await?;
+        model.load(&assets, &self.0.expect_abs()).await?;
         Ok(Arc::new(model))
     }
 }

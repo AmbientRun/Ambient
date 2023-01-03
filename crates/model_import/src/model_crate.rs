@@ -7,7 +7,7 @@ use elements_core::{
 };
 use elements_ecs::{query, query_mut, EntityData, EntityId, FrameEvent, System, World};
 use elements_model::{
-    animation_bind_id, model_def, model_skin_ix, model_skins, model_url, pbr_renderer_primitives_from_url, Model, ModelDef, PbrRenderPrimitiveFromUrl
+    animation_bind_id, model_def, model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, ModelDef, PbrRenderPrimitiveFromUrl
 };
 use elements_physics::{
     collider::{character_controller_height, character_controller_radius, collider, ColliderDef, ColliderFromUrls}, mesh::PhysxGeometryFromUrl, physx::PhysicsKey
@@ -440,7 +440,7 @@ impl ModelCrate {
 
     pub fn create_object(&mut self) {
         let mut object = World::new("object_asset");
-        let o = EntityData::new().set(model_url(), dotdot_path(self.models.loc.path(ModelCrate::MAIN)).into()).spawn(&mut object);
+        let o = EntityData::new().set(model_def(), ModelDef(dotdot_path(self.models.loc.path(ModelCrate::MAIN)).into())).spawn(&mut object);
         object.add_resource(children(), vec![o]);
         self.objects.insert(ModelCrate::MAIN, object);
     }
@@ -529,7 +529,7 @@ impl ModelCrate {
             .add_component(
                 object.resource(children())[0],
                 collider(),
-                ColliderDef::Asset { collider: TypedAssetUrl::new(dotdot_path(obj_collider.path), "collider") },
+                ColliderDef::Asset { collider: dotdot_path(obj_collider.path).into() },
             )
             .unwrap();
         Ok(())

@@ -48,11 +48,9 @@ impl AsyncAssetKey<Result<Arc<AnimationClip>, AssetError>> for AnimationClipReta
         AssetKeepalive::Forever
     }
     async fn load(self, assets: AssetCache) -> Result<Arc<AnimationClip>, AssetError> {
-        let anim_model = ModelDef::new(&self.clip.asset_crate().context("Invalid clip url")?.model().url)?
-            .get(&assets)
-            .await
-            .context("Failed to load model")?;
-        let clip = AnimationClipFromUrl::parse_url(self.clip.url.clone(), true)?.get(&assets).await.context("No such clip")?;
+        let anim_model =
+            ModelDef(self.clip.asset_crate().context("Invalid clip url")?.model()).get(&assets).await.context("Failed to load model")?;
+        let clip = AnimationClipFromUrl::new(self.clip.expect_abs(), true).get(&assets).await.context("No such clip")?;
         match self.translation_retargeting {
             AnimationRetargeting::None => Ok(clip),
             AnimationRetargeting::Skeleton => {
@@ -61,7 +59,7 @@ impl AsyncAssetKey<Result<Arc<AnimationClip>, AssetError>> for AnimationClipReta
                 Ok(Arc::new(clip))
             }
             AnimationRetargeting::AnimationScaled { normalize_hip } => {
-                let retarget_model = ModelDef::new(&self.retarget_model.context("No retarget_model specified")?.url)?
+                let retarget_model = ModelDef(self.retarget_model.context("No retarget_model specified")?)
                     .get(&assets)
                     .await
                     .context("Failed to load retarget model")?;

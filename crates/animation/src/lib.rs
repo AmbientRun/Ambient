@@ -167,15 +167,7 @@ pub fn animation_systems() -> SystemGroup {
                     if ctrlr.apply_base_pose {
                         if let Some(action) = ctrlr.actions.get(0) {
                             if let AnimationClipRef::FromModelAsset(def) = &action.clip {
-                                if let Some(asset_crate) = def.asset_crate() {
-                                    world
-                                        .add_component(
-                                            id,
-                                            animation_apply_base_pose(),
-                                            ModelDef(AbsAssetUrl::parse(asset_crate.model().url).unwrap()),
-                                        )
-                                        .unwrap();
-                                }
+                                world.add_component(id, animation_apply_base_pose(), ModelDef(def.asset_crate().unwrap().model())).unwrap();
                             }
                         }
                     }
@@ -202,8 +194,7 @@ pub fn animation_systems() -> SystemGroup {
                 let mut in_error = Vec::new();
                 for (id, (controller, binder)) in q.iter(world, qs) {
                     let retaget = world.get(id, animation_retargeting()).unwrap_or(AnimationRetargeting::None);
-                    let model =
-                        world.get_ref(id, model_def()).map(|def| TypedAssetUrl::<ModelAssetType>::from_url(&def.0.to_string())).ok();
+                    let model = world.get_ref(id, model_def()).map(|def| def.0.clone()).ok();
                     // Calc
                     for action in controller.actions.iter() {
                         match action.clip.get_clip(assets.clone(), retaget, model.clone()) {

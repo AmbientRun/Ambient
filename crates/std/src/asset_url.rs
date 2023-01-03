@@ -73,32 +73,56 @@ impl From<PathBuf> for AbsAssetUrl {
 #[serde(untagged)]
 pub enum AssetUrl {
     Url(Url),
-    RelativePath(String),
+    RelativePath(RelativePathBuf),
 }
 impl AssetUrl {
     pub fn parse(url_or_relative_path: impl AsRef<str>) -> Result<Self, url::ParseError> {
         match Url::parse(url_or_relative_path.as_ref()) {
             Ok(url) => Ok(Self::Url(url)),
-            Err(url::ParseError::RelativeUrlWithoutBase) => Ok(Self::RelativePath(url_or_relative_path.as_ref().to_string())),
+            Err(url::ParseError::RelativeUrlWithoutBase) => Ok(Self::RelativePath(url_or_relative_path.as_ref().into())),
             Err(err) => Err(err),
         }
     }
     pub fn resolve(&self, base_url: &AbsAssetUrl) -> Result<AbsAssetUrl, url::ParseError> {
         match self {
             AssetUrl::Url(url) => Ok(AbsAssetUrl(url.clone())),
-            AssetUrl::RelativePath(path) => Ok(AbsAssetUrl(base_url.0.join(path)?)),
+            AssetUrl::RelativePath(path) => Ok(AbsAssetUrl(base_url.0.join(path.as_str())?)),
         }
     }
     pub fn path(&self) -> &str {
         match self {
             AssetUrl::Url(url) => url.path(),
-            AssetUrl::RelativePath(path) => path,
+            AssetUrl::RelativePath(path) => path.as_str(),
+        }
+    }
+    pub fn join(&self, path: impl Into<RelativePathBuf>) -> Result<Self, url::ParseError> {
+        let path: RelativePathBuf = path.into();
+        match self {
+            AssetUrl::Url(url) => Ok(Self::Url(url.join(path.as_str())?)),
+            AssetUrl::RelativePath(p) => Ok(Self::RelativePath(p.join(path))),
+        }
+    }
+    pub fn parent(&self) -> Option<Self> {
+        match self {
+            AssetUrl::Url(url) => Some(Self::Url(url.join("..").ok()?)),
+            AssetUrl::RelativePath(path) => Some(Self::RelativePath(path.parent()?.to_relative_path_buf())),
+        }
+    }
+    pub fn expect_abs(self) -> AbsAssetUrl {
+        match self {
+            AssetUrl::Url(url) => AbsAssetUrl(url),
+            AssetUrl::RelativePath(_) => panic!("This AssetUrl hasn't been resolved yet"),
         }
     }
 }
 impl From<RelativePathBuf> for AssetUrl {
     fn from(value: RelativePathBuf) -> Self {
-        Self::RelativePath(value.to_string())
+        Self::RelativePath(value)
+    }
+}
+impl From<Url> for AssetUrl {
+    fn from(value: Url) -> Self {
+        Self::Url(value)
     }
 }
 impl std::fmt::Debug for AssetUrl {
@@ -117,6 +141,11 @@ impl std::fmt::Display for AssetUrl {
         }
     }
 }
+impl Default for AssetUrl {
+    fn default() -> Self {
+        Self::RelativePath(Default::default())
+    }
+}
 
 /// This is a wrapper for a URL (pointing to an asset)
 ///
@@ -124,62 +153,84 @@ impl std::fmt::Display for AssetUrl {
 /// which takes you to the AssetBrowser. See `elements_ui/src/asset_url` for
 /// the UI implementation and `dims_asset_browser` for the asset browser implementation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TypedAssetUrl<T: GetAssetType> {
-    pub url: String,
-    pub display_name: Option<String>,
-    #[serde(skip)]
-    pub asset_type: PhantomData<T>,
-}
+#[serde(transparent)]
+pub struct TypedAssetUrl<T: GetAssetType>(pub AssetUrl, PhantomData<T>);
 
 impl<T: GetAssetType> TypedAssetUrl<T> {
-    pub fn from_url(url: impl Into<String>) -> Self {
-        Self { url: url.into(), display_name: None, asset_type: PhantomData }
+    pub fn parse(url_or_relative_path: impl AsRef<str>) -> Result<Self, url::ParseError> {
+        Ok(Self(AssetUrl::parse(url_or_relative_path)?, PhantomData))
     }
-    pub fn new(download_url: impl Into<String>, display_name: impl Into<String>) -> Self {
-        Self { url: download_url.into(), display_name: Some(display_name.into()), asset_type: PhantomData }
+    pub fn new(url: impl Into<AssetUrl>) -> Self {
+        Self(url.into(), PhantomData)
     }
-    fn new2(download_url: impl Into<String>, display_name: &Option<String>) -> Self {
-        Self { url: download_url.into(), display_name: display_name.clone(), asset_type: PhantomData }
+    pub fn asset_type(&self) -> AssetType {
+        T::asset_type()
     }
-}
-impl<T: GetAssetType> Default for TypedAssetUrl<T> {
-    fn default() -> Self {
-        Self { url: Default::default(), display_name: None, asset_type: PhantomData }
+    pub fn resolve(&self, base_url: &AbsAssetUrl) -> Result<AbsAssetUrl, url::ParseError> {
+        self.0.resolve(base_url)
+    }
+    pub fn join<Y: GetAssetType>(&self, path: impl Into<RelativePathBuf>) -> Result<TypedAssetUrl<Y>, url::ParseError> {
+        Ok(TypedAssetUrl::<Y>(self.0.join(path)?, PhantomData))
+    }
+    pub fn parent<Y: GetAssetType>(&self) -> Option<TypedAssetUrl<Y>> {
+        Some(TypedAssetUrl::<Y>(self.0.parent()?, PhantomData))
+    }
+    pub fn expect_abs(self) -> AbsAssetUrl {
+        self.0.expect_abs()
     }
 }
 impl<T: GetAssetType> PartialEq for TypedAssetUrl<T> {
     fn eq(&self, other: &Self) -> bool {
-        self.url == other.url && self.asset_type == other.asset_type
+        self.0 == other.0 && self.asset_type() == other.asset_type()
     }
 }
 impl<T: GetAssetType> Eq for TypedAssetUrl<T> {}
-impl<T: Into<String>, X: GetAssetType> From<T> for TypedAssetUrl<X> {
-    fn from(s: T) -> Self {
-        Self::from_url(s)
+impl<T: GetAssetType> Default for TypedAssetUrl<T> {
+    fn default() -> Self {
+        Self(Default::default(), Default::default())
+    }
+}
+impl<T: GetAssetType> From<RelativePathBuf> for TypedAssetUrl<T> {
+    fn from(value: RelativePathBuf) -> Self {
+        Self(AssetUrl::RelativePath(value), PhantomData)
+    }
+}
+impl<T: GetAssetType> From<AbsAssetUrl> for TypedAssetUrl<T> {
+    fn from(value: AbsAssetUrl) -> Self {
+        Self(AssetUrl::Url(value.0), PhantomData)
+    }
+}
+impl<T: GetAssetType> From<AssetUrl> for TypedAssetUrl<T> {
+    fn from(value: AssetUrl) -> Self {
+        Self(value, PhantomData)
     }
 }
 
 /// Same as TypedAssetUrl, except it supports working with collections of asset urls
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AssetUrlCollection<T: GetAssetType> {
-    pub urls: Vec<String>,
-    pub display_name: Option<String>,
-    #[serde(skip)]
-    pub asset_type: PhantomData<T>,
+#[serde(transparent)]
+pub struct AssetUrlCollection<T: GetAssetType>(pub Vec<AssetUrl>, PhantomData<T>);
+impl<T: GetAssetType> AssetUrlCollection<T> {
+    pub fn new(values: Vec<AssetUrl>) -> Self {
+        Self(values, PhantomData)
+    }
+    pub fn asset_type(&self) -> AssetType {
+        T::asset_type()
+    }
 }
 impl<T: GetAssetType> Default for AssetUrlCollection<T> {
     fn default() -> Self {
-        Self { urls: Default::default(), display_name: None, asset_type: PhantomData }
+        Self(Default::default(), PhantomData)
     }
 }
 impl<T: GetAssetType> PartialEq for AssetUrlCollection<T> {
     fn eq(&self, other: &Self) -> bool {
-        self.urls == other.urls && self.asset_type == other.asset_type
+        self.0 == other.0 && self.asset_type() == other.asset_type()
     }
 }
 impl<T: GetAssetType> Eq for AssetUrlCollection<T> {}
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 pub enum AssetType {
     AssetCrate,
     Object,
@@ -219,10 +270,10 @@ impl GetAssetType for AssetCrateAssetType {
 }
 impl TypedAssetUrl<AssetCrateAssetType> {
     pub fn model(&self) -> TypedAssetUrl<ModelAssetType> {
-        TypedAssetUrl::<ModelAssetType>::new2(format!("{}/models/main.json", self.url), &self.display_name)
+        self.join("/models/main.json").unwrap()
     }
     pub fn collider(&self) -> TypedAssetUrl<ColliderAssetType> {
-        TypedAssetUrl::<ColliderAssetType>::new2(format!("{}/colliders/main.json", self.url), &self.display_name)
+        self.join("/colliders/main.json").unwrap()
     }
 }
 
@@ -243,8 +294,7 @@ impl GetAssetType for ModelAssetType {
 }
 impl TypedAssetUrl<ModelAssetType> {
     pub fn asset_crate(&self) -> Option<TypedAssetUrl<AssetCrateAssetType>> {
-        let (start, _) = self.url.split_once("/models/")?;
-        Some(TypedAssetUrl::<AssetCrateAssetType>::new2(start, &self.display_name))
+        Some(self.join("../..").ok()?)
     }
 }
 
@@ -257,8 +307,7 @@ impl GetAssetType for AnimationAssetType {
 }
 impl TypedAssetUrl<AnimationAssetType> {
     pub fn asset_crate(&self) -> Option<TypedAssetUrl<AssetCrateAssetType>> {
-        let (start, _) = self.url.split_once("/animations/")?;
-        Some(TypedAssetUrl::<AssetCrateAssetType>::new2(start, &self.display_name))
+        Some(self.join("../..").ok()?)
     }
 }
 
