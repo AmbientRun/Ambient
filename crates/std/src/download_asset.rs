@@ -56,10 +56,10 @@ impl ContentUrl {
         self.0.path().rsplit_once('.').map(|(_, ext)| ext.to_string().to_lowercase())
     }
     /// Resolves a potentially relative url, using self as the base url
-    pub fn resolve(&self, url_or_relative_path: &str) -> Result<Self, url::ParseError> {
-        match Url::parse(url_or_relative_path) {
+    pub fn resolve(&self, url_or_relative_path: impl AsRef<str>) -> Result<Self, url::ParseError> {
+        match Url::parse(url_or_relative_path.as_ref()) {
             Ok(url) => Ok(Self(url)),
-            Err(url::ParseError::RelativeUrlWithoutBase) => Ok(Self(self.0.join(url_or_relative_path)?)),
+            Err(url::ParseError::RelativeUrlWithoutBase) => Ok(Self(self.0.join(url_or_relative_path.as_ref())?)),
             Err(err) => Err(err),
         }
     }
