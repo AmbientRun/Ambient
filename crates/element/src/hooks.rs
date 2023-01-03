@@ -289,15 +289,16 @@ impl<'a> Hooks<'a> {
             });
         }
 
+        let dependencies = Some(dependencies);
         let mut prev_deps = prev_deps.lock();
-        if prev_deps.as_ref() != Some(&dependencies) {
+        if *prev_deps != dependencies {
             let mut cleanup_prev = cleanup_prev.lock();
             if let Some(cleanup_prev) = std::mem::replace(&mut *cleanup_prev, None) {
                 cleanup_prev.0(world);
             }
             profiling::scope!("us_effect_run");
             *cleanup_prev = Some(Cleanup(run(world)));
-            *prev_deps = Some(dependencies);
+            *prev_deps = dependencies;
         }
     }
 
