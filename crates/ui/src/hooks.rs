@@ -33,7 +33,6 @@ pub fn use_interval_deps<D>(
 {
     hooks.use_effect(world, dependencies.clone(), move |world| {
         if run_immediately {
-            log::info!("Running interval deps");
             func(&dependencies);
         }
 
