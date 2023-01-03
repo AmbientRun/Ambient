@@ -296,7 +296,7 @@ impl<'a> Hooks<'a> {
             if let Some(cleanup_prev) = std::mem::replace(&mut *cleanup_prev, None) {
                 cleanup_prev.0(world);
             }
-            profiling::scope!("us_effect_run");
+            profiling::scope!("use_effect_run");
             *cleanup_prev = Some(Cleanup(run(world)));
             *prev_deps = dependencies;
         }

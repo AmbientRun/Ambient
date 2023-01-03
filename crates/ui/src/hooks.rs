@@ -31,8 +31,6 @@ pub fn use_interval_deps<D>(
     D: 'static + Send + Sync + Clone + Debug + PartialEq,
 {
     hooks.use_effect(world, dependencies.clone(), move |world| {
-        func(&dependencies);
-
         let task = world.resource(runtime()).spawn(async move {
             let mut interval = tokio::time::interval(duration);
             interval.tick().await;
