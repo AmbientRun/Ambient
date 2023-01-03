@@ -35,6 +35,8 @@ components!("model", {
 
     model: Arc<Model>,
     model_def: ModelDef,
+    /// This may be an absolute or relative url
+    model_url: String,
 
     pbr_renderer_primitives_from_url: Vec<PbrRenderPrimitiveFromUrl>,
     model_animatable: bool,

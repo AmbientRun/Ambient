@@ -7,7 +7,7 @@ use elements_core::{
 };
 use elements_ecs::{query, query_mut, EntityData, EntityId, FrameEvent, System, World};
 use elements_model::{
-    animation_bind_id, model_def, model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, ModelDef, PbrRenderPrimitiveFromUrl
+    animation_bind_id, model_def, model_skin_ix, model_skins, model_url, pbr_renderer_primitives_from_url, Model, ModelDef, PbrRenderPrimitiveFromUrl
 };
 use elements_physics::{
     collider::{character_controller_height, character_controller_radius, collider, ColliderDef, ColliderFromUrls}, mesh::PhysxGeometryFromUrl, physx::PhysicsKey
@@ -439,10 +439,9 @@ impl ModelCrate {
 
     pub fn create_object(&mut self) {
         let mut object = World::new("object_asset");
-        let o = EntityData::new()
-            .set(model_def(), ModelDef::new(&self.models.loc.path(ModelCrate::MAIN).as_str().to_string()).unwrap())
-            .spawn(&mut object);
+        let o = EntityData::new().set(model_url(), self.models.loc.path(ModelCrate::MAIN).as_str().to_string()).spawn(&mut object);
         object.add_resource(children(), vec![o]);
+        self.objects.insert(ModelCrate::MAIN, object);
     }
     pub fn create_character_collider(&mut self, radius: Option<f32>, height: Option<f32>) {
         let world = self.object_world_mut();
