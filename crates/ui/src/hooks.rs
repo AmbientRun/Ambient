@@ -33,8 +33,10 @@ pub fn use_interval_deps<D>(
 {
     hooks.use_effect(world, dependencies.clone(), move |world| {
         if run_immediately {
+            log::info!("Running interval deps");
             func(&dependencies);
         }
+
         let task = world.resource(runtime()).spawn(async move {
             let mut interval = tokio::time::interval(duration);
             interval.tick().await;
