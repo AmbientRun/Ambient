@@ -43,20 +43,18 @@ impl ModelImportPipeline {
         self.steps.push(step);
         self
     }
-    // fn get_cache_path(&self) -> anyhow::Result<String> {
-    //     for step in &self.steps {
-    //         if let ModelImportTransform::ImportModelFromUrl { url, .. } = step {
-    //             let source_url = ContentLoc::parse(url)?;
-    //             return Ok(source_url.cache_path_string());
-    //         } else if let ModelImportTransform::MergeMeshLods { lods, .. } = step {
-    //             return Ok(format!("merged_mesh_lods/{}", lods[0].get_cache_path().context("Lod 0 doesn't have a cache path")?));
-    //         } else if let ModelImportTransform::MergeUnityMeshLods { url, .. } = step {
-    //             let source_url = ContentLoc::parse(url)?;
-    //             return Ok(source_url.cache_path_string());
-    //         }
-    //     }
-    //     Err(anyhow!("Can't create cache path, no ImportModelFromUrl or MergeMeshLods"))
-    // }
+    fn get_cache_path(&self) -> anyhow::Result<String> {
+        for step in &self.steps {
+            if let ModelImportTransform::ImportModelFromUrl { url, .. } = step {
+                return Ok(url.relative_cache_path());
+            } else if let ModelImportTransform::MergeMeshLods { lods, .. } = step {
+                return Ok(format!("merged_mesh_lods/{}", lods[0].get_cache_path().context("Lod 0 doesn't have a cache path")?));
+            } else if let ModelImportTransform::MergeUnityMeshLods { url, .. } = step {
+                return Ok(url.relative_cache_path());
+            }
+        }
+        Err(anyhow!("Can't create cache path, no ImportModelFromUrl or MergeMeshLods"))
+    }
     pub async fn produce_crate(&self, assets: &AssetCache) -> anyhow::Result<ModelCrate> {
         let mut asset_crate = ModelCrate::new();
         for step in &self.steps {
@@ -64,11 +62,11 @@ impl ModelImportPipeline {
         }
         Ok(asset_crate)
     }
-    // pub async fn produce_local_model_url(&self, asset_cache: &AssetCache) -> anyhow::Result<PathBuf> {
-    //     let cache_path = AssetsCacheDir.get(asset_cache).join("pipelines").join(self.get_cache_path()?);
-    //     let model_crate = self.clone().add_step(ModelImportTransform::Finalize).produce_crate(asset_cache).await?;
-    //     model_crate.produce_local_model_url(format!("{}/", cache_path.to_str().unwrap()).into()).await
-    // }
+    pub async fn produce_local_model_url(&self, asset_cache: &AssetCache) -> anyhow::Result<PathBuf> {
+        let cache_path = AssetsCacheDir.get(asset_cache).join("pipelines").join(self.get_cache_path()?);
+        let model_crate = self.clone().add_step(ModelImportTransform::Finalize).produce_crate(asset_cache).await?;
+        model_crate.produce_local_model_url(format!("{}/", cache_path.to_str().unwrap()).into()).await
+    }
     // pub async fn produce_local_model(&self, asset_cache: &AssetCache) -> anyhow::Result<Model> {
     //     let url = self.produce_local_model_url(asset_cache).await?;
     //     let mut model = Model::from_file(&url).await?;

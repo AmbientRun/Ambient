@@ -8,8 +8,9 @@ use elements_model::{model_def, ModelDef};
 use elements_model_import::{MaterialFilter, ModelImportPipeline, ModelImportTransform, ModelTransform};
 use elements_primitives::{Cube, Quad};
 use elements_renderer::{color, materials::pbr_material::PbrMaterialFromUrl};
-use elements_std::{asset_cache::AsyncAssetKeyExt, math::SphericalCoords};
+use elements_std::{asset_cache::AsyncAssetKeyExt, download_asset::ContentUrl, math::SphericalCoords};
 use glam::*;
+use reqwest::Url;
 
 async fn init(world: &mut World) {
     let assets = world.resource(asset_cache()).clone();
@@ -22,7 +23,10 @@ async fn init(world: &mut World) {
                 "https://dims-content.fra1.digitaloceanspaces.com/assets/models/Unity/Dynamic%20Nature%20-%20Mountain%20Tree%20Pack/";
 
             ModelImportPipeline::new()
-                .add_step(ModelImportTransform::MergeUnityMeshLods { url: format!("{fir_base}Fir_02_Small.FBX"), lod_cutoffs: None })
+                .add_step(ModelImportTransform::MergeUnityMeshLods {
+                    url: ContentUrl::parse(format!("{fir_base}Fir_02_Small.FBX")).unwrap(),
+                    lod_cutoffs: None,
+                })
                 .add_step(ModelImportTransform::OverrideMaterial {
                     filter: MaterialFilter::by_name("M_leaves_Fir"),
                     material: Box::new(PbrMaterialFromUrl {
@@ -49,19 +53,19 @@ async fn init(world: &mut World) {
             ModelImportPipeline::new()
                 .add_step(ModelImportTransform::MergeMeshLods {
                     lods: vec![
-                        ModelImportPipeline::model(format!("{grass_base}Var11/Var11_LOD0.fbx")).add_step(
+                        ModelImportPipeline::model(ContentUrl::parse(format!("{grass_base}Var11/Var11_LOD0.fbx")).unwrap()).add_step(
                             ModelImportTransform::OverrideMaterial { filter: MaterialFilter::All, material: Box::new(grass_atlas.clone()) },
                         ),
-                        ModelImportPipeline::model(format!("{grass_base}Var11/Var11_LOD1.fbx")).add_step(
+                        ModelImportPipeline::model(ContentUrl::parse(format!("{grass_base}Var11/Var11_LOD1.fbx")).unwrap()).add_step(
                             ModelImportTransform::OverrideMaterial { filter: MaterialFilter::All, material: Box::new(grass_atlas.clone()) },
                         ),
-                        ModelImportPipeline::model(format!("{grass_base}Var11/Var11_LOD2.fbx")).add_step(
+                        ModelImportPipeline::model(ContentUrl::parse(format!("{grass_base}Var11/Var11_LOD2.fbx")).unwrap()).add_step(
                             ModelImportTransform::OverrideMaterial { filter: MaterialFilter::All, material: Box::new(grass_atlas.clone()) },
                         ),
-                        ModelImportPipeline::model(format!("{grass_base}Var11/Var11_LOD3.fbx")).add_step(
+                        ModelImportPipeline::model(ContentUrl::parse(format!("{grass_base}Var11/Var11_LOD3.fbx")).unwrap()).add_step(
                             ModelImportTransform::OverrideMaterial { filter: MaterialFilter::All, material: Box::new(grass_atlas) },
                         ),
-                        ModelImportPipeline::model(format!("{grass_base}Var11/Var11_LOD4.fbx")).add_step(
+                        ModelImportPipeline::model(ContentUrl::parse(format!("{grass_base}Var11/Var11_LOD4.fbx")).unwrap()).add_step(
                             ModelImportTransform::OverrideMaterial { filter: MaterialFilter::All, material: Box::new(grass_billboard) },
                         ),
                     ],
@@ -69,14 +73,21 @@ async fn init(world: &mut World) {
                 })
                 .add_step(ModelImportTransform::Transform(ModelTransform::Scale { scale: 5. }))
         },
-        ModelImportPipeline::model("https://dims-content.fra1.digitaloceanspaces.com/assets/models/Misc/Soldier.glb"),
-        ModelImportPipeline::model_raw("https://dims-content.fra1.digitaloceanspaces.com/assets/models/PolyHaven/Barrel_01_4k.glb"),
-        ModelImportPipeline::model("https://dims-content.fra1.digitaloceanspaces.com/assets/models/PolyHaven/Barrel_01_4k.glb"),
+        ModelImportPipeline::model(
+            ContentUrl::parse("https://dims-content.fra1.digitaloceanspaces.com/assets/models/Misc/Soldier.glb").unwrap(),
+        ),
+        ModelImportPipeline::model_raw(
+            ContentUrl::parse("https://dims-content.fra1.digitaloceanspaces.com/assets/models/PolyHaven/Barrel_01_4k.glb").unwrap(),
+        ),
+        ModelImportPipeline::model(
+            ContentUrl::parse("https://dims-content.fra1.digitaloceanspaces.com/assets/models/PolyHaven/Barrel_01_4k.glb").unwrap(),
+        ),
     ];
     let mut model_defs = Vec::new();
     for pipeline in asset_pipelines.iter() {
         let model_url = pipeline.produce_local_model_url(&assets).await.unwrap();
-        model_defs.push(ModelDef(model_url));
+        println!("XX {:?}", model_url);
+        model_defs.push(ModelDef(ContentUrl(Url::from_file_path(model_url).unwrap())));
     }
 
     // "Regular" spawning

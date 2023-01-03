@@ -115,7 +115,7 @@ impl From<anyhow::Error> for AssertErrorString {
 pub struct AssetsCacheDir;
 impl SyncAssetKey<PathBuf> for AssetsCacheDir {
     fn load(&self, _assets: AssetCache) -> PathBuf {
-        "tmp".into()
+        std::env::current_dir().unwrap().join("tmp")
     }
 }
 
