@@ -439,7 +439,7 @@ impl ModelCrate {
 
     pub fn create_object(&mut self) {
         let mut object = World::new("object_asset");
-        let o = EntityData::new().set(model_url(), self.models.loc.path(ModelCrate::MAIN).as_str().to_string()).spawn(&mut object);
+        let o = EntityData::new().set(model_url(), dotdot_path(self.models.loc.path(ModelCrate::MAIN)).to_string()).spawn(&mut object);
         object.add_resource(children(), vec![o]);
         self.objects.insert(ModelCrate::MAIN, object);
     }
@@ -527,7 +527,7 @@ impl ModelCrate {
             .add_component(
                 object.resource(children())[0],
                 collider(),
-                ColliderDef::Asset { collider: AssetUrl::new(obj_collider.path, "collider") },
+                ColliderDef::Asset { collider: AssetUrl::new(dotdot_path(obj_collider.path), "collider") },
             )
             .unwrap();
         Ok(())
