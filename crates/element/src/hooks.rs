@@ -232,59 +232,6 @@ impl<'a> Hooks<'a> {
         listeners.push(FrameListener(Arc::new(on_frame)));
     }
 
-    /// Execute `func` at the specified interval, refreshing when dependencies change.
-    ///
-    /// `func` is executed in a multithreaded context.
-    ///
-    /// The interval is only started once when first spawned and then each time `deps` change
-    /// **Note**: There exists another *similar* function [`elements_ui::ui::hooks::use_interval`]
-    /// which is slightly different.
-    ///
-    /// This version:
-    /// - `func` is executed immediately, and then every `period`
-    /// - uses `FnMut`
-    /// - Allows to restart when dependencies change
-    pub fn use_memo_interval<D, F>(&mut self, world: &World, period: Duration, deps: D, mut func: F)
-    where
-        D: 'static + Send + Sync + Clone + Debug + PartialEq,
-        F: 'static + Send + Sync + FnMut(&D),
-    {
-        let runtime = world.resource(runtime()).clone();
-
-        let task = self.use_ref_with::<Option<JoinHandle<_>>>(|| None);
-        let prev_deps = self.use_ref_with(|| None);
-
-        let mut prev_deps = prev_deps.lock();
-
-        // First run or dependencies have changed
-        if Some(&deps) != prev_deps.as_ref() {
-            // Abort the previous task
-            let mut task = task.lock();
-            if let Some(task) = task.take() {
-                tracing::debug!("Aborting task in favor {prev_deps:?} => {deps:?}");
-                task.abort();
-            }
-
-            *prev_deps = Some(deps.clone());
-
-            // Start the task anew
-            tracing::info!("Starting memo task for {deps:?}");
-
-            // Don't rely on the executor for running instantly
-            func(&deps);
-
-            *task = Some(runtime.spawn(async move {
-                let mut interval = tokio::time::interval(period);
-
-                interval.tick().await;
-                loop {
-                    interval.tick().await;
-                    func(&deps);
-                }
-            }));
-        }
-    }
-
     // Helpers
     pub fn use_ref_with<T: Send + Debug + 'static>(&mut self, init: impl FnOnce() -> T) -> Arc<Mutex<T>> {
         self.use_state_with(|| Arc::new(Mutex::new(init()))).0

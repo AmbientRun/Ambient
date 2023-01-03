@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{fmt::Debug, time::Duration};
 
 use elements_core::{asset_cache, runtime};
 use elements_ecs::World;
@@ -21,24 +21,29 @@ pub fn use_interval<F: Fn() + Sync + Send + 'static>(hooks: &mut Hooks, seconds:
     });
 }
 
-pub fn use_interval_deps<F: Fn() + Sync + Send + 'static, D: PartialEq + Clone + Sync + Send + std::fmt::Debug + 'static>(
+pub fn use_interval_deps<D>(
     world: &mut World,
     hooks: &mut Hooks,
+    duration: Duration,
     dependencies: D,
-    seconds: f32,
-    cb: F,
-) {
-    hooks.use_effect(world, dependencies, move |world| {
-        let thread = world.resource(runtime()).spawn(async move {
-            let mut interval = tokio::time::interval(Duration::from_secs_f32(seconds));
+    mut func: impl 'static + Send + Sync + FnMut(&D),
+) where
+    D: 'static + Send + Sync + Clone + Debug + PartialEq,
+{
+    hooks.use_effect(world, dependencies.clone(), move |world| {
+        func(&dependencies);
+
+        let task = world.resource(runtime()).spawn(async move {
+            let mut interval = tokio::time::interval(duration);
             interval.tick().await;
             loop {
                 interval.tick().await;
-                cb();
+                func(&dependencies);
             }
         });
+
         Box::new(move |_| {
-            thread.abort();
+            task.abort();
         })
     });
 }
