@@ -25,12 +25,16 @@ pub fn use_interval_deps<D>(
     world: &mut World,
     hooks: &mut Hooks,
     duration: Duration,
+    run_immediately: bool,
     dependencies: D,
     mut func: impl 'static + Send + Sync + FnMut(&D),
 ) where
     D: 'static + Send + Sync + Clone + Debug + PartialEq,
 {
     hooks.use_effect(world, dependencies.clone(), move |world| {
+        if run_immediately {
+            func(&dependencies);
+        }
         let task = world.resource(runtime()).spawn(async move {
             let mut interval = tokio::time::interval(duration);
             interval.tick().await;

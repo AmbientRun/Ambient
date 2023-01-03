@@ -21,7 +21,7 @@ impl ElementComponent for ECSEditor {
         let (components, set_components) = hooks.use_state(HashMap::<Box<dyn IComponent>, bool>::new());
         let (entity_datas, set_entity_datas) = hooks.use_state(Vec::new());
         let (entities, set_entities) = hooks.use_state(Vec::new());
-        use_interval_deps(world, hooks, Duration::from_millis(500), components.clone(), {
+        use_interval_deps(world, hooks, Duration::from_millis(500), false, components.clone(), {
             let get_world = get_world.clone();
             move |components| {
                 let mut query = Query::all();
@@ -119,6 +119,7 @@ struct EntityEditor {
     data: EntityData,
     on_change: Cb<dyn Fn(&mut World, WorldDiff) + Sync + Send>,
 }
+
 impl ElementComponent for EntityEditor {
     fn render(self: Box<Self>, _world: &mut World, _hooks: &mut Hooks) -> Element {
         let Self { id, data, on_change } = *self;
