@@ -7,7 +7,7 @@ use elements_editor_derive::ElementEditor;
 use elements_element::ElementComponentExt;
 use elements_model::{Model, ModelDef};
 use elements_std::{
-    asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt}, asset_url::{AnimationAssetType, AssetUrl, ModelAssetType}, download_asset::AssetError
+    asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt}, asset_url::{AnimationAssetType, ModelAssetType, TypedAssetUrl}, download_asset::AssetError
 };
 use serde::{Deserialize, Serialize};
 
@@ -35,9 +35,9 @@ impl Default for AnimationRetargeting {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ElementEditor)]
 pub struct AnimationClipRetargetedFromModel {
-    pub clip: AssetUrl<AnimationAssetType>,
+    pub clip: TypedAssetUrl<AnimationAssetType>,
     pub translation_retargeting: AnimationRetargeting,
-    pub retarget_model: Option<AssetUrl<ModelAssetType>>,
+    pub retarget_model: Option<TypedAssetUrl<ModelAssetType>>,
 }
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<AnimationClip>, AssetError>> for AnimationClipRetargetedFromModel {

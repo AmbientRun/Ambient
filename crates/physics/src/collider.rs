@@ -9,7 +9,7 @@ use elements_ecs::{components, query, EntityData, EntityId, SystemGroup, World};
 use elements_editor_derive::ElementEditor;
 use elements_model::model_def;
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetUrl, ColliderAssetType, ModelAssetType}, download_asset::{AssetError, JsonFromUrl}, events::EventDispatcher
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, ColliderAssetType, ModelAssetType, TypedAssetUrl}, download_asset::{AssetError, JsonFromUrl}, events::EventDispatcher
 };
 use futures::future::try_join_all;
 use glam::{vec3, Mat4, Vec3};
@@ -236,7 +236,7 @@ fn vec3_zero_value() -> Vec3 {
 #[derive(Serialize, Deserialize, Debug, Clone, ElementEditor)]
 pub enum ColliderDef {
     Asset {
-        collider: AssetUrl<ColliderAssetType>,
+        collider: TypedAssetUrl<ColliderAssetType>,
     },
     FromModel,
     Box {
@@ -257,7 +257,7 @@ impl ColliderDef {
     pub fn resolve(self, world: &World, owner: EntityId) -> anyhow::Result<Self> {
         match self {
             ColliderDef::FromModel => Ok(ColliderDef::Asset {
-                collider: AssetUrl::<ModelAssetType>::from_url(
+                collider: TypedAssetUrl::<ModelAssetType>::from_url(
                     world.get_ref(owner, model_def()).clone().context("No model_def on entity")?.0.to_string(),
                 )
                 .asset_crate()

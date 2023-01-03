@@ -8,7 +8,7 @@ use elements_core::{asset_cache, hierarchy::children, time};
 use elements_ecs::{components, query, EntityId, SystemGroup};
 use elements_model::{animation_binder, model, model_def, ModelDef};
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKeyExt}, asset_url::{AbsAssetUrl, AnimationAssetType, AssetUrl, ModelAssetType}
+    asset_cache::{AssetCache, AsyncAssetKeyExt}, asset_url::{AbsAssetUrl, AnimationAssetType, ModelAssetType, TypedAssetUrl}
 };
 use serde::{Deserialize, Serialize};
 
@@ -29,7 +29,7 @@ components!("animation", {
     animation_errors: String,
 
     /// This is a shorthand for working directly with the animation_controller
-    loop_animation: AssetUrl<AnimationAssetType>,
+    loop_animation: TypedAssetUrl<AnimationAssetType>,
 });
 
 // Running
@@ -57,17 +57,17 @@ impl std::default::Default for AnimationActionTime {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum AnimationClipRef {
     Clip(Arc<AnimationClip>),
-    FromModelAsset(AssetUrl<AnimationAssetType>),
+    FromModelAsset(TypedAssetUrl<AnimationAssetType>),
 }
 impl AnimationClipRef {
     // pub fn from_model(model: impl Into<ModelDef>, clip: Option<&str>) -> Self {
-    //     Self::FromModelAsset(AssetUrl<AnimationAssetType> { model: model.into(), retarget: None, clip: clip.map(|x| x.to_string()) })
+    //     Self::FromModelAsset(TypedAssetUrl<AnimationAssetType> { model: model.into(), retarget: None, clip: clip.map(|x| x.to_string()) })
     // }
     pub fn get_clip(
         &self,
         assets: AssetCache,
         retarget: AnimationRetargeting,
-        model: Option<AssetUrl<ModelAssetType>>,
+        model: Option<TypedAssetUrl<ModelAssetType>>,
     ) -> Option<Result<Arc<AnimationClip>, String>> {
         match self {
             AnimationClipRef::Clip(clip) => Some(Ok(clip.clone())),
@@ -79,8 +79,8 @@ impl AnimationClipRef {
         }
     }
 }
-impl From<AssetUrl<AnimationAssetType>> for AnimationClipRef {
-    fn from(value: AssetUrl<AnimationAssetType>) -> Self {
+impl From<TypedAssetUrl<AnimationAssetType>> for AnimationClipRef {
+    fn from(value: TypedAssetUrl<AnimationAssetType>) -> Self {
         Self::FromModelAsset(value)
     }
 }
@@ -120,10 +120,10 @@ pub struct AnimationController {
     pub apply_base_pose: bool,
 }
 impl AnimationController {
-    pub fn looping(clip: impl Into<AssetUrl<AnimationAssetType>>) -> Self {
+    pub fn looping(clip: impl Into<TypedAssetUrl<AnimationAssetType>>) -> Self {
         Self::looping_with_speed(clip, 1.)
     }
-    pub fn looping_with_speed(clip: impl Into<AssetUrl<AnimationAssetType>>, speed: f32) -> Self {
+    pub fn looping_with_speed(clip: impl Into<TypedAssetUrl<AnimationAssetType>>, speed: f32) -> Self {
         Self {
             actions: vec![AnimationAction {
                 clip: AnimationClipRef::FromModelAsset(clip.into()),
@@ -202,7 +202,8 @@ pub fn animation_systems() -> SystemGroup {
                 let mut in_error = Vec::new();
                 for (id, (controller, binder)) in q.iter(world, qs) {
                     let retaget = world.get(id, animation_retargeting()).unwrap_or(AnimationRetargeting::None);
-                    let model = world.get_ref(id, model_def()).map(|def| AssetUrl::<ModelAssetType>::from_url(&def.0.to_string())).ok();
+                    let model =
+                        world.get_ref(id, model_def()).map(|def| TypedAssetUrl::<ModelAssetType>::from_url(&def.0.to_string())).ok();
                     // Calc
                     for action in controller.actions.iter() {
                         match action.clip.get_clip(assets.clone(), retaget, model.clone()) {

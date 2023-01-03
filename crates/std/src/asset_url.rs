@@ -120,18 +120,18 @@ impl std::fmt::Display for AbsAssetUrlOrRelativePath {
 
 /// This is a wrapper for a URL (pointing to an asset)
 ///
-/// An AssetUrl will be rendered with a Browse button next to it in the UI,
+/// An TypedAssetUrl will be rendered with a Browse button next to it in the UI,
 /// which takes you to the AssetBrowser. See `elements_ui/src/asset_url` for
 /// the UI implementation and `dims_asset_browser` for the asset browser implementation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AssetUrl<T: GetAssetType> {
+pub struct TypedAssetUrl<T: GetAssetType> {
     pub url: String,
     pub display_name: Option<String>,
     #[serde(skip)]
     pub asset_type: PhantomData<T>,
 }
 
-impl<T: GetAssetType> AssetUrl<T> {
+impl<T: GetAssetType> TypedAssetUrl<T> {
     pub fn from_url(url: impl Into<String>) -> Self {
         Self { url: url.into(), display_name: None, asset_type: PhantomData }
     }
@@ -142,24 +142,24 @@ impl<T: GetAssetType> AssetUrl<T> {
         Self { url: download_url.into(), display_name: display_name.clone(), asset_type: PhantomData }
     }
 }
-impl<T: GetAssetType> Default for AssetUrl<T> {
+impl<T: GetAssetType> Default for TypedAssetUrl<T> {
     fn default() -> Self {
         Self { url: Default::default(), display_name: None, asset_type: PhantomData }
     }
 }
-impl<T: GetAssetType> PartialEq for AssetUrl<T> {
+impl<T: GetAssetType> PartialEq for TypedAssetUrl<T> {
     fn eq(&self, other: &Self) -> bool {
         self.url == other.url && self.asset_type == other.asset_type
     }
 }
-impl<T: GetAssetType> Eq for AssetUrl<T> {}
-impl<T: Into<String>, X: GetAssetType> From<T> for AssetUrl<X> {
+impl<T: GetAssetType> Eq for TypedAssetUrl<T> {}
+impl<T: Into<String>, X: GetAssetType> From<T> for TypedAssetUrl<X> {
     fn from(s: T) -> Self {
         Self::from_url(s)
     }
 }
 
-/// Same as AssetUrl, except it supports working with collections of asset urls
+/// Same as TypedAssetUrl, except it supports working with collections of asset urls
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AssetUrlCollection<T: GetAssetType> {
     pub urls: Vec<String>,
@@ -217,12 +217,12 @@ impl GetAssetType for AssetCrateAssetType {
         AssetType::AssetCrate
     }
 }
-impl AssetUrl<AssetCrateAssetType> {
-    pub fn model(&self) -> AssetUrl<ModelAssetType> {
-        AssetUrl::<ModelAssetType>::new2(format!("{}/models/main.json", self.url), &self.display_name)
+impl TypedAssetUrl<AssetCrateAssetType> {
+    pub fn model(&self) -> TypedAssetUrl<ModelAssetType> {
+        TypedAssetUrl::<ModelAssetType>::new2(format!("{}/models/main.json", self.url), &self.display_name)
     }
-    pub fn collider(&self) -> AssetUrl<ColliderAssetType> {
-        AssetUrl::<ColliderAssetType>::new2(format!("{}/colliders/main.json", self.url), &self.display_name)
+    pub fn collider(&self) -> TypedAssetUrl<ColliderAssetType> {
+        TypedAssetUrl::<ColliderAssetType>::new2(format!("{}/colliders/main.json", self.url), &self.display_name)
     }
 }
 
@@ -241,10 +241,10 @@ impl GetAssetType for ModelAssetType {
         AssetType::Model
     }
 }
-impl AssetUrl<ModelAssetType> {
-    pub fn asset_crate(&self) -> Option<AssetUrl<AssetCrateAssetType>> {
+impl TypedAssetUrl<ModelAssetType> {
+    pub fn asset_crate(&self) -> Option<TypedAssetUrl<AssetCrateAssetType>> {
         let (start, _) = self.url.split_once("/models/")?;
-        Some(AssetUrl::<AssetCrateAssetType>::new2(start, &self.display_name))
+        Some(TypedAssetUrl::<AssetCrateAssetType>::new2(start, &self.display_name))
     }
 }
 
@@ -255,10 +255,10 @@ impl GetAssetType for AnimationAssetType {
         AssetType::Animation
     }
 }
-impl AssetUrl<AnimationAssetType> {
-    pub fn asset_crate(&self) -> Option<AssetUrl<AssetCrateAssetType>> {
+impl TypedAssetUrl<AnimationAssetType> {
+    pub fn asset_crate(&self) -> Option<TypedAssetUrl<AssetCrateAssetType>> {
         let (start, _) = self.url.split_once("/animations/")?;
-        Some(AssetUrl::<AssetCrateAssetType>::new2(start, &self.display_name))
+        Some(TypedAssetUrl::<AssetCrateAssetType>::new2(start, &self.display_name))
     }
 }
 

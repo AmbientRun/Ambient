@@ -2,22 +2,20 @@ use elements_core::asset_cache;
 use elements_ecs::World;
 use elements_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use elements_std::{
-    asset_url::{select_asset, AssetUrl, AssetUrlCollection, GetAssetType}, Cb
+    asset_url::{select_asset, AssetUrlCollection, GetAssetType, TypedAssetUrl}, Cb
 };
 
-use crate::{
-    align_vertical, space_between_items, Align, Button, ButtonStyle, Editor, EditorOpts, FlowRow, Text, STREET
-};
+use crate::{align_vertical, space_between_items, Align, Button, ButtonStyle, Editor, EditorOpts, FlowRow, Text, STREET};
 
-impl<T: GetAssetType + 'static> Editor for AssetUrl<T> {
+impl<T: GetAssetType + 'static> Editor for TypedAssetUrl<T> {
     fn editor(value: Self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _opts: EditorOpts) -> Element {
         AssetUrlEditor { value, on_change }.el()
     }
 }
 #[derive(Debug, Clone)]
 pub struct AssetUrlEditor<T: GetAssetType> {
-    pub value: AssetUrl<T>,
-    pub on_change: Option<Cb<dyn Fn(AssetUrl<T>) + Sync + Send>>,
+    pub value: TypedAssetUrl<T>,
+    pub on_change: Option<Cb<dyn Fn(TypedAssetUrl<T>) + Sync + Send>>,
 }
 impl<T: GetAssetType + 'static> ElementComponent for AssetUrlEditor<T> {
     fn render(self: Box<Self>, _world: &mut World, _hooks: &mut Hooks) -> Element {
@@ -29,7 +27,7 @@ impl<T: GetAssetType + 'static> ElementComponent for AssetUrlEditor<T> {
                     let on_change = on_change.clone();
                     select_asset(world.resource(asset_cache()), T::asset_type(), move |asset_url| {
                         if let Some(url) = asset_url.random() {
-                            on_change(AssetUrl {
+                            on_change(TypedAssetUrl {
                                 url: url.to_string(),
                                 display_name: asset_url.name().map(|x| x.to_string()),
                                 asset_type: std::marker::PhantomData,
