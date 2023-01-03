@@ -83,6 +83,13 @@ impl AssetUrl {
             Err(err) => Err(err),
         }
     }
+    /// This is always lowercase
+    pub fn extension(&self) -> Option<String> {
+        match self {
+            AssetUrl::Url(url) => AbsAssetUrl(url.clone()).extension(),
+            AssetUrl::RelativePath(path) => path.extension().map(|x| x.to_string().to_lowercase()),
+        }
+    }
     pub fn resolve(&self, base_url: &AbsAssetUrl) -> Result<AbsAssetUrl, url::ParseError> {
         match self {
             AssetUrl::Url(url) => Ok(AbsAssetUrl(url.clone())),
@@ -123,6 +130,11 @@ impl From<RelativePathBuf> for AssetUrl {
 impl From<Url> for AssetUrl {
     fn from(value: Url) -> Self {
         Self::Url(value)
+    }
+}
+impl From<AbsAssetUrl> for AssetUrl {
+    fn from(value: AbsAssetUrl) -> Self {
+        Self::Url(value.0)
     }
 }
 impl std::fmt::Debug for AssetUrl {

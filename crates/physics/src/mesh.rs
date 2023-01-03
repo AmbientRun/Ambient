@@ -23,20 +23,18 @@ pub enum PhysxGeometry {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PhysxGeometryFromUrl(pub AssetUrl);
 impl PhysxGeometryFromUrl {
-    pub fn resolve(&self, base_url: &AbsAssetUrl) -> anyhow::Result<PhysxGeometryFromResolvedUrl> {
-        Ok(PhysxGeometryFromResolvedUrl(self.0.resolve(base_url)?))
+    pub fn resolve(&self, base_url: &AbsAssetUrl) -> anyhow::Result<Self> {
+        Ok(Self(self.0.resolve(base_url)?.into()))
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct PhysxGeometryFromResolvedUrl(pub AbsAssetUrl);
 #[async_trait]
-impl AsyncAssetKey<Result<Arc<PhysxGeometry>, AssetError>> for PhysxGeometryFromResolvedUrl {
+impl AsyncAssetKey<Result<Arc<PhysxGeometry>, AssetError>> for PhysxGeometryFromUrl {
     async fn load(self, assets: AssetCache) -> Result<Arc<PhysxGeometry>, AssetError> {
         if self.0.extension().unwrap_or_default().to_lowercase() == PHYSX_TRIANGLE_MESH_EXTENSION {
-            Ok(Arc::new(PhysxGeometry::TriangleMesh(PhysxTriangleMeshFromResolvedUrl(self.0).get(&assets).await?.0)))
+            Ok(Arc::new(PhysxGeometry::TriangleMesh(PhysxTriangleMeshFromUrl(self.0.expect_abs().into()).get(&assets).await?.0)))
         } else {
-            Ok(Arc::new(PhysxGeometry::ConvexMesh(PhysxConvexMeshFromResolvedUrl(self.0).get(&assets).await?.0)))
+            Ok(Arc::new(PhysxGeometry::ConvexMesh(PhysxConvexMeshFromUrl(self.0.expect_abs().into()).get(&assets).await?.0)))
         }
     }
 }
@@ -44,17 +42,15 @@ impl AsyncAssetKey<Result<Arc<PhysxGeometry>, AssetError>> for PhysxGeometryFrom
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PhysxTriangleMeshFromUrl(pub AssetUrl);
 impl PhysxTriangleMeshFromUrl {
-    pub fn resolve(&self, base_url: &AbsAssetUrl) -> anyhow::Result<PhysxTriangleMeshFromResolvedUrl> {
-        Ok(PhysxTriangleMeshFromResolvedUrl(self.0.resolve(base_url)?))
+    pub fn resolve(&self, base_url: &AbsAssetUrl) -> anyhow::Result<Self> {
+        Ok(Self(self.0.resolve(base_url)?.into()))
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PhysxTriangleMeshFromResolvedUrl(pub AbsAssetUrl);
 #[async_trait]
-impl AsyncAssetKey<Result<PxRcAsset<PxTriangleMesh>, AssetError>> for PhysxTriangleMeshFromResolvedUrl {
+impl AsyncAssetKey<Result<PxRcAsset<PxTriangleMesh>, AssetError>> for PhysxTriangleMeshFromUrl {
     async fn load(self, assets: AssetCache) -> Result<PxRcAsset<PxTriangleMesh>, AssetError> {
-        let file = BytesFromUrlCachedPath { url: self.0.clone() }.get(&assets).await?;
+        let file = BytesFromUrlCachedPath { url: self.0.expect_abs() }.get(&assets).await?;
         tokio::task::block_in_place(|| {
             let mem = PxDefaultFileInputData::new(&*file);
             let physics = PhysicsKey.get(&assets);
@@ -73,17 +69,15 @@ impl AsyncAssetKey<Result<PxRcAsset<PxTriangleMesh>, AssetError>> for PhysxTrian
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PhysxConvexMeshFromUrl(pub AssetUrl);
 impl PhysxConvexMeshFromUrl {
-    pub fn resolve(&self, base_url: &AbsAssetUrl) -> anyhow::Result<PhysxConvexMeshFromResolvedUrl> {
-        Ok(PhysxConvexMeshFromResolvedUrl(self.0.resolve(base_url)?))
+    pub fn resolve(&self, base_url: &AbsAssetUrl) -> anyhow::Result<Self> {
+        Ok(Self(self.0.resolve(base_url)?.into()))
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PhysxConvexMeshFromResolvedUrl(pub AbsAssetUrl);
 #[async_trait]
-impl AsyncAssetKey<Result<PxRcAsset<PxConvexMesh>, AssetError>> for PhysxConvexMeshFromResolvedUrl {
+impl AsyncAssetKey<Result<PxRcAsset<PxConvexMesh>, AssetError>> for PhysxConvexMeshFromUrl {
     async fn load(self, assets: AssetCache) -> Result<PxRcAsset<PxConvexMesh>, AssetError> {
-        let file = BytesFromUrlCachedPath { url: self.0.clone() }.get(&assets).await?;
+        let file = BytesFromUrlCachedPath { url: self.0.expect_abs() }.get(&assets).await?;
         tokio::task::block_in_place(|| {
             let mem = PxDefaultFileInputData::new(&*file);
             let physics = PhysicsKey.get(&assets);

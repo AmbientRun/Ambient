@@ -20,7 +20,7 @@ use physxx::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    main_controller_manager, make_physics_static, mesh::{PhysxGeometry, PhysxGeometryFromResolvedUrl, PhysxGeometryFromUrl}, physx::{character_controller, physics, physics_controlled, physics_shape, rigid_actor, Physics}, wood_physics_material, ColliderScene, PxActorUserData, PxShapeUserData, PxWoodMaterialKey
+    main_controller_manager, make_physics_static, mesh::{PhysxGeometry, PhysxGeometryFromUrl}, physx::{character_controller, physics, physics_controlled, physics_shape, rigid_actor, Physics}, wood_physics_material, ColliderScene, PxActorUserData, PxShapeUserData, PxWoodMaterialKey
 };
 
 components!("physics", {
@@ -328,21 +328,16 @@ pub struct ColliderFromUrls {
     pub convex: Vec<(Mat4, PhysxGeometryFromUrl)>,
 }
 impl ColliderFromUrls {
-    pub fn resolve(&self, base_url: &AbsAssetUrl) -> anyhow::Result<ColliderFromResolvedUrls> {
-        Ok(ColliderFromResolvedUrls {
+    pub fn resolve(&self, base_url: &AbsAssetUrl) -> anyhow::Result<Self> {
+        Ok(Self {
             concave: self.concave.iter().map(|(mat, url)| Ok((*mat, url.resolve(base_url)?))).collect::<anyhow::Result<Vec<_>>>()?,
             convex: self.convex.iter().map(|(mat, url)| Ok((*mat, url.resolve(base_url)?))).collect::<anyhow::Result<Vec<_>>>()?,
         })
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct ColliderFromResolvedUrls {
-    pub concave: Vec<(Mat4, PhysxGeometryFromResolvedUrl)>,
-    pub convex: Vec<(Mat4, PhysxGeometryFromResolvedUrl)>,
-}
 #[async_trait]
-impl AsyncAssetKey<Result<Arc<Collider>, AssetError>> for ColliderFromResolvedUrls {
+impl AsyncAssetKey<Result<Arc<Collider>, AssetError>> for ColliderFromUrls {
     async fn load(self, assets: AssetCache) -> Result<Arc<Collider>, AssetError> {
         let mut res: Vec<_> = try_join_all([self.concave, self.convex].into_iter().map(|list| async {
             let iter = list.into_iter().map(|(transform, mesh)| {

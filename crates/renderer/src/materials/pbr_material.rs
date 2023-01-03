@@ -251,15 +251,15 @@ pub struct PbrMaterialFromUrl {
     pub roughness: f32,
 }
 impl PbrMaterialFromUrl {
-    pub fn resolve(&self, base_url: &AbsAssetUrl) -> anyhow::Result<PbrMaterialFromResolvedUrl> {
-        Ok(PbrMaterialFromResolvedUrl {
+    pub fn resolve(&self, base_url: &AbsAssetUrl) -> anyhow::Result<Self> {
+        Ok(Self {
             name: self.name.clone(),
             source: self.source.clone(),
 
-            base_color: if let Some(x) = &self.base_color { Some(x.resolve(base_url)?) } else { None },
-            opacity: if let Some(x) = &self.opacity { Some(x.resolve(base_url)?) } else { None },
-            normalmap: if let Some(x) = &self.normalmap { Some(x.resolve(base_url)?) } else { None },
-            metallic_roughness: if let Some(x) = &self.metallic_roughness { Some(x.resolve(base_url)?) } else { None },
+            base_color: if let Some(x) = &self.base_color { Some(x.resolve(base_url)?.into()) } else { None },
+            opacity: if let Some(x) = &self.opacity { Some(x.resolve(base_url)?.into()) } else { None },
+            normalmap: if let Some(x) = &self.normalmap { Some(x.resolve(base_url)?.into()) } else { None },
+            metallic_roughness: if let Some(x) = &self.metallic_roughness { Some(x.resolve(base_url)?.into()) } else { None },
 
             base_color_factor: self.base_color_factor.clone(),
             emissive_factor: self.emissive_factor.clone(),
@@ -272,36 +272,21 @@ impl PbrMaterialFromUrl {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct PbrMaterialFromResolvedUrl {
-    pub name: Option<String>,
-    pub source: Option<String>,
-
-    pub base_color: Option<AbsAssetUrl>,
-    pub opacity: Option<AbsAssetUrl>,
-    pub normalmap: Option<AbsAssetUrl>,
-    pub metallic_roughness: Option<AbsAssetUrl>,
-
-    pub base_color_factor: Option<Vec4>,
-    pub emissive_factor: Option<Vec4>,
-    pub transparent: Option<bool>,
-    pub alpha_cutoff: Option<f32>,
-    pub double_sided: Option<bool>,
-    pub metallic: f32,
-    pub roughness: f32,
-}
-
 #[async_trait]
-impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialFromResolvedUrl {
+impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialFromUrl {
     async fn load(self, assets: AssetCache) -> Result<Arc<PbrMaterial>, AssetError> {
         let color = if let (Some(opacity), Some(albedo)) = (&self.opacity, &self.base_color) {
             Some(
-                SplitTextureFromUrl { color: albedo.clone(), alpha: opacity.clone(), format: wgpu::TextureFormat::Rgba8UnormSrgb }
-                    .get(&assets)
-                    .await?,
+                SplitTextureFromUrl {
+                    color: albedo.clone().expect_abs(),
+                    alpha: opacity.clone().expect_abs(),
+                    format: wgpu::TextureFormat::Rgba8UnormSrgb,
+                }
+                .get(&assets)
+                .await?,
             )
         } else if let Some(albedo) = &self.base_color {
-            Some(TextureFromUrl { url: albedo.clone(), format: wgpu::TextureFormat::Rgba8UnormSrgb }.get(&assets).await?)
+            Some(TextureFromUrl { url: albedo.clone().expect_abs(), format: wgpu::TextureFormat::Rgba8UnormSrgb }.get(&assets).await?)
         } else {
             None
         };
@@ -311,7 +296,7 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialFromReso
         };
         let normalmap = if let Some(normalmap) = &self.normalmap {
             Arc::new(
-                TextureFromUrl { url: normalmap.clone(), format: wgpu::TextureFormat::Rgba8Unorm }
+                TextureFromUrl { url: normalmap.clone().expect_abs(), format: wgpu::TextureFormat::Rgba8Unorm }
                     .get(&assets)
                     .await?
                     .create_view(&Default::default()),
@@ -321,9 +306,8 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialFromReso
         };
 
         let metallic_roughness = if let Some(metallic_roughness) = self.metallic_roughness {
-            println!("Found metallic roughness map at: {:?}", metallic_roughness);
             Arc::new(
-                TextureFromUrl { url: metallic_roughness, format: wgpu::TextureFormat::Rgba8Unorm }
+                TextureFromUrl { url: metallic_roughness.clone().expect_abs(), format: wgpu::TextureFormat::Rgba8Unorm }
                     .get(&assets)
                     .await?
                     .create_view(&Default::default()),
