@@ -59,7 +59,7 @@ impl AbsAssetUrl {
         }
     }
     pub fn resolve(&self, url_or_relative_path: impl AsRef<str>) -> Result<Self, url::ParseError> {
-        AbsAssetUrlOrRelativePath::parse(url_or_relative_path)?.resolve(self)
+        AssetUrl::parse(url_or_relative_path)?.resolve(self)
     }
 }
 impl From<PathBuf> for AbsAssetUrl {
@@ -71,11 +71,11 @@ impl From<PathBuf> for AbsAssetUrl {
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
 #[serde(untagged)]
-pub enum AbsAssetUrlOrRelativePath {
+pub enum AssetUrl {
     Url(Url),
     RelativePath(String),
 }
-impl AbsAssetUrlOrRelativePath {
+impl AssetUrl {
     pub fn parse(url_or_relative_path: impl AsRef<str>) -> Result<Self, url::ParseError> {
         match Url::parse(url_or_relative_path.as_ref()) {
             Ok(url) => Ok(Self::Url(url)),
@@ -85,23 +85,23 @@ impl AbsAssetUrlOrRelativePath {
     }
     pub fn resolve(&self, base_url: &AbsAssetUrl) -> Result<AbsAssetUrl, url::ParseError> {
         match self {
-            AbsAssetUrlOrRelativePath::Url(url) => Ok(AbsAssetUrl(url.clone())),
-            AbsAssetUrlOrRelativePath::RelativePath(path) => Ok(AbsAssetUrl(base_url.0.join(path)?)),
+            AssetUrl::Url(url) => Ok(AbsAssetUrl(url.clone())),
+            AssetUrl::RelativePath(path) => Ok(AbsAssetUrl(base_url.0.join(path)?)),
         }
     }
     pub fn path(&self) -> &str {
         match self {
-            AbsAssetUrlOrRelativePath::Url(url) => url.path(),
-            AbsAssetUrlOrRelativePath::RelativePath(path) => path,
+            AssetUrl::Url(url) => url.path(),
+            AssetUrl::RelativePath(path) => path,
         }
     }
 }
-impl From<RelativePathBuf> for AbsAssetUrlOrRelativePath {
+impl From<RelativePathBuf> for AssetUrl {
     fn from(value: RelativePathBuf) -> Self {
         Self::RelativePath(value.to_string())
     }
 }
-impl std::fmt::Debug for AbsAssetUrlOrRelativePath {
+impl std::fmt::Debug for AssetUrl {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Url(arg0) => write!(f, "{}", arg0),
@@ -109,7 +109,7 @@ impl std::fmt::Debug for AbsAssetUrlOrRelativePath {
         }
     }
 }
-impl std::fmt::Display for AbsAssetUrlOrRelativePath {
+impl std::fmt::Display for AssetUrl {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Url(arg0) => write!(f, "{}", arg0),

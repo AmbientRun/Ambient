@@ -5,7 +5,7 @@ use elements_gpu::{
     gpu::{Gpu, GpuKey}, shader_module::{BindGroupDesc, ShaderModule}, std_assets::{get_default_sampler, DefaultNormalMapViewKey, PixelTextureViewKey}, texture::{Texture, TextureView}, texture_loaders::{SplitTextureFromUrl, TextureFromUrl}
 };
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AbsAssetUrlOrRelativePath, ImageAssetType, TypedAssetUrl}, download_asset::AssetError, include_file
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetUrl, ImageAssetType, TypedAssetUrl}, download_asset::AssetError, include_file
 };
 use glam::Vec4;
 use serde::{Deserialize, Serialize};
@@ -235,10 +235,10 @@ pub struct PbrMaterialFromUrl {
     pub name: Option<String>,
     pub source: Option<String>,
 
-    pub base_color: Option<AbsAssetUrlOrRelativePath>,
-    pub opacity: Option<AbsAssetUrlOrRelativePath>,
-    pub normalmap: Option<AbsAssetUrlOrRelativePath>,
-    pub metallic_roughness: Option<AbsAssetUrlOrRelativePath>,
+    pub base_color: Option<AssetUrl>,
+    pub opacity: Option<AssetUrl>,
+    pub normalmap: Option<AssetUrl>,
+    pub metallic_roughness: Option<AssetUrl>,
 
     pub base_color_factor: Option<Vec4>,
     pub emissive_factor: Option<Vec4>,

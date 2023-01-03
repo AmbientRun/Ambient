@@ -9,7 +9,7 @@ use elements_model_import::{MaterialFilter, ModelImportPipeline, ModelImportTran
 use elements_primitives::{Cube, Quad};
 use elements_renderer::{color, materials::pbr_material::PbrMaterialFromUrl};
 use elements_std::{
-    asset_cache::AsyncAssetKeyExt, asset_url::{AbsAssetUrl, AbsAssetUrlOrRelativePath}, math::SphericalCoords
+    asset_cache::AsyncAssetKeyExt, asset_url::{AbsAssetUrl, AssetUrl}, math::SphericalCoords
 };
 use glam::*;
 use reqwest::Url;
@@ -32,7 +32,7 @@ async fn init(world: &mut World) {
                 .add_step(ModelImportTransform::OverrideMaterial {
                     filter: MaterialFilter::by_name("M_leaves_Fir"),
                     material: Box::new(PbrMaterialFromUrl {
-                        base_color: Some(AbsAssetUrlOrRelativePath::parse(format!("{fir_base}Textures/T_Fir_leaves_BC_T.TGA")).unwrap()),
+                        base_color: Some(AssetUrl::parse(format!("{fir_base}Textures/T_Fir_leaves_BC_T.TGA")).unwrap()),
                         ..Default::default()
                     }),
                 })
@@ -40,18 +40,14 @@ async fn init(world: &mut World) {
         {
             let grass_base = "https://dims-content.fra1.digitaloceanspaces.com/assets/models/Quixel/Grass_vlkhcbxia_2K_3dplant_ms/";
             let grass_atlas = PbrMaterialFromUrl {
-                base_color: Some(AbsAssetUrlOrRelativePath::parse(format!("{grass_base}Textures/Atlas/vlkhcbxia_2K_Albedo.jpg")).unwrap()),
-                opacity: Some(AbsAssetUrlOrRelativePath::parse(format!("{grass_base}Textures/Atlas/vlkhcbxia_2K_Opacity.jpg")).unwrap()),
+                base_color: Some(AssetUrl::parse(format!("{grass_base}Textures/Atlas/vlkhcbxia_2K_Albedo.jpg")).unwrap()),
+                opacity: Some(AssetUrl::parse(format!("{grass_base}Textures/Atlas/vlkhcbxia_2K_Opacity.jpg")).unwrap()),
                 double_sided: Some(true),
                 ..Default::default()
             };
             let grass_billboard = PbrMaterialFromUrl {
-                base_color: Some(
-                    AbsAssetUrlOrRelativePath::parse(format!("{grass_base}Textures/Billboard/Billboard_2K_Albedo.jpg")).unwrap(),
-                ),
-                opacity: Some(
-                    AbsAssetUrlOrRelativePath::parse(format!("{grass_base}Textures/Billboard/Billboard_2K_Opacity.jpg")).unwrap(),
-                ),
+                base_color: Some(AssetUrl::parse(format!("{grass_base}Textures/Billboard/Billboard_2K_Albedo.jpg")).unwrap()),
+                opacity: Some(AssetUrl::parse(format!("{grass_base}Textures/Billboard/Billboard_2K_Opacity.jpg")).unwrap()),
                 alpha_cutoff: Some(0.1),
                 double_sided: Some(true),
                 ..Default::default()

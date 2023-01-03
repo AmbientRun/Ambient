@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AbsAssetUrlOrRelativePath}, download_asset::{AssetError, BytesFromUrlCachedPath}
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetUrl}, download_asset::{AssetError, BytesFromUrlCachedPath}
 };
 use itertools::Itertools;
 use physxx::{PxConvexMesh, PxDefaultFileInputData, PxTriangleMesh};
@@ -21,7 +21,7 @@ pub enum PhysxGeometry {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PhysxGeometryFromUrl(pub AbsAssetUrlOrRelativePath);
+pub struct PhysxGeometryFromUrl(pub AssetUrl);
 impl PhysxGeometryFromUrl {
     pub fn resolve(&self, base_url: &AbsAssetUrl) -> anyhow::Result<PhysxGeometryFromResolvedUrl> {
         Ok(PhysxGeometryFromResolvedUrl(self.0.resolve(base_url)?))
@@ -42,7 +42,7 @@ impl AsyncAssetKey<Result<Arc<PhysxGeometry>, AssetError>> for PhysxGeometryFrom
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PhysxTriangleMeshFromUrl(pub AbsAssetUrlOrRelativePath);
+pub struct PhysxTriangleMeshFromUrl(pub AssetUrl);
 impl PhysxTriangleMeshFromUrl {
     pub fn resolve(&self, base_url: &AbsAssetUrl) -> anyhow::Result<PhysxTriangleMeshFromResolvedUrl> {
         Ok(PhysxTriangleMeshFromResolvedUrl(self.0.resolve(base_url)?))
@@ -71,7 +71,7 @@ impl AsyncAssetKey<Result<PxRcAsset<PxTriangleMesh>, AssetError>> for PhysxTrian
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PhysxConvexMeshFromUrl(pub AbsAssetUrlOrRelativePath);
+pub struct PhysxConvexMeshFromUrl(pub AssetUrl);
 impl PhysxConvexMeshFromUrl {
     pub fn resolve(&self, base_url: &AbsAssetUrl) -> anyhow::Result<PhysxConvexMeshFromResolvedUrl> {
         Ok(PhysxConvexMeshFromResolvedUrl(self.0.resolve(base_url)?))
