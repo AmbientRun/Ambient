@@ -171,12 +171,12 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
             alpha_cutoff: mat.alpha_cutoff(),
             metallic: if has_mr { 1.0 } else { pbr.metallic_factor() },
             roughness: if has_mr { 1.0 } else { pbr.roughness_factor() },
-            base_color: pbr.base_color_texture().and_then(|x| images.get(x.texture().index())).map(|x| dotdot_path(x).to_string()),
-            normalmap: mat.normal_texture().and_then(|x| images.get(x.texture().index())).map(|x| dotdot_path(x).to_string()),
+            base_color: pbr.base_color_texture().and_then(|x| images.get(x.texture().index())).map(|x| dotdot_path(x).into()),
+            normalmap: mat.normal_texture().and_then(|x| images.get(x.texture().index())).map(|x| dotdot_path(x).into()),
             metallic_roughness: pbr
                 .metallic_roughness_texture()
                 .and_then(|x| images.get(x.texture().index()))
-                .map(|x| dotdot_path(x).to_string()),
+                .map(|x| dotdot_path(x).into()),
             double_sided: Some(mat.double_sided()),
             opacity: None,
         };
@@ -204,8 +204,8 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
                 let primitive_defs = mesh_
                     .primitives()
                     .map(|primitive| PbrRenderPrimitiveFromUrl {
-                        mesh: dotdot_path(&meshes[mesh_.index()][primitive.index()]).to_string(),
-                        material: primitive.material().index().map(|material_index| dotdot_path(&materials[material_index]).to_string()),
+                        mesh: dotdot_path(&meshes[mesh_.index()][primitive.index()]).into(),
+                        material: primitive.material().index().map(|material_index| dotdot_path(&materials[material_index]).into()),
                         lod: 0,
                     })
                     .collect_vec();

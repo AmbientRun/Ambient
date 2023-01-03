@@ -12,7 +12,7 @@ use elements_renderer::{
     }, primitives, RenderPrimitive, StandardShaderKey
 };
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, download_asset::{AssetError, BytesFromUrl, ContentUrl, JsonFromUrl, UrlString}, log_result, math::Line
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, download_asset::{AssetError, BytesFromUrl, ContentUrl, ContentUrlOrRelativePath, JsonFromUrl, UrlString}, log_result, math::Line
 };
 use futures::StreamExt;
 use glam::{vec4, Vec3};
@@ -35,8 +35,7 @@ components!("model", {
 
     model: Arc<Model>,
     model_def: ModelDef,
-    /// This may be an absolute or relative url
-    model_url: String,
+    model_url: ContentUrlOrRelativePath,
 
     pbr_renderer_primitives_from_url: Vec<PbrRenderPrimitiveFromUrl>,
     model_animatable: bool,
@@ -229,15 +228,15 @@ impl SyncAssetKey<Arc<Semaphore>> for ModelLoadSemaphore {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct PbrRenderPrimitiveFromUrl {
-    pub mesh: UrlString,
-    pub material: Option<UrlString>,
+    pub mesh: ContentUrlOrRelativePath,
+    pub material: Option<ContentUrlOrRelativePath>,
     pub lod: usize,
 }
 impl PbrRenderPrimitiveFromUrl {
     pub fn resolve(&self, base_url: &ContentUrl) -> anyhow::Result<PbrRenderPrimitiveFromResolvedUrl> {
         Ok(PbrRenderPrimitiveFromResolvedUrl {
-            mesh: base_url.resolve(&self.mesh)?,
-            material: if let Some(x) = &self.material { Some(base_url.resolve(&x)?) } else { None },
+            mesh: self.mesh.resolve(base_url)?,
+            material: if let Some(x) = &self.material { Some(x.resolve(base_url)?) } else { None },
             lod: self.lod,
         })
     }

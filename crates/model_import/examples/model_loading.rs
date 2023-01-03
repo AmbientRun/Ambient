@@ -8,7 +8,9 @@ use elements_model::{model_def, ModelDef};
 use elements_model_import::{MaterialFilter, ModelImportPipeline, ModelImportTransform, ModelTransform};
 use elements_primitives::{Cube, Quad};
 use elements_renderer::{color, materials::pbr_material::PbrMaterialFromUrl};
-use elements_std::{asset_cache::AsyncAssetKeyExt, download_asset::ContentUrl, math::SphericalCoords};
+use elements_std::{
+    asset_cache::AsyncAssetKeyExt, download_asset::{ContentUrl, ContentUrlOrRelativePath}, math::SphericalCoords
+};
 use glam::*;
 use reqwest::Url;
 
@@ -30,7 +32,7 @@ async fn init(world: &mut World) {
                 .add_step(ModelImportTransform::OverrideMaterial {
                     filter: MaterialFilter::by_name("M_leaves_Fir"),
                     material: Box::new(PbrMaterialFromUrl {
-                        base_color: Some(format!("{fir_base}Textures/T_Fir_leaves_BC_T.TGA").into()),
+                        base_color: Some(ContentUrlOrRelativePath::parse(format!("{fir_base}Textures/T_Fir_leaves_BC_T.TGA")).unwrap()),
                         ..Default::default()
                     }),
                 })
@@ -38,14 +40,16 @@ async fn init(world: &mut World) {
         {
             let grass_base = "https://dims-content.fra1.digitaloceanspaces.com/assets/models/Quixel/Grass_vlkhcbxia_2K_3dplant_ms/";
             let grass_atlas = PbrMaterialFromUrl {
-                base_color: Some(format!("{grass_base}Textures/Atlas/vlkhcbxia_2K_Albedo.jpg").into()),
-                opacity: Some(format!("{grass_base}Textures/Atlas/vlkhcbxia_2K_Opacity.jpg").into()),
+                base_color: Some(ContentUrlOrRelativePath::parse(format!("{grass_base}Textures/Atlas/vlkhcbxia_2K_Albedo.jpg")).unwrap()),
+                opacity: Some(ContentUrlOrRelativePath::parse(format!("{grass_base}Textures/Atlas/vlkhcbxia_2K_Opacity.jpg")).unwrap()),
                 double_sided: Some(true),
                 ..Default::default()
             };
             let grass_billboard = PbrMaterialFromUrl {
-                base_color: Some(format!("{grass_base}Textures/Billboard/Billboard_2K_Albedo.jpg").into()),
-                opacity: Some(format!("{grass_base}Textures/Billboard/Billboard_2K_Opacity.jpg").into()),
+                base_color: Some(
+                    ContentUrlOrRelativePath::parse(format!("{grass_base}Textures/Billboard/Billboard_2K_Albedo.jpg")).unwrap(),
+                ),
+                opacity: Some(ContentUrlOrRelativePath::parse(format!("{grass_base}Textures/Billboard/Billboard_2K_Opacity.jpg")).unwrap()),
                 alpha_cutoff: Some(0.1),
                 double_sided: Some(true),
                 ..Default::default()
@@ -86,7 +90,6 @@ async fn init(world: &mut World) {
     let mut model_defs = Vec::new();
     for pipeline in asset_pipelines.iter() {
         let model_url = pipeline.produce_local_model_url(&assets).await.unwrap();
-        println!("XX {:?}", model_url);
         model_defs.push(ModelDef(ContentUrl(Url::from_file_path(model_url).unwrap())));
     }
 

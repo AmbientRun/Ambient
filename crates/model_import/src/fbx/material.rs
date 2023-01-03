@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use elements_renderer::materials::pbr_material::PbrMaterialFromUrl;
-use elements_std::asset_url::AssetUrl;
+use elements_std::{asset_url::AssetUrl, download_asset::ContentUrlOrRelativePath};
 use fbxcel::tree::v7400::NodeHandle;
 use glam::{vec3, Vec3};
 
@@ -125,7 +125,7 @@ impl FbxMaterial {
             }
             None
         };
-        let img_to_asset = |(image, _id): (AssetLoc, i64)| dotdot_path(&image.path).to_string();
+        let img_to_asset = |(image, _id): (AssetLoc, i64)| -> ContentUrlOrRelativePath { dotdot_path(&image.path).into() };
         PbrMaterialFromUrl {
             name: Some(self.name.to_string()),
             source: Some(source),

@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, download_asset::{AssetError, BytesFromUrlCachedPath, ContentUrl, UrlString}
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, download_asset::{AssetError, BytesFromUrlCachedPath, ContentUrl, ContentUrlOrRelativePath, UrlString}
 };
 use itertools::Itertools;
 use physxx::{PxConvexMesh, PxDefaultFileInputData, PxTriangleMesh};
@@ -21,10 +21,10 @@ pub enum PhysxGeometry {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PhysxGeometryFromUrl(pub String);
+pub struct PhysxGeometryFromUrl(pub ContentUrlOrRelativePath);
 impl PhysxGeometryFromUrl {
     pub fn resolve(&self, base_url: &ContentUrl) -> anyhow::Result<PhysxGeometryFromResolvedUrl> {
-        Ok(PhysxGeometryFromResolvedUrl(base_url.resolve(&self.0)?))
+        Ok(PhysxGeometryFromResolvedUrl(self.0.resolve(base_url)?))
     }
 }
 
@@ -42,10 +42,10 @@ impl AsyncAssetKey<Result<Arc<PhysxGeometry>, AssetError>> for PhysxGeometryFrom
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PhysxTriangleMeshFromUrl(pub String);
+pub struct PhysxTriangleMeshFromUrl(pub ContentUrlOrRelativePath);
 impl PhysxTriangleMeshFromUrl {
     pub fn resolve(&self, base_url: &ContentUrl) -> anyhow::Result<PhysxTriangleMeshFromResolvedUrl> {
-        Ok(PhysxTriangleMeshFromResolvedUrl(base_url.resolve(&self.0)?))
+        Ok(PhysxTriangleMeshFromResolvedUrl(self.0.resolve(base_url)?))
     }
 }
 
@@ -71,10 +71,10 @@ impl AsyncAssetKey<Result<PxRcAsset<PxTriangleMesh>, AssetError>> for PhysxTrian
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PhysxConvexMeshFromUrl(pub String);
+pub struct PhysxConvexMeshFromUrl(pub ContentUrlOrRelativePath);
 impl PhysxConvexMeshFromUrl {
     pub fn resolve(&self, base_url: &ContentUrl) -> anyhow::Result<PhysxConvexMeshFromResolvedUrl> {
-        Ok(PhysxConvexMeshFromResolvedUrl(base_url.resolve(&self.0)?))
+        Ok(PhysxConvexMeshFromResolvedUrl(self.0.resolve(base_url)?))
     }
 }
 

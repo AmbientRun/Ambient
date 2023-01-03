@@ -38,6 +38,7 @@ convert_case.workspace = true
 once_cell.workspace = true
 pin-project.workspace = true
 url.workspace = true
+relative-path.workspace = true
 
 [features]
 hotload-includes = []

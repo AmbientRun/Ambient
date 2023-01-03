@@ -163,8 +163,8 @@ impl FbxModel {
             if let Some(n_meshes) = n_meshes.get(&geo) {
                 let prims = (0..*n_meshes)
                     .map(|mi| PbrRenderPrimitiveFromUrl {
-                        mesh: dotdot_path(asset_crate.meshes.loc.path(format!("{}_{}", geo, mi))).to_string(),
-                        material: self.materials.get(mi).map(|x| dotdot_path(asset_crate.materials.loc.path(x.to_string())).to_string()),
+                        mesh: dotdot_path(asset_crate.meshes.loc.path(format!("{}_{}", geo, mi))).into(),
+                        material: self.materials.get(mi).map(|x| dotdot_path(asset_crate.materials.loc.path(x.to_string())).into()),
                         lod: 0,
                     })
                     .collect_vec();

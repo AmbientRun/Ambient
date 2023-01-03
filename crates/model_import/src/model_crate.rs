@@ -274,16 +274,17 @@ impl ModelCrate {
             let lod_world = lod.world();
             let lod_id = lod.get_node_id();
             for primitive in lod_world.get_ref(lod_id, pbr_renderer_primitives_from_url()).cloned().unwrap_or_default() {
-                let mesh_id = format!("{}_{}", i, lod.model.meshes.loc.id_from_path(&primitive.mesh).unwrap());
-                let mesh_path = self.meshes.insert(mesh_id.clone(), lod.model.meshes.get_by_path(&primitive.mesh).unwrap().clone()).path;
+                let mesh_id = format!("{}_{}", i, lod.model.meshes.loc.id_from_path(primitive.mesh.path()).unwrap());
+                let mesh_path =
+                    self.meshes.insert(mesh_id.clone(), lod.model.meshes.get_by_path(primitive.mesh.path()).unwrap().clone()).path;
                 let material = primitive.material.as_ref().and_then(|mat_url| {
-                    let mat_id = lod.model.materials.loc.id_from_path(mat_url)?;
+                    let mat_id = lod.model.materials.loc.id_from_path(mat_url.path())?;
                     let lod_mat = lod.model.materials.content.get(&mat_id)?;
                     Some(self.materials.insert(i.to_string(), lod_mat.clone()).path)
                 });
                 root.get_mut(pbr_renderer_primitives_from_url()).unwrap().push(PbrRenderPrimitiveFromUrl {
-                    mesh: dotdot_path(mesh_path).to_string(),
-                    material: material.map(|x| dotdot_path(x).to_string()),
+                    mesh: dotdot_path(mesh_path).into(),
+                    material: material.map(|x| dotdot_path(x).into()),
                     lod: i,
                 });
             }
@@ -305,7 +306,7 @@ impl ModelCrate {
         let mat_path = dotdot_path(self.materials.insert("main".to_string(), material).path);
         for (_, primitives, _) in query_mut(pbr_renderer_primitives_from_url(), ()).iter(self.model_world_mut(), None) {
             for primitive in primitives.iter_mut() {
-                primitive.material = Some(mat_path.to_string());
+                primitive.material = Some(mat_path.clone().into());
             }
         }
     }
@@ -327,7 +328,7 @@ impl ModelCrate {
             let aabbs = primitives
                 .iter()
                 .filter_map(|p| {
-                    if let Some(mesh) = self.meshes.get_by_path(&RelativePathBuf::from("materials").join(&p.mesh)) {
+                    if let Some(mesh) = self.meshes.get_by_path(&RelativePathBuf::from("materials").join(p.mesh.path())) {
                         if let Ok(skin_id) = world.get(node, model_skin_ix()) {
                             if let Some(joint_matrices) = joint_matrices.as_ref().unwrap().get(skin_id) {
                                 let mut mesh = mesh.clone();
@@ -439,7 +440,7 @@ impl ModelCrate {
 
     pub fn create_object(&mut self) {
         let mut object = World::new("object_asset");
-        let o = EntityData::new().set(model_url(), dotdot_path(self.models.loc.path(ModelCrate::MAIN)).to_string()).spawn(&mut object);
+        let o = EntityData::new().set(model_url(), dotdot_path(self.models.loc.path(ModelCrate::MAIN)).into()).spawn(&mut object);
         object.add_resource(children(), vec![o]);
         self.objects.insert(ModelCrate::MAIN, object);
     }
@@ -510,13 +511,14 @@ impl ModelCrate {
             for primitive in prims.into_iter().filter(|x| x.lod == max_lod) {
                 let transform = world_transform * ltw * mtl;
                 let (scale, rot, pos) = transform.to_scale_rotation_translation();
-                let mesh_id = self.meshes.loc.id_from_path(&primitive.mesh).unwrap();
+                let mesh_id = self.meshes.loc.id_from_path(primitive.mesh.path()).unwrap();
                 if create_triangle_mesh(self, &mesh_id) {
                     if let Some(convex_path) = create_convex_mesh(self, &mesh_id, scale.signum()) {
-                        let convex_path = dotdot_path(convex_path).to_string();
-                        let triangle_path = dotdot_path(self.px_triangle_meshes.loc.path(mesh_id)).to_string();
-                        convex.push((Mat4::from_scale_rotation_translation(scale.abs(), rot, pos), PhysxGeometryFromUrl(convex_path)));
-                        triangle.push((transform, PhysxGeometryFromUrl(triangle_path)));
+                        let convex_path = dotdot_path(convex_path);
+                        let triangle_path = dotdot_path(self.px_triangle_meshes.loc.path(mesh_id));
+                        convex
+                            .push((Mat4::from_scale_rotation_translation(scale.abs(), rot, pos), PhysxGeometryFromUrl(convex_path.into())));
+                        triangle.push((transform, PhysxGeometryFromUrl(triangle_path.into())));
                     }
                 }
             }

@@ -168,8 +168,8 @@ fn import_sync(buffer: &[u8], model_crate: &mut ModelCrate, extension: &str) -> 
                     .flat_map(|mesh_i| {
                         scene.meshes.get(*mesh_i as usize).map(|mesh| PbrRenderPrimitiveFromUrl {
                             lod: 0,
-                            material: Some(dotdot_path(model_crate.materials.loc.path(mesh.material_index.to_string())).to_string()),
-                            mesh: dotdot_path(model_crate.meshes.loc.path(mesh_i.to_string())).to_string(),
+                            material: Some(dotdot_path(model_crate.materials.loc.path(mesh.material_index.to_string())).into()),
+                            mesh: dotdot_path(model_crate.meshes.loc.path(mesh_i.to_string())).into(),
                         })
                     })
                     .collect(),

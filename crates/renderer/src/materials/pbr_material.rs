@@ -5,7 +5,7 @@ use elements_gpu::{
     gpu::{Gpu, GpuKey}, shader_module::{BindGroupDesc, ShaderModule}, std_assets::{get_default_sampler, DefaultNormalMapViewKey, PixelTextureViewKey}, texture::{Texture, TextureView}, texture_loaders::{SplitTextureFromUrl, TextureFromUrl}
 };
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AssetUrl, ImageAssetType}, download_asset::{AssetError, ContentUrl, UrlString}, include_file
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AssetUrl, ImageAssetType}, download_asset::{AssetError, ContentUrl, ContentUrlOrRelativePath, UrlString}, include_file
 };
 use glam::Vec4;
 use serde::{Deserialize, Serialize};
@@ -235,10 +235,10 @@ pub struct PbrMaterialFromUrl {
     pub name: Option<String>,
     pub source: Option<String>,
 
-    pub base_color: Option<UrlString>,
-    pub opacity: Option<UrlString>,
-    pub normalmap: Option<UrlString>,
-    pub metallic_roughness: Option<UrlString>,
+    pub base_color: Option<ContentUrlOrRelativePath>,
+    pub opacity: Option<ContentUrlOrRelativePath>,
+    pub normalmap: Option<ContentUrlOrRelativePath>,
+    pub metallic_roughness: Option<ContentUrlOrRelativePath>,
 
     pub base_color_factor: Option<Vec4>,
     pub emissive_factor: Option<Vec4>,
@@ -256,10 +256,10 @@ impl PbrMaterialFromUrl {
             name: self.name.clone(),
             source: self.source.clone(),
 
-            base_color: if let Some(x) = &self.base_color { Some(base_url.resolve(x)?) } else { None },
-            opacity: if let Some(x) = &self.opacity { Some(base_url.resolve(x)?) } else { None },
-            normalmap: if let Some(x) = &self.normalmap { Some(base_url.resolve(x)?) } else { None },
-            metallic_roughness: if let Some(x) = &self.metallic_roughness { Some(base_url.resolve(x)?) } else { None },
+            base_color: if let Some(x) = &self.base_color { Some(x.resolve(base_url)?) } else { None },
+            opacity: if let Some(x) = &self.opacity { Some(x.resolve(base_url)?) } else { None },
+            normalmap: if let Some(x) = &self.normalmap { Some(x.resolve(base_url)?) } else { None },
+            metallic_roughness: if let Some(x) = &self.metallic_roughness { Some(x.resolve(base_url)?) } else { None },
 
             base_color_factor: self.base_color_factor.clone(),
             emissive_factor: self.emissive_factor.clone(),
