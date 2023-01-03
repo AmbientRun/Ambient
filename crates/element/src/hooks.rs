@@ -316,14 +316,11 @@ impl<'a> Hooks<'a> {
     /// The provided functions returns a function which is run when the part is
     /// removed or `use_effect` is run again.
     #[profiling::function]
-    pub fn use_effect<
-        F: FnOnce(&mut World) -> Box<dyn FnOnce(&mut World) + Sync + Send> + Sync + Send,
-        D: PartialEq + ComponentValue + Debug,
-    >(
+    pub fn use_effect<D: PartialEq + ComponentValue + Debug>(
         &mut self,
         world: &mut World,
         dependencies: D,
-        run: F,
+        run: impl FnOnce(&mut World) -> Box<dyn FnOnce(&mut World) + Sync + Send> + Sync + Send,
     ) {
         struct Cleanup(Box<dyn FnOnce(&mut World) + Sync + Send>);
         impl Debug for Cleanup {
@@ -332,7 +329,7 @@ impl<'a> Hooks<'a> {
             }
         }
         let cleanup_prev: Arc<Mutex<Option<Cleanup>>> = self.use_ref_with(|| None);
-        let prev_deps = self.use_ref_with(|| None);
+        let prev_deps = self.use_ref_with::<Option<D>>(|| None);
         {
             let cleanup_prev = cleanup_prev.clone();
             self.use_spawn(move |_| {
@@ -344,16 +341,16 @@ impl<'a> Hooks<'a> {
                 })
             });
         }
-        let dependencies = Some(dependencies);
+
         let mut prev_deps = prev_deps.lock();
-        if *prev_deps != dependencies {
+        if prev_deps.as_ref() != Some(&dependencies) {
             let mut cleanup_prev = cleanup_prev.lock();
             if let Some(cleanup_prev) = std::mem::replace(&mut *cleanup_prev, None) {
                 cleanup_prev.0(world);
             }
             profiling::scope!("us_effect_run");
             *cleanup_prev = Some(Cleanup(run(world)));
-            *prev_deps = dependencies;
+            *prev_deps = Some(dependencies);
         }
     }
 
