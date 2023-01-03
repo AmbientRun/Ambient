@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, download_asset::{AssetError, BytesFromUrlCachedPath, ContentUrl, ContentUrlOrRelativePath, UrlString}
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, download_asset::{AssetError, BytesFromUrlCachedPath, ContentUrl, ContentUrlOrRelativePath}
 };
 use itertools::Itertools;
 use physxx::{PxConvexMesh, PxDefaultFileInputData, PxTriangleMesh};

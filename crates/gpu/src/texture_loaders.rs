@@ -2,7 +2,7 @@ use std::{any::type_name, borrow::Cow, fmt, io::Cursor, sync::Arc};
 
 use async_trait::async_trait;
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, download_asset::{AssetError, AssetResult, BytesFromUrl, ContentUrl, UrlString}, CowStr
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, download_asset::{AssetError, AssetResult, BytesFromUrl, ContentUrl}, CowStr
 };
 use futures::future::join_all;
 use image::{DynamicImage, ImageFormat, Rgba, RgbaImage};

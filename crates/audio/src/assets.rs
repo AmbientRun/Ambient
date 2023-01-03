@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use async_trait::*;
 use elements_std::{
-    asset_cache::{AsyncAssetKey, AsyncAssetKeyExt}, asset_url::{AssetType, GetAssetType}, download_asset::{BytesFromUrl, ContentUrl, UrlString}
+    asset_cache::{AsyncAssetKey, AsyncAssetKeyExt}, asset_url::{AssetType, GetAssetType}, download_asset::{BytesFromUrl, ContentUrl}
 };
 
 use crate::{

@@ -16,8 +16,6 @@ use crate::{
     asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, mesh::Mesh
 };
 
-pub type UrlString = String;
-
 /// This is a thin wrapper around Url, which is guaranteed to always
 /// be an absolute url (including when pointing to a local file).
 ///

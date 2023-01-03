@@ -8,7 +8,7 @@ use elements_element::{element_component, Element, ElementComponentExt, Hooks};
 use elements_gpu::{mesh_buffer::GpuMesh, texture::Texture};
 use elements_renderer::{color, gpu_primitives, material, primitives, renderer_shader, SharedMaterial};
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, download_asset::{AssetError, AssetResult, BytesFromUrl, UrlString}, mesh::*, shapes::AABB, CowStr
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, download_asset::{AssetError, AssetResult, BytesFromUrl, ContentUrl}, mesh::*, shapes::AABB, CowStr
 };
 use glam::*;
 use glyph_brush::{
@@ -115,7 +115,7 @@ impl Default for FontStyle {
 #[derive(Debug, Clone)]
 pub enum FontFamily {
     Default,
-    Custom(UrlString),
+    Custom(ContentUrl),
     FontAwesome { solid: bool },
     SourceSansPro,
 }
@@ -401,13 +401,13 @@ fn mesh_from_glyph_vertices(vertices: Vec<GlyphVertex>) -> Mesh {
 }
 
 #[derive(Debug, Clone)]
-pub struct FontFromUrl(CowStr);
+pub struct FontFromUrl(ContentUrl);
 
 #[async_trait]
 impl AsyncAssetKey<AssetResult<Arc<FontArc>>> for FontFromUrl {
     async fn load(self, assets: elements_std::asset_cache::AssetCache) -> AssetResult<Arc<FontArc>> {
         info!("Downloading font: {}", self.0);
-        let data = BytesFromUrl::parse_url(&self.0, true)?.get(&assets).await?;
+        let data = BytesFromUrl::new(self.0, true).get(&assets).await?;
         let brush = FontArc::try_from_vec(data.deref().clone()).context("Failed to parse font")?;
         Ok(Arc::new(brush))
     }
