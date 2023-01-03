@@ -9,7 +9,7 @@ use elements_core::{
 use elements_ecs::World;
 use elements_model::{model_skins, Model, ModelSkin};
 use elements_renderer::skinning;
-use elements_std::{asset_cache::AssetCache, download_asset::ContentUrl};
+use elements_std::{asset_cache::AssetCache, asset_url::ContentUrl};
 use fbxcel::tree::{
     any::AnyTree, v7400::{NodeHandle, Tree}
 };

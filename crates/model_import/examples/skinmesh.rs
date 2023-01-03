@@ -8,7 +8,7 @@ use elements_element::ElementComponentExt;
 use elements_model_import::model_crate::ModelCrate;
 use elements_primitives::{Cube, Quad};
 use elements_renderer::color;
-use elements_std::{download_asset::ContentUrl, math::SphericalCoords};
+use elements_std::{asset_url::ContentUrl, math::SphericalCoords};
 use glam::*;
 use winit::event::{Event, VirtualKeyCode, WindowEvent};
 

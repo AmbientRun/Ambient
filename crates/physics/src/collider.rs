@@ -9,7 +9,7 @@ use elements_ecs::{components, query, EntityData, EntityId, SystemGroup, World};
 use elements_editor_derive::ElementEditor;
 use elements_model::model_def;
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AssetUrl, ColliderAssetType, ModelAssetType}, download_asset::{AssetError, ContentUrl, JsonFromUrl}, events::EventDispatcher
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AssetUrl, ColliderAssetType, ContentUrl, ModelAssetType}, download_asset::{AssetError, JsonFromUrl}, events::EventDispatcher
 };
 use futures::future::try_join_all;
 use glam::{vec3, Mat4, Vec3};

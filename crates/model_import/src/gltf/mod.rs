@@ -7,7 +7,9 @@ use elements_core::{
 use elements_ecs::{EntityData, World};
 use elements_model::{model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, ModelSkin, PbrRenderPrimitiveFromUrl};
 use elements_renderer::materials::pbr_material::PbrMaterialFromUrl;
-use elements_std::{asset_cache::AssetCache, asset_url::AssetUrl, download_asset::ContentUrl, mesh::Mesh, shapes::AABB};
+use elements_std::{
+    asset_cache::AssetCache, asset_url::{AssetUrl, ContentUrl}, mesh::Mesh, shapes::AABB
+};
 use glam::{uvec4, Mat4, Quat, UVec4, Vec2, Vec3, Vec4, Vec4Swizzles};
 use gltf::animation::util::ReadOutputs;
 use itertools::Itertools;

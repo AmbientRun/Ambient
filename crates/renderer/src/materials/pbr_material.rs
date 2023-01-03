@@ -5,7 +5,7 @@ use elements_gpu::{
     gpu::{Gpu, GpuKey}, shader_module::{BindGroupDesc, ShaderModule}, std_assets::{get_default_sampler, DefaultNormalMapViewKey, PixelTextureViewKey}, texture::{Texture, TextureView}, texture_loaders::{SplitTextureFromUrl, TextureFromUrl}
 };
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AssetUrl, ImageAssetType}, download_asset::{AssetError, ContentUrl, ContentUrlOrRelativePath}, include_file
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AssetUrl, ContentUrl, ContentUrlOrRelativePath, ImageAssetType}, download_asset::AssetError, include_file
 };
 use glam::Vec4;
 use serde::{Deserialize, Serialize};

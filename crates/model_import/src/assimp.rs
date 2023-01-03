@@ -6,7 +6,7 @@ use elements_core::{
 use elements_ecs::{EntityData, EntityId, World};
 use elements_model::{pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl};
 use elements_renderer::materials::pbr_material::PbrMaterialFromUrl;
-use elements_std::{asset_cache::AssetCache, download_asset::ContentUrl, mesh::Mesh};
+use elements_std::{asset_cache::AssetCache, asset_url::ContentUrl, mesh::Mesh};
 use glam::{vec2, vec3, vec4, Mat4};
 use itertools::Itertools;
 use relative_path::{RelativePath, RelativePathBuf};

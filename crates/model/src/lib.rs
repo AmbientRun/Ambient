@@ -12,7 +12,7 @@ use elements_renderer::{
     }, primitives, RenderPrimitive, StandardShaderKey
 };
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, download_asset::{AssetError, BytesFromUrl, ContentUrl, ContentUrlOrRelativePath, JsonFromUrl}, log_result, math::Line
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::{ContentUrl, ContentUrlOrRelativePath}, download_asset::{AssetError, BytesFromUrl, JsonFromUrl}, log_result, math::Line
 };
 use futures::StreamExt;
 use glam::{vec4, Vec3};

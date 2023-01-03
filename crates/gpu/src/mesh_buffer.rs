@@ -6,7 +6,7 @@ use std::{
 
 use async_trait::async_trait;
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, download_asset::{AssetResult, ContentUrl, MeshFromUrl}, mesh::Mesh
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::ContentUrl, download_asset::{AssetResult, MeshFromUrl}, mesh::Mesh
 };
 use glam::{UVec4, Vec2, Vec4};
 use itertools::Itertools;

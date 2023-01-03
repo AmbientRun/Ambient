@@ -10,7 +10,7 @@ use elements_renderer::{
     cast_shadows, color, gpu_primitives, lod::cpu_lod_visible, primitives, skinning::{self, Skin, SkinsBuffer, SkinsBufferKey}
 };
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt}, download_asset::{AssetError, ContentUrl}, shapes::AABB
+    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::ContentUrl, download_asset::AssetError, shapes::AABB
 };
 use futures::future::join_all;
 use glam::{Mat4, Vec3, Vec4};

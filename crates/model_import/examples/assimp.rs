@@ -6,7 +6,7 @@ use elements_ecs::World;
 use elements_element::ElementComponentExt;
 use elements_model_import::model_crate::ModelCrate;
 use elements_primitives::Quad;
-use elements_std::{download_asset::ContentUrl, math::SphericalCoords};
+use elements_std::{asset_url::ContentUrl, math::SphericalCoords};
 use glam::*;
 
 async fn init(world: &mut World) {

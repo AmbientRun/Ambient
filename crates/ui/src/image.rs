@@ -11,7 +11,7 @@ use elements_renderer::{
     color, gpu_primitives, material, materials::pbr_material::{get_pbr_shader_unlit, PbrMaterial, PbrMaterialConfig, PbrMaterialParams}, primitives, renderer_shader, SharedMaterial
 };
 use elements_std::{
-    asset_cache::{AsyncAssetKeyExt, SyncAssetKeyExt}, download_asset::ContentUrl, CowStr
+    asset_cache::{AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::ContentUrl, CowStr
 };
 use glam::*;
 

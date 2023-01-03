@@ -12,7 +12,7 @@ use elements_renderer::{
     gpu_primitives, material, materials::flat_material::{get_flat_shader, FlatMaterial}, primitives, renderer_shader, Material, MaterialShader, SharedMaterial, StandardShaderKey, MATERIAL_BIND_GROUP
 };
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, download_asset::ContentUrl, math::SphericalCoords
+    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::ContentUrl, math::SphericalCoords
 };
 use glam::*;
 use wgpu::BindGroup;

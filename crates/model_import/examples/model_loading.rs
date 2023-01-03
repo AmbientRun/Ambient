@@ -9,7 +9,7 @@ use elements_model_import::{MaterialFilter, ModelImportPipeline, ModelImportTran
 use elements_primitives::{Cube, Quad};
 use elements_renderer::{color, materials::pbr_material::PbrMaterialFromUrl};
 use elements_std::{
-    asset_cache::AsyncAssetKeyExt, download_asset::{ContentUrl, ContentUrlOrRelativePath}, math::SphericalCoords
+    asset_cache::AsyncAssetKeyExt, asset_url::{ContentUrl, ContentUrlOrRelativePath}, math::SphericalCoords
 };
 use glam::*;
 use reqwest::Url;

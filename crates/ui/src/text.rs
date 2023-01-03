@@ -8,7 +8,7 @@ use elements_element::{element_component, Element, ElementComponentExt, Hooks};
 use elements_gpu::{mesh_buffer::GpuMesh, texture::Texture};
 use elements_renderer::{color, gpu_primitives, material, primitives, renderer_shader, SharedMaterial};
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, download_asset::{AssetError, AssetResult, BytesFromUrl, ContentUrl}, mesh::*, shapes::AABB, CowStr
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, asset_url::ContentUrl, download_asset::{AssetError, AssetResult, BytesFromUrl}, mesh::*, shapes::AABB, CowStr
 };
 use glam::*;
 use glyph_brush::{

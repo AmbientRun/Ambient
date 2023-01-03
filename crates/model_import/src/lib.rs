@@ -9,7 +9,7 @@ use elements_editor_derive::ElementEditor;
 use elements_model::Model;
 use elements_renderer::materials::pbr_material::PbrMaterialFromUrl;
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, download_asset::{download, AssetResult, AssetsCacheDir, ContentUrl}
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::ContentUrl, download_asset::{download, AssetResult, AssetsCacheDir}
 };
 use futures::FutureExt;
 use glam::{Mat4, Vec3, Vec4};

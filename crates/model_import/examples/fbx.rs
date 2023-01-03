@@ -8,7 +8,7 @@ use elements_gizmos::{gizmos, GizmoPrimitive};
 use elements_model::bones_to_lines;
 use elements_model_import::model_crate::ModelCrate;
 use elements_primitives::Quad;
-use elements_std::{download_asset::ContentUrl, line_hash, math::SphericalCoords};
+use elements_std::{asset_url::ContentUrl, line_hash, math::SphericalCoords};
 use glam::*;
 
 async fn init(world: &mut World) {

@@ -7,7 +7,7 @@ use elements_editor_derive::ElementEditor;
 use elements_element::ElementComponentExt;
 use elements_model::{Model, ModelDef};
 use elements_std::{
-    asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt}, asset_url::{AnimationAssetType, AssetUrl, ModelAssetType}, download_asset::{AssetError, ContentUrl}
+    asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt}, asset_url::{AnimationAssetType, AssetUrl, ModelAssetType}, download_asset::AssetError
 };
 use serde::{Deserialize, Serialize};
 

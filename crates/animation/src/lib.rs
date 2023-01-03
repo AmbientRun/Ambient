@@ -8,7 +8,7 @@ use elements_core::{asset_cache, hierarchy::children, time};
 use elements_ecs::{components, query, EntityId, SystemGroup};
 use elements_model::{animation_binder, model, model_def, ModelDef};
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKeyExt}, asset_url::{AnimationAssetType, AssetUrl, ModelAssetType}, download_asset::ContentUrl
+    asset_cache::{AssetCache, AsyncAssetKeyExt}, asset_url::{AnimationAssetType, AssetUrl, ContentUrl, ModelAssetType}
 };
 use serde::{Deserialize, Serialize};
 

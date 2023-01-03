@@ -1,12 +1,122 @@
-use std::marker::PhantomData;
+use std::{marker::PhantomData, path::PathBuf};
 
 use convert_case::{Case, Casing};
 use rand::seq::SliceRandom;
+use relative_path::RelativePathBuf;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use url::Url;
 
 use crate::{
-    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, Cb
+    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, download_asset::AssetsCacheDir, Cb
 };
+
+/// This is a thin wrapper around Url, which is guaranteed to always
+/// be an absolute url (including when pointing to a local file).
+///
+/// It's got a custom Debug implementation which just prints the url,
+/// which makes it useful in asset keys
+#[derive(Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct ContentUrl(pub Url);
+impl std::fmt::Debug for ContentUrl {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0.as_str())
+    }
+}
+impl std::fmt::Display for ContentUrl {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0.as_str())
+    }
+}
+impl ContentUrl {
+    /// This will also resolve relative local paths
+    pub fn parse(url: impl AsRef<str>) -> anyhow::Result<Self> {
+        match Url::parse(url.as_ref()) {
+            Ok(url) => Ok(Self(url)),
+            Err(url::ParseError::RelativeUrlWithoutBase) => {
+                Ok(Self(Url::parse(&format!("file://{}/{}", std::env::current_dir().unwrap().to_str().unwrap(), url.as_ref()))?))
+            }
+            Err(err) => Err(err.into()),
+        }
+    }
+    pub fn relative_cache_path(&self) -> String {
+        self.0.to_string().replace("://", "/")
+    }
+    pub fn absolute_cache_path(&self, assets: &AssetCache) -> PathBuf {
+        AssetsCacheDir.get(assets).join(self.relative_cache_path()).into()
+    }
+    /// This is always lowercase
+    pub fn extension(&self) -> Option<String> {
+        self.0.path().rsplit_once('.').map(|(_, ext)| ext.to_string().to_lowercase())
+    }
+    pub fn to_file_path(&self) -> anyhow::Result<Option<PathBuf>> {
+        if self.0.scheme() == "file" {
+            match self.0.to_file_path() {
+                Ok(path) => Ok(Some(path)),
+                Err(_) => Err(anyhow::anyhow!("Invalid file url: {:?}", self)),
+            }
+        } else {
+            Ok(None)
+        }
+    }
+    pub fn resolve(&self, url_or_relative_path: impl AsRef<str>) -> Result<Self, url::ParseError> {
+        ContentUrlOrRelativePath::parse(url_or_relative_path)?.resolve(self)
+    }
+}
+impl From<PathBuf> for ContentUrl {
+    fn from(value: PathBuf) -> Self {
+        let value = if value.is_absolute() { value } else { std::env::current_dir().unwrap().join(value) };
+        Self(Url::from_file_path(value).unwrap())
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
+#[serde(untagged)]
+pub enum ContentUrlOrRelativePath {
+    Url(Url),
+    RelativePath(String),
+}
+impl ContentUrlOrRelativePath {
+    pub fn parse(url_or_relative_path: impl AsRef<str>) -> Result<Self, url::ParseError> {
+        match Url::parse(url_or_relative_path.as_ref()) {
+            Ok(url) => Ok(Self::Url(url)),
+            Err(url::ParseError::RelativeUrlWithoutBase) => Ok(Self::RelativePath(url_or_relative_path.as_ref().to_string())),
+            Err(err) => Err(err),
+        }
+    }
+    pub fn resolve(&self, base_url: &ContentUrl) -> Result<ContentUrl, url::ParseError> {
+        match self {
+            ContentUrlOrRelativePath::Url(url) => Ok(ContentUrl(url.clone())),
+            ContentUrlOrRelativePath::RelativePath(path) => Ok(ContentUrl(base_url.0.join(path)?)),
+        }
+    }
+    pub fn path(&self) -> &str {
+        match self {
+            ContentUrlOrRelativePath::Url(url) => url.path(),
+            ContentUrlOrRelativePath::RelativePath(path) => path,
+        }
+    }
+}
+impl From<RelativePathBuf> for ContentUrlOrRelativePath {
+    fn from(value: RelativePathBuf) -> Self {
+        Self::RelativePath(value.to_string())
+    }
+}
+impl std::fmt::Debug for ContentUrlOrRelativePath {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Url(arg0) => write!(f, "{}", arg0),
+            Self::RelativePath(arg0) => write!(f, "{}", arg0),
+        }
+    }
+}
+impl std::fmt::Display for ContentUrlOrRelativePath {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Url(arg0) => write!(f, "{}", arg0),
+            Self::RelativePath(arg0) => write!(f, "{}", arg0),
+        }
+    }
+}
 
 /// This is a wrapper for a URL (pointing to an asset)
 ///
