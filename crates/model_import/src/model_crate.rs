@@ -42,22 +42,15 @@ impl AssetMapLoc {
     pub fn path(&self, id: impl Into<String>) -> RelativePathBuf {
         format!("{}/{}.{}", self.store, id.into(), self.extension).into()
     }
-    /// This takes the last two parts of the path and extracts the store and id
     pub fn id_from_path(&self, path: impl Into<RelativePathBuf>) -> Option<String> {
         let path: RelativePathBuf = path.into();
-        let path = path.iter().collect_vec();
-        if path.len() > 1 {
-            let store = path[path.len() - 2];
-            if store != self.store {
-                return None;
+        let path = path.to_string();
+        if let Some((_, file)) = path.split_once(&format!("{}/", self.store)) {
+            if let Some((id, extension)) = file.rsplit_once('.') {
+                if extension == self.extension {
+                    return Some(id.to_string());
+                }
             }
-        }
-        let file = path[path.len() - 1];
-        if let Some((id, extension)) = file.rsplit_once('.') {
-            if extension != self.extension {
-                return None;
-            }
-            return Some(id.to_string());
         }
         None
     }
