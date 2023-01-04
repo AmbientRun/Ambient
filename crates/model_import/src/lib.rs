@@ -306,3 +306,13 @@ pub const MODEL_EXTENSIONS: &'static [&'static str] = &["gltf", "fbx", "obj"];
 pub fn dotdot_path(path: impl Into<RelativePathBuf>) -> RelativePathBuf {
     RelativePathBuf::from("..").join(path.into())
 }
+pub trait RelativePathBufExt {
+    /// [prefix]/[self]
+    fn prejoin(&self, prefix: impl Into<RelativePathBuf>) -> Self;
+}
+impl RelativePathBufExt for RelativePathBuf {
+    fn prejoin(&self, prefix: impl Into<RelativePathBuf>) -> Self {
+        let prefix: RelativePathBuf = prefix.into();
+        prefix.join(self)
+    }
+}
