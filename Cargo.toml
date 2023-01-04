@@ -24,9 +24,9 @@ elements_model = { path = "crates/model" }
 elements_model_import = { path = "crates/model_import" }
 elements_animation = { path = "crates/animation" }
 elements_app = { path = "crates/app" }
+elements_build = { path = "crates/build" }
 clap.workspace = true
 tokio.workspace = true
-walkdir.workspace = true
 futures.workspace = true
 
 [dev-dependencies]

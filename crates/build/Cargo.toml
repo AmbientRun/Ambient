@@ -1,0 +1,13 @@
+[package]
+name = "elements_build"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+elements_std = { path = "../std" }
+elements_asset_cache = { path = "../asset_cache" }
+elements_model_import = { path = "../model_import" }
+walkdir.workspace = true
+futures.workspace = true
