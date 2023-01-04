@@ -278,15 +278,15 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialFromUrl 
         let color = if let (Some(opacity), Some(albedo)) = (&self.opacity, &self.base_color) {
             Some(
                 SplitTextureFromUrl {
-                    color: albedo.clone().expect_abs(),
-                    alpha: opacity.clone().expect_abs(),
+                    color: albedo.clone().unwrap_abs(),
+                    alpha: opacity.clone().unwrap_abs(),
                     format: wgpu::TextureFormat::Rgba8UnormSrgb,
                 }
                 .get(&assets)
                 .await?,
             )
         } else if let Some(albedo) = &self.base_color {
-            Some(TextureFromUrl { url: albedo.clone().expect_abs(), format: wgpu::TextureFormat::Rgba8UnormSrgb }.get(&assets).await?)
+            Some(TextureFromUrl { url: albedo.clone().unwrap_abs(), format: wgpu::TextureFormat::Rgba8UnormSrgb }.get(&assets).await?)
         } else {
             None
         };
@@ -296,7 +296,7 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialFromUrl 
         };
         let normalmap = if let Some(normalmap) = &self.normalmap {
             Arc::new(
-                TextureFromUrl { url: normalmap.clone().expect_abs(), format: wgpu::TextureFormat::Rgba8Unorm }
+                TextureFromUrl { url: normalmap.clone().unwrap_abs(), format: wgpu::TextureFormat::Rgba8Unorm }
                     .get(&assets)
                     .await?
                     .create_view(&Default::default()),
@@ -307,7 +307,7 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialFromUrl 
 
         let metallic_roughness = if let Some(metallic_roughness) = self.metallic_roughness {
             Arc::new(
-                TextureFromUrl { url: metallic_roughness.clone().expect_abs(), format: wgpu::TextureFormat::Rgba8Unorm }
+                TextureFromUrl { url: metallic_roughness.clone().unwrap_abs(), format: wgpu::TextureFormat::Rgba8Unorm }
                     .get(&assets)
                     .await?
                     .create_view(&Default::default()),

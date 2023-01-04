@@ -32,9 +32,9 @@ impl PhysxGeometryFromUrl {
 impl AsyncAssetKey<Result<Arc<PhysxGeometry>, AssetError>> for PhysxGeometryFromUrl {
     async fn load(self, assets: AssetCache) -> Result<Arc<PhysxGeometry>, AssetError> {
         if self.0.extension().unwrap_or_default().to_lowercase() == PHYSX_TRIANGLE_MESH_EXTENSION {
-            Ok(Arc::new(PhysxGeometry::TriangleMesh(PhysxTriangleMeshFromUrl(self.0.expect_abs().into()).get(&assets).await?.0)))
+            Ok(Arc::new(PhysxGeometry::TriangleMesh(PhysxTriangleMeshFromUrl(self.0.unwrap_abs().into()).get(&assets).await?.0)))
         } else {
-            Ok(Arc::new(PhysxGeometry::ConvexMesh(PhysxConvexMeshFromUrl(self.0.expect_abs().into()).get(&assets).await?.0)))
+            Ok(Arc::new(PhysxGeometry::ConvexMesh(PhysxConvexMeshFromUrl(self.0.unwrap_abs().into()).get(&assets).await?.0)))
         }
     }
 }
@@ -50,7 +50,7 @@ impl PhysxTriangleMeshFromUrl {
 #[async_trait]
 impl AsyncAssetKey<Result<PxRcAsset<PxTriangleMesh>, AssetError>> for PhysxTriangleMeshFromUrl {
     async fn load(self, assets: AssetCache) -> Result<PxRcAsset<PxTriangleMesh>, AssetError> {
-        let file = BytesFromUrlCachedPath { url: self.0.expect_abs() }.get(&assets).await?;
+        let file = BytesFromUrlCachedPath { url: self.0.unwrap_abs() }.get(&assets).await?;
         tokio::task::block_in_place(|| {
             let mem = PxDefaultFileInputData::new(&*file);
             let physics = PhysicsKey.get(&assets);
@@ -77,7 +77,7 @@ impl PhysxConvexMeshFromUrl {
 #[async_trait]
 impl AsyncAssetKey<Result<PxRcAsset<PxConvexMesh>, AssetError>> for PhysxConvexMeshFromUrl {
     async fn load(self, assets: AssetCache) -> Result<PxRcAsset<PxConvexMesh>, AssetError> {
-        let file = BytesFromUrlCachedPath { url: self.0.expect_abs() }.get(&assets).await?;
+        let file = BytesFromUrlCachedPath { url: self.0.unwrap_abs() }.get(&assets).await?;
         tokio::task::block_in_place(|| {
             let mem = PxDefaultFileInputData::new(&*file);
             let physics = PhysicsKey.get(&assets);

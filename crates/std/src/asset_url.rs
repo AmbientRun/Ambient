@@ -77,90 +77,90 @@ impl From<PathBuf> for AbsAssetUrl {
 /// When serialized, this serializes to a string
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub enum AssetUrl {
-    Url(Url),
-    RelativePath(RelativePathBuf),
+    Absolute(AbsAssetUrl),
+    Relative(RelativePathBuf),
 }
 impl AssetUrl {
     pub fn parse(url_or_relative_path: impl AsRef<str>) -> Result<Self, url::ParseError> {
         match Url::parse(url_or_relative_path.as_ref()) {
-            Ok(url) => Ok(Self::Url(url)),
-            Err(url::ParseError::RelativeUrlWithoutBase) => Ok(Self::RelativePath(url_or_relative_path.as_ref().into())),
+            Ok(url) => Ok(Self::Absolute(AbsAssetUrl(url))),
+            Err(url::ParseError::RelativeUrlWithoutBase) => Ok(Self::Relative(url_or_relative_path.as_ref().into())),
             Err(err) => Err(err),
         }
     }
     /// This is always lowercase
     pub fn extension(&self) -> Option<String> {
         match self {
-            AssetUrl::Url(url) => AbsAssetUrl(url.clone()).extension(),
-            AssetUrl::RelativePath(path) => path.extension().map(|x| x.to_string().to_lowercase()),
+            AssetUrl::Absolute(url) => url.extension(),
+            AssetUrl::Relative(path) => path.extension().map(|x| x.to_string().to_lowercase()),
         }
     }
     pub fn resolve(&self, base_url: &AbsAssetUrl) -> Result<AbsAssetUrl, url::ParseError> {
         match self {
-            AssetUrl::Url(url) => Ok(AbsAssetUrl(url.clone())),
-            AssetUrl::RelativePath(path) => Ok(AbsAssetUrl(base_url.0.join(path.as_str())?)),
+            AssetUrl::Absolute(url) => Ok(url.clone()),
+            AssetUrl::Relative(path) => Ok(AbsAssetUrl(base_url.0.join(path.as_str())?)),
         }
     }
     pub fn path(&self) -> &str {
         match self {
-            AssetUrl::Url(url) => url.path(),
-            AssetUrl::RelativePath(path) => path.as_str(),
+            AssetUrl::Absolute(url) => url.0.path(),
+            AssetUrl::Relative(path) => path.as_str(),
         }
     }
     pub fn join(&self, path: impl Into<RelativePathBuf>) -> Result<Self, url::ParseError> {
         let path: RelativePathBuf = path.into();
         match self {
-            AssetUrl::Url(url) => Ok(Self::Url(url.join(path.as_str())?)),
-            AssetUrl::RelativePath(p) => Ok(Self::RelativePath(p.join(path))),
+            AssetUrl::Absolute(url) => Ok(Self::Absolute(AbsAssetUrl(url.0.join(path.as_str())?))),
+            AssetUrl::Relative(p) => Ok(Self::Relative(p.join(path))),
         }
     }
     pub fn parent(&self) -> Option<Self> {
         match self {
-            AssetUrl::Url(url) => Some(Self::Url(url.join("..").ok()?)),
-            AssetUrl::RelativePath(path) => Some(Self::RelativePath(path.parent()?.to_relative_path_buf())),
+            AssetUrl::Absolute(url) => Some(Self::Absolute(AbsAssetUrl(url.0.join("..").ok()?))),
+            AssetUrl::Relative(path) => Some(Self::Relative(path.parent()?.to_relative_path_buf())),
         }
     }
-    pub fn expect_abs(self) -> AbsAssetUrl {
+    pub fn unwrap_abs(self) -> AbsAssetUrl {
         match self {
-            AssetUrl::Url(url) => AbsAssetUrl(url),
-            AssetUrl::RelativePath(_) => panic!("This AssetUrl hasn't been resolved yet"),
+            AssetUrl::Absolute(url) => url,
+            AssetUrl::Relative(_) => panic!("This AssetUrl hasn't been resolved yet"),
         }
     }
 }
 impl From<RelativePathBuf> for AssetUrl {
     fn from(value: RelativePathBuf) -> Self {
-        Self::RelativePath(value)
+        Self::Relative(value)
     }
 }
 impl From<Url> for AssetUrl {
     fn from(value: Url) -> Self {
-        Self::Url(value)
+        Self::Absolute(AbsAssetUrl(value))
     }
 }
 impl From<AbsAssetUrl> for AssetUrl {
     fn from(value: AbsAssetUrl) -> Self {
-        Self::Url(value.0)
+        Self::Absolute(value)
     }
 }
 impl std::fmt::Debug for AssetUrl {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Url(arg0) => write!(f, "{}", arg0),
-            Self::RelativePath(arg0) => write!(f, "{}", arg0),
+            Self::Absolute(arg0) => write!(f, "{}", arg0),
+            Self::Relative(arg0) => write!(f, "{}", arg0),
         }
     }
 }
 impl std::fmt::Display for AssetUrl {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Url(arg0) => write!(f, "{}", arg0),
-            Self::RelativePath(arg0) => write!(f, "{}", arg0),
+            Self::Absolute(arg0) => write!(f, "{}", arg0),
+            Self::Relative(arg0) => write!(f, "{}", arg0),
         }
     }
 }
 impl Default for AssetUrl {
     fn default() -> Self {
-        Self::RelativePath(Default::default())
+        Self::Relative(Default::default())
     }
 }
 impl Serialize for AssetUrl {
@@ -224,7 +224,7 @@ impl<T: GetAssetType> TypedAssetUrl<T> {
         Some(TypedAssetUrl::<Y>(self.0.parent()?, PhantomData))
     }
     pub fn expect_abs(self) -> AbsAssetUrl {
-        self.0.expect_abs()
+        self.0.unwrap_abs()
     }
 }
 impl<T: GetAssetType> std::fmt::Display for TypedAssetUrl<T> {
@@ -245,12 +245,12 @@ impl<T: GetAssetType> Default for TypedAssetUrl<T> {
 }
 impl<T: GetAssetType> From<RelativePathBuf> for TypedAssetUrl<T> {
     fn from(value: RelativePathBuf) -> Self {
-        Self(AssetUrl::RelativePath(value), PhantomData)
+        Self(AssetUrl::Relative(value), PhantomData)
     }
 }
 impl<T: GetAssetType> From<AbsAssetUrl> for TypedAssetUrl<T> {
     fn from(value: AbsAssetUrl) -> Self {
-        Self(AssetUrl::Url(value.0), PhantomData)
+        Self(AssetUrl::Absolute(value), PhantomData)
     }
 }
 impl<T: GetAssetType> From<AssetUrl> for TypedAssetUrl<T> {
