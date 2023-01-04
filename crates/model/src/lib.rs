@@ -207,11 +207,11 @@ impl ModelDef {
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<Model>, AssetError>> for ModelDef {
     async fn load(self, assets: AssetCache) -> Result<Arc<Model>, AssetError> {
-        let data = BytesFromUrl::new(self.0.clone().expect_abs(), true).get(&assets).await?;
+        let data = BytesFromUrl::new(self.0.clone().unwrap_abs(), true).get(&assets).await?;
         let semaphore = ModelLoadSemaphore.get(&assets);
         let _permit = semaphore.acquire().await;
         let mut model = tokio::task::block_in_place(|| Model::from_slice(&data))?;
-        model.load(&assets, &self.0.expect_abs()).await?;
+        model.load(&assets, &self.0.unwrap_abs()).await?;
         Ok(Arc::new(model))
     }
 }

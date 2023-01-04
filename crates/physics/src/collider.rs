@@ -287,7 +287,7 @@ impl ColliderDef {
                 (vec![shape.clone()], vec![shape])
             })),
             ColliderDef::Asset { collider } => {
-                let collider = collider.expect_abs();
+                let collider = collider.unwrap_abs();
                 let collider_from_urls: Arc<ColliderFromUrls> = JsonFromUrl::new(collider.clone(), true).get(&assets).await?;
                 let collider = collider_from_urls.resolve(&collider)?.get(&assets).await?;
 

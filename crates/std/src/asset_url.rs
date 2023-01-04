@@ -130,11 +130,14 @@ impl AssetUrl {
             AssetUrl::Relative(path) => Some(Self::Relative(path.parent()?.to_relative_path_buf())),
         }
     }
-    pub fn unwrap_abs(self) -> AbsAssetUrl {
+    pub fn abs(self) -> Option<AbsAssetUrl> {
         match self {
-            AssetUrl::Absolute(url) => url,
-            AssetUrl::Relative(_) => panic!("This AssetUrl hasn't been resolved yet"),
+            AssetUrl::Absolute(url) => Some(url),
+            AssetUrl::Relative(_) => None,
         }
+    }
+    pub fn unwrap_abs(self) -> AbsAssetUrl {
+        self.abs().expect("This AssetUrl hasn't been resolved yet")
     }
 }
 impl From<RelativePathBuf> for AssetUrl {
@@ -233,7 +236,10 @@ impl<T: GetAssetType> TypedAssetUrl<T> {
     pub fn parent<Y: GetAssetType>(&self) -> Option<TypedAssetUrl<Y>> {
         Some(TypedAssetUrl::<Y>(self.0.parent()?, PhantomData))
     }
-    pub fn expect_abs(self) -> AbsAssetUrl {
+    pub fn abs(self) -> Option<AbsAssetUrl> {
+        self.0.abs()
+    }
+    pub fn unwrap_abs(self) -> AbsAssetUrl {
         self.0.unwrap_abs()
     }
 }
