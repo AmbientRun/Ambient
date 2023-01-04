@@ -71,6 +71,10 @@ impl From<PathBuf> for AbsAssetUrl {
     }
 }
 
+/// This is either an absolute url (which can also be an absolute file:// url),
+/// or a relative path which needs to be resolved
+///
+/// When serialized, this serializes to a string
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub enum AssetUrl {
     Url(Url),
@@ -190,7 +194,8 @@ impl<'de> Deserialize<'de> for AssetUrl {
     }
 }
 
-/// This is a wrapper for a URL (pointing to an asset)
+/// This is a typed wrapper for AssetUrl. By adding the type information,
+/// we can render a correct editor ui when used in a ui context.
 ///
 /// An TypedAssetUrl will be rendered with a Browse button next to it in the UI,
 /// which takes you to the AssetBrowser. See `elements_ui/src/asset_url` for
