@@ -3,7 +3,9 @@ use std::{marker::PhantomData, path::PathBuf};
 use convert_case::{Case, Casing};
 use rand::seq::SliceRandom;
 use relative_path::RelativePathBuf;
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{
+    de::{DeserializeOwned, Visitor}, Deserialize, Deserializer, Serialize, Serializer
+};
 use url::Url;
 
 use crate::{
@@ -69,8 +71,7 @@ impl From<PathBuf> for AbsAssetUrl {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
-#[serde(untagged)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub enum AssetUrl {
     Url(Url),
     RelativePath(RelativePathBuf),
@@ -156,6 +157,36 @@ impl std::fmt::Display for AssetUrl {
 impl Default for AssetUrl {
     fn default() -> Self {
         Self::RelativePath(Default::default())
+    }
+}
+impl Serialize for AssetUrl {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+impl<'de> Deserialize<'de> for AssetUrl {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct AssetUrlVisitor;
+
+        impl<'de> Visitor<'de> for AssetUrlVisitor {
+            type Value = AssetUrl;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("struct AssetUrl")
+            }
+
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                AssetUrl::parse(v).map_err(|err| E::custom(format!("Bad asset url format: {:?}", err)))
+            }
+        }
+
+        deserializer.deserialize_str(AssetUrlVisitor)
     }
 }
 
