@@ -109,16 +109,10 @@ pub fn server_systems() -> SystemGroup {
 
                 let mut by_collider = HashMap::new();
                 for (id, (collider_def,)) in all {
-                    match collider_def.clone().resolve(world, id) {
-                        Ok(collider_def) => {
-                            let density = world.get(id, density()).unwrap_or(1.);
-                            let entry = by_collider
-                                .entry(format!("{:?}-{}", collider_def, density))
-                                .or_insert_with(|| (collider_def, density, Vec::new()));
-                            entry.2.push(id);
-                        }
-                        Err(err) => tracing::warn!("Failed to resolve collider: {:?}", err),
-                    }
+                    let density = world.get(id, density()).unwrap_or(1.);
+                    let entry =
+                        by_collider.entry(format!("{:?}-{}", collider_def, density)).or_insert_with(|| (collider_def, density, Vec::new()));
+                    entry.2.push(id);
                 }
                 if by_collider.is_empty() {
                     return;
@@ -238,7 +232,6 @@ pub enum ColliderDef {
     Asset {
         collider: TypedAssetUrl<ColliderAssetType>,
     },
-    FromModel,
     Box {
         size: Vec3,
         #[serde(default = "vec3_zero_value")]
@@ -254,20 +247,14 @@ pub enum ColliderDef {
 
 type ColliderSpawner = Box<dyn Fn(&Physics, Vec3) -> (Vec<PxShape>, Vec<PxShape>) + Sync + Send>;
 impl ColliderDef {
-    pub fn resolve(self, world: &World, owner: EntityId) -> anyhow::Result<Self> {
+    pub fn resolve(&mut self, base_url: &AbsAssetUrl) -> anyhow::Result<()> {
         match self {
-            ColliderDef::FromModel => Ok(ColliderDef::Asset {
-                collider: world
-                    .get_ref(owner, model_def())
-                    .clone()
-                    .context("No model_def on entity")?
-                    .0
-                    .asset_crate()
-                    .context("Can't get asset crate from model2_def")?
-                    .collider(),
-            }),
-            x => Ok(x),
+            ColliderDef::Asset { collider } => {
+                *collider = collider.resolve(base_url).context("Failed to resolve")?.into();
+            }
+            _ => {}
         }
+        Ok(())
     }
 
     /// Generate a closure which will spawn a shape into the world given the in-world scale.
@@ -311,7 +298,6 @@ impl ColliderDef {
                     )
                 }))
             }
-            ColliderDef::FromModel => unreachable!(),
         }
     }
 }
