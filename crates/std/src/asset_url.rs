@@ -2,7 +2,7 @@ use std::{marker::PhantomData, path::PathBuf};
 
 use convert_case::{Case, Casing};
 use rand::seq::SliceRandom;
-use relative_path::RelativePathBuf;
+use relative_path::{Display, RelativePathBuf};
 use serde::{
     de::{DeserializeOwned, Visitor}, Deserialize, Deserializer, Serialize, Serializer
 };
@@ -222,6 +222,11 @@ impl<T: GetAssetType> TypedAssetUrl<T> {
         self.0.expect_abs()
     }
 }
+impl<T: GetAssetType> std::fmt::Display for TypedAssetUrl<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 impl<T: GetAssetType> PartialEq for TypedAssetUrl<T> {
     fn eq(&self, other: &Self) -> bool {
         self.0 == other.0 && self.asset_type() == other.asset_type()
@@ -313,10 +318,10 @@ impl GetAssetType for AssetCrateAssetType {
 }
 impl TypedAssetUrl<AssetCrateAssetType> {
     pub fn model(&self) -> TypedAssetUrl<ModelAssetType> {
-        self.join("/models/main.json").unwrap()
+        self.join("models/main.json").unwrap()
     }
     pub fn collider(&self) -> TypedAssetUrl<ColliderAssetType> {
-        self.join("/colliders/main.json").unwrap()
+        self.join("colliders/main.json").unwrap()
     }
 }
 
@@ -325,6 +330,11 @@ pub struct ObjectAssetType;
 impl GetAssetType for ObjectAssetType {
     fn asset_type() -> AssetType {
         AssetType::Object
+    }
+}
+impl TypedAssetUrl<ObjectAssetType> {
+    pub fn asset_crate(&self) -> Option<TypedAssetUrl<AssetCrateAssetType>> {
+        Some(self.join("..").ok()?)
     }
 }
 
@@ -337,8 +347,20 @@ impl GetAssetType for ModelAssetType {
 }
 impl TypedAssetUrl<ModelAssetType> {
     pub fn asset_crate(&self) -> Option<TypedAssetUrl<AssetCrateAssetType>> {
-        Some(self.join("../..").ok()?)
+        Some(self.join("..").ok()?)
     }
+}
+
+#[test]
+fn test_join() {
+    let obj = TypedAssetUrl::<ObjectAssetType>::parse("https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/1.7.0/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json0/objects/main.json").unwrap();
+    let crat = obj.asset_crate().unwrap();
+    assert_eq!(
+        crat.to_string(),
+        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/1.7.0/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json0/"
+    );
+    let model = crat.model();
+    assert_eq!(model.to_string(), "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/1.7.0/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json0/models/main.json");
 }
 
 #[derive(Debug, Clone)]
@@ -350,7 +372,7 @@ impl GetAssetType for AnimationAssetType {
 }
 impl TypedAssetUrl<AnimationAssetType> {
     pub fn asset_crate(&self) -> Option<TypedAssetUrl<AssetCrateAssetType>> {
-        Some(self.join("../..").ok()?)
+        Some(self.join("..").ok()?)
     }
 }
 
