@@ -1,4 +1,6 @@
-use std::{marker::PhantomData, path::PathBuf};
+use std::{
+    marker::PhantomData, path::{Path, PathBuf}
+};
 
 use convert_case::{Case, Casing};
 use rand::seq::SliceRandom;
@@ -38,6 +40,14 @@ impl AbsAssetUrl {
                 Ok(Self(Url::parse(&format!("file://{}/{}", std::env::current_dir().unwrap().to_str().unwrap(), url.as_ref()))?))
             }
             Err(err) => Err(err.into()),
+        }
+    }
+    pub fn from_file_path(path: impl AsRef<Path>) -> Self {
+        if path.as_ref().is_absolute() {
+            Self(Url::from_file_path(path).unwrap())
+        } else {
+            let path = std::env::current_dir().unwrap().join(path);
+            Self(Url::from_file_path(path).unwrap())
         }
     }
     pub fn relative_cache_path(&self) -> String {

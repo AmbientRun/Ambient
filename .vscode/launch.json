@@ -4,7 +4,7 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "elements (internal server) [debug]",
+            "name": "elements [debug]",
             "cargo": {
                 "args": [
                     "build"
@@ -18,7 +18,10 @@
                 "RUST_LOG": "info,wgpu=warn,naga=warn,quinn=warn,sentry=debug,sentry-anyhow=debug,sentry-core=debug,fbxcel=error",
                 "DIMS_DISABLE_TIMEOUT": "true"
             },
-            "args": [],
+            "args": [
+                "build",
+                "examples/hello_world"
+            ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [
                 "rust"
@@ -27,7 +30,7 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "elements (internal server) [release]",
+            "name": "elements [release]",
             "cargo": {
                 "args": [
                     "build",

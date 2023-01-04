@@ -134,13 +134,21 @@ pub fn get_time_since_app_start(world: &World) -> Duration {
 pub struct AppBuilder {
     pub runtime: Option<Runtime>,
     pub window_builder: Option<WindowBuilder>,
+    pub asset_cache: Option<AssetCache>,
     pub install_component_registry: bool,
     pub ui_renderer: bool,
     pub main_renderer: bool,
 }
 impl AppBuilder {
     pub fn new() -> Self {
-        Self { runtime: None, window_builder: None, install_component_registry: false, ui_renderer: false, main_renderer: true }
+        Self {
+            runtime: None,
+            window_builder: None,
+            asset_cache: None,
+            install_component_registry: false,
+            ui_renderer: false,
+            main_renderer: true,
+        }
     }
     pub fn simple() -> Self {
         Self::new().install_component_registry(true)
@@ -157,6 +165,10 @@ impl AppBuilder {
     }
     pub fn with_window_builder(mut self, window_builder: WindowBuilder) -> Self {
         self.window_builder = Some(window_builder);
+        self
+    }
+    pub fn with_asset_cache(mut self, asset_cache: AssetCache) -> Self {
+        self.asset_cache = Some(asset_cache);
         self
     }
     pub fn install_component_registry(mut self, value: bool) -> Self {
@@ -196,7 +208,7 @@ impl AppBuilder {
 
         let mut world = World::new("main_app");
         let gpu = Arc::new(runtime.block_on(async { Gpu::with_config(Some(&window), true).await }));
-        let assets = AssetCache::new(runtime.handle().clone());
+        let assets = self.asset_cache.unwrap_or_else(|| AssetCache::new(runtime.handle().clone()));
         RuntimeKey.insert(&assets, runtime.handle().clone());
         GpuKey.insert(&assets, gpu.clone());
         WindowKey.insert(&assets, window.clone());

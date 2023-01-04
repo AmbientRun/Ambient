@@ -300,7 +300,7 @@ pub async fn download_bytes(assets: &AssetCache, url: &AbsAssetUrl) -> anyhow::R
     }
 }
 
-pub const MODEL_EXTENSIONS: &'static [&'static str] = &["gltf", "fbx", "obj"];
+pub const MODEL_EXTENSIONS: &'static [&'static str] = &["glb", "fbx", "obj"];
 
 /// ../[path]
 pub fn dotdot_path(path: impl Into<RelativePathBuf>) -> RelativePathBuf {

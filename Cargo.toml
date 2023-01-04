@@ -27,6 +27,7 @@ elements_app = { path = "crates/app" }
 clap.workspace = true
 tokio.workspace = true
 walkdir.workspace = true
+futures.workspace = true
 
 [dev-dependencies]
 glam.workspace = true
