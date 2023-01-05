@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Arc, time::SystemTime};
+use std::{collections::HashMap, path::PathBuf, sync::Arc, time::SystemTime};
 
 use anyhow::Context;
 use elements_core::{app_start_time, asset_cache, dtime, no_sync, remove_at_time, time};
@@ -6,8 +6,13 @@ use elements_ecs::{EntityData, SystemGroup, World, WorldStreamCompEvent};
 use elements_network::{
     bi_stream_handlers, client::GameRpcArgs, datagram_handlers, server::{ForkingEvent, GameServer, ShutdownEvent}
 };
+use elements_object::ObjectFromUrl;
 use elements_rpc::RpcRegistry;
-use elements_std::asset_cache::AssetCache;
+use elements_std::{
+    asset_cache::{AssetCache, AsyncAssetKeyExt}, asset_url::AbsAssetUrl
+};
+
+use crate::{Cli, Commands};
 
 fn server_systems() -> SystemGroup {
     SystemGroup::new(
@@ -57,7 +62,7 @@ fn create_server_resources(assets: AssetCache) -> EntityData {
     server_resources
 }
 
-pub fn start_server(runtime: &tokio::runtime::Runtime, assets: AssetCache) -> u16 {
+pub(crate) fn start_server(runtime: &tokio::runtime::Runtime, assets: AssetCache, cli: Cli, project_path: PathBuf) -> u16 {
     log::info!("Creating server");
     let server = runtime.block_on(async move {
         GameServer::new_with_port_in_range(9000..(9000 + 10)).await.context("failed to create game server with port in range").unwrap()
@@ -68,7 +73,14 @@ pub fn start_server(runtime: &tokio::runtime::Runtime, assets: AssetCache) -> u1
         let mut server_world = World::new_with_config("server", 1, true);
         server_world.init_shape_change_tracking();
 
-        server_world.add_components(server_world.resource_entity(), create_server_resources(assets)).unwrap();
+        server_world.add_components(server_world.resource_entity(), create_server_resources(assets.clone())).unwrap();
+
+        if let Commands::View { asset_path } = cli.command.clone() {
+            let asset_path = AbsAssetUrl::from_file_path(project_path.join("target").join(asset_path).join("objects/main.json"));
+            log::info!("Spawning asset from {:?}", asset_path);
+            let obj = ObjectFromUrl(asset_path).get(&assets).await.unwrap();
+            obj.spawn_into_world(&mut server_world, None);
+        }
         log::info!("Starting server");
         server
             .run(

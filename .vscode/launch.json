@@ -20,7 +20,8 @@
             },
             "args": [
                 "--project-path=examples/hello_world",
-                "run"
+                "view",
+                "assets/Cube.glb"
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [

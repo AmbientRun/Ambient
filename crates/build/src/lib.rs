@@ -34,6 +34,8 @@ async fn build_assets(assets: &AssetCache, assets_path: PathBuf, target_path: Pa
             .unwrap();
         model.update_node_primitive_aabbs_from_cpu_meshes();
         model.model_mut().update_model_aabb();
+        model.create_object();
+        model.create_collider_from_model(assets).unwrap();
         model.write_to_fs(&target_path.join("assets").join(&model_path.strip_prefix(&assets_path).unwrap())).await;
     }
 }

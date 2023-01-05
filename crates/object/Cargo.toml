@@ -1,0 +1,24 @@
+[package]
+name = "elements_object"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+elements_ecs = { path = "../ecs" }
+elements_core = { path = "../core" }
+elements_model = { path = "../model" }
+elements_network = { path = "../network" }
+elements_physics = { path = "../physics" }
+elements_rpc = { path = "../rpc" }
+elements_std = { path = "../std" }
+glam.workspace = true
+serde.workspace = true
+tokio.workspace = true
+thiserror.workspace = true
+friendly_id.workspace = true
+anyhow.workspace = true
+async-trait.workspace = true
+log.workspace = true
+serde_json.workspace = true
