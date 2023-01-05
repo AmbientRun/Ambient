@@ -119,7 +119,7 @@ pub type InitCallback = Box<dyn FnOnce(&mut World, Arc<RenderTarget>) + Send + S
 
 #[allow(clippy::type_complexity)]
 #[derive(Debug)]
-pub struct GameClientView<T: Debug + Send + 'static> {
+pub struct GameClientView {
     pub server_addr: SocketAddr,
     pub user_id: String,
     pub size: UVec2,
@@ -127,14 +127,14 @@ pub struct GameClientView<T: Debug + Send + 'static> {
     pub systems_and_resources: Cb<dyn Fn() -> (SystemGroup, EntityData) + Sync + Send>,
     pub init_world: Cb<UseOnce<InitCallback>>,
     pub error_view: Cb<dyn Fn(String) -> Element + Sync + Send>,
-    pub on_loaded: Cb<dyn Fn(Arc<Mutex<ClientGameState>>, GameClient) -> anyhow::Result<T> + Sync + Send>,
+    pub on_loaded: Cb<dyn Fn(Arc<Mutex<ClientGameState>>, GameClient) -> anyhow::Result<Cb<dyn Fn() + Sync + Send>> + Sync + Send>,
     pub on_in_entities: Option<Cb<dyn Fn(&WorldDiff) + Sync + Send>>,
-    pub on_disconnect: Cb<dyn Fn(Option<T>) + Sync + Send + 'static>,
+    pub on_disconnect: Cb<dyn Fn() + Sync + Send + 'static>,
     pub create_rpc_registry: Cb<dyn Fn() -> RpcRegistry<GameRpcArgs> + Sync + Send>,
     pub ui: Element,
 }
 
-impl<T: Debug + Send + 'static> Clone for GameClientView<T> {
+impl Clone for GameClientView {
     fn clone(&self) -> Self {
         Self {
             server_addr: self.server_addr,
@@ -153,10 +153,7 @@ impl<T: Debug + Send + 'static> Clone for GameClientView<T> {
     }
 }
 
-impl<T> ElementComponent for GameClientView<T>
-where
-    T: Debug + Send + 'static,
-{
+impl ElementComponent for GameClientView {
     fn render(self: Box<Self>, world: &mut World, hooks: &mut Hooks) -> Element {
         let Self {
             server_addr,
@@ -260,7 +257,7 @@ where
                         client_stats_ctx(stats);
                     };
 
-                    let client_loop = ClientInstance::<T> {
+                    let client_loop = ClientInstance {
                         set_connection_status,
                         server_addr,
                         user_id,
@@ -270,7 +267,7 @@ where
                         on_client_stats: &mut on_client_stats,
                         on_event: &mut on_event,
                         on_disconnect,
-                        data: None,
+                        init_destructor: None,
                     };
 
                     match client_loop.run().await {
@@ -328,29 +325,32 @@ where
     }
 }
 
-struct ClientInstance<'a, T> {
+struct ClientInstance<'a> {
     set_connection_status: CallbackFn<String>,
     server_addr: SocketAddr,
     user_id: String,
 
     /// Called when the client connected and received the world.
-    on_init: &'a mut (dyn FnMut(Connection, ClientInfo) -> anyhow::Result<T> + Send + Sync),
+    on_init: &'a mut (dyn FnMut(Connection, ClientInfo) -> anyhow::Result<Cb<dyn Fn() + Sync + Send>> + Send + Sync),
     on_diff: &'a mut (dyn FnMut(WorldDiff) + Send + Sync),
 
     on_server_stats: &'a mut (dyn FnMut(GameClientServerStats) + Send + Sync),
     on_client_stats: &'a mut (dyn FnMut(GameClientNetworkStats) + Send + Sync),
     on_event: &'a mut (dyn FnMut(String, Box<[u8]>) + Send + Sync),
-    on_disconnect: Cb<dyn Fn(Option<T>) + Sync + Send + 'static>,
-    data: Option<T>,
+    on_disconnect: Cb<dyn Fn() + Sync + Send + 'static>,
+    init_destructor: Option<Cb<dyn Fn() + Sync + Send>>,
 }
 
-impl<'a, T> Drop for ClientInstance<'a, T> {
+impl<'a> Drop for ClientInstance<'a> {
     fn drop(&mut self) {
-        (self.on_disconnect)(self.data.take())
+        (self.on_disconnect)();
+        if let Some(on_disconnect) = self.init_destructor.take() {
+            (on_disconnect)();
+        }
     }
 }
 
-impl<'a, T> ClientInstance<'a, T> {
+impl<'a> ClientInstance<'a> {
     #[tracing::instrument(skip(self))]
     async fn run(mut self) -> anyhow::Result<()> {
         tracing::info!("Connecting to server at: {}", self.server_addr);
@@ -371,7 +371,8 @@ impl<'a, T> ClientInstance<'a, T> {
 
         let msg = protocol.diff_stream.next().await?;
         (self.on_diff)(msg);
-        self.data = Some((self.on_init)(protocol.connection(), protocol.client_info().clone()).context("Client initialization failed")?);
+        self.init_destructor =
+            Some((self.on_init)(protocol.connection(), protocol.client_info().clone()).context("Client initialization failed")?);
 
         // The server
         loop {
