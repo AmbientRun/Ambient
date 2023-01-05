@@ -19,8 +19,8 @@
                 "DIMS_DISABLE_TIMEOUT": "true"
             },
             "args": [
-                "build",
-                "examples/hello_world"
+                "--project-path=examples/hello_world",
+                "build"
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [
