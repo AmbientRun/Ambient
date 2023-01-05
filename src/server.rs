@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc, time::SystemTime};
 
 use anyhow::Context;
-use elements_core::{app_start_time, asset_cache, dtime, remove_at_time, time};
+use elements_core::{app_start_time, asset_cache, dtime, no_sync, remove_at_time, time};
 use elements_ecs::{EntityData, SystemGroup, World, WorldStreamCompEvent};
 use elements_network::{
     bi_stream_handlers, client::GameRpcArgs, datagram_handlers, server::{ForkingEvent, GameServer, ShutdownEvent}
@@ -38,7 +38,7 @@ pub fn create_rpc_registry() -> RpcRegistry<GameRpcArgs> {
 }
 
 fn create_server_resources(assets: AssetCache) -> EntityData {
-    let mut server_resources = EntityData::new().set(asset_cache(), assets);
+    let mut server_resources = EntityData::new().set(asset_cache(), assets).set(no_sync(), ());
 
     server_resources.append_self(elements_core::async_ecs::async_ecs_resources());
     server_resources.set_self(elements_core::runtime(), tokio::runtime::Handle::current());
