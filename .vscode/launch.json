@@ -20,7 +20,7 @@
             },
             "args": [
                 "--project-path=examples/hello_world",
-                "build"
+                "run"
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [

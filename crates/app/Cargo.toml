@@ -28,6 +28,7 @@ wgpu.workspace = true
 puffin = { workspace = true, optional = true }
 puffin_http = { workspace = true, optional = true }
 tracing.workspace = true
+parking_lot.workspace = true
 
 [dev-dependencies]
 elements_primitives = { path = "../primitives" }

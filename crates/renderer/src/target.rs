@@ -6,13 +6,6 @@ use elements_gpu::{
 use elements_std::asset_cache::AssetCache;
 use glam::UVec2;
 
-pub fn get_screen_render_target(assets: AssetCache) -> Arc<RenderTarget> {
-    assets.try_get_sync("screen_render_target").unwrap()
-}
-pub fn set_screen_render_target(assets: AssetCache, screen: RenderTarget) {
-    assets.insert("screen_render_target", Arc::new(screen));
-}
-
 #[derive(Debug)]
 pub struct RenderTarget {
     pub depth_buffer: Arc<Texture>,

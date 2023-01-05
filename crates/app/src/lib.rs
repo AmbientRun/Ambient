@@ -13,19 +13,21 @@ use elements_gizmos::{gizmos, Gizmos};
 use elements_gpu::{
     gpu::{Gpu, GpuKey}, mesh_buffer::MeshBufferKey
 };
-use elements_renderer::{lod::lod_system, set_screen_render_target, RenderTarget};
+use elements_renderer::{lod::lod_system, RenderTarget};
 use elements_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt}, fps_counter::{FpsCounter, FpsSample}
 };
 use glam::{uvec2, vec2, Vec2};
+use parking_lot::Mutex;
+use renderers::{examples_renderer, ui_renderer, UIRender};
 use tokio::runtime::Runtime;
 use winit::{
     event::{ElementState, Event, KeyboardInput, ModifiersState, VirtualKeyCode, WindowEvent}, event_loop::{ControlFlow, EventLoop}, window::{Window, WindowBuilder}
 };
 
-use crate::examples_renderer::ExamplesRender;
+use crate::renderers::ExamplesRender;
 
-mod examples_renderer;
+mod renderers;
 
 components!("app", {
     window_title: String,
@@ -45,6 +47,7 @@ pub fn init_all_components() {
     elements_input::init_all_components();
     elements_model::init_components();
     elements_cameras::init_all_components();
+    renderers::init_components();
 }
 
 pub fn gpu_world_sync_systems() -> SystemGroup<GpuWorldSyncEvent> {
@@ -132,6 +135,7 @@ pub fn get_time_since_app_start(world: &World) -> Duration {
 }
 
 pub struct AppBuilder {
+    pub event_loop: Option<EventLoop<()>>,
     pub runtime: Option<Runtime>,
     pub window_builder: Option<WindowBuilder>,
     pub asset_cache: Option<AssetCache>,
@@ -142,6 +146,7 @@ pub struct AppBuilder {
 impl AppBuilder {
     pub fn new() -> Self {
         Self {
+            event_loop: None,
             runtime: None,
             window_builder: None,
             asset_cache: None,
@@ -158,6 +163,10 @@ impl AppBuilder {
     }
     pub fn simple_dual() -> Self {
         Self::new().install_component_registry(true).ui_renderer(true).main_renderer(true)
+    }
+    pub fn with_event_loop(mut self, event_loop: EventLoop<()>) -> Self {
+        self.event_loop = Some(event_loop);
+        self
     }
     pub fn with_runtime(mut self, runtime: Runtime) -> Self {
         self.runtime = Some(runtime);
@@ -183,13 +192,14 @@ impl AppBuilder {
         self.main_renderer = value;
         self
     }
-    pub fn build(self, event_loop: &EventLoop<()>) -> anyhow::Result<App> {
+    pub fn build(self) -> anyhow::Result<App> {
         if self.install_component_registry {
             SimpleComponentRegistry::install();
         }
         crate::init_all_components();
+        let event_loop = self.event_loop.unwrap_or_else(|| EventLoop::new());
         let window = self.window_builder.unwrap_or_default();
-        let window = Arc::new(window.build(event_loop).unwrap());
+        let window = Arc::new(window.build(&event_loop).unwrap());
 
         #[cfg(feature = "profile")]
         let puffin_server = {
@@ -218,11 +228,15 @@ impl AppBuilder {
 
         let resources = world_instance_resources(app_resources);
         world.add_components(world.resource_entity(), resources).unwrap();
-        let wind_size = {
-            let size = world.resource(elements_core::window()).inner_size();
-            uvec2(size.width, size.height)
-        };
-        set_screen_render_target(assets, RenderTarget::new(gpu, wind_size, None));
+        if self.ui_renderer || self.main_renderer {
+            if !self.main_renderer {
+                let renderer = Arc::new(Mutex::new(UIRender::new(&mut world)));
+                world.add_resource(ui_renderer(), renderer);
+            } else {
+                let renderer = Arc::new(Mutex::new(ExamplesRender::new(&mut world, self.ui_renderer, self.main_renderer)));
+                world.add_resource(examples_renderer(), renderer);
+            }
+        }
 
         Ok(App {
             window_focused: true,
@@ -233,8 +247,14 @@ impl AppBuilder {
             gpu_world_sync_systems: gpu_world_sync_systems(),
             window_event_systems: SystemGroup::new(
                 "window_event_systems",
-                vec![Box::new(assets_camera_systems()), Box::new(WinitEventsSystem::new()), Box::new(elements_input::event_systems())],
+                vec![
+                    Box::new(assets_camera_systems()),
+                    Box::new(WinitEventsSystem::new()),
+                    Box::new(elements_input::event_systems()),
+                    Box::new(renderers::systems()),
+                ],
             ),
+            event_loop: Some(event_loop),
 
             fps: FpsCounter::new(),
             #[cfg(feature = "profile")]
@@ -243,28 +263,10 @@ impl AppBuilder {
         })
     }
     pub fn run(self, init: impl FnOnce(&mut App, tokio::runtime::Handle)) {
-        let ui_renderer = self.ui_renderer;
-        let main_renderer = self.main_renderer;
-
-        let event_loop = EventLoop::new();
-        let mut app = self.build(&event_loop).unwrap();
-        let examples_system = ExamplesSystem::new(&mut app, ui_renderer, main_renderer);
-        app.window_event_systems.add(Box::new(examples_system));
+        let mut app = self.build().unwrap();
         let runtime = app.runtime.handle().clone();
         init(&mut app, runtime);
-        event_loop.run(move |event, _, control_flow| {
-            // HACK(mithun): treat dpi changes as resize events. ideally we'd handle this in handle_event proper,
-            // but https://github.com/rust-windowing/winit/issues/1968 restricts us
-            if let Event::WindowEvent { window_id, event: WindowEvent::ScaleFactorChanged { new_inner_size, scale_factor } } = &event {
-                *app.world.resource_mut(window_scale_factor()) = *scale_factor;
-                app.handle_event(
-                    &Event::WindowEvent { window_id: *window_id, event: WindowEvent::Resized(**new_inner_size) },
-                    control_flow,
-                );
-            } else if let Some(event) = event.to_static() {
-                app.handle_event(&event, control_flow);
-            }
-        });
+        app.run()
     }
     pub fn run_world(self, init: impl FnOnce(&mut World)) {
         self.run(|app, _| init(&mut app.world))
@@ -278,6 +280,7 @@ pub struct App {
     pub window_event_systems: SystemGroup<Event<'static, ()>>,
     pub runtime: Runtime,
     pub window: Arc<Window>,
+    event_loop: Option<EventLoop<()>>,
     fps: FpsCounter,
     #[cfg(feature = "profile")]
     _puffin: puffin_http::Server,
@@ -310,27 +313,22 @@ impl App {
     pub fn builder() -> AppBuilder {
         AppBuilder::new()
     }
-    // pub fn run_debug_app(init: impl FnOnce(&mut App, tokio::runtime::Handle)) {
-    //     Self::run_debug_app_with_config(false, true, true, init)
-    // }
-    // pub fn run_debug_app_with_config(
-    //     ui_renderer: bool,
-    //     main_renderer: bool,
-    //     install_component_registry: bool,
-    //     init: impl FnOnce(&mut App, tokio::runtime::Handle),
-    // ) {
-
-    // }
-
-    // pub fn run_world(init: impl FnOnce(&mut World)) {
-    //     Self::run_debug_app(|app, _| init(&mut app.world))
-    // }
-    // pub fn run_ui(init: impl FnOnce(&mut World)) {
-    //     Self::run_debug_app_with_config(true, false, true, |app, _| init(&mut app.world))
-    // }
-    // pub fn run_world<F: Future + Sync + Send>(init: impl FnOnce(&mut World) -> F + Sync + Send) {
-    //     Self::run_app(|app| init(&mut app.world));
-    // }
+    pub fn run(mut self) {
+        let event_loop = self.event_loop.take().unwrap();
+        event_loop.run(move |event, _, control_flow| {
+            // HACK(mithun): treat dpi changes as resize events. ideally we'd handle this in handle_event proper,
+            // but https://github.com/rust-windowing/winit/issues/1968 restricts us
+            if let Event::WindowEvent { window_id, event: WindowEvent::ScaleFactorChanged { new_inner_size, scale_factor } } = &event {
+                *self.world.resource_mut(window_scale_factor()) = *scale_factor;
+                self.handle_event(
+                    &Event::WindowEvent { window_id: *window_id, event: WindowEvent::Resized(**new_inner_size) },
+                    control_flow,
+                );
+            } else if let Some(event) = event.to_static() {
+                self.handle_event(&event, control_flow);
+            }
+        });
+    }
     pub fn handle_event(&mut self, event: &Event<'static, ()>, control_flow: &mut ControlFlow) {
         *control_flow = ControlFlow::Poll;
 
@@ -368,15 +366,12 @@ impl App {
                 WindowEvent::Focused(focused) => {
                     self.window_focused = *focused;
                 }
+                WindowEvent::ScaleFactorChanged { new_inner_size, scale_factor } => {
+                    *self.world.resource_mut(window_scale_factor()) = *scale_factor;
+                }
                 WindowEvent::Resized(size) => {
                     let gpu = world.resource(gpu()).clone();
                     gpu.resize(*size);
-                    if self.window.fullscreen().is_none() {
-                        set_screen_render_target(
-                            world.resource(asset_cache()).clone(),
-                            RenderTarget::new(gpu, uvec2(size.width, size.height), None),
-                        );
-                    }
                 }
                 WindowEvent::CloseRequested => {
                     *control_flow = ControlFlow::Exit;
@@ -412,20 +407,10 @@ impl App {
 }
 
 #[derive(Debug)]
-pub struct ExamplesSystem {
-    renderer: ExamplesRender,
-}
-impl ExamplesSystem {
-    pub fn new(app: &mut App, ui_renderer: bool, main_renderer: bool) -> Self {
-        Self { renderer: ExamplesRender::new(&mut app.world, ui_renderer, main_renderer) }
-    }
-}
+pub struct ExamplesSystem;
 impl System<Event<'static, ()>> for ExamplesSystem {
     fn run(&mut self, world: &mut World, event: &Event<'static, ()>) {
         match event {
-            Event::MainEventsCleared => {
-                self.renderer.run(world, &FrameEvent);
-            }
             Event::WindowEvent {
                 event:
                     WindowEvent::KeyboardInput {
@@ -436,9 +421,7 @@ impl System<Event<'static, ()>> for ExamplesSystem {
             } => match virtual_keycode {
                 VirtualKeyCode::F1 => dump_world_hierarchy_to_tmp_file(world),
                 VirtualKeyCode::F2 => world.dump_to_tmp_file(),
-                VirtualKeyCode::F3 => {
-                    self.renderer.dump_to_tmp_file();
-                }
+                VirtualKeyCode::F3 => world.resource(examples_renderer()).lock().dump_to_tmp_file(),
                 _ => {}
             },
             _ => {}

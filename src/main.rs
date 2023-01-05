@@ -23,17 +23,25 @@ enum Commands {
     Run,
     /// Builds the project
     Build,
+    /// View an asset
+    View { asset_path: String },
 }
 impl Commands {
     fn should_build(&self) -> bool {
         match self {
             Commands::Run => true,
             Commands::Build => true,
+            Commands::View { .. } => true,
+        }
+    }
+    fn should_run(&self) -> bool {
+        match self {
+            Commands::Run => true,
+            Commands::Build => false,
+            Commands::View { .. } => true,
         }
     }
 }
-
-fn init(world: &mut World) {}
 
 fn main() {
     SimpleComponentRegistry::install();
@@ -47,9 +55,13 @@ fn main() {
         runtime.block_on(elements_build::build(&assets, project_path));
     }
 
-    if let Commands::Run = cli.command {
-        AppBuilder::simple().install_component_registry(false).with_runtime(runtime).with_asset_cache(assets).run(|app, runtime| {
-            runtime.spawn(async move {});
-        });
+    if cli.command.should_run() {
+        AppBuilder::simple().install_component_registry(false).ui_renderer(true).with_runtime(runtime).with_asset_cache(assets).run(
+            |app, runtime| {
+                if let Commands::View { asset_path } = cli.command.clone() {
+                    runtime.spawn(async move {});
+                }
+            },
+        );
     }
 }
