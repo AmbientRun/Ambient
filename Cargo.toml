@@ -25,9 +25,13 @@ elements_model_import = { path = "crates/model_import" }
 elements_animation = { path = "crates/animation" }
 elements_app = { path = "crates/app" }
 elements_build = { path = "crates/build" }
+elements_network = { path = "crates/network" }
+elements_physics = { path = "crates/physics" }
+elements_rpc = { path = "crates/rpc" }
 clap.workspace = true
 tokio.workspace = true
 futures.workspace = true
+anyhow.workspace = true
 
 [dev-dependencies]
 glam.workspace = true

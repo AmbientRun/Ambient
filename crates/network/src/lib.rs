@@ -318,7 +318,7 @@ pub fn create_client_endpoint_random_port() -> Option<Endpoint> {
     None
 }
 
-pub fn create_server(server_addr: SocketAddr) -> anyhow::Result<(Endpoint, Incoming)> {
+fn create_server(server_addr: SocketAddr) -> anyhow::Result<(Endpoint, Incoming)> {
     let cert = Certificate(CERT.to_vec());
     let cert_key = PrivateKey(CERT_KEY.to_vec());
     let mut server_conf = ServerConfig::with_single_cert(vec![cert], cert_key)?;

@@ -1,9 +1,13 @@
-use std::{path::PathBuf, sync::Arc};
-
 use clap::{Parser, Subcommand};
-use elements_app::{App, AppBuilder};
+use elements_app::AppBuilder;
+use elements_cameras::UICamera;
+use elements_core::camera::active_camera;
 use elements_ecs::{SimpleComponentRegistry, World};
+use elements_element::{element_component, Element, ElementComponentExt, Hooks};
 use elements_std::asset_cache::AssetCache;
+use elements_ui::{FocusRoot, Text};
+
+mod server;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -43,9 +47,15 @@ impl Commands {
     }
 }
 
+#[element_component]
+fn MainApp(world: &mut World, hooks: &mut Hooks) -> Element {
+    FocusRoot::el([UICamera.el().set(active_camera(), 0.), Text::el("hi")])
+}
+
 fn main() {
     SimpleComponentRegistry::install();
     elements_app::init_all_components();
+    elements_network::init_all_components();
     let runtime = tokio::runtime::Builder::new_multi_thread().enable_all().build().unwrap();
     let assets = AssetCache::new(runtime.handle().clone());
 
@@ -56,8 +66,10 @@ fn main() {
     }
 
     if cli.command.should_run() {
+        server::start_server(&runtime, assets.clone());
         AppBuilder::simple().install_component_registry(false).ui_renderer(true).with_runtime(runtime).with_asset_cache(assets).run(
             |app, runtime| {
+                MainApp.el().spawn_interactive(&mut app.world);
                 if let Commands::View { asset_path } = cli.command.clone() {
                     runtime.spawn(async move {});
                 }

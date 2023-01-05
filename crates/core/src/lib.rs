@@ -140,7 +140,6 @@ pub fn on_frame_system() -> DynSystem {
     })
 }
 
-#[profiling::function]
 pub fn remove_at_time_system() -> DynSystem {
     query((remove_at_time(),)).to_system(|q, world, qs, _| {
         let time = *world.resource(self::time());
