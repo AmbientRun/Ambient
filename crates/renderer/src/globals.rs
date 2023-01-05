@@ -229,7 +229,7 @@ impl ForwardGlobals {
         self.gpu.queue.write_buffer(&self.buffer, 0, bytemuck::cast_slice(&[self.params]));
         self.gpu.queue.write_buffer(&self.shadow_cameras_buffer, 0, bytemuck::cast_slice(shadow_cameras));
 
-        self.params.debug_params = *world.resource(shader_debug_params());
+        self.params.debug_params = world.resource_opt(shader_debug_params()).cloned().unwrap_or_default();
     }
 }
 

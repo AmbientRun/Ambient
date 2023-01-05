@@ -127,7 +127,7 @@ pub struct GameClientView {
     pub systems_and_resources: Cb<dyn Fn() -> (SystemGroup, EntityData) + Sync + Send>,
     pub init_world: Cb<UseOnce<InitCallback>>,
     pub error_view: Cb<dyn Fn(String) -> Element + Sync + Send>,
-    pub on_loaded: Cb<dyn Fn(Arc<Mutex<ClientGameState>>, GameClient) -> anyhow::Result<Cb<dyn Fn() + Sync + Send>> + Sync + Send>,
+    pub on_loaded: Cb<dyn Fn(Arc<Mutex<ClientGameState>>, GameClient) -> anyhow::Result<Box<dyn FnOnce() + Sync + Send>> + Sync + Send>,
     pub on_in_entities: Option<Cb<dyn Fn(&WorldDiff) + Sync + Send>>,
     pub on_disconnect: Cb<dyn Fn() + Sync + Send + 'static>,
     pub create_rpc_registry: Cb<dyn Fn() -> RpcRegistry<GameRpcArgs> + Sync + Send>,
@@ -331,14 +331,14 @@ struct ClientInstance<'a> {
     user_id: String,
 
     /// Called when the client connected and received the world.
-    on_init: &'a mut (dyn FnMut(Connection, ClientInfo) -> anyhow::Result<Cb<dyn Fn() + Sync + Send>> + Send + Sync),
+    on_init: &'a mut (dyn FnMut(Connection, ClientInfo) -> anyhow::Result<Box<dyn FnOnce() + Sync + Send>> + Send + Sync),
     on_diff: &'a mut (dyn FnMut(WorldDiff) + Send + Sync),
 
     on_server_stats: &'a mut (dyn FnMut(GameClientServerStats) + Send + Sync),
     on_client_stats: &'a mut (dyn FnMut(GameClientNetworkStats) + Send + Sync),
     on_event: &'a mut (dyn FnMut(String, Box<[u8]>) + Send + Sync),
     on_disconnect: Cb<dyn Fn() + Sync + Send + 'static>,
-    init_destructor: Option<Cb<dyn Fn() + Sync + Send>>,
+    init_destructor: Option<Box<dyn FnOnce() + Sync + Send>>,
 }
 
 impl<'a> Drop for ClientInstance<'a> {

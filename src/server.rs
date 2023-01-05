@@ -31,7 +31,7 @@ fn is_sync_component(component: &dyn elements_ecs::IComponent, event: WorldStrea
     res
 }
 
-fn create_server_rpc_registry() -> RpcRegistry<GameRpcArgs> {
+pub fn create_rpc_registry() -> RpcRegistry<GameRpcArgs> {
     let mut reg = RpcRegistry::new();
     elements_network::rpc::register_rpcs(&mut reg);
     reg
@@ -48,7 +48,7 @@ fn create_server_resources(assets: AssetCache) -> EntityData {
     server_resources.set_self(dtime(), 1. / 60.);
 
     let mut handlers = HashMap::new();
-    elements_network::register_rpc_bi_stream_handler(&mut handlers, create_server_rpc_registry());
+    elements_network::register_rpc_bi_stream_handler(&mut handlers, create_rpc_registry());
     server_resources.set_self(bi_stream_handlers(), handlers);
 
     let mut handlers = HashMap::new();
@@ -57,14 +57,19 @@ fn create_server_resources(assets: AssetCache) -> EntityData {
     server_resources
 }
 
-pub fn start_server(runtime: &tokio::runtime::Runtime, assets: AssetCache) {
+pub fn start_server(runtime: &tokio::runtime::Runtime, assets: AssetCache) -> u16 {
+    log::info!("Creating server");
+    let server = runtime.block_on(async move {
+        GameServer::new_with_port_in_range(9000..(9000 + 10)).await.context("failed to create game server with port in range").unwrap()
+    });
+    let port = server.port;
+    log::info!("Server created on port {port}");
     runtime.spawn(async move {
-        let server =
-            GameServer::new_with_port_in_range(9000..(9000 + 10)).await.context("failed to create game server with port in range").unwrap();
         let mut server_world = World::new_with_config("server", 1, true);
         server_world.init_shape_change_tracking();
 
         server_world.add_components(server_world.resource_entity(), create_server_resources(assets)).unwrap();
+        log::info!("Starting server");
         server
             .run(
                 server_world,
@@ -75,4 +80,5 @@ pub fn start_server(runtime: &tokio::runtime::Runtime, assets: AssetCache) {
             )
             .await;
     });
+    port
 }

@@ -1,11 +1,16 @@
+use std::sync::Arc;
+
 use clap::{Parser, Subcommand};
 use elements_app::AppBuilder;
 use elements_cameras::UICamera;
 use elements_core::camera::active_camera;
-use elements_ecs::{SimpleComponentRegistry, World};
+use elements_ecs::{EntityData, SimpleComponentRegistry, SystemGroup, World};
 use elements_element::{element_component, Element, ElementComponentExt, Hooks};
-use elements_std::asset_cache::AssetCache;
-use elements_ui::{FocusRoot, Text};
+use elements_network::{
+    client::{GameClientNetworkStats, GameClientServerStats, GameClientView, UseOnce}, events::ServerEventRegistry
+};
+use elements_std::{asset_cache::AssetCache, Cb};
+use elements_ui::{use_window_logical_resolution, use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text};
 
 mod server;
 
@@ -47,12 +52,42 @@ impl Commands {
     }
 }
 
+fn client_systems() -> SystemGroup {
+    SystemGroup::new("client", vec![])
+}
+
 #[element_component]
-fn MainApp(world: &mut World, hooks: &mut Hooks) -> Element {
-    FocusRoot::el([UICamera.el().set(active_camera(), 0.), Text::el("hi")])
+fn MainApp(world: &mut World, hooks: &mut Hooks, port: u16) -> Element {
+    let screen_size = use_window_logical_resolution(world, hooks);
+    let resolution = use_window_physical_resolution(world, hooks);
+
+    hooks.provide_context(GameClientNetworkStats::default);
+    hooks.provide_context(GameClientServerStats::default);
+
+    FocusRoot::el([
+        UICamera.el().set(active_camera(), 0.),
+        GameClientView {
+            server_addr: format!("127.0.0.1:{port}").parse().unwrap(),
+            user_id: "host".to_string(),
+            size: screen_size,
+            resolution,
+            on_disconnect: Cb::new(move || {}),
+            init_world: Cb::new(UseOnce::new(Box::new(move |world, render_target| {
+                world.add_resource(elements_network::events::event_registry(), Arc::new(ServerEventRegistry::new()));
+            }))),
+            on_loaded: Cb::new(move |game_state, game_client| Ok(Box::new(|| {}))),
+            error_view: Cb(Arc::new(move |error| Dock(vec![Text::el("Error").header_style(), Text::el(error.clone())]).el())),
+            systems_and_resources: Cb::new(|| (client_systems(), EntityData::new())),
+            create_rpc_registry: Cb::new(server::create_rpc_registry),
+            on_in_entities: None,
+            ui: Element::new(),
+        }
+        .el(),
+    ])
 }
 
 fn main() {
+    env_logger::init();
     SimpleComponentRegistry::install();
     elements_app::init_all_components();
     elements_network::init_all_components();
@@ -66,10 +101,10 @@ fn main() {
     }
 
     if cli.command.should_run() {
-        server::start_server(&runtime, assets.clone());
+        let port = server::start_server(&runtime, assets.clone());
         AppBuilder::simple().install_component_registry(false).ui_renderer(true).with_runtime(runtime).with_asset_cache(assets).run(
             |app, runtime| {
-                MainApp.el().spawn_interactive(&mut app.world);
+                MainApp { port }.el().spawn_interactive(&mut app.world);
                 if let Commands::View { asset_path } = cli.command.clone() {
                     runtime.spawn(async move {});
                 }

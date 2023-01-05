@@ -9,7 +9,7 @@ use std::{
 };
 
 use elements_core::{
-    get_window_resolution, get_window_scaled_resolution, hierarchy::children, on_frame, on_window_event, transform::*, window
+    get_window_resolution, get_window_scaled_resolution, hierarchy::children, on_frame, on_window_event, transform::*, window, window_logical_size, window_physical_size
 };
 pub use elements_ecs::{EntityId, SystemGroup, World};
 pub use elements_editor_derive::ElementEditor;
@@ -104,20 +104,20 @@ pub fn UIBase(_: &mut World, _: &mut Hooks) -> Element {
         .init(height(), 0.)
 }
 
-pub fn use_window_resolution(world: &World, hooks: &mut Hooks) -> UVec2 {
-    let (res, set_res) = hooks.use_state(get_window_resolution(world));
+pub fn use_window_physical_resolution(world: &World, hooks: &mut Hooks) -> UVec2 {
+    let (res, set_res) = hooks.use_state(*world.resource(window_physical_size()));
     hooks.use_frame(move |world| {
-        let new_res = get_window_resolution(world);
+        let new_res = *world.resource(window_physical_size());
         if new_res != res {
             set_res(new_res);
         }
     });
     res
 }
-pub fn use_window_scaled_resolution(world: &World, hooks: &mut Hooks) -> UVec2 {
-    let (res, set_res) = hooks.use_state(get_window_scaled_resolution(world));
+pub fn use_window_logical_resolution(world: &World, hooks: &mut Hooks) -> UVec2 {
+    let (res, set_res) = hooks.use_state(*world.resource(window_logical_size()));
     hooks.use_frame(move |world| {
-        let new_res = get_window_scaled_resolution(world);
+        let new_res = *world.resource(window_logical_size());
         if new_res != res {
             set_res(new_res);
         }
@@ -130,7 +130,7 @@ pub struct WindowSized(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(WindowSized);
 impl ElementComponent for WindowSized {
     fn render(self: Box<Self>, world: &mut World, hooks: &mut Hooks) -> Element {
-        let res = use_window_scaled_resolution(world, hooks);
+        let res = use_window_logical_resolution(world, hooks);
         Dock(self.0).el().set(width(), res.x as _).set(height(), res.y as _).remove(local_to_parent())
     }
 }
