@@ -262,12 +262,29 @@ impl<'a> Hooks<'a> {
     ///
     /// The provided functions returns a function which is run when the part is
     /// removed or `use_effect` is run again.
-    #[profiling::function]
+    #[inline]
     pub fn use_effect<D: PartialEq + ComponentValue + Debug>(
         &mut self,
         world: &mut World,
         dependencies: D,
         run: impl FnOnce(&mut World) -> Box<dyn FnOnce(&mut World) + Sync + Send> + Sync + Send,
+    ) {
+        self.use_effect_with(world, dependencies, |world, _| run(world))
+    }
+
+    #[profiling::function]
+    /// Variant of [`Self::use_effect`] where the closure has access to the dependencies.
+    ///
+    /// This makes the `run` method error prone when values are used in the closure but forgotten
+    /// in dependencies.
+    ///
+    /// In addition it reduces the need to clone values twice using the `closure!` macro and into
+    /// the dependencies.
+    pub fn use_effect_with<D: PartialEq + ComponentValue + Debug>(
+        &mut self,
+        world: &mut World,
+        dependencies: D,
+        run: impl FnOnce(&mut World, &D) -> Box<dyn FnOnce(&mut World) + Sync + Send> + Sync + Send,
     ) {
         struct Cleanup(Box<dyn FnOnce(&mut World) + Sync + Send>);
         impl Debug for Cleanup {
@@ -289,16 +306,16 @@ impl<'a> Hooks<'a> {
             });
         }
 
-        let dependencies = Some(dependencies);
+        let dependencies = dependencies;
         let mut prev_deps = prev_deps.lock();
-        if *prev_deps != dependencies {
+        if prev_deps.as_ref() != Some(&dependencies) {
             let mut cleanup_prev = cleanup_prev.lock();
             if let Some(cleanup_prev) = std::mem::replace(&mut *cleanup_prev, None) {
                 cleanup_prev.0(world);
             }
             profiling::scope!("use_effect_run");
-            *cleanup_prev = Some(Cleanup(run(world)));
-            *prev_deps = dependencies;
+            *cleanup_prev = Some(Cleanup(run(world, &dependencies)));
+            *prev_deps = Some(dependencies);
         }
     }
 

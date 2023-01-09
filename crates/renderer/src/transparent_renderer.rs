@@ -131,9 +131,11 @@ impl TransparentRenderer {
         self.gpu_primitives
             .write(0, &self.primitives.iter().map(|e| get_gpu_primitive_id(world, e.id, e.primitive_index, 0)).collect_vec());
     }
+
     fn remove(&mut self, id: EntityId, primitive_index: usize) {
         self.primitives.retain(|x| !(x.id == id && x.primitive_index == primitive_index));
     }
+
     #[profiling::function]
     pub fn render<'a>(&'a self, render_pass: &mut wgpu::RenderPass<'a>, binds: &[(&str, &'a BindGroup)]) {
         let mut is_bound = false;
