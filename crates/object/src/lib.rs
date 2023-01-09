@@ -18,10 +18,10 @@ impl AsyncAssetKey<Result<Arc<World>, AssetError>> for ObjectFromUrl {
         let DeserWorldWithWarnings { mut world, warnings } = tokio::task::block_in_place(|| serde_json::from_slice(&data))
             .with_context(|| format!("Failed to deserialize object2 from url {}", self.0))?;
         warnings.log_warnings();
-        for (id, (url,), _) in query_mut((model_def(),), ()).iter(&mut world, None) {
+        for (_id, (url,), _) in query_mut((model_def(),), ()).iter(&mut world, None) {
             *url = ModelDef(url.0.resolve(&self.0).context("Failed to resolve model url")?.into());
         }
-        for (id, (def,), _) in query_mut((collider(),), ()).iter(&mut world, None) {
+        for (_id, (def,), _) in query_mut((collider(),), ()).iter(&mut world, None) {
             def.resolve(&self.0).context("Failed to resolve collider")?;
         }
         Ok(Arc::new(world))

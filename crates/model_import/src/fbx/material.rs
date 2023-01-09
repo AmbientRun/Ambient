@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use elements_renderer::materials::pbr_material::PbrMaterialFromUrl;
-use elements_std::asset_url::{AssetUrl, TypedAssetUrl};
+use elements_std::asset_url::AssetUrl;
 use fbxcel::tree::v7400::NodeHandle;
 use glam::{vec3, Vec3};
 

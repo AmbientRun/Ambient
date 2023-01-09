@@ -4,7 +4,6 @@ use anyhow::Context;
 use async_trait::async_trait;
 use elements_core::transform::{rotation, translation};
 use elements_editor_derive::ElementEditor;
-use elements_element::ElementComponentExt;
 use elements_model::{Model, ModelDef};
 use elements_std::{
     asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt}, asset_url::{AnimationAssetType, ModelAssetType, TypedAssetUrl}, download_asset::AssetError
@@ -65,7 +64,7 @@ impl AsyncAssetKey<Result<Arc<AnimationClip>, AssetError>> for AnimationClipReta
                     .context("Failed to load retarget model")?;
                 let mut clip = (*clip).clone();
                 let anim_root = anim_model.roots()[0];
-                let retarget_root = retarget_model.roots()[0];
+                let _retarget_root = retarget_model.roots()[0];
                 let anim_root_rot = anim_model.0.get(anim_root, rotation()).unwrap_or_default();
                 let retarget_root_rot = retarget_model.0.get(anim_root, rotation()).unwrap_or_default();
                 clip.tracks.retain_mut(|track| {

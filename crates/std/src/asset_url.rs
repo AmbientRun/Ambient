@@ -4,7 +4,7 @@ use std::{
 
 use convert_case::{Case, Casing};
 use rand::seq::SliceRandom;
-use relative_path::{Display, RelativePathBuf};
+use relative_path::RelativePathBuf;
 use serde::{
     de::{DeserializeOwned, Visitor}, Deserialize, Deserializer, Serialize, Serializer
 };

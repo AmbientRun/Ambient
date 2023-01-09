@@ -1,4 +1,3 @@
-
 use crate::{Frame, Peek, SampleRate, Source};
 
 /// A source which converts another source's sample rate and channel count to another.
@@ -46,7 +45,7 @@ impl<S: Source> SampleConversion<S> {
         let step = src_rate.max(dst_rate);
 
         let (first_frame, start) = Self::consume_frames(step, dst_rate, &mut source);
-        let dst = src_rate + src_rate.max(dst_rate);
+        let _dst = src_rate + src_rate.max(dst_rate);
 
         let (second_frame, start) = Self::consume_frames(start + step, dst_rate, &mut source);
 
@@ -87,7 +86,7 @@ impl<S: Source> SampleConversion<S> {
             // Since we may need to lerp
             //
             // *Pretend* that the last sample goes on forever
-            let next = source.peek().unwrap_or(current);
+            let _next = source.peek().unwrap_or(current);
 
             // Position within the sample
             let t = (cursor % step) as f32 / step as f32;

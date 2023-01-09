@@ -16,7 +16,6 @@ use futures::future::join_all;
 use glam::{Mat4, Vec3, Vec4};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use url::Url;
 
 use super::{
     animation_bind_id, animation_binder, is_model_node, model_animatable, model_loaded, model_skin_ix, model_skins, pbr_renderer_primitives_from_url

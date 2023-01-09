@@ -20,7 +20,6 @@ use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 mod model;
 
-use elements_editor_derive::ElementEditor;
 use elements_meshes::CubeMeshKey;
 pub use model::*;
 use tokio::sync::Semaphore;
