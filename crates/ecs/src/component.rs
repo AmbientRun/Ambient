@@ -11,13 +11,10 @@
 #![allow(clippy::borrowed_box)]
 
 use std::{
-    any::Any, collections::HashMap, convert::TryInto, fmt::{self, Display}, marker::PhantomData
+    any::Any,  convert::TryInto, fmt::{self, Display}, marker::PhantomData
 };
 
 use downcast_rs::{impl_downcast, Downcast};
-use elements_std::asset_url::AbsAssetUrl;
-use once_cell::sync::{Lazy, OnceCell};
-use parking_lot::RwLock;
 use serde::{
     de::{self, DeserializeOwned, MapAccess, SeqAccess, Visitor}, Deserializer, Serializer
 };
@@ -202,7 +199,7 @@ impl<T: ComponentValue> IComponent for Component<T> {
         self.index as usize
     }
     fn external_type(&self) -> Option<PrimitiveComponentType> {
-        ComponentRegistry::get().components[self.get_index()].external_type.clone()
+        ComponentRegistry::get().components[self.get_index()].primitive_component_type.clone()
     }
     fn set_index(&mut self, index: usize) {
         self.index = index.try_into().unwrap();

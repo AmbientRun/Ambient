@@ -1,14 +1,8 @@
-use std::{
-    any::Any, collections::HashMap, convert::TryInto, fmt::{self, Display}, marker::PhantomData
-};
+use std::collections::HashMap;
 
-use downcast_rs::{impl_downcast, Downcast};
 use elements_std::{asset_url::AbsAssetUrl, events::EventDispatcher};
-use once_cell::sync::{Lazy, OnceCell};
+use once_cell::sync::Lazy;
 use parking_lot::RwLock;
-use serde::{
-    de::{self, DeserializeOwned, MapAccess, SeqAccess, Visitor}, Deserializer, Serializer
-};
 
 use super::*;
 
@@ -25,7 +19,7 @@ pub fn with_component_registry_mut<R>(f: impl FnOnce(&mut ComponentRegistry) -> 
 #[derive(Clone)]
 pub(crate) struct RegistryComponent {
     pub(crate) component: Box<dyn IComponent>,
-    pub(crate) external_type: Option<PrimitiveComponentType>,
+    pub(crate) primitive_component_type: Option<PrimitiveComponentType>,
     pub(crate) primitive_component: Option<PrimitiveComponent>,
 }
 
@@ -46,7 +40,9 @@ impl ComponentRegistry {
     pub fn get_mut() -> parking_lot::RwLockWriteGuard<'static, Self> {
         COMPONENT_REGISTRY.write()
     }
-    pub fn add_external(&mut self, source: AbsAssetUrl) {
+    /// When decorating is true, the components read from the source will be assumed to already exist and we'll just add
+    /// metadata to them
+    pub fn add_external(&mut self, source: AbsAssetUrl, decorating: bool) {
         let data: Vec<u8> = if let Some(path) = source.to_file_path().unwrap() {
             std::fs::read(path).unwrap()
         } else {
@@ -60,7 +56,7 @@ impl ComponentRegistry {
         }
         let components: Vec<Entry> = serde_json::from_slice(&data).unwrap();
         for Entry { id, type_ } in components {
-            type_.register(self, &id);
+            type_.register(self, &id, decorating);
         }
         for handler in self.on_external_components_change.iter() {
             handler();
@@ -70,25 +66,32 @@ impl ComponentRegistry {
         if component.index >= 0 {
             return;
         }
-        self.register_with_id(&format!("{namespace}::{name}"), component, None, None);
+        self.register_with_id(&format!("{namespace}::{name}"), component, false, None, None);
     }
     pub(crate) fn register_with_id(
         &mut self,
         id: &str,
         component: &mut dyn IComponent,
-        external_type: Option<PrimitiveComponentType>,
-        primitive_component: Option<PrimitiveComponent>,
+        decorating: bool,
+        primitive_component_type: Option<PrimitiveComponentType>,
+        mut primitive_component: Option<PrimitiveComponent>,
     ) {
         if let Some(idx) = self.name_to_idx.get(id) {
-            log::warn!("Duplicate components: {}", id);
-            component.set_index(*idx);
-            self.components[*idx].external_type = external_type;
-            self.components[*idx].primitive_component = primitive_component;
+            if decorating {
+                component.set_index(*idx);
+                self.components[*idx].primitive_component_type = primitive_component_type;
+                self.components[*idx].primitive_component = primitive_component;
+            } else {
+                log::warn!("Duplicate components: {}", id);
+            }
             return;
         }
         let index = self.components.len();
         component.set_index(index);
-        let reg_comp = RegistryComponent { component: component.clone_boxed(), external_type, primitive_component };
+        if let Some(primitive_component) = &mut primitive_component {
+            primitive_component.as_component_mut().set_index(index);
+        }
+        let reg_comp = RegistryComponent { component: component.clone_boxed(), primitive_component_type, primitive_component };
         self.components.push(reg_comp.clone());
         self.name_to_idx.insert(id.to_owned(), index);
         self.idx_to_id.insert(component.get_index(), id.to_owned());
@@ -117,7 +120,7 @@ impl ComponentRegistry {
         }
     }
     pub fn all_external(&self) -> impl Iterator<Item = &Box<dyn IComponent>> {
-        self.components.iter().filter(|x| x.external_type.is_some()).map(|x| &x.component)
+        self.components.iter().filter(|x| x.primitive_component_type.is_some()).map(|x| &x.component)
     }
     pub fn all(&self) -> impl Iterator<Item = &Box<dyn IComponent>> {
         self.components.iter().map(|x| &x.component)
@@ -127,12 +130,6 @@ impl ComponentRegistry {
     }
     pub fn component_count(&self) -> usize {
         self.components.len()
-    }
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-    fn as_any_mut(&mut self) -> &mut dyn Any {
-        self
     }
 }
 

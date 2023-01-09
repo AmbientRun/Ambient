@@ -1,4 +1,4 @@
-use elements_std::asset_url::{ObjectAssetType, ObjectRef, TypedAssetUrl};
+use elements_std::asset_url::ObjectRef;
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
 use paste::paste;
 use serde::{Deserialize, Serialize};
@@ -23,18 +23,6 @@ macro_rules! make_primitive_component {
         }
 
         impl PrimitiveComponent {
-            fn new(component: &dyn IComponent) -> Option<Self> {
-                $(if let Some(comp) = component.downcast_ref::<Component<$type>>() {
-                    return Some(PrimitiveComponent::$value(comp.clone()));
-                }) *
-                $(if let Some(comp) = component.downcast_ref::<Component<Vec<$type>>>() {
-                    return Some(PrimitiveComponent::[<Vec $value>](comp.clone()));
-                }) *
-                $(if let Some(comp) = component.downcast_ref::<Component<Option<$type>>>() {
-                    return Some(PrimitiveComponent::[<Option $value>](comp.clone()));
-                }) *
-                None
-            }
 
             pub fn as_component(&self) -> &dyn IComponent {
                 match self {
@@ -43,13 +31,21 @@ macro_rules! make_primitive_component {
                   $(Self::[<Option $value>](c) => c,)*
                 }
             }
+            pub fn as_component_mut(&mut self) -> &mut dyn IComponent {
+                match self {
+                  $(Self::$value(c) => c,)*
+                  $(Self::[<Vec $value>](c) => c,)*
+                  $(Self::[<Option $value>](c) => c,)*
+                }
+            }
         }
         impl PrimitiveComponentType {
-            pub(crate) fn register(&self, reg: &mut ComponentRegistry, key: &str) {
+            pub(crate) fn register(&self, reg: &mut ComponentRegistry, key: &str, decorating: bool) {
                 match self {
                     $(
                         PrimitiveComponentType::$value => reg.register_with_id(key,
                             &mut Component::<$type>::new_external(0),
+                            decorating,
                             Some(self.clone()),
                             Some(PrimitiveComponent::$value(Component::<$type>::new_external(0)))
                         ),
@@ -58,6 +54,7 @@ macro_rules! make_primitive_component {
                         $(
                             PrimitiveComponentType::$value => reg.register_with_id(key,
                                 &mut Component::<Vec<$type>>::new_external(0),
+                                decorating,
                                 Some(self.clone()),
                                 Some(PrimitiveComponent::[<Vec $value>](Component::<Vec<$type>>::new_external(0)))
                             ),
@@ -68,6 +65,7 @@ macro_rules! make_primitive_component {
                         $(
                             PrimitiveComponentType::$value => reg.register_with_id(key,
                                 &mut Component::<Option<$type>>::new_external(0),
+                                decorating,
                                 Some(self.clone()),
                                 Some(PrimitiveComponent::[<Option $value>](Component::<Option<$type>>::new_external(0)))
                             ),
