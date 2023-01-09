@@ -291,7 +291,7 @@ impl FromIterator<ComponentUnit> for EntityData {
 
 #[cfg(test)]
 mod test {
-    use crate::{components, EntityData, SimpleComponentRegistry};
+    use crate::{components, ComponentRegistry, EntityData};
 
     components!("test", {
         ser_test2: String,
@@ -299,7 +299,7 @@ mod test {
 
     #[test]
     pub fn test_serialize_entity_data() {
-        SimpleComponentRegistry::install();
+        ComponentRegistry::install();
         init_components();
         let source = EntityData::new().set(ser_test2(), "hello".to_string());
         let ser = serde_json::to_string(&source).unwrap();

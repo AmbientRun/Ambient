@@ -150,7 +150,7 @@ mod test {
     });
 
     fn init() {
-        SimpleComponentRegistry::install();
+        ComponentRegistry::install();
         init_components();
     }
 

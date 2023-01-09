@@ -538,17 +538,17 @@ pub trait IComponentRegistryExt: IComponentRegistry {
 impl<I: ?Sized> IComponentRegistryExt for I where I: IComponentRegistry {}
 
 #[derive(Clone, Default)]
-pub struct SimpleComponentRegistry {
+pub struct ComponentRegistry {
     components_by_name: HashMap<String, Box<dyn IComponent>>,
     idx_to_id: HashMap<usize, String>,
     components: Vec<Box<dyn IComponent>>,
 }
-impl SimpleComponentRegistry {
+impl ComponentRegistry {
     pub fn install() {
         set_component_registry(Self::default);
     }
 }
-impl IComponentRegistry for SimpleComponentRegistry {
+impl IComponentRegistry for ComponentRegistry {
     fn register_with_id(&mut self, id: &str, component: &mut dyn IComponent) {
         if self.components_by_name.contains_key(id) {
             log::warn!("Duplicate components: {}", id);

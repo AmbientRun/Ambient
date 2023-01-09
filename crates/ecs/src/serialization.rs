@@ -132,7 +132,7 @@ mod test {
     });
 
     fn init() {
-        SimpleComponentRegistry::install();
+        ComponentRegistry::install();
         crate::init_components();
         init_components();
     }
