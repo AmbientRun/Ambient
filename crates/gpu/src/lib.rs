@@ -1,5 +1,3 @@
-#![feature(int_log)]
-
 pub mod blit;
 pub mod fill;
 pub mod gpu;

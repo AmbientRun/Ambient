@@ -3,7 +3,6 @@ use std::sync::Arc;
 use elements_gpu::{
     gpu::{Gpu, DEFAULT_SAMPLE_COUNT}, texture::{Texture, TextureView}
 };
-use elements_std::asset_cache::AssetCache;
 use glam::UVec2;
 
 #[derive(Debug)]

@@ -83,6 +83,7 @@ impl std::fmt::Debug for ContentState {
 }
 
 struct AsyncAssetLoc {
+    #[allow(dead_code)]
     key: AssetKey,
     /// Since there may be multiple tasks for keepalive, keepalive_end should only be called when
     /// **All** keepalive tasks are done.

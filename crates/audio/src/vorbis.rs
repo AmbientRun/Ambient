@@ -1,9 +1,8 @@
 use std::{io::Cursor, sync::Arc};
 
 use derivative::Derivative;
-
 use itertools::Itertools;
-use lewton::{inside_ogg::OggStreamReader};
+use lewton::inside_ogg::OggStreamReader;
 
 use crate::{ChannelCount, Error, Frame, Result, SampleRate, Source};
 
@@ -93,9 +92,9 @@ impl VorbisTrack {
     }
 
     pub fn decode(&self) -> VorbisDecodeStream {
-        let mut streamer = OggStreamReader::new(Cursor::new(self.bytes.clone())).unwrap();
-        let channels: ChannelCount = streamer.ident_hdr.audio_channels as _;
-        let sample_rate: SampleRate = streamer.ident_hdr.audio_sample_rate as _;
+        let streamer = OggStreamReader::new(Cursor::new(self.bytes.clone())).unwrap();
+        let _channels: ChannelCount = streamer.ident_hdr.audio_channels as _;
+        let _sample_rate: SampleRate = streamer.ident_hdr.audio_sample_rate as _;
 
         VorbisDecodeStream {
             streamer,

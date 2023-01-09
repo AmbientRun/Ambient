@@ -31,6 +31,7 @@ impl<S> BufferedReader<S>
 where
     S: Source,
 {
+    #[allow(dead_code)]
     pub fn new(source: S) -> Self {
         Self {
             buf: Vec::new(),

@@ -7,13 +7,11 @@ use elements_core::{
 use elements_ecs::{EntityData, World};
 use elements_model::{model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, ModelSkin, PbrRenderPrimitiveFromUrl};
 use elements_renderer::materials::pbr_material::PbrMaterialFromUrl;
-use elements_std::{
-    asset_cache::AssetCache, asset_url::{AbsAssetUrl, TypedAssetUrl}, mesh::Mesh, shapes::AABB
-};
+use elements_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl, mesh::Mesh, shapes::AABB};
 use glam::{uvec4, Mat4, Quat, UVec4, Vec2, Vec3, Vec4, Vec4Swizzles};
 use gltf::animation::util::ReadOutputs;
 use itertools::Itertools;
-use relative_path::{RelativePath, RelativePathBuf};
+use relative_path::RelativePathBuf;
 
 use self::gltf_import::GltfImport;
 use crate::{dotdot_path, download_bytes, model_crate::ModelCrate};
@@ -252,7 +250,7 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
         if !childs.is_empty() {
             for child_id in &childs {
                 world.add_component(*child_id, parent(), *id).unwrap();
-                world.add_component(*child_id, local_to_parent(), Default::default());
+                world.add_component(*child_id, local_to_parent(), Default::default()).unwrap();
             }
             world.add_component(*id, children(), childs).unwrap();
         }

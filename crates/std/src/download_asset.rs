@@ -1,11 +1,8 @@
-use std::{
-    borrow::BorrowMut, marker::PhantomData, path::{Path, PathBuf}, sync::Arc, time::Duration
-};
+use std::{borrow::BorrowMut, marker::PhantomData, path::PathBuf, sync::Arc, time::Duration};
 
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use futures::Future;
-use relative_path::RelativePathBuf;
 use reqwest::Url;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use thiserror::Error;

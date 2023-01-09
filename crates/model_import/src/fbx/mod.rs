@@ -16,7 +16,7 @@ use fbxcel::tree::{
 use glam::{Mat4, Vec3};
 use indexmap::IndexMap;
 use itertools::Itertools;
-use relative_path::{RelativePath, RelativePathBuf};
+use relative_path::RelativePathBuf;
 
 use self::{
     animation::{FbxAnimationCurve, FbxAnimationCurveNode, FbxAnimationLayer, FbxAnimationStack}, material::{FbxMaterial, FbxTexture, FbxVideo}, mesh::{FbxCluster, FbxGeometry, FbxSkin}, model::FbxModel

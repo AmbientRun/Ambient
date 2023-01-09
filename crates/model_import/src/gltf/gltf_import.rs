@@ -139,7 +139,7 @@ fn new_image_data(image: DynamicImage) -> gltf::image::Data {
         _ => todo!(),
     };
     let (width, height) = image.dimensions();
-    let pixels = image.to_bytes();
+    let pixels = image.into_bytes();
     gltf::image::Data { format, width, height, pixels }
 }
 

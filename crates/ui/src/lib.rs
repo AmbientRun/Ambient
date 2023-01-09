@@ -8,9 +8,7 @@ use std::{
     }
 };
 
-use elements_core::{
-    get_window_resolution, get_window_scaled_resolution, hierarchy::children, on_frame, on_window_event, transform::*, window, window_logical_size, window_physical_size
-};
+use elements_core::{hierarchy::children, on_frame, on_window_event, transform::*, window, window_logical_size, window_physical_size};
 pub use elements_ecs::{EntityId, SystemGroup, World};
 pub use elements_editor_derive::ElementEditor;
 pub use elements_element as element;

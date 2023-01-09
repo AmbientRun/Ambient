@@ -8,15 +8,14 @@ use elements_element::{element_component, Element, ElementComponentExt, Hooks};
 use elements_gpu::{mesh_buffer::GpuMesh, texture::Texture};
 use elements_renderer::{color, gpu_primitives, material, primitives, renderer_shader, SharedMaterial};
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, asset_url::AbsAssetUrl, download_asset::{AssetError, AssetResult, BytesFromUrl}, mesh::*, shapes::AABB, CowStr
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, asset_url::AbsAssetUrl, download_asset::{AssetResult, BytesFromUrl}, mesh::*, shapes::AABB
 };
 use glam::*;
 use glyph_brush::{
-    ab_glyph::{Font, FontArc, InvalidFont, PxScale, Rect}, BrushAction, BrushError, GlyphBrush, GlyphBrushBuilder, Section
+    ab_glyph::{Font, FontArc, PxScale, Rect}, BrushAction, BrushError, GlyphBrush, GlyphBrushBuilder, Section
 };
 use log::info;
 use parking_lot::Mutex;
-use thiserror::Error;
 
 use crate::{
     layout::*, text_material::{get_text_shader, TextMaterial}, UIBase, UIElement

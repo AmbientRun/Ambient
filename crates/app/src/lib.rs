@@ -13,7 +13,7 @@ use elements_gizmos::{gizmos, Gizmos};
 use elements_gpu::{
     gpu::{Gpu, GpuKey}, mesh_buffer::MeshBufferKey
 };
-use elements_renderer::{lod::lod_system, RenderTarget};
+use elements_renderer::lod::lod_system;
 use elements_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt}, fps_counter::{FpsCounter, FpsSample}
 };
@@ -366,7 +366,7 @@ impl App {
                 WindowEvent::Focused(focused) => {
                     self.window_focused = *focused;
                 }
-                WindowEvent::ScaleFactorChanged { new_inner_size, scale_factor } => {
+                WindowEvent::ScaleFactorChanged { scale_factor, .. } => {
                     *self.world.resource_mut(window_scale_factor()) = *scale_factor;
                 }
                 WindowEvent::Resized(size) => {

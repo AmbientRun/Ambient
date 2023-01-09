@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use elements_core::{asset_cache, gpu, main_scene, ui_scene, window};
-use elements_ecs::{components, query, FnSystem, FrameEvent, System, SystemGroup, World};
+use elements_ecs::{components, query, FrameEvent, System, SystemGroup, World};
 use elements_gizmos::render::GizmoRenderer;
 use elements_gpu::{
     blit::{Blitter, BlitterKey}, gpu::Gpu, texture::{Texture, TextureView}
@@ -29,7 +29,7 @@ pub fn systems() -> SystemGroup<Event<'static, ()>> {
                     let mut ui_render = ui_render.lock();
                     match &event {
                         Event::WindowEvent { event: WindowEvent::Resized(size), .. } => ui_render.resize(size),
-                        Event::WindowEvent { event: WindowEvent::ScaleFactorChanged { new_inner_size, scale_factor }, .. } => {
+                        Event::WindowEvent { event: WindowEvent::ScaleFactorChanged { new_inner_size, .. }, .. } => {
                             ui_render.resize(new_inner_size);
                         }
                         _ => {}
@@ -114,6 +114,7 @@ impl ExamplesRender {
         self.dump(&mut f);
         println!("Wrote renderer to tmp/renderer.txt");
     }
+    #[allow(dead_code)]
     pub fn n_entities(&self) -> usize {
         self.main.as_ref().map(|x| x.n_entities()).unwrap_or(0) + self.ui.as_ref().map(|x| x.n_entities()).unwrap_or(0)
     }

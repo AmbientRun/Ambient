@@ -162,6 +162,7 @@ impl EntityLocations {
     pub(super) fn on_swap_remove(&mut self, removed_entity_loc: EntityLocation, swapped_id: EntityId) {
         self.allocated[swapped_id.namespace as usize][swapped_id.id].index = removed_entity_loc.index;
     }
+    #[allow(dead_code)]
     pub(super) fn namespace(&self) -> u8 {
         self.local_namespace
     }

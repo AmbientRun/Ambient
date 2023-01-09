@@ -16,7 +16,7 @@ use elements_renderer::{
     double_sided, lod::{gpu_lod, lod_cutoffs}, materials::pbr_material::PbrMaterialFromUrl
 };
 use elements_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, TypedAssetUrl}, download_asset::AssetsCacheDir, mesh::Mesh, shapes::AABB
+    asset_cache::{AssetCache, SyncAssetKeyExt}, asset_url::AbsAssetUrl, download_asset::AssetsCacheDir, mesh::Mesh, shapes::AABB
 };
 use futures::FutureExt;
 use glam::{Mat4, Vec3};

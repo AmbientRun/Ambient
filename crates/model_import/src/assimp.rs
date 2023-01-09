@@ -9,7 +9,7 @@ use elements_renderer::materials::pbr_material::PbrMaterialFromUrl;
 use elements_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl, mesh::Mesh};
 use glam::{vec2, vec3, vec4, Mat4};
 use itertools::Itertools;
-use relative_path::{RelativePath, RelativePathBuf};
+use relative_path::RelativePathBuf;
 use russimp::{
     material::{Material, PropertyTypeInfo}, node::Node, scene::{PostProcess, Scene}, texture::TextureType
 };

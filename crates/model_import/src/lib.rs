@@ -2,14 +2,12 @@ use std::{f32::consts::PI, path::PathBuf, sync::Arc};
 
 use anyhow::{anyhow, Context};
 use async_recursion::async_recursion;
-use async_trait::async_trait;
 use elements_animation::AnimationOutputs;
 use elements_core::{bounding::local_bounding_aabb, transform::translation};
 use elements_editor_derive::ElementEditor;
-use elements_model::Model;
 use elements_renderer::materials::pbr_material::PbrMaterialFromUrl;
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::AbsAssetUrl, download_asset::{download, AssetResult, AssetsCacheDir}
+    asset_cache::{AssetCache, SyncAssetKeyExt}, asset_url::AbsAssetUrl, download_asset::{download, AssetsCacheDir}
 };
 use futures::FutureExt;
 use glam::{Mat4, Vec3, Vec4};
@@ -157,7 +155,7 @@ impl ModelImportTransform {
                 model_crate.create_object();
             }
             ModelImportTransform::CreateColliderFromModel => {
-                model_crate.create_collider_from_model(assets);
+                model_crate.create_collider_from_model(assets)?;
             }
             ModelImportTransform::CreateCharacterCollider => {
                 model_crate.create_character_collider(None, None);

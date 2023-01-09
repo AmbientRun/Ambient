@@ -16,6 +16,7 @@ new_key_type! {
 type SignalVec = Vec<(SoundId, Arc<dyn Signal>)>;
 
 struct PlayingSound {
+    #[allow(dead_code)]
     cursor: usize,
     source: Box<dyn Source>,
 }

@@ -4,7 +4,6 @@ use async_trait::async_trait;
 use elements_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetUrl}, download_asset::{AssetError, BytesFromUrlCachedPath}
 };
-use itertools::Itertools;
 use physxx::{PxConvexMesh, PxDefaultFileInputData, PxTriangleMesh};
 use serde::{Deserialize, Serialize};
 
