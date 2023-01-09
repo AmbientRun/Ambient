@@ -299,7 +299,7 @@ mod test {
 
     #[test]
     pub fn test_serialize_entity_data() {
-        ComponentRegistry::install();
+        ComponentRegistry::install(vec![]);
         init_components();
         let source = EntityData::new().set(ser_test2(), "hello".to_string());
         let ser = serde_json::to_string(&source).unwrap();

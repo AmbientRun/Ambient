@@ -358,6 +358,7 @@ impl TypedAssetUrl<ObjectAssetType> {
         Some(self.join("..").ok()?)
     }
 }
+pub type ObjectRef = TypedAssetUrl<ObjectAssetType>;
 
 #[derive(Debug, Clone)]
 pub struct ModelAssetType;

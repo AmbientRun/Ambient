@@ -1,6 +1,7 @@
 #![allow(incomplete_features)]
 #![feature(specialization)]
 #![feature(type_alias_impl_trait)]
+#![feature(once_cell)]
 
 extern crate lazy_static;
 use core::fmt;
@@ -20,21 +21,27 @@ use thiserror::Error;
 
 mod archetype;
 mod component;
+mod component_registry;
 mod component_unit;
 mod entity_data;
+mod entity_uid;
 mod events;
 mod index;
 mod location;
+mod primitive_component;
 mod query;
 mod serialization;
 mod stream;
 pub use archetype::*;
 pub use component::*;
+pub use component_registry::*;
 pub use component_unit::*;
 pub use entity_data::*;
+pub use entity_uid::*;
 pub use events::*;
 pub use index::*;
 pub use location::*;
+pub use primitive_component::*;
 pub use query::*;
 pub use serialization::*;
 pub use stream::*;

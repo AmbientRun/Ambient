@@ -32,4 +32,5 @@ bit-set.workspace = true
 bit-vec.workspace = true
 tokio.workspace = true
 friendly_id.workspace = true
-
+reqwest.workspace = true
+glam.workspace = true

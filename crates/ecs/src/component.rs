@@ -15,7 +15,8 @@ use std::{
 };
 
 use downcast_rs::{impl_downcast, Downcast};
-use once_cell::sync::OnceCell;
+use elements_std::asset_url::AbsAssetUrl;
+use once_cell::sync::{Lazy, OnceCell};
 use parking_lot::RwLock;
 use serde::{
     de::{self, DeserializeOwned, MapAccess, SeqAccess, Visitor}, Deserializer, Serializer
@@ -43,6 +44,7 @@ impl_downcast!(ComponentValueBase);
 pub trait IComponent: Send + Sync + Downcast {
     fn create_buffer(&self) -> Box<dyn IComponentBuffer>;
     fn get_index(&self) -> usize;
+    fn external_type(&self) -> Option<PrimitiveComponentType>;
     // required for dynamic registration. do not call on static components
     fn set_index(&mut self, index: usize);
     fn get_name(&self) -> String;
@@ -94,6 +96,9 @@ impl<T: ComponentValue> Debug for Component<T> {
 }
 impl<T: ComponentValue> Component<T> {
     pub const fn new(index: i32) -> Self {
+        Self { index, changed_filter: false, name: None, _type: PhantomData }
+    }
+    pub(crate) const fn new_external(index: i32) -> Self {
         Self { index, changed_filter: false, name: None, _type: PhantomData }
     }
     pub const fn new_with_name(index: i32, name: &'static str) -> Self {
@@ -194,6 +199,9 @@ impl<T: ComponentValue> IComponent for Component<T> {
             panic!("Component not initialized: {:?}", self.name);
         }
         self.index as usize
+    }
+    fn external_type(&self) -> Option<PrimitiveComponentType> {
+        ComponentRegistry::get().components[self.get_index()].external_type.clone()
     }
     fn set_index(&mut self, index: usize) {
         self.index = index.try_into().unwrap();
@@ -476,150 +484,4 @@ impl Clone for Box<dyn IComponentBuffer> {
     fn clone(&self) -> Self {
         self.as_ref().clone_boxed()
     }
-}
-
-static COMPONENT_REGISTRY: RwLock<OnceCell<Box<dyn IComponentRegistry + Send + Sync>>> = RwLock::new(OnceCell::new());
-pub fn with_component_registry<R>(f: impl FnOnce(&dyn IComponentRegistry) -> R + Sync + Send) -> R {
-    let lock = COMPONENT_REGISTRY.read();
-    f(lock.get().expect("component registry not initialized").as_ref())
-}
-pub fn with_component_registry_mut<R>(f: impl FnOnce(&mut dyn IComponentRegistry) -> R + Sync + Send) -> R {
-    let mut lock = COMPONENT_REGISTRY.write();
-    f(lock.get_mut().expect("component registry not initialized").as_mut())
-}
-pub fn set_component_registry<R: IComponentRegistry + Send + Sync + 'static>(registry: impl FnOnce() -> R) {
-    let lock = COMPONENT_REGISTRY.write();
-    if lock.get().is_none() && lock.set(Box::new(registry())).is_err() {
-        panic!("component registry already set");
-    }
-}
-
-pub trait IComponentRegistry {
-    fn register_with_id(&mut self, id: &str, component: &mut dyn IComponent);
-    fn register_internal_with_namespace(&mut self, namespace: &str, name: &str, component: &mut dyn IComponent);
-
-    /// mutable as the registry may need to modify its own state to service this request
-    fn get_by_id(&mut self, id: &str) -> Option<&dyn IComponent>;
-    /// use [get_by_id] unless you are sure that your component does not need to be loaded in from another location
-    fn get_by_id_without_load(&self, id: &str) -> Option<&dyn IComponent>;
-    fn get_by_index(&self, index: usize) -> Option<&dyn IComponent>;
-    fn all(&self) -> &[Box<dyn IComponent>];
-    fn idx_to_id(&self) -> &HashMap<usize, String>;
-    fn as_any(&self) -> &dyn Any;
-    fn as_any_mut(&mut self) -> &mut dyn Any;
-}
-pub trait IComponentRegistryExt: IComponentRegistry {
-    fn register<T: ComponentValue>(&mut self, namespace: &str, name: &str, component: &mut Component<T>) {
-        if component.index >= 0 {
-            return;
-        }
-        self.register_internal_with_namespace(namespace, name, &mut *component);
-    }
-    fn get_by_id_type<T: IComponent + Clone>(&mut self, id: &str) -> Option<T> {
-        self.get_by_id(id)?.downcast_ref().cloned()
-    }
-    fn get_by_index_type<T: IComponent + Clone>(&self, index: usize) -> Option<T> {
-        self.get_by_index(index)?.downcast_ref().cloned()
-    }
-    fn get_id_for_opt(&self, component: &dyn IComponent) -> Option<&str> {
-        self.idx_to_id().get(&component.get_index()).map(|s| s.as_str())
-    }
-    /// Will panic if the specified component does not exist
-    fn get_id_for(&self, component: &dyn IComponent) -> &str {
-        match self.get_id_for_opt(component) {
-            Some(id) => id,
-            None => panic!("failed to get id for component {}", component.get_index()),
-        }
-    }
-    fn component_count(&self) -> usize {
-        self.all().len()
-    }
-}
-impl<I: ?Sized> IComponentRegistryExt for I where I: IComponentRegistry {}
-
-#[derive(Clone, Default)]
-pub struct ComponentRegistry {
-    components_by_name: HashMap<String, Box<dyn IComponent>>,
-    idx_to_id: HashMap<usize, String>,
-    components: Vec<Box<dyn IComponent>>,
-}
-impl ComponentRegistry {
-    pub fn install() {
-        set_component_registry(Self::default);
-    }
-}
-impl IComponentRegistry for ComponentRegistry {
-    fn register_with_id(&mut self, id: &str, component: &mut dyn IComponent) {
-        if self.components_by_name.contains_key(id) {
-            log::warn!("Duplicate components: {}", id);
-            return;
-        }
-        component.set_index(self.components.len());
-        self.components.push(component.clone_boxed());
-        self.components_by_name.insert(id.to_owned(), component.clone_boxed());
-        self.idx_to_id.insert(component.get_index(), id.to_owned());
-    }
-    fn register_internal_with_namespace(&mut self, namespace: &str, name: &str, component: &mut dyn IComponent) {
-        self.register_with_id(&format!("{namespace}::{name}"), component)
-    }
-
-    fn get_by_id(&mut self, id: &str) -> Option<&dyn IComponent> {
-        self.get_by_id_without_load(id)
-    }
-    fn get_by_id_without_load(&self, id: &str) -> Option<&dyn IComponent> {
-        self.components_by_name.get(id).map(|b| b.as_ref())
-    }
-    fn get_by_index(&self, index: usize) -> Option<&dyn IComponent> {
-        self.components.get(index).map(|b| b.as_ref())
-    }
-    fn all(&self) -> &[Box<dyn IComponent>] {
-        &self.components
-    }
-    fn idx_to_id(&self) -> &HashMap<usize, String> {
-        &self.idx_to_id
-    }
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-    fn as_any_mut(&mut self) -> &mut dyn Any {
-        self
-    }
-}
-
-#[macro_export]
-macro_rules! components {
-    ( $namespace:literal, { $( $(#[$outer:meta])* $name:ident : $ty:ty, )+ } ) => {
-        $(
-            $crate::paste::paste! {
-                #[allow(non_upper_case_globals)]
-                #[no_mangle]
-                static mut [<comp_ $name>]: $crate::Component<$ty> = $crate::Component::new_with_name(-1, stringify!($name));
-            }
-            $(#[$outer])*
-            pub fn $name() -> $crate::Component<$ty> {
-                $crate::paste::paste! {
-                    unsafe { [<comp_ $name>] }
-                }
-            }
-        )*
-        /// Initialize the components for the module
-        static COMPONENTS_INITIALIZED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
-        pub fn init_components() {
-            use std::sync::atomic::Ordering;
-            use $crate::IComponentRegistryExt;
-
-            if COMPONENTS_INITIALIZED.load(Ordering::SeqCst) {
-                return;
-            }
-
-            $crate::with_component_registry_mut(|registry| unsafe {
-                $(
-                    $crate::paste::paste! {
-                        registry.register(concat!("core::", $namespace), stringify!($name), &mut [<comp_ $name>]);
-                    }
-                )*
-            });
-            COMPONENTS_INITIALIZED.store(true, Ordering::SeqCst);
-        }
-    };
 }
