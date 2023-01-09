@@ -327,7 +327,6 @@ mod test {
 
     #[test]
     fn registry() {
-        ComponentRegistry::install();
         components!("intent", {
            intent_add: f32,
            intent_add_revert: f32,

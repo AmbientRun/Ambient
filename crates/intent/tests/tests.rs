@@ -112,7 +112,6 @@ fn setup_state() -> SharedServerState {
 
 #[tokio::test]
 async fn simple() {
-    SimpleComponentRegistry::install();
     init_components();
     elements_intent::init_components();
 
@@ -157,7 +156,6 @@ async fn simple() {
 
 #[tokio::test]
 async fn enqueued() {
-    SimpleComponentRegistry::install();
     init_components();
     elements_intent::init_components();
 
@@ -199,7 +197,6 @@ async fn enqueued() {
 
 #[tokio::test]
 async fn enqueued_collapse() {
-    SimpleComponentRegistry::install();
     init_components();
     elements_intent::init_components();
 
@@ -278,7 +275,6 @@ async fn enqueued_collapse() {
 
 #[tokio::test]
 async fn enqueue2() {
-    SimpleComponentRegistry::install();
     init_components();
     elements_intent::init_components();
 
@@ -323,7 +319,6 @@ async fn enqueue2() {
 
 #[tokio::test]
 async fn enqueue2_redo() {
-    SimpleComponentRegistry::install();
     init_components();
     elements_intent::init_components();
 
@@ -381,7 +376,6 @@ async fn enqueue2_redo() {
 
 #[test]
 fn undo_failed() {
-    SimpleComponentRegistry::install();
     init_components();
     elements_intent::init_components();
 
@@ -428,7 +422,6 @@ fn undo_failed() {
 
 #[tokio::test]
 async fn undo_push() {
-    SimpleComponentRegistry::install();
     init_components();
     elements_intent::init_components();
 
@@ -494,7 +487,6 @@ async fn undo_push() {
 
 #[tokio::test]
 async fn redo_collapsed() {
-    SimpleComponentRegistry::install();
     init_components();
     elements_intent::init_components();
 
@@ -560,7 +552,6 @@ async fn redo_collapsed() {
 
 #[tokio::test]
 async fn collapse() {
-    SimpleComponentRegistry::install();
     init_components();
     elements_intent::init_components();
 

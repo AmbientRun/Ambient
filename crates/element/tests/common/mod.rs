@@ -14,7 +14,6 @@ components!("test", {
 });
 
 pub fn initialize() -> World {
-    SimpleComponentRegistry::install();
     elements_core::hierarchy::init_components();
     elements_element::init_components();
     init_components();

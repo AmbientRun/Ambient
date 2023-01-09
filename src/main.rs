@@ -100,7 +100,6 @@ fn MainApp(world: &mut World, hooks: &mut Hooks, port: u16) -> Element {
 
 fn main() {
     env_logger::init();
-    SimpleComponentRegistry::install();
     elements_app::init_all_components();
     elements_network::init_all_components();
     elements_physics::init_all_components();
