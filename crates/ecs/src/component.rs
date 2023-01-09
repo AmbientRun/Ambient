@@ -47,6 +47,7 @@ pub trait IComponent: Send + Sync + Downcast {
     fn external_type(&self) -> Option<PrimitiveComponentType>;
     // required for dynamic registration. do not call on static components
     fn set_index(&mut self, index: usize);
+    fn get_id(&self) -> String;
     fn get_name(&self) -> String;
     fn is_change_filter(&self) -> bool;
     fn clone_boxed(&self) -> Box<dyn IComponent>;
@@ -205,6 +206,9 @@ impl<T: ComponentValue> IComponent for Component<T> {
     }
     fn set_index(&mut self, index: usize) {
         self.index = index.try_into().unwrap();
+    }
+    fn get_id(&self) -> String {
+        with_component_registry(|r| r.idx_to_id().get(&self.get_index()).cloned().unwrap())
     }
     fn get_name(&self) -> String {
         self.name

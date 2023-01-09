@@ -31,7 +31,7 @@ pub(crate) struct RegistryComponent {
 
 #[derive(Clone, Default)]
 pub struct ComponentRegistry {
-    pub(crate) components_by_name: HashMap<String, RegistryComponent>,
+    pub(crate) name_to_idx: HashMap<String, usize>,
     pub(crate) idx_to_id: HashMap<usize, String>,
     pub(crate) components: Vec<RegistryComponent>,
 
@@ -70,7 +70,7 @@ impl ComponentRegistry {
         if component.index >= 0 {
             return;
         }
-        self.register_with_id(&format!("{namespace}::{name}"), &mut *component, None, None);
+        self.register_with_id(&format!("{namespace}::{name}"), component, None, None);
     }
     pub(crate) fn register_with_id(
         &mut self,
@@ -79,19 +79,23 @@ impl ComponentRegistry {
         external_type: Option<PrimitiveComponentType>,
         primitive_component: Option<PrimitiveComponent>,
     ) {
-        if self.components_by_name.contains_key(id) {
+        if let Some(idx) = self.name_to_idx.get(id) {
             log::warn!("Duplicate components: {}", id);
+            component.set_index(*idx);
+            self.components[*idx].external_type = external_type;
+            self.components[*idx].primitive_component = primitive_component;
             return;
         }
-        component.set_index(self.components.len());
+        let index = self.components.len();
+        component.set_index(index);
         let reg_comp = RegistryComponent { component: component.clone_boxed(), external_type, primitive_component };
         self.components.push(reg_comp.clone());
-        self.components_by_name.insert(id.to_owned(), reg_comp.clone());
+        self.name_to_idx.insert(id.to_owned(), index);
         self.idx_to_id.insert(component.get_index(), id.to_owned());
     }
 
     pub fn get_by_id(&mut self, id: &str) -> Option<&dyn IComponent> {
-        self.components_by_name.get(id).map(|b| b.component.as_ref())
+        self.name_to_idx.get(id).map(|b| self.components[*b].component.as_ref())
     }
     pub fn get_by_index(&self, index: usize) -> Option<&dyn IComponent> {
         self.components.get(index).map(|b| b.component.as_ref())

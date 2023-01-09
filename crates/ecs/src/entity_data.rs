@@ -161,7 +161,7 @@ impl Debug for EntityData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut out = f.debug_struct("EntityData");
         for comp in self.content.iter() {
-            out.field(&comp.component().get_name(), &comp.debug_value());
+            out.field(&comp.component().get_id(), &comp.debug_value());
         }
         out.finish()
     }
