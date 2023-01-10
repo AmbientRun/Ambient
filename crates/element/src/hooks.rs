@@ -258,29 +258,13 @@ impl<'a> Hooks<'a> {
         }
     }
 
+    #[profiling::function]
     /// Run a function for its side effects each time a dependency changes.
     ///
     /// The provided functions returns a function which is run when the part is
     /// removed or `use_effect` is run again.
-    #[inline]
+    ///
     pub fn use_effect<D: PartialEq + ComponentValue + Debug>(
-        &mut self,
-        world: &mut World,
-        dependencies: D,
-        run: impl FnOnce(&mut World) -> Box<dyn FnOnce(&mut World) + Sync + Send> + Sync + Send,
-    ) {
-        self.use_effect_with(world, dependencies, |world, _| run(world))
-    }
-
-    #[profiling::function]
-    /// Variant of [`Self::use_effect`] where the closure has access to the dependencies.
-    ///
-    /// This makes the `run` method error prone when values are used in the closure but forgotten
-    /// in dependencies.
-    ///
-    /// In addition it reduces the need to clone values twice using the `closure!` macro and into
-    /// the dependencies.
-    pub fn use_effect_with<D: PartialEq + ComponentValue + Debug>(
         &mut self,
         world: &mut World,
         dependencies: D,

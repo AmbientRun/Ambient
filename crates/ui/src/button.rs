@@ -208,7 +208,7 @@ pub fn Button(
     let (is_working, set_is_working) = hooks.use_state(false);
     let (is_pressed_immediate, _) = hooks.use_state_with(|| Arc::new(AtomicBool::new(false)));
 
-    hooks.use_effect(world, is_pressed, move |world| {
+    hooks.use_effect(world, is_pressed, move |world, _| {
         if let Some(on_is_pressed_changed) = on_is_pressed_changed {
             on_is_pressed_changed(world, is_pressed);
         }
