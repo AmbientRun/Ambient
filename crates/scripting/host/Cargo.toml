@@ -6,11 +6,13 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+elements_animation = { path = "../../animation" }
 elements_app = { path = "../../app" }
 elements_core = { path = "../../core" }
 elements_ecs = { path = "../../ecs" }
 elements_physics = { path = "../../physics" }
 elements_std = { path = "../../std" }
+physxx = { path = "../../../libs/physxx" }
 
 anyhow.workspace = true
 async-trait.workspace = true
