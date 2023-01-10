@@ -175,7 +175,7 @@ impl ElementComponent for GameClientView {
 
         let gpu = world.resource(gpu()).clone();
 
-        let render_target = hooks.use_memo_with(resolution, || Arc::new(RenderTarget::new(gpu.clone(), resolution, None)));
+        let render_target = hooks.use_memo_with(resolution, |&resolution| Arc::new(RenderTarget::new(gpu.clone(), resolution, None)));
 
         let (connection_status, set_connection_status) = hooks.use_state("Connecting".to_string());
 
@@ -209,7 +209,7 @@ impl ElementComponent for GameClientView {
             let render_target = render_target.clone();
             let runtime = world.resource(runtime()).clone();
 
-            hooks.use_memo_with((), move || {
+            hooks.use_memo_with((), move |()| {
                 let task = runtime.spawn(async move {
                     // These are the callbacks for everything that can happen
                     let mut on_event = {

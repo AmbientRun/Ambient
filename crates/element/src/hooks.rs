@@ -238,21 +238,21 @@ impl<'a> Hooks<'a> {
     }
 
     #[profiling::function]
-    pub fn use_memo_with<T: Clone + ComponentValue + Debug, F: FnOnce() -> T, D: PartialEq + Clone + Sync + Send + Debug + 'static>(
+    pub fn use_memo_with<T: Clone + ComponentValue + Debug, D: PartialEq + Clone + Sync + Send + Debug + 'static>(
         &mut self,
         dependencies: D,
-        create: F,
+        create: impl FnOnce(&D) -> T,
     ) -> T {
         let value = self.use_ref_with(|| None);
         let prev_deps = self.use_ref_with(|| None);
-        let dependencies = Some(dependencies);
 
         let mut prev_deps = prev_deps.lock();
         let mut value = value.lock();
 
-        if *prev_deps != dependencies {
-            *prev_deps = dependencies;
-            value.insert(create()).clone()
+        if prev_deps.as_ref() != Some(&dependencies) {
+            let value = value.insert(create(&dependencies)).clone();
+            *prev_deps = Some(dependencies);
+            value
         } else {
             value.clone().expect("No memo value")
         }

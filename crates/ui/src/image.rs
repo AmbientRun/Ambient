@@ -27,7 +27,7 @@ impl ElementComponent for Image {
         let Image { texture } = *self;
         let assets = world.resource(asset_cache());
         let texture_id = texture.as_ref().map(|x| x.texture.id);
-        let mat = hooks.use_memo_with(texture_id, move || {
+        let mat = hooks.use_memo_with(texture_id, move |_| {
             texture.map(|texture| {
                 SharedMaterial::new(PbrMaterial::new(
                     assets.clone(),
