@@ -4,7 +4,7 @@ use clap::{Parser, Subcommand};
 use elements_app::AppBuilder;
 use elements_cameras::{LookatCamera, UICamera};
 use elements_core::{camera::active_camera, main_scene, transform::scale};
-use elements_ecs::{EntityData, SimpleComponentRegistry, SystemGroup, World};
+use elements_ecs::{EntityData, SystemGroup, World};
 use elements_element::{element_component, Element, ElementComponentExt, Hooks};
 use elements_network::{
     client::{GameClientNetworkStats, GameClientServerStats, GameClientView, UseOnce}, events::ServerEventRegistry

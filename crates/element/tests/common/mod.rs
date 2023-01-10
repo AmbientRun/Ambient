@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use elements_ecs::{components, query_mut, SimpleComponentRegistry, World};
+use elements_ecs::{components, query_mut, World};
 use elements_std::events::EventDispatcher;
 use itertools::Itertools;
 

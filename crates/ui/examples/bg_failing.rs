@@ -17,7 +17,7 @@ impl ElementComponent for Example {
 
         let texture = PixelTextureViewKey::white().get(assets);
         let runtime = world.resource(runtime());
-        hooks.use_memo_with((), move || {
+        hooks.use_memo_with((), move |_| {
             runtime.spawn(async move {
                 log::info!("Spawning task");
                 use elements_std::IntoDuration;

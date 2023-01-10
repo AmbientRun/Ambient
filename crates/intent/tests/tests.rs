@@ -1,7 +1,7 @@
 use std::{collections::BTreeMap, sync::Arc};
 
 use anyhow::bail;
-use elements_ecs::{components, query, query_mut, EntityData, EntityId, FrameEvent, SimpleComponentRegistry, System, World};
+use elements_ecs::{components, query, query_mut, EntityData, EntityId, FrameEvent, System, World};
 use elements_intent::{
     common_intent_systems, intent_registry, logic::{create_intent, push_intent, redo_intent, undo_head}, use_old_state, IntentRegistry
 };

@@ -43,7 +43,7 @@ impl ElementComponent for Example {
         let runtime = world.resource(runtime());
         {
             let mut history = history.clone();
-            hooks.use_memo_with((), move || {
+            hooks.use_memo_with((), move |_| {
                 runtime.spawn(async move {
                     log::info!("Spawning task");
                     let mut interval = tokio::time::interval(50.ms());

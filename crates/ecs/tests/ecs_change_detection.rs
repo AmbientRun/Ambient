@@ -2,9 +2,7 @@ use std::sync::{
     atomic::{AtomicU32, Ordering}, Arc
 };
 
-use elements_ecs::{
-    components, query, query_mut, ArchetypeFilter, EntityData, EntityId, FrameEvent, Query, QueryState, SimpleComponentRegistry, World
-};
+use elements_ecs::{components, query, query_mut, ArchetypeFilter, EntityData, EntityId, FrameEvent, Query, QueryState, World};
 use itertools::Itertools;
 
 components!("test", {

@@ -1,4 +1,4 @@
-use elements_ecs::{components, query, query_mut, EntityData, EntityId, Query, QueryState, SimpleComponentRegistry, World};
+use elements_ecs::{components, query, query_mut, EntityData, EntityId, Query, QueryState, World};
 use itertools::Itertools;
 
 components!("test", {
