@@ -9,7 +9,7 @@ use serde::{
 };
 
 use super::{with_component_registry, Component, ComponentUnit, ComponentValue, ComponentValueBase, ECSError, EntityId, IComponent, World};
-use crate::{with_component_registry_mut, ComponentSet, ECSDeserializationWarnings};
+use crate::{ComponentSet, ECSDeserializationWarnings};
 
 #[derive(Clone)]
 pub struct EntityData {
@@ -206,7 +206,7 @@ impl<'de> Deserialize<'de> for EntityData {
                 let mut map = erased_serde::de::erase::MapAccess { state: map };
                 while let Some(key) = map.state.next_key::<String>()? {
                     let comp = {
-                        let comp = with_component_registry_mut(|r| Some(r.get_by_id(&key)?.clone_boxed()));
+                        let comp = with_component_registry(|r| Some(r.get_by_id(&key)?.clone_boxed()));
                         match comp {
                             Some(comp) => comp,
                             None => {

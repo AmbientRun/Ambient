@@ -11,10 +11,6 @@ pub fn with_component_registry<R>(f: impl FnOnce(&ComponentRegistry) -> R + Sync
     let lock = COMPONENT_REGISTRY.read();
     f(&lock)
 }
-pub fn with_component_registry_mut<R>(f: impl FnOnce(&mut ComponentRegistry) -> R + Sync + Send) -> R {
-    let mut lock = COMPONENT_REGISTRY.write();
-    f(&mut lock)
-}
 
 #[derive(Clone)]
 pub(crate) struct RegistryComponent {
@@ -102,7 +98,7 @@ impl ComponentRegistry {
         self.idx_to_id.insert(component.get_index(), id.to_owned());
     }
 
-    pub fn get_by_id(&mut self, id: &str) -> Option<&dyn IComponent> {
+    pub fn get_by_id(&self, id: &str) -> Option<&dyn IComponent> {
         self.name_to_idx.get(id).map(|b| self.components[*b].component.as_ref())
     }
     pub fn get_by_index(&self, index: usize) -> Option<&dyn IComponent> {
@@ -163,13 +159,13 @@ macro_rules! components {
                 return;
             }
 
-            $crate::with_component_registry_mut(|registry| unsafe {
+            unsafe {
                 $(
                     $crate::paste::paste! {
-                        registry.register(concat!("core::", $namespace), stringify!($name), &mut [<comp_ $name>]);
+                        $crate::ComponentRegistry::get_mut().register(concat!("core::", $namespace), stringify!($name), &mut [<comp_ $name>]);
                     }
                 )*
-            });
+            }
             COMPONENTS_INITIALIZED.store(true, Ordering::SeqCst);
         }
     };
