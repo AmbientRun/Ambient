@@ -50,6 +50,14 @@ impl AbsAssetUrl {
             Self(Url::from_file_path(path).unwrap())
         }
     }
+    pub fn from_directory_path(path: impl AsRef<Path>) -> Self {
+        if path.as_ref().is_absolute() {
+            Self(Url::from_directory_path(path).unwrap())
+        } else {
+            let path = std::env::current_dir().unwrap().join(path);
+            Self(Url::from_directory_path(path).unwrap())
+        }
+    }
     pub fn relative_cache_path(&self) -> String {
         self.0.to_string().replace("://", "/")
     }
@@ -72,6 +80,9 @@ impl AbsAssetUrl {
     }
     pub fn resolve(&self, url_or_relative_path: impl AsRef<str>) -> Result<Self, url::ParseError> {
         AssetUrl::parse(url_or_relative_path)?.resolve(self)
+    }
+    pub fn join(&self, path: impl AsRef<str>) -> Result<Self, url::ParseError> {
+        Ok(AbsAssetUrl(self.0.join(path.as_ref())?))
     }
 }
 impl From<PathBuf> for AbsAssetUrl {
