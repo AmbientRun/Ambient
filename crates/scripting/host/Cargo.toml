@@ -10,6 +10,7 @@ elements_animation = { path = "../../animation" }
 elements_app = { path = "../../app" }
 elements_core = { path = "../../core" }
 elements_ecs = { path = "../../ecs" }
+elements_object = { path = "../../object" }
 elements_physics = { path = "../../physics" }
 elements_std = { path = "../../std" }
 physxx = { path = "../../../libs/physxx" }
