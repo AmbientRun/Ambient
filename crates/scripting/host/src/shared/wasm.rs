@@ -17,17 +17,19 @@ impl WorldRef {
     pub const fn new() -> Self {
         WorldRef(std::ptr::null_mut())
     }
-
-    pub fn as_ref(&self) -> &World {
-        unsafe { self.0.as_ref().unwrap() }
-    }
-
-    pub fn as_mut(&mut self) -> &mut World {
-        unsafe { self.0.as_mut().unwrap() }
-    }
 }
 unsafe impl Send for WorldRef {}
 unsafe impl Sync for WorldRef {}
+impl AsRef<World> for WorldRef {
+    fn as_ref(&self) -> &World {
+        unsafe { self.0.as_ref().unwrap() }
+    }
+}
+impl AsMut<World> for WorldRef {
+    fn as_mut(&mut self) -> &mut World {
+        unsafe { self.0.as_mut().unwrap() }
+    }
+}
 
 // TODO(mithun): come up with a more optimal way to do this that doesn't
 // implicitly require unsafe and mutex locking
