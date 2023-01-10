@@ -161,7 +161,7 @@ impl Debug for EntityData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut out = f.debug_struct("EntityData");
         for comp in self.content.iter() {
-            out.field(&comp.component().get_name(), &comp.debug_value());
+            out.field(&comp.component().get_id(), &comp.debug_value());
         }
         out.finish()
     }
@@ -291,7 +291,7 @@ impl FromIterator<ComponentUnit> for EntityData {
 
 #[cfg(test)]
 mod test {
-    use crate::{components, EntityData, SimpleComponentRegistry};
+    use crate::{components, ComponentRegistry, EntityData};
 
     components!("test", {
         ser_test2: String,
@@ -299,7 +299,7 @@ mod test {
 
     #[test]
     pub fn test_serialize_entity_data() {
-        SimpleComponentRegistry::install();
+        ComponentRegistry::install(vec![]);
         init_components();
         let source = EntityData::new().set(ser_test2(), "hello".to_string());
         let ser = serde_json::to_string(&source).unwrap();

@@ -7,7 +7,7 @@ pub use elements_core::gpu;
 use elements_core::{
     app_start_time, asset_cache, async_ecs::async_ecs_systems, bounding::bounding_systems, camera::camera_systems, frame_index, gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate}, hierarchy::dump_world_hierarchy_to_tmp_file, mouse_position, on_frame_system, remove_at_time_system, runtime, time, transform::TransformSystem, window_scale_factor, RuntimeKey, TimeResourcesSystem, WindowKey, WindowSyncSystem, WinitEventsSystem
 };
-use elements_ecs::{components, DynSystem, EntityData, FrameEvent, SimpleComponentRegistry, System, SystemGroup, World};
+use elements_ecs::{components, DynSystem, EntityData, FrameEvent, System, SystemGroup, World};
 use elements_element::elements_system;
 use elements_gizmos::{gizmos, Gizmos};
 use elements_gpu::{
@@ -139,30 +139,21 @@ pub struct AppBuilder {
     pub runtime: Option<Runtime>,
     pub window_builder: Option<WindowBuilder>,
     pub asset_cache: Option<AssetCache>,
-    pub install_component_registry: bool,
     pub ui_renderer: bool,
     pub main_renderer: bool,
 }
 impl AppBuilder {
     pub fn new() -> Self {
-        Self {
-            event_loop: None,
-            runtime: None,
-            window_builder: None,
-            asset_cache: None,
-            install_component_registry: false,
-            ui_renderer: false,
-            main_renderer: true,
-        }
+        Self { event_loop: None, runtime: None, window_builder: None, asset_cache: None, ui_renderer: false, main_renderer: true }
     }
     pub fn simple() -> Self {
-        Self::new().install_component_registry(true)
+        Self::new()
     }
     pub fn simple_ui() -> Self {
-        Self::new().install_component_registry(true).ui_renderer(true).main_renderer(false)
+        Self::new().ui_renderer(true).main_renderer(false)
     }
     pub fn simple_dual() -> Self {
-        Self::new().install_component_registry(true).ui_renderer(true).main_renderer(true)
+        Self::new().ui_renderer(true).main_renderer(true)
     }
     pub fn with_event_loop(mut self, event_loop: EventLoop<()>) -> Self {
         self.event_loop = Some(event_loop);
@@ -180,10 +171,6 @@ impl AppBuilder {
         self.asset_cache = Some(asset_cache);
         self
     }
-    pub fn install_component_registry(mut self, value: bool) -> Self {
-        self.install_component_registry = value;
-        self
-    }
     pub fn ui_renderer(mut self, value: bool) -> Self {
         self.ui_renderer = value;
         self
@@ -193,9 +180,6 @@ impl AppBuilder {
         self
     }
     pub fn build(self) -> anyhow::Result<App> {
-        if self.install_component_registry {
-            SimpleComponentRegistry::install();
-        }
         crate::init_all_components();
         let event_loop = self.event_loop.unwrap_or_else(|| EventLoop::new());
         let window = self.window_builder.unwrap_or_default();

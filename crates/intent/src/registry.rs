@@ -321,13 +321,12 @@ pub fn registry_systems() -> SystemGroup {
 #[cfg(test)]
 mod test {
 
-    use elements_ecs::{components, SimpleComponentRegistry};
+    use elements_ecs::{components, ComponentRegistry};
 
     use super::*;
 
     #[test]
     fn registry() {
-        SimpleComponentRegistry::install();
         components!("intent", {
            intent_add: f32,
            intent_add_revert: f32,

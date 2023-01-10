@@ -136,7 +136,6 @@ elements_ecs::components!("renderer", {
 fn main() {
     // wgpu_subscriber::initialize_default_subscriber(None);
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
-    SimpleComponentRegistry::install();
     init_components();
     AppBuilder::simple().run(|app, _| {
         init(&mut app.world);

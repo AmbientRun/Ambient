@@ -66,16 +66,8 @@ pub fn init_all_components() {
     bounding::init_gpu_components();
 }
 
-#[deprecated(note = "use world.resource(window_physical_size())")]
-pub fn get_window_resolution(world: &World) -> UVec2 {
-    *world.resource(window_physical_size())
-}
-#[deprecated(note = "use world.resource(window_logical_size())")]
-pub fn get_window_scaled_resolution(world: &World) -> UVec2 {
-    *world.resource(window_logical_size())
-}
 pub fn screen_to_clip_space(world: &World, screen_pos: Vec2) -> Vec2 {
-    let screen_size = get_window_resolution(world);
+    let screen_size = *world.resource(window_physical_size());
     interpolate(screen_pos, Vec2::ZERO, screen_size.as_vec2(), vec2(-1., 1.), vec2(1., -1.))
 }
 pub fn get_mouse_clip_space_position(world: &World) -> Vec2 {

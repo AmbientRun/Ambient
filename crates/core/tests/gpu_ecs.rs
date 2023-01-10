@@ -33,7 +33,6 @@ struct TestCommon {
 }
 impl TestCommon {
     async fn new() -> Self {
-        SimpleComponentRegistry::install();
         elements_core::init_all_components();
         init_components();
         init_gpu_components();

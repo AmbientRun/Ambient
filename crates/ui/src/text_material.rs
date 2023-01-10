@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use elements_gpu::{
-    gpu::{Gpu, GpuKey}, shader_module::BindGroupDesc, std_assets::get_default_sampler, texture::TextureView
+    gpu::{Gpu, GpuKey}, shader_module::BindGroupDesc, std_assets::DefaultSamplerKey, texture::TextureView
 };
 use elements_renderer::{Material, MaterialShader, RendererShader, StandardShaderKey, MATERIAL_BIND_GROUP};
 use elements_std::{
@@ -64,7 +64,7 @@ impl TextMaterial {
                 layout: &material.shader.first_layout(&assets),
                 entries: &[
                     wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::TextureView(&font_atlas) },
-                    wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(&get_default_sampler(assets.clone())) },
+                    wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(&DefaultSamplerKey.get(&assets)) },
                 ],
                 label: Some("TextMaterial.bind_group"),
             }),
