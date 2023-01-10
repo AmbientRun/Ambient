@@ -11,7 +11,7 @@
 #![allow(clippy::borrowed_box)]
 
 use std::{
-    any::Any,  convert::TryInto, fmt::{self, Display}, marker::PhantomData
+    any::Any, convert::TryInto, fmt::{self, Display}, marker::PhantomData
 };
 
 use downcast_rs::{impl_downcast, Downcast};
@@ -93,9 +93,6 @@ impl<T: ComponentValue> Debug for Component<T> {
     }
 }
 impl<T: ComponentValue> Component<T> {
-    pub const fn new(index: i32) -> Self {
-        Self { index, changed_filter: false, name: None, _type: PhantomData }
-    }
     pub(crate) const fn new_external(index: i32) -> Self {
         Self { index, changed_filter: false, name: None, _type: PhantomData }
     }

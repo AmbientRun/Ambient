@@ -59,7 +59,7 @@ macro_rules! make_primitive_component {
                                 Some(PrimitiveComponent::[<Vec $value>](Component::<Vec<$type>>::new_external(0)))
                             ),
                         )*
-                        _ => panic!("Unsuported Vec inner type: {:?}", variants),
+                        _ => panic!("Unsupported Vec inner type: {:?}", variants),
                     },
                     PrimitiveComponentType::Option { variants } => match **variants {
                         $(
@@ -70,7 +70,7 @@ macro_rules! make_primitive_component {
                                 Some(PrimitiveComponent::[<Option $value>](Component::<Option<$type>>::new_external(0)))
                             ),
                         )*
-                        _ => panic!("Unsuported Vec inner type: {:?}", variants),
+                        _ => panic!("Unsupported Option inner type: {:?}", variants),
                     }
                 }
             }
