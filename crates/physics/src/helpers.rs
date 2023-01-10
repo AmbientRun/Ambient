@@ -168,7 +168,7 @@ pub fn transform_entity(world: &mut World, id: EntityId, transformation: Mat4, r
 }
 
 pub fn scale_shape(shape: PxShape, scale: Vec3) {
-    tracing::info!("Scaling shape");
+    tracing::debug!("Scaling shape");
     let geo = shape.get_geometry();
     let ud = shape.get_user_data::<PxShapeUserData>().unwrap();
     let (base_scale, base_rot, base_pos) = ud.base_pose.to_scale_rotation_translation();
