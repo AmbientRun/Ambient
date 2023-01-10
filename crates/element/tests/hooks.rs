@@ -139,7 +139,7 @@ fn use_memo() {
     }
     impl ElementComponent for Test {
         fn render(self: Box<Self>, world: &mut World, hooks: &mut Hooks) -> Element {
-            hooks.use_memo_with(self.deps, || {
+            hooks.use_memo_with(self.deps, |_| {
                 *world.resource_mut(counter()) += 1;
                 "test"
             });
@@ -172,7 +172,7 @@ fn use_effect() {
     }
     impl ElementComponent for Inner {
         fn render(self: Box<Self>, world: &mut World, hooks: &mut Hooks) -> Element {
-            hooks.use_effect(world, self.value, |world| {
+            hooks.use_effect(world, self.value, |world, _| {
                 *world.resource_mut(counter()) += 1;
                 *world.resource_mut(n_renders()) += 1;
                 Box::new(|world| {

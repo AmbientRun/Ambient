@@ -1,8 +1,6 @@
 use std::sync::Arc;
 
-use elements_ecs::{
-    components, ArchetypeFilter, EntityData, IComponent, Query, SimpleComponentRegistry, World, WorldDiff, WorldStream, WorldStreamFilter
-};
+use elements_ecs::{components, ArchetypeFilter, EntityData, IComponent, Query, World, WorldDiff, WorldStream, WorldStreamFilter};
 use itertools::Itertools;
 
 components!("test", {

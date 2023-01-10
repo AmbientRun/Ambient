@@ -238,36 +238,37 @@ impl<'a> Hooks<'a> {
     }
 
     #[profiling::function]
-    pub fn use_memo_with<T: Clone + ComponentValue + Debug, F: FnOnce() -> T, D: PartialEq + Clone + Sync + Send + Debug + 'static>(
+    pub fn use_memo_with<T: Clone + ComponentValue + Debug, D: PartialEq + Clone + Sync + Send + Debug + 'static>(
         &mut self,
         dependencies: D,
-        create: F,
+        create: impl FnOnce(&D) -> T,
     ) -> T {
         let value = self.use_ref_with(|| None);
         let prev_deps = self.use_ref_with(|| None);
-        let dependencies = Some(dependencies);
 
         let mut prev_deps = prev_deps.lock();
         let mut value = value.lock();
 
-        if *prev_deps != dependencies {
-            *prev_deps = dependencies;
-            value.insert(create()).clone()
+        if prev_deps.as_ref() != Some(&dependencies) {
+            let value = value.insert(create(&dependencies)).clone();
+            *prev_deps = Some(dependencies);
+            value
         } else {
             value.clone().expect("No memo value")
         }
     }
 
+    #[profiling::function]
     /// Run a function for its side effects each time a dependency changes.
     ///
     /// The provided functions returns a function which is run when the part is
     /// removed or `use_effect` is run again.
-    #[profiling::function]
+    ///
     pub fn use_effect<D: PartialEq + ComponentValue + Debug>(
         &mut self,
         world: &mut World,
         dependencies: D,
-        run: impl FnOnce(&mut World) -> Box<dyn FnOnce(&mut World) + Sync + Send> + Sync + Send,
+        run: impl FnOnce(&mut World, &D) -> Box<dyn FnOnce(&mut World) + Sync + Send> + Sync + Send,
     ) {
         struct Cleanup(Box<dyn FnOnce(&mut World) + Sync + Send>);
         impl Debug for Cleanup {
@@ -289,16 +290,16 @@ impl<'a> Hooks<'a> {
             });
         }
 
-        let dependencies = Some(dependencies);
+        let dependencies = dependencies;
         let mut prev_deps = prev_deps.lock();
-        if *prev_deps != dependencies {
+        if prev_deps.as_ref() != Some(&dependencies) {
             let mut cleanup_prev = cleanup_prev.lock();
             if let Some(cleanup_prev) = std::mem::replace(&mut *cleanup_prev, None) {
                 cleanup_prev.0(world);
             }
             profiling::scope!("use_effect_run");
-            *cleanup_prev = Some(Cleanup(run(world)));
-            *prev_deps = dependencies;
+            *cleanup_prev = Some(Cleanup(run(world, &dependencies)));
+            *prev_deps = Some(dependencies);
         }
     }
 

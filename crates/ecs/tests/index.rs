@@ -1,7 +1,7 @@
 use std::ops::Bound;
 
 use elements_ecs::{
-    components, index_system, ArchetypeFilter, EntityData, FrameEvent, Index, IndexColumns, IndexField, IndexKey, SimpleComponentRegistry, System, World
+    components, index_system, ArchetypeFilter, EntityData, FrameEvent, Index, IndexColumns, IndexField, IndexKey, System, World
 };
 use itertools::Itertools;
 

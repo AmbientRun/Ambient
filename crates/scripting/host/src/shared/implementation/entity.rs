@@ -2,8 +2,7 @@ use crate::shared::QueryStateMap;
 use anyhow::Context;
 use elements_core::transform::translation;
 use elements_ecs::{
-    query as ecs_query, with_component_registry, with_component_registry_mut, EntityId, QueryEvent,
-    QueryState, World,
+    query as ecs_query, with_component_registry, EntityId, QueryEvent, QueryState, World,
 };
 use elements_ecs::{Component, ComponentValue};
 use glam::Vec3;
@@ -14,7 +13,7 @@ pub fn get_component_type<T: ComponentValue>(component_index: u64) -> Option<Com
 }
 
 pub fn get_component_index(id: &str) -> Option<usize> {
-    with_component_registry_mut(|r| Some(r.get_by_id(id)?.get_index()))
+    with_component_registry(|r| Some(r.get_by_id(id)?.get_index()))
 }
 
 pub fn has_component(world: &World, entity_id: EntityId, index: usize) -> bool {

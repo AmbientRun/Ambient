@@ -32,6 +32,7 @@ pub struct SpawnConfig {
     pub entity_uids: MultiEntityUID,
     pub components: EntityData,
 }
+
 impl SpawnConfig {
     pub fn new(entity_uids: MultiEntityUID, position: Vec3, rotation: Quat, scale: Vec3) -> Self {
         assert!(scale.is_finite());

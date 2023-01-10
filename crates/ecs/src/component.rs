@@ -172,7 +172,7 @@ impl<'de, T: ComponentValue> Deserialize<'de> for Component<T> {
             where
                 E: de::Error,
             {
-                let component = with_component_registry_mut(|r| Some(r.get_by_id(v)?.clone_boxed()));
+                let component = with_component_registry(|r| Some(r.get_by_id(v)?.clone_boxed()));
                 let component = match component {
                     Some(comp) => comp,
                     None => panic!("No such component: {}", v),
@@ -367,7 +367,7 @@ impl<'de> Deserialize<'de> for Box<dyn IComponent> {
             where
                 E: de::Error,
             {
-                let component = with_component_registry_mut(|r| Some(r.get_by_id(v)?.clone_boxed()));
+                let component = with_component_registry(|r| Some(r.get_by_id(v)?.clone_boxed()));
                 match component {
                     Some(comp) => Ok(comp),
                     None => Err(de::Error::custom(format!("No such component: {}", v))),
