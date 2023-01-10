@@ -7,8 +7,10 @@ use crate::{
     gpu::GpuKey, texture::{Texture, TextureView}
 };
 
-pub fn get_default_sampler(assets: AssetCache) -> Arc<wgpu::Sampler> {
-    assets.get_sync("default_sampler".to_string(), |assets| {
+#[derive(Debug)]
+pub struct DefaultSamplerKey;
+impl SyncAssetKey<Arc<wgpu::Sampler>> for DefaultSamplerKey {
+    fn load(&self, assets: AssetCache) -> Arc<wgpu::Sampler> {
         let gpu = GpuKey.get(&assets);
         Arc::new(gpu.device.create_sampler(&wgpu::SamplerDescriptor {
             address_mode_u: wgpu::AddressMode::Repeat,
@@ -20,11 +22,13 @@ pub fn get_default_sampler(assets: AssetCache) -> Arc<wgpu::Sampler> {
             anisotropy_clamp: NonZeroU8::new(16),
             ..Default::default()
         }))
-    })
+    }
 }
 
-pub fn get_linear_sampler(assets: AssetCache) -> Arc<wgpu::Sampler> {
-    assets.get_sync("linear_sampler".to_string(), |assets| {
+#[derive(Debug)]
+pub struct LinearSamplerKey;
+impl SyncAssetKey<Arc<wgpu::Sampler>> for LinearSamplerKey {
+    fn load(&self, assets: AssetCache) -> Arc<wgpu::Sampler> {
         let gpu = GpuKey.get(&assets);
         Arc::new(gpu.device.create_sampler(&wgpu::SamplerDescriptor {
             address_mode_u: wgpu::AddressMode::Repeat,
@@ -35,11 +39,13 @@ pub fn get_linear_sampler(assets: AssetCache) -> Arc<wgpu::Sampler> {
             mipmap_filter: wgpu::FilterMode::Nearest,
             ..Default::default()
         }))
-    })
+    }
 }
 
-pub fn get_mirroring_sampler(assets: AssetCache) -> Arc<wgpu::Sampler> {
-    assets.get_sync("mirroring_sampler".to_string(), |assets| {
+#[derive(Debug)]
+pub struct MirroringSamplerKey;
+impl SyncAssetKey<Arc<wgpu::Sampler>> for MirroringSamplerKey {
+    fn load(&self, assets: AssetCache) -> Arc<wgpu::Sampler> {
         let gpu = GpuKey.get(&assets);
         Arc::new(gpu.device.create_sampler(&wgpu::SamplerDescriptor {
             address_mode_u: wgpu::AddressMode::MirrorRepeat,
@@ -50,10 +56,13 @@ pub fn get_mirroring_sampler(assets: AssetCache) -> Arc<wgpu::Sampler> {
             mipmap_filter: wgpu::FilterMode::Linear,
             ..Default::default()
         }))
-    })
+    }
 }
-pub fn get_depth_buffer_sampler(assets: AssetCache) -> Arc<wgpu::Sampler> {
-    assets.get_sync("depth_buffer_sampler".to_string(), |assets| {
+
+#[derive(Debug)]
+pub struct DepthBufferSampler;
+impl SyncAssetKey<Arc<wgpu::Sampler>> for DepthBufferSampler {
+    fn load(&self, assets: AssetCache) -> Arc<wgpu::Sampler> {
         let gpu = GpuKey.get(&assets);
         Arc::new(gpu.device.create_sampler(&wgpu::SamplerDescriptor {
             address_mode_u: wgpu::AddressMode::ClampToEdge,
@@ -69,7 +78,7 @@ pub fn get_depth_buffer_sampler(assets: AssetCache) -> Arc<wgpu::Sampler> {
             anisotropy_clamp: None,
             border_color: None,
         }))
-    })
+    }
 }
 
 #[derive(Debug, Clone)]

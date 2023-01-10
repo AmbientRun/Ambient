@@ -5,7 +5,7 @@ use elements_core::{
 };
 use elements_ecs::{Component, World};
 use elements_gpu::{
-    gpu::{Gpu, GpuKey}, shader_module::BindGroupDesc, std_assets::get_default_sampler, texture::{Texture, TextureView}
+    gpu::{Gpu, GpuKey}, shader_module::BindGroupDesc, std_assets::DefaultSamplerKey, texture::{Texture, TextureView}
 };
 use elements_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
@@ -190,7 +190,7 @@ impl ForwardGlobals {
         self.gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &self.layout,
             entries: &[
-                wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::Sampler(&get_default_sampler(assets)) },
+                wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::Sampler(&DefaultSamplerKey.get(&assets)) },
                 wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Buffer(self.buffer.as_entire_buffer_binding()) },
                 wgpu::BindGroupEntry {
                     binding: 2,
@@ -286,7 +286,7 @@ impl ShadowAndUIGlobals {
             bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
                 layout: &layout,
                 entries: &[
-                    wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::Sampler(&get_default_sampler(assets)) },
+                    wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::Sampler(&DefaultSamplerKey.get(&assets)) },
                     wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Buffer(buffer.as_entire_buffer_binding()) },
                     wgpu::BindGroupEntry {
                         binding: 2,

@@ -40,15 +40,20 @@ pub struct RendererResources {
     pub collect: Arc<RendererCollect>,
 }
 
-impl RendererResources {
-    fn get(assets: AssetCache) -> Self {
-        assets.get_sync("renderer_resources".to_string(), |assets| {
-            let primitives = get_common_module(&assets).get_layout(PRIMITIVES_BIND_GROUP).unwrap().get(&assets);
-            let resources_layout = get_resources_module().get_layout(RESOURCES_BIND_GROUP).unwrap().get(&assets);
-            let globals_layout = get_globals_module(&assets).get_layout(GLOBALS_BIND_GROUP).unwrap().get(&assets);
+#[derive(Debug)]
+struct RendererResourcesKey;
+impl SyncAssetKey<RendererResources> for RendererResourcesKey {
+    fn load(&self, assets: AssetCache) -> RendererResources {
+        let primitives = get_common_module(&assets).get_layout(PRIMITIVES_BIND_GROUP).unwrap().get(&assets);
+        let resources_layout = get_resources_module().get_layout(RESOURCES_BIND_GROUP).unwrap().get(&assets);
+        let globals_layout = get_globals_module(&assets).get_layout(GLOBALS_BIND_GROUP).unwrap().get(&assets);
 
-            Self { collect: Arc::new(RendererCollect::new(&assets)), primitives_layout: primitives, resources_layout, globals_layout }
-        })
+        RendererResources {
+            collect: Arc::new(RendererCollect::new(&assets)),
+            primitives_layout: primitives,
+            resources_layout,
+            globals_layout,
+        }
     }
 }
 
@@ -144,8 +149,7 @@ impl Renderer {
         world.add_resource(shader_debug_params(), Default::default());
         let gpu = GpuKey.get(&assets);
 
-        let renderer_resources = RendererResources::get(assets.clone());
-
+        let renderer_resources = RendererResourcesKey.get(&assets);
         let renderer_settings = RendererSettingsKey.get(&assets);
 
         // Need atleast one for array<Camera, SIZE> to be valid
