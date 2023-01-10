@@ -67,6 +67,11 @@ components!("ecs", {
     ids: Vec<EntityId>,
     /// Generic component that indicates the entity shouldn't be stored on disk
     dont_store: (),
+
+    /// User-editable entities need to have a `uid` component, so that intent history and selection can
+    /// work, even if the actual entity in the world is destroyed and then re-created
+    uid: EntityUid,
+    uid_lookup: UidLookup,
 });
 
 #[derive(Clone)]
