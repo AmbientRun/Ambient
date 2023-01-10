@@ -1,11 +1,10 @@
 use std::sync::Arc;
 
 use elements_app::{gpu_world_sync_systems, world_instance_resources, world_instance_systems, AppResources};
-use elements_ecs::{query, FrameEvent, System, SystemGroup, World};
 use elements_core::{
-    camera::{get_active_camera, projection_view}, get_window_resolution, gpu_ecs::GpuWorldSyncEvent, main_scene, transform::local_to_world
+    camera::{get_active_camera, projection_view}, gpu_ecs::GpuWorldSyncEvent, main_scene, transform::local_to_world, window_physical_size
 };
-use elements_ecs::{components, EntityData};
+use elements_ecs::{components, query, EntityData, FrameEvent, System, SystemGroup, World};
 use elements_gizmos::render::GizmoRenderer;
 use elements_gpu::gpu::GpuKey;
 use elements_renderer::{RenderTarget, Renderer, RendererConfig, RendererTarget};
@@ -131,7 +130,7 @@ impl ClientGameState {
         proj_view.project_point3(p)
     }
     pub fn clip_to_screen_space(&self, p: Vec3) -> Vec2 {
-        let screen_size = get_window_resolution(&self.world);
+        let screen_size = *self.world.resource(window_physical_size());
         interpolate(p.xy(), vec2(-1., 1.), vec2(1., -1.), Vec2::ZERO, screen_size.as_vec2())
     }
     pub fn world_to_screen_space(&self, p: Vec3) -> Vec2 {

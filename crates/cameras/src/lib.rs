@@ -1,4 +1,4 @@
-use elements_core::{camera::*, get_window_scaled_resolution, transform::*, ui_scene};
+use elements_core::{camera::*, transform::*, ui_scene, window_logical_size};
 use elements_ecs::{components, query_mut, SystemGroup, World};
 use elements_element::{element_component, Element, Hooks};
 use elements_std::shapes::BoundingBox;
@@ -32,7 +32,7 @@ pub fn ui_camera_system() -> SystemGroup<Event<'static, ()>> {
     SystemGroup::new(
         "ui_camera_system",
         vec![query_mut((orthographic(), local_to_world()), (ui_camera(),)).to_system(|q, world, qs, _| {
-            let window_size = get_window_scaled_resolution(world).as_vec2();
+            let window_size = world.resource(window_logical_size()).as_vec2();
             for (_, (orth, ltw), (_,)) in q.iter(world, qs) {
                 *ltw = Mat4::from_translation((window_size / 2.).extend(0.));
                 orth.left = -window_size.x / 2.;
