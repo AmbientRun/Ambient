@@ -21,6 +21,7 @@ use thiserror::Error;
 
 mod archetype;
 mod component;
+mod component2;
 mod component_registry;
 mod component_unit;
 mod entity_data;
