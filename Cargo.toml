@@ -29,7 +29,7 @@ elements_network = { path = "crates/network" }
 elements_physics = { path = "crates/physics" }
 elements_rpc = { path = "crates/rpc" }
 elements_object = { path = "crates/object" }
-elements_scripting = { path = "crates/scripting" }
+elements_scripting_host = { path = "crates/scripting/host" }
 clap.workspace = true
 tokio.workspace = true
 futures.workspace = true
@@ -193,3 +193,4 @@ walkdir = "2"
 relative-path = { version = "1.7", features = ["serde"] }
 pin-project = "1.0"
 abort-on-drop = "0.2"
+indoc = "1.0"

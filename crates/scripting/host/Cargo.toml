@@ -1,0 +1,36 @@
+[package]
+name = "elements_scripting_host"
+version.workspace = true
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+elements_app = { path = "../../app" }
+elements_core = { path = "../../core" }
+elements_ecs = { path = "../../ecs" }
+elements_physics = { path = "../../physics" }
+elements_std = { path = "../../std" }
+
+anyhow.workspace = true
+async-trait.workspace = true
+base64.workspace = true
+chrono.workspace = true
+glam.workspace = true
+indexmap.workspace = true
+indoc.workspace = true
+once_cell.workspace = true
+parking_lot.workspace = true
+serde_bytes.workspace = true
+serde_json.workspace = true
+serde.workspace = true
+slotmap.workspace = true
+
+wasi-common.workspace = true
+wasmtime-wasi.workspace = true
+wasmtime.workspace = true
+# make sure this is synchronised with the version used by interface/Cargo.toml
+wit-bindgen-host-wasmtime-rust = { git = "https://github.com/bytecodealliance/wit-bindgen.git", rev = "181093b58f49b194ee34be2d986d737f4f553d3d" }
+
+cargo_toml = "0.14.0"
+toml = "0.5.10"
