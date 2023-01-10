@@ -35,18 +35,29 @@ components!("scripting::shared", {
     script_module_errors: ScriptModuleErrors,
 });
 
-pub type QueryStateMap =
-    slotmap::SlotMap<slotmap::DefaultKey, (Query, QueryState, Vec<PrimitiveComponent>)>;
-
 /// HACK: set by the instantiating script host. required until the bindings stuff can be decoupled,
 /// but even then I'm not super sure how it'll all work with additional types being introduced in
 /// other hosts. Maybe a runtime-mutable list?
 pub static SUPPORTED_COMPONENT_TYPES: OnceCell<&[(TypeId, &'static str)]> = OnceCell::new();
 
+pub type QueryStateMap =
+    slotmap::SlotMap<slotmap::DefaultKey, (Query, QueryState, Vec<PrimitiveComponent>)>;
+
 #[derive(Default, Clone)]
 pub struct EventSharedState {
     pub subscribed_events: HashSet<String>,
     pub events: Vec<(String, EntityData)>,
+}
+
+#[derive(Default, Clone)]
+pub struct BaseHostGuestState {
+    pub spawned_entities: HashSet<EntityUid>,
+    pub event: EventSharedState,
+    pub query_states: QueryStateMap,
+}
+
+pub trait GetBaseHostGuestState {
+    fn base_mut(&mut self) -> &mut BaseHostGuestState;
 }
 
 #[derive(Clone)]
@@ -137,14 +148,14 @@ impl ScriptContext {
 pub struct ScriptModuleState<
     Context: WasmContext,
     Exports: GuestExports<Context>,
-    SharedState: Default,
+    HostGuestState: Default,
 > {
     wasm: Option<wasm::WasmState<Context, Exports>>,
-    pub shared_state: Arc<Mutex<SharedState>>,
+    pub shared_state: Arc<Mutex<HostGuestState>>,
 }
 
-impl<Context: WasmContext, Exports: GuestExports<Context>, SharedState: Default> Clone
-    for ScriptModuleState<Context, Exports, SharedState>
+impl<Context: WasmContext, Exports: GuestExports<Context>, HostGuestState: Default> Clone
+    for ScriptModuleState<Context, Exports, HostGuestState>
 {
     fn clone(&self) -> Self {
         Self {
@@ -153,24 +164,24 @@ impl<Context: WasmContext, Exports: GuestExports<Context>, SharedState: Default>
         }
     }
 }
-impl<Context: WasmContext, Exports: GuestExports<Context>, SharedState: Default> std::fmt::Debug
-    for ScriptModuleState<Context, Exports, SharedState>
+impl<Context: WasmContext, Exports: GuestExports<Context>, HostGuestState: Default> std::fmt::Debug
+    for ScriptModuleState<Context, Exports, HostGuestState>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ScriptModuleState").finish()
     }
 }
-impl<Context: WasmContext, Exports: GuestExports<Context>, SharedState: Default>
-    ScriptModuleState<Context, Exports, SharedState>
+impl<Context: WasmContext, Exports: GuestExports<Context>, HostGuestState: Default>
+    ScriptModuleState<Context, Exports, HostGuestState>
 {
     pub fn new(
         bytecode: &[u8],
         stdout_output: Box<dyn Fn(&World, &str) + Sync + Send>,
         stderr_output: Box<dyn Fn(&World, &str) + Sync + Send>,
-        make_wasm_context: impl Fn(WasiCtx, Arc<Mutex<SharedState>>) -> Context,
+        make_wasm_context: impl Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context,
         interface_version: u32,
     ) -> anyhow::Result<Self> {
-        let shared_state = Arc::new(Mutex::new(SharedState::default()));
+        let shared_state = Arc::new(Mutex::new(HostGuestState::default()));
 
         let wasm = if bytecode.is_empty() {
             None
@@ -196,7 +207,7 @@ impl<Context: WasmContext, Exports: GuestExports<Context>, SharedState: Default>
         Ok(())
     }
 
-    pub fn shared_state(&self) -> Arc<Mutex<SharedState>> {
+    pub fn shared_state(&self) -> Arc<Mutex<HostGuestState>> {
         self.shared_state.clone()
     }
 }

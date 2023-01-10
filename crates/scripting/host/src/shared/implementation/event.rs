@@ -6,7 +6,7 @@ pub fn subscribe(shared_state: &mut EventSharedState, name: &str) {
 }
 
 pub fn send(shared_state: &mut EventSharedState, name: &str, data: EntityData) {
-    if name.starts_with("dims/") {
+    if name.starts_with("core/") {
         return;
     }
     shared_state.events.push((name.to_string(), data));
