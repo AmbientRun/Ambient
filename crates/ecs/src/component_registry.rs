@@ -79,6 +79,11 @@ impl ComponentRegistry {
         if let Some(idx) = self.name_to_idx.get(id) {
             if decorating {
                 component.set_index(*idx);
+
+                if let Some(primitive_component) = &mut primitive_component {
+                    primitive_component.as_component_mut().set_index(*idx);
+                }
+
                 self.components[*idx].primitive_component_type = primitive_component_type;
                 self.components[*idx].primitive_component = primitive_component;
             } else {
