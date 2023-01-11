@@ -1,5 +1,5 @@
 use std::{
-    any::{type_name, Any, TypeId}, cmp::Ordering, marker::PhantomData, mem::{self, ManuallyDrop}, ptr::{self, NonNull}
+    any::{type_name, Any, TypeId}, cmp::Ordering, marker::PhantomData, mem::{self, ManuallyDrop, MaybeUninit}, ptr::{self, NonNull}
 };
 
 /// Defines an object safe trait which allows for downcasting
@@ -64,11 +64,6 @@ impl<T> Component<T> {
     }
 }
 
-unsafe fn impl_clone<T: ComponentValue + Clone>(value: &ComponentHolder<()>) -> ErasedHolder {
-    let value = value.cast::<T>();
-    ComponentHolder::construct::<T>(value.vtable, value.index, (*value.object).clone())
-}
-
 unsafe fn impl_default<T: ComponentValue + Default>(vtable: &'static ComponentVTable<T>, index: i32) -> ErasedHolder {
     ComponentHolder::construct(vtable, index, T::default())
 }
@@ -85,11 +80,11 @@ struct ComponentVTable<T: 'static> {
     /// Drops the inner value
     /// The passed holder must not be used.
     /// See: [`std::ptr::drop_in_place`]
-    impl_drop: unsafe fn(*mut ComponentHolder<T>),
+    impl_drop: unsafe fn(Box<ComponentHolder<T>>),
     impl_clone: unsafe fn(*const ComponentHolder<T>) -> ErasedHolder,
     impl_default: Option<unsafe fn(&'static ComponentVTable<T>, i32) -> ErasedHolder>,
 
-    impl_take: unsafe fn(*mut ComponentHolder<T>),
+    impl_take: unsafe fn(Box<ComponentHolder<T>>, dst: *mut MaybeUninit<T>),
 
     pub serialize: Option<fn(&dyn ComponentValue) -> &dyn erased_serde::Serialize>,
     pub custom_attrs: fn(&str) -> Option<&'static Attribute>,
@@ -98,25 +93,31 @@ struct ComponentVTable<T: 'static> {
 impl<T: Clone + ComponentValue> ComponentVTable<T> {
     /// Creates a new vtable of `T` without any additional bounds
     pub const fn construct(component_name: &'static str) -> Self {
-        unsafe fn drop<T>(holder: *mut ComponentHolder<T>) {
-            ManuallyDrop::drop(&mut (*holder).object)
+        unsafe fn impl_drop<T>(holder: Box<ComponentHolder<T>>) {
+            mem::drop(holder)
         }
 
-        unsafe fn clone<T: Clone + ComponentValue>(holder: *const ComponentHolder<T>) -> ErasedHolder {
-            let object = &*(*holder).object;
+        unsafe fn impl_clone<T: Clone + ComponentValue>(holder: *const ComponentHolder<T>) -> ErasedHolder {
+            let object = &(*holder).object;
             ComponentHolder::construct::<T>((*holder).vtable, (*holder).index, T::clone(object))
+        }
+
+        unsafe fn impl_take<T: ComponentValue>(holder: Box<ComponentHolder<T>>, dst: *mut MaybeUninit<T>) {
+            // Take v, but drop the rest
+            let v = holder.object;
+            ptr::write((*dst).as_mut_ptr(), v);
         }
 
         Self {
             component_name,
             get_type_name: || std::any::type_name::<T>(),
             get_type_id: || TypeId::of::<T>(),
-            impl_clone: clone::<T>,
-            impl_drop: drop::<T>,
+            impl_clone: impl_clone::<T>,
+            impl_drop: impl_drop::<T>,
+            impl_take: impl_take::<T>,
             impl_default: None,
             serialize: None,
             custom_attrs: |_| None,
-            impl_take: |v| {},
         }
     }
 }
@@ -129,28 +130,27 @@ struct ComponentHolder<T: 'static> {
     ///
     /// **Note**: Do not access manually as the actual `T` type may be different due to type
     /// erasure
-    object: ManuallyDrop<T>,
+    object: T,
 }
 
-// Note: as Drop can't be specialized, the `T` is irrelevant as the vtable drop impl will be called
-impl<T> Drop for ComponentHolder<T> {
+impl Drop for DynComponent {
     fn drop(&mut self) {
         unsafe {
             // Drop is only called once.
             // The pointer is safe to read and drop
             // Delegate to the actual drop impl of T
-            let erased = self as *mut ComponentHolder<T> as *mut ComponentHolder<()>;
-            let d = (*erased).vtable.impl_drop;
-            (d)(erased);
+            let inner = ManuallyDrop::take(&mut self.inner);
+            let d = (inner).vtable.impl_drop;
+            (d)(inner);
         }
     }
 }
 
-type ErasedHolder = Box<ComponentHolder<()>>;
+type ErasedHolder = ManuallyDrop<Box<ComponentHolder<()>>>;
 
 /// Represents a type erased component and value
 pub struct DynComponent {
-    inner: Box<ComponentHolder<()>>,
+    inner: ErasedHolder,
 }
 
 impl DynComponent {
@@ -161,8 +161,13 @@ impl DynComponent {
         Self { inner }
     }
 
+    #[inline]
+    fn is<T: 'static>(&self) -> bool {
+        (self.inner.vtable.get_type_id)() == TypeId::of::<T>()
+    }
+
     fn try_downcast_ref<T: 'static>(&self) -> Option<&T> {
-        if (self.inner.vtable.get_type_id)() == TypeId::of::<T>() {
+        if self.is::<T>() {
             let v = unsafe { self.inner.cast::<T>() };
             Some(&v.object)
         } else {
@@ -179,11 +184,31 @@ impl DynComponent {
         #[cfg(not(debug_assertions))]
         self.try_downcast_ref().expect("Mismatched types")
     }
+
+    fn take<T: 'static>(self) -> Option<T> {
+        if self.is::<T>() {
+            let mut dst = MaybeUninit::uninit();
+            // Safety
+            // Type is guaranteed
+            unsafe {
+                // Prevent the Self drop impl from running, so that we can take inner
+                // However, we can't just `mem::forget` is as the Box still needs to be
+                // deallocated, which is take care of in `impl_take`.
+                let mut this = ManuallyDrop::new(self);
+                let inner = ManuallyDrop::take(&mut this.inner);
+                let p = &mut dst as *mut MaybeUninit<T> as *mut MaybeUninit<()>;
+                (inner.vtable.impl_take)(inner, p);
+                Some(dst.assume_init())
+            }
+        } else {
+            None
+        }
+    }
 }
 
 impl Clone for DynComponent {
     fn clone(&self) -> Self {
-        let inner = unsafe { (self.inner.vtable.impl_clone)(&*self.inner as *const _) };
+        let inner = unsafe { (self.inner.vtable.impl_clone)(&**self.inner as *const _) };
         Self { inner }
     }
 }
@@ -210,13 +235,15 @@ impl ComponentHolder<()> {
             std::any::type_name::<T>()
         );
 
-        let value = Box::new(ComponentHolder { index, vtable, object: ManuallyDrop::new(object) });
+        let value = Box::new(ComponentHolder { index, vtable, object });
 
         // Erase the inner type of the ComponentHolder.
         //
         // This is equivalent to an unsized coercion from Box<ComponentHolder> to
         // Box<ComponentHolder<dyn ComponentValue>>;
-        mem::transmute::<Box<ComponentHolder<T>>, Box<ComponentHolder<()>>>(value)
+        let value = mem::transmute::<Box<ComponentHolder<T>>, Box<ComponentHolder<()>>>(value);
+        // Signify that the caller needs to take special care when destructuring this
+        ManuallyDrop::new(value)
     }
 }
 
@@ -258,6 +285,30 @@ mod test {
         assert_eq!(value.downcast_ref::<String>(), value2.downcast_ref::<String>());
 
         assert_eq!(value.try_downcast_ref::<&str>(), None);
+    }
+
+    #[test]
+    fn test_take() {
+        static VTABLE: &ComponentVTable<Arc<String>> = &ComponentVTable::construct("my_component");
+
+        let shared = Arc::new("Foo".to_string());
+
+        let component = Component::new(1, VTABLE);
+        {
+            let value = DynComponent::new(component, shared.clone());
+            let value2 = DynComponent::new(component, shared.clone());
+
+            assert_eq!(Arc::strong_count(&shared), 3);
+            drop(value);
+            assert_eq!(Arc::strong_count(&shared), 2);
+
+            let value = value2.take::<Arc<String>>().unwrap();
+            assert_eq!(Arc::strong_count(&shared), 2);
+            drop(value);
+            assert_eq!(Arc::strong_count(&shared), 1);
+        }
+
+        assert_eq!(Arc::strong_count(&shared), 1);
     }
 
     #[test]
