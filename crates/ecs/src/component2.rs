@@ -25,15 +25,14 @@ pub fn slice_attrs(attrs: &'static [Attribute], key: &str) -> Option<&'static At
     attrs.iter().find(|v| v.key == key)
 }
 
-pub struct Component<T> {
+pub struct Component<T: 'static> {
     index: i32,
-    vtable: &'static ComponentVTable,
-    _marker: PhantomData<T>,
+    vtable: &'static ComponentVTable<T>,
 }
 
 impl<T> Clone for Component<T> {
     fn clone(&self) -> Self {
-        Self { index: self.index, vtable: self.vtable, _marker: PhantomData }
+        Self { index: self.index, vtable: self.vtable }
     }
 }
 
@@ -60,8 +59,8 @@ impl<T> Ord for Component<T> {
 }
 
 impl<T> Component<T> {
-    fn new(index: i32, vtable: &'static ComponentVTable) -> Self {
-        Self { index, vtable, _marker: PhantomData }
+    fn new(index: i32, vtable: &'static ComponentVTable<T>) -> Self {
+        Self { index, vtable }
     }
 }
 
@@ -70,12 +69,12 @@ unsafe fn impl_clone<T: ComponentValue + Clone>(value: &ComponentHolder<()>) -> 
     ComponentHolder::construct::<T>(value.vtable, value.index, (*value.object).clone())
 }
 
-unsafe fn impl_default<T: ComponentValue + Default>(vtable: &'static ComponentVTable, index: i32) -> ErasedHolder {
+unsafe fn impl_default<T: ComponentValue + Default>(vtable: &'static ComponentVTable<T>, index: i32) -> ErasedHolder {
     ComponentHolder::construct(vtable, index, T::default())
 }
 
 /// Holds untyped information for everything a component can do
-struct ComponentVTable {
+struct ComponentVTable<T: 'static> {
     component_name: &'static str,
     // TODO: use const value when stabilized
     // https://github.com/rust-lang/rust/issues/63084
@@ -86,29 +85,33 @@ struct ComponentVTable {
     /// Drops the inner value
     /// The passed holder must not be used.
     /// See: [`std::ptr::drop_in_place`]
-    impl_drop: unsafe fn(*mut ManuallyDrop<()>),
-    impl_clone: unsafe fn(&ComponentHolder<()>) -> ErasedHolder,
-    impl_default: Option<unsafe fn(&'static ComponentVTable, i32) -> ErasedHolder>,
+    impl_drop: unsafe fn(*mut ComponentHolder<T>),
+    impl_clone: unsafe fn(*const ComponentHolder<T>) -> ErasedHolder,
+    impl_default: Option<unsafe fn(&'static ComponentVTable<T>, i32) -> ErasedHolder>,
 
-    impl_take: unsafe fn(*mut ComponentHolder<()>),
+    impl_take: unsafe fn(*mut ComponentHolder<T>),
 
     pub serialize: Option<fn(&dyn ComponentValue) -> &dyn erased_serde::Serialize>,
     pub custom_attrs: fn(&str) -> Option<&'static Attribute>,
 }
 
-impl ComponentVTable {
+impl<T: Clone + ComponentValue> ComponentVTable<T> {
     /// Creates a new vtable of `T` without any additional bounds
-    pub const fn construct<T: ComponentValue + Clone>(component_name: &'static str) -> ComponentVTable {
-        unsafe fn drop<T>(object: *mut ManuallyDrop<()>) {
-            let object = &mut *(object as *mut ManuallyDrop<T>);
-            ManuallyDrop::drop(object);
+    pub const fn construct(component_name: &'static str) -> Self {
+        unsafe fn drop<T>(holder: *mut ComponentHolder<T>) {
+            ManuallyDrop::drop(&mut (*holder).object)
+        }
+
+        unsafe fn clone<T: Clone + ComponentValue>(holder: *const ComponentHolder<T>) -> ErasedHolder {
+            let object = &*(*holder).object;
+            ComponentHolder::construct::<T>((*holder).vtable, (*holder).index, T::clone(object))
         }
 
         Self {
             component_name,
             get_type_name: || std::any::type_name::<T>(),
             get_type_id: || TypeId::of::<T>(),
-            impl_clone: impl_clone::<T>,
+            impl_clone: clone::<T>,
             impl_drop: drop::<T>,
             impl_default: None,
             serialize: None,
@@ -119,21 +122,14 @@ impl ComponentVTable {
 }
 
 #[repr(C)]
-struct ComponentHolder<T> {
+struct ComponentHolder<T: 'static> {
     index: i32,
-    vtable: &'static ComponentVTable,
+    vtable: &'static ComponentVTable<T>,
     /// The value.
     ///
     /// **Note**: Do not access manually as the actual `T` type may be different due to type
     /// erasure
     object: ManuallyDrop<T>,
-}
-
-type ErasedHolder = Box<ComponentHolder<()>>;
-
-/// Represents a type erased component and value
-pub struct DynComponent {
-    inner: Box<ComponentHolder<()>>,
 }
 
 // Note: as Drop can't be specialized, the `T` is irrelevant as the vtable drop impl will be called
@@ -143,10 +139,18 @@ impl<T> Drop for ComponentHolder<T> {
             // Drop is only called once.
             // The pointer is safe to read and drop
             // Delegate to the actual drop impl of T
-            let erased = &mut *(self as *mut ComponentHolder<T> as *mut ComponentHolder<()>);
-            (self.vtable.impl_drop)(&mut erased.object as *mut _);
+            let erased = self as *mut ComponentHolder<T> as *mut ComponentHolder<()>;
+            let d = (*erased).vtable.impl_drop;
+            (d)(erased);
         }
     }
+}
+
+type ErasedHolder = Box<ComponentHolder<()>>;
+
+/// Represents a type erased component and value
+pub struct DynComponent {
+    inner: Box<ComponentHolder<()>>,
 }
 
 impl DynComponent {
@@ -170,14 +174,16 @@ impl DynComponent {
         #[cfg(debug_assertions)]
         match self.try_downcast_ref() {
             Some(v) => v,
-            None => panic!("Mismatched type. Expected: {:?}. Found {:?}", (self.inner.vtable.get_type_name)(), std::any::type_name::<T>()),
+            None => panic!("Mismatched types. Expected: {:?}. Found {:?}", (self.inner.vtable.get_type_name)(), std::any::type_name::<T>()),
         }
+        #[cfg(not(debug_assertions))]
+        self.try_downcast_ref().expect("Mismatched types")
     }
 }
 
 impl Clone for DynComponent {
     fn clone(&self) -> Self {
-        let inner = unsafe { (self.inner.vtable.impl_clone)(&self.inner) };
+        let inner = unsafe { (self.inner.vtable.impl_clone)(&*self.inner as *const _) };
         Self { inner }
     }
 }
@@ -195,7 +201,7 @@ impl ComponentHolder<()> {
     /// The vtable must be of the type `T`
     ///
     /// T **must** be Send+Sync+'static to be coerced to `ComponentHolder<()>`
-    unsafe fn construct<T: ComponentValue>(vtable: &'static ComponentVTable, index: i32, object: T) -> ErasedHolder {
+    unsafe fn construct<T: ComponentValue>(vtable: &'static ComponentVTable<T>, index: i32, object: T) -> ErasedHolder {
         debug_assert_eq!(
             (vtable.get_type_id)(),
             TypeId::of::<T>(),
@@ -231,10 +237,10 @@ mod test {
         ];
 
         // let vtable: &'static ComponentVTable = &ComponentVTable {
-        static VTABLE: &ComponentVTable = &ComponentVTable {
+        static VTABLE: &ComponentVTable<String> = &ComponentVTable {
             impl_default: Some(impl_default::<String>),
             custom_attrs: |key| slice_attrs(ATTRS, key),
-            ..ComponentVTable::construct::<String>("my_component")
+            ..ComponentVTable::construct("my_component")
         };
 
         let component: Component<String> = Component::new(1, VTABLE);
@@ -256,7 +262,7 @@ mod test {
 
     #[test]
     fn leak_test() {
-        static VTABLE: &ComponentVTable = &ComponentVTable::construct::<Arc<String>>("my_component");
+        static VTABLE: &ComponentVTable<Arc<String>> = &ComponentVTable::construct("my_component");
 
         let shared = Arc::new("Foo".to_string());
 
