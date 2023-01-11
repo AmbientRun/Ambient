@@ -192,3 +192,4 @@ walkdir = "2"
 relative-path = { version = "1.7", features = ["serde"] }
 pin-project = "1.0"
 abort-on-drop = "0.2"
+toml = "0.5.10"

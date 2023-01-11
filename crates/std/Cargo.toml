@@ -39,6 +39,7 @@ once_cell.workspace = true
 pin-project.workspace = true
 url.workspace = true
 relative-path.workspace = true
+toml.workspace = true
 
 [features]
 hotload-includes = []

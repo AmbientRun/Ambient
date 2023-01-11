@@ -2,16 +2,17 @@ use std::{
     marker::PhantomData, path::{Path, PathBuf}
 };
 
+use anyhow::Context;
 use convert_case::{Case, Casing};
 use rand::seq::SliceRandom;
-use relative_path::RelativePathBuf;
+use relative_path::{RelativePath, RelativePathBuf};
 use serde::{
     de::{DeserializeOwned, Visitor}, Deserialize, Deserializer, Serialize, Serializer
 };
 use url::Url;
 
 use crate::{
-    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, download_asset::AssetsCacheDir, Cb
+    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, download_asset::{download, AssetsCacheDir}, Cb
 };
 
 /// This is a thin wrapper around Url, which is guaranteed to always
@@ -83,6 +84,38 @@ impl AbsAssetUrl {
     }
     pub fn join(&self, path: impl AsRef<str>) -> Result<Self, url::ParseError> {
         Ok(AbsAssetUrl(self.0.join(path.as_ref())?))
+    }
+    pub fn path(&self) -> &RelativePath {
+        RelativePath::new(self.0.path())
+    }
+    pub fn relative_path(&self, path: impl AsRef<RelativePath>) -> RelativePathBuf {
+        RelativePathBuf::from(self.0.path()).relative(path)
+    }
+    pub async fn download_bytes(&self, assets: &AssetCache) -> anyhow::Result<Vec<u8>> {
+        if let Some(path) = self.to_file_path()? {
+            Ok(tokio::fs::read(path).await.context(format!("Failed to read file at: {:}", self.0))?)
+        } else {
+            Ok(download(&assets, self.0.clone(), |resp| async { Ok(resp.bytes().await?) }).await?.to_vec())
+        }
+    }
+    pub async fn download_string(&self, assets: &AssetCache) -> anyhow::Result<String> {
+        if let Some(path) = self.to_file_path()? {
+            Ok(tokio::fs::read_to_string(path).await.context(format!("Failed to read file at: {:}", self.0))?)
+        } else {
+            Ok(download(&assets, self.0.clone(), |resp| async { Ok(resp.text().await?) }).await?)
+        }
+    }
+    pub async fn download_json<T: DeserializeOwned>(&self, assets: &AssetCache) -> anyhow::Result<T> {
+        if let Some(path) = self.to_file_path()? {
+            let content: Vec<u8> = tokio::fs::read(path).await.context(format!("Failed to read file at: {:}", self.0))?;
+            Ok(serde_json::from_slice(&content)?)
+        } else {
+            Ok(download(&assets, self.0.clone(), |resp| async { Ok(resp.json::<T>().await?) }).await?)
+        }
+    }
+    pub async fn download_toml<T: DeserializeOwned>(&self, assets: &AssetCache) -> anyhow::Result<T> {
+        let content = self.download_bytes(assets).await?;
+        Ok(toml::from_slice(&content)?)
     }
 }
 impl From<PathBuf> for AbsAssetUrl {

@@ -4,12 +4,10 @@ use std::{
 
 use elements_std::asset_url::{AbsAssetUrl, AssetType};
 
-use crate::pipelines::context::AssetCrateId;
-
 #[derive(Debug)]
 pub enum OutAssetContent {
     Content(AbsAssetUrl),
-    Collection(Vec<AssetCrateId>),
+    Collection(Vec<AbsAssetUrl>),
 }
 impl OutAssetContent {
     pub fn is_collection(&self) -> bool {
@@ -26,7 +24,6 @@ pub enum OutAssetPreview {
 
 #[derive(Debug)]
 pub struct OutAsset {
-    pub asset_crate_id: AssetCrateId,
     /// Which asset in the asset crate is this
     pub sub_asset: Option<String>,
     pub type_: AssetType,
@@ -40,5 +37,5 @@ pub struct OutAsset {
     pub categories: [HashSet<String>; 3],
     pub preview: OutAssetPreview,
     pub content: OutAssetContent,
-    pub source: Option<String>,
+    pub source: Option<AbsAssetUrl>,
 }
