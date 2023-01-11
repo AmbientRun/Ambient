@@ -32,10 +32,10 @@ async fn build_assets(assets: &AssetCache, assets_path: PathBuf, target_path: Pa
         input_file_filter: None,
         package_name: "".to_string(),
         write_file: Arc::new(move |path, contents| {
-            let target_path = target_path.clone();
+            let path = target_path.join("assets").join(path);
             async move {
-                let path = target_path.join("assets").join(path);
-                tokio::fs::write(&path, contents).await;
+                std::fs::create_dir_all(path.parent().unwrap());
+                tokio::fs::write(&path, contents).await.unwrap();
                 AbsAssetUrl::from_file_path(path)
             }
             .boxed()

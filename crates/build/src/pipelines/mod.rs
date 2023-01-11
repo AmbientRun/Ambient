@@ -88,9 +88,7 @@ impl Pipeline {
 pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
     futures::stream::iter(ctx.files.iter())
         .filter_map(|file| async move {
-            let pipelines: Vec<Pipeline> = if file.0.path().ends_with("pipeline.toml") {
-                file.download_toml(&ctx.assets).await.unwrap()
-            } else if file.0.path().ends_with("pipeline.json") {
+            let pipelines: Vec<Pipeline> = if file.0.path().ends_with("pipeline.json") {
                 file.download_json(&ctx.assets).await.unwrap()
             } else {
                 return None;
@@ -99,7 +97,7 @@ pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
         })
         .flat_map(|(file, pipelines)| futures::stream::iter(pipelines.into_iter().map(|pipeline| (file.clone(), pipeline))))
         .then(|(file, pipeline)| async move {
-            let ctx = PipelineCtx { process_ctx: ctx.clone(), pipeline: Arc::new(pipeline.clone()), root: file };
+            let ctx = PipelineCtx { process_ctx: ctx.clone(), pipeline: Arc::new(pipeline.clone()), root: file.join(".").unwrap() };
             pipeline.process(ctx).await
         })
         .flat_map(|out_assets| futures::stream::iter(out_assets.into_iter()))
