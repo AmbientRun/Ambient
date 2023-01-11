@@ -1,0 +1,153 @@
+{
+  "defs": {
+    "AssaultRifleShoot": {
+      "inner": {
+        "source": {
+          "RandomSource": [
+            {
+              "source": {
+                "Url": {
+                  "url": "https://playdims.com/assetdb/63YR8DZEpYPfVc0fM467/2.0.0/m16-single-shot-1.ogg",
+                  "display_name": "qubodup - military sounds/2.0.0/m16-single-shot-1.ogg"
+                }
+              },
+              "adapters": []
+            },
+            {
+              "source": {
+                "Url": {
+                  "url": "https://playdims.com/assetdb/63YR8DZEpYPfVc0fM467/2.0.0/m16-single-shot-2.ogg",
+                  "display_name": "qubodup - military sounds/2.0.0/m16-single-shot-2.ogg"
+                }
+              },
+              "adapters": []
+            },
+            {
+              "source": {
+                "Url": {
+                  "url": "https://playdims.com/assetdb/63YR8DZEpYPfVc0fM467/2.0.0/m16-single-shot-3.ogg",
+                  "display_name": "qubodup - military sounds/2.0.0/m16-single-shot-3.ogg"
+                }
+              },
+              "adapters": []
+            },
+            {
+              "source": {
+                "Url": {
+                  "url": "https://playdims.com/assetdb/63YR8DZEpYPfVc0fM467/2.0.0/m16-single-shot-4.ogg",
+                  "display_name": "qubodup - military sounds/2.0.0/m16-single-shot-4.ogg"
+                }
+              },
+              "adapters": []
+            },
+            {
+              "source": {
+                "Url": {
+                  "url": "https://playdims.com/assetdb/63YR8DZEpYPfVc0fM467/2.0.0/m16-single-shot-5.ogg",
+                  "display_name": "qubodup - military sounds/2.0.0/m16-single-shot-5.ogg"
+                }
+              },
+              "adapters": []
+            }
+          ]
+        },
+        "adapters": []
+      },
+      "priority": 0.0
+    },
+    "Boost": {
+      "inner": {
+        "source": {
+          "Url": {
+            "url": "https://playdims.com/assetdb/pd1ayXSgulIkgw6bpOl7/1.0.0/270554__littlerobotsoundfactory__warpdrive-02.wav",
+            "display_name": "LittleRobotSoundFactory - Sci-Fi Sound Effects Library/1.0.0/270554__littlerobotsoundfactory__warpdrive-02.wav"
+          }
+        },
+        "adapters": []
+      },
+      "priority": 0.0
+    },
+    "Pickup": {
+      "inner": {
+        "source": {
+          "Url": {
+            "url": "https://playdims.com/assetdb/63YR8DZEpYPfVc0fM467/2.0.0/metal-click-1.ogg",
+            "display_name": "qubodup - military sounds/2.0.0/metal-click-1.ogg"
+          }
+        },
+        "adapters": []
+      },
+      "priority": 0.0
+    },
+    "RevolverShoot": {
+      "inner": {
+        "source": {
+          "Url": {
+            "url": "https://playdims.com/assetdb/63YR8DZEpYPfVc0fM467/2.0.0/howitzer-gun-shot-1.ogg",
+            "display_name": "qubodup - military sounds/2.0.0/howitzer-gun-shot-1.ogg"
+          }
+        },
+        "adapters": []
+      },
+      "priority": 0.0
+    },
+    "ShotgunShoot": {
+      "inner": {
+        "source": {
+          "Url": {
+            "url": "https://playdims.com/assetdb/63YR8DZEpYPfVc0fM467/2.0.0/mk-46-30mm-gun-single-shot.ogg",
+            "display_name": "qubodup - military sounds/2.0.0/mk-46-30mm-gun-single-shot.ogg"
+          }
+        },
+        "adapters": []
+      },
+      "priority": 0.0
+    },
+    "Walk": {
+      "inner": {
+        "source": {
+          "RandomSource": [
+            {
+              "source": {
+                "Url": {
+                  "url": "https://playdims.com/assetdb/EndNfBVyfClRhoEYliMb/1.0.0/sfx_step_grass_l.ogg",
+                  "display_name": "environmental_sfx/1.0.0/sfx_step_grass_l.ogg"
+                }
+              },
+              "adapters": []
+            },
+            {
+              "source": {
+                "Url": {
+                  "url": "https://playdims.com/assetdb/EndNfBVyfClRhoEYliMb/1.0.0/sfx_step_grass_r.ogg",
+                  "display_name": "environmental_sfx/1.0.0/sfx_step_grass_r.ogg"
+                }
+              },
+              "adapters": []
+            }
+          ]
+        },
+        "adapters": [
+          {
+            "Pad": {
+              "duration": {
+                "dur": {
+                  "secs": 0,
+                  "nanos": 400000000
+                },
+                "valid": true,
+                "input": "0.4"
+              }
+            }
+          },
+          {
+            "Gain": {
+              "gain": 0.5
+            }
+          }
+        ]
+      },
+      "priority": 100.0
+    }
+  }
+}
