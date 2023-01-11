@@ -167,7 +167,7 @@ pub fn animation_systems() -> SystemGroup {
                     if ctrlr.apply_base_pose {
                         if let Some(action) = ctrlr.actions.get(0) {
                             if let AnimationClipRef::FromModelAsset(def) = &action.clip {
-                                world.add_component(id, animation_apply_base_pose(), ModelDef(def.asset_crate().unwrap().model())).unwrap();
+                                world.add_component(id, animation_apply_base_pose(), ModelDef(def.model_crate().unwrap().model())).unwrap();
                             }
                         }
                     }

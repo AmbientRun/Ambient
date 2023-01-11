@@ -2,18 +2,18 @@ use std::sync::Arc;
 
 use elements_model_import::{model_crate::ModelCrate, RelativePathBufExt};
 use elements_renderer::materials::pbr_material::PbrMaterialFromUrl;
-use elements_std::asset_url::AssetType;
+use elements_std::asset_url::{AbsAssetUrl, AssetType, AssetUrl};
 use glam::Vec4;
 use image::RgbaImage;
-use relative_path::RelativePathBuf;
+use relative_path::{RelativePath, RelativePathBuf};
 use serde::{Deserialize, Serialize};
 
 use super::{
     context::PipelineCtx, out_asset::{OutAsset, OutAssetContent, OutAssetPreview}
 };
-use crate::helpers::download_image;
+use crate::pipelines::download_image;
 
-pub mod quixel_surfaces;
+// pub mod quixel_surfaces;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
@@ -31,32 +31,30 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
     match config.importer {
         MaterialsImporter::Single(mat) => {
             ctx.process_single(move |ctx| async move {
-                let name = mat.name.as_ref().or(mat.source.as_ref()).or(mat.base_color.as_ref()).unwrap().to_string();
-                let asset_crate_id = ctx.asset_crate_id(&name);
-                let asset_crate_url = ctx.crate_url(&asset_crate_id);
+                let name = mat.name.as_ref().or(mat.source.as_ref()).unwrap().to_string();
+
                 let mut model_crate = ModelCrate::new();
-                let material = mat.to_mat(&ctx, &mut model_crate).await?;
-                let mat_url =
-                    asset_crate_url.resolve(model_crate.materials.insert(ModelCrate::MAIN, material.clone()).path.as_str()).unwrap();
-                ctx.write_model_crate(&model_crate, &asset_crate_id).await;
+                let material = mat.to_mat(&ctx, &mut model_crate, ctx.root.clone()).await?;
+                model_crate.materials.insert(ModelCrate::MAIN, material);
+                let model_url = ctx.write_model_crate(&model_crate, &RelativePath::new("material")).await;
                 Ok(vec![OutAsset {
-                    asset_crate_id: asset_crate_id.clone(),
-                    sub_asset: None,
+                    id: ctx.root.to_string(),
                     type_: AssetType::Material,
                     hidden: false,
                     name,
                     tags: Default::default(),
                     categories: Default::default(),
-                    preview: OutAssetPreview::Image {
-                        image: Arc::new(model_crate.images.get_by_path(material.base_color.as_ref().unwrap().path()).unwrap().clone()),
-                    },
-                    content: OutAssetContent::Content(mat_url),
+                    preview: OutAssetPreview::Image { image: Arc::new(model_crate.images.content.get("base_color").unwrap().clone()) },
+                    content: OutAssetContent::Content(model_url.model_crate().unwrap().material(ModelCrate::MAIN).abs().unwrap()),
                     source: None,
                 }])
             })
             .await
         }
-        MaterialsImporter::Quixel => quixel_surfaces::pipeline(ctx, config).await,
+        MaterialsImporter::Quixel => {
+            todo!()
+            // quixel_surfaces::pipeline(ctx, config).await
+        }
     }
 }
 
@@ -65,10 +63,10 @@ pub struct PipelinePbrMaterial {
     pub name: Option<String>,
     pub source: Option<String>,
 
-    pub base_color: Option<String>,
-    pub opacity: Option<String>,
-    pub normalmap: Option<String>,
-    pub metallic_roughness: Option<String>,
+    pub base_color: Option<AssetUrl>,
+    pub opacity: Option<AssetUrl>,
+    pub normalmap: Option<AssetUrl>,
+    pub metallic_roughness: Option<AssetUrl>,
 
     pub base_color_factor: Option<Vec4>,
     pub emissive_factor: Option<Vec4>,
@@ -79,21 +77,48 @@ pub struct PipelinePbrMaterial {
     pub roughness: Option<f32>,
 
     // Non-pbr properties that gets translated to pbr
-    pub specular: Option<String>,
+    pub specular: Option<AssetUrl>,
     pub specular_exponent: Option<f32>,
 }
 impl PipelinePbrMaterial {
-    pub async fn to_mat(&self, ctx: &PipelineCtx, model_crate: &mut ModelCrate) -> anyhow::Result<PbrMaterialFromUrl> {
+    pub async fn to_mat(
+        &self,
+        ctx: &PipelineCtx,
+        model_crate: &mut ModelCrate,
+        self_url: AbsAssetUrl,
+    ) -> anyhow::Result<PbrMaterialFromUrl> {
+        /// Reads an image from the asset pack, writes it to the model_crate, and optionally processes it in between
+        async fn pipe_image(
+            name: &str,
+            ctx: &PipelineCtx,
+            model_crate: &mut ModelCrate,
+            self_url: &AbsAssetUrl,
+            source_url: Option<AssetUrl>,
+            process: impl Fn(&mut RgbaImage) + Sync + Send,
+        ) -> anyhow::Result<Option<AssetUrl>> {
+            if let Some(source_url) = source_url {
+                let url = source_url.resolve(self_url).unwrap();
+                let mut image = download_image(&ctx.process_ctx.assets, &url, &url.extension()).await.unwrap().into_rgba8();
+                process(&mut image);
+                model_crate.images.insert(name.to_string(), image);
+                Ok(Some(AssetUrl::Relative(format!("../images/{name}").into())))
+            } else {
+                Ok(None)
+            }
+        }
+
         Ok(PbrMaterialFromUrl {
             name: self.name.clone(),
             source: self.source.clone(),
-            base_color: pipe_image(ctx, model_crate, self.base_color.clone(), |_| {}).await?.map(|x| x.prejoin("..").into()),
-            opacity: pipe_image(ctx, model_crate, self.opacity.clone(), |_| {}).await?.map(|x| x.prejoin("..").into()),
-            normalmap: pipe_image(ctx, model_crate, self.normalmap.clone(), |_| {}).await?.map(|x| x.prejoin("..").into()),
-            metallic_roughness: if let Some(url) = pipe_image(ctx, model_crate, self.metallic_roughness.clone(), |_| {}).await? {
-                Some(url.prejoin("..").into())
+            base_color: pipe_image("base_color", ctx, model_crate, &self_url, self.base_color.clone(), |_| {}).await?,
+            opacity: pipe_image("opacity", ctx, model_crate, &self_url, self.opacity.clone(), |_| {}).await?,
+            normalmap: pipe_image("normalmap", ctx, model_crate, &self_url, self.normalmap.clone(), |_| {}).await?,
+            metallic_roughness: if let Some(url) =
+                pipe_image("metallic_roughness", ctx, model_crate, &self_url, self.metallic_roughness.clone(), |_| {}).await?
+            {
+                Some(url)
             } else {
-                pipe_image(ctx, model_crate, self.specular.clone(), |image| {
+                pipe_image("metallic_roughness", ctx, model_crate, &self_url, self.specular.clone(), |image| {
                     for p in image.pixels_mut() {
                         let specular = 1. - (1. - p[1] as f32 / 255.).powf(self.specular_exponent.unwrap_or(1.));
                         p[0] = (specular * 255.) as u8;
@@ -103,7 +128,6 @@ impl PipelinePbrMaterial {
                     }
                 })
                 .await?
-                .map(|x| x.prejoin("..").into())
             },
 
             base_color_factor: self.base_color_factor,
@@ -114,23 +138,5 @@ impl PipelinePbrMaterial {
             metallic: self.metallic.unwrap_or(1.),
             roughness: self.roughness.unwrap_or(1.),
         })
-    }
-}
-
-/// Reads an image from the asset pack, writes it to the model_crate, and optionally processes it in between
-pub async fn pipe_image(
-    ctx: &PipelineCtx,
-    model_crate: &mut ModelCrate,
-    path: Option<String>,
-    process: impl Fn(&mut RgbaImage) + Sync + Send,
-) -> anyhow::Result<Option<RelativePathBuf>> {
-    if let Some(path) = path {
-        let file = ctx.get_file(&path)?;
-        let mut image = download_image(&ctx.assets, &file.temp_download_url, &file.sub_path.extension).await.unwrap().into_rgba8();
-        process(&mut image);
-        let path = format!("{}/{}", file.sub_path.path.join("/"), file.sub_path.filename);
-        Ok(Some(model_crate.images.insert(path, image).path))
-    } else {
-        Ok(None)
     }
 }

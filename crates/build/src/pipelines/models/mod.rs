@@ -8,35 +8,34 @@ use futures::FutureExt;
 use serde::{Deserialize, Serialize};
 
 use super::{
-    context::PipelineCtx, materials::PipelinePbrMaterial, out_asset::{OutAsset, OutAssetContent, OutAssetPreview}
+    context::PipelineCtx, download_image, materials::PipelinePbrMaterial, out_asset::{OutAsset, OutAssetContent, OutAssetPreview}
 };
-use crate::helpers::download_image;
 
-pub mod quixel;
+// pub mod quixel;
 pub mod regular;
-pub mod unity;
+// pub mod unity;
 
 pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset> {
     let mut assets = match &config.importer {
         ModelImporter::Regular => regular::pipeline(ctx, config.clone()).await,
-        ModelImporter::UnityModels { use_prefabs } => unity::pipeline(ctx, *use_prefabs, config.clone()).await,
-        ModelImporter::Quixel => quixel::pipeline(ctx, config.clone()).await,
+        // ModelImporter::UnityModels { use_prefabs } => unity::pipeline(ctx, *use_prefabs, config.clone()).await,
+        // ModelImporter::Quixel => quixel::pipeline(ctx, config.clone()).await,
+        _ => todo!(),
     };
     if config.collection_of_variants && assets.len() > 1 {
         for asset in &mut assets {
             asset.hidden = true;
         }
         assets.push(OutAsset {
-            asset_crate_id: ctx.asset_crate_id("collection"),
-            sub_asset: None,
+            id: format!("{}_col", ctx.root.to_string()),
             type_: AssetType::Object,
             hidden: false,
-            name: ctx.asset_pack_name.to_string(),
+            name: ctx.process_ctx.package_name.to_string(),
 
             tags: Default::default(),
             categories: Default::default(),
             preview: OutAssetPreview::None,
-            content: OutAssetContent::Collection(assets.iter().map(|a| a.asset_crate_id.clone()).collect()),
+            content: OutAssetContent::Collection(assets.iter().map(|a| a.id.clone()).collect()),
             source: None,
         });
     }
@@ -49,9 +48,11 @@ fn true_value() -> bool {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ModelsPipeline {
+    #[serde(default)]
     importer: ModelImporter,
     #[serde(default)]
     force_assimp: bool,
+    #[serde(default)]
     collider: Collider,
     cap_texture_sizes: Option<ModelTextureSize>,
     #[serde(default)]
@@ -73,7 +74,7 @@ impl ModelsPipeline {
             transform.apply(model_crate);
         }
         for mat in &self.material_overrides {
-            let material = mat.material.to_mat(ctx, model_crate).await?;
+            let material = mat.material.to_mat(ctx, model_crate, ctx.root.clone()).await?;
             model_crate.override_material(&mat.filter, material);
         }
         if let Some(max_size) = self.cap_texture_sizes {
@@ -83,7 +84,7 @@ impl ModelsPipeline {
         match self.collider {
             Collider::None => {}
             Collider::FromModel => {
-                model_crate.create_collider_from_model(&ctx.assets).unwrap();
+                model_crate.create_collider_from_model(&ctx.process_ctx.assets).unwrap();
             }
             Collider::Character { radius, height } => model_crate.create_character_collider(radius, height),
         }
@@ -100,20 +101,27 @@ pub struct MaterialOverride {
     pub material: PipelinePbrMaterial,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(tag = "type")]
 pub enum ModelImporter {
+    #[default]
     Regular,
-    UnityModels { use_prefabs: bool },
+    UnityModels {
+        use_prefabs: bool,
+    },
     Quixel,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(tag = "type")]
 pub enum Collider {
+    #[default]
     None,
     FromModel,
-    Character { radius: Option<f32>, height: Option<f32> },
+    Character {
+        radius: Option<f32>,
+        height: Option<f32>,
+    },
 }
 
 fn create_texture_resolver(ctx: &PipelineCtx) -> TextureResolver {
@@ -123,9 +131,11 @@ fn create_texture_resolver(ctx: &PipelineCtx) -> TextureResolver {
         async move {
             let path: PathBuf = path.into();
             let filename = path.file_name().unwrap().to_str().unwrap().to_string();
-            if let Some(file) = ctx.files.iter().find_map(|(key, value)| if key.contains(&filename) { Some(value) } else { None }) {
+            if let Some(file) =
+                ctx.process_ctx.files.iter().find_map(|file| if file.path().as_str().contains(&filename) { Some(file) } else { None })
+            {
                 Some(
-                    download_image(&ctx.assets, &file.temp_download_url, &path.extension().map(|x| x.to_str().unwrap().to_string()))
+                    download_image(&ctx.process_ctx.assets, &file, &path.extension().map(|x| x.to_str().unwrap().to_string()))
                         .await
                         .unwrap()
                         .into_rgba8(),

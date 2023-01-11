@@ -375,18 +375,30 @@ pub trait GetAssetType: std::fmt::Debug + Clone + Sync + Send {
 }
 
 #[derive(Debug, Clone)]
-pub struct AssetCrateAssetType;
-impl GetAssetType for AssetCrateAssetType {
+pub struct ModelCrateAssetType;
+impl GetAssetType for ModelCrateAssetType {
     fn asset_type() -> AssetType {
         AssetType::AssetCrate
     }
 }
-impl TypedAssetUrl<AssetCrateAssetType> {
+impl TypedAssetUrl<ModelCrateAssetType> {
     pub fn model(&self) -> TypedAssetUrl<ModelAssetType> {
         self.join("models/main.json").unwrap()
     }
+    pub fn object(&self) -> TypedAssetUrl<ObjectAssetType> {
+        self.join("objects/main.json").unwrap()
+    }
     pub fn collider(&self) -> TypedAssetUrl<ColliderAssetType> {
         self.join("colliders/main.json").unwrap()
+    }
+    pub fn animation(&self, id: &str) -> TypedAssetUrl<AnimationAssetType> {
+        self.join(format!("animations/{id}.json")).unwrap()
+    }
+    pub fn material(&self, id: &str) -> TypedAssetUrl<MaterialAssetType> {
+        self.join(format!("materials/{id}.json")).unwrap()
+    }
+    pub fn image(&self, id: &str) -> TypedAssetUrl<ImageAssetType> {
+        self.join(format!("images/{id}.json")).unwrap()
     }
 }
 
@@ -398,7 +410,7 @@ impl GetAssetType for ObjectAssetType {
     }
 }
 impl TypedAssetUrl<ObjectAssetType> {
-    pub fn asset_crate(&self) -> Option<TypedAssetUrl<AssetCrateAssetType>> {
+    pub fn model_crate(&self) -> Option<TypedAssetUrl<ModelCrateAssetType>> {
         Some(self.join("..").ok()?)
     }
 }
@@ -412,21 +424,9 @@ impl GetAssetType for ModelAssetType {
     }
 }
 impl TypedAssetUrl<ModelAssetType> {
-    pub fn asset_crate(&self) -> Option<TypedAssetUrl<AssetCrateAssetType>> {
+    pub fn model_crate(&self) -> Option<TypedAssetUrl<ModelCrateAssetType>> {
         Some(self.join("..").ok()?)
     }
-}
-
-#[test]
-fn test_join() {
-    let obj = TypedAssetUrl::<ObjectAssetType>::parse("https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/1.7.0/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json0/objects/main.json").unwrap();
-    let crat = obj.asset_crate().unwrap();
-    assert_eq!(
-        crat.to_string(),
-        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/1.7.0/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json0/"
-    );
-    let model = crat.model();
-    assert_eq!(model.to_string(), "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/1.7.0/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json0/models/main.json");
 }
 
 #[derive(Debug, Clone)]
@@ -437,7 +437,7 @@ impl GetAssetType for AnimationAssetType {
     }
 }
 impl TypedAssetUrl<AnimationAssetType> {
-    pub fn asset_crate(&self) -> Option<TypedAssetUrl<AssetCrateAssetType>> {
+    pub fn model_crate(&self) -> Option<TypedAssetUrl<ModelCrateAssetType>> {
         Some(self.join("..").ok()?)
     }
 }
@@ -457,6 +457,11 @@ impl GetAssetType for MaterialAssetType {
         AssetType::Material
     }
 }
+impl TypedAssetUrl<MaterialAssetType> {
+    pub fn model_crate(&self) -> Option<TypedAssetUrl<ModelCrateAssetType>> {
+        Some(self.join("..").ok()?)
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct SoundAssetType;
@@ -472,6 +477,18 @@ impl GetAssetType for ColliderAssetType {
     fn asset_type() -> AssetType {
         AssetType::Collider
     }
+}
+
+#[test]
+fn test_join() {
+    let obj = TypedAssetUrl::<ObjectAssetType>::parse("https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/1.7.0/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json0/objects/main.json").unwrap();
+    let crat = obj.model_crate().unwrap();
+    assert_eq!(
+        crat.to_string(),
+        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/1.7.0/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json0/"
+    );
+    let model = crat.model();
+    assert_eq!(model.to_string(), "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/1.7.0/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json0/models/main.json");
 }
 
 /// Invoking this method will show a UI for selecting an asset from the asset db, and will then return the result of that

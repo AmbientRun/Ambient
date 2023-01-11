@@ -3,7 +3,7 @@ use std::{collections::HashMap, fmt::Display, sync::Arc, time::Duration};
 use anyhow::Context;
 use elements_model_import::model_crate::ModelCrate;
 use elements_std::{
-    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetType}
+    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetType, ModelAssetType, ModelCrateAssetType, TypedAssetUrl}
 };
 use futures::{
     future::{join_all, BoxFuture}, stream::StreamExt, Future
@@ -61,9 +61,11 @@ impl PipelineCtx {
     //     format!("{}/{}", self.pipeline_storage_path(), id.crate_uid)
     // }
 
-    pub async fn write_model_crate(&self, model_crate: &ModelCrate, path: &RelativePath) {
+    pub async fn write_model_crate(&self, model_crate: &ModelCrate, path: &RelativePath) -> TypedAssetUrl<ModelAssetType> {
         let items = model_crate.to_items();
-        join_all(items.into_iter().map(|item| self.write_file(path.join(item.path), (*item.data).clone()))).await;
+        let urls = join_all(items.iter().map(|item| self.write_file(path.join(&item.path), (*item.data).clone()))).await;
+        let index = items.iter().position(|item| item.path.ends_with("models/main.json")).unwrap();
+        urls[index].clone().into()
     }
     pub async fn write_file(&self, path: impl AsRef<str>, content: Vec<u8>) -> AbsAssetUrl {
         (self.process_ctx.write_file)(path.as_ref().to_string(), content).await

@@ -30,6 +30,7 @@ async fn build_assets(assets: &AssetCache, assets_path: PathBuf, target_path: Pa
         assets: assets.clone(),
         files: Arc::new(files),
         input_file_filter: None,
+        package_name: "".to_string(),
         write_file: Arc::new(move |path, contents| {
             let target_path = target_path.clone();
             async move {

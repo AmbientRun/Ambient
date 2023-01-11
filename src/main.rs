@@ -114,10 +114,8 @@ fn main() {
 
     if cli.command.should_run() {
         let port = server::start_server(&runtime, assets.clone(), cli, project_path.clone());
-        AppBuilder::simple().install_component_registry(false).ui_renderer(true).with_runtime(runtime).with_asset_cache(assets).run(
-            |app, runtime| {
-                MainApp { port }.el().spawn_interactive(&mut app.world);
-            },
-        );
+        AppBuilder::simple().ui_renderer(true).with_runtime(runtime).with_asset_cache(assets).run(|app, runtime| {
+            MainApp { port }.el().spawn_interactive(&mut app.world);
+        });
     }
 }

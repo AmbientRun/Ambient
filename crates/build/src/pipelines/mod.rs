@@ -14,18 +14,20 @@ use itertools::Itertools;
 use out_asset::{OutAsset, OutAssetContent, OutAssetPreview};
 use serde::{Deserialize, Serialize};
 
+use self::{materials::MaterialsPipeline, models::ModelsPipeline};
+
 // pub mod audio;
 pub mod context;
-// pub mod materials;
-// pub mod models;
+pub mod materials;
+pub mod models;
 pub mod out_asset;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum PipelineConfig {
-    // Models(ModelsPipeline),
+    Models(ModelsPipeline),
     ScriptBundles,
-    // Materials(MaterialsPipeline),
+    Materials(MaterialsPipeline),
     // Audio,
 }
 
@@ -43,7 +45,7 @@ pub struct Pipeline {
 impl Pipeline {
     pub async fn process(&self, ctx: PipelineCtx) -> Vec<OutAsset> {
         let mut assets = match &self.pipeline {
-            // PipelineConfig::Models(config) => models::pipeline(&ctx, config.clone()).await,
+            PipelineConfig::Models(config) => models::pipeline(&ctx, config.clone()).await,
             PipelineConfig::ScriptBundles => {
                 ctx.process_files(
                     |f| f.extension() == Some("script_bundle".to_string()),
@@ -52,7 +54,7 @@ impl Pipeline {
                         let content = ctx.write_file(ctx.root.relative_path(file.path()).with_extension("script_bundle"), bundle).await;
 
                         Ok(vec![OutAsset {
-                            sub_asset: None,
+                            id: file.to_string(),
                             type_: AssetType::ScriptBundle,
                             hidden: false,
                             name: file.path().file_name().unwrap().to_string(),
@@ -110,6 +112,7 @@ pub struct ProcessCtx {
     pub assets: AssetCache,
     pub files: Arc<Vec<AbsAssetUrl>>,
     pub input_file_filter: Option<String>,
+    pub package_name: String,
     pub write_file: Arc<dyn Fn(String, Vec<u8>) -> BoxFuture<'static, AbsAssetUrl> + Sync + Send>,
     pub on_status: Arc<dyn Fn(String) -> BoxFuture<'static, ()> + Sync + Send>,
     pub on_error: Arc<dyn Fn(anyhow::Error) -> BoxFuture<'static, ()> + Sync + Send>,

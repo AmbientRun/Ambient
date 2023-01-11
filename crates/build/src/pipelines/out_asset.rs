@@ -7,7 +7,7 @@ use elements_std::asset_url::{AbsAssetUrl, AssetType};
 #[derive(Debug)]
 pub enum OutAssetContent {
     Content(AbsAssetUrl),
-    Collection(Vec<AbsAssetUrl>),
+    Collection(Vec<String>),
 }
 impl OutAssetContent {
     pub fn is_collection(&self) -> bool {
@@ -24,8 +24,8 @@ pub enum OutAssetPreview {
 
 #[derive(Debug)]
 pub struct OutAsset {
-    /// Which asset in the asset crate is this
-    pub sub_asset: Option<String>,
+    /// A unique id identifying this asset
+    pub id: String,
     pub type_: AssetType,
     /// If this asset is not displayed in search results
     pub hidden: bool,
