@@ -9,5 +9,27 @@ edition = "2021"
 elements_std = { path = "../std" }
 elements_asset_cache = { path = "../asset_cache" }
 elements_model_import = { path = "../model_import" }
+elements_model = { path = "../model" }
+elements_renderer = { path = "../renderer" }
+elements_core = { path = "../core" }
+elements_ecs = { path = "../ecs" }
+elements_world_audio = { path = "../world_audio" }
+unity_parser = { path = "../../libs/unity_parser" }
 walkdir.workspace = true
 futures.workspace = true
+tokio.workspace = true
+itertools.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+glam.workspace = true
+async-recursion.workspace = true
+image.workspace = true
+anyhow.workspace = true
+relative-path.workspace = true
+convert_case.workspace = true
+slugify.workspace = true
+log.workspace = true
+glob.workspace = true
+yaml-rust.workspace = true
+tracing.workspace = true
+parking_lot.workspace = true

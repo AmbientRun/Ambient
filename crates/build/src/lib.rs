@@ -6,6 +6,9 @@ use elements_std::asset_url::AbsAssetUrl;
 use futures::FutureExt;
 use walkdir::WalkDir;
 
+pub mod helpers;
+pub mod pipelines;
+
 /// This takes the path to an Elements project and builds it. An Elements project is expected to
 /// have the following structure:
 ///
