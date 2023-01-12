@@ -21,7 +21,7 @@ use thiserror::Error;
 
 mod archetype;
 mod component;
-mod component2;
+pub mod component2;
 mod component_registry;
 mod component_unit;
 mod entity_data;
@@ -35,6 +35,7 @@ mod serialization;
 mod stream;
 pub use archetype::*;
 pub use component::*;
+pub use component2::{AttributeEntry, ComponentAttribute};
 pub use component_registry::*;
 pub use component_unit::*;
 pub use entity_data::*;
