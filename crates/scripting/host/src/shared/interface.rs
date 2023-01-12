@@ -15,12 +15,21 @@ pub mod shared {
     include!("../../../guest/rust/src/internal/shared.rs");
 }
 
-pub fn get_scripting_interface() -> Vec<(PathBuf, String)> {
+pub const SCRIPTING_INTERFACE_NAME: &str = "elements_scripting_interface";
+
+fn get_scripting_interface() -> Vec<(PathBuf, String)> {
     let interface_json = include_str!(concat!(
         env!("OUT_DIR"),
         "/elements_guest_rust_interface.json"
     ));
     serde_json::from_str(interface_json).unwrap()
+}
+
+pub fn get_scripting_interfaces() -> HashMap<String, Vec<(PathBuf, String)>> {
+    HashMap::from_iter([(
+        SCRIPTING_INTERFACE_NAME.to_string(),
+        get_scripting_interface(),
+    )])
 }
 
 pub fn write_scripting_interfaces(
