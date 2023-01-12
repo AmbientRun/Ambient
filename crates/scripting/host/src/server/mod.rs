@@ -11,7 +11,10 @@ use elements_ecs::{
     components, query, uid, uid_lookup, Component, ComponentRegistry, ComponentUnit as CU,
     EntityData, EntityId, FnSystem, SystemGroup, World,
 };
-use elements_network::{player::player, server::ForkingEvent};
+use elements_network::{
+    player::player,
+    server::{ForkingEvent, ShutdownEvent},
+};
 use elements_physics::{collider_loads, collisions, PxShapeUserData};
 use itertools::Itertools;
 use parking_lot::Mutex;
@@ -370,15 +373,17 @@ pub fn on_forking_systems<
     )
 }
 
-pub fn on_shutdown<
+pub fn on_shutdown_systems<
     Bindings: Send + Sync + 'static,
     Context: WasmContext<Bindings> + Send + Sync + 'static,
     Exports: GuestExports<Bindings, Context> + Send + Sync + 'static,
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
-    world: &mut World,
     host_state_component: Component<Arc<HostState<Bindings, Context, Exports, HostGuestState>>>,
-) {
+) -> SystemGroup<ShutdownEvent> {
+    SystemGroup::new(
+        "core/scripting/server/on_shutdown_systems",
+        vec![Box::new(FnSystem::new(move |world, _| {
     let scripts = query(()).incl(script_module()).collect_ids(world, None);
     let players = query(player()).collect_ids(world, None);
     let host_state = world.resource(host_state_component).clone();
@@ -386,6 +391,8 @@ pub fn on_shutdown<
         let errors = host_state.unload(world, script_id, &players, "shutting down");
         host_state.update_errors(world, &errors, true);
     }
+        }))],
+    )
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
