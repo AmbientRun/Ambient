@@ -57,6 +57,8 @@ pub fn systems<
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
     host_state_component: Component<Arc<HostState<Bindings, Context, Exports, HostGuestState>>>,
+    // Whether or not the code in ScriptModules is written to disk
+    update_filesystem_from_ecs: bool,
 ) -> SystemGroup {
     // Update the scripts whenever the external components change.
     let (update_tx, update_rx) = flume::unbounded();
@@ -151,11 +153,17 @@ pub fn systems<
                 };
 
                 let host_state = host_state(world);
-                if !ready_ids.is_empty() {
-                    // Write all workspace-related state to disk.
-                    let members = crate::shared::all_module_names_sanitized(world, false);
-                    crate::shared::write_workspace_files(&host_state.scripts_path, &members);
-                    crate::shared::remove_old_script_modules(&host_state.scripts_path, &members);
+
+                if update_filesystem_from_ecs {
+                    if !ready_ids.is_empty() {
+                        // Write all workspace-related state to disk.
+                        let members = crate::shared::all_module_names_sanitized(world, false);
+                        crate::shared::write_workspace_files(&host_state.workspace_path, &members);
+                        crate::shared::remove_old_script_modules(
+                            &host_state.workspace_path,
+                            &members,
+                        );
+                    }
                 }
 
                 let tasks = ready_ids
@@ -168,7 +176,8 @@ pub fn systems<
                             Arc::new(compile_module_raw(
                                 script_module,
                                 host_state.install_dirs.clone(),
-                                host_state.scripts_path.clone(),
+                                host_state.workspace_path.clone(),
+                                update_filesystem_from_ecs,
                                 get_module_name(world, id),
                             )?),
                         ))
@@ -390,13 +399,13 @@ pub fn on_shutdown_systems<
     SystemGroup::new(
         "core/scripting/server/on_shutdown_systems",
         vec![Box::new(FnSystem::new(move |world, _| {
-    let scripts = query(()).incl(script_module()).collect_ids(world, None);
-    let players = query(player()).collect_ids(world, None);
-    let host_state = world.resource(host_state_component).clone();
-    for script_id in scripts {
-        let errors = host_state.unload(world, script_id, &players, "shutting down");
-        host_state.update_errors(world, &errors, true);
-    }
+            let scripts = query(()).incl(script_module()).collect_ids(world, None);
+            let players = query(player()).collect_ids(world, None);
+            let host_state = world.resource(host_state_component).clone();
+            for script_id in scripts {
+                let errors = host_state.unload(world, script_id, &players, "shutting down");
+                host_state.update_errors(world, &errors, true);
+            }
         }))],
     )
 }
@@ -409,6 +418,7 @@ pub enum MessageType {
     Stderr,
 }
 
+/// All paths specified should be absolute
 pub struct HostState<
     Bindings: Send + Sync + 'static,
     Context: WasmContext<Bindings> + Send + Sync + 'static,
@@ -418,14 +428,18 @@ pub struct HostState<
     pub messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
     pub scripting_interfaces: HashMap<String, Vec<(PathBuf, String)>>,
 
+    /// Where Rust should be installed
     pub rust_path: PathBuf,
+    /// Where the Rust applications are installed. Should be underneath [rust_path].
     pub install_dirs: InstallDirs,
     /// Where the scripting interfaces should be installed, not the path to the scripting interface itself
     ///
     /// e.g. world/, not world/scripting_interface
     pub scripting_interface_root_path: PathBuf,
+    /// Where the scripting templates should be stored
     pub templates_path: PathBuf,
-    pub scripts_path: PathBuf,
+    /// Where the root Cargo.toml for your scripts are
+    pub workspace_path: PathBuf,
 
     pub server_state_component:
         Component<ScriptModuleState<Bindings, Context, Exports, HostGuestState>>,
@@ -453,7 +467,7 @@ impl<
             install_dirs: self.install_dirs.clone(),
             scripting_interface_root_path: self.scripting_interface_root_path.clone(),
             templates_path: self.templates_path.clone(),
-            scripts_path: self.scripts_path.clone(),
+            workspace_path: self.workspace_path.clone(),
 
             server_state_component: self.server_state_component.clone(),
             make_wasm_context: self.make_wasm_context.clone(),
@@ -479,6 +493,16 @@ impl<
         assert!(self
             .scripting_interfaces
             .contains_key(primary_scripting_interface_name));
+        assert!([
+            &self.rust_path,
+            &self.install_dirs.cargo_path,
+            &self.install_dirs.rustup_path,
+            &self.scripting_interface_root_path,
+            &self.templates_path,
+            &self.workspace_path
+        ]
+        .iter()
+        .all(|p| p.is_absolute()));
 
         if !self.rust_path.exists() {
             let rustup_init_path = Path::new("./rustup-init");
@@ -510,16 +534,6 @@ impl<
             scripting_interface_name(),
             primary_scripting_interface_name.to_owned(),
         );
-        world.add_resource(
-            docs_path(),
-            rustc::document_module(
-                &self.install_dirs,
-                &self
-                    .scripting_interface_root_path
-                    .join(primary_scripting_interface_name),
-            )
-            .context("failed to document scripting interface")?,
-        );
 
         // To speed up compilation of new maps with this version, we precompile a dummy script using the
         // scripting interface. Its resulting target folder will then be copied into this project's
@@ -536,18 +550,37 @@ impl<
             log::info!("finished building precompiled template");
         }
 
-        let target_dir = self.scripts_path.join("target");
-        if !target_dir.exists() {
+        let target_dir = self.workspace_path.join("target");
+        if !target_dir
+            .join("wasm32-wasi")
+            .join("release")
+            .join("dummy.wasm")
+            .exists()
+        {
             log::info!("world does not have compiled scripts, copying precompiled template");
             std::fs::create_dir_all(&target_dir)
                 .context("failed to create target directory for world")?;
             fs_extra::dir::copy(
                 self.templates_path.join("scripts").join("target"),
-                &self.scripts_path,
-                &fs_extra::dir::CopyOptions::new(),
+                &self.workspace_path,
+                &fs_extra::dir::CopyOptions {
+                    overwrite: true,
+                    ..Default::default()
+                },
             )
             .context("failed to copy scripts to target")?;
         }
+
+        world.add_resource(
+            docs_path(),
+            rustc::document_module(
+                &self.install_dirs,
+                &self
+                    .scripting_interface_root_path
+                    .join(primary_scripting_interface_name),
+            )
+            .context("failed to document scripting interface")?,
+        );
 
         Ok(())
     }
@@ -807,36 +840,40 @@ pub fn spawn_script_module(
 fn compile_module_raw(
     sm: &ScriptModule,
     install_dirs: InstallDirs,
-    scripts_path: PathBuf,
+    workspace_path: PathBuf,
+    update_filesystem_from_ecs: bool,
     name: String,
 ) -> Option<std::thread::JoinHandle<anyhow::Result<Vec<u8>>>> {
-    let mut files = sm.files().clone();
-    if let Some(lib) = files.get_mut(Path::new("src/lib.rs")) {
-        lib.contents.push_str(r#"
-        #[no_mangle]
-        pub extern "C" fn call_main(runtime_interface_version: u32) {{
-            if INTERFACE_VERSION != runtime_interface_version {{
-                panic!("This script was compiled with interface version {{INTERFACE_VERSION}}, but the script host is running with version {{interface_version}}");
-            }}
-            run_async(main());
-        }}
-    "#);
+    if update_filesystem_from_ecs {
+        let mut files = sm.files().clone();
+
+        if let Some(lib) = files.get_mut(Path::new("src/lib.rs")) {
+            lib.contents.push_str(r#"
+            #[no_mangle]
+            pub extern "C" fn call_main(runtime_interface_version: u32) {
+                if INTERFACE_VERSION != runtime_interface_version {
+                    panic!("This script was compiled with interface version {{INTERFACE_VERSION}}, but the script host is running with version {{runtime_interface_version}}");
+                }
+                run_async(main());
+            }
+        "#);
+        }
+
+        // Remove the directory to ensure there aren't any old files left around
+        let script_path = workspace_path.join(sanitize(&name));
+        let _ = std::fs::remove_dir_all(&script_path);
+        write_files_to_directory(
+            &script_path,
+            &files
+                .iter()
+                .map(|(p, f)| (p.clone(), f.contents.clone()))
+                .collect_vec(),
+        )
+        .unwrap();
     }
 
-    // Remove the directory to ensure there aren't any old files left around
-    let script_path = scripts_path.join(sanitize(&name));
-    let _ = std::fs::remove_dir_all(&script_path);
-    write_files_to_directory(
-        &script_path,
-        &files
-            .iter()
-            .map(|(p, f)| (p.clone(), f.contents.clone()))
-            .collect_vec(),
-    )
-    .unwrap();
-
     Some(std::thread::spawn(move || {
-        rustc::build_module_in_workspace(&install_dirs, &scripts_path, &name)
+        rustc::build_module_in_workspace(&install_dirs, &workspace_path, &name)
     }))
 }
 
@@ -849,7 +886,7 @@ fn build_script_template(
     let _ = std::fs::remove_dir_all(templates_path);
     std::fs::create_dir_all(templates_path)?;
 
-    write_scripting_interfaces(scripting_interfaces, templates_path)
+    write_scripting_interfaces(scripting_interfaces, &templates_path.join("interfaces"))
         .context("failed to write scripting interface for template")?;
 
     let dummy_name = "dummy";
@@ -870,6 +907,7 @@ fn build_script_template(
         &dummy_module,
         install_dirs.clone(),
         scripts_path.clone(),
+        true,
         dummy_name.to_owned(),
     )
     .context("failed to generate dummy compilation task")?
