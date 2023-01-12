@@ -14,5 +14,3 @@ rand = "0.8.5"
 wasi = "0.11.0"
 # make sure this is synchronised with the version used by elements_scripting_host
 wit-bindgen-guest-rust = { git = "https://github.com/bytecodealliance/wit-bindgen.git", rev = "181093b58f49b194ee34be2d986d737f4f553d3d" }
-
-[workspace]

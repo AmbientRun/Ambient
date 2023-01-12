@@ -61,6 +61,11 @@ pub struct BaseHostGuestState {
 pub trait GetBaseHostGuestState {
     fn base_mut(&mut self) -> &mut BaseHostGuestState;
 }
+impl GetBaseHostGuestState for BaseHostGuestState {
+    fn base_mut(&mut self) -> &mut BaseHostGuestState {
+        self
+    }
+}
 
 #[derive(Clone)]
 pub struct ScriptModuleBytecode(pub Vec<u8>);

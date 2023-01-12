@@ -37,6 +37,9 @@ anyhow.workspace = true
 log.workspace = true
 env_logger.workspace = true
 glam.workspace = true
+wasmtime-wasi.workspace = true
+parking_lot.workspace = true
+walkdir.workspace = true
 
 [dev-dependencies]
 glam.workspace = true
@@ -44,7 +47,8 @@ glam.workspace = true
 
 [workspace]
 resolver = "2"
-members = ["crates/*", "libs/*"]
+exclude = ["crates/scripting"]
+members = ["crates/*", "crates/scripting/host", "libs/*"]
 
 [workspace.package]
 version = "0.30.1"

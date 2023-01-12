@@ -13,6 +13,7 @@ use elements_std::{asset_cache::AssetCache, math::SphericalCoords, Cb};
 use elements_ui::{use_window_logical_resolution, use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text};
 use glam::vec3;
 
+pub mod scripting;
 mod server;
 
 #[derive(Parser)]
@@ -102,11 +103,17 @@ fn main() {
     elements_app::init_all_components();
     elements_network::init_all_components();
     elements_physics::init_all_components();
+    elements_scripting_host::shared::init_components();
     let runtime = tokio::runtime::Builder::new_multi_thread().enable_all().build().unwrap();
     let assets = AssetCache::new(runtime.handle().clone());
 
     let cli = Cli::parse();
-    let project_path = cli.project_path.clone().map(|x| x.into()).unwrap_or_else(|| std::env::current_dir().unwrap());
+    let current_dir = std::env::current_dir().unwrap();
+    let project_path = cli.project_path.clone().map(|x| x.into()).unwrap_or_else(|| current_dir.clone());
+
+    let project_path =
+        if project_path.is_absolute() { project_path } else { elements_std::path::normalize(&current_dir.join(project_path)) };
+
     if cli.command.should_build() {
         runtime.block_on(elements_build::build(&assets, project_path.clone()));
     }
@@ -114,7 +121,7 @@ fn main() {
     if cli.command.should_run() {
         let port = server::start_server(&runtime, assets.clone(), cli, project_path.clone());
         AppBuilder::simple().ui_renderer(true).with_runtime(runtime).with_asset_cache(assets).run(|app, _runtime| {
-                MainApp { port }.el().spawn_interactive(&mut app.world);
+            MainApp { port }.el().spawn_interactive(&mut app.world);
         });
     }
 }

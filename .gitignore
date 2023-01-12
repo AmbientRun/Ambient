@@ -3,3 +3,4 @@ target
 **/tmp/**
 .DS_Store
 /example_assets
+/rust
