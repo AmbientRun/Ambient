@@ -736,7 +736,9 @@ impl<
             format!("{} - {}", get_module_name(world, id), context.event_name)
         );
 
-        if context.event_name != "core/module_load"
+        // If this is not a whitelisted event and it's not in the subscribed events,
+        // skip over it
+        if !["core/module_load", "core/frame"].contains(&context.event_name.as_str())
             && !state
                 .shared_state
                 .lock()
