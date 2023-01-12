@@ -236,7 +236,10 @@ pub fn systems<
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("script module collision event");
                 // trigger collision event
-                let collisions = world.resource(collisions()).lock().clone();
+                let collisions = match world.resource_opt(collisions()) {
+                    Some(collisions) => collisions.lock().clone(),
+                    None => return,
+                };
                 let host_state = host_state(world);
                 for (a, b) in collisions.into_iter() {
                     let select_entity = |px: PxRigidActorRef| {
@@ -263,8 +266,11 @@ pub fn systems<
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("script module collider loads");
                 // trigger collider loads
+                let collider_loads = match world.resource_opt(collider_loads()) {
+                    Some(collider_loads) => collider_loads.clone(),
+                    None => return,
+                };
                 let host_state = host_state(world);
-                let collider_loads = world.resource(collider_loads()).clone();
                 for id in collider_loads {
                     host_state.run_all(
                         world,
