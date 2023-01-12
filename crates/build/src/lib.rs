@@ -29,7 +29,7 @@ async fn build_assets(assets: &AssetCache, assets_path: PathBuf, target_path: Pa
         println!("model: {:?} {:?}", model_path, model_path.extension());
         let mut model = ModelCrate::new();
         model
-            .import(assets, &AbsAssetUrl::from_file_path(&model_path), true, false, Arc::new(|path| async move { None }.boxed()))
+            .import(assets, &AbsAssetUrl::from_file_path(&model_path), true, false, Arc::new(|_path| async move { None }.boxed()))
             .await
             .unwrap();
         model.update_node_primitive_aabbs_from_cpu_meshes();
