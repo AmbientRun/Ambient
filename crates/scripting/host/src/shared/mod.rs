@@ -405,7 +405,7 @@ impl ScriptModule {
                 crate-type = ["cdylib"]
 
                 [dependencies]
-                {{scripting_interface}} = {path = "../../{{scripting_interface}}"}
+                {{scripting_interface}} = {path = "../../interfaces/{{scripting_interface}}"}
             "#},
         ),
         (
