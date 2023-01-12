@@ -171,6 +171,7 @@ fn run_command(
         .envs([
             ("RUSTUP_HOME", dirs.rustup_path.to_string_lossy().as_ref()),
             ("CARGO_HOME", dirs.cargo_path.to_string_lossy().as_ref()),
+            ("RUSTUP_TOOLCHAIN", "stable"),
             ("CARGO_INCREMENTAL", "1"),
         ])
         .args(args);
