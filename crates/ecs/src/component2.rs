@@ -1,5 +1,5 @@
 use std::{
-    any::{Any, TypeId}, cmp::Ordering, marker::PhantomData, mem::{self, ManuallyDrop, MaybeUninit}
+    any::{Any, TypeId}, cmp::Ordering, fmt::Debug, marker::PhantomData, mem::{self, ManuallyDrop, MaybeUninit}
 };
 
 use once_cell::sync::Lazy;
@@ -21,7 +21,7 @@ macro_rules! component_attributes {
     ($($(#[$outer: meta])* $name: ident: $ty: ty,)*) => {
 $(
         /// Component attribute
-        $(#($outer))*
+        $(#[$outer])*
         #[derive(Default, Eq, PartialEq, PartialOrd, Hash, Debug, Clone)]
         pub struct $name {}
 
@@ -34,34 +34,28 @@ $(
 }
 
 pub trait ComponentAttributeValue<T> {
-    fn construct() -> Self;
-}
-
-/// An attribute with no value
-pub struct FlagAttribute;
-
-impl FlagAttribute {
-    pub const fn construct_attr<T: ComponentValue>() -> Self {
-        Self
-    }
+    /// Construct a new instance of the attribute value
+    fn construct(component: Component<T>) -> Self;
 }
 
 /// Allow serializing a component entry
+#[derive(Clone, Copy)]
 pub struct ComponentSerializer {
     ser: fn(&ComponentEntry) -> &dyn erased_serde::Serialize,
     deser: fn(ComponentDesc, &mut dyn erased_serde::Deserializer) -> Result<ComponentEntry, erased_serde::Error>,
+    desc: ComponentDesc,
 }
 
 impl<T: ComponentValue + Serialize + for<'de> Deserialize<'de>> ComponentAttributeValue<T> for ComponentSerializer {
-    fn construct() -> Self {
+    fn construct(component: Component<T>) -> Self {
         Self {
             ser: |v| v.downcast_ref::<T>() as &dyn erased_serde::Serialize,
             deser: |desc, deserializer| {
-                let deserializer = unsafe { &mut *deserializer };
                 let value = T::deserialize(deserializer)?;
                 let entry = ComponentEntry::from_raw_parts(desc, value);
                 Ok(entry)
             },
+            desc: component.desc,
         }
     }
 }
@@ -71,20 +65,9 @@ impl ComponentSerializer {
     pub fn serialize<'a>(&self, entry: &'a ComponentEntry) -> &'a dyn erased_serde::Serialize {
         (self.ser)(entry)
     }
-
-    /// Deserialize a value into an untyped ComponentEntry
-    pub fn deserialize<'a>(&self, desc: ComponentDesc) -> ComponentEntryDeserializer {
-        ComponentEntryDeserializer { desc, deser: self.deser }
-    }
 }
 
-/// Deserializes a single component value into a `ComponentEntry`
-pub struct ComponentEntryDeserializer {
-    desc: ComponentDesc,
-    deser: fn(ComponentDesc, &mut dyn erased_serde::Deserializer) -> Result<ComponentEntry, erased_serde::Error>,
-}
-
-impl<'de> serde::de::DeserializeSeed<'de> for ComponentEntryDeserializer {
+impl<'de> serde::de::DeserializeSeed<'de> for ComponentSerializer {
     type Value = ComponentEntry;
 
     fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
@@ -97,13 +80,28 @@ impl<'de> serde::de::DeserializeSeed<'de> for ComponentEntryDeserializer {
     }
 }
 
+pub struct ComponentDebugger {
+    debug: fn(&ComponentEntry) -> &dyn Debug,
+}
+
+impl<T> ComponentAttributeValue<T> for ComponentDebugger
+where
+    T: Debug,
+{
+    fn construct(component: Component<T>) -> Self {
+        Self { debug: |entry| entry.downcast_ref::<T>() as &dyn Debug }
+    }
+}
+
 component_attributes! {
+    /// Declares a component as [`serde::Serialize`] and [`serde::Deserialize`]
     Serializable: ComponentSerializer,
+    Debuggable: ComponentDebugger,
     Store: (),
 }
 
 impl<T> ComponentAttributeValue<T> for () {
-    fn construct() -> Self {}
+    fn construct(_: Component<T>) -> Self {}
 }
 
 pub struct AttributeEntry {
@@ -112,24 +110,24 @@ pub struct AttributeEntry {
     /// To use: cast to the correct type, which is determined by the attribute in use.
     ///
     /// It is recommended to use helper functions
-    value: Lazy<Box<dyn Any + Send + Sync>>,
+    value: Box<dyn Any + Send + Sync>,
 }
 
 impl AttributeEntry {
-    pub const fn new<Attr, T>() -> Self
+    pub fn new<Attr, T>(component: Component<T>) -> Self
     where
         Attr: ComponentAttribute,
         Attr::Value: ComponentAttributeValue<T>,
         T: 'static,
     {
-        Self { key: || TypeId::of::<Attr>(), value: Lazy::new(|| Box::new(Attr::Value::construct) as Box<dyn Any + Send + Sync>) }
+        Self { key: || TypeId::of::<Attr>(), value: Box::new(Attr::Value::construct(component)) as Box<dyn Any + Send + Sync> }
     }
 }
 
 /// Construct attributes from a slice
 #[inline(always)]
-pub fn slice_attrs(attrs: &'static [&'static AttributeEntry], key: TypeId) -> Option<&'static AttributeEntry> {
-    attrs.iter().find(|v| (v.key)() == key).as_deref()
+pub fn slice_attrs(attrs: &'static [AttributeEntry], key: TypeId) -> Option<&'static AttributeEntry> {
+    attrs.iter().find(|v| (v.key)() == key)
 }
 
 /// Represents a
@@ -178,7 +176,7 @@ impl<T> Component<T> {
     }
 
     pub fn attribute<A: ComponentAttribute>(&self) -> Option<&'static A::Value> {
-        self.desc.vtable.attribute::<A>()
+        self.desc.attribute::<A>()
     }
 }
 
@@ -203,7 +201,7 @@ pub struct ComponentVTable<T: 'static> {
     impl_clone: fn(&ComponentHolder<T>) -> ErasedHolder,
     impl_take: fn(Box<ComponentHolder<T>>, dst: *mut MaybeUninit<T>),
 
-    pub custom_attrs: fn(TypeId) -> Option<&'static AttributeEntry>,
+    pub custom_attrs: fn(ComponentDesc, TypeId) -> Option<&'static AttributeEntry>,
 }
 
 impl<T: Clone + ComponentValue> ComponentVTable<T> {
@@ -234,18 +232,12 @@ impl<T: Clone + ComponentValue> ComponentVTable<T> {
             impl_clone: impl_clone::<T>,
             impl_drop: impl_drop::<T>,
             impl_take: impl_take::<T>,
-            custom_attrs: |_| None,
+            custom_attrs: |_, _| None,
         }
     }
 }
 
 impl<T: 'static> ComponentVTable<T> {
-    pub fn attribute<A: ComponentAttribute>(&self) -> Option<&A::Value> {
-        let entry = (self.custom_attrs)(TypeId::of::<A>())?;
-        let value = entry.value.downcast_ref().expect("Mismatched attribute types");
-        Some(value)
-    }
-
     /// Erases the vtable
     ///
     /// # Safety
@@ -274,6 +266,12 @@ pub struct ComponentDesc {
 impl ComponentDesc {
     pub fn new(index: i32, vtable: &'static ComponentVTable<()>) -> Self {
         Self { index, vtable }
+    }
+
+    pub fn attribute<A: ComponentAttribute>(&self) -> Option<&'static A::Value> {
+        let entry = (self.vtable.custom_attrs)(*self, TypeId::of::<A>())?;
+        let value = entry.value.downcast_ref().expect("Mismatched attribute types");
+        Some(value)
     }
 }
 
@@ -374,7 +372,22 @@ impl ComponentEntry {
     }
 
     pub fn attribute<A: ComponentAttribute>(&self) -> Option<&'static A::Value> {
-        self.inner.desc.vtable.attribute::<A>()
+        self.inner.desc.attribute::<A>()
+    }
+
+    pub fn as_debug(&self) -> &dyn Debug {
+        struct NoDebug;
+        impl Debug for NoDebug {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.write_str("...")
+            }
+        }
+
+        if let Some(v) = self.attribute::<Debuggable>() {
+            (v.debug)(self)
+        } else {
+            &NoDebug
+        }
     }
 }
 
@@ -421,23 +434,28 @@ impl ComponentHolder<()> {
 
 #[macro_export]
 macro_rules! components2 {
-    ($($(#[$outer:meta])* $(@[$($attr: ty),*])? $vis: vis $name:ident: $ty:ty,)*) => {
+    ($ns: literal, { $($(#[$outer:meta])* $(@[$($attr: ty),*])? $vis: vis $name:ident: $ty:ty,)*}) => {
         $(
             $crate::paste::paste! {
                 #[allow(non_upper_case_globals)]
                 static mut [<comp_ $name>]: i32 = -1;
                 $(#[$outer])*
                 $vis fn $name() -> Component<$ty> {
-                    static ATTRS: &[&$crate::AttributeEntry] = &[
-                        $(
+                    fn init_attr(desc:ComponentDesc) -> Box<[AttributeEntry]> {
+                        let _component: Component<$ty> = Component::new(desc);
+                        Box::new([
                             $(
-                                &$crate::AttributeEntry::new::<$attr, $ty>(),
+                                $(
+                                    $crate::AttributeEntry::new::<$attr, $ty>(_component),
+                                )*
                             )*
-                        )*
-                    ];
+                        ])
+                    }
+
+                    static ATTRS: once_cell::sync::OnceCell<Box<[AttributeEntry]>> = once_cell::sync::OnceCell::new();
 
                     static VTABLE: &ComponentVTable<$ty> = &ComponentVTable {
-                        custom_attrs: |key| slice_attrs(ATTRS, key),
+                        custom_attrs: |desc, key| slice_attrs(ATTRS.get_or_init(|| init_attr(desc)), key),
                         ..ComponentVTable::construct(stringify!($name))
                     };
 
@@ -453,15 +471,13 @@ macro_rules! components2 {
 mod test {
     use std::{ptr, sync::Arc};
 
+    use serde::de::DeserializeSeed;
+
     use super::*;
 
     #[test]
     fn manual_component() {
-        static ATTRS: &[AttributeEntry] = &[];
-
-        // let vtable: &'static ComponentVTable = &ComponentVTable {
-        static VTABLE: &ComponentVTable<String> =
-            &ComponentVTable { custom_attrs: |key| slice_attrs(ATTRS, key), ..ComponentVTable::construct("my_component") };
+        static VTABLE: &ComponentVTable<String> = &ComponentVTable::construct("my_component");
 
         let component: Component<String> = Component::new(ComponentDesc::new(1, unsafe { VTABLE.erase() }));
 
@@ -482,19 +498,19 @@ mod test {
 
     #[test]
     fn component_macro() {
-        #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+        #[derive(PartialEq, Eq, Debug, Clone, serde::Serialize, serde::Deserialize)]
         struct Person {
             name: String,
             age: i32,
         }
 
-        components2! {
-            /// Declares a component
-            @[Serializable, Store]
+        components2! ("test",{
+            @[Serializable, Debuggable]
             foo: String,
-            @[Serializable]
+            /// This is a person
+            @[Serializable, Debuggable]
             person: Person,
-        }
+        });
 
         let component = foo();
 
@@ -508,13 +524,24 @@ mod test {
         let str = serde_json::to_string_pretty(entry.attribute::<Serializable>().unwrap().serialize(&entry)).unwrap();
 
         eprintln!("Serialized: {str}");
+
+        let deserialize = person().attribute::<Serializable>().unwrap();
+
+        let value: ComponentEntry = deserialize.deserialize(&mut serde_json::Deserializer::from_str(&str)).unwrap();
+
+        eprintln!("Value: {:?}", value.as_debug());
+
+        let p = entry.take::<Person>().unwrap();
+        assert_eq!(value.downcast_ref::<Person>(), &p);
+        assert_eq!(value.try_downcast_ref::<String>(), None);
     }
 
     #[test]
     fn test_take() {
-        components2! {
+        components2! ("test", {
+            @[Store]
             my_component: Arc<String>,
-        }
+        });
 
         let shared = Arc::new("Foo".to_string());
 
@@ -539,9 +566,9 @@ mod test {
     fn leak_test() {
         let shared = Arc::new("Foo".to_string());
 
-        components2! {
+        components2! ("test", {
             my_component: Arc<String>,
-        }
+        });
 
         {
             let value = ComponentEntry::new(my_component(), shared.clone());
