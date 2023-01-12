@@ -1,5 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
+    marker::PhantomData,
     path::{Path, PathBuf},
     sync::Arc,
     time::{Duration, Instant},
@@ -18,8 +19,10 @@ use physxx::{PxRigidActor, PxRigidActorRef, PxUserData};
 use wasi_common::WasiCtx;
 
 use crate::shared::{
-    get_module_name, sanitize, script_module, script_module_bytecode, script_module_compiled,
-    script_module_errors, update_components,
+    get_module_name,
+    interface::write_scripting_interfaces,
+    sanitize, script_module, script_module_bytecode, script_module_compiled, script_module_errors,
+    update_components,
     wasm::{GuestExports, WasmContext},
     write_files_to_directory, FileMap, GetBaseHostGuestState, ParametersMap, ScriptContext,
     ScriptModule, ScriptModuleBytecode, ScriptModuleErrors, ScriptModuleState,
@@ -27,26 +30,28 @@ use crate::shared::{
 
 use self::rustc::InstallDirs;
 
+pub mod bindings;
 pub mod implementation;
 pub mod rustc;
+mod wasm;
 
 pub const PARAMETER_CHANGE_DEBOUNCE_SECONDS: u64 = 2;
 pub const MINIMUM_RUST_VERSION: (u32, u32, u32) = (1, 65, 0);
 pub const MAXIMUM_ERROR_COUNT: usize = 10;
 
 components!("scripting::server", {
-    docs_path: PathBuf,
     deferred_compilation_tasks: HashMap<EntityId, Instant>,
     compilation_tasks: HashMap<EntityId, Arc<std::thread::JoinHandle<anyhow::Result<Vec<u8>>>>>,
 });
 
 /// The [host_state_component] resource *must* be initialized before this is called
 pub fn systems<
-    Context: WasmContext + Send + Sync + 'static,
-    Exports: GuestExports<Context> + Send + Sync + 'static,
+    Bindings: Send + Sync + 'static,
+    Context: WasmContext<Bindings> + Send + Sync + 'static,
+    Exports: GuestExports<Bindings, Context> + Send + Sync + 'static,
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
-    host_state_component: Component<Arc<HostState<Context, Exports, HostGuestState>>>,
+    host_state_component: Component<Arc<HostState<Bindings, Context, Exports, HostGuestState>>>,
 ) -> SystemGroup {
     // Update the scripts whenever the external components change.
     let (update_tx, update_rx) = flume::unbounded();
@@ -340,11 +345,12 @@ pub fn systems<
 }
 
 pub fn on_forking_systems<
-    Context: WasmContext + Send + Sync + 'static,
-    Exports: GuestExports<Context> + Send + Sync + 'static,
+    Bindings: Send + Sync + 'static,
+    Context: WasmContext<Bindings> + Send + Sync + 'static,
+    Exports: GuestExports<Bindings, Context> + Send + Sync + 'static,
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
-    host_state_component: Component<Arc<HostState<Context, Exports, HostGuestState>>>,
+    host_state_component: Component<Arc<HostState<Bindings, Context, Exports, HostGuestState>>>,
 ) -> SystemGroup<ForkingEvent> {
     SystemGroup::new(
         "core/scripting/server/on_forking_systems",
@@ -359,12 +365,13 @@ pub fn on_forking_systems<
 }
 
 pub fn on_shutdown<
-    Context: WasmContext + Send + Sync + 'static,
-    Exports: GuestExports<Context> + Send + Sync + 'static,
+    Bindings: Send + Sync + 'static,
+    Context: WasmContext<Bindings> + Send + Sync + 'static,
+    Exports: GuestExports<Bindings, Context> + Send + Sync + 'static,
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
     world: &mut World,
-    host_state_component: Component<Arc<HostState<Context, Exports, HostGuestState>>>,
+    host_state_component: Component<Arc<HostState<Bindings, Context, Exports, HostGuestState>>>,
 ) {
     let scripts = query(()).incl(script_module()).collect_ids(world, None);
     let players = query(player()).collect_ids(world, None);
@@ -384,54 +391,66 @@ pub enum MessageType {
 }
 
 pub struct HostState<
-    Context: WasmContext + Send + Sync + 'static,
-    Exports: GuestExports<Context> + Send + Sync + 'static,
+    Bindings: Send + Sync + 'static,
+    Context: WasmContext<Bindings> + Send + Sync + 'static,
+    Exports: GuestExports<Bindings, Context> + Send + Sync + 'static,
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 > {
     pub messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
-    pub scripting_interface: Vec<(PathBuf, String)>,
-    pub scripting_interface_version: u32,
+    pub scripting_interfaces: HashMap<String, Vec<(PathBuf, String)>>,
 
     pub rust_path: PathBuf,
     pub install_dirs: InstallDirs,
-    pub scripting_interface_path: PathBuf,
+    /// Where the scripting interfaces should be installed, not the path to the scripting interface itself
+    ///
+    /// e.g. world/, not world/scripting_interface
+    pub scripting_interface_root_path: PathBuf,
     pub templates_path: PathBuf,
     pub scripts_path: PathBuf,
 
-    pub server_state_component: Component<ScriptModuleState<Context, Exports, HostGuestState>>,
+    pub server_state_component:
+        Component<ScriptModuleState<Bindings, Context, Exports, HostGuestState>>,
     pub make_wasm_context:
         Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>,
+    pub add_to_linker:
+        Arc<dyn Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
+
+    pub _bindings: PhantomData<Bindings>,
 }
 
 impl<
-        Context: WasmContext + Send + Sync + 'static,
-        Exports: GuestExports<Context> + Send + Sync + 'static,
+        Bindings: Send + Sync + 'static,
+        Context: WasmContext<Bindings> + Send + Sync + 'static,
+        Exports: GuestExports<Bindings, Context> + Send + Sync + 'static,
         HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
-    > Clone for HostState<Context, Exports, HostGuestState>
+    > Clone for HostState<Bindings, Context, Exports, HostGuestState>
 {
     fn clone(&self) -> Self {
         Self {
             messenger: self.messenger.clone(),
-            scripting_interface: self.scripting_interface.clone(),
-            scripting_interface_version: self.scripting_interface_version.clone(),
+            scripting_interfaces: self.scripting_interfaces.clone(),
 
             rust_path: self.rust_path.clone(),
             install_dirs: self.install_dirs.clone(),
-            scripting_interface_path: self.scripting_interface_path.clone(),
+            scripting_interface_root_path: self.scripting_interface_root_path.clone(),
             templates_path: self.templates_path.clone(),
             scripts_path: self.scripts_path.clone(),
 
             server_state_component: self.server_state_component.clone(),
             make_wasm_context: self.make_wasm_context.clone(),
+            add_to_linker: self.add_to_linker.clone(),
+
+            _bindings: self._bindings.clone(),
         }
     }
 }
 
 impl<
-        Context: WasmContext + Send + Sync + 'static,
-        Exports: GuestExports<Context> + Send + Sync + 'static,
-        SharedState: Default + GetBaseHostGuestState + Send + Sync + 'static,
-    > HostState<Context, Exports, SharedState>
+        Bindings: Send + Sync + 'static,
+        Context: WasmContext<Bindings> + Send + Sync + 'static,
+        Exports: GuestExports<Bindings, Context> + Send + Sync + 'static,
+        HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
+    > HostState<Bindings, Context, Exports, HostGuestState>
 {
     pub async fn initialize(&self, world: &mut World) -> anyhow::Result<()> {
         if !self.rust_path.exists() {
@@ -454,13 +473,10 @@ impl<
             rustc::update_rust(&self.install_dirs).context("failed to update rust")?;
         }
 
-        let _ = std::fs::remove_dir_all(self.scripting_interface_path.join("src"));
-        write_files_to_directory(&self.scripting_interface_path, &self.scripting_interface)?;
-        world.add_resource(
-            docs_path(),
-            rustc::document_module(&self.install_dirs, &self.scripting_interface_path)
-                .context("failed to document scripting interface")?,
-        );
+        write_scripting_interfaces(
+            &self.scripting_interfaces,
+            &self.scripting_interface_root_path,
+        )?;
         world.add_resource(deferred_compilation_tasks(), HashMap::new());
         world.add_resource(compilation_tasks(), HashMap::new());
 
@@ -472,7 +488,7 @@ impl<
             build_script_template(
                 &self.install_dirs,
                 &self.templates_path,
-                &self.scripting_interface,
+                &self.scripting_interfaces,
             )
             .context("failed to build script template")?;
             log::info!("finished building precompiled template");
@@ -569,10 +585,11 @@ impl<
 }
 
 impl<
-        Context: WasmContext + Send + Sync + 'static,
-        Exports: GuestExports<Context> + Send + Sync + 'static,
-        SharedState: Default + GetBaseHostGuestState + Send + Sync + 'static,
-    > HostState<Context, Exports, SharedState>
+        Bindings: Send + Sync + 'static,
+        Context: WasmContext<Bindings> + Send + Sync + 'static,
+        Exports: GuestExports<Bindings, Context> + Send + Sync + 'static,
+        HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
+    > HostState<Bindings, Context, Exports, HostGuestState>
 {
     fn reload(&self, world: &mut World, scripts: &[(EntityId, Option<ScriptModuleBytecode>)]) {
         let players = query(player()).collect_ids(world, None);
@@ -582,6 +599,7 @@ impl<
 
             if let Some(bytecode) = bytecode {
                 let make_wasm_context = self.make_wasm_context.clone();
+                let add_to_linker = self.add_to_linker.clone();
                 let result = run_and_catch_errors(|| {
                     let messenger = self.messenger.clone();
                     ScriptModuleState::new(
@@ -596,7 +614,8 @@ impl<
                             messenger(world, script_id, MessageType::Stderr, msg);
                         }),
                         move |ctx, state| make_wasm_context(ctx, state),
-                        self.scripting_interface_version,
+                        move |linker| add_to_linker(linker),
+                        crate::shared::interface::shared::INTERFACE_VERSION,
                     )
                 });
                 match result {
@@ -667,7 +686,7 @@ impl<
         &self,
         world: &mut World,
         id: EntityId,
-        mut state: ScriptModuleState<Context, Exports, SharedState>,
+        mut state: ScriptModuleState<Bindings, Context, Exports, HostGuestState>,
         context: &ScriptContext,
     ) -> Option<(EntityId, String)> {
         profiling::scope!(
@@ -778,15 +797,13 @@ fn compile_module_raw(
 fn build_script_template(
     install_dirs: &InstallDirs,
     templates_path: &Path,
-    scripting_interface: &[(PathBuf, String)],
+    scripting_interfaces: &HashMap<String, Vec<(PathBuf, String)>>,
 ) -> Result<(), anyhow::Error> {
     let _ = std::fs::remove_dir_all(templates_path);
     std::fs::create_dir_all(templates_path)?;
-    write_files_to_directory(
-        &templates_path.join("scripting_interface"),
-        scripting_interface,
-    )
-    .context("failed to write scripting interface for template")?;
+
+    write_scripting_interfaces(scripting_interfaces, templates_path)
+        .context("failed to write scripting interface for template")?;
 
     let dummy_name = "dummy";
 

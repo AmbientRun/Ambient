@@ -1,7 +1,7 @@
 use std::{
-    any::TypeId,
     collections::{HashMap, HashSet},
     fmt::{Display, Write},
+    marker::PhantomData,
     path::{Path, PathBuf},
     str::FromStr,
     sync::Arc,
@@ -17,7 +17,6 @@ use elements_std::asset_url::ObjectRef;
 use glam::Vec3;
 use indexmap::IndexMap;
 use indoc::indoc;
-use once_cell::sync::OnceCell;
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
 use wasi_common::WasiCtx;
@@ -28,17 +27,17 @@ pub mod dependencies;
 pub mod implementation;
 pub mod wasm;
 
+pub mod bindings;
+pub mod conversion;
+pub mod guest_conversion;
+pub mod interface;
+
 components!("scripting::shared", {
     script_module: ScriptModule,
     script_module_bytecode: ScriptModuleBytecode,
     script_module_compiled: (),
     script_module_errors: ScriptModuleErrors,
 });
-
-/// HACK: set by the instantiating script host. required until the bindings stuff can be decoupled,
-/// but even then I'm not super sure how it'll all work with additional types being introduced in
-/// other hosts. Maybe a runtime-mutable list?
-pub static SUPPORTED_COMPONENT_TYPES: OnceCell<&[(TypeId, &'static str)]> = OnceCell::new();
 
 pub type QueryStateMap =
     slotmap::SlotMap<slotmap::DefaultKey, (Query, QueryState, Vec<PrimitiveComponent>)>;
@@ -146,39 +145,55 @@ impl ScriptContext {
 
 #[derive(Default)]
 pub struct ScriptModuleState<
-    Context: WasmContext,
-    Exports: GuestExports<Context>,
+    Bindings: Send + Sync + 'static,
+    Context: WasmContext<Bindings>,
+    Exports: GuestExports<Bindings, Context>,
     HostGuestState: Default,
 > {
-    wasm: Option<wasm::WasmState<Context, Exports>>,
+    wasm: Option<wasm::WasmState<Bindings, Context, Exports>>,
     pub shared_state: Arc<Mutex<HostGuestState>>,
+    _bindings: PhantomData<Bindings>,
 }
 
-impl<Context: WasmContext, Exports: GuestExports<Context>, HostGuestState: Default> Clone
-    for ScriptModuleState<Context, Exports, HostGuestState>
+impl<
+        Bindings: Send + Sync + 'static,
+        Context: WasmContext<Bindings>,
+        Exports: GuestExports<Bindings, Context>,
+        HostGuestState: Default,
+    > Clone for ScriptModuleState<Bindings, Context, Exports, HostGuestState>
 {
     fn clone(&self) -> Self {
         Self {
             wasm: self.wasm.clone(),
             shared_state: self.shared_state.clone(),
+            _bindings: self._bindings.clone(),
         }
     }
 }
-impl<Context: WasmContext, Exports: GuestExports<Context>, HostGuestState: Default> std::fmt::Debug
-    for ScriptModuleState<Context, Exports, HostGuestState>
+impl<
+        Bindings: Send + Sync + 'static,
+        Context: WasmContext<Bindings>,
+        Exports: GuestExports<Bindings, Context>,
+        HostGuestState: Default,
+    > std::fmt::Debug for ScriptModuleState<Bindings, Context, Exports, HostGuestState>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ScriptModuleState").finish()
     }
 }
-impl<Context: WasmContext, Exports: GuestExports<Context>, HostGuestState: Default>
-    ScriptModuleState<Context, Exports, HostGuestState>
+impl<
+        Bindings: Send + Sync + 'static,
+        Context: WasmContext<Bindings>,
+        Exports: GuestExports<Bindings, Context>,
+        HostGuestState: Default,
+    > ScriptModuleState<Bindings, Context, Exports, HostGuestState>
 {
     pub fn new(
         bytecode: &[u8],
         stdout_output: Box<dyn Fn(&World, &str) + Sync + Send>,
         stderr_output: Box<dyn Fn(&World, &str) + Sync + Send>,
         make_wasm_context: impl Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context,
+        add_to_linker: impl Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()>,
         interface_version: u32,
     ) -> anyhow::Result<Self> {
         let shared_state = Arc::new(Mutex::new(HostGuestState::default()));
@@ -194,10 +209,15 @@ impl<Context: WasmContext, Exports: GuestExports<Context>, HostGuestState: Defau
                     let shared_state = shared_state.clone();
                     move |wasi| make_wasm_context(wasi, shared_state.clone())
                 },
+                add_to_linker,
                 interface_version,
             )?)
         };
-        Ok(Self { wasm, shared_state })
+        Ok(Self {
+            wasm,
+            shared_state,
+            _bindings: PhantomData,
+        })
     }
 
     pub fn run(&mut self, world: &mut World, context: &ScriptContext) -> anyhow::Result<()> {
@@ -299,7 +319,7 @@ impl ScriptModule {
                 crate-type = ["cdylib"]
 
                 [dependencies]
-                dims_scripting_interface = {path = "../../scripting_interface"}
+                dims_scripting_interface = {path = "../../dims_scripting_interface"}
             "#},
         ),
         (
@@ -421,9 +441,7 @@ impl ScriptModule {
             }
         }
 
-        let supported_types: HashMap<_, _> = SUPPORTED_COMPONENT_TYPES
-            .get()
-            .unwrap()
+        let supported_types: HashMap<_, _> = bindings::SUPPORTED_COMPONENT_TYPES
             .iter()
             .copied()
             .collect();
@@ -453,7 +471,6 @@ impl ScriptModule {
                     } else {
                         writeln!(output, "{space}pub mod {name} {{").ok();
                         writeln!(output, "{space}    use dims_scripting_interface::*;").ok();
-                        writeln!(output, "{space}    use once_cell::sync::Lazy;").ok();
                         for (key, value) in hm {
                             write_to_file(output, key, value, depth + 1);
                         }

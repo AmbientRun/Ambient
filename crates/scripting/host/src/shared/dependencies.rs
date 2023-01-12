@@ -85,7 +85,7 @@ const AI: &[&str] = &["pathfinding"];
 static WHITELIST: Lazy<HashSet<&'static str>> = Lazy::new(|| {
     HashSet::from_iter(
         [
-            &["dims_scripting_interface"],
+            &["dims_scripting_interface", "elements_scripting_interface"],
             RUST_PATTERNS,
             DATA_STRUCTURES,
             ALGORITHMS,

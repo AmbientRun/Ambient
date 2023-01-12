@@ -1,4 +1,4 @@
-use std::{io, sync::Arc};
+use std::{io, marker::PhantomData, sync::Arc};
 
 use anyhow::Context;
 use async_trait::async_trait;
@@ -10,7 +10,7 @@ use wasi_common::{
 };
 use wasmtime_wasi::WasiFile;
 
-use super::ScriptContext;
+use super::{interface::guest, ScriptContext};
 
 pub struct WorldRef(pub *mut World);
 impl WorldRef {
@@ -66,27 +66,29 @@ impl WasiFile for WasiOutputFile {
     }
 }
 
-pub trait WasmContext {
+pub trait WasmContext<Bindings> {
     fn wasi(&mut self) -> &mut wasmtime_wasi::WasiCtx;
+    fn bindings_implementation(&mut self) -> &mut Bindings;
+    fn guest_data(&mut self) -> &mut guest::GuestData;
     fn set_world(&mut self, world: &mut World);
 }
 
-pub trait GuestExports<WasmContext>
+pub trait GuestExports<Bindings, Context: WasmContext<Bindings>>
 where
     Self: Sized,
 {
     fn create(
         engine: &wasmtime::Engine,
-        store: &mut wasmtime::Store<WasmContext>,
-        linker: &mut wasmtime::Linker<WasmContext>,
+        store: &mut wasmtime::Store<Context>,
+        linker: &mut wasmtime::Linker<Context>,
         bytecode: &[u8],
     ) -> anyhow::Result<(Self, wasmtime::Instance)>;
 
-    fn initialize(&self, store: &mut wasmtime::Store<WasmContext>) -> anyhow::Result<()>;
+    fn initialize(&self, store: &mut wasmtime::Store<Context>) -> anyhow::Result<()>;
 
     fn run(
         &self,
-        store: &mut wasmtime::Store<WasmContext>,
+        store: &mut wasmtime::Store<Context>,
         event_name: &str,
         components: &EntityData,
         time: f32,
@@ -94,15 +96,26 @@ where
     ) -> anyhow::Result<()>;
 }
 
-pub struct WasmState<Context: WasmContext, Exports: GuestExports<Context>> {
+pub struct WasmState<
+    Bindings: Send + Sync + 'static,
+    Context: WasmContext<Bindings>,
+    Exports: GuestExports<Bindings, Context>,
+> {
     _engine: wasmtime::Engine,
     store: Arc<Mutex<wasmtime::Store<Context>>>,
     world_ref: Arc<Mutex<WorldRef>>,
 
     guest_exports: Arc<Exports>,
     _guest_instance: wasmtime::Instance,
+
+    _bindings: PhantomData<Bindings>,
 }
-impl<Context: WasmContext, Exports: GuestExports<Context>> Clone for WasmState<Context, Exports> {
+impl<
+        Bindings: Send + Sync + 'static,
+        Context: WasmContext<Bindings>,
+        Exports: GuestExports<Bindings, Context>,
+    > Clone for WasmState<Bindings, Context, Exports>
+{
     fn clone(&self) -> Self {
         Self {
             _engine: self._engine.clone(),
@@ -110,15 +123,22 @@ impl<Context: WasmContext, Exports: GuestExports<Context>> Clone for WasmState<C
             world_ref: self.world_ref.clone(),
             guest_exports: self.guest_exports.clone(),
             _guest_instance: self._guest_instance,
+            _bindings: self._bindings.clone(),
         }
     }
 }
-impl<Context: WasmContext, Exports: GuestExports<Context>> WasmState<Context, Exports> {
+impl<
+        Bindings: Send + Sync + 'static,
+        Context: WasmContext<Bindings>,
+        Exports: GuestExports<Bindings, Context>,
+    > WasmState<Bindings, Context, Exports>
+{
     pub fn new(
         bytecode: &[u8],
         stdout_output: Box<dyn Fn(&World, &str) + Sync + Send>,
         stderr_output: Box<dyn Fn(&World, &str) + Sync + Send>,
         make_wasm_context: impl Fn(WasiCtx) -> Context,
+        add_to_linker: impl Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()>,
         interface_version: u32,
     ) -> anyhow::Result<Self> {
         let engine = wasmtime::Engine::default();
@@ -136,6 +156,7 @@ impl<Context: WasmContext, Exports: GuestExports<Context>> WasmState<Context, Ex
         let (guest_exports, guest_instance) = {
             let mut linker: wasmtime::Linker<Context> = wasmtime::Linker::new(&engine);
             wasmtime_wasi::add_to_linker(&mut linker, |cx| cx.wasi())?;
+            add_to_linker(&mut linker)?;
 
             Exports::create(&engine, &mut store, &mut linker, bytecode)?
         };
@@ -156,6 +177,7 @@ impl<Context: WasmContext, Exports: GuestExports<Context>> WasmState<Context, Ex
 
             guest_exports: Arc::new(guest_exports),
             _guest_instance: guest_instance,
+            _bindings: PhantomData,
         })
     }
 
