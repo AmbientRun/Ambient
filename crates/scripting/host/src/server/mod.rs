@@ -22,7 +22,7 @@ use crate::shared::{
     get_module_name,
     interface::write_scripting_interfaces,
     sanitize, script_module, script_module_bytecode, script_module_compiled, script_module_errors,
-    update_components,
+    scripting_interface_name, update_components,
     wasm::{GuestExports, WasmContext},
     write_files_to_directory, FileMap, GetBaseHostGuestState, ParametersMap, ScriptContext,
     ScriptModule, ScriptModuleBytecode, ScriptModuleErrors, ScriptModuleState,
@@ -40,8 +40,10 @@ pub const MINIMUM_RUST_VERSION: (u32, u32, u32) = (1, 65, 0);
 pub const MAXIMUM_ERROR_COUNT: usize = 10;
 
 components!("scripting::server", {
+    // resources
     deferred_compilation_tasks: HashMap<EntityId, Instant>,
     compilation_tasks: HashMap<EntityId, Arc<std::thread::JoinHandle<anyhow::Result<Vec<u8>>>>>,
+    docs_path: PathBuf,
 });
 
 /// The [host_state_component] resource *must* be initialized before this is called
@@ -75,13 +77,17 @@ pub fn systems<
                 .spawned()
                 .to_system(|q, world, qs, _| {
                     profiling::scope!("script module spawn population");
+
+                    let scripting_interface_name =
+                        world.resource(scripting_interface_name()).clone();
+
                     let ids = q.iter(world, qs).map(|(id, _)| id).collect_vec();
                     for id in ids {
                         let name = get_module_name(world, id);
                         world
                             .get_mut(id, script_module())
                             .unwrap()
-                            .populate_files(&name);
+                            .populate_files(&name, &scripting_interface_name);
 
                         world
                             .add_component(
@@ -452,7 +458,15 @@ impl<
         HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
     > HostState<Bindings, Context, Exports, HostGuestState>
 {
-    pub async fn initialize(&self, world: &mut World) -> anyhow::Result<()> {
+    pub async fn initialize(
+        &self,
+        world: &mut World,
+        primary_scripting_interface_name: &str,
+    ) -> anyhow::Result<()> {
+        assert!(self
+            .scripting_interfaces
+            .contains_key(primary_scripting_interface_name));
+
         if !self.rust_path.exists() {
             let rustup_init_path = Path::new("./rustup-init");
             let err = rustc::download_and_install(&self.install_dirs, rustup_init_path)
@@ -479,6 +493,20 @@ impl<
         )?;
         world.add_resource(deferred_compilation_tasks(), HashMap::new());
         world.add_resource(compilation_tasks(), HashMap::new());
+        world.add_resource(
+            scripting_interface_name(),
+            primary_scripting_interface_name.to_owned(),
+        );
+        world.add_resource(
+            docs_path(),
+            rustc::document_module(
+                &self.install_dirs,
+                &self
+                    .scripting_interface_root_path
+                    .join(primary_scripting_interface_name),
+            )
+            .context("failed to document scripting interface")?,
+        );
 
         // To speed up compilation of new maps with this version, we precompile a dummy script using the
         // scripting interface. Its resulting target folder will then be copied into this project's
@@ -489,6 +517,7 @@ impl<
                 &self.install_dirs,
                 &self.templates_path,
                 &self.scripting_interfaces,
+                primary_scripting_interface_name,
             )
             .context("failed to build script template")?;
             log::info!("finished building precompiled template");
@@ -743,6 +772,7 @@ pub fn spawn_script_module(
         anyhow::bail!("a script module by the name {name} already exists");
     }
 
+    let scripting_interface_name = world.resource(scripting_interface_name()).clone();
     let sm = ScriptModule::new(
         name,
         description,
@@ -750,6 +780,7 @@ pub fn spawn_script_module(
         parameters,
         external_component_ids,
         enabled,
+        &scripting_interface_name,
     );
     Ok(EntityData::new()
         .set(elements_core::name(), name.to_string())
@@ -798,6 +829,7 @@ fn build_script_template(
     install_dirs: &InstallDirs,
     templates_path: &Path,
     scripting_interfaces: &HashMap<String, Vec<(PathBuf, String)>>,
+    primary_scripting_interface_name: &str,
 ) -> Result<(), anyhow::Error> {
     let _ = std::fs::remove_dir_all(templates_path);
     std::fs::create_dir_all(templates_path)?;
@@ -817,6 +849,7 @@ fn build_script_template(
         Default::default(),
         Default::default(),
         true,
+        primary_scripting_interface_name,
     );
     let _dummy_bytecode = compile_module_raw(
         &dummy_module,

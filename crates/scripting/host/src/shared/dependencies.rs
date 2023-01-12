@@ -85,7 +85,6 @@ const AI: &[&str] = &["pathfinding"];
 static WHITELIST: Lazy<HashSet<&'static str>> = Lazy::new(|| {
     HashSet::from_iter(
         [
-            &["dims_scripting_interface", "elements_scripting_interface"],
             RUST_PATTERNS,
             DATA_STRUCTURES,
             ALGORITHMS,
@@ -110,7 +109,11 @@ static WHITELIST: Lazy<HashSet<&'static str>> = Lazy::new(|| {
     )
 });
 
-pub fn merge_cargo_toml(existing_file: &str, new_file: &str) -> anyhow::Result<String> {
+pub fn merge_cargo_toml(
+    scripting_interfaces: &[&str],
+    existing_file: &str,
+    new_file: &str,
+) -> anyhow::Result<String> {
     if new_file.is_empty() {
         anyhow::bail!("cannot merge empty Cargo.toml");
     }
@@ -118,9 +121,12 @@ pub fn merge_cargo_toml(existing_file: &str, new_file: &str) -> anyhow::Result<S
     let mut existing_manifest = cargo_toml::Manifest::from_str(existing_file)?;
     let new_manifest = cargo_toml::Manifest::from_str(new_file)?;
 
-    fn merge_dependencies(new: &cargo_toml::DepsSet) -> anyhow::Result<cargo_toml::DepsSet> {
+    fn merge_dependencies(
+        scripting_interfaces: &[&str],
+        new: &cargo_toml::DepsSet,
+    ) -> anyhow::Result<cargo_toml::DepsSet> {
         for dep in new.keys() {
-            if !WHITELIST.contains(dep.as_str()) {
+            if !WHITELIST.contains(dep.as_str()) && !scripting_interfaces.contains(&dep.as_str()) {
                 anyhow::bail!("package `{dep}` is not in the dependency whitelist");
             }
         }
@@ -128,9 +134,12 @@ pub fn merge_cargo_toml(existing_file: &str, new_file: &str) -> anyhow::Result<S
         Ok(new.clone())
     }
 
-    existing_manifest.dependencies = merge_dependencies(&new_manifest.dependencies)?;
-    existing_manifest.build_dependencies = merge_dependencies(&new_manifest.build_dependencies)?;
-    existing_manifest.dev_dependencies = merge_dependencies(&new_manifest.dev_dependencies)?;
+    existing_manifest.dependencies =
+        merge_dependencies(scripting_interfaces, &new_manifest.dependencies)?;
+    existing_manifest.build_dependencies =
+        merge_dependencies(scripting_interfaces, &new_manifest.build_dependencies)?;
+    existing_manifest.dev_dependencies =
+        merge_dependencies(scripting_interfaces, &new_manifest.dev_dependencies)?;
 
     Ok(toml::to_string(&existing_manifest)?)
 }
@@ -138,6 +147,8 @@ pub fn merge_cargo_toml(existing_file: &str, new_file: &str) -> anyhow::Result<S
 #[cfg(test)]
 mod tests {
     use super::merge_cargo_toml;
+
+    const SCRIPTING_INTERFACES: &[&str] = &["elements_scripting_interface"];
 
     const DEFAULT_FILE: &str = indoc::indoc! {r#"
         [package]
@@ -150,13 +161,13 @@ mod tests {
         crate-type = ["cdylib"]
 
         [dependencies]
-        dims_scripting_interface = {path = "../../scripting_interface"}
+        elements_scripting_interface = {path = "../../elements_scripting_interface"}
     "#};
 
     #[test]
     fn cannot_merge_cargo_toml_with_empty_file() {
         assert_eq!(
-            merge_cargo_toml(DEFAULT_FILE, "")
+            merge_cargo_toml(SCRIPTING_INTERFACES, DEFAULT_FILE, "")
                 .err()
                 .map(|s| s.to_string())
                 .unwrap_or_default(),
@@ -167,15 +178,15 @@ mod tests {
     #[test]
     fn can_merge_with_no_changes() {
         assert_eq!(
-            merge_cargo_toml(DEFAULT_FILE, DEFAULT_FILE).unwrap_or_default(),
+            merge_cargo_toml(SCRIPTING_INTERFACES, DEFAULT_FILE, DEFAULT_FILE).unwrap_or_default(),
             indoc::indoc! {r#"
                 [package]
                 name = "test-module"
                 edition = "2021"
                 version = "0.1.0"
                 description = "a cool description"
-                [dependencies.dims_scripting_interface]
-                path = "../../scripting_interface"
+                [dependencies.elements_scripting_interface]
+                path = "../../elements_scripting_interface"
                 features = []
 
                 [lib]
@@ -199,19 +210,19 @@ mod tests {
             ignored-key = "okay!"
 
             [dependencies]
-            dims_scripting_interface = {path = "../../scripting_interface"}
+            elements_scripting_interface = {path = "../../elements_scripting_interface"}
         "#};
 
         assert_eq!(
-            merge_cargo_toml(DEFAULT_FILE, NEW_FILE).unwrap_or_default(),
+            merge_cargo_toml(SCRIPTING_INTERFACES, DEFAULT_FILE, NEW_FILE).unwrap_or_default(),
             indoc::indoc! {r#"
                 [package]
                 name = "test-module"
                 edition = "2021"
                 version = "0.1.0"
                 description = "a cool description"
-                [dependencies.dims_scripting_interface]
-                path = "../../scripting_interface"
+                [dependencies.elements_scripting_interface]
+                path = "../../elements_scripting_interface"
                 features = []
 
                 [lib]
@@ -234,12 +245,12 @@ mod tests {
             crate-type = ["cdylib"]
 
             [dependencies]
-            dims_scripting_interface = {path = "../../scripting_interface"}
+            elements_scripting_interface = {path = "../../elements_scripting_interface"}
             indexmap = "1.9.2"
         "#};
 
         assert_eq!(
-            merge_cargo_toml(DEFAULT_FILE, NEW_FILE).unwrap_or_default(),
+            merge_cargo_toml(SCRIPTING_INTERFACES, DEFAULT_FILE, NEW_FILE).unwrap_or_default(),
             indoc::indoc! {r#"
                 [package]
                 name = "test-module"
@@ -250,8 +261,8 @@ mod tests {
                 [dependencies]
                 indexmap = "1.9.2"
 
-                [dependencies.dims_scripting_interface]
-                path = "../../scripting_interface"
+                [dependencies.elements_scripting_interface]
+                path = "../../elements_scripting_interface"
                 features = []
 
                 [lib]
@@ -274,12 +285,12 @@ mod tests {
             crate-type = ["cdylib"]
 
             [dependencies]
-            dims_scripting_interface = {path = "../../scripting_interface"}
+            elements_scripting_interface = {path = "../../elements_scripting_interface"}
             malicious-package = "42.0.0"
         "#};
 
         assert_eq!(
-            merge_cargo_toml(DEFAULT_FILE, NEW_FILE)
+            merge_cargo_toml(SCRIPTING_INTERFACES, DEFAULT_FILE, NEW_FILE)
                 .err()
                 .map(|s| s.to_string())
                 .unwrap_or_default(),

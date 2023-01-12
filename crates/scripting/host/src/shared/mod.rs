@@ -37,6 +37,9 @@ components!("scripting::shared", {
     script_module_bytecode: ScriptModuleBytecode,
     script_module_compiled: (),
     script_module_errors: ScriptModuleErrors,
+
+    // resources
+    scripting_interface_name: String,
 });
 
 pub type QueryStateMap =
@@ -285,6 +288,8 @@ impl ScriptModule {
         parameters: ParametersMap,
         external_component_ids: HashSet<String>,
         enabled: bool,
+
+        scripting_interface: &str,
     ) -> Self {
         let mut sm = ScriptModule {
             files: HashMap::new(),
@@ -295,7 +300,7 @@ impl ScriptModule {
             last_updated_by_parameters: false,
         };
         sm.files.extend(files);
-        sm.populate_files(name);
+        sm.populate_files(name, scripting_interface);
         sm
     }
 
@@ -305,7 +310,88 @@ impl ScriptModule {
         &self.files
     }
 
-    pub const STATIC_FILE_TEMPLATES: &[(&'static str, &'static str)] = &[
+    pub fn system_controlled_files() -> Vec<PathBuf> {
+        ["src/params.rs", "src/components.rs"]
+            .into_iter()
+            .map(|p| p.into())
+            .collect()
+    }
+
+    pub fn populate_files(&mut self, name: &str, scripting_interface: &str) {
+        self.regenerate_params_file(scripting_interface);
+        self.regenerate_components_file(scripting_interface);
+        for (filename, contents) in Self::STATIC_FILE_TEMPLATES {
+            let filename = PathBuf::from(filename);
+            let contents = contents
+                .replace("{{name}}", &sanitize(&name))
+                .replace("{{description}}", &self.description)
+                .replace("{{scripting_interface}}", scripting_interface);
+            let file = File::new_at_now(contents);
+
+            self.files.entry(filename).or_insert(file);
+        }
+        self.last_updated_by_parameters = false;
+    }
+
+    pub fn update_parameters(&mut self, parameters: ParametersMap, scripting_interface: &str) {
+        self.parameters = parameters;
+        self.last_updated_by_parameters = true;
+        self.regenerate_params_file(scripting_interface);
+        self.regenerate_components_file(scripting_interface);
+    }
+
+    pub fn insert(
+        &mut self,
+        scripting_interfaces: &[&str],
+        relative_path: PathBuf,
+        new_file: String,
+    ) -> anyhow::Result<()> {
+        let relative_path = normalize_path(&relative_path);
+        if ScriptModule::system_controlled_files().contains(&relative_path) {
+            anyhow::bail!("{relative_path:?} is system-controlled and cannot be updated");
+        }
+
+        if relative_path == Path::new("Cargo.toml") {
+            self.files.insert(
+                relative_path,
+                File::new_at_now(dependencies::merge_cargo_toml(
+                    scripting_interfaces,
+                    &self
+                        .files
+                        .get(Path::new("Cargo.toml"))
+                        .context("no Cargo.toml")?
+                        .contents,
+                    &new_file,
+                )?),
+            );
+        } else {
+            self.files.insert(relative_path, File::new_at_now(new_file));
+        }
+
+        Ok(())
+    }
+
+    pub fn remove(&mut self, relative_path: &Path) {
+        let relative_path = normalize_path(relative_path);
+        if ScriptModule::system_controlled_files()
+            .iter()
+            .any(|pb| pb == &relative_path)
+        {
+            return;
+        }
+        self.files.remove(&relative_path);
+    }
+
+    pub fn enabled(&self) -> bool {
+        self.enabled
+    }
+
+    pub fn last_updated_by_parameters(&self) -> bool {
+        self.last_updated_by_parameters
+    }
+}
+impl ScriptModule {
+    const STATIC_FILE_TEMPLATES: &[(&'static str, &'static str)] = &[
         (
             "Cargo.toml",
             indoc! {r#"
@@ -319,13 +405,13 @@ impl ScriptModule {
                 crate-type = ["cdylib"]
 
                 [dependencies]
-                dims_scripting_interface = {path = "../../dims_scripting_interface"}
+                {{scripting_interface}} = {path = "../../{{scripting_interface}}"}
             "#},
         ),
         (
             "src/lib.rs",
             indoc! {r#"
-                use dims_scripting_interface::*;
+                use {{scripting_interface}}::*;
                 pub mod params;
                 pub mod components;
 
@@ -336,36 +422,7 @@ impl ScriptModule {
         ),
     ];
 
-    pub fn system_controlled_files() -> Vec<PathBuf> {
-        ["src/params.rs", "src/components.rs"]
-            .into_iter()
-            .map(|p| p.into())
-            .collect()
-    }
-
-    pub fn populate_files(&mut self, name: &str) {
-        self.regenerate_params_file();
-        self.regenerate_components_file();
-        for (filename, contents) in Self::STATIC_FILE_TEMPLATES {
-            let filename = PathBuf::from(filename);
-            let contents = contents
-                .replace("{{name}}", &sanitize(&name))
-                .replace("{{description}}", &self.description);
-            let file = File::new_at_now(contents);
-
-            self.files.entry(filename).or_insert(file);
-        }
-        self.last_updated_by_parameters = false;
-    }
-
-    pub fn update_parameters(&mut self, parameters: ParametersMap) {
-        self.parameters = parameters;
-        self.last_updated_by_parameters = true;
-        self.regenerate_params_file();
-        self.regenerate_components_file();
-    }
-
-    fn regenerate_params_file(&mut self) {
+    fn regenerate_params_file(&mut self, scripting_interface: &str) {
         let mut contents = String::new();
         let _ = writeln!(contents, "#![allow(unused_imports)]");
         for (category, parameters) in &self.parameters {
@@ -375,7 +432,7 @@ impl ScriptModule {
             }
 
             let _ = writeln!(contents, "pub mod {category} {{");
-            let _ = writeln!(contents, "    use dims_scripting_interface::*;");
+            let _ = writeln!(contents, "    use {}::*;", scripting_interface);
             for (key, value) in parameters {
                 let key = key.trim().replace(' ', "_").to_uppercase();
                 if key.is_empty() {
@@ -410,7 +467,7 @@ impl ScriptModule {
             .insert("src/params.rs".into(), File::new_at_now(contents));
     }
 
-    fn regenerate_components_file(&mut self) {
+    fn regenerate_components_file(&mut self, scripting_interface: &str) {
         enum ComponentTreeNode {
             Category(HashMap<String, ComponentTreeNode>),
             Component { typename: &'static str, id: String },
@@ -460,19 +517,20 @@ impl ScriptModule {
             name: &str,
             component: &ComponentTreeNode,
             depth: usize,
+            scripting_interface: &str,
         ) {
             let space = " ".repeat(depth * 4);
             match component {
                 ComponentTreeNode::Category(hm) => {
                     if name.is_empty() {
                         for (key, value) in hm {
-                            write_to_file(output, key, value, 0);
+                            write_to_file(output, key, value, 0, scripting_interface);
                         }
                     } else {
                         writeln!(output, "{space}pub mod {name} {{").ok();
-                        writeln!(output, "{space}    use dims_scripting_interface::*;").ok();
+                        writeln!(output, "{space}    use {}::*;", scripting_interface).ok();
                         for (key, value) in hm {
-                            write_to_file(output, key, value, depth + 1);
+                            write_to_file(output, key, value, depth + 1, scripting_interface);
                         }
                         writeln!(output, "{space}}}").ok();
                     }
@@ -495,54 +553,10 @@ impl ScriptModule {
         }
         let mut contents = String::new();
         let _ = writeln!(contents, "#![allow(unused_imports)]");
-        write_to_file(&mut contents, "", &root, 0);
+        write_to_file(&mut contents, "", &root, 0, scripting_interface);
 
         self.files
             .insert("src/components.rs".into(), File::new_at_now(contents));
-    }
-
-    pub fn insert(&mut self, relative_path: PathBuf, new_file: String) -> anyhow::Result<()> {
-        let relative_path = normalize_path(&relative_path);
-        if ScriptModule::system_controlled_files().contains(&relative_path) {
-            anyhow::bail!("{relative_path:?} is system-controlled and cannot be updated");
-        }
-
-        if relative_path == Path::new("Cargo.toml") {
-            self.files.insert(
-                relative_path,
-                File::new_at_now(dependencies::merge_cargo_toml(
-                    &self
-                        .files
-                        .get(Path::new("Cargo.toml"))
-                        .context("no Cargo.toml")?
-                        .contents,
-                    &new_file,
-                )?),
-            );
-        } else {
-            self.files.insert(relative_path, File::new_at_now(new_file));
-        }
-
-        Ok(())
-    }
-
-    pub fn remove(&mut self, relative_path: &Path) {
-        let relative_path = normalize_path(relative_path);
-        if ScriptModule::system_controlled_files()
-            .iter()
-            .any(|pb| pb == &relative_path)
-        {
-            return;
-        }
-        self.files.remove(&relative_path);
-    }
-
-    pub fn enabled(&self) -> bool {
-        self.enabled
-    }
-
-    pub fn last_updated_by_parameters(&self) -> bool {
-        self.last_updated_by_parameters
     }
 }
 
@@ -710,8 +724,9 @@ pub fn get_module_name(world: &World, id: EntityId) -> String {
 }
 
 pub fn update_components(world: &mut World) {
+    let scripting_interface_name = world.resource(scripting_interface_name()).clone();
     for (_, sm, name) in query_mut(script_module(), name()).iter(world, None) {
-        sm.populate_files(name);
+        sm.populate_files(name, &scripting_interface_name);
     }
 }
 
