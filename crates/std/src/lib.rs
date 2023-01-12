@@ -18,6 +18,7 @@ pub mod line_hash;
 pub mod math;
 pub mod mesh;
 pub mod ordered_glam;
+pub mod path;
 pub mod shapes;
 pub mod sparse_vec;
 pub mod time;
