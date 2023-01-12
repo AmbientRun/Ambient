@@ -29,6 +29,8 @@ async fn build_assets(assets: &AssetCache, assets_path: PathBuf, target_path: Pa
     let ctx = ProcessCtx {
         assets: assets.clone(),
         files: Arc::new(files),
+        in_root: AbsAssetUrl::from_directory_path(&assets_path),
+        out_root: AbsAssetUrl::from_directory_path(target_path.join("assets")),
         input_file_filter: None,
         package_name: "".to_string(),
         write_file: Arc::new(move |path, contents| {

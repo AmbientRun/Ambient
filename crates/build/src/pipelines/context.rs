@@ -34,7 +34,8 @@ use super::{out_asset::OutAsset, Pipeline, ProcessCtx};
 #[derive(Clone)]
 pub struct PipelineCtx {
     pub process_ctx: ProcessCtx,
-    pub root: AbsAssetUrl,
+    pub pipeline_file: AbsAssetUrl,
+    pub root_path: RelativePathBuf,
 
     // pub asset_pack_id: String,
     // pub asset_pack_version: String,
@@ -44,6 +45,15 @@ pub struct PipelineCtx {
     // pub output_base_url: AbsAssetUrl,
 }
 impl PipelineCtx {
+    pub fn assets(&self) -> &AssetCache {
+        &self.process_ctx.assets
+    }
+    pub fn in_root(&self) -> AbsAssetUrl {
+        self.process_ctx.in_root.join(&self.root_path).unwrap()
+    }
+    pub fn out_root(&self) -> AbsAssetUrl {
+        self.process_ctx.out_root.join(&self.root_path).unwrap()
+    }
     // pub fn asset_crate_id(&self, uid: &str) -> AssetCrateId {
     //     // This does not include the version, because the idea here is that the id's are stable across versions
     //     // This makes it possible to create collections of assets, that continue to work even if the assets are updated
@@ -76,10 +86,10 @@ impl PipelineCtx {
     ) -> Vec<OutAsset> {
         let res = tokio::spawn({
             let ctx = self.clone();
-            async move { process(ctx.clone()).await.with_context(|| format!("In pipeline {}", ctx.root)) }
+            async move { process(ctx.clone()).await.with_context(|| format!("In pipeline {}", ctx.pipeline_file)) }
         })
         .await
-        .with_context(|| format!("In pipeline {}", self.root));
+        .with_context(|| format!("In pipeline {}", self.pipeline_file));
         let err = match res {
             Ok(Ok(res)) => return res,
             Ok(Err(err)) => err,
@@ -129,12 +139,15 @@ impl PipelineCtx {
                     let file = file.clone();
                     async move {
                         let _permit = semaphore.acquire().await;
-                        (ctx.process_ctx.on_status)(format!("[{}] Processing file {}/{}: {}", ctx.root, i + 1, n_files, file)).await;
-                        process_file(ctx.clone(), file.clone()).await.with_context(|| format!("In pipeline {}, at file {}", ctx.root, file))
+                        (ctx.process_ctx.on_status)(format!("[{}] Processing file {}/{}: {}", ctx.pipeline_file, i + 1, n_files, file))
+                            .await;
+                        process_file(ctx.clone(), file.clone())
+                            .await
+                            .with_context(|| format!("In pipeline {}, at file {}", ctx.pipeline_file, file))
                     }
                 })
                 .await
-                .with_context(|| format!("In pipeline {}, at file {}", ctx.root, file));
+                .with_context(|| format!("In pipeline {}, at file {}", ctx.pipeline_file, file));
                 let err = match res {
                     Ok(Ok(res)) => return res,
                     Ok(Err(err)) => err,
@@ -149,7 +162,7 @@ impl PipelineCtx {
         .flatten()
         .collect()
     }
-    pub fn make_downloadable_file(&self, url: &AbsAssetUrl) -> anyhow::Result<&AbsAssetUrl> {
+    pub fn get_downloadable_url(&self, url: &AbsAssetUrl) -> anyhow::Result<&AbsAssetUrl> {
         self.process_ctx.files.iter().find(|x| x.path() == url.path()).with_context(|| format!("No such file: {url}"))
     }
 }

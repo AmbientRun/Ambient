@@ -27,7 +27,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
 
                 config.apply(&ctx, &mut model_crate).await?;
 
-                let model_url = ctx.write_model_crate(&model_crate, &ctx.root.relative_path(file.path())).await;
+                let model_url = ctx.write_model_crate(&model_crate, &ctx.in_root().relative_path(file.path())).await;
 
                 if config.output_objects {
                     res.push(OutAsset {

@@ -69,6 +69,16 @@ impl AbsAssetUrl {
     pub fn extension(&self) -> Option<String> {
         self.0.path().rsplit_once('.').map(|(_, ext)| ext.to_string().to_lowercase())
     }
+    /// This is always lowercase
+    pub fn extension_is(&self, extension: impl AsRef<str>) -> bool {
+        self.extension() == Some(extension.as_ref().to_string())
+    }
+    /// Appends the extension: test.png -> test.png.hello
+    pub fn add_extension(&self, extension: &str) -> Self {
+        let mut url = self.0.clone();
+        url.set_path(&format!("{}.{}", url.path(), extension));
+        Self(url)
+    }
     pub fn to_file_path(&self) -> anyhow::Result<Option<PathBuf>> {
         if self.0.scheme() == "file" {
             match self.0.to_file_path() {
@@ -87,6 +97,9 @@ impl AbsAssetUrl {
     }
     pub fn path(&self) -> &RelativePath {
         RelativePath::new(self.0.path())
+    }
+    pub fn set_path(&mut self, path: impl AsRef<str>) {
+        self.0.set_path(path.as_ref());
     }
     pub fn relative_path(&self, path: impl AsRef<RelativePath>) -> RelativePathBuf {
         RelativePathBuf::from(self.0.path()).relative(path)
@@ -174,9 +187,9 @@ impl AssetUrl {
             AssetUrl::Relative(path) => Some(Self::Relative(path.parent()?.to_relative_path_buf())),
         }
     }
-    pub fn abs(self) -> Option<AbsAssetUrl> {
+    pub fn abs(&self) -> Option<AbsAssetUrl> {
         match self {
-            AssetUrl::Absolute(url) => Some(url),
+            AssetUrl::Absolute(url) => Some(url.clone()),
             AssetUrl::Relative(_) => None,
         }
     }
@@ -280,7 +293,7 @@ impl<T: GetAssetType> TypedAssetUrl<T> {
     pub fn parent<Y: GetAssetType>(&self) -> Option<TypedAssetUrl<Y>> {
         Some(TypedAssetUrl::<Y>(self.0.parent()?, PhantomData))
     }
-    pub fn abs(self) -> Option<AbsAssetUrl> {
+    pub fn abs(&self) -> Option<AbsAssetUrl> {
         self.0.abs()
     }
     pub fn unwrap_abs(self) -> AbsAssetUrl {

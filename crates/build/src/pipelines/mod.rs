@@ -51,7 +51,8 @@ impl Pipeline {
                     |f| f.extension() == Some("script_bundle".to_string()),
                     |ctx, file| async move {
                         let bundle = file.download_bytes(&ctx.process_ctx.assets).await.unwrap();
-                        let content = ctx.write_file(ctx.root.relative_path(file.path()).with_extension("script_bundle"), bundle).await;
+                        let content =
+                            ctx.write_file(ctx.in_root().relative_path(file.path()).with_extension("script_bundle"), bundle).await;
 
                         Ok(vec![OutAsset {
                             id: file.to_string(),
@@ -97,7 +98,13 @@ pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
         })
         .flat_map(|(file, pipelines)| futures::stream::iter(pipelines.into_iter().map(|pipeline| (file.clone(), pipeline))))
         .then(|(file, pipeline)| async move {
-            let ctx = PipelineCtx { process_ctx: ctx.clone(), pipeline: Arc::new(pipeline.clone()), root: file.join(".").unwrap() };
+            let root = file.join(".").unwrap();
+            let ctx = PipelineCtx {
+                process_ctx: ctx.clone(),
+                pipeline: Arc::new(pipeline.clone()),
+                pipeline_file: file.clone(),
+                root_path: ctx.in_root.relative_path(root.path()),
+            };
             pipeline.process(ctx).await
         })
         .flat_map(|out_assets| futures::stream::iter(out_assets.into_iter()))
@@ -111,14 +118,16 @@ pub struct ProcessCtx {
     pub files: Arc<Vec<AbsAssetUrl>>,
     pub input_file_filter: Option<String>,
     pub package_name: String,
+    pub in_root: AbsAssetUrl,
+    pub out_root: AbsAssetUrl,
     pub write_file: Arc<dyn Fn(String, Vec<u8>) -> BoxFuture<'static, AbsAssetUrl> + Sync + Send>,
     pub on_status: Arc<dyn Fn(String) -> BoxFuture<'static, ()> + Sync + Send>,
     pub on_error: Arc<dyn Fn(anyhow::Error) -> BoxFuture<'static, ()> + Sync + Send>,
 }
 
-pub async fn download_image(assets: &AssetCache, url: &AbsAssetUrl, extension: &Option<String>) -> anyhow::Result<image::DynamicImage> {
+pub async fn download_image(assets: &AssetCache, url: &AbsAssetUrl) -> anyhow::Result<image::DynamicImage> {
     let data = url.download_bytes(assets).await?;
-    if let Some(format) = extension.as_ref().and_then(|ext| ImageFormat::from_extension(ext)) {
+    if let Some(format) = url.extension().as_ref().and_then(|ext| ImageFormat::from_extension(ext)) {
         Ok(image::load_from_memory_with_format(&data, format).with_context(|| format!("Failed to load image {url}"))?)
     } else {
         Ok(image::load_from_memory(&data).with_context(|| format!("Failed to load image {url}"))?)

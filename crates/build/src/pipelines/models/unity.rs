@@ -26,12 +26,8 @@ use tokio::sync::Mutex;
 use unity_parser::{parse_unity_yaml, prefab::PrefabObject, UnityRef};
 use yaml_rust::Yaml;
 
-use super::{
-    super::context::{AssetCrate, AssetCrateId, PipelineCtx}, create_texture_resolver, ModelsPipeline
-};
-use crate::{
-    helpers::{download_image, download_text}, pipelines::{context::AssetPackFile, OutAsset, OutAssetContent, OutAssetPreview}
-};
+use super::{super::context::PipelineCtx, create_texture_resolver, ModelsPipeline};
+use crate::pipelines::{download_image, OutAsset, OutAssetContent, OutAssetPreview};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UnityConfig {
@@ -41,15 +37,20 @@ pub struct UnityConfig {
 
 pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeline) -> Vec<OutAsset> {
     let guid_lookup = join_all(
-        ctx.files
-            .values()
+        ctx.process_ctx
+            .files
+            .iter()
             .cloned()
-            .filter_map(|AssetPackFile { sub_path_string, sub_path: _, temp_download_url: download_url, .. }| {
-                if let Some(base_path) = sub_path_string.strip_suffix(".meta") {
+            .filter(|file| file.path().starts_with(ctx.in_root().path()))
+            .filter_map(|file| {
+                if let Some(base_path) = file.path().as_str().strip_suffix(".meta") {
                     let base_path = base_path.to_string();
+                    let mut base_file = file.clone();
+                    base_file.set_path(base_path);
+                    let base_file = ctx.get_downloadable_url(&base_file).unwrap().clone();
                     Some(async move {
-                        let docs = download_unity_yaml(&ctx.assets, &download_url).await?;
-                        Ok((docs[0]["guid"].as_str().unwrap().to_string(), base_path))
+                        let docs = download_unity_yaml(&ctx.assets(), &file).await?;
+                        Ok((docs[0]["guid"].as_str().unwrap().to_string(), base_file))
                     })
                 } else {
                     None
@@ -64,15 +65,13 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
 
     log::info!("guid_lookup done");
 
-    let materials_id = AssetCrateId::new(ctx.asset_pack_id.clone(), "materials");
-    let materials =
-        Arc::new(Mutex::new(UnityMaterials { materials: Default::default(), materials_crate: AssetCrate::new(ctx, materials_id.clone()) }));
+    let materials = Arc::new(Mutex::new(UnityMaterials { materials: Default::default(), ctx: ctx.clone() }));
     let guid_lookup = Arc::new(guid_lookup);
     let mesh_models = Arc::new(Mutex::new(MeshModels { models: Default::default(), force_assimp: config.force_assimp }));
 
     if use_prefabs {
         ctx.process_files(
-            |file| file.sub_path.extension == Some("prefab".to_string()),
+            |file| file.extension() == Some("prefab".to_string()),
             move |ctx, file| {
                 let config = config.clone();
                 let materials = materials.clone();
@@ -80,12 +79,8 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                 let guid_lookup = guid_lookup.clone();
                 async move {
                     let mut res = Vec::new();
-                    let prefab = unity_parser::prefab::PrefabFile::from_yaml(
-                        download_unity_yaml(&ctx.assets, &file.temp_download_url).await.unwrap(),
-                    )
-                    .unwrap();
-                    let asset_crate_id = ctx.asset_crate_id(&file.sub_path_string);
-                    let asset_crate_url = ctx.crate_url(&asset_crate_id);
+                    let prefab =
+                        unity_parser::prefab::PrefabFile::from_yaml(download_unity_yaml(&ctx.assets(), &file).await.unwrap()).unwrap();
 
                     let mut asset_crate = model_from_prefab(
                         UnityCtx {
@@ -93,7 +88,6 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                             config: &config,
                             materials_lookup: &materials,
                             mesh_models: &mesh_models,
-                            _asset_crate_url: &asset_crate_url,
                             guid_lookup: &guid_lookup,
                         },
                         &prefab,
@@ -101,21 +95,18 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                     .await?;
                     config.apply(&ctx, &mut asset_crate).await?;
 
+                    let model_url = ctx.write_model_crate(&asset_crate, &ctx.in_root().relative_path(file.path())).await;
                     res.push(OutAsset {
-                        asset_crate_id: asset_crate_id.clone(),
-                        sub_asset: None,
+                        id: file.to_string(),
                         type_: AssetType::Object,
                         hidden: false,
-                        name: file.sub_path.filename.to_string(),
+                        name: file.path().file_name().unwrap().to_string(),
                         tags: Default::default(),
                         categories: Default::default(),
-                        preview: OutAssetPreview::FromModel {
-                            url: asset_crate_url.resolve(asset_crate.models.loc.path(ModelCrate::MAIN)).unwrap(),
-                        },
-                        content: OutAssetContent::Content(asset_crate_url.resolve(asset_crate.objects.loc.path(ModelCrate::MAIN)).unwrap()),
-                        source: Some(file.sub_path_string.clone()),
+                        preview: OutAssetPreview::FromModel { url: model_url.abs().unwrap() },
+                        content: OutAssetContent::Content(model_url.model_crate().unwrap().object().abs().unwrap()),
+                        source: Some(file.clone()),
                     });
-                    ctx.write_model_crate(&asset_crate, &asset_crate_id).await;
                     Ok(res)
                 }
             },
@@ -124,7 +115,7 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
     } else {
         // TODO(fred): Should parse .meta file to find ModelImporter instead of checking extension
         ctx.process_files(
-            |file| file.sub_path.extension == Some("fbx".to_string()),
+            |file| file.extension() == Some("fbx".to_string()),
             move |ctx, file| {
                 let config = config.clone();
                 let materials = materials.clone();
@@ -132,52 +123,41 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                 async move {
                     let mut res = Vec::new();
 
-                    let asset_crate_id = ctx.asset_crate_id(&file.sub_path_string);
+                    let out_path = ctx.in_root().relative_path(file.path());
+                    let out_root = ctx.out_root().join(&out_path).unwrap();
+
                     let pipeline = ModelImportPipeline::new()
                         .add_step(ModelImportTransform::ImportModelFromUrl {
-                            url: file.temp_download_url.clone(),
+                            url: file.clone(),
                             normalize: true,
                             force_assimp: config.force_assimp,
                         })
-                        .add_step(ModelImportTransform::SetName { name: file.sub_path.filename.clone() })
+                        .add_step(ModelImportTransform::SetName { name: file.path().file_name().unwrap().to_string() })
                         .add_step(ModelImportTransform::Transform(ModelTransform::Center))
                         .add_step(ModelImportTransform::CreateObject)
                         .add_step(ModelImportTransform::CreateColliderFromModel);
-                    let asset_crate_url = ctx.crate_url(&asset_crate_id);
-                    let mut asset_crate = pipeline.produce_crate(&ctx.assets).await.unwrap();
+                    let mut asset_crate = pipeline.produce_crate(&ctx.assets()).await.unwrap();
                     for mat in asset_crate.materials.content.values_mut() {
                         let name = mat.name.clone().unwrap();
-                        *mat = materials
-                            .lock()
-                            .await
-                            .get_unity_material(
-                                &ctx,
-                                &config,
-                                &guid_lookup,
-                                &format!("{}/Materials/{}.mat", file.sub_path.path.join("/"), name),
-                                &name,
-                            )
-                            .await
-                            .unwrap();
+                        let material_url = file.join(format!("Materials/{}.mat", name)).unwrap();
+                        *mat = materials.lock().await.get_unity_material(&config, &guid_lookup, &material_url, &name).await.unwrap();
+                        *mat = mat.relative_path_from(&out_root.join(format!("materials/{}.json", name)).unwrap());
                     }
 
                     config.apply(&ctx, &mut asset_crate).await?;
 
+                    let model_url = ctx.write_model_crate(&asset_crate, &out_path).await;
                     res.push(OutAsset {
-                        asset_crate_id: asset_crate_id.clone(),
-                        sub_asset: None,
+                        id: file.to_string(),
                         type_: AssetType::Object,
                         hidden: false,
-                        name: file.sub_path.filename.to_string(),
+                        name: file.path().file_name().unwrap().to_string(),
                         tags: Default::default(),
                         categories: Default::default(),
-                        preview: OutAssetPreview::FromModel {
-                            url: asset_crate_url.resolve(asset_crate.models.loc.path(ModelCrate::MAIN)).unwrap(),
-                        },
-                        content: OutAssetContent::Content(asset_crate_url.resolve(asset_crate.objects.loc.path(ModelCrate::MAIN)).unwrap()),
-                        source: Some(file.sub_path_string.clone()),
+                        preview: OutAssetPreview::FromModel { url: model_url.abs().unwrap().into() },
+                        content: OutAssetContent::Content(model_url.model_crate().unwrap().object().abs().unwrap()),
+                        source: Some(file.clone()),
                     });
-                    ctx.write_model_crate(&asset_crate, &asset_crate_id).await;
                     Ok(res)
                 }
             },
@@ -187,18 +167,17 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
 }
 
 async fn download_unity_yaml(assets: &AssetCache, url: &AbsAssetUrl) -> anyhow::Result<Vec<Yaml>> {
-    let data = download_text(assets, url).await?;
+    let data = url.download_string(assets).await?;
     parse_unity_yaml(&data)
 }
 
 #[derive(Clone, Copy)]
 struct UnityCtx<'a> {
     ctx: &'a PipelineCtx,
-    guid_lookup: &'a HashMap<String, String>,
+    guid_lookup: &'a HashMap<String, AbsAssetUrl>,
     config: &'a ModelsPipeline,
     materials_lookup: &'a Mutex<UnityMaterials>,
     mesh_models: &'a Mutex<MeshModels>,
-    _asset_crate_url: &'a AbsAssetUrl,
 }
 
 // Materials might be shared, so we need to process them globaly
@@ -207,19 +186,18 @@ struct UnityCtx<'a> {
 // Need to do something about that at some point
 struct UnityMaterials {
     materials: HashMap<String, PbrMaterialFromUrl>,
-    materials_crate: AssetCrate,
+    ctx: PipelineCtx,
 }
 impl UnityMaterials {
     async fn get_by_guid(
         &mut self,
-        ctx: &PipelineCtx,
         config: &ModelsPipeline,
-        guid_lookup: &HashMap<String, String>,
+        guid_lookup: &HashMap<String, AbsAssetUrl>,
         unity_ref: &UnityRef,
     ) -> anyhow::Result<PbrMaterialFromUrl> {
         let material_path = guid_lookup.get(unity_ref.guid.as_ref().unwrap()).unwrap();
         if unity_ref.type_ == Some(2) {
-            self.get_unity_material(ctx, config, guid_lookup, material_path, unity_ref.guid.as_ref().unwrap())
+            self.get_unity_material(config, guid_lookup, material_path, unity_ref.guid.as_ref().unwrap())
                 .await
                 .with_context(|| format!("Failed to get material {material_path}"))
         } else if unity_ref.type_ == Some(3) {
@@ -230,43 +208,42 @@ impl UnityMaterials {
     }
     async fn get_unity_material(
         &mut self,
-        ctx: &PipelineCtx,
         config: &ModelsPipeline,
-        guid_lookup: &HashMap<String, String>,
-        path: &str,
+        guid_lookup: &HashMap<String, AbsAssetUrl>,
+        material_url: &AbsAssetUrl,
         name: &str,
     ) -> anyhow::Result<PbrMaterialFromUrl> {
-        if let Some(mat) = self.materials.get(path) {
+        if let Some(mat) = self.materials.get(&material_url.to_string()) {
             Ok(mat.clone())
         } else {
-            let get_texture = |ref_: &Option<UnityRef>| -> Option<&AssetPackFile> {
+            let get_texture = |ref_: &Option<UnityRef>| -> Option<&AbsAssetUrl> {
                 if let Some(UnityRef { guid: Some(guid), .. }) = ref_ {
-                    if let Some(path) = guid_lookup.get(guid) {
-                        return ctx.files.get(path);
+                    if let Some(url) = guid_lookup.get(guid) {
+                        return Some(url);
                     }
                 }
                 None
             };
 
-            let docs = download_unity_yaml(&ctx.assets, &ctx.files.get(path).unwrap().temp_download_url).await?;
+            let docs = download_unity_yaml(self.ctx.assets(), &material_url).await?;
             let mat = unity_parser::mat::Material::from_yaml(&docs[0])?;
             let metallic_r_ao_g_smothness_a = if let Some(file) = get_texture(&mat.metallic_r_ao_g_smothness_a) {
-                Some((download_image(&ctx.assets, &file.temp_download_url, &file.sub_path.extension).await?.into_rgba8(), file))
+                Some((download_image(self.ctx.assets(), &file).await?.into_rgba8(), file))
             } else {
                 None
             };
             let metallic_gloss_map = if let Some(file) = get_texture(&mat.metallic_gloss_map) {
-                Some((download_image(&ctx.assets, &file.temp_download_url, &file.sub_path.extension).await?.into_rgba8(), file))
+                Some((download_image(self.ctx.assets(), &file).await?.into_rgba8(), file))
             } else {
                 None
             };
             let occlusion_map = if let Some(file) = get_texture(&mat.occlusion_map) {
-                Some((download_image(&ctx.assets, &file.temp_download_url, &file.sub_path.extension).await?.into_rgba8(), file))
+                Some((download_image(self.ctx.assets(), &file).await?.into_rgba8(), file))
             } else {
                 None
             };
             let base_color = if let Some(file) = get_texture(&mat.main_tex) {
-                let mut image = download_image(&ctx.assets, &file.temp_download_url, &file.sub_path.extension).await?.into_rgba8();
+                let mut image = download_image(self.ctx.assets(), &file).await?.into_rgba8();
                 // Pre-multiply AO
                 if let Some((maos, _)) = &occlusion_map {
                     for (b, m) in image.pixels_mut().zip(maos.pixels()) {
@@ -300,16 +277,15 @@ impl UnityMaterials {
                 None
             };
             let normalmap = if let Some(file) = get_texture(&mat.bump_map) {
-                let image = download_image(&ctx.assets, &file.temp_download_url, &file.sub_path.extension).await?.into_rgba8();
+                let image = download_image(self.ctx.assets(), &file).await?.into_rgba8();
                 Some((image, file.clone()))
             } else {
                 None
             };
-            let get_image = |image_and_file: Option<(image::RgbaImage, AssetPackFile)>| {
+            let get_image = |image_and_file: Option<(image::RgbaImage, AbsAssetUrl)>| {
                 if let Some((mut image, file)) = image_and_file {
-                    let filename = format!("{}/{}.png", file.sub_path.path.join("/"), file.sub_path.filename);
-                    let path = AssetCrate::get_path(AssetType::Image, &filename);
-                    let materials_crate = self.materials_crate.clone();
+                    let out_image_path = self.ctx.in_root().relative_path(&file.path()).prejoin("materials").with_extension(".png");
+                    let ctx = self.ctx.clone();
                     let config = config.clone();
                     async move {
                         let mut data = Cursor::new(Vec::new());
@@ -319,12 +295,11 @@ impl UnityMaterials {
                             }
                             image.write_to(&mut data, ImageOutputFormat::Png).unwrap();
                         });
-                        materials_crate.write_file(AssetType::Image, &filename, data.into_inner()).await;
-                        Some(path.prejoin("../../materials"))
+                        Some(ctx.write_file(&out_image_path, data.into_inner()).await)
                     }
                     .boxed()
                 } else {
-                    async move { None as Option<RelativePathBuf> }.boxed()
+                    async move { None as Option<AbsAssetUrl> }.boxed()
                 }
             };
             let (base_color, normalmap, metallic_roughness) =
@@ -333,14 +308,14 @@ impl UnityMaterials {
                 name: Some(name.to_string()),
                 source: None,
                 base_color: base_color.map(|x| x.into()),
+                normalmap: normalmap.map(|x| x.into()),
+                metallic_roughness: metallic_roughness.map(|x| x.into()),
                 opacity: None,
                 base_color_factor: None,
                 emissive_factor: None,
-                normalmap: normalmap.map(|x| x.into()),
                 transparent: None,
                 alpha_cutoff: mat.alpha_cutoff,
                 double_sided: Some(true), // TODO: Double sided is configured in the shader in unity, so hard to know. Maybe make user configureable
-                metallic_roughness: metallic_roughness.map(|x| x.into()),
                 metallic: 1.,
                 roughness: 1.,
             };
@@ -368,7 +343,7 @@ async fn model_from_prefab(ctx: UnityCtx<'_>, prefab_file: &unity_parser::prefab
     model_crate.model_mut().transform(Mat4::from_cols(Vec4::Y, Vec4::Z, Vec4::X, Vec4::W));
 
     model_crate.create_object();
-    model_crate.create_collider_from_model(&ctx.ctx.assets)?;
+    model_crate.create_collider_from_model(&ctx.ctx.assets())?;
     model_crate.finalize_model();
     Ok(model_crate)
 }
@@ -450,7 +425,7 @@ impl MeshModels {
     async fn get(&mut self, ctx: &PipelineCtx, mesh_url: &AbsAssetUrl) -> anyhow::Result<Arc<ModelCrate>> {
         if !self.models.contains_key(mesh_url) {
             let mut tmp_model = ModelCrate::new();
-            tmp_model.import(&ctx.assets, mesh_url, false, self.force_assimp, create_texture_resolver(ctx)).await?;
+            tmp_model.import(&ctx.assets(), mesh_url, false, self.force_assimp, create_texture_resolver(ctx)).await?;
             tmp_model.update_transforms();
             // dump_world_hierarchy_to_tmp_file(tmp_model.model_world());
             self.models.insert(mesh_url.clone(), Arc::new(tmp_model));
@@ -470,19 +445,19 @@ async fn primitives_from_unity_mesh_renderer(
 ) -> anyhow::Result<Vec<PbrRenderPrimitiveFromUrl>> {
     let game_object = mesh_renderer.get_game_object(prefab).unwrap();
     let mesh_filter = game_object.get_component::<unity_parser::prefab::MeshFilter>(prefab).unwrap();
-    let mesh_path = ctx.guid_lookup.get(mesh_filter.mesh.guid.as_ref().unwrap()).unwrap();
-    let mesh_url = ctx.ctx.files.get(mesh_path).unwrap().temp_download_url.clone();
-    let mesh_meta_url = ctx.ctx.files.get(&format!("{mesh_path}.meta")).unwrap().temp_download_url.clone();
-    let mesh_meta = download_unity_yaml(&ctx.ctx.assets, &mesh_meta_url).await.unwrap();
-    if mesh_path.to_lowercase().ends_with(".asset") {
-        let asset = download_unity_yaml(&ctx.ctx.assets, &mesh_url).await.unwrap();
+    let mesh_guid = mesh_filter.mesh.guid.as_ref().unwrap().clone();
+    let mesh_url = ctx.guid_lookup.get(&mesh_guid).unwrap().clone();
+    let mesh_meta_url = ctx.ctx.get_downloadable_url(&mesh_url.add_extension("meta")).unwrap();
+    let mesh_meta = download_unity_yaml(&ctx.ctx.assets(), &mesh_meta_url).await.unwrap();
+    if mesh_url.extension_is("asset") {
+        let asset = download_unity_yaml(&ctx.ctx.assets(), &mesh_url).await.unwrap();
         let mut mesh = unity_parser::asset::Asset::from_yaml(asset[0].clone()).mesh;
         let mat_ref = mesh_renderer.materials[0].clone();
-        let mat = ctx.materials_lookup.lock().await.get_by_guid(ctx.ctx, ctx.config, ctx.guid_lookup, &mat_ref).await.unwrap();
+        let mat = ctx.materials_lookup.lock().await.get_by_guid(ctx.config, ctx.guid_lookup, &mat_ref).await.unwrap();
         mesh.transform(Mat4::from_cols(-Vec4::X, Vec4::Z, -Vec4::Y, Vec4::W));
         let mut model_crate = model_crate.lock();
         Ok(vec![PbrRenderPrimitiveFromUrl {
-            mesh: dotdot_path(model_crate.meshes.insert(mesh_path, mesh).path).into(),
+            mesh: dotdot_path(model_crate.meshes.insert(mesh_guid.clone(), mesh).path).into(),
             material: Some(dotdot_path(model_crate.materials.insert(mat_ref.to_string(), mat).path).into()),
             lod: lod_i,
         }])
@@ -494,7 +469,7 @@ async fn primitives_from_unity_mesh_renderer(
         let prims = tmp_model.model_world().get_ref(node, pbr_renderer_primitives_from_url()).unwrap();
         let mut res = Vec::new();
         for (prim, mat_ref) in prims.iter().zip(mesh_renderer.materials.iter()) {
-            let mat = ctx.materials_lookup.lock().await.get_by_guid(ctx.ctx, ctx.config, ctx.guid_lookup, mat_ref).await.unwrap();
+            let mat = ctx.materials_lookup.lock().await.get_by_guid(ctx.config, ctx.guid_lookup, mat_ref).await.unwrap();
             let mut mesh = tmp_model.meshes.get_by_path(prim.mesh.path()).unwrap().clone();
             let node_world = get_world_transform(tmp_model.model_world(), node).unwrap();
             let node_mesh_transform = tmp_model.model_world().get(node, mesh_to_local()).unwrap_or_default();
@@ -509,7 +484,7 @@ async fn primitives_from_unity_mesh_renderer(
             mesh.invert_indicies();
             let mut model_crate = model_crate.lock();
             res.push(PbrRenderPrimitiveFromUrl {
-                mesh: dotdot_path(model_crate.meshes.insert(format!("{}_{}", mesh_path, prim.mesh.path()), mesh).path).into(),
+                mesh: dotdot_path(model_crate.meshes.insert(format!("{}_{}", mesh_guid, prim.mesh.path()), mesh).path).into(),
                 material: Some(dotdot_path(model_crate.materials.insert(mat_ref.to_string(), mat).path).into()),
                 lod: lod_i,
             });

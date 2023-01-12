@@ -13,12 +13,12 @@ use super::{
 
 // pub mod quixel;
 pub mod regular;
-// pub mod unity;
+pub mod unity;
 
 pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset> {
     let mut assets = match &config.importer {
         ModelImporter::Regular => regular::pipeline(ctx, config.clone()).await,
-        // ModelImporter::UnityModels { use_prefabs } => unity::pipeline(ctx, *use_prefabs, config.clone()).await,
+        ModelImporter::UnityModels { use_prefabs } => unity::pipeline(ctx, *use_prefabs, config.clone()).await,
         // ModelImporter::Quixel => quixel::pipeline(ctx, config.clone()).await,
         _ => todo!(),
     };
@@ -27,7 +27,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
             asset.hidden = true;
         }
         assets.push(OutAsset {
-            id: format!("{}_col", ctx.root.to_string()),
+            id: format!("{}_col", ctx.in_root().to_string()),
             type_: AssetType::Object,
             hidden: false,
             name: ctx.process_ctx.package_name.to_string(),
@@ -74,7 +74,7 @@ impl ModelsPipeline {
             transform.apply(model_crate);
         }
         for mat in &self.material_overrides {
-            let material = mat.material.to_mat(ctx, model_crate, ctx.root.clone()).await?;
+            let material = mat.material.to_mat(ctx, model_crate, ctx.in_root()).await?;
             model_crate.override_material(&mat.filter, material);
         }
         if let Some(max_size) = self.cap_texture_sizes {
@@ -134,12 +134,7 @@ fn create_texture_resolver(ctx: &PipelineCtx) -> TextureResolver {
             if let Some(file) =
                 ctx.process_ctx.files.iter().find_map(|file| if file.path().as_str().contains(&filename) { Some(file) } else { None })
             {
-                Some(
-                    download_image(&ctx.process_ctx.assets, &file, &path.extension().map(|x| x.to_str().unwrap().to_string()))
-                        .await
-                        .unwrap()
-                        .into_rgba8(),
-                )
+                Some(download_image(&ctx.process_ctx.assets, &file).await.unwrap().into_rgba8())
             } else {
                 None
             }

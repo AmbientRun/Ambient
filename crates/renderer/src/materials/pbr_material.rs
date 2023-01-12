@@ -270,6 +270,25 @@ impl PbrMaterialFromUrl {
             roughness: self.roughness.clone(),
         })
     }
+    pub fn relative_path_from(&self, base_url: &AbsAssetUrl) -> Self {
+        Self {
+            name: self.name.clone(),
+            source: self.source.clone(),
+
+            base_color: if let Some(x) = &self.base_color { Some(base_url.relative_path(x.path()).into()) } else { None },
+            opacity: if let Some(x) = &self.opacity { Some(base_url.relative_path(x.path()).into()) } else { None },
+            normalmap: if let Some(x) = &self.normalmap { Some(base_url.relative_path(x.path()).into()) } else { None },
+            metallic_roughness: if let Some(x) = &self.metallic_roughness { Some(base_url.relative_path(x.path()).into()) } else { None },
+
+            base_color_factor: self.base_color_factor.clone(),
+            emissive_factor: self.emissive_factor.clone(),
+            transparent: self.transparent.clone(),
+            alpha_cutoff: self.alpha_cutoff.clone(),
+            double_sided: self.double_sided.clone(),
+            metallic: self.metallic.clone(),
+            roughness: self.roughness.clone(),
+        }
+    }
 }
 
 #[async_trait]

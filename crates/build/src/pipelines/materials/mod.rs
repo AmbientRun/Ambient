@@ -34,11 +34,11 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
                 let name = mat.name.as_ref().or(mat.source.as_ref()).unwrap().to_string();
 
                 let mut model_crate = ModelCrate::new();
-                let material = mat.to_mat(&ctx, &mut model_crate, ctx.root.clone()).await?;
+                let material = mat.to_mat(&ctx, &mut model_crate, ctx.in_root().clone()).await?;
                 model_crate.materials.insert(ModelCrate::MAIN, material);
                 let model_url = ctx.write_model_crate(&model_crate, &RelativePath::new("material")).await;
                 Ok(vec![OutAsset {
-                    id: ctx.root.to_string(),
+                    id: ctx.in_root().to_string(),
                     type_: AssetType::Material,
                     hidden: false,
                     name,
@@ -98,7 +98,7 @@ impl PipelinePbrMaterial {
         ) -> anyhow::Result<Option<AssetUrl>> {
             if let Some(source_url) = source_url {
                 let url = source_url.resolve(self_url).unwrap();
-                let mut image = download_image(&ctx.process_ctx.assets, &url, &url.extension()).await.unwrap().into_rgba8();
+                let mut image = download_image(&ctx.process_ctx.assets, &url).await.unwrap().into_rgba8();
                 process(&mut image);
                 model_crate.images.insert(name.to_string(), image);
                 Ok(Some(AssetUrl::Relative(format!("../images/{name}").into())))
