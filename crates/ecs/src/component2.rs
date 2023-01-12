@@ -142,7 +142,7 @@ struct ComponentHolder<T: 'static> {
     object: T,
 }
 
-impl Drop for DynComponent {
+impl Drop for ComponentEntry {
     fn drop(&mut self) {
         unsafe {
             // Drop is only called once.
@@ -158,11 +158,11 @@ impl Drop for DynComponent {
 type ErasedHolder = ManuallyDrop<Box<ComponentHolder<()>>>;
 
 /// Represents a type erased component and value
-pub struct DynComponent {
+pub struct ComponentEntry {
     inner: ErasedHolder,
 }
 
-impl DynComponent {
+impl ComponentEntry {
     /// Creates a type erased component
     pub fn new<T: ComponentValue>(component: Component<T>, value: T) -> Self {
         let inner = ComponentHolder::construct(component.vtable, component.index, value);
@@ -222,7 +222,7 @@ impl DynComponent {
     }
 }
 
-impl Clone for DynComponent {
+impl Clone for ComponentEntry {
     fn clone(&self) -> Self {
         let inner = (self.inner.vtable.impl_clone)(&self.inner);
         Self { inner }
@@ -263,8 +263,6 @@ impl ComponentHolder<()> {
     }
 }
 
-impl<T> ComponentHolder<T> {}
-
 #[cfg(test)]
 mod test {
     use std::{ptr, sync::Arc};
@@ -276,7 +274,7 @@ mod test {
         static ATTRS: &[Attribute] = &[
             Attribute::new("is_networked", &()),
             Attribute::new("is_stored", &()),
-            Attribute::new("display", &|v: &DynComponent| format!("value: {}", v.downcast_ref::<String>())),
+            Attribute::new("display", &|v: &ComponentEntry| format!("value: {}", v.downcast_ref::<String>())),
         ];
 
         // let vtable: &'static ComponentVTable = &ComponentVTable {
@@ -288,7 +286,7 @@ mod test {
 
         let component: Component<String> = Component::new(1, VTABLE);
 
-        let value = DynComponent::new(component, "Hello, World".into());
+        let value = ComponentEntry::new(component, "Hello, World".into());
 
         let value2 = value.clone();
 
@@ -311,8 +309,8 @@ mod test {
 
         let component = Component::new(1, VTABLE);
         {
-            let value = DynComponent::new(component, shared.clone());
-            let value2 = DynComponent::new(component, shared.clone());
+            let value = ComponentEntry::new(component, shared.clone());
+            let value2 = ComponentEntry::new(component, shared.clone());
 
             assert_eq!(Arc::strong_count(&shared), 3);
             drop(value);
@@ -335,8 +333,8 @@ mod test {
 
         let component = Component::new(1, VTABLE);
         {
-            let value = DynComponent::new(component, shared.clone());
-            let value2 = DynComponent::new(component, shared.clone());
+            let value = ComponentEntry::new(component, shared.clone());
+            let value2 = ComponentEntry::new(component, shared.clone());
 
             assert_eq!(Arc::strong_count(&shared), 3);
             drop(value);
