@@ -1,4 +1,4 @@
-use crate::shared::QueryStateMap;
+use crate::shared::host_guest_state::QueryStateMap;
 use anyhow::Context;
 use elements_core::transform::translation;
 use elements_ecs::{

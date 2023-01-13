@@ -5,26 +5,28 @@ use elements_network::server::{ForkingEvent, ShutdownEvent};
 use elements_scripting_host::{
     server::bindings::{Bindings, WasmServerContext},
     shared::{
-        host_state::{spawn_script_module, HostState, MessageType},
-        interface::get_scripting_interfaces,
-        rustc::InstallDirs,
+        host_guest_state::BaseHostGuestState,
+        spawn_script, MessageType,
+        interface::{get_scripting_interfaces, SCRIPTING_INTERFACE_NAME},
         util::get_module_name,
-        BaseHostGuestState, File, ScriptModuleState,
+        File, ScriptModuleState,
     },
+    wasmtime,
 };
+use parking_lot::Mutex;
+use wasmtime_wasi::WasiCtx;
 
 use crate::server::project_path;
-
-pub type HostServerState = HostState<Bindings, WasmServerContext, BaseHostGuestState>;
 
 pub type ScriptModuleServerState =
     ScriptModuleState<Bindings, WasmServerContext, BaseHostGuestState>;
 
 components!("scripting::server", {
-    // resource
-    host_state: Arc<HostServerState>,
     // component
     script_module_state: ScriptModuleServerState,
+    // resource
+    make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<Mutex<BaseHostGuestState>>) -> WasmServerContext + Send + Sync>,
+    add_to_linker: Arc<dyn Fn(&mut wasmtime::Linker<WasmServerContext>) -> anyhow::Result<()> + Send + Sync>,
 });
 
 pub fn init_all_components() {
@@ -33,15 +35,24 @@ pub fn init_all_components() {
 }
 
 pub fn systems() -> SystemGroup {
-    elements_scripting_host::server::systems(host_state(), false)
+    elements_scripting_host::server::systems(
+        script_module_state(),
+        make_wasm_context(),
+        add_to_linker(),
+        false,
+    )
 }
 
 pub fn on_forking_systems() -> SystemGroup<ForkingEvent> {
-    elements_scripting_host::server::on_forking_systems(host_state())
+    elements_scripting_host::server::on_forking_systems(
+        script_module_state(),
+        make_wasm_context(),
+        add_to_linker(),
+    )
 }
 
 pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
-    elements_scripting_host::server::on_shutdown_systems(host_state())
+    elements_scripting_host::server::on_shutdown_systems(script_module_state())
 }
 
 pub async fn initialize(world: &mut World) -> anyhow::Result<()> {
@@ -66,31 +77,26 @@ pub async fn initialize(world: &mut World) -> anyhow::Result<()> {
     );
 
     let project_path = world.resource(project_path()).clone();
-    let new_host_state = HostServerState {
+    elements_scripting_host::server::initialize(
+        world,
         messenger,
-        scripting_interfaces: get_scripting_interfaces(),
-
-        rust_path: rust_path.clone(),
-        install_dirs: InstallDirs {
-            rustup_path: rust_path.join("rustup"),
-            cargo_path: rust_path.join("cargo"),
-        },
-        scripting_interface_root_path: project_path.join("interfaces"),
-        templates_path: rust_path.join("templates"),
-        workspace_path: project_path.clone(),
-        scripts_path: project_path.join("scripts"),
-
-        state_component: script_module_state(),
-        make_wasm_context: Arc::new(|ctx, state| WasmServerContext::new(ctx, state)),
-        add_to_linker: Arc::new(|linker| WasmServerContext::link(linker, |c| c)),
-
-        _bindings: Default::default(),
-    };
-    new_host_state
-        .initialize(world, "elements_scripting_interface")
-        .await?;
-    world.add_resource(host_state(), Arc::new(new_host_state));
-    elements_scripting_host::server::initialize(world, host_state())?;
+        get_scripting_interfaces(),
+        SCRIPTING_INTERFACE_NAME,
+        rust_path.clone(),
+        project_path.join("interfaces"),
+        rust_path.join("templates"),
+        project_path.clone(),
+        project_path.join("scripts"),
+        (
+            make_wasm_context(),
+            Arc::new(|ctx, state| WasmServerContext::new(ctx, state)),
+        ),
+        (
+            add_to_linker(),
+            Arc::new(|linker| WasmServerContext::link(linker, |c| c)),
+        ),
+    )
+    .await?;
 
     let scripts_path = project_path.join("scripts");
     if scripts_path.exists() {
@@ -115,7 +121,7 @@ pub async fn initialize(world: &mut World) -> anyhow::Result<()> {
                     })
                     .collect::<anyhow::Result<_>>()?;
 
-                spawn_script_module(
+                spawn_script(
                     world,
                     name.as_ref(),
                     String::new(),

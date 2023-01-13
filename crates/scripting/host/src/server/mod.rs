@@ -18,18 +18,24 @@ use elements_network::{
 use elements_physics::{collider_loads, collisions, PxShapeUserData};
 use itertools::Itertools;
 
+use parking_lot::Mutex;
 use physxx::{PxRigidActor, PxRigidActorRef, PxUserData};
+use wasi_common::WasiCtx;
 
 use crate::shared::{
-    host_state::{compile_module, HostState, MessageType},
+    compile,
+    host_guest_state::GetBaseHostGuestState,
+    install_dirs,
     interface::Host,
-    rustc, script_module, script_module_bytecode, script_module_compiled, script_module_errors,
-    scripting_interface_name,
+    messenger, reload, reload_all, run_all, rustc, script_module, script_module_bytecode,
+    script_module_compiled, script_module_errors, scripting_interface_name, scripts_path, unload,
+    update_errors,
     util::{
         all_module_names_sanitized, get_module_name, remove_old_script_modules,
         write_workspace_files,
     },
-    GetBaseHostGuestState, ScriptContext, ScriptModuleBytecode, ScriptModuleErrors, WasmContext,
+    workspace_path, MessageType, ScriptContext, ScriptModuleBytecode, ScriptModuleErrors,
+    ScriptModuleState, WasmContext,
 };
 
 pub mod bindings;
@@ -45,13 +51,18 @@ components!("scripting::server", {
     docs_path: PathBuf,
 });
 
-/// The [host_state_component] resource *must* be initialized before this is called
 pub fn systems<
     Bindings: Send + Sync + Host + 'static,
     Context: WasmContext<Bindings> + Send + Sync + 'static,
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
-    host_state_component: Component<Arc<HostState<Bindings, Context, HostGuestState>>>,
+    state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
+    make_wasm_context_component: Component<
+        Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>,
+    >,
+    add_to_linker_component: Component<
+        Arc<dyn Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
+    >,
     update_workspace_toml: bool,
 ) -> SystemGroup {
     // Update the scripts whenever the external components change.
@@ -62,7 +73,8 @@ pub fn systems<
             update_tx.send(()).unwrap();
         }));
 
-    let host_state = move |world: &World| world.resource(host_state_component).clone();
+    let make_wasm_context = move |w: &World| w.resource(make_wasm_context_component).clone();
+    let add_to_linker = move |w: &World| w.resource(add_to_linker_component).clone();
 
     SystemGroup::new(
         "elements/scripting/server",
@@ -97,37 +109,44 @@ pub fn systems<
                             .unwrap();
                     }
                 }),
-            query(script_module().changed()).to_system(move |q, world, qs, _| {
-                profiling::scope!("script module changed");
-                // Script module (files/enabled) changed, issue compilation tasks.
-                // If the last edit was a parameter, defer the compilation so that users can
-                // edit parameters without forcing a compilation task to be issued on each keystroke.
-                let mut tasks = vec![];
-                let mut to_disable = vec![];
-                let now = Instant::now();
-                for (id, sm) in q.iter(world, qs) {
-                    match (sm.enabled, sm.last_updated_by_parameters()) {
-                        (true, true) => tasks.push((
-                            id,
-                            now + Duration::from_secs(PARAMETER_CHANGE_DEBOUNCE_SECONDS),
-                        )),
-                        (true, false) => tasks.push((id, now)),
-                        (false, _) => {
-                            to_disable.push(id);
+            query(script_module().changed()).to_system({
+                let make_wasm_context = make_wasm_context.clone();
+                let add_to_linker = add_to_linker.clone();
+                move |q, world, qs, _| {
+                    profiling::scope!("script module changed");
+                    // Script module (files/enabled) changed, issue compilation tasks.
+                    // If the last edit was a parameter, defer the compilation so that users can
+                    // edit parameters without forcing a compilation task to be issued on each keystroke.
+                    let mut tasks = vec![];
+                    let mut to_disable = vec![];
+                    let now = Instant::now();
+                    for (id, sm) in q.iter(world, qs) {
+                        match (sm.enabled, sm.last_updated_by_parameters()) {
+                            (true, true) => tasks.push((
+                                id,
+                                now + Duration::from_secs(PARAMETER_CHANGE_DEBOUNCE_SECONDS),
+                            )),
+                            (true, false) => tasks.push((id, now)),
+                            (false, _) => {
+                                to_disable.push(id);
+                            }
                         }
                     }
-                }
 
-                world
-                    .resource_mut(deferred_compilation_tasks())
-                    .extend(tasks);
-
-                let host_state = host_state(world);
-                for id in to_disable {
-                    host_state.reload(world, &[(id, None)]);
                     world
-                        .remove_component(id, host_state.state_component)
-                        .unwrap();
+                        .resource_mut(deferred_compilation_tasks())
+                        .extend(tasks);
+
+                    for id in to_disable {
+                        reload(
+                            world,
+                            state_component,
+                            make_wasm_context(world),
+                            add_to_linker(world),
+                            &[(id, None)],
+                        );
+                        world.remove_component(id, state_component).unwrap();
+                    }
                 }
             }),
             Box::new(FnSystem::new(move |world, _| {
@@ -146,19 +165,17 @@ pub fn systems<
                     ready_ids
                 };
 
-                let host_state = host_state(world);
+                let workspace_path = world.resource(workspace_path()).clone();
+                let scripts_path = world.resource(scripts_path()).clone();
 
                 if !ready_ids.is_empty() {
                     // Write all workspace-related state to disk.
                     let members = all_module_names_sanitized(world, false);
-                    write_workspace_files(
-                        &host_state.workspace_path,
-                        &members,
-                        update_workspace_toml,
-                    );
-                    remove_old_script_modules(&host_state.scripts_path, &members);
+                    write_workspace_files(&workspace_path, &members, update_workspace_toml);
+                    remove_old_script_modules(&scripts_path, &members);
                 }
 
+                let install_dirs = world.resource(install_dirs()).clone();
                 let tasks = ready_ids
                     .into_iter()
                     .filter_map(|id| {
@@ -166,11 +183,11 @@ pub fn systems<
 
                         Some((
                             id,
-                            Arc::new(compile_module(
+                            Arc::new(compile(
                                 script_module,
-                                host_state.install_dirs.clone(),
-                                host_state.workspace_path.clone(),
-                                host_state.scripts_path.clone(),
+                                install_dirs.clone(),
+                                workspace_path.clone(),
+                                scripts_path.clone(),
                                 get_module_name(world, id),
                             )?),
                         ))
@@ -187,20 +204,27 @@ pub fn systems<
                         .collect_vec();
 
                     // Script module bytecode changed, recreate the WASM state
-                    let host_state = host_state(world);
-                    host_state.reload(world, &scripts);
+                    reload(
+                        world,
+                        state_component,
+                        make_wasm_context(world),
+                        add_to_linker(world),
+                        &scripts,
+                    );
+
+                    let messenger = world.resource(messenger()).clone();
                     for (id, _) in &scripts {
-                        (host_state.messenger)(world, *id, MessageType::Info, "Updated");
+                        (messenger)(world, *id, MessageType::Info, "Updated");
                     }
                 },
             ),
             query(player()).spawned().to_system(move |q, world, qs, _| {
                 profiling::scope!("script module player join event");
                 // trigger player join event
-                let host_state = host_state(world);
                 for (id, _) in q.collect_cloned(world, qs) {
-                    host_state.run_all(
+                    run_all(
                         world,
+                        state_component,
                         &ScriptContext::new(
                             world,
                             "core/player_join",
@@ -214,10 +238,10 @@ pub fn systems<
                 .to_system(move |q, world, qs, _| {
                     profiling::scope!("script module player leave event");
                     // trigger player leave event
-                    let host_state = host_state(world);
                     for (id, _) in q.collect_cloned(world, qs) {
-                        host_state.run_all(
+                        run_all(
                             world,
+                            state_component,
                             &ScriptContext::new(
                                 world,
                                 "core/player_leave",
@@ -229,9 +253,9 @@ pub fn systems<
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("script module frame event");
                 // trigger frame event
-                let host_state = host_state(world);
-                host_state.run_all(
+                run_all(
                     world,
+                    state_component,
                     &ScriptContext::new(world, "core/frame", EntityData::new()),
                 );
             })),
@@ -242,7 +266,6 @@ pub fn systems<
                     Some(collisions) => collisions.lock().clone(),
                     None => return,
                 };
-                let host_state = host_state(world);
                 for (a, b) in collisions.into_iter() {
                     let select_entity = |px: PxRigidActorRef| {
                         px.get_shapes()
@@ -255,8 +278,9 @@ pub fn systems<
                         .into_iter()
                         .flatten()
                         .collect_vec();
-                    host_state.run_all(
+                    run_all(
                         world,
+                        state_component,
                         &ScriptContext::new(
                             world,
                             "core/collision",
@@ -272,10 +296,10 @@ pub fn systems<
                     Some(collider_loads) => collider_loads.clone(),
                     None => return,
                 };
-                let host_state = host_state(world);
                 for id in collider_loads {
-                    host_state.run_all(
+                    run_all(
                         world,
+                        state_component,
                         &ScriptContext::new(
                             world,
                             "core/collider_load",
@@ -285,10 +309,10 @@ pub fn systems<
                 }
             })),
             query(uid()).spawned().to_system(move |q, world, qs, _| {
-                let host_state = host_state(world);
                 for (id, uid) in q.collect_cloned(world, qs) {
-                    host_state.run_all(
+                    run_all(
                         world,
+                        state_component,
                         &ScriptContext::new(
                             world,
                             "core/entity_spawn",
@@ -350,7 +374,7 @@ pub fn systems<
                         )
                         .unwrap();
                 }
-                host_state(world).update_errors(world, &errors, false);
+                update_errors(world, state_component, &errors, false);
             })),
             Box::new(FnSystem::new(move |world, _| {
                 if update_rx.drain().count() == 0 {
@@ -371,16 +395,22 @@ pub fn on_forking_systems<
     Context: WasmContext<Bindings> + Send + Sync + 'static,
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
-    host_state_component: Component<Arc<HostState<Bindings, Context, HostGuestState>>>,
+    state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
+    make_wasm_context_component: Component<
+        Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>,
+    >,
+    add_to_linker_component: Component<
+        Arc<dyn Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
+    >,
 ) -> SystemGroup<ForkingEvent> {
     SystemGroup::new(
         "core/scripting/server/on_forking_systems",
         vec![Box::new(FnSystem::new(move |world, _| {
+            let make_wasm_context = world.resource(make_wasm_context_component).clone();
+            let add_to_linker = world.resource(add_to_linker_component).clone();
+
             // Reset the states of all the scripts when we fork.
-            world
-                .resource(host_state_component)
-                .clone()
-                .reload_all(world);
+            reload_all(world, state_component, make_wasm_context, add_to_linker);
         }))],
     )
 }
@@ -390,36 +420,70 @@ pub fn on_shutdown_systems<
     Context: WasmContext<Bindings> + Send + Sync + 'static,
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
-    host_state_component: Component<Arc<HostState<Bindings, Context, HostGuestState>>>,
+    state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
 ) -> SystemGroup<ShutdownEvent> {
     SystemGroup::new(
         "core/scripting/server/on_shutdown_systems",
         vec![Box::new(FnSystem::new(move |world, _| {
             let scripts = query(()).incl(script_module()).collect_ids(world, None);
             let players = query(player()).collect_ids(world, None);
-            let host_state = world.resource(host_state_component).clone();
             for script_id in scripts {
-                let errors = host_state.unload(world, script_id, &players, "shutting down");
-                host_state.update_errors(world, &errors, true);
+                let errors = unload(world, state_component, script_id, &players, "shutting down");
+                update_errors(world, state_component, &errors, true);
             }
         }))],
     )
 }
 
-pub fn initialize<
+#[allow(clippy::too_many_arguments)]
+pub async fn initialize<
     Bindings: Send + Sync + Host + 'static,
     Context: WasmContext<Bindings> + Send + Sync + 'static,
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
     world: &mut World,
-    host_state_component: Component<Arc<HostState<Bindings, Context, HostGuestState>>>,
+
+    messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
+    scripting_interfaces: HashMap<String, Vec<(PathBuf, String)>>,
+
+    primary_scripting_interface_name: &str,
+
+    // Where Rust should be installed
+    rust_path: PathBuf,
+    // Where the scripting interfaces should be installed, not the path to the scripting interface itself
+    //
+    // e.g. world/, not world/scripting_interface
+    scripting_interface_root_path: PathBuf,
+    // Where the scripting templates should be stored
+    templates_path: PathBuf,
+    // Where the root Cargo.toml for your scripts are
+    workspace_path: PathBuf,
+    // Where the scripts are located
+    scripts_path: PathBuf,
+
+    (make_wasm_context_component, make_wasm_context): (
+        Component<Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>>,
+        Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>,
+    ),
+    (add_to_linker_component, add_to_linker): (
+        Component<Arc<dyn Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()> + Send + Sync>>,
+        Arc<dyn Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
+    ),
 ) -> anyhow::Result<()> {
-    let install_dirs = world.resource(host_state_component).install_dirs.clone();
-    let scripting_interface_root_path = world
-        .resource(host_state_component)
-        .scripting_interface_root_path
-        .clone();
-    let primary_scripting_interface_name = world.resource(scripting_interface_name()).clone();
+    super::shared::initialize(
+        world,
+        messenger,
+        scripting_interfaces,
+        primary_scripting_interface_name.clone(),
+        rust_path,
+        scripting_interface_root_path.clone(),
+        templates_path,
+        workspace_path,
+        scripts_path,
+    )
+    .await?;
+
+    let install_dirs = world.resource(super::shared::install_dirs()).clone();
 
     world.add_resource(deferred_compilation_tasks(), HashMap::new());
     world.add_resource(compilation_tasks(), HashMap::new());
@@ -431,6 +495,8 @@ pub fn initialize<
         )
         .context("failed to document scripting interface")?,
     );
+    world.add_resource(make_wasm_context_component, make_wasm_context);
+    world.add_resource(add_to_linker_component, add_to_linker);
 
     Ok(())
 }

@@ -1,29 +1,3 @@
-use std::{
-    collections::{HashMap, HashSet},
-    fmt::{Display, Write},
-    marker::PhantomData,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
-
-use anyhow::Context;
-use async_trait::async_trait;
-use elements_ecs::{
-    components, with_component_registry, EntityData, EntityId, EntityUid, PrimitiveComponent,
-    Query, QueryState, World, COMPONENT_ENTITY_ID_MIGRATERS,
-};
-use elements_std::asset_url::ObjectRef;
-use glam::Vec3;
-use indexmap::IndexMap;
-use indoc::indoc;
-use parking_lot::Mutex;
-use serde::{Deserialize, Serialize};
-use wasi_common::{
-    file::{FdFlags, FileType},
-    WasiCtx,
-};
-use wasmtime_wasi::WasiFile;
-
 pub mod dependencies;
 pub mod implementation;
 pub mod util;
@@ -31,15 +5,34 @@ pub mod util;
 pub mod bindings;
 pub mod conversion;
 pub mod guest_conversion;
+pub mod host_guest_state;
 pub mod interface;
 
-pub mod host_state;
 pub mod rustc;
 
-use self::{
-    guest_conversion::GuestConvert,
-    interface::guest::{Guest, GuestData, RunContext},
+mod script_module;
+pub use script_module::*;
+
+use std::{
+    collections::{HashMap, HashSet},
+    path::{Path, PathBuf},
+    sync::Arc,
 };
+
+use anyhow::Context;
+use elements_ecs::{
+    components, query, uid, uid_lookup, Component, ComponentUnit as CU, EntityData, EntityId,
+    World, COMPONENT_ENTITY_ID_MIGRATERS,
+};
+use elements_network::player::player;
+use itertools::Itertools;
+use parking_lot::Mutex;
+use wasi_common::WasiCtx;
+
+use host_guest_state::GetBaseHostGuestState;
+use interface::write_scripting_interfaces;
+use rustc::InstallDirs;
+use util::{get_module_name, sanitize, write_files_to_directory};
 
 components!("scripting::shared", {
     script_module: ScriptModule,
@@ -49,94 +42,38 @@ components!("scripting::shared", {
 
     // resources
     scripting_interface_name: String,
+
+    /// used to signal messages from the scripting host/runtime
+    messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
+    /// all available scripting interfaces
+    scripting_interfaces: HashMap<String, Vec<(PathBuf, String)>>,
+
+    /// Where Rust should be installed
+    rust_path: PathBuf,
+    /// Where the Rust applications are installed. Should be underneath [rust_path].
+    install_dirs: InstallDirs,
+    /// Where the scripting interfaces should be installed, not the path to the scripting interface itself
+    ///
+    /// e.g. world/, not world/scripting_interface
+    scripting_interface_root_path: PathBuf,
+    /// Where the scripting templates should be stored
+    templates_path: PathBuf,
+    /// Where the root Cargo.toml for your scripts are
+    workspace_path: PathBuf,
+    /// Where the scripts are located
+    scripts_path: PathBuf,
 });
 
-pub type QueryStateMap =
-    slotmap::SlotMap<slotmap::DefaultKey, (Query, QueryState, Vec<PrimitiveComponent>)>;
+pub const PARAMETER_CHANGE_DEBOUNCE_SECONDS: u64 = 2;
+pub const MINIMUM_RUST_VERSION: (u32, u32, u32) = (1, 65, 0);
+pub const MAXIMUM_ERROR_COUNT: usize = 10;
 
-#[derive(Default, Clone)]
-pub struct EventSharedState {
-    pub subscribed_events: HashSet<String>,
-    pub events: Vec<(String, EntityData)>,
-}
-
-#[derive(Default, Clone)]
-pub struct BaseHostGuestState {
-    pub spawned_entities: HashSet<EntityUid>,
-    pub event: EventSharedState,
-    pub query_states: QueryStateMap,
-}
-
-pub trait GetBaseHostGuestState {
-    fn base_mut(&mut self) -> &mut BaseHostGuestState;
-}
-impl GetBaseHostGuestState for BaseHostGuestState {
-    fn base_mut(&mut self) -> &mut BaseHostGuestState {
-        self
-    }
-}
-
-#[derive(Clone)]
-pub struct ScriptModuleBytecode(pub Vec<u8>);
-impl std::fmt::Debug for ScriptModuleBytecode {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("ScriptModuleBytecode")
-            .field(&base64::encode(&self.0))
-            .finish()
-    }
-}
-impl std::fmt::Display for ScriptModuleBytecode {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "ScriptModuleBytecode({} bytes)", self.0.len())
-    }
-}
-impl Serialize for ScriptModuleBytecode {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_str(&base64::encode(&self.0))
-    }
-}
-impl<'de> Deserialize<'de> for ScriptModuleBytecode {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        use serde::de::{self, Visitor};
-
-        struct ScriptModuleBytecodeVisitor;
-        impl<'de> Visitor<'de> for ScriptModuleBytecodeVisitor {
-            type Value = ScriptModuleBytecode;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("a base64-encoded string of bytes")
-            }
-
-            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                base64::decode(v)
-                    .map_err(|err| {
-                        E::custom(format!("failed to decode base64-encoded string: {err}"))
-                    })
-                    .map(ScriptModuleBytecode)
-            }
-        }
-
-        deserializer.deserialize_str(ScriptModuleBytecodeVisitor)
-    }
-}
-
-pub fn register_entity_id_migraters() {
-    COMPONENT_ENTITY_ID_MIGRATERS
-        .lock()
-        .push(|world, entity, old_to_new_ids| {
-            if let Ok(script) = world.get_mut(entity, script_module()) {
-                script.migrate_ids(old_to_new_ids);
-            }
-        })
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum MessageType {
+    Info,
+    Error,
+    Stdout,
+    Stderr,
 }
 
 #[derive(Debug, Clone)]
@@ -160,574 +97,554 @@ impl ScriptContext {
     }
 }
 
-pub struct ScriptModuleState<
-    Bindings: Send + Sync + 'static,
-    Context: WasmContext<Bindings>,
-    HostGuestState: Default,
-> {
-    _engine: wasmtime::Engine,
-    store: Arc<Mutex<wasmtime::Store<Context>>>,
-    world_ref: Arc<Mutex<WorldRef>>,
+#[allow(clippy::too_many_arguments)]
+pub async fn initialize(
+    world: &mut World,
 
-    guest_exports: Arc<Guest<Context>>,
-    _guest_instance: wasmtime::Instance,
+    messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
+    scripting_interfaces: HashMap<String, Vec<(PathBuf, String)>>,
 
-    _bindings: PhantomData<Bindings>,
-    pub shared_state: Arc<Mutex<HostGuestState>>,
-}
-impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>, HostGuestState: Default> Clone
-    for ScriptModuleState<Bindings, Context, HostGuestState>
-{
-    fn clone(&self) -> Self {
-        Self {
-            _engine: self._engine.clone(),
-            store: self.store.clone(),
-            world_ref: self.world_ref.clone(),
-            guest_exports: self.guest_exports.clone(),
-            _guest_instance: self._guest_instance.clone(),
-            _bindings: self._bindings.clone(),
-            shared_state: self.shared_state.clone(),
+    primary_scripting_interface_name: &str,
+
+    // Where Rust should be installed
+    rust_path: PathBuf,
+    // Where the scripting interfaces should be installed, not the path to the scripting interface itself
+    //
+    // e.g. world/, not world/scripting_interface
+    scripting_interface_root_path: PathBuf,
+    // Where the scripting templates should be stored
+    templates_path: PathBuf,
+    // Where the root Cargo.toml for your scripts are
+    workspace_path: PathBuf,
+    // Where the scripts are located
+    scripts_path: PathBuf,
+) -> anyhow::Result<()> {
+    assert!(scripting_interfaces.contains_key(primary_scripting_interface_name));
+    assert!([
+        &rust_path,
+        &scripting_interface_root_path,
+        &templates_path,
+        &workspace_path
+    ]
+    .iter()
+    .all(|p| p.is_absolute()));
+
+    let install_dirs = InstallDirs {
+        rustup_path: rust_path.join("rustup"),
+        cargo_path: rust_path.join("cargo"),
+    };
+
+    if !rust_path.exists() {
+        let rustup_init_path = Path::new("./rustup-init");
+        let err = rustc::download_and_install(&install_dirs, rustup_init_path)
+            .await
+            .err();
+        if let Some(err) = err {
+            std::fs::remove_dir_all(&rust_path)?;
+            std::fs::remove_file(rustup_init_path)?;
+            return Err(err);
         }
     }
+
+    // Update Rust if we're below our minimum supported Rust version.
+    if rustc::get_installed_version(&install_dirs).context("failed to get rustc version")?
+        < MINIMUM_RUST_VERSION
+    {
+        rustc::update_rust(&install_dirs).context("failed to update rust")?;
+    }
+
+    write_scripting_interfaces(&scripting_interfaces, &scripting_interface_root_path)?;
+    world.add_resource(
+        scripting_interface_name(),
+        primary_scripting_interface_name.to_owned(),
+    );
+
+    // To speed up compilation of new maps with this version, we precompile a dummy script using the
+    // scripting interface. Its resulting target folder will then be copied into this project's
+    // scripts folder when there is not already a target folder available.
+    if !templates_path.exists() {
+        log::info!("no precompiled template available, building");
+        build_template(
+            &install_dirs,
+            &templates_path,
+            &scripting_interfaces,
+            primary_scripting_interface_name,
+        )
+        .context("failed to build script template")?;
+        log::info!("finished building precompiled template");
+    }
+
+    let target_dir = workspace_path.join("target");
+    if !target_dir
+        .join("wasm32-wasi")
+        .join("release")
+        .join("dummy.wasm")
+        .exists()
+    {
+        log::info!("world does not have compiled scripts, copying precompiled template");
+        std::fs::create_dir_all(&target_dir)
+            .context("failed to create target directory for world")?;
+        fs_extra::dir::copy(
+            templates_path.join("scripts").join("target"),
+            &workspace_path,
+            &fs_extra::dir::CopyOptions {
+                overwrite: true,
+                ..Default::default()
+            },
+        )
+        .context("failed to copy scripts to target")?;
+    }
+
+    world.add_resource(self::messenger(), messenger);
+    world.add_resource(self::scripting_interfaces(), scripting_interfaces);
+    world.add_resource(self::rust_path(), rust_path);
+    world.add_resource(self::install_dirs(), install_dirs);
+    world.add_resource(
+        self::scripting_interface_root_path(),
+        scripting_interface_root_path,
+    );
+    world.add_resource(self::templates_path(), templates_path);
+    world.add_resource(self::workspace_path(), workspace_path);
+    world.add_resource(self::scripts_path(), scripts_path);
+
+    Ok(())
 }
 
-impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>, HostGuestState: Default>
-    std::fmt::Debug for ScriptModuleState<Bindings, Context, HostGuestState>
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ScriptModuleState").finish()
+pub fn reload_all<
+    Bindings: Send + Sync + 'static,
+    Context: WasmContext<Bindings> + Send + Sync + 'static,
+    HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
+>(
+    world: &mut World,
+    state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
+    make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>,
+    add_to_linker: Arc<dyn Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
+) {
+    let scripts = query((script_module(), script_module_bytecode()))
+        .iter(world, None)
+        .map(|(id, (sm, bc))| (id, sm.enabled.then(|| bc.clone())))
+        .collect_vec();
+
+    reload(
+        world,
+        state_component,
+        make_wasm_context,
+        add_to_linker,
+        &scripts,
+    );
+}
+
+pub fn run_all<
+    Bindings: Send + Sync + 'static,
+    Context: WasmContext<Bindings> + Send + Sync + 'static,
+    HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
+>(
+    world: &mut World,
+    state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
+    context: &ScriptContext,
+) {
+    let errors: Vec<(EntityId, String)> = query(state_component)
+        .collect_cloned(world, None)
+        .into_iter()
+        .flat_map(|(id, sms)| run(world, state_component, id, sms, context))
+        .collect();
+    update_errors(world, state_component, &errors, true);
+}
+
+pub fn reload<
+    Bindings: Send + Sync + 'static,
+    Context: WasmContext<Bindings> + Send + Sync + 'static,
+    HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
+>(
+    world: &mut World,
+    state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
+    make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>,
+    add_to_linker: Arc<dyn Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
+    scripts: &[(EntityId, Option<ScriptModuleBytecode>)],
+) {
+    let players = query(player()).collect_ids(world, None);
+    for (script_id, bytecode) in scripts {
+        let mut errors = unload(world, state_component, *script_id, &players, "reloading");
+
+        if let Some(bytecode) = bytecode {
+            if !bytecode.0.is_empty() {
+                load(
+                    world,
+                    state_component,
+                    *script_id,
+                    make_wasm_context.clone(),
+                    add_to_linker.clone(),
+                    &bytecode.0,
+                    &players,
+                    &mut errors,
+                );
+            }
+        }
+
+        update_errors(world, state_component, &errors, true);
     }
 }
-impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>, HostGuestState: Default>
-    ScriptModuleState<Bindings, Context, HostGuestState>
-{
-    pub fn new(
-        bytecode: &[u8],
-        stdout_output: Box<dyn Fn(&World, &str) + Sync + Send>,
-        stderr_output: Box<dyn Fn(&World, &str) + Sync + Send>,
-        make_wasm_context: impl Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context,
-        add_to_linker: impl Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()>,
-        interface_version: u32,
-    ) -> anyhow::Result<Self> {
-        let shared_state = Arc::new(Mutex::new(HostGuestState::default()));
 
-        let mut engine = wasmtime::Engine::default();
-        let world_ref = Arc::new(Mutex::new(WorldRef::new()));
-        let mut store = wasmtime::Store::new(
-            &engine,
-            make_wasm_context(
-                wasmtime_wasi::sync::WasiCtxBuilder::new()
-                    .stdout(Box::new(WasiOutputFile(stdout_output, world_ref.clone())))
-                    .stderr(Box::new(WasiOutputFile(stderr_output, world_ref.clone())))
-                    .build(),
-                shared_state.clone(),
+pub fn load<
+    Bindings: Send + Sync + 'static,
+    Context: WasmContext<Bindings> + Send + Sync + 'static,
+    HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
+>(
+    world: &mut World,
+    state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
+    script_id: EntityId,
+    make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>,
+    add_to_linker: Arc<dyn Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
+    bytecode: &[u8],
+    players: &[EntityId],
+    errors: &mut Vec<(EntityId, String)>,
+) {
+    let messenger = world.resource(messenger()).clone();
+    let result = run_and_catch_panics(|| {
+        ScriptModuleState::new(
+            bytecode,
+            Box::new({
+                let messenger = messenger.clone();
+                move |world, msg| {
+                    messenger(world, script_id, MessageType::Stdout, msg);
+                }
+            }),
+            Box::new(move |world, msg| {
+                messenger(world, script_id, MessageType::Stderr, msg);
+            }),
+            move |ctx, state| make_wasm_context(ctx, state),
+            move |linker| add_to_linker(linker),
+            crate::shared::interface::shared::INTERFACE_VERSION,
+        )
+    });
+
+    match result {
+        Ok(sms) => {
+            // Run the initial startup event.
+            errors.extend(run(
+                world,
+                state_component,
+                script_id,
+                sms.clone(),
+                &ScriptContext::new(world, "core/module_load", EntityData::new()),
+            ));
+
+            // Run the PlayerJoin event for all players to simulate the world being loaded
+            // in for the module.
+            errors.extend(players.iter().filter_map(|player_id| {
+                let script_context = ScriptContext::new(
+                    world,
+                    "core/player_join",
+                    vec![CU::new(elements_ecs::id(), *player_id)].into(),
+                );
+                run(
+                    world,
+                    state_component,
+                    script_id,
+                    sms.clone(),
+                    &script_context,
+                )
+            }));
+
+            world
+                .add_component(script_id, state_component, sms)
+                .unwrap();
+        }
+        Err(err) => errors.push((script_id, err)),
+    }
+}
+
+pub fn unload<
+    Bindings: Send + Sync + 'static,
+    Context: WasmContext<Bindings> + Send + Sync + 'static,
+    HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
+>(
+    world: &mut World,
+    state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
+    script_id: EntityId,
+    players: &[EntityId],
+    reason: &str,
+) -> Vec<(EntityId, String)> {
+    // TODO: replace with explicit ModuleUnload/ModuleLoad events
+    // Run PlayerLeave events for all players in the world for the module.
+    let errors = players
+        .iter()
+        .filter_map(|player_id| {
+            run(
+                world,
+                state_component,
+                script_id,
+                world.get_cloned(script_id, state_component).ok()?,
+                &ScriptContext::new(
+                    world,
+                    "core/player_leave",
+                    vec![CU::new(elements_ecs::id(), *player_id)].into(),
+                ),
+            )
+        })
+        .collect_vec();
+
+    let spawned_entities = world
+        .get_mut(script_id, state_component)
+        .map(|sms| std::mem::take(&mut sms.shared_state().lock().base_mut().spawned_entities))
+        .unwrap_or_default();
+
+    if let Ok(script_module_errors) = world.get_mut(script_id, script_module_errors()) {
+        script_module_errors.runtime.clear();
+    }
+
+    world.remove_component(script_id, state_component).unwrap();
+
+    for uid in spawned_entities {
+        if let Ok(id) = world.resource(uid_lookup()).get(&uid) {
+            world.despawn(id);
+        }
+    }
+
+    let messenger = world.resource(messenger()).clone();
+    messenger(
+        world,
+        script_id,
+        MessageType::Info,
+        &format!("Unloaded (reason: {reason})"),
+    );
+
+    errors
+}
+
+pub fn update_errors<
+    Bindings: Send + Sync + 'static,
+    Context: WasmContext<Bindings> + Send + Sync + 'static,
+    HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
+>(
+    world: &mut World,
+    state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
+    errors: &[(EntityId, String)],
+    runtime: bool,
+) {
+    let players = query(player()).collect_ids(world, None);
+
+    let messenger = world.resource(messenger()).clone();
+    for (id, err) in errors {
+        messenger(
+            world,
+            *id,
+            MessageType::Error,
+            &format!(
+                "{} error: {}",
+                match runtime {
+                    true => "Run",
+                    false => "Compile",
+                },
+                err
             ),
         );
 
-        let (guest_exports, guest_instance) = {
-            let mut linker: wasmtime::Linker<Context> = wasmtime::Linker::new(&engine);
-            wasmtime_wasi::add_to_linker(&mut linker, |cx| &mut cx.base_wasm_context_mut().wasi)?;
-            add_to_linker(&mut linker)?;
-
-            let module = wasmtime::Module::from_binary(&mut engine, bytecode)?;
-            Guest::instantiate(&mut store, &module, &mut linker, |cx| {
-                &mut cx.base_wasm_context_mut().guest_data
-            })?
-        };
-
-        // Initialise the runtime.
-        guest_exports.init(&mut store)?;
-        // Call the script's main function.
-        guest_instance
-            .get_func(&mut store, "call_main")
-            .context("not a func")?
-            .typed::<(u32,), (), _>(&store)?
-            .call(&mut store, (interface_version,))?;
-
-        Ok(Self {
-            shared_state,
-            _bindings: PhantomData,
-            _engine: engine,
-            store: Arc::new(Mutex::new(store)),
-            world_ref,
-            guest_exports: Arc::new(guest_exports),
-            _guest_instance: guest_instance,
-        })
-    }
-
-    pub fn run(&mut self, world: &mut World, context: &ScriptContext) -> anyhow::Result<()> {
-        let ScriptContext {
-            event_name,
-            event_data,
-            time,
-            frametime,
-        } = context;
-
-        let mut store = self.store.lock();
-        store.data_mut().set_world(world);
-        self.world_ref.lock().0 = world;
-
-        // remap the generated entitydata to components to send across
-        let components = bindings::convert_entity_data_to_components(event_data);
-        // TEMPORARY: convert the host rep components to owned guest rep components
-        let components: Vec<_> = components
-            .iter()
-            .map(|(id, ct)| (*id, ct.guest_convert()))
-            .collect();
-        // then get the borrowing representation
-        // these two steps should be unnecessary once we can update to the component version of wit-bindgen
-        let components: Vec<_> = components
-            .iter()
-            .map(|(id, ct)| (*id, ct.as_guest()))
-            .collect();
-
-        Ok(self.guest_exports.exec(
-            &mut *store,
-            RunContext {
-                time: *time,
-                frametime: *frametime,
-            },
-            event_name,
-            &components,
-        )?)
-    }
-
-    pub fn shared_state(&self) -> Arc<Mutex<HostGuestState>> {
-        self.shared_state.clone()
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub enum Parameter {
-    EntityUid(Option<EntityUid>),
-    ObjectRef(ObjectRef),
-    Integer(i32),
-    Float(f32),
-    Vec3(Vec3),
-    String(String),
-    Bool(bool),
-}
-impl Default for Parameter {
-    fn default() -> Self {
-        Parameter::Integer(0)
-    }
-}
-
-pub type ParametersMap = IndexMap<String, IndexMap<String, Parameter>>;
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-pub struct File {
-    // TODO(mithun): consider using an enum of Plaintext(String)/Binary(Bytes) files so that people can include binary assets
-    // in their crates
-    pub contents: String,
-    pub last_modified: chrono::DateTime<chrono::Utc>,
-}
-impl File {
-    pub fn new_at_now(contents: String) -> Self {
-        Self {
-            contents,
-            last_modified: chrono::Utc::now(),
+        if let Ok(script_module_errors) = world.get_mut(*id, script_module_errors()) {
+            let error_stream = match runtime {
+                true => &mut script_module_errors.runtime,
+                false => &mut script_module_errors.compiletime,
+            };
+            error_stream.push(err.clone());
+            if error_stream.len() > MAXIMUM_ERROR_COUNT {
+                unload(world, state_component, *id, &players, "too many errors");
+            }
         }
     }
 }
 
-pub type FileMap = HashMap<PathBuf, File>;
+pub fn run<
+    Bindings: Send + Sync + 'static,
+    Context: WasmContext<Bindings> + Send + Sync + 'static,
+    HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
+>(
+    world: &mut World,
+    state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
+    id: EntityId,
+    mut state: ScriptModuleState<Bindings, Context, HostGuestState>,
+    context: &ScriptContext,
+) -> Option<(EntityId, String)> {
+    profiling::scope!(
+        "run_script",
+        format!("{} - {}", get_module_name(world, id), context.event_name)
+    );
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub struct ScriptModule {
+    // If this is not a whitelisted event and it's not in the subscribed events,
+    // skip over it
+    if !["core/module_load", "core/frame"].contains(&context.event_name.as_str())
+        && !state
+            .shared_state
+            .lock()
+            .base_mut()
+            .event
+            .subscribed_events
+            .contains(&context.event_name)
+    {
+        return None;
+    }
+
+    let result = run_and_catch_panics(|| state.run(world, context));
+    let events_to_run = std::mem::take(&mut state.shared_state.lock().base_mut().event.events);
+    world.set(id, state_component, state).ok();
+
+    let err = result.err().map(|err| (id, err));
+    // TODO(mithun): come up with a more intelligent dispatch scheme than this
+    // This can very easily result in an infinite loop.
+    // Things to fix include:
+    // - don't let a script trigger an event on itself
+    // - don't let two scripts chat with each other indefinitely (shunt them to the next tick)
+    // - don't do the event dispatch in this function and instead do it *after* initial
+    //   execution of all scripts
+    for (event_name, event_data) in events_to_run {
+        run_all(
+            world,
+            state_component,
+            &ScriptContext::new(world, &event_name, event_data),
+        );
+    }
+
+    err
+}
+
+pub fn spawn_script(
+    world: &mut World,
+    name: &str,
+    description: String,
+    enabled: bool,
     files: FileMap,
-    pub description: String,
-    pub parameters: ParametersMap,
-    last_updated_by_parameters: bool,
-    pub external_component_ids: HashSet<String>,
-    pub enabled: bool,
+    parameters: ParametersMap,
+    external_component_ids: HashSet<String>,
+) -> anyhow::Result<EntityId> {
+    if query(())
+        .incl(script_module())
+        .iter(world, None)
+        .any(|(id, _)| get_module_name(world, id) == name)
+    {
+        anyhow::bail!("a script module by the name {name} already exists");
+    }
+
+    let scripting_interface_name = world.resource(scripting_interface_name()).clone();
+    let sm = ScriptModule::new(
+        name,
+        description,
+        files,
+        parameters,
+        external_component_ids,
+        enabled,
+        &scripting_interface_name,
+    );
+    Ok(EntityData::new()
+        .set(elements_core::name(), name.to_string())
+        .set(uid(), elements_ecs::EntityUid::create())
+        .set(script_module(), sm)
+        .spawn(world))
 }
-impl ScriptModule {
-    pub fn new(
-        name: &str,
-        description: impl Into<String>,
-        files: FileMap,
-        parameters: ParametersMap,
-        external_component_ids: HashSet<String>,
-        enabled: bool,
 
-        scripting_interface: &str,
-    ) -> Self {
-        let mut sm = ScriptModule {
-            files: HashMap::new(),
-            description: description.into(),
-            parameters,
-            enabled,
-            external_component_ids,
-            last_updated_by_parameters: false,
-        };
-        sm.files.extend(files);
-        sm.populate_files(name, scripting_interface);
-        sm
-    }
+pub fn compile(
+    sm: &ScriptModule,
+    install_dirs: InstallDirs,
+    workspace_path: PathBuf,
+    scripts_path: PathBuf,
+    name: String,
+) -> Option<std::thread::JoinHandle<anyhow::Result<Vec<u8>>>> {
+    let mut files = sm.files().clone();
 
-    pub fn migrate_ids(&mut self, _old_to_new_ids: &HashMap<EntityId, EntityId>) {}
+    if let Some(file) = files.get_mut(Path::new("src/lib.rs")) {
+        // HACK(mithun): figure out how to insert this without exposing it to the user
+        if !file.contents.contains("fn call_main") {
+            file.contents += indoc::indoc! {r#"
 
-    pub fn files(&self) -> &HashMap<PathBuf, File> {
-        &self.files
-    }
-
-    pub fn system_controlled_files() -> Vec<PathBuf> {
-        ["src/params.rs", "src/components.rs"]
-            .into_iter()
-            .map(|p| p.into())
-            .collect()
-    }
-
-    pub fn populate_files(&mut self, name: &str, scripting_interface: &str) {
-        self.regenerate_params_file(scripting_interface);
-        self.regenerate_components_file(scripting_interface);
-        for (filename, contents) in Self::STATIC_FILE_TEMPLATES {
-            let filename = PathBuf::from(filename);
-            let contents = contents
-                .replace("{{name}}", &util::sanitize(&name))
-                .replace("{{description}}", &self.description)
-                .replace("{{scripting_interface}}", scripting_interface);
-            let file = File::new_at_now(contents);
-
-            self.files.entry(filename).or_insert(file);
-        }
-        self.last_updated_by_parameters = false;
-    }
-
-    pub fn update_parameters(&mut self, parameters: ParametersMap, scripting_interface: &str) {
-        self.parameters = parameters;
-        self.last_updated_by_parameters = true;
-        self.regenerate_params_file(scripting_interface);
-        self.regenerate_components_file(scripting_interface);
-    }
-
-    pub fn insert(
-        &mut self,
-        scripting_interfaces: &[&str],
-        relative_path: PathBuf,
-        new_file: String,
-    ) -> anyhow::Result<()> {
-        let relative_path = elements_std::path::normalize(&relative_path);
-        if ScriptModule::system_controlled_files().contains(&relative_path) {
-            anyhow::bail!("{relative_path:?} is system-controlled and cannot be updated");
-        }
-
-        if relative_path == Path::new("Cargo.toml") {
-            self.files.insert(
-                relative_path,
-                File::new_at_now(dependencies::merge_cargo_toml(
-                    scripting_interfaces,
-                    &self
-                        .files
-                        .get(Path::new("Cargo.toml"))
-                        .context("no Cargo.toml")?
-                        .contents,
-                    &new_file,
-                )?),
-            );
-        } else {
-            self.files.insert(relative_path, File::new_at_now(new_file));
-        }
-
-        Ok(())
-    }
-
-    pub fn remove(&mut self, relative_path: &Path) {
-        let relative_path = elements_std::path::normalize(relative_path);
-        if ScriptModule::system_controlled_files()
-            .iter()
-            .any(|pb| pb == &relative_path)
-        {
-            return;
-        }
-        self.files.remove(&relative_path);
-    }
-
-    pub fn enabled(&self) -> bool {
-        self.enabled
-    }
-
-    pub fn last_updated_by_parameters(&self) -> bool {
-        self.last_updated_by_parameters
-    }
-}
-impl ScriptModule {
-    const STATIC_FILE_TEMPLATES: &[(&'static str, &'static str)] = &[
-        (
-            "Cargo.toml",
-            indoc! {r#"
-                [package]
-                edition = "2021"
-                name = "{{name}}"
-                description = "{{description}}"
-                version = "0.1.0"
-
-                [lib]
-                crate-type = ["cdylib"]
-
-                [dependencies]
-                {{scripting_interface}} = {path = "../../interfaces/{{scripting_interface}}"}
-            "#},
-        ),
-        (
-            "src/lib.rs",
-            indoc! {r#"
-                use {{scripting_interface}}::*;
-                pub mod params;
-                pub mod components;
-
-                pub async fn main() -> EventResult {
-                    EventOk
-                }
-            "#},
-        ),
-    ];
-
-    fn regenerate_params_file(&mut self, scripting_interface: &str) {
-        let mut contents = String::new();
-        let _ = writeln!(contents, "#![allow(unused_imports)]");
-        for (category, parameters) in &self.parameters {
-            let category = category.trim().replace(' ', "_").to_lowercase();
-            if category.is_empty() {
-                continue;
-            }
-
-            let _ = writeln!(contents, "pub mod {category} {{");
-            let _ = writeln!(contents, "    use {}::*;", scripting_interface);
-            for (key, value) in parameters {
-                let key = key.trim().replace(' ', "_").to_uppercase();
-                if key.is_empty() {
-                    continue;
-                }
-                let value = match value {
-                    Parameter::EntityUid(Some(uid)) => {
-                        format!("EntityUid = EntityUid::new(\"{uid}\")")
+                #[no_mangle]
+                pub extern "C" fn call_main(runtime_interface_version: u32) {
+                    if INTERFACE_VERSION != runtime_interface_version {
+                        panic!("This script was compiled with interface version {{INTERFACE_VERSION}}, but the script host is running with version {{runtime_interface_version}}");
                     }
-                    Parameter::EntityUid(None) => continue,
-                    Parameter::ObjectRef(url) => {
-                        format!(r#"ObjectRef = ObjectRef::new("{url}")"#)
-                    }
-                    Parameter::Integer(v) => format!("i32 = {v}"),
-                    Parameter::Float(v) => format!("f32 = {v} as f32"),
-                    Parameter::Vec3(v) => {
-                        format!(
-                            "Vec3 = vec3({} as f32, {} as f32, {} as f32)",
-                            v.x, v.y, v.z
-                        )
-                    }
-                    Parameter::String(v) => format!(r#"&str = {v:?}"#),
-                    Parameter::Bool(v) => format!("bool = {v}"),
-                };
-
-                let _ = writeln!(contents, "    pub const {key}: {value};");
-            }
-            let _ = writeln!(contents, "}}");
+                    run_async(main());
+                }
+            "#};
         }
 
-        self.files
-            .insert("src/params.rs".into(), File::new_at_now(contents));
+        // Remove the directory to ensure there aren't any old files left around
+        let script_path = scripts_path.join(sanitize(&name));
+        let _ = std::fs::remove_dir_all(&script_path);
+        write_files_to_directory(
+            &script_path,
+            &files
+                .iter()
+                .map(|(p, f)| (p.clone(), f.contents.clone()))
+                .collect_vec(),
+        )
+        .unwrap();
     }
 
-    fn regenerate_components_file(&mut self, scripting_interface: &str) {
-        enum ComponentTreeNode {
-            Category(HashMap<String, ComponentTreeNode>),
-            Component { typename: &'static str, id: String },
-        }
-        impl Default for ComponentTreeNode {
-            fn default() -> Self {
-                ComponentTreeNode::Category(Default::default())
-            }
-        }
-        impl ComponentTreeNode {
-            fn insert(&mut self, id_portion: &str, id: &str, typename: &'static str) {
-                if let ComponentTreeNode::Category(hm) = self {
-                    let (prefix, suffix) = id_portion.split_once("::").unwrap_or(("", id_portion));
-                    if prefix.is_empty() {
-                        hm.insert(
-                            suffix.to_string(),
-                            ComponentTreeNode::Component {
-                                typename,
-                                id: id.to_string(),
-                            },
-                        );
-                    } else {
-                        hm.entry(prefix.to_string())
-                            .or_default()
-                            .insert(suffix, id, typename);
-                    }
-                }
-            }
-        }
+    Some(std::thread::spawn(move || {
+        rustc::build_module_in_workspace(&install_dirs, &workspace_path, &name)
+    }))
+}
 
-        let supported_types: HashMap<_, _> = bindings::SUPPORTED_COMPONENT_TYPES
-            .iter()
-            .copied()
-            .collect();
+fn build_template(
+    install_dirs: &InstallDirs,
+    template_path: &Path,
+    scripting_interfaces: &HashMap<String, Vec<(PathBuf, String)>>,
+    primary_scripting_interface_name: &str,
+) -> Result<(), anyhow::Error> {
+    let _ = std::fs::remove_dir_all(template_path);
+    std::fs::create_dir_all(template_path)?;
 
-        let mut root = ComponentTreeNode::default();
-        with_component_registry(|registry| {
-            for component in registry.all_external() {
-                if let Some(typename) = supported_types.get(&component.type_id()) {
-                    root.insert(&component.get_id(), &component.get_id(), typename);
-                }
-            }
-        });
+    write_scripting_interfaces(scripting_interfaces, &template_path.join("interfaces"))
+        .context("failed to write scripting interface for template")?;
 
-        fn write_to_file(
-            output: &mut String,
-            name: &str,
-            component: &ComponentTreeNode,
-            depth: usize,
-            scripting_interface: &str,
-        ) {
-            let space = " ".repeat(depth * 4);
-            match component {
-                ComponentTreeNode::Category(hm) => {
-                    if name.is_empty() {
-                        for (key, value) in hm {
-                            write_to_file(output, key, value, 0, scripting_interface);
-                        }
-                    } else {
-                        writeln!(output, "{space}pub mod {name} {{").ok();
-                        writeln!(output, "{space}    use {}::*;", scripting_interface).ok();
-                        for (key, value) in hm {
-                            write_to_file(output, key, value, depth + 1, scripting_interface);
-                        }
-                        writeln!(output, "{space}}}").ok();
-                    }
-                }
-                ComponentTreeNode::Component { typename, id, .. } => {
-                    writeln!(
-                        output,
-                        r#"{space}static {}: LazyComponent<{typename}> = lazy_component!("{id}");"#,
-                        name.to_uppercase()
-                    )
-                    .ok();
-                    writeln!(
-                        output,
-                        "{space}pub fn {name}() -> Component<{typename}> {{ *{} }}",
-                        name.to_uppercase()
-                    )
-                    .ok();
-                }
-            }
-        }
-        let mut contents = String::new();
-        let _ = writeln!(contents, "#![allow(unused_imports)]");
-        write_to_file(&mut contents, "", &root, 0, scripting_interface);
+    let dummy_name = "dummy";
 
-        self.files
-            .insert("src/components.rs".into(), File::new_at_now(contents));
+    let scripts_path = template_path.join("scripts");
+    util::write_workspace_files(&scripts_path, &[dummy_name.to_string()], true);
+
+    let dummy_module = ScriptModule::new(
+        dummy_name,
+        "Dummy module",
+        Default::default(),
+        Default::default(),
+        Default::default(),
+        true,
+        primary_scripting_interface_name,
+    );
+    let _dummy_bytecode = compile(
+        &dummy_module,
+        install_dirs.clone(),
+        template_path.to_owned(),
+        scripts_path.clone(),
+        dummy_name.to_owned(),
+    )
+    .context("failed to generate dummy compilation task")?
+    .join()
+    .unwrap()
+    .context("failed to build dummy module")?;
+    let _ = std::fs::remove_dir_all(scripts_path.join(dummy_name));
+
+    Ok(())
+}
+
+fn run_and_catch_panics<R>(f: impl FnOnce() -> anyhow::Result<R>) -> Result<R, String> {
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(f));
+    match result {
+        Ok(Ok(r)) => Ok(r),
+        Ok(Err(e)) => Err(e.to_string()),
+        Err(e) => Err(match e.downcast::<String>() {
+            Ok(e) => e.to_string(),
+            Err(e) => match e.downcast::<&str>() {
+                Ok(e) => e.to_string(),
+                _ => "unknown error".to_string(),
+            },
+        }),
     }
 }
 
-impl Display for ScriptModule {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "ScriptModule")
-    }
-}
-
-#[derive(Default, Clone, Debug, Serialize, Deserialize)]
-pub struct ScriptModuleErrors {
-    pub compiletime: Vec<String>,
-    pub runtime: Vec<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ScriptModuleBundle {
-    pub name: String,
-    pub files: FileMap,
-    pub description: String,
-    pub parameters: ParametersMap,
-    #[serde(default)]
-    pub external_component_ids: HashSet<String>,
-}
-impl ScriptModuleBundle {
-    pub fn to_json(name: &str, sm: &ScriptModule) -> String {
-        let mut files = sm.files().clone();
-        for path in ScriptModule::system_controlled_files() {
-            files.remove(&path);
-        }
-        serde_json::to_string_pretty(&ScriptModuleBundle {
-            name: name.to_owned(),
-            files,
-            description: sm.description.clone(),
-            parameters: sm.parameters.clone(),
-            external_component_ids: sm.external_component_ids.clone(),
+pub fn register_entity_id_migraters() {
+    COMPONENT_ENTITY_ID_MIGRATERS
+        .lock()
+        .push(|world, entity, old_to_new_ids| {
+            if let Ok(script) = world.get_mut(entity, script_module()) {
+                script.migrate_ids(old_to_new_ids);
+            }
         })
-        .unwrap()
-    }
-}
-
-pub struct WorldRef(pub *mut World);
-impl WorldRef {
-    pub const fn new() -> Self {
-        WorldRef(std::ptr::null_mut())
-    }
-}
-unsafe impl Send for WorldRef {}
-unsafe impl Sync for WorldRef {}
-impl AsRef<World> for WorldRef {
-    fn as_ref(&self) -> &World {
-        unsafe { self.0.as_ref().unwrap() }
-    }
-}
-impl AsMut<World> for WorldRef {
-    fn as_mut(&mut self) -> &mut World {
-        unsafe { self.0.as_mut().unwrap() }
-    }
-}
-
-// TODO(mithun): come up with a more optimal way to do this that doesn't
-// implicitly require unsafe and mutex locking
-struct WasiOutputFile(
-    Box<dyn Fn(&World, &str) + Sync + Send>,
-    Arc<Mutex<WorldRef>>,
-);
-#[async_trait]
-impl WasiFile for WasiOutputFile {
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    async fn get_filetype(&mut self) -> Result<FileType, wasmtime_wasi::Error> {
-        Ok(FileType::Unknown)
-    }
-
-    async fn get_fdflags(&mut self) -> Result<FdFlags, wasmtime_wasi::Error> {
-        Ok(FdFlags::APPEND)
-    }
-
-    async fn write_vectored<'a>(
-        &mut self,
-        bufs: &[std::io::IoSlice<'a>],
-    ) -> Result<u64, wasmtime_wasi::Error> {
-        let mut count = 0;
-        for buf in bufs {
-            if let Ok(text) = std::str::from_utf8(buf) {
-                self.0(self.1.lock().as_ref(), text);
-                count += text.len();
-            }
-        }
-        Ok(count as u64)
-    }
-}
-
-pub trait WasmContext<Bindings> {
-    fn base_wasm_context_mut(&mut self) -> &mut BaseWasmContext;
-    fn set_world(&mut self, world: &mut World);
-}
-
-pub struct BaseWasmContext {
-    wasi: wasmtime_wasi::WasiCtx,
-    guest_data: GuestData,
-}
-impl BaseWasmContext {
-    pub fn new(wasi: wasmtime_wasi::WasiCtx) -> Self {
-        Self {
-            wasi,
-            guest_data: Default::default(),
-        }
-    }
 }

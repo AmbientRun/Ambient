@@ -1,4 +1,4 @@
-use crate::shared::EventSharedState;
+use crate::shared::host_guest_state::EventSharedState;
 use elements_ecs::EntityData;
 
 pub fn subscribe(shared_state: &mut EventSharedState, name: &str) {

@@ -10,9 +10,10 @@ use crate::{
     shared::{
         bindings::*,
         conversion::{FromBindgen, IntoBindgen},
+        host_guest_state::GetBaseHostGuestState,
         implementation as eshi,
         interface::{self as sif, host},
-        BaseWasmContext, GetBaseHostGuestState, WasmContext, WorldRef,
+        BaseWasmContext, WasmContext, WorldRef,
     },
 };
 
