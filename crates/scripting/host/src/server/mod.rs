@@ -21,6 +21,7 @@ use itertools::Itertools;
 use parking_lot::Mutex;
 use physxx::{PxRigidActor, PxRigidActorRef, PxUserData};
 use wasi_common::WasiCtx;
+use wasmtime::Linker;
 
 use crate::shared::{
     compile,
@@ -61,7 +62,7 @@ pub fn systems<
         Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>,
     >,
     add_to_linker_component: Component<
-        Arc<dyn Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
+        Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
     >,
     update_workspace_toml: bool,
 ) -> SystemGroup {
@@ -400,7 +401,7 @@ pub fn on_forking_systems<
         Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>,
     >,
     add_to_linker_component: Component<
-        Arc<dyn Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
+        Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
     >,
 ) -> SystemGroup<ForkingEvent> {
     SystemGroup::new(
@@ -466,8 +467,8 @@ pub async fn initialize<
         Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>,
     ),
     (add_to_linker_component, add_to_linker): (
-        Component<Arc<dyn Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()> + Send + Sync>>,
-        Arc<dyn Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
+        Component<Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>>,
+        Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
     ),
 ) -> anyhow::Result<()> {
     super::shared::initialize(

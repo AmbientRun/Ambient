@@ -6,15 +6,14 @@ use elements_scripting_host::{
     server::bindings::{Bindings, WasmServerContext},
     shared::{
         host_guest_state::BaseHostGuestState,
-        spawn_script, MessageType,
         interface::{get_scripting_interfaces, SCRIPTING_INTERFACE_NAME},
+        spawn_script,
         util::get_module_name,
-        File, ScriptModuleState,
+        File, MessageType, ScriptModuleState,
     },
-    wasmtime,
+    Linker, WasiCtx,
 };
 use parking_lot::Mutex;
-use wasmtime_wasi::WasiCtx;
 
 use crate::server::project_path;
 
@@ -26,7 +25,7 @@ components!("scripting::server", {
     script_module_state: ScriptModuleServerState,
     // resource
     make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<Mutex<BaseHostGuestState>>) -> WasmServerContext + Send + Sync>,
-    add_to_linker: Arc<dyn Fn(&mut wasmtime::Linker<WasmServerContext>) -> anyhow::Result<()> + Send + Sync>,
+    add_to_linker: Arc<dyn Fn(&mut Linker<WasmServerContext>) -> anyhow::Result<()> + Send + Sync>,
 });
 
 pub fn init_all_components() {

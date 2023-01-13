@@ -28,6 +28,7 @@ use elements_network::player::player;
 use itertools::Itertools;
 use parking_lot::Mutex;
 use wasi_common::WasiCtx;
+use wasmtime::Linker;
 
 use host_guest_state::GetBaseHostGuestState;
 use interface::write_scripting_interfaces;
@@ -218,7 +219,7 @@ pub fn reload_all<
     world: &mut World,
     state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
     make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>,
-    add_to_linker: Arc<dyn Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
+    add_to_linker: Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
 ) {
     let scripts = query((script_module(), script_module_bytecode()))
         .iter(world, None)
@@ -259,7 +260,7 @@ pub fn reload<
     world: &mut World,
     state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
     make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>,
-    add_to_linker: Arc<dyn Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
+    add_to_linker: Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
     scripts: &[(EntityId, Option<ScriptModuleBytecode>)],
 ) {
     let players = query(player()).collect_ids(world, None);
@@ -294,7 +295,7 @@ pub fn load<
     state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
     script_id: EntityId,
     make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>,
-    add_to_linker: Arc<dyn Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
+    add_to_linker: Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
     bytecode: &[u8],
     players: &[EntityId],
     errors: &mut Vec<(EntityId, String)>,

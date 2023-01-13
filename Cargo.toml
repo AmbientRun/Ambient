@@ -37,7 +37,6 @@ anyhow.workspace = true
 log.workspace = true
 env_logger.workspace = true
 glam.workspace = true
-wasmtime-wasi.workspace = true
 parking_lot.workspace = true
 walkdir.workspace = true
 
