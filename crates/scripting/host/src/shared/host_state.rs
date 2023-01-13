@@ -208,7 +208,7 @@ impl<
         let errors = players
             .iter()
             .filter_map(|player_id| {
-                self.run_script(
+                self.run(
                     world,
                     script_id,
                     world.get_cloned(script_id, self.state_component).ok()?,
@@ -254,7 +254,7 @@ impl<
         let errors: Vec<(EntityId, String)> = query(self.state_component)
             .collect_cloned(world, None)
             .into_iter()
-            .flat_map(|(id, sms)| self.run_script(world, id, sms, context))
+            .flat_map(|(id, sms)| self.run(world, id, sms, context))
             .collect();
         self.update_errors(world, &errors, true);
     }
@@ -262,56 +262,11 @@ impl<
     pub fn reload(&self, world: &mut World, scripts: &[(EntityId, Option<ScriptModuleBytecode>)]) {
         let players = query(player()).collect_ids(world, None);
         for (script_id, bytecode) in scripts {
-            let script_id = *script_id;
-            let mut errors = self.unload(world, script_id, &players, "reloading");
+            let mut errors = self.unload(world, *script_id, &players, "reloading");
 
             if let Some(bytecode) = bytecode {
-                let make_wasm_context = self.make_wasm_context.clone();
-                let add_to_linker = self.add_to_linker.clone();
-                let result = run_and_catch_errors(|| {
-                    let messenger = self.messenger.clone();
-                    ScriptModuleState::new(
-                        &bytecode.0,
-                        Box::new({
-                            let messenger = messenger.clone();
-                            move |world, msg| {
-                                messenger(world, script_id, MessageType::Stdout, msg);
-                            }
-                        }),
-                        Box::new(move |world, msg| {
-                            messenger(world, script_id, MessageType::Stderr, msg);
-                        }),
-                        move |ctx, state| make_wasm_context(ctx, state),
-                        move |linker| add_to_linker(linker),
-                        crate::shared::interface::shared::INTERFACE_VERSION,
-                    )
-                });
-                match result {
-                    Ok(sms) => {
-                        // Run the initial startup event.
-                        errors.extend(self.run_script(
-                            world,
-                            script_id,
-                            sms.clone(),
-                            &ScriptContext::new(world, "core/module_load", EntityData::new()),
-                        ));
-
-                        // Run the PlayerJoin event for all players to simulate the world being loaded
-                        // in for the module.
-                        errors.extend(players.iter().filter_map(|player_id| {
-                            let script_context = ScriptContext::new(
-                                world,
-                                "core/player_join",
-                                vec![CU::new(elements_ecs::id(), *player_id)].into(),
-                            );
-                            self.run_script(world, script_id, sms.clone(), &script_context)
-                        }));
-
-                        world
-                            .add_component(script_id, self.state_component, sms)
-                            .unwrap();
-                    }
-                    Err(err) => errors.push((script_id, err)),
+                if !bytecode.0.is_empty() {
+                    self.load(world, *script_id, &bytecode.0, &players, &mut errors);
                 }
             }
 
@@ -357,7 +312,66 @@ impl<
         HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
     > HostState<Bindings, Context, HostGuestState>
 {
-    fn run_script(
+    fn load(
+        &self,
+        world: &mut World,
+        script_id: EntityId,
+        bytecode: &[u8],
+        players: &[EntityId],
+        errors: &mut Vec<(EntityId, String)>,
+    ) {
+        let make_wasm_context = self.make_wasm_context.clone();
+        let add_to_linker = self.add_to_linker.clone();
+
+        let result = run_and_catch_panics(|| {
+            let messenger = self.messenger.clone();
+            ScriptModuleState::new(
+                bytecode,
+                Box::new({
+                    let messenger = messenger.clone();
+                    move |world, msg| {
+                        messenger(world, script_id, MessageType::Stdout, msg);
+                    }
+                }),
+                Box::new(move |world, msg| {
+                    messenger(world, script_id, MessageType::Stderr, msg);
+                }),
+                move |ctx, state| make_wasm_context(ctx, state),
+                move |linker| add_to_linker(linker),
+                crate::shared::interface::shared::INTERFACE_VERSION,
+            )
+        });
+
+        match result {
+            Ok(sms) => {
+                // Run the initial startup event.
+                errors.extend(self.run(
+                    world,
+                    script_id,
+                    sms.clone(),
+                    &ScriptContext::new(world, "core/module_load", EntityData::new()),
+                ));
+
+                // Run the PlayerJoin event for all players to simulate the world being loaded
+                // in for the module.
+                errors.extend(players.iter().filter_map(|player_id| {
+                    let script_context = ScriptContext::new(
+                        world,
+                        "core/player_join",
+                        vec![CU::new(elements_ecs::id(), *player_id)].into(),
+                    );
+                    self.run(world, script_id, sms.clone(), &script_context)
+                }));
+
+                world
+                    .add_component(script_id, self.state_component, sms)
+                    .unwrap();
+            }
+            Err(err) => errors.push((script_id, err)),
+        }
+    }
+
+    fn run(
         &self,
         world: &mut World,
         id: EntityId,
@@ -383,7 +397,7 @@ impl<
             return None;
         }
 
-        let result = run_and_catch_errors(|| state.run(world, context));
+        let result = run_and_catch_panics(|| state.run(world, context));
         let events_to_run = std::mem::take(&mut state.shared_state.lock().base_mut().event.events);
         world.set(id, self.state_component, state).ok();
 
@@ -521,7 +535,7 @@ fn build_script_template(
     Ok(())
 }
 
-fn run_and_catch_errors<R>(f: impl FnOnce() -> anyhow::Result<R>) -> Result<R, String> {
+fn run_and_catch_panics<R>(f: impl FnOnce() -> anyhow::Result<R>) -> Result<R, String> {
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(f));
     match result {
         Ok(Ok(r)) => Ok(r),

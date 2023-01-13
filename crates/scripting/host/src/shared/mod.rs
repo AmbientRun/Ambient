@@ -161,13 +161,12 @@ impl ScriptContext {
     }
 }
 
-#[derive(Default)]
 pub struct ScriptModuleState<
     Bindings: Send + Sync + 'static,
     Context: WasmContext<Bindings>,
     HostGuestState: Default,
 > {
-    wasm: Option<WasmState<Bindings, Context>>,
+    wasm: WasmState<Bindings, Context>,
     pub shared_state: Arc<Mutex<HostGuestState>>,
     _bindings: PhantomData<Bindings>,
 }
@@ -203,21 +202,17 @@ impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>, HostGuestS
     ) -> anyhow::Result<Self> {
         let shared_state = Arc::new(Mutex::new(HostGuestState::default()));
 
-        let wasm = if bytecode.is_empty() {
-            None
-        } else {
-            Some(WasmState::new(
-                bytecode,
-                stdout_output,
-                stderr_output,
-                {
-                    let shared_state = shared_state.clone();
-                    move |wasi| make_wasm_context(wasi, shared_state.clone())
-                },
-                add_to_linker,
-                interface_version,
-            )?)
-        };
+        let wasm = WasmState::new(
+            bytecode,
+            stdout_output,
+            stderr_output,
+            {
+                let shared_state = shared_state.clone();
+                move |wasi| make_wasm_context(wasi, shared_state.clone())
+            },
+            add_to_linker,
+            interface_version,
+        )?;
         Ok(Self {
             wasm,
             shared_state,
@@ -226,9 +221,8 @@ impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>, HostGuestS
     }
 
     pub fn run(&mut self, world: &mut World, context: &ScriptContext) -> anyhow::Result<()> {
-        if let Some(wasm) = &mut self.wasm {
-            wasm.run(world, context)?;
-        }
+        self.wasm.run(world, context)?;
+
         Ok(())
     }
 
