@@ -10,33 +10,66 @@ use crate::{
     shared::{
         bindings::*,
         conversion::{FromBindgen, IntoBindgen},
-        implementation as eshi, interface as sif,
-        wasm::WorldRef,
+        implementation as eshi,
+        interface::{self as sif, host},
+        wasm::{BaseWasmContext, WasmContext, WorldRef},
         GetBaseHostGuestState,
     },
 };
+
+pub struct WasmServerContext {
+    pub base_context: BaseWasmContext,
+    pub elements_bindings: Bindings,
+}
+impl WasmServerContext {
+    pub fn new(
+        wasi: wasmtime_wasi::WasiCtx,
+        shared_state: Arc<Mutex<dyn GetBaseHostGuestState + Send + Sync>>,
+    ) -> Self {
+        Self {
+            base_context: BaseWasmContext::new(wasi),
+            elements_bindings: Bindings::new(shared_state.clone()),
+        }
+    }
+
+    pub fn link<T>(
+        linker: &mut wasmtime::Linker<T>,
+        projection: impl Fn(&mut T) -> &mut Self + Send + Sync + Copy + 'static,
+    ) -> anyhow::Result<()> {
+        host::add_to_linker(linker, move |cx| &mut projection(cx).elements_bindings)
+    }
+}
+impl WasmContext<Bindings> for WasmServerContext {
+    fn base_wasm_context_mut(&mut self) -> &mut BaseWasmContext {
+        &mut self.base_context
+    }
+
+    fn set_world(&mut self, world: &mut elements_ecs::World) {
+        self.elements_bindings.set_world(world);
+    }
+}
 
 pub struct Bindings {
     world: WorldRef,
     shared_state: Arc<Mutex<dyn GetBaseHostGuestState + Send + Sync>>,
 }
 impl Bindings {
-    pub const fn new(shared_state: Arc<Mutex<dyn GetBaseHostGuestState + Send + Sync>>) -> Self {
+    fn new(shared_state: Arc<Mutex<dyn GetBaseHostGuestState + Send + Sync>>) -> Self {
         Self {
             world: WorldRef::new(),
             shared_state,
         }
     }
 
-    pub fn set_world(&mut self, world: &mut World) {
+    fn set_world(&mut self, world: &mut World) {
         self.world.0 = world;
     }
 
-    pub fn world(&mut self) -> &World {
+    fn world(&mut self) -> &World {
         self.world.as_ref()
     }
 
-    pub fn world_mut(&mut self) -> &mut World {
+    fn world_mut(&mut self) -> &mut World {
         self.world.as_mut()
     }
 }

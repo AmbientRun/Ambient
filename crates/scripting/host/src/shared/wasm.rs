@@ -13,11 +13,9 @@ use wasmtime_wasi::WasiFile;
 use super::{
     bindings,
     guest_conversion::GuestConvert,
-    interface::guest::{Guest, RunContext},
+    interface::guest::{Guest, GuestData, RunContext},
     ScriptContext,
 };
-
-pub use super::interface::guest::GuestData;
 
 pub struct WorldRef(pub *mut World);
 impl WorldRef {
@@ -74,9 +72,21 @@ impl WasiFile for WasiOutputFile {
 }
 
 pub trait WasmContext<Bindings> {
-    fn wasi(&mut self) -> &mut wasmtime_wasi::WasiCtx;
-    fn guest_data(&mut self) -> &mut GuestData;
+    fn base_wasm_context_mut(&mut self) -> &mut BaseWasmContext;
     fn set_world(&mut self, world: &mut World);
+}
+
+pub struct BaseWasmContext {
+    wasi: wasmtime_wasi::WasiCtx,
+    guest_data: GuestData,
+}
+impl BaseWasmContext {
+    pub fn new(wasi: wasmtime_wasi::WasiCtx) -> Self {
+        Self {
+            wasi,
+            guest_data: Default::default(),
+        }
+    }
 }
 
 pub struct WasmState<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>> {
@@ -126,11 +136,13 @@ impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>> WasmState<
 
         let (guest_exports, guest_instance) = {
             let mut linker: wasmtime::Linker<Context> = wasmtime::Linker::new(&engine);
-            wasmtime_wasi::add_to_linker(&mut linker, |cx| cx.wasi())?;
+            wasmtime_wasi::add_to_linker(&mut linker, |cx| &mut cx.base_wasm_context_mut().wasi)?;
             add_to_linker(&mut linker)?;
 
             let module = wasmtime::Module::from_binary(&mut engine, bytecode)?;
-            Guest::instantiate(&mut store, &module, &mut linker, |cx| cx.guest_data())?
+            Guest::instantiate(&mut store, &module, &mut linker, |cx| {
+                &mut cx.base_wasm_context_mut().guest_data
+            })?
         };
 
         // Initialise the runtime.

@@ -3,17 +3,15 @@ use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use elements_ecs::{components, EntityId, SystemGroup, World};
 use elements_network::server::{ForkingEvent, ShutdownEvent};
 use elements_scripting_host::{
-    server::bindings::Bindings,
+    server::bindings::{Bindings, WasmServerContext},
     shared::{
         get_module_name,
         host_state::{spawn_script_module, HostState, MessageType},
-        interface::{get_scripting_interfaces, host},
+        interface::get_scripting_interfaces,
         rustc::InstallDirs,
-        wasm::{GuestData, WasmContext},
         BaseHostGuestState, File, ScriptModuleState,
     },
 };
-use parking_lot::Mutex;
 
 use crate::server::project_path;
 
@@ -28,34 +26,6 @@ components!("scripting::server", {
     // component
     script_module_state: ScriptModuleServerState,
 });
-
-pub struct WasmServerContext {
-    pub wasi: wasmtime_wasi::WasiCtx,
-    pub elements_bindings: Bindings,
-    pub guest_data: GuestData,
-}
-impl WasmServerContext {
-    pub fn new(wasi: wasmtime_wasi::WasiCtx, shared_state: Arc<Mutex<BaseHostGuestState>>) -> Self {
-        Self {
-            wasi,
-            elements_bindings: Bindings::new(shared_state.clone()),
-            guest_data: GuestData::default(),
-        }
-    }
-}
-impl WasmContext<Bindings> for WasmServerContext {
-    fn wasi(&mut self) -> &mut wasmtime_wasi::WasiCtx {
-        &mut self.wasi
-    }
-
-    fn set_world(&mut self, world: &mut elements_ecs::World) {
-        self.elements_bindings.set_world(world);
-    }
-
-    fn guest_data(&mut self) -> &mut elements_scripting_host::shared::interface::guest::GuestData {
-        &mut self.guest_data
-    }
-}
 
 pub fn init_all_components() {
     elements_scripting_host::server::init_components();
@@ -111,10 +81,8 @@ pub async fn initialize(world: &mut World) -> anyhow::Result<()> {
         scripts_path: project_path.join("scripts"),
 
         state_component: script_module_state(),
-        make_wasm_context: Arc::new(WasmServerContext::new),
-        add_to_linker: Arc::new(|linker| {
-            host::add_to_linker(linker, |cx| &mut cx.elements_bindings)
-        }),
+        make_wasm_context: Arc::new(|ctx, state| WasmServerContext::new(ctx, state)),
+        add_to_linker: Arc::new(|linker| WasmServerContext::link(linker, |c| c)),
 
         _bindings: Default::default(),
     };
