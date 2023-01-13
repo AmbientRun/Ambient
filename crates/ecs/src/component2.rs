@@ -2,10 +2,7 @@ use std::{
     any::{Any, TypeId}, cmp::Ordering, fmt::Debug, marker::PhantomData, mem::{self, ManuallyDrop, MaybeUninit}
 };
 
-use once_cell::sync::Lazy;
-use serde::{
-    de::{self, Visitor}, Deserialize, Serialize
-};
+use serde::{self, Deserialize, Serialize};
 
 /// Defines an object safe trait which allows for downcasting
 pub trait ComponentValue: 'static + Send + Sync {}
@@ -33,9 +30,9 @@ $(
     };
 }
 
-pub trait ComponentAttributeValue<T> {
+pub trait ComponentAttributeValue<T, P> {
     /// Construct a new instance of the attribute value
-    fn construct(component: Component<T>) -> Self;
+    fn construct(component: Component<T>, params: P) -> Self;
 }
 
 /// Allow serializing a component entry
@@ -46,8 +43,8 @@ pub struct ComponentSerializer {
     desc: ComponentDesc,
 }
 
-impl<T: ComponentValue + Serialize + for<'de> Deserialize<'de>> ComponentAttributeValue<T> for ComponentSerializer {
-    fn construct(component: Component<T>) -> Self {
+impl<T: ComponentValue + Serialize + for<'de> Deserialize<'de>> ComponentAttributeValue<T, ()> for ComponentSerializer {
+    fn construct(component: Component<T>, _: ()) -> Self {
         Self {
             ser: |v| v.downcast_ref::<T>() as &dyn erased_serde::Serialize,
             deser: |desc, deserializer| {
@@ -76,7 +73,7 @@ impl<'de> serde::de::DeserializeSeed<'de> for ComponentSerializer {
     {
         let mut deserializer = <dyn erased_serde::Deserializer>::erase(deserializer);
         let deserializer = &mut deserializer;
-        (self.deser)(self.desc, deserializer).map_err(de::Error::custom)
+        (self.deser)(self.desc, deserializer).map_err(serde::de::Error::custom)
     }
 }
 
@@ -84,12 +81,35 @@ pub struct ComponentDebugger {
     debug: fn(&ComponentEntry) -> &dyn Debug,
 }
 
-impl<T> ComponentAttributeValue<T> for ComponentDebugger
+impl<T> ComponentAttributeValue<T, ()> for ComponentDebugger
 where
     T: Debug,
 {
-    fn construct(component: Component<T>) -> Self {
+    fn construct(_: Component<T>, _: ()) -> Self {
         Self { debug: |entry| entry.downcast_ref::<T>() as &dyn Debug }
+    }
+}
+
+pub struct ComponentDefault {
+    make_default: Box<dyn Fn() -> ComponentEntry + Send + Sync>,
+}
+
+impl ComponentDefault {
+    /// Construct the default value of this component
+    pub fn make_default(&self) -> ComponentEntry {
+        (self.make_default)()
+    }
+}
+
+impl<T: ComponentValue + Default> ComponentAttributeValue<T, ()> for ComponentDefault {
+    fn construct(component: Component<T>, _: ()) -> Self {
+        Self { make_default: Box::new(move || ComponentEntry::new(component, T::default())) }
+    }
+}
+
+impl<T: ComponentValue, F: 'static + Send + Sync + Fn() -> T> ComponentAttributeValue<T, F> for ComponentDefault {
+    fn construct(component: Component<T>, func: F) -> Self {
+        Self { make_default: Box::new(move || ComponentEntry::new(component, func())) }
     }
 }
 
@@ -97,11 +117,13 @@ component_attributes! {
     /// Declares a component as [`serde::Serialize`] and [`serde::Deserialize`]
     Serializable: ComponentSerializer,
     Debuggable: ComponentDebugger,
+    MakeDefault: ComponentDefault,
     Store: (),
+    Networked: (),
 }
 
-impl<T> ComponentAttributeValue<T> for () {
-    fn construct(_: Component<T>) -> Self {}
+impl<T> ComponentAttributeValue<T, ()> for () {
+    fn construct(_: Component<T>, _: ()) -> Self {}
 }
 
 pub struct AttributeEntry {
@@ -114,13 +136,13 @@ pub struct AttributeEntry {
 }
 
 impl AttributeEntry {
-    pub fn new<Attr, T>(component: Component<T>) -> Self
+    pub fn new<Attr, T, P>(component: Component<T>, params: P) -> Self
     where
         Attr: ComponentAttribute,
-        Attr::Value: ComponentAttributeValue<T>,
+        Attr::Value: ComponentAttributeValue<T, P>,
         T: 'static,
     {
-        Self { key: || TypeId::of::<Attr>(), value: Box::new(Attr::Value::construct(component)) as Box<dyn Any + Send + Sync> }
+        Self { key: || TypeId::of::<Attr>(), value: Box::new(Attr::Value::construct(component, params)) as Box<dyn Any + Send + Sync> }
     }
 }
 
@@ -130,7 +152,7 @@ pub fn slice_attrs(attrs: &'static [AttributeEntry], key: TypeId) -> Option<&'st
     attrs.iter().find(|v| (v.key)() == key)
 }
 
-/// Represents a
+/// Component key
 pub struct Component<T: 'static> {
     desc: ComponentDesc,
     _marker: PhantomData<T>,
@@ -139,6 +161,11 @@ pub struct Component<T: 'static> {
 impl<T: 'static> Component<T> {
     pub fn name(&self) -> &'static str {
         self.desc.vtable.component_name
+    }
+
+    /// Returns an untyped description of the component key
+    pub fn desc(&self) -> ComponentDesc {
+        self.desc
     }
 }
 
@@ -171,17 +198,14 @@ impl<T> Ord for Component<T> {
 }
 
 impl<T> Component<T> {
-    fn new(desc: ComponentDesc) -> Self {
+    /// Create a component key from the untyped description
+    pub fn new(desc: ComponentDesc) -> Self {
         Self { desc, _marker: PhantomData }
     }
 
     pub fn attribute<A: ComponentAttribute>(&self) -> Option<&'static A::Value> {
         self.desc.attribute::<A>()
     }
-}
-
-fn impl_default<T: ComponentValue + Default>(desc: ComponentDesc) -> ErasedHolder {
-    ComponentHolder::construct(desc, T::default())
 }
 
 /// Holds untyped information for everything a component can do
@@ -199,6 +223,7 @@ pub struct ComponentVTable<T: 'static> {
     /// See: [`std::ptr::drop_in_place`]
     impl_drop: fn(Box<ComponentHolder<T>>),
     impl_clone: fn(&ComponentHolder<T>) -> ErasedHolder,
+    impl_downcast_cloned: fn(&ComponentHolder<T>, dst: *mut MaybeUninit<T>),
     impl_take: fn(Box<ComponentHolder<T>>, dst: *mut MaybeUninit<T>),
 
     pub custom_attrs: fn(ComponentDesc, TypeId) -> Option<&'static AttributeEntry>,
@@ -216,6 +241,14 @@ impl<T: Clone + ComponentValue> ComponentVTable<T> {
             ComponentHolder::construct::<T>(holder.desc, T::clone(object))
         }
 
+        fn impl_downcast_cloned<T: Clone + ComponentValue>(holder: &ComponentHolder<T>, dst: *mut MaybeUninit<T>) {
+            let object = T::clone(&holder.object);
+            // Write into the destination
+            unsafe {
+                MaybeUninit::write(&mut *dst, object);
+            }
+        }
+
         #[allow(clippy::boxed_local)]
         fn impl_take<T: ComponentValue>(holder: Box<ComponentHolder<T>>, dst: *mut MaybeUninit<T>) {
             // Take v, but drop the rest
@@ -231,6 +264,7 @@ impl<T: Clone + ComponentValue> ComponentVTable<T> {
             get_type_id: || TypeId::of::<T>(),
             impl_clone: impl_clone::<T>,
             impl_drop: impl_drop::<T>,
+            impl_downcast_cloned: impl_downcast_cloned::<T>,
             impl_take: impl_take::<T>,
             custom_attrs: |_, _| None,
         }
@@ -305,7 +339,57 @@ pub struct ComponentEntry {
     inner: ErasedHolder,
 }
 
+impl Debug for ComponentEntry {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if f.alternate() {
+            f.debug_struct("ComponentEntry")
+                .field("name", &self.name())
+                .field("index", &self.inner.desc.index)
+                .field("value", self.as_debug())
+                .finish()
+        } else {
+            self.as_debug().fmt(f)
+        }
+    }
+}
+
+macro_rules! impl_infallible {
+    ($recv: ty, $name: ident, $ret: ty) => {
+        paste::paste! {
+            #[doc = "See [`" try_ $name "`]" ]
+            #[doc = "# Panics"]
+            #[doc = "If the types do not match"]
+            pub fn $name<T: 'static>(self: $recv) -> $ret {
+                #[cfg(debug_assertions)]
+                {
+                    let ty = self.type_name();
+                    match self.[< try_ $name >]() {
+                        Some(v) => v,
+                        None => {
+                            panic!(
+                                "Mismatched types. Attempt to downcast {:?} into {:?}",
+                                ty,
+                                std::any::type_name::<T>()
+                            )
+                        }
+                    }
+                }
+                #[cfg(not(debug_assertions))]
+                self.[< try_ $name>]().expect("Mismatched types")
+            }
+        }
+    };
+}
+
 impl ComponentEntry {
+    pub fn name(&self) -> &'static str {
+        self.inner.desc.vtable.component_name
+    }
+
+    pub fn type_name(&self) -> &'static str {
+        (self.inner.desc.vtable.get_type_name)()
+    }
+
     /// Creates a type erased component
     pub fn new<T: ComponentValue>(component: Component<T>, value: T) -> Self {
         Self::from_raw_parts(component.desc, value)
@@ -324,6 +408,11 @@ impl ComponentEntry {
         (self.inner.desc.vtable.get_type_id)() == TypeId::of::<T>()
     }
 
+    impl_infallible!(&Self, downcast_ref, &T);
+    impl_infallible!(&mut Self, downcast_mut, &mut T);
+    impl_infallible!(&Self, downcast_cloned, T);
+    impl_infallible!(Self, into_inner, T);
+
     /// Attempt to downcast the value to type `T`
     fn try_downcast_ref<T: 'static>(&self) -> Option<&T> {
         if self.is::<T>() {
@@ -338,20 +427,18 @@ impl ComponentEntry {
         }
     }
 
-    fn downcast_ref<T: 'static>(&self) -> &T {
-        #[cfg(debug_assertions)]
-        match self.try_downcast_ref() {
-            Some(v) => v,
-            None => {
-                panic!("Mismatched types. Expected: {:?}. Found {:?}", (self.inner.desc.vtable.get_type_name)(), std::any::type_name::<T>())
-            }
+    /// Attempt to downcast the value to type `T`
+    fn try_downcast_mut<T: 'static>(&mut self) -> Option<&mut T> {
+        if self.is::<T>() {
+            let v = unsafe { self.inner.cast_mut::<T>() };
+            Some(&mut v.object)
+        } else {
+            None
         }
-        #[cfg(not(debug_assertions))]
-        self.try_downcast_ref().expect("Mismatched types")
     }
 
     /// Take a concrete value out of the DynComponent.
-    pub fn take<T: 'static>(self) -> Option<T> {
+    pub fn try_into_inner<T: 'static>(self) -> Option<T> {
         if self.is::<T>() {
             let mut dst = MaybeUninit::uninit();
             // Safety
@@ -366,6 +453,17 @@ impl ComponentEntry {
                 (inner.desc.vtable.impl_take)(inner, p);
                 Some(dst.assume_init())
             }
+        } else {
+            None
+        }
+    }
+
+    pub fn try_downcast_cloned<T: 'static>(&self) -> Option<T> {
+        if self.is::<T>() {
+            let mut dst = MaybeUninit::uninit();
+            (self.inner.desc.vtable.impl_downcast_cloned)(&self.inner, &mut dst as *mut MaybeUninit<T> as *mut MaybeUninit<()>);
+
+            Some(unsafe { dst.assume_init() })
         } else {
             None
         }
@@ -403,6 +501,10 @@ impl ComponentHolder<()> {
         &*(self as *const ComponentHolder<()> as *const ComponentHolder<T>)
     }
 
+    unsafe fn cast_mut<T>(&mut self) -> &mut ComponentHolder<T> {
+        &mut *(self as *mut ComponentHolder<()> as *mut ComponentHolder<T>)
+    }
+
     /// Construct a new type erased instance of `T` and return a pointer to the allocation.
     ///
     /// The returned pointer must be deallocated manually
@@ -411,7 +513,7 @@ impl ComponentHolder<()> {
     /// The vtable must be of the type `T`
     ///
     /// T **must** be 'static + Send + Sync to be coerced to `ComponentHolder<()>`
-    fn construct<T: ComponentValue>(desc: ComponentDesc, object: T) -> ErasedHolder {
+    fn construct<T: 'static + Send + Sync>(desc: ComponentDesc, object: T) -> ErasedHolder {
         debug_assert_eq!(
             (desc.vtable.get_type_id)(),
             TypeId::of::<T>(),
@@ -434,7 +536,7 @@ impl ComponentHolder<()> {
 
 #[macro_export]
 macro_rules! components2 {
-    ($ns: literal, { $($(#[$outer:meta])* $(@[$($attr: ty),*])? $vis: vis $name:ident: $ty:ty,)*}) => {
+    ($ns: literal, { $($(#[$outer:meta])* $(@[$($attr: ty$([ $params: tt ])?),*])? $vis: vis $name:ident: $ty:ty,)*}) => {
         $(
             $crate::paste::paste! {
                 #[allow(non_upper_case_globals)]
@@ -446,7 +548,7 @@ macro_rules! components2 {
                         Box::new([
                             $(
                                 $(
-                                    $crate::AttributeEntry::new::<$attr, $ty>(_component),
+                                    $crate::AttributeEntry::new::<$attr, $ty, _>(_component, ($($params),*)),
                                 )*
                             )*
                         ])
@@ -496,14 +598,14 @@ mod test {
         assert_eq!(value.try_downcast_ref::<&str>(), None);
     }
 
+    #[derive(PartialEq, Eq, Debug, Clone, serde::Serialize, serde::Deserialize)]
+    struct Person {
+        name: String,
+        age: i32,
+    }
+
     #[test]
     fn component_macro() {
-        #[derive(PartialEq, Eq, Debug, Clone, serde::Serialize, serde::Deserialize)]
-        struct Person {
-            name: String,
-            age: i32,
-        }
-
         components2! ("test",{
             @[Serializable, Debuggable]
             foo: String,
@@ -531,9 +633,40 @@ mod test {
 
         eprintln!("Value: {:?}", value.as_debug());
 
-        let p = entry.take::<Person>().unwrap();
+        let p = entry.into_inner::<Person>();
         assert_eq!(value.downcast_ref::<Person>(), &p);
         assert_eq!(value.try_downcast_ref::<String>(), None);
+    }
+
+    #[test]
+    fn make_default() {
+        fn default_person() -> Person {
+            Person { age: 21, name: "unnamed".into() }
+        }
+
+        components2! ("test", {
+            @[MakeDefault, Debuggable]
+            people: Vec<Person>,
+            @[MakeDefault[default_person], Debuggable, Store, Networked]
+            person: Person,
+        });
+
+        let people_desc: ComponentDesc = people().desc();
+        let person_desc: ComponentDesc = person().desc();
+
+        let mut people = people_desc.attribute::<MakeDefault>().unwrap().make_default();
+
+        let mut person = person_desc.attribute::<MakeDefault>().unwrap().make_default();
+
+        assert_eq!(person.downcast_ref::<Person>(), &Person { age: 21, name: "unnamed".into() });
+
+        people.downcast_mut::<Vec<Person>>().push(person.downcast_cloned::<Person>());
+
+        assert_eq!(&people.downcast_mut::<Vec<Person>>()[0], person.downcast_ref::<Person>());
+        person.downcast_mut::<Person>().name = "Smith".to_string();
+        assert_ne!(&people.downcast_mut::<Vec<Person>>()[0], person.downcast_ref::<Person>());
+
+        eprintln!("people: {people:?}, person: {person:?}");
     }
 
     #[test]
@@ -553,7 +686,7 @@ mod test {
             drop(value);
             assert_eq!(Arc::strong_count(&shared), 2);
 
-            let value = value2.take::<Arc<String>>().unwrap();
+            let value = value2.into_inner::<Arc<String>>();
             assert_eq!(Arc::strong_count(&shared), 2);
             drop(value);
             assert_eq!(Arc::strong_count(&shared), 1);
@@ -579,6 +712,9 @@ mod test {
             assert_eq!(Arc::strong_count(&shared), 2);
 
             let value3 = value2.clone();
+            let value4: Arc<String> = value2.downcast_cloned();
+            assert_eq!(Arc::strong_count(&shared), 4);
+            drop(value4);
             assert_eq!(Arc::strong_count(&shared), 3);
 
             assert_eq!(value3.downcast_ref::<Arc<String>>(), &shared);

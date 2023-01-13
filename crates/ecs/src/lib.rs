@@ -14,7 +14,10 @@ use bit_set::BitSet;
 use bit_vec::BitVec;
 use elements_std::sparse_vec::SparseVec;
 use itertools::Itertools;
+/// Expose to macros
+pub use once_cell;
 use parking_lot::Mutex;
+/// Expose to macros
 pub use paste;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;

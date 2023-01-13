@@ -291,7 +291,7 @@ impl FromIterator<ComponentUnit> for EntityData {
 
 #[cfg(test)]
 mod test {
-    use crate::{components, ComponentRegistry, EntityData};
+    use crate::{components, EntityData};
 
     components!("test", {
         ser_test2: String,
