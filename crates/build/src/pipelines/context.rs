@@ -114,15 +114,21 @@ impl PipelineCtx {
                 if sources_filter.is_empty() {
                     true
                 } else {
+                    let path = self.in_root().relative_path(file.path());
+                    println!("YY path={} file={} in_root={}", path, file, self.in_root());
                     for pat in &sources_filter {
-                        if pat.matches(file.path().as_str()) {
+                        if pat.matches(path.as_str()) {
                             return true;
                         }
                     }
                     false
                 }
             })
-            .filter(|f| opt_filter.as_ref().map(|p| p.matches(f.path().as_str())).unwrap_or(true))
+            .filter(|f| {
+                let path = self.in_root().relative_path(f.path());
+                println!("XX {:?} {} {}", opt_filter, path, f);
+                opt_filter.as_ref().map(|p| p.matches(path.as_str())).unwrap_or(true)
+            })
             .filter(|f| filter(f))
             .cloned()
             .collect_vec();

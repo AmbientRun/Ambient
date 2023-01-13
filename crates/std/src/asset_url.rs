@@ -4,6 +4,7 @@ use std::{
 
 use anyhow::Context;
 use convert_case::{Case, Casing};
+use percent_encoding::percent_decode_str;
 use rand::seq::SliceRandom;
 use relative_path::{RelativePath, RelativePathBuf};
 use serde::{
@@ -95,8 +96,9 @@ impl AbsAssetUrl {
     pub fn join(&self, path: impl AsRef<str>) -> Result<Self, url::ParseError> {
         Ok(AbsAssetUrl(self.0.join(path.as_ref())?))
     }
-    pub fn path(&self) -> &RelativePath {
-        RelativePath::new(self.0.path())
+    /// Returns the decoded path
+    pub fn path(&self) -> RelativePathBuf {
+        RelativePathBuf::from(&percent_decode_str(self.0.path()).decode_utf8().unwrap())
     }
     pub fn set_path(&mut self, path: impl AsRef<str>) {
         self.0.set_path(path.as_ref());

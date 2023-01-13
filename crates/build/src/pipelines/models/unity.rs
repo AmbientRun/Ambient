@@ -47,11 +47,14 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                     let base_path = base_path.to_string();
                     let mut base_file = file.clone();
                     base_file.set_path(base_path);
-                    let base_file = ctx.get_downloadable_url(&base_file).unwrap().clone();
-                    Some(async move {
-                        let docs = download_unity_yaml(&ctx.assets(), &file).await?;
-                        Ok((docs[0]["guid"].as_str().unwrap().to_string(), base_file))
-                    })
+                    if let Ok(base_file) = ctx.get_downloadable_url(&base_file).cloned() {
+                        Some(async move {
+                            let docs = download_unity_yaml(&ctx.assets(), &file).await?;
+                            Ok((docs[0]["guid"].as_str().unwrap().to_string(), base_file))
+                        })
+                    } else {
+                        None
+                    }
                 } else {
                     None
                 }
@@ -71,7 +74,10 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
 
     if use_prefabs {
         ctx.process_files(
-            |file| file.extension() == Some("prefab".to_string()),
+            |file| {
+                println!("{:?} {}", file.extension(), file);
+                file.extension() == Some("prefab".to_string())
+            },
             move |ctx, file| {
                 let config = config.clone();
                 let materials = materials.clone();
