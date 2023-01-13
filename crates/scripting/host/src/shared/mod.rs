@@ -32,6 +32,9 @@ pub mod conversion;
 pub mod guest_conversion;
 pub mod interface;
 
+pub mod host_state;
+pub mod rustc;
+
 components!("scripting::shared", {
     script_module: ScriptModule,
     script_module_bytecode: ScriptModuleBytecode,

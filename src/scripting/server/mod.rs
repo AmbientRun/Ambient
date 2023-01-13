@@ -2,15 +2,16 @@ use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 use elements_ecs::{components, EntityId, SystemGroup, World};
 use elements_network::server::{ForkingEvent, ShutdownEvent};
-pub use elements_scripting_host::server::docs_path;
 use elements_scripting_host::{
-    server::{bindings::Bindings, rustc::InstallDirs, spawn_script_module, HostState, MessageType},
+    server::bindings::Bindings,
     shared::{
         get_module_name,
+        host_state::{spawn_script_module, HostState, MessageType},
         interface::{
             get_scripting_interfaces,
             guest::{Guest, GuestData},
         },
+        rustc::InstallDirs,
         wasm::WasmContext,
         BaseHostGuestState, File, ScriptModuleState,
     },
@@ -117,7 +118,7 @@ pub async fn initialize(world: &mut World) -> anyhow::Result<()> {
         workspace_path: project_path.clone(),
         scripts_path: project_path.join("scripts"),
 
-        server_state_component: script_module_state(),
+        state_component: script_module_state(),
         make_wasm_context: Arc::new(WasmServerContext::new),
         add_to_linker: Arc::new(|_linker| Ok(())),
 
@@ -127,6 +128,7 @@ pub async fn initialize(world: &mut World) -> anyhow::Result<()> {
         .initialize(world, "elements_scripting_interface")
         .await?;
     world.add_resource(host_state(), Arc::new(new_host_state));
+    elements_scripting_host::server::initialize(world, host_state())?;
 
     let scripts_path = project_path.join("scripts");
     if scripts_path.exists() {
