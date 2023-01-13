@@ -115,7 +115,6 @@ impl PipelineCtx {
                     true
                 } else {
                     let path = self.in_root().relative_path(file.path());
-                    println!("YY path={} file={} in_root={}", path, file, self.in_root());
                     for pat in &sources_filter {
                         if pat.matches(path.as_str()) {
                             return true;
@@ -126,7 +125,6 @@ impl PipelineCtx {
             })
             .filter(|f| {
                 let path = self.in_root().relative_path(f.path());
-                println!("XX {:?} {} {}", opt_filter, path, f);
                 opt_filter.as_ref().map(|p| p.matches(path.as_str())).unwrap_or(true)
             })
             .filter(|f| filter(f))
