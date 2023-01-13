@@ -36,6 +36,7 @@ components!("transform", {
     fbx_scaling_offset: Vec3,
     fbx_scaling_pivot: Vec3,
 });
+
 gpu_components! {
     mesh_to_world() => mesh_to_world: GpuComponentFormat::Mat4,
 }

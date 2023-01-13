@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use elements_core::{
     asset_cache, async_ecs::{async_run, AsyncRun}, bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere}, hierarchy::{children, despawn_recursive}, main_scene, runtime, transform::{get_world_position, inv_local_to_world, local_to_world, mesh_to_world}
 };
-use elements_ecs::{components, query, EntityData, EntityId, IComponent, SystemGroup, World};
+use elements_ecs::{components, query, ComponentDesc, EntityData, EntityId, IComponent, SystemGroup, World};
 use elements_gpu::mesh_buffer::GpuMeshFromUrl;
 use elements_renderer::{
     color, gpu_primitives, materials::{
@@ -183,16 +183,16 @@ fn remove_model(world: &mut World, entity: EntityId) {
         });
         world.set(entity, children(), childs).ok();
     }
-    let mut components: Vec<Box<dyn IComponent>> = vec![
-        primitives().into(),
-        gpu_primitives().into(),
-        animation_binder().into(),
-        local_bounding_aabb().into(),
-        world_bounding_aabb().into(),
-        world_bounding_sphere().into(),
-        model_loaded().into(),
+    let mut components: Vec<ComponentDesc> = vec![
+        primitives().desc(),
+        gpu_primitives().desc(),
+        animation_binder().desc(),
+        local_bounding_aabb().desc(),
+        world_bounding_aabb().desc(),
+        world_bounding_sphere().desc(),
+        model_loaded().desc(),
     ];
-    components.retain(|comp| world.has_component_ref(entity, comp.as_ref()));
+    components.retain(|&comp| world.has_component_ref(entity, comp));
     world.remove_components(entity, components).ok();
 }
 

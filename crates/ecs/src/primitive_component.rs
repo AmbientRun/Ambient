@@ -1,42 +1,32 @@
 use elements_std::asset_url::ObjectRef;
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
 use paste::paste;
-use serde::{Deserialize, Serialize};
 
-use crate::{Component, ComponentRegistry, EntityId, EntityUid, IComponent};
+use crate::{ComponentDesc, ComponentRegistry, ComponentVTable, EntityId, EntityUid};
 
 macro_rules! make_primitive_component {
     ($(($value:ident, $type:ty)),*) => { paste! {
-        #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-        pub enum PrimitiveComponent {
-            $($value(Component<$type>)), *,
-            $([<Vec $value>](Component<Vec<$type>>)), *,
-            $([<Option $value>](Component<Option<$type>>)), *
-        }
-        impl PrimitiveComponent {
-            pub fn as_component(&self) -> &dyn IComponent {
-                match self {
-                  $(Self::$value(c) => c,)*
-                  $(Self::[<Vec $value>](c) => c,)*
-                  $(Self::[<Option $value>](c) => c,)*
-                }
-            }
-            pub fn as_component_mut(&mut self) -> &mut dyn IComponent {
-                match self {
-                  $(Self::$value(c) => c,)*
-                  $(Self::[<Vec $value>](c) => c,)*
-                  $(Self::[<Option $value>](c) => c,)*
-                }
-            }
+        #[derive(Debug,  Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+        pub struct PrimitiveComponent {
+            pub ty: PrimitiveComponentType,
+            pub desc: ComponentDesc,
+
+            // $($value(Component<$type>)), *,
+            // $([<Vec $value>](Component<Vec<$type>>)), *,
+            // $([<Option $value>](Component<Option<$type>>)), *
         }
 
-        #[derive(Clone, Serialize, Deserialize, Debug)]
+        #[derive(Debug,  Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+        #[derive(serde::Serialize, serde::Deserialize)]
         #[serde(tag = "type")]
         pub enum PrimitiveComponentType {
             $($value), *,
+            $([< Vec $value >]), *,
+            $([< Option$value >]), *,
             Vec { variants: Box<PrimitiveComponentType> },
             Option { variants: Box<PrimitiveComponentType> },
         }
+
         impl TryFrom<&str> for PrimitiveComponentType {
             type Error = &'static str;
 
@@ -48,36 +38,74 @@ macro_rules! make_primitive_component {
                 }
             }
         }
+
+        impl PrimitiveComponent {
+            pub fn as_component(&self) -> ComponentDesc {
+                self.desc
+            }
+        }
+
         impl PrimitiveComponentType {
-            pub(crate) fn register(&self, reg: &mut ComponentRegistry, key: &str, decorating: bool) {
+            pub(crate) fn register(&self, reg: &mut ComponentRegistry, key: &str, decorating: bool) -> PrimitiveComponent {
                 match self {
                     $(
-                        PrimitiveComponentType::$value => reg.register_with_id(key,
-                            &mut Component::<$type>::new_external(0),
-                            decorating,
-                            Some(self.clone()),
-                            Some(PrimitiveComponent::$value(Component::<$type>::new_external(0)))
+                        ty @ PrimitiveComponentType::$value => reg.register_with_primitive(
+                            {
+                                static VTABLE: &ComponentVTable<$type> = &ComponentVTable::construct("core", "<unknown>", |_, _| None);
+                                unsafe { VTABLE.erase() }
+                            },
+                            ty.clone()
+                        ),
+                        ty @ PrimitiveComponentType::[< Vec $value >] => reg.register_with_primitive(
+                            {
+                                static VTABLE: &ComponentVTable<Vec<$type>> = &ComponentVTable::construct("core", "<unknown>", |_, _| None);
+                                unsafe { VTABLE.erase() }
+                            },
+                            ty.clone(),
+                        ),
+                        ty @ PrimitiveComponentType::[< Option $value >] => reg.register_with_primitive(
+                            {
+                                static VTABLE: &ComponentVTable<Option<$type>> = &ComponentVTable::construct("core", "<unknown>", |_, _| None);
+                                unsafe { VTABLE.erase() }
+                            },
+                            ty.clone(),
                         ),
                     )*
                     PrimitiveComponentType::Vec { variants } => match **variants {
                         $(
-                            PrimitiveComponentType::$value => reg.register_with_id(key,
-                                &mut Component::<Vec<$type>>::new_external(0),
-                                decorating,
-                                Some(self.clone()),
-                                Some(PrimitiveComponent::[<Vec $value>](Component::<Vec<$type>>::new_external(0)))
+                            PrimitiveComponentType::$value => reg.register_with_primitive(
+                                {
+                                    static VTABLE: &ComponentVTable::<Vec<$type>> = &ComponentVTable::construct("core", "<unknown>", |_,_| None);
+                                    unsafe {
+                                        VTABLE.erase()
+                                    }
+                                },
+                                PrimitiveComponentType::[< Vec $value >]
                             ),
+                            // PrimitiveComponentType::$value => reg.register2(key,
+                            //     decorating,
+                            //     Some(self.clone()),
+                            //     Some(PrimitiveComponent::[<Vec $value>](Component::<Vec<$type>>::new_external(0)))
+                            // ),
                         )*
                         _ => panic!("Unsupported Vec inner type: {:?}", variants),
                     },
                     PrimitiveComponentType::Option { variants } => match **variants {
                         $(
-                            PrimitiveComponentType::$value => reg.register_with_id(key,
-                                &mut Component::<Option<$type>>::new_external(0),
-                                decorating,
-                                Some(self.clone()),
-                                Some(PrimitiveComponent::[<Option $value>](Component::<Option<$type>>::new_external(0)))
+                            PrimitiveComponentType::$value => reg.register_with_primitive(
+                                {
+                                    static VTABLE: &ComponentVTable::<Option<$type>> = &ComponentVTable::construct("core", "<unknown>", |_,_| None);
+                                    unsafe {
+                                        VTABLE.erase()
+                                    }
+                                },
+                                PrimitiveComponentType::[< Option $value >]
                             ),
+                            // PrimitiveComponentType::$value => reg.register2(key,
+                            //     decorating,
+                            //     Some(self.clone()),
+                            //     Some(PrimitiveComponent::[<Option $value>](Component::<Option<$type>>::new_external(0)))
+                            // ),
                         )*
                         _ => panic!("Unsupported Option inner type: {:?}", variants),
                     }
@@ -86,18 +114,7 @@ macro_rules! make_primitive_component {
         }
         impl PartialEq<PrimitiveComponentType> for PrimitiveComponent {
             fn eq(&self, other: &PrimitiveComponentType) -> bool {
-                match (self, other) {
-                    $((Self::$value(_), PrimitiveComponentType::$value) => true,)*
-                    (pc, PrimitiveComponentType::Vec { variants }) => match (pc, &**variants) {
-                        $((Self::[< Vec $value >](_), PrimitiveComponentType::$value) => true,)*
-                        _ => false,
-                    },
-                    (pc, PrimitiveComponentType::Option { variants }) => match (pc, &**variants) {
-                        $((Self::[< Option $value >](_), PrimitiveComponentType::$value) => true,)*
-                        _ => false,
-                    },
-                    _ => false,
-                }
+                &self.ty == other
             }
         }
     } };

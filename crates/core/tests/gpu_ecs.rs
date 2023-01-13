@@ -54,9 +54,6 @@ impl TestCommon {
 
         Self { world, gpu_world, sync, assets }
     }
-    fn get_component_name(component: &dyn IComponent) -> String {
-        with_component_registry(|cr| cr.get_id_for(component).split("::").last().unwrap_or_default().to_owned())
-    }
     fn update(&mut self) {
         self.gpu_world.lock().update(&self.world);
         self.sync.run(&mut self.world, &GpuWorldSyncEvent);
@@ -67,14 +64,11 @@ impl TestCommon {
 
         let module = GpuWorldShaderModuleKey { read_only: true }.get(&self.assets);
         let bind_group = self.gpu_world.lock().create_bind_group(true);
-        GpuRun::new(
-            "gpu_ecs",
-            format!("return get_entity_{}(vec2<u32>(u32(input.x), u32(input.y)));", Self::get_component_name(&component)),
-        )
-        .add_module(module)
-        .add_bind_group("ENTITIES_BIND_GROUP", bind_group)
-        .run(&self.assets, loc)
-        .await
+        GpuRun::new("gpu_ecs", format!("return get_entity_{}(vec2<u32>(u32(input.x), u32(input.y)));", component.name()))
+            .add_module(module)
+            .add_bind_group("ENTITIES_BIND_GROUP", bind_group)
+            .run(&self.assets, loc)
+            .await
     }
     async fn set_gpu_component(&self, id: EntityId, component: Component<Vec4>, value: f32) {
         let loc = self.world.entity_loc(id).unwrap();
@@ -84,10 +78,7 @@ impl TestCommon {
         let bind_group = self.gpu_world.lock().create_bind_group(false);
         let _res: Vec4 = GpuRun::new(
             "gpu_ecs",
-            format!(
-                "set_entity_{}(vec2<u32>(u32(input.x), u32(input.y)), vec4<f32>(input.z)); return vec4<f32>(0.);",
-                Self::get_component_name(&component)
-            ),
+            format!("set_entity_{}(vec2<u32>(u32(input.x), u32(input.y)), vec4<f32>(input.z)); return vec4<f32>(0.);", component.name()),
         )
         .add_module(module)
         .add_bind_group("ENTITIES_BIND_GROUP", bind_group)

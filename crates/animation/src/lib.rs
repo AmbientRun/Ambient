@@ -210,7 +210,7 @@ pub fn animation_systems() -> SystemGroup {
                                         "{}_{:?}_{}_{:?}",
                                         id,
                                         track.target,
-                                        track.outputs.component().get_index(),
+                                        track.outputs.component().index(),
                                         track.outputs.field()
                                     );
                                     if action.weight == 0.0 {

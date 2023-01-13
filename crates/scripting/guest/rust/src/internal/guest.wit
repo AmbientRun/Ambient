@@ -4,7 +4,7 @@ record run-context {
 }
 
 init: func()
-exec: func(ctx: run-context, event-name: string, event-data: list<tuple<u64, component-type>>)
+exec: func(ctx: run-context, event-name: string, event-data: list<tuple<u32, component-type>>)
 
 // TEMPORARY: until we move to the component model, we have to duplicate definitions
 // and convert between the import and guest representations... :(

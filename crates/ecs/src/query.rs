@@ -9,24 +9,30 @@ pub struct ArchetypeFilter {
     components: ComponentSet,
     not_components: ComponentSet,
 }
+
 impl ArchetypeFilter {
     pub fn new() -> Self {
         Self { components: ComponentSet::new(), not_components: ComponentSet::new() }
     }
-    pub fn incl_ref(mut self, component: &dyn IComponent) -> Self {
-        self.components.insert(component);
+
+    pub fn incl_ref(mut self, component: impl Into<ComponentDesc>) -> Self {
+        self.components.insert(component.into());
         self
     }
-    pub fn incl<T: IComponent>(self, component: T) -> Self {
-        self.incl_ref(&component)
+
+    pub fn incl(self, component: impl Into<ComponentDesc>) -> Self {
+        self.incl_ref(component.into())
     }
-    pub fn excl_ref(mut self, component: &dyn IComponent) -> Self {
-        self.not_components.insert(component);
+
+    pub fn excl_ref(mut self, component: impl Into<ComponentDesc>) -> Self {
+        self.not_components.insert(component.into());
         self
     }
-    pub fn excl<T: IComponent>(self, component: T) -> Self {
-        self.excl_ref(&component)
+
+    pub fn excl(self, component: impl Into<ComponentDesc>) -> Self {
+        self.excl_ref(component.into())
     }
+
     pub(crate) fn matches(&self, components: &ComponentSet) -> bool {
         components.is_superset(&self.components) && components.is_disjoint(&self.not_components)
     }
@@ -59,16 +65,18 @@ impl Default for ArchetypeFilter {
     }
 }
 
-pub trait ComponentsTuple<'a>: Send + Sync {
-    fn write_component_ids(&self, set: &mut ComponentSet);
-    fn get_change_filtered(&self, out: &mut Vec<Box<dyn IComponent>>);
+pub trait ComponentQuery<'a>: Send + Sync {
     type Data;
     type DataMut;
     type DataCloned;
+
+    fn write_component_ids(&self, set: &mut ComponentSet);
+    fn get_change_filtered(&self, out: &mut Vec<ComponentDesc>);
     fn get_data(&self, world: &'a World, acc: &EntityAccessor) -> Self::Data;
     fn get_data_mut(&self, world: &'a World, acc: &EntityAccessor) -> Self::DataMut;
     fn get_data_cloned(&self, world: &'a World, acc: &EntityAccessor) -> Self::DataCloned;
 }
+
 pub trait ComponentsTupleAppend<T: ComponentValue> {
     type Output;
     fn append(&self, component: Component<T>) -> Self::Output;
@@ -76,51 +84,54 @@ pub trait ComponentsTupleAppend<T: ComponentValue> {
 
 // From: https://stackoverflow.com/questions/56697029/is-there-a-way-to-impl-trait-for-a-tuple-that-may-have-any-number-elements
 macro_rules! tuple_impls {
-    ( $( $name:ident )+ ) => {
-        impl<'a, $($name: ComponentValue),+> ComponentsTuple<'a> for ($(Component<$name>,)+) {
+    ( $( $name:ident )* ) => {
+        impl<'a, $($name: ComponentQuery<'a>),*> ComponentQuery<'a> for ($($name,)*) {
+            type Data       = ($($name::Data,)*);
+            type DataMut    = ($($name::DataMut,)*);
+            type DataCloned = ($($name::DataCloned,)*);
+
             fn write_component_ids(&self, set: &mut ComponentSet) {
                 #[allow(non_snake_case)]
-                let ($($name,)+) = self;
-                $(set.insert($name);)+
+                let ($($name,)*) = self;
+                $($name.write_component_ids(set);)*
             }
-            fn get_change_filtered(&self, out: &mut Vec<Box<dyn IComponent>>) {
+
+            fn get_change_filtered(&self, out: &mut Vec<ComponentDesc>) {
                 #[allow(non_snake_case)]
-                let ($($name,)+) = self;
-                $(
-                    if $name.is_change_filter() {
-                        out.push(Box::new(*$name));
-                    }
-                )+
+                let ($($name,)*) = self;
+                $($name.get_change_filtered(out);)*
             }
-            type Data = ($(&'a $name,)+);
-            type DataMut = ($(&'a mut $name,)+);
-            type DataCloned = ($($name,)+);
+
             fn get_data(&self, world: &'a World, acc: &EntityAccessor) -> Self::Data {
                 #[allow(non_snake_case)]
-                let ($($name,)+) = self;
-                ($(acc.get(world, *$name),)+)
+                let ($($name,)*) = self;
+                ($($name.get_data(world, acc),)*)
             }
+
             fn get_data_mut(&self, world: &'a World, acc: &EntityAccessor) -> Self::DataMut {
                 #[allow(non_snake_case)]
-                let ($($name,)+) = self;
-                ($(acc.get_mut(world, *$name),)+)
+                let ($($name,)*) = self;
+                ($($name.get_data_mut(world, acc),)*)
             }
+
             fn get_data_cloned(&self, world: &'a World, acc: &EntityAccessor) -> Self::DataCloned {
                 #[allow(non_snake_case)]
-                let ($($name,)+) = self;
-                ($(acc.get(world, *$name).clone(),)+)
+                let ($($name,)*) = self;
+                ($($name.get_data_cloned(world, acc),)*)
             }
         }
-        impl<T: ComponentValue, $($name: ComponentValue),+> ComponentsTupleAppend<T> for ($(Component<$name>,)+) {
-            type Output = ($(Component<$name>,)+ Component<T>);
+
+        impl<T: ComponentValue, $($name: Clone),*> ComponentsTupleAppend<T> for ($($name,)*) {
+            type Output = ($($name,)* Component<T>);
             fn append(&self, component: Component<T>) -> Self::Output {
                 #[allow(non_snake_case)]
-                let ($($name,)+) = self;
-                ($(*$name,)+ component)
+                let ($($name,)*) = self.clone();
+                ($($name,)* component)
             }
         }
     };
 }
+
 tuple_impls! { A }
 tuple_impls! { A B }
 tuple_impls! { A B C }
@@ -131,22 +142,70 @@ tuple_impls! { A B C D E F G }
 tuple_impls! { A B C D E F G H }
 tuple_impls! { A B C D E F G H I }
 
-impl<'a, T: ComponentValue> ComponentsTuple<'a> for Component<T> {
-    fn write_component_ids(&self, set: &mut ComponentSet) {
-        set.insert(self);
+impl<T: ComponentValue> Component<T> {
+    pub fn changed(self) -> ChangedQuery<T> {
+        ChangedQuery { component: self }
     }
+}
 
-    fn get_change_filtered(&self, out: &mut Vec<Box<dyn IComponent>>) {
-        if self.is_change_filter() {
-            out.push(Box::new(*self))
-        }
+pub struct ChangedQuery<T: 'static> {
+    component: Component<T>,
+}
+
+impl<T> Clone for ChangedQuery<T> {
+    fn clone(&self) -> Self {
+        Self { component: self.component.clone() }
     }
+}
 
+impl<T> Debug for ChangedQuery<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ChangedQuery").field("component", &self.component).finish()
+    }
+}
+
+impl<T> Copy for ChangedQuery<T> {}
+
+impl<'a, T: ComponentValue> ComponentQuery<'a> for ChangedQuery<T> {
     type Data = &'a T;
 
     type DataMut = &'a mut T;
 
     type DataCloned = T;
+
+    fn write_component_ids(&self, set: &mut ComponentSet) {
+        self.component.write_component_ids(set)
+    }
+
+    fn get_change_filtered(&self, out: &mut Vec<ComponentDesc>) {
+        out.push(self.component.desc())
+    }
+
+    fn get_data(&self, world: &'a World, acc: &EntityAccessor) -> Self::Data {
+        self.component.get_data(world, acc)
+    }
+
+    fn get_data_mut(&self, world: &'a World, acc: &EntityAccessor) -> Self::DataMut {
+        self.component.get_data_mut(world, acc)
+    }
+
+    fn get_data_cloned(&self, world: &'a World, acc: &EntityAccessor) -> Self::DataCloned {
+        self.component.get_data_cloned(world, acc)
+    }
+}
+
+impl<'a, T: ComponentValue> ComponentQuery<'a> for Component<T> {
+    type Data = &'a T;
+
+    type DataMut = &'a mut T;
+
+    type DataCloned = T;
+
+    fn write_component_ids(&self, set: &mut ComponentSet) {
+        set.insert(self.desc());
+    }
+
+    fn get_change_filtered(&self, _: &mut Vec<ComponentDesc>) {}
 
     fn get_data(&self, world: &'a World, acc: &EntityAccessor) -> Self::Data {
         acc.get(world, *self)
@@ -167,12 +226,13 @@ impl<'a, T: ComponentValue> ComponentsTuple<'a> for Component<T> {
 // tuple_impls! { A B C D E F G H I J K }
 // tuple_impls! { A B C D E F G H I J K L }
 
-impl<'a> ComponentsTuple<'a> for () {
-    fn write_component_ids(&self, _: &mut ComponentSet) {}
-    fn get_change_filtered(&self, _: &mut Vec<Box<dyn IComponent>>) {}
+impl<'a> ComponentQuery<'a> for () {
     type Data = ();
     type DataMut = ();
     type DataCloned = ();
+
+    fn write_component_ids(&self, _: &mut ComponentSet) {}
+    fn get_change_filtered(&self, _: &mut Vec<ComponentDesc>) {}
     fn get_data(&self, _: &World, _: &EntityAccessor) -> Self::Data {}
     fn get_data_mut(&self, _: &World, _: &EntityAccessor) -> Self::DataMut {}
     fn get_data_cloned(&self, _: &World, _: &EntityAccessor) -> Self::DataCloned {}
@@ -266,7 +326,7 @@ impl QueryState {
 #[derive(Clone, Debug)]
 pub enum QueryEvent {
     Frame,
-    Changed { components: Vec<Box<dyn IComponent>> },
+    Changed { components: Vec<ComponentDesc> },
     Spawned,
     Despawned,
 }
@@ -297,53 +357,53 @@ impl Query {
         Self::new(ArchetypeFilter::new())
     }
 
-    pub fn any_changed(components: Vec<Box<dyn IComponent>>) -> Self {
+    pub fn any_changed(components: Vec<ComponentDesc>) -> Self {
         let mut q = Self::all();
         for comp in components {
-            q = q.when_changed_ref(comp.as_ref());
+            q = q.when_changed_ref(comp);
         }
         q
     }
 
-    fn new_for_typed_query(component_ids: ComponentSet, changed_components: Vec<Box<dyn IComponent>>) -> Self {
+    fn new_for_typed_query(component_ids: ComponentSet, changed_components: Vec<ComponentDesc>) -> Self {
         Query {
             filter: ArchetypeFilter { components: component_ids, not_components: ComponentSet::new() },
             event: if !changed_components.is_empty() { QueryEvent::Changed { components: changed_components } } else { QueryEvent::Frame },
         }
     }
 
-    pub fn when_changed_ref(mut self, component: &dyn IComponent) -> Self {
+    pub fn when_changed_ref(mut self, component: impl Into<ComponentDesc>) -> Self {
         if let QueryEvent::Changed { components } = &mut self.event {
-            components.push(component.clone_boxed());
+            components.push(component.into());
         } else {
-            self.event = QueryEvent::Changed { components: vec![component.clone_boxed()] };
+            self.event = QueryEvent::Changed { components: vec![component.into()] };
         }
         self
     }
 
-    pub fn when_changed<T: IComponent + 'static>(self, component: T) -> Self {
-        self.when_changed_ref(&component)
+    pub fn when_changed(self, component: impl Into<ComponentDesc>) -> Self {
+        self.when_changed_ref(component)
     }
-    pub fn incl_ref(mut self, component: &dyn IComponent) -> Self {
-        self.filter = self.filter.incl_ref(component);
+    pub fn incl_ref(mut self, component: impl Into<ComponentDesc>) -> Self {
+        self.filter = self.filter.incl_ref(component.into());
         self
     }
-    pub fn incl<T: IComponent>(self, component: T) -> Self {
-        self.incl_ref(&component)
+    pub fn incl(self, component: impl Into<ComponentDesc>) -> Self {
+        self.incl_ref(component)
     }
-    pub fn excl_ref(mut self, component: &dyn IComponent) -> Self {
-        self.filter = self.filter.excl_ref(component);
+    pub fn excl_ref(mut self, component: impl Into<ComponentDesc>) -> Self {
+        self.filter = self.filter.excl_ref(component.into());
         self
     }
-    pub fn excl<T: IComponent>(self, component: T) -> Self {
-        self.excl_ref(&component)
+    pub fn excl(self, component: impl Into<ComponentDesc>) -> Self {
+        self.excl_ref(component)
     }
-    pub fn optional_changed_ref(mut self, component: &dyn IComponent) -> Self {
+    pub fn optional_changed_ref(mut self, component: impl Into<ComponentDesc>) -> Self {
         let event = std::mem::replace(&mut self.event, QueryEvent::Frame);
         self.event = match event {
-            QueryEvent::Frame => QueryEvent::Changed { components: vec![component.clone_boxed()] },
+            QueryEvent::Frame => QueryEvent::Changed { components: vec![component.into()] },
             QueryEvent::Changed { mut components } => {
-                components.push(component.clone_boxed());
+                components.push(component.into());
                 QueryEvent::Changed { components }
             }
             _ => {
@@ -353,8 +413,8 @@ impl Query {
         self
     }
     /// Changes to this component trigger the query, but the component is not required
-    pub fn optional_changed<T: IComponent>(self, component: T) -> Self {
-        self.optional_changed_ref(&component)
+    pub fn optional_changed(self, component: impl Into<ComponentDesc>) -> Self {
+        self.optional_changed_ref(component.into())
     }
     pub fn spawned(mut self) -> Self {
         self.event = QueryEvent::Spawned;
@@ -369,13 +429,13 @@ impl Query {
         self.filter.not_components.union_with(&filter.not_components);
         self
     }
-    fn get_changed(&self, world: &World, state: &mut QueryState, components: &Vec<Box<dyn IComponent>>) {
+    fn get_changed(&self, world: &World, state: &mut QueryState, components: &Vec<ComponentDesc>) {
         if !state.inited && !world.ignore_query_inits {
             for arch in self.filter.iter_by_archetypes(&world.archetypes) {
                 for comp in components {
-                    if let Some(arch_comp) = arch.components.get(comp.get_index()) {
+                    if let Some(arch_comp) = arch.components.get(comp.index() as _) {
                         let events = &*arch_comp.changes.borrow();
-                        let read = state.get_change_reader(arch.id, comp.get_index());
+                        let read = state.get_change_reader(arch.id, comp.index() as _);
                         read.move_to_end(events);
                     }
                 }
@@ -384,8 +444,8 @@ impl Query {
         }
         for arch in self.filter.iter_by_archetypes(&world.archetypes) {
             for comp in components {
-                if let Some(arch_comp) = arch.components.get(comp.get_index()) {
-                    let read = state.get_change_reader(arch.id, comp.get_index());
+                if let Some(arch_comp) = arch.components.get(comp.index() as _) {
+                    let read = state.get_change_reader(arch.id, comp.index() as _);
                     let events = &*arch_comp.changes.borrow();
                     for (_, &entity_id) in read.iter(events) {
                         if let Some(loc) = world.locs.get(entity_id) {
@@ -511,7 +571,7 @@ impl Query {
             commands.soft_apply(world);
         })))
     }
-    fn add_component<T: IComponent>(&mut self, query: &Self, component: T) {
+    fn add_component(&mut self, query: &Self, component: ComponentDesc) {
         self.filter = query.filter.clone().incl(component);
         if query.event.is_spawned() {
             self.event = QueryEvent::Spawned;
@@ -549,10 +609,10 @@ impl EntityAccessor {
     }
 }
 
-pub fn query<'a, R: ComponentsTuple<'a> + Clone + 'static>(read_components: R) -> TypedReadQuery<R> {
+pub fn query<'a, R: ComponentQuery<'a> + Clone + 'static>(read_components: R) -> TypedReadQuery<R> {
     TypedReadQuery::new(read_components)
 }
-pub fn query_mut<'a, RW: ComponentsTuple<'a> + Clone + 'static, R: ComponentsTuple<'a> + Clone + 'static>(
+pub fn query_mut<'a, RW: ComponentQuery<'a> + Clone + 'static, R: ComponentQuery<'a> + Clone + 'static>(
     read_write_components: RW,
     read_components: R,
 ) -> TypedReadWriteQuery<RW, R> {
@@ -573,7 +633,7 @@ where
     }
 }
 
-impl<'a, R: ComponentsTuple<'a> + Clone + 'static> TypedReadQuery<R> {
+impl<'a, R: ComponentQuery<'a> + Clone + 'static> TypedReadQuery<R> {
     pub fn new(read_components: R) -> Self {
         let mut component_ids = ComponentSet::new();
         read_components.write_component_ids(&mut component_ids);
@@ -584,27 +644,27 @@ impl<'a, R: ComponentsTuple<'a> + Clone + 'static> TypedReadQuery<R> {
     pub fn read<T: ComponentValue>(&self, component: Component<T>) -> TypedReadQuery<<R as ComponentsTupleAppend<T>>::Output>
     where
         R: ComponentsTupleAppend<T>,
-        <R as ComponentsTupleAppend<T>>::Output: ComponentsTuple<'a> + Clone + 'static,
+        <R as ComponentsTupleAppend<T>>::Output: ComponentQuery<'a> + Clone + 'static,
     {
         let mut q = TypedReadQuery::new(self.read_components.append(component));
-        q.query.add_component(&self.query, component);
+        q.query.add_component(&self.query, component.desc());
         q
     }
     pub fn filter(mut self, filter: &ArchetypeFilter) -> Self {
         self.query = self.query.filter(filter);
         self
     }
-    pub fn incl<T: IComponent>(mut self, component: T) -> Self {
-        self.query.filter = self.query.filter.incl(component);
+    pub fn incl(mut self, component: impl Into<ComponentDesc>) -> Self {
+        self.query.filter = self.query.filter.incl(component.into());
         self
     }
-    pub fn excl<T: IComponent>(mut self, component: T) -> Self {
-        self.query.filter = self.query.filter.excl(component);
+    pub fn excl(mut self, component: impl Into<ComponentDesc>) -> Self {
+        self.query.filter = self.query.filter.excl(component.into());
         self
     }
     /// Changes to this component trigger the query, but the component is not required
-    pub fn optional_changed<T: IComponent>(mut self, component: T) -> Self {
-        self.query = self.query.optional_changed(component);
+    pub fn optional_changed(mut self, component: impl Into<ComponentDesc>) -> Self {
+        self.query = self.query.optional_changed(component.into());
         self
     }
     pub fn spawned(mut self) -> Self {
@@ -620,7 +680,7 @@ impl<'a, R: ComponentsTuple<'a> + Clone + 'static> TypedReadQuery<R> {
         &self,
         world: &'a World,
         state: Option<&'a mut QueryState>,
-    ) -> impl Iterator<Item = (EntityId, <R as ComponentsTuple<'a>>::Data)> + 'a {
+    ) -> impl Iterator<Item = (EntityId, <R as ComponentQuery<'a>>::Data)> + 'a {
         let r = self.read_components.clone();
         self.query.iter(world, state).into_iter().map(move |acc| (acc.id(), r.get_data(world, &acc)))
     }
@@ -628,7 +688,7 @@ impl<'a, R: ComponentsTuple<'a> + Clone + 'static> TypedReadQuery<R> {
         &self,
         world: &'a World,
         state: Option<&'a mut QueryState>,
-    ) -> impl Iterator<Item = (EntityId, <R as ComponentsTuple<'a>>::DataCloned)> + 'a {
+    ) -> impl Iterator<Item = (EntityId, <R as ComponentQuery<'a>>::DataCloned)> + 'a {
         let r = self.read_components.clone();
         self.query.iter(world, state).into_iter().map(move |acc| (acc.id(), r.get_data_cloned(world, &acc)))
     }
@@ -639,7 +699,7 @@ impl<'a, R: ComponentsTuple<'a> + Clone + 'static> TypedReadQuery<R> {
         &self,
         world: &'a World,
         state: Option<&'a mut QueryState>,
-    ) -> Vec<(EntityId, <R as ComponentsTuple<'a>>::DataCloned)> {
+    ) -> Vec<(EntityId, <R as ComponentQuery<'a>>::DataCloned)> {
         self.iter_cloned(world, state).collect_vec()
     }
     // attempts to read the first item from the query if it exists; will discard
@@ -648,7 +708,7 @@ impl<'a, R: ComponentsTuple<'a> + Clone + 'static> TypedReadQuery<R> {
         &self,
         world: &'a World,
         state: Option<&'a mut QueryState>,
-    ) -> Option<(EntityId, <R as ComponentsTuple<'a>>::DataCloned)> {
+    ) -> Option<(EntityId, <R as ComponentQuery<'a>>::DataCloned)> {
         self.iter_cloned(world, state).next()
     }
     pub fn to_system<F: FnMut(&Self, &mut World, Option<&mut QueryState>, &E) + Send + Sync + 'static, E: 'static>(
@@ -688,7 +748,7 @@ pub struct TypedReadWriteQuery<RW, R> {
     read_components: R,
     query: Query,
 }
-impl<'a, RW: ComponentsTuple<'a> + Clone + 'static, R: ComponentsTuple<'a> + Clone + 'static> TypedReadWriteQuery<RW, R> {
+impl<'a, RW: ComponentQuery<'a> + Clone + 'static, R: ComponentQuery<'a> + Clone + 'static> TypedReadWriteQuery<RW, R> {
     pub fn new(read_write_components: RW, read_components: R) -> Self {
         let mut write_set = ComponentSet::new();
         let mut read_set = ComponentSet::new();
@@ -710,19 +770,19 @@ impl<'a, RW: ComponentsTuple<'a> + Clone + 'static, R: ComponentsTuple<'a> + Clo
     pub fn read_write<T: ComponentValue>(&self, component: Component<T>) -> TypedReadWriteQuery<<RW as ComponentsTupleAppend<T>>::Output, R>
     where
         RW: ComponentsTupleAppend<T>,
-        <RW as ComponentsTupleAppend<T>>::Output: ComponentsTuple<'a> + Clone + 'static,
+        <RW as ComponentsTupleAppend<T>>::Output: ComponentQuery<'a> + Clone + 'static,
     {
         let mut q = TypedReadWriteQuery::new(self.read_write_components.append(component), self.read_components.clone());
-        q.query.add_component(&self.query, component);
+        q.query.add_component(&self.query, component.desc());
         q
     }
     pub fn read<T: ComponentValue>(&self, component: Component<T>) -> TypedReadWriteQuery<RW, <R as ComponentsTupleAppend<T>>::Output>
     where
         R: ComponentsTupleAppend<T>,
-        <R as ComponentsTupleAppend<T>>::Output: ComponentsTuple<'a> + Clone + 'static,
+        <R as ComponentsTupleAppend<T>>::Output: ComponentQuery<'a> + Clone + 'static,
     {
         let mut q = TypedReadWriteQuery::new(self.read_write_components.clone(), self.read_components.append(component));
-        q.query.add_component(&self.query, component);
+        q.query.add_component(&self.query, component.desc());
         q
     }
     pub fn filter(mut self, filter: &ArchetypeFilter) -> Self {
@@ -730,17 +790,17 @@ impl<'a, RW: ComponentsTuple<'a> + Clone + 'static, R: ComponentsTuple<'a> + Clo
         self.query.filter.not_components.union_with(&filter.not_components);
         self
     }
-    pub fn incl<T: IComponent>(mut self, component: T) -> Self {
-        self.query.filter = self.query.filter.incl(component);
+    pub fn incl<T: ComponentValue>(mut self, component: Component<T>) -> Self {
+        self.query.filter = self.query.filter.incl(component.desc());
         self
     }
-    pub fn excl<T: IComponent>(mut self, component: T) -> Self {
-        self.query.filter = self.query.filter.excl(component);
+    pub fn excl<T: ComponentValue>(mut self, component: Component<T>) -> Self {
+        self.query.filter = self.query.filter.excl(component.desc());
         self
     }
     /// Changes to this component trigger the query, but the component is not required
-    pub fn optional_changed<T: IComponent>(mut self, component: T) -> Self {
-        self.query = self.query.optional_changed(component);
+    pub fn optional_changed<T: ComponentValue>(mut self, component: Component<T>) -> Self {
+        self.query = self.query.optional_changed(component.desc());
         self
     }
     pub fn spawned(mut self) -> Self {
@@ -756,7 +816,7 @@ impl<'a, RW: ComponentsTuple<'a> + Clone + 'static, R: ComponentsTuple<'a> + Clo
         &self,
         world: &'a mut World,
         state: Option<&'a mut QueryState>,
-    ) -> impl Iterator<Item = (EntityId, <RW as ComponentsTuple<'a>>::DataMut, <R as ComponentsTuple<'a>>::Data)> + 'a {
+    ) -> impl Iterator<Item = (EntityId, <RW as ComponentQuery<'a>>::DataMut, <R as ComponentQuery<'a>>::Data)> + 'a {
         let rw = self.read_write_components.clone();
         let r = self.read_components.clone();
         let world = &*world;

@@ -11,7 +11,7 @@
 #![allow(clippy::borrowed_box)]
 
 use std::{
-    any::Any, convert::TryInto, fmt::{self, Display}, marker::PhantomData
+    any::Any, fmt::{self}, marker::PhantomData
 };
 
 use downcast_rs::{impl_downcast, Downcast};
@@ -20,6 +20,7 @@ use serde::{
 };
 
 use super::*;
+use crate::component2::ComponentEntry;
 
 pub trait ComponentValueBase: Send + Sync + Downcast + 'static {
     fn type_name(&self) -> &'static str {
@@ -75,243 +76,117 @@ pub trait IComponent: Send + Sync + Downcast {
     fn is_extended(&self) -> bool;
 }
 
-pub struct Component<T: ComponentValue> {
-    pub index: i32,
-    pub(super) changed_filter: bool,
-    name: Option<&'static str>,
-    _type: PhantomData<T>,
-}
-
-impl<T: ComponentValue> Debug for Component<T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Component")
-            .field("index", &self.index)
-            .field("changed_filter", &self.changed_filter)
-            .field("type", &std::any::type_name::<T>())
-            .field("name", &self.name.map(|x| x.to_string()).unwrap_or_else(|| component_name(self)))
-            .finish()
-    }
-}
-impl<T: ComponentValue> Component<T> {
-    pub(crate) const fn new_external(index: i32) -> Self {
-        Self { index, changed_filter: false, name: None, _type: PhantomData }
-    }
-    pub const fn new_with_name(index: i32, name: &'static str) -> Self {
-        Self { index, changed_filter: false, name: Some(name), _type: PhantomData }
-    }
-    pub fn changed(&self) -> Component<T> {
-        Self { index: self.index, changed_filter: true, name: self.name.clone(), _type: PhantomData }
-    }
-    pub fn with(&self, value: T) -> EntityData {
-        EntityData::new().set(*self, value)
-    }
-}
 impl<T: ComponentValue + Default> Component<T> {
     pub fn with_default(&self) -> EntityData {
         EntityData::new().set(*self, T::default())
     }
 }
-impl<T: ComponentValue> Copy for Component<T> {}
-impl<T: ComponentValue> Clone for Component<T> {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
-impl<T: ComponentValue> std::hash::Hash for Component<T> {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.index.hash(state);
-        self.changed_filter.hash(state);
-        self._type.hash(state);
-    }
-}
-impl<T: ComponentValue> PartialEq for Component<T> {
-    fn eq(&self, other: &Self) -> bool {
-        self.get_index() == other.get_index()
-    }
-}
-impl<T: ComponentValue> PartialEq<Box<dyn IComponent>> for Component<T> {
-    fn eq(&self, other: &Box<dyn IComponent>) -> bool {
-        self.get_index() == other.get_index()
-    }
-}
-impl<T: ComponentValue> PartialEq<Component<T>> for Box<dyn IComponent> {
-    fn eq(&self, other: &Component<T>) -> bool {
-        self.get_index() == other.get_index()
-    }
-}
-impl<T: ComponentValue> Eq for Component<T> {}
-impl<T: ComponentValue> Ord for Component<T> {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.get_index().cmp(&other.get_index())
-    }
-}
-impl<T: ComponentValue> PartialOrd for Component<T> {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
+
 impl<T: ComponentValue> Serialize for Component<T> {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(&with_component_registry(|r| r.get_id_for(self).to_owned()))
+        self.desc().serialize(serializer)
     }
 }
+
 impl<'de, T: ComponentValue> Deserialize<'de> for Component<T> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        struct ComponentVisitor<T: ComponentValue>(PhantomData<T>);
-
-        impl<'de, T: ComponentValue> Visitor<'de> for ComponentVisitor<T> {
-            type Value = Component<T>;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("struct Component<T>")
-            }
-            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                let component = with_component_registry(|r| Some(r.get_by_id(v)?.clone_boxed()));
-                let component = match component {
-                    Some(comp) => comp,
-                    None => panic!("No such component: {}", v),
-                };
-                Ok(Component::<T> { index: component.get_index() as i32, name: None, _type: PhantomData, changed_filter: false })
-            }
-        }
-
-        deserializer.deserialize_str(ComponentVisitor::<T>(PhantomData))
+        let desc: ComponentDesc = ComponentDesc::deserialize(deserializer)?;
+        Ok(Self::new(desc))
     }
 }
-impl<T: ComponentValue> IComponent for Component<T> {
-    fn create_buffer(&self) -> Box<dyn IComponentBuffer> {
-        Box::new(ComponentBuffer::<T>::new(*self))
-    }
-    fn get_index(&self) -> usize {
-        #[cfg(debug_assertions)]
-        if self.index < 0 {
-            panic!("Component not initialized: {:?}", self.name);
-        }
-        self.index as usize
-    }
-    fn external_type(&self) -> Option<PrimitiveComponentType> {
-        ComponentRegistry::get().components[self.get_index()].primitive_component_type.clone()
-    }
-    fn set_index(&mut self, index: usize) {
-        self.index = index.try_into().unwrap();
-    }
-    fn get_id(&self) -> String {
-        with_component_registry(|r| r.idx_to_id().get(&self.get_index()).cloned().unwrap())
-    }
-    fn get_name(&self) -> String {
-        self.name
-            .map(|x| x.to_string())
-            .unwrap_or_else(|| with_component_registry(|r| r.idx_to_id().get(&self.get_index()).cloned().unwrap()))
-    }
-    fn is_change_filter(&self) -> bool {
-        self.changed_filter
-    }
-    fn clone_boxed(&self) -> Box<dyn IComponent> {
-        Box::new(*self)
-    }
-    fn create_buffer_with_value(&self, value: &Box<dyn ComponentValueBase>) -> Box<dyn IComponentBuffer> {
-        let value = value.downcast_ref::<T>().unwrap();
-        Box::new(ComponentBuffer::new_with_value(*self, value.clone()))
-    }
-    fn is_valid_value(&self, value: &Box<dyn ComponentValueBase>) -> bool {
-        value.downcast_ref::<T>().is_some()
-    }
-    fn clone_value(&self, value: &Box<dyn ComponentValueBase>) -> Box<dyn ComponentValueBase> {
-        let value = value.downcast_ref::<T>().unwrap();
-        Box::new(value.clone())
-    }
-    fn clone_value_from_world(&self, world: &World, entity: EntityId) -> Result<Box<dyn ComponentValueBase>, ECSError> {
-        world.get_ref(entity, *self).map(|x| Box::new(x.clone()) as Box<dyn ComponentValueBase>)
-    }
-    fn set_at_entity(
-        &self,
-        world: &mut World,
-        entity: EntityId,
-        value: &Box<dyn ComponentValueBase>,
-    ) -> Result<Box<dyn ComponentValueBase>, ECSError> {
-        let value = value.downcast_ref::<T>().unwrap();
-        Ok(Box::new(world.set(entity, *self, value.clone())?))
-    }
-    fn add_component_to_entity(&self, world: &mut World, entity: EntityId, value: &Box<dyn ComponentValueBase>) -> Result<(), ECSError> {
-        let value = value.downcast_ref::<T>().unwrap();
-        world.add_component(entity, *self, value.clone())
-    }
-    fn remove_component_from_entity(&self, world: &mut World, entity: EntityId) -> Result<(), ECSError> {
-        world.remove_component(entity, *self)
-    }
-    default fn serialize_value<'a>(&self, _value: &'a dyn ComponentValueBase) -> &'a dyn erased_serde::Serialize {
-        panic!("Component '{}' is not an extended component", self.get_index())
-    }
-    default fn deserialize_seq_value(
-        &self,
-        _: &mut dyn erased_serde::de::SeqAccess,
-    ) -> Result<Option<Box<dyn ComponentValueBase>>, erased_serde::Error> {
-        panic!("Component '{}' is not an extended component", self.get_index())
-    }
-    default fn deserialize_map_value(
-        &self,
-        _: &mut dyn erased_serde::de::MapAccess,
-    ) -> Result<Box<dyn ComponentValueBase>, erased_serde::Error> {
-        panic!("Component '{}' is not an extended component", self.get_index())
-    }
-    default fn debug_value(&self, _value: &Box<dyn ComponentValueBase>) -> String {
-        panic!("Component '{}' is not an extended component", self.get_index())
-    }
-    default fn is_extended(&self) -> bool {
-        false
-    }
-    default fn value_to_json_value(&self, _value: &Box<dyn ComponentValueBase>) -> serde_json::Value {
-        panic!("Component '{}' is not an extended component", self.get_index())
-    }
-    default fn value_from_json_value(&self, _value: serde_json::Value) -> Result<Box<dyn ComponentValueBase>, serde_json::Error> {
-        panic!("Component '{}' is not an extended component", self.get_index())
-    }
-}
-impl<T: ExComponentValue> IComponent for Component<T> {
-    fn serialize_value<'a>(&self, value: &'a dyn ComponentValueBase) -> &'a dyn erased_serde::Serialize {
-        value.downcast_ref::<T>().expect("Failed to downcast to concrete type")
-    }
-    fn deserialize_seq_value(
-        &self,
-        mut seq: &mut dyn erased_serde::de::SeqAccess,
-    ) -> Result<Option<Box<dyn ComponentValueBase>>, erased_serde::Error> {
-        match seq.next_element::<T>() {
-            Ok(Some(value)) => Ok(Some(Box::new(value))),
-            Ok(None) => Ok(None),
-            Err(err) => Err(erased_serde::de::erase(err)),
-        }
-    }
-    fn deserialize_map_value(
-        &self,
-        mut map: &mut dyn erased_serde::de::MapAccess,
-    ) -> Result<Box<dyn ComponentValueBase>, erased_serde::Error> {
-        match map.next_value::<T>() {
-            Ok(value) => Ok(Box::new(value)),
-            Err(err) => Err(erased_serde::de::erase(err)),
-        }
-    }
-    fn debug_value(&self, value: &Box<dyn ComponentValueBase>) -> String {
-        let value = value.downcast_ref::<T>().unwrap();
-        format!("{:?}", value)
-    }
-    fn is_extended(&self) -> bool {
-        true
-    }
-    default fn value_to_json_value(&self, value: &Box<dyn ComponentValueBase>) -> serde_json::Value {
-        let value = value.downcast_ref::<T>().unwrap();
-        serde_json::to_value(value).unwrap()
-    }
-    default fn value_from_json_value(&self, value: serde_json::Value) -> Result<Box<dyn ComponentValueBase>, serde_json::Error> {
-        let value: T = serde_json::from_value(value)?;
-        Ok(Box::new(value))
-    }
-}
+// impl<T: ComponentValue> IComponent for Component<T> {
+//     fn create_buffer(&self) -> Box<dyn IComponentBuffer> {
+//         Box::new(ComponentBuffer::<T>::new(*self))
+//     }
+//     fn get_index(&self) -> usize {
+//         #[cfg(debug_assertions)]
+//         if self.index < 0 {
+//             panic!("Component not initialized: {:?}", self.name);
+//         }
+//         self.index as usize
+//     }
+//     fn external_type(&self) -> Option<PrimitiveComponentType> {
+//         todo!()
+//         // ComponentRegistry::get().components[self.get_index()].primitive_component_type.clone()
+//     }
+//     fn set_index(&mut self, index: usize) {
+//         self.index = index.try_into().unwrap();
+//     }
+//     fn get_id(&self) -> String {
+//         with_component_registry(|r| r.idx_to_id().get(&self.get_index()).cloned().unwrap())
+//     }
+//     fn get_name(&self) -> String {
+//         self.name
+//             .map(|x| x.to_string())
+//             .unwrap_or_else(|| with_component_registry(|r| r.idx_to_id().get(&self.get_index()).cloned().unwrap()))
+//     }
+//     fn is_change_filter(&self) -> bool {
+//         self.changed_filter
+//     }
+//     fn clone_boxed(&self) -> Box<dyn IComponent> {
+//         Box::new(*self)
+//     }
+//     fn create_buffer_with_value(&self, value: &Box<dyn ComponentValueBase>) -> Box<dyn IComponentBuffer> {
+//         let value = value.downcast_ref::<T>().unwrap();
+//         Box::new(ComponentBuffer::new_with_value(*self, value.clone()))
+//     }
+//     fn is_valid_value(&self, value: &Box<dyn ComponentValueBase>) -> bool {
+//         value.downcast_ref::<T>().is_some()
+//     }
+//     fn clone_value(&self, value: &Box<dyn ComponentValueBase>) -> Box<dyn ComponentValueBase> {
+//         let value = value.downcast_ref::<T>().unwrap();
+//         Box::new(value.clone())
+//     }
+//     fn clone_value_from_world(&self, world: &World, entity: EntityId) -> Result<Box<dyn ComponentValueBase>, ECSError> {
+//         world.get_ref(entity, *self).map(|x| Box::new(x.clone()) as Box<dyn ComponentValueBase>)
+//     }
+//     fn set_at_entity(
+//         &self,
+//         world: &mut World,
+//         entity: EntityId,
+//         value: &Box<dyn ComponentValueBase>,
+//     ) -> Result<Box<dyn ComponentValueBase>, ECSError> {
+//         let value = value.downcast_ref::<T>().unwrap();
+//         Ok(Box::new(world.set(entity, *self, value.clone())?))
+//     }
+//     fn add_component_to_entity(&self, world: &mut World, entity: EntityId, value: &Box<dyn ComponentValueBase>) -> Result<(), ECSError> {
+//         let value = value.downcast_ref::<T>().unwrap();
+//         world.add_component(entity, *self, value.clone())
+//     }
+//     fn remove_component_from_entity(&self, world: &mut World, entity: EntityId) -> Result<(), ECSError> {
+//         world.remove_component(entity, *self)
+//     }
+//     default fn serialize_value<'a>(&self, _value: &'a dyn ComponentValueBase) -> &'a dyn erased_serde::Serialize {
+//         panic!("Component '{}' is not an extended component", self.get_index())
+//     }
+//     default fn deserialize_seq_value(
+//         &self,
+//         _: &mut dyn erased_serde::de::SeqAccess,
+//     ) -> Result<Option<Box<dyn ComponentValueBase>>, erased_serde::Error> {
+//         panic!("Component '{}' is not an extended component", self.get_index())
+//     }
+//     default fn deserialize_map_value(
+//         &self,
+//         _: &mut dyn erased_serde::de::MapAccess,
+//     ) -> Result<Box<dyn ComponentValueBase>, erased_serde::Error> {
+//         panic!("Component '{}' is not an extended component", self.get_index())
+//     }
+//     default fn debug_value(&self, _value: &Box<dyn ComponentValueBase>) -> String {
+//         panic!("Component '{}' is not an extended component", self.get_index())
+//     }
+//     default fn is_extended(&self) -> bool {
+//         false
+//     }
+//     default fn value_to_json_value(&self, _value: &Box<dyn ComponentValueBase>) -> serde_json::Value {
+//         panic!("Component '{}' is not an extended component", self.get_index())
+//     }
+//     default fn value_from_json_value(&self, _value: serde_json::Value) -> Result<Box<dyn ComponentValueBase>, serde_json::Error> {
+//         panic!("Component '{}' is not an extended component", self.get_index())
+//     }
+// }
 
 impl PartialEq for dyn IComponent {
     fn eq(&self, other: &Self) -> bool {
@@ -378,108 +253,112 @@ impl<'de> Deserialize<'de> for Box<dyn IComponent> {
         deserializer.deserialize_str(BoxIComponentVisitor)
     }
 }
-impl<C: ComponentValue> From<Component<C>> for Box<dyn IComponent> {
-    fn from(comp: Component<C>) -> Self {
-        comp.clone_boxed()
-    }
-}
 
 pub trait IComponentBuffer: Send + Sync {
     fn len(&self) -> usize;
     fn is_empty(&self) -> bool {
         self.len() == 0
     }
-    fn component_index(&self) -> usize;
-    fn component_boxed(&self) -> Box<dyn IComponent>;
-    fn append(&mut self, buffer: Box<dyn IComponentBuffer>, count: usize);
-    fn set(&mut self, index: usize, value: &Box<dyn ComponentValueBase>);
-    fn swap_remove_index(&mut self, index: usize) -> Box<dyn IComponentBuffer>;
-    fn remove_index_boxed(&mut self, index: usize) -> Box<dyn ComponentValueBase>;
+    fn desc(&self) -> ComponentDesc;
+    fn append(&mut self, buffer: Box<dyn IComponentBuffer>);
+    fn push(&mut self, entry: ComponentEntry);
+    fn append_cloned(&mut self, entry: ComponentEntry, n: usize);
+
+    fn set(&mut self, index: usize, entry: ComponentEntry) -> ComponentEntry;
+
+    fn swap_remove_index(&mut self, index: usize) -> ComponentEntry;
+    fn remove_index(&mut self, index: usize) -> ComponentEntry;
+
     fn as_any(&self) -> &dyn Any;
     fn as_mut_any(&mut self) -> &mut dyn Any;
+
     fn write_to_world(self: Box<Self>, world: &mut World, entity: EntityId) -> Result<(), ECSError>;
     fn clone_boxed(&self) -> Box<dyn IComponentBuffer>;
-    fn clone_value_boxed(&self, index: usize) -> Box<dyn ComponentValueBase>;
-    fn pop_unit(&mut self) -> ComponentUnit;
+    fn clone_value_boxed(&self, index: usize) -> ComponentEntry;
+    fn pop(&mut self) -> ComponentEntry;
     fn dump_index(&self, index: usize) -> String;
 }
 
 #[derive(Debug, Clone)]
 pub struct ComponentBuffer<T: ComponentValue> {
-    pub component: Component<T>,
+    pub component: crate::component2::Component<T>,
     pub data: Vec<T>,
 }
+
 impl<T: ComponentValue> ComponentBuffer<T> {
-    pub fn new(component: Component<T>) -> Self {
+    pub fn new(component: crate::component2::Component<T>) -> Self {
         Self { component, data: Vec::new() }
     }
-    pub fn new_with_value(component: Component<T>, value: T) -> Self {
+    pub fn new_with_value(component: crate::component2::Component<T>, value: T) -> Self {
         Self { component, data: vec![value] }
     }
 }
+
 impl<T: ComponentValue> IComponentBuffer for ComponentBuffer<T> {
     fn len(&self) -> usize {
         self.data.len()
     }
-    fn component_index(&self) -> usize {
-        self.component.get_index()
+
+    fn desc(&self) -> ComponentDesc {
+        self.component.desc()
     }
-    fn component_boxed(&self) -> Box<dyn IComponent> {
-        Box::new(self.component)
-    }
-    fn append(&mut self, mut buffer: Box<dyn IComponentBuffer>, count: usize) {
+
+    fn append(&mut self, mut buffer: Box<dyn IComponentBuffer>) {
         let b = buffer.as_mut_any().downcast_mut::<ComponentBuffer<T>>().unwrap();
         let x = b.data.pop().unwrap();
-        self.data.resize(self.data.len() + count, x);
+        self.data.append(&mut b.data);
+        // self.data.resize(self.data.len() + count, x);
     }
-    fn set(&mut self, index: usize, value: &Box<dyn ComponentValueBase>) {
-        let b = value.downcast_ref::<T>().unwrap();
-        self.data[index] = b.clone();
+
+    fn push(&mut self, entry: ComponentEntry) {
+        self.data.push(entry.into_inner())
     }
-    fn swap_remove_index(&mut self, index: usize) -> Box<dyn IComponentBuffer> {
+
+    fn append_cloned(&mut self, entry: ComponentEntry, n: usize) {
+        self.data.resize(self.data.len() + n, entry.into_inner())
+    }
+
+    fn set(&mut self, index: usize, value: ComponentEntry) -> ComponentEntry {
+        let b = value.into_inner();
+        let old = std::mem::replace(&mut self.data[index], b);
+        ComponentEntry::new(self.component, old)
+    }
+
+    fn swap_remove_index(&mut self, index: usize) -> ComponentEntry {
         let value = self.data.swap_remove(index);
-        Box::new(ComponentBuffer::new_with_value(self.component, value))
+        ComponentEntry::new(self.component, value)
     }
-    fn remove_index_boxed(&mut self, index: usize) -> Box<dyn ComponentValueBase> {
-        Box::new(self.data.remove(index))
+
+    fn remove_index(&mut self, index: usize) -> ComponentEntry {
+        let value = self.data.remove(index);
+        ComponentEntry::new(self.component, value)
     }
+
     fn as_any(&self) -> &dyn Any {
         self
     }
     fn as_mut_any(&mut self) -> &mut dyn Any {
         self
     }
+
     fn write_to_world(mut self: Box<Self>, world: &mut World, entity: EntityId) -> Result<(), ECSError> {
         world.set(entity, self.component, self.data.pop().unwrap())?;
         Ok(())
     }
+
     fn clone_boxed(&self) -> Box<dyn IComponentBuffer> {
         Box::new(self.clone())
     }
-    fn clone_value_boxed(&self, index: usize) -> Box<dyn ComponentValueBase> {
-        Box::new(self.data[index].clone())
-    }
-    fn pop_unit(&mut self) -> ComponentUnit {
-        ComponentUnit::new(self.component, self.data.pop().unwrap())
+
+    fn clone_value_boxed(&self, index: usize) -> ComponentEntry {
+        ComponentEntry::new(self.component, self.data[index].clone())
     }
 
-    default fn dump_index(&self, _index: usize) -> String {
-        "-".to_string()
+    fn pop(&mut self) -> ComponentEntry {
+        ComponentEntry::new(self.component, self.data.pop().unwrap())
     }
-}
-impl<T: ComponentValue + Debug> IComponentBuffer for ComponentBuffer<T> {
-    default fn dump_index(&self, index: usize) -> String {
-        format!("{:?}", self.data[index])
-    }
-}
-impl<T: ComponentValue + Debug + Display> IComponentBuffer for ComponentBuffer<T> {
+
     fn dump_index(&self, index: usize) -> String {
-        format!("{}", self.data[index])
-    }
-}
-
-impl Clone for Box<dyn IComponentBuffer> {
-    fn clone(&self) -> Self {
-        self.as_ref().clone_boxed()
+        format!("{:?}", self.component.as_debug(&self.data[index]))
     }
 }

@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
-use elements_ecs::{Component, ComponentValue, EntityData, EntityId, IComponent, World};
+use elements_ecs::{Component, ComponentDesc, ComponentValue, EntityData, EntityId, World};
 use elements_std::events::EventDispatcher;
 
 use crate::ElementComponent;
@@ -61,13 +61,13 @@ impl ElementComponents {
         Self(HashMap::new())
     }
     pub fn set<T: ComponentValue + Clone>(&mut self, component: Component<T>, value: T) {
-        self.set_writer(&component, Arc::new(move |_, ed| ed.set_self(component, value.clone())));
+        self.set_writer(component, Arc::new(move |_, ed| ed.set_self(component, value.clone())));
     }
-    pub fn set_writer(&mut self, component: &dyn IComponent, writer: Arc<dyn Fn(&World, &mut EntityData) + Sync + Send>) {
-        self.0.insert(component.get_index(), writer);
+    pub fn set_writer(&mut self, component: impl Into<ComponentDesc>, writer: Arc<dyn Fn(&World, &mut EntityData) + Sync + Send>) {
+        self.0.insert(component.into().index() as _, writer);
     }
     pub fn remove<T: ComponentValue + Clone>(&mut self, component: Component<T>) {
-        self.0.remove(&component.get_index());
+        self.0.remove(&(component.index() as usize));
     }
     pub fn write_to_entity_data(&self, world: &World, entity_data: &mut EntityData) {
         for writer in self.0.values() {
@@ -94,7 +94,7 @@ impl ElementEventHandlers {
         Self(HashMap::new())
     }
     pub fn set<T: 'static + Sync + Send + ?Sized>(&mut self, component: Component<EventDispatcher<T>>, listener: Arc<T>) {
-        let entry = self.0.entry(component.get_index()).or_default();
+        let entry = self.0.entry(component.index() as usize).or_default();
         entry.push(ElementEventHandler {
             add: Arc::new(closure!(clone listener, |world, entity| {
                 if let Ok(event_dispatcher) = world.get_mut(entity, component) {

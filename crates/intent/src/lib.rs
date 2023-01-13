@@ -17,8 +17,8 @@ use logic::{create_intent, push_intent, redo_intent, undo_head, undo_head_exact}
 pub use registry::*;
 
 components!("intent", {
-    /// The component type of the intent
-    intent: usize,
+    /// The component index of the intent
+    intent: u32,
 
     /// Intents with the same id and intent type "next to" each other will be collapsed.
     ///

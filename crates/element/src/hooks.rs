@@ -5,7 +5,7 @@ use std::{
 use as_any::Downcast;
 use atomic_refcell::AtomicRefCell;
 use elements_core::runtime;
-use elements_ecs::{ComponentValue, ComponentsTuple, FrameEvent, QueryState, TypedReadQuery, World};
+use elements_ecs::{ComponentQuery, ComponentValue, FrameEvent, QueryState, TypedReadQuery, World};
 use parking_lot::Mutex;
 use tokio::task::JoinHandle;
 use tracing::info_span;
@@ -305,7 +305,7 @@ impl<'a> Hooks<'a> {
 
     pub fn use_system<
         'b,
-        R: ComponentsTuple<'b> + Clone + 'static,
+        R: ComponentQuery<'b> + Clone + 'static,
         F: Fn(&TypedReadQuery<R>, &mut World, Option<&mut QueryState>, &FrameEvent) + Send + Sync + 'static,
     >(
         &mut self,

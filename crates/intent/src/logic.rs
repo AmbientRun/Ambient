@@ -1,6 +1,6 @@
 use std::time::SystemTime;
 
-use elements_ecs::{query, Component, ComponentValue, EntityData, EntityId, IComponent, IndexField, IndexKey, World};
+use elements_ecs::{query, Component, ComponentValue, EntityData, EntityId, IndexField, IndexKey, World};
 use elements_network::server::SharedServerState;
 
 use crate::{
@@ -38,7 +38,7 @@ pub fn push_intent(state: SharedServerState, user_id: String, mut data: EntityDa
 
 pub fn create_intent<T: ComponentValue>(intent_arg: Component<T>, arg: T, collapse_id: Option<String>) -> EntityData {
     EntityData::new()
-        .set(intent(), intent_arg.get_index())
+        .set(intent(), intent_arg.index())
         .set(intent_timestamp(), SystemTime::now())
         .set(intent_arg, arg)
         .set(intent_id(), collapse_id.unwrap_or_else(friendly_id::create))
@@ -101,7 +101,7 @@ pub async fn redo_intent(state: SharedServerState, user_id: &str) -> Option<Enti
 
         let intent = world.get(id, intent()).expect("Not an intent");
 
-        world.remove_components(id, vec![intent_reverted().clone_boxed(), intent_applied().clone_boxed()]).unwrap();
+        world.remove_components(id, vec![intent_reverted().desc(), intent_applied().desc()]).unwrap();
 
         let reg = world.resource(intent_registry()).clone();
         (reg, id, intent)

@@ -5,13 +5,13 @@ use std::{
 use itertools::Itertools;
 
 use crate::{
-    ArchetypeFilter, Component, ComponentUnit, ComponentValue, ComponentValueBase, EntityId, FnSystem, IComponent, Query, SystemGroup, World
+    component2::ComponentEntry, ArchetypeFilter, Component, ComponentDesc, ComponentValue, ComponentValueBase, EntityId, FnSystem, IComponent, Query, SystemGroup, World
 };
 
 #[derive(Clone)]
 pub struct IndexColumns {
-    comparators: Vec<fn(&dyn ComponentValueBase, &dyn ComponentValueBase) -> Ordering>,
-    components: Vec<Box<dyn IComponent>>,
+    comparators: Vec<fn(&ComponentEntry, &ComponentEntry) -> Ordering>,
+    components: Vec<ComponentDesc>,
 }
 
 impl Debug for IndexColumns {
@@ -26,8 +26,8 @@ impl IndexColumns {
     }
 
     pub fn add_column<T: ComponentValue + Ord>(mut self, component: Component<T>) -> Self {
-        self.comparators.push(|a, b| a.downcast_ref::<T>().unwrap().cmp(b.downcast_ref::<T>().unwrap()));
-        self.components.push(component.clone_boxed());
+        self.comparators.push(|a, b| a.downcast_ref::<T>().cmp(b.downcast_ref::<T>()));
+        self.components.push(component.desc());
         self
     }
 
@@ -40,9 +40,9 @@ impl IndexColumns {
             .components
             .iter()
             .zip(self.comparators.iter())
-            .map(|(component, &comparator)| {
-                let value = component.clone_value_from_world(world, entity).ok()?;
-                Some(IndexField::Exact(IndexFieldValue { comparator, value: ComponentUnit::new_raw(component.clone_boxed(), value) }))
+            .map(|(&component, &comparator)| {
+                let value = world.get_entry(entity, component);
+                Some(IndexField::Exact(IndexFieldValue { comparator, value: ComponentEntry::from_raw_parts(component, value) }))
             })
             .collect::<Option<Vec<_>>>()?;
 
@@ -154,15 +154,12 @@ impl IndexField {
 }
 #[derive(Clone)]
 pub struct IndexFieldValue {
-    comparator: fn(&dyn ComponentValueBase, &dyn ComponentValueBase) -> Ordering,
-    value: ComponentUnit,
+    comparator: fn(&ComponentEntry, &ComponentEntry) -> Ordering,
+    value: ComponentEntry,
 }
 impl IndexFieldValue {
     pub fn new<T: ComponentValue + Ord>(component: Component<T>, value: T) -> Self {
-        Self {
-            comparator: |a, b| a.downcast_ref::<T>().unwrap().cmp(b.downcast_ref::<T>().unwrap()),
-            value: ComponentUnit::new(component, value),
-        }
+        Self { comparator: |a, b| a.downcast_ref::<T>().cmp(b.downcast_ref::<T>()), value: ComponentEntry::new(component, value) }
     }
 }
 impl Debug for IndexFieldValue {
@@ -183,14 +180,14 @@ impl PartialOrd for IndexFieldValue {
 }
 impl Ord for IndexFieldValue {
     fn cmp(&self, other: &Self) -> Ordering {
-        (self.comparator)(&**self.value.value(), &**other.value.value())
+        (self.comparator)(&self.value, &other.value)
     }
 }
 
 /// Creates and maintains an ECS Index as a resource on the world
 pub fn index_system(mut filter: ArchetypeFilter, columns: IndexColumns, index_resource: Component<Index>) -> SystemGroup {
-    for c in &columns.components {
-        filter = filter.incl_ref(c.as_ref());
+    for &c in &columns.components {
+        filter = filter.incl_ref(c);
     }
     let components = columns.components.clone();
     SystemGroup::new(

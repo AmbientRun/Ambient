@@ -81,7 +81,7 @@ impl System<GpuWorldSyncEvent> for VisibilityFromToGpuSystem {
             if let Some((gpu_buff, offset, layout_version)) =
                 gpu_world.get_buffer(GpuComponentFormat::UVec4, gpu_components::visibility_from(), arch.id)
             {
-                let content_changed = self.changed.changed(arch, &visibility_from(), layout_version);
+                let content_changed = self.changed.changed(arch, visibility_from(), layout_version);
                 let buf = arch.get_component_buffer(visibility_from()).unwrap();
                 if content_changed {
                     let entity_set: HashSet<EntityId> = buf.data.iter().copied().collect();
