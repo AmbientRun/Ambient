@@ -24,9 +24,8 @@ use crate::shared::{
     host_state::{compile_module, HostState, MessageType},
     interface::Host,
     rustc, script_module, script_module_bytecode, script_module_compiled, script_module_errors,
-    scripting_interface_name, update_components,
-    wasm::WasmContext,
-    GetBaseHostGuestState, ScriptContext, ScriptModuleBytecode, ScriptModuleErrors,
+    scripting_interface_name, update_components, GetBaseHostGuestState, ScriptContext,
+    ScriptModuleBytecode, ScriptModuleErrors, WasmContext,
 };
 
 pub mod bindings;

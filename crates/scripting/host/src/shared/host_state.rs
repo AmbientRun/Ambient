@@ -16,9 +16,9 @@ use wasi_common::WasiCtx;
 
 use crate::shared::{
     get_module_name, interface::write_scripting_interfaces, sanitize, script_module,
-    script_module_bytecode, script_module_errors, scripting_interface_name, wasm::WasmContext,
+    script_module_bytecode, script_module_errors, scripting_interface_name,
     write_files_to_directory, FileMap, GetBaseHostGuestState, ParametersMap, ScriptContext,
-    ScriptModule, ScriptModuleBytecode, ScriptModuleState,
+    ScriptModule, ScriptModuleBytecode, ScriptModuleState, WasmContext,
 };
 
 use super::rustc::{self, InstallDirs};

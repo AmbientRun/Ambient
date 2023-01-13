@@ -12,8 +12,7 @@ use crate::{
         conversion::{FromBindgen, IntoBindgen},
         implementation as eshi,
         interface::{self as sif, host},
-        wasm::{BaseWasmContext, WasmContext, WorldRef},
-        GetBaseHostGuestState,
+        BaseWasmContext, GetBaseHostGuestState, WasmContext, WorldRef,
     },
 };
 

@@ -8,6 +8,7 @@ use std::{
 };
 
 use anyhow::Context;
+use async_trait::async_trait;
 use elements_core::name;
 use elements_ecs::{
     components, query, query_mut, with_component_registry, EntityData, EntityId, EntityUid,
@@ -19,13 +20,14 @@ use indexmap::IndexMap;
 use indoc::indoc;
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
-use wasi_common::WasiCtx;
-
-use self::wasm::WasmContext;
+use wasi_common::{
+    file::{FdFlags, FileType},
+    WasiCtx,
+};
+use wasmtime_wasi::WasiFile;
 
 pub mod dependencies;
 pub mod implementation;
-pub mod wasm;
 
 pub mod bindings;
 pub mod conversion;
@@ -34,6 +36,11 @@ pub mod interface;
 
 pub mod host_state;
 pub mod rustc;
+
+use self::{
+    guest_conversion::GuestConvert,
+    interface::guest::{Guest, GuestData, RunContext},
+};
 
 components!("scripting::shared", {
     script_module: ScriptModule,
@@ -160,7 +167,7 @@ pub struct ScriptModuleState<
     Context: WasmContext<Bindings>,
     HostGuestState: Default,
 > {
-    wasm: Option<wasm::WasmState<Bindings, Context>>,
+    wasm: Option<WasmState<Bindings, Context>>,
     pub shared_state: Arc<Mutex<HostGuestState>>,
     _bindings: PhantomData<Bindings>,
 }
@@ -199,7 +206,7 @@ impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>, HostGuestS
         let wasm = if bytecode.is_empty() {
             None
         } else {
-            Some(wasm::WasmState::new(
+            Some(WasmState::new(
                 bytecode,
                 stdout_output,
                 stderr_output,
@@ -590,6 +597,192 @@ impl ScriptModuleBundle {
             external_component_ids: sm.external_component_ids.clone(),
         })
         .unwrap()
+    }
+}
+
+pub struct WorldRef(pub *mut World);
+impl WorldRef {
+    pub const fn new() -> Self {
+        WorldRef(std::ptr::null_mut())
+    }
+}
+unsafe impl Send for WorldRef {}
+unsafe impl Sync for WorldRef {}
+impl AsRef<World> for WorldRef {
+    fn as_ref(&self) -> &World {
+        unsafe { self.0.as_ref().unwrap() }
+    }
+}
+impl AsMut<World> for WorldRef {
+    fn as_mut(&mut self) -> &mut World {
+        unsafe { self.0.as_mut().unwrap() }
+    }
+}
+
+// TODO(mithun): come up with a more optimal way to do this that doesn't
+// implicitly require unsafe and mutex locking
+struct WasiOutputFile(
+    Box<dyn Fn(&World, &str) + Sync + Send>,
+    Arc<Mutex<WorldRef>>,
+);
+#[async_trait]
+impl WasiFile for WasiOutputFile {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
+    async fn get_filetype(&mut self) -> Result<FileType, wasmtime_wasi::Error> {
+        Ok(FileType::Unknown)
+    }
+
+    async fn get_fdflags(&mut self) -> Result<FdFlags, wasmtime_wasi::Error> {
+        Ok(FdFlags::APPEND)
+    }
+
+    async fn write_vectored<'a>(
+        &mut self,
+        bufs: &[std::io::IoSlice<'a>],
+    ) -> Result<u64, wasmtime_wasi::Error> {
+        let mut count = 0;
+        for buf in bufs {
+            if let Ok(text) = std::str::from_utf8(buf) {
+                self.0(self.1.lock().as_ref(), text);
+                count += text.len();
+            }
+        }
+        Ok(count as u64)
+    }
+}
+
+pub trait WasmContext<Bindings> {
+    fn base_wasm_context_mut(&mut self) -> &mut BaseWasmContext;
+    fn set_world(&mut self, world: &mut World);
+}
+
+pub struct BaseWasmContext {
+    wasi: wasmtime_wasi::WasiCtx,
+    guest_data: GuestData,
+}
+impl BaseWasmContext {
+    pub fn new(wasi: wasmtime_wasi::WasiCtx) -> Self {
+        Self {
+            wasi,
+            guest_data: Default::default(),
+        }
+    }
+}
+
+pub struct WasmState<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>> {
+    _engine: wasmtime::Engine,
+    store: Arc<Mutex<wasmtime::Store<Context>>>,
+    world_ref: Arc<Mutex<WorldRef>>,
+
+    guest_exports: Arc<Guest<Context>>,
+    _guest_instance: wasmtime::Instance,
+
+    _bindings: PhantomData<Bindings>,
+}
+impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>> Clone
+    for WasmState<Bindings, Context>
+{
+    fn clone(&self) -> Self {
+        Self {
+            _engine: self._engine.clone(),
+            store: self.store.clone(),
+            world_ref: self.world_ref.clone(),
+            guest_exports: self.guest_exports.clone(),
+            _guest_instance: self._guest_instance,
+            _bindings: self._bindings.clone(),
+        }
+    }
+}
+impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>> WasmState<Bindings, Context> {
+    pub fn new(
+        bytecode: &[u8],
+        stdout_output: Box<dyn Fn(&World, &str) + Sync + Send>,
+        stderr_output: Box<dyn Fn(&World, &str) + Sync + Send>,
+        make_wasm_context: impl Fn(WasiCtx) -> Context,
+        add_to_linker: impl Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()>,
+        interface_version: u32,
+    ) -> anyhow::Result<Self> {
+        let mut engine = wasmtime::Engine::default();
+        let world_ref = Arc::new(Mutex::new(WorldRef::new()));
+        let mut store = wasmtime::Store::new(
+            &engine,
+            make_wasm_context(
+                wasmtime_wasi::sync::WasiCtxBuilder::new()
+                    .stdout(Box::new(WasiOutputFile(stdout_output, world_ref.clone())))
+                    .stderr(Box::new(WasiOutputFile(stderr_output, world_ref.clone())))
+                    .build(),
+            ),
+        );
+
+        let (guest_exports, guest_instance) = {
+            let mut linker: wasmtime::Linker<Context> = wasmtime::Linker::new(&engine);
+            wasmtime_wasi::add_to_linker(&mut linker, |cx| &mut cx.base_wasm_context_mut().wasi)?;
+            add_to_linker(&mut linker)?;
+
+            let module = wasmtime::Module::from_binary(&mut engine, bytecode)?;
+            Guest::instantiate(&mut store, &module, &mut linker, |cx| {
+                &mut cx.base_wasm_context_mut().guest_data
+            })?
+        };
+
+        // Initialise the runtime.
+        guest_exports.init(&mut store)?;
+        // Call the script's main function.
+        guest_instance
+            .get_func(&mut store, "call_main")
+            .context("not a func")?
+            .typed::<(u32,), (), _>(&store)?
+            .call(&mut store, (interface_version,))?;
+
+        Ok(WasmState {
+            _engine: engine,
+            store: Arc::new(Mutex::new(store)),
+            world_ref,
+
+            guest_exports: Arc::new(guest_exports),
+            _guest_instance: guest_instance,
+            _bindings: PhantomData,
+        })
+    }
+
+    pub fn run(&mut self, world: &mut World, context: &ScriptContext) -> anyhow::Result<()> {
+        let ScriptContext {
+            event_name,
+            event_data,
+            time,
+            frametime,
+        } = context;
+
+        let mut store = self.store.lock();
+        store.data_mut().set_world(world);
+        self.world_ref.lock().0 = world;
+
+        // remap the generated entitydata to components to send across
+        let components = bindings::convert_entity_data_to_components(event_data);
+        // TEMPORARY: convert the host rep components to owned guest rep components
+        let components: Vec<_> = components
+            .iter()
+            .map(|(id, ct)| (*id, ct.guest_convert()))
+            .collect();
+        // then get the borrowing representation
+        // these two steps should be unnecessary once we can update to the component version of wit-bindgen
+        let components: Vec<_> = components
+            .iter()
+            .map(|(id, ct)| (*id, ct.as_guest()))
+            .collect();
+
+        Ok(self.guest_exports.exec(
+            &mut *store,
+            RunContext {
+                time: *time,
+                frametime: *frametime,
+            },
+            event_name,
+            &components,
+        )?)
     }
 }
 
