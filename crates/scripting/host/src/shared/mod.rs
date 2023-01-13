@@ -26,7 +26,7 @@ use elements_ecs::{
 };
 use elements_network::player::player;
 use itertools::Itertools;
-use parking_lot::Mutex;
+use parking_lot::RwLock;
 use wasi_common::WasiCtx;
 use wasmtime::Linker;
 
@@ -218,7 +218,7 @@ pub fn reload_all<
 >(
     world: &mut World,
     state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
-    make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>,
+    make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context + Send + Sync>,
     add_to_linker: Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
 ) {
     let scripts = query((script_module(), script_module_bytecode()))
@@ -259,7 +259,7 @@ pub fn reload<
 >(
     world: &mut World,
     state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
-    make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>,
+    make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context + Send + Sync>,
     add_to_linker: Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
     scripts: &[(EntityId, Option<ScriptModuleBytecode>)],
 ) {
@@ -294,7 +294,7 @@ pub fn load<
     world: &mut World,
     state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
     script_id: EntityId,
-    make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>,
+    make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context + Send + Sync>,
     add_to_linker: Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
     bytecode: &[u8],
     players: &[EntityId],
@@ -387,7 +387,7 @@ pub fn unload<
 
     let spawned_entities = world
         .get_mut(script_id, state_component)
-        .map(|sms| std::mem::take(&mut sms.shared_state().lock().base_mut().spawned_entities))
+        .map(|sms| std::mem::take(&mut sms.shared_state().write().base_mut().spawned_entities))
         .unwrap_or_default();
 
     if let Ok(script_module_errors) = world.get_mut(script_id, script_module_errors()) {
@@ -475,7 +475,7 @@ pub fn run<
     if !["core/module_load", "core/frame"].contains(&context.event_name.as_str())
         && !state
             .shared_state
-            .lock()
+            .write()
             .base_mut()
             .event
             .subscribed_events
@@ -485,7 +485,7 @@ pub fn run<
     }
 
     let result = run_and_catch_panics(|| state.run(world, context));
-    let events_to_run = std::mem::take(&mut state.shared_state.lock().base_mut().event.events);
+    let events_to_run = std::mem::take(&mut state.shared_state.write().base_mut().event.events);
     world.set(id, state_component, state).ok();
 
     let err = result.err().map(|err| (id, err));

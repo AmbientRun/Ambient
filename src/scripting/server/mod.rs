@@ -13,7 +13,7 @@ use elements_scripting_host::{
     },
     Linker, WasiCtx,
 };
-use parking_lot::Mutex;
+use parking_lot::RwLock;
 
 use crate::server::project_path;
 
@@ -24,7 +24,7 @@ components!("scripting::server", {
     // component
     script_module_state: ScriptModuleServerState,
     // resource
-    make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<Mutex<BaseHostGuestState>>) -> WasmServerContext + Send + Sync>,
+    make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<RwLock<BaseHostGuestState>>) -> WasmServerContext + Send + Sync>,
     add_to_linker: Arc<dyn Fn(&mut Linker<WasmServerContext>) -> anyhow::Result<()> + Send + Sync>,
 });
 

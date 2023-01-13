@@ -1,6 +1,7 @@
 use super::{
     bindings, dependencies,
     guest_conversion::GuestConvert,
+    host_guest_state::GetBaseHostGuestState,
     interface::guest::{Guest, GuestData, RunContext},
     util, ScriptContext,
 };
@@ -11,7 +12,7 @@ use elements_std::asset_url::ObjectRef;
 use glam::Vec3;
 use indexmap::IndexMap;
 use indoc::indoc;
-use parking_lot::Mutex;
+use parking_lot::{Mutex, RwLock};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::{HashMap, HashSet},
@@ -442,26 +443,27 @@ impl ScriptModuleBundle {
 pub struct ScriptModuleState<
     Bindings: Send + Sync + 'static,
     Context: WasmContext<Bindings>,
-    HostGuestState: Default,
+    HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 > {
     _engine: wasmtime::Engine,
     store: Arc<Mutex<wasmtime::Store<Context>>>,
-    world_ref: Arc<Mutex<WorldRef>>,
 
     guest_exports: Arc<Guest<Context>>,
     _guest_instance: wasmtime::Instance,
 
     _bindings: PhantomData<Bindings>,
-    pub shared_state: Arc<Mutex<HostGuestState>>,
+    pub shared_state: Arc<RwLock<HostGuestState>>,
 }
-impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>, HostGuestState: Default> Clone
-    for ScriptModuleState<Bindings, Context, HostGuestState>
+impl<
+        Bindings: Send + Sync + 'static,
+        Context: WasmContext<Bindings>,
+        HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
+    > Clone for ScriptModuleState<Bindings, Context, HostGuestState>
 {
     fn clone(&self) -> Self {
         Self {
             _engine: self._engine.clone(),
             store: self.store.clone(),
-            world_ref: self.world_ref.clone(),
             guest_exports: self.guest_exports.clone(),
             _guest_instance: self._guest_instance.clone(),
             _bindings: self._bindings.clone(),
@@ -470,34 +472,45 @@ impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>, HostGuestS
     }
 }
 
-impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>, HostGuestState: Default>
-    std::fmt::Debug for ScriptModuleState<Bindings, Context, HostGuestState>
+impl<
+        Bindings: Send + Sync + 'static,
+        Context: WasmContext<Bindings>,
+        HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
+    > std::fmt::Debug for ScriptModuleState<Bindings, Context, HostGuestState>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ScriptModuleState").finish()
     }
 }
-impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>, HostGuestState: Default>
-    ScriptModuleState<Bindings, Context, HostGuestState>
+impl<
+        Bindings: Send + Sync + 'static,
+        Context: WasmContext<Bindings>,
+        HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
+    > ScriptModuleState<Bindings, Context, HostGuestState>
 {
     pub fn new(
         bytecode: &[u8],
         stdout_output: Box<dyn Fn(&World, &str) + Sync + Send>,
         stderr_output: Box<dyn Fn(&World, &str) + Sync + Send>,
-        make_wasm_context: impl Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context,
+        make_wasm_context: impl Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context,
         add_to_linker: impl Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()>,
         interface_version: u32,
     ) -> anyhow::Result<Self> {
-        let shared_state = Arc::new(Mutex::new(HostGuestState::default()));
+        let shared_state = Arc::new(RwLock::new(HostGuestState::default()));
 
         let mut engine = wasmtime::Engine::default();
-        let world_ref = Arc::new(Mutex::new(WorldRef::new()));
         let mut store = wasmtime::Store::new(
             &engine,
             make_wasm_context(
                 wasmtime_wasi::sync::WasiCtxBuilder::new()
-                    .stdout(Box::new(WasiOutputFile(stdout_output, world_ref.clone())))
-                    .stderr(Box::new(WasiOutputFile(stderr_output, world_ref.clone())))
+                    .stdout(Box::new(WasiOutputFile(
+                        stdout_output,
+                        shared_state.clone(),
+                    )))
+                    .stderr(Box::new(WasiOutputFile(
+                        stderr_output,
+                        shared_state.clone(),
+                    )))
                     .build(),
                 shared_state.clone(),
             ),
@@ -528,7 +541,6 @@ impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>, HostGuestS
             _bindings: PhantomData,
             _engine: engine,
             store: Arc::new(Mutex::new(store)),
-            world_ref,
             guest_exports: Arc::new(guest_exports),
             _guest_instance: guest_instance,
         })
@@ -542,9 +554,7 @@ impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>, HostGuestS
             frametime,
         } = context;
 
-        let mut store = self.store.lock();
-        store.data_mut().set_world(world);
-        self.world_ref.lock().0 = world;
+        self.shared_state().write().base_mut().set_world(world);
 
         // remap the generated entitydata to components to send across
         let components = bindings::convert_entity_data_to_components(event_data);
@@ -561,7 +571,7 @@ impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>, HostGuestS
             .collect();
 
         Ok(self.guest_exports.exec(
-            &mut *store,
+            &mut *self.store.lock(),
             RunContext {
                 time: *time,
                 frametime: *frametime,
@@ -571,7 +581,7 @@ impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>, HostGuestS
         )?)
     }
 
-    pub fn shared_state(&self) -> Arc<Mutex<HostGuestState>> {
+    pub fn shared_state(&self) -> Arc<RwLock<HostGuestState>> {
         self.shared_state.clone()
     }
 }
@@ -580,7 +590,7 @@ impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>, HostGuestS
 // implicitly require unsafe and mutex locking
 struct WasiOutputFile(
     Box<dyn Fn(&World, &str) + Sync + Send>,
-    Arc<Mutex<WorldRef>>,
+    Arc<RwLock<dyn GetBaseHostGuestState + Sync + Send>>,
 );
 #[async_trait]
 impl WasiFile for WasiOutputFile {
@@ -603,7 +613,7 @@ impl WasiFile for WasiOutputFile {
         let mut count = 0;
         for buf in bufs {
             if let Ok(text) = std::str::from_utf8(buf) {
-                self.0(self.1.lock().as_ref(), text);
+                self.0(self.1.read().base().world(), text);
                 count += text.len();
             }
         }
@@ -611,28 +621,8 @@ impl WasiFile for WasiOutputFile {
     }
 }
 
-pub struct WorldRef(pub *mut World);
-impl WorldRef {
-    pub const fn new() -> Self {
-        WorldRef(std::ptr::null_mut())
-    }
-}
-unsafe impl Send for WorldRef {}
-unsafe impl Sync for WorldRef {}
-impl AsRef<World> for WorldRef {
-    fn as_ref(&self) -> &World {
-        unsafe { self.0.as_ref().unwrap() }
-    }
-}
-impl AsMut<World> for WorldRef {
-    fn as_mut(&mut self) -> &mut World {
-        unsafe { self.0.as_mut().unwrap() }
-    }
-}
-
 pub trait WasmContext<Bindings> {
     fn base_wasm_context_mut(&mut self) -> &mut BaseWasmContext;
-    fn set_world(&mut self, world: &mut World);
 }
 
 pub struct BaseWasmContext {

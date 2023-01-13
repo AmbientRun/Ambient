@@ -18,7 +18,7 @@ use elements_network::{
 use elements_physics::{collider_loads, collisions, PxShapeUserData};
 use itertools::Itertools;
 
-use parking_lot::Mutex;
+use parking_lot::RwLock;
 use physxx::{PxRigidActor, PxRigidActorRef, PxUserData};
 use wasi_common::WasiCtx;
 use wasmtime::Linker;
@@ -59,7 +59,7 @@ pub fn systems<
 >(
     state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
     make_wasm_context_component: Component<
-        Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>,
+        Arc<dyn Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context + Send + Sync>,
     >,
     add_to_linker_component: Component<
         Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
@@ -398,7 +398,7 @@ pub fn on_forking_systems<
 >(
     state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
     make_wasm_context_component: Component<
-        Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>,
+        Arc<dyn Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context + Send + Sync>,
     >,
     add_to_linker_component: Component<
         Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
@@ -463,8 +463,8 @@ pub async fn initialize<
     scripts_path: PathBuf,
 
     (make_wasm_context_component, make_wasm_context): (
-        Component<Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>>,
-        Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>,
+        Component<Arc<dyn Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context + Send + Sync>>,
+        Arc<dyn Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context + Send + Sync>,
     ),
     (add_to_linker_component, add_to_linker): (
         Component<Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>>,

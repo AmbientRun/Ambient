@@ -1,7 +1,7 @@
 use elements_ecs::{lookup_uid, with_component_registry, QueryEvent, World};
 use elements_physics::helpers::PhysicsObjectCollection;
 use itertools::Itertools;
-use parking_lot::Mutex;
+use parking_lot::RwLock;
 use std::sync::Arc;
 use wit_bindgen_host_wasmtime_rust::Le;
 
@@ -13,7 +13,7 @@ use crate::{
         host_guest_state::GetBaseHostGuestState,
         implementation as eshi,
         interface::{self as sif, host},
-        BaseWasmContext, WasmContext, WorldRef,
+        BaseWasmContext, WasmContext,
     },
 };
 
@@ -24,7 +24,7 @@ pub struct WasmServerContext {
 impl WasmServerContext {
     pub fn new(
         wasi: wasmtime_wasi::WasiCtx,
-        shared_state: Arc<Mutex<dyn GetBaseHostGuestState + Send + Sync>>,
+        shared_state: Arc<RwLock<dyn GetBaseHostGuestState + Send + Sync>>,
     ) -> Self {
         Self {
             base_context: BaseWasmContext::new(wasi),
@@ -43,34 +43,20 @@ impl WasmContext<Bindings> for WasmServerContext {
     fn base_wasm_context_mut(&mut self) -> &mut BaseWasmContext {
         &mut self.base_context
     }
-
-    fn set_world(&mut self, world: &mut elements_ecs::World) {
-        self.elements_bindings.set_world(world);
-    }
 }
 
 pub struct Bindings {
-    world: WorldRef,
-    shared_state: Arc<Mutex<dyn GetBaseHostGuestState + Send + Sync>>,
+    shared_state: Arc<RwLock<dyn GetBaseHostGuestState + Send + Sync>>,
 }
 impl Bindings {
-    fn new(shared_state: Arc<Mutex<dyn GetBaseHostGuestState + Send + Sync>>) -> Self {
-        Self {
-            world: WorldRef::new(),
-            shared_state,
-        }
+    fn new(shared_state: Arc<RwLock<dyn GetBaseHostGuestState + Send + Sync>>) -> Self {
+        Self { shared_state }
     }
-
-    fn set_world(&mut self, world: &mut World) {
-        self.world.0 = world;
+    fn world(&self) -> parking_lot::MappedRwLockReadGuard<World> {
+        parking_lot::RwLockReadGuard::map(self.shared_state.read(), |s| s.base().world())
     }
-
-    fn world(&mut self) -> &World {
-        self.world.as_ref()
-    }
-
-    fn world_mut(&mut self) -> &mut World {
-        self.world.as_mut()
+    fn world_mut(&mut self) -> parking_lot::MappedRwLockWriteGuard<World> {
+        parking_lot::RwLockWriteGuard::map(self.shared_state.write(), |s| s.base_mut().world_mut())
     }
 }
 
@@ -80,10 +66,13 @@ impl sif::Host for Bindings {
         data: ComponentsParam<'_>,
         persistent: bool,
     ) -> sif::EntityUidResult {
-        let id = esei::entity::spawn(self.world_mut(), convert_components_to_entity_data(data));
+        let id = esei::entity::spawn(
+            &mut *self.world_mut(),
+            convert_components_to_entity_data(data),
+        );
         if !persistent {
             self.shared_state
-                .lock()
+                .write()
                 .base_mut()
                 .spawned_entities
                 .insert(id.clone());
@@ -100,7 +89,7 @@ impl sif::Host for Bindings {
         persistent: bool,
     ) -> sif::EntityUidResult {
         let id = esei::entity::spawn_template(
-            self.world_mut(),
+            &mut *self.world_mut(),
             object_ref.id.to_string(),
             position.from_bindgen(),
             rotation.from_bindgen(),
@@ -108,7 +97,7 @@ impl sif::Host for Bindings {
         );
         if !persistent {
             self.shared_state
-                .lock()
+                .write()
                 .base_mut()
                 .spawned_entities
                 .insert(id.clone());
@@ -118,9 +107,10 @@ impl sif::Host for Bindings {
 
     fn entity_despawn(&mut self, entity: sif::EntityId) -> bool {
         let entity = entity.from_bindgen();
-        if let Some(uid) = esei::entity::despawn(self.world_mut(), entity) {
+        let despawn = esei::entity::despawn(&mut *self.world_mut(), entity);
+        if let Some(uid) = despawn {
             self.shared_state
-                .lock()
+                .write()
                 .base_mut()
                 .spawned_entities
                 .remove(&uid);
@@ -136,7 +126,7 @@ impl sif::Host for Bindings {
         animation_controller: sif::AnimationController,
     ) {
         esei::entity::set_animation_controller(
-            self.world_mut(),
+            &mut *self.world_mut(),
             entity.from_bindgen(),
             animation_controller.from_bindgen(),
         )
@@ -150,7 +140,7 @@ impl sif::Host for Bindings {
         relative: bool,
     ) {
         esei::entity::set_transform(
-            self.world_mut(),
+            &mut *self.world_mut(),
             entity.from_bindgen(),
             transform.from_bindgen(),
             relative,
@@ -159,7 +149,7 @@ impl sif::Host for Bindings {
     }
 
     fn entity_get_linear_velocity(&mut self, entity: sif::EntityId) -> Option<sif::Vec3> {
-        esei::entity::get_linear_velocity(self.world_mut(), entity.from_bindgen())
+        esei::entity::get_linear_velocity(&mut *self.world_mut(), entity.from_bindgen())
             .ok()
             .into_bindgen()
     }
@@ -173,7 +163,7 @@ impl sif::Host for Bindings {
         entity: sif::EntityId,
         index: u64,
     ) -> Option<sif::ComponentTypeResult> {
-        read_component_from_world(self.world(), entity.from_bindgen(), index)
+        read_component_from_world(&*self.world(), entity.from_bindgen(), index)
     }
 
     fn entity_set_component(
@@ -182,7 +172,7 @@ impl sif::Host for Bindings {
         index: u64,
         value: sif::ComponentTypeParam,
     ) {
-        write_component(self.world_mut(), entity.from_bindgen(), index, value)
+        write_component(&mut *self.world_mut(), entity.from_bindgen(), index, value)
     }
 
     fn entity_set_components(&mut self, entity: sif::EntityId, data: ComponentsParam<'_>) {
@@ -195,12 +185,20 @@ impl sif::Host for Bindings {
     }
 
     fn entity_has_component(&mut self, entity: sif::EntityId, index: u64) -> bool {
-        eshi::entity::has_component(self.world_mut(), entity.from_bindgen(), index as usize)
+        eshi::entity::has_component(
+            &mut *self.world_mut(),
+            entity.from_bindgen(),
+            index as usize,
+        )
     }
 
     fn entity_remove_component(&mut self, entity: sif::EntityId, index: u64) {
-        eshi::entity::remove_component(self.world_mut(), entity.from_bindgen(), index as usize)
-            .unwrap()
+        eshi::entity::remove_component(
+            &mut *self.world_mut(),
+            entity.from_bindgen(),
+            index as usize,
+        )
+        .unwrap()
     }
 
     fn entity_remove_components(&mut self, entity: sif::EntityId, components: &[Le<u64>]) {
@@ -220,12 +218,12 @@ impl sif::Host for Bindings {
     }
 
     fn entity_query(&mut self, index: u64) -> Vec<sif::EntityId> {
-        eshi::entity::query(self.world_mut(), index).into_bindgen()
+        eshi::entity::query(&mut *self.world_mut(), index).into_bindgen()
     }
 
     fn entity_query2(&mut self, query: sif::Query, query_event: sif::QueryEvent) -> u64 {
         eshi::entity::query2(
-            &mut self.shared_state.lock().base_mut().query_states,
+            &mut self.shared_state.write().base_mut().query_states,
             query.components.iter().map(|v| v.get()),
             query.include.iter().map(|v| v.get()),
             query.exclude.iter().map(|v| v.get()),
@@ -245,46 +243,62 @@ impl sif::Host for Bindings {
     ) -> Vec<(sif::EntityId, Vec<sif::ComponentTypeResult>)> {
         let key = slotmap::DefaultKey::from(slotmap::KeyData::from_ffi(query_index));
         let shared_state = self.shared_state.clone();
-        let mut lock = shared_state.lock();
-        let (query, query_state, primitive_components) = lock
+        let (result, query_state) = {
+            let lock = shared_state.read();
+            let base = lock.base();
+            let (query, query_state, primitive_components) =
+                base.query_states.get(key).expect("no query state for key");
+
+            let mut query_state = query_state.clone();
+
+            let world = base.world();
+            (
+                query
+                    .iter(world, Some(&mut query_state))
+                    .map(|ea| {
+                        (
+                            ea.id().into_bindgen(),
+                            primitive_components
+                                .iter()
+                                .map(|pc| {
+                                    read_primitive_component_from_entity_accessor(world, &ea, *pc)
+                                        .unwrap()
+                                })
+                                .collect(),
+                        )
+                    })
+                    .collect_vec(),
+                query_state,
+            )
+        };
+        shared_state
+            .write()
             .base_mut()
             .query_states
             .get_mut(key)
-            .expect("no query state for key");
+            .unwrap()
+            .1 = query_state;
 
-        let world = self.world();
-        query
-            .iter(world, Some(query_state))
-            .map(|ea| {
-                (
-                    ea.id().into_bindgen(),
-                    primitive_components
-                        .iter()
-                        .map(|pc| {
-                            read_primitive_component_from_entity_accessor(world, &ea, *pc).unwrap()
-                        })
-                        .collect(),
-                )
-            })
-            .collect_vec()
+        result
     }
 
     fn entity_lookup_uid(&mut self, uid: sif::EntityUidParam<'_>) -> Option<sif::EntityId> {
-        lookup_uid(self.world(), &uid.from_bindgen()).into_bindgen()
+        lookup_uid(&mut *self.world_mut(), &uid.from_bindgen()).into_bindgen()
     }
 
     fn entity_in_area(&mut self, position: sif::Vec3, radius: f32) -> Vec<sif::EntityId> {
-        eshi::entity::in_area(self.world_mut(), position.from_bindgen(), radius)
+        eshi::entity::in_area(&mut *self.world_mut(), position.from_bindgen(), radius)
             .unwrap()
             .into_bindgen()
     }
 
     fn physics_apply_force(&mut self, entities: &[Le<sif::EntityId>], force: sif::Vec3) {
         let collection = PhysicsObjectCollection::from_entities(
-            self.world(),
+            &mut *self.world_mut(),
             &entities.iter().map(|id| id.from_bindgen()).collect_vec(),
         );
-        esei::physics::apply_force(self.world_mut(), collection, force.from_bindgen()).unwrap()
+        esei::physics::apply_force(&mut *self.world_mut(), collection, force.from_bindgen())
+            .unwrap()
     }
 
     fn physics_explode_bomb(
@@ -295,7 +309,7 @@ impl sif::Host for Bindings {
         falloff_radius: Option<f32>,
     ) {
         esei::physics::explode_bomb(
-            self.world_mut(),
+            &mut *self.world_mut(),
             position.from_bindgen(),
             radius,
             force,
@@ -305,23 +319,24 @@ impl sif::Host for Bindings {
     }
 
     fn physics_set_gravity(&mut self, gravity: sif::Vec3) {
-        esei::physics::set_gravity(self.world_mut(), gravity.from_bindgen()).unwrap();
+        esei::physics::set_gravity(&mut *self.world_mut(), gravity.from_bindgen()).unwrap();
     }
 
     fn physics_unfreeze(&mut self, entity: sif::EntityId) {
-        esei::physics::unfreeze(self.world_mut(), entity.from_bindgen()).unwrap();
+        esei::physics::unfreeze(&mut *self.world_mut(), entity.from_bindgen()).unwrap();
     }
 
     fn physics_freeze(&mut self, entity: sif::EntityId) {
-        esei::physics::freeze(self.world_mut(), entity.from_bindgen()).unwrap();
+        esei::physics::freeze(&mut *self.world_mut(), entity.from_bindgen()).unwrap();
     }
 
     fn physics_start_motor(&mut self, entity: sif::EntityId, velocity: f32) {
-        esei::physics::start_motor(self.world_mut(), entity.from_bindgen(), velocity).unwrap();
+        esei::physics::start_motor(&mut *self.world_mut(), entity.from_bindgen(), velocity)
+            .unwrap();
     }
 
     fn physics_stop_motor(&mut self, entity: sif::EntityId) {
-        esei::physics::stop_motor(self.world_mut(), entity.from_bindgen()).unwrap();
+        esei::physics::stop_motor(&mut *self.world_mut(), entity.from_bindgen()).unwrap();
     }
 
     fn physics_raycast_first(
@@ -330,7 +345,7 @@ impl sif::Host for Bindings {
         direction: sif::Vec3,
     ) -> Option<(sif::EntityId, f32)> {
         esei::physics::raycast_first(
-            self.world(),
+            &mut *self.world_mut(),
             origin.from_bindgen(),
             direction.from_bindgen(),
         )
@@ -344,7 +359,7 @@ impl sif::Host for Bindings {
         direction: sif::Vec3,
     ) -> Vec<(sif::EntityId, f32)> {
         esei::physics::raycast(
-            self.world(),
+            &mut *self.world_mut(),
             origin.from_bindgen(),
             direction.from_bindgen(),
         )
@@ -355,12 +370,12 @@ impl sif::Host for Bindings {
     }
 
     fn event_subscribe(&mut self, name: &str) {
-        eshi::event::subscribe(&mut self.shared_state.lock().base_mut().event, name)
+        eshi::event::subscribe(&mut self.shared_state.write().base_mut().event, name)
     }
 
     fn event_send(&mut self, name: &str, data: ComponentsParam<'_>) {
         eshi::event::send(
-            &mut self.shared_state.lock().base_mut().event,
+            &mut self.shared_state.write().base_mut().event,
             name,
             convert_components_to_entity_data(data),
         )
