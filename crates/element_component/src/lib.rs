@@ -63,7 +63,7 @@ fn do_derive_element_component(input: TokenStream, item: TokenStream) -> TokenSt
         }
     };
 
-    let item = match syn::parse2::<syn::ItemFn>(item.clone()) {
+    let item = match syn::parse2::<syn::ItemFn>(item) {
         Ok(syntax_tree) => syntax_tree,
         Err(err) => return err.to_compile_error(),
     };
@@ -169,6 +169,7 @@ fn do_derive_element_component(input: TokenStream, item: TokenStream) -> TokenSt
     let el_block = with_el.then(|| {
         quote! {
             impl #generic_params #name #generic_idents #where_clause {
+                #[allow(clippy::too_many_arguments)]
                 pub fn el(#(#props),*) -> elements_element::Element {
                     use elements_element::ElementComponentExt;
                     Self #props_names_braced .el()
@@ -288,6 +289,7 @@ mod test {
                 }
             }
             impl ZeroArg {
+                #[allow(clippy::too_many_arguments)]
                 pub fn el() -> elements_element::Element {
                     use elements_element::ElementComponentExt;
                     Self.el()
@@ -388,6 +390,7 @@ mod test {
                 }
             }
             impl Choice {
+                #[allow(clippy::too_many_arguments)]
                 pub fn el(msg: CowStr, choices: Vec<(CowStr, WorldCallback)>, post: WorldCallback) -> elements_element::Element {
                     use elements_element::ElementComponentExt;
                     Self { msg, choices, post }.el()
@@ -460,6 +463,7 @@ mod test {
                 }
             }
             impl<T1: Debug + 'static, T2> GenericComponent<T1, T2> where T2: Debug + 'static {
+                #[allow(clippy::too_many_arguments)]
                 pub fn el(a: T1, b: T2) -> elements_element::Element {
                     use elements_element::ElementComponentExt;
                     Self { a, b }.el()

@@ -41,7 +41,7 @@ pub async fn import<'a>(
                 let image = if let Some(_data) = &tex.data {
                     todo!()
                 } else {
-                    let path = tex.path.replace("\\\\", "/").replace("\\", "/");
+                    let path = tex.path.replace("\\\\", "/").replace('\\', "/");
                     resolve_texture(path).await
                 };
                 if let Some(image) = image {
@@ -92,6 +92,7 @@ pub async fn import<'a>(
             ..Default::default()
         };
         for prop in &material.properties {
+            #[allow(clippy::single_match)]
             match &prop.key as &str {
                 "?mat.name" => {
                     if let PropertyTypeInfo::String(value) = &prop.data {

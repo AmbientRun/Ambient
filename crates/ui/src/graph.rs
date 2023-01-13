@@ -248,7 +248,7 @@ impl ElementComponent for Guide {
 
         let text_rot = rot.inverse();
         let screen_offset = scale.offset / scale.span() * scale.screen_size;
-        let ticks = (0..=scale.tick_count as u32)
+        let ticks = (0..=scale.tick_count)
             .map(|i| {
                 let val = (-scale.offset as f64 + scale.min as f64 + i as f64 * scale.spacing as f64) as f32;
                 (i, val)

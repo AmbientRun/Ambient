@@ -118,13 +118,7 @@ impl OverlayRenderer {
         }
     }
 
-    pub fn render<'a>(
-        &'a self,
-        cmds: &mut CommandEncoder,
-        target: &RendererTarget,
-        binds: &[(&str, &BindGroup)],
-        mesh_buffer: &MeshBuffer,
-    ) {
+    pub fn render(&self, cmds: &mut CommandEncoder, target: &RendererTarget, binds: &[(&str, &BindGroup)], mesh_buffer: &MeshBuffer) {
         let mut renderpass = cmds.begin_render_pass(&RenderPassDescriptor {
             label: Some("Overlay"),
             color_attachments: &[Some(RenderPassColorAttachment {

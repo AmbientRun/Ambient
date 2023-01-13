@@ -125,7 +125,7 @@ impl FbxMaterial {
             }
             None
         };
-        let img_to_asset = |(image, _id): (AssetLoc, i64)| -> AssetUrl { dotdot_path(&image.path).into() };
+        let img_to_asset = |(image, _id): (AssetLoc, i64)| -> AssetUrl { dotdot_path(image.path).into() };
         PbrMaterialFromUrl {
             name: Some(self.name.to_string()),
             source: Some(source),

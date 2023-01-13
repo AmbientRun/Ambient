@@ -1,4 +1,4 @@
-use elements_app::{App, AppBuilder};
+use elements_app::AppBuilder;
 use elements_cameras::UICamera;
 use elements_core::camera::active_camera;
 use elements_ecs::World;
@@ -44,7 +44,7 @@ impl ElementComponent for SubScreen {
         let (id, _) = hooks.use_state_with(|| friendly_id::create());
         PageScreen(vec![
             ScreenContainer(screen).el(),
-            Text::el(format!("SubScreen {}", id)),
+            Text::el(format!("SubScreen {id}")),
             Button::new("Back", move |_| on_back()).el(),
             Button::new("Open sub screen", {
                 let set_screen = set_screen.clone();

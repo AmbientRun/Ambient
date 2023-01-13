@@ -71,7 +71,6 @@ where
 
 #[cfg(test)]
 mod test {
-    
 
     use itertools::Itertools;
 

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use elements_app::{gpu, App, AppBuilder};
+use elements_app::{gpu, AppBuilder};
 use elements_cameras::UICamera;
 use elements_core::camera::active_camera;
 use elements_ecs::World;

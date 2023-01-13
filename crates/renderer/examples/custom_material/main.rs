@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use elements_app::{App, AppBuilder};
+use elements_app::AppBuilder;
 use elements_core::{asset_cache, camera::active_camera, hierarchy::set_component_recursive, main_scene, mesh, transform::*};
 use elements_ecs::{EntityData, World};
 use elements_gpu::{
@@ -12,7 +12,7 @@ use elements_renderer::{
     gpu_primitives, material, materials::flat_material::{get_flat_shader, FlatMaterial}, primitives, renderer_shader, Material, MaterialShader, SharedMaterial, StandardShaderKey, MATERIAL_BIND_GROUP
 };
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::AbsAssetUrl, math::SphericalCoords
+    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, asset_url::AbsAssetUrl, math::SphericalCoords
 };
 use glam::*;
 use wgpu::BindGroup;

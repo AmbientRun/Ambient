@@ -11,7 +11,7 @@ components!("camera", {
 });
 
 #[derive(Debug, Default, Display, Clone)]
-#[display(fmt = "{:?}", self)]
+#[display(fmt = "{self:?}")]
 pub struct FreeCamera {
     is_up_pressed: bool,
     is_down_pressed: bool,

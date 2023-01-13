@@ -62,7 +62,7 @@ fn import_image_data(document: &Document, base: Option<&Path>, buffer_data: &[bu
             gltf::image::Source::Uri { uri, mime_type } if base.is_some() => {
                 match Scheme::parse(uri) {
                     Scheme::Data(Some(annoying_case), base64) => {
-                        let encoded_image = base64::decode(&base64).map_err(gltf::Error::Base64)?;
+                        let encoded_image = base64::decode(base64).map_err(gltf::Error::Base64)?;
                         let encoded_format = match annoying_case {
                             "image/png" => Png,
                             "image/jpeg" => Jpeg,
@@ -188,7 +188,7 @@ impl Scheme<'_> {
 
     fn read(base: &Path, uri: &str) -> gltf::Result<Vec<u8>> {
         match Scheme::parse(uri) {
-            Scheme::Data(_, base64) => base64::decode(&base64).map_err(gltf::Error::Base64),
+            Scheme::Data(_, base64) => base64::decode(base64).map_err(gltf::Error::Base64),
             Scheme::File(path) => read_to_end(path),
             Scheme::Relative => read_to_end(base.join(uri)),
             Scheme::Unsupported => Err(gltf::Error::UnsupportedScheme),

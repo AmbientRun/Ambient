@@ -68,7 +68,6 @@ impl<S: Source> Source for Uniform<S> {
 
 #[cfg(test)]
 mod test {
-    
 
     use itertools::Itertools;
 

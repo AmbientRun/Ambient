@@ -85,7 +85,7 @@ impl PxShape {
         unsafe { physx_sys::PxShape_setFlag_mut(self.0, flag.bits as u32, value) }
     }
     pub fn set_flags(&self, flags: PxShapeFlag) {
-        unsafe { physx_sys::PxShape_setFlags_mut(self.0, physx_sys::PxShapeFlags { mBits: flags.bits as u8 }) }
+        unsafe { physx_sys::PxShape_setFlags_mut(self.0, physx_sys::PxShapeFlags { mBits: flags.bits }) }
     }
 }
 impl AsPxBase for PxShape {

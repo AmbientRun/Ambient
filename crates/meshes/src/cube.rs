@@ -27,7 +27,7 @@ impl Hash for CubeMesh {
     where
         H: ::std::hash::Hasher,
     {
-        format!("{:?}", self).hash(state);
+        format!("{self:?}").hash(state);
     }
 }
 impl Default for CubeMesh {

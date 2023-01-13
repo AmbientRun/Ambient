@@ -1,4 +1,4 @@
-use elements_app::{App, AppBuilder};
+use elements_app::AppBuilder;
 use elements_core::{
     asset_cache, bounding::world_bounding_sphere, camera::{active_camera, far, near, Camera, Projection}, main_scene, transform::*
 };

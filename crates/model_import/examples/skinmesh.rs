@@ -1,5 +1,5 @@
 use elements_animation::{animation_controller, AnimationController};
-use elements_app::{App, AppBuilder};
+use elements_app::AppBuilder;
 use elements_core::{
     asset_cache, camera::{active_camera, far}, main_scene, transform::*
 };

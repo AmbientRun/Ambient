@@ -111,8 +111,8 @@ pub fn systems<
                     }
                 }),
             query(script_module().changed()).to_system({
-                let make_wasm_context = make_wasm_context.clone();
-                let add_to_linker = add_to_linker.clone();
+                let make_wasm_context = make_wasm_context;
+                let add_to_linker = add_to_linker;
                 move |q, world, qs, _| {
                     profiling::scope!("script module changed");
                     // Script module (files/enabled) changed, issue compilation tasks.
@@ -475,7 +475,7 @@ pub async fn initialize<
         world,
         messenger,
         scripting_interfaces,
-        primary_scripting_interface_name.clone(),
+        primary_scripting_interface_name,
         rust_path,
         scripting_interface_root_path.clone(),
         templates_path,

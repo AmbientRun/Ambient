@@ -75,7 +75,7 @@ impl From<UVSphereMesh> for Mesh {
         }
 
         let mut mesh = Mesh {
-            name: format!("{:?}", sphere),
+            name: format!("{sphere:?}"),
             positions: Some(vertices),
             texcoords: vec![uvs],
             normals: Some(normals),

@@ -195,7 +195,7 @@ pub type CowStr = Cow<'static, str>;
 
 pub fn to_byte_unit(bytes: usize) -> String {
     if bytes < 1024 * 10 {
-        format!("{} b", bytes)
+        format!("{bytes} b")
     } else if bytes < 1024 * 1024 * 10 {
         format!("{} kb", bytes / 1024)
     } else if bytes < 1024 * 1024 * 1024 * 10 {

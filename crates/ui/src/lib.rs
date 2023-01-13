@@ -539,7 +539,7 @@ impl ElementComponent for TransformGroupChild {
 pub struct TransformMapGroup(pub HashMap<String, Element>);
 impl ElementComponent for TransformMapGroup {
     fn render(self: Box<Self>, _world: &mut World, _hooks: &mut Hooks) -> Element {
-        TransformGroup(self.0.into_iter().sorted_by_key(|x| x.0.clone()).map(|(k, v)| v.key(&k)).collect()).into()
+        TransformGroup(self.0.into_iter().sorted_by_key(|x| x.0.clone()).map(|(k, v)| v.key(k)).collect()).into()
     }
 }
 

@@ -98,7 +98,7 @@ impl TestCommon {
     async fn assert_gpu_cpu_components_eq(&self, id: EntityId, component: Component<Vec4>) {
         let gpu = self.get_gpu_component(id, component).await;
         let cpu = self.world.get(id, component).unwrap();
-        println!("{} {}", gpu, cpu);
+        println!("{gpu} {cpu}");
         assert_eq!(gpu, cpu);
     }
 }

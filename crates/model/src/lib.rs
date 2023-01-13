@@ -156,7 +156,7 @@ pub fn model_systems() -> SystemGroup {
             query((model_def().changed(),)).to_system(|q, world, qs, _| {
                 let mut new_models = HashMap::new();
                 for (id, (model_from_url,)) in q.iter(world, qs) {
-                    let entry = new_models.entry(format!("{:?}", model_from_url)).or_insert_with(|| (model_from_url.clone(), Vec::new()));
+                    let entry = new_models.entry(format!("{model_from_url:?}")).or_insert_with(|| (model_from_url.clone(), Vec::new()));
                     entry.1.push(id);
                 }
                 if new_models.is_empty() {

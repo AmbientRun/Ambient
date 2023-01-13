@@ -122,7 +122,7 @@ where
                 world
                     .add_components(
                         id,
-                        EntityData::new().set(intent_applied(), format!("failed: {:#}", err)).set(intent_failed(), format!("{:#}", err)),
+                        EntityData::new().set(intent_applied(), format!("failed: {err:#}")).set(intent_failed(), format!("{err:#}")),
                     )
                     .unwrap();
             }
@@ -321,7 +321,7 @@ pub fn registry_systems() -> SystemGroup {
 #[cfg(test)]
 mod test {
 
-    use elements_ecs::{components, ComponentRegistry};
+    use elements_ecs::components;
 
     use super::*;
 
@@ -335,14 +335,14 @@ mod test {
         init_components();
 
         crate::init_components();
-        let mut world = World::new("registry_test");
+        let _world = World::new("registry_test");
 
         let mut reg = IntentRegistry::new();
         reg.register(
             intent_add(),
             intent_add_revert(),
-            |ctx, arg| todo!(),
-            |ctx, revert| todo!(),
+            |_ctx, _arg| todo!(),
+            |_ctx, _revert| todo!(),
             |_, old_state, new_arg, _| (*old_state, *new_arg),
         );
     }

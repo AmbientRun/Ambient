@@ -48,7 +48,7 @@ impl EditorAttrs {
                                     "hidden" => res.hidden = true,
                                     "slider" => res.slider = true,
                                     "logarithmic" => res.logarithmic = Lit::Bool(LitBool::new(true, Span::call_site())),
-                                    _ => panic!("Unrecognized attribute: {}", attr),
+                                    _ => panic!("Unrecognized attribute: {attr}"),
                                 }
                             }
                             NestedMeta::Meta(Meta::NameValue(MetaNameValue { path, lit, .. })) => {
@@ -65,7 +65,7 @@ impl EditorAttrs {
                                         }
                                     }
                                     "editor" => res.editor = Some(lit),
-                                    _ => panic!("Unrecognized attribute: {} = {:?}", attr, lit),
+                                    _ => panic!("Unrecognized attribute: {attr} = {lit:?}"),
                                 }
                             }
                             _ => {}

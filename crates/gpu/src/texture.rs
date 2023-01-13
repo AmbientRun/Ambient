@@ -86,7 +86,7 @@ impl Texture {
         }
     }
     pub fn from_file<P: AsRef<Path> + std::fmt::Debug>(gpu: Arc<Gpu>, path: P, format: wgpu::TextureFormat) -> Self {
-        let label = format!("{:?}", path);
+        let label = format!("{path:?}");
         Self::from_image(gpu, ImageReader::open(path).unwrap().decode().unwrap(), format, Some(&label))
     }
     pub fn from_image_mipmapped(assets: AssetCache, image: DynamicImage, format: wgpu::TextureFormat, label: wgpu::Label) -> Self {
@@ -197,7 +197,7 @@ impl Texture {
     pub fn array_from_files<P: AsRef<Path> + std::fmt::Debug>(assets: AssetCache, paths: Vec<P>, format: wgpu::TextureFormat) -> Self {
         let imgs = paths.iter().map(|path| ImageReader::open(path).unwrap().decode().unwrap().into_rgba8()).collect_vec();
 
-        let name = paths.iter().map(|x| format!("{:?}", x)).join(", ");
+        let name = paths.iter().map(|x| format!("{x:?}")).join(", ");
         Self::array_rgba8_mipmapped(assets, Some(&name), imgs, format)
     }
 
@@ -380,7 +380,7 @@ impl TextureReader {
                 layout: wgpu::ImageDataLayout {
                     offset: 0,
                     bytes_per_row: Some(std::num::NonZeroU32::new(self.buffer_dimensions.padded_bytes_per_row as u32).unwrap()),
-                    rows_per_image: Some(std::num::NonZeroU32::new(self.buffer_dimensions.size.height as u32).unwrap()),
+                    rows_per_image: Some(std::num::NonZeroU32::new(self.buffer_dimensions.size.height).unwrap()),
                 },
             },
             self.base_size,
@@ -462,12 +462,12 @@ impl TextureReader {
             Some(
                 (0..self.size.depth_or_array_layers as usize)
                     .map(|layer| {
-                        println!("reading {}", layer);
+                        println!("reading {layer}");
                         let data = array.slice(s![layer, .., .., ..]);
                         let max = *data.iter().map(|x| OrderedFloat(*x)).max().unwrap();
                         let min = *data.iter().map(|x| OrderedFloat(*x)).min().unwrap();
                         let as_u8s = data.iter().map(|v| (255. * (v - min) / (max - min)) as u8).collect_vec();
-                        println!("min={} max={}", min, max);
+                        println!("min={min} max={max}");
                         match self.format {
                             wgpu::TextureFormat::Depth32Float => {
                                 DynamicImage::ImageLuma8(image::GrayImage::from_raw(self.size.width, self.size.height, as_u8s).unwrap())
@@ -522,7 +522,7 @@ impl TextureReader {
     pub async fn write_to_files(&self, path: &str) {
         let images = self.read_images().await.unwrap();
         for (i, image) in images.into_iter().enumerate() {
-            image.save(&format!("{}_{}.png", path, i)).unwrap();
+            image.save(&format!("{path}_{i}.png")).unwrap();
         }
     }
 }

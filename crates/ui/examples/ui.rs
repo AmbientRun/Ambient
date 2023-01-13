@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use elements_app::{App, AppBuilder};
+use elements_app::AppBuilder;
 use elements_cameras::UICamera;
 use elements_core::{camera::active_camera, hierarchy::children, on_frame, transform::translation};
 use elements_ecs::World;
@@ -65,14 +65,14 @@ struct Example;
 impl ElementComponent for Example {
     fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
         let (count, _set_count) = hooks.use_state(0);
-        hooks.provide_context(|| MyContext(format!("context {}", count)));
-        println!("Render example {}", count);
+        hooks.provide_context(|| MyContext(format!("context {count}")));
+        println!("Render example {count}");
         if count < 5 {
             Two {
                 first: UIBase.el().set(width(), 150.).set(height(), 30.).with_background(Color::rgba(0.5, 1., 0.5, 1.)),
                 second: FlowColumn(vec![
                     InputTest.el(),
-                    Text::el(format!("You clicked {} times", count)),
+                    Text::el(format!("You clicked {count} times")),
                     UIBase
                         .el()
                         .set(width(), 30. - count as f32 * 2.)

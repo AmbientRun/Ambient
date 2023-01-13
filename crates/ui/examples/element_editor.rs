@@ -1,4 +1,4 @@
-use elements_app::{App, AppBuilder};
+use elements_app::AppBuilder;
 use elements_cameras::UICamera;
 use elements_core::camera::active_camera;
 use elements_ecs::World;
@@ -56,7 +56,7 @@ impl ElementComponent for Example {
     fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
         let (state, set_state) = hooks.use_state(MyStruct::new());
         FocusRoot(vec![ScrollArea(
-            FlowColumn(vec![MyStruct::editor(state.clone(), Some(Cb(set_state)), Default::default()), Text::el(format!("{:#?}", state))])
+            FlowColumn(vec![MyStruct::editor(state.clone(), Some(Cb(set_state)), Default::default()), Text::el(format!("{state:#?}"))])
                 .el()
                 .set(space_between_items(), STREET),
         )

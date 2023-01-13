@@ -90,7 +90,7 @@ impl Gpu {
         let swapchain_mode = surface.as_ref().map(|surface| surface.get_supported_present_modes(&adapter)).as_ref().map(|modes| {
             [PresentMode::Immediate, PresentMode::Fifo, PresentMode::Mailbox]
                 .into_iter()
-                .find(|pm| modes.contains(&pm))
+                .find(|pm| modes.contains(pm))
                 .expect("unable to find compatible swapchain mode")
         });
         log::info!("Swapchain present mode: {swapchain_mode:?}");

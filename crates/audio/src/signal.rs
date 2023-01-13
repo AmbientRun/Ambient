@@ -15,7 +15,10 @@ pub struct AsyncSignal {
 
 impl AsyncSignal {
     pub fn new(waker: Waker) -> Self {
-        Self { waker: Mutex::new(waker), woken: AtomicBool::new(false) }
+        Self {
+            waker: Mutex::new(waker),
+            woken: AtomicBool::new(false),
+        }
     }
 
     pub fn is_woken(&self) -> bool {

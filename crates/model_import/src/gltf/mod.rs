@@ -25,7 +25,7 @@ pub async fn import_url(assets: &AssetCache, url: &AbsAssetUrl, asset_crate: &mu
 }
 
 pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow::Result<RelativePathBuf> {
-    let name_ = |name: Option<&str>| name.map(|x| format!("{}_", x)).unwrap_or_default();
+    let name_ = |name: Option<&str>| name.map(|x| format!("{x}_")).unwrap_or_default();
 
     let mut meshes = import.document.meshes().map(|mesh| mesh.primitives().map(|_| RelativePathBuf::new()).collect_vec()).collect_vec();
     for (mesh_i, mesh) in import.document.meshes().enumerate() {
@@ -152,7 +152,7 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
             gltf::image::Format::R32G32B32FLOAT => todo!(),
             gltf::image::Format::R32G32B32A32FLOAT => todo!(),
         };
-        let path = asset_crate.images.insert(&format!("{}", index), img).path;
+        let path = asset_crate.images.insert(&format!("{index}"), img).path;
         images.push(path);
     }
 

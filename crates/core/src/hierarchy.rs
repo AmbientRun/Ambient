@@ -81,7 +81,7 @@ pub fn dump_world_hierarchy_to_tmp_file(world: &World) {
     let mut f = File::create(&path).expect("Unable to create file");
     dump_world_hierarchy(world, &mut f);
 
-    println!("Wrote hierarchy to {:?}", path);
+    println!("Wrote hierarchy to {path:?}");
 }
 pub fn dump_world_hierarchy(world: &World, f: &mut dyn std::io::Write) {
     use yaml_rust::yaml::Yaml;
@@ -111,7 +111,7 @@ pub fn dump_world_hierarchy(world: &World, f: &mut dyn std::io::Write) {
     let mut emitter = YamlEmitter::new(&mut out_str);
     emitter.multiline_strings(false);
     emitter.dump(&yaml_rust::yaml::Yaml::Array(roots)).unwrap();
-    write!(f, "{}", out_str).unwrap();
+    write!(f, "{out_str}").unwrap();
 }
 fn dump_entity_hierarchy(world: &World, entity: EntityId, visited: &mut HashSet<EntityId>) -> yaml_rust::yaml::Hash {
     use yaml_rust::yaml::Yaml;

@@ -193,7 +193,7 @@ impl ScriptModule {
             }
 
             let _ = writeln!(contents, "pub mod {category} {{");
-            let _ = writeln!(contents, "    use {}::*;", scripting_interface);
+            let _ = writeln!(contents, "    use {scripting_interface}::*;");
             for (key, value) in parameters {
                 let key = key.trim().replace(' ', "_").to_uppercase();
                 if key.is_empty() {
@@ -289,7 +289,7 @@ impl ScriptModule {
                         }
                     } else {
                         writeln!(output, "{space}pub mod {name} {{").ok();
-                        writeln!(output, "{space}    use {}::*;", scripting_interface).ok();
+                        writeln!(output, "{space}    use {scripting_interface}::*;").ok();
                         for (key, value) in hm {
                             write_to_file(output, key, value, depth + 1, scripting_interface);
                         }
@@ -465,8 +465,8 @@ impl<
             _engine: self._engine.clone(),
             store: self.store.clone(),
             guest_exports: self.guest_exports.clone(),
-            _guest_instance: self._guest_instance.clone(),
-            _bindings: self._bindings.clone(),
+            _guest_instance: self._guest_instance,
+            _bindings: self._bindings,
             shared_state: self.shared_state.clone(),
         }
     }
@@ -498,7 +498,7 @@ impl<
     ) -> anyhow::Result<Self> {
         let shared_state = Arc::new(RwLock::new(HostGuestState::default()));
 
-        let mut engine = wasmtime::Engine::default();
+        let engine = wasmtime::Engine::default();
         let mut store = wasmtime::Store::new(
             &engine,
             make_wasm_context(
@@ -521,7 +521,7 @@ impl<
             wasmtime_wasi::add_to_linker(&mut linker, |cx| &mut cx.base_wasm_context_mut().wasi)?;
             add_to_linker(&mut linker)?;
 
-            let module = wasmtime::Module::from_binary(&mut engine, bytecode)?;
+            let module = wasmtime::Module::from_binary(&engine, bytecode)?;
             Guest::instantiate(&mut store, &module, &mut linker, |cx| {
                 &mut cx.base_wasm_context_mut().guest_data
             })?

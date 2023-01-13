@@ -1,6 +1,6 @@
 use std::f32::consts::PI;
 
-use elements_app::{App, AppBuilder};
+use elements_app::AppBuilder;
 use elements_core::{
     asset_cache, camera::active_camera, main_scene, transform::{rotation, scale, translation}
 };

@@ -3,7 +3,6 @@ use std::{mem, sync::Arc};
 use glam::Vec2;
 use parking_lot::Mutex;
 
-
 use crate::{Frame, Source};
 
 const DERIVATE_LEN: usize = 8;

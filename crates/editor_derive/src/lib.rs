@@ -271,7 +271,7 @@ fn fields_editor(
     unnamed: bool,
 ) -> TokenStream {
     let field_editors = fields.iter().enumerate().filter_map(|(i, field)| {
-        let field_name = if unnamed { Some(Ident::new(&format!("field_{}", i), Span::call_site())) } else { field.ident.clone() };
+        let field_name = if unnamed { Some(Ident::new(&format!("field_{i}"), Span::call_site())) } else { field.ident.clone() };
         let field_ty = field.ty.clone();
         let field_ty_colon = type_with_colon(&field_ty);
 
@@ -367,7 +367,7 @@ fn fields_editor(
                     match item {
                         Inline::Text(text) => quote! { Text::el(#text)#margin },
                         Inline::Field(field) => {
-                            let field_editor = fields.get(&field).unwrap_or_else(|| panic!("No such field: {:?}", field)).clone();
+                            let field_editor = fields.get(&field).unwrap_or_else(|| panic!("No such field: {field:?}")).clone();
                             quote! { #field_editor #margin }
                         }
                     }

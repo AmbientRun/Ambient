@@ -286,6 +286,7 @@ pub fn reload<
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn load<
     Bindings: Send + Sync + 'static,
     Context: WasmContext<Bindings> + Send + Sync + 'static,

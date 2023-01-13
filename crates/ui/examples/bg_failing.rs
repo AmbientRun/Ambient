@@ -1,4 +1,4 @@
-use elements_app::{App, AppBuilder};
+use elements_app::AppBuilder;
 use elements_cameras::UICamera;
 use elements_core::{asset_cache, camera::active_camera, runtime};
 use elements_ecs::World;

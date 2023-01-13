@@ -56,7 +56,7 @@ impl ModelImportPipeline {
     pub async fn produce_crate(&self, assets: &AssetCache) -> anyhow::Result<ModelCrate> {
         let mut asset_crate = ModelCrate::new();
         for step in &self.steps {
-            step.run(assets, &mut asset_crate).await.with_context(|| format!("Failed to run step: {:?}", step))?;
+            step.run(assets, &mut asset_crate).await.with_context(|| format!("Failed to run step: {step:?}"))?;
         }
         Ok(asset_crate)
     }
@@ -298,7 +298,7 @@ pub async fn download_bytes(assets: &AssetCache, url: &AbsAssetUrl) -> anyhow::R
     }
 }
 
-pub const MODEL_EXTENSIONS: &'static [&'static str] = &["glb", "fbx", "obj"];
+pub const MODEL_EXTENSIONS: &[&str] = &["glb", "fbx", "obj"];
 
 /// ../[path]
 pub fn dotdot_path(path: impl Into<RelativePathBuf>) -> RelativePathBuf {

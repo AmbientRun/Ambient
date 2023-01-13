@@ -55,7 +55,7 @@ impl<Args: Send + 'static> RpcRegistry<Args> {
     ) -> Vec<u8> {
         let name = std::any::type_name::<F>().to_string();
         let mut res = Vec::new();
-        writeln!(&mut res, "{}", name).unwrap();
+        writeln!(&mut res, "{name}").unwrap();
         let req = bincode::serialize(&req).unwrap();
         res.write_all(&req).unwrap();
         res
@@ -117,6 +117,6 @@ mod tests {
         let req = reg.serialize_req(testy, 6);
         let resp = reg.run_req((), &req).await.unwrap();
         let resp = reg.deserialize_resp(testy, &resp).unwrap();
-        println!("resp={:?}", resp);
+        println!("resp={resp:?}");
     }
 }

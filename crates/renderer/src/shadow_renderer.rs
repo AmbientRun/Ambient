@@ -70,7 +70,7 @@ impl ShadowsRenderer {
                         aspect: wgpu::TextureAspect::All,
                         base_mip_level: 0,
                         mip_level_count: None,
-                        base_array_layer: i as u32,
+                        base_array_layer: i,
                         array_layer_count: NonZeroU32::new(1),
                     }),
                     globals: ShadowAndUIGlobals::new(assets.clone(), renderer_resources.globals_layout.clone()),
@@ -125,7 +125,7 @@ impl ShadowsRenderer {
         for (i, cascade) in self.cascades.iter_mut().enumerate() {
             profiling::scope!("Shadow dynamic render");
             self.renderer.run_collect(encoder, post_submit, resources_bind_group, entities_bind_group, &mut cascade.collect_state);
-            let label = format!("Shadow cascade {}", i);
+            let label = format!("Shadow cascade {i}");
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some(&label),
                 color_attachments: &[],
@@ -152,7 +152,7 @@ impl ShadowsRenderer {
     pub fn stats(&self) -> String {
         let shadow_entities: usize = self.renderer.n_entities() * self.config.shadow_cascades as usize;
         let shadow_nodes: usize = self.renderer.n_nodes();
-        format!("shadow: {}/{}", shadow_entities, shadow_nodes)
+        format!("shadow: {shadow_entities}/{shadow_nodes}")
     }
 
     pub fn dump(&self, f: &mut dyn std::io::Write) {

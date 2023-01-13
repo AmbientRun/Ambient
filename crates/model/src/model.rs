@@ -67,14 +67,13 @@ impl Model {
     pub async fn load(&mut self, assets: &AssetCache, model_url: &AbsAssetUrl) -> anyhow::Result<()> {
         for (id, prims) in query(pbr_renderer_primitives_from_url()).collect_cloned(&self.0, None) {
             self.0.remove_component(id, pbr_renderer_primitives_from_url()).unwrap();
-            let prims =
-                join_all(prims.into_iter().map(|prim| async move { Ok(prim.resolve(model_url)?.get(assets).await?) }).collect_vec())
-                    .await
-                    .into_iter()
-                    .collect::<Result<Vec<_>, AssetError>>()?
-                    .into_iter()
-                    .map(|x| (*x).clone())
-                    .collect_vec();
+            let prims = join_all(prims.into_iter().map(|prim| async move { prim.resolve(model_url)?.get(assets).await }).collect_vec())
+                .await
+                .into_iter()
+                .collect::<Result<Vec<_>, AssetError>>()?
+                .into_iter()
+                .map(|x| (*x).clone())
+                .collect_vec();
             self.0.add_component(id, primitives(), prims).unwrap();
         }
         Ok(())

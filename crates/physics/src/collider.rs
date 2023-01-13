@@ -111,7 +111,7 @@ pub fn server_systems() -> SystemGroup {
                 for (id, (collider_def,)) in all {
                     let density = world.get(id, density()).unwrap_or(1.);
                     let entry =
-                        by_collider.entry(format!("{:?}-{}", collider_def, density)).or_insert_with(|| (collider_def, density, Vec::new()));
+                        by_collider.entry(format!("{collider_def:?}-{density}")).or_insert_with(|| (collider_def, density, Vec::new()));
                     entry.2.push(id);
                 }
                 if by_collider.is_empty() {
@@ -247,6 +247,7 @@ pub enum ColliderDef {
 
 type ColliderSpawner = Box<dyn Fn(&Physics, Vec3) -> (Vec<PxShape>, Vec<PxShape>) + Sync + Send>;
 impl ColliderDef {
+    #[allow(clippy::single_match)]
     pub fn resolve(&mut self, base_url: &AbsAssetUrl) -> anyhow::Result<()> {
         match self {
             ColliderDef::Asset { collider } => {
@@ -362,14 +363,14 @@ impl Collider {
                     PhysxGeometry::ConvexMesh(mesh) => {
                         let geometry = PxConvexMeshGeometry::new(mesh, Some(PxMeshScale::from_scale(scale.abs())), None);
                         if !geometry.is_valid() {
-                            panic!("Invalid geometry. scale={:?}", scale);
+                            panic!("Invalid geometry. scale={scale:?}");
                         }
                         Box::new(geometry)
                     }
                     PhysxGeometry::TriangleMesh(mesh) => {
                         let geometry = PxTriangleMeshGeometry::new(mesh, Some(PxMeshScale::from_scale(scale)), None);
                         if !geometry.is_valid() {
-                            panic!("Invalid geometry. scale={:?}", scale);
+                            panic!("Invalid geometry. scale={scale:?}");
                         }
                         Box::new(geometry)
                     }

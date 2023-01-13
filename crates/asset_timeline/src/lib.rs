@@ -109,7 +109,7 @@ impl ElementComponent for AssetTimelineVisualizer {
                     .toggled(filter == Filter::Aborted)
                     .style(ButtonStyle::Flat)
                     .el(),
-                    Button::new(format!("All ({})", total_count), {
+                    Button::new(format!("All ({total_count})"), {
                         let set_filter = set_filter.clone();
                         move |_| set_filter(Filter::All)
                     })

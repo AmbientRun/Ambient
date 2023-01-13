@@ -88,7 +88,7 @@ fn MainApp(world: &mut World, hooks: &mut Hooks, port: u16) -> Element {
                 .spawn(world);
             }))),
             on_loaded: Cb::new(move |_game_state, _game_client| Ok(Box::new(|| {}))),
-            error_view: Cb(Arc::new(move |error| Dock(vec![Text::el("Error").header_style(), Text::el(error.clone())]).el())),
+            error_view: Cb(Arc::new(move |error| Dock(vec![Text::el("Error").header_style(), Text::el(error)]).el())),
             systems_and_resources: Cb::new(|| (client_systems(), EntityData::new())),
             create_rpc_registry: Cb::new(server::create_rpc_registry),
             on_in_entities: None,
@@ -119,7 +119,7 @@ fn main() {
     }
 
     if cli.command.should_run() {
-        let port = server::start_server(&runtime, assets.clone(), cli, project_path.clone());
+        let port = server::start_server(&runtime, assets.clone(), cli, project_path);
         AppBuilder::simple().ui_renderer(true).with_runtime(runtime).with_asset_cache(assets).run(|app, _runtime| {
             MainApp { port }.el().spawn_interactive(&mut app.world);
         });

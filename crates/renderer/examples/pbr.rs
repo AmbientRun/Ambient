@@ -1,11 +1,7 @@
-use std::sync::Arc;
-
-use elements_app::{App, AppBuilder};
-use elements_core::{asset_cache, camera::active_camera, gpu, main_scene, transform::*};
+use elements_app::AppBuilder;
+use elements_core::{asset_cache, camera::active_camera, main_scene, transform::*};
 use elements_ecs::{EntityData, World};
-use elements_gpu::{
-    std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey}, texture::Texture
-};
+use elements_gpu::std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey};
 use elements_meshes::{CubeMeshKey, SphereMeshKey};
 use elements_renderer::{
     gpu_primitives, materials::pbr_material::{get_pbr_shader, PbrMaterial, PbrMaterialConfig, PbrMaterialParams}, primitives, RenderPrimitive, SharedMaterial

@@ -281,7 +281,7 @@ impl ElementComponent for GameClientView {
                             } else {
                                 log::error!("Game failed: {:?}", err);
                             }
-                            set_error(Some(format!("{:?}", err)));
+                            set_error(Some(format!("{err:?}")));
                         }
                         Ok(()) => {
                             log::info!("Client disconnected");

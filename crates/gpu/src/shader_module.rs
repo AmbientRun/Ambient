@@ -235,13 +235,13 @@ impl Shader {
             .collect();
 
         for (key, value) in idents.iter() {
-            source = source.replace(&format!("#{}", key), &value.to_wgsl());
+            source = source.replace(&format!("#{key}"), &value.to_wgsl());
         }
 
         #[cfg(debug_assertions)]
         {
             std::fs::create_dir_all("tmp/").unwrap();
-            std::fs::write(format!("tmp/{}.wgsl", label), &source.as_bytes()).unwrap();
+            std::fs::write(format!("tmp/{label}.wgsl"), source.as_bytes()).unwrap();
         }
         #[cfg(debug_assertions)]
         let src = Some(source.to_string());

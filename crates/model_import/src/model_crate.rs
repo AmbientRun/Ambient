@@ -109,7 +109,7 @@ impl ModelCrate {
         }
     }
     pub async fn local_import(assets: &AssetCache, url: &AbsAssetUrl, normalize: bool, force_assimp: bool) -> anyhow::Result<Model> {
-        let cache_path = AssetsCacheDir.get(assets).join("pipelines").join(&url.relative_cache_path());
+        let cache_path = AssetsCacheDir.get(assets).join("pipelines").join(url.relative_cache_path());
         let mut model = Self::new();
         model
             .import(
@@ -121,7 +121,7 @@ impl ModelCrate {
                     async move {
                         let path: PathBuf = path.into();
                         let filename = path.file_name().unwrap().to_str().unwrap().to_string();
-                        println!("XXX {:?}", filename);
+                        println!("XXX {filename:?}");
                         None
                     }
                     .boxed()
@@ -130,7 +130,7 @@ impl ModelCrate {
             .await?;
         model.update_node_primitive_aabbs_from_cpu_meshes();
         model.model_mut().update_model_aabb();
-        Ok(model.produce_local_model(assets, cache_path).await?)
+        model.produce_local_model(assets, cache_path).await
     }
     pub async fn write_to_fs(&self, path: &PathBuf) {
         for item in self.to_items() {
@@ -138,7 +138,7 @@ impl ModelCrate {
             std::fs::create_dir_all(item_path.parent().unwrap())
                 .context(format!("Failed to create dir: {:?}", item_path.parent().unwrap()))
                 .unwrap();
-            tokio::fs::write(&item_path, &*item.data).await.context(format!("Failed to write file: {:?}", item_path)).unwrap();
+            tokio::fs::write(&item_path, &*item.data).await.context(format!("Failed to write file: {item_path:?}")).unwrap();
         }
     }
     pub fn to_items(&self) -> Vec<AssetItem> {
@@ -214,7 +214,7 @@ impl ModelCrate {
                             return Err(err.into());
                         }
                     }
-                    Err(err) => return Err(err.into()),
+                    Err(err) => return Err(err),
                 }
             }
         } else if is_glb {

@@ -67,7 +67,7 @@ impl sif::Host for Bindings {
         persistent: bool,
     ) -> sif::EntityUidResult {
         let id = esei::entity::spawn(
-            &mut *self.world_mut(),
+            &mut self.world_mut(),
             convert_components_to_entity_data(data),
         );
         if !persistent {
@@ -89,7 +89,7 @@ impl sif::Host for Bindings {
         persistent: bool,
     ) -> sif::EntityUidResult {
         let id = esei::entity::spawn_template(
-            &mut *self.world_mut(),
+            &mut self.world_mut(),
             object_ref.id.to_string(),
             position.from_bindgen(),
             rotation.from_bindgen(),
@@ -107,7 +107,7 @@ impl sif::Host for Bindings {
 
     fn entity_despawn(&mut self, entity: sif::EntityId) -> bool {
         let entity = entity.from_bindgen();
-        let despawn = esei::entity::despawn(&mut *self.world_mut(), entity);
+        let despawn = esei::entity::despawn(&mut self.world_mut(), entity);
         if let Some(uid) = despawn {
             self.shared_state
                 .write()
@@ -126,7 +126,7 @@ impl sif::Host for Bindings {
         animation_controller: sif::AnimationController,
     ) {
         esei::entity::set_animation_controller(
-            &mut *self.world_mut(),
+            &mut self.world_mut(),
             entity.from_bindgen(),
             animation_controller.from_bindgen(),
         )
@@ -140,7 +140,7 @@ impl sif::Host for Bindings {
         relative: bool,
     ) {
         esei::entity::set_transform(
-            &mut *self.world_mut(),
+            &mut self.world_mut(),
             entity.from_bindgen(),
             transform.from_bindgen(),
             relative,
@@ -149,7 +149,7 @@ impl sif::Host for Bindings {
     }
 
     fn entity_get_linear_velocity(&mut self, entity: sif::EntityId) -> Option<sif::Vec3> {
-        esei::entity::get_linear_velocity(&mut *self.world_mut(), entity.from_bindgen())
+        esei::entity::get_linear_velocity(&mut self.world_mut(), entity.from_bindgen())
             .ok()
             .into_bindgen()
     }
@@ -163,7 +163,7 @@ impl sif::Host for Bindings {
         entity: sif::EntityId,
         index: u64,
     ) -> Option<sif::ComponentTypeResult> {
-        read_component_from_world(&*self.world(), entity.from_bindgen(), index)
+        read_component_from_world(&self.world(), entity.from_bindgen(), index)
     }
 
     fn entity_set_component(
@@ -172,7 +172,7 @@ impl sif::Host for Bindings {
         index: u64,
         value: sif::ComponentTypeParam,
     ) {
-        write_component(&mut *self.world_mut(), entity.from_bindgen(), index, value)
+        write_component(&mut self.world_mut(), entity.from_bindgen(), index, value)
     }
 
     fn entity_set_components(&mut self, entity: sif::EntityId, data: ComponentsParam<'_>) {
@@ -185,20 +185,12 @@ impl sif::Host for Bindings {
     }
 
     fn entity_has_component(&mut self, entity: sif::EntityId, index: u64) -> bool {
-        eshi::entity::has_component(
-            &mut *self.world_mut(),
-            entity.from_bindgen(),
-            index as usize,
-        )
+        eshi::entity::has_component(&self.world(), entity.from_bindgen(), index as usize)
     }
 
     fn entity_remove_component(&mut self, entity: sif::EntityId, index: u64) {
-        eshi::entity::remove_component(
-            &mut *self.world_mut(),
-            entity.from_bindgen(),
-            index as usize,
-        )
-        .unwrap()
+        eshi::entity::remove_component(&mut self.world_mut(), entity.from_bindgen(), index as usize)
+            .unwrap()
     }
 
     fn entity_remove_components(&mut self, entity: sif::EntityId, components: &[Le<u64>]) {
@@ -218,7 +210,7 @@ impl sif::Host for Bindings {
     }
 
     fn entity_query(&mut self, index: u64) -> Vec<sif::EntityId> {
-        eshi::entity::query(&mut *self.world_mut(), index).into_bindgen()
+        eshi::entity::query(&mut self.world_mut(), index).into_bindgen()
     }
 
     fn entity_query2(&mut self, query: sif::Query, query_event: sif::QueryEvent) -> u64 {
@@ -283,22 +275,21 @@ impl sif::Host for Bindings {
     }
 
     fn entity_lookup_uid(&mut self, uid: sif::EntityUidParam<'_>) -> Option<sif::EntityId> {
-        lookup_uid(&mut *self.world_mut(), &uid.from_bindgen()).into_bindgen()
+        lookup_uid(&self.world(), &uid.from_bindgen()).into_bindgen()
     }
 
     fn entity_in_area(&mut self, position: sif::Vec3, radius: f32) -> Vec<sif::EntityId> {
-        eshi::entity::in_area(&mut *self.world_mut(), position.from_bindgen(), radius)
+        eshi::entity::in_area(&mut self.world_mut(), position.from_bindgen(), radius)
             .unwrap()
             .into_bindgen()
     }
 
     fn physics_apply_force(&mut self, entities: &[Le<sif::EntityId>], force: sif::Vec3) {
         let collection = PhysicsObjectCollection::from_entities(
-            &mut *self.world_mut(),
+            &self.world(),
             &entities.iter().map(|id| id.from_bindgen()).collect_vec(),
         );
-        esei::physics::apply_force(&mut *self.world_mut(), collection, force.from_bindgen())
-            .unwrap()
+        esei::physics::apply_force(&mut self.world_mut(), collection, force.from_bindgen()).unwrap()
     }
 
     fn physics_explode_bomb(
@@ -309,7 +300,7 @@ impl sif::Host for Bindings {
         falloff_radius: Option<f32>,
     ) {
         esei::physics::explode_bomb(
-            &mut *self.world_mut(),
+            &mut self.world_mut(),
             position.from_bindgen(),
             radius,
             force,
@@ -319,24 +310,23 @@ impl sif::Host for Bindings {
     }
 
     fn physics_set_gravity(&mut self, gravity: sif::Vec3) {
-        esei::physics::set_gravity(&mut *self.world_mut(), gravity.from_bindgen()).unwrap();
+        esei::physics::set_gravity(&mut self.world_mut(), gravity.from_bindgen()).unwrap();
     }
 
     fn physics_unfreeze(&mut self, entity: sif::EntityId) {
-        esei::physics::unfreeze(&mut *self.world_mut(), entity.from_bindgen()).unwrap();
+        esei::physics::unfreeze(&mut self.world_mut(), entity.from_bindgen()).unwrap();
     }
 
     fn physics_freeze(&mut self, entity: sif::EntityId) {
-        esei::physics::freeze(&mut *self.world_mut(), entity.from_bindgen()).unwrap();
+        esei::physics::freeze(&mut self.world_mut(), entity.from_bindgen()).unwrap();
     }
 
     fn physics_start_motor(&mut self, entity: sif::EntityId, velocity: f32) {
-        esei::physics::start_motor(&mut *self.world_mut(), entity.from_bindgen(), velocity)
-            .unwrap();
+        esei::physics::start_motor(&mut self.world_mut(), entity.from_bindgen(), velocity).unwrap();
     }
 
     fn physics_stop_motor(&mut self, entity: sif::EntityId) {
-        esei::physics::stop_motor(&mut *self.world_mut(), entity.from_bindgen()).unwrap();
+        esei::physics::stop_motor(&mut self.world_mut(), entity.from_bindgen()).unwrap();
     }
 
     fn physics_raycast_first(
@@ -345,7 +335,7 @@ impl sif::Host for Bindings {
         direction: sif::Vec3,
     ) -> Option<(sif::EntityId, f32)> {
         esei::physics::raycast_first(
-            &mut *self.world_mut(),
+            &self.world(),
             origin.from_bindgen(),
             direction.from_bindgen(),
         )
@@ -359,7 +349,7 @@ impl sif::Host for Bindings {
         direction: sif::Vec3,
     ) -> Vec<(sif::EntityId, f32)> {
         esei::physics::raycast(
-            &mut *self.world_mut(),
+            &self.world(),
             origin.from_bindgen(),
             direction.from_bindgen(),
         )
