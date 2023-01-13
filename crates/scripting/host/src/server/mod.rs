@@ -57,8 +57,7 @@ pub fn systems<
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
     host_state_component: Component<Arc<HostState<Bindings, Context, Exports, HostGuestState>>>,
-    // Whether or not the code in ScriptModules is written to disk
-    update_filesystem_from_ecs: bool,
+    update_workspace_toml: bool,
 ) -> SystemGroup {
     // Update the scripts whenever the external components change.
     let (update_tx, update_rx) = flume::unbounded();
@@ -154,16 +153,15 @@ pub fn systems<
 
                 let host_state = host_state(world);
 
-                if update_filesystem_from_ecs {
-                    if !ready_ids.is_empty() {
-                        // Write all workspace-related state to disk.
-                        let members = crate::shared::all_module_names_sanitized(world, false);
-                        crate::shared::write_workspace_files(&host_state.workspace_path, &members);
-                        crate::shared::remove_old_script_modules(
-                            &host_state.workspace_path,
-                            &members,
-                        );
-                    }
+                if !ready_ids.is_empty() {
+                    // Write all workspace-related state to disk.
+                    let members = crate::shared::all_module_names_sanitized(world, false);
+                    crate::shared::write_workspace_files(
+                        &host_state.workspace_path,
+                        &members,
+                        update_workspace_toml,
+                    );
+                    crate::shared::remove_old_script_modules(&host_state.scripts_path, &members);
                 }
 
                 let tasks = ready_ids
@@ -177,7 +175,7 @@ pub fn systems<
                                 script_module,
                                 host_state.install_dirs.clone(),
                                 host_state.workspace_path.clone(),
-                                update_filesystem_from_ecs,
+                                host_state.scripts_path.clone(),
                                 get_module_name(world, id),
                             )?),
                         ))
@@ -440,6 +438,8 @@ pub struct HostState<
     pub templates_path: PathBuf,
     /// Where the root Cargo.toml for your scripts are
     pub workspace_path: PathBuf,
+    /// Where the scripts are located
+    pub scripts_path: PathBuf,
 
     pub server_state_component:
         Component<ScriptModuleState<Bindings, Context, Exports, HostGuestState>>,
@@ -468,6 +468,7 @@ impl<
             scripting_interface_root_path: self.scripting_interface_root_path.clone(),
             templates_path: self.templates_path.clone(),
             workspace_path: self.workspace_path.clone(),
+            scripts_path: self.scripts_path.clone(),
 
             server_state_component: self.server_state_component.clone(),
             make_wasm_context: self.make_wasm_context.clone(),
@@ -841,26 +842,28 @@ fn compile_module_raw(
     sm: &ScriptModule,
     install_dirs: InstallDirs,
     workspace_path: PathBuf,
-    update_filesystem_from_ecs: bool,
+    scripts_path: PathBuf,
     name: String,
 ) -> Option<std::thread::JoinHandle<anyhow::Result<Vec<u8>>>> {
-    if update_filesystem_from_ecs {
-        let mut files = sm.files().clone();
+    let mut files = sm.files().clone();
 
-        if let Some(lib) = files.get_mut(Path::new("src/lib.rs")) {
-            lib.contents.push_str(r#"
-            #[no_mangle]
-            pub extern "C" fn call_main(runtime_interface_version: u32) {
-                if INTERFACE_VERSION != runtime_interface_version {
-                    panic!("This script was compiled with interface version {{INTERFACE_VERSION}}, but the script host is running with version {{runtime_interface_version}}");
+    if let Some(file) = files.get_mut(Path::new("src/lib.rs")) {
+        // HACK(mithun): figure out how to insert this without exposing it to the user
+        if !file.contents.contains("fn call_main") {
+            file.contents += indoc::indoc! {r#"
+
+                #[no_mangle]
+                pub extern "C" fn call_main(runtime_interface_version: u32) {
+                    if INTERFACE_VERSION != runtime_interface_version {
+                        panic!("This script was compiled with interface version {{INTERFACE_VERSION}}, but the script host is running with version {{runtime_interface_version}}");
+                    }
+                    run_async(main());
                 }
-                run_async(main());
-            }
-        "#);
+            "#};
         }
 
         // Remove the directory to ensure there aren't any old files left around
-        let script_path = workspace_path.join(sanitize(&name));
+        let script_path = scripts_path.join(sanitize(&name));
         let _ = std::fs::remove_dir_all(&script_path);
         write_files_to_directory(
             &script_path,
@@ -879,20 +882,20 @@ fn compile_module_raw(
 
 fn build_script_template(
     install_dirs: &InstallDirs,
-    templates_path: &Path,
+    template_path: &Path,
     scripting_interfaces: &HashMap<String, Vec<(PathBuf, String)>>,
     primary_scripting_interface_name: &str,
 ) -> Result<(), anyhow::Error> {
-    let _ = std::fs::remove_dir_all(templates_path);
-    std::fs::create_dir_all(templates_path)?;
+    let _ = std::fs::remove_dir_all(template_path);
+    std::fs::create_dir_all(template_path)?;
 
-    write_scripting_interfaces(scripting_interfaces, &templates_path.join("interfaces"))
+    write_scripting_interfaces(scripting_interfaces, &template_path.join("interfaces"))
         .context("failed to write scripting interface for template")?;
 
     let dummy_name = "dummy";
 
-    let scripts_path = templates_path.join("scripts");
-    super::shared::write_workspace_files(&scripts_path, &[dummy_name.to_string()]);
+    let scripts_path = template_path.join("scripts");
+    super::shared::write_workspace_files(&scripts_path, &[dummy_name.to_string()], true);
 
     let dummy_module = ScriptModule::new(
         dummy_name,
@@ -906,8 +909,8 @@ fn build_script_template(
     let _dummy_bytecode = compile_module_raw(
         &dummy_module,
         install_dirs.clone(),
+        template_path.to_owned(),
         scripts_path.clone(),
-        true,
         dummy_name.to_owned(),
     )
     .context("failed to generate dummy compilation task")?

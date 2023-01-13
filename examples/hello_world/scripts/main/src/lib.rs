@@ -1,5 +1,8 @@
 use elements_scripting_interface::*;
 
+pub mod components;
+pub mod params;
+
 pub async fn main() -> EventResult {
     loop {
         println!("Hello, world! It is {}", time());

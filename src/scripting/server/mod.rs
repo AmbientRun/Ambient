@@ -115,6 +115,7 @@ pub async fn initialize(world: &mut World) -> anyhow::Result<()> {
         scripting_interface_root_path: project_path.join("interfaces"),
         templates_path: rust_path.join("templates"),
         workspace_path: project_path.clone(),
+        scripts_path: project_path.join("scripts"),
 
         server_state_component: script_module_state(),
         make_wasm_context: Arc::new(WasmServerContext::new),

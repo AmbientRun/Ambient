@@ -1,1 +1,5 @@
 */interfaces
+*/.vscode
+*/scripts/*/src/components.rs
+*/scripts/*/src/params.rs
+*/rust-toolchain.toml

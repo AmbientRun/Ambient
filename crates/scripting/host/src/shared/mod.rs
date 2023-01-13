@@ -631,15 +631,15 @@ pub fn all_module_names_sanitized(world: &World, include_disabled_modules: bool)
         .collect()
 }
 
-pub fn write_workspace_files(scripts_dir: &Path, script_module_sanitized_names: &[String]) {
-    let vscode_dir = scripts_dir.join(".vscode");
-    let workspace_files = [
+pub fn write_workspace_files(
+    workspace_path: &Path,
+    script_module_sanitized_names: &[String],
+    write_workspace_toml: bool,
+) {
+    let vscode_dir = workspace_path.join(".vscode");
+    let mut workspace_files = vec![
         (
-            scripts_dir.join("Cargo.toml"),
-            format!("[workspace]\nmembers = {script_module_sanitized_names:?}"),
-        ),
-        (
-            scripts_dir.join("rust-toolchain.toml"),
+            workspace_path.join("rust-toolchain.toml"),
             indoc! {r#"
             [toolchain]
             targets = ["wasm32-wasi"]
@@ -647,7 +647,7 @@ pub fn write_workspace_files(scripts_dir: &Path, script_module_sanitized_names: 
             .into(),
         ),
         (
-            scripts_dir.join(".cargo").join("config.toml"),
+            workspace_path.join(".cargo").join("config.toml"),
             indoc! {r#"
             [build]
             target = "wasm32-wasi"
@@ -668,6 +668,12 @@ pub fn write_workspace_files(scripts_dir: &Path, script_module_sanitized_names: 
             .into(),
         ),
     ];
+    if write_workspace_toml {
+        workspace_files.push((
+            workspace_path.join("Cargo.toml"),
+            format!("[workspace]\nmembers = {script_module_sanitized_names:?}"),
+        ));
+    }
 
     for (path, contents) in workspace_files {
         if let Some(parent) = path.parent() {
