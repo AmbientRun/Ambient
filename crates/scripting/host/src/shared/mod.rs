@@ -21,7 +21,7 @@ use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
 use wasi_common::WasiCtx;
 
-use self::wasm::{GuestExports, WasmContext};
+use self::wasm::WasmContext;
 
 pub mod dependencies;
 pub mod implementation;
@@ -158,20 +158,15 @@ impl ScriptContext {
 pub struct ScriptModuleState<
     Bindings: Send + Sync + 'static,
     Context: WasmContext<Bindings>,
-    Exports: GuestExports<Bindings, Context>,
     HostGuestState: Default,
 > {
-    wasm: Option<wasm::WasmState<Bindings, Context, Exports>>,
+    wasm: Option<wasm::WasmState<Bindings, Context>>,
     pub shared_state: Arc<Mutex<HostGuestState>>,
     _bindings: PhantomData<Bindings>,
 }
 
-impl<
-        Bindings: Send + Sync + 'static,
-        Context: WasmContext<Bindings>,
-        Exports: GuestExports<Bindings, Context>,
-        HostGuestState: Default,
-    > Clone for ScriptModuleState<Bindings, Context, Exports, HostGuestState>
+impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>, HostGuestState: Default> Clone
+    for ScriptModuleState<Bindings, Context, HostGuestState>
 {
     fn clone(&self) -> Self {
         Self {
@@ -181,23 +176,15 @@ impl<
         }
     }
 }
-impl<
-        Bindings: Send + Sync + 'static,
-        Context: WasmContext<Bindings>,
-        Exports: GuestExports<Bindings, Context>,
-        HostGuestState: Default,
-    > std::fmt::Debug for ScriptModuleState<Bindings, Context, Exports, HostGuestState>
+impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>, HostGuestState: Default>
+    std::fmt::Debug for ScriptModuleState<Bindings, Context, HostGuestState>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ScriptModuleState").finish()
     }
 }
-impl<
-        Bindings: Send + Sync + 'static,
-        Context: WasmContext<Bindings>,
-        Exports: GuestExports<Bindings, Context>,
-        HostGuestState: Default,
-    > ScriptModuleState<Bindings, Context, Exports, HostGuestState>
+impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>, HostGuestState: Default>
+    ScriptModuleState<Bindings, Context, HostGuestState>
 {
     pub fn new(
         bytecode: &[u8],

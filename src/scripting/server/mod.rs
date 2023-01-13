@@ -7,12 +7,9 @@ use elements_scripting_host::{
     shared::{
         get_module_name,
         host_state::{spawn_script_module, HostState, MessageType},
-        interface::{
-            get_scripting_interfaces,
-            guest::{Guest, GuestData},
-        },
+        interface::{get_scripting_interfaces, host},
         rustc::InstallDirs,
-        wasm::WasmContext,
+        wasm::{GuestData, WasmContext},
         BaseHostGuestState, File, ScriptModuleState,
     },
 };
@@ -20,11 +17,10 @@ use parking_lot::Mutex;
 
 use crate::server::project_path;
 
-pub type HostServerState =
-    HostState<Bindings, WasmServerContext, Guest<WasmServerContext>, BaseHostGuestState>;
+pub type HostServerState = HostState<Bindings, WasmServerContext, BaseHostGuestState>;
 
 pub type ScriptModuleServerState =
-    ScriptModuleState<Bindings, WasmServerContext, Guest<WasmServerContext>, BaseHostGuestState>;
+    ScriptModuleState<Bindings, WasmServerContext, BaseHostGuestState>;
 
 components!("scripting::server", {
     // resource
@@ -54,10 +50,6 @@ impl WasmContext<Bindings> for WasmServerContext {
 
     fn set_world(&mut self, world: &mut elements_ecs::World) {
         self.elements_bindings.set_world(world);
-    }
-
-    fn bindings_implementation(&mut self) -> &mut Bindings {
-        &mut self.elements_bindings
     }
 
     fn guest_data(&mut self) -> &mut elements_scripting_host::shared::interface::guest::GuestData {
@@ -120,7 +112,9 @@ pub async fn initialize(world: &mut World) -> anyhow::Result<()> {
 
         state_component: script_module_state(),
         make_wasm_context: Arc::new(WasmServerContext::new),
-        add_to_linker: Arc::new(|_linker| Ok(())),
+        add_to_linker: Arc::new(|linker| {
+            host::add_to_linker(linker, |cx| &mut cx.elements_bindings)
+        }),
 
         _bindings: Default::default(),
     };

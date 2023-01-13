@@ -2,7 +2,7 @@ use std::{io, marker::PhantomData, sync::Arc};
 
 use anyhow::Context;
 use async_trait::async_trait;
-use elements_ecs::{EntityData, World};
+use elements_ecs::World;
 use parking_lot::Mutex;
 use wasi_common::{
     file::{FdFlags, FileType},
@@ -10,7 +10,14 @@ use wasi_common::{
 };
 use wasmtime_wasi::WasiFile;
 
-use super::{interface::guest, ScriptContext};
+use super::{
+    bindings,
+    guest_conversion::GuestConvert,
+    interface::guest::{Guest, RunContext},
+    ScriptContext,
+};
+
+pub use super::interface::guest::GuestData;
 
 pub struct WorldRef(pub *mut World);
 impl WorldRef {
@@ -68,53 +75,22 @@ impl WasiFile for WasiOutputFile {
 
 pub trait WasmContext<Bindings> {
     fn wasi(&mut self) -> &mut wasmtime_wasi::WasiCtx;
-    fn bindings_implementation(&mut self) -> &mut Bindings;
-    fn guest_data(&mut self) -> &mut guest::GuestData;
+    fn guest_data(&mut self) -> &mut GuestData;
     fn set_world(&mut self, world: &mut World);
 }
 
-pub trait GuestExports<Bindings, Context: WasmContext<Bindings>>
-where
-    Self: Sized,
-{
-    fn create(
-        engine: &wasmtime::Engine,
-        store: &mut wasmtime::Store<Context>,
-        linker: &mut wasmtime::Linker<Context>,
-        bytecode: &[u8],
-    ) -> anyhow::Result<(Self, wasmtime::Instance)>;
-
-    fn initialize(&self, store: &mut wasmtime::Store<Context>) -> anyhow::Result<()>;
-
-    fn run(
-        &self,
-        store: &mut wasmtime::Store<Context>,
-        event_name: &str,
-        components: &EntityData,
-        time: f32,
-        frametime: f32,
-    ) -> anyhow::Result<()>;
-}
-
-pub struct WasmState<
-    Bindings: Send + Sync + 'static,
-    Context: WasmContext<Bindings>,
-    Exports: GuestExports<Bindings, Context>,
-> {
+pub struct WasmState<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>> {
     _engine: wasmtime::Engine,
     store: Arc<Mutex<wasmtime::Store<Context>>>,
     world_ref: Arc<Mutex<WorldRef>>,
 
-    guest_exports: Arc<Exports>,
+    guest_exports: Arc<Guest<Context>>,
     _guest_instance: wasmtime::Instance,
 
     _bindings: PhantomData<Bindings>,
 }
-impl<
-        Bindings: Send + Sync + 'static,
-        Context: WasmContext<Bindings>,
-        Exports: GuestExports<Bindings, Context>,
-    > Clone for WasmState<Bindings, Context, Exports>
+impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>> Clone
+    for WasmState<Bindings, Context>
 {
     fn clone(&self) -> Self {
         Self {
@@ -127,12 +103,7 @@ impl<
         }
     }
 }
-impl<
-        Bindings: Send + Sync + 'static,
-        Context: WasmContext<Bindings>,
-        Exports: GuestExports<Bindings, Context>,
-    > WasmState<Bindings, Context, Exports>
-{
+impl<Bindings: Send + Sync + 'static, Context: WasmContext<Bindings>> WasmState<Bindings, Context> {
     pub fn new(
         bytecode: &[u8],
         stdout_output: Box<dyn Fn(&World, &str) + Sync + Send>,
@@ -141,7 +112,7 @@ impl<
         add_to_linker: impl Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()>,
         interface_version: u32,
     ) -> anyhow::Result<Self> {
-        let engine = wasmtime::Engine::default();
+        let mut engine = wasmtime::Engine::default();
         let world_ref = Arc::new(Mutex::new(WorldRef::new()));
         let mut store = wasmtime::Store::new(
             &engine,
@@ -158,11 +129,12 @@ impl<
             wasmtime_wasi::add_to_linker(&mut linker, |cx| cx.wasi())?;
             add_to_linker(&mut linker)?;
 
-            Exports::create(&engine, &mut store, &mut linker, bytecode)?
+            let module = wasmtime::Module::from_binary(&mut engine, bytecode)?;
+            Guest::instantiate(&mut store, &module, &mut linker, |cx| cx.guest_data())?
         };
 
         // Initialise the runtime.
-        guest_exports.initialize(&mut store)?;
+        guest_exports.init(&mut store)?;
         // Call the script's main function.
         guest_instance
             .get_func(&mut store, "call_main")
@@ -192,7 +164,29 @@ impl<
         let mut store = self.store.lock();
         store.data_mut().set_world(world);
         self.world_ref.lock().0 = world;
-        self.guest_exports
-            .run(&mut *store, event_name, event_data, *time, *frametime)
+
+        // remap the generated entitydata to components to send across
+        let components = bindings::convert_entity_data_to_components(event_data);
+        // TEMPORARY: convert the host rep components to owned guest rep components
+        let components: Vec<_> = components
+            .iter()
+            .map(|(id, ct)| (*id, ct.guest_convert()))
+            .collect();
+        // then get the borrowing representation
+        // these two steps should be unnecessary once we can update to the component version of wit-bindgen
+        let components: Vec<_> = components
+            .iter()
+            .map(|(id, ct)| (*id, ct.as_guest()))
+            .collect();
+
+        Ok(self.guest_exports.exec(
+            &mut *store,
+            RunContext {
+                time: *time,
+                frametime: *frametime,
+            },
+            event_name,
+            &components,
+        )?)
     }
 }

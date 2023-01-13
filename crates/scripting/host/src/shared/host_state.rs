@@ -15,11 +15,8 @@ use parking_lot::Mutex;
 use wasi_common::WasiCtx;
 
 use crate::shared::{
-    get_module_name,
-    interface::write_scripting_interfaces,
-    sanitize, script_module, script_module_bytecode, script_module_errors,
-    scripting_interface_name,
-    wasm::{GuestExports, WasmContext},
+    get_module_name, interface::write_scripting_interfaces, sanitize, script_module,
+    script_module_bytecode, script_module_errors, scripting_interface_name, wasm::WasmContext,
     write_files_to_directory, FileMap, GetBaseHostGuestState, ParametersMap, ScriptContext,
     ScriptModule, ScriptModuleBytecode, ScriptModuleState,
 };
@@ -42,7 +39,6 @@ pub enum MessageType {
 pub struct HostState<
     Bindings: Send + Sync + 'static,
     Context: WasmContext<Bindings> + Send + Sync + 'static,
-    Exports: GuestExports<Bindings, Context> + Send + Sync + 'static,
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 > {
     pub messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
@@ -63,7 +59,7 @@ pub struct HostState<
     /// Where the scripts are located
     pub scripts_path: PathBuf,
 
-    pub state_component: Component<ScriptModuleState<Bindings, Context, Exports, HostGuestState>>,
+    pub state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
     pub make_wasm_context:
         Arc<dyn Fn(WasiCtx, Arc<Mutex<HostGuestState>>) -> Context + Send + Sync>,
     pub add_to_linker:
@@ -75,9 +71,8 @@ pub struct HostState<
 impl<
         Bindings: Send + Sync + 'static,
         Context: WasmContext<Bindings> + Send + Sync + 'static,
-        Exports: GuestExports<Bindings, Context> + Send + Sync + 'static,
         HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
-    > Clone for HostState<Bindings, Context, Exports, HostGuestState>
+    > Clone for HostState<Bindings, Context, HostGuestState>
 {
     fn clone(&self) -> Self {
         Self {
@@ -103,9 +98,8 @@ impl<
 impl<
         Bindings: Send + Sync + 'static,
         Context: WasmContext<Bindings> + Send + Sync + 'static,
-        Exports: GuestExports<Bindings, Context> + Send + Sync + 'static,
         HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
-    > HostState<Bindings, Context, Exports, HostGuestState>
+    > HostState<Bindings, Context, HostGuestState>
 {
     pub async fn initialize(
         &self,
@@ -360,15 +354,14 @@ impl<
 impl<
         Bindings: Send + Sync + 'static,
         Context: WasmContext<Bindings> + Send + Sync + 'static,
-        Exports: GuestExports<Bindings, Context> + Send + Sync + 'static,
         HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
-    > HostState<Bindings, Context, Exports, HostGuestState>
+    > HostState<Bindings, Context, HostGuestState>
 {
     fn run_script(
         &self,
         world: &mut World,
         id: EntityId,
-        mut state: ScriptModuleState<Bindings, Context, Exports, HostGuestState>,
+        mut state: ScriptModuleState<Bindings, Context, HostGuestState>,
         context: &ScriptContext,
     ) -> Option<(EntityId, String)> {
         profiling::scope!(

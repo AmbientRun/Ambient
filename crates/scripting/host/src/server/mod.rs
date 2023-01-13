@@ -22,15 +22,15 @@ use physxx::{PxRigidActor, PxRigidActorRef, PxUserData};
 use crate::shared::{
     get_module_name,
     host_state::{compile_module, HostState, MessageType},
+    interface::Host,
     rustc, script_module, script_module_bytecode, script_module_compiled, script_module_errors,
     scripting_interface_name, update_components,
-    wasm::{GuestExports, WasmContext},
+    wasm::WasmContext,
     GetBaseHostGuestState, ScriptContext, ScriptModuleBytecode, ScriptModuleErrors,
 };
 
 pub mod bindings;
 pub mod implementation;
-mod wasm;
 
 pub const PARAMETER_CHANGE_DEBOUNCE_SECONDS: u64 = 2;
 pub const MINIMUM_RUST_VERSION: (u32, u32, u32) = (1, 65, 0);
@@ -44,12 +44,11 @@ components!("scripting::server", {
 
 /// The [host_state_component] resource *must* be initialized before this is called
 pub fn systems<
-    Bindings: Send + Sync + 'static,
+    Bindings: Send + Sync + Host + 'static,
     Context: WasmContext<Bindings> + Send + Sync + 'static,
-    Exports: GuestExports<Bindings, Context> + Send + Sync + 'static,
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
-    host_state_component: Component<Arc<HostState<Bindings, Context, Exports, HostGuestState>>>,
+    host_state_component: Component<Arc<HostState<Bindings, Context, HostGuestState>>>,
     update_workspace_toml: bool,
 ) -> SystemGroup {
     // Update the scripts whenever the external components change.
@@ -360,12 +359,11 @@ pub fn systems<
 }
 
 pub fn on_forking_systems<
-    Bindings: Send + Sync + 'static,
+    Bindings: Send + Sync + Host + 'static,
     Context: WasmContext<Bindings> + Send + Sync + 'static,
-    Exports: GuestExports<Bindings, Context> + Send + Sync + 'static,
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
-    host_state_component: Component<Arc<HostState<Bindings, Context, Exports, HostGuestState>>>,
+    host_state_component: Component<Arc<HostState<Bindings, Context, HostGuestState>>>,
 ) -> SystemGroup<ForkingEvent> {
     SystemGroup::new(
         "core/scripting/server/on_forking_systems",
@@ -380,12 +378,11 @@ pub fn on_forking_systems<
 }
 
 pub fn on_shutdown_systems<
-    Bindings: Send + Sync + 'static,
+    Bindings: Send + Sync + Host + 'static,
     Context: WasmContext<Bindings> + Send + Sync + 'static,
-    Exports: GuestExports<Bindings, Context> + Send + Sync + 'static,
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
-    host_state_component: Component<Arc<HostState<Bindings, Context, Exports, HostGuestState>>>,
+    host_state_component: Component<Arc<HostState<Bindings, Context, HostGuestState>>>,
 ) -> SystemGroup<ShutdownEvent> {
     SystemGroup::new(
         "core/scripting/server/on_shutdown_systems",
@@ -402,13 +399,12 @@ pub fn on_shutdown_systems<
 }
 
 pub fn initialize<
-    Bindings: Send + Sync + 'static,
+    Bindings: Send + Sync + Host + 'static,
     Context: WasmContext<Bindings> + Send + Sync + 'static,
-    Exports: GuestExports<Bindings, Context> + Send + Sync + 'static,
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
     world: &mut World,
-    host_state_component: Component<Arc<HostState<Bindings, Context, Exports, HostGuestState>>>,
+    host_state_component: Component<Arc<HostState<Bindings, Context, HostGuestState>>>,
 ) -> anyhow::Result<()> {
     let install_dirs = world.resource(host_state_component).install_dirs.clone();
     let scripting_interface_root_path = world
