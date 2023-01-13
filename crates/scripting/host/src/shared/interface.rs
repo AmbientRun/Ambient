@@ -5,7 +5,7 @@ use std::{
 
 pub use host::*;
 
-use super::write_files_to_directory;
+use super::util::write_files_to_directory;
 
 wit_bindgen_host_wasmtime_rust::export!("../guest/rust/src/internal/host.wit");
 wit_bindgen_host_wasmtime_rust::import!("../guest/rust/src/internal/guest.wit");

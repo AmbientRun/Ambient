@@ -15,13 +15,13 @@ use parking_lot::Mutex;
 use wasi_common::WasiCtx;
 
 use crate::shared::{
-    get_module_name, interface::write_scripting_interfaces, sanitize, script_module,
-    script_module_bytecode, script_module_errors, scripting_interface_name,
-    write_files_to_directory, FileMap, GetBaseHostGuestState, ParametersMap, ScriptContext,
-    ScriptModule, ScriptModuleBytecode, ScriptModuleState, WasmContext,
+    interface::write_scripting_interfaces,
+    rustc::{self, InstallDirs},
+    script_module, script_module_bytecode, script_module_errors, scripting_interface_name,
+    util::{get_module_name, sanitize, write_files_to_directory},
+    FileMap, GetBaseHostGuestState, ParametersMap, ScriptContext, ScriptModule,
+    ScriptModuleBytecode, ScriptModuleState, WasmContext,
 };
-
-use super::rustc::{self, InstallDirs};
 
 pub const PARAMETER_CHANGE_DEBOUNCE_SECONDS: u64 = 2;
 pub const MINIMUM_RUST_VERSION: (u32, u32, u32) = (1, 65, 0);
@@ -508,7 +508,7 @@ fn build_script_template(
     let dummy_name = "dummy";
 
     let scripts_path = template_path.join("scripts");
-    super::write_workspace_files(&scripts_path, &[dummy_name.to_string()], true);
+    super::util::write_workspace_files(&scripts_path, &[dummy_name.to_string()], true);
 
     let dummy_module = ScriptModule::new(
         dummy_name,

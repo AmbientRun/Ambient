@@ -6,9 +6,10 @@ use std::{
 };
 
 use anyhow::Context;
+use elements_core::name;
 use elements_ecs::{
-    components, query, uid, Component, ComponentRegistry, ComponentUnit as CU, EntityData,
-    EntityId, FnSystem, SystemGroup, World,
+    components, query, query_mut, uid, Component, ComponentRegistry, ComponentUnit as CU,
+    EntityData, EntityId, FnSystem, SystemGroup, World,
 };
 use elements_network::{
     player::player,
@@ -20,12 +21,15 @@ use itertools::Itertools;
 use physxx::{PxRigidActor, PxRigidActorRef, PxUserData};
 
 use crate::shared::{
-    get_module_name,
     host_state::{compile_module, HostState, MessageType},
     interface::Host,
     rustc, script_module, script_module_bytecode, script_module_compiled, script_module_errors,
-    scripting_interface_name, update_components, GetBaseHostGuestState, ScriptContext,
-    ScriptModuleBytecode, ScriptModuleErrors, WasmContext,
+    scripting_interface_name,
+    util::{
+        all_module_names_sanitized, get_module_name, remove_old_script_modules,
+        write_workspace_files,
+    },
+    GetBaseHostGuestState, ScriptContext, ScriptModuleBytecode, ScriptModuleErrors, WasmContext,
 };
 
 pub mod bindings;
@@ -146,13 +150,13 @@ pub fn systems<
 
                 if !ready_ids.is_empty() {
                     // Write all workspace-related state to disk.
-                    let members = crate::shared::all_module_names_sanitized(world, false);
-                    crate::shared::write_workspace_files(
+                    let members = all_module_names_sanitized(world, false);
+                    write_workspace_files(
                         &host_state.workspace_path,
                         &members,
                         update_workspace_toml,
                     );
-                    crate::shared::remove_old_script_modules(&host_state.scripts_path, &members);
+                    remove_old_script_modules(&host_state.scripts_path, &members);
                 }
 
                 let tasks = ready_ids
@@ -349,8 +353,13 @@ pub fn systems<
                 host_state(world).update_errors(world, &errors, false);
             })),
             Box::new(FnSystem::new(move |world, _| {
-                if update_rx.drain().count() > 0 {
-                    update_components(world);
+                if update_rx.drain().count() == 0 {
+                    return;
+                }
+
+                let scripting_interface_name = world.resource(scripting_interface_name()).clone();
+                for (_, sm, name) in query_mut(script_module(), name()).iter(world, None) {
+                    sm.populate_files(name, &scripting_interface_name);
                 }
             })),
         ],

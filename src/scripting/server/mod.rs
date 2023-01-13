@@ -5,10 +5,10 @@ use elements_network::server::{ForkingEvent, ShutdownEvent};
 use elements_scripting_host::{
     server::bindings::{Bindings, WasmServerContext},
     shared::{
-        get_module_name,
         host_state::{spawn_script_module, HostState, MessageType},
         interface::get_scripting_interfaces,
         rustc::InstallDirs,
+        util::get_module_name,
         BaseHostGuestState, File, ScriptModuleState,
     },
 };
