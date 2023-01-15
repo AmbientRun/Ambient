@@ -115,7 +115,7 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
 
     let mut images = Vec::new();
     for (index, image) in import.images.iter().enumerate() {
-        let img = match image.format {
+        let mut img = match image.format {
             gltf::image::Format::R8G8B8A8 => image::RgbaImage::from_raw(image.width, image.height, image.pixels.clone()).unwrap(),
             gltf::image::Format::R8G8B8 => {
                 let img = image::RgbImage::from_raw(image.width, image.height, image.pixels.clone()).unwrap();
@@ -152,6 +152,22 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
             gltf::image::Format::R32G32B32FLOAT => todo!(),
             gltf::image::Format::R32G32B32A32FLOAT => todo!(),
         };
+        let mut is_mr = false;
+        for mat in import.document.materials() {
+            if let Some(mr) = mat.pbr_metallic_roughness().metallic_roughness_texture() {
+                if mr.texture().index() == index {
+                    is_mr = true;
+                    break;
+                }
+            }
+        }
+        if is_mr {
+            for p in img.pixels_mut() {
+                p[0] = p[2];
+                p[2] = 0;
+                p[3] = 255;
+            }
+        }
         let path = asset_crate.images.insert(&format!("{}", index), img).path;
         images.push(path);
     }
@@ -160,8 +176,6 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
     for (index, mat) in import.document.materials().enumerate() {
         let pbr = mat.pbr_metallic_roughness();
 
-        let has_mr = pbr.metallic_roughness_texture().is_some();
-
         let mat_def = PbrMaterialFromUrl {
             name: mat.name().map(|x| x.to_string()),
             source: Some(import.name.clone()),
@@ -169,8 +183,8 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
             emissive_factor: Some(glam::Vec3::from_slice(&mat.emissive_factor()).extend(0.)),
             transparent: Some(mat.alpha_mode() == gltf::material::AlphaMode::Blend),
             alpha_cutoff: mat.alpha_cutoff(),
-            metallic: if has_mr { 1.0 } else { pbr.metallic_factor() },
-            roughness: if has_mr { 1.0 } else { pbr.roughness_factor() },
+            metallic: pbr.metallic_factor(),
+            roughness: pbr.roughness_factor(),
             base_color: pbr.base_color_texture().and_then(|x| images.get(x.texture().index())).map(|x| dotdot_path(x).into()),
             normalmap: mat.normal_texture().and_then(|x| images.get(x.texture().index())).map(|x| dotdot_path(x).into()),
             metallic_roughness: pbr
