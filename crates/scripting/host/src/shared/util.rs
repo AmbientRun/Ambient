@@ -1,13 +1,15 @@
-use super::script_module;
-use elements_core::name;
-use elements_ecs::{query, EntityId, World};
-use indoc::indoc;
-use std::collections::HashSet;
 use std::{
+    collections::HashSet,
     fmt::Display,
     path::{Path, PathBuf},
     str::FromStr,
 };
+
+use elements_core::name;
+use elements_ecs::{query, EntityId, World};
+use indoc::indoc;
+
+use super::script_module;
 
 pub fn write_files_to_directory(
     base_path: &Path,

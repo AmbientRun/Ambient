@@ -1,9 +1,5 @@
-use super::{
-    conversion::{FromBindgen, IntoBindgen},
-    interface as sif,
-};
+use std::any::TypeId;
 
-use super::implementation::entity::get_component_type;
 use elements_ecs::{
     paste::paste, with_component_registry, Component, ComponentUnit, EntityData, EntityId,
     EntityUid, World,
@@ -11,7 +7,12 @@ use elements_ecs::{
 use elements_std::asset_url::ObjectRef;
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
 use once_cell::sync::Lazy;
-use std::any::TypeId;
+
+use super::{
+    conversion::{FromBindgen, IntoBindgen},
+    implementation::entity::get_component_type,
+    interface as sif,
+};
 
 pub type ComponentsParam<'a> = Vec<(u64, sif::ComponentTypeParam<'a>)>;
 

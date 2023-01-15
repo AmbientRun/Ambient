@@ -1,10 +1,11 @@
-use super::{
-    bindings, dependencies,
-    guest_conversion::GuestConvert,
-    host_guest_state::GetBaseHostGuestState,
-    interface::guest::{Guest, GuestData, RunContext},
-    util, ScriptContext,
+use std::{
+    collections::{HashMap, HashSet},
+    fmt::{Display, Write},
+    marker::PhantomData,
+    path::{Path, PathBuf},
+    sync::Arc,
 };
+
 use anyhow::Context;
 use async_trait::async_trait;
 use elements_ecs::{with_component_registry, EntityId, EntityUid, World};
@@ -14,16 +15,17 @@ use indexmap::IndexMap;
 use indoc::indoc;
 use parking_lot::{Mutex, RwLock};
 use serde::{Deserialize, Serialize};
-use std::{
-    collections::{HashMap, HashSet},
-    fmt::{Display, Write},
-    marker::PhantomData,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
 use wasi_common::{
     file::{FdFlags, FileType},
     WasiCtx, WasiFile,
+};
+
+use super::{
+    bindings, dependencies,
+    guest_conversion::GuestConvert,
+    host_guest_state::GetBaseHostGuestState,
+    interface::guest::{Guest, GuestData, RunContext},
+    util, ScriptContext,
 };
 
 pub type FileMap = HashMap<PathBuf, File>;

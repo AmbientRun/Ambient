@@ -17,7 +17,6 @@ use elements_network::{
 };
 use elements_physics::{collider_loads, collisions, PxShapeUserData};
 use itertools::Itertools;
-
 use parking_lot::RwLock;
 use physxx::{PxRigidActor, PxRigidActorRef, PxUserData};
 use wasi_common::WasiCtx;

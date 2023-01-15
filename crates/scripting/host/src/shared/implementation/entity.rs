@@ -1,12 +1,13 @@
-use crate::shared::host_guest_state::QueryStateMap;
 use anyhow::Context;
 use elements_core::transform::translation;
 use elements_ecs::{
-    query as ecs_query, with_component_registry, EntityId, QueryEvent, QueryState, World,
+    query as ecs_query, with_component_registry, Component, ComponentValue, EntityId, QueryEvent,
+    QueryState, World,
 };
-use elements_ecs::{Component, ComponentValue};
 use glam::Vec3;
 use slotmap::Key;
+
+use crate::shared::host_guest_state::QueryStateMap;
 
 pub fn get_component_type<T: ComponentValue>(component_index: u64) -> Option<Component<T>> {
     with_component_registry(|r| r.get_by_index_type::<Component<T>>(component_index as usize))

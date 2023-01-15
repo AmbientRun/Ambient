@@ -11,8 +11,6 @@ pub mod interface;
 pub mod rustc;
 
 mod script_module;
-pub use script_module::*;
-
 use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
@@ -25,15 +23,15 @@ use elements_ecs::{
     World, COMPONENT_ENTITY_ID_MIGRATERS,
 };
 use elements_network::player::player;
-use itertools::Itertools;
-use parking_lot::RwLock;
-use wasi_common::WasiCtx;
-use wasmtime::Linker;
-
 use host_guest_state::GetBaseHostGuestState;
 use interface::write_scripting_interfaces;
+use itertools::Itertools;
+use parking_lot::RwLock;
 use rustc::InstallDirs;
+pub use script_module::*;
 use util::{get_module_name, sanitize, write_files_to_directory};
+use wasi_common::WasiCtx;
+use wasmtime::Linker;
 
 components!("scripting::shared", {
     script_module: ScriptModule,

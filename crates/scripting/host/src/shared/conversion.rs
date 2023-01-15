@@ -1,10 +1,8 @@
 use std::time::SystemTime;
 
 use elements_animation as ea;
-use elements_ecs::EntityId;
-use elements_ecs::EntityUid;
-use elements_std::asset_url::ObjectRef;
-use elements_std::asset_url::TypedAssetUrl;
+use elements_ecs::{EntityId, EntityUid};
+use elements_std::asset_url::{ObjectRef, TypedAssetUrl};
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
 use wit_bindgen_host_wasmtime_rust::{Endian, Le};
 

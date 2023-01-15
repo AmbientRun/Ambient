@@ -1,8 +1,9 @@
+use std::sync::Arc;
+
 use elements_ecs::{lookup_uid, with_component_registry, QueryEvent, World};
 use elements_physics::helpers::PhysicsObjectCollection;
 use itertools::Itertools;
 use parking_lot::RwLock;
-use std::sync::Arc;
 use wit_bindgen_host_wasmtime_rust::Le;
 
 use crate::{

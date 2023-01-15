@@ -3,8 +3,9 @@
 //!  - blessed.rs
 //!  - arewegameyet.rs
 
-use once_cell::sync::Lazy;
 use std::collections::HashSet;
+
+use once_cell::sync::Lazy;
 
 const RUST_PATTERNS: &[&str] = &[
     "thiserror",
