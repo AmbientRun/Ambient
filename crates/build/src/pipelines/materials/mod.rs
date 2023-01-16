@@ -132,7 +132,7 @@ pub trait ImageTransformer: std::fmt::Debug + Clone + Sync + Send {
     fn transform(&self, image: &mut RgbaImage, second_image: Option<&RgbaImage>);
     fn name(&self) -> &str;
 }
-struct FnImageTransformer<F: Fn(&mut RgbaImage, Option<&RgbaImage>) + Sync + Send + 'static> {
+pub struct FnImageTransformer<F: Fn(&mut RgbaImage, Option<&RgbaImage>) + Sync + Send + 'static> {
     func: Arc<F>,
     name: &'static str,
 }

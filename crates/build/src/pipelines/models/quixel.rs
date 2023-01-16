@@ -3,7 +3,7 @@ use elements_model_import::{
     fbx::FbxDoc, model_crate::ModelCrate, MaterialFilter, ModelImportPipeline, ModelImportTransform, ModelTransform, RelativePathBufExt
 };
 use elements_renderer::materials::pbr_material::PbrMaterialFromUrl;
-use elements_std::asset_url::{AssetType, AssetUrl};
+use elements_std::asset_url::{AbsAssetUrl, AssetType, AssetUrl};
 use image::RgbaImage;
 use itertools::Itertools;
 use relative_path::RelativePathBuf;
@@ -13,22 +13,23 @@ use super::{
         context::PipelineCtx, out_asset::{OutAssetContent, OutAssetPreview}
     }, ModelsPipeline
 };
-use crate::{
-    helpers::download_json, pipelines::{materials::pipe_image, OutAsset}
+use crate::pipelines::{
+    materials::{FnImageTransformer, PipeImage}, out_asset::OutAsset
 };
 
 pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset> {
     ctx.process_files(
         |file| {
-            file.sub_path.extension == Some("json".to_string()) && file.sub_path_string.contains(&format!("_{}_", file.sub_path.filename))
+            file.extension() == Some("json".to_string())
+                && file.path().to_string().contains(&format!("_{}_", file.path().file_name().unwrap()))
         },
         move |ctx, file| {
             let config = config.clone();
             async move {
                 let mut res = Vec::new();
-                let quixel_id = QuixelId::from_full(file.sub_path.path.last().unwrap()).unwrap();
-                let quixel_json: serde_json::Value = download_json(&ctx.assets, &file.temp_download_url).await.unwrap();
-                let base_path = file.sub_path.path.join("/");
+                let quixel_id = QuixelId::from_full(file.path().file_name().unwrap()).unwrap();
+                let quixel_json: serde_json::Value = file.download_json(&ctx.assets()).await.unwrap();
+                let in_root_url = file.join(".").unwrap();
                 let tags = quixel_json["tags"]
                     .as_array()
                     .unwrap()
@@ -36,53 +37,51 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                     .map(|x| x.as_str().unwrap().to_string().to_case(Case::Title))
                     .collect_vec();
                 let pack_name = quixel_json["semanticTags"]["name"].as_str().unwrap().to_string();
-                let materials_id = ctx.asset_crate_id(&format!("{}_material", file.sub_path_string));
-                let _materials_url = ctx.crate_url(&materials_id);
                 let mut materials = ModelCrate::new();
                 let objs = object_pipelines_from_quixel_json(
                     &quixel_json,
                     quixel_id,
                     &ctx,
                     &config,
-                    &base_path,
+                    &in_root_url,
                     1.,
                     &mut materials,
-                    &materials_id.crate_uid,
+                    &ctx.out_root().join(ctx.in_root().relative_path(file.path()).join("material")).unwrap(),
                 )
                 .await
                 .unwrap();
                 let mut ids = Vec::new();
                 let is_collection = objs.len() > 1;
                 for (i, pipeline) in objs.into_iter().enumerate() {
-                    let asset_crate_id = ctx.asset_crate_id(&format!("{}{}", file.sub_path_string, i));
-                    let asset_crate_url = ctx.crate_url(&asset_crate_id);
-                    let mut asset_crate = pipeline.produce_crate(&ctx.assets).await.unwrap();
+                    let id = format!("{}_{}", file, i);
+                    let mut asset_crate = pipeline.produce_crate(&ctx.assets()).await.unwrap();
 
                     config.apply(&ctx, &mut asset_crate).await?;
 
+                    let model_url =
+                        ctx.write_model_crate(&asset_crate, &ctx.in_root().relative_path(file.path()).join(i.to_string())).await;
+
                     res.push(OutAsset {
-                        asset_crate_id: asset_crate_id.clone(),
-                        sub_asset: None,
+                        id: id.clone(),
                         type_: AssetType::Object,
                         hidden: is_collection,
                         name: pack_name.clone(),
                         tags: tags.clone(),
                         categories: Default::default(),
-                        preview: OutAssetPreview::FromModel {
-                            url: asset_crate_url.resolve(asset_crate.models.loc.path(ModelCrate::MAIN).as_str()).unwrap(),
-                        },
-                        content: OutAssetContent::Content(
-                            asset_crate_url.resolve(asset_crate.objects.loc.path(ModelCrate::MAIN).as_str()).unwrap(),
-                        ),
-                        source: Some(format!("{}#{}", file.sub_path_string, i)),
+
+                        preview: OutAssetPreview::FromModel { url: model_url.clone().abs().unwrap() },
+                        content: OutAssetContent::Content(model_url.model_crate().unwrap().object().abs().unwrap()),
+                        source: Some({
+                            let mut f = file.clone();
+                            f.0.set_fragment(Some(&i.to_string()));
+                            f
+                        }),
                     });
-                    ctx.write_model_crate(&asset_crate, &asset_crate_id).await;
-                    ids.push(asset_crate_id);
+                    ids.push(id);
                 }
                 if is_collection {
                     res.push(OutAsset {
-                        asset_crate_id: ctx.asset_crate_id(&file.sub_path_string),
-                        sub_asset: None,
+                        id: file.to_string(),
                         type_: AssetType::Object,
                         hidden: false,
                         name: pack_name.to_string(),
@@ -90,13 +89,13 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                         categories: Default::default(),
                         preview: OutAssetPreview::None,
                         content: OutAssetContent::Collection(ids),
-                        source: Some(file.sub_path_string.clone()),
+                        source: Some(file.clone()),
                     });
                 }
                 if let Some(max_size) = config.cap_texture_sizes {
                     materials.cap_texture_sizes(max_size.size());
                 }
-                ctx.write_model_crate(&materials, &materials_id).await;
+                ctx.write_model_crate(&materials, &ctx.in_root().relative_path(file.path())).await;
                 Ok(res)
             }
         },
@@ -114,10 +113,10 @@ pub async fn object_pipelines_from_quixel_json(
     quixel_id: QuixelId,
     ctx: &PipelineCtx,
     config: &ModelsPipeline,
-    base_path: &str,
+    in_root_url: &AbsAssetUrl,
     lod_factor: f32,
     materials: &mut ModelCrate,
-    materials_id: &str,
+    out_materials_url: &AbsAssetUrl,
 ) -> anyhow::Result<Vec<ModelImportPipeline>> {
     let mut object_defs = Vec::new();
     let pack_name = quixel["semanticTags"]["name"].as_str().unwrap().to_string();
@@ -145,57 +144,59 @@ pub async fn object_pipelines_from_quixel_json(
             };
 
             let mut mesh_base_name = find_mesh_base_name();
-            if !ctx.files.contains_key(&format!("{base_path}/{mesh_base_name}_LOD0.fbx")) {
+            if !ctx.process_ctx.has_input_file(&in_root_url.push(&format!("{mesh_base_name}_LOD0.fbx")).unwrap()) {
                 mesh_base_name = quixel_id.id.clone();
             }
             log::info!("Loading 3d asset: {:?}", mesh_base_name);
             let material_override = ModelImportTransform::OverrideMaterial {
                 filter: MaterialFilter::All,
                 material: Box::new(PbrMaterialFromUrl {
-                    base_color: pipe_image(
-                        ctx,
-                        materials,
-                        Some(format!("{base_path}/{}_{}_Albedo.jpg", mesh_base_name, quixel_id.resolution)),
-                        |_| {},
+                    base_color: PipeImage::resolve_opt(
+                        &ctx.assets(),
+                        in_root_url,
+                        &Some(AssetUrl::Relative(format!("{}_{}_Albedo.jpg", mesh_base_name, quixel_id.resolution).into())),
+                        None,
+                        out_materials_url,
                     )
-                    .await?
-                    .map(|x| material_image_path(materials_id, x)),
+                    .await?,
                     opacity: if quixel_has_opacity(quixel).unwrap_or(false) {
-                        pipe_image(
-                            ctx,
-                            materials,
-                            Some(format!("{base_path}/{}_{}_Opacity.jpg", mesh_base_name, quixel_id.resolution)),
-                            |_| {},
+                        PipeImage::resolve_opt(
+                            &ctx.assets(),
+                            in_root_url,
+                            &Some(AssetUrl::Relative(format!("{}_{}_Opacity.jpg", mesh_base_name, quixel_id.resolution).into())),
+                            None,
+                            out_materials_url,
                         )
                         .await?
-                        .map(|x| material_image_path(materials_id, x))
                     } else {
                         None
                     },
-                    normalmap: pipe_image(
-                        ctx,
-                        materials,
-                        Some(format!("{base_path}/{}_{}_Normal_LOD0.jpg", mesh_base_name, quixel_id.resolution)),
-                        |_| {},
+                    normalmap: PipeImage::resolve_opt(
+                        &ctx.assets(),
+                        in_root_url,
+                        &Some(AssetUrl::Relative(format!("{}_{}_Normal_LOD0.jpg", mesh_base_name, quixel_id.resolution).into())),
+                        None,
+                        out_materials_url,
                     )
-                    .await?
-                    .map(|x| material_image_path(materials_id, x)),
-                    metallic_roughness: pipe_image(
-                        ctx,
-                        materials,
-                        Some(format!("{base_path}/{}_{}_Roughness.jpg", mesh_base_name, quixel_id.resolution)),
-                        rougness_to_mr,
+                    .await?,
+                    metallic_roughness: PipeImage::resolve_opt(
+                        &ctx.assets(),
+                        in_root_url,
+                        &Some(AssetUrl::Relative(format!("{}_{}_Roughness.jpg", mesh_base_name, quixel_id.resolution).into())),
+                        None,
+                        out_materials_url,
                     )
-                    .await?
-                    .map(|x| material_image_path(materials_id, x)),
+                    .await?,
                     roughness: 1.0,
                     metallic: 0.2,
                     ..Default::default()
                 }),
             };
-            let mesh0 =
-                FbxDoc::from_url(&ctx.assets, &ctx.files.get(&format!("{base_path}/{mesh_base_name}_LOD5.fbx")).unwrap().temp_download_url)
-                    .await?;
+            let mesh0 = FbxDoc::from_url(
+                &ctx.assets(),
+                ctx.get_downloadable_url(&in_root_url.push(format!("{mesh_base_name}_LOD5.fbx")).unwrap())?,
+            )
+            .await?;
             for root_node in mesh0.models.values().filter(|m| m.parent.is_none()) {
                 let mut lods = Vec::new();
                 for i in 0..6 {
@@ -203,7 +204,7 @@ pub async fn object_pipelines_from_quixel_json(
                     lods.push(
                         ModelImportPipeline::new()
                             .add_step(ModelImportTransform::ImportModelFromUrl {
-                                url: ctx.files.get(&format!("{base_path}/{mesh_base_name}_LOD{i}.fbx")).unwrap().temp_download_url.clone(),
+                                url: ctx.get_downloadable_url(&in_root_url.push(format!("{mesh_base_name}_LOD{i}.fbx")).unwrap())?.clone(),
                                 normalize: true,
                                 force_assimp: config.force_assimp,
                             })
@@ -228,7 +229,7 @@ pub async fn object_pipelines_from_quixel_json(
                             && map.get("uri").unwrap().as_str().unwrap().contains(&format!("_{}_", quixel_id.resolution.to_uppercase()))
                             && map.get("name").unwrap().as_str().unwrap() == name
                         {
-                            Some(format!("{base_path}/{}", map.get("uri").unwrap().as_str().unwrap()))
+                            Some(in_root_url.push(format!("{}", map.get("uri").unwrap().as_str().unwrap())).unwrap())
                         } else {
                             None
                         }
@@ -258,7 +259,7 @@ pub async fn object_pipelines_from_quixel_json(
                                                 .unwrap()
                                                 .contains(&format!("_{}_", quixel_id.resolution.to_uppercase()))
                                         {
-                                            return Some(format!("{base_path}/{}", format.get("uri").unwrap().as_str().unwrap()));
+                                            return Some(in_root_url.push(format.get("uri").unwrap().as_str().unwrap()).unwrap());
                                         }
                                     }
                                 }
@@ -272,42 +273,77 @@ pub async fn object_pipelines_from_quixel_json(
             };
 
             let atlas = PbrMaterialFromUrl {
-                base_color: pipe_image(ctx, materials, get_map_v1("maps", "Albedo").or_else(|| get_map_v2("components", "Albedo")), |_| {})
-                    .await?
-                    .map(|x| material_image_path(materials_id, x)),
-                opacity: pipe_image(ctx, materials, get_map_v1("maps", "Opacity").or_else(|| get_map_v2("components", "Opacity")), |_| {})
-                    .await?
-                    .map(|x| material_image_path(materials_id, x)),
-                normalmap: pipe_image(ctx, materials, get_map_v1("maps", "Normal").or_else(|| get_map_v2("components", "Normal")), |_| {})
-                    .await?
-                    .map(|x| material_image_path(materials_id, x)),
-                alpha_cutoff: Some(0.5),
-                metallic_roughness: pipe_image(
-                    ctx,
-                    materials,
-                    get_map_v1("maps", "Roughness").or_else(|| get_map_v2("components", "Roughness")),
-                    rougness_to_mr,
+                base_color: PipeImage::resolve_opt(
+                    ctx.assets(),
+                    in_root_url,
+                    &get_map_v1("maps", "Albedo").or_else(|| get_map_v2("components", "Albedo")).map(|x| x.into()),
+                    None,
+                    out_materials_url,
                 )
-                .await?
-                .map(|x| material_image_path(materials_id, x)),
+                .await?,
+                opacity: PipeImage::resolve_opt(
+                    ctx.assets(),
+                    in_root_url,
+                    &get_map_v1("maps", "Opacity").or_else(|| get_map_v2("components", "Opacity")).map(|x| x.into()),
+                    None,
+                    out_materials_url,
+                )
+                .await?,
+                normalmap: PipeImage::resolve_opt(
+                    ctx.assets(),
+                    in_root_url,
+                    &get_map_v1("maps", "Normal").or_else(|| get_map_v2("components", "Normal")).map(|x| x.into()),
+                    None,
+                    out_materials_url,
+                )
+                .await?,
+                alpha_cutoff: Some(0.5),
+                metallic_roughness: PipeImage::resolve_opt(
+                    ctx.assets(),
+                    in_root_url,
+                    &get_map_v1("maps", "Roughness").or_else(|| get_map_v2("components", "Roughness")).map(|x| x.into()),
+                    Some(FnImageTransformer::new("mr", |img, _| rougness_to_mr(img))),
+                    out_materials_url,
+                )
+                .await?,
                 metallic: 0.2,
                 roughness: 1.0,
                 ..Default::default()
             };
             let billboard = PbrMaterialFromUrl {
-                base_color: pipe_image(ctx, materials, get_map_v1("billboards", "Albedo"), |_| {})
-                    .await?
-                    .map(|x| material_image_path(materials_id, x)),
-                opacity: pipe_image(ctx, materials, get_map_v1("billboards", "Opacity"), |_| {})
-                    .await?
-                    .map(|x| material_image_path(materials_id, x)),
-                normalmap: pipe_image(ctx, materials, get_map_v1("billboards", "Normal"), |_| {})
-                    .await?
-                    .map(|x| material_image_path(materials_id, x)),
+                base_color: PipeImage::resolve_opt(
+                    ctx.assets(),
+                    in_root_url,
+                    &get_map_v1("billboards", "Albedo").map(|x| x.into()),
+                    None,
+                    out_materials_url,
+                )
+                .await?,
+                opacity: PipeImage::resolve_opt(
+                    ctx.assets(),
+                    in_root_url,
+                    &get_map_v1("billboards", "Opacity").map(|x| x.into()),
+                    None,
+                    out_materials_url,
+                )
+                .await?,
+                normalmap: PipeImage::resolve_opt(
+                    ctx.assets(),
+                    in_root_url,
+                    &get_map_v1("billboards", "Normal").map(|x| x.into()),
+                    None,
+                    out_materials_url,
+                )
+                .await?,
                 alpha_cutoff: Some(0.5),
-                metallic_roughness: pipe_image(ctx, materials, get_map_v1("maps", "Roughness"), rougness_to_mr)
-                    .await?
-                    .map(|x| material_image_path(materials_id, x)),
+                metallic_roughness: PipeImage::resolve_opt(
+                    ctx.assets(),
+                    in_root_url,
+                    &get_map_v1("maps", "Roughness").map(|x| x.into()),
+                    Some(FnImageTransformer::new("mr", |img, _| rougness_to_mr(img))),
+                    out_materials_url,
+                )
+                .await?,
                 metallic: 0.2,
                 roughness: 1.0,
                 ..Default::default()
@@ -326,11 +362,11 @@ pub async fn object_pipelines_from_quixel_json(
                             let lod_index = lod.get("lod").unwrap().as_u64().unwrap();
                             let lod_distance = lod.get("lodDistance").unwrap().as_f64().unwrap() as f32;
                             lod_cutoffs.push(lod_distance * lod_factor);
-                            let file = format!("{base_path}/Var{variation_nr}/Var{variation_nr}_LOD{lod_index}.fbx");
+                            let file = in_root_url.push(format!("Var{variation_nr}/Var{variation_nr}_LOD{lod_index}.fbx")).unwrap();
                             lods.push(
                                 ModelImportPipeline::new()
                                     .add_step(ModelImportTransform::ImportModelFromUrl {
-                                        url: ctx.files.get(&file).unwrap().temp_download_url.clone(),
+                                        url: ctx.get_downloadable_url(&file).unwrap().clone(),
                                         normalize: true,
                                         force_assimp: config.force_assimp,
                                     })
@@ -353,17 +389,18 @@ pub async fn object_pipelines_from_quixel_json(
             if object_defs.is_empty() {
                 let mut variation = 0;
                 loop {
-                    if !ctx.files.contains_key(&format!("{base_path}/Var{var}/Var{var}_LOD{lod}.fbx", var = variation, lod = 0)) {
+                    if !ctx
+                        .process_ctx
+                        .has_input_file(&in_root_url.push(format!("Var{var}/Var{var}_LOD{lod}.fbx", var = variation, lod = 0)).unwrap())
+                    {
                         break;
                     }
                     let lods = (0..6)
                         .map(|i| {
                             ModelImportPipeline::new().add_step(ModelImportTransform::ImportModelFromUrl {
                                 url: ctx
-                                    .files
-                                    .get(&format!("{base_path}/Var{variation}/Var{variation}_LOD{i}.fbx"))
+                                    .get_downloadable_url(&in_root_url.push(format!("Var{variation}/Var{variation}_LOD{i}.fbx")).unwrap())
                                     .unwrap()
-                                    .temp_download_url
                                     .clone(),
                                 normalize: true,
                                 force_assimp: config.force_assimp,
@@ -395,8 +432,8 @@ pub struct QuixelId {
     pub name: String,
 }
 impl QuixelId {
+    /// Parses a quixel id from something like "Props_Storage_vijncb3_2K_3d_ms"
     pub fn from_full(full: &str) -> Option<Self> {
-        // Props_Storage_vijncb3_2K_3d_ms
         let mut ss = full.split('_').collect_vec();
         ss.pop()?; // ms
         ss.pop()?; // 3dplant

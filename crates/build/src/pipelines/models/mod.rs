@@ -11,7 +11,7 @@ use super::{
     context::PipelineCtx, download_image, materials::PipelinePbrMaterial, out_asset::{OutAsset, OutAssetContent, OutAssetPreview}
 };
 
-// pub mod quixel;
+pub mod quixel;
 pub mod regular;
 pub mod unity;
 
@@ -19,7 +19,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
     let mut assets = match &config.importer {
         ModelImporter::Regular => regular::pipeline(ctx, config.clone()).await,
         ModelImporter::UnityModels { use_prefabs } => unity::pipeline(ctx, *use_prefabs, config.clone()).await,
-        // ModelImporter::Quixel => quixel::pipeline(ctx, config.clone()).await,
+        ModelImporter::Quixel => quixel::pipeline(ctx, config.clone()).await,
         _ => todo!(),
     };
     if config.collection_of_variants && assets.len() > 1 {

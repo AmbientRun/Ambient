@@ -130,6 +130,11 @@ pub struct ProcessCtx {
     pub on_status: Arc<dyn Fn(String) -> BoxFuture<'static, ()> + Sync + Send>,
     pub on_error: Arc<dyn Fn(anyhow::Error) -> BoxFuture<'static, ()> + Sync + Send>,
 }
+impl ProcessCtx {
+    pub fn has_input_file(&self, url: &AbsAssetUrl) -> bool {
+        self.files.iter().position(|x| x == url).is_some()
+    }
+}
 
 pub async fn download_image(assets: &AssetCache, url: &AbsAssetUrl) -> anyhow::Result<image::DynamicImage> {
     let data = url.download_bytes(assets).await?;
