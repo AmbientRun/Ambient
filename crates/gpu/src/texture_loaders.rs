@@ -209,7 +209,7 @@ where
     F: 'static,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("MappedTexture").field("inner", &type_name::<F>()).finish()
+        f.debug_struct("MappedTexture").field("inner", &format!("{:?}", std::any::TypeId::of::<F>())).finish()
     }
 }
 
