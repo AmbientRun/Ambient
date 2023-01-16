@@ -606,7 +606,7 @@ fn build_template(
     let _dummy_bytecode = compile(
         &dummy_module,
         install_dirs.clone(),
-        template_path.to_owned(),
+        scripts_path.to_owned(),
         scripts_path.clone(),
         dummy_name.to_owned(),
     )
