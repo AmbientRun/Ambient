@@ -20,14 +20,15 @@ use crate::pipelines::{
 pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset> {
     ctx.process_files(
         |file| {
+            println!("{} <> {}", file.path().to_string(), format!("_{}_", file.path().file_stem().unwrap()));
             file.extension() == Some("json".to_string())
-                && file.path().to_string().contains(&format!("_{}_", file.path().file_name().unwrap()))
+                && file.path().to_string().contains(&format!("_{}_", file.path().file_stem().unwrap()))
         },
         move |ctx, file| {
             let config = config.clone();
             async move {
                 let mut res = Vec::new();
-                let quixel_id = QuixelId::from_full(file.path().file_name().unwrap()).unwrap();
+                let quixel_id = QuixelId::from_full(file.last_dir_name().unwrap()).unwrap();
                 let quixel_json: serde_json::Value = file.download_json(&ctx.assets()).await.unwrap();
                 let in_root_url = file.join(".").unwrap();
                 let tags = quixel_json["tags"]
@@ -101,10 +102,6 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
         },
     )
     .await
-}
-
-fn material_image_path(materials_id: &str, path: RelativePathBuf) -> AssetUrl {
-    path.prejoin(format!("../../{materials_id}")).into()
 }
 
 #[allow(clippy::too_many_arguments)]

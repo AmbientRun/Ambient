@@ -130,6 +130,12 @@ impl AbsAssetUrl {
         }
         res
     }
+    /// For a/b/c.png this returns b
+    pub fn last_dir_name(&self) -> Option<&str> {
+        let mut segs = self.0.path_segments()?.rev();
+        segs.next()?; // discard
+        segs.next()
+    }
     pub async fn download_bytes(&self, assets: &AssetCache) -> anyhow::Result<Vec<u8>> {
         if let Some(path) = self.to_file_path()? {
             Ok(tokio::fs::read(path).await.context(format!("Failed to read file at: {:}", self.0))?)
@@ -170,6 +176,8 @@ fn test_abs_asset_url() {
     assert_eq!(AbsAssetUrl::parse("http://t.c/hello/").unwrap().as_directory().to_string(), "http://t.c/hello/");
     assert_eq!(AbsAssetUrl::parse("http://t.c/hello").unwrap().as_file().to_string(), "http://t.c/hello");
     assert_eq!(AbsAssetUrl::parse("http://t.c/hello/").unwrap().as_file().to_string(), "http://t.c/hello");
+
+    assert_eq!(AbsAssetUrl::parse("http://t.c/a/b/c.png").unwrap().last_dir_name(), Some("b"));
 }
 
 /// This is either an absolute url (which can also be an absolute file:// url),
