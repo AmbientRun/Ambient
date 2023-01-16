@@ -12,6 +12,7 @@ use itertools::Itertools;
 use super::{
     super::{models::quixel::QuixelId, OutAsset, OutAssetContent, OutAssetPreview, PipelineCtx}, MaterialsPipeline
 };
+use crate::pipelines::out_asset::asset_id_from_url;
 
 pub async fn pipeline(ctx: &PipelineCtx, _config: MaterialsPipeline) -> Vec<OutAsset> {
     ctx.process_files(
@@ -35,7 +36,7 @@ pub async fn pipeline(ctx: &PipelineCtx, _config: MaterialsPipeline) -> Vec<OutA
             let model_crate_url = ctx.write_model_crate(&asset_crate, &ctx.in_root().relative_path(file.path())).await;
 
             res.push(OutAsset {
-                id: file.to_string(),
+                id: asset_id_from_url(&file),
                 type_: AssetType::Material,
                 hidden: false,
                 name: pack_name.clone(),

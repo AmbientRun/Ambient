@@ -15,7 +15,7 @@ use itertools::Itertools;
 use out_asset::{OutAsset, OutAssetContent, OutAssetPreview};
 use serde::{Deserialize, Serialize};
 
-use self::{materials::MaterialsPipeline, models::ModelsPipeline};
+use self::{materials::MaterialsPipeline, models::ModelsPipeline, out_asset::asset_id_from_url};
 
 // pub mod audio;
 pub mod context;
@@ -56,7 +56,7 @@ impl Pipeline {
                             ctx.write_file(ctx.in_root().relative_path(file.path()).with_extension("script_bundle"), bundle).await;
 
                         Ok(vec![OutAsset {
-                            id: file.to_string(),
+                            id: asset_id_from_url(&file),
                             type_: AssetType::ScriptBundle,
                             hidden: false,
                             name: file.path().file_name().unwrap().to_string(),

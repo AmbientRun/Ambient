@@ -19,7 +19,7 @@ use relative_path::{RelativePath, RelativePathBuf};
 use serde::{Deserialize, Serialize};
 
 use super::{
-    context::PipelineCtx, out_asset::{OutAsset, OutAssetContent, OutAssetPreview}, ProcessCtxKey
+    context::PipelineCtx, out_asset::{asset_id_from_url, OutAsset, OutAssetContent, OutAssetPreview}, ProcessCtxKey
 };
 use crate::pipelines::download_image;
 
@@ -49,7 +49,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
                 model_crate.materials.insert(ModelCrate::MAIN, material);
                 let model_crate_url = ctx.write_model_crate(&model_crate, &RelativePath::new("material")).await;
                 Ok(vec![OutAsset {
-                    id: ctx.in_root().to_string(),
+                    id: asset_id_from_url(&ctx.out_root()),
                     type_: AssetType::Material,
                     hidden: false,
                     name,

@@ -8,7 +8,7 @@ use futures::FutureExt;
 use serde::{Deserialize, Serialize};
 
 use super::{
-    context::PipelineCtx, download_image, materials::PipelinePbrMaterial, out_asset::{OutAsset, OutAssetContent, OutAssetPreview}
+    context::PipelineCtx, download_image, materials::PipelinePbrMaterial, out_asset::{asset_id_from_url, OutAsset, OutAssetContent, OutAssetPreview}
 };
 
 pub mod quixel;
@@ -27,7 +27,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
             asset.hidden = true;
         }
         assets.push(OutAsset {
-            id: format!("{}_col", ctx.in_root().to_string()),
+            id: asset_id_from_url(&ctx.out_root().push("col").unwrap()),
             type_: AssetType::Object,
             hidden: false,
             name: ctx.process_ctx.package_name.to_string(),

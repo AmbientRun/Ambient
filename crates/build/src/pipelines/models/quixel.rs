@@ -16,7 +16,7 @@ use super::{
     }, ModelsPipeline
 };
 use crate::pipelines::{
-    materials::{FnImageTransformer, PipeImage}, out_asset::OutAsset
+    materials::{FnImageTransformer, PipeImage}, out_asset::{asset_id_from_url, OutAsset}
 };
 
 pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset> {
@@ -53,7 +53,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                 let mut ids = Vec::new();
                 let is_collection = objs.len() > 1;
                 for (i, pipeline) in objs.into_iter().enumerate() {
-                    let id = format!("{}_{}", file, i);
+                    let id = asset_id_from_url(&file.push(i.to_string()).unwrap());
                     let mut asset_crate = pipeline.produce_crate(&ctx.assets()).await.unwrap();
 
                     config.apply(&ctx, &mut asset_crate).await?;
@@ -77,11 +77,11 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                             f
                         }),
                     });
-                    ids.push(id);
+                    ids.push(id.to_string());
                 }
                 if is_collection {
                     res.push(OutAsset {
-                        id: file.to_string(),
+                        id: asset_id_from_url(&file),
                         type_: AssetType::Object,
                         hidden: false,
                         name: pack_name.to_string(),

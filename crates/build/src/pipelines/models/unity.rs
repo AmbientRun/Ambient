@@ -27,7 +27,7 @@ use unity_parser::{parse_unity_yaml, prefab::PrefabObject, UnityRef};
 use yaml_rust::Yaml;
 
 use super::{super::context::PipelineCtx, create_texture_resolver, ModelsPipeline};
-use crate::pipelines::{download_image, OutAsset, OutAssetContent, OutAssetPreview};
+use crate::pipelines::{download_image, out_asset::asset_id_from_url, OutAsset, OutAssetContent, OutAssetPreview};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UnityConfig {
@@ -104,7 +104,7 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
 
                     let model_crate_url = ctx.write_model_crate(&asset_crate, &out_model_path).await;
                     res.push(OutAsset {
-                        id: file.to_string(),
+                        id: asset_id_from_url(&file),
                         type_: AssetType::Object,
                         hidden: false,
                         name: file.path().file_name().unwrap().to_string(),
@@ -155,7 +155,7 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
 
                     let model_crate_url = ctx.write_model_crate(&asset_crate, &out_path).await;
                     res.push(OutAsset {
-                        id: file.to_string(),
+                        id: asset_id_from_url(&file),
                         type_: AssetType::Object,
                         hidden: false,
                         name: file.path().file_name().unwrap().to_string(),

@@ -7,7 +7,7 @@ use super::{
         context::PipelineCtx, out_asset::{OutAssetContent, OutAssetPreview}, ModelsPipeline
     }, create_texture_resolver
 };
-use crate::pipelines::OutAsset;
+use crate::pipelines::{out_asset::asset_id_from_url, OutAsset};
 
 pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset> {
     ctx.process_files(
@@ -31,7 +31,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
 
                 if config.output_objects {
                     res.push(OutAsset {
-                        id: file.to_string(),
+                        id: asset_id_from_url(&file),
                         type_: AssetType::Object,
                         hidden: false,
                         name: file.path().file_name().unwrap().to_string(),
@@ -46,7 +46,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                 if config.output_animations {
                     for anim in model_crate.animations.content.keys() {
                         res.push(OutAsset {
-                            id: format!("{}anim_{}", file, slugify::slugify(anim, "", "_", None)),
+                            id: asset_id_from_url(&file.push(anim).unwrap()),
                             type_: AssetType::Animation,
                             hidden: false,
                             name: file.path().file_name().unwrap().to_string(),
