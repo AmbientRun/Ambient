@@ -86,7 +86,7 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                         unity_parser::prefab::PrefabFile::from_yaml(download_unity_yaml(&ctx.assets(), &file).await.unwrap()).unwrap();
 
                     let out_model_path = ctx.in_root().relative_path(file.path());
-                    let out_model_url = ctx.out_root().join(&out_model_path).unwrap();
+                    let out_model_url = ctx.out_root().push(&out_model_path).unwrap().as_directory();
 
                     let mut asset_crate = model_from_prefab(
                         UnityCtx {
@@ -131,7 +131,7 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                     let mut res = Vec::new();
 
                     let out_path = ctx.in_root().relative_path(file.path());
-                    let out_root = ctx.out_root().join(&out_path).unwrap();
+                    let out_root = ctx.out_root().push(&out_path).unwrap();
 
                     let pipeline = ModelImportPipeline::new()
                         .add_step(ModelImportTransform::ImportModelFromUrl {
@@ -146,9 +146,9 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                     let mut asset_crate = pipeline.produce_crate(&ctx.assets()).await.unwrap();
                     for mat in asset_crate.materials.content.values_mut() {
                         let name = mat.name.clone().unwrap();
-                        let material_url = file.join(format!("Materials/{}.mat", name)).unwrap();
+                        let material_url = file.push(format!("Materials/{}.mat", name)).unwrap();
                         *mat = materials.lock().await.get_unity_material(&config, &guid_lookup, &material_url, &name).await.unwrap();
-                        *mat = mat.relative_path_from(&out_root.join(format!("materials/{}.json", name)).unwrap());
+                        *mat = mat.relative_path_from(&out_root.push("materials").unwrap());
                     }
 
                     config.apply(&ctx, &mut asset_crate).await?;
@@ -469,7 +469,7 @@ async fn primitives_from_unity_mesh_renderer(
         let mut mesh = unity_parser::asset::Asset::from_yaml(asset[0].clone()).mesh;
         let mat_ref = mesh_renderer.materials[0].clone();
         let mut mat = ctx.materials_lookup.lock().await.get_by_guid(ctx.config, ctx.guid_lookup, &mat_ref).await.unwrap();
-        mat = mat.relative_path_from(&out_model_url.material("x").abs().unwrap());
+        mat = mat.relative_path_from(&out_model_url.abs().unwrap().push("materials").unwrap());
         mesh.transform(Mat4::from_cols(-Vec4::X, Vec4::Z, -Vec4::Y, Vec4::W));
         let mut model_crate = model_crate.lock();
         Ok(vec![PbrRenderPrimitiveFromUrl {
@@ -486,7 +486,7 @@ async fn primitives_from_unity_mesh_renderer(
         let mut res = Vec::new();
         for (prim, mat_ref) in prims.iter().zip(mesh_renderer.materials.iter()) {
             let mut mat = ctx.materials_lookup.lock().await.get_by_guid(ctx.config, ctx.guid_lookup, mat_ref).await.unwrap();
-            mat = mat.relative_path_from(&out_model_url.material("x").abs().unwrap());
+            mat = mat.relative_path_from(&out_model_url.abs().unwrap().push("materials").unwrap());
             let mut mesh = tmp_model.meshes.get_by_path(prim.mesh.path()).unwrap().clone();
             let node_world = get_world_transform(tmp_model.model_world(), node).unwrap();
             let node_mesh_transform = tmp_model.model_world().get(node, mesh_to_local()).unwrap_or_default();

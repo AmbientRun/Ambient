@@ -93,6 +93,11 @@ impl AbsAssetUrl {
     pub fn resolve(&self, url_or_relative_path: impl AsRef<str>) -> Result<Self, url::ParseError> {
         AssetUrl::parse(url_or_relative_path)?.resolve(self)
     }
+    /// This appends [path] to the current path, with a `/` joining them
+    pub fn push(&self, path: impl AsRef<str>) -> Result<Self, url::ParseError> {
+        Ok(AbsAssetUrl(self.as_directory().0.join(path.as_ref())?))
+    }
+    /// This joins the current url with a relative path. See https://docs.rs/url/latest/url/struct.Url.html#method.join for details how it works
     pub fn join(&self, path: impl AsRef<str>) -> Result<Self, url::ParseError> {
         Ok(AbsAssetUrl(self.0.join(path.as_ref())?))
     }
@@ -105,6 +110,25 @@ impl AbsAssetUrl {
     }
     pub fn relative_path(&self, path: impl AsRef<RelativePath>) -> RelativePathBuf {
         RelativePathBuf::from(self.0.path()).relative(path)
+    }
+    pub fn is_directory(&self) -> bool {
+        self.0.path().ends_with("/")
+    }
+    /// Ensures that this url ends with `/`, which is interpreted as a "directory" by the Url package
+    pub fn as_directory(&self) -> Self {
+        let mut res = self.clone();
+        if !res.is_directory() {
+            res.set_path(&format!("{}/", res.path()));
+        }
+        res
+    }
+    /// Ensures that this url doesn't end with `/`, which is interpreted as a "directory" by the Url package
+    pub fn as_file(&self) -> Self {
+        let mut res = self.clone();
+        if res.is_directory() {
+            res.set_path(&res.path().as_str()[0..(res.path().as_str().len() - 1)]);
+        }
+        res
     }
     pub async fn download_bytes(&self, assets: &AssetCache) -> anyhow::Result<Vec<u8>> {
         if let Some(path) = self.to_file_path()? {
@@ -138,6 +162,14 @@ impl From<PathBuf> for AbsAssetUrl {
         let value = if value.is_absolute() { value } else { std::env::current_dir().unwrap().join(value) };
         Self(Url::from_file_path(value).unwrap())
     }
+}
+
+#[test]
+fn test_abs_asset_url() {
+    assert_eq!(AbsAssetUrl::parse("http://t.c/hello").unwrap().as_directory().to_string(), "http://t.c/hello/");
+    assert_eq!(AbsAssetUrl::parse("http://t.c/hello/").unwrap().as_directory().to_string(), "http://t.c/hello/");
+    assert_eq!(AbsAssetUrl::parse("http://t.c/hello").unwrap().as_file().to_string(), "http://t.c/hello");
+    assert_eq!(AbsAssetUrl::parse("http://t.c/hello/").unwrap().as_file().to_string(), "http://t.c/hello");
 }
 
 /// This is either an absolute url (which can also be an absolute file:// url),

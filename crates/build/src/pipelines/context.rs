@@ -28,10 +28,10 @@ impl PipelineCtx {
         &self.process_ctx.assets
     }
     pub fn in_root(&self) -> AbsAssetUrl {
-        self.process_ctx.in_root.join(&self.root_path).unwrap()
+        self.process_ctx.in_root.push(&self.root_path).unwrap()
     }
     pub fn out_root(&self) -> AbsAssetUrl {
-        self.process_ctx.out_root.join(&self.root_path).unwrap()
+        self.process_ctx.out_root.push(&self.root_path).unwrap()
     }
 
     pub async fn write_model_crate(&self, model_crate: &ModelCrate, path: &RelativePath) -> TypedAssetUrl<ModelAssetType> {

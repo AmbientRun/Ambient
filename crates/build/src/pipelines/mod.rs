@@ -87,6 +87,7 @@ impl Pipeline {
 }
 
 pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
+    log::info!("Processing pipeline with out_root={}", ctx.out_root);
     futures::stream::iter(ctx.files.iter())
         .filter_map(|file| async move {
             let pipelines: Vec<Pipeline> = if file.0.path().ends_with("pipeline.json") {
