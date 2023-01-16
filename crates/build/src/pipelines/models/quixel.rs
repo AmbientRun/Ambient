@@ -47,7 +47,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                     &config,
                     &in_root_url,
                     1.,
-                    &ctx.out_root().join(ctx.in_root().relative_path(file.path()).join("material")).unwrap(),
+                    &ctx.out_root().join(ctx.in_root().relative_path(&file.path().join("0").join("material"))).unwrap(),
                 )
                 .await
                 .unwrap();
