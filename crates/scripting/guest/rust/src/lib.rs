@@ -21,8 +21,8 @@ mod host {
 
 /// Entity-related functionality, including manipulation, creation, removal, and search.
 pub mod entity;
-/// All core events
-pub mod events;
+/// Event-related functionality, including sending events and standard events.
+pub mod event;
 /// Physics-related functionality, including applying forces, changing physical properties, and more.
 pub mod physics;
 

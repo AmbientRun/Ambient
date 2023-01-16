@@ -1,5 +1,5 @@
 use crate::{
-    events, host,
+    event, host,
     internal::{
         conversion::{FromBindgen, IntoBindgen},
         runtime::on_async,
@@ -772,7 +772,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryImpl<Components>
     }
 
     fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static) {
-        on(events::FRAME, move |_| {
+        on(event::FRAME, move |_| {
             let results = self.evaluate();
             if !results.is_empty() {
                 callback(results);
@@ -781,7 +781,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryImpl<Components>
         })
     }
     fn bind_async<R: Future<Output = ()>>(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + 'static) {
-        on_async(events::FRAME, move |_| async move {
+        on_async(event::FRAME, move |_| async move {
             let results = self.evaluate();
             if !results.is_empty() {
                 callback(results).await;

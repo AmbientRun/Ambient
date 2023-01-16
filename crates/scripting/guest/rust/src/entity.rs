@@ -48,7 +48,7 @@ pub fn spawn_template(object_ref: &ObjectRef, position: Vec3, rotation: Option<Q
 // TODO(mithun): revisit once we think about the spawning situation some more
 pub async fn wait_for_spawn(uid: &EntityUid) -> EntityId {
     let uid = uid.clone();
-    let event = until_this(super::events::ENTITY_SPAWN, move |ed| ed.get(*UID).unwrap() == uid).await;
+    let event = until_this(super::event::ENTITY_SPAWN, move |ed| ed.get(*UID).unwrap() == uid).await;
     event.get(*ID).unwrap()
 }
 
