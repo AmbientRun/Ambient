@@ -189,7 +189,7 @@ pub fn systems<
                                 workspace_path.clone(),
                                 scripts_path.clone(),
                                 get_module_name(world, id),
-                            )?),
+                            )),
                         ))
                     })
                     .collect_vec();

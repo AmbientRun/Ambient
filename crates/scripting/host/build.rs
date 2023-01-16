@@ -12,6 +12,13 @@ fn main() {
         prefix.as_os_str().to_string_lossy()
     );
 
+    let walk_dir = |path| {
+        walkdir::WalkDir::new(prefix.join(path))
+            .into_iter()
+            .filter_map(Result::ok)
+            .map(|d| d.into_path())
+    };
+
     // Store the Rust scripting interface for use on the client and server.
     let files: Vec<(PathBuf, String)> = [
         ".vscode/settings.json",
@@ -22,12 +29,8 @@ fn main() {
     ]
     .into_iter()
     .map(|p| prefix.join(p))
-    .chain(
-        walkdir::WalkDir::new(prefix.join("src"))
-            .into_iter()
-            .filter_map(Result::ok)
-            .map(|d| d.into_path()),
-    )
+    .chain(walk_dir("src"))
+    .chain(walk_dir("main-macro"))
     .filter(|p| p.is_file())
     .map(|p| {
         (

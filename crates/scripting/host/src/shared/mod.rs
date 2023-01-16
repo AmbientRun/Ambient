@@ -547,24 +547,10 @@ pub fn compile(
     workspace_path: PathBuf,
     scripts_path: PathBuf,
     name: String,
-) -> Option<std::thread::JoinHandle<anyhow::Result<Vec<u8>>>> {
-    let mut files = sm.files().clone();
+) -> std::thread::JoinHandle<anyhow::Result<Vec<u8>>> {
+    let files = sm.files().clone();
 
-    if let Some(file) = files.get_mut(Path::new("src/lib.rs")) {
-        // HACK(mithun): figure out how to insert this without exposing it to the user
-        if !file.contents.contains("fn call_main") {
-            file.contents += indoc::indoc! {r#"
-
-                #[no_mangle]
-                pub extern "C" fn call_main(runtime_interface_version: u32) {
-                    if INTERFACE_VERSION != runtime_interface_version {
-                        panic!("This script was compiled with interface version {{INTERFACE_VERSION}}, but the script host is running with version {{runtime_interface_version}}");
-                    }
-                    run_async(main());
-                }
-            "#};
-        }
-
+    std::thread::spawn(move || {
         // Remove the directory to ensure there aren't any old files left around
         let script_path = scripts_path.join(sanitize(&name));
         let _ = std::fs::remove_dir_all(&script_path);
@@ -574,13 +560,10 @@ pub fn compile(
                 .iter()
                 .map(|(p, f)| (p.clone(), f.contents.clone()))
                 .collect_vec(),
-        )
-        .unwrap();
-    }
+        )?;
 
-    Some(std::thread::spawn(move || {
         rustc::build_module_in_workspace(&install_dirs, &workspace_path, &name)
-    }))
+    })
 }
 
 fn build_template(
@@ -610,7 +593,6 @@ fn build_template(
         scripts_path.clone(),
         dummy_name.to_owned(),
     )
-    .context("failed to generate dummy compilation task")?
     .join()
     .unwrap()
     .context("failed to build dummy module")?;

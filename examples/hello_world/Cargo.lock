@@ -36,6 +36,7 @@ dependencies = [
  "anyhow",
  "bincode",
  "glam",
+ "main-macro",
  "once_cell",
  "paste",
  "rand",
@@ -88,6 +89,10 @@ version = "0.1.0"
 dependencies = [
  "elements_scripting_interface",
 ]
+
+[[package]]
+name = "main-macro"
+version = "0.1.0"
 
 [[package]]
 name = "memchr"

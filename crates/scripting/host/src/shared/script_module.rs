@@ -194,6 +194,7 @@ impl ScriptModule {
                 pub mod params;
                 pub mod components;
 
+                #[main]
                 pub async fn main() -> EventResult {
                     EventOk
                 }

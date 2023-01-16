@@ -42,6 +42,8 @@ pub use internal::{
     EntityId, EntityUid, ObjectRef,
 };
 
+pub use main_macro::main;
+
 pub use anyhow::{anyhow, Context as AnyhowContext};
 pub use glam::{self, f32::*, Vec2Swizzles, Vec3Swizzles, Vec4Swizzles};
 pub use once_cell;
