@@ -2,6 +2,7 @@ use std::{collections::HashSet, sync::Arc};
 
 use anyhow::Context;
 use context::PipelineCtx;
+use elements_asset_cache::SyncAssetKey;
 use elements_model_import::model_crate::ModelCrate;
 use elements_std::{
     asset_cache::AssetCache, asset_url::{AbsAssetUrl, AssetType}
@@ -112,6 +113,10 @@ pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
         .collect::<Vec<_>>()
         .await
 }
+
+#[derive(Debug, Clone)]
+pub struct ProcessCtxKey;
+impl SyncAssetKey<ProcessCtx> for ProcessCtxKey {}
 
 #[derive(Clone)]
 pub struct ProcessCtx {

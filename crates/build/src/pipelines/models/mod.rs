@@ -74,7 +74,7 @@ impl ModelsPipeline {
             transform.apply(model_crate);
         }
         for mat in &self.material_overrides {
-            let material = mat.material.to_mat(ctx, model_crate, ctx.in_root()).await?;
+            let material = mat.material.to_mat(ctx, &ctx.in_root(), &ctx.out_root().join("materials")?).await?;
             model_crate.override_material(&mat.filter, material);
         }
         if let Some(max_size) = self.cap_texture_sizes {
