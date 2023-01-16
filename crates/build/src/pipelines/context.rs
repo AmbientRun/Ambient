@@ -15,34 +15,13 @@ use tokio::sync::Semaphore;
 
 use super::{out_asset::OutAsset, Pipeline, ProcessCtx};
 
-// #[derive(Debug, Clone)]
-// pub struct AssetCrateId {
-//     pack_id: String,
-//     pub crate_uid: String,
-// }
-// impl AssetCrateId {
-//     pub fn new(pack_id: impl Into<String>, crate_uid: &str) -> Self {
-//         AssetCrateId { pack_id: pack_id.into(), crate_uid: slugify::slugify(crate_uid, "", "_", None) }
-//     }
-// }
-// impl Display for AssetCrateId {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         write!(f, "{}-{}", self.pack_id, self.crate_uid)
-//     }
-// }
-
 #[derive(Clone)]
 pub struct PipelineCtx {
     pub process_ctx: ProcessCtx,
     pub pipeline_file: AbsAssetUrl,
     pub root_path: RelativePathBuf,
 
-    // pub asset_pack_id: String,
-    // pub asset_pack_version: String,
-    // pub asset_pack_name: String,
     pub pipeline: Arc<Pipeline>,
-    // pub pipeline_name: String,
-    // pub output_base_url: AbsAssetUrl,
 }
 impl PipelineCtx {
     pub fn assets(&self) -> &AssetCache {
@@ -54,22 +33,6 @@ impl PipelineCtx {
     pub fn out_root(&self) -> AbsAssetUrl {
         self.process_ctx.out_root.join(&self.root_path).unwrap()
     }
-    // pub fn asset_crate_id(&self, uid: &str) -> AssetCrateId {
-    //     // This does not include the version, because the idea here is that the id's are stable across versions
-    //     // This makes it possible to create collections of assets, that continue to work even if the assets are updated
-    //     AssetCrateId::new(&self.asset_pack_id, uid)
-    // }
-
-    // /// Generate a public url to a file in an asset crate generated from this pack (via the api/v1/assetdb http interface)
-    // pub fn crate_url(&self, id: &AssetCrateId) -> AbsAssetUrl {
-    //     self.output_base_url.join(self.crate_storage_path(id)).unwrap()
-    // }
-    // pub fn pipeline_storage_path(&self) -> String {
-    //     format!("crates/{}/{}", self.asset_pack_id, self.asset_pack_version)
-    // }
-    // pub fn crate_storage_path(&self, id: &AssetCrateId) -> String {
-    //     format!("{}/{}", self.pipeline_storage_path(), id.crate_uid)
-    // }
 
     pub async fn write_model_crate(&self, model_crate: &ModelCrate, path: &RelativePath) -> TypedAssetUrl<ModelAssetType> {
         let items = model_crate.to_items();
