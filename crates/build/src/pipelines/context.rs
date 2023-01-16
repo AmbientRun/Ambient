@@ -34,11 +34,9 @@ impl PipelineCtx {
         self.process_ctx.out_root.push(&self.root_path).unwrap()
     }
 
-    pub async fn write_model_crate(&self, model_crate: &ModelCrate, path: &RelativePath) -> TypedAssetUrl<ModelAssetType> {
-        let items = model_crate.to_items();
-        let urls = join_all(items.iter().map(|item| self.write_file(path.join(&item.path), (*item.data).clone()))).await;
-        let index = items.iter().position(|item| item.path.ends_with("models/main.json")).unwrap();
-        urls[index].clone().into()
+    pub async fn write_model_crate(&self, model_crate: &ModelCrate, path: &RelativePath) -> TypedAssetUrl<ModelCrateAssetType> {
+        join_all(model_crate.to_items().iter().map(|item| self.write_file(path.join(&item.path), (*item.data).clone()))).await;
+        self.out_root().push(path).unwrap().into()
     }
     pub async fn write_file(&self, path: impl AsRef<str>, content: Vec<u8>) -> AbsAssetUrl {
         (self.process_ctx.write_file)(path.as_ref().to_string(), content).await

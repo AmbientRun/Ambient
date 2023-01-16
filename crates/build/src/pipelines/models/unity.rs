@@ -102,7 +102,7 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                     .await?;
                     config.apply(&ctx, &mut asset_crate).await?;
 
-                    let model_url = ctx.write_model_crate(&asset_crate, &out_model_path).await;
+                    let model_crate_url = ctx.write_model_crate(&asset_crate, &out_model_path).await;
                     res.push(OutAsset {
                         id: file.to_string(),
                         type_: AssetType::Object,
@@ -110,8 +110,8 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                         name: file.path().file_name().unwrap().to_string(),
                         tags: Default::default(),
                         categories: Default::default(),
-                        preview: OutAssetPreview::FromModel { url: model_url.abs().unwrap() },
-                        content: OutAssetContent::Content(model_url.model_crate().unwrap().object().abs().unwrap()),
+                        preview: OutAssetPreview::FromModel { url: model_crate_url.model().abs().unwrap() },
+                        content: OutAssetContent::Content(model_crate_url.object().abs().unwrap()),
                         source: Some(file.clone()),
                     });
                     Ok(res)
@@ -153,7 +153,7 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
 
                     config.apply(&ctx, &mut asset_crate).await?;
 
-                    let model_url = ctx.write_model_crate(&asset_crate, &out_path).await;
+                    let model_crate_url = ctx.write_model_crate(&asset_crate, &out_path).await;
                     res.push(OutAsset {
                         id: file.to_string(),
                         type_: AssetType::Object,
@@ -161,8 +161,8 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                         name: file.path().file_name().unwrap().to_string(),
                         tags: Default::default(),
                         categories: Default::default(),
-                        preview: OutAssetPreview::FromModel { url: model_url.abs().unwrap().into() },
-                        content: OutAssetContent::Content(model_url.model_crate().unwrap().object().abs().unwrap()),
+                        preview: OutAssetPreview::FromModel { url: model_crate_url.model().abs().unwrap().into() },
+                        content: OutAssetContent::Content(model_crate_url.object().abs().unwrap()),
                         source: Some(file.clone()),
                     });
                     Ok(res)

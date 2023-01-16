@@ -27,7 +27,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
 
                 config.apply(&ctx, &mut model_crate).await?;
 
-                let model_url = ctx.write_model_crate(&model_crate, &ctx.in_root().relative_path(file.path())).await;
+                let model_crate_url = ctx.write_model_crate(&model_crate, &ctx.in_root().relative_path(file.path())).await;
 
                 if config.output_objects {
                     res.push(OutAsset {
@@ -38,8 +38,8 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
 
                         tags: Default::default(),
                         categories: Default::default(),
-                        preview: OutAssetPreview::FromModel { url: model_url.clone().abs().unwrap() },
-                        content: OutAssetContent::Content(model_url.model_crate().unwrap().object().abs().unwrap()),
+                        preview: OutAssetPreview::FromModel { url: model_crate_url.model().abs().unwrap() },
+                        content: OutAssetContent::Content(model_crate_url.object().abs().unwrap()),
                         source: Some(file.clone()),
                     });
                 }
@@ -53,7 +53,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                             tags: Default::default(),
                             categories: Default::default(),
                             preview: OutAssetPreview::None,
-                            content: OutAssetContent::Content(model_url.model_crate().unwrap().animation(anim).abs().unwrap()),
+                            content: OutAssetContent::Content(model_crate_url.animation(anim).abs().unwrap()),
                             source: Some(file.clone()),
                         });
                     }

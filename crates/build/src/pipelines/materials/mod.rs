@@ -23,7 +23,7 @@ use super::{
 };
 use crate::pipelines::download_image;
 
-// pub mod quixel_surfaces;
+pub mod quixel_surfaces;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
@@ -47,7 +47,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
                 let mat_out_url = ctx.out_root().join("material")?.join("materials")?;
                 let material = mat.to_mat(&ctx, &ctx.in_root(), &mat_out_url).await?;
                 model_crate.materials.insert(ModelCrate::MAIN, material);
-                let model_url = ctx.write_model_crate(&model_crate, &RelativePath::new("material")).await;
+                let model_crate_url = ctx.write_model_crate(&model_crate, &RelativePath::new("material")).await;
                 Ok(vec![OutAsset {
                     id: ctx.in_root().to_string(),
                     type_: AssetType::Material,
@@ -56,16 +56,13 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
                     tags: Default::default(),
                     categories: Default::default(),
                     preview: OutAssetPreview::Image { image: Arc::new(model_crate.images.content.get("base_color").unwrap().clone()) },
-                    content: OutAssetContent::Content(model_url.model_crate().unwrap().material(ModelCrate::MAIN).abs().unwrap()),
+                    content: OutAssetContent::Content(model_crate_url.material(ModelCrate::MAIN).abs().unwrap()),
                     source: None,
                 }])
             })
             .await
         }
-        MaterialsImporter::Quixel => {
-            todo!()
-            // quixel_surfaces::pipeline(ctx, config).await
-        }
+        MaterialsImporter::Quixel => quixel_surfaces::pipeline(ctx, config).await,
     }
 }
 

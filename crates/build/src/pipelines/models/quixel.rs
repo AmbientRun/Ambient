@@ -22,7 +22,6 @@ use crate::pipelines::{
 pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset> {
     ctx.process_files(
         |file| {
-            println!("{} <> {}", file.path().to_string(), format!("_{}_", file.path().file_stem().unwrap()));
             file.extension() == Some("json".to_string())
                 && file.path().to_string().contains(&format!("_{}_", file.path().file_stem().unwrap()))
         },
@@ -59,7 +58,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
 
                     config.apply(&ctx, &mut asset_crate).await?;
 
-                    let model_url =
+                    let model_crate_url =
                         ctx.write_model_crate(&asset_crate, &ctx.in_root().relative_path(file.path()).join(i.to_string())).await;
 
                     res.push(OutAsset {
@@ -70,8 +69,8 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                         tags: tags.clone(),
                         categories: Default::default(),
 
-                        preview: OutAssetPreview::FromModel { url: model_url.clone().abs().unwrap() },
-                        content: OutAssetContent::Content(model_url.model_crate().unwrap().object().abs().unwrap()),
+                        preview: OutAssetPreview::FromModel { url: model_crate_url.model().abs().unwrap() },
+                        content: OutAssetContent::Content(model_crate_url.object().abs().unwrap()),
                         source: Some({
                             let mut f = file.clone();
                             f.0.set_fragment(Some(&i.to_string()));

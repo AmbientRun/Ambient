@@ -12,43 +12,39 @@ use itertools::Itertools;
 use super::{
     super::{models::quixel::QuixelId, OutAsset, OutAssetContent, OutAssetPreview, PipelineCtx}, MaterialsPipeline
 };
-use crate::helpers::download_json;
 
 pub async fn pipeline(ctx: &PipelineCtx, _config: MaterialsPipeline) -> Vec<OutAsset> {
     ctx.process_files(
         |file| {
-            file.sub_path.extension == Some("json".to_string()) && file.sub_path_string.contains(&format!("_{}_", file.sub_path.filename))
+            file.extension() == Some("json".to_string())
+                && file.path().to_string().contains(&format!("_{}_", file.path().file_stem().unwrap()))
         },
         move |ctx, file| async move {
             let mut res = Vec::new();
-            let quixel_id = QuixelId::from_full(file.sub_path.path.last().unwrap()).unwrap();
-            let quixel_json: serde_json::Value = download_json(&ctx.assets, &file.temp_download_url).await.unwrap();
-            let base_path = file.sub_path.path.join("/");
-            let surface = QuixelSurfaceDef::from_quixel_json(&ctx, &quixel_id, &quixel_json, &base_path);
-            let asset_crate_id = ctx.asset_crate_id(&file.sub_path_string);
-            let asset_crate_url = ctx.crate_url(&asset_crate_id);
+            let quixel_id = QuixelId::from_full(file.last_dir_name().unwrap()).unwrap();
+            let quixel_json: serde_json::Value = file.download_json(&ctx.assets()).await.unwrap();
+            let in_root_url = file.join(".").unwrap();
+            let surface = QuixelSurfaceDef::from_quixel_json(&ctx, &quixel_id, &quixel_json, &in_root_url);
             let mut asset_crate = ModelCrate::new();
-            surface.write_to_asset_crate(&ctx.assets, &mut asset_crate).await;
+            surface.write_to_asset_crate(ctx.assets(), &mut asset_crate).await;
 
             let tags =
                 quixel_json["tags"].as_array().unwrap().iter().map(|x| x.as_str().unwrap().to_string().to_case(Case::Title)).collect_vec();
             let pack_name = quixel_json["semanticTags"]["name"].as_str().unwrap().to_string();
 
+            let model_crate_url = ctx.write_model_crate(&asset_crate, &ctx.in_root().relative_path(file.path())).await;
+
             res.push(OutAsset {
-                asset_crate_id: asset_crate_id.clone(),
-                sub_asset: None,
+                id: file.to_string(),
                 type_: AssetType::Material,
                 hidden: false,
                 name: pack_name.clone(),
                 tags,
                 categories: Default::default(),
                 preview: OutAssetPreview::Image { image: Arc::new(asset_crate.images.content.get("base_color").unwrap().clone()) },
-                content: OutAssetContent::Content(
-                    asset_crate_url.resolve(asset_crate.materials.loc.path(ModelCrate::MAIN).as_str()).unwrap(),
-                ),
-                source: Some(file.sub_path_string.clone()),
+                content: OutAssetContent::Content(model_crate_url.material(ModelCrate::MAIN).abs().unwrap()),
+                source: Some(file.clone()),
             });
-            ctx.write_model_crate(&asset_crate, &asset_crate_id).await;
             Ok(res)
         },
     )
@@ -56,7 +52,7 @@ pub async fn pipeline(ctx: &PipelineCtx, _config: MaterialsPipeline) -> Vec<OutA
 }
 async fn download_image(assets: &AssetCache, url: Option<AbsAssetUrl>) -> Option<image::RgbaImage> {
     if let Some(url) = url {
-        Some(crate::helpers::download_image(assets, &url, &None).await.ok()?.into_rgba8())
+        Some(super::download_image(assets, &url).await.ok()?.into_rgba8())
     } else {
         None
     }
@@ -97,7 +93,7 @@ impl QuixelSurfaceDef {
         };
         asset_crate.materials.insert(ModelCrate::MAIN, mat);
     }
-    fn from_quixel_json(ctx: &PipelineCtx, qid: &QuixelId, json: &serde_json::Value, base_path: &str) -> Self {
+    fn from_quixel_json(ctx: &PipelineCtx, qid: &QuixelId, json: &serde_json::Value, in_root_url: &AbsAssetUrl) -> Self {
         let mut res = Self::default();
         let target_resolution = match &qid.resolution as &str {
             "1K" => "1024x",
@@ -114,12 +110,11 @@ impl QuixelSurfaceDef {
                         if resolution["resolution"].as_str().unwrap().starts_with(target_resolution) {
                             for format in resolution["formats"].as_array().unwrap() {
                                 if format["mimeType"].as_str().unwrap() == "image/jpeg" {
-                                    let path = format!("{base_path}/{}", format["uri"].as_str().unwrap());
-                                    if let Some(url) = ctx.files.get(&path).map(|x| x.temp_download_url.clone()) {
+                                    if let Ok(url) = ctx.get_downloadable_url(&in_root_url.push(format["uri"].as_str().unwrap()).unwrap()) {
                                         match comp_type {
-                                            "albedo" => res.albedo = Some(url),
-                                            "ao" => res.ao = Some(url),
-                                            "normal" => res.normal = Some(url),
+                                            "albedo" => res.albedo = Some(url.clone()),
+                                            "ao" => res.ao = Some(url.clone()),
+                                            "normal" => res.normal = Some(url.clone()),
                                             _ => {}
                                         }
                                     }
@@ -132,12 +127,11 @@ impl QuixelSurfaceDef {
         } else {
             for map in json["maps"].as_array().unwrap() {
                 if map["mimeType"].as_str().unwrap() == "image/jpeg" && map["resolution"].as_str().unwrap().starts_with(target_resolution) {
-                    let path = format!("{base_path}/{}", map["uri"].as_str().unwrap());
-                    if let Some(url) = ctx.files.get(&path).map(|x| x.temp_download_url.clone()) {
+                    if let Ok(url) = ctx.get_downloadable_url(&in_root_url.push(map["uri"].as_str().unwrap()).unwrap()) {
                         match map["type"].as_str().unwrap() {
-                            "albedo" => res.albedo = Some(url),
-                            "ao" => res.ao = Some(url),
-                            "normal" => res.normal = Some(url),
+                            "albedo" => res.albedo = Some(url.clone()),
+                            "ao" => res.ao = Some(url.clone()),
+                            "normal" => res.normal = Some(url.clone()),
                             _ => {}
                         }
                     }
