@@ -291,7 +291,7 @@ impl UnityMaterials {
             };
             let get_image = |image_and_file: Option<(image::RgbaImage, AbsAssetUrl)>| {
                 if let Some((mut image, file)) = image_and_file {
-                    let out_image_path = self.ctx.in_root().relative_path(&file.path()).prejoin("materials").with_extension(".png");
+                    let out_image_path = self.ctx.in_root().relative_path(&file.path()).prejoin("materials").with_extension("png");
                     let ctx = self.ctx.clone();
                     let config = config.clone();
                     async move {
