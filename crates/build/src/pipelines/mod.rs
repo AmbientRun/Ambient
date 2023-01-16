@@ -70,7 +70,7 @@ impl Pipeline {
                 )
                 .await
             }
-            // PipelineConfig::Materials(config) => materials::pipeline(&ctx, config.clone()).await,
+            PipelineConfig::Materials(config) => materials::pipeline(&ctx, config.clone()).await,
             // PipelineConfig::Audio => audio::pipeline(&ctx).await,
             _ => todo!(),
         };
