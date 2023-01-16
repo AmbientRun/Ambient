@@ -21,7 +21,8 @@ use wasi_common::{
 };
 
 use super::{
-    bindings, dependencies,
+    bindings,
+    dependencies::{self, clean_cargo_toml},
     guest_conversion::GuestConvert,
     host_guest_state::GetBaseHostGuestState,
     interface::guest::{Guest, GuestData, RunContext},
@@ -45,26 +46,19 @@ impl Display for ScriptModule {
 }
 impl ScriptModule {
     pub fn new(
-        name: &str,
         description: impl Into<String>,
-        files: FileMap,
         parameters: ParametersMap,
         external_component_ids: HashSet<String>,
         enabled: bool,
-
-        scripting_interface: &str,
     ) -> Self {
-        let mut sm = ScriptModule {
+        ScriptModule {
             files: HashMap::new(),
             description: description.into(),
             parameters,
             enabled,
             external_component_ids,
             last_updated_by_parameters: false,
-        };
-        sm.files.extend(files);
-        sm.populate_files(name, scripting_interface);
-        sm
+        }
     }
 
     pub fn migrate_ids(&mut self, _old_to_new_ids: &HashMap<EntityId, EntityId>) {}
@@ -73,7 +67,7 @@ impl ScriptModule {
         &self.files
     }
 
-    pub fn system_controlled_files() -> Vec<PathBuf> {
+    pub fn system_controlled_files() -> HashSet<PathBuf> {
         ["src/params.rs", "src/components.rs"]
             .into_iter()
             .map(|p| p.into())
@@ -103,11 +97,30 @@ impl ScriptModule {
         self.regenerate_components_file(scripting_interface);
     }
 
+    /// Ignores system-controlled files
+    pub fn insert_multiple(
+        &mut self,
+        module_name: &str,
+        scripting_interfaces: &[&str],
+        primary_scripting_interface: &str,
+        files: &FileMap,
+    ) -> anyhow::Result<()> {
+        let system_controlled_files = Self::system_controlled_files();
+        for (relative_path, new_file) in files {
+            if system_controlled_files.contains(relative_path) {
+                continue;
+            }
+            self.insert(scripting_interfaces, relative_path, new_file)?;
+        }
+        self.populate_files(module_name, primary_scripting_interface);
+        Ok(())
+    }
+
     pub fn insert(
         &mut self,
         scripting_interfaces: &[&str],
-        relative_path: PathBuf,
-        new_file: String,
+        relative_path: &Path,
+        new_file: &File,
     ) -> anyhow::Result<()> {
         let relative_path = elements_std::path::normalize(&relative_path);
         if ScriptModule::system_controlled_files().contains(&relative_path) {
@@ -115,20 +128,23 @@ impl ScriptModule {
         }
 
         if relative_path == Path::new("Cargo.toml") {
-            self.files.insert(
-                relative_path,
-                File::new_at_now(dependencies::merge_cargo_toml(
-                    scripting_interfaces,
-                    &self
-                        .files
-                        .get(Path::new("Cargo.toml"))
-                        .context("no Cargo.toml")?
-                        .contents,
-                    &new_file,
-                )?),
-            );
+            if let Some(old_cargo) = self.files.get(Path::new("Cargo.toml")) {
+                self.files.insert(
+                    relative_path,
+                    File::new_at_now(dependencies::merge_cargo_toml(
+                        scripting_interfaces,
+                        &old_cargo.contents,
+                        &new_file.contents,
+                    )?),
+                );
+            } else {
+                self.files.insert(
+                    relative_path,
+                    File::new_at_now(clean_cargo_toml(scripting_interfaces, &new_file.contents)?),
+                );
+            }
         } else {
-            self.files.insert(relative_path, File::new_at_now(new_file));
+            self.files.insert(relative_path, new_file.clone());
         }
 
         Ok(())

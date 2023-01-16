@@ -523,16 +523,17 @@ pub fn spawn_script(
         anyhow::bail!("a script module by the name {name} already exists");
     }
 
-    let scripting_interface_name = world.resource(scripting_interface_name()).clone();
-    let sm = ScriptModule::new(
+    let mut sm = ScriptModule::new(description, parameters, external_component_ids, enabled);
+    sm.insert_multiple(
         name,
-        description,
-        files,
-        parameters,
-        external_component_ids,
-        enabled,
-        &scripting_interface_name,
-    );
+        &world
+            .resource(scripting_interfaces())
+            .keys()
+            .map(|s| s.as_str())
+            .collect::<Vec<_>>(),
+        world.resource(scripting_interface_name()).as_ref(),
+        &files,
+    )?;
     Ok(EntityData::new()
         .set(elements_core::name(), name.to_string())
         .set(uid(), elements_ecs::EntityUid::create())
@@ -599,15 +600,9 @@ fn build_template(
     let scripts_path = template_path.join("scripts");
     util::write_workspace_files(&scripts_path, &[dummy_name.to_string()], true);
 
-    let dummy_module = ScriptModule::new(
-        dummy_name,
-        "Dummy module",
-        Default::default(),
-        Default::default(),
-        Default::default(),
-        true,
-        primary_scripting_interface_name,
-    );
+    let mut dummy_module =
+        ScriptModule::new("Dummy module", Default::default(), Default::default(), true);
+    dummy_module.populate_files(dummy_name, primary_scripting_interface_name);
     let _dummy_bytecode = compile(
         &dummy_module,
         install_dirs.clone(),

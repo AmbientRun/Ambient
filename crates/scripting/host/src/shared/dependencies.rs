@@ -110,6 +110,16 @@ static WHITELIST: Lazy<HashSet<&'static str>> = Lazy::new(|| {
     )
 });
 
+pub fn clean_cargo_toml(scripting_interfaces: &[&str], file: &str) -> anyhow::Result<String> {
+    if file.is_empty() {
+        anyhow::bail!("cannot clean empty Cargo.toml");
+    }
+
+    let manifest = cargo_toml::Manifest::from_str(file)?;
+    validate_manifest(&manifest, scripting_interfaces)?;
+    Ok(toml::to_string(&manifest)?)
+}
+
 pub fn merge_cargo_toml(
     scripting_interfaces: &[&str],
     existing_file: &str,
@@ -120,29 +130,39 @@ pub fn merge_cargo_toml(
     }
 
     let mut existing_manifest = cargo_toml::Manifest::from_str(existing_file)?;
-    let new_manifest = cargo_toml::Manifest::from_str(new_file)?;
+    {
+        let new_manifest = cargo_toml::Manifest::from_str(new_file)?;
+        existing_manifest.dependencies = new_manifest.dependencies;
+        existing_manifest.build_dependencies = new_manifest.build_dependencies;
+        existing_manifest.dev_dependencies = new_manifest.dev_dependencies;
+    }
+    validate_manifest(&existing_manifest, scripting_interfaces)?;
 
-    fn merge_dependencies(
+    Ok(toml::to_string(&existing_manifest)?)
+}
+
+fn validate_manifest(
+    manifest: &cargo_toml::Manifest,
+    scripting_interfaces: &[&str],
+) -> anyhow::Result<()> {
+    fn validate_dependencies(
         scripting_interfaces: &[&str],
-        new: &cargo_toml::DepsSet,
-    ) -> anyhow::Result<cargo_toml::DepsSet> {
-        for dep in new.keys() {
+        deps: &cargo_toml::DepsSet,
+    ) -> anyhow::Result<()> {
+        for dep in deps.keys() {
             if !WHITELIST.contains(dep.as_str()) && !scripting_interfaces.contains(&dep.as_str()) {
                 anyhow::bail!("package `{dep}` is not in the dependency whitelist");
             }
         }
 
-        Ok(new.clone())
+        Ok(())
     }
 
-    existing_manifest.dependencies =
-        merge_dependencies(scripting_interfaces, &new_manifest.dependencies)?;
-    existing_manifest.build_dependencies =
-        merge_dependencies(scripting_interfaces, &new_manifest.build_dependencies)?;
-    existing_manifest.dev_dependencies =
-        merge_dependencies(scripting_interfaces, &new_manifest.dev_dependencies)?;
+    validate_dependencies(scripting_interfaces, &manifest.dependencies)?;
+    validate_dependencies(scripting_interfaces, &manifest.build_dependencies)?;
+    validate_dependencies(scripting_interfaces, &manifest.dev_dependencies)?;
 
-    Ok(toml::to_string(&existing_manifest)?)
+    Ok(())
 }
 
 #[cfg(test)]
