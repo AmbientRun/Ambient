@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 
 use self::{materials::MaterialsPipeline, models::ModelsPipeline, out_asset::asset_id_from_url};
 
-// pub mod audio;
+pub mod audio;
 pub mod context;
 pub mod materials;
 pub mod models;
@@ -29,7 +29,7 @@ pub enum PipelineConfig {
     Models(ModelsPipeline),
     ScriptBundles,
     Materials(MaterialsPipeline),
-    // Audio,
+    Audio,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

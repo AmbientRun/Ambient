@@ -1,7 +1,6 @@
 use std::process::Stdio;
 
 use anyhow::Context;
-use elements_model_import::model_crate::ModelCrate;
 use elements_std::asset_url::AssetType;
 use elements_world_audio::AudioNode;
 use futures::FutureExt;
@@ -9,52 +8,39 @@ use tokio::io::{AsyncRead, AsyncReadExt};
 use tracing::{info_span, Instrument};
 
 use super::{
-    context::{AssetCrate, PipelineCtx}, out_asset::{OutAsset, OutAssetContent, OutAssetPreview}
+    context::PipelineCtx, out_asset::{asset_id_from_url, OutAsset, OutAssetContent, OutAssetPreview}
 };
-use crate::helpers::download_bytes;
 
 pub const SOUND_GRAPH_EXTENSION: &str = "sgr";
 
 pub async fn pipeline(ctx: &PipelineCtx) -> Vec<OutAsset> {
     ctx.process_files(
-        |file| {
-            let ext = file.sub_path.extension.as_deref();
-
-            matches!(ext, Some("ogg") | Some("wav") | Some("mp3"))
-        },
+        |file| matches!(file.extension().as_deref(), Some("ogg") | Some("wav") | Some("mp3")),
         |ctx, file| async move {
-            let id = ctx.asset_crate_id(&file.sub_path_string);
-            let asset_crate = AssetCrate::new(&ctx, id.clone());
-            let contents = download_bytes(&ctx.assets, &file.temp_download_url).await?;
+            let contents = file.download_bytes(ctx.assets()).await?;
 
-            let ext = file.sub_path.extension.as_deref();
-            let filename = file.sub_path.filename.to_string();
+            let filename = file.path().file_name().unwrap().to_string();
 
-            let content_url = match ext {
-                Some("ogg") => asset_crate.write_file(AssetType::VorbisTrack, &format!("{}.ogg", ModelCrate::MAIN), contents).await,
-                Some("wav" | "mp3") => {
+            let rel_path = ctx.in_root().relative_path(file.path());
+
+            let content_url = match file.extension().as_deref() {
+                Some("ogg") => ctx.write_file(&rel_path, contents).await,
+                ext @ Some("wav" | "mp3") => {
                     tracing::info!("Processing {ext:?} file");
                     // Make sure to take the contents, to avoid having both the input and output in
                     // memory at once
                     let contents = ffmpeg_convert(std::io::Cursor::new(contents)).await?;
-                    asset_crate.write_file(AssetType::VorbisTrack, &format!("{}.ogg", ModelCrate::MAIN), contents).await
+                    ctx.write_file(rel_path.with_extension("ogg"), contents).await
                 }
                 other => anyhow::bail!("Audio filetype {:?} is not yet supported", other.unwrap_or_default()),
             };
 
             let root_node = AudioNode::Vorbis { url: content_url.to_string() };
-            let graph_url = asset_crate
-                .write_file(
-                    AssetType::SoundGraph,
-                    &format!("{}.{SOUND_GRAPH_EXTENSION}", ModelCrate::MAIN),
-                    save_audio_graph(root_node).unwrap(),
-                )
-                .await;
+            let graph_url = ctx.write_file(&rel_path.with_extension("SOUND_GRAPH_EXTENSION"), save_audio_graph(root_node).unwrap()).await;
 
             Ok(vec![
                 OutAsset {
-                    asset_crate_id: id.clone(),
-                    sub_asset: None,
+                    id: asset_id_from_url(&file),
                     type_: AssetType::VorbisTrack,
                     hidden: false,
                     name: filename.clone(),
@@ -62,11 +48,10 @@ pub async fn pipeline(ctx: &PipelineCtx) -> Vec<OutAsset> {
                     categories: Default::default(),
                     preview: OutAssetPreview::None,
                     content: OutAssetContent::Content(content_url),
-                    source: Some(file.sub_path_string.clone()),
+                    source: Some(file.clone()),
                 },
                 OutAsset {
-                    asset_crate_id: id,
-                    sub_asset: None,
+                    id: asset_id_from_url(&file.push("graph").unwrap()),
                     type_: AssetType::SoundGraph,
                     hidden: false,
                     name: filename,
