@@ -1,9 +1,11 @@
 use convert_case::{Case, Casing};
+use elements_asset_cache::AsyncAssetKeyExt;
 use elements_model_import::{
     fbx::FbxDoc, model_crate::ModelCrate, MaterialFilter, ModelImportPipeline, ModelImportTransform, ModelTransform, RelativePathBufExt
 };
 use elements_renderer::materials::pbr_material::PbrMaterialFromUrl;
 use elements_std::asset_url::{AbsAssetUrl, AssetType, AssetUrl};
+use futures::{future::BoxFuture, FutureExt};
 use image::RgbaImage;
 use itertools::Itertools;
 use relative_path::RelativePathBuf;
@@ -38,7 +40,6 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                     .map(|x| x.as_str().unwrap().to_string().to_case(Case::Title))
                     .collect_vec();
                 let pack_name = quixel_json["semanticTags"]["name"].as_str().unwrap().to_string();
-                let mut materials = ModelCrate::new();
                 let objs = object_pipelines_from_quixel_json(
                     &quixel_json,
                     quixel_id,
@@ -46,7 +47,6 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                     &config,
                     &in_root_url,
                     1.,
-                    &mut materials,
                     &ctx.out_root().join(ctx.in_root().relative_path(file.path()).join("material")).unwrap(),
                 )
                 .await
@@ -93,10 +93,6 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                         source: Some(file.clone()),
                     });
                 }
-                if let Some(max_size) = config.cap_texture_sizes {
-                    materials.cap_texture_sizes(max_size.size());
-                }
-                ctx.write_model_crate(&materials, &ctx.in_root().relative_path(file.path())).await;
                 Ok(res)
             }
         },
@@ -112,7 +108,6 @@ pub async fn object_pipelines_from_quixel_json(
     config: &ModelsPipeline,
     in_root_url: &AbsAssetUrl,
     lod_factor: f32,
-    materials: &mut ModelCrate,
     out_materials_url: &AbsAssetUrl,
 ) -> anyhow::Result<Vec<ModelImportPipeline>> {
     let mut object_defs = Vec::new();
@@ -124,6 +119,21 @@ pub async fn object_pipelines_from_quixel_json(
         }
     }
 
+    let pipe_image = |filename: &str| -> BoxFuture<'_, anyhow::Result<AssetUrl>> {
+        let ctx = ctx.clone();
+        let in_root_url = in_root_url.clone();
+        let filename = filename.to_string();
+        let config = config.clone();
+        async move {
+            Ok(AssetUrl::from(
+                PipeImage::new(ctx.get_downloadable_url(&in_root_url.push(filename).unwrap()).unwrap().clone())
+                    .cap_texture_size(config.cap_texture_sizes)
+                    .get(ctx.assets())
+                    .await?,
+            ))
+        }
+        .boxed()
+    };
     match get_path(quixel, vec!["semanticTags", "asset_type"]).unwrap().as_str().unwrap() as &str {
         "3D asset" => {
             let find_mesh_base_name = || {
@@ -147,47 +157,22 @@ pub async fn object_pipelines_from_quixel_json(
             log::info!("Loading 3d asset: {:?}", mesh_base_name);
             let material_override = ModelImportTransform::OverrideMaterial {
                 filter: MaterialFilter::All,
-                material: Box::new(PbrMaterialFromUrl {
-                    base_color: PipeImage::resolve_opt(
-                        &ctx.assets(),
-                        in_root_url,
-                        &Some(AssetUrl::Relative(format!("{}_{}_Albedo.jpg", mesh_base_name, quixel_id.resolution).into())),
-                        None,
-                        out_materials_url,
-                    )
-                    .await?,
-                    opacity: if quixel_has_opacity(quixel).unwrap_or(false) {
-                        PipeImage::resolve_opt(
-                            &ctx.assets(),
-                            in_root_url,
-                            &Some(AssetUrl::Relative(format!("{}_{}_Opacity.jpg", mesh_base_name, quixel_id.resolution).into())),
-                            None,
-                            out_materials_url,
-                        )
-                        .await?
-                    } else {
-                        None
-                    },
-                    normalmap: PipeImage::resolve_opt(
-                        &ctx.assets(),
-                        in_root_url,
-                        &Some(AssetUrl::Relative(format!("{}_{}_Normal_LOD0.jpg", mesh_base_name, quixel_id.resolution).into())),
-                        None,
-                        out_materials_url,
-                    )
-                    .await?,
-                    metallic_roughness: PipeImage::resolve_opt(
-                        &ctx.assets(),
-                        in_root_url,
-                        &Some(AssetUrl::Relative(format!("{}_{}_Roughness.jpg", mesh_base_name, quixel_id.resolution).into())),
-                        None,
-                        out_materials_url,
-                    )
-                    .await?,
-                    roughness: 1.0,
-                    metallic: 0.2,
-                    ..Default::default()
-                }),
+                material: Box::new(
+                    PbrMaterialFromUrl {
+                        base_color: Some(pipe_image(&format!("{}_{}_Albedo.jpg", mesh_base_name, quixel_id.resolution)).await?),
+                        opacity: if quixel_has_opacity(quixel).unwrap_or(false) {
+                            Some(pipe_image(&format!("{}_{}_Opacity.jpg", mesh_base_name, quixel_id.resolution)).await?)
+                        } else {
+                            None
+                        },
+                        normalmap: Some(pipe_image(&format!("{}_{}_Normal_LOD0.jpg", mesh_base_name, quixel_id.resolution)).await?),
+                        metallic_roughness: Some(pipe_image(&format!("{}_{}_Roughness.jpg", mesh_base_name, quixel_id.resolution)).await?),
+                        roughness: 1.0,
+                        metallic: 0.2,
+                        ..Default::default()
+                    }
+                    .relative_path_from(out_materials_url),
+                ),
             };
             let mesh0 = FbxDoc::from_url(
                 &ctx.assets(),
@@ -226,7 +211,7 @@ pub async fn object_pipelines_from_quixel_json(
                             && map.get("uri").unwrap().as_str().unwrap().contains(&format!("_{}_", quixel_id.resolution.to_uppercase()))
                             && map.get("name").unwrap().as_str().unwrap() == name
                         {
-                            Some(in_root_url.push(format!("{}", map.get("uri").unwrap().as_str().unwrap())).unwrap())
+                            Some(format!("{}", map.get("uri").unwrap().as_str().unwrap()))
                         } else {
                             None
                         }
@@ -256,7 +241,7 @@ pub async fn object_pipelines_from_quixel_json(
                                                 .unwrap()
                                                 .contains(&format!("_{}_", quixel_id.resolution.to_uppercase()))
                                         {
-                                            return Some(in_root_url.push(format.get("uri").unwrap().as_str().unwrap()).unwrap());
+                                            return Some(format.get("uri").unwrap().as_str().unwrap().to_string());
                                         }
                                     }
                                 }
@@ -268,83 +253,59 @@ pub async fn object_pipelines_from_quixel_json(
                     None
                 }
             };
+            let pipe_image_opt = |filename: Option<String>| -> BoxFuture<'_, anyhow::Result<Option<AssetUrl>>> {
+                async move {
+                    if let Some(filename) = filename {
+                        Ok(Some(pipe_image(&filename).await?))
+                    } else {
+                        Ok(None)
+                    }
+                }
+                .boxed()
+            };
+            let pipe_mr_image = |filename: Option<String>| -> BoxFuture<'_, anyhow::Result<Option<AssetUrl>>> {
+                let config = config.clone();
+                let in_root_url = in_root_url.clone();
+                let filename = filename.clone();
+                async move {
+                    if let Some(filename) = filename {
+                        Ok(Some(AssetUrl::from(
+                            PipeImage::new(ctx.get_downloadable_url(&in_root_url.push(filename).unwrap()).unwrap().clone())
+                                .transform("mr", |img, _| rougness_to_mr(img))
+                                .cap_texture_size(config.cap_texture_sizes)
+                                .get(ctx.assets())
+                                .await?,
+                        )))
+                    } else {
+                        Ok(None)
+                    }
+                }
+                .boxed()
+            };
 
             let atlas = PbrMaterialFromUrl {
-                base_color: PipeImage::resolve_opt(
-                    ctx.assets(),
-                    in_root_url,
-                    &get_map_v1("maps", "Albedo").or_else(|| get_map_v2("components", "Albedo")).map(|x| x.into()),
-                    None,
-                    out_materials_url,
-                )
-                .await?,
-                opacity: PipeImage::resolve_opt(
-                    ctx.assets(),
-                    in_root_url,
-                    &get_map_v1("maps", "Opacity").or_else(|| get_map_v2("components", "Opacity")).map(|x| x.into()),
-                    None,
-                    out_materials_url,
-                )
-                .await?,
-                normalmap: PipeImage::resolve_opt(
-                    ctx.assets(),
-                    in_root_url,
-                    &get_map_v1("maps", "Normal").or_else(|| get_map_v2("components", "Normal")).map(|x| x.into()),
-                    None,
-                    out_materials_url,
-                )
-                .await?,
+                base_color: pipe_image_opt(get_map_v1("maps", "Albedo").or_else(|| get_map_v2("components", "Albedo"))).await?,
+                opacity: pipe_image_opt(get_map_v1("maps", "Opacity").or_else(|| get_map_v2("components", "Opacity"))).await?,
+                normalmap: pipe_image_opt(get_map_v1("maps", "Normal").or_else(|| get_map_v2("components", "Normal"))).await?,
                 alpha_cutoff: Some(0.5),
-                metallic_roughness: PipeImage::resolve_opt(
-                    ctx.assets(),
-                    in_root_url,
-                    &get_map_v1("maps", "Roughness").or_else(|| get_map_v2("components", "Roughness")).map(|x| x.into()),
-                    Some(FnImageTransformer::new("mr", |img, _| rougness_to_mr(img))),
-                    out_materials_url,
-                )
-                .await?,
+                metallic_roughness: pipe_mr_image(get_map_v1("maps", "Roughness").or_else(|| get_map_v2("components", "Roughness")))
+                    .await?,
                 metallic: 0.2,
                 roughness: 1.0,
                 ..Default::default()
-            };
+            }
+            .relative_path_from(out_materials_url);
             let billboard = PbrMaterialFromUrl {
-                base_color: PipeImage::resolve_opt(
-                    ctx.assets(),
-                    in_root_url,
-                    &get_map_v1("billboards", "Albedo").map(|x| x.into()),
-                    None,
-                    out_materials_url,
-                )
-                .await?,
-                opacity: PipeImage::resolve_opt(
-                    ctx.assets(),
-                    in_root_url,
-                    &get_map_v1("billboards", "Opacity").map(|x| x.into()),
-                    None,
-                    out_materials_url,
-                )
-                .await?,
-                normalmap: PipeImage::resolve_opt(
-                    ctx.assets(),
-                    in_root_url,
-                    &get_map_v1("billboards", "Normal").map(|x| x.into()),
-                    None,
-                    out_materials_url,
-                )
-                .await?,
+                base_color: pipe_image_opt(get_map_v1("billboards", "Albedo")).await?,
+                opacity: pipe_image_opt(get_map_v1("billboards", "Opacity")).await?,
+                normalmap: pipe_image_opt(get_map_v1("billboards", "Normal")).await?,
                 alpha_cutoff: Some(0.5),
-                metallic_roughness: PipeImage::resolve_opt(
-                    ctx.assets(),
-                    in_root_url,
-                    &get_map_v1("maps", "Roughness").map(|x| x.into()),
-                    Some(FnImageTransformer::new("mr", |img, _| rougness_to_mr(img))),
-                    out_materials_url,
-                )
-                .await?,
+                metallic_roughness: pipe_mr_image(get_map_v1("maps", "Roughness")).await?,
                 metallic: 0.2,
                 roughness: 1.0,
                 ..Default::default()
-            };
+            }
+            .relative_path_from(out_materials_url);
             for meta in get_path(quixel, vec!["meta"]).unwrap().as_array().unwrap() {
                 if meta.as_object().unwrap().get("key").unwrap().as_str().unwrap() == "lodDistance" {
                     for variation in meta.as_object().unwrap().get("value").unwrap().as_array().unwrap() {

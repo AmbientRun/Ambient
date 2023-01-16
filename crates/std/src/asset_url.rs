@@ -1,5 +1,5 @@
 use std::{
-    marker::PhantomData, path::{Path, PathBuf}
+    marker::PhantomData, path::{Path, PathBuf}, sync::Arc
 };
 
 use anyhow::Context;
@@ -252,6 +252,11 @@ impl From<Url> for AssetUrl {
 impl From<AbsAssetUrl> for AssetUrl {
     fn from(value: AbsAssetUrl) -> Self {
         Self::Absolute(value)
+    }
+}
+impl From<Arc<AbsAssetUrl>> for AssetUrl {
+    fn from(value: Arc<AbsAssetUrl>) -> Self {
+        Self::Absolute((*value).clone())
     }
 }
 impl std::fmt::Debug for AssetUrl {

@@ -12,6 +12,7 @@ use elements_renderer::materials::pbr_material::PbrMaterialFromUrl;
 use elements_std::{
     asset_url::{AbsAssetUrl, AssetType, AssetUrl}, download_asset::AssetResult
 };
+use futures::{future::BoxFuture, FutureExt};
 use glam::Vec4;
 use image::{ImageOutputFormat, RgbaImage};
 use relative_path::{RelativePath, RelativePathBuf};
@@ -92,28 +93,46 @@ pub struct PipelinePbrMaterial {
 }
 impl PipelinePbrMaterial {
     pub async fn to_mat(&self, ctx: &PipelineCtx, source_root: &AbsAssetUrl, out_root: &AbsAssetUrl) -> anyhow::Result<PbrMaterialFromUrl> {
+        let pipe_image = |path: &Option<AssetUrl>| -> BoxFuture<'_, anyhow::Result<Option<AssetUrl>>> {
+            let source_root = source_root.clone();
+            let path = path.clone();
+            let ctx = ctx.clone();
+            async move {
+                if let Some(path) = path {
+                    Ok(Some(AssetUrl::from(PipeImage::new(path.resolve(&source_root).unwrap()).get(ctx.assets()).await?)))
+                } else {
+                    Ok(None)
+                }
+            }
+            .boxed()
+        };
         Ok(PbrMaterialFromUrl {
             name: self.name.clone(),
             source: self.source.clone(),
-            base_color: PipeImage::resolve_opt(ctx.assets(), &source_root, &self.base_color, None, &out_root).await?,
-            opacity: PipeImage::resolve_opt(ctx.assets(), &source_root, &self.opacity, None, &out_root).await?,
-            normalmap: PipeImage::resolve_opt(ctx.assets(), &source_root, &self.normalmap, None, &out_root).await?,
-            metallic_roughness: if let Some(url) =
-                PipeImage::resolve_opt(ctx.assets(), &source_root, &self.metallic_roughness, None, &out_root).await?
-            {
-                Some(url)
-            } else {
+            base_color: pipe_image(&self.base_color).await?,
+            opacity: pipe_image(&self.opacity).await?,
+            normalmap: pipe_image(&self.normalmap).await?,
+            metallic_roughness: if let Some(url) = &self.metallic_roughness {
+                Some(PipeImage::new(url.resolve(source_root).unwrap()).get(ctx.assets()).await?.into())
+            } else if let Some(specular) = &self.specular {
                 let specular_exponent = self.specular_exponent.unwrap_or(1.);
-                let transform = FnImageTransformer::new("mr_from_s", move |image, _| {
-                    for p in image.pixels_mut() {
-                        let specular = 1. - (1. - p[1] as f32 / 255.).powf(specular_exponent);
-                        p[0] = (specular * 255.) as u8;
-                        p[1] = ((1. - specular) * 255.) as u8;
-                        p[2] = 0;
-                        p[3] = 255;
-                    }
-                });
-                PipeImage::resolve_opt(ctx.assets(), &source_root, &self.specular, Some(transform), &out_root).await?
+                Some(
+                    PipeImage::new(specular.resolve(source_root).unwrap())
+                        .transform("mr_from_s", move |image, _| {
+                            for p in image.pixels_mut() {
+                                let specular = 1. - (1. - p[1] as f32 / 255.).powf(specular_exponent);
+                                p[0] = (specular * 255.) as u8;
+                                p[1] = ((1. - specular) * 255.) as u8;
+                                p[2] = 0;
+                                p[3] = 255;
+                            }
+                        })
+                        .get(ctx.assets())
+                        .await?
+                        .into(),
+                )
+            } else {
+                None
             },
 
             base_color_factor: self.base_color_factor,
@@ -123,7 +142,8 @@ impl PipelinePbrMaterial {
             double_sided: self.double_sided,
             metallic: self.metallic.unwrap_or(1.),
             roughness: self.roughness.unwrap_or(1.),
-        })
+        }
+        .relative_path_from(&out_root))
     }
 }
 
@@ -168,31 +188,20 @@ pub struct PipeImage {
     cap_texture_sizes: Option<ModelTextureSize>,
 }
 impl PipeImage {
-    pub async fn resolve_opt(
-        assets: &AssetCache,
-        source_root: &AbsAssetUrl,
-        source: &Option<AssetUrl>,
-        transform: Option<Box<dyn ImageTransformer>>,
-        base_url: &AbsAssetUrl,
-    ) -> anyhow::Result<Option<AssetUrl>> {
-        if let Some(source) = source {
-            Ok(Some(
-                PipeImage::resolve(assets, source.resolve(source_root).context("Failed to resolve root")?, transform, base_url)
-                    .await?
-                    .into(),
-            ))
-        } else {
-            Ok(None)
-        }
+    pub fn new(source: AbsAssetUrl) -> Self {
+        PipeImage { source, second_source: None, transform: None, cap_texture_sizes: None }
     }
-    pub async fn resolve(
-        assets: &AssetCache,
-        source: AbsAssetUrl,
-        transform: Option<Box<dyn ImageTransformer>>,
-        base_url: &AbsAssetUrl,
-    ) -> anyhow::Result<RelativePathBuf> {
-        let url = PipeImage { source, second_source: None, transform, cap_texture_sizes: None }.get(assets).await?;
-        Ok(base_url.relative_path(url.path()))
+    pub fn transform<F: Fn(&mut RgbaImage, Option<&RgbaImage>) + Sync + Send + 'static>(
+        mut self,
+        transform_name: &'static str,
+        transform: F,
+    ) -> Self {
+        self.transform = Some(FnImageTransformer::new(transform_name, transform));
+        self
+    }
+    pub fn cap_texture_size(mut self, cap_texture_sizes: Option<ModelTextureSize>) -> Self {
+        self.cap_texture_sizes = cap_texture_sizes;
+        self
     }
 }
 #[async_trait]
