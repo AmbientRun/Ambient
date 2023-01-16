@@ -1,14 +1,11 @@
 use convert_case::{Case, Casing};
 use elements_asset_cache::AsyncAssetKeyExt;
-use elements_model_import::{
-    fbx::FbxDoc, model_crate::ModelCrate, MaterialFilter, ModelImportPipeline, ModelImportTransform, ModelTransform, RelativePathBufExt
-};
+use elements_model_import::{fbx::FbxDoc, MaterialFilter, ModelImportPipeline, ModelImportTransform, ModelTransform};
 use elements_renderer::materials::pbr_material::PbrMaterialFromUrl;
 use elements_std::asset_url::{AbsAssetUrl, AssetType, AssetUrl};
 use futures::{future::BoxFuture, FutureExt};
 use image::RgbaImage;
 use itertools::Itertools;
-use relative_path::RelativePathBuf;
 
 use super::{
     super::{
@@ -16,7 +13,7 @@ use super::{
     }, ModelsPipeline
 };
 use crate::pipelines::{
-    materials::{FnImageTransformer, PipeImage}, out_asset::{asset_id_from_url, OutAsset}
+    materials::PipeImage, out_asset::{asset_id_from_url, OutAsset}
 };
 
 pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset> {

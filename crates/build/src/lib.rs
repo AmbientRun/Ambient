@@ -1,7 +1,6 @@
 use std::{path::PathBuf, sync::Arc};
 
 use elements_asset_cache::{AssetCache, SyncAssetKeyExt};
-use elements_model_import::{model_crate::ModelCrate, MODEL_EXTENSIONS};
 use elements_std::asset_url::AbsAssetUrl;
 use futures::FutureExt;
 use itertools::Itertools;
@@ -37,7 +36,7 @@ async fn build_assets(assets_path: PathBuf, target_path: PathBuf) {
         write_file: Arc::new(move |path, contents| {
             let path = target_path.join("assets").join(path);
             async move {
-                std::fs::create_dir_all(path.parent().unwrap());
+                std::fs::create_dir_all(path.parent().unwrap()).unwrap();
                 tokio::fs::write(&path, contents).await.unwrap();
                 AbsAssetUrl::from_file_path(path)
             }

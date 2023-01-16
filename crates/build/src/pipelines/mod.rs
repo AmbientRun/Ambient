@@ -3,15 +3,11 @@ use std::{collections::HashSet, sync::Arc};
 use anyhow::Context;
 use context::PipelineCtx;
 use elements_asset_cache::SyncAssetKey;
-use elements_model_import::model_crate::ModelCrate;
 use elements_std::{
     asset_cache::AssetCache, asset_url::{AbsAssetUrl, AssetType}
 };
-use futures::{
-    future::{join_all, BoxFuture}, StreamExt
-};
+use futures::{future::BoxFuture, StreamExt};
 use image::ImageFormat;
-use itertools::Itertools;
 use out_asset::{OutAsset, OutAssetContent, OutAssetPreview};
 use serde::{Deserialize, Serialize};
 
@@ -71,10 +67,8 @@ impl Pipeline {
                 .await
             }
             PipelineConfig::Materials(config) => materials::pipeline(&ctx, config.clone()).await,
-            // PipelineConfig::Audio => audio::pipeline(&ctx).await,
-            _ => todo!(),
+            PipelineConfig::Audio => audio::pipeline(&ctx).await,
         };
-        let ctx = &ctx;
         for asset in &mut assets {
             asset.tags.extend(self.tags.clone());
             for i in 0..asset.categories.len() {

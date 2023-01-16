@@ -1,16 +1,13 @@
-use std::{collections::HashMap, fmt::Display, sync::Arc, time::Duration};
+use std::sync::Arc;
 
 use anyhow::Context;
 use elements_model_import::model_crate::ModelCrate;
 use elements_std::{
-    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetType, ModelAssetType, ModelCrateAssetType, TypedAssetUrl}
+    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, ModelCrateAssetType, TypedAssetUrl}
 };
-use futures::{
-    future::{join_all, BoxFuture}, stream::StreamExt, Future
-};
+use futures::{future::join_all, Future};
 use itertools::Itertools;
 use relative_path::{RelativePath, RelativePathBuf};
-use serde::Serialize;
 use tokio::sync::Semaphore;
 
 use super::{out_asset::OutAsset, Pipeline, ProcessCtx};

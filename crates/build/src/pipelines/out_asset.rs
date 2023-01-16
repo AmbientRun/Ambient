@@ -1,6 +1,4 @@
-use std::{
-    collections::{HashMap, HashSet}, io::Cursor, sync::Arc
-};
+use std::{collections::HashSet, sync::Arc};
 
 use elements_std::asset_url::{AbsAssetUrl, AssetType};
 

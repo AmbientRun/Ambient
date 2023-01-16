@@ -20,7 +20,6 @@ use futures::{future::join_all, FutureExt};
 use glam::{Mat4, Vec3, Vec4};
 use image::ImageOutputFormat;
 use itertools::Itertools;
-use relative_path::RelativePathBuf;
 use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
 use unity_parser::{parse_unity_yaml, prefab::PrefabObject, UnityRef};

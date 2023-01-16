@@ -20,7 +20,6 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
         ModelImporter::Regular => regular::pipeline(ctx, config.clone()).await,
         ModelImporter::UnityModels { use_prefabs } => unity::pipeline(ctx, *use_prefabs, config.clone()).await,
         ModelImporter::Quixel => quixel::pipeline(ctx, config.clone()).await,
-        _ => todo!(),
     };
     if config.collection_of_variants && assets.len() > 1 {
         for asset in &mut assets {

@@ -4,9 +4,8 @@ use anyhow::Context;
 use async_trait::async_trait;
 use dyn_clonable::*;
 use elements_asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt};
-use elements_core::transform;
 use elements_model_import::{
-    model_crate::{cap_texture_size, ModelCrate}, ModelTextureSize, RelativePathBufExt
+    model_crate::{cap_texture_size, ModelCrate}, ModelTextureSize
 };
 use elements_renderer::materials::pbr_material::PbrMaterialFromUrl;
 use elements_std::{
@@ -15,7 +14,7 @@ use elements_std::{
 use futures::{future::BoxFuture, FutureExt};
 use glam::Vec4;
 use image::{ImageOutputFormat, RgbaImage};
-use relative_path::{RelativePath, RelativePathBuf};
+use relative_path::RelativePath;
 use serde::{Deserialize, Serialize};
 
 use super::{
