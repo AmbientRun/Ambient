@@ -102,17 +102,24 @@ impl PipelineCtx {
                 let res = tokio::spawn({
                     let ctx = ctx.clone();
                     let file = file.clone();
+                    let file_path = file.relative_path(ctx.in_root().path());
                     async move {
                         let _permit = semaphore.acquire().await;
-                        (ctx.process_ctx.on_status)(format!("[{}] Processing file {}/{}: {}", ctx.pipeline_path(), i + 1, n_files, file))
-                            .await;
+                        (ctx.process_ctx.on_status)(format!(
+                            "[{}] Processing file {}/{}: {}",
+                            ctx.pipeline_path(),
+                            i + 1,
+                            n_files,
+                            file_path
+                        ))
+                        .await;
                         process_file(ctx.clone(), file.clone())
                             .await
-                            .with_context(|| format!("In pipeline {}, at file {}", ctx.pipeline_path(), file))
+                            .with_context(|| format!("In pipeline {}, at file {}", ctx.pipeline_path(), file_path))
                     }
                 })
                 .await
-                .with_context(|| format!("In pipeline {}, at file {}", ctx.pipeline_path(), file));
+                .with_context(|| format!("In pipeline {}, at file {}", ctx.pipeline_path(), file.relative_path(ctx.in_root().path())));
                 let err = match res {
                     Ok(Ok(res)) => return res,
                     Ok(Err(err)) => err,
