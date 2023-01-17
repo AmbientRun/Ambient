@@ -41,8 +41,8 @@ impl IndexColumns {
             .iter()
             .zip(self.comparators.iter())
             .map(|(&component, &comparator)| {
-                let value = world.get_entry(entity, component);
-                Some(IndexField::Exact(IndexFieldValue { comparator, value: ComponentEntry::from_raw_parts(component, value) }))
+                let value = world.get_entry(entity, component).ok()?;
+                Some(IndexField::Exact(IndexFieldValue { comparator, value }))
             })
             .collect::<Option<Vec<_>>>()?;
 

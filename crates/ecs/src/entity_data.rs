@@ -5,7 +5,7 @@ use std::{
 use elements_std::sparse_vec::SparseVec;
 use itertools::Itertools;
 use serde::{
-    de::{self, MapAccess, Visitor}, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer
+    de::{self, DeserializeSeed, MapAccess, Visitor}, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer
 };
 
 use super::{with_component_registry, Component, ComponentValue, ECSError, EntityId, World};
@@ -188,81 +188,119 @@ impl Serialize for EntityData {
     }
 }
 
-struct EntityDataVisitor {
-    warnings: Option<ECSDeserializationWarnings>,
-}
-
-impl<'de> Visitor<'de> for EntityDataVisitor {
-    type Value = DeserEntityDataWithWarnings;
-
-    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter.write_str("struct EntityData")
-    }
-
-    fn visit_map<V>(mut self, map: V) -> Result<DeserEntityDataWithWarnings, V::Error>
-    where
-        V: MapAccess<'de>,
-    {
-        let mut res = EntityData::new();
-        let mut map = erased_serde::de::erase::MapAccess { state: map };
-        while let Some(key) = map.state.next_key::<String>()? {
-            let entry = with_component_registry(|r| r.get_by_path(&key));
-            let desc = match (entry, &mut self.warnings) {
-                (Some(entry), _) => entry,
-
-                (None, Some(warnings)) => {
-                    warnings.push((EntityId::null(), key.clone(), format!("No such component: {key}")));
-                    continue;
-                }
-                (None, None) => {
-                    log::error!("No such component: {}", key);
-                    continue;
-                }
-            };
-
-            let ser = desc
-                .attribute::<Serializable>()
-                .ok_or_else(|| de::Error::custom("Attempt to deserialize a component which is not deserializable"));
-
-            let ser = *match (ser, &mut self.warnings) {
-                (Ok(v), _) => v,
-                (Err(err), None) => return Err(err),
-                (Err(err), Some(warnings)) => {
-                    warnings.push((EntityId::null(), key, format!("{err:?}")));
-                    continue;
-                }
-            };
-
-            let value = map.state.next_value_seed(ser)?;
-            res.set_entry(value);
-        }
-
-        Ok(DeserEntityDataWithWarnings { entity: res, warnings: self.warnings.unwrap_or_default() })
-    }
-}
-
 impl<'de> Deserialize<'de> for EntityData {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        Ok(deserializer.deserialize_map(EntityDataVisitor { warnings: None })?.entity)
+        struct EntityDataVisitor;
+
+        impl<'de> Visitor<'de> for EntityDataVisitor {
+            type Value = EntityData;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("struct EntityData")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> Result<Self::Value, V::Error>
+            where
+                V: MapAccess<'de>,
+            {
+                let mut res = EntityData::new();
+                while let Some(key) = map.next_key::<String>()? {
+                    let desc = with_component_registry(|r| r.get_by_path(&key))
+                        .ok_or_else(|| de::Error::custom(format!("No such component: {key}")))?;
+
+                    let ser = desc
+                        .attribute::<Serializable>()
+                        .ok_or_else(|| de::Error::custom(format!("Component {desc:?} is not deserializable")))?;
+
+                    let value = map.next_value_seed(*ser)?;
+
+                    res.set_entry(value);
+                }
+
+                Ok(res)
+            }
+        }
+
+        deserializer.deserialize_map(EntityDataVisitor)
     }
 }
+
+impl<'de> Deserialize<'de> for DeserEntityDataWithWarnings {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct EntityDataVisitor {
+            warnings: ECSDeserializationWarnings,
+        }
+
+        impl<'de> Visitor<'de> for EntityDataVisitor {
+            type Value = DeserEntityDataWithWarnings;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("struct EntityData")
+            }
+
+            fn visit_map<V>(mut self, map: V) -> Result<Self::Value, V::Error>
+            where
+                V: MapAccess<'de>,
+            {
+                let mut res = EntityData::new();
+                let mut map = erased_serde::de::erase::MapAccess { state: map };
+                while let Some((key, value)) = dbg!(map.state.next_entry::<String, serde_json::Value>()?) {
+                    let desc = with_component_registry(|r| r.get_by_path(&key));
+                    let desc = match desc {
+                        Some(desc) => desc,
+
+                        None => {
+                            self.warnings.push((EntityId::null(), key.clone(), format!("No such component: {key}")));
+                            continue;
+                        }
+                    };
+
+                    let ser: Result<_, V::Error> = desc
+                        .attribute::<Serializable>()
+                        .ok_or_else(|| de::Error::custom(format!("Component {desc:?} is not deserializable")));
+
+                    let ser = *match ser {
+                        Ok(v) => v,
+                        Err(err) => {
+                            self.warnings.push((EntityId::null(), key, format!("{err:?}")));
+                            continue;
+                        }
+                    };
+
+                    eprintln!("Deserializing {desc:?} => {value:?}");
+                    let value = ser.deserialize(value);
+                    let value = match value {
+                        Ok(v) => v,
+                        Err(err) => {
+                            self.warnings.push((EntityId::null(), key, format!("{err:?}")));
+                            continue;
+                        }
+                    };
+
+                    res.set_entry(value);
+                }
+
+                Ok(DeserEntityDataWithWarnings { entity: res, warnings: self.warnings })
+            }
+        }
+
+        deserializer.deserialize_map(EntityDataVisitor { warnings: Default::default() })
+    }
+}
+
 /// Use this struct while de-serializing an EntityData to also get warnings
 /// about missing/bad components. Only works with serde_json
 pub struct DeserEntityDataWithWarnings {
     pub entity: EntityData,
     pub warnings: ECSDeserializationWarnings,
 }
-impl<'de> Deserialize<'de> for DeserEntityDataWithWarnings {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        deserializer.deserialize_map(EntityDataVisitor { warnings: Some(Default::default()) })
-    }
-}
+
 impl IntoIterator for EntityData {
     type Item = ComponentEntry;
 

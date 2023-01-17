@@ -195,7 +195,7 @@ impl<T> Debug for Component<T> {
 
 impl Debug for ComponentDesc {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        (self.index, self.vtable.component_name).fmt(f)
+        f.debug_struct("ComponentDesc").field("path", &self.path()).field("index", &self.index).finish_non_exhaustive()
     }
 }
 
@@ -365,7 +365,7 @@ impl<T: Clone + ComponentValue> ComponentVTable<T> {
 
     /// Returns the fully qualified component path
     pub fn path(&self) -> String {
-        format!("{}:{}", self.namespace, self.component_name)
+        format!("{}::{}", self.namespace, self.component_name)
     }
 }
 

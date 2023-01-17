@@ -6,7 +6,7 @@ use serde::{
 };
 
 use crate::{
-    component2::Serializable, dont_store, query, with_component_registry, CreateResources, DeserEntityDataWithWarnings, EntityData, EntityId, World
+    component2::Serializable, dont_store, query, CreateResources, DeserEntityDataWithWarnings, EntityData, EntityId, World
 };
 
 impl Serialize for World {
@@ -145,7 +145,9 @@ mod test {
     use crate::{serialization::DeserWorldWithWarnings, *};
 
     components!("test", {
+        @[Serializable]
         ser_test3: String,
+        @[Serializable]
         ser_test4: String,
     });
 
