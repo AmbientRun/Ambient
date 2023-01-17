@@ -33,7 +33,7 @@ impl PipelineCtx {
 
     pub async fn write_model_crate(&self, model_crate: &ModelCrate, path: &RelativePath) -> TypedAssetUrl<ModelCrateAssetType> {
         join_all(model_crate.to_items().iter().map(|item| self.write_file(path.join(&item.path), (*item.data).clone()))).await;
-        self.out_root().push(path).unwrap().into()
+        self.out_root().push(path).unwrap().as_directory().into()
     }
     pub async fn write_file(&self, path: impl AsRef<str>, content: Vec<u8>) -> AbsAssetUrl {
         (self.process_ctx.write_file)(path.as_ref().to_string(), content).await
