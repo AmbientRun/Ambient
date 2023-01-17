@@ -1,3 +1,4 @@
+use anyhow::Context;
 use convert_case::{Case, Casing};
 use elements_asset_cache::AsyncAssetKeyExt;
 use elements_model_import::{fbx::FbxDoc, MaterialFilter, ModelImportPipeline, ModelImportTransform, ModelTransform};
@@ -115,54 +116,32 @@ pub async fn object_pipelines_from_quixel_json(
         }
     }
 
-    let pipe_image = |filename: &str| -> BoxFuture<'_, anyhow::Result<AssetUrl>> {
+    let pipe_image = |ending: &str| -> BoxFuture<'_, anyhow::Result<AssetUrl>> {
         let ctx = ctx.clone();
         let in_root_url = in_root_url.clone();
-        let filename = filename.to_string();
         let config = config.clone();
+        let ending = ending.to_string();
         async move {
-            Ok(AssetUrl::from(
-                PipeImage::new(ctx.get_downloadable_url(&in_root_url.push(filename).unwrap()).unwrap().clone())
-                    .cap_texture_size(config.cap_texture_sizes)
-                    .get(ctx.assets())
-                    .await?,
-            ))
+            let pattern = format!("{}**/*{}", in_root_url.as_directory().path(), ending);
+            let file = ctx.process_ctx.find_file_res(&pattern)?.clone();
+            Ok(AssetUrl::from(PipeImage::new(file).cap_texture_size(config.cap_texture_sizes).get(ctx.assets()).await?))
         }
         .boxed()
     };
     match get_path(quixel, vec!["semanticTags", "asset_type"]).unwrap().as_str().unwrap() as &str {
         "3D asset" => {
-            let find_mesh_base_name = || {
-                for mesh in quixel["meshes"].as_array().unwrap() {
-                    if mesh["type"].as_str().unwrap() == "lod" {
-                        for uri in mesh["uris"].as_array().unwrap() {
-                            let uri_str = uri["uri"].as_str().unwrap();
-                            if uri_str.to_lowercase().ends_with(".fbx") {
-                                return uri_str[0..uri_str.len() - 9].to_string();
-                            }
-                        }
-                    }
-                }
-                quixel_id.id.to_string()
-            };
-
-            let mut mesh_base_name = find_mesh_base_name();
-            if !ctx.process_ctx.has_input_file(&in_root_url.push(&format!("{mesh_base_name}_LOD0.fbx")).unwrap()) {
-                mesh_base_name = quixel_id.id.clone();
-            }
-            log::info!("Loading 3d asset: {:?}", mesh_base_name);
             let material_override = ModelImportTransform::OverrideMaterial {
                 filter: MaterialFilter::All,
                 material: Box::new(
                     PbrMaterialFromUrl {
-                        base_color: Some(pipe_image(&format!("{}_{}_Albedo.jpg", mesh_base_name, quixel_id.resolution)).await?),
+                        base_color: Some(pipe_image(&format!("{}_Albedo.jpg", quixel_id.resolution)).await?),
                         opacity: if quixel_has_opacity(quixel).unwrap_or(false) {
-                            Some(pipe_image(&format!("{}_{}_Opacity.jpg", mesh_base_name, quixel_id.resolution)).await?)
+                            Some(pipe_image(&format!("{}_Opacity.jpg", quixel_id.resolution)).await?)
                         } else {
                             None
                         },
-                        normalmap: Some(pipe_image(&format!("{}_{}_Normal_LOD0.jpg", mesh_base_name, quixel_id.resolution)).await?),
-                        metallic_roughness: Some(pipe_image(&format!("{}_{}_Roughness.jpg", mesh_base_name, quixel_id.resolution)).await?),
+                        normalmap: Some(pipe_image(&format!("{}_Normal_LOD0.jpg", quixel_id.resolution)).await?),
+                        metallic_roughness: Some(pipe_image(&format!("{}_Roughness.jpg", quixel_id.resolution)).await?),
                         roughness: 1.0,
                         metallic: 0.2,
                         ..Default::default()
@@ -172,7 +151,7 @@ pub async fn object_pipelines_from_quixel_json(
             };
             let mesh0 = FbxDoc::from_url(
                 &ctx.assets(),
-                ctx.get_downloadable_url(&in_root_url.push(format!("{mesh_base_name}_LOD5.fbx")).unwrap())?,
+                ctx.process_ctx.find_file_res(format!("{}**/*_LOD5.fbx", in_root_url.as_directory().path()))?,
             )
             .await?;
             for root_node in mesh0.models.values().filter(|m| m.parent.is_none()) {
@@ -182,7 +161,10 @@ pub async fn object_pipelines_from_quixel_json(
                     lods.push(
                         ModelImportPipeline::new()
                             .add_step(ModelImportTransform::ImportModelFromUrl {
-                                url: ctx.get_downloadable_url(&in_root_url.push(format!("{mesh_base_name}_LOD{i}.fbx")).unwrap())?.clone(),
+                                url: ctx
+                                    .process_ctx
+                                    .find_file_res(format!("{}**/*_LOD{i}.fbx", in_root_url.as_directory().path()))?
+                                    .clone(),
                                 normalize: true,
                                 force_assimp: config.force_assimp,
                             })
@@ -249,24 +231,24 @@ pub async fn object_pipelines_from_quixel_json(
                     None
                 }
             };
-            let pipe_image_opt = |filename: Option<String>| -> BoxFuture<'_, anyhow::Result<Option<AssetUrl>>> {
+            let pipe_image_opt = |ending: Option<String>| -> BoxFuture<'_, anyhow::Result<Option<AssetUrl>>> {
                 async move {
-                    if let Some(filename) = filename {
-                        Ok(Some(pipe_image(&filename).await?))
+                    if let Some(ending) = ending {
+                        Ok(Some(pipe_image(&ending).await?))
                     } else {
                         Ok(None)
                     }
                 }
                 .boxed()
             };
-            let pipe_mr_image = |filename: Option<String>| -> BoxFuture<'_, anyhow::Result<Option<AssetUrl>>> {
+            let pipe_mr_image = |ending: Option<String>| -> BoxFuture<'_, anyhow::Result<Option<AssetUrl>>> {
                 let config = config.clone();
                 let in_root_url = in_root_url.clone();
-                let filename = filename.clone();
+                let ending = ending.clone();
                 async move {
-                    if let Some(filename) = filename {
+                    if let Some(ending) = ending {
                         Ok(Some(AssetUrl::from(
-                            PipeImage::new(ctx.get_downloadable_url(&in_root_url.push(filename).unwrap()).unwrap().clone())
+                            PipeImage::new(ctx.get_downloadable_url(&in_root_url.push(ending).unwrap()).unwrap().clone())
                                 .transform("mr", |img, _| rougness_to_mr(img))
                                 .cap_texture_size(config.cap_texture_sizes)
                                 .get(ctx.assets())

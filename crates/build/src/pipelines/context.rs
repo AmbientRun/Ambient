@@ -31,7 +31,7 @@ impl PipelineCtx {
         self.process_ctx.out_root.push(&self.root_path).unwrap()
     }
     pub fn pipeline_path(&self) -> RelativePathBuf {
-        self.pipeline_file.relative_path(self.process_ctx.in_root.path())
+        self.process_ctx.in_root.relative_path(&self.pipeline_file.path())
     }
 
     pub async fn write_model_crate(&self, model_crate: &ModelCrate, path: &RelativePath) -> TypedAssetUrl<ModelCrateAssetType> {
@@ -102,7 +102,7 @@ impl PipelineCtx {
                 let res = tokio::spawn({
                     let ctx = ctx.clone();
                     let file = file.clone();
-                    let file_path = file.relative_path(ctx.in_root().path());
+                    let file_path = ctx.in_root().relative_path(file.path());
                     async move {
                         let _permit = semaphore.acquire().await;
                         (ctx.process_ctx.on_status)(format!(
@@ -119,7 +119,7 @@ impl PipelineCtx {
                     }
                 })
                 .await
-                .with_context(|| format!("In pipeline {}, at file {}", ctx.pipeline_path(), file.relative_path(ctx.in_root().path())));
+                .with_context(|| format!("In pipeline {}, at file {}", ctx.pipeline_path(), ctx.in_root().relative_path(file.path())));
                 let err = match res {
                     Ok(Ok(res)) => return res,
                     Ok(Err(err)) => err,

@@ -128,6 +128,13 @@ impl ProcessCtx {
     pub fn has_input_file(&self, url: &AbsAssetUrl) -> bool {
         self.files.iter().position(|x| x == url).is_some()
     }
+    pub fn find_file_res(&self, glob_pattern: impl AsRef<str>) -> anyhow::Result<&AbsAssetUrl> {
+        self.find_file(&glob_pattern).with_context(|| format!("Failed to find file with pattern {}", glob_pattern.as_ref()))
+    }
+    pub fn find_file(&self, glob_pattern: impl AsRef<str>) -> Option<&AbsAssetUrl> {
+        let pattern = glob::Pattern::new(glob_pattern.as_ref()).unwrap();
+        self.files.iter().find(|f| pattern.matches(f.path().as_str()))
+    }
 }
 
 pub async fn download_image(assets: &AssetCache, url: &AbsAssetUrl) -> anyhow::Result<image::DynamicImage> {
