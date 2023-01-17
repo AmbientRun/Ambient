@@ -322,9 +322,10 @@ impl FromIterator<ComponentEntry> for EntityData {
 
 #[cfg(test)]
 mod test {
-    use crate::{components, EntityData};
+    use crate::{component2::Serializable, components, EntityData};
 
     components!("test", {
+        @[Serializable]
         ser_test2: String,
     });
 
