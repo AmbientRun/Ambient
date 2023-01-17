@@ -841,7 +841,7 @@ mod test {
 
     #[test]
     fn component_macro() {
-        components! ("test",{
+        components! ("component_macro",{
             @[Serializable, Debuggable]
             foo: String,
             /// This is a person
@@ -881,7 +881,7 @@ mod test {
             Person { age: 21, name: "unnamed".into() }
         }
 
-        components! ("test", {
+        components! ("make_default", {
             @[MakeDefault, Debuggable]
             people: Vec<Person>,
             @[MakeDefault[default_person], Debuggable, Store, Networked]
@@ -909,7 +909,7 @@ mod test {
 
     #[test]
     fn test_take() {
-        components! ("test", {
+        components! ("test_take", {
             @[Store]
             my_component: Arc<String>,
         });
@@ -938,7 +938,7 @@ mod test {
     fn leak_test() {
         let shared = Arc::new("Foo".to_string());
 
-        components! ("test", {
+        components! ("leak_test", {
             my_component: Arc<String>,
         });
 
