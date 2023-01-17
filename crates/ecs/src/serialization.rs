@@ -26,7 +26,6 @@ struct SerWorldEntity<'a> {
 }
 impl<'a> Serialize for SerWorldEntity<'a> {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let idx_to_id = with_component_registry(|r| r.idx_to_id().clone());
         let comps =
             self.world.get_components(self.id).unwrap().into_iter().filter(|x| x.attribute::<Serializable>().is_some()).collect_vec();
 

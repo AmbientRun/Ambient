@@ -5,7 +5,7 @@ use std::{
 use itertools::Itertools;
 
 use crate::{
-    component2::ComponentEntry, ArchetypeFilter, Component, ComponentDesc, ComponentValue, ComponentValueBase, EntityId, FnSystem, IComponent, Query, SystemGroup, World
+    component2::ComponentEntry, ArchetypeFilter, Component, ComponentDesc, ComponentValue, ComponentValueBase, EntityId, FnSystem, Query, SystemGroup, World
 };
 
 #[derive(Clone)]

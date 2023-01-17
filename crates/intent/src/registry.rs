@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fmt::Debug, marker::Send};
 
 use elements_ecs::{
-    with_component_registry, ArchetypeFilter, Component, ComponentValue, EntityData, EntityId, IComponent, IndexExt, SystemGroup, World
+    with_component_registry, ArchetypeFilter, Component, ComponentValue, EntityData, EntityId, IndexExt, SystemGroup, World
 };
 use elements_network::server::{ServerState, SharedServerState};
 use futures::Future;

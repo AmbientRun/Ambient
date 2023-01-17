@@ -118,78 +118,59 @@ impl ComponentRegistry {
         // self.register_with_id(&format!("{namespace}::{name}"), component, false, None, None);
     }
 
-    pub(crate) fn register_with_id(
-        &mut self,
-        id: &str,
-        component: &mut dyn IComponent,
-        decorating: bool,
-        primitive_component_type: Option<PrimitiveComponentType>,
-        mut primitive_component: Option<PrimitiveComponent>,
-    ) {
-        todo!()
-        // if let Some(idx) = self.name_to_idx.get(id) {
-        //     if decorating {
-        //         component.set_index(*idx);
+    // pub(crate) fn register_with_id(
+    //     &mut self,
+    //     id: &str,
+    //     component: &mut dyn IComponent,
+    //     decorating: bool,
+    //     primitive_component_type: Option<PrimitiveComponentType>,
+    //     mut primitive_component: Option<PrimitiveComponent>,
+    // ) {
+    //     todo!()
+    //     // if let Some(idx) = self.name_to_idx.get(id) {
+    //     //     if decorating {
+    //     //         component.set_index(*idx);
 
-        //         if let Some(primitive_component) = &mut primitive_component {
-        //             primitive_component.as_component_mut().set_index(*idx);
-        //         }
+    //     //         if let Some(primitive_component) = &mut primitive_component {
+    //     //             primitive_component.as_component_mut().set_index(*idx);
+    //     //         }
 
-        //         self.components[*idx].primitive_component_type = primitive_component_type;
-        //         self.components[*idx].primitive_component = primitive_component;
-        //     } else {
-        //         log::warn!("Duplicate components: {}", id);
-        //     }
-        //     return;
-        // }
-        // let index = self.components.len();
-        // component.set_index(index);
-        // if let Some(primitive_component) = &mut primitive_component {
-        //     primitive_component.as_component_mut().set_index(index);
-        // }
-        // let reg_comp = RegistryComponent { component: component.clone_boxed(), primitive_component_type, primitive_component };
-        // self.components.push(reg_comp.clone());
-        // self.name_to_idx.insert(id.to_owned(), index);
-        // self.idx_to_id.insert(component.get_index(), id.to_owned());
-    }
+    //     //         self.components[*idx].primitive_component_type = primitive_component_type;
+    //     //         self.components[*idx].primitive_component = primitive_component;
+    //     //     } else {
+    //     //         log::warn!("Duplicate components: {}", id);
+    //     //     }
+    //     //     return;
+    //     // }
+    //     // let index = self.components.len();
+    //     // component.set_index(index);
+    //     // if let Some(primitive_component) = &mut primitive_component {
+    //     //     primitive_component.as_component_mut().set_index(index);
+    //     // }
+    //     // let reg_comp = RegistryComponent { component: component.clone_boxed(), primitive_component_type, primitive_component };
+    //     // self.components.push(reg_comp.clone());
+    //     // self.name_to_idx.insert(id.to_owned(), index);
+    //     // self.idx_to_id.insert(component.get_index(), id.to_owned());
+    // }
 
-    pub fn get_by_id(&self, id: &str) -> Option<&dyn IComponent> {
-        todo!()
-        // self.name_to_idx.get(id).map(|b| self.components[*b].component.as_ref())
-    }
     pub fn get_by_index(&self, index: u32) -> Option<ComponentDesc> {
         self.components.get(index as usize).map(|b| b.desc)
-    }
-
-    pub fn get_id_for_opt(&self, component: &dyn IComponent) -> Option<&str> {
-        todo!()
-        // self.idx_to_id().get(&component.get_index()).map(|s| s.as_str())
     }
 
     pub fn get_primitive_component(&self, idx: u32) -> Option<PrimitiveComponent> {
         self.components.get(idx as usize).unwrap().primitive_component.clone()
     }
-    /// Will panic if the specified component does not exist
-    pub fn get_id_for(&self, component: &dyn IComponent) -> &str {
-        todo!()
-        // match self.get_id_for_opt(component) {
-        //     Some(id) => id,
-        //     None => panic!("failed to get id for component {}", component.get_index()),
-        // }
-    }
+
     pub fn all_external(&self) -> impl Iterator<Item = ComponentDesc> + '_ {
         self.components.iter().filter(|v| v.primitive_component_type.is_some()).map(|x| x.desc)
     }
+
     pub fn all(&self) -> impl Iterator<Item = ComponentDesc> + '_ {
         self.components.iter().map(|v| v.desc)
     }
-    pub fn idx_to_id(&self) -> &HashMap<usize, String> {
-        todo!()
-        // &self.idx_to_id
-    }
+
     pub fn component_count(&self) -> usize {
-        todo!()
-        // self.components.len()
+        self.components.len()
     }
 }
 

@@ -10,14 +10,10 @@
 //               <(dyn elements_ecs::IComponent + 'a) as std::cmp::PartialEq>
 #![allow(clippy::borrowed_box)]
 
-use std::{
-    any::Any, fmt::{self}, marker::PhantomData
-};
+use std::{self, any::Any};
 
 use downcast_rs::{impl_downcast, Downcast};
-use serde::{
-    de::{self, DeserializeOwned, MapAccess, SeqAccess, Visitor}, Deserializer, Serializer
-};
+use serde::{de::DeserializeOwned, Deserializer, Serializer};
 
 use super::*;
 use crate::component2::ComponentEntry;
@@ -36,45 +32,44 @@ impl<T: ComponentValueBase + Clone> ComponentValue for T {}
 pub trait ExComponentValue: ComponentValue + Serialize + DeserializeOwned + Clone + std::fmt::Debug {}
 impl<T: ComponentValue + Serialize + DeserializeOwned + Clone + std::fmt::Debug> ExComponentValue for T {}
 
-impl_downcast!(IComponent);
 impl_downcast!(ComponentValueBase);
 
-pub trait IComponent: Send + Sync + Downcast {
-    fn create_buffer(&self) -> Box<dyn IComponentBuffer>;
-    fn get_index(&self) -> usize;
-    fn external_type(&self) -> Option<PrimitiveComponentType>;
-    // required for dynamic registration. do not call on static components
-    fn set_index(&mut self, index: usize);
-    fn get_id(&self) -> String;
-    fn get_name(&self) -> String;
-    fn is_change_filter(&self) -> bool;
-    fn clone_boxed(&self) -> Box<dyn IComponent>;
+// pub trait IComponent: Send + Sync + Downcast {
+//     fn create_buffer(&self) -> Box<dyn IComponentBuffer>;
+//     fn get_index(&self) -> usize;
+//     fn external_type(&self) -> Option<PrimitiveComponentType>;
+//     // required for dynamic registration. do not call on static components
+//     fn set_index(&mut self, index: usize);
+//     fn get_id(&self) -> String;
+//     fn get_name(&self) -> String;
+//     fn is_change_filter(&self) -> bool;
+//     fn clone_boxed(&self) -> Box<dyn IComponent>;
 
-    fn create_buffer_with_value(&self, value: &Box<dyn ComponentValueBase>) -> Box<dyn IComponentBuffer>;
-    fn is_valid_value(&self, value: &Box<dyn ComponentValueBase>) -> bool;
-    fn clone_value(&self, value: &Box<dyn ComponentValueBase>) -> Box<dyn ComponentValueBase>;
-    fn clone_value_from_world(&self, world: &World, entity: EntityId) -> Result<Box<dyn ComponentValueBase>, ECSError>;
-    fn set_at_entity(
-        &self,
-        world: &mut World,
-        entity: EntityId,
-        value: &Box<dyn ComponentValueBase>,
-    ) -> Result<Box<dyn ComponentValueBase>, ECSError>;
-    fn add_component_to_entity(&self, world: &mut World, entity: EntityId, value: &Box<dyn ComponentValueBase>) -> Result<(), ECSError>;
-    fn remove_component_from_entity(&self, world: &mut World, entity: EntityId) -> Result<(), ECSError>;
+//     fn create_buffer_with_value(&self, value: &Box<dyn ComponentValueBase>) -> Box<dyn IComponentBuffer>;
+//     fn is_valid_value(&self, value: &Box<dyn ComponentValueBase>) -> bool;
+//     fn clone_value(&self, value: &Box<dyn ComponentValueBase>) -> Box<dyn ComponentValueBase>;
+//     fn clone_value_from_world(&self, world: &World, entity: EntityId) -> Result<Box<dyn ComponentValueBase>, ECSError>;
+//     fn set_at_entity(
+//         &self,
+//         world: &mut World,
+//         entity: EntityId,
+//         value: &Box<dyn ComponentValueBase>,
+//     ) -> Result<Box<dyn ComponentValueBase>, ECSError>;
+//     fn add_component_to_entity(&self, world: &mut World, entity: EntityId, value: &Box<dyn ComponentValueBase>) -> Result<(), ECSError>;
+//     fn remove_component_from_entity(&self, world: &mut World, entity: EntityId) -> Result<(), ECSError>;
 
-    fn serialize_value<'a>(&self, value: &'a dyn ComponentValueBase) -> &'a dyn erased_serde::Serialize;
-    fn deserialize_seq_value(
-        &self,
-        seq: &mut dyn erased_serde::de::SeqAccess,
-    ) -> Result<Option<Box<dyn ComponentValueBase>>, erased_serde::Error>;
-    fn deserialize_map_value(&self, seq: &mut dyn erased_serde::de::MapAccess) -> Result<Box<dyn ComponentValueBase>, erased_serde::Error>;
-    fn value_to_json_value(&self, value: &Box<dyn ComponentValueBase>) -> serde_json::Value;
-    fn value_from_json_value(&self, value: serde_json::Value) -> Result<Box<dyn ComponentValueBase>, serde_json::Error>;
-    fn debug_value(&self, value: &Box<dyn ComponentValueBase>) -> String;
-    /// I.e. supports serialize, deserialize
-    fn is_extended(&self) -> bool;
-}
+//     fn serialize_value<'a>(&self, value: &'a dyn ComponentValueBase) -> &'a dyn erased_serde::Serialize;
+//     fn deserialize_seq_value(
+//         &self,
+//         seq: &mut dyn erased_serde::de::SeqAccess,
+//     ) -> Result<Option<Box<dyn ComponentValueBase>>, erased_serde::Error>;
+//     fn deserialize_map_value(&self, seq: &mut dyn erased_serde::de::MapAccess) -> Result<Box<dyn ComponentValueBase>, erased_serde::Error>;
+//     fn value_to_json_value(&self, value: &Box<dyn ComponentValueBase>) -> serde_json::Value;
+//     fn value_from_json_value(&self, value: serde_json::Value) -> Result<Box<dyn ComponentValueBase>, serde_json::Error>;
+//     fn debug_value(&self, value: &Box<dyn ComponentValueBase>) -> String;
+//     /// I.e. supports serialize, deserialize
+//     fn is_extended(&self) -> bool;
+// }
 
 impl<T: ComponentValue + Default> Component<T> {
     pub fn with_default(&self) -> EntityData {
@@ -187,72 +182,6 @@ impl<'de, T: ComponentValue> Deserialize<'de> for Component<T> {
 //         panic!("Component '{}' is not an extended component", self.get_index())
 //     }
 // }
-
-impl PartialEq for dyn IComponent {
-    fn eq(&self, other: &Self) -> bool {
-        self.get_index() == other.get_index()
-    }
-}
-// From: https://github.com/rust-lang/rust/issues/31740#issuecomment-700950186
-impl PartialEq<&Self> for Box<dyn IComponent> {
-    fn eq(&self, other: &&Self) -> bool {
-        self.get_index() == other.get_index()
-    }
-}
-impl Eq for dyn IComponent {}
-impl std::hash::Hash for dyn IComponent {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.get_index().hash(state)
-    }
-}
-impl Clone for Box<dyn IComponent> {
-    fn clone(&self) -> Self {
-        self.clone_boxed()
-    }
-}
-impl std::fmt::Debug for Box<dyn IComponent> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Box<dyn IComponent>").field("index", &self.get_index()).finish()
-    }
-}
-impl std::fmt::Debug for &dyn IComponent {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("&dyn IComponent").field("index", &self.get_index()).finish()
-    }
-}
-impl Serialize for Box<dyn IComponent> {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(&with_component_registry(|r| r.get_id_for(self.as_ref()).to_owned()))
-    }
-}
-impl<'de> Deserialize<'de> for Box<dyn IComponent> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        struct BoxIComponentVisitor;
-
-        impl<'de> Visitor<'de> for BoxIComponentVisitor {
-            type Value = Box<dyn IComponent>;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("struct Box<dyn IComponent>")
-            }
-            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                let component = with_component_registry(|r| Some(r.get_by_id(v)?.clone_boxed()));
-                match component {
-                    Some(comp) => Ok(comp),
-                    None => Err(de::Error::custom(format!("No such component: {}", v))),
-                }
-            }
-        }
-
-        deserializer.deserialize_str(BoxIComponentVisitor)
-    }
-}
 
 pub trait IComponentBuffer: Send + Sync {
     fn len(&self) -> usize;

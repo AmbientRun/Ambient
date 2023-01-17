@@ -40,7 +40,7 @@ mod query;
 mod serialization;
 mod stream;
 pub use archetype::*;
-pub use component::{ComponentValue, ComponentValueBase, IComponent};
+pub use component::{ComponentValue, ComponentValueBase};
 pub use component2::{AttributeEntry, Component, ComponentAttribute, ComponentDesc, ComponentEntry, ComponentVTable};
 pub use component_registry::*;
 pub use component_unit::*;
@@ -521,9 +521,8 @@ impl World {
     pub fn dump_entity(&self, entity_id: EntityId, indent: usize, f: &mut dyn std::io::Write) {
         if let Some(loc) = self.locs.get(entity_id) {
             let arch = self.archetypes.get(loc.archetype).expect("No such archetype");
-            let idx_to_id = with_component_registry(|r| r.idx_to_id().clone());
 
-            arch.dump_entity(loc.index, indent, &idx_to_id, f);
+            arch.dump_entity(loc.index, indent, f);
         } else {
             let indent = format!("{:indent$}", "", indent = indent);
             writeln!(f, "{indent}ERROR, NO SUCH ENTITY: {}", entity_id).unwrap();

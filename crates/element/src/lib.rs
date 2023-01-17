@@ -7,7 +7,7 @@ use std::{any::Any, sync::Arc};
 
 use as_any::AsAny;
 use dyn_clonable::clonable;
-use elements_ecs::{components, Component, ComponentDesc, ComponentValue, EntityData, EntityId, IComponent, SystemGroup, World};
+use elements_ecs::{components, Component, ComponentDesc, ComponentValue, EntityData, EntityId, SystemGroup, World};
 use elements_std::events::EventDispatcher;
 use parking_lot::Mutex;
 

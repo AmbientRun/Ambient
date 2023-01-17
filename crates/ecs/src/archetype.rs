@@ -284,8 +284,6 @@ impl Archetype {
     }
 
     pub fn dump_info(&self) -> ArchetypeInfo {
-        let idx_to_id = with_component_registry(|r| r.idx_to_id().clone());
-
         ArchetypeInfo {
             components: self.components.iter().map(|v| v.component).collect_vec(),
             entities: self.entity_indices_to_ids.clone(),
@@ -293,7 +291,6 @@ impl Archetype {
     }
 
     pub fn dump(&self, f: &mut dyn std::io::Write) {
-        let idx_to_id = with_component_registry(|r| r.idx_to_id().clone());
         writeln!(f, "Archetype id: {} ({} entities)", self.id, self.entity_count()).unwrap();
         for component in self.components.iter() {
             let comp = unsafe { &mut **component.data.0.get() };
@@ -301,10 +298,10 @@ impl Archetype {
             writeln!(f, "  Component {:#?}: {} changes", desc, component.changes.borrow().n_events()).unwrap();
         }
         for i in 0..self.entity_count() {
-            self.dump_entity(i, 2, &idx_to_id, f);
+            self.dump_entity(i, 2, f);
         }
     }
-    pub fn dump_entity(&self, entity_ix: usize, indent: usize, idx_to_id: &HashMap<usize, String>, f: &mut dyn std::io::Write) {
+    pub fn dump_entity(&self, entity_ix: usize, indent: usize, f: &mut dyn std::io::Write) {
         let id = self.entity_indices_to_ids[entity_ix];
         let indent = format!("{:indent$}", "", indent = indent);
         writeln!(f, "{}Entity id={} loc={}:{}", indent, id, self.id, entity_ix).unwrap();
@@ -330,7 +327,6 @@ impl Archetype {
     /// # Safety
     /// TODO
     pub fn dump_entity_to_yml(&self, entity_ix: usize) -> (String, yaml_rust::yaml::Hash) {
-        let idx_to_id = with_component_registry(|r| r.idx_to_id().clone());
         let id = self.entity_indices_to_ids[entity_ix];
         let mut res = yaml_rust::yaml::Hash::new();
         for component in self.components.iter() {

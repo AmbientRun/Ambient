@@ -167,7 +167,7 @@ impl Debug for EntityData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut out = f.debug_struct("EntityData");
         for entry in self.content.iter() {
-            out.field(&entry.desc().name(), &entry.as_debug());
+            out.field(entry.desc().name(), &entry.as_debug());
         }
         out.finish()
     }
@@ -176,7 +176,6 @@ impl Debug for EntityData {
 impl Serialize for EntityData {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         let len = self.content.iter().filter(|v| v.attribute::<Serializable>().is_some()).count();
-        let idx_to_id = with_component_registry(|r| r.idx_to_id().clone());
 
         let mut map = serializer.serialize_map(Some(len))?;
         for unit in self.content.iter() {

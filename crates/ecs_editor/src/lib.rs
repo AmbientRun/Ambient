@@ -1,6 +1,6 @@
 use std::{collections::HashMap, time::Duration};
 
-use elements_ecs::{with_component_registry, ComponentDesc, EntityData, EntityId, IComponent, Query, World, WorldDiff};
+use elements_ecs::{with_component_registry, ComponentDesc, EntityData, EntityId, Query, World, WorldDiff};
 use elements_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use elements_renderer::color;
 use elements_std::Cb;

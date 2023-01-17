@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use elements_core::{
     asset_cache, async_ecs::{async_run, AsyncRun}, bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere}, hierarchy::{children, despawn_recursive}, main_scene, runtime, transform::{get_world_position, inv_local_to_world, local_to_world, mesh_to_world}
 };
-use elements_ecs::{components, query, ComponentDesc, EntityData, EntityId, IComponent, SystemGroup, World};
+use elements_ecs::{components, query, ComponentDesc, EntityData, EntityId, SystemGroup, World};
 use elements_gpu::mesh_buffer::GpuMeshFromUrl;
 use elements_renderer::{
     color, gpu_primitives, materials::{
