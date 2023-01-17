@@ -34,12 +34,12 @@ impl std::fmt::Debug for AssetError {
 pub struct AssertErrorString(pub String);
 impl From<AssetError> for AssertErrorString {
     fn from(err: AssetError) -> Self {
-        Self(format!("{:#}", err))
+        Self(format!("{err:#}"))
     }
 }
 impl From<anyhow::Error> for AssertErrorString {
     fn from(err: anyhow::Error) -> Self {
-        Self(format!("{:#}", err))
+        Self(format!("{err:#}"))
     }
 }
 
@@ -76,7 +76,7 @@ pub async fn download<T, F: Future<Output = anyhow::Result<T>>>(
         log::info!("download [pending ] {}", url_short);
         let _permit = semaphore.acquire().await.unwrap();
         log::info!("download [download] {}", url_short);
-        let resp = client.get(url.clone()).send().await.with_context(|| format!("Failed to download {}", url_str))?;
+        let resp = client.get(url.clone()).send().await.with_context(|| format!("Failed to download {url_str}"))?;
         if !resp.status().is_success() {
             log::warn!("Request for {} failed: {:?}", url_str, resp.status());
             return Err(anyhow!("Downloading {url_str} failed, bad status code: {:?}", resp.status()));
@@ -115,7 +115,7 @@ impl AsyncAssetKey<AssetResult<Arc<Vec<u8>>>> for BytesFromUrl {
             let path = BytesFromUrlCachedPath { url: self.url.clone() }.get(&assets).await?;
             let semaphore = FileReadSemaphore.get(&assets);
             let _permit = semaphore.acquire().await;
-            return Ok(Arc::new(tokio::fs::read(&*path).await.context(format!("Failed to read file: {:?}", path))?));
+            return Ok(Arc::new(tokio::fs::read(&*path).await.context(format!("Failed to read file: {path:?}"))?));
         }
 
         if let Some(path) = self.url.to_file_path()? {
@@ -155,15 +155,14 @@ impl AsyncAssetKey<AssetResult<Arc<PathBuf>>> for BytesFromUrlCachedPath {
         if !path.exists() {
             let mut dir = path.clone();
             dir.pop();
-            std::fs::create_dir_all(&dir).context(format!("Failed to create asset dir: {:?}", dir))?;
+            std::fs::create_dir_all(&dir).context(format!("Failed to create asset dir: {dir:?}"))?;
             let tmp_path = path.with_extension(".downloading");
             download(&assets, self.url.0.clone(), {
                 let tmp_path = tmp_path.clone();
                 move |mut resp| {
                     let tmp_path = tmp_path.clone();
                     async move {
-                        let mut file =
-                            tokio::fs::File::create(&tmp_path).await.context(format!("Failed to create file: {:?}", tmp_path))?;
+                        let mut file = tokio::fs::File::create(&tmp_path).await.context(format!("Failed to create file: {tmp_path:?}"))?;
                         while let Some(mut item) = resp.chunk().await.context("Failed to download chunk")? {
                             file.write_all_buf(item.borrow_mut()).await.context("Failed to write to tmp file")?;
                         }
@@ -173,7 +172,7 @@ impl AsyncAssetKey<AssetResult<Arc<PathBuf>>> for BytesFromUrlCachedPath {
                 }
             })
             .await?;
-            std::fs::rename(&tmp_path, &path).context(format!("Failed to rename tmp file, from: {:?}, to: {:?}", tmp_path, path))?;
+            std::fs::rename(&tmp_path, &path).context(format!("Failed to rename tmp file, from: {tmp_path:?}, to: {path:?}"))?;
             log::info!("Cached asset at {:?}", path);
         }
         return Ok(Arc::new(path));

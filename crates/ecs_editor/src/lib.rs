@@ -125,7 +125,7 @@ impl ElementComponent for EntityEditor {
         with_component_registry(|r| {
             FlowRow::el([
                 FlowColumn::el([
-                    Text::el(format!("{}", id)),
+                    Text::el(format!("{id}")),
                     Button::new("\u{f6bf}", move |world| on_change(world, WorldDiff::new().despawn(vec![id])))
                         .style(ButtonStyle::Flat)
                         .el(),

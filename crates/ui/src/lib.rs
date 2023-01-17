@@ -291,24 +291,35 @@ impl ElementComponent for FocusRoot {
     }
 }
 
+impl Default for HighjackMouse {
+    fn default() -> Self {
+        Self { on_mouse_move: Cb::new(|_, _, _| {}), on_click: Cb::new(|_| {}), hide_mouse: false }
+    }
+}
+
 #[element_component]
 pub fn HighjackMouse(
     _: &mut World,
     hooks: &mut Hooks,
     on_mouse_move: Cb<dyn Fn(&World, Vec2, Vec2) + Sync + Send>,
     on_click: Cb<dyn Fn(MouseButton) + Sync + Send>,
+    hide_mouse: bool,
 ) -> Element {
     // let (window_focused, _) = hooks.use_state(Arc::new(AtomicBool::new(true)));
     // Assume window has focus
     let focused = Arc::new(AtomicBool::new(true));
     let position = hooks.use_ref_with(|| Vec2::ZERO);
-    hooks.use_spawn(|world| {
-        world.resource(window()).set_cursor_grab(winit::window::CursorGrabMode::Locked).ok();
-        world.resource(window()).set_cursor_visible(false);
-        Box::new(|world| {
+    hooks.use_spawn(move |world| {
+        if hide_mouse {
+            world.resource(window()).set_cursor_grab(winit::window::CursorGrabMode::Locked).ok();
+            world.resource(window()).set_cursor_visible(false);
+        }
+        Box::new(move |world| {
             let window = world.resource(window());
-            window.set_cursor_grab(winit::window::CursorGrabMode::None).ok();
-            window.set_cursor_visible(true);
+            if hide_mouse {
+                window.set_cursor_grab(winit::window::CursorGrabMode::None).ok();
+                window.set_cursor_visible(true);
+            }
         })
     });
     WindowSized(vec![])
@@ -528,7 +539,7 @@ impl ElementComponent for TransformGroupChild {
 pub struct TransformMapGroup(pub HashMap<String, Element>);
 impl ElementComponent for TransformMapGroup {
     fn render(self: Box<Self>, _world: &mut World, _hooks: &mut Hooks) -> Element {
-        TransformGroup(self.0.into_iter().sorted_by_key(|x| x.0.clone()).map(|(k, v)| v.key(&k)).collect()).into()
+        TransformGroup(self.0.into_iter().sorted_by_key(|x| x.0.clone()).map(|(k, v)| v.key(k)).collect()).into()
     }
 }
 

@@ -141,7 +141,9 @@ impl Projection {
             Projection::PerspectiveInfiniteReverse { fovy, aspect_ratio, near } => {
                 Projection::Perspective { fovy, aspect_ratio, near, far: new_far }
             }
-            Projection::Perspective { fovy, aspect_ratio, near, far: _ } => Projection::Perspective { fovy, aspect_ratio, near, far: new_far },
+            Projection::Perspective { fovy, aspect_ratio, near, far: _ } => {
+                Projection::Perspective { fovy, aspect_ratio, near, far: new_far }
+            }
             Projection::Identity => todo!(),
         }
     }
@@ -449,7 +451,7 @@ fn test_frustum_reverse_z() {
     }
 
     let frustum = projection.view_space_frustum();
-    println!("{:?}", frustum);
+    println!("{frustum:?}");
     assert!(frustum.right.distance(Vec3::X * 6.) > 0.);
     assert!(frustum.top.distance(Vec3::Y * 6.) > 0.);
 

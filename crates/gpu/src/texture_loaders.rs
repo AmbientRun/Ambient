@@ -39,7 +39,7 @@ async fn image_from_url(assets: AssetCache, url: AbsAssetUrl) -> Result<DynamicI
         let format = ImageFormat::from_extension(extension).context("Invalid extension")?;
         Ok(image::io::Reader::with_format(Cursor::new(&*data), format).decode()?)
     })
-    .with_context(|| format!("Failed to load image {}", url))
+    .with_context(|| format!("Failed to load image {url}"))
     .unwrap())
 }
 
@@ -267,9 +267,9 @@ impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for TextureArrayFromUrls {
                         tokio::task::block_in_place(|| -> anyhow::Result<RgbaImage> {
                             Ok(image::io::Reader::new(Cursor::new(&*data))
                                 .with_guessed_format()
-                                .with_context(|| format!("Failed to guess format of {}", url))?
+                                .with_context(|| format!("Failed to guess format of {url}"))?
                                 .decode()
-                                .with_context(|| format!("Failed to decode image {}", url))?
+                                .with_context(|| format!("Failed to decode image {url}"))?
                                 .into_rgba8())
                         })
                     }

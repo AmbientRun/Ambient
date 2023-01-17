@@ -74,7 +74,7 @@ impl AnimationClipRef {
             AnimationClipRef::FromModelAsset(def) => {
                 AnimationClipRetargetedFromModel { clip: def.clone(), translation_retargeting: retarget, retarget_model: model }
                     .peek(&assets)
-                    .map(|x| x.map_err(|err| format!("{:#}", err)))
+                    .map(|x| x.map_err(|err| format!("{err:#}")))
             }
         }
     }
@@ -113,7 +113,7 @@ impl AnimationAction {
 }
 
 #[derive(Debug, Default, Display, Clone, PartialEq, Serialize, Deserialize)]
-#[display(fmt = "{:?}", self)]
+#[display(fmt = "{self:?}")]
 pub struct AnimationController {
     pub actions: Vec<AnimationAction>,
     /// Apply the base pose of the first animation action
@@ -277,15 +277,15 @@ pub fn animation_bind_id_from_name(name: &str) -> String {
     let name = if let Some((_a, b)) = name.split_once(':') { b.to_string() } else { name.to_string() };
     fn normalize_name(value: &str) -> String {
         if let Some(index) = value.strip_prefix("Thumb") {
-            return format!("HandThumb{}", index);
+            return format!("HandThumb{index}");
         } else if let Some(index) = value.strip_prefix("Index") {
-            return format!("HandIndex{}", index);
+            return format!("HandIndex{index}");
         } else if let Some(index) = value.strip_prefix("Middle") {
-            return format!("HandMiddle{}", index);
+            return format!("HandMiddle{index}");
         } else if let Some(index) = value.strip_prefix("Ring") {
-            return format!("HandRing{}", index);
+            return format!("HandRing{index}");
         } else if let Some(index) = value.strip_prefix("Pinky") {
-            return format!("HandPinky{}", index);
+            return format!("HandPinky{index}");
         }
         match value {
             "Knee" => "Leg".to_string(),

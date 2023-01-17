@@ -18,7 +18,7 @@ impl<T: ToString + PartialEq + Clone + Debug + Sync + Send + 'static> ElementCom
         FlowRow(
             tabs.into_iter()
                 .map(|tab| {
-                    Button::new(&tab.to_string(), closure!(clone on_change, clone tab, |_| on_change.0(tab.clone())))
+                    Button::new(tab.to_string(), closure!(clone on_change, clone tab, |_| on_change.0(tab.clone())))
                         .toggled(tab == value)
                         .el()
                 })

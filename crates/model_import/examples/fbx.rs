@@ -1,4 +1,4 @@
-use elements_app::{App, AppBuilder};
+use elements_app::AppBuilder;
 use elements_core::{
     asset_cache, camera::{active_camera, far}, hierarchy::dump_world_hierarchy_to_tmp_file, main_scene, transform::*
 };

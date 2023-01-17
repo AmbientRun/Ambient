@@ -93,7 +93,7 @@ impl ComponentRegistry {
             primitive_component.as_component_mut().set_index(index);
         }
         let reg_comp = RegistryComponent { component: component.clone_boxed(), primitive_component_type, primitive_component };
-        self.components.push(reg_comp.clone());
+        self.components.push(reg_comp);
         self.name_to_idx.insert(id.to_owned(), index);
         self.idx_to_id.insert(component.get_index(), id.to_owned());
     }

@@ -9,7 +9,7 @@ use serde::{
 };
 
 #[derive(Debug, Clone, Copy, Display, Eq, PartialEq, Hash, PartialOrd, Ord)]
-#[display(fmt = "{}:{}:{}", namespace, id, gen)]
+#[display(fmt = "{namespace}:{id}:{gen}")]
 pub struct EntityId {
     pub namespace: u8,
     pub id: usize,

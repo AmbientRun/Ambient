@@ -71,7 +71,7 @@ pub fn TextInput(
                             on_submit.0(value.clone());
                         }
                     } else if c != '\t' && c != '\n' && c != '\r' {
-                        on_change.0(format!("{}{}", value, c))
+                        on_change.0(format!("{value}{c}"))
                     }
                     true
                 })),

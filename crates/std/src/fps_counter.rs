@@ -72,7 +72,7 @@ impl FpsSample {
     }
     pub fn dump_short(&self) -> String {
         let fps = self.fps();
-        let fps = if fps > 1. { format!("{:.0}", fps) } else { format!("{:.2}", fps) };
+        let fps = if fps > 1. { format!("{fps:.0}") } else { format!("{fps:.2}") };
         format!("{fps} fps/{:.1} ms max", self.slowest_frame.as_secs_f64() * 1000.)
     }
     pub fn dump_server(&self) -> String {

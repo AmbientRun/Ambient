@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
 use collider::collider_shapes;
-use elements_core::{asset_cache};
+use elements_core::asset_cache;
 use elements_ecs::{components, query, DynSystem, EntityData, EntityId, FnSystem, SystemGroup, World};
 use elements_network::server::{ForkingEvent, ShutdownEvent};
 use elements_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 use glam::{vec3, Mat4, Vec3};
-use helpers::{release_px_scene};
+use helpers::release_px_scene;
 use parking_lot::Mutex;
 use physx::{
     actor_aggregate, articulation_cache, articulation_link, articulation_reduce_coordinate, character_controller, fixed_joint, physics_shape, revolute_joint, rigid_actor, rigid_dynamic, rigid_static
@@ -264,7 +264,7 @@ pub fn on_forking_systems() -> SystemGroup<ForkingEvent> {
 }
 pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
     SystemGroup::new(
-        "dims/phyiscs/on_shutdown_systems",
+        "dims/physics/on_shutdown_systems",
         vec![Box::new(FnSystem::new(|world, _| {
             world.resource(main_physics_scene()).fetch_results(true);
             release_px_scene(*world.resource(main_physics_scene()));

@@ -25,7 +25,7 @@ impl Hash for PyramidMesh {
     where
         H: ::std::hash::Hasher,
     {
-        format!("{:?}", self).hash(state);
+        format!("{self:?}").hash(state);
     }
 }
 impl Default for PyramidMesh {

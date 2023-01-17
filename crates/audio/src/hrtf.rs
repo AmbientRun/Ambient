@@ -367,8 +367,8 @@ impl FaceBsp {
         // We always sort edges and then choose the first one for splitting, but randomly choosing
         // the splitting plane is more optimal. Here is the simplest LCG random generator. The
         // parameters were copied from Numerical Recipes.
-        let first_idx = ((edges.len() as u32).overflowing_mul(1664525).0 + 1013904223) as u32
-            % edges.len() as u32;
+        let first_idx =
+            ((edges.len() as u32).overflowing_mul(1664525).0 + 1013904223) % edges.len() as u32;
         edges.swap(0, first_idx as usize);
         edges
     }
@@ -391,9 +391,7 @@ impl FaceBsp {
         } else {
             assert!(
                 !edges.is_empty(),
-                "No more remaining edges,\nnodes: {:?},\nfaces: {:?}",
-                nodes,
-                faces
+                "No more remaining edges,\nnodes: {nodes:?},\nfaces: {faces:?}"
             );
             Self::build(nodes, edges, faces, vertices);
         }
@@ -766,7 +764,7 @@ where
             );
 
             let start_index = i as usize * self.block_len;
-            let end_index = (i as usize + 1) * self.block_len as usize;
+            let end_index = (i as usize + 1) * self.block_len;
 
             // Chunked writing
             let out = &mut output[start_index..end_index];

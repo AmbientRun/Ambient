@@ -1,12 +1,6 @@
-use std::{
-    sync::Arc
-};
-
+use std::sync::Arc;
 
 use derive_more::From;
-
-
-
 
 use crate::{
     error::Result, vorbis::{VorbisDecodeStream, VorbisTrack}, wav::{WavDecodeStream, WavTrack}, Source
@@ -45,7 +39,7 @@ impl Track {
 
     pub fn decode(&self) -> TrackDecodeStream {
         match self {
-            Track::Vorbis(v) => TrackDecodeStream::Vorbis(v.decode()),
+            Track::Vorbis(v) => TrackDecodeStream::Vorbis(Box::new(v.decode())),
             Track::Wav(v) => TrackDecodeStream::Wav(v.decode()),
         }
     }
@@ -53,7 +47,7 @@ impl Track {
 
 #[derive(Clone)]
 pub enum TrackDecodeStream {
-    Vorbis(VorbisDecodeStream),
+    Vorbis(Box<VorbisDecodeStream>),
     Wav(WavDecodeStream),
 }
 

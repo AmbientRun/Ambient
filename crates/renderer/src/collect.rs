@@ -223,7 +223,7 @@ impl RendererCollect {
             let count = (primitives_count as f32 / COLLECT_WORKGROUP_SIZE as f32).ceil() as u32;
             let width = if count < COLLECT_CHUNK_SIZE { count } else { COLLECT_CHUNK_SIZE };
             let height = (count as f32 / COLLECT_CHUNK_SIZE as f32).ceil() as u32;
-            cpass.dispatch_workgroups(width as u32, height, 1);
+            cpass.dispatch_workgroups(width, height, 1);
         }
 
         #[cfg(target_os = "macos")]

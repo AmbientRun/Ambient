@@ -8,7 +8,7 @@ impl<T> From<anyhow::Result<T>> for Loadable<T> {
     fn from(res: anyhow::Result<T>) -> Self {
         match res {
             Ok(value) => Loadable::Loaded(value),
-            Err(err) => Loadable::Error(format!("{:#}", err)),
+            Err(err) => Loadable::Error(format!("{err:#}")),
         }
     }
 }

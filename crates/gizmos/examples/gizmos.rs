@@ -1,4 +1,4 @@
-use elements_app::{App, AppBuilder};
+use elements_app::AppBuilder;
 use elements_core::{camera::active_camera, main_scene};
 use elements_ecs::World;
 use elements_gizmos::{gizmos, GizmoPrimitive};

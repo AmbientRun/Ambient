@@ -302,7 +302,7 @@ impl TreeRenderer {
     }
     pub fn dump(&self, f: &mut dyn std::io::Write) {
         for (key, node) in self.tree.iter() {
-            writeln!(f, "    shader {:?}", key).unwrap();
+            writeln!(f, "    shader {key:?}").unwrap();
             node.dump(f);
         }
     }

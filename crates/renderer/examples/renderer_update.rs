@@ -1,4 +1,4 @@
-use elements_app::{gpu, App, AppBuilder};
+use elements_app::{gpu, AppBuilder};
 use elements_core::{asset_cache, camera::active_camera, main_scene, transform::*};
 use elements_ecs::{EntityData, EntityId, FnSystem, World};
 use elements_meshes::{CubeMeshKey, QuadMeshKey};

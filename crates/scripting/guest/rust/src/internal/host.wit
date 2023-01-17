@@ -1,0 +1,185 @@
+record entity-id {
+    namespace: u8,
+    id: u64,
+    gen: s32,
+}
+
+record vec2 {
+    x: float32,
+    y: float32,
+}
+
+record vec3 {
+    x: float32,
+    y: float32,
+    z: float32,
+}
+
+record vec4 {
+    x: float32,
+    y: float32,
+    z: float32,
+    w: float32,
+}
+
+record quat {
+    x: float32,
+    y: float32,
+    z: float32,
+    w: float32,
+}
+
+record mat4 {
+    x: vec4,
+    y: vec4,
+    z: vec4,
+    w: vec4,
+}
+
+enum entity-filter {
+    any,
+    player,
+}
+
+record object-ref {
+    id: string,
+}
+
+record entity-uid {
+    id: string,
+}
+
+/// An action in an animation.
+record animation-action {
+    // we assume only URLs for now
+    /// The animation clip URL to play.
+    clip-url: string,
+    // no time: we assume this is being played at the time of playback
+    // will be relaxed later
+    /// Whether or not this action should loop
+    looping: bool,
+    /// How strongly this action applies to the final blend [0-1]
+    weight: float32,
+}
+
+/// Controls the animations for an entity.
+record animation-controller {
+    /// All of the actions that contribute to this animation.
+    /// Will be blended together.
+    actions: list<animation-action>,
+    /// Whether or not the first action's pose should be used as a base pose.
+    apply-base-pose: bool,
+}
+
+variant component-list-type {
+    type-empty(list<tuple<>>),
+    type-bool(list<bool>),
+    type-entity-id(list<entity-id>),
+    type-f32(list<float32>),
+    type-f64(list<float64>),
+    type-mat4(list<mat4>),
+    type-i32(list<s32>),
+    type-quat(list<quat>),
+    type-string(list<string>),
+    type-u32(list<u32>),
+    type-u64(list<u64>),
+    type-vec2(list<vec2>),
+    type-vec3(list<vec3>),
+    type-vec4(list<vec4>),
+    type-object-ref(list<object-ref>),
+    type-entity-uid(list<entity-uid>),
+}
+
+variant component-option-type {
+    type-empty(option<tuple<>>),
+    type-bool(option<bool>),
+    type-entity-id(option<entity-id>),
+    type-f32(option<float32>),
+    type-f64(option<float64>),
+    type-mat4(option<mat4>),
+    type-i32(option<s32>),
+    type-quat(option<quat>),
+    type-string(option<string>),
+    type-u32(option<u32>),
+    type-u64(option<u64>),
+    type-vec2(option<vec2>),
+    type-vec3(option<vec3>),
+    type-vec4(option<vec4>),
+    type-object-ref(option<object-ref>),
+    type-entity-uid(option<entity-uid>),
+}
+
+variant component-type {
+    type-empty(tuple<>),
+    type-bool(bool),
+    type-entity-id(entity-id),
+    type-f32(float32),
+    type-f64(float64),
+    type-mat4(mat4),
+    type-i32(s32),
+    type-quat(quat),
+    type-string(string),
+    type-u32(u32),
+    type-u64(u64),
+    type-vec2(vec2),
+    type-vec3(vec3),
+    type-vec4(vec4),
+    type-object-ref(object-ref),
+    type-entity-uid(entity-uid),
+    type-list(component-list-type),
+    type-option(component-option-type),
+}
+
+component-get-index: func(id: string) -> option<u64>
+type components = list<tuple<u64, component-type>>
+
+// entity
+entity-spawn: func(data: components, persistent: bool) -> entity-uid
+entity-spawn-template: func(object-ref: object-ref, position: vec3, rotation: option<quat>, scale: option<vec3>, persistent: bool) -> entity-uid
+entity-despawn: func(entity: entity-id) -> bool
+entity-set-animation-controller: func(entity: entity-id, animation-controller: animation-controller)
+entity-set-transform: func(entity: entity-id, transform: mat4, relative: bool)
+entity-get-linear-velocity: func(entity: entity-id) -> option<vec3>
+entity-in-area: func(position: vec3, radius: float32) -> list<entity-id>
+
+entity-get-component: func(entity: entity-id, index: u64) -> option<component-type>
+entity-set-component: func(entity: entity-id, index: u64, value: component-type)
+entity-set-components: func(entity: entity-id, data: components)
+entity-has-component: func(entity: entity-id, index: u64) -> bool
+entity-remove-component: func(entity: entity-id, index: u64)
+entity-remove-components: func(entity: entity-id, indices: list<u64>)
+
+entity-exists: func(entity: entity-id) -> bool
+entity-query: func(index: u64) -> list<entity-id>
+entity-lookup-uid: func(uid: entity-uid) -> option<entity-id>
+
+record query {
+    components: list<u64>,
+    include: list<u64>,
+    exclude: list<u64>,
+    changed: list<u64>,
+}
+
+enum query-event {
+    frame,
+    spawn,
+    despawn
+}
+
+entity-query2: func(q: query, t: query-event) -> u64
+query-eval: func(q: u64) -> list<tuple<entity-id, list<component-type>>>
+
+// physics
+physics-apply-force: func(entities: list<entity-id>, force: vec3)
+physics-explode-bomb: func(position: vec3, force: float32, radius: float32, falloff-radius: option<float32>)
+physics-set-gravity: func(gravity: vec3)
+physics-unfreeze: func(entity: entity-id)
+physics-freeze: func(entity: entity-id)
+physics-start-motor: func(entity: entity-id, velocity: float32)
+physics-stop-motor: func(entity: entity-id)
+physics-raycast-first: func(origin: vec3, direction: vec3) -> option<tuple<entity-id, float32>>
+physics-raycast: func(origin: vec3, direction: vec3) -> list<tuple<entity-id, float32>>
+
+// event
+event-subscribe: func(name: string)
+event-send: func(name: string, data: components)

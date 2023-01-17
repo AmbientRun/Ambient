@@ -1,6 +1,6 @@
 use std::f32::consts::TAU;
 
-use elements_app::{App, AppBuilder};
+use elements_app::AppBuilder;
 use elements_cameras::UICamera;
 use elements_core::{camera::active_camera, runtime};
 use elements_ecs::World;
@@ -27,13 +27,13 @@ impl ElementComponent for Example {
         let points: (Vec<_>, Vec<_>, Vec<_>) = (0..max)
             .map(|v| {
                 let v = v as f32 / max as f32;
-                let x1 = v as f32 * 8.0 - 5.5;
+                let x1 = v * 8.0 - 5.5;
                 let y1 = (k * 0.1 + x1 * TAU).sin() * (k * x1).cos();
 
-                let x2 = v as f32 * 32.0 - 5.0;
+                let x2 = v * 32.0 - 5.0;
                 let y2 = k * x2 * x2 * ((k + x2).sin());
 
-                let x3 = v as f32 * 2.0;
+                let x3 = v * 2.0;
                 let y3 = (k * x3).exp();
 
                 (vec2(x1, y1), vec2(x2, y2), vec2(x3, y3))

@@ -13,8 +13,8 @@ const FBX_TIME: f32 = 46186158000.;
 
 pub fn get_animations(doc: &FbxDoc) -> HashMap<String, AnimationClip> {
     doc.animation_stacks
-        .iter()
-        .map(|(_, stack)| {
+        .values()
+        .map(|stack| {
             let mut clip = AnimationClip {
                 id: stack.name.clone(),
                 tracks: stack
@@ -39,13 +39,13 @@ pub fn get_animations(doc: &FbxDoc) -> HashMap<String, AnimationClip> {
                                                     "Lcl Translation" => translation(),
                                                     "Lcl Scaling" => scale(),
                                                     "Lcl Rotation" => euler_rotation(),
-                                                    _ => panic!("Unsupported target property: {}", property),
+                                                    _ => panic!("Unsupported target property: {property}"),
                                                 },
                                                 field: match field as &str {
                                                     "d|X" => Vec3Field::X,
                                                     "d|Y" => Vec3Field::Y,
                                                     "d|Z" => Vec3Field::Z,
-                                                    _ => panic!("Unsupported field: {}", field),
+                                                    _ => panic!("Unsupported field: {field}"),
                                                 },
                                                 data: match property as &str {
                                                     "Lcl Rotation" => curve.key_value_float.iter().map(|v| v.to_radians()).collect(),

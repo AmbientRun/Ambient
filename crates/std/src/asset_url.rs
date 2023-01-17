@@ -64,7 +64,7 @@ impl AbsAssetUrl {
         self.0.to_string().replace("://", "/")
     }
     pub fn absolute_cache_path(&self, assets: &AssetCache) -> PathBuf {
-        AssetsCacheDir.get(assets).join(self.relative_cache_path()).into()
+        AssetsCacheDir.get(assets).join(self.relative_cache_path())
     }
     /// This is always lowercase
     pub fn extension(&self) -> Option<String> {
@@ -262,16 +262,16 @@ impl From<Arc<AbsAssetUrl>> for AssetUrl {
 impl std::fmt::Debug for AssetUrl {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Absolute(arg0) => write!(f, "{}", arg0),
-            Self::Relative(arg0) => write!(f, "{}", arg0),
+            Self::Absolute(arg0) => write!(f, "{arg0}"),
+            Self::Relative(arg0) => write!(f, "{arg0}"),
         }
     }
 }
 impl std::fmt::Display for AssetUrl {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Absolute(arg0) => write!(f, "{}", arg0),
-            Self::Relative(arg0) => write!(f, "{}", arg0),
+            Self::Absolute(arg0) => write!(f, "{arg0}"),
+            Self::Relative(arg0) => write!(f, "{arg0}"),
         }
     }
 }
@@ -303,7 +303,7 @@ impl<'de> Deserialize<'de> for AssetUrl {
             where
                 E: serde::de::Error,
             {
-                AssetUrl::parse(v).map_err(|err| E::custom(format!("Bad asset url format: {:?}", err)))
+                AssetUrl::parse(v).map_err(|err| E::custom(format!("Bad asset url format: {err:?}")))
             }
         }
 
@@ -426,7 +426,7 @@ pub enum AssetType {
 
 impl AssetType {
     pub fn to_snake_case(&self) -> String {
-        format!("{:?}", self).to_case(Case::Snake)
+        format!("{self:?}").to_case(Case::Snake)
     }
 }
 
@@ -470,8 +470,8 @@ impl GetAssetType for ObjectAssetType {
     }
 }
 impl TypedAssetUrl<ObjectAssetType> {
-    pub fn model_crate(&self) -> Option<TypedAssetUrl<ModelCrateAssetType>> {
-        Some(self.join("..").ok()?)
+    pub fn asset_crate(&self) -> Option<TypedAssetUrl<AssetCrateAssetType>> {
+        self.join("..").ok()
     }
 }
 pub type ObjectRef = TypedAssetUrl<ObjectAssetType>;
@@ -484,8 +484,8 @@ impl GetAssetType for ModelAssetType {
     }
 }
 impl TypedAssetUrl<ModelAssetType> {
-    pub fn model_crate(&self) -> Option<TypedAssetUrl<ModelCrateAssetType>> {
-        Some(self.join("..").ok()?)
+    pub fn asset_crate(&self) -> Option<TypedAssetUrl<AssetCrateAssetType>> {
+        self.join("..").ok()
     }
 }
 
@@ -497,8 +497,8 @@ impl GetAssetType for AnimationAssetType {
     }
 }
 impl TypedAssetUrl<AnimationAssetType> {
-    pub fn model_crate(&self) -> Option<TypedAssetUrl<ModelCrateAssetType>> {
-        Some(self.join("..").ok()?)
+    pub fn asset_crate(&self) -> Option<TypedAssetUrl<AssetCrateAssetType>> {
+        self.join("..").ok()
     }
 }
 

@@ -207,8 +207,7 @@ impl AppBuilder {
         GpuKey.insert(&assets, gpu.clone());
         WindowKey.insert(&assets, window.clone());
 
-        let app_resources =
-            AppResources { gpu: gpu.clone(), runtime: runtime.handle().clone(), assets: assets.clone(), window: Some(window.clone()) };
+        let app_resources = AppResources { gpu, runtime: runtime.handle().clone(), assets, window: Some(window.clone()) };
 
         let resources = world_instance_resources(app_resources);
         world.add_components(world.resource_entity(), resources).unwrap();
@@ -393,6 +392,7 @@ impl App {
 #[derive(Debug)]
 pub struct ExamplesSystem;
 impl System<Event<'static, ()>> for ExamplesSystem {
+    #[allow(clippy::single_match)]
     fn run(&mut self, world: &mut World, event: &Event<'static, ()>) {
         match event {
             Event::WindowEvent {

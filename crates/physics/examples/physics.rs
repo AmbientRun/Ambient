@@ -1,8 +1,8 @@
-use elements_app::{gpu, App, AppBuilder};
+use elements_app::{gpu, AppBuilder};
 use elements_core::{asset_cache, camera::active_camera, main_scene, transform::scale, FixedTimestepSystem};
 use elements_ecs::{FnSystem, World};
 use elements_element::ElementComponentExt;
-use elements_physics::physx::{physics, physics_controlled, rigid_dynamic, rigid_static, sync_ecs_physics, PhysicsKey};
+use elements_physics::physx::{physics_controlled, rigid_dynamic, rigid_static, sync_ecs_physics, PhysicsKey};
 use elements_primitives::{Cube, Quad};
 use elements_renderer::color;
 use elements_std::{asset_cache::SyncAssetKeyExt, math::SphericalCoords};

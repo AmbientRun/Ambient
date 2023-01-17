@@ -50,7 +50,7 @@ pub fn import_from_fbx_reader(
                 let meshes = geo.to_cpu_meshes(&doc.skins, &doc.clusters);
                 n_meshes.insert(*id, meshes.len());
                 for (index, mesh) in meshes.into_iter().enumerate() {
-                    asset_crate.meshes.insert(format!("{}_{}", id, index), mesh);
+                    asset_crate.meshes.insert(format!("{id}_{index}"), mesh);
                 }
             }
             let animations = animation::get_animations(&doc);
@@ -298,7 +298,7 @@ impl FbxConnection {
         let t = match t {
             "OO" => FbxConnectionType::ObjectObject,
             "OP" => FbxConnectionType::ObjectProperty,
-            _ => panic!("Unexpected: {}", t),
+            _ => panic!("Unexpected: {t}"),
         };
         let to = node.attributes()[1].get_i64().unwrap();
         let from = node.attributes()[2].get_i64().unwrap();

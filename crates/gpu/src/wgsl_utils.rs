@@ -4,10 +4,7 @@ pub fn wgsl_interpolate() -> String {
             "fn interpolate_{name}(x: {xt}, x0: {xt}, x1: {xt}, y0: {yt}, y1: {yt}) -> {yt} {{
             let p = (x - x0) / (x1 - x0);
             return mix(y0, y1, {yt}(p));
-          }}",
-            name = name,
-            xt = xt,
-            yt = yt
+          }}"
         )
     }
     fn interpolate_clamped(name: &str, xt: &str, yt: &str) -> String {
@@ -15,10 +12,7 @@ pub fn wgsl_interpolate() -> String {
             "fn interpolate_clamped_{name}(x: {xt}, x0: {xt}, x1: {xt}, y0: {yt}, y1: {yt}) -> {yt} {{
             let p = clamp((x - x0) / (x1 - x0), {xt}(0.), {xt}(1.));
             return mix(y0, y1, {yt}(p));
-          }}",
-            name = name,
-            xt = xt,
-            yt = yt
+          }}"
         )
     }
     [

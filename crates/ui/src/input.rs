@@ -117,7 +117,7 @@ impl Editor for f32 {
         if let Some(on_change) = on_change {
             F32Input { value, on_change }.el()
         } else {
-            Text::el(format!("{}", value))
+            Text::el(format!("{value}"))
         }
     }
 }
@@ -126,7 +126,7 @@ impl Editor for i32 {
         if let Some(on_change) = on_change {
             I32Input { value, on_change }.el()
         } else {
-            Text::el(format!("{}", value))
+            Text::el(format!("{value}"))
         }
     }
 }
@@ -135,7 +135,7 @@ impl Editor for u32 {
         if let Some(on_change) = on_change {
             U32Input { value, on_change }.el()
         } else {
-            Text::el(format!("{}", value))
+            Text::el(format!("{value}"))
         }
     }
 }
@@ -144,7 +144,7 @@ impl Editor for u64 {
         if let Some(on_change) = on_change {
             U64Input { value, on_change }.el()
         } else {
-            Text::el(format!("{}", value))
+            Text::el(format!("{value}"))
         }
     }
 }
@@ -153,7 +153,7 @@ impl Editor for usize {
         if let Some(on_change) = on_change {
             UsizeInput { value, on_change }.el()
         } else {
-            Text::el(format!("{}", value))
+            Text::el(format!("{value}"))
         }
     }
 }
@@ -495,7 +495,7 @@ impl Editor for Vec2 {
         if let Some(on_change) = on_change {
             Vec2Editor { value, on_change }.el()
         } else {
-            Text::el(format!("{}", value))
+            Text::el(format!("{value}"))
         }
     }
 }
@@ -542,7 +542,7 @@ impl Editor for Vec3 {
         if let Some(on_change) = on_change {
             Vec3Editor { value, on_change }.el()
         } else {
-            Text::el(format!("{}", value))
+            Text::el(format!("{value}"))
         }
     }
 }
@@ -598,7 +598,7 @@ impl Editor for Vec4 {
             Vec4Editor { value, on_change }.el()
         } else {
             // Removed unneccesary clone
-            Text::el(format!("{}", value))
+            Text::el(format!("{value}"))
         }
     }
 }

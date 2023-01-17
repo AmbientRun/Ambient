@@ -80,9 +80,7 @@ impl Mesh {
     pub fn invert_indicies(&mut self) {
         if let Some(indicies) = &mut self.indices {
             for chunk in indicies.chunks_exact_mut(3) {
-                let x = chunk[1];
-                chunk[1] = chunk[2];
-                chunk[2] = x;
+                chunk.swap(1, 2);
             }
         }
     }

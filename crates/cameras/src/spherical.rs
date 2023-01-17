@@ -10,7 +10,7 @@ components!("camera", {
 });
 
 #[derive(Debug, Default, Display, Clone)]
-#[display(fmt = "{:?}", self)]
+#[display(fmt = "{self:?}")]
 pub struct SphericalCamera {
     is_rotating: bool,
     is_up_pressed: bool,

@@ -145,8 +145,8 @@ impl ButtonStyle {
         } else {
             let content = content.set(font_style(), FontStyle::Bold);
             let tooltip = if let Some(hotkey) = hotkey {
-                let modifier = if hotkey_modifier != ModifiersState::empty() { format!("{:?} + ", hotkey_modifier) } else { String::new() };
-                let hotkey = Text::el(format!("[{}{:?}]", modifier, hotkey));
+                let modifier = if hotkey_modifier != ModifiersState::empty() { format!("{hotkey_modifier:?} + ") } else { String::new() };
+                let hotkey = Text::el(format!("[{modifier}{hotkey:?}]"));
                 if let Some(tooltip) = tooltip {
                     Some(FlowColumn::el([tooltip, hotkey]).set(space_between_items(), 10.))
                 } else {

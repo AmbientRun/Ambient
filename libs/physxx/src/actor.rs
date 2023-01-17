@@ -48,7 +48,7 @@ impl<T: AsPxActor + 'static> PxActor for T {
         }
     }
     fn set_actor_flag(&self, flag: PxActorFlag, value: bool) {
-        unsafe { physx_sys::PxActor_setActorFlag_mut(self.as_actor().0, flag.bits as u32, value) }
+        unsafe { physx_sys::PxActor_setActorFlag_mut(self.as_actor().0, flag.bits, value) }
     }
     fn set_actor_flags(&self, flags: PxActorFlag) {
         unsafe { physx_sys::PxActor_setActorFlags_mut(self.as_actor().0, physx_sys::PxActorFlags { mBits: flags.bits as u8 }) }
@@ -312,7 +312,7 @@ impl<T: AsPxRigidBody + ?Sized> PxRigidBody for T {
         unsafe { PxRigidBodyFlag::from_bits(physx_sys::PxRigidBody_getRigidBodyFlags(self.as_rigid_body().0).mBits as u32).unwrap() }
     }
     fn set_rigid_body_flag(&self, flag: PxRigidBodyFlag, value: bool) {
-        unsafe { physx_sys::PxRigidBody_setRigidBodyFlag_mut(self.as_rigid_body().0, flag.bits as u32, value) }
+        unsafe { physx_sys::PxRigidBody_setRigidBodyFlag_mut(self.as_rigid_body().0, flag.bits, value) }
     }
     fn set_rigid_body_flags(&self, flags: PxRigidBodyFlag) {
         unsafe {

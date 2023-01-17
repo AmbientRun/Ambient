@@ -188,12 +188,15 @@ impl FbxGeometry {
                         .iter()
                         .map(|uv| match uv.mapping_info_type {
                             FbxMappingInformationType::ByPolygonVertex => {
-                                uv.uvs[match uv.mapping_ref_type {
-                                    FbxReferenceInformationType::Direct => polygon_vertex_index,
-                                    FbxReferenceInformationType::IndexToDirect => {
-                                        uv.uv_indices.as_ref().unwrap()[polygon_vertex_index] as usize
-                                    }
-                                }]
+                                let index = match uv.mapping_ref_type {
+                                    FbxReferenceInformationType::Direct => polygon_vertex_index as i32,
+                                    FbxReferenceInformationType::IndexToDirect => uv.uv_indices.as_ref().unwrap()[polygon_vertex_index],
+                                };
+                                if index >= 0 {
+                                    uv.uvs[index as usize]
+                                } else {
+                                    Default::default()
+                                }
                             }
                             FbxMappingInformationType::ByVertex => {
                                 uv.uvs[match uv.mapping_ref_type {
