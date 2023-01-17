@@ -38,5 +38,5 @@ pub struct OutAsset {
     pub source: Option<AbsAssetUrl>,
 }
 pub fn asset_id_from_url(url: &AbsAssetUrl) -> String {
-    slugify::slugify(&format!("{}{}", url.0.host_str().unwrap(), url.0.path()), "", "_", None)
+    slugify::slugify(&format!("{}{}", url.0.host_str().unwrap_or(""), url.0.path()), "", "_", None)
 }
