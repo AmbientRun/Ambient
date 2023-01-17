@@ -470,7 +470,7 @@ impl GetAssetType for ObjectAssetType {
     }
 }
 impl TypedAssetUrl<ObjectAssetType> {
-    pub fn asset_crate(&self) -> Option<TypedAssetUrl<AssetCrateAssetType>> {
+    pub fn model_crate(&self) -> Option<TypedAssetUrl<ModelCrateAssetType>> {
         self.join("..").ok()
     }
 }
@@ -484,7 +484,7 @@ impl GetAssetType for ModelAssetType {
     }
 }
 impl TypedAssetUrl<ModelAssetType> {
-    pub fn asset_crate(&self) -> Option<TypedAssetUrl<AssetCrateAssetType>> {
+    pub fn model_crate(&self) -> Option<TypedAssetUrl<ModelCrateAssetType>> {
         self.join("..").ok()
     }
 }
@@ -497,7 +497,7 @@ impl GetAssetType for AnimationAssetType {
     }
 }
 impl TypedAssetUrl<AnimationAssetType> {
-    pub fn asset_crate(&self) -> Option<TypedAssetUrl<AssetCrateAssetType>> {
+    pub fn model_crate(&self) -> Option<TypedAssetUrl<ModelCrateAssetType>> {
         self.join("..").ok()
     }
 }
