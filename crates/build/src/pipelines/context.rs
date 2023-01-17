@@ -30,6 +30,9 @@ impl PipelineCtx {
     pub fn out_root(&self) -> AbsAssetUrl {
         self.process_ctx.out_root.push(&self.root_path).unwrap()
     }
+    pub fn pipeline_path(&self) -> RelativePathBuf {
+        self.pipeline_file.relative_path(self.process_ctx.in_root.path())
+    }
 
     pub async fn write_model_crate(&self, model_crate: &ModelCrate, path: &RelativePath) -> TypedAssetUrl<ModelCrateAssetType> {
         join_all(model_crate.to_items().iter().map(|item| self.write_file(path.join(&item.path), (*item.data).clone()))).await;
@@ -44,10 +47,10 @@ impl PipelineCtx {
     ) -> Vec<OutAsset> {
         let res = tokio::spawn({
             let ctx = self.clone();
-            async move { process(ctx.clone()).await.with_context(|| format!("In pipeline {}", ctx.pipeline_file)) }
+            async move { process(ctx.clone()).await.with_context(|| format!("In pipeline {}", ctx.pipeline_path())) }
         })
         .await
-        .with_context(|| format!("In pipeline {}", self.pipeline_file));
+        .with_context(|| format!("In pipeline {}", self.pipeline_path()));
         let err = match res {
             Ok(Ok(res)) => return res,
             Ok(Err(err)) => err,
@@ -101,15 +104,15 @@ impl PipelineCtx {
                     let file = file.clone();
                     async move {
                         let _permit = semaphore.acquire().await;
-                        (ctx.process_ctx.on_status)(format!("[{}] Processing file {}/{}: {}", ctx.pipeline_file, i + 1, n_files, file))
+                        (ctx.process_ctx.on_status)(format!("[{}] Processing file {}/{}: {}", ctx.pipeline_path(), i + 1, n_files, file))
                             .await;
                         process_file(ctx.clone(), file.clone())
                             .await
-                            .with_context(|| format!("In pipeline {}, at file {}", ctx.pipeline_file, file))
+                            .with_context(|| format!("In pipeline {}, at file {}", ctx.pipeline_path(), file))
                     }
                 })
                 .await
-                .with_context(|| format!("In pipeline {}, at file {}", ctx.pipeline_file, file));
+                .with_context(|| format!("In pipeline {}, at file {}", ctx.pipeline_path(), file));
                 let err = match res {
                     Ok(Ok(res)) => return res,
                     Ok(Err(err)) => err,
