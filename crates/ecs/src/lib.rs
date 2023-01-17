@@ -12,7 +12,6 @@ use std::{
 use anyhow::Context;
 use bit_set::BitSet;
 use bit_vec::BitVec;
-use component2::Serializable;
 use elements_std::sparse_vec::SparseVec;
 use itertools::Itertools;
 /// Expose to macros
@@ -26,6 +25,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 mod archetype;
+mod attributes;
 mod component;
 pub mod component2;
 mod component_entry;
@@ -41,7 +41,8 @@ mod query;
 mod serialization;
 mod stream;
 pub use archetype::*;
-pub use component2::{AttributeEntry, Component, ComponentAttribute, ComponentDesc, ComponentValue, ComponentValueBase};
+pub use attributes::*;
+pub use component2::{AttributeEntry, Component, ComponentDesc, ComponentValue, ComponentValueBase};
 pub use component_entry::*;
 pub use component_registry::*;
 pub use component_unit::*;

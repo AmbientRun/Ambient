@@ -5,9 +5,7 @@ use serde::{
     de::{MapAccess, Visitor}, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer
 };
 
-use crate::{
-    component2::Serializable, dont_store, query, CreateResources, DeserEntityDataWithWarnings, EntityData, EntityId, World
-};
+use crate::{dont_store, query, CreateResources, DeserEntityDataWithWarnings, EntityData, EntityId, Serializable, World};
 
 impl Serialize for World {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {

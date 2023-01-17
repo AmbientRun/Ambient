@@ -6,7 +6,7 @@ use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
 use super::{ArchetypeFilter, Component, ComponentValue, EntityData, EntityId, FramedEventsReader, Query, QueryState, World};
-use crate::{component2::Serializable, ComponentDesc, ComponentEntry};
+use crate::{ComponentDesc, ComponentEntry, Serializable};
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct WorldDiff {

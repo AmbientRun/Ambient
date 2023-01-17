@@ -7,7 +7,7 @@ use serde::{
 };
 
 use super::*;
-use crate::component2::Serializable;
+use crate::Serializable;
 
 impl Serialize for ComponentEntry {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
@@ -69,7 +69,7 @@ impl From<EntityData> for Vec<ComponentEntry> {
 
 #[cfg(test)]
 mod test {
-    use crate::{component2::Serializable, *};
+    use crate::{Serializable, *};
 
     components!("test", {
         @[Serializable]
