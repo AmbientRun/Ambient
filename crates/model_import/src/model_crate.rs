@@ -5,7 +5,7 @@ use elements_animation::{animation_bind_id_from_name, AnimationClip};
 use elements_core::{
     bounding::local_bounding_aabb, hierarchy::children, name, transform::{local_to_parent, local_to_world, mesh_to_local, TransformSystem}
 };
-use elements_ecs::{query, query_mut, EntityData, EntityId, FrameEvent, System, World};
+use elements_ecs::{query, query_mut, Component, ComponentValue, EntityData, EntityId, FrameEvent, System, World};
 use elements_model::{
     animation_bind_id, model_def, model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, ModelDef, PbrRenderPrimitiveFromUrl
 };
@@ -436,6 +436,11 @@ impl ModelCrate {
         let o = EntityData::new().set(model_def(), ModelDef(dotdot_path(self.models.loc.path(ModelCrate::MAIN)).into())).spawn(&mut object);
         object.add_resource(children(), vec![o]);
         self.objects.insert(ModelCrate::MAIN, object);
+    }
+    pub fn add_component_to_object<T: ComponentValue>(&mut self, component: Component<T>, value: T) {
+        let world = self.object_world_mut();
+        let object = world.resource(children())[0];
+        world.add_component(object, component, value).unwrap();
     }
     pub fn create_character_collider(&mut self, radius: Option<f32>, height: Option<f32>) {
         let world = self.object_world_mut();

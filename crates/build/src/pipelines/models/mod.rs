@@ -3,6 +3,7 @@ use std::{path::PathBuf, sync::Arc};
 use elements_core::hierarchy::children;
 use elements_ecs::EntityData;
 use elements_model_import::{model_crate::ModelCrate, MaterialFilter, ModelTextureSize, ModelTransform, TextureResolver};
+use elements_physics::collider::{collider_type, ColliderType};
 use elements_std::asset_url::AssetType;
 use futures::FutureExt;
 use serde::{Deserialize, Serialize};
@@ -53,6 +54,8 @@ pub struct ModelsPipeline {
     force_assimp: bool,
     #[serde(default)]
     collider: Collider,
+    #[serde(default)]
+    collider_type: ColliderType,
     cap_texture_sizes: Option<ModelTextureSize>,
     #[serde(default)]
     collection_of_variants: bool,
@@ -87,6 +90,7 @@ impl ModelsPipeline {
             }
             Collider::Character { radius, height } => model_crate.create_character_collider(radius, height),
         }
+        model_crate.add_component_to_object(collider_type(), self.collider_type);
         let world = model_crate.object_world_mut();
         let obj = world.resource(children())[0];
         world.add_components(obj, self.object_components.clone()).unwrap();

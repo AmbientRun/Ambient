@@ -352,8 +352,6 @@ async fn model_from_prefab(
     model_crate.model_mut().transform(Mat4::from_cols(Vec4::Y, Vec4::Z, Vec4::X, Vec4::W));
 
     model_crate.create_object();
-    model_crate.create_collider_from_model(&ctx.ctx.assets())?;
-    model_crate.finalize_model();
     Ok(model_crate)
 }
 
