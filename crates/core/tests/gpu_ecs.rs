@@ -3,9 +3,7 @@ use std::sync::Arc;
 use elements_core::{
     gpu_components, gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorld, GpuWorldShaderModuleKey, GpuWorldSyncEvent, GpuWorldUpdater}
 };
-use elements_ecs::{
-    components, with_component_registry, ArchetypeFilter, Component, EntityData, EntityId, IComponent, System, SystemGroup, World
-};
+use elements_ecs::{components, with_component_registry, ArchetypeFilter, Component, EntityData, EntityId, System, SystemGroup, World};
 use elements_gpu::{
     gpu::{Gpu, GpuKey}, gpu_run::GpuRun
 };

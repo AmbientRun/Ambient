@@ -5,7 +5,7 @@ use elements_std::sparse_vec::SparseVec;
 
 use super::*;
 use crate::{
-    component::{ComponentBuffer, IComponentBuffer}, component2::ComponentEntry
+    component::{ComponentBuffer, IComponentBuffer}, ComponentEntry
 };
 
 pub(super) struct ArchComponentData(UnsafeCell<Box<dyn IComponentBuffer>>);

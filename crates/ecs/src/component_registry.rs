@@ -5,7 +5,7 @@ use once_cell::sync::Lazy;
 use parking_lot::RwLock;
 
 use super::*;
-use crate::component2::ComponentVTable;
+use crate::ComponentVTable;
 
 static COMPONENT_REGISTRY: Lazy<RwLock<ComponentRegistry>> = Lazy::new(|| RwLock::new(ComponentRegistry::default()));
 pub fn with_component_registry<R>(f: impl FnOnce(&ComponentRegistry) -> R + Sync + Send) -> R {

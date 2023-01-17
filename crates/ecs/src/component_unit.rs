@@ -9,28 +9,18 @@ use serde::{
 use super::*;
 use crate::component2::Serializable;
 
-// impl Clone for ComponentUnit {
-//     fn clone(&self) -> Self {
-//         Self { component: self.component.clone(), value: self.component.clone_value(&self.value) }
-//     }
-// }
-// impl std::fmt::Debug for ComponentUnit {
-//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-//         f.debug_struct("ComponentUnit").field("component", &self.component).field("value", &self.debug_value()).finish()
-//     }
-// }
-
 impl Serialize for ComponentEntry {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         let mut map = serializer.serialize_tuple(2)?;
         let ser = self.attribute::<Serializable>().expect("Component is not serializable");
 
         map.serialize_element(&self.desc())?;
-        map.serialize_element(&ser.serialize(&self))?;
+        map.serialize_element(&ser.serialize(self))?;
 
         map.end()
     }
 }
+
 impl<'de> Deserialize<'de> for ComponentEntry {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -104,7 +94,7 @@ mod test {
     pub fn test() {
         init();
         let source = ComponentEntry::new(ser_test(), "hello".to_string());
-        let ser = source.desc().to_json(&source).unwrap();
+        let ser = serde_json::to_string(&source).unwrap();
         assert_eq!(&ser, "[\"core::test::ser_test\",\"hello\"]");
         let deser: ComponentEntry = serde_json::from_str(&ser).unwrap();
         assert_eq!(source.downcast_ref::<String>(), deser.downcast_ref::<String>());

@@ -16,17 +16,7 @@ use downcast_rs::{impl_downcast, Downcast};
 use serde::{de::DeserializeOwned, Deserializer, Serializer};
 
 use super::*;
-use crate::component2::ComponentEntry;
-
-pub trait ComponentValueBase: Send + Sync + Downcast + 'static {
-    fn type_name(&self) -> &'static str {
-        std::any::type_name::<Self>()
-    }
-}
-
-impl<T: Send + Sync + 'static> ComponentValueBase for T {}
-pub trait ComponentValue: ComponentValueBase + Clone {}
-impl<T: ComponentValueBase + Clone> ComponentValue for T {}
+use crate::ComponentEntry;
 
 /// ExComponentValues support serilization, cloning, debug
 pub trait ExComponentValue: ComponentValue + Serialize + DeserializeOwned + Clone + std::fmt::Debug {}
@@ -223,7 +213,7 @@ impl<T: ComponentValue> ComponentBuffer<T> {
     }
 }
 
-impl<T: ComponentValue> IComponentBuffer for ComponentBuffer<T> {
+impl<T: ComponentValue + Clone> IComponentBuffer for ComponentBuffer<T> {
     fn len(&self) -> usize {
         self.data.len()
     }

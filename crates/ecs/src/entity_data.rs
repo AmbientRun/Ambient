@@ -9,9 +9,7 @@ use serde::{
 };
 
 use super::{with_component_registry, Component, ComponentValue, ECSError, EntityId, World};
-use crate::{
-    component2::{ComponentEntry, Serializable}, ComponentDesc, ComponentSet, ECSDeserializationWarnings
-};
+use crate::{ComponentDesc, ComponentEntry, ComponentSet, ECSDeserializationWarnings, Serializable};
 
 #[derive(Clone)]
 pub struct EntityData {
