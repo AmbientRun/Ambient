@@ -159,7 +159,7 @@ impl<F: Fn(&mut RgbaImage, Option<&RgbaImage>) + Sync + Send + 'static> FnImageT
 }
 impl<F: Fn(&mut RgbaImage, Option<&RgbaImage>) + Sync + Send + 'static> Clone for FnImageTransformer<F> {
     fn clone(&self) -> Self {
-        Self { func: self.func.clone(), name: self.name.clone() }
+        Self { func: self.func.clone(), name: self.name }
     }
 }
 impl<F: Fn(&mut RgbaImage, Option<&RgbaImage>) + Sync + Send + 'static> std::fmt::Debug for FnImageTransformer<F> {
