@@ -145,7 +145,7 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                     let mut asset_crate = pipeline.produce_crate(&ctx.assets()).await.unwrap();
                     for mat in asset_crate.materials.content.values_mut() {
                         let name = mat.name.clone().unwrap();
-                        let material_url = file.push(format!("Materials/{}.mat", name)).unwrap();
+                        let material_url = ctx.process_ctx.find_file(format!("**/Materials/{}.mat", name)).unwrap();
                         *mat = materials.lock().await.get_unity_material(&config, &guid_lookup, &material_url, &name).await.unwrap();
                         *mat = mat.relative_path_from(&out_root.push("materials").unwrap());
                     }
