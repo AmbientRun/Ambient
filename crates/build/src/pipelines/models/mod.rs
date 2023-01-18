@@ -4,8 +4,9 @@ use elements_core::hierarchy::children;
 use elements_ecs::EntityData;
 use elements_model_import::{model_crate::ModelCrate, MaterialFilter, ModelTextureSize, ModelTransform, TextureResolver};
 use elements_physics::collider::{collider_type, ColliderType};
-use elements_std::asset_url::AssetType;
+use elements_std::asset_url::{AbsAssetUrl, AssetType};
 use futures::FutureExt;
+use relative_path::{RelativePath, RelativePathBuf};
 use serde::{Deserialize, Serialize};
 
 use super::{
@@ -71,12 +72,18 @@ pub struct ModelsPipeline {
     transforms: Vec<ModelTransform>,
 }
 impl ModelsPipeline {
-    pub async fn apply(&self, ctx: &PipelineCtx, model_crate: &mut ModelCrate) -> anyhow::Result<()> {
+    pub async fn apply(
+        &self,
+        ctx: &PipelineCtx,
+        model_crate: &mut ModelCrate,
+        out_model_path: impl AsRef<RelativePath>,
+    ) -> anyhow::Result<()> {
         for transform in &self.transforms {
             transform.apply(model_crate);
         }
         for mat in &self.material_overrides {
-            let material = mat.material.to_mat(ctx, &ctx.in_root(), &ctx.out_root().join("materials")?).await?;
+            let material =
+                mat.material.to_mat(ctx, &ctx.in_root(), &ctx.out_root().push(out_model_path.as_ref().join("materials"))?).await?;
             model_crate.override_material(&mat.filter, material);
         }
         if let Some(max_size) = self.cap_texture_sizes {

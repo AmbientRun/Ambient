@@ -99,7 +99,7 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                         &out_model_url.into(),
                     )
                     .await?;
-                    config.apply(&ctx, &mut asset_crate).await?;
+                    config.apply(&ctx, &mut asset_crate, &out_model_path).await?;
 
                     let model_crate_url = ctx.write_model_crate(&asset_crate, &out_model_path).await;
                     res.push(OutAsset {
@@ -150,7 +150,7 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                         *mat = mat.relative_path_from(&out_root.push("materials").unwrap());
                     }
 
-                    config.apply(&ctx, &mut asset_crate).await?;
+                    config.apply(&ctx, &mut asset_crate, &out_path).await?;
 
                     let model_crate_url = ctx.write_model_crate(&asset_crate, &out_path).await;
                     res.push(OutAsset {

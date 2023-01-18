@@ -54,10 +54,10 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                     let id = asset_id_from_url(&file.push(i.to_string()).unwrap());
                     let mut asset_crate = pipeline.produce_crate(&ctx.assets()).await.unwrap();
 
-                    config.apply(&ctx, &mut asset_crate).await?;
+                    let out_model_path = ctx.in_root().relative_path(file.path()).join(i.to_string());
+                    config.apply(&ctx, &mut asset_crate, &out_model_path).await?;
 
-                    let model_crate_url =
-                        ctx.write_model_crate(&asset_crate, &ctx.in_root().relative_path(file.path()).join(i.to_string())).await;
+                    let model_crate_url = ctx.write_model_crate(&asset_crate, &out_model_path).await;
 
                     res.push(OutAsset {
                         id: id.clone(),

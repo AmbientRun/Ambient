@@ -25,9 +25,10 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                 model_crate.model_mut().set_name(&file.path().file_name().unwrap());
                 model_crate.create_object();
 
-                config.apply(&ctx, &mut model_crate).await?;
+                let out_model_path = ctx.in_root().relative_path(file.path());
+                config.apply(&ctx, &mut model_crate, &out_model_path).await?;
 
-                let model_crate_url = ctx.write_model_crate(&model_crate, &ctx.in_root().relative_path(file.path())).await;
+                let model_crate_url = ctx.write_model_crate(&model_crate, &out_model_path).await;
 
                 if config.output_objects {
                     res.push(OutAsset {
