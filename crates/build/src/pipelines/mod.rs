@@ -92,7 +92,13 @@ pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
             };
             Some((file, pipelines))
         })
-        .flat_map(|(file, pipelines)| futures::stream::iter(pipelines.into_iter().map(|pipeline| (file.clone(), pipeline))))
+        .flat_map(|(file, pipelines)| {
+            futures::stream::iter(pipelines.into_iter().enumerate().map(|(i, pipeline)| {
+                let mut file = file.clone();
+                file.0.set_fragment(Some(&i.to_string()));
+                (file, pipeline)
+            }))
+        })
         .then(|(file, pipeline)| async move {
             let root = file.join(".").unwrap();
             let ctx = PipelineCtx {

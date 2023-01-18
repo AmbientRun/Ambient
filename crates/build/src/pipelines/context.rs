@@ -31,7 +31,12 @@ impl PipelineCtx {
         self.process_ctx.out_root.push(&self.root_path).unwrap()
     }
     pub fn pipeline_path(&self) -> RelativePathBuf {
-        self.process_ctx.in_root.relative_path(&self.pipeline_file.path())
+        let path = self.process_ctx.in_root.relative_path(&self.pipeline_file.path());
+        if let Some(fragment) = self.pipeline_file.0.fragment() {
+            path.join(fragment)
+        } else {
+            path
+        }
     }
 
     pub async fn write_model_crate(&self, model_crate: &ModelCrate, path: &RelativePath) -> TypedAssetUrl<ModelCrateAssetType> {

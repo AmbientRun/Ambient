@@ -42,11 +42,11 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
             ctx.process_single(move |ctx| async move {
                 let name = mat.name.as_ref().or(mat.source.as_ref()).unwrap().to_string();
 
-                let mut model_crate = ModelCrate::new();
-                let mat_out_url = ctx.out_root().join("material")?.join("materials")?;
+                let mat_out_url = ctx.out_root().join(ctx.pipeline_path())?.as_directory();
                 let material = mat.to_mat(&ctx, &ctx.in_root(), &mat_out_url).await?;
-                model_crate.materials.insert(ModelCrate::MAIN, material);
-                let model_crate_url = ctx.write_model_crate(&model_crate, &RelativePath::new("material")).await;
+                let base_color_url = material.base_color.clone().unwrap().resolve(&mat_out_url).unwrap();
+                let base_color = ImageFromUrl { url: base_color_url }.get(ctx.assets()).await?;
+                let mat_url = ctx.write_file(ctx.pipeline_path().join("mat.json"), serde_json::to_vec(&material).unwrap()).await;
                 Ok(vec![OutAsset {
                     id: asset_id_from_url(&ctx.out_root()),
                     type_: AssetType::Material,
@@ -54,8 +54,8 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
                     name,
                     tags: Default::default(),
                     categories: Default::default(),
-                    preview: OutAssetPreview::Image { image: Arc::new(model_crate.images.content.get("base_color").unwrap().clone()) },
-                    content: OutAssetContent::Content(model_crate_url.material(ModelCrate::MAIN).abs().unwrap()),
+                    preview: OutAssetPreview::Image { image: base_color },
+                    content: OutAssetContent::Content(mat_url),
                     source: None,
                 }])
             })
