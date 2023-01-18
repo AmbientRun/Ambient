@@ -95,7 +95,7 @@ impl PipelinePbrMaterial {
             let ctx = ctx.clone();
             async move {
                 if let Some(path) = path {
-                    Ok(Some(AssetUrl::from(PipeImage::new(path.resolve(&source_root).unwrap()).get(ctx.assets()).await?)))
+                    Ok(Some(AssetUrl::from(PipeImage::resolve(&ctx, path.resolve(&source_root).unwrap()).get(ctx.assets()).await?)))
                 } else {
                     Ok(None)
                 }
@@ -109,11 +109,11 @@ impl PipelinePbrMaterial {
             opacity: pipe_image(&self.opacity).await?,
             normalmap: pipe_image(&self.normalmap).await?,
             metallic_roughness: if let Some(url) = &self.metallic_roughness {
-                Some(PipeImage::new(url.resolve(source_root).unwrap()).get(ctx.assets()).await?.into())
+                Some(PipeImage::resolve(ctx, url.resolve(source_root).unwrap()).get(ctx.assets()).await?.into())
             } else if let Some(specular) = &self.specular {
                 let specular_exponent = self.specular_exponent.unwrap_or(1.);
                 Some(
-                    PipeImage::new(specular.resolve(source_root).unwrap())
+                    PipeImage::resolve(ctx, specular.resolve(source_root).unwrap())
                         .transform("mr_from_s", move |image, _| {
                             for p in image.pixels_mut() {
                                 let specular = 1. - (1. - p[1] as f32 / 255.).powf(specular_exponent);
@@ -184,6 +184,9 @@ pub struct PipeImage {
     cap_texture_sizes: Option<ModelTextureSize>,
 }
 impl PipeImage {
+    pub fn resolve(ctx: &PipelineCtx, source: AbsAssetUrl) -> Self {
+        Self::new(ctx.get_downloadable_url(&source).unwrap().clone())
+    }
     pub fn new(source: AbsAssetUrl) -> Self {
         PipeImage { source, second_source: None, transform: None, cap_texture_sizes: None }
     }
