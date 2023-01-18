@@ -44,7 +44,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                     &config,
                     &in_root_url,
                     1.,
-                    &ctx.out_root().join(ctx.in_root().relative_path(&file.path().join("0").join("material"))).unwrap(),
+                    &ctx.out_root().join(ctx.in_root().relative_path(&file.path().join("0").join("material"))).unwrap().as_directory(),
                 )
                 .await
                 .unwrap();
@@ -130,24 +130,22 @@ pub async fn object_pipelines_from_quixel_json(
     };
     match get_path(quixel, vec!["semanticTags", "asset_type"]).unwrap().as_str().unwrap() as &str {
         "3D asset" => {
+            let material = PbrMaterialFromUrl {
+                base_color: Some(pipe_image(&format!("{}_Albedo.jpg", quixel_id.resolution)).await?),
+                opacity: if quixel_has_opacity(quixel).unwrap_or(false) {
+                    Some(pipe_image(&format!("{}_Opacity.jpg", quixel_id.resolution)).await?)
+                } else {
+                    None
+                },
+                normalmap: Some(pipe_image(&format!("{}_Normal_LOD0.jpg", quixel_id.resolution)).await?),
+                metallic_roughness: Some(pipe_image(&format!("{}_Roughness.jpg", quixel_id.resolution)).await?),
+                roughness: 1.0,
+                metallic: 0.2,
+                ..Default::default()
+            };
             let material_override = ModelImportTransform::OverrideMaterial {
                 filter: MaterialFilter::All,
-                material: Box::new(
-                    PbrMaterialFromUrl {
-                        base_color: Some(pipe_image(&format!("{}_Albedo.jpg", quixel_id.resolution)).await?),
-                        opacity: if quixel_has_opacity(quixel).unwrap_or(false) {
-                            Some(pipe_image(&format!("{}_Opacity.jpg", quixel_id.resolution)).await?)
-                        } else {
-                            None
-                        },
-                        normalmap: Some(pipe_image(&format!("{}_Normal_LOD0.jpg", quixel_id.resolution)).await?),
-                        metallic_roughness: Some(pipe_image(&format!("{}_Roughness.jpg", quixel_id.resolution)).await?),
-                        roughness: 1.0,
-                        metallic: 0.2,
-                        ..Default::default()
-                    }
-                    .relative_path_from(out_materials_url),
-                ),
+                material: Box::new(material.relative_path_from(out_materials_url)),
             };
             let mesh0 = FbxDoc::from_url(
                 &ctx.assets(),
