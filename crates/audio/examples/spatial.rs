@@ -86,7 +86,7 @@ impl Plotter {
                         |vertex: lyon::lyon_tessellation::StrokeVertex| {
                             let pos = vertex.position();
                             macroquad::models::Vertex {
-                                position: vec3(pos.x, pos.y, 0.0),
+                                position: macroquad::math::vec3(pos.x, pos.y, 0.0),
                                 uv: Default::default(),
                                 color,
                             }
@@ -276,8 +276,8 @@ async fn main() {
 
         Window::new(
             hash!(),
-            vec2(0.0, screen_height() - 200.0),
-            vec2(screen_width(), 200.0),
+            macroquad::math::vec2(0.0, screen_height() - 200.0),
+            macroquad::math::vec2(screen_width(), 200.0),
         )
         .label("Controls")
         .ui(&mut root_ui(), |ui| {

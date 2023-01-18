@@ -107,8 +107,10 @@ pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
                 pipeline_file: file.clone(),
                 root_path: ctx.in_root.relative_path(root.path()),
             };
-            tokio::spawn(async move { pipeline.process(ctx).await }).await.unwrap()
+            tokio::spawn(async move { pipeline.process(ctx).await })
         })
+        .buffered(30)
+        .map(|x| x.unwrap())
         .flat_map(|out_assets| futures::stream::iter(out_assets.into_iter()))
         .collect::<Vec<_>>()
         .await
