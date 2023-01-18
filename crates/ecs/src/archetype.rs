@@ -314,9 +314,9 @@ impl Archetype {
             if value.len() == 1 {
                 writeln!(f, "{}  {}(v{}): {}", indent, name, content_version, value[0]).unwrap();
             } else {
-                writeln!(f, "{indent}  {name}(v{content_version}):").unwrap();
+                writeln!(f, "{}  {}(v{}):", indent, name, content_version).unwrap();
                 for row in &value {
-                    writeln!(f, "{indent}  | {row}").unwrap();
+                    writeln!(f, "{}  | {}", indent, row).unwrap();
                 }
             }
         }

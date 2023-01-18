@@ -256,7 +256,7 @@ impl<'de> Deserialize<'de> for DeserEntityDataWithWarnings {
                     match unit {
                         Ok(value) => entity.set_unit(value),
                         Err(err) => {
-                            let comp = if let serde_json::Value::String(val) = key { val } else { format!("{key}") };
+                            let comp = if let serde_json::Value::String(val) = key { val } else { format!("{}", key) };
                             warnings.warnings.push((EntityId::null(), comp, err.to_string()))
                         }
                     }
@@ -291,7 +291,7 @@ impl FromIterator<ComponentUnit> for EntityData {
 
 #[cfg(test)]
 mod test {
-    use crate::{components, EntityData};
+    use crate::{components, ComponentRegistry, EntityData};
 
     components!("test", {
         ser_test2: String,

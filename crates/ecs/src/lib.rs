@@ -492,7 +492,7 @@ impl World {
             arch.dump_entity(loc.index, indent, &idx_to_id, f);
         } else {
             let indent = format!("{:indent$}", "", indent = indent);
-            writeln!(f, "{indent}ERROR, NO SUCH ENTITY: {entity_id}").unwrap();
+            writeln!(f, "{indent}ERROR, NO SUCH ENTITY: {}", entity_id).unwrap();
         }
     }
 

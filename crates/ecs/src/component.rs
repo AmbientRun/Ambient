@@ -100,7 +100,7 @@ impl<T: ComponentValue> Component<T> {
         Self { index, changed_filter: false, name: Some(name), _type: PhantomData }
     }
     pub fn changed(&self) -> Component<T> {
-        Self { index: self.index, changed_filter: true, name: self.name, _type: PhantomData }
+        Self { index: self.index, changed_filter: true, name: self.name.clone(), _type: PhantomData }
     }
     pub fn with(&self, value: T) -> EntityData {
         EntityData::new().set(*self, value)
@@ -175,7 +175,7 @@ impl<'de, T: ComponentValue> Deserialize<'de> for Component<T> {
                 let component = with_component_registry(|r| Some(r.get_by_id(v)?.clone_boxed()));
                 let component = match component {
                     Some(comp) => comp,
-                    None => panic!("No such component: {v}"),
+                    None => panic!("No such component: {}", v),
                 };
                 Ok(Component::<T> { index: component.get_index() as i32, name: None, _type: PhantomData, changed_filter: false })
             }
@@ -298,7 +298,7 @@ impl<T: ExComponentValue> IComponent for Component<T> {
     }
     fn debug_value(&self, value: &Box<dyn ComponentValueBase>) -> String {
         let value = value.downcast_ref::<T>().unwrap();
-        format!("{value:?}")
+        format!("{:?}", value)
     }
     fn is_extended(&self) -> bool {
         true
@@ -370,7 +370,7 @@ impl<'de> Deserialize<'de> for Box<dyn IComponent> {
                 let component = with_component_registry(|r| Some(r.get_by_id(v)?.clone_boxed()));
                 match component {
                     Some(comp) => Ok(comp),
-                    None => Err(de::Error::custom(format!("No such component: {v}"))),
+                    None => Err(de::Error::custom(format!("No such component: {}", v))),
                 }
             }
         }
