@@ -4,41 +4,32 @@ use serde::{Deserialize, Serialize};
 
 use crate::{Component, ComponentDesc, ComponentEntry, ComponentValue};
 
-/// Declares an attribute type which can be attached to a component
-pub trait ComponentAttribute: 'static {
-    type Value: 'static + Send + Sync;
-}
+pub trait ComponentAttribute: 'static + Send + Sync {}
 
 macro_rules! component_attributes {
-    ($($(#[$outer: meta])* $name: ident: $ty: ty,)*) => {
+    ($($name: ident,)*) => {
 $(
-        /// Component attribute
-        $(#[$outer])*
-        #[derive(Default, Eq, PartialEq, PartialOrd, Hash, Debug, Clone)]
-        pub struct $name {}
-
-        impl $crate::ComponentAttribute for $name {
-            type Value = $ty;
-        }
+        impl $crate::ComponentAttribute for $name { }
 
 )        *
     };
 }
 
-pub trait ComponentAttributeValue<T, P> {
+/// Declares an attribute type which can be attached to a component
+pub trait ComponentAttributeConstructor<T, P>: 'static + Send + Sync {
     /// Construct a new instance of the attribute value
     fn construct(component: Component<T>, params: P) -> Self;
 }
 
-/// Allow serializing a component entry
 #[derive(Clone, Copy)]
-pub struct ComponentSerializer {
+/// Declares a component as [`serde::Serialize`] and [`serde::Deserialize`]
+pub struct Serializable {
     ser: fn(&ComponentEntry) -> &dyn erased_serde::Serialize,
     deser: fn(ComponentDesc, &mut dyn erased_serde::Deserializer) -> Result<ComponentEntry, erased_serde::Error>,
     desc: ComponentDesc,
 }
 
-impl<T: ComponentValue + Serialize + for<'de> Deserialize<'de>> ComponentAttributeValue<T, ()> for ComponentSerializer {
+impl<T: ComponentValue + Serialize + for<'de> Deserialize<'de>> ComponentAttributeConstructor<T, ()> for Serializable {
     fn construct(component: Component<T>, _: ()) -> Self {
         Self {
             ser: |v| v.downcast_ref::<T>() as &dyn erased_serde::Serialize,
@@ -52,14 +43,14 @@ impl<T: ComponentValue + Serialize + for<'de> Deserialize<'de>> ComponentAttribu
     }
 }
 
-impl ComponentSerializer {
+impl Serializable {
     /// Serialize a value
     pub fn serialize<'a>(&self, entry: &'a ComponentEntry) -> &'a dyn erased_serde::Serialize {
         (self.ser)(entry)
     }
 }
 
-impl<'de> serde::de::DeserializeSeed<'de> for ComponentSerializer {
+impl<'de> serde::de::DeserializeSeed<'de> for Serializable {
     type Value = ComponentEntry;
 
     fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
@@ -72,17 +63,17 @@ impl<'de> serde::de::DeserializeSeed<'de> for ComponentSerializer {
     }
 }
 
-pub struct ComponentDebugger {
+pub struct Debuggable {
     debug: fn(&dyn Any) -> &dyn Debug,
 }
 
-impl ComponentDebugger {
+impl Debuggable {
     pub(crate) fn as_debug<'a>(&self, value: &'a dyn Any) -> &'a dyn Debug {
         (self.debug)(value)
     }
 }
 
-impl<T> ComponentAttributeValue<T, ()> for ComponentDebugger
+impl<T> ComponentAttributeConstructor<T, ()> for Debuggable
 where
     T: Debug,
 {
@@ -91,38 +82,51 @@ where
     }
 }
 
-pub struct ComponentDefault {
+/// Allows constructing a default value of the type
+pub struct MakeDefault {
     make_default: Box<dyn Fn() -> ComponentEntry + Send + Sync>,
 }
 
-impl ComponentDefault {
+impl MakeDefault {
     /// Construct the default value of this component
     pub fn make_default(&self) -> ComponentEntry {
         (self.make_default)()
     }
 }
 
-impl<T: ComponentValue + Default> ComponentAttributeValue<T, ()> for ComponentDefault {
+impl<T: ComponentValue + Default> ComponentAttributeConstructor<T, ()> for MakeDefault {
     fn construct(component: Component<T>, _: ()) -> Self {
         Self { make_default: Box::new(move || ComponentEntry::new(component, T::default())) }
     }
 }
 
-impl<T: ComponentValue, F: 'static + Send + Sync + Fn() -> T> ComponentAttributeValue<T, F> for ComponentDefault {
+impl<T: ComponentValue, F: 'static + Send + Sync + Fn() -> T> ComponentAttributeConstructor<T, F> for MakeDefault {
     fn construct(component: Component<T>, func: F) -> Self {
         Self { make_default: Box::new(move || ComponentEntry::new(component, func())) }
     }
 }
 
-component_attributes! {
-    /// Declares a component as [`serde::Serialize`] and [`serde::Deserialize`]
-    Serializable: ComponentSerializer,
-    Debuggable: ComponentDebugger,
-    MakeDefault: ComponentDefault,
-    Store: (),
-    Networked: (),
+/// Store the component on disc
+#[derive(Debug, Clone, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Store;
+/// Synchronize the component over the network to the clients
+#[derive(Debug, Clone, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Networked;
+
+/// Automatically implement for marker types
+impl<A, T> ComponentAttributeConstructor<T, ()> for A
+where
+    A: ComponentAttribute + Default,
+{
+    fn construct(_: Component<T>, _: ()) -> Self {
+        Self::default()
+    }
 }
 
-impl<T> ComponentAttributeValue<T, ()> for () {
-    fn construct(_: Component<T>, _: ()) -> Self {}
+component_attributes! {
+    Serializable,
+    Debuggable,
+    MakeDefault,
+    Store,
+    Networked,
 }

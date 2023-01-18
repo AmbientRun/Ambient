@@ -275,7 +275,7 @@ impl ComponentEntry {
         }
     }
 
-    pub fn attribute<A: ComponentAttribute>(&self) -> Option<&'static A::Value> {
+    pub fn attribute<A: ComponentAttribute>(&self) -> Option<&'static A> {
         self.desc().attribute::<A>()
     }
 

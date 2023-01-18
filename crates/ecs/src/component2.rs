@@ -1,6 +1,6 @@
 use core::fmt;
 use std::{
-    any::{Any, TypeId}, cmp::Ordering, fmt::Debug, marker::PhantomData, mem::{self, ManuallyDrop, MaybeUninit}
+    any::{Any, TypeId}, cmp::Ordering, fmt::Debug, marker::PhantomData
 };
 
 use downcast_rs::Downcast;
@@ -9,7 +9,7 @@ use serde::{
 };
 
 use crate::{
-    component::{ComponentBuffer, IComponentBuffer}, with_component_registry, ComponentAttribute, ComponentAttributeValue, ComponentEntry, ComponentHolder, ComponentVTable, Debuggable, ErasedHolder, Serializable
+    component::IComponentBuffer, with_component_registry, ComponentAttribute, ComponentAttributeConstructor, ComponentEntry, ComponentVTable, Debuggable, Serializable
 };
 
 pub trait ComponentValueBase: Send + Sync + Downcast + 'static {
@@ -34,11 +34,10 @@ pub struct AttributeEntry {
 impl AttributeEntry {
     pub fn new<Attr, T, P>(component: Component<T>, params: P) -> Self
     where
-        Attr: ComponentAttribute,
-        Attr::Value: ComponentAttributeValue<T, P>,
+        Attr: ComponentAttributeConstructor<T, P>,
         T: 'static,
     {
-        Self { key: || TypeId::of::<Attr>(), value: Box::new(Attr::Value::construct(component, params)) as Box<dyn Any + Send + Sync> }
+        Self { key: || TypeId::of::<Attr>(), value: Box::new(Attr::construct(component, params)) as Box<dyn Any + Send + Sync> }
     }
 }
 
@@ -162,7 +161,7 @@ impl<T> Component<T> {
         Self { desc, _marker: PhantomData }
     }
 
-    pub fn attribute<A: ComponentAttribute>(&self) -> Option<&'static A::Value> {
+    pub fn attribute<A: ComponentAttribute>(&self) -> Option<&'static A> {
         self.desc.attribute::<A>()
     }
 
@@ -232,7 +231,7 @@ impl ComponentDesc {
         Self { index, vtable }
     }
 
-    pub fn attribute<A: ComponentAttribute>(&self) -> Option<&'static A::Value> {
+    pub fn attribute<A: ComponentAttribute>(&self) -> Option<&'static A> {
         let entry = (self.vtable.custom_attrs)(*self, TypeId::of::<A>())?;
         let value = entry.value.downcast_ref().expect("Mismatched attribute types");
         Some(value)
