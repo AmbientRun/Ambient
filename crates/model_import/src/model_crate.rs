@@ -503,20 +503,23 @@ impl ModelCrate {
         };
         for (id, prims) in entities {
             let ltw = self.model_world().get(id, local_to_world()).unwrap_or_default();
-            let max_lod = prims.iter().map(|x| x.lod).max().unwrap();
-            let mtl = self.model_world().get(id, mesh_to_local()).unwrap_or_default();
-            // Only use the "max" lod for colliders
-            for primitive in prims.into_iter().filter(|x| x.lod == max_lod) {
-                let transform = world_transform * ltw * mtl;
-                let (scale, rot, pos) = transform.to_scale_rotation_translation();
-                let mesh_id = self.meshes.loc.id_from_path(primitive.mesh.path()).unwrap();
-                if create_triangle_mesh(self, &mesh_id) {
-                    if let Some(convex_path) = create_convex_mesh(self, &mesh_id, scale.signum()) {
-                        let convex_path = dotdot_path(convex_path);
-                        let triangle_path = dotdot_path(self.px_triangle_meshes.loc.path(mesh_id));
-                        convex
-                            .push((Mat4::from_scale_rotation_translation(scale.abs(), rot, pos), PhysxGeometryFromUrl(convex_path.into())));
-                        triangle.push((transform, PhysxGeometryFromUrl(triangle_path.into())));
+            if let Some(max_lod) = prims.iter().map(|x| x.lod).max() {
+                let mtl = self.model_world().get(id, mesh_to_local()).unwrap_or_default();
+                // Only use the "max" lod for colliders
+                for primitive in prims.into_iter().filter(|x| x.lod == max_lod) {
+                    let transform = world_transform * ltw * mtl;
+                    let (scale, rot, pos) = transform.to_scale_rotation_translation();
+                    let mesh_id = self.meshes.loc.id_from_path(primitive.mesh.path()).unwrap();
+                    if create_triangle_mesh(self, &mesh_id) {
+                        if let Some(convex_path) = create_convex_mesh(self, &mesh_id, scale.signum()) {
+                            let convex_path = dotdot_path(convex_path);
+                            let triangle_path = dotdot_path(self.px_triangle_meshes.loc.path(mesh_id));
+                            convex.push((
+                                Mat4::from_scale_rotation_translation(scale.abs(), rot, pos),
+                                PhysxGeometryFromUrl(convex_path.into()),
+                            ));
+                            triangle.push((transform, PhysxGeometryFromUrl(triangle_path.into())));
+                        }
                     }
                 }
             }
