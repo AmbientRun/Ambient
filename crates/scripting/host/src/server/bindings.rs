@@ -156,14 +156,14 @@ impl sif::Host for Bindings {
             .into_bindgen()
     }
 
-    fn component_get_index(&mut self, id: &str) -> Option<u64> {
-        Some(eshi::entity::get_component_index(id)? as u64)
+    fn component_get_index(&mut self, id: &str) -> Option<u32> {
+        Some(eshi::entity::get_component_index(id)?)
     }
 
     fn entity_get_component(
         &mut self,
         entity: sif::EntityId,
-        index: u64,
+        index: u32,
     ) -> Option<sif::ComponentTypeResult> {
         read_component_from_world(&self.world(), entity.from_bindgen(), index)
     }
@@ -171,7 +171,7 @@ impl sif::Host for Bindings {
     fn entity_set_component(
         &mut self,
         entity: sif::EntityId,
-        index: u64,
+        index: u32,
         value: sif::ComponentTypeParam,
     ) {
         write_component(&mut self.world_mut(), entity.from_bindgen(), index, value)
@@ -186,20 +186,19 @@ impl sif::Host for Bindings {
             .unwrap()
     }
 
-    fn entity_has_component(&mut self, entity: sif::EntityId, index: u64) -> bool {
-        eshi::entity::has_component(&self.world(), entity.from_bindgen(), index as usize)
+    fn entity_has_component(&mut self, entity: sif::EntityId, index: u32) -> bool {
+        eshi::entity::has_component(&self.world(), entity.from_bindgen(), index)
     }
 
-    fn entity_remove_component(&mut self, entity: sif::EntityId, index: u64) {
-        eshi::entity::remove_component(&mut self.world_mut(), entity.from_bindgen(), index as usize)
-            .unwrap()
+    fn entity_remove_component(&mut self, entity: sif::EntityId, index: u32) {
+        eshi::entity::remove_component(&mut self.world_mut(), entity.from_bindgen(), index).unwrap()
     }
 
-    fn entity_remove_components(&mut self, entity: sif::EntityId, components: &[Le<u64>]) {
+    fn entity_remove_components(&mut self, entity: sif::EntityId, components: &[Le<u32>]) {
         let components = with_component_registry(|cr| {
             components
                 .iter()
-                .flat_map(|idx| Some(cr.get_by_index(idx.get() as usize)?.clone_boxed()))
+                .flat_map(|idx| cr.get_by_index(idx.get()))
                 .collect()
         });
         self.world_mut()
@@ -211,7 +210,7 @@ impl sif::Host for Bindings {
         self.world().exists(entity.from_bindgen())
     }
 
-    fn entity_query(&mut self, index: u64) -> Vec<sif::EntityId> {
+    fn entity_query(&mut self, index: u32) -> Vec<sif::EntityId> {
         eshi::entity::query(&mut self.world_mut(), index).into_bindgen()
     }
 
@@ -255,8 +254,12 @@ impl sif::Host for Bindings {
                             primitive_components
                                 .iter()
                                 .map(|pc| {
-                                    read_primitive_component_from_entity_accessor(world, &ea, *pc)
-                                        .unwrap()
+                                    read_primitive_component_from_entity_accessor(
+                                        world,
+                                        &ea,
+                                        pc.clone(),
+                                    )
+                                    .unwrap()
                                 })
                                 .collect(),
                         )

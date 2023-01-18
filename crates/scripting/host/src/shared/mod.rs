@@ -19,8 +19,8 @@ use std::{
 
 use anyhow::Context;
 use elements_ecs::{
-    components, query, uid, uid_lookup, Component, ComponentUnit as CU, EntityData, EntityId,
-    World, COMPONENT_ENTITY_ID_MIGRATERS,
+    components, query, uid, uid_lookup, Component, ComponentEntry, EntityData, EntityId, World,
+    COMPONENT_ENTITY_ID_MIGRATERS,
 };
 use elements_network::player::player;
 use host_guest_state::GetBaseHostGuestState;
@@ -335,7 +335,7 @@ pub fn load<
                 let script_context = ScriptContext::new(
                     world,
                     "core/player_join",
-                    vec![CU::new(elements_ecs::id(), *player_id)].into(),
+                    vec![ComponentEntry::new(elements_ecs::id(), *player_id)].into(),
                 );
                 run(
                     world,
@@ -378,7 +378,7 @@ pub fn unload<
                 &ScriptContext::new(
                     world,
                     "core/player_leave",
-                    vec![CU::new(elements_ecs::id(), *player_id)].into(),
+                    vec![ComponentEntry::new(elements_ecs::id(), *player_id)].into(),
                 ),
             )
         })

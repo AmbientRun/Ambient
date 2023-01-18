@@ -287,7 +287,8 @@ impl ScriptModule {
         with_component_registry(|registry| {
             for component in registry.all_external() {
                 if let Some(typename) = supported_types.get(&component.type_id()) {
-                    root.insert(&component.get_id(), &component.get_id(), typename);
+                    let path = component.path();
+                    root.insert(&path, &path, typename);
                 }
             }
         });

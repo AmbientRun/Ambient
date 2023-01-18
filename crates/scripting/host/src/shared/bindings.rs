@@ -1,8 +1,8 @@
 use std::any::TypeId;
 
 use elements_ecs::{
-    paste::paste, with_component_registry, Component, ComponentUnit, EntityData, EntityId,
-    EntityUid, World,
+    paste::paste, with_component_registry, Component, ComponentDesc, ComponentEntry, EntityData,
+    EntityId, EntityUid, World,
 };
 use elements_std::asset_url::ObjectRef;
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
@@ -14,38 +14,42 @@ use super::{
     interface as sif,
 };
 
-pub type ComponentsParam<'a> = Vec<(u64, sif::ComponentTypeParam<'a>)>;
+pub type ComponentsParam<'a> = Vec<(u32, sif::ComponentTypeParam<'a>)>;
+
+use elements_ecs::{PrimitiveComponent as PC, PrimitiveComponentType as PCT};
 
 macro_rules! define_component_types {
     ($(($type:ty, $value:ident)),*) => { paste! {
-        pub static SUPPORTED_COMPONENT_TYPES: Lazy<Vec<(TypeId, &'static str)>> = Lazy::new(|| vec![$(
+        pub(crate) static SUPPORTED_COMPONENT_TYPES: Lazy<Vec< (TypeId, &str) >> = Lazy::new(|| vec![$(
             (TypeId::of::<Component<$type>>(), stringify!($type)),
             (TypeId::of::<Component<Vec<$type>>>(), stringify!(Vec<$type>)),
             (TypeId::of::<Component<Option<$type>>>(), stringify!(Option<$type>))
         ),*]);
 
-        pub(crate) fn read_primitive_component_from_world(
+        fn read_primitive_component_from_world(
             world: &World,
             entity_id: EntityId,
             primitive_component: elements_ecs::PrimitiveComponent,
         ) -> Option<sif::ComponentTypeResult> {
-            use elements_ecs::PrimitiveComponent as PC;
+            use elements_ecs::PrimitiveComponentType as PCT;
             use sif::{ComponentTypeResult as CTR, ComponentListTypeResult as CLTR, ComponentOptionTypeResult as COTR};
 
             fn get<T: IntoBindgen + Clone + Send + Sync + 'static>(
                 world: &World,
                 id: EntityId,
-                component: Component<T>,
+                component: ComponentDesc,
             ) -> Option<<T as IntoBindgen>::Item> {
-                Some(world.get_cloned(id, component).ok()?.into_bindgen())
+                Some(world.get_cloned(id, Component::<T>::new(component)).ok()?.into_bindgen())
             }
 
-            Some(match primitive_component {
+            let c = primitive_component.desc;
+            Some(match primitive_component.ty {
                 $(
-                PC::$value(c) => CTR::[<Type $value>](get(world, entity_id, c)?),
-                PC::[<Vec $value>](c) => CTR::TypeList(CLTR::[<Type $value>](get(world, entity_id, c)?),),
-                PC::[<Option $value>](c) => CTR::TypeOption(COTR::[<Type $value>](get(world, entity_id, c)?),)
-                ),*
+                PCT::$value            => CTR::[<Type $value>](get::<$type>(world, entity_id, c)?),
+                PCT::[<Vec $value>]    => CTR::TypeList(CLTR::[<Type $value>](get::<Vec<$type>>(world, entity_id, c)?),),
+                PCT::[<Option $value>] => CTR::TypeOption(COTR::[<Type $value>](get::<Option<$type>>(world, entity_id, c)?),),
+                )*
+                _ => unreachable!(),
             })
         }
 
@@ -54,37 +58,38 @@ macro_rules! define_component_types {
             entity_accessor: &elements_ecs::EntityAccessor,
             primitive_component: elements_ecs::PrimitiveComponent,
         ) -> Option<sif::ComponentTypeResult> {
-            use elements_ecs::PrimitiveComponent as PC;
+            use elements_ecs::PrimitiveComponentType as PCT;
             use sif::{ComponentTypeResult as CTR, ComponentListTypeResult as CLTR, ComponentOptionTypeResult as COTR};
 
             fn get<T: IntoBindgen + Clone + Send + Sync + 'static>(
                 world: &World,
                 entity_accessor: &elements_ecs::EntityAccessor,
-                component: Component<T>,
+                component: ComponentDesc,
             ) -> <T as IntoBindgen>::Item {
-                entity_accessor.get(world, component).clone().into_bindgen()
+                entity_accessor.get(world, Component::<T>::new(component)).clone().into_bindgen()
             }
 
-            Some(match primitive_component {
+            let c = primitive_component.desc;
+            Some(match primitive_component.ty {
                 $(
-                PC::$value(c) => CTR::[<Type $value>](get(world, entity_accessor, c).clone()),
-                PC::[<Vec $value>](c) => CTR::TypeList(CLTR::[<Type $value>](get(world, entity_accessor, c).clone()),),
-                PC::[<Option $value>](c) => CTR::TypeOption(COTR::[<Type $value>](get(world, entity_accessor, c).clone()),)
-                ),*
+                PCT::$value            => CTR::[<Type $value>](get::<$type>(world, entity_accessor, c).clone()),
+                PCT::[<Vec $value>]    => CTR::TypeList(CLTR::[<Type $value>](get::<Vec<$type>>(world, entity_accessor, c).clone()),),
+                PCT::[<Option $value>] => CTR::TypeOption(COTR::[<Type $value>](get::<Option<$type>>(world, entity_accessor, c).clone()),),
+                )*
+                _ => unreachable!(),
             })
         }
 
         pub(crate) fn read_component_from_world(
             world: &World,
             entity_id: EntityId,
-            index: u64,
+            index: u32,
         ) -> Option<sif::ComponentTypeResult> {
-            let primitive_component = with_component_registry(|r| r.get_primitive_component(index as usize))?;
+            let primitive_component = with_component_registry(|r| r.get_primitive_component(index))?;
             read_primitive_component_from_world(world, entity_id, primitive_component)
         }
 
-        pub(crate) fn convert_entity_data_to_components(ed: &EntityData) -> Vec<(u64, sif::ComponentTypeResult)> {
-            use elements_ecs::PrimitiveComponent as PC;
+        pub(crate) fn convert_entity_data_to_components(ed: &EntityData) -> Vec<(u32, sif::ComponentTypeResult)> {
             use sif::{
                 ComponentListTypeResult as CLTR, ComponentOptionTypeResult as COTR,
                 ComponentTypeResult as CTR,
@@ -93,27 +98,30 @@ macro_rules! define_component_types {
             with_component_registry(|cr| {
                 ed.iter()
                     .flat_map(|cu| {
-                        let index = cu.get_component_index();
+                        let index = cu.index();
                         let primitive_component = cr.get_primitive_component(index)?;
                         fn get<T: IntoBindgen + Clone + Send + Sync + 'static>(
-                            component_unit: &ComponentUnit,
-                            component: Component<T>,
+                            entry: &ComponentEntry,
+                            component: ComponentDesc,
                         ) -> Option<<T as IntoBindgen>::Item> {
                             Some(
-                                component_unit
-                                    .as_component_value(component)
-                                    .cloned()?
+                                entry
+                                    .downcast_cloned::<T>()
                                     .into_bindgen(),
                             )
                         }
-                        let value = match primitive_component {
+
+            let c = primitive_component.desc;
+                        let value = match primitive_component.ty {
                             $(
-                            PC::$value(c) => CTR::[<Type $value>](get(cu, c)?),
-                            PC::[<Vec $value>](c) => CTR::TypeList(CLTR::[<Type $value>](get(cu, c)?),),
-                            PC::[<Option $value>](c) => CTR::TypeOption(COTR::[<Type $value>](get(cu, c)?),)
-                            ),*
+                            PCT::$value            => CTR::[<Type $value>](get::<$type>(cu, c)?),
+                            PCT::[<Vec $value>]    => CTR::TypeList(CLTR::[<Type $value>](get::<Vec<$type>>(cu, c)?),),
+                            PCT::[<Option $value>] => CTR::TypeOption(COTR::[<Type $value>](get::<Option<$type>>(cu, c)?),),
+                            )*
+                            _ => unreachable!(),
                         };
-                        Some((index as u64, value))
+
+                        Some((index, value))
                     })
                     .collect()
             })
@@ -122,7 +130,6 @@ macro_rules! define_component_types {
         pub(crate) fn convert_components_to_entity_data(
             components: ComponentsParam<'_>,
         ) -> EntityData {
-            use elements_ecs::PrimitiveComponent as PC;
             use sif::{
                 ComponentListTypeParam as CLTP, ComponentOptionTypeParam as COTP,
                 ComponentTypeParam as CTP,
@@ -131,12 +138,14 @@ macro_rules! define_component_types {
                 components
                     .into_iter()
                     .flat_map(|(index, value)| {
-                        let primitive_component = cr.get_primitive_component(index as usize)?;
-                        match (primitive_component, value) {
+                        let primitive_component = cr.get_primitive_component(index)?;
+                        let c = primitive_component.desc;
+
+                        match (primitive_component.ty, value) {
                             $(
-                            (PC::$value(c), CTP::[<Type $value>](v)) => Some(ComponentUnit::new(c, v.from_bindgen())),
-                            (PC::[<Vec $value>](c), CTP::TypeList(CLTP::[<Type $value>](v))) => Some(ComponentUnit::new(c, v.from_bindgen())),
-                            (PC::[<Option $value>](c), CTP::TypeOption(COTP::[<Type $value>](v))) => Some(ComponentUnit::new(c, v.from_bindgen()))
+                            (PCT::$value, CTP::[<Type $value>](v))                              => Some(ComponentEntry::from_raw_parts(c, v.from_bindgen())),
+                            (PCT::[<Vec $value>], CTP::TypeList(CLTP::[<Type $value>](v)))      => Some(ComponentEntry::from_raw_parts(c, v.from_bindgen())),
+                            (PCT::[<Option $value>], CTP::TypeOption(COTP::[<Type $value>](v))) => Some(ComponentEntry::from_raw_parts(c, v.from_bindgen()))
                             ),*,
                             _ => None,
                         }
@@ -148,7 +157,7 @@ macro_rules! define_component_types {
         pub(crate) fn write_component(
             world: &mut World,
             entity_id: EntityId,
-            index: u64,
+            index: u32,
             value: sif::ComponentTypeParam<'_>,
         ) {
             match value {
