@@ -29,6 +29,7 @@ elements_network = { path = "crates/network" }
 elements_physics = { path = "crates/physics" }
 elements_rpc = { path = "crates/rpc" }
 elements_object = { path = "crates/object" }
+elements_decals = { path = "crates/decals" }
 elements_scripting_host = { path = "crates/scripting/host" }
 clap.workspace = true
 tokio.workspace = true

@@ -116,6 +116,27 @@
         {
             "type": "lldb",
             "request": "launch",
+            "name": "Example 'elements/decals/decals' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=decals",
+                    "--package=elements_decals"
+                ],
+                "filter": {
+                    "name": "decals",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
             "name": "Example 'elements/ecs_editor' [debug]",
             "cargo": {
                 "args": [
@@ -343,27 +364,6 @@
             "env": {
                 "RUST_BACKTRACE": "1"
             },
-            "cwd": "${workspaceFolder}",
-            "sourceLanguages": [
-                "rust"
-            ]
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Example 'elements/renderer/decals' [debug]",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--example=decals",
-                    "--package=elements_renderer"
-                ],
-                "filter": {
-                    "name": "decals",
-                    "kind": "example"
-                }
-            },
-            "args": [],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [
                 "rust"

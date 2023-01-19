@@ -55,7 +55,7 @@ impl Commands {
 }
 
 fn client_systems() -> SystemGroup {
-    SystemGroup::new("client", vec![])
+    SystemGroup::new("client", vec![elements_decals::client_systems()])
 }
 
 #[element_component]
@@ -98,12 +98,17 @@ fn MainApp(world: &mut World, hooks: &mut Hooks, port: u16) -> Element {
     ])
 }
 
-fn main() {
-    env_logger::init();
+fn init_all_components() {
     elements_app::init_all_components();
     elements_network::init_all_components();
     elements_physics::init_all_components();
     elements_scripting_host::shared::init_components();
+    elements_decals::init_components();
+}
+
+fn main() {
+    env_logger::init();
+    init_all_components();
     let runtime = tokio::runtime::Builder::new_multi_thread().enable_all().build().unwrap();
     let assets = AssetCache::new(runtime.handle().clone());
 

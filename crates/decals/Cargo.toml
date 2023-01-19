@@ -1,0 +1,24 @@
+[package]
+name = "elements_decals"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+elements_asset_cache = { path = "../asset_cache" }
+elements_ecs = { path = "../ecs" }
+elements_renderer = { path = "../renderer" }
+elements_gpu = { path = "../gpu" }
+elements_std = { path = "../std" }
+elements_core = { path = "../core" }
+elements_meshes = { path = "../meshes" }
+log.workspace = true
+glam.workspace = true
+
+[dev-dependencies]
+elements_app = { path = "../app" }
+elements_element = { path = "../element" }
+elements_primitives = { path = "../primitives" }
+elements_cameras = { path = "../cameras" }
+env_logger.workspace = true
