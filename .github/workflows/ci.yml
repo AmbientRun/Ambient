@@ -2,20 +2,19 @@ name: Rust
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   build:
-
-    runs_on: [self-hosted, linux, x64]
+    runs-on: [self-hosted, linux, x64]
 
     steps:
-    - name: Build
-      run: cargo build --workspace --verbose
-    - name: Run tests
-      run: cargo test --workspace --verbose
+      - name: Build
+        run: cargo build --workspace --verbose
+      - name: Run tests
+        run: cargo test --workspace --verbose
