@@ -137,7 +137,7 @@ impl AsyncAssetKey<Result<Arc<World>, AssetError>> for ObjectFromUrl {
             def.resolve(&self.0).context("Failed to resolve collider")?;
         }
         for (_id, (def,), _) in query_mut((decal(),), ()).iter(&mut world, None) {
-            def.resolve(&self.0).context("Failed to resolve decal")?;
+            *def = def.resolve(&self.0).context("Failed to resolve decal")?.into();
         }
         Ok(Arc::new(world))
     }
