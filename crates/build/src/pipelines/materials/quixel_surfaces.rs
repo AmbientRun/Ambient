@@ -46,6 +46,8 @@ pub async fn pipeline(ctx: &PipelineCtx, _config: MaterialsPipeline) -> Vec<OutA
                     .images
                     .content
                     .get("base_color")
+                    .or(asset_crate.images.content.get("opacity"))
+                    .or(asset_crate.images.content.get("normal"))
                     .map(|image| OutAssetPreview::Image { image: Arc::new(image.clone()) })
                     .unwrap_or(OutAssetPreview::None),
                 content: OutAssetContent::Content(model_crate_url.material(ModelCrate::MAIN).abs().unwrap()),
@@ -69,6 +71,7 @@ pub struct QuixelSurfaceDef {
     pub albedo: Option<AbsAssetUrl>,
     pub ao: Option<AbsAssetUrl>,
     pub normal: Option<AbsAssetUrl>,
+    pub opacity: Option<AbsAssetUrl>,
 }
 impl QuixelSurfaceDef {
     async fn write_to_asset_crate(&self, assets: &AssetCache, asset_crate: &mut ModelCrate) {
@@ -77,6 +80,7 @@ impl QuixelSurfaceDef {
                 download_image(assets, self.albedo.clone()),
                 download_image(assets, self.ao.clone()),
                 download_image(assets, self.normal.clone()),
+                download_image(assets, self.opacity.clone()),
             ]
             .into_iter(),
         )
@@ -84,6 +88,7 @@ impl QuixelSurfaceDef {
         let mut albedo = images.remove(0);
         let ao = images.remove(0);
         let normal = images.remove(0);
+        let opacity = images.remove(0);
         if let (Some(albedo), Some(ao)) = (&mut albedo, &ao) {
             // Pre-multiply AO
             for (b, ao) in albedo.pixels_mut().zip(ao.pixels()) {
@@ -93,8 +98,10 @@ impl QuixelSurfaceDef {
             }
         }
         let mat = PbrMaterialFromUrl {
+            transparent: Some(opacity.is_some()),
             base_color: albedo.map(|albedo| asset_crate.images.insert("base_color", albedo).path).map(|x| dotdot_path(x).into()),
             normalmap: normal.map(|normal| asset_crate.images.insert("normalmap", normal).path).map(|x| dotdot_path(x).into()),
+            opacity: opacity.map(|opacity| asset_crate.images.insert("opacity", opacity).path).map(|x| dotdot_path(x).into()),
             ..Default::default()
         };
         asset_crate.materials.insert(ModelCrate::MAIN, mat);
@@ -121,6 +128,7 @@ impl QuixelSurfaceDef {
                                             "albedo" => res.albedo = Some(url.clone()),
                                             "ao" => res.ao = Some(url.clone()),
                                             "normal" => res.normal = Some(url.clone()),
+                                            "opacity" => res.opacity = Some(url.clone()),
                                             _ => {}
                                         }
                                     }
@@ -138,6 +146,7 @@ impl QuixelSurfaceDef {
                             "albedo" => res.albedo = Some(url.clone()),
                             "ao" => res.ao = Some(url.clone()),
                             "normal" => res.normal = Some(url.clone()),
+                            "opacity" => res.opacity = Some(url.clone()),
                             _ => {}
                         }
                     }
