@@ -5,7 +5,9 @@ use std::{
     sync::Arc, time::{Duration, Instant, SystemTime}
 };
 
-use elements_ecs::{components, query, DynSystem, EntityId, FrameEvent, QueryState, System, World};
+use elements_ecs::{
+    components, query, Debuggable, DynSystem, EntityId, FrameEvent, Networked, QueryState, Serializable, Store, System, World
+};
 use elements_gpu::{gpu::Gpu, mesh_buffer::GpuMesh};
 
 pub mod async_ecs;
@@ -34,7 +36,9 @@ components!("app", {
     window_physical_size: UVec2,
     /// Mouse position in screen space
     mouse_position: Vec2,
+    @[Serializable, Debuggable, Networked, Store]
     main_scene: (),
+    @[Serializable, Debuggable, Networked, Store]
     ui_scene: (),
     asset_cache: AssetCache,
 
@@ -42,6 +46,7 @@ components!("app", {
     dtime: f32,
     app_start_time: Duration,
     frame_index: usize,
+    @[Serializable, Debuggable, Store]
     remove_at_time: Duration,
 
     on_frame: EventDispatcher<dyn Fn(&mut World, EntityId, f32) + Sync + Send>,

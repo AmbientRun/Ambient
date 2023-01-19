@@ -48,7 +48,7 @@ fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
 }
 
 fn is_sync_component(component: ComponentDesc, _: WorldStreamCompEvent) -> bool {
-    component.attribute::<Serializable>().is_some() && component != remove_at_time()
+    component.attribute::<Serializable>().is_some()
 }
 
 pub fn create_rpc_registry() -> RpcRegistry<GameRpcArgs> {
