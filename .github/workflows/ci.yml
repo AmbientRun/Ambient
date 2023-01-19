@@ -14,6 +14,11 @@ jobs:
     runs-on: [self-hosted, linux, x64]
 
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          clean: false
+
       - name: Build
         run: cargo build --workspace --verbose
       - name: Run tests
