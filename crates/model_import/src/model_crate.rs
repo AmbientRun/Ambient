@@ -431,9 +431,13 @@ impl ModelCrate {
         self.model_mut().remove_non_storage_matrices();
     }
 
-    pub fn create_object(&mut self) {
+    pub fn create_object_from_model(&mut self) {
+        self.create_object(EntityData::new().set(model_def(), ModelDef(dotdot_path(self.models.loc.path(ModelCrate::MAIN)).into())))
+    }
+
+    pub fn create_object(&mut self, data: EntityData) {
         let mut object = World::new("object_asset");
-        let o = EntityData::new().set(model_def(), ModelDef(dotdot_path(self.models.loc.path(ModelCrate::MAIN)).into())).spawn(&mut object);
+        let o = data.spawn(&mut object);
         object.add_resource(children(), vec![o]);
         self.objects.insert(ModelCrate::MAIN, object);
     }

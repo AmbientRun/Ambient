@@ -351,7 +351,7 @@ async fn model_from_prefab(
     model_crate.model_world_mut().add_resource(children(), roots);
     model_crate.model_mut().transform(Mat4::from_cols(Vec4::Y, Vec4::Z, Vec4::X, Vec4::W));
 
-    model_crate.create_object();
+    model_crate.create_object_from_model();
     Ok(model_crate)
 }
 

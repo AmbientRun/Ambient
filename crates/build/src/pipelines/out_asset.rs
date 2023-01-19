@@ -2,7 +2,7 @@ use std::{collections::HashSet, sync::Arc};
 
 use elements_std::asset_url::{AbsAssetUrl, AssetType};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum OutAssetContent {
     Content(AbsAssetUrl),
     Collection(Vec<String>),
@@ -20,7 +20,7 @@ pub enum OutAssetPreview {
     Image { image: Arc<image::RgbaImage> },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct OutAsset {
     /// A unique id identifying this asset
     pub id: String,

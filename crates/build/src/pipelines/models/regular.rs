@@ -23,7 +23,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                     .await
                     .with_context(|| format!("Failed to import model {}", file))?;
                 model_crate.model_mut().set_name(&file.path().file_name().unwrap());
-                model_crate.create_object();
+                model_crate.create_object_from_model();
 
                 let out_model_path = ctx.in_root().relative_path(file.path());
                 config.apply(&ctx, &mut model_crate, &out_model_path).await?;

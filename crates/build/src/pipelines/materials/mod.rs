@@ -4,6 +4,8 @@ use anyhow::Context;
 use async_trait::async_trait;
 use dyn_clonable::*;
 use elements_asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt};
+use elements_decals::decal;
+use elements_ecs::EntityData;
 use elements_model_import::{
     model_crate::{cap_texture_size, ModelCrate}, ModelTextureSize
 };
@@ -34,10 +36,11 @@ pub enum MaterialsImporter {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MaterialsPipeline {
     pub importer: MaterialsImporter,
+    pub output_decals: bool,
 }
 
 pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAsset> {
-    match config.importer {
+    let materials = match config.importer.clone() {
         MaterialsImporter::Single(mat) => {
             ctx.process_single(move |ctx| async move {
                 let name = mat.name.as_ref().or(mat.source.as_ref()).unwrap().to_string();
@@ -61,7 +64,35 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
             })
             .await
         }
-        MaterialsImporter::Quixel => quixel_surfaces::pipeline(ctx, config).await,
+        MaterialsImporter::Quixel => quixel_surfaces::pipeline(ctx, config.clone()).await,
+    };
+    if config.output_decals {
+        let mut res = materials.clone();
+        for mat in materials {
+            if let OutAssetContent::Content(mat_url) = mat.content {
+                let model_path =
+                    ctx.in_root().relative_path(mat.source.clone().map(|x| x.path()).unwrap_or_else(|| ctx.pipeline_path())).join("decal");
+                let out_model_url = ctx.out_root().join(&model_path).unwrap();
+                let mut model_crate = ModelCrate::new();
+                let decal_path = out_model_url.path().join("objects").relative(mat_url.path());
+                model_crate.create_object(EntityData::new().set(decal(), decal_path.into()));
+                let model_url = ctx.write_model_crate(&model_crate, &model_path).await;
+                res.push(OutAsset {
+                    id: asset_id_from_url(&out_model_url),
+                    type_: AssetType::Object,
+                    hidden: false,
+                    name: mat.name,
+                    tags: mat.tags,
+                    categories: mat.categories,
+                    preview: mat.preview,
+                    content: OutAssetContent::Content(model_url.object().unwrap_abs()),
+                    source: mat.source,
+                });
+            }
+        }
+        res
+    } else {
+        materials
     }
 }
 

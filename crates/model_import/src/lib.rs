@@ -152,7 +152,7 @@ impl ModelImportTransform {
             //     model.animatable = Some(*animatable);
             // }
             ModelImportTransform::CreateObject => {
-                model_crate.create_object();
+                model_crate.create_object_from_model();
             }
             ModelImportTransform::CreateColliderFromModel => {
                 model_crate.create_collider_from_model(assets)?;
