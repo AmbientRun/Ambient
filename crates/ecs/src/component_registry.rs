@@ -1,4 +1,6 @@
-use std::collections::HashMap;
+use std::{
+    any::TypeId, collections::{hash_map::Entry, HashMap}
+};
 
 use elements_std::{asset_url::AbsAssetUrl, events::EventDispatcher};
 use once_cell::sync::Lazy;
@@ -13,14 +15,17 @@ pub fn with_component_registry<R>(f: impl FnOnce(&ComponentRegistry) -> R + Sync
     f(&lock)
 }
 
-#[derive(Clone)]
 pub(crate) struct RegistryComponent {
     pub(crate) desc: ComponentDesc,
     pub(crate) primitive_component_type: Option<PrimitiveComponentType>,
     pub(crate) primitive_component: Option<PrimitiveComponent>,
+    /// Some if there are external attributes.
+    ///
+    /// Othewise, attributes are stored statically
+    attributes: Option<HashMap<TypeId, AttributeEntry>>,
 }
 
-#[derive(Clone, Default)]
+#[derive(Default)]
 pub struct ComponentRegistry {
     pub(crate) components: Vec<RegistryComponent>,
     pub component_paths: HashMap<String, u32>,
@@ -60,28 +65,65 @@ impl ComponentRegistry {
         for (id, type_) in components {
             type_.register(self, &id, decorating);
         }
+
         for handler in self.on_external_components_change.iter() {
             handler();
         }
     }
 
-    pub fn register2(&mut self, vtable: &'static ComponentVTable<()>) -> ComponentDesc {
-        let path = vtable.path();
+    pub fn register_external(
+        &mut self,
+        path: String,
+        vtable: &'static ComponentVTable<()>,
+        attributes: impl IntoIterator<Item = Box<dyn Fn(ComponentDesc) -> AttributeEntry>>,
+    ) -> ComponentDesc {
+        assert_eq!(None, vtable.path, "Static name does not match provided name");
+
         log::info!("Registering component: {path}");
 
         let index = self.components.len().try_into().expect("Maximum component reached");
         let desc = ComponentDesc::new(index, vtable);
 
-        self.components.push(RegistryComponent { desc, primitive_component_type: None, primitive_component: None });
+        let attributes = attributes.into_iter();
+        let attributes =
+            attributes.map(|v| v(desc)).chain([AttributeEntry::from_value(ComponentPath(path.clone()))]).map(|v| (v.key(), v)).collect();
 
-        assert!(self.component_paths.insert(path, index).is_none(), "Duplicate component path");
+        self.components.push(RegistryComponent {
+            desc,
+            primitive_component_type: None,
+            primitive_component: None,
+            attributes: Some(attributes),
+        });
+
+        match self.component_paths.entry(path) {
+            Entry::Occupied(slot) => panic!("Duplicate component path: {:?}", slot.key()),
+            Entry::Vacant(slot) => slot.insert(index),
+        };
 
         desc
     }
 
-    pub fn register_with_primitive(&mut self, vtable: &'static ComponentVTable<()>, ty: PrimitiveComponentType) -> PrimitiveComponent {
-        let desc = self.register2(vtable);
-        self.set_primitive_component(&desc.path(), ty)
+    pub fn register_static(&mut self, path: &'static str, vtable: &'static ComponentVTable<()>) -> ComponentDesc {
+        assert_eq!(Some(path), vtable.path, "Static name does not match provided name");
+
+        log::info!("Registering component: {path}");
+
+        let index = self.components.len().try_into().expect("Maximum component reached");
+        let desc = ComponentDesc::new(index, vtable);
+
+        self.components.push(RegistryComponent {
+            desc,
+            primitive_component_type: None,
+            primitive_component: None,
+            attributes: Default::default(),
+        });
+
+        match self.component_paths.entry(path.into()) {
+            Entry::Occupied(slot) => panic!("Duplicate component path: {:?}", slot.key()),
+            Entry::Vacant(slot) => slot.insert(index),
+        };
+
+        desc
     }
 
     /// Sets the primitive component for an existing component
@@ -99,6 +141,12 @@ impl ComponentRegistry {
         entry.primitive_component_type = Some(ty);
         entry.primitive_component = Some(prim.clone());
         prim
+    }
+
+    pub(crate) fn get_external_attribute(&self, index: u32, key: TypeId) -> Option<AttributeEntry> {
+        let entry = &self.components[index as usize];
+
+        entry.attributes.as_ref().expect("No external attributes on static components").get(&key).cloned()
     }
 
     pub fn path_to_index(&self, path: &str) -> Option<u32> {

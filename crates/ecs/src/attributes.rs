@@ -123,10 +123,13 @@ where
     }
 }
 
+pub(crate) struct ComponentPath(pub String);
+
 component_attributes! {
     Serializable,
     Debuggable,
     MakeDefault,
     Store,
     Networked,
+    ComponentPath,
 }

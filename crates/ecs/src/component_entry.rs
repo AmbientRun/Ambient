@@ -3,7 +3,7 @@ use std::{
 };
 
 use crate::{
-    component::{ComponentBuffer, IComponentBuffer}, AttributeEntry, Component, ComponentAttribute, ComponentDesc, ComponentValue
+    component::{ComponentBuffer, IComponentBuffer}, AttributeEntry, Component, ComponentDesc, ComponentRegistry, ComponentValue
 };
 
 pub(crate) type ErasedHolder = ManuallyDrop<Box<ComponentHolder<()>>>;
@@ -11,8 +11,7 @@ pub(crate) type ErasedHolder = ManuallyDrop<Box<ComponentHolder<()>>>;
 /// Holds untyped information for everything a component can do
 #[repr(C)]
 pub struct ComponentVTable<T: 'static> {
-    pub(crate) namespace: &'static str,
-    pub(crate) component_name: &'static str,
+    pub(crate) path: Option<&'static str>,
     // TODO: use const value when stabilized
     // https://github.com/rust-lang/rust/issues/63084
     pub(crate) get_type_name: fn() -> &'static str,
@@ -30,16 +29,24 @@ pub struct ComponentVTable<T: 'static> {
     pub(crate) impl_downcast_cloned: fn(&ComponentHolder<T>, dst: *mut MaybeUninit<T>),
     pub(crate) impl_take: fn(Box<ComponentHolder<T>>, dst: *mut MaybeUninit<T>),
 
-    pub(crate) custom_attrs: fn(ComponentDesc, TypeId) -> Option<&'static AttributeEntry>,
+    pub(crate) custom_attrs: fn(ComponentDesc, TypeId) -> Option<AttributeEntry>,
 }
 
 impl<T: Clone + ComponentValue> ComponentVTable<T> {
     /// Creates a new vtable of `T` without any additional bounds
-    pub const fn construct(
-        namespace: &'static str,
-        component_name: &'static str,
-        custom_attrs: fn(ComponentDesc, TypeId) -> Option<&'static AttributeEntry>,
-    ) -> Self {
+    pub const fn construct(path: &'static str, custom_attrs: fn(ComponentDesc, TypeId) -> Option<AttributeEntry>) -> Self {
+        Self::construct_inner(Some(path), custom_attrs)
+    }
+
+    /// Construct a vtable for a component where the name and attributes are not statically known.
+    ///
+    /// Must be hydrated by ComponentRegistry
+    pub const fn construct_external() -> Self {
+        Self::construct_inner(None, |desc, key| ComponentRegistry::get().get_external_attribute(desc.index(), key))
+    }
+
+    /// Creates a new vtable of `T` without any additional bounds
+    const fn construct_inner(path: Option<&'static str>, custom_attrs: fn(ComponentDesc, TypeId) -> Option<AttributeEntry>) -> Self {
         fn impl_drop<T>(holder: Box<ComponentHolder<T>>) {
             mem::drop(holder)
         }
@@ -75,8 +82,7 @@ impl<T: Clone + ComponentValue> ComponentVTable<T> {
         }
 
         Self {
-            namespace,
-            component_name,
+            path,
             get_type_name: || std::any::type_name::<T>(),
             get_type_id: || TypeId::of::<T>(),
             impl_clone: impl_clone::<T>,
@@ -87,11 +93,6 @@ impl<T: Clone + ComponentValue> ComponentVTable<T> {
             impl_create_buffer: impl_create_buffer::<T>,
             custom_attrs,
         }
-    }
-
-    /// Returns the fully qualified component path
-    pub fn path(&self) -> String {
-        format!("{}::{}", self.namespace, self.component_name)
     }
 }
 
@@ -108,7 +109,7 @@ impl<T: 'static> ComponentVTable<T> {
     /// `Box<T>`, `&T`, `*const T`, `*mut T` and similar thin pointers are *safe*.
     ///
     /// `&mut T` is *unsafe* due to pointer variance
-    pub unsafe fn erase(&'static self) -> &'static ComponentVTable<()> {
+    pub const unsafe fn erase(&'static self) -> &'static ComponentVTable<()> {
         mem::transmute::<&'static ComponentVTable<T>, &'static ComponentVTable<()>>(self)
     }
 }
@@ -273,10 +274,6 @@ impl ComponentEntry {
         } else {
             None
         }
-    }
-
-    pub fn attribute<A: ComponentAttribute>(&self) -> Option<&'static A> {
-        self.desc().attribute::<A>()
     }
 
     pub fn as_debug(&self) -> &dyn Debug {

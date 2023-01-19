@@ -1,6 +1,6 @@
 use core::fmt;
 use std::{
-    any::{Any, TypeId}, cmp::Ordering, fmt::Debug, marker::PhantomData
+    any::{Any, TypeId}, cmp::Ordering, fmt::Debug, marker::PhantomData, sync::Arc
 };
 
 use downcast_rs::Downcast;
@@ -9,7 +9,7 @@ use serde::{
 };
 
 use crate::{
-    component::IComponentBuffer, with_component_registry, ComponentAttribute, ComponentAttributeConstructor, ComponentEntry, ComponentVTable, Debuggable, Serializable
+    component::IComponentBuffer, with_component_registry, ComponentAttribute, ComponentAttributeConstructor, ComponentEntry, ComponentPath, ComponentVTable, Debuggable, Serializable
 };
 
 pub trait ComponentValueBase: Send + Sync + Downcast + 'static {
@@ -22,29 +22,38 @@ impl<T: Send + Sync + 'static> ComponentValueBase for T {}
 pub trait ComponentValue: ComponentValueBase + Clone {}
 impl<T: ComponentValueBase + Clone> ComponentValue for T {}
 
+#[derive(Clone)]
 pub struct AttributeEntry {
     /// const fn TypeId::of is not stable
     key: fn() -> TypeId,
     /// To use: cast to the correct type, which is determined by the attribute in use.
     ///
     /// It is recommended to use helper functions
-    value: Box<dyn Any + Send + Sync>,
+    value: Arc<dyn Any + Send + Sync>,
 }
 
 impl AttributeEntry {
-    pub fn new<Attr, T, P>(component: Component<T>, params: P) -> Self
+    pub fn from_value<A: ComponentAttribute>(value: A) -> Self {
+        Self { key: || TypeId::of::<A>(), value: Arc::new(value) }
+    }
+
+    pub fn new<A, T, P>(component: Component<T>, params: P) -> Self
     where
-        Attr: ComponentAttributeConstructor<T, P>,
+        A: ComponentAttributeConstructor<T, P>,
         T: 'static,
     {
-        Self { key: || TypeId::of::<Attr>(), value: Box::new(Attr::construct(component, params)) as Box<dyn Any + Send + Sync> }
+        Self { key: || TypeId::of::<A>(), value: Arc::new(A::construct(component, params)) as Arc<dyn Any + Send + Sync> }
+    }
+
+    pub(crate) fn key(&self) -> TypeId {
+        (self.key)()
     }
 }
 
 /// Construct attributes from a slice
 #[inline(always)]
-pub fn slice_attrs(attrs: &'static [AttributeEntry], key: TypeId) -> Option<&'static AttributeEntry> {
-    attrs.iter().find(|v| (v.key)() == key)
+pub fn slice_attrs(attrs: &'static [AttributeEntry], key: TypeId) -> Option<AttributeEntry> {
+    attrs.iter().find(|v| (v.key)() == key).cloned()
 }
 
 /// Component key
@@ -77,7 +86,7 @@ impl<T: 'static> std::ops::Deref for Component<T> {
 
 impl<T> Debug for Component<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Component").field("name", &self.desc.vtable.component_name).field("index", &self.desc.index).finish()
+        f.debug_struct("Component").field("path", &self.desc.vtable.path).field("index", &self.desc.index).finish()
     }
 }
 
@@ -88,10 +97,6 @@ impl Debug for ComponentDesc {
 }
 
 impl<T: 'static> Component<T> {
-    pub fn name(&self) -> &'static str {
-        self.desc.vtable.component_name
-    }
-
     /// Returns an untyped description of the component key
     #[inline]
     pub fn desc(&self) -> ComponentDesc {
@@ -161,10 +166,6 @@ impl<T> Component<T> {
         Self { desc, _marker: PhantomData }
     }
 
-    pub fn attribute<A: ComponentAttribute>(&self) -> Option<&'static A> {
-        self.desc.attribute::<A>()
-    }
-
     pub fn as_debug<'a>(&self, value: &'a T) -> &'a dyn Debug {
         self.desc.as_debug(value)
     }
@@ -206,11 +207,20 @@ impl Ord for ComponentDesc {
 impl ComponentDesc {
     /// Returns the fully qualified component path
     pub fn path(&self) -> String {
-        self.vtable.path()
+        if let Some(path) = self.vtable.path {
+            path.to_string()
+        } else {
+            self.attribute::<ComponentPath>().expect("No path for component").0.clone()
+        }
     }
 
-    pub fn name(&self) -> &'static str {
-        self.vtable.component_name
+    pub fn name(&self) -> String {
+        if let Some(path) = self.vtable.path {
+            path.rsplit_once("::").map(|v| v.1).unwrap_or(path).into()
+        } else {
+            let path = &self.attribute::<ComponentPath>().expect("No path for component").0;
+            path.rsplit_once("::").map(|v| v.1).unwrap_or(path).into()
+        }
     }
 
     pub fn type_name(&self) -> &'static str {
@@ -231,9 +241,9 @@ impl ComponentDesc {
         Self { index, vtable }
     }
 
-    pub fn attribute<A: ComponentAttribute>(&self) -> Option<&'static A> {
+    pub fn attribute<A: ComponentAttribute>(&self) -> Option<Arc<A>> {
         let entry = (self.vtable.custom_attrs)(*self, TypeId::of::<A>())?;
-        let value = entry.value.downcast_ref().expect("Mismatched attribute types");
+        let value = entry.value.downcast::<A>().expect("Mismatched attribute types");
         Some(value)
     }
 
@@ -332,16 +342,15 @@ macro_rules! components {
 
                     static ATTRS: $crate::OnceCell<Box<[$crate::AttributeEntry]>> = $crate::OnceCell::new();
 
-                    static NAMESPACE: &str = concat!("core::", $ns);
+                    static PATH: &str = concat!("core::", $ns, "::", stringify!($name));
 
                     static VTABLE: &$crate::ComponentVTable<$ty> = &$crate::ComponentVTable::construct(
-                        NAMESPACE,
-                        stringify!($name),
+                        PATH,
                         |desc, key| $crate::component2::slice_attrs(ATTRS.get_or_init(|| init_attr(desc)), key)
                     );
 
                     *[<comp_ $name>].get_or_init(|| {
-                        reg.register2(unsafe { VTABLE.erase() } )
+                        reg.register_static(PATH, unsafe { VTABLE.erase() } )
                     })
                 }
 
@@ -381,7 +390,7 @@ mod test {
 
     #[test]
     fn manual_component() {
-        static VTABLE: &ComponentVTable<String> = &ComponentVTable::construct("core::test", "my_component", |_, _| None);
+        static VTABLE: &ComponentVTable<String> = &ComponentVTable::construct("core::test::my_component", |_, _| None);
 
         let component: Component<String> = Component::new(ComponentDesc::new(1, unsafe { VTABLE.erase() }));
 

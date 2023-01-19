@@ -46,66 +46,70 @@ macro_rules! make_primitive_component {
         }
 
         impl PrimitiveComponentType {
-            pub(crate) fn register(&self, reg: &mut ComponentRegistry, key: &str, decorating: bool) -> PrimitiveComponent {
+            pub(crate) fn register(&self, reg: &mut ComponentRegistry, path: &str, decorating: bool) -> PrimitiveComponent {
                 match self {
                     $(
-                        ty @ PrimitiveComponentType::$value => reg.register_with_primitive(
-                            {
-                                static VTABLE: &ComponentVTable<$type> = &ComponentVTable::construct("core", "<unknown>", |_, _| None);
-                                unsafe { VTABLE.erase() }
-                            },
-                            ty.clone()
-                        ),
-                        ty @ PrimitiveComponentType::[< Vec $value >] => reg.register_with_primitive(
-                            {
-                                static VTABLE: &ComponentVTable<Vec<$type>> = &ComponentVTable::construct("core", "<unknown>", |_, _| None);
-                                unsafe { VTABLE.erase() }
-                            },
-                            ty.clone(),
-                        ),
-                        ty @ PrimitiveComponentType::[< Option $value >] => reg.register_with_primitive(
-                            {
-                                static VTABLE: &ComponentVTable<Option<$type>> = &ComponentVTable::construct("core", "<unknown>", |_, _| None);
-                                unsafe { VTABLE.erase() }
-                            },
-                            ty.clone(),
-                        ),
+                        ty @ PrimitiveComponentType::$value =>
+                        {
+                            if decorating {
+                                static VTABLE: &ComponentVTable<$type> = &ComponentVTable::construct_external() ;
+
+                                reg.register_external(path.into(), unsafe { VTABLE.erase() } , []);
+                            }
+
+                            reg.set_primitive_component(path.into(), ty.clone())
+                        },
+                        ty @ PrimitiveComponentType::[< Vec $value >] =>
+
+                        {
+                            if decorating {
+                                static VTABLE: &ComponentVTable<Vec<$type>> = &ComponentVTable::construct_external() ;
+
+                                reg.register_external(path.into(), unsafe { VTABLE.erase() }, []);
+                            }
+
+                            reg.set_primitive_component(path.into(), ty.clone())
+                        },
+                        ty @ PrimitiveComponentType::[< Option $value >] =>
+                        {
+                            if decorating {
+                                static VTABLE: &ComponentVTable<Option<$type>> = &ComponentVTable::construct_external() ;
+
+                                reg.register_external(path.into(), unsafe { VTABLE.erase() }, []);
+                            }
+
+                            reg.set_primitive_component(path.into(), ty.clone())
+                        },
                     )*
                     PrimitiveComponentType::Vec { variants } => match **variants {
                         $(
-                            PrimitiveComponentType::$value => reg.register_with_primitive(
-                                {
-                                    static VTABLE: &ComponentVTable::<Vec<$type>> = &ComponentVTable::construct("core", "<unknown>", |_,_| None);
-                                    unsafe {
-                                        VTABLE.erase()
-                                    }
-                                },
-                                PrimitiveComponentType::[< Vec $value >]
-                            ),
-                            // PrimitiveComponentType::$value => reg.register2(key,
-                            //     decorating,
-                            //     Some(self.clone()),
-                            //     Some(PrimitiveComponent::[<Vec $value>](Component::<Vec<$type>>::new_external(0)))
-                            // ),
+                            PrimitiveComponentType::$value =>
+                            {
+                                if decorating {
+                                    static VTABLE: &ComponentVTable<Vec<$type>> = &ComponentVTable::construct_external() ;
+
+                                    reg.register_external(path.into(), unsafe { VTABLE.erase() }, []);
+                                }
+
+                                let ty = PrimitiveComponentType::[< Vec $value >];
+                                reg.set_primitive_component(path.into(), ty.clone())
+                            },
                         )*
                         _ => panic!("Unsupported Vec inner type: {:?}", variants),
                     },
                     PrimitiveComponentType::Option { variants } => match **variants {
                         $(
-                            PrimitiveComponentType::$value => reg.register_with_primitive(
-                                {
-                                    static VTABLE: &ComponentVTable::<Option<$type>> = &ComponentVTable::construct("core", "<unknown>", |_,_| None);
-                                    unsafe {
-                                        VTABLE.erase()
-                                    }
-                                },
-                                PrimitiveComponentType::[< Option $value >]
-                            ),
-                            // PrimitiveComponentType::$value => reg.register2(key,
-                            //     decorating,
-                            //     Some(self.clone()),
-                            //     Some(PrimitiveComponent::[<Option $value>](Component::<Option<$type>>::new_external(0)))
-                            // ),
+                            PrimitiveComponentType::$value =>
+                            {
+                                if decorating {
+                                    static VTABLE: &ComponentVTable<Option<$type>> = &ComponentVTable::construct_external() ;
+
+                                    reg.register_external(path.into(), unsafe { VTABLE.erase() }, []);
+                                }
+
+                                let ty = PrimitiveComponentType::[< Vec $value >];
+                                reg.set_primitive_component(path.into(), ty.clone())
+                            },
                         )*
                         _ => panic!("Unsupported Option inner type: {:?}", variants),
                     }

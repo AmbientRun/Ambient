@@ -165,7 +165,7 @@ impl Debug for EntityData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut out = f.debug_struct("EntityData");
         for entry in self.content.iter() {
-            out.field(entry.desc().name(), &entry.as_debug());
+            out.field(&entry.desc().name(), &entry.as_debug());
         }
         out.finish()
     }
@@ -263,7 +263,7 @@ impl<'de> Deserialize<'de> for DeserEntityDataWithWarnings {
                         .attribute::<Serializable>()
                         .ok_or_else(|| de::Error::custom(format!("Component {desc:?} is not deserializable")));
 
-                    let ser = *match ser {
+                    let ser = match ser {
                         Ok(v) => v,
                         Err(err) => {
                             self.warnings.push((EntityId::null(), key, format!("{err:?}")));
