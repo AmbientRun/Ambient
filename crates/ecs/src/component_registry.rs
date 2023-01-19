@@ -127,11 +127,12 @@ impl ComponentRegistry {
     }
 
     /// Sets the primitive component for an existing component
-    pub fn set_primitive_component(&mut self, path: &str, ty: PrimitiveComponentType) -> PrimitiveComponent {
+    pub fn set_primitive_component(&mut self, path: &str, ty: PrimitiveComponentType) -> Option<PrimitiveComponent> {
         let index = *match self.component_paths.get(path) {
             Some(v) => v,
             None => {
-                panic!("Attempt to set primitive type for unknown component: {path:?}");
+                log::error!("Attempt to set primitive type for unknown component: {path:?}");
+                return None;
             }
         };
 
@@ -140,7 +141,7 @@ impl ComponentRegistry {
         let prim = PrimitiveComponent { ty: ty.clone(), desc: entry.desc };
         entry.primitive_component_type = Some(ty);
         entry.primitive_component = Some(prim.clone());
-        prim
+        Some(prim)
     }
 
     pub(crate) fn get_external_attribute(&self, index: u32, key: TypeId) -> Option<AttributeEntry> {

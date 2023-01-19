@@ -46,12 +46,12 @@ macro_rules! make_primitive_component {
         }
 
         impl PrimitiveComponentType {
-            pub(crate) fn register(&self, reg: &mut ComponentRegistry, path: &str, decorating: bool) -> PrimitiveComponent {
+            pub(crate) fn register(&self, reg: &mut ComponentRegistry, path: &str, decorating: bool) -> Option<PrimitiveComponent> {
                 match self {
                     $(
                         ty @ PrimitiveComponentType::$value =>
                         {
-                            if decorating {
+                            if !decorating {
                                 static VTABLE: &ComponentVTable<$type> = &ComponentVTable::construct_external() ;
 
                                 reg.register_external(path.into(), unsafe { VTABLE.erase() } , []);
@@ -62,7 +62,7 @@ macro_rules! make_primitive_component {
                         ty @ PrimitiveComponentType::[< Vec $value >] =>
 
                         {
-                            if decorating {
+                            if !decorating {
                                 static VTABLE: &ComponentVTable<Vec<$type>> = &ComponentVTable::construct_external() ;
 
                                 reg.register_external(path.into(), unsafe { VTABLE.erase() }, []);
@@ -72,7 +72,7 @@ macro_rules! make_primitive_component {
                         },
                         ty @ PrimitiveComponentType::[< Option $value >] =>
                         {
-                            if decorating {
+                            if !decorating {
                                 static VTABLE: &ComponentVTable<Option<$type>> = &ComponentVTable::construct_external() ;
 
                                 reg.register_external(path.into(), unsafe { VTABLE.erase() }, []);
@@ -85,7 +85,7 @@ macro_rules! make_primitive_component {
                         $(
                             PrimitiveComponentType::$value =>
                             {
-                                if decorating {
+                                if !decorating {
                                     static VTABLE: &ComponentVTable<Vec<$type>> = &ComponentVTable::construct_external() ;
 
                                     reg.register_external(path.into(), unsafe { VTABLE.erase() }, []);
@@ -101,7 +101,7 @@ macro_rules! make_primitive_component {
                         $(
                             PrimitiveComponentType::$value =>
                             {
-                                if decorating {
+                                if !decorating {
                                     static VTABLE: &ComponentVTable<Option<$type>> = &ComponentVTable::construct_external() ;
 
                                     reg.register_external(path.into(), unsafe { VTABLE.erase() }, []);
