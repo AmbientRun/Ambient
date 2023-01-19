@@ -13,6 +13,7 @@ elements_network = { path = "../network" }
 elements_physics = { path = "../physics" }
 elements_rpc = { path = "../rpc" }
 elements_std = { path = "../std" }
+elements_decals = { path = "../decals" }
 glam.workspace = true
 serde.workspace = true
 tokio.workspace = true

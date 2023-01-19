@@ -3,6 +3,7 @@ use std::sync::Arc;
 use anyhow::Context;
 use async_trait::async_trait;
 use elements_core::{asset_cache, async_ecs::async_run, runtime, transform};
+use elements_decals::decal;
 use elements_ecs::{query_mut, uid, DeserWorldWithWarnings, EntityData, EntityId, EntityUid, World};
 use elements_model::{model_def, ModelDef};
 use elements_network::client::GameRpcArgs;
@@ -134,6 +135,9 @@ impl AsyncAssetKey<Result<Arc<World>, AssetError>> for ObjectFromUrl {
         }
         for (_id, (def,), _) in query_mut((collider(),), ()).iter(&mut world, None) {
             def.resolve(&self.0).context("Failed to resolve collider")?;
+        }
+        for (_id, (def,), _) in query_mut((decal(),), ()).iter(&mut world, None) {
+            def.resolve(&self.0).context("Failed to resolve decal")?;
         }
         Ok(Arc::new(world))
     }

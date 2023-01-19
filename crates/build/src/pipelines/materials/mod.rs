@@ -9,12 +9,13 @@ use elements_ecs::EntityData;
 use elements_model_import::{
     model_crate::{cap_texture_size, ModelCrate}, ModelTextureSize
 };
+use elements_physics::collider::{collider, collider_type};
 use elements_renderer::materials::pbr_material::PbrMaterialFromUrl;
 use elements_std::{
     asset_url::{AbsAssetUrl, AssetType, AssetUrl}, download_asset::AssetResult
 };
 use futures::{future::BoxFuture, FutureExt};
-use glam::Vec4;
+use glam::{Vec3, Vec4};
 use image::{ImageOutputFormat, RgbaImage};
 use relative_path::RelativePath;
 use serde::{Deserialize, Serialize};
@@ -75,7 +76,12 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
                 let out_model_url = ctx.out_root().join(&model_path).unwrap();
                 let mut model_crate = ModelCrate::new();
                 let decal_path = out_model_url.path().join("objects").relative(mat_url.path());
-                model_crate.create_object(EntityData::new().set(decal(), decal_path.into()));
+                model_crate.create_object(
+                    EntityData::new()
+                        .set(decal(), decal_path.into())
+                        .set(collider(), elements_physics::collider::ColliderDef::Box { size: Vec3::ONE, center: Vec3::ZERO })
+                        .set(collider_type(), elements_physics::collider::ColliderType::Picking),
+                );
                 let model_url = ctx.write_model_crate(&model_crate, &model_path).await;
                 res.push(OutAsset {
                     id: asset_id_from_url(&out_model_url),
