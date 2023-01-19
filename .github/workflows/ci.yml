@@ -20,6 +20,6 @@ jobs:
           clean: false
 
       - name: Build
-        run: cargo build --workspace --verbose
+        run: cargo build --workspace
       - name: Run tests
-        run: cargo test --workspace --verbose
+        run: cargo test --workspace
