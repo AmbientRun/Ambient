@@ -1,5 +1,4 @@
 target
-/Cargo.lock
 **/tmp/**
 .DS_Store
 /example_assets

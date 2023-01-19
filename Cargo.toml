@@ -160,8 +160,6 @@ slotmap = "1.0.6"
 atomic_refcell = "0.1.8"
 flume = { version = "0.10", features = ["async"] }
 tokio-postgres = "0.7.6"
-postgres-native-tls = "0.5.0"
-native-tls = "0.2.10"
 machine-uid = "0.2.0"
 im = "15.1.0"
 axum = "0.5.7"
