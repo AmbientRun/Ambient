@@ -4,13 +4,14 @@ use elements_app::AppBuilder;
 use elements_core::{
     asset_cache, camera::active_camera, main_scene, transform::{rotation, scale, translation}
 };
+use elements_decals::DecalShaderKey;
 use elements_ecs::World;
 use elements_element::ElementComponentExt;
 use elements_primitives::{Cube, Quad};
 use elements_renderer::{
     cast_shadows, color, material, materials::{
         flat_material::FlatMaterial, pbr_material::{PbrMaterial, PbrMaterialShaderKey}
-    }, renderer_shader, DecalShaderKey, SharedMaterial
+    }, renderer_shader, SharedMaterial
 };
 use elements_std::{asset_cache::SyncAssetKeyExt, math::SphericalCoords};
 use glam::*;
