@@ -42,7 +42,12 @@ pub async fn pipeline(ctx: &PipelineCtx, _config: MaterialsPipeline) -> Vec<OutA
                 name: pack_name.clone(),
                 tags,
                 categories: Default::default(),
-                preview: OutAssetPreview::Image { image: Arc::new(asset_crate.images.content.get("base_color").unwrap().clone()) },
+                preview: asset_crate
+                    .images
+                    .content
+                    .get("base_color")
+                    .map(|image| OutAssetPreview::Image { image: Arc::new(image.clone()) })
+                    .unwrap_or(OutAssetPreview::None),
                 content: OutAssetContent::Content(model_crate_url.material(ModelCrate::MAIN).abs().unwrap()),
                 source: Some(file.clone()),
             });
