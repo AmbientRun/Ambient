@@ -89,6 +89,7 @@ impl QuixelSurfaceDef {
         let ao = images.remove(0);
         let normal = images.remove(0);
         let opacity = images.remove(0);
+        let transparent = Some(opacity.is_some());
         if let (Some(albedo), Some(ao)) = (&mut albedo, &ao) {
             // Pre-multiply AO
             for (b, ao) in albedo.pixels_mut().zip(ao.pixels()) {
@@ -97,11 +98,15 @@ impl QuixelSurfaceDef {
                 b[2] = ((ao[0] as f32 / 255.) * b[2] as f32) as u8;
             }
         }
+        if let (Some(albedo), Some(opacity)) = (&mut albedo, &opacity) {
+            for (b, op) in albedo.pixels_mut().zip(opacity.pixels()) {
+                b[3] = op[0];
+            }
+        }
         let mat = PbrMaterialFromUrl {
-            transparent: Some(opacity.is_some()),
+            transparent,
             base_color: albedo.map(|albedo| asset_crate.images.insert("base_color", albedo).path).map(|x| dotdot_path(x).into()),
             normalmap: normal.map(|normal| asset_crate.images.insert("normalmap", normal).path).map(|x| dotdot_path(x).into()),
-            opacity: opacity.map(|opacity| asset_crate.images.insert("opacity", opacity).path).map(|x| dotdot_path(x).into()),
             ..Default::default()
         };
         asset_crate.materials.insert(ModelCrate::MAIN, mat);
