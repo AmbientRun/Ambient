@@ -34,7 +34,7 @@ fn default_title() -> String {
 }
 
 components!("app", {
-    @[Serializable, MakeDefault[default_title], Debuggable]
+    @[MakeDefault[default_title], Debuggable]
     window_title: String,
     fps_stats: FpsSample,
 });

@@ -11,53 +11,53 @@ use crate::{
 
 components!("transform", {
 
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     translation: Vec3,
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     scale: Vec3,
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     rotation: Quat,
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     euler_rotation: Vec3,
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     lookat_center: Vec3,
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     lookat_up: Vec3,
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
 
     local_to_world: Mat4,
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     inv_local_to_world: Mat4,
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     local_to_parent: Mat4,
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     mesh_to_local: Mat4,
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     mesh_to_world: Mat4,
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     spherical_billboard: (),
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     cylindrical_billboard_z: (),
 
     /// When this component is applied to a transform hierarchy, the scale will be reset
     /// at that point (and only rotation/translation considered)
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     reset_scale: (),
 
     // FBX
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     fbx_complex_transform: (),
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     fbx_rotation_offset: Vec3,
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     fbx_rotation_pivot: Vec3,
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     fbx_pre_rotation: Quat,
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     fbx_post_rotation: Quat,
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     fbx_scaling_offset: Vec3,
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     fbx_scaling_pivot: Vec3,
 });
 

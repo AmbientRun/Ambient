@@ -36,9 +36,9 @@ components!("app", {
     window_physical_size: UVec2,
     /// Mouse position in screen space
     mouse_position: Vec2,
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     main_scene: (),
-    @[Serializable, Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store]
     ui_scene: (),
     asset_cache: AssetCache,
 
@@ -46,7 +46,7 @@ components!("app", {
     dtime: f32,
     app_start_time: Duration,
     frame_index: usize,
-    @[Serializable, Debuggable, Store]
+    @[Debuggable, Store]
     remove_at_time: Duration,
 
     on_frame: EventDispatcher<dyn Fn(&mut World, EntityId, f32) + Sync + Send>,
