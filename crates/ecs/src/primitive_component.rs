@@ -54,7 +54,7 @@ macro_rules! make_primitive_component {
                             if !decorating {
                                 static VTABLE: &ComponentVTable<$type> = &ComponentVTable::construct_external() ;
 
-                                reg.register_external(path.into(), unsafe { VTABLE.erase() } , []);
+                                reg.register_external(path.into(), unsafe { VTABLE.erase() } , Default::default());
                             }
 
                             reg.set_primitive_component(path.into(), ty.clone())
@@ -65,7 +65,7 @@ macro_rules! make_primitive_component {
                             if !decorating {
                                 static VTABLE: &ComponentVTable<Vec<$type>> = &ComponentVTable::construct_external() ;
 
-                                reg.register_external(path.into(), unsafe { VTABLE.erase() }, []);
+                                reg.register_external(path.into(), unsafe { VTABLE.erase() }, Default::default());
                             }
 
                             reg.set_primitive_component(path.into(), ty.clone())
@@ -75,7 +75,7 @@ macro_rules! make_primitive_component {
                             if !decorating {
                                 static VTABLE: &ComponentVTable<Option<$type>> = &ComponentVTable::construct_external() ;
 
-                                reg.register_external(path.into(), unsafe { VTABLE.erase() }, []);
+                                reg.register_external(path.into(), unsafe { VTABLE.erase() }, Default::default());
                             }
 
                             reg.set_primitive_component(path.into(), ty.clone())
@@ -88,7 +88,7 @@ macro_rules! make_primitive_component {
                                 if !decorating {
                                     static VTABLE: &ComponentVTable<Vec<$type>> = &ComponentVTable::construct_external() ;
 
-                                    reg.register_external(path.into(), unsafe { VTABLE.erase() }, []);
+                                    reg.register_external(path.into(), unsafe { VTABLE.erase() }, Default::default());
                                 }
 
                                 let ty = PrimitiveComponentType::[< Vec $value >];
@@ -104,7 +104,7 @@ macro_rules! make_primitive_component {
                                 if !decorating {
                                     static VTABLE: &ComponentVTable<Option<$type>> = &ComponentVTable::construct_external() ;
 
-                                    reg.register_external(path.into(), unsafe { VTABLE.erase() }, []);
+                                    reg.register_external(path.into(), unsafe { VTABLE.erase() }, Default::default());
                                 }
 
                                 let ty = PrimitiveComponentType::[< Vec $value >];

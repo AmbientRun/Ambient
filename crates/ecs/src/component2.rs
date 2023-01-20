@@ -1,15 +1,16 @@
 use core::fmt;
 use std::{
-    any::{Any, TypeId}, cmp::Ordering, fmt::Debug, marker::PhantomData, sync::Arc
+    any::{Any, TypeId}, cmp::Ordering, fmt::Debug, marker::PhantomData
 };
 
 use downcast_rs::Downcast;
+use parking_lot::MappedRwLockReadGuard;
 use serde::{
     self, de::{self, DeserializeSeed}, Deserialize, Serialize
 };
 
 use crate::{
-    component::IComponentBuffer, with_component_registry, ComponentAttribute, ComponentAttributeConstructor, ComponentEntry, ComponentPath, ComponentVTable, Debuggable, Serializable
+    component::IComponentBuffer, with_component_registry, AttributeGuard, ComponentAttribute, ComponentEntry, ComponentPath, ComponentVTable, Debuggable, Serializable
 };
 
 pub trait ComponentValueBase: Send + Sync + Downcast + 'static {
@@ -21,40 +22,6 @@ pub trait ComponentValueBase: Send + Sync + Downcast + 'static {
 impl<T: Send + Sync + 'static> ComponentValueBase for T {}
 pub trait ComponentValue: ComponentValueBase + Clone {}
 impl<T: ComponentValueBase + Clone> ComponentValue for T {}
-
-#[derive(Clone)]
-pub struct AttributeEntry {
-    /// const fn TypeId::of is not stable
-    key: fn() -> TypeId,
-    /// To use: cast to the correct type, which is determined by the attribute in use.
-    ///
-    /// It is recommended to use helper functions
-    value: Arc<dyn Any + Send + Sync>,
-}
-
-impl AttributeEntry {
-    pub fn from_value<A: ComponentAttribute>(value: A) -> Self {
-        Self { key: || TypeId::of::<A>(), value: Arc::new(value) }
-    }
-
-    pub fn new<A, T, P>(component: Component<T>, params: P) -> Self
-    where
-        A: ComponentAttributeConstructor<T, P>,
-        T: 'static,
-    {
-        Self { key: || TypeId::of::<A>(), value: Arc::new(A::construct(component, params)) as Arc<dyn Any + Send + Sync> }
-    }
-
-    pub(crate) fn key(&self) -> TypeId {
-        (self.key)()
-    }
-}
-
-/// Construct attributes from a slice
-#[inline(always)]
-pub fn slice_attrs(attrs: &'static [AttributeEntry], key: TypeId) -> Option<AttributeEntry> {
-    attrs.iter().find(|v| (v.key)() == key).cloned()
-}
 
 /// Component key
 pub struct Component<T: 'static> {
@@ -241,10 +208,9 @@ impl ComponentDesc {
         Self { index, vtable }
     }
 
-    pub fn attribute<A: ComponentAttribute>(&self) -> Option<Arc<A>> {
-        let entry = (self.vtable.custom_attrs)(*self, TypeId::of::<A>())?;
-        let value = entry.value.downcast::<A>().expect("Mismatched attribute types");
-        Some(value)
+    pub fn attribute<A: ComponentAttribute>(&self) -> Option<AttributeGuard<A>> {
+        let guard = (self.vtable.attributes)(*self);
+        MappedRwLockReadGuard::try_map(guard, |store| store.get::<A>()).ok()
     }
 
     pub fn as_debug<'a>(&self, value: &'a dyn Any) -> &'a dyn Debug {
@@ -328,25 +294,31 @@ macro_rules! components {
 
                 #[doc(hidden)]
                 fn [< __init_component_ $name>] (reg: &mut $crate::ComponentRegistry) -> $crate::ComponentDesc {
-                    fn init_attr(desc:$crate::ComponentDesc) -> Box<[$crate::AttributeEntry]> {
-                        let _component: $crate::component2::Component<$ty> = $crate::component2::Component::new(desc);
+                    fn init_attr(_component: $crate::Component<$ty>) -> $crate::parking_lot::RwLock<$crate::AttributeStore> {
 
-                        Box::new([
-                            $(
-                                $(
-                                    $crate::AttributeEntry::new::<$attr, $ty, _>(_component, ($($params),*)),
-                                )*
-                            )*
-                        ])
+                        #[allow(unused_mut)]
+                        let mut store = $crate::AttributeStore::new();
+
+
+                        $( $(
+                            <$attr as $crate::AttributeConstructor::<$ty, _>>::construct(
+                                &mut store,
+                                _component,
+                                ($($params),*)
+                            );
+                        )*)*
+
+                        $crate::parking_lot::RwLock::new(store)
+
                     }
 
-                    static ATTRS: $crate::OnceCell<Box<[$crate::AttributeEntry]>> = $crate::OnceCell::new();
+                    static ATTRIBUTES: $crate::OnceCell<$crate::parking_lot::RwLock<$crate::AttributeStore>> = $crate::OnceCell::new();
 
                     static PATH: &str = concat!("core::", $ns, "::", stringify!($name));
 
                     static VTABLE: &$crate::ComponentVTable<$ty> = &$crate::ComponentVTable::construct(
                         PATH,
-                        |desc, key| $crate::component2::slice_attrs(ATTRS.get_or_init(|| init_attr(desc)), key)
+                        |desc| $crate::parking_lot::RwLockReadGuard::map(ATTRIBUTES.get_or_init(|| init_attr($crate::Component::new(desc))).read(), |v| v)
                     );
 
                     *[<comp_ $name>].get_or_init(|| {
@@ -383,14 +355,18 @@ macro_rules! components {
 mod test {
     use std::{ptr, sync::Arc};
 
+    use once_cell::sync::Lazy;
+    use parking_lot::{RwLock, RwLockReadGuard};
     use serde::de::DeserializeSeed;
 
     use super::*;
-    use crate::{ComponentVTable, MakeDefault, Networked, Store};
+    use crate::{AttributeStore, ComponentVTable, MakeDefault, Networked, Store};
 
     #[test]
     fn manual_component() {
-        static VTABLE: &ComponentVTable<String> = &ComponentVTable::construct("core::test::my_component", |_, _| None);
+        static ATTRIBUTES: Lazy<RwLock<AttributeStore>> = Lazy::new(Default::default);
+        static VTABLE: &ComponentVTable<String> =
+            &ComponentVTable::construct("core::test::my_component", |_| RwLockReadGuard::map(ATTRIBUTES.read(), |v| v));
 
         let component: Component<String> = Component::new(ComponentDesc::new(1, unsafe { VTABLE.erase() }));
 

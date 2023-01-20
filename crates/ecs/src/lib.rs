@@ -14,6 +14,9 @@ use itertools::Itertools;
 /// Expose to macros
 #[doc(hidden)]
 pub use once_cell::sync::OnceCell;
+/// Expose to macros
+#[doc(hidden)]
+pub use parking_lot;
 use parking_lot::Mutex;
 /// Expose to macros
 #[doc(hidden)]
@@ -39,7 +42,7 @@ mod serialization;
 mod stream;
 pub use archetype::*;
 pub use attributes::*;
-pub use component2::{AttributeEntry, Component, ComponentDesc, ComponentValue, ComponentValueBase};
+pub use component2::{Component, ComponentDesc, ComponentValue, ComponentValueBase};
 pub use component_entry::*;
 pub use component_registry::*;
 pub use component_unit::*;

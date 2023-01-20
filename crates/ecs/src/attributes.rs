@@ -1,10 +1,44 @@
-use std::{any::Any, fmt::Debug};
+use std::{
+    any::{Any, TypeId}, collections::HashMap, fmt::Debug
+};
 
+use downcast_rs::{impl_downcast, Downcast};
 use serde::{Deserialize, Serialize};
 
 use crate::{Component, ComponentDesc, ComponentEntry, ComponentValue};
 
-pub trait ComponentAttribute: 'static + Send + Sync {}
+/// Represents a single attribute attached to a component
+pub trait ComponentAttribute: 'static + Send + Sync + Downcast {}
+impl_downcast!(ComponentAttribute);
+
+#[derive(Default)]
+pub struct AttributeStore {
+    inner: HashMap<TypeId, Box<dyn ComponentAttribute>>,
+}
+
+impl AttributeStore {
+    pub fn new() -> Self {
+        Self { inner: Default::default() }
+    }
+
+    pub fn set<A: ComponentAttribute>(&mut self, attribute: A) {
+        self.inner.insert(TypeId::of::<A>(), Box::new(attribute));
+    }
+
+    pub fn get_dyn(&self, key: TypeId) -> Option<&Box<dyn ComponentAttribute>> {
+        self.inner.get(&key)
+    }
+
+    pub fn get<A: ComponentAttribute>(&self) -> Option<&A> {
+        self.inner.get(&TypeId::of::<A>()).map(|v| v.downcast_ref::<A>().expect("Invalid type"))
+    }
+}
+
+impl FromIterator<Box<dyn ComponentAttribute>> for AttributeStore {
+    fn from_iter<T: IntoIterator<Item = Box<dyn ComponentAttribute>>>(iter: T) -> Self {
+        Self { inner: iter.into_iter().map(|v| (v.as_ref().type_id(), v)).collect() }
+    }
+}
 
 macro_rules! component_attributes {
     ($($name: ident,)*) => {
@@ -15,23 +49,28 @@ $(
     };
 }
 
-/// Declares an attribute type which can be attached to a component
-pub trait ComponentAttributeConstructor<T, P>: 'static + Send + Sync {
-    /// Construct a new instance of the attribute value
-    fn construct(component: Component<T>, params: P) -> Self;
+/// Initializes the attribute
+pub trait AttributeConstructor<T, P>: 'static + Send + Sync {
+    /// Construct a new instance of the attribute value and push it to the store
+    fn construct(store: &mut AttributeStore, component: Component<T>, params: P);
 }
 
 #[derive(Clone, Copy)]
 /// Declares a component as [`serde::Serialize`] and [`serde::Deserialize`]
+///
+/// Prefer [`Store`] or [`Networked`] rather than using directly
 pub struct Serializable {
     ser: fn(&ComponentEntry) -> &dyn erased_serde::Serialize,
     deser: fn(ComponentDesc, &mut dyn erased_serde::Deserializer) -> Result<ComponentEntry, erased_serde::Error>,
     desc: ComponentDesc,
 }
 
-impl<T: ComponentValue + Serialize + for<'de> Deserialize<'de>> ComponentAttributeConstructor<T, ()> for Serializable {
-    fn construct(component: Component<T>, _: ()) -> Self {
-        Self {
+impl<T> AttributeConstructor<T, ()> for Serializable
+where
+    T: ComponentValue + Serialize + for<'de> Deserialize<'de>,
+{
+    fn construct(store: &mut AttributeStore, component: Component<T>, _: ()) {
+        store.set(Self {
             ser: |v| v.downcast_ref::<T>() as &dyn erased_serde::Serialize,
             deser: |desc, deserializer| {
                 let value = T::deserialize(deserializer)?;
@@ -39,7 +78,7 @@ impl<T: ComponentValue + Serialize + for<'de> Deserialize<'de>> ComponentAttribu
                 Ok(entry)
             },
             desc: component.desc(),
-        }
+        });
     }
 }
 
@@ -73,12 +112,12 @@ impl Debuggable {
     }
 }
 
-impl<T> ComponentAttributeConstructor<T, ()> for Debuggable
+impl<T> AttributeConstructor<T, ()> for Debuggable
 where
     T: Debug,
 {
-    fn construct(_: Component<T>, _: ()) -> Self {
-        Self { debug: |entry| entry.downcast_ref::<T>().unwrap() as &dyn Debug }
+    fn construct(store: &mut AttributeStore, _: Component<T>, _: ()) {
+        store.set(Self { debug: |entry| entry.downcast_ref::<T>().unwrap() as &dyn Debug })
     }
 }
 
@@ -94,32 +133,46 @@ impl MakeDefault {
     }
 }
 
-impl<T: ComponentValue + Default> ComponentAttributeConstructor<T, ()> for MakeDefault {
-    fn construct(component: Component<T>, _: ()) -> Self {
-        Self { make_default: Box::new(move || ComponentEntry::new(component, T::default())) }
+impl<T: ComponentValue + Default> AttributeConstructor<T, ()> for MakeDefault {
+    fn construct(store: &mut AttributeStore, component: Component<T>, _: ()) {
+        store.set(Self { make_default: Box::new(move || ComponentEntry::new(component, T::default())) })
     }
 }
 
-impl<T: ComponentValue, F: 'static + Send + Sync + Fn() -> T> ComponentAttributeConstructor<T, F> for MakeDefault {
-    fn construct(component: Component<T>, func: F) -> Self {
-        Self { make_default: Box::new(move || ComponentEntry::new(component, func())) }
+impl<T: ComponentValue, F: 'static + Send + Sync + Fn() -> T> AttributeConstructor<T, F> for MakeDefault {
+    fn construct(store: &mut AttributeStore, component: Component<T>, func: F) {
+        store.set(Self { make_default: Box::new(move || ComponentEntry::new(component, func())) })
     }
 }
 
 /// Store the component on disc
+///
+/// Provides `Serializable`
 #[derive(Debug, Clone, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Store;
 /// Synchronize the component over the network to the clients
+///
+/// Provides `Serializable`
 #[derive(Debug, Clone, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Networked;
 
-/// Automatically implement for marker types
-impl<A, T> ComponentAttributeConstructor<T, ()> for A
+impl<T> AttributeConstructor<T, ()> for Networked
 where
-    A: ComponentAttribute + Default,
+    T: ComponentValue + Serialize + for<'de> Deserialize<'de>,
 {
-    fn construct(_: Component<T>, _: ()) -> Self {
-        Self::default()
+    fn construct(store: &mut AttributeStore, component: Component<T>, params: ()) {
+        Serializable::construct(store, component, params);
+        store.set(Self);
+    }
+}
+
+impl<T> AttributeConstructor<T, ()> for Store
+where
+    T: ComponentValue + Serialize + for<'de> Deserialize<'de>,
+{
+    fn construct(store: &mut AttributeStore, component: Component<T>, params: ()) {
+        Serializable::construct(store, component, params);
+        store.set(Self);
     }
 }
 

@@ -4,7 +4,7 @@ use std::{
 
 use elements_std::{asset_url::AbsAssetUrl, events::EventDispatcher};
 use once_cell::sync::Lazy;
-use parking_lot::RwLock;
+use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use super::*;
 use crate::ComponentVTable;
@@ -22,7 +22,7 @@ pub(crate) struct RegistryComponent {
     /// Some if there are external attributes.
     ///
     /// Othewise, attributes are stored statically
-    attributes: Option<HashMap<TypeId, AttributeEntry>>,
+    attributes: Option<AttributeStore>,
 }
 
 #[derive(Default)]
@@ -36,10 +36,10 @@ pub struct ComponentRegistry {
     pub on_external_components_change: EventDispatcher<dyn Fn() + Sync + Send>,
 }
 impl ComponentRegistry {
-    pub fn get() -> parking_lot::RwLockReadGuard<'static, Self> {
+    pub fn get() -> RwLockReadGuard<'static, Self> {
         COMPONENT_REGISTRY.read()
     }
-    pub fn get_mut() -> parking_lot::RwLockWriteGuard<'static, Self> {
+    pub fn get_mut() -> RwLockWriteGuard<'static, Self> {
         COMPONENT_REGISTRY.write()
     }
     /// When decorating is true, the components read from the source will be assumed to already exist and we'll just add
@@ -75,7 +75,7 @@ impl ComponentRegistry {
         &mut self,
         path: String,
         vtable: &'static ComponentVTable<()>,
-        attributes: impl IntoIterator<Item = Box<dyn Fn(ComponentDesc) -> AttributeEntry>>,
+        mut attributes: AttributeStore,
     ) -> ComponentDesc {
         assert_eq!(None, vtable.path, "Static name does not match provided name");
 
@@ -84,9 +84,7 @@ impl ComponentRegistry {
         let index = self.components.len().try_into().expect("Maximum component reached");
         let desc = ComponentDesc::new(index, vtable);
 
-        let attributes = attributes.into_iter();
-        let attributes =
-            attributes.map(|v| v(desc)).chain([AttributeEntry::from_value(ComponentPath(path.clone()))]).map(|v| (v.key(), v)).collect();
+        attributes.set(ComponentPath(path.clone()));
 
         self.components.push(RegistryComponent {
             desc,
@@ -144,10 +142,10 @@ impl ComponentRegistry {
         Some(prim)
     }
 
-    pub(crate) fn get_external_attribute(&self, index: u32, key: TypeId) -> Option<AttributeEntry> {
+    pub fn get_external_attribute(&self, index: u32, key: TypeId) -> Option<&Box<dyn ComponentAttribute>> {
         let entry = &self.components[index as usize];
 
-        entry.attributes.as_ref().expect("No external attributes on static components").get(&key).cloned()
+        entry.attributes.as_ref().expect("No external attributes on static components").get_dyn(key)
     }
 
     pub fn path_to_index(&self, path: &str) -> Option<u32> {
@@ -220,6 +218,16 @@ impl ComponentRegistry {
 
     pub fn component_count(&self) -> usize {
         self.components.len()
+    }
+
+    pub(crate) fn get_external_attributes(index: u32) -> AttributeStoreGuard {
+        let guard = Self::get();
+
+        RwLockReadGuard::map(guard, |reg| {
+            let entry = &reg.components[index as usize];
+
+            entry.attributes.as_ref().expect("No external attributes on static components")
+        })
     }
 }
 

@@ -2,11 +2,16 @@ use std::{
     any::{Any, TypeId}, fmt::Debug, mem::{self, ManuallyDrop, MaybeUninit}
 };
 
+use parking_lot::MappedRwLockReadGuard;
+
 use crate::{
-    component::{ComponentBuffer, IComponentBuffer}, AttributeEntry, Component, ComponentDesc, ComponentRegistry, ComponentValue
+    component::{ComponentBuffer, IComponentBuffer}, AttributeStore, Component, ComponentDesc, ComponentRegistry, ComponentValue
 };
 
 pub(crate) type ErasedHolder = ManuallyDrop<Box<ComponentHolder<()>>>;
+
+pub type AttributeGuard<A> = MappedRwLockReadGuard<'static, A>;
+pub type AttributeStoreGuard = MappedRwLockReadGuard<'static, AttributeStore>;
 
 /// Holds untyped information for everything a component can do
 #[repr(C)]
@@ -29,24 +34,24 @@ pub struct ComponentVTable<T: 'static> {
     pub(crate) impl_downcast_cloned: fn(&ComponentHolder<T>, dst: *mut MaybeUninit<T>),
     pub(crate) impl_take: fn(Box<ComponentHolder<T>>, dst: *mut MaybeUninit<T>),
 
-    pub(crate) custom_attrs: fn(ComponentDesc, TypeId) -> Option<AttributeEntry>,
+    pub(crate) attributes: fn(ComponentDesc) -> AttributeStoreGuard,
 }
 
 impl<T: Clone + ComponentValue> ComponentVTable<T> {
     /// Creates a new vtable of `T` without any additional bounds
-    pub const fn construct(path: &'static str, custom_attrs: fn(ComponentDesc, TypeId) -> Option<AttributeEntry>) -> Self {
-        Self::construct_inner(Some(path), custom_attrs)
+    pub const fn construct(path: &'static str, attributes: fn(ComponentDesc) -> AttributeStoreGuard) -> Self {
+        Self::construct_inner(Some(path), attributes)
     }
 
     /// Construct a vtable for a component where the name and attributes are not statically known.
     ///
     /// Must be hydrated by ComponentRegistry
     pub const fn construct_external() -> Self {
-        Self::construct_inner(None, |desc, key| ComponentRegistry::get().get_external_attribute(desc.index(), key))
+        Self::construct_inner(None, |desc| ComponentRegistry::get_external_attributes(desc.index()))
     }
 
     /// Creates a new vtable of `T` without any additional bounds
-    const fn construct_inner(path: Option<&'static str>, custom_attrs: fn(ComponentDesc, TypeId) -> Option<AttributeEntry>) -> Self {
+    const fn construct_inner(path: Option<&'static str>, attributes: fn(ComponentDesc) -> AttributeStoreGuard) -> Self {
         fn impl_drop<T>(holder: Box<ComponentHolder<T>>) {
             mem::drop(holder)
         }
@@ -91,7 +96,7 @@ impl<T: Clone + ComponentValue> ComponentVTable<T> {
             impl_take: impl_take::<T>,
             impl_as_any: impl_as_any::<T>,
             impl_create_buffer: impl_create_buffer::<T>,
-            custom_attrs,
+            attributes,
         }
     }
 }
