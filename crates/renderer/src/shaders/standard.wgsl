@@ -88,7 +88,7 @@ fn fs_forward_lit_main(in: VertexOutput, @builtin(front_facing) is_front: bool) 
 
     return MainFsOut(
         shading(material, in.world_position),
-        vec4<f32>(material.normal, 0.)
+        vec4<f32>(in.world_normal, 0.)
     );
 }
 
@@ -100,15 +100,9 @@ fn fs_forward_unlit_main(in: VertexOutput, @builtin(front_facing) is_front: bool
         discard;
     }
 
-    if (!is_front) {
-        material.normal = -material.normal;
-    }
-
-    material.normal = normalize(material.normal);
-
     return MainFsOut(
         vec4<f32>(material.base_color, material.opacity),
-        vec4<f32>(material.normal, 0.)
+        vec4<f32>(in.world_normal, 0.)
     );
 }
 
