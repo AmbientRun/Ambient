@@ -6,7 +6,7 @@ use std::{
 
 use bytes::Bytes;
 use client::GameRpcArgs;
-use elements_ecs::{components, query, Component, ComponentValue, EntityId, Networked, Serializable, Store, World};
+use elements_ecs::{components, query, Component, ComponentValue, Debuggable, EntityId, Networked, Serializable, Store, World};
 use elements_rpc::{RpcError, RpcRegistry};
 use elements_std::{asset_cache::AssetCache, log_error, log_result};
 use futures::{Future, SinkExt, StreamExt};
@@ -48,10 +48,13 @@ components!("network", {
     datagram_handlers: DatagramHandlers,
 
     /// Works like `world.resource_entity` for server worlds, except it's also persisted to disk, and synchronized to clients
+    @[Debuggable, Networked]
     persistent_resources: (),
     /// Works like `world.resource_entity` for server worlds, except it's synchronized to clients. State is not persisted to disk.
+    @[Debuggable, Networked]
     synced_resources: (),
 
+    @[Debuggable, Networked]
     is_remote_entity: (),
 });
 
@@ -103,7 +106,7 @@ fn assert_networked(desc: elements_ecs::ComponentDesc) {
     }
 
     if desc.attribute::<Serializable>().is_none() {
-        panic!("Sync component {desc:?} is not serializeable");
+        panic!("Sync component {desc:?} is not serializable");
     }
 }
 
