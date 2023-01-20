@@ -455,13 +455,12 @@ pub async fn initialize<
 
     world.add_resource(deferred_compilation_tasks(), HashMap::new());
     world.add_resource(compilation_tasks(), HashMap::new());
+    let interface = scripting_interface_root_path.join(primary_scripting_interface_name);
+    log::info!("Documenting module: {interface:?}");
     world.add_resource(
         docs_path(),
-        rustc::document_module(
-            &install_dirs,
-            &scripting_interface_root_path.join(primary_scripting_interface_name),
-        )
-        .context("failed to document scripting interface")?,
+        rustc::document_module(&install_dirs, &interface)
+            .context("failed to document scripting interface")?,
     );
     world.add_resource(make_wasm_context_component, make_wasm_context);
     world.add_resource(add_to_linker_component, add_to_linker);
