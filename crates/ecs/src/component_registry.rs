@@ -79,7 +79,7 @@ impl ComponentRegistry {
     ) -> ComponentDesc {
         assert_eq!(None, vtable.path, "Static name does not match provided name");
 
-        log::info!("Registering component: {path}");
+        log::debug!("Registering external component: {path}");
 
         let index = self.components.len().try_into().expect("Maximum component reached");
         let desc = ComponentDesc::new(index, vtable);
@@ -106,7 +106,7 @@ impl ComponentRegistry {
     pub fn register_static(&mut self, path: &'static str, vtable: &'static ComponentVTable<()>) -> ComponentDesc {
         assert_eq!(Some(path), vtable.path, "Static name does not match provided name");
 
-        log::info!("Registering component: {path}");
+        log::debug!("Registering static component: {path}");
 
         let index = self.components.len().try_into().expect("Maximum component reached");
         let desc = ComponentDesc::new(index, vtable);
