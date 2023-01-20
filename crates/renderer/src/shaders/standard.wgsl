@@ -32,7 +32,7 @@ fn vs_main(@builtin(instance_index) instance_index: u32, @builtin(vertex_index) 
 
     let clip = global_params.projection_view * world.pos;
 
-    out.position = clip; 
+    out.position = clip;
     return out;
 }
 
@@ -67,8 +67,13 @@ fn get_outline(instance_index: u32) -> vec4<f32> {
     return get_entity_outline_or(entity_loc, vec4<f32>(0., 0., 0., 0.));
 }
 
+struct MainFsOut {
+    @location(0) color: vec4<f32>,
+    @location(1) normal: vec4<f32>,
+}
+
 @fragment
-fn fs_forward_lit_main(in: VertexOutput, @builtin(front_facing) is_front: bool) -> @location(0) vec4<f32> {
+fn fs_forward_lit_main(in: VertexOutput, @builtin(front_facing) is_front: bool) -> MainFsOut {
     var material = get_material(get_material_in(in, is_front));
 
     if (material.opacity < material.alpha_cutoff) {
@@ -81,17 +86,30 @@ fn fs_forward_lit_main(in: VertexOutput, @builtin(front_facing) is_front: bool) 
 
     material.normal = normalize(material.normal);
 
-    return shading(material, in.world_position);
+    return MainFsOut(
+        shading(material, in.world_position),
+        vec4<f32>(material.normal, 0.)
+    );
 }
 
 @fragment
-fn fs_forward_unlit_main(in: VertexOutput, @builtin(front_facing) is_front: bool) -> @location(0) vec4<f32> {
+fn fs_forward_unlit_main(in: VertexOutput, @builtin(front_facing) is_front: bool) -> MainFsOut {
     var material = get_material(get_material_in(in, is_front));
 
     if (material.opacity < material.alpha_cutoff) {
         discard;
     }
-    return vec4<f32>(material.base_color, material.opacity);
+
+    if (!is_front) {
+        material.normal = -material.normal;
+    }
+
+    material.normal = normalize(material.normal);
+
+    return MainFsOut(
+        vec4<f32>(material.base_color, material.opacity),
+        vec4<f32>(material.normal, 0.)
+    );
 }
 
 @fragment

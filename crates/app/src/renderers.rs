@@ -173,7 +173,7 @@ impl System for ExamplesRender {
             self.gpu.surface.as_ref().unwrap().get_current_texture().expect("Failed to acquire next swap chain texture")
         };
         let frame_view = frame.texture.create_view(&wgpu::TextureViewDescriptor::default());
-        self.blit.run(&mut encoder, &self.render_target.screen_buffer_view, &frame_view);
+        self.blit.run(&mut encoder, &self.render_target.color_buffer_view, &frame_view);
 
         {
             profiling::scope!("Submit");

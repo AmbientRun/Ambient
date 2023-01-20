@@ -22,3 +22,10 @@ elements_element = { path = "../element" }
 elements_primitives = { path = "../primitives" }
 elements_cameras = { path = "../cameras" }
 env_logger.workspace = true
+
+[features]
+hotload-includes = [
+    'elements_std/hotload-includes',
+    'elements_renderer/hotload-includes',
+    'elements_gpu/hotload-includes',
+]

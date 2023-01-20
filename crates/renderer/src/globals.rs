@@ -127,6 +127,16 @@ pub fn globals_layout() -> BindGroupDesc {
                 },
                 count: None,
             },
+            wgpu::BindGroupLayoutEntry {
+                binding: 7,
+                visibility: wgpu::ShaderStages::FRAGMENT,
+                ty: wgpu::BindingType::Texture {
+                    sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                    view_dimension: wgpu::TextureViewDimension::D2,
+                    multisampled: false,
+                },
+                count: None,
+            },
         ],
         label: "GLOBALS_BIND_GROUP".into(),
     }
@@ -201,8 +211,9 @@ impl ForwardGlobals {
                     binding: 4,
                     resource: wgpu::BindingResource::TextureView(shadow_texture.unwrap_or(&self.dummy_shadow_texture)),
                 },
-                wgpu::BindGroupEntry { binding: 5, resource: wgpu::BindingResource::TextureView(&solids_frame.screen_buffer_view) },
+                wgpu::BindGroupEntry { binding: 5, resource: wgpu::BindingResource::TextureView(&solids_frame.color_buffer_view) },
                 wgpu::BindGroupEntry { binding: 6, resource: wgpu::BindingResource::TextureView(&solids_frame.depth_buffer_view) },
+                wgpu::BindGroupEntry { binding: 7, resource: wgpu::BindingResource::TextureView(&solids_frame.color_buffer_view) },
             ],
             label: Some("ForwardGlobals.bind_group"),
         })
@@ -294,8 +305,12 @@ impl ShadowAndUIGlobals {
                     },
                     wgpu::BindGroupEntry { binding: 3, resource: wgpu::BindingResource::Sampler(&shadow_sampler) },
                     wgpu::BindGroupEntry { binding: 4, resource: wgpu::BindingResource::TextureView(&shadow_view) },
-                    wgpu::BindGroupEntry { binding: 5, resource: wgpu::BindingResource::TextureView(&dummy_prev_frame.screen_buffer_view) },
+                    wgpu::BindGroupEntry { binding: 5, resource: wgpu::BindingResource::TextureView(&dummy_prev_frame.color_buffer_view) },
                     wgpu::BindGroupEntry { binding: 6, resource: wgpu::BindingResource::TextureView(&dummy_prev_frame.depth_buffer_view) },
+                    wgpu::BindGroupEntry {
+                        binding: 7,
+                        resource: wgpu::BindingResource::TextureView(&dummy_prev_frame.normals_buffer_view),
+                    },
                 ],
                 label: Some("ShadowGlobals.bind_group"),
             }),

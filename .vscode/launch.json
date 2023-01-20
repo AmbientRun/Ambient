@@ -121,7 +121,8 @@
                 "args": [
                     "build",
                     "--example=decals",
-                    "--package=elements_decals"
+                    "--package=elements_decals",
+                    "--features=hotload-includes"
                 ],
                 "filter": {
                     "name": "decals",

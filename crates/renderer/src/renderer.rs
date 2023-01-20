@@ -101,7 +101,7 @@ pub enum RendererTarget<'a> {
 impl<'a> RendererTarget<'a> {
     pub fn color(&self) -> &'a wgpu::TextureView {
         match self {
-            RendererTarget::Target(target) => &target.screen_buffer_view,
+            RendererTarget::Target(target) => &target.color_buffer_view,
             RendererTarget::Direct { color, .. } => color,
         }
     }
@@ -111,9 +111,15 @@ impl<'a> RendererTarget<'a> {
             RendererTarget::Direct { depth, .. } => depth,
         }
     }
+    pub fn normals(&self) -> Option<&'a wgpu::TextureView> {
+        match self {
+            RendererTarget::Target(target) => Some(&target.normals_buffer_view),
+            RendererTarget::Direct { .. } => None,
+        }
+    }
     pub fn size(&self) -> wgpu::Extent3d {
         match self {
-            RendererTarget::Target(target) => target.screen_buffer.size,
+            RendererTarget::Target(target) => target.color_buffer.size,
             RendererTarget::Direct { size, .. } => *size,
         }
     }
@@ -161,7 +167,6 @@ impl Renderer {
             None
         };
 
-        let targets = [Some(gpu.swapchain_format().into())];
         Self {
             culling: Culling::new(&assets, renderer_settings, config.scene),
             forward_globals: ForwardGlobals::new(gpu.clone(), renderer_resources.globals_layout.clone(), shadow_cascades, config.scene),
@@ -178,7 +183,7 @@ impl Renderer {
             ),
             forward: TreeRenderer::new(TreeRendererConfig {
                 gpu: gpu.clone(),
-                targets: targets.to_vec(),
+                targets: vec![Some(gpu.swapchain_format().into()), Some(wgpu::TextureFormat::Rgba8Snorm.into())],
                 filter: ArchetypeFilter::new().incl(config.scene),
                 renderer_resources: renderer_resources.clone(),
                 fs_main: FSMain::Forward,
@@ -222,10 +227,10 @@ impl Renderer {
         profiling::scope!("Renderer.render");
 
         if let RendererTarget::Target(target) = &target {
-            if self.solids_frame.screen_buffer.size != target.screen_buffer.size {
+            if self.solids_frame.color_buffer.size != target.color_buffer.size {
                 self.solids_frame = RenderTarget::new(
                     self.gpu.clone(),
-                    uvec2(target.screen_buffer.size.width, target.screen_buffer.size.height),
+                    uvec2(target.color_buffer.size.width, target.color_buffer.size.height),
                     Some(wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST),
                 );
             }
@@ -274,14 +279,24 @@ impl Renderer {
             profiling::scope!("Forward");
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("Forward"),
-                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                    view: target.color(),
-                    resolve_target: None,
-                    ops: wgpu::Operations {
-                        load: if let Some(clear) = clear { wgpu::LoadOp::Clear(clear.into()) } else { wgpu::LoadOp::Load },
-                        store: true,
-                    },
-                })],
+                color_attachments: &[
+                    Some(wgpu::RenderPassColorAttachment {
+                        view: target.color(),
+                        resolve_target: None,
+                        ops: wgpu::Operations {
+                            load: if let Some(clear) = clear { wgpu::LoadOp::Clear(clear.into()) } else { wgpu::LoadOp::Load },
+                            store: true,
+                        },
+                    }),
+                    Some(wgpu::RenderPassColorAttachment {
+                        view: target.normals().unwrap(),
+                        resolve_target: None,
+                        ops: wgpu::Operations {
+                            load: if let Some(clear) = clear { wgpu::LoadOp::Clear(Color::BLACK.into()) } else { wgpu::LoadOp::Load },
+                            store: true,
+                        },
+                    }),
+                ],
                 depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
                     view: target.depth(),
                     depth_ops: Some(wgpu::Operations {
@@ -323,9 +338,14 @@ impl Renderer {
                 target.depth_buffer.size,
             );
             encoder.copy_texture_to_texture(
-                target.screen_buffer.handle.as_image_copy(),
-                self.solids_frame.screen_buffer.handle.as_image_copy(),
-                target.screen_buffer.size,
+                target.color_buffer.handle.as_image_copy(),
+                self.solids_frame.color_buffer.handle.as_image_copy(),
+                target.color_buffer.size,
+            );
+            encoder.copy_texture_to_texture(
+                target.normals_buffer.handle.as_image_copy(),
+                self.solids_frame.normals_buffer.handle.as_image_copy(),
+                target.normals_buffer.size,
             );
         }
         {

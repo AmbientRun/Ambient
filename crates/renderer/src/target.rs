@@ -9,8 +9,10 @@ use glam::UVec2;
 pub struct RenderTarget {
     pub depth_buffer: Arc<Texture>,
     pub depth_buffer_view: TextureView,
-    pub screen_buffer: Arc<Texture>,
-    pub screen_buffer_view: TextureView,
+    pub color_buffer: Arc<Texture>,
+    pub color_buffer_view: TextureView,
+    pub normals_buffer: Arc<Texture>,
+    pub normals_buffer_view: TextureView,
 }
 impl RenderTarget {
     pub fn new(gpu: Arc<Gpu>, size: UVec2, usage: Option<wgpu::TextureUsages>) -> Self {
@@ -29,10 +31,10 @@ impl RenderTarget {
                 usage,
             },
         ));
-        let screen_buffer = Arc::new(Texture::new(
-            gpu,
+        let color_buffer = Arc::new(Texture::new(
+            gpu.clone(),
             &wgpu::TextureDescriptor {
-                label: Some("RenderTarget.screen_buffer"),
+                label: Some("RenderTarget.color_buffer"),
                 size: wgpu::Extent3d { width: sc_desc.width, height: sc_desc.height, depth_or_array_layers: 1 },
                 mip_level_count: 1,
                 sample_count: 1,
@@ -41,11 +43,25 @@ impl RenderTarget {
                 usage,
             },
         ));
+        let normals_buffer = Arc::new(Texture::new(
+            gpu,
+            &wgpu::TextureDescriptor {
+                label: Some("RenderTarget.normals_buffer"),
+                size: wgpu::Extent3d { width: sc_desc.width, height: sc_desc.height, depth_or_array_layers: 1 },
+                mip_level_count: 1,
+                sample_count: 1,
+                dimension: wgpu::TextureDimension::D2,
+                format: wgpu::TextureFormat::Rgba8Snorm,
+                usage,
+            },
+        ));
         Self {
-            depth_buffer_view: depth_buffer.create_view(&wgpu::TextureViewDescriptor::default()),
+            depth_buffer_view: depth_buffer.create_view(&Default::default()),
             depth_buffer,
-            screen_buffer_view: screen_buffer.create_view(&wgpu::TextureViewDescriptor::default()),
-            screen_buffer,
+            color_buffer_view: color_buffer.create_view(&Default::default()),
+            color_buffer,
+            normals_buffer_view: normals_buffer.create_view(&Default::default()),
+            normals_buffer,
         }
     }
 }

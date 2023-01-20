@@ -308,7 +308,7 @@ impl ElementComponent for GameClientView {
             world.add_resource(self::game_client(), Some(game_client.clone()));
 
             Element::new().children(vec![
-                Image { texture: Some(Arc::new(render_target.screen_buffer.create_view(&Default::default()))) }
+                Image { texture: Some(Arc::new(render_target.color_buffer.create_view(&Default::default()))) }
                     .el()
                     .set(width(), size.x as _)
                     .set(height(), size.y as _),

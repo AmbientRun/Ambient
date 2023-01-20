@@ -51,11 +51,15 @@ var shadow_texture: texture_depth_2d_array;
 
 @group(#GLOBALS_BIND_GROUP)
 @binding(5)
-var solids_screen_texture: texture_2d<f32>;
+var solids_screen_color: texture_2d<f32>;
 
 @group(#GLOBALS_BIND_GROUP)
 @binding(6)
-var solids_depth_texture: texture_depth_2d;
+var solids_screen_depth: texture_depth_2d;
+
+@group(#GLOBALS_BIND_GROUP)
+@binding(7)
+var solids_screen_normal: texture_2d<f32>;
 
 fn inside(v: vec3<f32>) -> bool {
     return v.x > -1. && v.x < 1. && v.y > -1. && v.y < 1. && v.z > 0. && v.z < 1.;
@@ -117,11 +121,15 @@ fn project_point(transform: mat4x4<f32>, position: vec3<f32>) -> vec3<f32> {
 
 fn get_solids_screen_depth(screen_ndc: vec3<f32>) -> f32 {
     let screen_tc = screen_ndc_to_uv(screen_ndc);
-    return textureSampleLevel(solids_depth_texture, default_sampler, screen_tc, 0.);
+    return textureSampleLevel(solids_screen_depth, default_sampler, screen_tc, 0.);
 }
 fn get_solids_screen_color(screen_ndc: vec3<f32>) -> vec3<f32> {
     let screen_tc = screen_ndc_to_uv(screen_ndc);
-    return textureSample(solids_screen_texture, default_sampler, screen_tc).rgb;
+    return textureSample(solids_screen_color, default_sampler, screen_tc).rgb;
+}
+fn get_solids_screen_normal(screen_ndc: vec3<f32>) -> vec3<f32> {
+    let screen_tc = screen_ndc_to_uv(screen_ndc);
+    return textureSample(solids_screen_normal, default_sampler, screen_tc).rgb;
 }
 
 struct MaterialInput {
