@@ -69,7 +69,8 @@ fn get_outline(instance_index: u32) -> vec4<f32> {
 
 @fragment
 fn fs_forward_lit_main(in: VertexOutput, @builtin(front_facing) is_front: bool) -> MainFsOut {
-    var material = get_material(get_material_in(in, is_front));
+    let material_in = get_material_in(in, is_front);
+    var material = get_material(material_in);
 
     if (material.opacity < material.alpha_cutoff) {
         discard;
@@ -83,13 +84,14 @@ fn fs_forward_lit_main(in: VertexOutput, @builtin(front_facing) is_front: bool) 
 
     return MainFsOut(
         shading(material, in.world_position),
-        vec4<f32>(in.world_normal, 0.)
+        quat_from_mat3(material_in.normal_matrix)
     );
 }
 
 @fragment
 fn fs_forward_unlit_main(in: VertexOutput, @builtin(front_facing) is_front: bool) -> MainFsOut {
-    var material = get_material(get_material_in(in, is_front));
+    let material_in = get_material_in(in, is_front);
+    var material = get_material(material_in);
 
     if (material.opacity < material.alpha_cutoff) {
         discard;
@@ -97,7 +99,7 @@ fn fs_forward_unlit_main(in: VertexOutput, @builtin(front_facing) is_front: bool
 
     return MainFsOut(
         vec4<f32>(material.base_color, material.opacity),
-        vec4<f32>(in.world_normal, 0.)
+        quat_from_mat3(material_in.normal_matrix)
     );
 }
 

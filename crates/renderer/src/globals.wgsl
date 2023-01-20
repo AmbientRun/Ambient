@@ -127,9 +127,9 @@ fn get_solids_screen_color(screen_ndc: vec3<f32>) -> vec3<f32> {
     let screen_tc = screen_ndc_to_uv(screen_ndc);
     return textureSample(solids_screen_color, default_sampler, screen_tc).rgb;
 }
-fn get_solids_screen_normal(screen_ndc: vec3<f32>) -> vec3<f32> {
+fn get_solids_screen_normal(screen_ndc: vec3<f32>) -> vec4<f32> {
     let screen_tc = screen_ndc_to_uv(screen_ndc);
-    return textureSample(solids_screen_normal, default_sampler, screen_tc).rgb;
+    return textureSample(solids_screen_normal, default_sampler, screen_tc);
 }
 
 struct MaterialInput {

@@ -69,14 +69,9 @@ fn get_decal(in: VertexOutput) -> Decal {
     material_in.texcoord.y = (1. - local_pos.x) / 2.;
     material_in.texcoord.x = (local_pos.y - 1.) / 2.;
     material_in.world_position = world_position;
-    // TODO: Use g-buffer normal
-    let screen_normal = get_solids_screen_normal(screen_ndc);
-    material_in.normal = screen_normal.xyz;
-    material_in.normal_matrix = mat3x3<f32>(
-        vec3<f32>(1., 0., 0.),
-        vec3<f32>(0., 1., 0.),
-        vec3<f32>(0., 0., 1.)
-    );
+    let screen_normal_mat = mat3_from_quat(get_solids_screen_normal(screen_ndc));
+    material_in.normal = screen_normal_mat * vec3<f32>(0., 0., 1.);
+    material_in.normal_matrix = screen_normal_mat;
     material_in.instance_index = in.instance_index;
     res.material_in = material_in;
 
@@ -113,7 +108,7 @@ fn fs_forward_lit_main(in: VertexOutput, @builtin(front_facing) is_front: bool) 
         discard;
     }
     var res: FsOutputs;
-    res.color = vec4<f32>(decal.material_in.normal / 2. + 0.5, 1.); // shading(material, vec4<f32>(decal.material_in.world_position, 1.)); // ;
+    res.color = shading(material, vec4<f32>(decal.material_in.world_position, 1.));
     res.depth = decal.depth + 0.0001;
     return res;
 }
