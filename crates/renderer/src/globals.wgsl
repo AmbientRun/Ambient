@@ -154,6 +154,11 @@ struct MaterialOutput {
     roughness: f32,
 };
 
+struct MainFsOut {
+    @location(0) color: vec4<f32>,
+    @location(1) normal: vec4<f32>,
+}
+
 fn apply_fog(color: vec3<f32>, camera_pos: vec3<f32>, world_pos: vec3<f32>) -> vec3<f32> {
     // From https://developer.amd.com/wordpress/media/2012/10/Wenzel-Real-time_Atmospheric_Effects_in_Games.pdf
     let camera_to_world_pos = world_pos - camera_pos;

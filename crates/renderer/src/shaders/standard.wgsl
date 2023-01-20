@@ -67,11 +67,6 @@ fn get_outline(instance_index: u32) -> vec4<f32> {
     return get_entity_outline_or(entity_loc, vec4<f32>(0., 0., 0., 0.));
 }
 
-struct MainFsOut {
-    @location(0) color: vec4<f32>,
-    @location(1) normal: vec4<f32>,
-}
-
 @fragment
 fn fs_forward_lit_main(in: VertexOutput, @builtin(front_facing) is_front: bool) -> MainFsOut {
     var material = get_material(get_material_in(in, is_front));

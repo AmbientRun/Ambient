@@ -112,12 +112,8 @@ fn fs_forward_lit_main(in: VertexOutput, @builtin(front_facing) is_front: bool) 
     if (material.opacity < material.alpha_cutoff) {
         discard;
     }
-    if (!is_front) {
-        material.normal = -material.normal;
-    }
-    material.normal = normalize(material.normal);
     var res: FsOutputs;
-    res.color = shading(material, vec4<f32>(decal.material_in.world_position, 1.)); // vec4<f32>(material.normal, 1.);
+    res.color = vec4<f32>(decal.material_in.normal / 2. + 0.5, 1.); // shading(material, vec4<f32>(decal.material_in.world_position, 1.)); // ;
     res.depth = decal.depth + 0.0001;
     return res;
 }
