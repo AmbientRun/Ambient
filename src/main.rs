@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use clap::{Parser, Subcommand};
-use elements_app::AppBuilder;
+use elements_app::{AppBuilder, ExamplesSystem};
 use elements_cameras::UICamera;
 use elements_core::{camera::active_camera, main_scene};
 use elements_ecs::{EntityData, SystemGroup, World};
@@ -55,7 +55,7 @@ impl Commands {
 }
 
 fn client_systems() -> SystemGroup {
-    SystemGroup::new("client", vec![elements_decals::client_systems()])
+    SystemGroup::new("client", vec![Box::new(elements_decals::client_systems())])
 }
 
 #[element_component]
@@ -126,6 +126,7 @@ fn main() {
     if cli.command.should_run() {
         let port = server::start_server(&runtime, assets.clone(), cli, project_path);
         AppBuilder::simple().ui_renderer(true).with_runtime(runtime).with_asset_cache(assets).run(|app, _runtime| {
+            app.window_event_systems.add(Box::new(ExamplesSystem));
             MainApp { port }.el().spawn_interactive(&mut app.world);
         });
     }
