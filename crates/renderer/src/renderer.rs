@@ -113,7 +113,7 @@ impl<'a> RendererTarget<'a> {
     }
     pub fn normals(&self) -> Option<&'a wgpu::TextureView> {
         match self {
-            RendererTarget::Target(target) => Some(&target.normals_buffer_view),
+            RendererTarget::Target(target) => Some(&target.normals_quat_buffer_view),
             RendererTarget::Direct { .. } => None,
         }
     }
@@ -345,9 +345,9 @@ impl Renderer {
                 target.color_buffer.size,
             );
             encoder.copy_texture_to_texture(
-                target.normals_buffer.handle.as_image_copy(),
-                self.solids_frame.normals_buffer.handle.as_image_copy(),
-                target.normals_buffer.size,
+                target.normals_quat_buffer.handle.as_image_copy(),
+                self.solids_frame.normals_quat_buffer.handle.as_image_copy(),
+                target.normals_quat_buffer.size,
             );
         }
         {

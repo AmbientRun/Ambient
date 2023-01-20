@@ -69,7 +69,7 @@ fn get_decal(in: VertexOutput) -> Decal {
     material_in.texcoord.y = (1. - local_pos.x) / 2.;
     material_in.texcoord.x = (local_pos.y - 1.) / 2.;
     material_in.world_position = world_position;
-    let screen_normal_mat = mat3_from_quat(get_solids_screen_normal(screen_ndc));
+    let screen_normal_mat = mat3_from_quat(get_solids_screen_normal_quat(screen_ndc));
     material_in.normal = screen_normal_mat * vec3<f32>(0., 0., 1.);
     material_in.normal_matrix = screen_normal_mat;
     material_in.instance_index = in.instance_index;

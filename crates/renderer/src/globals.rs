@@ -213,7 +213,7 @@ impl ForwardGlobals {
                 },
                 wgpu::BindGroupEntry { binding: 5, resource: wgpu::BindingResource::TextureView(&solids_frame.color_buffer_view) },
                 wgpu::BindGroupEntry { binding: 6, resource: wgpu::BindingResource::TextureView(&solids_frame.depth_buffer_view) },
-                wgpu::BindGroupEntry { binding: 7, resource: wgpu::BindingResource::TextureView(&solids_frame.normals_buffer_view) },
+                wgpu::BindGroupEntry { binding: 7, resource: wgpu::BindingResource::TextureView(&solids_frame.normals_quat_buffer_view) },
             ],
             label: Some("ForwardGlobals.bind_group"),
         })
@@ -307,7 +307,7 @@ impl ShadowAndUIGlobals {
                     wgpu::BindGroupEntry { binding: 6, resource: wgpu::BindingResource::TextureView(&dummy_prev_frame.depth_buffer_view) },
                     wgpu::BindGroupEntry {
                         binding: 7,
-                        resource: wgpu::BindingResource::TextureView(&dummy_prev_frame.normals_buffer_view),
+                        resource: wgpu::BindingResource::TextureView(&dummy_prev_frame.normals_quat_buffer_view),
                     },
                 ],
                 label: Some("ShadowGlobals.bind_group"),

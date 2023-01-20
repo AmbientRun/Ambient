@@ -11,8 +11,8 @@ pub struct RenderTarget {
     pub depth_buffer_view: TextureView,
     pub color_buffer: Arc<Texture>,
     pub color_buffer_view: TextureView,
-    pub normals_buffer: Arc<Texture>,
-    pub normals_buffer_view: TextureView,
+    pub normals_quat_buffer: Arc<Texture>,
+    pub normals_quat_buffer_view: TextureView,
 }
 impl RenderTarget {
     pub fn new(gpu: Arc<Gpu>, size: UVec2, usage: Option<wgpu::TextureUsages>) -> Self {
@@ -46,7 +46,7 @@ impl RenderTarget {
         let normals_buffer = Arc::new(Texture::new(
             gpu,
             &wgpu::TextureDescriptor {
-                label: Some("RenderTarget.normals_buffer"),
+                label: Some("RenderTarget.normals_quat_buffer"),
                 size: wgpu::Extent3d { width: sc_desc.width, height: sc_desc.height, depth_or_array_layers: 1 },
                 mip_level_count: 1,
                 sample_count: 1,
@@ -60,8 +60,8 @@ impl RenderTarget {
             depth_buffer,
             color_buffer_view: color_buffer.create_view(&Default::default()),
             color_buffer,
-            normals_buffer_view: normals_buffer.create_view(&Default::default()),
-            normals_buffer,
+            normals_quat_buffer_view: normals_buffer.create_view(&Default::default()),
+            normals_quat_buffer: normals_buffer,
         }
     }
 }
