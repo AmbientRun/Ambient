@@ -6,7 +6,7 @@ use std::{
 
 use bytes::Bytes;
 use client::GameRpcArgs;
-use elements_ecs::{components, query, Component, ComponentValue, EntityId, World};
+use elements_ecs::{components, query, Component, ComponentValue, EntityId, Networked, Serializable, Store, World};
 use elements_rpc::{RpcError, RpcRegistry};
 use elements_std::{asset_cache::AssetCache, log_error, log_result};
 use futures::{Future, SinkExt, StreamExt};
@@ -77,9 +77,11 @@ impl ServerWorldExt for World {
         query(()).incl(persistent_resources()).iter(self, None).map(|(id, _)| id).next()
     }
     fn persisted_resource<T: ComponentValue>(&self, component: Component<T>) -> Option<&T> {
+        assert_persisted(*component);
         self.persisted_resource_entity().and_then(|id| self.get_ref(id, component).ok())
     }
     fn persisted_resource_mut<T: ComponentValue>(&mut self, component: Component<T>) -> Option<&mut T> {
+        assert_persisted(*component);
         self.persisted_resource_entity().and_then(|id| self.get_mut(id, component).ok())
     }
 
@@ -87,10 +89,29 @@ impl ServerWorldExt for World {
         query(()).incl(synced_resources()).iter(self, None).map(|(id, _)| id).next()
     }
     fn synced_resource<T: ComponentValue>(&self, component: Component<T>) -> Option<&T> {
+        assert_networked(*component);
         self.synced_resource_entity().and_then(|id| self.get_ref(id, component).ok())
     }
     fn synced_resource_mut<T: ComponentValue>(&mut self, component: Component<T>) -> Option<&mut T> {
         self.synced_resource_entity().and_then(|id| self.get_mut(id, component).ok())
+    }
+}
+
+fn assert_networked(desc: elements_ecs::ComponentDesc) {
+    if desc.attribute::<Networked>().is_none() {
+        panic!("Attempt to access sync {desc:?} which is not marked as `Networked`");
+    }
+
+    if desc.attribute::<Serializable>().is_none() {
+        panic!("Sync component {desc:?} is not serializeable");
+    }
+}
+
+fn assert_persisted(desc: elements_ecs::ComponentDesc) {
+    assert_networked(desc);
+
+    if desc.attribute::<Store>().is_none() {
+        panic!("Attempt to access persisted resource {desc:?} which is not `Store`");
     }
 }
 
