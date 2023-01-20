@@ -49,6 +49,7 @@ pub async fn client_push_intent<T: ComponentValue>(
     collapse_id: Option<String>,
     on_applied: Option<Box<dyn Fn() + Sync + Send + 'static>>,
 ) {
+    let now = std::time::Instant::now();
     let ed = create_intent(intent_arg, arg, collapse_id);
     let intent_id = unwrap_log_network_err!(game_client.rpc(rpc_push_intent, ed).await);
     if let Some(on_applied) = on_applied {
@@ -56,6 +57,7 @@ pub async fn client_push_intent<T: ComponentValue>(
             let mut state = game_client.game_state.lock();
             let mut qs = QueryState::new();
             state.add_temporary_system(move |world| {
+                tracing::info!("Waiting for intent: {intent_arg:?} {:?}", now.elapsed());
                 for (id, _) in query(intent_applied()).spawned().iter(world, Some(&mut qs)) {
                     if id == intent_id {
                         on_applied();
