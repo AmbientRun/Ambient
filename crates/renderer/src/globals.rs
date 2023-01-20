@@ -12,7 +12,7 @@ use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
 use wgpu::BindGroup;
 
 use super::{fog_color, get_active_sun, light_ambient, light_diffuse, RenderTarget, ShadowCameraData};
-use crate::{fog_density, fog_height_falloff, shader_debug_params};
+use crate::{fog_density, fog_height_falloff};
 
 #[repr(C)]
 #[derive(Default, Debug, Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
@@ -26,7 +26,7 @@ pub struct ShaderDebugParams {
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
-struct GlobalParams {
+pub(crate) struct GlobalParams {
     pub projection_view: Mat4,
     pub inv_projection_view: Mat4,
     pub camera_position: Vec4,
@@ -41,7 +41,7 @@ struct GlobalParams {
     pub time: f32,
     pub fog_height_falloff: f32,
     pub fog_density: f32,
-    debug_params: ShaderDebugParams,
+    pub debug_params: ShaderDebugParams,
 }
 
 impl Default for GlobalParams {
@@ -142,13 +142,13 @@ pub fn globals_layout() -> BindGroupDesc {
     }
 }
 
-pub struct ForwardGlobals {
+pub(crate) struct ForwardGlobals {
     gpu: Arc<Gpu>,
     buffer: wgpu::Buffer,
     shadow_cameras_buffer: wgpu::Buffer,
     shadow_sampler: wgpu::Sampler,
     dummy_shadow_texture: TextureView,
-    params: GlobalParams,
+    pub(crate) params: GlobalParams,
     scene: Component<()>,
     start_time: Instant,
     layout: Arc<wgpu::BindGroupLayout>,
@@ -239,8 +239,6 @@ impl ForwardGlobals {
         self.params.time = Instant::now().duration_since(self.start_time).as_secs_f32();
         self.gpu.queue.write_buffer(&self.buffer, 0, bytemuck::cast_slice(&[self.params]));
         self.gpu.queue.write_buffer(&self.shadow_cameras_buffer, 0, bytemuck::cast_slice(shadow_cameras));
-
-        self.params.debug_params = world.resource_opt(shader_debug_params()).cloned().unwrap_or_default();
     }
 }
 

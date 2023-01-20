@@ -62,7 +62,6 @@ components!("rendering", {
     fog_density: f32,
     /// Transparent objects are sorted by (transparency_group, z-depth)
     transparency_group: i32,
-    shader_debug_params: ShaderDebugParams,
 });
 gpu_components! {
     color() => color: GpuComponentFormat::Vec4,

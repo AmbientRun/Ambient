@@ -16,7 +16,7 @@ use wgpu::BindGroupLayout;
 use super::{
     get_common_module, get_globals_module, get_resources_module, overlay_renderer::{OverlayConfig, OverlayRenderer}, shadow_renderer::ShadowsRenderer, Culling, FSMain, ForwardGlobals, Outlines, OutlinesConfig, RenderTarget, RendererCollect, RendererCollectState, TransparentRenderer, TransparentRendererConfig, TreeRenderer, TreeRendererConfig
 };
-use crate::{shader_debug_params, skinning::SkinsBufferKey};
+use crate::{skinning::SkinsBufferKey, ShaderDebugParams};
 pub const GLOBALS_BIND_GROUP: &str = "GLOBALS_BIND_GROUP";
 pub const MATERIAL_BIND_GROUP: &str = "MATERIAL_BIND_GROUP";
 pub const RESOURCES_BIND_GROUP: &str = "RESOURCES_BIND_GROUP";
@@ -139,6 +139,7 @@ pub trait SubRenderer: std::fmt::Debug + Send + Sync {
 pub struct Renderer {
     gpu: Arc<Gpu>,
     config: RendererConfig,
+    pub shader_debug_params: ShaderDebugParams,
     resources_layout: Arc<wgpu::BindGroupLayout>,
     culling: Culling,
     pub shadows: Option<ShadowsRenderer>,
@@ -152,7 +153,6 @@ pub struct Renderer {
 }
 impl Renderer {
     pub fn new(world: &mut World, assets: AssetCache, config: RendererConfig) -> Self {
-        world.add_resource(shader_debug_params(), Default::default());
         let gpu = GpuKey.get(&assets);
 
         let renderer_resources = RendererResourcesKey.get(&assets);
@@ -212,6 +212,7 @@ impl Renderer {
             outlines: Outlines::new(&assets, OutlinesConfig { scene: config.scene, renderer_resources: renderer_resources.clone() }),
             resources_layout: renderer_resources.resources_layout,
             config,
+            shader_debug_params: Default::default(),
             gpu,
         }
     }
@@ -262,6 +263,7 @@ impl Renderer {
             shadows.run(world, encoder, post_submit, &resources_bind_group, &entities_bind_group, &mesh_buffer);
         }
 
+        self.forward_globals.params.debug_params = self.shader_debug_params.clone();
         self.forward_globals.update(world, &self.shadows.as_ref().map(|x| x.get_cameras()).unwrap_or_default());
         let forward_globals_bind_group = self.forward_globals.create_bind_group(
             world.resource(asset_cache()).clone(),

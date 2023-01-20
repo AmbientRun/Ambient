@@ -7,10 +7,11 @@ use elements_core::{camera::active_camera, main_scene};
 use elements_ecs::{EntityData, SystemGroup, World};
 use elements_element::{element_component, Element, ElementComponentExt, Hooks};
 use elements_network::{
-    client::{GameClientNetworkStats, GameClientServerStats, GameClientView, UseOnce}, events::ServerEventRegistry
+    client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce}, client_game_state::game_screen_render_target, events::ServerEventRegistry
 };
+use elements_renderer_debugger::RendererDebugger;
 use elements_std::{asset_cache::AssetCache, math::SphericalCoords, Cb};
-use elements_ui::{use_window_logical_resolution, use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text};
+use elements_ui::{use_window_logical_resolution, use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
 use glam::vec3;
 
 pub mod scripting;
@@ -59,6 +60,26 @@ fn client_systems() -> SystemGroup {
 }
 
 #[element_component]
+fn GameView(world: &mut World, hooks: &mut Hooks) -> Element {
+    let (state, _) = hooks.consume_context::<GameClient>().unwrap();
+    let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
+
+    let show_debug = true;
+    if show_debug {
+        RendererDebugger {
+            get_state: Cb::new(move |cb| {
+                let mut game_state = state.game_state.lock();
+                let game_state = &mut *game_state;
+                cb(&mut game_state.renderer, &render_target.0, &mut game_state.world);
+            }),
+        }
+        .el()
+    } else {
+        Element::new()
+    }
+}
+
+#[element_component]
 fn MainApp(world: &mut World, hooks: &mut Hooks, port: u16) -> Element {
     let screen_size = use_window_logical_resolution(world, hooks);
     let resolution = use_window_physical_resolution(world, hooks);
@@ -68,10 +89,9 @@ fn MainApp(world: &mut World, hooks: &mut Hooks, port: u16) -> Element {
 
     FocusRoot::el([
         UICamera.el().set(active_camera(), 0.),
-        GameClientView {
+        WindowSized::el([GameClientView {
             server_addr: format!("127.0.0.1:{port}").parse().unwrap(),
             user_id: "host".to_string(),
-            size: screen_size,
             resolution,
             on_disconnect: Cb::new(move || {}),
             init_world: Cb::new(UseOnce::new(Box::new(move |world, _render_target| {
@@ -92,9 +112,9 @@ fn MainApp(world: &mut World, hooks: &mut Hooks, port: u16) -> Element {
             systems_and_resources: Cb::new(|| (client_systems(), EntityData::new())),
             create_rpc_registry: Cb::new(server::create_rpc_registry),
             on_in_entities: None,
-            ui: Element::new(),
+            ui: GameView.el(),
         }
-        .el(),
+        .el()]),
     ])
 }
 

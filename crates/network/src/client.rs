@@ -46,7 +46,6 @@ pub struct GameClient {
     pub rpc_registry: Arc<RpcRegistry<GameRpcArgs>>,
     pub user_id: String,
     pub game_state: Arc<Mutex<ClientGameState>>,
-    pub render_target: Arc<RenderTarget>,
 }
 
 impl GameClient {
@@ -54,10 +53,9 @@ impl GameClient {
         connection: Connection,
         rpc_registry: Arc<RpcRegistry<GameRpcArgs>>,
         game_state: Arc<Mutex<ClientGameState>>,
-        render_target: Arc<RenderTarget>,
         user_id: String,
     ) -> Self {
-        Self { connection, rpc_registry, user_id, game_state, render_target }
+        Self { connection, rpc_registry, user_id, game_state }
     }
 
     const SIZE_LIMIT: usize = 100_000_000;
@@ -100,6 +98,9 @@ impl GameClient {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct GameClientRenderTarget(pub Arc<RenderTarget>);
+
 #[derive(Debug)]
 pub struct UseOnce<T> {
     val: Mutex<Option<T>>,
@@ -122,7 +123,6 @@ pub type InitCallback = Box<dyn FnOnce(&mut World, Arc<RenderTarget>) + Send + S
 pub struct GameClientView {
     pub server_addr: SocketAddr,
     pub user_id: String,
-    pub size: UVec2,
     pub resolution: UVec2,
     pub systems_and_resources: Cb<dyn Fn() -> (SystemGroup, EntityData) + Sync + Send>,
     pub init_world: Cb<UseOnce<InitCallback>>,
@@ -139,7 +139,6 @@ impl Clone for GameClientView {
         Self {
             server_addr: self.server_addr,
             user_id: self.user_id.clone(),
-            size: self.size,
             resolution: self.resolution,
             systems_and_resources: self.systems_and_resources.clone(),
             init_world: self.init_world.clone(),
@@ -158,7 +157,6 @@ impl ElementComponent for GameClientView {
         let Self {
             server_addr,
             user_id,
-            size,
             resolution,
             init_world,
             error_view,
@@ -225,13 +223,7 @@ impl ElementComponent for GameClientView {
                     let mut on_init = {
                         let game_state = game_state.clone();
                         move |conn, info: ClientInfo| {
-                            let game_client = GameClient::new(
-                                conn,
-                                Arc::new(create_rpc_registry()),
-                                game_state.clone(),
-                                render_target.clone(),
-                                info.user_id,
-                            );
+                            let game_client = GameClient::new(conn, Arc::new(create_rpc_registry()), game_state.clone(), info.user_id);
 
                             game_state.lock().world.add_resource(self::game_client(), Some(game_client.clone()));
 
@@ -305,21 +297,15 @@ impl ElementComponent for GameClientView {
         if let Some(game_client) = game_client {
             // Provide the context
             hooks.provide_context(|| game_client.clone());
+            hooks.provide_context(|| GameClientRenderTarget(render_target.clone()));
             world.add_resource(self::game_client(), Some(game_client.clone()));
 
-            Element::new().children(vec![
-                Image { texture: Some(Arc::new(render_target.color_buffer.create_view(&Default::default()))) }
-                    .el()
-                    .set(width(), size.x as _)
-                    .set(height(), size.y as _),
-                ui,
-            ])
+            Image { texture: Some(Arc::new(render_target.color_buffer.create_view(&Default::default()))) }.el().children(vec![ui])
         } else {
-            WindowSized(vec![Centered(vec![FlowColumn::el([
+            Centered(vec![FlowColumn::el([
                 FlowRow::el([Text::el(connection_status), Throbber.el()]),
                 Button::new("Cancel", move |_| task.abort()).el(),
             ])])
-            .el()])
             .el()
         }
     }

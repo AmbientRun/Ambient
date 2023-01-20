@@ -30,6 +30,7 @@ elements_physics = { path = "crates/physics" }
 elements_rpc = { path = "crates/rpc" }
 elements_object = { path = "crates/object" }
 elements_decals = { path = "crates/decals" }
+elements_renderer_debugger = { path = "crates/renderer_debugger" }
 elements_scripting_host = { path = "crates/scripting/host" }
 clap.workspace = true
 tokio.workspace = true
