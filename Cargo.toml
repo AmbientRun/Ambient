@@ -41,6 +41,8 @@ env_logger.workspace = true
 glam.workspace = true
 parking_lot.workspace = true
 walkdir.workspace = true
+serde.workspace = true
+toml.workspace = true
 
 [dev-dependencies]
 glam.workspace = true

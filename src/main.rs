@@ -15,6 +15,7 @@ use elements_std::{asset_cache::AssetCache, math::SphericalCoords, Cb};
 use elements_ui::{use_window_logical_resolution, use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
 use glam::vec3;
 
+pub mod components;
 mod new_project;
 pub mod scripting;
 mod server;
@@ -70,7 +71,7 @@ fn client_systems() -> SystemGroup {
 }
 
 #[element_component]
-fn GameView(world: &mut World, hooks: &mut Hooks) -> Element {
+fn GameView(_world: &mut World, hooks: &mut Hooks) -> Element {
     let (state, _) = hooks.consume_context::<GameClient>().unwrap();
     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
 
@@ -127,17 +128,9 @@ fn MainApp(world: &mut World, hooks: &mut Hooks, server_addr: SocketAddr) -> Ele
     ])
 }
 
-fn init_all_components() {
-    elements_app::init_all_components();
-    elements_network::init_all_components();
-    elements_physics::init_all_components();
-    elements_scripting_host::shared::init_components();
-    elements_decals::init_components();
-}
-
 fn main() {
     env_logger::init();
-    init_all_components();
+    components::init().unwrap();
     let runtime = tokio::runtime::Builder::new_multi_thread().enable_all().build().unwrap();
     let assets = AssetCache::new(runtime.handle().clone());
 

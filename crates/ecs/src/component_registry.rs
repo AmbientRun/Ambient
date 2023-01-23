@@ -51,7 +51,12 @@ impl ComponentRegistry {
             type_: PrimitiveComponentType,
         }
         let components: Vec<Entry> = serde_json::from_slice(&data).unwrap();
-        for Entry { id, type_ } in components {
+        self.add_external_from_iterator(components.into_iter().map(|c| (c.id, c.type_)), decorating)
+    }
+    /// When decorating is true, the components read from the source will be assumed to already exist and we'll just add
+    /// metadata to them
+    pub fn add_external_from_iterator(&mut self, components: impl Iterator<Item = (String, PrimitiveComponentType)>, decorating: bool) {
+        for (id, type_) in components {
             type_.register(self, &id, decorating);
         }
         for handler in self.on_external_components_change.iter() {

@@ -13,17 +13,7 @@ macro_rules! make_primitive_component {
             $([<Vec $value>](Component<Vec<$type>>)), *,
             $([<Option $value>](Component<Option<$type>>)), *
         }
-
-        #[derive(Clone, Serialize, Deserialize, Debug)]
-        #[serde(tag = "type")]
-        pub enum PrimitiveComponentType {
-            $($value), *,
-            Vec { variants: Box<PrimitiveComponentType> },
-            Option { variants: Box<PrimitiveComponentType> },
-        }
-
         impl PrimitiveComponent {
-
             pub fn as_component(&self) -> &dyn IComponent {
                 match self {
                   $(Self::$value(c) => c,)*
@@ -36,6 +26,25 @@ macro_rules! make_primitive_component {
                   $(Self::$value(c) => c,)*
                   $(Self::[<Vec $value>](c) => c,)*
                   $(Self::[<Option $value>](c) => c,)*
+                }
+            }
+        }
+
+        #[derive(Clone, Serialize, Deserialize, Debug)]
+        #[serde(tag = "type")]
+        pub enum PrimitiveComponentType {
+            $($value), *,
+            Vec { variants: Box<PrimitiveComponentType> },
+            Option { variants: Box<PrimitiveComponentType> },
+        }
+        impl TryFrom<&str> for PrimitiveComponentType {
+            type Error = &'static str;
+
+            fn try_from(value: &str) -> Result<Self, Self::Error> {
+                match value {
+                    $(stringify!($value) => Ok(Self::$value),)*
+                    "Vec" | "Option" => Err("The specified type is a container type, not primitive"),
+                    _ => Err("Unsupported type")
                 }
             }
         }
@@ -75,7 +84,6 @@ macro_rules! make_primitive_component {
                 }
             }
         }
-
         impl PartialEq<PrimitiveComponentType> for PrimitiveComponent {
             fn eq(&self, other: &PrimitiveComponentType) -> bool {
                 match (self, other) {

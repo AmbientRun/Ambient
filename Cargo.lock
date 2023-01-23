@@ -5453,7 +5453,9 @@ dependencies = [
  "glam 0.22.0",
  "log",
  "parking_lot",
+ "serde",
  "tokio",
+ "toml",
  "walkdir",
 ]
 
