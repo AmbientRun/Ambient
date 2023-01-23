@@ -295,6 +295,7 @@ impl ElementComponent for GameClientView {
         }
 
         if let Some(game_client) = game_client {
+            log::debug!("Received game client. Mounting UI");
             // Provide the context
             hooks.provide_context(|| game_client.clone());
             hooks.provide_context(|| GameClientRenderTarget(render_target.clone()));
