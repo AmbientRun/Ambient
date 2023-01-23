@@ -199,3 +199,9 @@ abort-on-drop = "0.2"
 toml = "0.5.10"
 percent-encoding = "2.2.0"
 indoc = "1.0"
+
+# Patch cap-std until wasmtime/wit-bindgen can be updated
+[patch.crates-io]
+cap-std = { git = "https://github.com/bytecodealliance/cap-std.git", branch = "0.26-with-a-0.25-version-number" }
+cap-primitives = { git = "https://github.com/bytecodealliance/cap-std.git", branch = "0.26-with-a-0.25-version-number" }
+cap-fs-ext = { git = "https://github.com/bytecodealliance/cap-std.git", branch = "0.26-with-a-0.25-version-number" }
