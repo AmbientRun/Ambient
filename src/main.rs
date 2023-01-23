@@ -141,7 +141,9 @@ fn main() {
     let cli = Cli::parse();
 
     if let Commands::New { name } = cli.command {
-        new_project::new_project(&name);
+        if let Err(err) = new_project::new_project(&name) {
+            println!("Failed to create project: {:?}", err);
+        }
         return;
     }
 
