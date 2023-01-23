@@ -19,8 +19,8 @@ use std::{
 
 use anyhow::Context;
 use elements_ecs::{
-    components, query, uid, uid_lookup, Component, ComponentEntry, EntityData, EntityId, World,
-    COMPONENT_ENTITY_ID_MIGRATERS,
+    components, query, uid, uid_lookup, Component, ComponentEntry, EntityData, EntityId, Networked,
+    Store, World, COMPONENT_ENTITY_ID_MIGRATERS,
 };
 use elements_network::player::player;
 use host_guest_state::GetBaseHostGuestState;
@@ -34,32 +34,43 @@ use wasi_common::WasiCtx;
 use wasmtime::Linker;
 
 components!("scripting::shared", {
+    @[Networked, Store]
     script_module: ScriptModule,
+    @[Networked, Store]
     script_module_bytecode: ScriptModuleBytecode,
+    @[Networked, Store]
     script_module_compiled: (),
+    @[Networked, Store]
     script_module_errors: ScriptModuleErrors,
 
     // resources
+    @[Networked, Store]
     scripting_interface_name: String,
 
     /// used to signal messages from the scripting host/runtime
     messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
     /// all available scripting interfaces
+    @[Networked, Store]
     scripting_interfaces: HashMap<String, Vec<(PathBuf, String)>>,
 
     /// Where Rust should be installed
+    @[Networked, Store]
     rust_path: PathBuf,
     /// Where the Rust applications are installed. Should be underneath [rust_path].
     install_dirs: InstallDirs,
     /// Where the scripting interfaces should be installed, not the path to the scripting interface itself
     ///
     /// e.g. world/, not world/scripting_interface
+    @[Networked, Store]
     scripting_interface_root_path: PathBuf,
     /// Where the scripting templates should be stored
+    @[Networked, Store]
     templates_path: PathBuf,
     /// Where the root Cargo.toml for your scripts are
+    @[Networked, Store]
     workspace_path: PathBuf,
     /// Where the scripts are located
+    @[Networked, Store]
     scripts_path: PathBuf,
 });
 
