@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{net::SocketAddr, sync::Arc};
 
 use anyhow::Context;
 use clap::{Parser, Subcommand};
@@ -41,6 +41,8 @@ enum Commands {
     Build,
     /// View an asset
     View { asset_path: String },
+    /// Join a multiplayer session
+    Join { ip: SocketAddr },
 }
 impl Commands {
     fn should_build(&self) -> bool {
@@ -49,6 +51,7 @@ impl Commands {
             Commands::Run => true,
             Commands::Build => true,
             Commands::View { .. } => true,
+            Commands::Join { .. } => false,
         }
     }
     fn should_run(&self) -> bool {
@@ -57,6 +60,7 @@ impl Commands {
             Commands::Run => true,
             Commands::Build => false,
             Commands::View { .. } => true,
+            Commands::Join { .. } => true,
         }
     }
 }
@@ -86,8 +90,7 @@ fn GameView(world: &mut World, hooks: &mut Hooks) -> Element {
 }
 
 #[element_component]
-fn MainApp(world: &mut World, hooks: &mut Hooks, port: u16) -> Element {
-    let screen_size = use_window_logical_resolution(world, hooks);
+fn MainApp(world: &mut World, hooks: &mut Hooks, server_addr: SocketAddr) -> Element {
     let resolution = use_window_physical_resolution(world, hooks);
 
     hooks.provide_context(GameClientNetworkStats::default);
@@ -96,7 +99,7 @@ fn MainApp(world: &mut World, hooks: &mut Hooks, port: u16) -> Element {
     FocusRoot::el([
         UICamera.el().set(active_camera(), 0.),
         WindowSized::el([GameClientView {
-            server_addr: format!("127.0.0.1:{port}").parse().unwrap(),
+            server_addr,
             user_id: "host".to_string(),
             resolution,
             on_disconnect: Cb::new(move || {}),
@@ -157,10 +160,16 @@ fn main() {
     }
 
     if cli.command.should_run() {
-        let port = server::start_server(&runtime, assets.clone(), cli, project_path);
+        let server_addr = if let Commands::Join { ip } = &cli.command {
+            ip.clone()
+        } else {
+            let port = server::start_server(&runtime, assets.clone(), cli, project_path);
+            println!("Server running on port {port}");
+            format!("127.0.0.1:{port}").parse().unwrap()
+        };
         AppBuilder::simple().ui_renderer(true).with_runtime(runtime).with_asset_cache(assets).run(|app, _runtime| {
             app.window_event_systems.add(Box::new(ExamplesSystem));
-            MainApp { port }.el().spawn_interactive(&mut app.world);
+            MainApp { server_addr }.el().spawn_interactive(&mut app.world);
         });
     }
 }
