@@ -31,13 +31,16 @@ pub mod rpc;
 pub mod server;
 
 pub mod player {
-    use elements_ecs::components;
+    use elements_ecs::{components, Networked, Store};
 
     components!("player", {
+        @[Networked, Store]
         player: (),
         // The identifier of the user. Can be attached to more than just the player;
         // will also be attached to their sub-entities, like their head and such.
+        @[Networked, Store]
         user_id: String,
+        @[Networked, Store]
         local_user_id: String,
     });
 }

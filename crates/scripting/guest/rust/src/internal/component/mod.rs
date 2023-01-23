@@ -45,6 +45,7 @@ impl<T> IComponent for Component<T> {
 
 #[doc(hidden)]
 pub fn internal_get_component<T>(id: &str) -> Component<T> {
+    panic!("");
     Component::new(host::component_get_index(id).unwrap())
 }
 
