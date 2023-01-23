@@ -293,7 +293,6 @@ impl Archetype {
     pub fn dump(&self, f: &mut dyn std::io::Write) {
         writeln!(f, "Archetype id: {} ({} entities)", self.id, self.entity_count()).unwrap();
         for component in self.components.iter() {
-            let comp = unsafe { &mut **component.data.0.get() };
             let desc = component.component;
             writeln!(f, "  Component {:#?}: {} changes", desc, component.changes.borrow().n_events()).unwrap();
         }

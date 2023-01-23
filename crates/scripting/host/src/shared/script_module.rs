@@ -283,12 +283,21 @@ impl ScriptModule {
             .copied()
             .collect();
 
+        log::info!("Supported types: {supported_types:#?}");
         let mut root = ComponentTreeNode::default();
         with_component_registry(|registry| {
             for component in registry.all_external() {
+                log::info!("Found external component: {component:?}");
                 if let Some(typename) = supported_types.get(&component.type_id()) {
                     let path = component.path();
+                    log::info!("Found supported type: {} for {path}", component.type_name(),);
                     root.insert(&path, &path, typename);
+                } else {
+                    log::error!(
+                        "Type {:?}:{:?} is not supported",
+                        component.type_id(),
+                        component.type_name()
+                    );
                 }
             }
         });

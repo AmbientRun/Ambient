@@ -50,6 +50,7 @@ impl ComponentRegistry {
         } else {
             reqwest::blocking::get(source.0).unwrap().bytes().unwrap().into()
         };
+
         #[derive(Deserialize)]
         struct Entry {
             id: String,
