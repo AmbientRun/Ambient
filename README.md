@@ -9,6 +9,8 @@ Our goal is to provide a free and Open source game development API/runtime which
 
 We're also developing https://tilt.place, which will allow you to host and distribute your Tilt projects with ease.
 
+See the [documentation](./docs/index.md) for a getting started guide.
+
 ## Roadmap & features
 
 ***Note; Tilt is in an alpha stage and the API will still be iterated on heavily. We're working towards a stable release.***
