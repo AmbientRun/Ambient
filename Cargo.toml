@@ -1,6 +1,6 @@
 [package]
-name = "elements"
-version = "0.1.0"
+name = "tilt"
+version.workspace = true
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -52,7 +52,7 @@ exclude = ["crates/scripting"]
 members = ["crates/*", "crates/scripting/host", "libs/*"]
 
 [workspace.package]
-version = "0.31.0"
+version = "0.0.1"
 
 [workspace.dependencies]
 profiling = { git = "https://github.com/PlayDims/profiling", features = [
