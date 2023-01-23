@@ -393,9 +393,8 @@ dependencies = [
 
 [[package]]
 name = "cap-fs-ext"
-version = "0.25.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "438ca7f5bb15c799ea146429e4f8b7bfd25ff1eb05319024549a7728de45800c"
+version = "0.25.5"
+source = "git+https://github.com/bytecodealliance/cap-std.git?branch=0.26-with-a-0.25-version-number#535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b"
 dependencies = [
  "cap-primitives",
  "cap-std",
@@ -405,9 +404,8 @@ dependencies = [
 
 [[package]]
 name = "cap-primitives"
-version = "0.25.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba063daa90ed40882bb288ac4ecaa942d655d15cf74393d41d2267b5d7daf120"
+version = "0.25.5"
+source = "git+https://github.com/bytecodealliance/cap-std.git?branch=0.26-with-a-0.25-version-number#535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b"
 dependencies = [
  "ambient-authority",
  "fs-set-times",
@@ -433,9 +431,8 @@ dependencies = [
 
 [[package]]
 name = "cap-std"
-version = "0.25.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e3a603c9f3bd2181ed128ab3cd32fbde7cff76afc64a3576662701c4aee7e2b"
+version = "0.25.5"
+source = "git+https://github.com/bytecodealliance/cap-std.git?branch=0.26-with-a-0.25-version-number#535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b"
 dependencies = [
  "cap-primitives",
  "io-extras",
