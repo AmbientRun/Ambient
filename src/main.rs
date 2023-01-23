@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use anyhow::Context;
 use clap::{Parser, Subcommand};
 use elements_app::{AppBuilder, ExamplesSystem};
 use elements_cameras::UICamera;
@@ -14,6 +15,7 @@ use elements_std::{asset_cache::AssetCache, math::SphericalCoords, Cb};
 use elements_ui::{use_window_logical_resolution, use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
 use glam::vec3;
 
+mod new_project;
 pub mod scripting;
 mod server;
 
@@ -31,6 +33,8 @@ struct Cli {
 
 #[derive(Subcommand, Clone)]
 enum Commands {
+    /// Create a new Tilt project
+    New { name: String },
     /// Builds and runs the project
     Run,
     /// Builds the project
@@ -41,6 +45,7 @@ enum Commands {
 impl Commands {
     fn should_build(&self) -> bool {
         match self {
+            Commands::New { .. } => false,
             Commands::Run => true,
             Commands::Build => true,
             Commands::View { .. } => true,
@@ -48,6 +53,7 @@ impl Commands {
     }
     fn should_run(&self) -> bool {
         match self {
+            Commands::New { .. } => false,
             Commands::Run => true,
             Commands::Build => false,
             Commands::View { .. } => true,
@@ -133,9 +139,14 @@ fn main() {
     let assets = AssetCache::new(runtime.handle().clone());
 
     let cli = Cli::parse();
+
+    if let Commands::New { name } = cli.command {
+        new_project::new_project(&name);
+        return;
+    }
+
     let current_dir = std::env::current_dir().unwrap();
     let project_path = cli.project_path.clone().map(|x| x.into()).unwrap_or_else(|| current_dir.clone());
-
     let project_path =
         if project_path.is_absolute() { project_path } else { elements_std::path::normalize(&current_dir.join(project_path)) };
 

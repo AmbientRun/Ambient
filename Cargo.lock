@@ -1315,47 +1315,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "90e5c1c8368803113bf0c9584fc495a58b86dc8a29edbf8fe877d21d9507e797"
 
 [[package]]
-name = "elements"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap 4.0.32",
- "elements_animation",
- "elements_app",
- "elements_audio",
- "elements_build",
- "elements_cameras",
- "elements_core",
- "elements_decals",
- "elements_ecs",
- "elements_editor_derive",
- "elements_element",
- "elements_gizmos",
- "elements_gpu",
- "elements_input",
- "elements_meshes",
- "elements_model",
- "elements_model_import",
- "elements_network",
- "elements_object",
- "elements_physics",
- "elements_primitives",
- "elements_renderer",
- "elements_renderer_debugger",
- "elements_rpc",
- "elements_scripting_host",
- "elements_std",
- "elements_ui",
- "env_logger 0.9.3",
- "futures",
- "glam 0.22.0",
- "log",
- "parking_lot",
- "tokio",
- "walkdir",
-]
-
-[[package]]
 name = "elements_animation"
 version = "0.1.0"
 dependencies = [
@@ -1408,7 +1367,7 @@ dependencies = [
 
 [[package]]
 name = "elements_asset_cache"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "abort-on-drop",
  "anyhow",
@@ -1428,7 +1387,7 @@ dependencies = [
 
 [[package]]
 name = "elements_asset_timeline"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1451,7 +1410,7 @@ dependencies = [
 
 [[package]]
 name = "elements_audio"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "approx",
  "async-trait",
@@ -1541,7 +1500,7 @@ dependencies = [
 
 [[package]]
 name = "elements_core"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "bytemuck",
  "derive_more",
@@ -1566,7 +1525,7 @@ dependencies = [
 
 [[package]]
 name = "elements_curve"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "elements_std",
  "glam 0.22.0",
@@ -1594,7 +1553,7 @@ dependencies = [
 
 [[package]]
 name = "elements_ecs"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "anyhow",
  "atomic_refcell",
@@ -1625,7 +1584,7 @@ dependencies = [
 
 [[package]]
 name = "elements_ecs_editor"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "elements_app",
  "elements_cameras",
@@ -1642,7 +1601,7 @@ dependencies = [
 
 [[package]]
 name = "elements_editor_derive"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "elements_ui",
  "itertools",
@@ -1655,7 +1614,7 @@ dependencies = [
 
 [[package]]
 name = "elements_element"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "as-any",
  "atomic_refcell",
@@ -1677,7 +1636,7 @@ dependencies = [
 
 [[package]]
 name = "elements_element_component"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "itertools",
  "proc-macro-crate",
@@ -1688,7 +1647,7 @@ dependencies = [
 
 [[package]]
 name = "elements_gizmos"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "bytemuck",
  "dashmap",
@@ -1710,7 +1669,7 @@ dependencies = [
 
 [[package]]
 name = "elements_gpu"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1734,7 +1693,7 @@ dependencies = [
 
 [[package]]
 name = "elements_input"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "elements_core",
  "elements_ecs",
@@ -1746,7 +1705,7 @@ dependencies = [
 
 [[package]]
 name = "elements_intent"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "anyhow",
  "atomic_refcell",
@@ -1769,7 +1728,7 @@ dependencies = [
 
 [[package]]
 name = "elements_meshes"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "elements_gpu",
  "elements_std",
@@ -1848,7 +1807,7 @@ dependencies = [
 
 [[package]]
 name = "elements_network"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "anyhow",
  "bincode",
@@ -1911,7 +1870,7 @@ dependencies = [
 
 [[package]]
 name = "elements_physics"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1960,7 +1919,7 @@ dependencies = [
 
 [[package]]
 name = "elements_renderer"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2012,7 +1971,7 @@ dependencies = [
 
 [[package]]
 name = "elements_rpc"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "bincode",
  "futures",
@@ -2024,7 +1983,7 @@ dependencies = [
 
 [[package]]
 name = "elements_scripting_host"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2065,7 +2024,7 @@ dependencies = [
 
 [[package]]
 name = "elements_std"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "anyhow",
  "as-any",
@@ -2105,7 +2064,7 @@ dependencies = [
 
 [[package]]
 name = "elements_ui"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2147,7 +2106,7 @@ dependencies = [
 
 [[package]]
 name = "elements_world_audio"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "anyhow",
  "atomic_refcell",
@@ -4161,7 +4120,7 @@ dependencies = [
 
 [[package]]
 name = "physxx"
-version = "0.31.0"
+version = "0.0.1"
 dependencies = [
  "as-any",
  "bitflags",
@@ -5455,6 +5414,47 @@ dependencies = [
  "flate2",
  "jpeg-decoder",
  "weezl",
+]
+
+[[package]]
+name = "tilt"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "clap 4.0.32",
+ "elements_animation",
+ "elements_app",
+ "elements_audio",
+ "elements_build",
+ "elements_cameras",
+ "elements_core",
+ "elements_decals",
+ "elements_ecs",
+ "elements_editor_derive",
+ "elements_element",
+ "elements_gizmos",
+ "elements_gpu",
+ "elements_input",
+ "elements_meshes",
+ "elements_model",
+ "elements_model_import",
+ "elements_network",
+ "elements_object",
+ "elements_physics",
+ "elements_primitives",
+ "elements_renderer",
+ "elements_renderer_debugger",
+ "elements_rpc",
+ "elements_scripting_host",
+ "elements_std",
+ "elements_ui",
+ "env_logger 0.9.3",
+ "futures",
+ "glam 0.22.0",
+ "log",
+ "parking_lot",
+ "tokio",
+ "walkdir",
 ]
 
 [[package]]
