@@ -10,10 +10,6 @@ macro_rules! make_primitive_component {
         pub struct PrimitiveComponent {
             pub ty: PrimitiveComponentType,
             pub desc: ComponentDesc,
-
-            // $($value(Component<$type>)), *,
-            // $([<Vec $value>](Component<Vec<$type>>)), *,
-            // $([<Option $value>](Component<Option<$type>>)), *
         }
 
         #[derive(Debug,  Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
