@@ -23,8 +23,12 @@ pub async fn build(assets: &AssetCache, path: PathBuf) {
 }
 
 async fn build_assets(assets_path: PathBuf, target_path: PathBuf) {
-    let files =
-        WalkDir::new(&assets_path).into_iter().filter_map(|e| e.ok()).map(|x| AbsAssetUrl::from_file_path(x.into_path())).collect_vec();
+    let files = WalkDir::new(&assets_path)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.metadata().map(|x| x.is_file()).unwrap_or(false))
+        .map(|x| AbsAssetUrl::from_file_path(x.into_path()))
+        .collect_vec();
     let assets = AssetCache::new_with_config(tokio::runtime::Handle::current(), None);
     let ctx = ProcessCtx {
         assets: assets.clone(),
