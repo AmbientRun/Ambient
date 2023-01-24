@@ -27,13 +27,16 @@ See the [documentation](./docs/index.md) for a getting started guide.
 | Skinmeshing | ✅ |
 | Shadow maps | ✅ |
 | Decals | ✅ |
+| GPU culling and lodding | ✅ |
 | Multi platform | ✅ | *Windows, Mac, Linux so far* |
 | Run on Web | 🚧 |
-| Client side scripting | 🚧 |
-| UI | 🚧 |
-| Custom shaders | 🚧 |
+| Client side API | 🚧 |
+| Multithreading API | 🚧 | *Multithreading is used internally already, but we want to expose an API on the WASM side* |
+| UI API | 🚧 | *A React-like UI library already exists in the repo, and we're working on exposing it through the WASM API* |
+| Custom shaders | 🚧 | *Custom shaders are supported by the renderer, but not yet exposed in the API* |
+| Hot-reloading | 🚧 |
 | Audio | 🚧 |
-| Persistent worlds | 🚧 |
+| Save/load ECS | 🚧 |
 
 ## Examples
 
