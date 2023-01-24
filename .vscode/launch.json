@@ -4,13 +4,13 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "elements [debug]",
+            "name": "tilt [debug]",
             "cargo": {
                 "args": [
                     "build"
                 ],
                 "filter": {
-                    "name": "elements",
+                    "name": "tilt",
                     "kind": "bin"
                 }
             },
@@ -19,9 +19,9 @@
                 "DIMS_DISABLE_TIMEOUT": "true"
             },
             "args": [
-                "--project-path=examples/hello_world",
+                "--project-path=examples/asset_loading",
                 "view",
-                "assets/Cube.glb"
+                "assets/models/crate.glb"
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [
@@ -31,14 +31,14 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "elements [release]",
+            "name": "tilt [release]",
             "cargo": {
                 "args": [
                     "build",
                     "--release"
                 ],
                 "filter": {
-                    "name": "elements",
+                    "name": "tilt",
                     "kind": "bin"
                 }
             },
@@ -53,12 +53,12 @@
             ]
         },
         {
-            "name": "elements (Windows, Internal server) [debug]",
+            "name": "tilt (Windows, Internal server) [debug]",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/target/debug/elements.exe",
+            "program": "${workspaceRoot}/target/debug/tilt.exe",
             "env": {
-                "RUST_LOG": "dims=info,dims_shared=info,elements=info"
+                "RUST_LOG": "dims=info,dims_shared=info,tilt=info"
             },
             "args": [
                 "--internal-server"
