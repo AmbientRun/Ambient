@@ -1,9 +1,9 @@
 use std::{collections::HashMap, fmt::Debug, marker::Send};
 
-use elements_ecs::{
-    with_component_registry, ArchetypeFilter, Component, ComponentValue, EntityData, EntityId, IndexExt, SystemGroup, World
+use elements_ecs::{ArchetypeFilter, Component, ComponentValue, EntityData, EntityId, IndexExt, SystemGroup, World};
+use elements_network::{
+    assert_networked, server::{ServerState, SharedServerState}
 };
-use elements_network::server::{ServerState, SharedServerState};
 use futures::Future;
 use parking_lot::MutexGuard;
 use tracing::info_span;
@@ -265,6 +265,7 @@ impl IntentRegistry {
         RevertState: ComponentValue + Debug,
     {
         let name = intent.path();
+        assert_networked(intent.desc());
         let handler = IntentHandler { name, intent, intent_revert, apply, revert, merge };
 
         self.handlers.insert(intent.index(), Box::new(handler));

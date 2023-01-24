@@ -24,6 +24,7 @@ pub mod camera;
 pub mod transform;
 
 components!("app", {
+    @[Debuggable, Networked, Store]
     name: String,
     runtime: tokio::runtime::Handle,
     gpu: Arc<Gpu>,
@@ -56,6 +57,7 @@ components!("app", {
     on_device_event: EventDispatcher<dyn Fn(&mut World, EntityId, &winit::event::DeviceEvent) + Sync + Send>,
 
     /// Generic component that indicates the entity shouldn't be sent over network
+    @[Debuggable, Networked, Store]
     no_sync: (),
 });
 

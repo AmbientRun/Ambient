@@ -188,7 +188,7 @@ macro_rules! impl_infallible {
             #[doc = "# Panics"]
             #[doc = "If the types do not match"]
             pub fn $name<T: 'static>(self: $recv) -> $ret {
-                #[cfg(debug_assertions)]
+                // #[cfg(debug_assertions)]
                 {
                     let ty = self.type_name();
                     match self.[< try_ $name >]() {
@@ -202,8 +202,8 @@ macro_rules! impl_infallible {
                         }
                     }
                 }
-                #[cfg(not(debug_assertions))]
-                self.[< try_ $name>]().expect("Mismatched types")
+                // #[cfg(not(debug_assertions))]
+                // self.[< try_ $name>]().expect("Mismatched types")
             }
         }
     };

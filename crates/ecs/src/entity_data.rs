@@ -97,7 +97,7 @@ impl EntityData {
     }
 
     pub fn remove_self<T: ComponentValue>(&mut self, component: Component<T>) -> Option<T> {
-        self.remove_raw(component.desc())?.into_inner()
+        Some(self.remove_raw(component.desc())?.into_inner())
     }
 
     pub fn remove<T: ComponentValue>(mut self, component: Component<T>) -> Self {
@@ -248,7 +248,7 @@ impl<'de> Deserialize<'de> for DeserEntityDataWithWarnings {
             {
                 let mut res = EntityData::new();
                 let mut map = erased_serde::de::erase::MapAccess { state: map };
-                while let Some((key, value)) = dbg!(map.state.next_entry::<String, serde_json::Value>()?) {
+                while let Some((key, value)) = map.state.next_entry::<String, serde_json::Value>()? {
                     let desc = with_component_registry(|r| r.get_by_path(&key));
                     let desc = match desc {
                         Some(desc) => desc,
@@ -271,7 +271,6 @@ impl<'de> Deserialize<'de> for DeserEntityDataWithWarnings {
                         }
                     };
 
-                    eprintln!("Deserializing {desc:?} => {value:?}");
                     let value = ser.deserialize(value);
                     let value = match value {
                         Ok(v) => v,

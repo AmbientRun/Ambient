@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use elements_ecs::{components, query_mut, EntityId, FramedEventsReader, System, SystemGroup, World};
+use elements_ecs::{components, query_mut, Debuggable, EntityId, FramedEventsReader, Networked, Store, System, SystemGroup, World};
 use elements_std::{
     shapes::{Sphere, AABB}, sparse_vec::SparseVec
 };
@@ -13,8 +13,11 @@ use crate::{
 
 components!("rendering", {
     visibility_from: EntityId,
+    @[Debuggable, Networked, Store]
     local_bounding_aabb: AABB,
+    @[Debuggable, Networked, Store]
     world_bounding_aabb: AABB,
+    @[Debuggable, Networked, Store]
     world_bounding_sphere: Sphere,
 });
 gpu_components! {
