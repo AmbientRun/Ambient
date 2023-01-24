@@ -2,16 +2,17 @@ use std::{
     any::{Any, TypeId}, fmt::Debug, mem::{self, ManuallyDrop, MaybeUninit}
 };
 
-use parking_lot::MappedRwLockReadGuard;
+use parking_lot::{MappedRwLockReadGuard, MappedRwLockWriteGuard};
 
 use crate::{
-    component::{ComponentBuffer, IComponentBuffer}, AttributeStore, Component, ComponentDesc, ComponentRegistry, ComponentValue
+    component::{ComponentBuffer, IComponentBuffer}, get_external_attributes, get_external_attributes_init, AttributeStore, Component, ComponentDesc, ComponentRegistry, ComponentValue
 };
 
 pub(crate) type ErasedHolder = ManuallyDrop<Box<ComponentHolder<()>>>;
 
 pub type AttributeGuard<A> = MappedRwLockReadGuard<'static, A>;
 pub type AttributeStoreGuard = MappedRwLockReadGuard<'static, AttributeStore>;
+pub type AttributeStoreGuardMut = MappedRwLockWriteGuard<'static, AttributeStore>;
 
 /// Holds untyped information for everything a component can do
 #[repr(C)]
@@ -35,23 +36,32 @@ pub struct ComponentVTable<T: 'static> {
     pub(crate) impl_take: fn(Box<ComponentHolder<T>>, dst: *mut MaybeUninit<T>),
 
     pub(crate) attributes: fn(ComponentDesc) -> AttributeStoreGuard,
+    pub(crate) attributes_init: fn(ComponentDesc) -> AttributeStoreGuardMut,
 }
 
 impl<T: Clone + ComponentValue> ComponentVTable<T> {
     /// Creates a new vtable of `T` without any additional bounds
-    pub const fn construct(path: &'static str, attributes: fn(ComponentDesc) -> AttributeStoreGuard) -> Self {
-        Self::construct_inner(Some(path), attributes)
+    pub const fn construct(
+        path: &'static str,
+        attributes: fn(ComponentDesc) -> AttributeStoreGuard,
+        attributes_init: fn(ComponentDesc) -> AttributeStoreGuardMut,
+    ) -> Self {
+        Self::construct_inner(Some(path), attributes, attributes_init)
     }
 
     /// Construct a vtable for a component where the name and attributes are not statically known.
     ///
     /// Must be hydrated by ComponentRegistry
     pub const fn construct_external() -> Self {
-        Self::construct_inner(None, |desc| ComponentRegistry::get_external_attributes(desc.index()))
+        Self::construct_inner(None, |desc| get_external_attributes(desc.index()), |desc| get_external_attributes_init(desc.index()))
     }
 
     /// Creates a new vtable of `T` without any additional bounds
-    const fn construct_inner(path: Option<&'static str>, attributes: fn(ComponentDesc) -> AttributeStoreGuard) -> Self {
+    const fn construct_inner(
+        path: Option<&'static str>,
+        attributes: fn(ComponentDesc) -> AttributeStoreGuard,
+        attributes_init: fn(ComponentDesc) -> AttributeStoreGuardMut,
+    ) -> Self {
         fn impl_drop<T>(holder: Box<ComponentHolder<T>>) {
             mem::drop(holder)
         }
@@ -72,7 +82,7 @@ impl<T: Clone + ComponentValue> ComponentVTable<T> {
         #[allow(clippy::boxed_local)]
         fn impl_take<T: ComponentValue>(holder: Box<ComponentHolder<T>>, dst: *mut MaybeUninit<T>) {
             // Take v, but drop the rest
-            // This is safe because `ComponentHolder` does not have a drop impl, so rusts normal
+            // This is safe because `ComponentHolder` does not have a drop impl, so rust's normal
             // drop glue follows, where `object` is skipped
             let v = holder.object;
             unsafe { MaybeUninit::write(&mut *dst, v) };
@@ -97,6 +107,7 @@ impl<T: Clone + ComponentValue> ComponentVTable<T> {
             impl_as_any: impl_as_any::<T>,
             impl_create_buffer: impl_create_buffer::<T>,
             attributes,
+            attributes_init,
         }
     }
 }

@@ -1,6 +1,4 @@
-use std::{
-    any::TypeId, collections::{hash_map::Entry, HashMap}
-};
+use std::collections::{hash_map::Entry, BTreeMap, HashMap};
 
 use elements_std::{asset_url::AbsAssetUrl, events::EventDispatcher};
 use once_cell::sync::Lazy;
@@ -10,6 +8,19 @@ use super::*;
 use crate::ComponentVTable;
 
 static COMPONENT_REGISTRY: Lazy<RwLock<ComponentRegistry>> = Lazy::new(|| RwLock::new(ComponentRegistry::default()));
+static COMPONENT_ATTRIBUTES: RwLock<BTreeMap<u32, AttributeStore>> = RwLock::new(BTreeMap::new());
+
+pub(crate) fn get_external_attributes(index: u32) -> AttributeStoreGuard {
+    let guard = COMPONENT_ATTRIBUTES.read();
+
+    RwLockReadGuard::map(guard, |val| val.get(&index).expect("No external attributes"))
+}
+
+pub(crate) fn get_external_attributes_init(index: u32) -> AttributeStoreGuardMut {
+    let guard = COMPONENT_ATTRIBUTES.write();
+
+    RwLockWriteGuard::map(guard, |val| val.entry(index).or_default())
+}
 pub fn with_component_registry<R>(f: impl FnOnce(&ComponentRegistry) -> R + Sync + Send) -> R {
     let lock = COMPONENT_REGISTRY.read();
     f(&lock)
@@ -19,10 +30,6 @@ pub(crate) struct RegistryComponent {
     pub(crate) desc: ComponentDesc,
     pub(crate) primitive_component_type: Option<PrimitiveComponentType>,
     pub(crate) primitive_component: Option<PrimitiveComponent>,
-    /// Some if there are external attributes.
-    ///
-    /// Othewise, attributes are stored statically
-    attributes: Option<AttributeStore>,
 }
 
 #[derive(Default)]
@@ -30,6 +37,7 @@ pub struct ComponentRegistry {
     pub(crate) components: Vec<RegistryComponent>,
     pub component_paths: HashMap<String, u32>,
     pub next_index: u32,
+    pub(crate) attributes: BTreeMap<u32, AttributeStore>,
 
     /// Handlers are called with a write-lock on ComponentRegistry, which will result in deadlock if your operation
     /// requires a read-lock on ComponentRegistry. Consider deferring your operation to a later time.
@@ -44,7 +52,7 @@ impl ComponentRegistry {
     }
     /// When decorating is true, the components read from the source will be assumed to already exist and we'll just add
     /// metadata to them
-    pub fn add_external(&mut self, source: AbsAssetUrl, decorating: bool) {
+    pub fn add_external(&mut self, source: AbsAssetUrl) {
         let data: Vec<u8> = if let Some(path) = source.to_file_path().unwrap() {
             std::fs::read(path).unwrap()
         } else {
@@ -58,13 +66,13 @@ impl ComponentRegistry {
             type_: PrimitiveComponentType,
         }
         let components: Vec<Entry> = serde_json::from_slice(&data).unwrap();
-        self.add_external_from_iterator(components.into_iter().map(|c| (c.id, c.type_)), decorating)
+        self.add_external_from_iterator(components.into_iter().map(|c| (c.id, c.type_)))
     }
     /// When decorating is true, the components read from the source will be assumed to already exist and we'll just add
     /// metadata to them
-    pub fn add_external_from_iterator(&mut self, components: impl Iterator<Item = (String, PrimitiveComponentType)>, decorating: bool) {
+    pub fn add_external_from_iterator(&mut self, components: impl Iterator<Item = (String, PrimitiveComponentType)>) {
         for (id, type_) in components {
-            type_.register(self, &id, decorating);
+            type_.register(self, &id);
         }
 
         for handler in self.on_external_components_change.iter() {
@@ -72,57 +80,47 @@ impl ComponentRegistry {
         }
     }
 
-    pub fn register_external(
-        &mut self,
-        path: String,
-        vtable: &'static ComponentVTable<()>,
-        mut attributes: AttributeStore,
-    ) -> ComponentDesc {
+    fn register(&mut self, path: String, vtable: &'static ComponentVTable<()>, attributes: Option<AttributeStore>) -> ComponentDesc {
+        if let Some(vpath) = vtable.path {
+            assert_eq!(path, vpath, "Static name does not match provided name");
+        }
+
+        let index = match self.component_paths.entry(path.to_owned()) {
+            Entry::Occupied(slot) => *slot.get(),
+            Entry::Vacant(slot) => {
+                let index = self.components.len().try_into().expect("Maximum component count exceeded");
+                slot.insert(index);
+
+                let desc = ComponentDesc::new(index, vtable);
+
+                self.components.push(RegistryComponent { desc, primitive_component_type: None, primitive_component: None });
+
+                index
+            }
+        };
+
+        let slot = &mut self.components[index as usize];
+
+        if let Some(src) = attributes {
+            let mut dst = (vtable.attributes_init)(slot.desc);
+            dst.append(src);
+            dst.set(ComponentPath(path));
+        }
+
+        slot.desc
+    }
+
+    pub fn register_external(&mut self, path: String, vtable: &'static ComponentVTable<()>, attributes: AttributeStore) -> ComponentDesc {
         assert_eq!(None, vtable.path, "Static name does not match provided name");
 
         log::debug!("Registering external component: {path}");
 
-        let index = self.components.len().try_into().expect("Maximum component reached");
-        let desc = ComponentDesc::new(index, vtable);
-
-        attributes.set(ComponentPath(path.clone()));
-
-        self.components.push(RegistryComponent {
-            desc,
-            primitive_component_type: None,
-            primitive_component: None,
-            attributes: Some(attributes),
-        });
-
-        match self.component_paths.entry(path) {
-            Entry::Occupied(slot) => panic!("Duplicate component path: {:?}", slot.key()),
-            Entry::Vacant(slot) => slot.insert(index),
-        };
-
-        desc
+        self.register(path, vtable, Some(attributes))
     }
 
     pub fn register_static(&mut self, path: &'static str, vtable: &'static ComponentVTable<()>) -> ComponentDesc {
-        assert_eq!(Some(path), vtable.path, "Static name does not match provided name");
-
         log::debug!("Registering static component: {path}");
-
-        let index = self.components.len().try_into().expect("Maximum component reached");
-        let desc = ComponentDesc::new(index, vtable);
-
-        self.components.push(RegistryComponent {
-            desc,
-            primitive_component_type: None,
-            primitive_component: None,
-            attributes: Default::default(),
-        });
-
-        match self.component_paths.entry(path.into()) {
-            Entry::Occupied(slot) => panic!("Duplicate component path: {:?}", slot.key()),
-            Entry::Vacant(slot) => slot.insert(index),
-        };
-
-        desc
+        self.register(path.into(), vtable, Default::default())
     }
 
     /// Sets the primitive component for an existing component
@@ -143,12 +141,6 @@ impl ComponentRegistry {
         Some(prim)
     }
 
-    pub fn get_external_attribute(&self, index: u32, key: TypeId) -> Option<&Box<dyn ComponentAttribute>> {
-        let entry = &self.components[index as usize];
-
-        entry.attributes.as_ref().expect("No external attributes on static components").get_dyn(key)
-    }
-
     pub fn path_to_index(&self, path: &str) -> Option<u32> {
         self.component_paths.get(path).copied()
     }
@@ -156,14 +148,6 @@ impl ComponentRegistry {
     pub fn get_by_path(&self, path: &str) -> Option<ComponentDesc> {
         let index = *self.component_paths.get(path)?;
         Some(self.components[index as usize].desc)
-    }
-
-    pub fn register<T: ComponentValue>(&mut self, namespace: &str, name: &str, component: &mut Component<T>) {
-        todo!()
-        // if component.index >= 0 {
-        //     return;
-        // }
-        // self.register_with_id(&format!("{namespace}::{name}"), component, false, None, None);
     }
 
     // pub(crate) fn register_with_id(
@@ -219,16 +203,6 @@ impl ComponentRegistry {
 
     pub fn component_count(&self) -> usize {
         self.components.len()
-    }
-
-    pub(crate) fn get_external_attributes(index: u32) -> AttributeStoreGuard {
-        let guard = Self::get();
-
-        RwLockReadGuard::map(guard, |reg| {
-            let entry = &reg.components[index as usize];
-
-            entry.attributes.as_ref().expect("No external attributes on static components")
-        })
     }
 }
 

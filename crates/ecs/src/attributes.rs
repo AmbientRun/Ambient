@@ -25,12 +25,17 @@ impl AttributeStore {
         self.inner.insert(TypeId::of::<A>(), Box::new(attribute));
     }
 
-    pub fn get_dyn(&self, key: TypeId) -> Option<&Box<dyn ComponentAttribute>> {
-        self.inner.get(&key)
+    pub fn get_dyn(&self, key: TypeId) -> Option<&dyn ComponentAttribute> {
+        self.inner.get(&key).map(|v| v.as_ref())
     }
 
     pub fn get<A: ComponentAttribute>(&self) -> Option<&A> {
         self.inner.get(&TypeId::of::<A>()).map(|v| v.downcast_ref::<A>().expect("Invalid type"))
+    }
+
+    /// Appends all attributes from `other` into self
+    pub fn append(&mut self, other: Self) {
+        self.inner.extend(other.inner)
     }
 }
 
@@ -42,10 +47,10 @@ impl FromIterator<Box<dyn ComponentAttribute>> for AttributeStore {
 
 macro_rules! component_attributes {
     ($($name: ident,)*) => {
-$(
+        $(
         impl $crate::ComponentAttribute for $name { }
 
-)        *
+        )*
     };
 }
 

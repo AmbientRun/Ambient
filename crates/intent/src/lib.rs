@@ -4,7 +4,7 @@ mod registry;
 use std::{fmt::Debug, sync::Arc, time::SystemTime};
 
 use elements_ecs::{
-    components, index_system, query, ArchetypeFilter, Component, ComponentValue, EntityData, EntityId, Index, IndexColumns, QueryState, SystemGroup, World
+    components, index_system, query, ArchetypeFilter, Component, ComponentValue, Debuggable, EntityData, EntityId, Index, IndexColumns, Networked, QueryState, Store, SystemGroup, World
 };
 use elements_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use elements_network::{
@@ -18,27 +18,41 @@ pub use registry::*;
 
 components!("intent", {
     /// The component index of the intent
+    @[Debuggable, Networked, Store]
     intent: u32,
 
     /// Intents with the same id and intent type "next to" each other will be collapsed.
     ///
     /// It is an error for two events of the same id and incompatible types
+    @[Debuggable, Networked, Store]
     intent_id: String,
+    @[Debuggable, Networked, Store]
     intent_timestamp: SystemTime,
+    @[Debuggable, Networked, Store]
     intent_user_id: String,
+    @[Debuggable, Networked, Store]
     intent_reverted: (),
     /// Set for an applied intent, with a debug format of the revert intent
+    @[Debuggable, Networked, Store]
     intent_applied: String,
+    @[Debuggable, Networked, Store]
     intent_failed: String,
+    @[Debuggable, Networked, Store]
     intent_success: (),
+    @[Debuggable, Networked, Store]
     intent_no_state: (),
 
+    @[Debuggable]
     intent_registry: Arc<IntentRegistry>,
 
     // Index
+    @[Debuggable]
     intent_index: Index,
+    @[Debuggable]
     intent_id_index: Index,
+    @[Debuggable]
     intent_index_reverted: Index,
+    @[Debuggable]
     intent_index_applied: Index,
 });
 

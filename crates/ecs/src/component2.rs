@@ -318,7 +318,8 @@ macro_rules! components {
 
                     static VTABLE: &$crate::ComponentVTable<$ty> = &$crate::ComponentVTable::construct(
                         PATH,
-                        |desc| $crate::parking_lot::RwLockReadGuard::map(ATTRIBUTES.get_or_init(|| init_attr($crate::Component::new(desc))).read(), |v| v)
+                        |desc| $crate::parking_lot::RwLockReadGuard::map(ATTRIBUTES.get_or_init(|| init_attr($crate::Component::new(desc))).read(), |v| v),
+                        |desc| $crate::parking_lot::RwLockWriteGuard::map(ATTRIBUTES.get_or_init(|| init_attr($crate::Component::new(desc))).write(), |v| v)
                     );
 
                     *[<comp_ $name>].get_or_init(|| {
@@ -356,7 +357,7 @@ mod test {
     use std::{ptr, sync::Arc};
 
     use once_cell::sync::Lazy;
-    use parking_lot::{RwLock, RwLockReadGuard};
+    use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
     use serde::de::DeserializeSeed;
 
     use super::*;
@@ -365,8 +366,11 @@ mod test {
     #[test]
     fn manual_component() {
         static ATTRIBUTES: Lazy<RwLock<AttributeStore>> = Lazy::new(Default::default);
-        static VTABLE: &ComponentVTable<String> =
-            &ComponentVTable::construct("core::test::my_component", |_| RwLockReadGuard::map(ATTRIBUTES.read(), |v| v));
+        static VTABLE: &ComponentVTable<String> = &ComponentVTable::construct(
+            "core::test::my_component",
+            |_| RwLockReadGuard::map(ATTRIBUTES.read(), |v| v),
+            |_| RwLockWriteGuard::map(ATTRIBUTES.write(), |v| v),
+        );
 
         let component: Component<String> = Component::new(ComponentDesc::new(1, unsafe { VTABLE.erase() }));
 
