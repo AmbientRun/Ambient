@@ -202,7 +202,7 @@ impl ModelCrate {
         if force_assimp {
             crate::assimp::import_url(assets, url, self, resolve_texture).await?;
         } else if is_fbx {
-            if let Err(err) = crate::fbx::import_url(assets, url, self).await {
+            if let Err(err) = crate::fbx::import_url(assets, url, self, resolve_texture.clone()).await {
                 match err.downcast::<fbxcel::tree::any::Error>() {
                     Ok(err) => {
                         if let fbxcel::tree::any::Error::ParserCreation(fbxcel::pull_parser::any::Error::Header(

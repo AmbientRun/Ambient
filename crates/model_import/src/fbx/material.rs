@@ -6,7 +6,7 @@ use fbxcel::tree::v7400::NodeHandle;
 use glam::{vec3, Vec3};
 
 use crate::{
-    dotdot_path, model_crate::{AssetLoc, ModelCrate}
+    dotdot_path, model_crate::{AssetLoc, ModelCrate}, TextureResolver
 };
 
 #[derive(Debug)]
@@ -193,7 +193,7 @@ impl FbxVideo {
             content: content.and_then(|content| Some(FbxVideoContent(content.attributes().get(0)?.get_binary()?.to_vec()))),
         }
     }
-    pub fn to_image(&self) -> Option<image::RgbaImage> {
+    pub async fn to_image(&self, texture_resolver: TextureResolver) -> Option<image::RgbaImage> {
         if let Some(content) = &self.content {
             let format = if self.filename.to_lowercase().ends_with(".png") {
                 image::ImageFormat::Png
@@ -208,7 +208,7 @@ impl FbxVideo {
             };
             Some(image::load_from_memory_with_format(&content.0, format).unwrap().to_rgba8())
         } else {
-            None
+            texture_resolver(self.filename.clone()).await
         }
     }
 }

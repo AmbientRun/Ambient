@@ -13,6 +13,7 @@ use elements_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use fbxcel::tree::{
     any::AnyTree, v7400::{NodeHandle, Tree}
 };
+use futures::future::join_all;
 use glam::{Mat4, Vec3};
 use indexmap::IndexMap;
 use itertools::Itertools;
@@ -21,24 +22,30 @@ use relative_path::RelativePathBuf;
 use self::{
     animation::{FbxAnimationCurve, FbxAnimationCurveNode, FbxAnimationLayer, FbxAnimationStack}, material::{FbxMaterial, FbxTexture, FbxVideo}, mesh::{FbxCluster, FbxGeometry, FbxSkin}, model::FbxModel
 };
-use crate::{download_bytes, model_crate::ModelCrate};
+use crate::{download_bytes, model_crate::ModelCrate, TextureResolver};
 
 mod animation;
 mod material;
 mod mesh;
 mod model;
 
-pub async fn import_url(assets: &AssetCache, url: &AbsAssetUrl, asset_crate: &mut ModelCrate) -> anyhow::Result<RelativePathBuf> {
+pub async fn import_url(
+    assets: &AssetCache,
+    url: &AbsAssetUrl,
+    asset_crate: &mut ModelCrate,
+    texture_resolver: TextureResolver,
+) -> anyhow::Result<RelativePathBuf> {
     let content = download_bytes(assets, url).await?;
     let cursor = Cursor::new(&*content);
-    import_from_fbx_reader(asset_crate, url.to_string(), true, cursor)
+    import_from_fbx_reader(asset_crate, url.to_string(), true, cursor, texture_resolver).await
 }
 
-pub fn import_from_fbx_reader(
+pub async fn import_from_fbx_reader(
     asset_crate: &mut ModelCrate,
     name: String,
     load_images: bool,
     reader: impl Read + Seek,
+    texture_resolver: TextureResolver,
 ) -> anyhow::Result<RelativePathBuf> {
     match AnyTree::from_seekable_reader(reader).context("Failed to load tree")? {
         AnyTree::V7400(_, tree, _) => {
@@ -59,9 +66,10 @@ pub fn import_from_fbx_reader(
             }
 
             let images = if load_images {
-                doc.videos
-                    .iter()
-                    .filter_map(|(id, video)| video.to_image().map(|img| (*id, asset_crate.images.insert(id.to_string(), img))))
+                join_all(doc.videos.iter().map(|(id, video)| async { (*id, video.to_image(texture_resolver.clone()).await) }))
+                    .await
+                    .into_iter()
+                    .filter_map(|(id, image)| image.map(|img| (id, asset_crate.images.insert(id.to_string(), img))))
                     .collect::<HashMap<_, _>>()
             } else {
                 Default::default()
