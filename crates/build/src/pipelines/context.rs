@@ -44,7 +44,7 @@ impl PipelineCtx {
         self.out_root().push(path).unwrap().as_directory().into()
     }
     pub async fn write_file(&self, path: impl AsRef<str>, content: Vec<u8>) -> AbsAssetUrl {
-        (self.process_ctx.write_file)(path.as_ref().to_string(), content).await
+        (self.process_ctx.write_file)(self.root_path.join(path.as_ref()).to_string(), content).await
     }
     pub async fn process_single<F: Future<Output = anyhow::Result<Vec<OutAsset>>> + Send>(
         &self,
