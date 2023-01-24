@@ -144,7 +144,13 @@ fn create_texture_resolver(ctx: &PipelineCtx) -> TextureResolver {
             if let Some(file) =
                 ctx.process_ctx.files.iter().find_map(|file| if file.path().as_str().contains(&filename) { Some(file) } else { None })
             {
-                Some(download_image(&ctx.process_ctx.assets, &file).await.unwrap().into_rgba8())
+                match download_image(&ctx.process_ctx.assets, &file).await {
+                    Ok(img) => Some(img.into_rgba8()),
+                    Err(err) => {
+                        log::error!("Failed to import image {:?}: {:?}", path, err);
+                        None
+                    }
+                }
             } else {
                 None
             }
