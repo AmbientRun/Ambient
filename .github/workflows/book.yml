@@ -2,7 +2,7 @@ name: Deploy book
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   deploy:
