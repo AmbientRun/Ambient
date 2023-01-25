@@ -20,7 +20,7 @@ mod new_project;
 pub mod scripting;
 mod server;
 
-#[derive(Parser)]
+#[derive(Parser, Clone)]
 #[command(author, version, about, long_about = None)]
 #[command(propagate_version = true)]
 struct Cli {
@@ -36,14 +36,16 @@ struct Cli {
 enum Commands {
     /// Create a new Tilt project
     New { name: String },
-    /// Builds and runs the project
+    /// Builds and runs the project locally
     Run,
     /// Builds the project
     Build,
+    /// Builds and runs the project in server only mode
+    Serve,
     /// View an asset
     View { asset_path: String },
     /// Join a multiplayer session
-    Join { ip: SocketAddr },
+    Join { ip: Option<SocketAddr> },
 }
 impl Commands {
     fn should_build(&self) -> bool {
@@ -51,6 +53,7 @@ impl Commands {
             Commands::New { .. } => false,
             Commands::Run => true,
             Commands::Build => true,
+            Commands::Serve => true,
             Commands::View { .. } => true,
             Commands::Join { .. } => false,
         }
@@ -60,6 +63,7 @@ impl Commands {
             Commands::New { .. } => false,
             Commands::Run => true,
             Commands::Build => false,
+            Commands::Serve => false,
             Commands::View { .. } => true,
             Commands::Join { .. } => true,
         }
@@ -152,17 +156,25 @@ fn main() {
         runtime.block_on(elements_build::build(&assets, project_path.clone()));
     }
 
+    let server_addr = if let Commands::Join { ip } = &cli.command {
+        ip.clone().unwrap_or_else(|| format!("127.0.0.1:9000").parse().unwrap())
+    } else {
+        let port = server::start_server(&runtime, assets.clone(), cli.clone(), project_path);
+        println!("Server running on port {port}");
+        format!("127.0.0.1:{port}").parse().unwrap()
+    };
+    let handle = runtime.handle().clone();
     if cli.command.should_run() {
-        let server_addr = if let Commands::Join { ip } = &cli.command {
-            ip.clone()
-        } else {
-            let port = server::start_server(&runtime, assets.clone(), cli, project_path);
-            println!("Server running on port {port}");
-            format!("127.0.0.1:{port}").parse().unwrap()
-        };
         AppBuilder::simple().ui_renderer(true).with_runtime(runtime).with_asset_cache(assets).run(|app, _runtime| {
             app.window_event_systems.add(Box::new(ExamplesSystem));
             MainApp { server_addr }.el().spawn_interactive(&mut app.world);
+        });
+    } else {
+        handle.block_on(async move {
+            match tokio::signal::ctrl_c().await {
+                Ok(()) => {}
+                Err(err) => log::error!("Unable to listen for shutdown signal: {}", err),
+            }
         });
     }
 }
