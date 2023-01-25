@@ -51,6 +51,7 @@ fn true_value() -> bool {
 pub struct ModelsPipeline {
     #[serde(default)]
     importer: ModelImporter,
+    /// Use assimp as the importer; this will support more file formats, but is less well integrated
     #[serde(default)]
     force_assimp: bool,
     #[serde(default)]
@@ -58,12 +59,15 @@ pub struct ModelsPipeline {
     #[serde(default)]
     collider_type: ColliderType,
     cap_texture_sizes: Option<ModelTextureSize>,
+    /// Treats all assets in the pipeline as variations, and outputs a single asset which is a collection of all assets
     #[serde(default)]
     collection_of_variants: bool,
+    /// Output objects which can be spawned from server-side scripts
     #[serde(default = "true_value")]
     output_objects: bool,
     #[serde(default = "true_value")]
     output_animations: bool,
+    /// Add components to server side objects
     #[serde(default)]
     object_components: EntityData,
     #[serde(default)]

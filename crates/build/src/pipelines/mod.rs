@@ -32,10 +32,14 @@ pub enum PipelineConfig {
 #[serde(tag = "type")]
 pub struct Pipeline {
     pub pipeline: PipelineConfig,
+    /// Filter sources; this is a list of glob patterns for accepted files
+    /// All files are accepted if this is empty
     #[serde(default)]
     pub sources: Vec<String>,
+    /// Tags to apply to the output resources
     #[serde(default)]
     pub tags: Vec<String>,
+    /// Categories ot apply to the output resources
     #[serde(default)]
     pub categories: Vec<Vec<String>>,
 }
