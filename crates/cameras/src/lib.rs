@@ -11,7 +11,7 @@ pub mod free;
 pub mod spherical;
 
 components!("camera", {
-    @[Networked]
+    @[Networked, Store]
     camera_movement_speed: f32,
     @[Networked, Store]
     ui_camera: (),
