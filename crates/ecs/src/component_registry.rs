@@ -37,7 +37,6 @@ pub struct ComponentRegistry {
     pub(crate) components: Vec<RegistryComponent>,
     pub component_paths: HashMap<String, u32>,
     pub next_index: u32,
-    pub(crate) attributes: BTreeMap<u32, AttributeStore>,
 
     /// Handlers are called with a write-lock on ComponentRegistry, which will result in deadlock if your operation
     /// requires a read-lock on ComponentRegistry. Consider deferring your operation to a later time.
@@ -103,7 +102,7 @@ impl ComponentRegistry {
 
         if let Some(src) = attributes {
             let mut dst = (vtable.attributes_init)(slot.desc);
-            dst.append(src);
+            dst.append(&src);
             dst.set(ComponentPath(path));
         }
 
@@ -136,8 +135,18 @@ impl ComponentRegistry {
         let entry = &mut self.components[index as usize];
 
         let prim = PrimitiveComponent { ty: ty.clone(), desc: entry.desc };
-        entry.primitive_component_type = Some(ty);
+        entry.primitive_component_type = Some(ty.clone());
         entry.primitive_component = Some(prim.clone());
+
+        // Hydrate the store with the primitive component attributes
+        if let Some(src) = PRIMITIVE_ATTRIBUTE_REGISTRY.read().get(&ty) {
+            let mut dst = (entry.desc.vtable.attributes_init)(entry.desc);
+            log::info!("Hydrating {:?}", path);
+            dst.append(src)
+        } else {
+            log::warn!("No primitive attributes for {ty:?}");
+        }
+
         Some(prim)
     }
 

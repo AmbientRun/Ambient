@@ -10,7 +10,7 @@ use serde::{
 };
 
 use crate::{
-    component::IComponentBuffer, with_component_registry, AttributeGuard, ComponentAttribute, ComponentEntry, ComponentPath, ComponentVTable, Debuggable, Serializable
+    component::IComponentBuffer, with_component_registry, AttributeGuard, AttributeStoreGuard, ComponentAttribute, ComponentEntry, ComponentPath, ComponentVTable, Debuggable, Serializable
 };
 
 pub trait ComponentValueBase: Send + Sync + Downcast + 'static {
@@ -213,6 +213,10 @@ impl ComponentDesc {
         MappedRwLockReadGuard::try_map(guard, |store| store.get::<A>()).ok()
     }
 
+    pub fn attributes(&self) -> AttributeStoreGuard {
+        (self.vtable.attributes)(*self)
+    }
+
     pub fn as_debug<'a>(&self, value: &'a dyn Any) -> &'a dyn Debug {
         struct NoDebug;
         impl Debug for NoDebug {
@@ -235,6 +239,7 @@ impl ComponentDesc {
     pub fn from_json(&self, value: &str) -> Result<ComponentEntry, serde_json::Error> {
         self.attribute::<Serializable>()
             .expect("Component is not serializable")
+            .deserializer(*self)
             .deserialize(&mut serde_json::de::Deserializer::from_str(value))
     }
 
@@ -303,7 +308,6 @@ macro_rules! components {
                         $( $(
                             <$attr as $crate::AttributeConstructor::<$ty, _>>::construct(
                                 &mut store,
-                                _component,
                                 ($($params),*)
                             );
                         )*)*
@@ -420,9 +424,9 @@ mod test {
 
         eprintln!("Serialized: {str}");
 
-        let deserialize = person().attribute::<Serializable>().unwrap();
+        let ser = person().attribute::<Serializable>().unwrap();
 
-        let value: ComponentEntry = deserialize.deserialize(&mut serde_json::Deserializer::from_str(&str)).unwrap();
+        let value: ComponentEntry = ser.deserializer(person().desc()).deserialize(&mut serde_json::Deserializer::from_str(&str)).unwrap();
 
         eprintln!("Value: {:?}", value.as_debug());
 
@@ -448,9 +452,9 @@ mod test {
         let people_desc: ComponentDesc = people().desc();
         let person_desc: ComponentDesc = person().desc();
 
-        let mut people = people_desc.attribute::<MakeDefault>().unwrap().make_default();
+        let mut people = people_desc.attribute::<MakeDefault>().unwrap().make_default(people_desc);
 
-        let mut person = person_desc.attribute::<MakeDefault>().unwrap().make_default();
+        let mut person = person_desc.attribute::<MakeDefault>().unwrap().make_default(people_desc);
 
         assert_eq!(person.downcast_ref::<Person>(), &Person { age: 21, name: "unnamed".into() });
 

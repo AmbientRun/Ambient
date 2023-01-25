@@ -213,7 +213,7 @@ impl<'de> Deserialize<'de> for EntityData {
                         .attribute::<Serializable>()
                         .ok_or_else(|| de::Error::custom(format!("Component {desc:?} is not deserializable")))?;
 
-                    let value = map.next_value_seed(*ser)?;
+                    let value = map.next_value_seed(ser.deserializer(desc))?;
 
                     res.set_entry(value);
                 }
@@ -271,7 +271,7 @@ impl<'de> Deserialize<'de> for DeserEntityDataWithWarnings {
                         }
                     };
 
-                    let value = ser.deserialize(value);
+                    let value = ser.deserializer(desc).deserialize(value);
                     let value = match value {
                         Ok(v) => v,
                         Err(err) => {

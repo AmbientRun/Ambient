@@ -1,11 +1,17 @@
 use elements_std::asset_url::ObjectRef;
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
+use once_cell::sync::Lazy;
+use parking_lot::RwLock;
 use paste::paste;
 
-use crate::{ComponentDesc, ComponentRegistry, ComponentVTable, EntityId, EntityUid};
+use crate::{
+    ComponentDesc, ComponentRegistry, ComponentVTable, Debuggable, EntityId, EntityUid, Networked, PrimitiveAttributeRegistry, Store
+};
+
+pub static PRIMITIVE_ATTRIBUTE_REGISTRY: Lazy<RwLock<PrimitiveAttributeRegistry>> = Lazy::new(Default::default);
 
 macro_rules! make_primitive_component {
-    ($(($value:ident, $type:ty)),*) => { paste! {
+    ($(($value:ident, $type:ty, [$($attr: ty),*])),*) => { paste! {
         #[derive(Debug,  Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
         pub struct PrimitiveComponent {
             pub ty: PrimitiveComponentType,
@@ -42,6 +48,57 @@ macro_rules! make_primitive_component {
         }
 
         impl PrimitiveComponentType {
+            /// Register dynamic attributes for primitive component types
+            pub fn register_attributes() {
+                let mut reg = PRIMITIVE_ATTRIBUTE_REGISTRY.write();
+
+                $(
+                    {
+                        #[allow(unused_mut)]
+                        let mut store = $crate::AttributeStore::new();
+
+
+                        $(
+                            <$attr as $crate::AttributeConstructor::<$type, _>>::construct(
+                                &mut store,
+                                ()
+                            );
+                        )*
+
+                        reg.set(PrimitiveComponentType::$value, store);
+                    }
+                    {
+                        #[allow(unused_mut)]
+                        let mut store = $crate::AttributeStore::new();
+
+
+                        $(
+                            <$attr as $crate::AttributeConstructor::<Vec<$type>, _>>::construct(
+                                &mut store,
+                                ()
+                            );
+                        )*
+
+                        reg.set(PrimitiveComponentType::[<Vec $value >], store);
+                    }
+                    {
+                        #[allow(unused_mut)]
+                        let mut store = $crate::AttributeStore::new();
+
+
+                        $(
+                            <$attr as $crate::AttributeConstructor::<Option<$type>, _>>::construct(
+                                &mut store,
+                                ()
+                            );
+                        )*
+
+                        reg.set(PrimitiveComponentType::[<Option $value >], store);
+                    }
+                )*
+            }
+
+
             pub(crate) fn register(&self, reg: &mut ComponentRegistry, path: &str) -> Option<PrimitiveComponent> {
                 match self {
                     $(
@@ -107,20 +164,20 @@ macro_rules! make_primitive_component {
 }
 
 make_primitive_component!(
-    (Empty, ()),
-    (Bool, bool),
-    (EntityId, EntityId),
-    (F32, f32),
-    (F64, f64),
-    (Mat4, Mat4),
-    (I32, i32),
-    (Quat, Quat),
-    (String, String),
-    (U32, u32),
-    (U64, u64),
-    (Vec2, Vec2),
-    (Vec3, Vec3),
-    (Vec4, Vec4),
-    (ObjectRef, ObjectRef),
-    (EntityUid, EntityUid)
+    (Empty, (), [Debuggable, Networked, Store]),
+    (Bool, bool, [Debuggable, Networked, Store]),
+    (EntityId, EntityId, [Debuggable, Networked, Store]),
+    (F32, f32, [Debuggable, Networked, Store]),
+    (F64, f64, [Debuggable, Networked, Store]),
+    (Mat4, Mat4, [Debuggable, Networked, Store]),
+    (I32, i32, [Debuggable, Networked, Store]),
+    (Quat, Quat, [Debuggable, Networked, Store]),
+    (String, String, [Debuggable, Networked, Store]),
+    (U32, u32, [Debuggable, Networked, Store]),
+    (U64, u64, [Debuggable, Networked, Store]),
+    (Vec2, Vec2, [Debuggable, Networked, Store]),
+    (Vec3, Vec3, [Debuggable, Networked, Store]),
+    (Vec4, Vec4, [Debuggable, Networked, Store]),
+    (ObjectRef, ObjectRef, [Debuggable, Networked, Store]),
+    (EntityUid, EntityUid, [Debuggable, Networked, Store])
 );
