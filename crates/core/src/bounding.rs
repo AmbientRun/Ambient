@@ -12,6 +12,7 @@ use crate::{
 };
 
 components!("rendering", {
+    @[Debuggable, Networked, Store]
     visibility_from: EntityId,
     @[Debuggable, Networked, Store]
     local_bounding_aabb: AABB,

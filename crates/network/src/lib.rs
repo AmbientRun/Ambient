@@ -105,11 +105,11 @@ impl ServerWorldExt for World {
 
 pub fn assert_networked(desc: elements_ecs::ComponentDesc) {
     if desc.attribute::<Networked>().is_none() {
-        panic!("Attempt to access sync {desc:?} which is not marked as `Networked`");
+        panic!("Attempt to access sync {desc:#?} which is not marked as `Networked`");
     }
 
     if desc.attribute::<Serializable>().is_none() {
-        panic!("Sync component {desc:?} is not serializable");
+        panic!("Sync component {desc:#?} is not serializable");
     }
 }
 

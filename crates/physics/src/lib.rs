@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use collider::collider_shapes;
 use elements_core::asset_cache;
-use elements_ecs::{components, query, DynSystem, EntityData, EntityId, FnSystem, SystemGroup, World};
+use elements_ecs::{components, query, Debuggable, DynSystem, EntityData, EntityId, FnSystem, Networked, Store, SystemGroup, World};
 use elements_network::server::{ForkingEvent, ShutdownEvent};
 use elements_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 use glam::{vec3, Mat4, Vec3};
@@ -31,12 +31,18 @@ components!("physics", {
     trigger_areas_scene: PxSceneRef,
     main_controller_manager: PxControllerManagerRef,
     wood_physics_material: PxMaterial,
+    @[Debuggable, Networked, Store]
     unit_velocity: Vec3,
+    @[Debuggable, Networked, Store]
     unit_mass: f32,
+    @[Debuggable, Networked, Store]
     unit_yaw: f32,
+    @[Debuggable]
     collisions: Arc<Mutex<Vec<(PxRigidActorRef, PxRigidActorRef)>>>,
+    @[Debuggable, Networked, Store]
     collider_loads: Vec<EntityId>,
     /// Put this on world.resources to make all physics objects static when loaded
+    @[Debuggable, Networked, Store]
     make_physics_static: bool,
 });
 pub fn init_all_components() {
