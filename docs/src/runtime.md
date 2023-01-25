@@ -1,25 +1,4 @@
-# Tilt runtime documentation
-
-## Installing
-
-See [README.md](../README.md#installing)
-
-## Getting started
-
-To create a project, first run;
-
-```sh
-tilt new my-project
-```
-
-This will generate a new project for you. You can immediately run it:
-
-```sh
-cd my-project
-tilt run
-```
-
-From here on, you can open up the project in your favorite IDE and start editing the code.
+# Runtime
 
 ## Coordinate system
 
