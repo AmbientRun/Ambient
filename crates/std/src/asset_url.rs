@@ -18,7 +18,11 @@ use crate::{
 
 #[derive(Debug, Clone)]
 pub struct ServerBaseUrlKey;
-impl SyncAssetKey<AbsAssetUrl> for ServerBaseUrlKey {}
+impl SyncAssetKey<AbsAssetUrl> for ServerBaseUrlKey {
+    fn load(&self, _assets: AssetCache) -> AbsAssetUrl {
+        AbsAssetUrl::parse("http://localhost:8999").unwrap()
+    }
+}
 
 /// This is a thin wrapper around Url, which is guaranteed to always
 /// be an absolute url (including when pointing to a local file).
