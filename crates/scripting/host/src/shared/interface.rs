@@ -15,12 +15,12 @@ pub mod shared {
     include!("../../../guest/rust/src/internal/shared.rs");
 }
 
-pub const SCRIPTING_INTERFACE_NAME: &str = "elements_scripting_interface";
+pub const SCRIPTING_INTERFACE_NAME: &str = "tilt_base_scripting_interface";
 
 fn get_scripting_interface() -> Vec<(PathBuf, String)> {
     let interface_json = include_str!(concat!(
         env!("OUT_DIR"),
-        "/elements_guest_rust_interface.json"
+        "/tilt_base_scripting_interface.json"
     ));
     serde_json::from_str(interface_json).unwrap()
 }

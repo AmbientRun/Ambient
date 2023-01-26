@@ -7,7 +7,7 @@ use components::core::{
     player::{player, user_id},
     transform::{inv_local_to_world, local_to_world, rotation, translation},
 };
-use elements_scripting_interface::*;
+use tilt_base_scripting_interface::*;
 
 pub mod components;
 pub mod params;

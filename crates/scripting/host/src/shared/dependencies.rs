@@ -169,7 +169,7 @@ fn validate_manifest(
 mod tests {
     use super::merge_cargo_toml;
 
-    const SCRIPTING_INTERFACES: &[&str] = &["elements_scripting_interface"];
+    const SCRIPTING_INTERFACES: &[&str] = &["tilt_base_scripting_interface"];
 
     const DEFAULT_FILE: &str = indoc::indoc! {r#"
         [package]
@@ -182,7 +182,7 @@ mod tests {
         crate-type = ["cdylib"]
 
         [dependencies]
-        elements_scripting_interface = {path = "../../elements_scripting_interface"}
+        tilt_base_scripting_interface = {path = "../../tilt_base_scripting_interface"}
     "#};
 
     #[test]
@@ -206,8 +206,8 @@ mod tests {
                 edition = "2021"
                 version = "0.1.0"
                 description = "a cool description"
-                [dependencies.elements_scripting_interface]
-                path = "../../elements_scripting_interface"
+                [dependencies.tilt_base_scripting_interface]
+                path = "../../tilt_base_scripting_interface"
                 features = []
 
                 [lib]
@@ -231,7 +231,7 @@ mod tests {
             ignored-key = "okay!"
 
             [dependencies]
-            elements_scripting_interface = {path = "../../elements_scripting_interface"}
+            tilt_base_scripting_interface = {path = "../../tilt_base_scripting_interface"}
         "#};
 
         assert_eq!(
@@ -242,8 +242,8 @@ mod tests {
                 edition = "2021"
                 version = "0.1.0"
                 description = "a cool description"
-                [dependencies.elements_scripting_interface]
-                path = "../../elements_scripting_interface"
+                [dependencies.tilt_base_scripting_interface]
+                path = "../../tilt_base_scripting_interface"
                 features = []
 
                 [lib]
@@ -266,7 +266,7 @@ mod tests {
             crate-type = ["cdylib"]
 
             [dependencies]
-            elements_scripting_interface = {path = "../../elements_scripting_interface"}
+            tilt_base_scripting_interface = {path = "../../tilt_base_scripting_interface"}
             indexmap = "1.9.2"
         "#};
 
@@ -282,8 +282,8 @@ mod tests {
                 [dependencies]
                 indexmap = "1.9.2"
 
-                [dependencies.elements_scripting_interface]
-                path = "../../elements_scripting_interface"
+                [dependencies.tilt_base_scripting_interface]
+                path = "../../tilt_base_scripting_interface"
                 features = []
 
                 [lib]
@@ -306,7 +306,7 @@ mod tests {
             crate-type = ["cdylib"]
 
             [dependencies]
-            elements_scripting_interface = {path = "../../elements_scripting_interface"}
+            tilt_base_scripting_interface = {path = "../../tilt_base_scripting_interface"}
             malicious-package = "42.0.0"
         "#};
 

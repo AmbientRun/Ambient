@@ -41,7 +41,7 @@ fn main() {
     .collect();
 
     std::fs::write(
-        Path::new(&std::env::var("OUT_DIR").unwrap()).join("elements_guest_rust_interface.json"),
+        Path::new(&std::env::var("OUT_DIR").unwrap()).join("tilt_base_scripting_interface.json"),
         serde_json::to_string(&files).unwrap(),
     )
     .unwrap();
