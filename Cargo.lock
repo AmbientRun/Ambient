@@ -2011,8 +2011,8 @@ dependencies = [
  "serde_bytes",
  "serde_json",
  "slotmap",
+ "tilt_scripting_host_build",
  "toml",
- "walkdir",
  "wasi-common",
  "wasmtime",
  "wasmtime-wasi",
@@ -5471,6 +5471,14 @@ dependencies = [
  "elements_std",
  "log",
  "parking_lot",
+ "walkdir",
+]
+
+[[package]]
+name = "tilt_scripting_host_build"
+version = "0.0.1"
+dependencies = [
+ "serde_json",
  "walkdir",
 ]
 

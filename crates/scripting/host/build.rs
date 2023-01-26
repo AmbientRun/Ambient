@@ -1,48 +1,9 @@
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 fn main() {
-    // Store TARGET for rustup fetch
-    println!(
-        "cargo:rustc-env=TARGET={}",
-        std::env::var("TARGET").unwrap()
+    tilt_scripting_host_build::bundle_scripting_interface(
+        Path::new("../guest/rust"),
+        "tilt_base_scripting_interface.json",
+        &["src", "main-macro"],
     );
-    let prefix = std::path::Path::new("../guest/rust");
-    println!(
-        "cargo:rerun-if-changed={}",
-        prefix.as_os_str().to_string_lossy()
-    );
-
-    let walk_dir = |path| {
-        walkdir::WalkDir::new(prefix.join(path))
-            .into_iter()
-            .filter_map(Result::ok)
-            .map(|d| d.into_path())
-    };
-
-    // Store the Rust scripting interface for use on the client and server.
-    let files: Vec<(PathBuf, String)> = [
-        ".vscode/settings.json",
-        "Cargo.lock",
-        "Cargo.toml",
-        "rust-toolchain.toml",
-        "rustfmt.toml",
-    ]
-    .into_iter()
-    .map(|p| prefix.join(p))
-    .chain(walk_dir("src"))
-    .chain(walk_dir("main-macro"))
-    .filter(|p| p.is_file())
-    .map(|p| {
-        (
-            p.strip_prefix(prefix).unwrap().to_owned(),
-            std::fs::read_to_string(p).unwrap(),
-        )
-    })
-    .collect();
-
-    std::fs::write(
-        Path::new(&std::env::var("OUT_DIR").unwrap()).join("tilt_base_scripting_interface.json"),
-        serde_json::to_string(&files).unwrap(),
-    )
-    .unwrap();
 }

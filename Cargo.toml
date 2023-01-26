@@ -57,7 +57,7 @@ glam.workspace = true
 [workspace]
 resolver = "2"
 exclude = ["crates/scripting", "src/crates/scripting/guest"]
-members = ["crates/*", "crates/scripting/host", "libs/*", "src/crates/scripting/host"]
+members = ["crates/*", "crates/scripting/host_build", "crates/scripting/host", "libs/*", "src/crates/scripting/host"]
 
 [workspace.package]
 version = "0.0.1"
