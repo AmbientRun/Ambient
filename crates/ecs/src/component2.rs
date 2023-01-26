@@ -454,7 +454,7 @@ mod test {
 
         let mut people = people_desc.attribute::<MakeDefault>().unwrap().make_default(people_desc);
 
-        let mut person = person_desc.attribute::<MakeDefault>().unwrap().make_default(people_desc);
+        let mut person = person_desc.attribute::<MakeDefault>().unwrap().make_default(person_desc);
 
         assert_eq!(person.downcast_ref::<Person>(), &Person { age: 21, name: "unnamed".into() });
 
