@@ -32,6 +32,7 @@ elements_object = { path = "crates/object" }
 elements_decals = { path = "crates/decals" }
 elements_renderer_debugger = { path = "crates/renderer_debugger" }
 elements_scripting_host = { path = "crates/scripting/host" }
+elements_world_audio = { path = "crates/world_audio" }
 clap.workspace = true
 tokio.workspace = true
 futures.workspace = true

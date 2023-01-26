@@ -93,7 +93,7 @@ pub(crate) fn start_server(runtime: &tokio::runtime::Runtime, assets: AssetCache
 
         scripting::server::initialize(&mut server_world).await.unwrap();
 
-        if let Commands::View { asset_path } = cli.command.clone() {
+        if let Commands::View { asset_path, .. } = cli.command.clone() {
             let asset_path = AbsAssetUrl::from_file_path(project_path.join("target").join(asset_path).join("objects/main.json"));
             log::info!("Spawning asset from {:?}", asset_path);
             let obj = ObjectFromUrl(asset_path).get(&assets).await.unwrap();

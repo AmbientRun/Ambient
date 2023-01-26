@@ -1,22 +1,21 @@
 use std::{net::SocketAddr, sync::Arc};
 
-use anyhow::Context;
 use clap::{Parser, Subcommand};
 use elements_app::{AppBuilder, ExamplesSystem};
 use elements_cameras::UICamera;
-use elements_core::{camera::active_camera, main_scene};
+use elements_core::camera::active_camera;
 use elements_ecs::{EntityData, SystemGroup, World};
 use elements_element::{element_component, Element, ElementComponentExt, Hooks};
 use elements_network::{
-    client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce}, client_game_state::game_screen_render_target, events::ServerEventRegistry
+    client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce}, events::ServerEventRegistry
 };
 use elements_renderer_debugger::RendererDebugger;
-use elements_std::{asset_cache::AssetCache, math::SphericalCoords, Cb};
-use elements_ui::{use_window_logical_resolution, use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
-use glam::vec3;
+use elements_std::{asset_cache::AssetCache, Cb};
+use elements_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
 
 pub mod components;
 mod new_project;
+mod player;
 pub mod scripting;
 mod server;
 
@@ -37,21 +36,32 @@ enum Commands {
     /// Create a new Tilt project
     New { name: String },
     /// Builds and runs the project locally
-    Run,
+    Run {
+        #[clap(short, long)]
+        user_id: Option<String>,
+    },
     /// Builds the project
     Build,
     /// Builds and runs the project in server only mode
     Serve,
     /// View an asset
-    View { asset_path: String },
+    View {
+        asset_path: String,
+        #[clap(short, long)]
+        user_id: Option<String>,
+    },
     /// Join a multiplayer session
-    Join { ip: Option<SocketAddr> },
+    Join {
+        ip: Option<SocketAddr>,
+        #[clap(short, long)]
+        user_id: Option<String>,
+    },
 }
 impl Commands {
     fn should_build(&self) -> bool {
         match self {
             Commands::New { .. } => false,
-            Commands::Run => true,
+            Commands::Run { .. } => true,
             Commands::Build => true,
             Commands::Serve => true,
             Commands::View { .. } => true,
@@ -61,17 +71,27 @@ impl Commands {
     fn should_run(&self) -> bool {
         match self {
             Commands::New { .. } => false,
-            Commands::Run => true,
+            Commands::Run { .. } => true,
             Commands::Build => false,
             Commands::Serve => false,
             Commands::View { .. } => true,
             Commands::Join { .. } => true,
         }
     }
+    fn user_id(&self) -> Option<&str> {
+        match self {
+            Commands::New { .. } => None,
+            Commands::Run { user_id, .. } => user_id.as_deref(),
+            Commands::Build => None,
+            Commands::Serve => None,
+            Commands::View { user_id, .. } => user_id.as_deref(),
+            Commands::Join { user_id, .. } => user_id.as_deref(),
+        }
+    }
 }
 
 fn client_systems() -> SystemGroup {
-    SystemGroup::new("client", vec![Box::new(elements_decals::client_systems())])
+    SystemGroup::new("client", vec![Box::new(elements_decals::client_systems()), Box::new(player::client_systems())])
 }
 
 #[element_component]
@@ -95,7 +115,7 @@ fn GameView(_world: &mut World, hooks: &mut Hooks) -> Element {
 }
 
 #[element_component]
-fn MainApp(world: &mut World, hooks: &mut Hooks, server_addr: SocketAddr) -> Element {
+fn MainApp(world: &mut World, hooks: &mut Hooks, server_addr: SocketAddr, user_id: String) -> Element {
     let resolution = use_window_physical_resolution(world, hooks);
 
     hooks.provide_context(GameClientNetworkStats::default);
@@ -105,21 +125,11 @@ fn MainApp(world: &mut World, hooks: &mut Hooks, server_addr: SocketAddr) -> Ele
         UICamera.el().set(active_camera(), 0.),
         WindowSized::el([GameClientView {
             server_addr,
-            user_id: "host".to_string(),
+            user_id,
             resolution,
             on_disconnect: Cb::new(move || {}),
             init_world: Cb::new(UseOnce::new(Box::new(move |world, _render_target| {
                 world.add_resource(elements_network::events::event_registry(), Arc::new(ServerEventRegistry::new()));
-                // Cube.el().spawn_static(world);
-                // Quad.el().set(scale(), Vec3::ONE * 10.).spawn_static(world);
-
-                elements_cameras::spherical::new(
-                    vec3(0., 0., 0.),
-                    SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.),
-                )
-                .set(active_camera(), 0.)
-                .set(main_scene(), ())
-                .spawn(world);
             }))),
             on_loaded: Cb::new(move |_game_state, _game_client| Ok(Box::new(|| {}))),
             error_view: Cb(Arc::new(move |error| Dock(vec![Text::el("Error").header_style(), Text::el(error)]).el())),
@@ -156,18 +166,19 @@ fn main() {
         runtime.block_on(elements_build::build(&assets, project_path.clone()));
     }
 
-    let server_addr = if let Commands::Join { ip } = &cli.command {
+    let server_addr = if let Commands::Join { ip, .. } = &cli.command {
         ip.clone().unwrap_or_else(|| format!("127.0.0.1:9000").parse().unwrap())
     } else {
         let port = server::start_server(&runtime, assets.clone(), cli.clone(), project_path);
         println!("Server running on port {port}");
         format!("127.0.0.1:{port}").parse().unwrap()
     };
+    let user_id = cli.command.user_id().unwrap_or("user").to_string();
     let handle = runtime.handle().clone();
     if cli.command.should_run() {
         AppBuilder::simple().ui_renderer(true).with_runtime(runtime).with_asset_cache(assets).run(|app, _runtime| {
             app.window_event_systems.add(Box::new(ExamplesSystem));
-            MainApp { server_addr }.el().spawn_interactive(&mut app.world);
+            MainApp { server_addr, user_id }.el().spawn_interactive(&mut app.world);
         });
     } else {
         handle.block_on(async move {

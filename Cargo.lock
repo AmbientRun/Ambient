@@ -5445,6 +5445,7 @@ dependencies = [
  "elements_scripting_host",
  "elements_std",
  "elements_ui",
+ "elements_world_audio",
  "env_logger 0.9.3",
  "futures",
  "glam 0.22.0",
