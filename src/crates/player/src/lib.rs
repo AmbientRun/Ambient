@@ -6,13 +6,13 @@ pub use components::{
 };
 use elements_audio::AudioListener;
 use elements_core::{camera::active_camera, main_scene, on_frame, runtime};
-use elements_ecs::{query, query_mut, SystemGroup, World};
+use elements_ecs::{query, query_mut, EntityData, SystemGroup, World};
 use elements_element::{element_component, Element, Hooks};
 use elements_input::{
     on_app_focus_change, on_app_keyboard_input, on_app_mouse_input, on_app_mouse_motion, on_app_mouse_wheel, ElementState, MouseButton, MouseScrollDelta
 };
 use elements_network::{
-    client::game_client, get_player_by_user_id, player::{local_user_id, user_id}, DatagramHandlers
+    client::game_client, get_player_by_user_id, player::{local_user_id, player, user_id}, DatagramHandlers
 };
 use elements_std::unwrap_log_err;
 use elements_ui::VirtualKeyCode;
@@ -72,6 +72,18 @@ pub fn register_datagram_handler(handlers: &mut DatagramHandlers) {
             }
         }),
     );
+}
+
+pub fn server_systems() -> SystemGroup {
+    SystemGroup::new(
+        "player/server_systems",
+        vec![query(player()).spawned().to_system(|q, world, qs, _| {
+            let player_ids = q.collect_ids(world, qs);
+            for player_id in player_ids {
+                world.add_components(player_id, EntityData::new().set_default(raw_input()).set_default(prev_raw_input())).ok();
+            }
+        })],
+    )
 }
 
 pub fn server_systems_final() -> SystemGroup {

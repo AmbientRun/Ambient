@@ -22,6 +22,7 @@ fn server_systems() -> SystemGroup {
             Box::new(elements_core::async_ecs::async_ecs_systems()),
             Box::new(elements_core::transform::TransformSystem::new()),
             elements_core::remove_at_time_system(),
+            Box::new(player::server_systems()),
             Box::new(scripting::server::systems()),
             Box::new(player::server_systems_final()),
         ],
