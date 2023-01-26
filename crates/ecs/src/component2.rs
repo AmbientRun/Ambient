@@ -335,7 +335,7 @@ macro_rules! components {
                 pub fn $name() -> $crate::component2::Component<$ty> {
 
                     let desc = *[<comp_ $name>].get()
-                        .expect(concat!("Component: ", "core::", $ns, stringify!($name), "is not initialized"));
+                        .expect(concat!("Component: ", "core::", $ns, "::", stringify!($name), " is not initialized"));
 
                     $crate::component2::Component::new(desc)
                 }
