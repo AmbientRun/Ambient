@@ -24,8 +24,13 @@ mod server;
 #[command(propagate_version = true)]
 struct Cli {
     /// Set the path to the project. Defaults to the current directory
-    #[arg(short, long)]
+    #[arg(long)]
     project_path: Option<String>,
+
+    /// Provide a public address or ip to the instance, which will allow users to connect to this instance over the internet
+    /// Defaults to localhost
+    #[arg(long)]
+    public_host: Option<String>,
 
     #[command(subcommand)]
     command: Commands,

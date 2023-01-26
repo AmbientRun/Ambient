@@ -1,6 +1,11 @@
-use std::{collections::HashMap, path::PathBuf, sync::Arc, time::SystemTime};
+use std::{
+    collections::HashMap, net::SocketAddr, path::{Path, PathBuf}, sync::Arc, time::SystemTime
+};
 
 use anyhow::Context;
+use axum::{
+    http::{Method, StatusCode}, response::IntoResponse, routing::{get, get_service}, Router
+};
 use elements_core::{app_start_time, asset_cache, dtime, no_sync, remove_at_time, time};
 use elements_ecs::{components, EntityData, SystemGroup, World, WorldStreamCompEvent};
 use elements_network::{
@@ -9,8 +14,9 @@ use elements_network::{
 use elements_object::ObjectFromUrl;
 use elements_rpc::RpcRegistry;
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKeyExt}, asset_url::AbsAssetUrl
+    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, ServerBaseUrlKey}
 };
+use tower_http::{cors::CorsLayer, services::ServeDir};
 
 use crate::{scripting, Cli, Commands};
 
@@ -74,16 +80,44 @@ fn create_server_resources(assets: AssetCache, project_path: PathBuf) -> EntityD
     server_resources
 }
 
+pub const HTTP_INTERFACE_PORT: u16 = 8999;
+pub const QUIC_INTERFACE_PORT: u16 = 9000;
+
+fn start_http_interface(runtime: &tokio::runtime::Runtime, project_path: &Path) {
+    let router = Router::new()
+        .route("/ping", get(|| async move { "ok" }))
+        .nest("/assets", get_service(ServeDir::new(project_path.join("target"))).handle_error(handle_error))
+        .layer(CorsLayer::new().allow_origin(tower_http::cors::Any).allow_methods(vec![Method::GET]).allow_headers(tower_http::cors::Any));
+
+    runtime.spawn(async move {
+        let addr = SocketAddr::from(([0, 0, 0, 0], HTTP_INTERFACE_PORT));
+        axum::Server::bind(&addr).serve(router.into_make_service()).await.unwrap();
+    });
+}
+
+async fn handle_error(_err: std::io::Error) -> impl IntoResponse {
+    (StatusCode::INTERNAL_SERVER_ERROR, "Something went wrong...")
+}
+
 pub(crate) fn start_server(runtime: &tokio::runtime::Runtime, assets: AssetCache, cli: Cli, project_path: PathBuf) -> u16 {
     log::info!("Creating server");
     let server = runtime.block_on(async move {
-        GameServer::new_with_port_in_range(9000..(9000 + 10)).await.context("failed to create game server with port in range").unwrap()
+        GameServer::new_with_port_in_range(QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10))
+            .await
+            .context("failed to create game server with port in range")
+            .unwrap()
     });
     let port = server.port;
     log::info!("Server created on port {port}");
 
     init_components();
     scripting::server::init_all_components();
+    ServerBaseUrlKey.insert(
+        &assets,
+        AbsAssetUrl::parse(format!("http://{}:{HTTP_INTERFACE_PORT}/assets/", cli.public_host.unwrap_or("localhost".to_string()))).unwrap(),
+    );
+
+    start_http_interface(runtime, &project_path);
 
     runtime.spawn(async move {
         let mut server_world = World::new_with_config("server", 1, true);

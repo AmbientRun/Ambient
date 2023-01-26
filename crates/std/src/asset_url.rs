@@ -16,6 +16,10 @@ use crate::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, download_asset::{download, AssetsCacheDir}, Cb
 };
 
+#[derive(Debug, Clone)]
+pub struct ServerBaseUrlKey;
+impl SyncAssetKey<AbsAssetUrl> for ServerBaseUrlKey {}
+
 /// This is a thin wrapper around Url, which is guaranteed to always
 /// be an absolute url (including when pointing to a local file).
 ///
