@@ -45,11 +45,7 @@ pub struct LoadingMaterialKey {
     pub scale: f32,
 }
 
-impl SyncAssetKey<Arc<RendererShader>> for LoadingMaterialKey {
-    fn load(&self, _assets: AssetCache) -> Arc<RendererShader> {
-        panic!("This resource doesn't implement the load method")
-    }
-}
+impl SyncAssetKey<Arc<RendererShader>> for LoadingMaterialKey {}
 
 #[derive(Debug)]
 #[allow(dead_code)]

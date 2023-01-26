@@ -10,7 +10,7 @@ use elements_network::client::GameRpcArgs;
 use elements_physics::collider::collider;
 use elements_rpc::RpcRegistry;
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, asset_url::AbsAssetUrl, download_asset::{AssetError, BytesFromUrl}, unwrap_log_err
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetUrl, ServerBaseUrlKey}, download_asset::{AssetError, BytesFromUrl}, unwrap_log_err
 };
 use glam::{Quat, Vec3};
 use serde::{Deserialize, Serialize};
@@ -49,10 +49,14 @@ impl SpawnConfig {
     }
 }
 
+fn resolve_object_url(world: &World, url: &str) -> anyhow::Result<ObjectFromUrl> {
+    Ok(ObjectFromUrl(AssetUrl::parse(url)?.resolve(&ServerBaseUrlKey.get(world.resource(asset_cache())))?))
+}
+
 /// This method assumes the object has already been loaded into the asset cache;
 /// Use Object2FromUrl(url).get(&assets).await or rpc_load_object(url)
 pub fn spawn_preloaded_by_url(world: &mut World, object_url: String, config: SpawnConfig) -> anyhow::Result<Vec<EntityId>> {
-    if let Some(Ok(es)) = ObjectFromUrl(AbsAssetUrl::parse(&object_url)?).peek(world.resource(asset_cache())) {
+    if let Some(Ok(es)) = resolve_object_url(world, &object_url)?.peek(world.resource(asset_cache())) {
         Ok(spawn(world, &es, config))
     } else {
         Err(anyhow::anyhow!("Object url {} has not been pre-loaded", object_url))
@@ -60,7 +64,7 @@ pub fn spawn_preloaded_by_url(world: &mut World, object_url: String, config: Spa
 }
 pub async fn spawn_by_url(world: &World, object_url: String, config: SpawnConfig) -> anyhow::Result<Vec<EntityId>> {
     let async_run = world.resource(async_run()).clone();
-    let es = ObjectFromUrl(AbsAssetUrl::parse(&object_url)?).get(world.resource(asset_cache())).await?;
+    let es = resolve_object_url(world, &object_url)?.get(world.resource(asset_cache())).await?;
     let (send, recv) = oneshot::channel();
     async_run.run(move |world| {
         send.send(spawn(world, &es, config)).ok();
@@ -72,11 +76,12 @@ pub fn fire_spawn_by_url(
     object_url: String,
     config: SpawnConfig,
     cb: Option<Box<dyn FnOnce(&mut World, anyhow::Result<Vec<EntityId>>) + Sync + Send>>,
-) {
+) -> anyhow::Result<()> {
     let async_run = world.resource(async_run()).clone();
     let assets = world.resource(asset_cache()).clone();
+    let obj_url = resolve_object_url(world, &object_url)?;
     world.resource(runtime()).spawn(async move {
-        let obj = ObjectFromUrl(unwrap_log_err!(AbsAssetUrl::parse(&object_url))).get(&assets).await;
+        let obj = obj_url.get(&assets).await;
         match obj {
             Ok(obj) => {
                 async_run.run(move |world| {
@@ -95,6 +100,7 @@ pub fn fire_spawn_by_url(
             }
         }
     });
+    Ok(())
 }
 fn spawn(world: &mut World, object: &World, config: SpawnConfig) -> Vec<EntityId> {
     let ids = object.spawn_into_world(world, Some(config.components));

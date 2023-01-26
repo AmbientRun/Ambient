@@ -428,7 +428,7 @@ impl std::fmt::Debug for AssetCache {
 
 pub trait SyncAssetKey<T: Clone + Sync + Send + 'static>: Sync + Send + std::fmt::Debug {
     fn load(&self, _assets: AssetCache) -> T {
-        panic!("This resource doesn't implement the load method")
+        panic!("{} resource doesn't implement the load method", std::any::type_name::<T>())
     }
 }
 pub trait SyncAssetKeyExt<T: Clone + Sync + Send + 'static>: SyncAssetKey<T> {
