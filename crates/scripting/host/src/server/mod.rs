@@ -39,7 +39,7 @@ use crate::shared::{
 };
 
 pub mod bindings;
-pub mod implementation;
+pub(crate) mod implementation;
 
 pub const PARAMETER_CHANGE_DEBOUNCE_SECONDS: u64 = 2;
 pub const MINIMUM_RUST_VERSION: (u32, u32, u32) = (1, 65, 0);

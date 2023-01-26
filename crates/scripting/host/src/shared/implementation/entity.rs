@@ -100,16 +100,3 @@ pub fn in_area(world: &mut World, centre: Vec3, radius: f32) -> anyhow::Result<V
         .filter_map(|(id, (pos,))| ((*pos - centre).length() < radius).then_some(id))
         .collect())
 }
-
-pub fn for_each_entity_in_radius(
-    world: &mut World,
-    position: Vec3,
-    radius: f32,
-    callback: impl Fn(EntityId) -> anyhow::Result<()>,
-) -> anyhow::Result<()> {
-    let entities = in_area(world, position, radius)?;
-    for id in entities {
-        callback(id)?;
-    }
-    Ok(())
-}

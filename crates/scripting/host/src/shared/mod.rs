@@ -1,8 +1,8 @@
 pub mod dependencies;
-pub mod implementation;
+pub(crate) mod implementation;
 pub mod util;
 
-pub mod bindings;
+pub(crate) mod bindings;
 pub mod conversion;
 pub mod guest_conversion;
 pub mod host_guest_state;
