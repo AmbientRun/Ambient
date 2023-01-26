@@ -5454,8 +5454,23 @@ dependencies = [
  "log",
  "parking_lot",
  "serde",
+ "tilt_runtime_scripting_host",
  "tokio",
  "toml",
+ "walkdir",
+]
+
+[[package]]
+name = "tilt_runtime_scripting_host"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "elements_ecs",
+ "elements_network",
+ "elements_scripting_host",
+ "elements_std",
+ "log",
+ "parking_lot",
  "walkdir",
 ]
 

@@ -2,7 +2,7 @@ use std::{collections::HashMap, path::PathBuf, sync::Arc, time::SystemTime};
 
 use anyhow::Context;
 use elements_core::{app_start_time, asset_cache, dtime, no_sync, remove_at_time, time};
-use elements_ecs::{components, EntityData, SystemGroup, World, WorldStreamCompEvent};
+use elements_ecs::{EntityData, SystemGroup, World, WorldStreamCompEvent};
 use elements_network::{
     bi_stream_handlers, client::GameRpcArgs, datagram_handlers, server::{ForkingEvent, GameServer, ShutdownEvent}
 };
@@ -11,12 +11,9 @@ use elements_rpc::RpcRegistry;
 use elements_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt}, asset_url::AbsAssetUrl
 };
+use tilt_runtime_scripting_host as scripting;
 
-use crate::{player, scripting, Cli, Commands};
-
-components!("app", {
-    project_path: PathBuf,
-});
+use crate::{player, Cli, Commands};
 
 fn server_systems() -> SystemGroup {
     SystemGroup::new(
@@ -54,7 +51,7 @@ pub fn create_rpc_registry() -> RpcRegistry<GameRpcArgs> {
     reg
 }
 
-fn create_server_resources(assets: AssetCache, project_path: PathBuf) -> EntityData {
+fn create_server_resources(assets: AssetCache) -> EntityData {
     let mut server_resources = EntityData::new().set(asset_cache(), assets).set(no_sync(), ());
 
     server_resources.append_self(elements_core::async_ecs::async_ecs_resources());
@@ -63,7 +60,6 @@ fn create_server_resources(assets: AssetCache, project_path: PathBuf) -> EntityD
     server_resources.set_self(time(), now);
     server_resources.set_self(app_start_time(), now);
     server_resources.set_self(dtime(), 1. / 60.);
-    server_resources.set_self(self::project_path(), project_path);
 
     let mut handlers = HashMap::new();
     elements_network::register_rpc_bi_stream_handler(&mut handlers, create_rpc_registry());
@@ -84,16 +80,15 @@ pub(crate) fn start_server(runtime: &tokio::runtime::Runtime, assets: AssetCache
     let port = server.port;
     log::info!("Server created on port {port}");
 
-    init_components();
     scripting::server::init_all_components();
 
     runtime.spawn(async move {
         let mut server_world = World::new_with_config("server", 1, true);
         server_world.init_shape_change_tracking();
 
-        server_world.add_components(server_world.resource_entity(), create_server_resources(assets.clone(), project_path.clone())).unwrap();
+        server_world.add_components(server_world.resource_entity(), create_server_resources(assets.clone())).unwrap();
 
-        scripting::server::initialize(&mut server_world).await.unwrap();
+        scripting::server::initialize(&mut server_world, project_path.clone()).await.unwrap();
 
         if let Commands::View { asset_path, .. } = cli.command.clone() {
             let asset_path = AbsAssetUrl::from_file_path(project_path.join("target").join(asset_path).join("objects/main.json"));

@@ -17,7 +17,6 @@ use player::PlayerRawInputHandler;
 pub mod components;
 mod new_project;
 mod player;
-pub mod scripting;
 mod server;
 
 #[derive(Parser, Clone)]

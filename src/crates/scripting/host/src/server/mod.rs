@@ -15,8 +15,6 @@ use elements_scripting_host::{
 };
 use parking_lot::RwLock;
 
-use crate::server::project_path;
-
 pub type ScriptModuleServerState =
     ScriptModuleState<Bindings, WasmServerContext, BaseHostGuestState>;
 
@@ -54,7 +52,7 @@ pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
     elements_scripting_host::server::on_shutdown_systems(script_module_state())
 }
 
-pub async fn initialize(world: &mut World) -> anyhow::Result<()> {
+pub async fn initialize(world: &mut World, project_path: PathBuf) -> anyhow::Result<()> {
     let rust_path = elements_std::path::normalize(&std::env::current_dir()?.join("rust"));
 
     let messenger = Arc::new(
@@ -75,7 +73,6 @@ pub async fn initialize(world: &mut World) -> anyhow::Result<()> {
         },
     );
 
-    let project_path = world.resource(project_path()).clone();
     elements_scripting_host::server::initialize(
         world,
         messenger,
