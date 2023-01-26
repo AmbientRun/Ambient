@@ -47,8 +47,8 @@ target = "wasm32-wasi"
 name = "main"
 edition = "2021"
 version = "0.1.0"
-[dependencies.tilt_base_scripting_interface]
-path = "../../interfaces/tilt_base_scripting_interface"
+[dependencies.tilt_runtime_scripting_interface]
+path = "../../interfaces/tilt_runtime_scripting_interface"
 features = []
 
 [lib]
@@ -61,7 +61,7 @@ required-features = []
 
     std::fs::write(
         scripts_main_src.join("lib.rs"),
-        r#"use tilt_base_scripting_interface::*;
+        r#"use tilt_runtime_scripting_interface::*;
 
 pub mod components;
 pub mod params;

@@ -3,20 +3,28 @@ use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use elements_ecs::{components, EntityId, SystemGroup, World};
 use elements_network::server::{ForkingEvent, ShutdownEvent};
 use elements_scripting_host::{
-    server::bindings::{Bindings, WasmServerContext},
+    server::bindings::{
+        Bindings as ElementsBindings, WasmServerContext as ElementsWasmServerContext,
+    },
     shared::{
-        host_guest_state::BaseHostGuestState,
-        interface::{get_scripting_interfaces, SCRIPTING_INTERFACE_NAME},
-        spawn_script,
-        util::get_module_name,
-        File, MessageType, ScriptModuleState,
+        host_guest_state::BaseHostGuestState, spawn_script, util::get_module_name, BaseWasmContext,
+        File, MessageType, ScriptModuleState, WasmContext,
     },
     Linker, WasiCtx,
 };
 use parking_lot::RwLock;
 
+use self::{
+    bindings::Bindings,
+    interface::{get_scripting_interfaces, SCRIPTING_INTERFACE_NAME},
+};
+
+mod bindings;
+mod implementation;
+mod interface;
+
 pub type ScriptModuleServerState =
-    ScriptModuleState<Bindings, WasmServerContext, BaseHostGuestState>;
+    ScriptModuleState<ElementsBindings, WasmServerContext, BaseHostGuestState>;
 
 components!("scripting::server", {
     // component
@@ -25,6 +33,29 @@ components!("scripting::server", {
     make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<RwLock<BaseHostGuestState>>) -> WasmServerContext + Send + Sync>,
     add_to_linker: Arc<dyn Fn(&mut Linker<WasmServerContext>) -> anyhow::Result<()> + Send + Sync>,
 });
+
+pub struct WasmServerContext {
+    pub elements_context: ElementsWasmServerContext,
+    pub dims_bindings: Bindings,
+}
+impl WasmServerContext {
+    pub fn new(wasi: WasiCtx, shared_state: Arc<RwLock<BaseHostGuestState>>) -> Self {
+        Self {
+            elements_context: ElementsWasmServerContext::new(wasi, shared_state.clone()),
+            dims_bindings: Bindings::new(shared_state),
+        }
+    }
+
+    pub fn link(linker: &mut Linker<WasmServerContext>) -> anyhow::Result<()> {
+        ElementsWasmServerContext::link(linker, |cx| &mut cx.elements_context)?;
+        interface::host::add_to_linker(linker, |cx| &mut cx.dims_bindings)
+    }
+}
+impl WasmContext<ElementsBindings> for WasmServerContext {
+    fn base_wasm_context_mut(&mut self) -> &mut BaseWasmContext {
+        self.elements_context.base_wasm_context_mut()
+    }
+}
 
 pub fn init_all_components() {
     elements_scripting_host::server::init_components();
@@ -89,7 +120,7 @@ pub async fn initialize(world: &mut World, project_path: PathBuf) -> anyhow::Res
         ),
         (
             add_to_linker(),
-            Arc::new(|linker| WasmServerContext::link(linker, |c| c)),
+            Arc::new(|linker| WasmServerContext::link(linker)),
         ),
     )
     .await?;

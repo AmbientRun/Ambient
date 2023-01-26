@@ -54,10 +54,9 @@ toml.workspace = true
 [dev-dependencies]
 glam.workspace = true
 
-
 [workspace]
 resolver = "2"
-exclude = ["crates/scripting", "src/crates/scripting"]
+exclude = ["crates/scripting", "src/crates/scripting", "src/crates/scripting/guest"]
 members = [
     "crates/*",
     "crates/scripting/host_build",
