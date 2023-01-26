@@ -95,7 +95,8 @@ impl sif::Host for Bindings {
             position.from_bindgen(),
             rotation.from_bindgen(),
             scale.from_bindgen(),
-        );
+        )
+        .unwrap();
         if !persistent {
             self.shared_state
                 .write()

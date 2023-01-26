@@ -16,7 +16,7 @@ pub fn spawn_template(
     position: Vec3,
     rotation: Option<Quat>,
     scale: Option<Vec3>,
-) -> EntityUid {
+) -> anyhow::Result<EntityUid> {
     let uid = MultiEntityUID::new();
     fire_spawn_by_url(
         world,
@@ -28,9 +28,9 @@ pub fn spawn_template(
             scale.unwrap_or(Vec3::ONE),
         ),
         None,
-    );
+    )?;
     // TODO(fred): This will only return the first entity spawned. Need async spawn to return all
-    uid.get_uid(0)
+    Ok(uid.get_uid(0))
 }
 
 pub fn despawn(world: &mut World, entity: EntityId) -> Option<EntityUid> {
