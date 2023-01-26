@@ -4,10 +4,6 @@ use crate::{host, Components};
 pub const GAME_START: &str = "core/game_start";
 /// Triggered each frame
 pub const FRAME: &str = "core/frame";
-/// Triggered when a player joins. Components will contain the `id` of the player
-pub const PLAYER_JOIN: &str = "core/player_join";
-/// Triggered when a player leaves. Components will contain the `id` of the player
-pub const PLAYER_LEAVE: &str = "core/player_leave";
 /// Triggered on a collision. Components will contain the `ids` of the objects
 pub const COLLISION: &str = "core/collision";
 /// Triggered when a collider is loaded. Components will contain the `id` of the object

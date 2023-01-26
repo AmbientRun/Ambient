@@ -218,38 +218,6 @@ pub fn systems<
                     }
                 },
             ),
-            query(player()).spawned().to_system(move |q, world, qs, _| {
-                profiling::scope!("script module player join event");
-                // trigger player join event
-                for (id, _) in q.collect_cloned(world, qs) {
-                    run_all(
-                        world,
-                        state_component,
-                        &ScriptContext::new(
-                            world,
-                            "core/player_join",
-                            vec![CU::new(elements_ecs::id(), id)].into(),
-                        ),
-                    );
-                }
-            }),
-            query(player())
-                .despawned()
-                .to_system(move |q, world, qs, _| {
-                    profiling::scope!("script module player leave event");
-                    // trigger player leave event
-                    for (id, _) in q.collect_cloned(world, qs) {
-                        run_all(
-                            world,
-                            state_component,
-                            &ScriptContext::new(
-                                world,
-                                "core/player_leave",
-                                vec![CU::new(elements_ecs::id(), id)].into(),
-                            ),
-                        );
-                    }
-                }),
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("script module frame event");
                 // trigger frame event
