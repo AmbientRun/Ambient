@@ -5454,10 +5454,32 @@ dependencies = [
  "log",
  "parking_lot",
  "serde",
+ "tilt_runtime_player",
  "tilt_runtime_scripting_host",
  "tokio",
  "toml",
  "walkdir",
+]
+
+[[package]]
+name = "tilt_runtime_player"
+version = "0.0.1"
+dependencies = [
+ "bincode",
+ "byteorder",
+ "elements_audio",
+ "elements_core",
+ "elements_ecs",
+ "elements_element",
+ "elements_input",
+ "elements_network",
+ "elements_std",
+ "elements_ui",
+ "elements_world_audio",
+ "glam 0.22.0",
+ "log",
+ "parking_lot",
+ "serde",
 ]
 
 [[package]]
@@ -5469,9 +5491,13 @@ dependencies = [
  "elements_network",
  "elements_scripting_host",
  "elements_std",
+ "glam 0.22.0",
  "log",
  "parking_lot",
+ "serde_json",
+ "tilt_scripting_host_build",
  "walkdir",
+ "wit-bindgen-host-wasmtime-rust",
 ]
 
 [[package]]

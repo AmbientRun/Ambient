@@ -12,12 +12,13 @@ use elements_network::{
 use elements_renderer_debugger::RendererDebugger;
 use elements_std::{asset_cache::AssetCache, Cb};
 use elements_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
-use player::PlayerRawInputHandler;
 
 pub mod components;
 mod new_project;
-mod player;
 mod server;
+
+use player::PlayerRawInputHandler;
+use tilt_runtime_player as player;
 
 #[derive(Parser, Clone)]
 #[command(author, version, about, long_about = None)]

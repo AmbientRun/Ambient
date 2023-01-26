@@ -35,6 +35,7 @@ elements_scripting_host = { path = "crates/scripting/host" }
 elements_world_audio = { path = "crates/world_audio" }
 
 tilt_runtime_scripting_host = { path = "src/crates/scripting/host" }
+tilt_runtime_player = { path = "src/crates/player" }
 
 bincode.workspace = true
 byteorder.workspace = true
@@ -56,8 +57,15 @@ glam.workspace = true
 
 [workspace]
 resolver = "2"
-exclude = ["crates/scripting", "src/crates/scripting/guest"]
-members = ["crates/*", "crates/scripting/host_build", "crates/scripting/host", "libs/*", "src/crates/scripting/host"]
+exclude = ["crates/scripting", "src/crates/scripting"]
+members = [
+    "crates/*",
+    "crates/scripting/host_build",
+    "crates/scripting/host",
+    "libs/*",
+    "src/crates/*",
+    "src/crates/scripting/host",
+]
 
 [workspace.package]
 version = "0.0.1"
