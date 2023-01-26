@@ -321,15 +321,17 @@ pub fn registry_systems() -> SystemGroup {
 #[cfg(test)]
 mod test {
 
-    use elements_ecs::components;
+    use elements_ecs::{components, Networked, Store};
 
     use super::*;
 
     #[test]
     fn registry() {
         components!("intent", {
-           intent_add: f32,
-           intent_add_revert: f32,
+            @[Networked, Store]
+            intent_add: f32,
+            @[Networked, Store]
+            intent_add_revert: f32,
         });
 
         init_components();
