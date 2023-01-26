@@ -98,6 +98,11 @@ name = "uid"
 description = ""
 type = "EntityUid"
 
+["core::game_objects::player_camera"]
+name = "Player Camera"
+description = "No description provided"
+type = "Empty"
+
 ["core::model::model_animatable"]
 name = "Model Animatable"
 description = "No description provided"
