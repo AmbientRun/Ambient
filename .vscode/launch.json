@@ -19,9 +19,9 @@
                 "DIMS_DISABLE_TIMEOUT": "true"
             },
             "args": [
-                "--project-path=examples/hello_world",
+                "--project-path=examples/asset_loading",
                 "view",
-                "assets/Cube.glb"
+                "assets/models/crate.glb"
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [
