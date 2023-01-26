@@ -25,6 +25,8 @@ pub mod entity;
 pub mod event;
 /// Physics-related functionality, including applying forces, changing physical properties, and more.
 pub mod physics;
+/// Player-related functionality.
+pub mod player;
 
 mod global;
 pub use global::*;
