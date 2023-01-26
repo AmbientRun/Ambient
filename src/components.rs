@@ -11,7 +11,7 @@ pub(crate) fn init() -> anyhow::Result<()> {
     elements_decals::init_components();
     elements_world_audio::init_components();
 
-    crate::player::init_components();
+    crate::player::init_all_components();
 
     load_from_toml(include_str!("components.toml"), true)?;
 

@@ -12,7 +12,7 @@ use elements_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt}, asset_url::AbsAssetUrl
 };
 
-use crate::{scripting, Cli, Commands};
+use crate::{player, scripting, Cli, Commands};
 
 components!("app", {
     project_path: PathBuf,
@@ -26,6 +26,7 @@ fn server_systems() -> SystemGroup {
             Box::new(elements_core::transform::TransformSystem::new()),
             elements_core::remove_at_time_system(),
             Box::new(scripting::server::systems()),
+            Box::new(player::server_systems_final()),
         ],
     )
 }
@@ -68,7 +69,8 @@ fn create_server_resources(assets: AssetCache, project_path: PathBuf) -> EntityD
     elements_network::register_rpc_bi_stream_handler(&mut handlers, create_rpc_registry());
     server_resources.set_self(bi_stream_handlers(), handlers);
 
-    let handlers = HashMap::new();
+    let mut handlers = HashMap::new();
+    player::register_datagram_handler(&mut handlers);
     server_resources.set_self(datagram_handlers(), handlers);
 
     server_resources

@@ -12,6 +12,7 @@ use elements_network::{
 use elements_renderer_debugger::RendererDebugger;
 use elements_std::{asset_cache::AssetCache, Cb};
 use elements_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
+use player::PlayerRawInputHandler;
 
 pub mod components;
 mod new_project;
@@ -123,6 +124,7 @@ fn MainApp(world: &mut World, hooks: &mut Hooks, server_addr: SocketAddr, user_i
 
     FocusRoot::el([
         UICamera.el().set(active_camera(), 0.),
+        PlayerRawInputHandler.el(),
         WindowSized::el([GameClientView {
             server_addr,
             user_id,

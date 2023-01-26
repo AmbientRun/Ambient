@@ -5418,6 +5418,8 @@ name = "tilt"
 version = "0.0.1"
 dependencies = [
  "anyhow",
+ "bincode",
+ "byteorder",
  "clap 4.0.32",
  "elements_animation",
  "elements_app",
@@ -6716,6 +6718,7 @@ dependencies = [
  "raw-window-handle 0.4.3",
  "raw-window-handle 0.5.0",
  "sctk-adwaita",
+ "serde",
  "smithay-client-toolkit",
  "wasm-bindgen",
  "wayland-client",

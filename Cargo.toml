@@ -33,6 +33,8 @@ elements_decals = { path = "crates/decals" }
 elements_renderer_debugger = { path = "crates/renderer_debugger" }
 elements_scripting_host = { path = "crates/scripting/host" }
 elements_world_audio = { path = "crates/world_audio" }
+bincode.workspace = true
+byteorder.workspace = true
 clap.workspace = true
 tokio.workspace = true
 futures.workspace = true
@@ -63,7 +65,7 @@ profiling = { git = "https://github.com/PlayDims/profiling", features = [
 ] }
 tracing = "0.1.35"
 wgpu = "0.14.2"
-winit = "0.27.5"
+winit = { version = "0.27.5", features = ["serde"] }
 wgpu-subscriber = "0.1.0"
 futures = { version = "0.3", default-features = false, features = ["std"] }
 tokio = { version = "1.20", features = ["full"] }
