@@ -39,7 +39,7 @@ impl ArchComponent {
         }
     }
 
-    fn on_write(&self, id: EntityId, index: usize, frame: u64) {
+    pub(crate) fn on_write(&self, id: EntityId, index: usize, frame: u64) {
         self.changes.borrow_mut().add_event(id);
         // These do not depend on self ordering
         self.max_content_version.0.store(frame, Ordering::Relaxed);
@@ -216,9 +216,25 @@ impl Archetype {
         }
     }
 
-    pub fn get_component_buffer_untyped_mut(&mut self, component: ComponentDesc) -> Option<&mut dyn IComponentBuffer> {
+    pub fn replace_with_entry(
+        &mut self,
+        id: EntityId,
+        index: usize,
+        entry: ComponentEntry,
+        version: u64,
+    ) -> Result<ComponentEntry, ECSError> {
+        match self.get_arch_component_mut(entry.desc()) {
+            Some(d) => {
+                d.on_write(id, index, version);
+                Ok(d.data.0.get_mut().set(index, entry))
+            }
+            None => Err(ECSError::EntityDoesntHaveComponent { component_index: entry.desc().index() as usize, name: entry.name() }),
+        }
+    }
+
+    fn get_arch_component_mut(&mut self, component: ComponentDesc) -> Option<&mut ArchComponent> {
         if let Some(component) = self.components.get_mut(component.index() as _) {
-            Some(&mut **component.data.0.get_mut())
+            Some(&mut *component)
         } else {
             None
         }

@@ -243,13 +243,9 @@ impl World {
 
     pub fn set_entry(&mut self, entity_id: EntityId, entry: ComponentEntry) -> Result<ComponentEntry, ECSError> {
         if let Some(loc) = self.locs.get(entity_id) {
+            let version = self.inc_version();
             let arch = self.archetypes.get_mut(loc.archetype).expect("Archetype doesn't exist");
-            match arch.get_component_buffer_untyped_mut(entry.desc()) {
-                Some(d) => Ok(d.set(loc.index, entry)),
-                None => {
-                    Err(ECSError::EntityDoesntHaveComponent { component_index: entry.desc().index() as usize, name: entry.name().into() })
-                }
-            }
+            arch.replace_with_entry(entity_id, loc.index, entry, version)
         } else {
             Err(ECSError::NoSuchEntity { entity_id })
         }
@@ -277,10 +273,7 @@ impl World {
             let arch = self.archetypes.get(loc.archetype).expect("Archetype doesn't exist");
             match arch.get_component_mut(loc.index, entity_id, component, self.version()) {
                 Some(d) => Ok(d),
-                None => Err(ECSError::EntityDoesntHaveComponent {
-                    component_index: component.desc().index() as _,
-                    name: component.name().into(),
-                }),
+                None => Err(ECSError::EntityDoesntHaveComponent { component_index: component.desc().index() as _, name: component.name() }),
             }
         } else {
             Err(ECSError::NoSuchEntity { entity_id })

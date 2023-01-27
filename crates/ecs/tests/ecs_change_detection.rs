@@ -2,7 +2,9 @@ use std::sync::{
     atomic::{AtomicU32, Ordering}, Arc
 };
 
-use elements_ecs::{components, query, query_mut, ArchetypeFilter, EntityData, EntityId, FrameEvent, Query, QueryState, World};
+use elements_ecs::{
+    components, query, query_mut, ArchetypeFilter, ComponentEntry, EntityData, EntityId, FrameEvent, Query, QueryState, World
+};
 use itertools::Itertools;
 
 components!("test", {
@@ -41,6 +43,28 @@ fn change_query() {
     assert_eq!(&[] as &[EntityId], &q.iter(&world, Some(&mut state)).map(|x| x.id()).collect_vec()[..]);
 }
 
+#[test]
+fn change_query_dyn() {
+    init();
+    let mut world = World::new("change_query");
+    let e_a = world.spawn(EntityData::new().set(a(), 1.));
+    let q = Query::new(ArchetypeFilter::new().incl(a())).when_changed(a());
+    let mut state = QueryState::new();
+
+    assert_eq!(&[e_a], &q.iter(&world, Some(&mut state)).map(|x| x.id()).collect_vec()[..]);
+    assert_eq!(&[] as &[EntityId], &q.iter(&world, Some(&mut state)).map(|x| x.id()).collect_vec()[..]);
+
+    world.set_entry(e_a, ComponentEntry::new(a(), 2.0)).unwrap();
+    world.set_entry(e_a, ComponentEntry::new(a(), 2.0)).unwrap();
+    assert_eq!(&[e_a], &q.iter(&world, Some(&mut state)).map(|x| x.id()).collect_vec()[..]);
+
+    let e_b = world.spawn(EntityData::new().set(a(), 1.));
+    assert_eq!(&[e_b], &q.iter(&world, Some(&mut state)).map(|x| x.id()).collect_vec()[..]);
+
+    world.set_entry(e_a, ComponentEntry::new(a(), 2.0)).unwrap();
+    world.despawn(e_a);
+    assert_eq!(&[] as &[EntityId], &q.iter(&world, Some(&mut state)).map(|x| x.id()).collect_vec()[..]);
+}
 #[test]
 fn change_system() {
     init();

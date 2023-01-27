@@ -18,7 +18,7 @@ components!("rendering", {
     local_bounding_aabb: AABB,
     @[Debuggable, Networked, Store]
     world_bounding_aabb: AABB,
-    @[Debuggable, Networked, Store]
+    @[Debuggable]
     world_bounding_sphere: Sphere,
 });
 gpu_components! {

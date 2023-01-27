@@ -24,9 +24,9 @@ components!("transform", {
     @[Debuggable, Networked, Store]
     lookat_up: Vec3,
 
-    @[Debuggable]
+    @[Debuggable, Networked, Store]
     local_to_world: Mat4,
-    @[Debuggable]
+    @[Debuggable, Networked, Store]
     inv_local_to_world: Mat4,
 
     @[Debuggable, Networked, Store]

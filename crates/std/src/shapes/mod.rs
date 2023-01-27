@@ -114,7 +114,7 @@ impl From<(Vec3, Vec3)> for Cuboid {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, Default, PartialEq, bytemuck::Pod, bytemuck::Zeroable, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f32,
