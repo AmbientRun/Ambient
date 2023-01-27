@@ -3,9 +3,17 @@
 [![MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/TiltOrg/Tilt#license)
 [![Discord](https://img.shields.io/discord/894505972289134632)](https://discord.gg/gYSM4tHZ)
 
-Tilt Runtime provides a programming environment for building high performance games and 3d applications.
+Tilt is a WebAssembly runtime for high-performance online games and 3d applications.
 
-Our goal is to provide a free and Open source game development API/runtime which can be accessed from any language, which can be run on as many platforms as possible and which is multiplayer native. Since Tilt is powered by WASM, modules built on Tilt are always safe to run, both on your own game servers and on your clients machines.
+Features:
+- *Seamless networking*: Tilt is both your server and client. You just need to build your server and/or client side logic, the runtime handles synchronization of data for you.
+- *Isolation*: Packages you build for Tilt are executed in isolation, which means that even if something crashes, it won’t take down your entire program. It also means that you can run untrusted code safely.
+- *Data oriented design*: The core data model of Tilt is an ECS which each “process” can manipulate.
+- *Multi-lingual*: You will be able to build Tilt modules in any language which compiles to WebAssembly. Rust is the only supported language yet, but we’re working on expanding to other languages.
+- *Single executable*: The Tilt Runtime is a single executable which runs on Windows, Mac and Linux. It can act as a server, or as a client, in which case it renders your game world for you.
+- *Interoperability*: We’ve designed a way for you to define “component schemas”, which makes it possible to share data between Tilt modules, even if they don’t explicitly know about each other.
+- *Asset pipeline & streaming*: The runtime supports building and loading multiple file formats, such as .glb and .fbx. The assets are always streamed over the network.
+- *Powerful renderer*: The Tilt renderer is “gpu driven”, with culling and lodding happening on the gpu side. It’s PBR by default, supports cascading shadow maps, and instances everything that can be instanced.
 
 We're also developing https://tilt.place, which will allow you to host and distribute your Tilt projects with ease.
 
@@ -19,7 +27,7 @@ cargo install tilt
 
 See [installing](./docs/src/installing.md) for more details.
 
-## Roadmap & features
+## Roadmap
 
 ***Note; Tilt is in an alpha stage and the API will still be iterated on heavily. We're working towards a stable release.***
 
