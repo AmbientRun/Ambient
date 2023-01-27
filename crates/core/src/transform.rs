@@ -23,11 +23,12 @@ components!("transform", {
     lookat_center: Vec3,
     @[Debuggable, Networked, Store]
     lookat_up: Vec3,
-    @[Debuggable]
 
+    @[Debuggable]
     local_to_world: Mat4,
-    @[Debuggable, Networked, Store]
+    @[Debuggable]
     inv_local_to_world: Mat4,
+
     @[Debuggable, Networked, Store]
     local_to_parent: Mat4,
     @[Debuggable, Networked, Store]
