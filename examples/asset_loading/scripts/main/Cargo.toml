@@ -2,8 +2,8 @@
 name = "main"
 edition = "2021"
 version = "0.1.0"
-[dependencies.elements_scripting_interface]
-path = "../../interfaces/elements_scripting_interface"
+[dependencies.tilt_runtime_scripting_interface]
+path = "../../interfaces/tilt_runtime_scripting_interface"
 features = []
 
 [lib]
