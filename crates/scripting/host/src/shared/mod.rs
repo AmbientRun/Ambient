@@ -36,7 +36,6 @@ use wasmtime::Linker;
 components!("scripting::shared", {
     @[Networked, Store]
     script_module: ScriptModule,
-    @[Networked, Store]
     script_module_bytecode: ScriptModuleBytecode,
     @[Networked, Store]
     script_module_compiled: (),

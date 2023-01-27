@@ -24,6 +24,7 @@ pub struct EditorAttrs {
     pub round: Lit,
     pub editor: Option<Lit>,
 }
+
 impl EditorAttrs {
     pub fn parse(attrs: &Vec<Attribute>) -> Self {
         let mut res = Self {
