@@ -304,9 +304,9 @@ impl Display for WorldChange {
         match self {
             WorldChange::Spawn(id, data) => write!(f, "spawn({}, {})", id.unwrap_or(EntityId::null()), data.len()),
             WorldChange::Despawn(id) => write!(f, "despawn({id})"),
-            WorldChange::AddComponents(id, _) => write!(f, "add_components({id})"),
+            WorldChange::AddComponents(id, data) => write!(f, "add_components({id}, {data:?})"),
             WorldChange::RemoveComponents(id, _) => write!(f, "remove_components({id})"),
-            WorldChange::Set(id, _) => write!(f, "set({id})"),
+            WorldChange::Set(id, data) => write!(f, "set({id}, {data:?})"),
         }
     }
 }
