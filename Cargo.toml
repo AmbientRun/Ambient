@@ -1,73 +1,16 @@
-[package]
-name = "tilt"
-version.workspace = true
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-elements_audio = { path = "crates/audio" }
-elements_editor_derive = { path = "crates/editor_derive" }
-elements_std = { path = "crates/std" }
-elements_ecs = { path = "crates/ecs" }
-elements_core = { path = "crates/core" }
-elements_gpu = { path = "crates/gpu" }
-elements_element = { path = "crates/element" }
-elements_meshes = { path = "crates/meshes" }
-elements_renderer = { path = "crates/renderer" }
-elements_gizmos = { path = "crates/gizmos" }
-elements_input = { path = "crates/input" }
-elements_ui = { path = "crates/ui" }
-elements_cameras = { path = "crates/cameras" }
-elements_primitives = { path = "crates/primitives" }
-elements_model = { path = "crates/model" }
-elements_model_import = { path = "crates/model_import" }
-elements_animation = { path = "crates/animation" }
-elements_app = { path = "crates/app" }
-elements_build = { path = "crates/build" }
-elements_network = { path = "crates/network" }
-elements_physics = { path = "crates/physics" }
-elements_rpc = { path = "crates/rpc" }
-elements_object = { path = "crates/object" }
-elements_decals = { path = "crates/decals" }
-elements_renderer_debugger = { path = "crates/renderer_debugger" }
-elements_scripting_host = { path = "crates/scripting/host" }
-elements_world_audio = { path = "crates/world_audio" }
-
-tilt_runtime_scripting_host = { path = "src/crates/scripting/host" }
-tilt_runtime_player = { path = "src/crates/player" }
-
-bincode.workspace = true
-byteorder.workspace = true
-clap.workspace = true
-tokio.workspace = true
-futures.workspace = true
-anyhow.workspace = true
-log.workspace = true
-env_logger.workspace = true
-glam.workspace = true
-parking_lot.workspace = true
-walkdir.workspace = true
-serde.workspace = true
-toml.workspace = true
-axum.workspace = true
-tower-http.workspace = true
-local-ip-address.workspace = true
-
-[dev-dependencies]
-glam.workspace = true
-
 [workspace]
-resolver = "2"
-exclude = ["crates/scripting", "src/crates/scripting", "src/crates/scripting/guest"]
+default-members = ["runtime"]
+exclude = ["crates/scripting", "runtime/crates/scripting/guest/rust"]
 members = [
-    "crates/*",
-    "crates/scripting/host_build",
-    "crates/scripting/host",
-    "libs/*",
-    "src/crates/*",
-    "src/crates/scripting/host",
+  "crates/*",
+  "crates/scripting/host_build",
+  "crates/scripting/host",
+  "libs/*",
+  "runtime",
+  "runtime/crates/player", # Explicitly specify member crates due to https://github.com/rust-lang/cargo/issues/6745
+  "runtime/crates/scripting/host",
 ]
+resolver = "2"
 
 [workspace.package]
 version = "0.0.1"

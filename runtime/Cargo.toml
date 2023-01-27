@@ -1,0 +1,56 @@
+[package]
+edition = "2021"
+name = "tilt_runtime"
+version.workspace = true
+
+[dependencies]
+elements_animation = {path = "../crates/animation"}
+elements_app = {path = "../crates/app"}
+elements_audio = {path = "../crates/audio"}
+elements_build = {path = "../crates/build"}
+elements_cameras = {path = "../crates/cameras"}
+elements_core = {path = "../crates/core"}
+elements_decals = {path = "../crates/decals"}
+elements_ecs = {path = "../crates/ecs"}
+elements_editor_derive = {path = "../crates/editor_derive"}
+elements_element = {path = "../crates/element"}
+elements_gizmos = {path = "../crates/gizmos"}
+elements_gpu = {path = "../crates/gpu"}
+elements_input = {path = "../crates/input"}
+elements_meshes = {path = "../crates/meshes"}
+elements_model = {path = "../crates/model"}
+elements_model_import = {path = "../crates/model_import"}
+elements_network = {path = "../crates/network"}
+elements_object = {path = "../crates/object"}
+elements_physics = {path = "../crates/physics"}
+elements_primitives = {path = "../crates/primitives"}
+elements_renderer = {path = "../crates/renderer"}
+elements_renderer_debugger = {path = "../crates/renderer_debugger"}
+elements_rpc = {path = "../crates/rpc"}
+elements_scripting_host = {path = "../crates/scripting/host"}
+elements_std = {path = "../crates/std"}
+elements_ui = {path = "../crates/ui"}
+elements_world_audio = {path = "../crates/world_audio"}
+
+tilt_runtime_player = {path = "crates/player"}
+tilt_runtime_scripting_host = {path = "crates/scripting/host"}
+
+anyhow.workspace = true
+axum.workspace = true
+bincode.workspace = true
+byteorder.workspace = true
+clap.workspace = true
+env_logger.workspace = true
+futures.workspace = true
+glam.workspace = true
+local-ip-address.workspace = true
+log.workspace = true
+parking_lot.workspace = true
+serde.workspace = true
+tokio.workspace = true
+toml.workspace = true
+tower-http.workspace = true
+walkdir.workspace = true
+
+[dev-dependencies]
+glam.workspace = true
