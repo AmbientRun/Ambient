@@ -106,7 +106,7 @@ macro_rules! make_primitive_component {
                         {
 
                             static VTABLE: &ComponentVTable<$type> = &ComponentVTable::construct_external() ;
-                            reg.register_external(path.into(), unsafe { VTABLE.erase() } , Default::default());
+                            reg.register_external(path.into(), unsafe { VTABLE.erase() }, Default::default());
 
                             reg.set_primitive_component(path.into(), ty.clone())
                         },

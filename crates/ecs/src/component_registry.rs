@@ -100,10 +100,11 @@ impl ComponentRegistry {
 
         let slot = &mut self.components[index as usize];
 
+        let mut dst = (vtable.attributes_init)(slot.desc);
+        dst.set(ComponentPath(path));
+
         if let Some(src) = attributes {
-            let mut dst = (vtable.attributes_init)(slot.desc);
             dst.append(&src);
-            dst.set(ComponentPath(path));
         }
 
         slot.desc
@@ -135,17 +136,18 @@ impl ComponentRegistry {
         let entry = &mut self.components[index as usize];
 
         let prim = PrimitiveComponent { ty: ty.clone(), desc: entry.desc };
-        entry.primitive_component_type = Some(ty.clone());
+        entry.primitive_component_type = Some(ty);
         entry.primitive_component = Some(prim.clone());
 
-        // Hydrate the store with the primitive component attributes
-        if let Some(src) = PRIMITIVE_ATTRIBUTE_REGISTRY.read().get(&ty) {
-            let mut dst = (entry.desc.vtable.attributes_init)(entry.desc);
-            log::info!("Hydrating {:?}", path);
-            dst.append(src)
-        } else {
-            log::warn!("No primitive attributes for {ty:?}");
-        }
+        // TODO: externally defined attributes
+        // // Hydrate the store with the primitive component attributes
+        // if let Some(src) = PRIMITIVE_ATTRIBUTE_REGISTRY.read().get(&ty) {
+        //     let mut dst = (entry.desc.vtable.attributes_init)(entry.desc);
+        //     log::info!("Hydrating {:?}", path);
+        //     dst.append(src)
+        // } else {
+        //     log::warn!("No primitive attributes for {ty:?}");
+        // }
 
         Some(prim)
     }
