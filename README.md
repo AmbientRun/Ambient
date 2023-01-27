@@ -3,7 +3,7 @@
 [![MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/TiltOrg/Tilt#license)
 [![Discord](https://img.shields.io/discord/894505972289134632)](https://discord.gg/gYSM4tHZ)
 
-Tilt is a WebAssembly runtime for high-performance online games and 3d applications.
+Tilt is a WebAssembly runtime for building high-performance online games and 3d applications.
 
 Features:
 - **Seamless networking**: Tilt is both your server and client. You just need to build your server and/or client side logic, the runtime handles synchronization of data for you.
