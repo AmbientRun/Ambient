@@ -176,7 +176,7 @@ impl Debug for ComponentEntry {
                 .field("value", self.as_debug())
                 .finish()
         } else {
-            self.as_debug().fmt(f)
+            f.debug_tuple("ComponentEntry").field(&self.name()).field(self.as_debug()).finish()
         }
     }
 }
