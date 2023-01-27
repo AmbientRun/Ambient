@@ -77,18 +77,16 @@ pub async fn download_and_install(
     std::fs::remove_file(rustup_init_path).context("failed to remove rustup-init")?;
 
     info!("installing wasm32-wasi");
-    let (success, message) = run_command(dirs, "rustup", ["target", "add", "wasm32-wasi"], None)
-        .context("failed to run rustup target add")?;
-    if !success {
-        anyhow::bail!("{message}");
-    }
+    handle_command_failure(
+        "add rustup target wasm32-wasi",
+        run_command(dirs, "rustup", ["target", "add", "wasm32-wasi"], None),
+    )?;
 
     info!("setting rustup default");
-    let (success, message) = run_command(dirs, "rustup", ["default", "stable"], None)
-        .context("failed to run rustup default")?;
-    if !success {
-        anyhow::bail!("{message}");
-    }
+    handle_command_failure(
+        "set rustup default",
+        run_command(dirs, "rustup", ["default", "stable"], None),
+    )?;
 
     update_rust(dirs).context("failed to update rust")?;
 
@@ -97,11 +95,10 @@ pub async fn download_and_install(
 
 pub fn update_rust(dirs: &InstallDirs) -> anyhow::Result<()> {
     info!("running rustup update");
-    let (success, message) =
-        run_command(dirs, "rustup", ["update"], None).context("failed to run rustup-update")?;
-    if !success {
-        anyhow::bail!("{message}");
-    }
+    handle_command_failure(
+        "run rustup update",
+        run_command(dirs, "rustup", ["update"], None),
+    )?;
 
     Ok(())
 }
@@ -112,7 +109,7 @@ pub fn build_module_in_workspace(
     package_name: &str,
 ) -> anyhow::Result<Vec<u8>> {
     Ok(std::fs::read(
-        parse_command_result(run_command(
+        parse_command_result_for_filenames(run_command(
             dirs,
             "cargo",
             [
@@ -126,7 +123,7 @@ pub fn build_module_in_workspace(
                 package_name,
             ],
             Some(workspace_path),
-        )?)?
+        ))?
         .into_iter()
         .find(|p| p.extension().unwrap_or_default() == "wasm")
         .context("no wasm artifact")?,
@@ -134,7 +131,7 @@ pub fn build_module_in_workspace(
 }
 
 pub fn document_module(dirs: &InstallDirs, script_path: &Path) -> anyhow::Result<PathBuf> {
-    Ok(parse_command_result(run_command(
+    Ok(parse_command_result_for_filenames(run_command(
         dirs,
         "cargo",
         [
@@ -147,7 +144,7 @@ pub fn document_module(dirs: &InstallDirs, script_path: &Path) -> anyhow::Result
             "wasm32-wasi",
         ],
         Some(script_path),
-    )?)?
+    ))?
     .into_iter()
     .find(|p| p.extension().unwrap_or_default() == "html")
     .context("no html artifact")?
@@ -157,12 +154,30 @@ pub fn document_module(dirs: &InstallDirs, script_path: &Path) -> anyhow::Result
     .to_owned())
 }
 
+pub fn get_installed_version(dirs: &InstallDirs) -> anyhow::Result<(u32, u32, u32)> {
+    let version = handle_command_failure(
+        "get version",
+        run_command(dirs, "rustc", ["--version"], None),
+    )?;
+    version
+        .split_whitespace()
+        .nth(1)
+        .context("failed to extract version component (1)")?
+        .split('-')
+        .next()
+        .context("failed to extract version component (2)")?
+        .split('.')
+        .map(|i| i.parse().unwrap_or_default())
+        .collect_tuple::<(u32, u32, u32)>()
+        .context("failed to collect version into tuple")
+}
+
 fn run_command(
     dirs: &InstallDirs,
     cmd: &str,
     args: impl IntoIterator<Item = impl AsRef<OsStr>>,
     working_directory: Option<&Path>,
-) -> anyhow::Result<(bool, String)> {
+) -> anyhow::Result<(bool, String, String)> {
     let exe_path = dirs.cargo_path.join("bin").join(exe(cmd));
 
     let mut command = Command::new(exe_path);
@@ -183,10 +198,15 @@ fn run_command(
     Ok((
         result.status.success(),
         std::str::from_utf8(&result.stdout)?.to_owned(),
+        std::str::from_utf8(&result.stderr)?.to_owned(),
     ))
 }
 
-fn parse_command_result((success, stdout): (bool, String)) -> anyhow::Result<Vec<PathBuf>> {
+fn parse_command_result_for_filenames(
+    result: anyhow::Result<(bool, String, String)>,
+) -> anyhow::Result<Vec<PathBuf>> {
+    let (success, stdout, stderr) = result?;
+
     let messages: Vec<_> = stdout
         .lines()
         .filter_map(|l| Some(serde_json::Value::from_str(l).ok()?.as_object()?.to_owned()))
@@ -211,39 +231,45 @@ fn parse_command_result((success, stdout): (bool, String)) -> anyhow::Result<Vec
             .map(|p| p.into())
             .collect())
     } else {
+        let stdout_errors = messages
+            .iter()
+            .filter(|v| v.get("reason").and_then(|v| v.as_str()) == Some("compiler-message"))
+            .map(|v| {
+                v.get("message")
+                    .and_then(|m| m.as_object())
+                    .and_then(|m| m.get("rendered"))
+                    .and_then(|r| r.as_str())
+                    .unwrap_or_default()
+            })
+            .join("");
+
         anyhow::bail!(
-            "failed to compile: {}",
-            messages
-                .iter()
-                .filter(|v| v.get("reason").and_then(|v| v.as_str()) == Some("compiler-message"))
-                .map(|v| {
-                    v.get("message")
-                        .and_then(|m| m.as_object())
-                        .and_then(|m| m.get("rendered"))
-                        .and_then(|r| r.as_str())
-                        .unwrap_or_default()
-                })
-                .join("")
-        )
+            "failed to compile, {}",
+            generate_error_report(stdout_errors, stderr)
+        );
     }
 }
 
-pub fn get_installed_version(dirs: &InstallDirs) -> anyhow::Result<(u32, u32, u32)> {
-    let (success, version) = run_command(dirs, "rustc", ["--version"], None)?;
+fn handle_command_failure(
+    task: &str,
+    result: anyhow::Result<(bool, String, String)>,
+) -> anyhow::Result<String> {
+    let (success, stdout, stderr) = result?;
     if !success {
-        anyhow::bail!("failed to get version: {version}");
+        anyhow::bail!(
+            "failed to {task}: {}",
+            generate_error_report(stdout, stderr)
+        )
     }
-    version
-        .split_whitespace()
-        .nth(1)
-        .context("failed to extract version component (1)")?
-        .split('-')
-        .next()
-        .context("failed to extract version component (2)")?
-        .split('.')
-        .map(|i| i.parse().unwrap_or_default())
-        .collect_tuple::<(u32, u32, u32)>()
-        .context("failed to collect version into tuple")
+    Ok(stdout)
+}
+
+fn generate_error_report(stdout: String, stderr: String) -> String {
+    [("stdout", stdout), ("stderr", stderr)]
+        .into_iter()
+        .filter(|(_, errors)| !errors.is_empty())
+        .map(|(name, errors)| format!("{name}: {errors}"))
+        .join(", ")
 }
 
 fn exe(app: &str) -> String {
