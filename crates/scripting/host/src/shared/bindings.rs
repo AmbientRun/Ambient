@@ -16,7 +16,7 @@ use super::{
 
 pub type ComponentsParam<'a> = Vec<(u32, sif::ComponentTypeParam<'a>)>;
 
-use elements_ecs::{PrimitiveComponent as PC, PrimitiveComponentType as PCT};
+use elements_ecs::PrimitiveComponentType as PCT;
 
 macro_rules! define_component_types {
     ($(($type:ty, $value:ident)),*) => { paste! {

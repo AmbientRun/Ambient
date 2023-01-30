@@ -157,7 +157,7 @@ impl sif::Host for Bindings {
     }
 
     fn component_get_index(&mut self, id: &str) -> Option<u32> {
-        Some(eshi::entity::get_component_index(id)?)
+        eshi::entity::get_component_index(id)
     }
 
     fn entity_get_component(

@@ -51,9 +51,7 @@ impl ElementComponent for ECSEditor {
             let entities = entities.clone();
             FlowRow::el([
                 Button::new("\u{f6bf}", {
-                    let comp = comp.clone();
                     move |world| {
-                        let comp = comp.clone();
                         let entities = entities.clone();
                         let mut diff = WorldDiff::new();
                         for id in &entities {

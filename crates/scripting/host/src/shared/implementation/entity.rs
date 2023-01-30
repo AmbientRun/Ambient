@@ -31,7 +31,7 @@ pub fn remove_component(world: &mut World, entity_id: EntityId, index: u32) -> a
 }
 
 pub fn query(world: &mut World, index: u32) -> Vec<EntityId> {
-    let desc = match with_component_registry(|r| Some(r.get_by_index(index)?)) {
+    let desc = match with_component_registry(|r| r.get_by_index(index)) {
         Some(c) => c,
         None => return vec![],
     };

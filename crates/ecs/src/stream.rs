@@ -152,8 +152,7 @@ impl WorldStreamFilter {
             .collect_vec()
     }
     fn read_entity_components(&self, world: &World, id: EntityId) -> Vec<ComponentEntry> {
-        let components = self.get_entity_components(world, id).into_iter().map(|comp| world.get_entry(id, comp).unwrap()).collect_vec();
-        components
+        self.get_entity_components(world, id).into_iter().map(|comp| world.get_entry(id, comp).unwrap()).collect_vec()
     }
 }
 impl Default for WorldStreamFilter {

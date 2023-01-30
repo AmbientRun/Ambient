@@ -161,41 +161,6 @@ impl ComponentRegistry {
         Some(self.components[index as usize].desc)
     }
 
-    // pub(crate) fn register_with_id(
-    //     &mut self,
-    //     id: &str,
-    //     component: &mut dyn IComponent,
-    //     decorating: bool,
-    //     primitive_component_type: Option<PrimitiveComponentType>,
-    //     mut primitive_component: Option<PrimitiveComponent>,
-    // ) {
-    //     todo!()
-    //     // if let Some(idx) = self.name_to_idx.get(id) {
-    //     //     if decorating {
-    //     //         component.set_index(*idx);
-
-    //     //         if let Some(primitive_component) = &mut primitive_component {
-    //     //             primitive_component.as_component_mut().set_index(*idx);
-    //     //         }
-
-    //     //         self.components[*idx].primitive_component_type = primitive_component_type;
-    //     //         self.components[*idx].primitive_component = primitive_component;
-    //     //     } else {
-    //     //         log::warn!("Duplicate components: {}", id);
-    //     //     }
-    //     //     return;
-    //     // }
-    //     // let index = self.components.len();
-    //     // component.set_index(index);
-    //     // if let Some(primitive_component) = &mut primitive_component {
-    //     //     primitive_component.as_component_mut().set_index(index);
-    //     // }
-    //     // let reg_comp = RegistryComponent { component: component.clone_boxed(), primitive_component_type, primitive_component };
-    //     // self.components.push(reg_comp.clone());
-    //     // self.name_to_idx.insert(id.to_owned(), index);
-    //     // self.idx_to_id.insert(component.get_index(), id.to_owned());
-    // }
-
     pub fn get_by_index(&self, index: u32) -> Option<ComponentDesc> {
         self.components.get(index as usize).map(|b| b.desc)
     }
@@ -216,40 +181,3 @@ impl ComponentRegistry {
         self.components.len()
     }
 }
-
-// #[macro_export]
-// macro_rules! components {
-//     ( $namespace:literal, { $( $(#[$outer:meta])* $name:ident : $ty:ty, )+ } ) => {
-//         $(
-//             $crate::paste::paste! {
-//                 #[allow(non_upper_case_globals)]
-//                 #[no_mangle]
-//                 static mut [<comp_ $name>]: $crate::Component<$ty> = $crate::Component::new_with_name(-1, stringify!($name));
-//             }
-//             $(#[$outer])*
-//             pub fn $name() -> $crate::Component<$ty> {
-//                 $crate::paste::paste! {
-//                     unsafe { [<comp_ $name>] }
-//                 }
-//             }
-//         )*
-//         /// Initialize the components for the module
-//         static COMPONENTS_INITIALIZED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
-//         pub fn init_components() {
-//             use std::sync::atomic::Ordering;
-
-//             if COMPONENTS_INITIALIZED.load(Ordering::SeqCst) {
-//                 return;
-//             }
-
-//             unsafe {
-//                 $(
-//                     $crate::paste::paste! {
-//                         $crate::ComponentRegistry::get_mut().register(concat!("core::", $namespace), stringify!($name), &mut [<comp_ $name>]);
-//                     }
-//                 )*
-//             }
-//             COMPONENTS_INITIALIZED.store(true, Ordering::SeqCst);
-//         }
-//     };
-// }

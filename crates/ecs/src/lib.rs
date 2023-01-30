@@ -290,10 +290,9 @@ impl World {
             let arch = self.archetypes.get(loc.archetype).expect("Archetype doesn't exist");
             match arch.get_component(loc.index, component) {
                 Some(d) => Ok(d),
-                None => Err(ECSError::EntityDoesntHaveComponent {
-                    component_index: component.desc().index() as usize,
-                    name: component.name().into(),
-                }),
+                None => {
+                    Err(ECSError::EntityDoesntHaveComponent { component_index: component.desc().index() as usize, name: component.name() })
+                }
             }
         } else {
             Err(ECSError::NoSuchEntity { entity_id })

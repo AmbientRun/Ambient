@@ -65,6 +65,7 @@ fn change_query_dyn() {
     world.despawn(e_a);
     assert_eq!(&[] as &[EntityId], &q.iter(&world, Some(&mut state)).map(|x| x.id()).collect_vec()[..]);
 }
+
 #[test]
 fn change_system() {
     init();
