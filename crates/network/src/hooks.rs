@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::Arc};
 
 use elements_core::runtime;
 use elements_ecs::{
-    query, ArchetypeFilter, Component, ComponentValue, ComponentsTuple, ECSError, EntityId, FrameEvent, QueryState, TypedReadQuery, World, WorldDiff
+    query, ArchetypeFilter, Component, ComponentQuery, ComponentValue, ECSError, EntityId, FrameEvent, QueryState, TypedReadQuery, World, WorldDiff
 };
 use elements_element::{Hooks, Setter};
 use elements_std::Cb;
@@ -11,7 +11,7 @@ use crate::{client::GameClient, log_network_result, persistent_resources, player
 
 pub fn use_remote_world_system<
     'a,
-    R: ComponentsTuple<'a> + Clone + 'static,
+    R: ComponentQuery<'a> + Clone + 'static,
     F: Fn(&TypedReadQuery<R>, &mut World, Option<&mut QueryState>, &FrameEvent) + Send + Sync + 'static,
 >(
     hooks: &mut Hooks,
@@ -35,7 +35,7 @@ pub fn use_remote_component<T: ComponentValue + std::fmt::Debug>(
     let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
     let component_version = hooks.use_ref_with(|| {
         let game_state = game_client.game_state.lock();
-        game_state.world.get_component_content_version(entity, &component).ok()
+        game_state.world.get_component_content_version(entity, component.index()).ok()
     });
     let (value, set_value) = hooks.use_state_with(|| {
         let game_state = game_client.game_state.lock();
@@ -44,7 +44,7 @@ pub fn use_remote_component<T: ComponentValue + std::fmt::Debug>(
     hooks.use_frame(move |_| {
         let game_state = game_client.game_state.lock();
         let mut cv = component_version.lock();
-        let version = game_state.world.get_component_content_version(entity, &component).ok();
+        let version = game_state.world.get_component_content_version(entity, component.index()).ok();
         if *cv != version {
             *cv = version;
             set_value(game_state.world.get_ref(entity, component).cloned());

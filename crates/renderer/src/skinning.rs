@@ -5,7 +5,7 @@ use std::sync::{
 use elements_core::{
     asset_cache, gpu_components, gpu_ecs::{GpuComponentFormat, GpuWorldSyncEvent, MappedComponentToGpuSystem}, transform::{inv_local_to_world, local_to_world}
 };
-use elements_ecs::{components, query, Commands, EntityId, SystemGroup};
+use elements_ecs::{components, query, Commands, EntityId, Networked, Store, SystemGroup};
 use elements_gpu::{
     gpu::{Gpu, GpuKey}, typed_buffer::TypedBuffer
 };
@@ -15,12 +15,16 @@ use itertools::Itertools;
 use parking_lot::Mutex;
 
 components!("rendering", {
+    @[Networked, Store]
     inverse_bind_matrices: Arc<Vec<glam::Mat4>>,
+    @[Networked, Store]
     joints: Vec<EntityId>,
+    @[Networked, Store]
     joint_matrices: Vec<glam::Mat4>,
 
     skin: Skin,
 
+    @[Networked, Store]
     joints_by_fbx_id: Vec<i64>,
 });
 gpu_components! {

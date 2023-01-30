@@ -1,42 +1,34 @@
 use elements_std::asset_url::ObjectRef;
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
+use once_cell::sync::Lazy;
+use parking_lot::RwLock;
 use paste::paste;
-use serde::{Deserialize, Serialize};
 
-use crate::{Component, ComponentRegistry, EntityId, EntityUid, IComponent};
+use crate::{
+    ComponentDesc, ComponentRegistry, ComponentVTable, Debuggable, EntityId, EntityUid, Networked, PrimitiveAttributeRegistry, Store
+};
+
+pub static PRIMITIVE_ATTRIBUTE_REGISTRY: Lazy<RwLock<PrimitiveAttributeRegistry>> = Lazy::new(Default::default);
 
 macro_rules! make_primitive_component {
-    ($(($value:ident, $type:ty)),*) => { paste! {
-        #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-        pub enum PrimitiveComponent {
-            $($value(Component<$type>)), *,
-            $([<Vec $value>](Component<Vec<$type>>)), *,
-            $([<Option $value>](Component<Option<$type>>)), *
-        }
-        impl PrimitiveComponent {
-            pub fn as_component(&self) -> &dyn IComponent {
-                match self {
-                  $(Self::$value(c) => c,)*
-                  $(Self::[<Vec $value>](c) => c,)*
-                  $(Self::[<Option $value>](c) => c,)*
-                }
-            }
-            pub fn as_component_mut(&mut self) -> &mut dyn IComponent {
-                match self {
-                  $(Self::$value(c) => c,)*
-                  $(Self::[<Vec $value>](c) => c,)*
-                  $(Self::[<Option $value>](c) => c,)*
-                }
-            }
+    ($(($value:ident, $type:ty, [$($attr: ty),*])),*) => { paste! {
+        #[derive(Debug,  Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+        pub struct PrimitiveComponent {
+            pub ty: PrimitiveComponentType,
+            pub desc: ComponentDesc,
         }
 
-        #[derive(Clone, Serialize, Deserialize, Debug)]
+        #[derive(Debug,  Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+        #[derive(serde::Serialize, serde::Deserialize)]
         #[serde(tag = "type")]
         pub enum PrimitiveComponentType {
             $($value), *,
+            $([< Vec $value >]), *,
+            $([< Option$value >]), *,
             Vec { variants: Box<PrimitiveComponentType> },
             Option { variants: Box<PrimitiveComponentType> },
         }
+
         impl TryFrom<&str> for PrimitiveComponentType {
             type Error = &'static str;
 
@@ -48,36 +40,115 @@ macro_rules! make_primitive_component {
                 }
             }
         }
+
+        impl PrimitiveComponent {
+            pub fn as_component(&self) -> ComponentDesc {
+                self.desc
+            }
+        }
+
         impl PrimitiveComponentType {
-            pub(crate) fn register(&self, reg: &mut ComponentRegistry, key: &str, decorating: bool) {
+            /// Register dynamic attributes for primitive component types
+            pub fn register_attributes() {
+                let mut reg = PRIMITIVE_ATTRIBUTE_REGISTRY.write();
+
+                $(
+                    {
+                        #[allow(unused_mut)]
+                        let mut store = $crate::AttributeStore::new();
+
+
+                        $(
+                            <$attr as $crate::AttributeConstructor::<$type, _>>::construct(
+                                &mut store,
+                                ()
+                            );
+                        )*
+
+                        reg.set(PrimitiveComponentType::$value, store);
+                    }
+                    {
+                        #[allow(unused_mut)]
+                        let mut store = $crate::AttributeStore::new();
+
+
+                        $(
+                            <$attr as $crate::AttributeConstructor::<Vec<$type>, _>>::construct(
+                                &mut store,
+                                ()
+                            );
+                        )*
+
+                        reg.set(PrimitiveComponentType::[<Vec $value >], store);
+                    }
+                    {
+                        #[allow(unused_mut)]
+                        let mut store = $crate::AttributeStore::new();
+
+
+                        $(
+                            <$attr as $crate::AttributeConstructor::<Option<$type>, _>>::construct(
+                                &mut store,
+                                ()
+                            );
+                        )*
+
+                        reg.set(PrimitiveComponentType::[<Option $value >], store);
+                    }
+                )*
+            }
+
+
+            pub(crate) fn register(&self, reg: &mut ComponentRegistry, path: &str) -> Option<PrimitiveComponent> {
                 match self {
                     $(
-                        PrimitiveComponentType::$value => reg.register_with_id(key,
-                            &mut Component::<$type>::new_external(0),
-                            decorating,
-                            Some(self.clone()),
-                            Some(PrimitiveComponent::$value(Component::<$type>::new_external(0)))
-                        ),
+                        ty @ PrimitiveComponentType::$value =>
+                        {
+
+                            static VTABLE: &ComponentVTable<$type> = &ComponentVTable::construct_external() ;
+                            reg.register_external(path.into(), unsafe { VTABLE.erase() }, Default::default());
+
+                            reg.set_primitive_component(path.into(), ty.clone())
+                        },
+                        ty @ PrimitiveComponentType::[< Vec $value >] =>
+
+                        {
+                            static VTABLE: &ComponentVTable<Vec<$type>> = &ComponentVTable::construct_external() ;
+                            reg.register_external(path.into(), unsafe { VTABLE.erase() }, Default::default());
+
+                            reg.set_primitive_component(path.into(), ty.clone())
+                        },
+                        ty @ PrimitiveComponentType::[< Option $value >] =>
+                        {
+                            static VTABLE: &ComponentVTable<Option<$type>> = &ComponentVTable::construct_external() ;
+                            reg.register_external(path.into(), unsafe { VTABLE.erase() }, Default::default());
+
+                            reg.set_primitive_component(path.into(), ty.clone())
+                        },
                     )*
                     PrimitiveComponentType::Vec { variants } => match **variants {
                         $(
-                            PrimitiveComponentType::$value => reg.register_with_id(key,
-                                &mut Component::<Vec<$type>>::new_external(0),
-                                decorating,
-                                Some(self.clone()),
-                                Some(PrimitiveComponent::[<Vec $value>](Component::<Vec<$type>>::new_external(0)))
-                            ),
+                            PrimitiveComponentType::$value =>
+                            {
+                                static VTABLE: &ComponentVTable<Vec<$type>> = &ComponentVTable::construct_external() ;
+                                reg.register_external(path.into(), unsafe { VTABLE.erase() }, Default::default());
+
+                                let ty = PrimitiveComponentType::[< Vec $value >];
+                                reg.set_primitive_component(path.into(), ty.clone())
+                            },
                         )*
                         _ => panic!("Unsupported Vec inner type: {:?}", variants),
                     },
                     PrimitiveComponentType::Option { variants } => match **variants {
                         $(
-                            PrimitiveComponentType::$value => reg.register_with_id(key,
-                                &mut Component::<Option<$type>>::new_external(0),
-                                decorating,
-                                Some(self.clone()),
-                                Some(PrimitiveComponent::[<Option $value>](Component::<Option<$type>>::new_external(0)))
-                            ),
+                            PrimitiveComponentType::$value =>
+                            {
+                                static VTABLE: &ComponentVTable<Option<$type>> = &ComponentVTable::construct_external() ;
+                                reg.register_external(path.into(), unsafe { VTABLE.erase() }, Default::default());
+
+                                let ty = PrimitiveComponentType::[< Vec $value >];
+                                reg.set_primitive_component(path.into(), ty.clone())
+                            },
                         )*
                         _ => panic!("Unsupported Option inner type: {:?}", variants),
                     }
@@ -86,38 +157,27 @@ macro_rules! make_primitive_component {
         }
         impl PartialEq<PrimitiveComponentType> for PrimitiveComponent {
             fn eq(&self, other: &PrimitiveComponentType) -> bool {
-                match (self, other) {
-                    $((Self::$value(_), PrimitiveComponentType::$value) => true,)*
-                    (pc, PrimitiveComponentType::Vec { variants }) => match (pc, &**variants) {
-                        $((Self::[< Vec $value >](_), PrimitiveComponentType::$value) => true,)*
-                        _ => false,
-                    },
-                    (pc, PrimitiveComponentType::Option { variants }) => match (pc, &**variants) {
-                        $((Self::[< Option $value >](_), PrimitiveComponentType::$value) => true,)*
-                        _ => false,
-                    },
-                    _ => false,
-                }
+                &self.ty == other
             }
         }
     } };
 }
 
 make_primitive_component!(
-    (Empty, ()),
-    (Bool, bool),
-    (EntityId, EntityId),
-    (F32, f32),
-    (F64, f64),
-    (Mat4, Mat4),
-    (I32, i32),
-    (Quat, Quat),
-    (String, String),
-    (U32, u32),
-    (U64, u64),
-    (Vec2, Vec2),
-    (Vec3, Vec3),
-    (Vec4, Vec4),
-    (ObjectRef, ObjectRef),
-    (EntityUid, EntityUid)
+    (Empty, (), [Debuggable, Networked, Store]),
+    (Bool, bool, [Debuggable, Networked, Store]),
+    (EntityId, EntityId, [Debuggable, Networked, Store]),
+    (F32, f32, [Debuggable, Networked, Store]),
+    (F64, f64, [Debuggable, Networked, Store]),
+    (Mat4, Mat4, [Debuggable, Networked, Store]),
+    (I32, i32, [Debuggable, Networked, Store]),
+    (Quat, Quat, [Debuggable, Networked, Store]),
+    (String, String, [Debuggable, Networked, Store]),
+    (U32, u32, [Debuggable, Networked, Store]),
+    (U64, u64, [Debuggable, Networked, Store]),
+    (Vec2, Vec2, [Debuggable, Networked, Store]),
+    (Vec3, Vec3, [Debuggable, Networked, Store]),
+    (Vec4, Vec4, [Debuggable, Networked, Store]),
+    (ObjectRef, ObjectRef, [Debuggable, Networked, Store]),
+    (EntityUid, EntityUid, [Debuggable, Networked, Store])
 );

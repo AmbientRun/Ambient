@@ -128,7 +128,7 @@ impl guest::Guest for Guest {
         GLOBAL_STATE.initialize();
     }
 
-    fn exec(ctx: guest::RunContext, event_name: String, components: Vec<(u64, guest::ComponentType)>) {
+    fn exec(ctx: guest::RunContext, event_name: String, components: Vec<(u32, guest::ComponentType)>) {
         use guest_conversion::GuestConvert;
 
         let components = Components(components.into_iter().map(|(id, ct)| (id, ct.guest_convert())).collect());

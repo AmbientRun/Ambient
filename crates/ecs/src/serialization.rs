@@ -5,7 +5,7 @@ use serde::{
     de::{MapAccess, Visitor}, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer
 };
 
-use crate::{dont_store, query, with_component_registry, CreateResources, DeserEntityDataWithWarnings, EntityData, EntityId, World};
+use crate::{dont_store, query, CreateResources, DeserEntityDataWithWarnings, EntityData, EntityId, Serializable, World};
 
 impl Serialize for World {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
@@ -24,13 +24,15 @@ struct SerWorldEntity<'a> {
 }
 impl<'a> Serialize for SerWorldEntity<'a> {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let idx_to_id = with_component_registry(|r| r.idx_to_id().clone());
-        let comps = self.world.get_components(self.id).unwrap().into_iter().filter(|x| x.is_extended()).collect_vec();
+        let comps =
+            self.world.get_components(self.id).unwrap().into_iter().filter(|x| x.attribute::<Serializable>().is_some()).collect_vec();
+
         let mut entity = serializer.serialize_map(Some(comps.len()))?;
         for comp in comps {
-            let value = comp.clone_value_from_world(self.world, self.id).unwrap();
-            let value = comp.serialize_value(&*value);
-            entity.serialize_entry(idx_to_id.get(&comp.get_index()).unwrap(), value)?;
+            if let Some(ser) = comp.attribute::<Serializable>() {
+                let value = self.world.get_entry(self.id, comp).unwrap();
+                entity.serialize_entry(&comp.path(), ser.serialize(&value))?;
+            }
         }
         entity.end()
     }
@@ -111,6 +113,20 @@ impl<'de> Deserialize<'de> for DeserWorldWithWarnings {
 pub struct ECSDeserializationWarnings {
     pub warnings: Vec<(EntityId, String, String)>,
 }
+
+impl std::ops::DerefMut for ECSDeserializationWarnings {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.warnings
+    }
+}
+
+impl std::ops::Deref for ECSDeserializationWarnings {
+    type Target = Vec<(EntityId, String, String)>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.warnings
+    }
+}
 impl ECSDeserializationWarnings {
     pub fn log_warnings(&self) {
         if !self.warnings.is_empty() {
@@ -127,7 +143,9 @@ mod test {
     use crate::{serialization::DeserWorldWithWarnings, *};
 
     components!("test", {
+        @[Serializable]
         ser_test3: String,
+        @[Serializable]
         ser_test4: String,
     });
 

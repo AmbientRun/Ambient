@@ -6,7 +6,7 @@ use std::{
 
 use bytes::Bytes;
 use client::GameRpcArgs;
-use elements_ecs::{components, query, Component, ComponentValue, EntityId, World};
+use elements_ecs::{components, query, Component, ComponentValue, Debuggable, EntityId, Networked, Serializable, Store, World};
 use elements_rpc::{RpcError, RpcRegistry};
 use elements_std::{asset_cache::AssetCache, log_error, log_result};
 use futures::{Future, SinkExt, StreamExt};
@@ -31,13 +31,16 @@ pub mod rpc;
 pub mod server;
 
 pub mod player {
-    use elements_ecs::components;
+    use elements_ecs::{components, Networked, Store};
 
     components!("player", {
+        @[Networked, Store]
         player: (),
         // The identifier of the user. Can be attached to more than just the player;
         // will also be attached to their sub-entities, like their head and such.
+        @[Networked, Store]
         user_id: String,
+        @[Networked, Store]
         local_user_id: String,
     });
 }
@@ -48,10 +51,13 @@ components!("network", {
     datagram_handlers: DatagramHandlers,
 
     /// Works like `world.resource_entity` for server worlds, except it's also persisted to disk, and synchronized to clients
+    @[Debuggable, Networked]
     persistent_resources: (),
     /// Works like `world.resource_entity` for server worlds, except it's synchronized to clients. State is not persisted to disk.
+    @[Debuggable, Networked]
     synced_resources: (),
 
+    @[Debuggable, Networked]
     is_remote_entity: (),
 });
 
@@ -77,9 +83,11 @@ impl ServerWorldExt for World {
         query(()).incl(persistent_resources()).iter(self, None).map(|(id, _)| id).next()
     }
     fn persisted_resource<T: ComponentValue>(&self, component: Component<T>) -> Option<&T> {
+        assert_persisted(*component);
         self.persisted_resource_entity().and_then(|id| self.get_ref(id, component).ok())
     }
     fn persisted_resource_mut<T: ComponentValue>(&mut self, component: Component<T>) -> Option<&mut T> {
+        assert_persisted(*component);
         self.persisted_resource_entity().and_then(|id| self.get_mut(id, component).ok())
     }
 
@@ -87,10 +95,29 @@ impl ServerWorldExt for World {
         query(()).incl(synced_resources()).iter(self, None).map(|(id, _)| id).next()
     }
     fn synced_resource<T: ComponentValue>(&self, component: Component<T>) -> Option<&T> {
+        assert_networked(*component);
         self.synced_resource_entity().and_then(|id| self.get_ref(id, component).ok())
     }
     fn synced_resource_mut<T: ComponentValue>(&mut self, component: Component<T>) -> Option<&mut T> {
         self.synced_resource_entity().and_then(|id| self.get_mut(id, component).ok())
+    }
+}
+
+pub fn assert_networked(desc: elements_ecs::ComponentDesc) {
+    if desc.attribute::<Networked>().is_none() {
+        panic!("Attempt to access sync {desc:#?} which is not marked as `Networked`. Attributes: {:?}", desc.attributes());
+    }
+
+    if desc.attribute::<Serializable>().is_none() {
+        panic!("Sync component {desc:#?} is not serializable. Attributes: {:?}", desc.attributes());
+    }
+}
+
+fn assert_persisted(desc: elements_ecs::ComponentDesc) {
+    assert_networked(desc);
+
+    if desc.attribute::<Store>().is_none() {
+        panic!("Attempt to access persisted resource {desc:?} which is not `Store`");
     }
 }
 

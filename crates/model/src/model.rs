@@ -5,7 +5,7 @@ use elements_core::{
         fbx_complex_transform, fbx_post_rotation, fbx_pre_rotation, fbx_rotation_offset, fbx_rotation_pivot, fbx_scaling_offset, fbx_scaling_pivot, inv_local_to_world, local_to_parent, local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation
     }
 };
-use elements_ecs::{query, EntityData, EntityId, IComponent, World};
+use elements_ecs::{query, ComponentDesc, EntityData, EntityId, World};
 use elements_renderer::{
     cast_shadows, color, gpu_primitives, lod::cpu_lod_visible, primitives, skinning::{self, Skin, SkinsBuffer, SkinsBufferKey}
 };
@@ -376,22 +376,22 @@ impl Model {
         world.add_components(id, ed).ok();
     }
 
-    fn build_transform(&self, node: EntityId, ed: &mut EntityData, mut remove: Option<&mut Vec<Box<dyn IComponent>>>, rotation_only: bool) {
+    fn build_transform(&self, node: EntityId, ed: &mut EntityData, mut remove: Option<&mut Vec<ComponentDesc>>, rotation_only: bool) {
         if let Ok(rot) = self.0.get(node, rotation()) {
             ed.set_self(rotation(), rot);
         } else if let Some(remove) = &mut remove {
-            remove.push(rotation().clone_boxed());
+            remove.push(rotation().desc());
         }
         if !rotation_only {
             if let Ok(pos) = self.0.get(node, translation()) {
                 ed.set_self(translation(), pos);
             } else if let Some(remove) = &mut remove {
-                remove.push(translation().clone_boxed());
+                remove.push(translation().desc());
             }
             if let Ok(scl) = self.0.get(node, scale()) {
                 ed.set_self(scale(), scl);
             } else if let Some(remove) = &mut remove {
-                remove.push(scale().clone_boxed());
+                remove.push(scale().desc());
             }
         }
 
@@ -399,38 +399,38 @@ impl Model {
         if self.0.has_component(node, fbx_complex_transform()) {
             ed.set_self(fbx_complex_transform(), ());
         } else if let Some(remove) = &mut remove {
-            remove.push(fbx_complex_transform().clone_boxed());
+            remove.push(fbx_complex_transform().desc());
         }
         if let Ok(val) = self.0.get(node, fbx_rotation_offset()) {
             ed.set_self(fbx_rotation_offset(), val);
         } else if let Some(remove) = &mut remove {
-            remove.push(fbx_rotation_offset().clone_boxed());
+            remove.push(fbx_rotation_offset().desc());
         }
         if let Ok(val) = self.0.get(node, fbx_rotation_pivot()) {
             ed.set_self(fbx_rotation_pivot(), val);
         } else if let Some(remove) = &mut remove {
-            remove.push(fbx_rotation_pivot().clone_boxed());
+            remove.push(fbx_rotation_pivot().desc());
         }
         if let Ok(val) = self.0.get(node, fbx_pre_rotation()) {
             ed.set_self(fbx_pre_rotation(), val);
         } else if let Some(remove) = &mut remove {
-            remove.push(fbx_pre_rotation().clone_boxed());
+            remove.push(fbx_pre_rotation().desc());
         }
         if let Ok(val) = self.0.get(node, fbx_post_rotation()) {
             ed.set_self(fbx_post_rotation(), val);
         } else if let Some(remove) = &mut remove {
-            remove.push(fbx_post_rotation().clone_boxed());
+            remove.push(fbx_post_rotation().desc());
         }
         if !rotation_only {
             if let Ok(val) = self.0.get(node, fbx_scaling_offset()) {
                 ed.set_self(fbx_scaling_offset(), val);
             } else if let Some(remove) = &mut remove {
-                remove.push(fbx_scaling_offset().clone_boxed());
+                remove.push(fbx_scaling_offset().desc());
             }
             if let Ok(val) = self.0.get(node, fbx_scaling_pivot()) {
                 ed.set_self(fbx_scaling_pivot(), val);
             } else if let Some(remove) = &mut remove {
-                remove.push(fbx_scaling_pivot().clone_boxed());
+                remove.push(fbx_scaling_pivot().desc());
             }
         }
     }

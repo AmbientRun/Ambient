@@ -1,4 +1,4 @@
-use std::{any::type_name, borrow::Cow, fmt, io::Cursor, sync::Arc};
+use std::{borrow::Cow, fmt, io::Cursor, sync::Arc};
 
 use async_trait::async_trait;
 use elements_std::{

@@ -5,7 +5,7 @@ use downcast_rs::{impl_downcast, DowncastSync};
 use elements_core::{
     gpu_components, gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldShaderModuleKey, GpuWorldSyncEvent}, mesh, transform::get_world_rotation
 };
-use elements_ecs::{components, query_mut, EntityId, SystemGroup, World};
+use elements_ecs::{components, query_mut, Debuggable, EntityId, Networked, Store, SystemGroup, World};
 use elements_gpu::{
     mesh_buffer::{get_mesh_buffer_types, GpuMesh, MESH_BUFFER_TYPES_WGSL}, shader_module::{BindGroupDesc, Shader, ShaderModule, ShaderModuleIdentifier}, wgsl_utils::wgsl_interpolate
 };
@@ -44,23 +44,35 @@ pub use tree_renderer::*;
 pub const MAX_PRIMITIVE_COUNT: usize = 20;
 
 components!("rendering", {
+    @[Debuggable]
     primitives: Vec<RenderPrimitive>,
     gpu_primitives: [GpuRenderPrimitive; MAX_PRIMITIVE_COUNT],
     renderer_shader: Arc<RendererShader>,
     material: SharedMaterial,
+    @[Debuggable, Networked, Store]
     overlay: (),
+    @[Debuggable, Networked, Store]
     color: Vec4,
     renderer_stats: String,
+    @[Debuggable, Networked, Store]
     double_sided: bool,
+    @[Debuggable, Networked, Store]
     cast_shadows: (),
     /// Higher number is higher priority
+    @[Debuggable, Networked, Store]
     sun: f32,
+    @[Debuggable, Networked, Store]
     light_diffuse: Vec3,
+    @[Debuggable, Networked, Store]
     light_ambient: Vec3,
+    @[Debuggable, Networked, Store]
     fog_color: Vec3,
+    @[Debuggable, Networked, Store]
     fog_height_falloff: f32,
+    @[Debuggable, Networked, Store]
     fog_density: f32,
     /// Transparent objects are sorted by (transparency_group, z-depth)
+    @[Debuggable, Networked, Store]
     transparency_group: i32,
 });
 gpu_components! {

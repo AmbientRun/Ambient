@@ -8,8 +8,8 @@ use std::{
 use anyhow::Context;
 use elements_core::name;
 use elements_ecs::{
-    components, query, query_mut, uid, Component, ComponentRegistry, ComponentUnit as CU,
-    EntityData, EntityId, FnSystem, SystemGroup, World,
+    components, query, query_mut, uid, Component, ComponentEntry, ComponentRegistry, EntityData,
+    EntityId, FnSystem, SystemGroup, World,
 };
 use elements_network::{
     player::player,
@@ -252,7 +252,7 @@ pub fn systems<
                         &ScriptContext::new(
                             world,
                             "core/collision",
-                            vec![CU::new(elements_ecs::ids(), ids)].into(),
+                            vec![ComponentEntry::new(elements_ecs::ids(), ids)].into(),
                         ),
                     );
                 }
@@ -271,7 +271,7 @@ pub fn systems<
                         &ScriptContext::new(
                             world,
                             "core/collider_load",
-                            vec![CU::new(elements_ecs::id(), id)].into(),
+                            vec![ComponentEntry::new(elements_ecs::id(), id)].into(),
                         ),
                     );
                 }
@@ -285,8 +285,8 @@ pub fn systems<
                             world,
                             "core/entity_spawn",
                             vec![
-                                CU::new(elements_ecs::id(), id),
-                                CU::new(elements_ecs::uid(), uid),
+                                ComponentEntry::new(elements_ecs::id(), id),
+                                ComponentEntry::new(elements_ecs::uid(), uid),
                             ]
                             .into(),
                         ),
@@ -455,13 +455,12 @@ pub async fn initialize<
 
     world.add_resource(deferred_compilation_tasks(), HashMap::new());
     world.add_resource(compilation_tasks(), HashMap::new());
+    let interface = scripting_interface_root_path.join(primary_scripting_interface_name);
+    log::info!("Documenting module: {interface:?}");
     world.add_resource(
         docs_path(),
-        rustc::document_module(
-            &install_dirs,
-            &scripting_interface_root_path.join(primary_scripting_interface_name),
-        )
-        .context("failed to document scripting interface")?,
+        rustc::document_module(&install_dirs, &interface)
+            .context("failed to document scripting interface")?,
     );
     world.add_resource(make_wasm_context_component, make_wasm_context);
     world.add_resource(add_to_linker_component, add_to_linker);

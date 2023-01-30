@@ -4,8 +4,8 @@ use std::{
 
 use convert_case::{Case, Casing};
 use derive_more::Display;
-use elements_core::{asset_cache, hierarchy::children, time};
-use elements_ecs::{components, query, EntityId, SystemGroup};
+use elements_core::{asset_cache, hierarchy::children, time, transform};
+use elements_ecs::{components, query, Debuggable, EntityId, Networked, Store, SystemGroup};
 use elements_model::{animation_binder, model, model_def, ModelDef};
 use elements_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt}, asset_url::{AnimationAssetType, ModelAssetType, TypedAssetUrl}
@@ -19,16 +19,22 @@ pub use resources::*;
 pub use retargeting::*;
 
 components!("animation", {
+    @[Debuggable, Networked, Store]
     animation_controller: AnimationController,
+    @[Debuggable, Networked, Store]
     animation_retargeting: AnimationRetargeting,
     /// Some animations will only work if the base pose of the character is the same as
     /// the animations base pose, so we apply the pose from the animations model to make sure they
     /// correspond
+    @[Debuggable, Networked, Store]
     animation_apply_base_pose: ModelDef,
+    @[Debuggable, Networked, Store]
     copy_animation_controller_to_children: (),
+    @[Debuggable, Networked, Store]
     animation_errors: String,
 
     /// This is a shorthand for working directly with the animation_controller
+    @[Debuggable, Networked, Store]
     loop_animation: TypedAssetUrl<AnimationAssetType>,
 });
 
@@ -210,7 +216,7 @@ pub fn animation_systems() -> SystemGroup {
                                         "{}_{:?}_{}_{:?}",
                                         id,
                                         track.target,
-                                        track.outputs.component().get_index(),
+                                        track.outputs.component().index(),
                                         track.outputs.field()
                                     );
                                     if action.weight == 0.0 {
@@ -310,6 +316,7 @@ pub fn animation_bind_id_from_name(name: &str) -> String {
 fn test_animation() {
     use elements_core::transform::translation;
     use glam::vec3;
+    transform::init_components();
     let mut int = AnimationTrackInterpolator::new();
     let track = AnimationTrack {
         target: AnimationTarget::BinderId("".to_string()),

@@ -109,7 +109,7 @@ pub(super) enum ComponentType<'a> {
     TypeOption(ComponentOptionType<'a>),
 }
 
-pub(super) fn create_owned_types(data: &HashMap<u64, host::ComponentTypeResult>) -> Vec<(u64, ComponentType)> {
+pub(super) fn create_owned_types(data: &HashMap<u32, host::ComponentTypeResult>) -> Vec<(u32, ComponentType)> {
     data.iter()
         .map(|(id, component)| {
             (
@@ -183,7 +183,7 @@ pub(super) fn create_owned_types(data: &HashMap<u64, host::ComponentTypeResult>)
         .collect()
 }
 
-pub(super) fn create_borrowed_types<'a>(data: &'a [(u64, ComponentType)]) -> Vec<(u64, host::ComponentTypeParam<'a>)> {
+pub(super) fn create_borrowed_types<'a>(data: &'a [(u32, ComponentType)]) -> Vec<(u32, host::ComponentTypeParam<'a>)> {
     data.iter()
         .map(|(id, ct)| {
             (

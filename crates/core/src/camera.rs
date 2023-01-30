@@ -1,4 +1,4 @@
-use elements_ecs::{components, query, query_mut, Component, ECSError, EntityData, EntityId, SystemGroup, World};
+use elements_ecs::{components, query, query_mut, Component, ECSError, EntityData, EntityId, Networked, Store, SystemGroup, World};
 use elements_std::{
     math::Line, shapes::{BoundingBox, Plane, Ray, AABB}
 };
@@ -20,17 +20,29 @@ pub struct OrthographicRect {
 
 components!("camera", {
     orthographic: OrthographicRect,
+    @[Networked, Store]
     perspective_infinite_reverse: (),
+    @[Networked, Store]
     perspective: (),
+    @[Networked, Store]
     near: f32,
+    @[Networked, Store]
     far: f32,
+    @[Networked, Store]
     fovy: f32,
+    @[Networked, Store]
     aspect_ratio: f32,
+    @[Networked, Store]
     aspect_ratio_from_window: (),
+    @[Networked, Store]
     projection: glam::Mat4,
+    @[Networked, Store]
     projection_view: glam::Mat4,
+    @[Networked, Store]
     active_camera: f32, // Higher value means higher priority
+    @[Networked, Store]
     fog: (),
+    @[Networked, Store]
     shadows_far: f32,
 });
 

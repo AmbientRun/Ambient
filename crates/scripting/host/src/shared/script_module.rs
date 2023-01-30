@@ -9,6 +9,7 @@ use std::{
 use anyhow::Context;
 use async_trait::async_trait;
 use elements_ecs::{with_component_registry, EntityId, EntityUid, World};
+use elements_network::assert_networked;
 use elements_std::asset_url::ObjectRef;
 use glam::Vec3;
 use indexmap::IndexMap;
@@ -283,11 +284,19 @@ impl ScriptModule {
             .copied()
             .collect();
 
+        // log::info!("Supported types: {supported_types:#?}");
         let mut root = ComponentTreeNode::default();
         with_component_registry(|registry| {
             for component in registry.all_external() {
                 if let Some(typename) = supported_types.get(&component.type_id()) {
-                    root.insert(&component.get_id(), &component.get_id(), typename);
+                    let path = component.path();
+                    root.insert(&path, &path, typename);
+                } else {
+                    log::error!(
+                        "Type {:?}:{:?} is not supported",
+                        component.type_id(),
+                        component.type_name()
+                    );
                 }
             }
         });

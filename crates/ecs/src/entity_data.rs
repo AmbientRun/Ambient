@@ -5,15 +5,15 @@ use std::{
 use elements_std::sparse_vec::SparseVec;
 use itertools::Itertools;
 use serde::{
-    de::{MapAccess, Visitor}, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer
+    de::{self, DeserializeSeed, MapAccess, Visitor}, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer
 };
 
-use super::{with_component_registry, Component, ComponentUnit, ComponentValue, ComponentValueBase, ECSError, EntityId, IComponent, World};
-use crate::{ComponentSet, ECSDeserializationWarnings};
+use super::{with_component_registry, Component, ComponentValue, ECSError, EntityId, World};
+use crate::{ComponentDesc, ComponentEntry, ComponentSet, ECSDeserializationWarnings, Serializable};
 
 #[derive(Clone)]
 pub struct EntityData {
-    content: SparseVec<ComponentUnit>,
+    content: SparseVec<ComponentEntry>,
     pub(super) active_components: ComponentSet,
 }
 impl EntityData {
@@ -27,15 +27,15 @@ impl EntityData {
         self.get_ref(component).cloned()
     }
     pub fn get_ref<T: ComponentValue>(&self, component: Component<T>) -> Option<&T> {
-        if let Some(unit) = self.content.get(component.get_index()) {
-            Some(unit.downcast_value_ref::<T>().expect("Invalid type"))
+        if let Some(unit) = self.content.get(component.index() as _) {
+            Some(unit.downcast_ref::<T>())
         } else {
             None
         }
     }
     pub fn get_mut<T: ComponentValue>(&mut self, component: Component<T>) -> Option<&mut T> {
-        if let Some(unit) = self.content.get_mut(component.get_index()) {
-            Some(unit.downcast_value_mut::<T>().expect("Invalid type"))
+        if let Some(unit) = self.content.get_mut(component.index() as _) {
+            Some(unit.downcast_mut::<T>())
         } else {
             None
         }
@@ -44,17 +44,16 @@ impl EntityData {
     pub fn contains<T: ComponentValue>(&self, component: Component<T>) -> bool {
         self.get_ref(component).is_some()
     }
-    pub fn set_unit(&mut self, unit: ComponentUnit) {
-        self.active_components.insert(unit.component());
-        self.content.set(unit.component().get_index(), unit);
+
+    pub fn set_entry(&mut self, entry: ComponentEntry) {
+        self.active_components.insert(entry.desc());
+        self.content.set(entry.desc().index() as _, entry);
     }
-    pub fn set_raw(&mut self, component: Box<dyn IComponent>, value: Box<dyn ComponentValueBase>) {
-        self.set_unit(ComponentUnit::new_raw(component, value))
-    }
+
     pub fn set_self<T: ComponentValue>(&mut self, component: Component<T>, value: T) {
-        let index = component.get_index();
-        self.content.set(index, ComponentUnit::new(component, value));
-        self.active_components.insert(&component);
+        let index = component.index() as _;
+        self.content.set(index, ComponentEntry::new(component, value));
+        self.active_components.insert(component.desc());
     }
 
     pub fn set<T: ComponentValue>(mut self, component: Component<T>, value: T) -> Self {
@@ -87,34 +86,39 @@ impl EntityData {
         self
     }
 
-    pub fn remove_raw(&mut self, component: &dyn IComponent) -> Option<ComponentUnit> {
-        let value = self.content.remove(component.get_index());
+    pub fn remove_raw(&mut self, desc: ComponentDesc) -> Option<ComponentEntry> {
+        let value = self.content.remove(desc.index() as usize);
+
         if value.is_some() {
-            self.active_components.remove(component);
+            self.active_components.remove(desc);
         }
+
         value
     }
 
     pub fn remove_self<T: ComponentValue>(&mut self, component: Component<T>) -> Option<T> {
-        self.remove_raw(&component)?.downcast_value()
+        Some(self.remove_raw(component.desc())?.into_inner())
     }
+
     pub fn remove<T: ComponentValue>(mut self, component: Component<T>) -> Self {
         self.remove_self(component);
         self
     }
+
     pub fn append(mut self, other: EntityData) -> EntityData {
         self.append_self(other);
         self
     }
+
     pub fn append_self(&mut self, other: EntityData) {
         let other = other.content;
-        for unit in other.into_iter() {
-            self.set_unit(unit);
+        for entry in other {
+            self.set_entry(entry);
         }
     }
 
-    pub fn components(&self) -> Vec<Box<dyn IComponent>> {
-        self.content.iter().map(|x| x.component().clone_boxed()).collect_vec()
+    pub fn components(&self) -> Vec<ComponentDesc> {
+        self.content.iter().map(|x| x.desc()).collect_vec()
     }
 
     pub fn spawn(self, world: &mut World) -> EntityId {
@@ -133,15 +137,15 @@ impl EntityData {
         }
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = &ComponentUnit> {
+    pub fn iter(&self) -> impl Iterator<Item = &ComponentEntry> {
         self.content.iter()
     }
 
-    pub fn filter(&mut self, filter: &dyn Fn(&dyn IComponent) -> bool) {
+    pub fn filter(&mut self, filter: &dyn Fn(ComponentDesc) -> bool) {
         let comps = self.components();
-        for comp in comps {
-            if !filter(comp.as_ref()) {
-                self.remove_raw(comp.as_ref());
+        for entry in comps {
+            if !filter(entry) {
+                self.remove_raw(entry);
             }
         }
     }
@@ -160,8 +164,8 @@ impl Default for EntityData {
 impl Debug for EntityData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut out = f.debug_struct("EntityData");
-        for comp in self.content.iter() {
-            out.field(&comp.component().get_name(), &comp.debug_value());
+        for entry in self.content.iter() {
+            out.field(&entry.desc().name(), &entry.as_debug());
         }
         out.finish()
     }
@@ -169,21 +173,19 @@ impl Debug for EntityData {
 
 impl Serialize for EntityData {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let len = self.content.iter().filter(|v| v.component().is_extended()).count();
-        let idx_to_id = with_component_registry(|r| r.idx_to_id().clone());
+        let len = self.content.iter().filter(|v| v.attribute::<Serializable>().is_some()).count();
 
         let mut map = serializer.serialize_map(Some(len))?;
         for unit in self.content.iter() {
-            if unit.component().is_extended() {
-                let value = unit.value();
-                let value = unit.component().serialize_value(&**value);
-                map.serialize_entry(idx_to_id.get(&unit.component().get_index()).unwrap(), &value)
-                    .expect("Bincode does not support #[serde(flatten)]");
+            if let Some(ser) = unit.attribute::<Serializable>() {
+                let value = ser.serialize(unit);
+                map.serialize_entry(&unit.desc().path(), &value).expect("Bincode does not support #[serde(flatten)]");
             }
         }
         map.end()
     }
 }
+
 impl<'de> Deserialize<'de> for EntityData {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -198,26 +200,24 @@ impl<'de> Deserialize<'de> for EntityData {
                 formatter.write_str("struct EntityData")
             }
 
-            fn visit_map<V>(self, map: V) -> Result<EntityData, V::Error>
+            fn visit_map<V>(self, mut map: V) -> Result<Self::Value, V::Error>
             where
                 V: MapAccess<'de>,
             {
                 let mut res = EntityData::new();
-                let mut map = erased_serde::de::erase::MapAccess { state: map };
-                while let Some(key) = map.state.next_key::<String>()? {
-                    let comp = {
-                        let comp = with_component_registry(|r| Some(r.get_by_id(&key)?.clone_boxed()));
-                        match comp {
-                            Some(comp) => comp,
-                            None => {
-                                log::error!("No such component: {}", key);
-                                continue;
-                            }
-                        }
-                    };
-                    let value = comp.deserialize_map_value(&mut map).map_err(erased_serde::de::unerase)?;
-                    res.set_raw(comp, value);
+                while let Some(key) = map.next_key::<String>()? {
+                    let desc = with_component_registry(|r| r.get_by_path(&key))
+                        .ok_or_else(|| de::Error::custom(format!("No such component: {key}")))?;
+
+                    let ser = desc
+                        .attribute::<Serializable>()
+                        .ok_or_else(|| de::Error::custom(format!("Component {desc:?} is not deserializable")))?;
+
+                    let value = map.next_value_seed(ser.deserializer(desc))?;
+
+                    res.set_entry(value);
                 }
+
                 Ok(res)
             }
         }
@@ -225,18 +225,15 @@ impl<'de> Deserialize<'de> for EntityData {
         deserializer.deserialize_map(EntityDataVisitor)
     }
 }
-/// Use this struct while de-serializing an EntityData to also get warnings
-/// about missing/bad components. Only works with serde_json
-pub struct DeserEntityDataWithWarnings {
-    pub entity: EntityData,
-    pub warnings: ECSDeserializationWarnings,
-}
+
 impl<'de> Deserialize<'de> for DeserEntityDataWithWarnings {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        struct EntityDataVisitor;
+        struct EntityDataVisitor {
+            warnings: ECSDeserializationWarnings,
+        }
 
         impl<'de> Visitor<'de> for EntityDataVisitor {
             type Value = DeserEntityDataWithWarnings;
@@ -245,31 +242,64 @@ impl<'de> Deserialize<'de> for DeserEntityDataWithWarnings {
                 formatter.write_str("struct EntityData")
             }
 
-            fn visit_map<V>(self, mut map: V) -> Result<DeserEntityDataWithWarnings, V::Error>
+            fn visit_map<V>(mut self, map: V) -> Result<Self::Value, V::Error>
             where
                 V: MapAccess<'de>,
             {
-                let mut entity = EntityData::new();
-                let mut warnings = ECSDeserializationWarnings::default();
-                while let Some((key, value)) = map.next_entry::<serde_json::Value, serde_json::Value>()? {
-                    let unit = serde_json::from_value::<ComponentUnit>(serde_json::Value::Array(vec![key.clone(), value]));
-                    match unit {
-                        Ok(value) => entity.set_unit(value),
-                        Err(err) => {
-                            let comp = if let serde_json::Value::String(val) = key { val } else { format!("{}", key) };
-                            warnings.warnings.push((EntityId::null(), comp, err.to_string()))
+                let mut res = EntityData::new();
+                let mut map = erased_serde::de::erase::MapAccess { state: map };
+                while let Some((key, value)) = map.state.next_entry::<String, serde_json::Value>()? {
+                    let desc = with_component_registry(|r| r.get_by_path(&key));
+                    let desc = match desc {
+                        Some(desc) => desc,
+
+                        None => {
+                            self.warnings.push((EntityId::null(), key.clone(), format!("No such component: {key}")));
+                            continue;
                         }
-                    }
+                    };
+
+                    let ser: Result<_, V::Error> = desc
+                        .attribute::<Serializable>()
+                        .ok_or_else(|| de::Error::custom(format!("Component {desc:?} is not deserializable")));
+
+                    let ser = match ser {
+                        Ok(v) => v,
+                        Err(err) => {
+                            self.warnings.push((EntityId::null(), key, format!("{err:?}")));
+                            continue;
+                        }
+                    };
+
+                    let value = ser.deserializer(desc).deserialize(value);
+                    let value = match value {
+                        Ok(v) => v,
+                        Err(err) => {
+                            self.warnings.push((EntityId::null(), key, format!("{err:?}")));
+                            continue;
+                        }
+                    };
+
+                    res.set_entry(value);
                 }
-                Ok(DeserEntityDataWithWarnings { entity, warnings })
+
+                Ok(DeserEntityDataWithWarnings { entity: res, warnings: self.warnings })
             }
         }
 
-        deserializer.deserialize_map(EntityDataVisitor)
+        deserializer.deserialize_map(EntityDataVisitor { warnings: Default::default() })
     }
 }
+
+/// Use this struct while de-serializing an EntityData to also get warnings
+/// about missing/bad components. Only works with serde_json
+pub struct DeserEntityDataWithWarnings {
+    pub entity: EntityData,
+    pub warnings: ECSDeserializationWarnings,
+}
+
 impl IntoIterator for EntityData {
-    type Item = ComponentUnit;
+    type Item = ComponentEntry;
 
     type IntoIter = Flatten<std::vec::IntoIter<Option<Self::Item>>>;
 
@@ -277,12 +307,12 @@ impl IntoIterator for EntityData {
         self.content.into_iter()
     }
 }
-impl FromIterator<ComponentUnit> for EntityData {
-    fn from_iter<I: IntoIterator<Item = ComponentUnit>>(iter: I) -> Self {
+impl FromIterator<ComponentEntry> for EntityData {
+    fn from_iter<I: IntoIterator<Item = ComponentEntry>>(iter: I) -> Self {
         let mut c = EntityData::new();
 
-        for i in iter {
-            c.set_unit(i);
+        for v in iter {
+            c.set_entry(v);
         }
 
         c
@@ -291,9 +321,10 @@ impl FromIterator<ComponentUnit> for EntityData {
 
 #[cfg(test)]
 mod test {
-    use crate::{components, ComponentRegistry, EntityData};
+    use crate::{components, EntityData, Networked};
 
     components!("test", {
+        @[Networked]
         ser_test2: String,
     });
 
