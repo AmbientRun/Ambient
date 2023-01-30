@@ -1,6 +1,8 @@
 use std::{num::NonZeroU32, sync::Arc};
 
-use elements_core::{asset_cache, bounding::world_bounding_sphere, camera::shadow_cameras_from_world, main_scene};
+use elements_core::{
+    asset_cache, bounding::world_bounding_sphere, camera::shadow_cameras_from_world, hierarchy::dump_world_hierarchy_to_tmp_file, main_scene
+};
 use elements_ecs::{query, World};
 use elements_element::{element_component, Element, ElementComponentExt, Hooks};
 use elements_gizmos::{gizmos, GizmoPrimitive};
@@ -20,6 +22,16 @@ pub fn RendererDebugger(world: &mut World, hooks: &mut Hooks, get_state: GetRend
     let (show_shadows, set_show_shadows) = hooks.use_state(false);
     FlowColumn::el([
         FlowRow(vec![
+            Button::new("Dump World", {
+                let get_state = get_state.clone();
+                move |world| {
+                    get_state(&mut |_, _, world| dump_world_hierarchy_to_tmp_file(world));
+                }
+            })
+            .hotkey_modifier(ModifiersState::SHIFT)
+            .hotkey(VirtualKeyCode::F1)
+            .style(ButtonStyle::Flat)
+            .el(),
             Button::new("Dump Client Renderer", {
                 let get_state = get_state.clone();
                 move |world| {
