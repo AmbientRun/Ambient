@@ -17,7 +17,9 @@ pub mod components;
 mod new_project;
 mod server;
 
+use anyhow::Context;
 use player::PlayerRawInputHandler;
+use server::QUIC_INTERFACE_PORT;
 use tilt_runtime_player as player;
 
 #[derive(Parser, Clone)]
@@ -58,7 +60,7 @@ enum Commands {
     },
     /// Join a multiplayer session
     Join {
-        ip: Option<SocketAddr>,
+        host: Option<String>,
         #[clap(short, long)]
         user_id: Option<String>,
     },
@@ -149,7 +151,7 @@ fn MainApp(world: &mut World, hooks: &mut Hooks, server_addr: SocketAddr, user_i
     ])
 }
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     env_logger::init();
     components::init().unwrap();
     let runtime = tokio::runtime::Builder::new_multi_thread().enable_all().build().unwrap();
@@ -161,7 +163,7 @@ fn main() {
         if let Err(err) = new_project::new_project(&name) {
             println!("Failed to create project: {:?}", err);
         }
-        return;
+        return Ok(());
     }
 
     let current_dir = std::env::current_dir().unwrap();
@@ -173,8 +175,15 @@ fn main() {
         runtime.block_on(elements_build::build(&assets, project_path.clone()));
     }
 
-    let server_addr = if let Commands::Join { ip, .. } = &cli.command {
-        ip.clone().unwrap_or_else(|| format!("127.0.0.1:9000").parse().unwrap())
+    let server_addr = if let Commands::Join { host, .. } = &cli.command {
+        if let Some(mut host) = host.clone() {
+            if !host.contains(":") {
+                host = format!("{host}:{QUIC_INTERFACE_PORT}");
+            }
+            host.parse().with_context(|| format!("Invalid address for host {host}"))?
+        } else {
+            format!("127.0.0.1:{QUIC_INTERFACE_PORT}").parse().unwrap()
+        }
     } else {
         let port = server::start_server(&runtime, assets.clone(), cli.clone(), project_path);
         println!("Server running on port {port}");
@@ -195,4 +204,5 @@ fn main() {
             }
         });
     }
+    Ok(())
 }
