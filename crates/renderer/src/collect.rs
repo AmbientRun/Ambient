@@ -179,11 +179,12 @@ impl RendererCollect {
     }
 
     #[allow(clippy::too_many_arguments)]
+    #[allow(clippy::ptr_arg)]
     #[profiling::function]
     pub fn run(
         &self,
         encoder: &mut wgpu::CommandEncoder,
-        _post_submit: &mut [Box<dyn FnOnce() + Send + Send>],
+        _post_submit: &mut Vec<Box<dyn FnOnce() + Send + Send>>,
         resources_bind_group: &wgpu::BindGroup,
         entities_bind_group: &wgpu::BindGroup,
         input_primitives: &TypedMultiBuffer<CollectPrimitive>,
