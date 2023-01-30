@@ -1,13 +1,15 @@
 use std::{num::NonZeroU32, sync::Arc};
 
 use elements_core::{
-    asset_cache, bounding::world_bounding_sphere, camera::shadow_cameras_from_world, hierarchy::dump_world_hierarchy_to_tmp_file, main_scene
+    asset_cache, bounding::world_bounding_sphere, camera::shadow_cameras_from_world, hierarchy::{dump_world_hierarchy, dump_world_hierarchy_to_tmp_file}, main_scene, runtime
 };
 use elements_ecs::{query, World};
 use elements_element::{element_component, Element, ElementComponentExt, Hooks};
 use elements_gizmos::{gizmos, GizmoPrimitive};
 use elements_gpu::std_assets::PixelTextureViewKey;
+use elements_network::client::{GameClient, GameRpcArgs};
 use elements_renderer::{RenderTarget, Renderer};
+use elements_rpc::RpcRegistry;
 use elements_std::{asset_cache::SyncAssetKeyExt, color::Color, download_asset::AssetsCacheDir, line_hash, Cb};
 use elements_ui::{
     fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dock, Dropdown, Fit, FlowColumn, FlowRow, Image, UIExt, VirtualKeyCode
@@ -17,12 +19,25 @@ use winit::event::ModifiersState;
 
 type GetRendererState = Cb<dyn Fn(&mut dyn FnMut(&mut Renderer, &RenderTarget, &mut World)) + Sync + Send>;
 
+pub async fn rpc_dump_world_hierarchy(args: GameRpcArgs, _: ()) -> Option<String> {
+    let mut res = Vec::new();
+    let mut state = args.state.lock();
+    let world = state.get_player_world_mut(&args.user_id)?;
+    dump_world_hierarchy(world, &mut res);
+    Some(String::from_utf8(res).unwrap())
+}
+
+pub fn register_rpcs(reg: &mut RpcRegistry<GameRpcArgs>) {
+    reg.register(rpc_dump_world_hierarchy);
+}
+
 #[element_component]
 pub fn RendererDebugger(world: &mut World, hooks: &mut Hooks, get_state: GetRendererState) -> Element {
     let (show_shadows, set_show_shadows) = hooks.use_state(false);
+    let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
     FlowColumn::el([
         FlowRow(vec![
-            Button::new("Dump World", {
+            Button::new("Dump Client World", {
                 let get_state = get_state.clone();
                 move |world| {
                     get_state(&mut |_, _, world| dump_world_hierarchy_to_tmp_file(world));
@@ -30,6 +45,25 @@ pub fn RendererDebugger(world: &mut World, hooks: &mut Hooks, get_state: GetRend
             })
             .hotkey_modifier(ModifiersState::SHIFT)
             .hotkey(VirtualKeyCode::F1)
+            .style(ButtonStyle::Flat)
+            .el(),
+            Button::new("Dump Server World", {
+                let game_client = game_client.clone();
+                move |world| {
+                    let game_client = game_client.clone();
+                    let cache_dir = AssetsCacheDir.get(world.resource(asset_cache()));
+                    world.resource(runtime()).clone().spawn(async move {
+                        if let Ok(Some(res)) = game_client.rpc(rpc_dump_world_hierarchy, ()).await {
+                            std::fs::create_dir_all(&cache_dir).ok();
+                            let path = cache_dir.join("server_hierarchy.yml");
+                            std::fs::write(&path, res).ok();
+                            log::info!("Wrote {:?}", path);
+                        }
+                    });
+                }
+            })
+            .hotkey_modifier(ModifiersState::SHIFT)
+            .hotkey(VirtualKeyCode::F6)
             .style(ButtonStyle::Flat)
             .el(),
             Button::new("Dump Client Renderer", {

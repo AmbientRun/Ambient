@@ -2005,10 +2005,13 @@ dependencies = [
  "elements_element_component",
  "elements_gizmos",
  "elements_gpu",
+ "elements_network",
  "elements_renderer",
+ "elements_rpc",
  "elements_std",
  "elements_ui",
  "glam 0.22.0",
+ "log",
  "wgpu",
  "winit",
 ]

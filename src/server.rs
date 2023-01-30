@@ -55,6 +55,7 @@ fn is_sync_component(component: &dyn elements_ecs::IComponent, _event: WorldStre
 pub fn create_rpc_registry() -> RpcRegistry<GameRpcArgs> {
     let mut reg = RpcRegistry::new();
     elements_network::rpc::register_rpcs(&mut reg);
+    elements_renderer_debugger::register_rpcs(&mut reg);
     reg
 }
 
