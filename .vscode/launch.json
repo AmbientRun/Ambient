@@ -20,8 +20,7 @@
             },
             "args": [
                 "--project-path=examples/asset_loading",
-                "view",
-                "assets/models/crate.glb"
+                "run"
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [
