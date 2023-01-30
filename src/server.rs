@@ -7,7 +7,7 @@ use axum::{
     http::{Method, StatusCode}, response::IntoResponse, routing::{get, get_service}, Router
 };
 use elements_core::{app_start_time, asset_cache, dtime, no_sync, remove_at_time, time};
-use elements_ecs::{component2::Serializable, components, ComponentDesc, EntityData, SystemGroup, World, WorldStreamCompEvent};
+use elements_ecs::{component2::Serializable, components, ComponentDesc, EntityData, Networked, SystemGroup, World, WorldStreamCompEvent};
 use elements_network::{
     bi_stream_handlers, client::GameRpcArgs, datagram_handlers, server::{ForkingEvent, GameServer, ShutdownEvent}
 };
@@ -48,7 +48,7 @@ fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
 }
 
 fn is_sync_component(component: ComponentDesc, _: WorldStreamCompEvent) -> bool {
-    component.attribute::<Serializable>().is_some()
+    component.attribute::<Networked>().is_some()
 }
 
 pub fn create_rpc_registry() -> RpcRegistry<GameRpcArgs> {

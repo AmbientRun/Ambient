@@ -346,10 +346,6 @@ impl WorldStream {
                                 if loc.archetype == arch.id && arch_comp.get_content_version(loc.index) > self.version {
                                     let entry = sets.entry(entity_id).or_insert_with(Vec::new);
                                     entry.push(world.get_entry(entity_id, arch_comp.component).unwrap());
-                                    // entry.push(ComponentEntry::from_raw_parts(
-                                    //     arch_comp.component.clone_boxed(),
-                                    //     arch_comp.component.clone_value_from_world(world, *entity_id).unwrap(),
-                                    // ));
                                 }
                             }
                         }
