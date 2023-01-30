@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use elements_ecs::{
-    components, query, query_mut, Debuggable, ECSError, EntityId, FrameEvent, Networked, QueryState, Serializable, Store, System, SystemGroup, World
+    components, query, query_mut, Debuggable, ECSError, EntityId, FrameEvent, Networked, QueryState, Store, System, SystemGroup, World
 };
 use glam::*;
 

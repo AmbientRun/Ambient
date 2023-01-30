@@ -5,7 +5,7 @@ use std::{
 use parking_lot::{MappedRwLockReadGuard, MappedRwLockWriteGuard};
 
 use crate::{
-    component::{ComponentBuffer, IComponentBuffer}, get_external_attributes, get_external_attributes_init, AttributeStore, Component, ComponentDesc, ComponentRegistry, ComponentValue
+    component::{ComponentBuffer, IComponentBuffer}, get_external_attributes, get_external_attributes_init, AttributeStore, Component, ComponentDesc, ComponentValue
 };
 
 pub(crate) type ErasedHolder = ManuallyDrop<Box<ComponentHolder<()>>>;
