@@ -7,7 +7,7 @@ use axum::{
     http::{Method, StatusCode}, response::IntoResponse, routing::{get, get_service}, Router
 };
 use elements_core::{app_start_time, asset_cache, dtime, no_sync, remove_at_time, time};
-use elements_ecs::{component2::Serializable, components, ComponentDesc, EntityData, Networked, SystemGroup, World, WorldStreamCompEvent};
+use elements_ecs::{components, ComponentDesc, EntityData, Networked, Serializable, SystemGroup, World, WorldStreamCompEvent};
 use elements_network::{
     bi_stream_handlers, client::GameRpcArgs, datagram_handlers, server::{ForkingEvent, GameServer, ShutdownEvent}
 };

@@ -213,7 +213,7 @@ pub fn index_system(mut filter: ArchetypeFilter, columns: IndexColumns, index_re
                     index.remove(id);
                 }
             }),
-            Query::any_changed(components.clone()).filter(&filter).to_system(move |q, world, qs, _| {
+            Query::any_changed(components).filter(&filter).to_system(move |q, world, qs, _| {
                 let keys = {
                     let index = world.resource(index_resource);
                     q.iter(world, Some(qs)).map(|x| index.columns.key_from_entity(world, x.id())).collect_vec()

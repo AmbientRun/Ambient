@@ -152,7 +152,7 @@ pub struct Renderer {
     outlines: Outlines,
 }
 impl Renderer {
-    pub fn new(world: &mut World, assets: AssetCache, config: RendererConfig) -> Self {
+    pub fn new(_: &mut World, assets: AssetCache, config: RendererConfig) -> Self {
         let gpu = GpuKey.get(&assets);
 
         let renderer_resources = RendererResourcesKey.get(&assets);
@@ -263,7 +263,7 @@ impl Renderer {
             shadows.run(world, encoder, post_submit, &resources_bind_group, &entities_bind_group, &mesh_buffer);
         }
 
-        self.forward_globals.params.debug_params = self.shader_debug_params.clone();
+        self.forward_globals.params.debug_params = self.shader_debug_params;
         self.forward_globals.update(world, &self.shadows.as_ref().map(|x| x.get_cameras()).unwrap_or_default());
         let forward_globals_bind_group = self.forward_globals.create_bind_group(
             world.resource(asset_cache()).clone(),
@@ -294,6 +294,7 @@ impl Renderer {
                         view: target.normals().unwrap(),
                         resolve_target: None,
                         ops: wgpu::Operations {
+                            /// FIXME: clear color ignored
                             load: if let Some(clear) = clear { wgpu::LoadOp::Clear(Color::BLACK.into()) } else { wgpu::LoadOp::Load },
                             store: true,
                         },

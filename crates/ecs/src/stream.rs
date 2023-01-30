@@ -185,9 +185,9 @@ impl WorldChange {
                 if let Some(id) = id {
                     if !world.spawn_mirrored(id, data.append(spanwed_extra_data.clone())) {
                         if panic_on_error {
-                            panic!("WorldChange::apply spawn_mirror entity already exists: {:?}", id);
+                            panic!("WorldChange::apply spawn_mirror entity already exists: {id:?}");
                         } else {
-                            log::error!("WorldChange::apply spawn_mirror entity already exists: {:?}", id);
+                            log::error!("WorldChange::apply spawn_mirror entity already exists: {id:?}");
                         }
                     }
                     if create_revert {
@@ -240,7 +240,7 @@ impl WorldChange {
                     Ok(entry) => entry,
                     Err(err) => {
                         if panic_on_error {
-                            panic!("Failed to set: {:?}", err);
+                            panic!("Failed to set: {err:?}");
                         } else {
                             return None;
                         }

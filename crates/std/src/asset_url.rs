@@ -120,7 +120,7 @@ impl AbsAssetUrl {
         RelativePathBuf::from(self.0.path()).relative(path)
     }
     pub fn is_directory(&self) -> bool {
-        self.0.path().ends_with("/")
+        self.0.path().ends_with('/')
     }
     /// Ensures that this url ends with `/`, which is interpreted as a "directory" by the Url package
     pub fn as_directory(&self) -> Self {
@@ -148,14 +148,14 @@ impl AbsAssetUrl {
         if let Some(path) = self.to_file_path()? {
             Ok(tokio::fs::read(path).await.context(format!("Failed to read file at: {:}", self.0))?)
         } else {
-            Ok(download(&assets, self.0.clone(), |resp| async { Ok(resp.bytes().await?) }).await?.to_vec())
+            Ok(download(assets, self.0.clone(), |resp| async { Ok(resp.bytes().await?) }).await?.to_vec())
         }
     }
     pub async fn download_string(&self, assets: &AssetCache) -> anyhow::Result<String> {
         if let Some(path) = self.to_file_path()? {
             Ok(tokio::fs::read_to_string(path).await.context(format!("Failed to read file at: {:}", self.0))?)
         } else {
-            Ok(download(&assets, self.0.clone(), |resp| async { Ok(resp.text().await?) }).await?)
+            Ok(download(assets, self.0.clone(), |resp| async { Ok(resp.text().await?) }).await?)
         }
     }
     pub async fn download_json<T: DeserializeOwned>(&self, assets: &AssetCache) -> anyhow::Result<T> {
@@ -163,7 +163,7 @@ impl AbsAssetUrl {
             let content: Vec<u8> = tokio::fs::read(path).await.context(format!("Failed to read file at: {:}", self.0))?;
             Ok(serde_json::from_slice(&content)?)
         } else {
-            Ok(download(&assets, self.0.clone(), |resp| async { Ok(resp.json::<T>().await?) }).await?)
+            Ok(download(assets, self.0.clone(), |resp| async { Ok(resp.json::<T>().await?) }).await?)
         }
     }
     pub async fn download_toml<T: DeserializeOwned>(&self, assets: &AssetCache) -> anyhow::Result<T> {
@@ -527,7 +527,7 @@ impl GetAssetType for MaterialAssetType {
 }
 impl TypedAssetUrl<MaterialAssetType> {
     pub fn model_crate(&self) -> Option<TypedAssetUrl<ModelCrateAssetType>> {
-        Some(self.join("..").ok()?)
+        self.join("..").ok()
     }
 }
 

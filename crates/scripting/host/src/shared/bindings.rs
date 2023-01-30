@@ -102,7 +102,6 @@ macro_rules! define_component_types {
                         let primitive_component = cr.get_primitive_component(index)?;
                         fn get<T: IntoBindgen + Clone + Send + Sync + 'static>(
                             entry: &ComponentEntry,
-                            component: ComponentDesc,
                         ) -> Option<<T as IntoBindgen>::Item> {
                             Some(
                                 entry
@@ -111,12 +110,11 @@ macro_rules! define_component_types {
                             )
                         }
 
-            let c = primitive_component.desc;
                         let value = match primitive_component.ty {
                             $(
-                            PCT::$value            => CTR::[<Type $value>](get::<$type>(cu, c)?),
-                            PCT::[<Vec $value>]    => CTR::TypeList(CLTR::[<Type $value>](get::<Vec<$type>>(cu, c)?),),
-                            PCT::[<Option $value>] => CTR::TypeOption(COTR::[<Type $value>](get::<Option<$type>>(cu, c)?),),
+                            PCT::$value            => CTR::[<Type $value>](get::<$type>(cu)?),
+                            PCT::[<Vec $value>]    => CTR::TypeList(CLTR::[<Type $value>](get::<Vec<$type>>(cu)?),),
+                            PCT::[<Option $value>] => CTR::TypeOption(COTR::[<Type $value>](get::<Option<$type>>(cu)?),),
                             )*
                             _ => unreachable!(),
                         };

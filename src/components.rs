@@ -13,12 +13,12 @@ pub(crate) fn init() -> anyhow::Result<()> {
 
     crate::player::init_all_components();
 
-    load_from_toml(include_str!("components.toml"), true)?;
+    load_from_toml(include_str!("components.toml"))?;
 
     Ok(())
 }
 
-fn load_from_toml(manifest: &str, decorating: bool) -> anyhow::Result<()> {
+fn load_from_toml(manifest: &str) -> anyhow::Result<()> {
     #[derive(Deserialize, Debug)]
     #[serde(untagged)]
     enum ComponentTypeToml {
@@ -70,7 +70,7 @@ fn load_from_toml(manifest: &str, decorating: bool) -> anyhow::Result<()> {
         .map(|(id, component)| Ok((id, PrimitiveComponentType::try_from(component.type_)?)))
         .collect::<Result<_, _>>()
         .map_err(|e: &'static str| anyhow::anyhow!("{e}"))?;
-    ComponentRegistry::get_mut().add_external_from_iterator(components.into_iter(), decorating);
+    ComponentRegistry::get_mut().add_external_from_iterator(components.into_iter());
 
     Ok(())
 }

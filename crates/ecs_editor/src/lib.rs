@@ -130,7 +130,7 @@ impl ElementComponent for EntityEditor {
                     .map(|entry| {
                         FlowRow::el([
                             Text::el(format!("{}:", entry.desc().path())).set(color(), vec4(1., 1., 0., 1.)),
-                            Text::el(format!("{:?}", entry.as_debug())),
+                            Text::el(ellipsis_text(format!("{:?}", entry.as_debug()))),
                         ])
                         .set(space_between_items(), STREET)
                     })

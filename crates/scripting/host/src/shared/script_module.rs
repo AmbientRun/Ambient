@@ -9,7 +9,6 @@ use std::{
 use anyhow::Context;
 use async_trait::async_trait;
 use elements_ecs::{with_component_registry, EntityId, EntityUid, World};
-use elements_network::assert_networked;
 use elements_std::asset_url::ObjectRef;
 use glam::Vec3;
 use indexmap::IndexMap;
@@ -123,7 +122,7 @@ impl ScriptModule {
         relative_path: &Path,
         new_file: &File,
     ) -> anyhow::Result<()> {
-        let relative_path = elements_std::path::normalize(&relative_path);
+        let relative_path = elements_std::path::normalize(relative_path);
         if ScriptModule::system_controlled_files().contains(&relative_path) {
             anyhow::bail!("{relative_path:?} is system-controlled and cannot be updated");
         }

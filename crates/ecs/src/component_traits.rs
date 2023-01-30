@@ -97,9 +97,7 @@ impl<T: ComponentValue + Clone> IComponentBuffer for ComponentBuffer<T> {
 
     fn append(&mut self, mut buffer: Box<dyn IComponentBuffer>) {
         let b = buffer.as_mut_any().downcast_mut::<ComponentBuffer<T>>().unwrap();
-        let x = b.data.pop().unwrap();
         self.data.append(&mut b.data);
-        // self.data.resize(self.data.len() + count, x);
     }
 
     fn push(&mut self, entry: ComponentEntry) {

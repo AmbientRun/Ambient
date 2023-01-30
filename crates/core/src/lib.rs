@@ -5,9 +5,7 @@ use std::{
     sync::Arc, time::{Duration, Instant, SystemTime}
 };
 
-use elements_ecs::{
-    components, query, Debuggable, DynSystem, EntityId, FrameEvent, Networked, QueryState, Serializable, Store, System, World
-};
+use elements_ecs::{components, query, Debuggable, DynSystem, EntityId, FrameEvent, Networked, QueryState, Store, System, World};
 use elements_gpu::{gpu::Gpu, mesh_buffer::GpuMesh};
 
 pub mod async_ecs;

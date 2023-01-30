@@ -361,7 +361,7 @@ impl World {
             if mapping.active_components == prev_comps {
                 assert_eq!(mapping.removes.len(), 0);
                 let arch = self.archetypes.get_mut(loc.archetype).expect("No such archetype");
-                for (desc, value) in mapping.sets.into_iter() {
+                for (_, value) in mapping.sets.into_iter() {
                     arch.set_component_raw(loc.index, entity_id, value, version);
                 }
             } else {
@@ -522,7 +522,7 @@ impl World {
             arch.dump_entity(loc.index, indent, f);
         } else {
             let indent = format!("{:indent$}", "", indent = indent);
-            writeln!(f, "{indent}ERROR, NO SUCH ENTITY: {}", entity_id).unwrap();
+            writeln!(f, "{indent}ERROR, NO SUCH ENTITY: {entity_id}").unwrap();
         }
     }
 

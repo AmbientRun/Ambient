@@ -280,13 +280,13 @@ impl PbrMaterialFromUrl {
             normalmap: if let Some(x) = &self.normalmap { Some(base_url.relative_path(x.path()).into()) } else { None },
             metallic_roughness: if let Some(x) = &self.metallic_roughness { Some(base_url.relative_path(x.path()).into()) } else { None },
 
-            base_color_factor: self.base_color_factor.clone(),
-            emissive_factor: self.emissive_factor.clone(),
-            transparent: self.transparent.clone(),
-            alpha_cutoff: self.alpha_cutoff.clone(),
-            double_sided: self.double_sided.clone(),
-            metallic: self.metallic.clone(),
-            roughness: self.roughness.clone(),
+            base_color_factor: self.base_color_factor,
+            emissive_factor: self.emissive_factor,
+            transparent: self.transparent,
+            alpha_cutoff: self.alpha_cutoff,
+            double_sided: self.double_sided,
+            metallic: self.metallic,
+            roughness: self.roughness,
         }
     }
 }
