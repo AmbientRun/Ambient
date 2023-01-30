@@ -9,7 +9,7 @@ use elements_element::{element_component, Element, ElementComponentExt, Hooks};
 use elements_network::{
     client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce}, events::ServerEventRegistry
 };
-use elements_renderer_debugger::RendererDebugger;
+use elements_debugger::RendererDebugger;
 use elements_std::{asset_cache::AssetCache, Cb};
 use elements_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
 

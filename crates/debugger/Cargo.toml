@@ -1,5 +1,5 @@
 [package]
-name = "elements_renderer_debugger"
+name = "elements_debugger"
 version.workspace = true
 edition = "2021"
 
