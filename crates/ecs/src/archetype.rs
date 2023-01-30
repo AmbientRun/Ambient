@@ -5,7 +5,7 @@ use elements_std::sparse_vec::SparseVec;
 
 use super::*;
 use crate::{
-    component::{ComponentBuffer, IComponentBuffer}, ComponentEntry
+    component_traits::{ComponentBuffer, IComponentBuffer}, ComponentEntry
 };
 
 pub(super) struct ArchComponentData(UnsafeCell<Box<dyn IComponentBuffer>>);
@@ -108,7 +108,7 @@ impl EntityMoveData {
 impl From<EntityMoveData> for EntityData {
     fn from(data: EntityMoveData) -> Self {
         let mut ed = EntityData::new();
-        for mut comp in data.content.into_iter() {
+        for comp in data.content.into_iter() {
             ed.set_entry(comp.data);
         }
         ed

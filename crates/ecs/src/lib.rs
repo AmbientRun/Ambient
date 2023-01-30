@@ -26,10 +26,10 @@ use thiserror::Error;
 
 mod archetype;
 mod attributes;
-mod component;
-pub mod component2;
+pub mod component;
 mod component_entry;
 mod component_registry;
+mod component_traits;
 mod component_unit;
 mod entity_data;
 mod entity_uid;
@@ -42,7 +42,7 @@ mod serialization;
 mod stream;
 pub use archetype::*;
 pub use attributes::*;
-pub use component2::{Component, ComponentDesc, ComponentValue, ComponentValueBase};
+pub use component::{Component, ComponentDesc, ComponentValue, ComponentValueBase};
 pub use component_entry::*;
 pub use component_registry::*;
 pub use component_unit::*;
@@ -234,7 +234,7 @@ impl World {
     pub fn set<T: ComponentValue>(
         &mut self,
         entity_id: EntityId,
-        component: crate::component2::Component<T>,
+        component: crate::component::Component<T>,
         value: T,
     ) -> Result<T, ECSError> {
         let p = self.get_mut(entity_id, component)?;
