@@ -194,13 +194,29 @@ pub struct UIRender {
     gpu: Arc<Gpu>,
     ui_renderer: Renderer,
     depth_buffer_view: Arc<TextureView>,
+    normals_view: Arc<TextureView>,
 }
+
 impl UIRender {
     pub fn new(world: &mut World) -> Self {
         let gpu = world.resource(gpu()).clone();
         let window = world.resource(window());
         let size = window.inner_size();
         let depth_buffer = Arc::new(Self::create_depth_buffer(gpu.clone(), &size));
+
+        let normals = Arc::new(Texture::new(
+            gpu.clone(),
+            &wgpu::TextureDescriptor {
+                label: Some("RenderTarget.depth_buffer"),
+                size: wgpu::Extent3d { width: size.width, height: size.height, depth_or_array_layers: 1 },
+                mip_level_count: 1,
+                sample_count: 1,
+                dimension: wgpu::TextureDimension::D2,
+                format: wgpu::TextureFormat::Rgba8Snorm,
+                usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
+            },
+        ));
+
         let assets = world.resource(asset_cache()).clone();
         Self {
             ui_renderer: Renderer::new(
@@ -215,8 +231,10 @@ impl UIRender {
             ),
             depth_buffer_view: Arc::new(depth_buffer.create_view(&Default::default())),
             gpu,
+            normals_view: Arc::new(normals.create_view(&Default::default())),
         }
     }
+
     fn create_depth_buffer(gpu: Arc<Gpu>, size: &PhysicalSize<u32>) -> Texture {
         Texture::new(
             gpu,
@@ -231,10 +249,12 @@ impl UIRender {
             },
         )
     }
+
     fn resize(&mut self, size: &PhysicalSize<u32>) {
         let depth_buffer = Arc::new(Self::create_depth_buffer(self.gpu.clone(), size));
         self.depth_buffer_view = Arc::new(depth_buffer.create_view(&Default::default()));
     }
+
     fn render(&mut self, world: &mut World) {
         let gpu = world.resource(gpu()).clone();
         let mut encoder = gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("UIRenderer") });
@@ -242,6 +262,7 @@ impl UIRender {
             profiling::scope!("Get swapchain texture");
             gpu.surface.as_ref().unwrap().get_current_texture().expect("Failed to acquire next swap chain texture")
         };
+
         let window_size = world.resource(window()).inner_size();
         let frame_view = frame.texture.create_view(&wgpu::TextureViewDescriptor::default());
         let mut post_submit = Vec::new();
@@ -253,6 +274,7 @@ impl UIRender {
                 color: &frame_view,
                 depth: &self.depth_buffer_view,
                 size: wgpu::Extent3d { width: window_size.width, height: window_size.height, depth_or_array_layers: 1 },
+                normals: &self.normals_view,
             },
             Some(app_background_color()),
         );

@@ -11,7 +11,7 @@ use elements_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, color::Color
 };
 use glam::uvec2;
-use wgpu::BindGroupLayout;
+use wgpu::{BindGroupLayout, TextureView};
 
 use super::{
     get_common_module, get_globals_module, get_resources_module, overlay_renderer::{OverlayConfig, OverlayRenderer}, shadow_renderer::ShadowsRenderer, Culling, FSMain, ForwardGlobals, Outlines, OutlinesConfig, RenderTarget, RendererCollect, RendererCollectState, TransparentRenderer, TransparentRendererConfig, TreeRenderer, TreeRendererConfig
@@ -96,25 +96,25 @@ impl Default for RendererConfig {
 
 pub enum RendererTarget<'a> {
     Target(&'a RenderTarget),
-    Direct { color: &'a wgpu::TextureView, depth: &'a wgpu::TextureView, size: wgpu::Extent3d },
+    Direct { color: &'a TextureView, depth: &'a TextureView, normals: &'a TextureView, size: wgpu::Extent3d },
 }
 impl<'a> RendererTarget<'a> {
-    pub fn color(&self) -> &'a wgpu::TextureView {
+    pub fn color(&self) -> &'a TextureView {
         match self {
             RendererTarget::Target(target) => &target.color_buffer_view,
             RendererTarget::Direct { color, .. } => color,
         }
     }
-    pub fn depth(&self) -> &'a wgpu::TextureView {
+    pub fn depth(&self) -> &'a TextureView {
         match self {
             RendererTarget::Target(target) => &target.depth_buffer_view,
             RendererTarget::Direct { depth, .. } => depth,
         }
     }
-    pub fn normals(&self) -> Option<&'a wgpu::TextureView> {
+    pub fn normals(&self) -> &'a TextureView {
         match self {
-            RendererTarget::Target(target) => Some(&target.normals_quat_buffer_view),
-            RendererTarget::Direct { .. } => None,
+            RendererTarget::Target(target) => &target.normals_quat_buffer_view,
+            RendererTarget::Direct { normals, .. } => normals,
         }
     }
     pub fn size(&self) -> wgpu::Extent3d {
@@ -291,7 +291,7 @@ impl Renderer {
                         },
                     }),
                     Some(wgpu::RenderPassColorAttachment {
-                        view: target.normals().unwrap(),
+                        view: target.normals(),
                         resolve_target: None,
                         ops: wgpu::Operations {
                             /// FIXME: clear color ignored
