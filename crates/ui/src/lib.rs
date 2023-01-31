@@ -1,5 +1,5 @@
 use std::{
-    collections::HashMap, fmt::Debug, ops::Deref, sync::{
+    collections::HashMap, fmt::Debug, sync::{
         atomic::{AtomicBool, Ordering}, Arc
     }
 };
@@ -16,7 +16,7 @@ use elements_input::{
     on_app_mouse_input, on_app_mouse_motion, on_app_mouse_wheel, picking::{mouse_pickable, on_mouse_enter, on_mouse_hover, on_mouse_input, on_mouse_leave, on_mouse_wheel}
 };
 pub use elements_std::Cb;
-use elements_std::{color::Color, shapes::AABB, time::Timeout};
+use elements_std::{color::Color, shapes::AABB};
 use glam::*;
 use itertools::Itertools;
 use parking_lot::Mutex;
@@ -26,6 +26,7 @@ mod asset_url;
 mod button;
 mod collections;
 mod dropdown;
+mod editor;
 pub mod graph;
 mod hooks;
 mod image;
@@ -47,6 +48,7 @@ pub use asset_url::*;
 pub use button::*;
 pub use collections::*;
 pub use dropdown::*;
+pub use editor::*;
 pub use hooks::*;
 pub use input::*;
 pub use layout::*;
@@ -351,100 +353,6 @@ pub fn HighjackMouse(
                 }
             }),
         )
-}
-
-#[derive(Clone, Debug)]
-pub struct EditorOpts {
-    pub enum_can_change_type: bool,
-}
-
-impl Default for EditorOpts {
-    fn default() -> Self {
-        Self { enum_can_change_type: true }
-    }
-}
-
-pub trait Editor {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, opts: EditorOpts) -> Element;
-}
-
-impl Editor for EditableDuration {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
-        DurationEditor::new(self, on_change.unwrap_or_else(|| Cb(Arc::new(|_| {})))).el()
-    }
-}
-
-impl<T: Editor + 'static> Editor for Box<T> {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, opts: EditorOpts) -> Element {
-        T::editor(*self, on_change.map(|cb| Cb(Arc::new(move |new_value| cb.0(Box::new(new_value))) as Arc<dyn Fn(T) + Sync + Send>)), opts)
-    }
-}
-
-impl<T> Editor for Arc<T>
-where
-    T: 'static + Send + Sync + Clone + Editor,
-{
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, opts: EditorOpts) -> Element {
-        T::editor(self.deref().clone(), on_change.map(|f| Cb::new(move |v: T| f(Arc::new(v))) as Cb<dyn Fn(T) + Sync + Send>), opts)
-    }
-}
-
-impl<T> Editor for Arc<Mutex<T>>
-where
-    T: 'static + Send + Sync + Clone + Editor,
-{
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, opts: EditorOpts) -> Element {
-        let v: T = self.lock().clone();
-        T::editor(
-            v,
-            on_change.map(|f| {
-                Cb::new(move |v: T| {
-                    // Update the shared value
-                    *self.lock() = v;
-                    // Give the same value which is now internally mutated
-                    f(self.clone())
-                }) as Cb<dyn Fn(T) + Sync + Send>
-            }),
-            opts,
-        )
-    }
-}
-impl Editor for () {
-    fn editor(self, _on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _opts: EditorOpts) -> Element {
-        Element::new()
-    }
-}
-
-impl Editor for Timeout {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
-        let on_change = on_change.unwrap_or_else(|| Cb::new(|_| {}));
-
-        DurationEditor::new(
-            EditableDuration::new(self.duration(), true, self.duration().as_secs().to_string()),
-            Cb::new(move |v| (on_change)(Timeout::new(v.dur()))),
-        )
-        .el()
-    }
-}
-
-impl<T: Default + Editor + 'static> Editor for Option<T> {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, opts: EditorOpts) -> Element {
-        if let Some(on_change) = on_change {
-            if let Some(inner_value) = self {
-                FlowRow(vec![
-                    Button::new("\u{f056}", closure!(clone on_change, |_| on_change.0(None))).style(ButtonStyle::Flat).el(),
-                    T::editor(inner_value, Some(Cb(Arc::new(closure!(clone on_change, |value| on_change.0(Some(value)))))), opts),
-                ])
-                .el()
-            } else {
-                Button::new("\u{f055}", closure!(clone on_change, |_| on_change.0(Some(T::default())))).style(ButtonStyle::Flat).el()
-            }
-        } else if let Some(value) = self {
-            T::editor(value, None, opts)
-        } else {
-            Text::el("None")
-        }
-    }
 }
 
 pub trait UIExt {
