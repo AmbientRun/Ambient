@@ -22,6 +22,7 @@ pub mod shapes;
 pub mod sparse_vec;
 pub mod time;
 
+use itertools::Itertools;
 pub use time::{FromDuration, IntoDuration};
 
 /// Read a file as a string during debug at runtime, or use include_str at release
@@ -256,4 +257,13 @@ pub fn pretty_duration(duration: Duration) -> String {
     }
 
     res.join(" ")
+}
+
+pub trait IntoSorted {
+    fn into_sorted(self) -> Self;
+}
+impl<T: Ord> IntoSorted for Vec<T> {
+    fn into_sorted(self) -> Self {
+        self.into_iter().sorted().collect()
+    }
 }

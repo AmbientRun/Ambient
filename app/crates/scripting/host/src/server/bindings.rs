@@ -63,11 +63,7 @@ trait FromElementsRuntimeBindgen {
 impl FromElementsRuntimeBindgen for host::EntityId {
     type Item = EntityId;
     fn from_elements_runtime_bindgen(self) -> Self::Item {
-        EntityId {
-            namespace: self.namespace,
-            id: self.id as usize,
-            gen: self.gen,
-        }
+        EntityId::from_u64s(self.id0, self.id1)
     }
 }
 

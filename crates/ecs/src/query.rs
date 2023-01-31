@@ -37,7 +37,7 @@ impl ArchetypeFilter {
         components.is_superset(&self.components) && components.is_disjoint(&self.not_components)
     }
     pub fn matches_entity(&self, world: &World, id: EntityId) -> bool {
-        if let Some(loc) = world.locs.get(id) {
+        if let Some(loc) = world.locs.get(&id) {
             let arch = world.archetypes.get(loc.archetype).expect("Archetype doesn't exist");
             self.matches(&arch.active_components)
         } else {
@@ -244,39 +244,54 @@ impl<T: ComponentValue> ComponentsTupleAppend<T> for () {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-struct EntityMark {
-    value: u64,
-    gen: i32,
-}
+// TODO: This will just grow forever, need to figure out something more clever
+// #[derive(Debug, Clone, Copy)]
+// struct EntityMark {
+//     value: u64,
+//     gen: i32,
+// }
 #[derive(Debug, Clone)]
 struct EntityMarker {
-    marks: Vec<Vec<EntityMark>>,
+    marks: HashMap<EntityId, u64, EntityIdHashBuilder>,
 }
 impl EntityMarker {
     fn new() -> Self {
-        Self { marks: Vec::new() }
+        Self { marks: HashMap::with_hasher(EntityIdHashBuilder) }
     }
     fn prepare_for_query(&mut self, world: &World) {
-        if self.marks.len() < world.locs.allocated.len() {
-            self.marks.resize(world.locs.allocated.len(), Vec::new());
-        }
-        for (i, vals) in world.locs.allocated.iter().enumerate() {
-            if self.marks[i].len() < vals.len() {
-                self.marks[i].resize(vals.len(), EntityMark { value: 0, gen: -1 });
-            }
-        }
+        // if self.marks.len() < world.locs.allocated.len() {
+        //     self.marks.resize(world.locs.allocated.len(), Vec::new());
+        // }
+        // for (i, vals) in world.locs.allocated.iter().enumerate() {
+        //     if self.marks[i].len() < vals.len() {
+        //         self.marks[i].resize(vals.len(), EntityMark { value: 0, gen: -1 });
+        //     }
+        // }
     }
     /// This returns true if the value hasn't been set for this entity before. I.e.:
     /// mark(5, 3) -> false
     /// mark(5, 3) -> true
     /// mark(5, 4) -> false
     fn mark(&mut self, id: EntityId, value: u64) -> bool {
-        let cell = &mut self.marks[id.namespace as usize][id.id];
-        let changed = cell.gen != id.gen || cell.value != value;
-        cell.value = value;
-        cell.gen = id.gen;
-        changed
+        match self.marks.entry(id) {
+            std::collections::hash_map::Entry::Occupied(mut o) => {
+                if *o.get() == value {
+                    false
+                } else {
+                    *o.get_mut() = value;
+                    true
+                }
+            }
+            std::collections::hash_map::Entry::Vacant(v) => {
+                v.insert(value);
+                true
+            }
+        }
+        // let cell = &mut self.marks[id.namespace as usize][id.id];
+        // let changed = cell.gen != id.gen || cell.value != value;
+        // cell.value = value;
+        // cell.gen = id.gen;
+        // changed
     }
 }
 
@@ -448,7 +463,7 @@ impl Query {
                     let read = state.get_change_reader(arch.id, comp.index() as _);
                     let events = &*arch_comp.changes.borrow();
                     for (_, &entity_id) in read.iter(events) {
-                        if let Some(loc) = world.locs.get(entity_id) {
+                        if let Some(loc) = world.locs.get(&entity_id) {
                             if loc.archetype == arch.id
                                 && arch_comp.get_content_version(loc.index) > state.world_version
                                 && state.processed.mark(entity_id, state.processed_ticker)
@@ -474,7 +489,7 @@ impl Query {
         for arch in self.filter.iter_by_archetypes(&world.archetypes) {
             let read = state.get_movein_reader(arch.id);
             for (_, id) in read.iter(&arch.movein_events) {
-                if let Some(loc) = world.locs.get(*id) {
+                if let Some(loc) = world.locs.get(id) {
                     if loc.archetype == arch.id {
                         let spawn = state.spawned.mark(*id, 1);
                         if spawn {
@@ -503,7 +518,7 @@ impl Query {
         for arch in self.filter.iter_by_archetypes(&world.archetypes) {
             let read = state.get_moveout_reader(arch.id);
             for (event_id, (id, _)) in read.iter(&arch.moveout_events) {
-                let next_matched = if let Some(loc) = world.locs.get(*id) {
+                let next_matched = if let Some(loc) = world.locs.get(id) {
                     self.filter.matches(&world.archetypes[loc.archetype].active_components)
                 } else {
                     false

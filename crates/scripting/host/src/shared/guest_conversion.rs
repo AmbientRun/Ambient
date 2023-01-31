@@ -12,9 +12,8 @@ impl GuestConvert for host::EntityId {
     type Item = guest::EntityId;
     fn guest_convert(self) -> Self::Item {
         Self::Item {
-            namespace: self.namespace,
-            id: self.id,
-            gen: self.gen,
+            id0: self.id0,
+            id1: self.id1,
         }
     }
 }

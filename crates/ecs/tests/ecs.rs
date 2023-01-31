@@ -127,9 +127,9 @@ fn remove_despawn() {
 fn mirroring() {
     init();
     let mut world = World::new("mirroring");
-    let id1 = EntityId { namespace: 1, id: 5, gen: 3 };
-    let id1b = EntityId { namespace: 1, id: 5, gen: 4 };
-    let id2 = EntityId { namespace: 1, id: 7, gen: 3 };
+    let id1 = EntityId(5);
+    let id1b = EntityId(7);
+    let id2 = EntityId(9);
     world.spawn_mirrored(id1, EntityData::new().set(a(), 3.));
     world.get(id1, a()).unwrap();
     assert_eq!(query((a(),)).iter(&world, None).count(), 1);
@@ -164,7 +164,7 @@ fn content_version_should_remain_on_remove() {
 #[test]
 fn no_resources() {
     init();
-    let world = World::new_with_config("no_resources", 0, false);
+    let world = World::new_with_config("no_resources", false);
     assert!(!world.exists(world.resource_entity()));
     assert!(world.resource_opt(a()).is_none());
 }
@@ -177,7 +177,7 @@ fn fresh_moveout_event_reader_should_work() {
     // This test checks that this is no longer the case.
 
     init();
-    let mut world = World::new_with_config("fresh_moveout_event_reader_should_work", 0, false);
+    let mut world = World::new_with_config("fresh_moveout_event_reader_should_work", false);
 
     // Ensure that spawn queries work correctly.
     let mut spawn_query_state = QueryState::new();

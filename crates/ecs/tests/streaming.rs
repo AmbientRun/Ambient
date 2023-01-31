@@ -43,7 +43,7 @@ fn from_a_to_b_remove_component() {
 #[test]
 fn streaming() {
     init();
-    let mut source = World::new_with_config("streaming_src", 1, true);
+    let mut source = World::new_with_config("streaming_src", true);
     source.init_shape_change_tracking();
     source.add_component(source.resource_entity(), no_sync(), ()).ok();
     let mut dest = World::new("streaming_dst");

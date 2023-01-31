@@ -90,7 +90,7 @@ components!("ecs", {
 pub struct World {
     name: &'static str,
     archetypes: Vec<Archetype>,
-    locs: EntityLocations,
+    locs: HashMap<EntityId, EntityLocation, EntityIdHashBuilder>,
     loc_changed: FramedEvents<EntityId>,
     version: CloneableAtomicU64,
     shape_change_events: Option<FramedEvents<WorldChange>>,
@@ -99,40 +99,29 @@ pub struct World {
 }
 impl World {
     pub fn new(name: &'static str) -> Self {
-        Self::new_with_config(name, 0, true)
+        Self::new_with_config(name, true)
     }
-    pub fn new_with_config(name: &'static str, namespace: u8, resources: bool) -> Self {
-        Self::new_with_config_internal(name, namespace, if resources { CreateResources::Create } else { CreateResources::AllocateLoc })
+    pub fn new_with_config(name: &'static str, resources: bool) -> Self {
+        Self::new_with_config_internal(name, resources)
     }
-    fn new_with_config_internal(name: &'static str, namespace: u8, resources: CreateResources) -> Self {
+    fn new_with_config_internal(name: &'static str, resources: bool) -> Self {
         let mut world = Self {
             name,
             archetypes: Vec::new(),
-            locs: EntityLocations::new(0),
+            locs: HashMap::with_hasher(EntityIdHashBuilder),
             loc_changed: FramedEvents::new(),
             version: CloneableAtomicU64::new(0),
             shape_change_events: None,
             ignore_query_inits: false,
         };
-        match resources {
-            CreateResources::Create => {
-                world.spawn(EntityData::new());
-            }
-            CreateResources::AllocateLoc => {
-                // Reserve 0:0:0 for resources
-                let id = world.spawn(EntityData::new());
-                world.despawn(id);
-            }
-            CreateResources::None => {}
-        }
-        if namespace != 0 {
-            world.set_namespace(namespace);
+        if resources {
+            world.spawn_mirrored(EntityId::resources(), EntityData::new());
         }
         world
     }
     /// Clones all entities specified in the source world and returns a new world with them
     pub fn from_entities(world: &World, entities: impl IntoIterator<Item = EntityId>, serialiable_only: bool) -> Self {
-        let mut res = World::new_with_config("from_entities", 0, false);
+        let mut res = World::new_with_config("from_entities", false);
         for id in entities {
             let mut entity = world.clone_entity(id).unwrap();
             if serialiable_only {
@@ -159,7 +148,10 @@ impl World {
         self.batch_spawn(entity_data, 1).pop().unwrap()
     }
     pub fn batch_spawn(&mut self, entity_data: EntityData, count: usize) -> Vec<EntityId> {
-        let ids = self.locs.allocate(count);
+        let ids = (0..count).map(|_| EntityId::new()).collect_vec();
+        for id in &ids {
+            self.locs.insert(*id, EntityLocation::empty());
+        }
         if let Some(events) = &mut self.shape_change_events {
             events.add_events(ids.iter().map(|id| WorldChange::Spawn(Some(*id), entity_data.clone())));
         }
@@ -169,7 +161,8 @@ impl World {
     /// Spawn an entity which lives remotely, and is just mirrored locally; i.e. the id is managed
     /// on the remote side. Returns false if the id already exists
     pub fn spawn_mirrored(&mut self, entity_id: EntityId, entity_data: EntityData) -> bool {
-        if self.locs.allocate_mirror(entity_id) {
+        if !self.locs.contains_key(&entity_id) {
+            self.locs.insert(entity_id, EntityLocation::empty());
             self.spawn_with_ids(EntityMoveData::from_entity_data(entity_data, self.version() + 1), vec![entity_id]);
             true
         } else {
@@ -188,22 +181,22 @@ impl World {
         };
         let arch = &mut self.archetypes[arch_id];
         for (i, id) in ids.iter().enumerate() {
-            let loc = self.locs.get_mut(*id).expect("No such entity id");
+            let loc = self.locs.get_mut(id).expect("No such entity id");
             loc.archetype = arch.id;
             loc.index = arch.next_index() + i;
         }
         arch.movein(ids, entity_data);
     }
     pub fn despawn(&mut self, entity_id: EntityId) -> Option<EntityData> {
-        if let Some(loc) = self.locs.get(entity_id) {
+        if let Some(loc) = self.locs.remove(&entity_id) {
             let version = self.inc_version();
             if let Some(events) = &mut self.shape_change_events {
                 events.add_event(WorldChange::Despawn(entity_id));
             }
             let arch = self.archetypes.get_mut(loc.archetype).expect("No such archetype");
             let last_entity_in_arch = *arch.entity_indices_to_ids.last().unwrap();
-            self.locs.free(loc, entity_id, last_entity_in_arch);
             if last_entity_in_arch != entity_id {
+                self.locs.get_mut(&last_entity_in_arch).unwrap().index = loc.index;
                 self.loc_changed.add_event(last_entity_in_arch);
             }
             Some(arch.moveout(loc.index, entity_id, version).into())
@@ -239,7 +232,7 @@ impl World {
     }
 
     pub fn set_entry(&mut self, entity_id: EntityId, entry: ComponentEntry) -> Result<ComponentEntry, ECSError> {
-        if let Some(loc) = self.locs.get(entity_id) {
+        if let Some(loc) = self.locs.get(&entity_id) {
             let version = self.inc_version();
             let arch = self.archetypes.get_mut(loc.archetype).expect("Archetype doesn't exist");
             arch.replace_with_entry(entity_id, loc.index, entry, version)
@@ -265,7 +258,7 @@ impl World {
         self.get_mut_unsafe(entity_id, component)
     }
     pub(crate) fn get_mut_unsafe<T: ComponentValue>(&self, entity_id: EntityId, component: Component<T>) -> Result<&mut T, ECSError> {
-        if let Some(loc) = self.locs.get(entity_id) {
+        if let Some(loc) = self.locs.get(&entity_id) {
             self.inc_version();
             let arch = self.archetypes.get(loc.archetype).expect("Archetype doesn't exist");
             match arch.get_component_mut(loc.index, entity_id, component, self.version()) {
@@ -283,7 +276,7 @@ impl World {
         self.get_ref(entity_id, component).map(|x| x.clone())
     }
     pub fn get_ref<T: ComponentValue>(&self, entity_id: EntityId, component: Component<T>) -> Result<&T, ECSError> {
-        if let Some(loc) = self.locs.get(entity_id) {
+        if let Some(loc) = self.locs.get(&entity_id) {
             let arch = self.archetypes.get(loc.archetype).expect("Archetype doesn't exist");
             match arch.get_component(loc.index, component) {
                 Some(d) => Ok(d),
@@ -296,7 +289,7 @@ impl World {
         }
     }
     pub fn get_entry(&self, entity_id: EntityId, component: ComponentDesc) -> Result<ComponentEntry, ECSError> {
-        if let Some(loc) = self.locs.get(entity_id) {
+        if let Some(loc) = self.locs.get(&entity_id) {
             let arch = self.archetypes.get(loc.archetype).expect("Archetype doesn't exist");
             match arch.get_component_buffer_untyped(component) {
                 Some(d) => Ok(d.clone_value_boxed(loc.index)),
@@ -307,7 +300,7 @@ impl World {
         }
     }
     pub fn has_component_index(&self, entity_id: EntityId, component_index: u32) -> bool {
-        if let Some(loc) = self.locs.get(entity_id) {
+        if let Some(loc) = self.locs.get(&entity_id) {
             let arch = self.archetypes.get(loc.archetype).expect("Archetype doesn't exist");
             arch.active_components.contains_index(component_index as usize)
         } else {
@@ -323,7 +316,7 @@ impl World {
         self.has_component_ref(entity_id, component.into())
     }
     pub fn get_components(&self, entity_id: EntityId) -> Result<Vec<ComponentDesc>, ECSError> {
-        if let Some(loc) = self.locs.get(entity_id) {
+        if let Some(loc) = self.locs.get(&entity_id) {
             let arch = self.archetypes.get(loc.archetype).expect("Archetype doesn't exist");
             Ok(arch.components.iter().map(|x| x.component).collect_vec())
         } else {
@@ -345,11 +338,11 @@ impl World {
         query(()).iter(self, None).map(|(id, _)| (id, self.clone_entity(id).unwrap())).collect()
     }
     pub fn exists(&self, entity_id: EntityId) -> bool {
-        self.locs.exists(entity_id)
+        self.locs.contains_key(&entity_id)
     }
 
     fn map_entity(&mut self, entity_id: EntityId, map: impl FnOnce(MapEntity) -> MapEntity) -> Result<(), ECSError> {
-        if let Some(loc) = self.locs.get(entity_id) {
+        if let Some(loc) = self.locs.get(&entity_id).cloned() {
             let version = self.inc_version();
             let prev_comps = self.archetypes.get_mut(loc.archetype).expect("No such archetype").active_components.clone();
 
@@ -364,7 +357,9 @@ impl World {
             } else {
                 let arch = self.archetypes.get_mut(loc.archetype).expect("No such archetype");
                 let last_entity_in_arch = *arch.entity_indices_to_ids.last().unwrap();
-                self.locs.on_swap_remove(loc, last_entity_in_arch);
+                if entity_id != last_entity_in_arch {
+                    self.locs.get_mut(&last_entity_in_arch).unwrap().index = loc.index;
+                }
                 self.loc_changed.add_event(last_entity_in_arch);
                 self.loc_changed.add_event(entity_id);
                 let mut data = arch.moveout(loc.index, entity_id, version);
@@ -404,7 +399,7 @@ impl World {
         self.map_entity(entity_id, |entity| entity.remove_components(components))
     }
     pub fn resource_entity(&self) -> EntityId {
-        EntityId { namespace: 0, id: 0, gen: 0 }
+        EntityId::resources()
     }
     pub fn resource_opt<T: ComponentValue>(&self, component: Component<T>) -> Option<&T> {
         self.get_ref(self.resource_entity(), component).ok()
@@ -424,14 +419,14 @@ impl World {
     pub fn archetypes(&self) -> &Vec<Archetype> {
         &self.archetypes
     }
-    pub fn entity_loc(&self, id: EntityId) -> Option<EntityLocation> {
-        self.locs.get(id)
+    pub fn entity_loc(&self, id: EntityId) -> Option<&EntityLocation> {
+        self.locs.get(&id)
     }
     /// Returns the content version of this component, which only changes when the component is written to (not when the entity changes archetype)
     pub fn get_component_content_version(&self, entity_id: EntityId, index: u32) -> Result<u64, ECSError> {
-        if let Some(loc) = self.locs.get(entity_id) {
+        if let Some(loc) = self.locs.get(&entity_id) {
             let arch = self.archetypes.get(loc.archetype).expect("Archetype doesn't exist");
-            match arch.get_component_content_version(loc, index) {
+            match arch.get_component_content_version(*loc, index) {
                 Some(d) => Ok(d),
                 None => Err(ECSError::EntityDoesntHaveComponent { component_index: index as _, name: "".to_string() }),
             }
@@ -491,9 +486,6 @@ impl World {
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
-    pub fn set_namespace(&mut self, namespace: u8) {
-        self.locs.set_namespace(namespace);
-    }
 
     pub fn debug_archetypes(&self) -> DebugWorldArchetypes {
         DebugWorldArchetypes { world: self }
@@ -513,7 +505,7 @@ impl World {
         log::info!("Wrote ecs to tmp/ecs.txt");
     }
     pub fn dump_entity(&self, entity_id: EntityId, indent: usize, f: &mut dyn std::io::Write) {
-        if let Some(loc) = self.locs.get(entity_id) {
+        if let Some(loc) = self.locs.get(&entity_id) {
             let arch = self.archetypes.get(loc.archetype).expect("No such archetype");
 
             arch.dump_entity(loc.index, indent, f);
@@ -524,7 +516,7 @@ impl World {
     }
 
     pub fn dump_entity_to_yml(&self, entity_id: EntityId) -> Option<(String, yaml_rust::yaml::Hash)> {
-        if let Some(loc) = self.locs.get(entity_id) {
+        if let Some(loc) = self.locs.get(&entity_id) {
             let arch = self.archetypes.get(loc.archetype).expect("No such archetype");
             Some(arch.dump_entity_to_yml(loc.index))
         } else {
@@ -553,12 +545,6 @@ impl std::fmt::Debug for World {
 
 unsafe impl Send for World {}
 unsafe impl Sync for World {}
-
-enum CreateResources {
-    Create,
-    AllocateLoc,
-    None,
-}
 
 // TODO(fred): Move this into the actual components instead
 pub static COMPONENT_ENTITY_ID_MIGRATERS: Mutex<Vec<fn(&mut World, EntityId, &HashMap<EntityId, EntityId>)>> = Mutex::new(Vec::new());

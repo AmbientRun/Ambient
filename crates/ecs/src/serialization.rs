@@ -5,7 +5,7 @@ use serde::{
     de::{MapAccess, Visitor}, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer
 };
 
-use crate::{dont_store, query, CreateResources, DeserEntityDataWithWarnings, EntityData, EntityId, Serializable, World};
+use crate::{dont_store, query, DeserEntityDataWithWarnings, EntityData, EntityId, Serializable, World};
 
 impl Serialize for World {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
@@ -56,7 +56,7 @@ impl<'de> Deserialize<'de> for World {
             where
                 V: MapAccess<'de>,
             {
-                let mut res = World::new_with_config_internal("deserialized-world", 0, CreateResources::None);
+                let mut res = World::new_with_config_internal("deserialized-world", false);
                 while let Some((id, entity)) = map.next_entry::<EntityId, EntityData>()? {
                     res.spawn_mirrored(id, entity);
                 }
@@ -93,10 +93,8 @@ impl<'de> Deserialize<'de> for DeserWorldWithWarnings {
             where
                 V: MapAccess<'de>,
             {
-                let mut res = DeserWorldWithWarnings {
-                    world: World::new_with_config_internal("deserialized", 0, CreateResources::None),
-                    warnings: Default::default(),
-                };
+                let mut res =
+                    DeserWorldWithWarnings { world: World::new_with_config_internal("deserialized", false), warnings: Default::default() };
                 while let Some((id, entity)) = map.next_entry::<EntityId, DeserEntityDataWithWarnings>()? {
                     res.world.spawn_mirrored(id, entity.entity);
                     res.warnings.warnings.extend(entity.warnings.warnings.into_iter().map(|(_, key, err)| (id, key, err)));
@@ -161,7 +159,7 @@ mod test {
         let id = EntityData::new().set(ser_test3(), "hi".to_string()).spawn(&mut world);
 
         let ser = serde_json::to_string(&world).unwrap();
-        assert_eq!(&ser, r#"{"0:0:0":{},"0:1:0":{"core::test::ser_test3":"hi"}}"#);
+        assert_eq!(&ser, &format!("{{\"1\":{{}},\"{id}\":{{\"core::test::ser_test3\":\"hi\"}}}}"));
 
         let deser: DeserWorldWithWarnings = serde_json::from_str(&ser).unwrap();
         assert_eq!(deser.world.get_ref(id, ser_test3()).unwrap(), "hi");
@@ -176,7 +174,7 @@ mod test {
         let mut world = World::new("test");
         world.add_resource(ser_test3(), "hi".to_string());
         let ser = serde_json::to_string(&world).unwrap();
-        assert_eq!(&ser, r#"{"0:0:0":{"core::test::ser_test3":"hi"}}"#);
+        assert_eq!(&ser, r#"{"1":{"core::test::ser_test3":"hi"}}"#);
         let deser: World = serde_json::from_str(&ser).unwrap();
         assert_eq!(deser.resource(ser_test3()), "hi");
     }
@@ -184,7 +182,7 @@ mod test {
     #[test]
     pub fn test_serialize_world_without_resources() {
         init();
-        let world = World::new_with_config("test", 0, false);
+        let world = World::new_with_config("test", false);
         let ser = serde_json::to_string(&world).unwrap();
         assert_eq!(&ser, r#"{}"#);
         let deser: World = serde_json::from_str(&ser).unwrap();
@@ -194,13 +192,13 @@ mod test {
     #[test]
     pub fn test_deserialize_bad_world() {
         init();
-        let source = r#"{"0:0:0":{},"0:1:0":{"core::test::ser_test3":{"bad":3},"missing":{"hi":5},"core::test::ser_test4":"hello"}}"#;
+        let source = r#"{"1":{},"123":{"core::test::ser_test3":{"bad":3},"missing":{"hi":5},"core::test::ser_test4":"hello"}}"#;
 
         let deser: DeserWorldWithWarnings = serde_json::from_str(source).unwrap();
-        assert_eq!(deser.world.get_ref(EntityId::new(0, 1, 0), ser_test4()).unwrap(), "hello");
+        assert_eq!(deser.world.get_ref(EntityId(123), ser_test4()).unwrap(), "hello");
         assert_eq!(deser.warnings.warnings.len(), 2);
         let ser = serde_json::to_string(&deser.world).unwrap();
-        assert_eq!(&ser, r#"{"0:0:0":{},"0:1:0":{"core::test::ser_test4":"hello"}}"#);
+        assert_eq!(&ser, r#"{"1":{},"123":{"core::test::ser_test4":"hello"}}"#);
 
         assert!(serde_json::from_str::<World>(source).is_err());
     }

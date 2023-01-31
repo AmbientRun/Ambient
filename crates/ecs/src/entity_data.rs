@@ -127,7 +127,7 @@ impl EntityData {
 
     pub fn write_to_entity(self, world: &World, entity: EntityId) -> Result<(), ECSError> {
         // TODO: If the new props don't fit the arch of the entity, it needs to be moved
-        if let Some(loc) = world.locs.get(entity) {
+        if let Some(loc) = world.locs.get(&entity) {
             world.inc_version();
             let arch = &world.archetypes[loc.archetype];
             arch.write(entity, loc.index, self, world.version());
