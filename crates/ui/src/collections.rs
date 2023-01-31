@@ -102,8 +102,8 @@ pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 
 }
 
 impl<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static> Editor for Vec<T> {
-    fn editor(value: Self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
-        ListEditor { value, on_change }.el()
+    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
+        ListEditor { value: self, on_change }.el()
     }
 }
 
@@ -359,8 +359,8 @@ impl<
         V: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static,
     > Editor for HashMap<K, V>
 {
-    fn editor(value: Self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
-        KeyValueEditor { value, on_change }.el()
+    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
+        KeyValueEditor { value: self, on_change }.el()
     }
 }
 
@@ -411,11 +411,11 @@ where
     K: std::hash::Hash + Eq + Send + Sync + Debug + 'static + Clone + Editor + Default,
     V: Send + Sync + Debug + 'static + Clone + Editor + Default,
 {
-    fn editor(value: Self, on_change: Option<Cb<dyn Fn(Self) + Send + Sync>>, opts: EditorOpts) -> Element {
+    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Send + Sync>>, opts: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
-            IndexMapEditor::new(value, on_change, false).el()
+            IndexMapEditor::new(self, on_change, false).el()
         } else {
-            let fields = value
+            let fields = self
                 .into_iter()
                 .map(|(k, v)| FlowColumn(vec![K::editor(k, None, opts.clone()), V::editor(v, None, opts.clone())]).el())
                 .collect_vec();

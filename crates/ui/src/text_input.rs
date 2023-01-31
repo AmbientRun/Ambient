@@ -128,11 +128,11 @@ impl TextInput {
     }
 }
 impl Editor for String {
-    fn editor(value: Self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
+    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
-            TextInput::new(value, on_change).placeholder(Some("Empty")).el()
+            TextInput::new(self, on_change).placeholder(Some("Empty")).el()
         } else {
-            Text.el().set(text(), value)
+            Text.el().set(text(), self)
         }
     }
 }

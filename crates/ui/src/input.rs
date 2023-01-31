@@ -97,63 +97,63 @@ pub type U64Input = ParseableInput<u64>;
 pub type UsizeInput = ParseableInput<usize>;
 
 impl Editor for Duration {
-    fn editor(value: Self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
+    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
             CustomParseInput {
-                value,
+                value: self,
                 on_change,
                 parse: Cb::new(|v| v.parse::<f32>().ok().map(Duration::from_secs_f32)),
                 to_string: Cb::new(|v| format!("{:.3}", v.as_secs_f32())),
             }
             .el()
         } else {
-            Text::el(format!("{}", value.as_secs_f32()))
+            Text::el(format!("{}", self.as_secs_f32()))
         }
     }
 }
 
 impl Editor for f32 {
-    fn editor(value: Self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
+    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
-            F32Input { value, on_change }.el()
+            F32Input { value: self, on_change }.el()
         } else {
-            Text::el(format!("{value}"))
+            Text::el(format!("{self}"))
         }
     }
 }
 impl Editor for i32 {
-    fn editor(value: Self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
+    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
-            I32Input { value, on_change }.el()
+            I32Input { value: self, on_change }.el()
         } else {
-            Text::el(format!("{value}"))
+            Text::el(format!("{self}"))
         }
     }
 }
 impl Editor for u32 {
-    fn editor(value: Self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
+    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
-            U32Input { value, on_change }.el()
+            U32Input { value: self, on_change }.el()
         } else {
-            Text::el(format!("{value}"))
+            Text::el(format!("{self}"))
         }
     }
 }
 impl Editor for u64 {
-    fn editor(value: Self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
+    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
-            U64Input { value, on_change }.el()
+            U64Input { value: self, on_change }.el()
         } else {
-            Text::el(format!("{value}"))
+            Text::el(format!("{self}"))
         }
     }
 }
 impl Editor for usize {
-    fn editor(value: Self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
+    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
-            UsizeInput { value, on_change }.el()
+            UsizeInput { value: self, on_change }.el()
         } else {
-            Text::el(format!("{value}"))
+            Text::el(format!("{self}"))
         }
     }
 }
@@ -178,10 +178,10 @@ impl ElementComponent for Checkbox {
 }
 
 impl Editor for bool {
-    fn editor(value: Self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
+    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
-            Checkbox { value, on_change }.el()
-        } else if value {
+            Checkbox { value: self, on_change }.el()
+        } else if self {
             FontAwesomeIcon::el(0xf14a, false)
         } else {
             FontAwesomeIcon::el(0xf0c8, false)
@@ -430,8 +430,8 @@ impl ElementComponent for SystemTimeEditor {
     }
 }
 impl Editor for SystemTime {
-    fn editor(value: Self, _: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
-        SystemTimeEditor { value, on_change: None }.el()
+    fn editor(self, _: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
+        SystemTimeEditor { value: self, on_change: None }.el()
     }
 }
 
@@ -491,11 +491,11 @@ impl ElementComponent for Vec2Editor {
     }
 }
 impl Editor for Vec2 {
-    fn editor(value: Self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
+    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
-            Vec2Editor { value, on_change }.el()
+            Vec2Editor { value: self, on_change }.el()
         } else {
-            Text::el(format!("{value}"))
+            Text::el(format!("{self}"))
         }
     }
 }
@@ -538,11 +538,11 @@ impl ElementComponent for Vec3Editor {
     }
 }
 impl Editor for Vec3 {
-    fn editor(value: Self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
+    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
-            Vec3Editor { value, on_change }.el()
+            Vec3Editor { value: self, on_change }.el()
         } else {
-            Text::el(format!("{value}"))
+            Text::el(format!("{self}"))
         }
     }
 }
@@ -593,12 +593,12 @@ impl ElementComponent for Vec4Editor {
     }
 }
 impl Editor for Vec4 {
-    fn editor(value: Self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
+    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
-            Vec4Editor { value, on_change }.el()
+            Vec4Editor { value: self, on_change }.el()
         } else {
             // Removed unneccesary clone
-            Text::el(format!("{value}"))
+            Text::el(format!("{self}"))
         }
     }
 }

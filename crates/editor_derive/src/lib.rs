@@ -68,8 +68,8 @@ fn do_derive_element_editor(input: TokenStream) -> TokenStream {
         }
 
         impl #ui_crate::Editor for #type_name {
-            fn editor(value: Self, on_change: Option<#ui_crate::Cb<dyn Fn(Self) + ::std::marker::Sync + ::std::marker::Send>>, opts: #ui_crate::EditorOpts) -> #ui_crate::element::Element {
-                #editor_name { value, on_change, opts }.into()
+            fn editor(self, on_change: Option<#ui_crate::Cb<dyn Fn(Self) + ::std::marker::Sync + ::std::marker::Send>>, opts: #ui_crate::EditorOpts) -> #ui_crate::element::Element {
+                #editor_name { value: self, on_change, opts }.into()
             }
         }
 
