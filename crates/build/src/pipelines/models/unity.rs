@@ -48,7 +48,7 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                     base_file.set_path(base_path);
                     if let Ok(base_file) = ctx.get_downloadable_url(&base_file).cloned() {
                         Some(async move {
-                            let docs = download_unity_yaml(&ctx.assets(), &file).await?;
+                            let docs = download_unity_yaml(ctx.assets(), &file).await?;
                             Ok((docs[0]["guid"].as_str().unwrap().to_string(), base_file))
                         })
                     } else {
@@ -82,7 +82,7 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                 async move {
                     let mut res = Vec::new();
                     let prefab =
-                        unity_parser::prefab::PrefabFile::from_yaml(download_unity_yaml(&ctx.assets(), &file).await.unwrap()).unwrap();
+                        unity_parser::prefab::PrefabFile::from_yaml(download_unity_yaml(ctx.assets(), &file).await.unwrap()).unwrap();
 
                     let out_model_path = ctx.in_root().relative_path(file.path());
                     let out_model_url = ctx.out_root().push(&out_model_path).unwrap().as_directory();
@@ -142,11 +142,11 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                         .add_step(ModelImportTransform::Transform(ModelTransform::Center))
                         .add_step(ModelImportTransform::CreateObject)
                         .add_step(ModelImportTransform::CreateColliderFromModel);
-                    let mut asset_crate = pipeline.produce_crate(&ctx.assets()).await.unwrap();
+                    let mut asset_crate = pipeline.produce_crate(ctx.assets()).await.unwrap();
                     for mat in asset_crate.materials.content.values_mut() {
                         let name = mat.name.clone().unwrap();
-                        let material_url = ctx.process_ctx.find_file(format!("**/Materials/{}.mat", name)).unwrap();
-                        *mat = materials.lock().await.get_unity_material(&config, &guid_lookup, &material_url, &name).await.unwrap();
+                        let material_url = ctx.process_ctx.find_file(format!("**/Materials/{name}.mat")).unwrap();
+                        *mat = materials.lock().await.get_unity_material(&config, &guid_lookup, material_url, &name).await.unwrap();
                         *mat = mat.relative_path_from(&out_root.push("materials").unwrap());
                     }
 

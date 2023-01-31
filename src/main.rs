@@ -4,12 +4,12 @@ use clap::{Parser, Subcommand};
 use elements_app::{AppBuilder, ExamplesSystem};
 use elements_cameras::UICamera;
 use elements_core::camera::active_camera;
+use elements_debugger::RendererDebugger;
 use elements_ecs::{EntityData, SystemGroup, World};
 use elements_element::{element_component, Element, ElementComponentExt, Hooks};
 use elements_network::{
     client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce}, events::ServerEventRegistry
 };
-use elements_debugger::RendererDebugger;
 use elements_std::{asset_cache::AssetCache, Cb};
 use elements_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
 
@@ -161,7 +161,7 @@ fn main() -> anyhow::Result<()> {
 
     if let Commands::New { name } = cli.command {
         if let Err(err) = new_project::new_project(&name) {
-            println!("Failed to create project: {:?}", err);
+            eprintln!("Failed to create project: {err:?}");
         }
         return Ok(());
     }
@@ -177,7 +177,7 @@ fn main() -> anyhow::Result<()> {
 
     let server_addr = if let Commands::Join { host, .. } = &cli.command {
         if let Some(mut host) = host.clone() {
-            if !host.contains(":") {
+            if !host.contains(':') {
                 host = format!("{host}:{QUIC_INTERFACE_PORT}");
             }
             host.parse().with_context(|| format!("Invalid address for host {host}"))?
@@ -186,7 +186,7 @@ fn main() -> anyhow::Result<()> {
         }
     } else {
         let port = server::start_server(&runtime, assets.clone(), cli.clone(), project_path);
-        println!("Server running on port {port}");
+        eprintln!("Server running on port {port}");
         format!("127.0.0.1:{port}").parse().unwrap()
     };
     let user_id = cli.command.user_id().unwrap_or("user").to_string();

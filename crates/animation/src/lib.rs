@@ -4,7 +4,7 @@ use std::{
 
 use convert_case::{Case, Casing};
 use derive_more::Display;
-use elements_core::{asset_cache, hierarchy::children, time, transform};
+use elements_core::{asset_cache, hierarchy::children, time};
 use elements_ecs::{components, query, Debuggable, EntityId, Networked, Store, SystemGroup};
 use elements_model::{animation_binder, model, model_def, ModelDef};
 use elements_std::{
@@ -314,9 +314,11 @@ pub fn animation_bind_id_from_name(name: &str) -> String {
 
 #[test]
 fn test_animation() {
-    use elements_core::transform::translation;
+    use elements_core::transform::{self, translation};
     use glam::vec3;
+
     transform::init_components();
+
     let mut int = AnimationTrackInterpolator::new();
     let track = AnimationTrack {
         target: AnimationTarget::BinderId("".to_string()),

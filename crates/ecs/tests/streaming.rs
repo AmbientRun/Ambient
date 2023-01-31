@@ -91,7 +91,7 @@ fn dump_content_string(world: &World) -> String {
                         format!("{:?}: {:?}", desc, desc.as_debug(&value))
                     })
                     .join(", ");
-                Some(format!("[{} {}]", id, data))
+                Some(format!("[{id} {data}]"))
             } else {
                 None
             }

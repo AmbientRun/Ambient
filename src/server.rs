@@ -112,7 +112,7 @@ pub(crate) fn start_server(runtime: &tokio::runtime::Runtime, assets: AssetCache
     scripting::server::init_all_components();
     let public_host =
         cli.public_host.or_else(|| local_ip_address::local_ip().ok().map(|x| x.to_string())).unwrap_or("localhost".to_string());
-    println!("Using public host: {public_host}");
+    eprintln!("Using public host: {public_host}");
     ServerBaseUrlKey.insert(&assets, AbsAssetUrl::parse(format!("http://{}:{HTTP_INTERFACE_PORT}/assets/", public_host)).unwrap());
 
     start_http_interface(runtime, &project_path);

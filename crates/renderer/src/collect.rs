@@ -266,6 +266,8 @@ impl CollectCountStagingBuffers {
     fn new(gpu: Arc<Gpu>) -> Self {
         Self { gpu, buffers: Arc::new(Mutex::new(Vec::new())) }
     }
+
+    #[cfg(target_os = "macos")]
     fn take_buffer(&self, size: u64) -> TypedBuffer<u32> {
         match self.buffers.lock().pop() {
             Some(mut buffer) => {
