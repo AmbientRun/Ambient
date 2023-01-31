@@ -462,12 +462,12 @@ impl TextureReader {
             Some(
                 (0..self.size.depth_or_array_layers as usize)
                     .map(|layer| {
-                        println!("reading {layer}");
+                        // println!("reading {layer}");
                         let data = array.slice(s![layer, .., .., ..]);
                         let max = *data.iter().map(|x| OrderedFloat(*x)).max().unwrap();
                         let min = *data.iter().map(|x| OrderedFloat(*x)).min().unwrap();
                         let as_u8s = data.iter().map(|v| (255. * (v - min) / (max - min)) as u8).collect_vec();
-                        println!("min={min} max={max}");
+                        // println!("min={min} max={max}");
                         match self.format {
                             wgpu::TextureFormat::Depth32Float => {
                                 DynamicImage::ImageLuma8(image::GrayImage::from_raw(self.size.width, self.size.height, as_u8s).unwrap())

@@ -422,7 +422,7 @@ mod test {
 
         let str = serde_json::to_string_pretty(entry.attribute::<Serializable>().unwrap().serialize(&entry)).unwrap();
 
-        println!("Serialized: {str}");
+        eprintln!("Serialized: {str}");
 
         let ser = person().attribute::<Serializable>().unwrap();
 

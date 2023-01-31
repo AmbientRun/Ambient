@@ -452,18 +452,18 @@ fn test_frustum_reverse_z() {
 
     for z in [1., 10., 100.] {
         let near = projection.matrix().project_point3(Vec3::Z * z + vec3(1., 1., 0.));
-        println!("point {z} = {near}");
+        eprintln!("point {z} = {near}");
     }
 
     let inv_proj = projection.matrix().inverse();
 
     for z in [1., 0.9, 0.5, 0.1, 0.] {
         let near = inv_proj.project_point3(Vec3::Z * z + vec3(1., 1., 0.));
-        println!("inv point {z} = {near}");
+        eprintln!("inv point {z} = {near}");
     }
 
     let frustum = projection.view_space_frustum();
-    println!("{frustum:?}");
+    eprintln!("{frustum:?}");
     assert!(frustum.right.distance(Vec3::X * 6.) > 0.);
     assert!(frustum.top.distance(Vec3::Y * 6.) > 0.);
 

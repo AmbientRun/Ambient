@@ -207,8 +207,8 @@ pub async fn object_pipelines_from_quixel_json(
                                     let resolution = resolution.as_object().unwrap();
                                     for format in resolution.get("formats").unwrap().as_array().unwrap() {
                                         let format = format.as_object().unwrap();
-                                        println!("format={}", format.get("mimeType").unwrap().as_str().unwrap());
-                                        println!("uri={}", format.get("uri").unwrap().as_str().unwrap());
+                                        tracing::info!("format={}", format.get("mimeType").unwrap().as_str().unwrap());
+                                        tracing::info!("uri={}", format.get("uri").unwrap().as_str().unwrap());
                                         if format.get("mimeType").unwrap().as_str().unwrap() == "image/jpeg"
                                             && format
                                                 .get("uri")

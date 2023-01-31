@@ -457,7 +457,7 @@ impl ElementTree {
     }
     pub fn dump_to_tmp_file(&self) {
         std::fs::write("tmp/elements.txt", self.dump(0)).expect("Unable to write file");
-        println!("Wrote elements to tmp/elements.txt");
+        tracing::info!("Wrote elements to tmp/elements.txt");
     }
 }
 impl std::fmt::Display for ElementTree {

@@ -69,7 +69,7 @@ impl AbsAssetUrl {
         }
     }
     pub fn relative_cache_path(&self) -> String {
-        self.0.to_string().replace("://", "/").replace(":", "_")
+        self.0.to_string().replace("://", "/").replace(':', "_")
     }
     pub fn absolute_cache_path(&self, assets: &AssetCache) -> PathBuf {
         AssetsCacheDir.get(assets).join(self.relative_cache_path())

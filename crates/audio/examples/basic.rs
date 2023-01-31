@@ -18,5 +18,5 @@ fn main() {
     let sound = mixer.play(source);
 
     sound.wait_blocking();
-    println!("Elapsed: {:?}", start.elapsed());
+    eprintln!("Elapsed: {:?}", start.elapsed());
 }

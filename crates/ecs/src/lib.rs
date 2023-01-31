@@ -513,7 +513,7 @@ impl World {
         std::fs::create_dir_all("tmp").ok();
         let mut f = File::create("tmp/ecs.txt").expect("Unable to create file");
         self.dump(&mut f);
-        println!("Wrote ecs to tmp/ecs.txt");
+       log::info!("Wrote ecs to tmp/ecs.txt");
     }
     pub fn dump_entity(&self, entity_id: EntityId, indent: usize, f: &mut dyn std::io::Write) {
         if let Some(loc) = self.locs.get(entity_id) {

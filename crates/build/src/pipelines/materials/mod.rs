@@ -36,12 +36,12 @@ pub enum MaterialsImporter {
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MaterialsPipeline {
-    pub importer: MaterialsImporter,
+    pub importer: Box<MaterialsImporter>,
     pub output_decals: bool,
 }
 
 pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAsset> {
-    let materials = match config.importer.clone() {
+    let materials = match *config.importer.clone() {
         MaterialsImporter::Single(mat) => {
             ctx.process_single(move |ctx| async move {
                 let name = mat.name.as_ref().or(mat.source.as_ref()).unwrap().to_string();

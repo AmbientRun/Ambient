@@ -210,7 +210,6 @@ mod test {
 
         let samples = SampleIter::new(source).collect_vec();
 
-        dbg!(&samples);
         assert_eq!(
             samples,
             [
@@ -238,7 +237,6 @@ mod test {
         // *-------*-------*-------*-------*-------   2 Hz
         // *---*---*---*---*---*---*---*---*---*---   4 Hz
 
-        dbg!(&samples);
         #[rustfmt::skip]
         assert_eq!(
             samples,
@@ -278,7 +276,6 @@ mod test {
             .map(|v| (v * 100.0).round() / 100.0)
             .collect_vec();
 
-        dbg!(&samples);
         #[rustfmt::skip]
         assert_eq!(
             samples,
@@ -329,7 +326,6 @@ mod test {
             .map(|v| (v * 100.0).round() / 100.0)
             .collect_vec();
 
-        dbg!(&samples);
         assert_eq!(
             samples,
             [
@@ -371,7 +367,6 @@ mod test {
             .map(|v| (v * 100.0).round() / 100.0)
             .collect_vec();
 
-        dbg!(&samples);
         assert_eq!(
             samples,
             [

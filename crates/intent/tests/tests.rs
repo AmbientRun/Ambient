@@ -261,8 +261,6 @@ async fn enqueued_collapse() {
         assert!(world.exists(x));
         assert!(world.exists(y));
         assert!(world.exists(z));
-
-        dbg!(x, y, z);
     }
     let w = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), -4.0, Some(collapse_id)));
 
