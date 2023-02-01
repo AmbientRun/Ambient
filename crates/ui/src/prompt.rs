@@ -12,7 +12,7 @@ pub fn Alert(
     _hooks: &mut Hooks,
     title: String,
     set_screen: Cb<dyn Fn(Option<Element>) + Sync + Send>,
-    on_ok: Option<Cb<dyn Fn(&mut World) + Sync + Send>>,
+    on_ok: Option<Cb<dyn Fn(&mut World) value: editorc + Send>>,
     on_cancel: Option<Cb<dyn Fn(&mut World) + Sync + Send>>,
 ) -> Element {
     DialogScreen(
@@ -142,13 +142,13 @@ impl Prompt {
 }
 
 #[element_component]
-pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + Sync + Send + 'static>(
+pub fn EditorPrompt<T: Editor<V> + std::fmt::Debug + Clone + Sync + Send + 'static, V+Clone>(
     _world: &mut World,
     hooks: &mut Hooks,
     title: String,
-    value: T,
+    editor: T,
     set_screen: Cb<dyn Fn(Option<Element>) + Sync + Send>,
-    on_ok: Cb<dyn Fn(&mut World, T) + Sync + Send>,
+    on_ok: Cb<dyn Fn(&mut World, V) + Sync + Send>,
     on_cancel: Option<Cb<dyn Fn(&mut World) + Sync + Send>>,
     validator: Option<Cb<dyn Fn(&T) -> bool + Sync + Send>>,
 ) -> Element {
@@ -157,7 +157,7 @@ pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + Sync + Send + 'static>
         ScrollArea(
             FlowColumn::el([
                 Text::el(title).header_style(),
-                T::editor(value.clone(), Some(Cb(set_value)), Default::default()),
+                value.clone().editor(Some(Cb(set_value)), Default::default()),
                 FlowRow(vec![
                     Button::new("Ok", {
                         let set_screen = set_screen.clone();
@@ -191,13 +191,14 @@ pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + Sync + Send + 'static>
     )
     .el()
 }
-impl<T: Editor + std::fmt::Debug + Clone + Sync + Send + 'static> EditorPrompt<T> {
+
+impl<T: Editor<V> + std::fmt::Debug + Clone + Sync + Send + 'static, V> EditorPrompt<T, V> {
     pub fn new(
         title: impl Into<String>,
         value: T,
         set_screen: Cb<dyn Fn(Option<Element>) + Sync + Send>,
         on_ok: impl Fn(&mut World, T) + Sync + Send + 'static,
     ) -> Self {
-        Self { title: title.into(), value, set_screen, on_ok: Cb::new(on_ok), on_cancel: None, validator: None }
+        Self { title: title.into(), editor: value, set_screen, on_ok: Cb::new(on_ok), on_cancel: None, validator: None }
     }
 }
