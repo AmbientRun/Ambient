@@ -1,9 +1,7 @@
-use std::{collections::HashSet, io::Write, sync::Arc};
+use std::{io::Write, sync::Arc};
 
 use byteorder::{BigEndian, WriteBytesExt};
-pub use components::{
-    game_objects::player_camera, player::{prev_raw_input, raw_input}
-};
+pub use components::game_objects::player_camera;
 use elements_audio::AudioListener;
 use elements_core::{camera::active_camera, main_scene, on_frame, runtime};
 use elements_ecs::{query, query_mut, EntityData, SystemGroup, World};
@@ -15,21 +13,12 @@ use elements_network::{
     client::game_client, get_player_by_user_id, player::{local_user_id, player, user_id}, DatagramHandlers
 };
 use elements_std::unwrap_log_err;
-use elements_ui::VirtualKeyCode;
 use elements_world_audio::audio_listener;
-use glam::{Mat4, Vec2, Vec3};
+use glam::{Mat4, Vec3};
 use parking_lot::Mutex;
-use serde::{Deserialize, Serialize};
+pub use tilt_runtime_core::player::{prev_raw_input, raw_input, RawInput};
 
 const PLAYER_INPUT_DATAGRAM_ID: u32 = 5;
-
-#[derive(Clone, Serialize, Deserialize, Default, Debug)]
-pub struct RawInput {
-    pub keys: HashSet<VirtualKeyCode>,
-    pub mouse_position: Vec2,
-    pub mouse_wheel: f32,
-    pub mouse_buttons: HashSet<MouseButton>,
-}
 
 mod components {
     pub mod game_objects {
@@ -42,22 +31,10 @@ mod components {
             player_camera: (),
         });
     }
-
-    pub mod player {
-        use elements_ecs::components;
-
-        use super::super::RawInput;
-
-        components!("player", {
-            raw_input: RawInput,
-            prev_raw_input: RawInput,
-        });
-    }
 }
 
 pub fn init_all_components() {
     components::game_objects::init_components();
-    components::player::init_components();
 }
 
 pub fn register_datagram_handler(handlers: &mut DatagramHandlers) {

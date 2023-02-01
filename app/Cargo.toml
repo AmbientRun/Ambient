@@ -32,7 +32,7 @@ elements_std = {path = "../crates/std"}
 elements_ui = {path = "../crates/ui"}
 elements_world_audio = {path = "../crates/world_audio"}
 
-tilt_runtime_player = {path = "crates/player"}
+tilt_runtime_core = {path = "crates/core"}
 tilt_runtime_scripting_host = {path = "crates/scripting/host"}
 
 anyhow.workspace = true

@@ -3,8 +3,8 @@ use std::cmp::Reverse;
 use elements_ecs::{components, query, EntityId, QueryState, System, SystemGroup, World};
 use elements_std::events::EventDispatcher;
 use glam::{vec2, Vec2};
-pub use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, MouseButton, MouseScrollDelta, WindowEvent};
-use winit::event::{ModifiersState, ScanCode, VirtualKeyCode};
+pub use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, MouseButton, MouseScrollDelta, VirtualKeyCode, WindowEvent};
+use winit::event::{ModifiersState, ScanCode};
 
 use crate::picking::picking_winit_event_system;
 

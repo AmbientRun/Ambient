@@ -13,7 +13,7 @@ elements_scripting_host = { path = "../../../../crates/scripting/host" }
 elements_std = { path = "../../../../crates/std" }
 elements_ui = { path = "../../../../crates/ui" }
 
-tilt_runtime_player = { path = "../../player" }
+tilt_runtime_core = { path = "../../core" }
 
 # make sure this is synchronised with the version used by guest/Cargo.toml
 wit-bindgen-host-wasmtime-rust = { git = "https://github.com/bytecodealliance/wit-bindgen.git", rev = "181093b58f49b194ee34be2d986d737f4f553d3d" }

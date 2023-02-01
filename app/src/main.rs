@@ -15,12 +15,12 @@ use elements_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Te
 
 pub mod components;
 mod new_project;
+mod player;
 mod server;
 
 use anyhow::Context;
 use player::PlayerRawInputHandler;
 use server::QUIC_INTERFACE_PORT;
-use tilt_runtime_player as player;
 
 #[derive(Parser, Clone)]
 #[command(author, version, about, long_about = None)]

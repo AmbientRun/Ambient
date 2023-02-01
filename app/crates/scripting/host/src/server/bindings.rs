@@ -6,7 +6,7 @@ use elements_scripting_host::shared::host_guest_state::BaseHostGuestState;
 use elements_ui::VirtualKeyCode;
 use glam::Vec2;
 use parking_lot::RwLock;
-use tilt_runtime_player::RawInput;
+use tilt_runtime_core::player::RawInput;
 
 use super::{implementation as trsi, interface::host};
 
