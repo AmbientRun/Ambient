@@ -7,5 +7,12 @@ edition = "2021"
 proc-macro = true
 
 [dependencies]
-syn = { version = "1.0", features = ["full"] }
+anyhow = "1.0"
 quote = "1.0"
+serde = { version = "1.0.152", features = ["derive"] }
+syn = { version = "1.0", features = ["full"] }
+toml = "0.7.1"
+proc-macro2 = "1.0"
+
+[dev-dependencies]
+indoc = "2.0.0"
