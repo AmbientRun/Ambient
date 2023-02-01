@@ -5,11 +5,12 @@ use std::{
 use convert_case::{Case, Casing};
 use derive_more::Display;
 use elements_core::{asset_cache, hierarchy::children, time};
-use elements_ecs::{components, query, Debuggable, EntityId, Networked, Store, SystemGroup};
+use elements_ecs::{components, query, Debuggable, EntityId, MakeDefault, Networked, Store, SystemGroup};
 use elements_model::{animation_binder, model, model_def, ModelDef};
 use elements_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt}, asset_url::{AnimationAssetType, ModelAssetType, TypedAssetUrl}
 };
+use elements_ui::Editable;
 use serde::{Deserialize, Serialize};
 
 mod resources;
@@ -21,7 +22,7 @@ pub use retargeting::*;
 components!("animation", {
     @[Debuggable, Networked, Store]
     animation_controller: AnimationController,
-    @[Debuggable, Networked, Store]
+    @[MakeDefault, Editable ,Debuggable, Networked, Store]
     animation_retargeting: AnimationRetargeting,
     /// Some animations will only work if the base pose of the character is the same as
     /// the animations base pose, so we apply the pose from the animations model to make sure they
@@ -34,7 +35,7 @@ components!("animation", {
     animation_errors: String,
 
     /// This is a shorthand for working directly with the animation_controller
-    @[Debuggable, Networked, Store]
+    @[MakeDefault, Editable, Debuggable, Networked, Store]
     loop_animation: TypedAssetUrl<AnimationAssetType>,
 });
 
@@ -46,6 +47,7 @@ pub enum AnimationActionTime {
     Offset { start_time: Duration, speed: f32 },
     Percentage { percentage: f32 },
 }
+
 impl AnimationActionTime {
     pub fn advance(&self, seconds: f32) -> AnimationActionTime {
         match self {
@@ -54,6 +56,7 @@ impl AnimationActionTime {
         }
     }
 }
+
 impl std::default::Default for AnimationActionTime {
     fn default() -> Self {
         Self::Absolute { time: 0.0 }

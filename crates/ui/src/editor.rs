@@ -1,6 +1,11 @@
 use std::{ops::Deref, sync::Arc};
 
+use elements_core::{
+    name, transform::{euler_rotation, scale, translation}
+};
+use elements_ecs::{AttributeConstructor, Component, ComponentAttribute, ComponentEntry, ComponentValue};
 use elements_element::{Element, ElementComponentExt};
+use elements_renderer::color;
 use elements_std::{time::Timeout, Cb};
 use parking_lot::Mutex;
 
@@ -17,18 +22,20 @@ impl Default for EditorOpts {
     }
 }
 
+pub type ChangeCb<T> = Cb<dyn Fn(T) + Sync + Send>;
+
 pub trait Editor {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, opts: EditorOpts) -> Element;
+    fn editor(self, on_change: Option<ChangeCb<Self>>, opts: EditorOpts) -> Element;
 }
 
 impl Editor for EditableDuration {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
+    fn editor(self, on_change: Option<ChangeCb<Self>>, _: EditorOpts) -> Element {
         DurationEditor::new(self, on_change.unwrap_or_else(|| Cb(Arc::new(|_| {})))).el()
     }
 }
 
 impl<T: Editor + 'static> Editor for Box<T> {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, opts: EditorOpts) -> Element {
+    fn editor(self, on_change: Option<ChangeCb<Self>>, opts: EditorOpts) -> Element {
         T::editor(*self, on_change.map(|cb| Cb(Arc::new(move |new_value| cb.0(Box::new(new_value))) as Arc<dyn Fn(T) + Sync + Send>)), opts)
     }
 }
@@ -37,7 +44,7 @@ impl<T> Editor for Arc<T>
 where
     T: 'static + Send + Sync + Clone + Editor,
 {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, opts: EditorOpts) -> Element {
+    fn editor(self, on_change: Option<ChangeCb<Self>>, opts: EditorOpts) -> Element {
         T::editor(self.deref().clone(), on_change.map(|f| Cb::new(move |v: T| f(Arc::new(v))) as Cb<dyn Fn(T) + Sync + Send>), opts)
     }
 }
@@ -46,7 +53,7 @@ impl<T> Editor for Arc<Mutex<T>>
 where
     T: 'static + Send + Sync + Clone + Editor,
 {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, opts: EditorOpts) -> Element {
+    fn editor(self, on_change: Option<ChangeCb<Self>>, opts: EditorOpts) -> Element {
         let v: T = self.lock().clone();
         T::editor(
             v,
@@ -62,14 +69,15 @@ where
         )
     }
 }
+
 impl Editor for () {
-    fn editor(self, _on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _opts: EditorOpts) -> Element {
+    fn editor(self, _on_change: Option<ChangeCb<Self>>, _opts: EditorOpts) -> Element {
         Element::new()
     }
 }
 
 impl Editor for Timeout {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
+    fn editor(self, on_change: Option<ChangeCb<Self>>, _: EditorOpts) -> Element {
         let on_change = on_change.unwrap_or_else(|| Cb::new(|_| {}));
 
         DurationEditor::new(
@@ -81,7 +89,7 @@ impl Editor for Timeout {
 }
 
 impl<T: Default + Editor + 'static> Editor for Option<T> {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, opts: EditorOpts) -> Element {
+    fn editor(self, on_change: Option<ChangeCb<Self>>, opts: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
             if let Some(inner_value) = self {
                 FlowRow(vec![
@@ -98,4 +106,84 @@ impl<T: Default + Editor + 'static> Editor for Option<T> {
             Text::el("None")
         }
     }
+}
+
+type EditFn<T> = fn(ComponentEntryEditor, Option<ChangeCb<T>>, EditorOpts) -> Element;
+
+#[derive(Clone)]
+/// Created through the `Editable` attribute
+pub struct ComponentEntryEditor {
+    pub entry: ComponentEntry,
+    edit: EditFn<Self>,
+}
+
+impl ComponentEntryEditor {
+    pub fn entry(&self) -> &ComponentEntry {
+        &self.entry
+    }
+}
+
+impl std::fmt::Debug for ComponentEntryEditor {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ComponentEntryEditor").field("entry", &self.entry).finish()
+    }
+}
+
+impl Editor for ComponentEntryEditor {
+    fn editor(self, on_change: Option<ChangeCb<Self>>, opts: EditorOpts) -> Element {
+        (self.edit)(self, on_change, opts)
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct Editable {
+    edit: EditFn<ComponentEntryEditor>,
+}
+
+impl Editable {
+    /// Create an editor for this component entry
+    pub fn edit(&self, entry: ComponentEntry) -> ComponentEntryEditor {
+        ComponentEntryEditor { entry, edit: self.edit }
+    }
+}
+
+impl ComponentAttribute for Editable {}
+
+impl<T> AttributeConstructor<T, ()> for Editable
+where
+    T: ComponentValue + Editor,
+{
+    fn construct(store: &mut elements_ecs::AttributeStore, _: ()) {
+        let editable = Editable {
+            edit: |editor, on_change, opts| {
+                let entry = editor.entry;
+                let desc = entry.desc();
+                T::editor(
+                    entry.into_inner(),
+                    on_change.map(|f| {
+                        Cb::new(move |v| (f)(ComponentEntryEditor { entry: ComponentEntry::from_raw_parts(desc, v), ..editor }))
+                            as ChangeCb<T>
+                    }),
+                    opts,
+                )
+            },
+        };
+
+        store.set(editable);
+    }
+}
+
+/// Adds the `Editable` attribute to multiple components where depending on `elements_ui` is not
+/// possible.
+pub fn hydrate_editable() {
+    fn set<T: ComponentValue + Editor>(component: Component<T>) {
+        let mut store = component.attributes_mut();
+        <Editable as AttributeConstructor<T, ()>>::construct(&mut store, ());
+    }
+
+    set(translation());
+    set(euler_rotation());
+    set(scale());
+    set(color());
+    set(name());
 }

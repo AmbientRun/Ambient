@@ -27,15 +27,19 @@ impl EntityData {
         self.get_ref(component).cloned()
     }
     pub fn get_ref<T: ComponentValue>(&self, component: Component<T>) -> Option<&T> {
-        if let Some(unit) = self.content.get(component.index() as _) {
-            Some(unit.downcast_ref::<T>())
+        if let Some(entry) = self.content.get(component.index() as _) {
+            Some(entry.downcast_ref::<T>())
         } else {
             None
         }
     }
+    pub fn get_entry(&self, desc: impl Into<ComponentDesc>) -> Option<&ComponentEntry> {
+        let desc = desc.into();
+        self.content.get(desc.index() as usize)
+    }
     pub fn get_mut<T: ComponentValue>(&mut self, component: Component<T>) -> Option<&mut T> {
-        if let Some(unit) = self.content.get_mut(component.index() as _) {
-            Some(unit.downcast_mut::<T>())
+        if let Some(entry) = self.content.get_mut(component.index() as _) {
+            Some(entry.downcast_mut::<T>())
         } else {
             None
         }
@@ -176,10 +180,10 @@ impl Serialize for EntityData {
         let len = self.content.iter().filter(|v| v.attribute::<Serializable>().is_some()).count();
 
         let mut map = serializer.serialize_map(Some(len))?;
-        for unit in self.content.iter() {
-            if let Some(ser) = unit.attribute::<Serializable>() {
-                let value = ser.serialize(unit);
-                map.serialize_entry(&unit.desc().path(), &value).expect("Bincode does not support #[serde(flatten)]");
+        for entry in self.content.iter() {
+            if let Some(ser) = entry.attribute::<Serializable>() {
+                let value = ser.serialize(entry);
+                map.serialize_entry(&entry.desc().path(), &value).expect("Bincode does not support #[serde(flatten)]");
             }
         }
         map.end()

@@ -1667,6 +1667,7 @@ dependencies = [
  "elements_primitives",
  "elements_renderer",
  "elements_std",
+ "elements_ui",
  "env_logger 0.9.3",
  "glam 0.22.0",
  "log",

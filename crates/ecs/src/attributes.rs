@@ -174,8 +174,9 @@ where
 }
 
 /// Allows constructing a default value of the type
+#[derive(Clone)]
 pub struct MakeDefault {
-    make_default: Box<dyn Fn(ComponentDesc) -> ComponentEntry + Send + Sync>,
+    make_default: Arc<dyn Fn(ComponentDesc) -> ComponentEntry + Send + Sync>,
 }
 
 impl MakeDefault {
@@ -187,13 +188,13 @@ impl MakeDefault {
 
 impl<T: ComponentValue + Default> AttributeConstructor<T, ()> for MakeDefault {
     fn construct(store: &mut AttributeStore, _: ()) {
-        store.set(Self { make_default: Box::new(move |desc| ComponentEntry::from_raw_parts(desc, T::default())) })
+        store.set(Self { make_default: Arc::new(move |desc| ComponentEntry::from_raw_parts(desc, T::default())) })
     }
 }
 
 impl<T: ComponentValue, F: 'static + Send + Sync + Fn() -> T> AttributeConstructor<T, F> for MakeDefault {
     fn construct(store: &mut AttributeStore, func: F) {
-        store.set(Self { make_default: Box::new(move |desc| ComponentEntry::from_raw_parts(desc, func())) })
+        store.set(Self { make_default: Arc::new(move |desc| ComponentEntry::from_raw_parts(desc, func())) })
     }
 }
 

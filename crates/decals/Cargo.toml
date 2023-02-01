@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 elements_asset_cache = { path = "../asset_cache" }
+elements_ui = { path = "../ui" }
 elements_ecs = { path = "../ecs" }
 elements_renderer = { path = "../renderer" }
 elements_gpu = { path = "../gpu" }

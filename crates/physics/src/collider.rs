@@ -6,7 +6,7 @@ use elements_core::{
     asset_cache, async_ecs::async_run, runtime, transform::{rotation, scale, translation}
 };
 use elements_ecs::{
-    components, query, Component, ComponentQuery, ComponentValueBase, Debuggable, EntityData, EntityId, Networked, QueryEvent, QueryState, Store, SystemGroup, TypedReadQuery, World
+    components, query, Component, ComponentQuery, ComponentValueBase, Debuggable, EntityData, EntityId, MakeDefault, Networked, QueryEvent, QueryState, Store, SystemGroup, TypedReadQuery, World
 };
 use elements_editor_derive::ElementEditor;
 use elements_model::model_def;
@@ -25,6 +25,10 @@ use serde::{Deserialize, Serialize};
 use crate::{
     main_controller_manager, make_physics_static, mesh::{PhysxGeometry, PhysxGeometryFromUrl}, physx::{character_controller, physics, physics_controlled, physics_shape, rigid_actor, Physics}, wood_physics_material, ColliderScene, PxActorUserData, PxShapeUserData, PxWoodMaterialKey
 };
+
+fn one() -> f32 {
+    1.0
+}
 
 components!("physics", {
 
@@ -48,20 +52,20 @@ components!("physics", {
     @[Debuggable, Networked, Store]
     dynamic: bool,
 
-    @[Editable, Networked, Store]
+    @[MakeDefault, Editable, Networked, Store]
     collider: ColliderDef,
-    @[Editable, Networked, Store]
+    @[MakeDefault[one], Editable, Networked, Store]
     density: f32,
-    @[Editable, Networked, Store]
+    @[MakeDefault, Editable, Networked, Store]
     collider_type: ColliderType,
     collider_shapes: Vec<PxShape>,
     collider_shapes_convex: Vec<PxShape>,
     on_collider_loaded: EventDispatcher<dyn Fn(&mut World, EntityId) + Sync + Send>,
-    @[Debuggable, Editable, Networked, Store]
+    @[Debuggable, MakeDefault[one], Editable, Networked, Store]
     mass: f32,
-    @[Debuggable, Networked, Store]
+    @[MakeDefault, Networked, Store]
     character_controller_height: f32,
-    @[Debuggable, Networked, Store]
+    @[MakeDefault, Networked, Store]
     character_controller_radius: f32,
 });
 

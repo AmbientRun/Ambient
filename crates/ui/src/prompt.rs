@@ -1,4 +1,4 @@
-use elements_ecs::World;
+use elements_ecs::{ComponentValue, World};
 use elements_element::{element_component, Element, ElementComponentExt, Hooks};
 use elements_std::Cb;
 
@@ -100,6 +100,7 @@ pub fn Prompt(
     )
     .el()
 }
+
 impl Prompt {
     pub fn new(
         title: impl Into<String>,
@@ -142,7 +143,7 @@ impl Prompt {
 }
 
 #[element_component]
-pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + Sync + Send + 'static>(
+pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + ComponentValue>(
     _world: &mut World,
     hooks: &mut Hooks,
     title: String,
@@ -157,7 +158,7 @@ pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + Sync + Send + 'static>
         ScrollArea(
             FlowColumn::el([
                 Text::el(title).header_style(),
-                T::editor(value.clone(), Some(Cb(set_value)), Default::default()),
+                value.clone().editor(Some(Cb(set_value)), Default::default()),
                 FlowRow(vec![
                     Button::new("Ok", {
                         let set_screen = set_screen.clone();
@@ -191,7 +192,8 @@ pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + Sync + Send + 'static>
     )
     .el()
 }
-impl<T: Editor + std::fmt::Debug + Clone + Sync + Send + 'static> EditorPrompt<T> {
+
+impl<T: Editor + std::fmt::Debug + Clone + ComponentValue> EditorPrompt<T> {
     pub fn new(
         title: impl Into<String>,
         value: T,

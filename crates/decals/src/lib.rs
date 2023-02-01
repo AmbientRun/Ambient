@@ -4,7 +4,7 @@ use elements_asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAsset
 use elements_core::{
     asset_cache, async_ecs::async_run, bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere}, main_scene, mesh, runtime, transform::{local_to_world, mesh_to_world}
 };
-use elements_ecs::{components, query, EntityData, SystemGroup};
+use elements_ecs::{components, query, EntityData, MakeDefault, Networked, Store, SystemGroup};
 use elements_gpu::shader_module::{Shader, ShaderModule};
 use elements_meshes::CubeMeshKey;
 use elements_renderer::{
@@ -13,9 +13,11 @@ use elements_renderer::{
 use elements_std::{
     asset_url::{MaterialAssetType, TypedAssetUrl}, download_asset::JsonFromUrl, include_file, shapes::AABB, unwrap_log_err, unwrap_log_warn
 };
+use elements_ui::Editable;
 use glam::{Vec3, Vec4};
 
 components!("decals", {
+    @[MakeDefault, Editable, Networked, Store]
     decal: TypedAssetUrl<MaterialAssetType>,
 });
 

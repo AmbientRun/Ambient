@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use elements_ecs::{
-    components, ensure_has_component, query, query_mut, Component, ComponentQuery, ComponentValue, Debuggable, DynSystem, ECSError, EntityId, FrameEvent, Networked, QueryState, Store, System, SystemGroup, TypedReadQuery, World
+    components, ensure_has_component, query, query_mut, Component, ComponentQuery, ComponentValue, Debuggable, DynSystem, ECSError, EntityId, FrameEvent, MakeDefault, Networked, QueryState, Store, System, SystemGroup, TypedReadQuery, World
 };
 use glam::*;
 
@@ -9,15 +9,19 @@ use crate::{
     camera::get_active_camera, gpu_components, gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent}, hierarchy::{children, parent}, main_scene
 };
 
+fn vec3_one() -> Vec3 {
+    Vec3::ONE
+}
+
 components!("transform", {
 
-    @[Debuggable, Networked, Store]
+    @[MakeDefault, Debuggable, Networked, Store]
     translation: Vec3,
-    @[Debuggable, Networked, Store]
+    @[MakeDefault[vec3_one], Debuggable, Networked, Store]
     scale: Vec3,
     @[Debuggable, Networked, Store]
     rotation: Quat,
-    @[Debuggable, Networked, Store]
+    @[MakeDefault, Debuggable, Networked, Store]
     euler_rotation: Vec3,
     @[Debuggable, Networked, Store]
     lookat_center: Vec3,
