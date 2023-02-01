@@ -93,15 +93,6 @@ impl FromIterator<Arc<dyn ComponentAttribute>> for AttributeStore {
     }
 }
 
-macro_rules! component_attributes {
-    ($($name: ident,)*) => {
-        $(
-        impl $crate::ComponentAttribute for $name { }
-
-        )*
-    };
-}
-
 /// Initializes the attribute
 pub trait AttributeConstructor<T, P>: 'static + Send + Sync {
     /// Construct a new instance of the attribute value and push it to the store
@@ -239,11 +230,9 @@ where
 
 pub(crate) struct ComponentPath(pub String);
 
-component_attributes! {
-    Serializable,
-    Debuggable,
-    MakeDefault,
-    Store,
-    Networked,
-    ComponentPath,
-}
+impl ComponentAttribute for Serializable {}
+impl ComponentAttribute for Debuggable {}
+impl ComponentAttribute for MakeDefault {}
+impl ComponentAttribute for Store {}
+impl ComponentAttribute for Networked {}
+impl ComponentAttribute for ComponentPath {}

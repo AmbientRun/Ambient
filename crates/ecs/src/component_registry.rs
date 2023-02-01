@@ -21,6 +21,7 @@ pub(crate) fn get_external_attributes_init(index: u32) -> AttributeStoreGuardMut
 
     RwLockWriteGuard::map(guard, |val| val.entry(index).or_default())
 }
+
 pub fn with_component_registry<R>(f: impl FnOnce(&ComponentRegistry) -> R + Sync + Send) -> R {
     let lock = COMPONENT_REGISTRY.read();
     f(&lock)

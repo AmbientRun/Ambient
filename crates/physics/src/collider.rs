@@ -13,6 +13,7 @@ use elements_model::model_def;
 use elements_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, ColliderAssetType, TypedAssetUrl}, download_asset::{AssetError, JsonFromUrl}, events::EventDispatcher
 };
+use elements_ui::Editable;
 use futures::future::try_join_all;
 use glam::{vec3, Mat4, Quat, Vec3};
 use itertools::Itertools;
@@ -47,16 +48,16 @@ components!("physics", {
     @[Debuggable, Networked, Store]
     dynamic: bool,
 
-    @[Debuggable, Networked, Store]
+    @[Editable, Networked, Store]
     collider: ColliderDef,
-    @[Debuggable, Networked, Store]
+    @[Editable, Networked, Store]
     density: f32,
-    @[Debuggable, Networked, Store]
+    @[Editable, Networked, Store]
     collider_type: ColliderType,
     collider_shapes: Vec<PxShape>,
     collider_shapes_convex: Vec<PxShape>,
     on_collider_loaded: EventDispatcher<dyn Fn(&mut World, EntityId) + Sync + Send>,
-    @[Debuggable, Networked, Store]
+    @[Debuggable, Editable, Networked, Store]
     mass: f32,
     @[Debuggable, Networked, Store]
     character_controller_height: f32,

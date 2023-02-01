@@ -10,7 +10,7 @@ use serde::{
 };
 
 use crate::{
-    component_traits::IComponentBuffer, with_component_registry, AttributeGuard, AttributeStoreGuard, ComponentAttribute, ComponentEntry, ComponentPath, ComponentVTable, Debuggable, Serializable
+    component_traits::IComponentBuffer, with_component_registry, AttributeGuard, AttributeStoreGuard, AttributeStoreGuardMut, ComponentAttribute, ComponentEntry, ComponentPath, ComponentVTable, Debuggable, Serializable
 };
 
 pub trait ComponentValueBase: Send + Sync + Downcast + 'static {
@@ -215,6 +215,10 @@ impl ComponentDesc {
 
     pub fn attributes(&self) -> AttributeStoreGuard {
         (self.vtable.attributes)(*self)
+    }
+
+    pub fn attributes_mut(&self) -> AttributeStoreGuardMut {
+        (self.vtable.attributes_init)(*self)
     }
 
     pub fn as_debug<'a>(&self, value: &'a dyn Any) -> &'a dyn Debug {
