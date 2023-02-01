@@ -2,7 +2,7 @@ use std::{collections::HashMap, fmt::Debug, hash::Hash, ops::Deref, sync::Arc};
 
 use closure::closure;
 use elements_core::on_window_event;
-use elements_ecs::{ComponentValue, EntityId, World};
+use elements_ecs::{EntityId, World};
 use elements_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
 use elements_input::{on_app_keyboard_input, KeyboardEvent};
 use elements_std::{color::Color, Cb};
@@ -14,30 +14,27 @@ use super::{Button, ButtonStyle, Dropdown, Editor, EditorOpts, FlowColumn, FlowR
 use crate::{layout::*, StylesExt, COLLECTION_ADD_ICON, COLLECTION_DELETE_ICON, MOVE_DOWN_ICON, MOVE_UP_ICON, STREET};
 
 #[element_component]
-pub fn ListEditor<T>(
+pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static>(
     _world: &mut World,
     _: &mut Hooks,
-    editor: Vec<T>,
-    on_change: Option<Cb<dyn Fn(Vec<T::Output>) + Sync + Send>>,
-) -> Element
-where
-    T: Editor + Debug + Clone + Default + ComponentValue,
-    T::Output: Debug + Clone + ComponentValue,
-{
+    value: Vec<T>,
+    on_change: Option<Cb<dyn Fn(Vec<T>) + Sync + Send>>,
+) -> Element {
     if let Some(on_change) = on_change {
         let button_size = 20.;
         FlowColumn::el([
             FlowColumn(
-                editor
+                value
                     .iter()
                     .enumerate()
                     .map(|(i, item)| {
                         FlowRow(vec![
                             Button::new(
                                 COLLECTION_DELETE_ICON,
-                                closure!(clone on_change, clone editor, |_| {
-                                    editor.remove(i);
-                                    on_change.0(editor.value());
+                                closure!(clone on_change, clone value, |_| {
+                                    let mut value = value.clone();
+                                    value.remove(i);
+                                    on_change.0(value);
                                 }),
                             )
                             .style(ButtonStyle::Flat)
@@ -46,9 +43,10 @@ where
                             if i > 0 {
                                 Button::new(
                                     MOVE_UP_ICON,
-                                    closure!(clone on_change, clone editor, |_| {
-                                        editor.swap(i, i - 1);
-                                        on_change.0(editor.value());
+                                    closure!(clone on_change, clone value, |_| {
+                                        let mut value = value.clone();
+                                        value.swap(i, i - 1);
+                                        on_change.0(value);
                                     }),
                                 )
                                 .style(ButtonStyle::Flat)
@@ -57,12 +55,13 @@ where
                             } else {
                                 UIBase.el().set(width(), button_size).set(height(), 1.)
                             },
-                            if i < editor.len() - 1 {
+                            if i < value.len() - 1 {
                                 Button::new(
                                     MOVE_DOWN_ICON,
-                                    closure!(clone on_change, clone editor, |_| {
-                                        editor.swap(i, i + 1);
-                                        on_change.0(editor.value());
+                                    closure!(clone on_change, clone value, |_| {
+                                        let mut value = value.clone();
+                                        value.swap(i, i + 1);
+                                        on_change.0(value);
                                     }),
                                 )
                                 .style(ButtonStyle::Flat)
@@ -71,9 +70,10 @@ where
                             } else {
                                 UIBase.el().set(width(), button_size).set(height(), 1.)
                             },
-                            item.editor(
-                                Some(Cb(Arc::new(closure!(clone editor, clone on_change, |item| {
-                                    let mut value = editor.value();
+                            T::editor(
+                                item.clone(),
+                                Some(Cb(Arc::new(closure!(clone value, clone on_change, |item| {
+                                    let mut value = value.clone();
                                     value[i] = item;
                                     on_change.0(value);
                                 })))),
@@ -88,8 +88,9 @@ where
             Button::new(
                 COLLECTION_ADD_ICON,
                 closure!(clone on_change, |_| {
-                    editor.push(Default::default());
-                    on_change.0(editor.value());
+                    let mut value = value.clone();
+                    value.push(T::default());
+                    on_change.0(value);
                 }),
             )
             .style(ButtonStyle::Flat)
@@ -100,31 +101,21 @@ where
     }
 }
 
-impl<T: Editor + Debug + Clone + Default + Sync + Send + 'static> Editor for Vec<T>
-where
-    T: Editor + Debug + Clone + Default + ComponentValue,
-    T::Output: Debug + Clone + ComponentValue,
-{
-    type Output = Vec<T::Output>;
-
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self::Output) + Sync + Send>>, _: EditorOpts) -> Element {
-        ListEditor { editor: self, on_change }.el()
-    }
-
-    fn value(&self) -> Self::Output {
-        self.iter().map(|v| v.value()).collect()
+impl<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static> Editor for Vec<T> {
+    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
+        ListEditor { value: self, on_change }.el()
     }
 }
 
 #[derive(Debug, Clone)]
-pub struct MinimalListEditor<T: Editor + Debug + Clone + Default + Sync + Send + 'static> {
-    pub editor: Vec<T>,
+pub struct MinimalListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static> {
+    pub value: Vec<T>,
     pub on_change: Option<Cb<dyn Fn(Vec<T>) + Sync + Send>>,
     pub item_opts: EditorOpts,
     pub add_presets: Option<Vec<T>>,
     pub add_title: String,
 }
-impl<T: Editor + Debug + Clone + Default + Sync + Send + 'static> ElementComponent for MinimalListEditor<T> {
+impl<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementComponent for MinimalListEditor<T> {
     fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
         MinimalListEditorWithItemEditor {
             value: self.value,
@@ -132,53 +123,25 @@ impl<T: Editor + Debug + Clone + Default + Sync + Send + 'static> ElementCompone
             item_opts: self.item_opts,
             add_presets: self.add_presets,
             add_title: self.add_title,
+            item_editor: Cb(Arc::new(T::editor)),
         }
         .el()
     }
 }
 
 #[allow(clippy::type_complexity)]
-pub struct MinimalListEditorWithItemEditor<T: Editor + Debug + Clone + Default + Sync + Send + 'static> {
+#[derive(Debug, Clone)]
+pub struct MinimalListEditorWithItemEditor<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> {
     pub value: Vec<T>,
-    pub on_change: Option<Cb<dyn Fn(Vec<T::Output>) + Sync + Send>>,
+    pub on_change: Option<Cb<dyn Fn(Vec<T>) + Sync + Send>>,
     pub item_opts: EditorOpts,
     pub add_presets: Option<Vec<T>>,
     pub add_title: String,
+    pub item_editor: Cb<dyn Fn(T, Option<Cb<dyn Fn(T) + Sync + Send>>, EditorOpts) -> Element + Sync + Send>,
 }
-
-impl<T> Clone for MinimalListEditorWithItemEditor<T>
-where
-    T: Editor + Debug + Clone + Default + Sync + Send + 'static,
-{
-    fn clone(&self) -> Self {
-        Self {
-            value: self.value.clone(),
-            on_change: self.on_change.clone(),
-            item_opts: self.item_opts.clone(),
-            add_presets: self.add_presets.clone(),
-            add_title: self.add_title.clone(),
-        }
-    }
-}
-
-impl<T: Editor + Debug + Clone + Default + Sync + Send + 'static> Debug for MinimalListEditorWithItemEditor<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("MinimalListEditorWithItemEditor")
-            .field("value", &self.value)
-            .field("on_change", &self.on_change)
-            .field("item_opts", &self.item_opts)
-            .field("add_presets", &self.add_presets)
-            .field("add_title", &self.add_title)
-            .finish()
-    }
-}
-impl<T> ElementComponent for MinimalListEditorWithItemEditor<T>
-where
-    T: Editor + Debug + Default + ComponentValue,
-    T::Output: Debug + Clone + ComponentValue,
-{
+impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementComponent for MinimalListEditorWithItemEditor<T> {
     fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
-        let Self { value, on_change, item_opts, add_presets, add_title } = *self;
+        let Self { value, on_change, item_opts, add_presets, add_title, item_editor } = *self;
         let (add_action, set_add_action) = hooks.use_state(false);
         FlowColumn::el([
             FlowColumn(
@@ -190,19 +153,20 @@ where
                             value: item.clone(),
                             on_change: on_change.clone().map(|on_change| {
                                 Cb(Arc::new(closure!(clone value, clone on_change, |item| {
-                                    let mut value = value.value();
+                                    let mut value = value.clone();
                                     value[i] = item;
                                     on_change.0(value);
-                                })) as Arc<dyn Fn(T::Output) + Sync + Send>)
+                                })) as Arc<dyn Fn(T) + Sync + Send>)
                             }),
                             on_delete: on_change.clone().map(|on_change| {
                                 Cb(Arc::new(closure!(clone value, clone on_change, || {
-                                    let mut value = value.value();
+                                    let mut value = value.clone();
                                     value.remove(i);
                                     on_change.0(value);
                                 })) as Arc<dyn Fn() + Sync + Send>)
                             }),
                             item_opts: item_opts.clone(),
+                            item_editor: item_editor.clone(),
                         }
                         .el()
                     })
@@ -225,10 +189,10 @@ where
                             add_presets
                                 .into_iter()
                                 .map(move |item| {
-                                    item.editor(None, Default::default())
+                                    item_editor.0(item.clone(), None, Default::default())
                                         .on_mouse_down(closure!(clone value, clone on_change, |_, _, _| {
-                                            let mut value = value.value();
-                                            value.push(item.value());
+                                            let mut value = value.clone();
+                                            value.push(item.clone());
                                             on_change.0(value);
                                         }))
                                         .set(margin(), Borders::even(STREET))
@@ -255,9 +219,9 @@ where
                     Button::new(
                         add_title,
                         closure!(clone value, clone on_change, |_| {
-                            let mut editor = value.clone();
-                            editor.push(T::default());
-                            on_change.0(editor.value());
+                            let mut value = value.clone();
+                            value.push(T::default());
+                            on_change.0(value);
                         }),
                     )
                     .style(ButtonStyle::Flat)
@@ -272,17 +236,14 @@ where
 
 #[allow(clippy::type_complexity)]
 #[derive(Debug, Clone)]
-pub struct MinimalListEditorItem<T: Editor + Debug + Clone + Default + Sync + Send + 'static> {
+pub struct MinimalListEditorItem<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> {
     pub value: T,
-    pub on_change: Option<Cb<dyn Fn(T::Output) + Sync + Send>>,
+    pub on_change: Option<Cb<dyn Fn(T) + Sync + Send>>,
     pub on_delete: Option<Cb<dyn Fn() + Sync + Send>>,
     pub item_opts: EditorOpts,
+    pub item_editor: Cb<dyn Fn(T, Option<Cb<dyn Fn(T) + Sync + Send>>, EditorOpts) -> Element + Sync + Send>,
 }
-impl<T> ElementComponent for MinimalListEditorItem<T>
-where
-    T: Editor + Debug + Default + ComponentValue,
-    T::Output: Debug + Clone + ComponentValue,
-{
+impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementComponent for MinimalListEditorItem<T> {
     fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
         let Self { value, on_change, on_delete, item_opts, item_editor } = *self;
         let (self_id, set_self_id) = hooks.use_state(EntityId::null());
@@ -330,15 +291,15 @@ where
 #[allow(clippy::type_complexity)]
 #[derive(Debug, Clone)]
 pub struct KeyValueEditor<
-    K: Editor + Debug + Clone + Default + Hash + PartialEq + Eq + PartialOrd + Ord + Sync + Send + 'static,
-    V: Editor + Debug + Clone + Default + Sync + Send + 'static,
+    K: Editor + std::fmt::Debug + Clone + Default + Hash + PartialEq + Eq + PartialOrd + Ord + Sync + Send + 'static,
+    V: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static,
 > {
     pub value: HashMap<K, V>,
     pub on_change: Option<Cb<dyn Fn(HashMap<K, V>) + Sync + Send>>,
 }
 impl<
-        K: Editor + Debug + Clone + Default + Hash + PartialEq + Eq + PartialOrd + Ord + Sync + Send + 'static,
-        V: Editor + Debug + Clone + Default + Sync + Send + 'static,
+        K: Editor + std::fmt::Debug + Clone + Default + Hash + PartialEq + Eq + PartialOrd + Ord + Sync + Send + 'static,
+        V: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static,
     > ElementComponent for KeyValueEditor<K, V>
 {
     fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
@@ -355,11 +316,11 @@ impl<
                                 key.clone(),
                                 on_change.clone().map(|on_change| {
                                     Cb(Arc::new(closure!(clone key, clone on_change, clone value, |new_key| {
-                                        let mut value = value.value();
+                                        let mut value = value.clone();
                                         let item = value.remove(&key).unwrap();
                                         value.insert(new_key, item);
                                         on_change.0(value);
-                                    })) as Arc<dyn Fn(K::Output) + Sync + Send>)
+                                    })) as Arc<dyn Fn(K) + Sync + Send>)
                                 }),
                                 Default::default(),
                             ),
@@ -370,7 +331,7 @@ impl<
                                         let mut value = value.clone();
                                         value.insert(key.clone(), item);
                                         on_change.0(value);
-                                    })) as Arc<dyn Fn(V::Output) + Sync + Send>)
+                                    })) as Arc<dyn Fn(V) + Sync + Send>)
                                 }),
                                 Default::default(),
                             ),
@@ -394,48 +355,23 @@ impl<
     }
 }
 impl<
-        K: Editor + Debug + Clone + Default + Hash + PartialEq + Eq + PartialOrd + Ord + Sync + Send + 'static,
-        V: Editor + Debug + Clone + Default + Sync + Send + 'static,
+        K: Editor + std::fmt::Debug + Clone + Default + Hash + PartialEq + Eq + PartialOrd + Ord + Sync + Send + 'static,
+        V: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static,
     > Editor for HashMap<K, V>
 {
-    type Output = Self;
-
     fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         KeyValueEditor { value: self, on_change }.el()
     }
-
-    fn value(&self) -> Self::Output {
-        self.clone()
-    }
 }
 
-pub struct IndexMapEditor<K: Editor, V: Editor> {
+#[derive(Debug, Clone)]
+pub struct IndexMapEditor<K, V> {
     value: Arc<IndexMap<K, V>>,
-    on_change: Cb<dyn Fn(IndexMap<K::Output, V::Output>) + Send + Sync>,
+    on_change: Cb<dyn Fn(IndexMap<K, V>) + Send + Sync>,
     use_row_instead_of_column: bool,
 }
 
-impl<K: Editor + Clone, V: Editor + Clone> Clone for IndexMapEditor<K, V> {
-    fn clone(&self) -> Self {
-        Self {
-            value: self.value.clone(),
-            on_change: self.on_change.clone(),
-            use_row_instead_of_column: self.use_row_instead_of_column.clone(),
-        }
-    }
-}
-
-impl<K: Editor + Debug, V: Editor + Debug> Debug for IndexMapEditor<K, V> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("IndexMapEditor")
-            .field("value", &self.value)
-            .field("on_change", &self.on_change)
-            .field("use_row_instead_of_column", &self.use_row_instead_of_column)
-            .finish()
-    }
-}
-
-impl<K: Editor, V: Editor> IndexMapEditor<K, V> {
+impl<K, V> IndexMapEditor<K, V> {
     pub fn new(value: IndexMap<K, V>, on_change: Cb<dyn Fn(IndexMap<K, V>) + Send + Sync>, use_row_instead_of_column: bool) -> Self {
         Self { value: Arc::new(value), on_change, use_row_instead_of_column }
     }
@@ -472,13 +408,10 @@ where
 /// preserved
 impl<K, V> Editor for IndexMap<K, V>
 where
-    K: Hash + Eq + Send + Sync + Debug + 'static + Clone + Editor + Default,
+    K: std::hash::Hash + Eq + Send + Sync + Debug + 'static + Clone + Editor + Default,
     V: Send + Sync + Debug + 'static + Clone + Editor + Default,
-    K::Output: Hash + Eq,
 {
-    type Output = IndexMap<K::Output, V::Output>;
-
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self::Output) + Send + Sync>>, opts: EditorOpts) -> Element {
+    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Send + Sync>>, opts: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
             IndexMapEditor::new(self, on_change, false).el()
         } else {
@@ -490,46 +423,20 @@ where
             FlowColumn(fields).el().set(space_between_items(), STREET)
         }
     }
-
-    fn value(&self) -> Self::Output {
-        self.iter().map(|(k, v)| (k.value(), v.value())).collect()
-    }
 }
 
-struct IndexMapEntryPart<K: Editor, V: Editor> {
+#[derive(Debug, Clone)]
+struct IndexMapEntryPart<K, V> {
     key: K,
     value: V,
     parent: Arc<IndexMap<K, V>>,
-    on_change: Cb<dyn Fn(IndexMap<K::Output, V::Output>) + Send + Sync>,
-}
-
-impl<K: Editor + Clone, V: Editor + Clone> Clone for IndexMapEntryPart<K, V> {
-    fn clone(&self) -> Self {
-        Self { key: self.key.clone(), value: self.value.clone(), parent: self.parent.clone(), on_change: self.on_change.clone() }
-    }
-}
-
-impl<K: Editor, V: Editor> IndexMapEntryPart<K, V> {
-    fn new(key: K, value: V, parent: Arc<IndexMap<K, V>>, on_change: Cb<dyn Fn(IndexMap<K::Output, V::Output>) + Send + Sync>) -> Self {
-        Self { key, value, parent, on_change }
-    }
-}
-
-impl<K: Editor + Debug, V: Editor + Debug> Debug for IndexMapEntryPart<K, V> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("IndexMapEntryPart")
-            .field("key", &self.key)
-            .field("value", &self.value)
-            .field("parent", &self.parent)
-            .field("on_change", &self.on_change)
-            .finish()
-    }
+    on_change: Cb<dyn Fn(IndexMap<K, V>) + Send + Sync>,
 }
 
 impl<K, V> ElementComponent for IndexMapEntryPart<K, V>
 where
-    K: 'static + Default + Hash + Eq + Clone + Debug + Send + Sync + Editor,
-    V: 'static + Default + Clone + Debug + Editor + Send + Sync,
+    K: Hash + Eq + Clone + Debug + Send + Sync + 'static + Editor,
+    V: Clone + Debug + Editor + Send + Sync + 'static,
 {
     fn render(self: Box<Self>, _world: &mut World, _: &mut Hooks) -> Element {
         let Self { key, value, on_change, parent } = *self;
@@ -538,9 +445,10 @@ where
             let parent = parent.clone();
             let on_change = on_change.clone();
             let old_key = key.clone();
-            key.editor(
+            K::editor(
+                key.clone(),
                 Some(Cb(Arc::new(move |key| {
-                    let mut map = parent.deref().value();
+                    let mut map = parent.deref().clone();
                     let val = map.remove(&old_key).expect("Missing key in map");
                     map.insert(key, val);
                     on_change(map);
@@ -553,9 +461,10 @@ where
             let key = key.clone();
             let on_change = on_change.clone();
             let parent = parent.clone();
-            value.editor(
+            V::editor(
+                value,
                 Some(Cb(Arc::new(move |value| {
-                    let mut map = parent.value();
+                    let mut map = parent.deref().clone();
                     map.insert(key.clone(), value);
 
                     on_change(map)

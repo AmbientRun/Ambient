@@ -531,7 +531,7 @@ impl<
             set_screen(Some(
                 EditorPrompt {
                     title: title.clone(),
-                    editor: value.get_cloned(),
+                    value: value.get_cloned(),
                     set_screen: Cb(set_screen.clone()),
                     on_ok: Cb::new({
                         let value = value.clone();

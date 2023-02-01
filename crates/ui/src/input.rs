@@ -97,8 +97,6 @@ pub type U64Input = ParseableInput<u64>;
 pub type UsizeInput = ParseableInput<usize>;
 
 impl Editor for Duration {
-    type Output = Self;
-
     fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
             CustomParseInput {
@@ -112,15 +110,9 @@ impl Editor for Duration {
             Text::el(format!("{}", self.as_secs_f32()))
         }
     }
-
-    fn value(&self) -> Self::Output {
-        *self
-    }
 }
 
 impl Editor for f32 {
-    type Output = Self;
-
     fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
             F32Input { value: self, on_change }.el()
@@ -128,14 +120,8 @@ impl Editor for f32 {
             Text::el(format!("{self}"))
         }
     }
-
-    fn value(&self) -> Self::Output {
-        *self
-    }
 }
 impl Editor for i32 {
-    type Output = Self;
-
     fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
             I32Input { value: self, on_change }.el()
@@ -143,15 +129,8 @@ impl Editor for i32 {
             Text::el(format!("{self}"))
         }
     }
-
-    fn value(&self) -> Self::Output {
-        *self
-    }
 }
-
 impl Editor for u32 {
-    type Output = Self;
-
     fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
             U32Input { value: self, on_change }.el()
@@ -159,14 +138,8 @@ impl Editor for u32 {
             Text::el(format!("{self}"))
         }
     }
-
-    fn value(&self) -> Self::Output {
-        *self
-    }
 }
 impl Editor for u64 {
-    type Output = Self;
-
     fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
             U64Input { value: self, on_change }.el()
@@ -174,24 +147,14 @@ impl Editor for u64 {
             Text::el(format!("{self}"))
         }
     }
-
-    fn value(&self) -> Self::Output {
-        *self
-    }
 }
 impl Editor for usize {
-    type Output = Self;
-
     fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
             UsizeInput { value: self, on_change }.el()
         } else {
             Text::el(format!("{self}"))
         }
-    }
-
-    fn value(&self) -> Self::Output {
-        *self
     }
 }
 
@@ -215,8 +178,6 @@ impl ElementComponent for Checkbox {
 }
 
 impl Editor for bool {
-    type Output = Self;
-
     fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
             Checkbox { value: self, on_change }.el()
@@ -225,10 +186,6 @@ impl Editor for bool {
         } else {
             FontAwesomeIcon::el(0xf0c8, false)
         }
-    }
-
-    fn value(&self) -> Self::Output {
-        *self
     }
 }
 
@@ -243,7 +200,6 @@ pub struct Slider {
     pub round: Option<u32>,
     pub suffix: Option<&'static str>,
 }
-
 impl ElementComponent for Slider {
     fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
         let Slider { value, min, max, width: slider_width, logarithmic, round, suffix, .. } = *self;
@@ -392,7 +348,7 @@ impl ElementComponent for IntegerSlider {
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize)]
 pub struct EditableDuration {
-    pub(crate) dur: Duration,
+    dur: Duration,
     valid: bool,
     input: String,
 }
@@ -439,11 +395,11 @@ impl From<String> for EditableDuration {
 #[derive(Debug, Clone)]
 pub struct DurationEditor {
     pub value: EditableDuration,
-    pub on_change: Cb<dyn Fn(Duration) + Sync + Send>,
+    pub on_change: Cb<dyn Fn(EditableDuration) + Sync + Send>,
 }
 
 impl DurationEditor {
-    pub fn new(value: EditableDuration, on_change: Cb<dyn Fn(Duration) + Sync + Send>) -> Self {
+    pub fn new(value: EditableDuration, on_change: Cb<dyn Fn(EditableDuration) + Sync + Send>) -> Self {
         Self { value, on_change }
     }
 }
@@ -451,7 +407,7 @@ impl DurationEditor {
 impl ElementComponent for DurationEditor {
     fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
         let Self { value: EditableDuration { input, dur, valid }, on_change } = *self;
-        let input = TextInput::new(input, Cb(Arc::new(move |upd: String| on_change(EditableDuration::from(upd).dur)))).el();
+        let input = TextInput::new(input, Cb(Arc::new(move |upd: String| on_change(EditableDuration::from(upd))))).el();
         let value = Text::el(format!("{dur:#?}"));
 
         if valid {
@@ -474,14 +430,8 @@ impl ElementComponent for SystemTimeEditor {
     }
 }
 impl Editor for SystemTime {
-    type Output = Self;
-
     fn editor(self, _: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         SystemTimeEditor { value: self, on_change: None }.el()
-    }
-
-    fn value(&self) -> Self::Output {
-        *self
     }
 }
 
@@ -540,20 +490,13 @@ impl ElementComponent for Vec2Editor {
         .el()
     }
 }
-
 impl Editor for Vec2 {
-    type Output = Self;
-
     fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
             Vec2Editor { value: self, on_change }.el()
         } else {
-            Text::el(self.to_string())
+            Text::el(format!("{self}"))
         }
-    }
-
-    fn value(&self) -> Self::Output {
-        *self
     }
 }
 
@@ -562,7 +505,6 @@ pub struct Vec3Editor {
     pub value: Vec3,
     pub on_change: Cb<dyn Fn(Vec3) + Sync + Send>,
 }
-
 impl ElementComponent for Vec3Editor {
     fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
         let Self { value, on_change } = *self;
@@ -595,20 +537,13 @@ impl ElementComponent for Vec3Editor {
         .el()
     }
 }
-
 impl Editor for Vec3 {
-    type Output = Self;
-
     fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
             Vec3Editor { value: self, on_change }.el()
         } else {
-            Text::el(self.to_string())
+            Text::el(format!("{self}"))
         }
-    }
-
-    fn value(&self) -> Self::Output {
-        *self
     }
 }
 
@@ -617,7 +552,6 @@ pub struct Vec4Editor {
     pub value: Vec4,
     pub on_change: Cb<dyn Fn(Vec4) + Sync + Send>,
 }
-
 impl ElementComponent for Vec4Editor {
     fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
         let Self { value, on_change } = *self;
@@ -658,19 +592,13 @@ impl ElementComponent for Vec4Editor {
         .el()
     }
 }
-
 impl Editor for Vec4 {
-    type Output = Self;
-
     fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
         if let Some(on_change) = on_change {
             Vec4Editor { value: self, on_change }.el()
         } else {
-            Text::el(self.to_string())
+            // Removed unneccesary clone
+            Text::el(format!("{self}"))
         }
-    }
-
-    fn value(&self) -> Self::Output {
-        *self
     }
 }
