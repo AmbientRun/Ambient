@@ -5515,7 +5515,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "tilt_runtime"
+name = "tilt"
 version = "0.0.1"
 dependencies = [
  "anyhow",
@@ -5551,6 +5551,7 @@ dependencies = [
  "elements_ui",
  "elements_world_audio",
  "env_logger 0.9.3",
+ "friendly_id",
  "futures",
  "glam 0.22.0",
  "local-ip-address",
