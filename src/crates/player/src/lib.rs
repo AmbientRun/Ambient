@@ -33,11 +33,12 @@ pub struct RawInput {
 
 mod components {
     pub mod game_objects {
-        use elements_ecs::components;
+        use elements_ecs::{components, Networked};
 
         components!("game_objects", {
             // attached to a camera entity to mark it as belonging to a player
             // player is located through user_id
+            @[Networked]
             player_camera: (),
         });
     }
