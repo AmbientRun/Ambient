@@ -1,5 +1,7 @@
 extern crate proc_macro;
 
+use std::path::PathBuf;
+
 use anyhow::Context;
 use proc_macro::TokenStream;
 use quote::quote;
@@ -69,10 +71,10 @@ pub fn tilt_project(input: TokenStream) -> TokenStream {
 }
 
 fn tilt_project_read_file(file_path: String) -> anyhow::Result<(String, String)> {
-    let file_path = std::env::current_dir()?.join(&file_path);
+    let file_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").context("no manifest dir")?).join(&file_path);
     let file_path_str = format!("{}", file_path.display());
 
-    let contents = std::fs::read_to_string(&file_path).context(file_path.to_string_lossy().to_string())?;
+    let contents = std::fs::read_to_string(&file_path)?;
 
     Ok((file_path_str, contents))
 }
