@@ -7,9 +7,6 @@ use components::core::{
 };
 use tilt_runtime_scripting_interface::{player::KeyCode, *};
 
-pub mod components;
-pub mod params;
-
 struct CameraState {
     radius: f32,
     yaw: f32,

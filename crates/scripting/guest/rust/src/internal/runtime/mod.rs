@@ -44,7 +44,7 @@ impl SchedulerState {
         futures.retain_mut(|f| match f.as_mut().poll(&mut Context::from_waker(&self.waker)) {
             Poll::Ready(Ok(_)) => false,
             Poll::Ready(Err(e)) => {
-                println!("Error while handling future: {:?}", e);
+                eprintln!("Error while handling future: {e:?}");
                 false
             }
             Poll::Pending => true,

@@ -44,12 +44,14 @@ pub use internal::{
     EntityId, EntityUid, ObjectRef,
 };
 
-pub use interface_macros::main;
+pub use interface_macros::{main, tilt_project};
 
 pub use anyhow::{anyhow, Context as AnyhowContext};
 pub use glam::{self, f32::*, Vec2Swizzles, Vec3Swizzles, Vec4Swizzles};
 pub use once_cell;
 pub use rand::prelude::*;
+
+interface_macros::tilt_project!();
 
 #[inline]
 /// Helper function that returns the [std::default::Default::default] for the type `T`.

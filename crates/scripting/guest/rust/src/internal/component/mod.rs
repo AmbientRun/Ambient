@@ -54,16 +54,9 @@ pub type LazyComponent<T> = Lazy<Component<T>>;
 #[macro_export]
 macro_rules! lazy_component {
     ($id:literal) => {
-        once_cell::sync::Lazy::new(|| internal_get_component($id))
+        $crate::LazyComponent::new(|| $crate::internal_get_component($id))
     };
 }
-
-pub(crate) static TRANSLATION: LazyComponent<Vec3> = lazy_component!("core::transform::translation");
-pub(crate) static ROTATION: LazyComponent<Quat> = lazy_component!("core::transform::rotation");
-pub(crate) static SCALE: LazyComponent<Vec3> = lazy_component!("core::transform::scale");
-
-pub(crate) static ID: LazyComponent<EntityId> = lazy_component!("core::ecs::id");
-pub(crate) static UID: LazyComponent<EntityUid> = lazy_component!("core::ecs::uid");
 
 #[doc(hidden)]
 pub trait ToParam {

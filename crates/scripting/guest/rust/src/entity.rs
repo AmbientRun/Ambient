@@ -1,7 +1,7 @@
 use super::{
-    host,
+    components, host,
     internal::{
-        component::{Component, IComponent, ToParam, ID, ROTATION, SCALE, TRANSLATION, UID},
+        component::{Component, IComponent, ToParam},
         conversion::{FromBindgen, IntoBindgen},
     },
     until_this, Components, EntityId, EntityUid, Mat4, ObjectRef, Quat, SupportedComponentTypeGet, SupportedComponentTypeSet, Vec3,
@@ -48,8 +48,8 @@ pub fn spawn_template(object_ref: &ObjectRef, position: Vec3, rotation: Option<Q
 // TODO(mithun): revisit once we think about the spawning situation some more
 pub async fn wait_for_spawn(uid: &EntityUid) -> EntityId {
     let uid = uid.clone();
-    let event = until_this(super::event::ENTITY_SPAWN, move |ed| ed.get(*UID).unwrap() == uid).await;
-    event.get(*ID).unwrap()
+    let event = until_this(super::event::ENTITY_SPAWN, move |ed| ed.get(components::core::ecs::uid()).unwrap() == uid).await;
+    event.get(components::core::ecs::id()).unwrap()
 }
 
 /// Despawns `entity` from the world. `entity` will not work with any other functions afterwards.
@@ -64,7 +64,7 @@ pub fn set_animation_controller(entity: EntityId, controller: AnimationControlle
 }
 /// Gets the position of the `entity` if it exists, or `None` if it does not.
 pub fn get_position(entity: EntityId) -> Option<Vec3> {
-    get_component(entity, *TRANSLATION)
+    get_component(entity, components::core::transform::translation())
 }
 /// Sets the position of `entity` to `position`.
 pub fn set_position(entity: EntityId, position: Vec3) {
@@ -78,7 +78,7 @@ pub fn set_position(entity: EntityId, position: Vec3) {
 }
 /// Gets the rotation of the `entity` if it exists, or `None` if it does not.
 pub fn get_rotation(entity: EntityId) -> Option<Quat> {
-    get_component(entity, *ROTATION)
+    get_component(entity, components::core::transform::rotation())
 }
 /// Sets the rotation of `entity` to `rotation`.
 pub fn set_rotation(entity: EntityId, rotation: Quat) {
@@ -92,7 +92,7 @@ pub fn set_rotation(entity: EntityId, rotation: Quat) {
 }
 /// Gets the scale of the `entity` if it exists, or `None` if it does not.
 pub fn get_scale(entity: EntityId) -> Option<Vec3> {
-    get_component(entity, *SCALE)
+    get_component(entity, components::core::transform::scale())
 }
 /// Sets the scale of `entity` to `scale`.
 pub fn set_scale(entity: EntityId, scale: Vec3) {
@@ -227,5 +227,8 @@ pub fn mutate_component_with_default<T: SupportedComponentTypeGet + SupportedCom
 
 /// Creates a [Components] that can be used as a base for a game object.
 pub fn game_object_base() -> Components {
-    Components::new().with(*TRANSLATION, Vec3::ZERO).with(*ROTATION, Quat::IDENTITY).with(*SCALE, Vec3::ONE)
+    Components::new()
+        .with(components::core::transform::translation(), Vec3::ZERO)
+        .with(components::core::transform::rotation(), Quat::IDENTITY)
+        .with(components::core::transform::scale(), Vec3::ONE)
 }
