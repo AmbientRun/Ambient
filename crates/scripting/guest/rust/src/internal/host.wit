@@ -130,8 +130,8 @@ variant component-type {
     type-option(component-option-type),
 }
 
-component-get-index: func(id: string) -> option<u64>
-type components = list<tuple<u64, component-type>>
+component-get-index: func(id: string) -> option<u32>
+type components = list<tuple<u32, component-type>>
 
 // entity
 entity-spawn: func(data: components, persistent: bool) -> entity-uid
@@ -142,22 +142,22 @@ entity-set-transform: func(entity: entity-id, transform: mat4, relative: bool)
 entity-get-linear-velocity: func(entity: entity-id) -> option<vec3>
 entity-in-area: func(position: vec3, radius: float32) -> list<entity-id>
 
-entity-get-component: func(entity: entity-id, index: u64) -> option<component-type>
-entity-set-component: func(entity: entity-id, index: u64, value: component-type)
+entity-get-component: func(entity: entity-id, index: u32) -> option<component-type>
+entity-set-component: func(entity: entity-id, index: u32, value: component-type)
 entity-set-components: func(entity: entity-id, data: components)
-entity-has-component: func(entity: entity-id, index: u64) -> bool
-entity-remove-component: func(entity: entity-id, index: u64)
-entity-remove-components: func(entity: entity-id, indices: list<u64>)
+entity-has-component: func(entity: entity-id, index: u32) -> bool
+entity-remove-component: func(entity: entity-id, index: u32)
+entity-remove-components: func(entity: entity-id, indices: list<u32>)
 
 entity-exists: func(entity: entity-id) -> bool
-entity-query: func(index: u64) -> list<entity-id>
+entity-query: func(index: u32) -> list<entity-id>
 entity-lookup-uid: func(uid: entity-uid) -> option<entity-id>
 
 record query {
-    components: list<u64>,
-    include: list<u64>,
-    exclude: list<u64>,
-    changed: list<u64>,
+    components: list<u32>,
+    include: list<u32>,
+    exclude: list<u32>,
+    changed: list<u32>,
 }
 
 enum query-event {

@@ -122,7 +122,7 @@ impl ScriptModule {
         relative_path: &Path,
         new_file: &File,
     ) -> anyhow::Result<()> {
-        let relative_path = elements_std::path::normalize(&relative_path);
+        let relative_path = elements_std::path::normalize(relative_path);
         if ScriptModule::system_controlled_files().contains(&relative_path) {
             anyhow::bail!("{relative_path:?} is system-controlled and cannot be updated");
         }
@@ -283,11 +283,19 @@ impl ScriptModule {
             .copied()
             .collect();
 
+        // log::info!("Supported types: {supported_types:#?}");
         let mut root = ComponentTreeNode::default();
         with_component_registry(|registry| {
             for component in registry.all_external() {
                 if let Some(typename) = supported_types.get(&component.type_id()) {
-                    root.insert(&component.get_id(), &component.get_id(), typename);
+                    let path = component.path();
+                    root.insert(&path, &path, typename);
+                } else {
+                    log::error!(
+                        "Type {:?}:{:?} is not supported",
+                        component.type_id(),
+                        component.type_name()
+                    );
                 }
             }
         });

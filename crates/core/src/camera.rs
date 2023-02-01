@@ -1,4 +1,4 @@
-use elements_ecs::{components, query, query_mut, Component, ECSError, EntityData, EntityId, SystemGroup, World};
+use elements_ecs::{components, query, query_mut, Component, ECSError, EntityData, EntityId, Networked, Store, SystemGroup, World};
 use elements_std::{
     math::Line, shapes::{BoundingBox, Plane, Ray, AABB}
 };
@@ -20,17 +20,29 @@ pub struct OrthographicRect {
 
 components!("camera", {
     orthographic: OrthographicRect,
+    @[Networked, Store]
     perspective_infinite_reverse: (),
+    @[Networked, Store]
     perspective: (),
+    @[Networked, Store]
     near: f32,
+    @[Networked, Store]
     far: f32,
+    @[Networked, Store]
     fovy: f32,
+    @[Networked, Store]
     aspect_ratio: f32,
+    @[Networked, Store]
     aspect_ratio_from_window: (),
+    @[Networked, Store]
     projection: glam::Mat4,
+    @[Networked, Store]
     projection_view: glam::Mat4,
+    @[Networked, Store]
     active_camera: f32, // Higher value means higher priority
+    @[Networked, Store]
     fog: (),
+    @[Networked, Store]
     shadows_far: f32,
 });
 
@@ -440,18 +452,18 @@ fn test_frustum_reverse_z() {
 
     for z in [1., 10., 100.] {
         let near = projection.matrix().project_point3(Vec3::Z * z + vec3(1., 1., 0.));
-        println!("point {z} = {near}");
+        eprintln!("point {z} = {near}");
     }
 
     let inv_proj = projection.matrix().inverse();
 
     for z in [1., 0.9, 0.5, 0.1, 0.] {
         let near = inv_proj.project_point3(Vec3::Z * z + vec3(1., 1., 0.));
-        println!("inv point {z} = {near}");
+        eprintln!("inv point {z} = {near}");
     }
 
     let frustum = projection.view_space_frustum();
-    println!("{frustum:?}");
+    eprintln!("{frustum:?}");
     assert!(frustum.right.distance(Vec3::X * 6.) > 0.);
     assert!(frustum.top.distance(Vec3::Y * 6.) > 0.);
 

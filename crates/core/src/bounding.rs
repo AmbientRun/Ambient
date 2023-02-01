@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use elements_ecs::{components, query_mut, EntityId, FramedEventsReader, System, SystemGroup, World};
+use elements_ecs::{components, query_mut, Debuggable, EntityId, FramedEventsReader, Networked, Store, System, SystemGroup, World};
 use elements_std::{
     shapes::{Sphere, AABB}, sparse_vec::SparseVec
 };
@@ -12,9 +12,13 @@ use crate::{
 };
 
 components!("rendering", {
+    @[Debuggable, Networked, Store]
     visibility_from: EntityId,
+    @[Debuggable, Networked, Store]
     local_bounding_aabb: AABB,
+    @[Debuggable, Networked, Store]
     world_bounding_aabb: AABB,
+    @[Debuggable]
     world_bounding_sphere: Sphere,
 });
 gpu_components! {
@@ -81,7 +85,7 @@ impl System<GpuWorldSyncEvent> for VisibilityFromToGpuSystem {
             if let Some((gpu_buff, offset, layout_version)) =
                 gpu_world.get_buffer(GpuComponentFormat::UVec4, gpu_components::visibility_from(), arch.id)
             {
-                let content_changed = self.changed.changed(arch, &visibility_from(), layout_version);
+                let content_changed = self.changed.changed(arch, visibility_from(), layout_version);
                 let buf = arch.get_component_buffer(visibility_from()).unwrap();
                 if content_changed {
                     let entity_set: HashSet<EntityId> = buf.data.iter().copied().collect();

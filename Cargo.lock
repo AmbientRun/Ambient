@@ -1576,6 +1576,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "elements_debugger"
+version = "0.0.1"
+dependencies = [
+ "elements_core",
+ "elements_ecs",
+ "elements_element",
+ "elements_element_component",
+ "elements_gizmos",
+ "elements_gpu",
+ "elements_network",
+ "elements_renderer",
+ "elements_rpc",
+ "elements_std",
+ "elements_ui",
+ "glam 0.22.0",
+ "log",
+ "wgpu",
+ "winit",
+]
+
+[[package]]
 name = "elements_decals"
 version = "0.0.1"
 dependencies = [
@@ -1991,24 +2012,6 @@ dependencies = [
  "profiling 1.0.6",
  "serde",
  "smallvec",
- "wgpu",
- "winit",
-]
-
-[[package]]
-name = "elements_renderer_debugger"
-version = "0.0.1"
-dependencies = [
- "elements_core",
- "elements_ecs",
- "elements_element",
- "elements_element_component",
- "elements_gizmos",
- "elements_gpu",
- "elements_renderer",
- "elements_std",
- "elements_ui",
- "glam 0.22.0",
  "wgpu",
  "winit",
 ]
@@ -5525,6 +5528,7 @@ dependencies = [
  "elements_build",
  "elements_cameras",
  "elements_core",
+ "elements_debugger",
  "elements_decals",
  "elements_ecs",
  "elements_editor_derive",
@@ -5540,7 +5544,6 @@ dependencies = [
  "elements_physics",
  "elements_primitives",
  "elements_renderer",
- "elements_renderer_debugger",
  "elements_rpc",
  "elements_scripting_host",
  "elements_std",

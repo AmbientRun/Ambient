@@ -108,8 +108,12 @@ impl GlobalState {
 
     fn load_pending_into_current_scheduler(&self) {
         let (mut st, mut pst) = (self.scheduler_mut(), self.pending_scheduler_mut());
-        st.callbacks.extend(pst.callbacks.drain());
-        st.once_callbacks.extend(pst.once_callbacks.drain());
+        for (event_name, mut new_callbacks) in pst.callbacks.drain() {
+            st.callbacks.entry(event_name).or_default().append(&mut new_callbacks);
+        }
+        for (event_name, mut new_callbacks) in pst.once_callbacks.drain() {
+            st.once_callbacks.entry(event_name).or_default().append(&mut new_callbacks);
+        }
         st.futures.append(&mut pst.futures);
     }
 }
@@ -124,7 +128,7 @@ impl guest::Guest for Guest {
         GLOBAL_STATE.initialize();
     }
 
-    fn exec(ctx: guest::RunContext, event_name: String, components: Vec<(u64, guest::ComponentType)>) {
+    fn exec(ctx: guest::RunContext, event_name: String, components: Vec<(u32, guest::ComponentType)>) {
         use guest_conversion::GuestConvert;
 
         let components = Components(components.into_iter().map(|(id, ct)| (id, ct.guest_convert())).collect());

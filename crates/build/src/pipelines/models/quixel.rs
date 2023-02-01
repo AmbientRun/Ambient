@@ -28,7 +28,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
             async move {
                 let mut res = Vec::new();
                 let quixel_id = QuixelId::from_full(file.last_dir_name().unwrap()).unwrap();
-                let quixel_json: serde_json::Value = file.download_json(&ctx.assets()).await.unwrap();
+                let quixel_json: serde_json::Value = file.download_json(ctx.assets()).await.unwrap();
                 let in_root_url = file.join(".").unwrap();
                 let tags = quixel_json["tags"]
                     .as_array()
@@ -52,7 +52,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                 let is_collection = objs.len() > 1;
                 for (i, pipeline) in objs.into_iter().enumerate() {
                     let id = asset_id_from_url(&file.push(i.to_string()).unwrap());
-                    let mut asset_crate = pipeline.produce_crate(&ctx.assets()).await.unwrap();
+                    let mut asset_crate = pipeline.produce_crate(ctx.assets()).await.unwrap();
 
                     let out_model_path = ctx.in_root().relative_path(file.path()).join(i.to_string());
                     config.apply(&ctx, &mut asset_crate, &out_model_path).await?;
@@ -148,7 +148,7 @@ pub async fn object_pipelines_from_quixel_json(
                 material: Box::new(material.relative_path_from(out_materials_url)),
             };
             let mesh0 = FbxDoc::from_url(
-                &ctx.assets(),
+                ctx.assets(),
                 ctx.process_ctx.find_file_res(format!("{}**/*_LOD5.fbx", in_root_url.as_directory().path()))?,
             )
             .await?;
@@ -187,7 +187,7 @@ pub async fn object_pipelines_from_quixel_json(
                             && map.get("uri").unwrap().as_str().unwrap().contains(&format!("_{}_", quixel_id.resolution.to_uppercase()))
                             && map.get("name").unwrap().as_str().unwrap() == name
                         {
-                            Some(format!("{}", map.get("uri").unwrap().as_str().unwrap()))
+                            Some(map.get("uri").unwrap().as_str().unwrap().to_string())
                         } else {
                             None
                         }
@@ -207,8 +207,8 @@ pub async fn object_pipelines_from_quixel_json(
                                     let resolution = resolution.as_object().unwrap();
                                     for format in resolution.get("formats").unwrap().as_array().unwrap() {
                                         let format = format.as_object().unwrap();
-                                        println!("format={}", format.get("mimeType").unwrap().as_str().unwrap());
-                                        println!("uri={}", format.get("uri").unwrap().as_str().unwrap());
+                                        tracing::info!("format={}", format.get("mimeType").unwrap().as_str().unwrap());
+                                        tracing::info!("uri={}", format.get("uri").unwrap().as_str().unwrap());
                                         if format.get("mimeType").unwrap().as_str().unwrap() == "image/jpeg"
                                             && format
                                                 .get("uri")
@@ -242,7 +242,7 @@ pub async fn object_pipelines_from_quixel_json(
             let pipe_mr_image = |ending: Option<String>| -> BoxFuture<'_, anyhow::Result<Option<AssetUrl>>> {
                 let config = config.clone();
                 let in_root_url = in_root_url.clone();
-                let ending = ending.clone();
+                let ending = ending;
                 async move {
                     if let Some(ending) = ending {
                         Ok(Some(AssetUrl::from(

@@ -125,9 +125,9 @@ async fn main() {
     let sample_history = Arc::new(Mutex::new(CircularQueue::with_capacity(history_len)));
     let sample_history2 = Arc::new(Mutex::new(Vec::new()));
 
-    let hrtf_lib = HrtfLib::load(Cursor::new(
-        std::fs::read("example_assets/IRC_1002_C.bin").unwrap(),
-    ))
+    let hrtf_lib = HrtfLib::load(Cursor::new(include_bytes!(
+        "../../world_audio/IRC_1002_C.bin"
+    )))
     .unwrap();
 
     let listener = Arc::new(Mutex::new(AudioListener {

@@ -7,7 +7,7 @@ use std::{any::Any, sync::Arc};
 
 use as_any::AsAny;
 use dyn_clonable::clonable;
-use elements_ecs::{components, Component, ComponentValue, EntityData, EntityId, IComponent, SystemGroup, World};
+use elements_ecs::{components, Component, ComponentDesc, ComponentValue, EntityData, EntityId, SystemGroup, World};
 use elements_std::events::EventDispatcher;
 use parking_lot::Mutex;
 
@@ -87,7 +87,7 @@ impl Element {
         self
     }
     pub fn set_with<T: ComponentValue, F: Fn(&World) -> T + ComponentValue>(mut self, component: Component<T>, value: F) -> Self {
-        self.config.components.set_writer(&component, Arc::new(move |world, ed| ed.set_self(component, value(world))));
+        self.config.components.set_writer(component, Arc::new(move |world, ed| ed.set_self(component, value(world))));
         self
     }
     pub fn set_default<T: ComponentValue + Clone + Default>(mut self, component: Component<T>) -> Self {
@@ -101,7 +101,7 @@ impl Element {
     }
     /// See [`Element::init`]
     pub fn init_with<T: ComponentValue, F: Fn(&World) -> T + ComponentValue>(mut self, component: Component<T>, value: F) -> Self {
-        self.config.init_components.set_writer(&component, Arc::new(move |world, ed| ed.set_self(component, value(world))));
+        self.config.init_components.set_writer(component, Arc::new(move |world, ed| ed.set_self(component, value(world))));
         self
     }
     /// See [`Element::init`]
@@ -111,7 +111,7 @@ impl Element {
     }
     pub fn extend(mut self, entity_data: EntityData) -> Self {
         for unit in entity_data.into_iter() {
-            self.config.components.set_writer(&*unit.component().clone_boxed(), Arc::new(move |_, ed| ed.set_unit(unit.clone())));
+            self.config.components.set_writer(unit.desc(), Arc::new(move |_, ed| ed.set_entry(unit.clone())));
         }
         self
     }
@@ -156,8 +156,9 @@ impl Element {
         self.config.memo_key = Some(memo_key.into());
         self
     }
-    pub fn has_component<T: IComponent>(&self, component: T) -> bool {
-        self.config.components.0.contains_key(&component.get_index()) || self.config.init_components.0.contains_key(&component.get_index())
+    pub fn has_component(&self, component: impl Into<ComponentDesc>) -> bool {
+        let index = component.into().index() as usize;
+        self.config.components.0.contains_key(&index) || self.config.init_components.0.contains_key(&index)
     }
     /// This spawns the element tree as a number of entities, but they won't react to changes. Returns the root entity
     pub fn spawn_static(self, world: &mut World) -> EntityId {

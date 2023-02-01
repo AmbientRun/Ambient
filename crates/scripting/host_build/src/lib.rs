@@ -1,3 +1,4 @@
+#![allow(clippy::disallowed_macros)]
 use std::path::{Path, PathBuf};
 
 pub fn bundle_scripting_interface(

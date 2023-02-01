@@ -9,56 +9,54 @@ use slotmap::Key;
 
 use crate::shared::host_guest_state::QueryStateMap;
 
-pub fn get_component_type<T: ComponentValue>(component_index: u64) -> Option<Component<T>> {
-    with_component_registry(|r| r.get_by_index_type::<Component<T>>(component_index as usize))
+pub fn get_component_type<T: ComponentValue>(component_index: u32) -> Option<Component<T>> {
+    let desc = with_component_registry(|r| r.get_by_index(component_index))?;
+
+    Some(Component::new(desc))
 }
 
-pub fn get_component_index(id: &str) -> Option<usize> {
-    with_component_registry(|r| Some(r.get_by_id(id)?.get_index()))
+pub fn get_component_index(id: &str) -> Option<u32> {
+    with_component_registry(|r| Some(r.get_by_path(id)?.index()))
 }
 
-pub fn has_component(world: &World, entity_id: EntityId, index: usize) -> bool {
+pub fn has_component(world: &World, entity_id: EntityId, index: u32) -> bool {
     world.has_component_index(entity_id, index)
 }
 
-pub fn remove_component(
-    world: &mut World,
-    entity_id: EntityId,
-    index: usize,
-) -> anyhow::Result<()> {
-    let component = with_component_registry(|cr| cr.get_by_index(index).map(|c| c.clone_boxed()))
-        .context("no component for index")?;
-    Ok(world.remove_component(entity_id, component)?)
+pub fn remove_component(world: &mut World, entity_id: EntityId, index: u32) -> anyhow::Result<()> {
+    let desc =
+        with_component_registry(|cr| cr.get_by_index(index)).context("no component for index")?;
+
+    Ok(world.remove_component(entity_id, desc)?)
 }
 
-pub fn query(world: &mut World, index: u64) -> Vec<EntityId> {
-    let component =
-        match with_component_registry(|r| Some(r.get_by_index(index as usize)?.clone_boxed())) {
-            Some(c) => c,
-            None => return vec![],
-        };
+pub fn query(world: &mut World, index: u32) -> Vec<EntityId> {
+    let desc = match with_component_registry(|r| r.get_by_index(index)) {
+        Some(c) => c,
+        None => return vec![],
+    };
 
-    elements_ecs::Query::new(elements_ecs::ArchetypeFilter::new().incl_ref(component.as_ref()))
+    elements_ecs::Query::new(elements_ecs::ArchetypeFilter::new().incl_ref(desc))
         .iter(world, None)
         .map(|ea| ea.id())
         .collect()
 }
 pub fn query2(
     query_states: &mut QueryStateMap,
-    components: impl Iterator<Item = u64> + Sync + Send,
-    include: impl Iterator<Item = u64> + Sync + Send,
-    exclude: impl Iterator<Item = u64> + Sync + Send,
-    changed: impl Iterator<Item = u64> + Sync + Send,
+    components: impl Iterator<Item = u32> + Sync + Send,
+    include: impl Iterator<Item = u32> + Sync + Send,
+    exclude: impl Iterator<Item = u32> + Sync + Send,
+    changed: impl Iterator<Item = u32> + Sync + Send,
     query_event: QueryEvent,
 ) -> anyhow::Result<u64> {
     fn get_components(
         registry: &elements_ecs::ComponentRegistry,
-        components: impl Iterator<Item = u64> + Sync + Send,
+        components: impl Iterator<Item = u32> + Sync + Send,
     ) -> anyhow::Result<Vec<elements_ecs::PrimitiveComponent>> {
         components
             .map(|c| {
                 registry
-                    .get_primitive_component(c as usize)
+                    .get_primitive_component(c)
                     .context("no primitive component")
             })
             .collect()

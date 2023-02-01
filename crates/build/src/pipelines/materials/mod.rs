@@ -17,7 +17,6 @@ use elements_std::{
 use futures::{future::BoxFuture, FutureExt};
 use glam::{Vec3, Vec4};
 use image::{ImageOutputFormat, RgbaImage};
-use relative_path::RelativePath;
 use serde::{Deserialize, Serialize};
 
 use super::{
@@ -36,12 +35,12 @@ pub enum MaterialsImporter {
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MaterialsPipeline {
-    pub importer: MaterialsImporter,
+    pub importer: Box<MaterialsImporter>,
     pub output_decals: bool,
 }
 
 pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAsset> {
-    let materials = match config.importer.clone() {
+    let materials = match *config.importer.clone() {
         MaterialsImporter::Single(mat) => {
             ctx.process_single(move |ctx| async move {
                 let name = mat.name.as_ref().or(mat.source.as_ref()).unwrap().to_string();
@@ -176,7 +175,7 @@ impl PipelinePbrMaterial {
             metallic: self.metallic.unwrap_or(1.),
             roughness: self.roughness.unwrap_or(1.),
         }
-        .relative_path_from(&out_root))
+        .relative_path_from(out_root))
     }
 }
 
@@ -190,7 +189,7 @@ pub struct FnImageTransformer<F: Fn(&mut RgbaImage, Option<&RgbaImage>) + Sync +
     name: &'static str,
 }
 impl<F: Fn(&mut RgbaImage, Option<&RgbaImage>) + Sync + Send + 'static> FnImageTransformer<F> {
-    pub fn new(name: &'static str, func: F) -> Box<dyn ImageTransformer> {
+    pub fn new_boxed(name: &'static str, func: F) -> Box<dyn ImageTransformer> {
         Box::new(Self { func: Arc::new(func), name })
     }
 }
@@ -232,7 +231,7 @@ impl PipeImage {
         transform_name: &'static str,
         transform: F,
     ) -> Self {
-        self.transform = Some(FnImageTransformer::new(transform_name, transform));
+        self.transform = Some(FnImageTransformer::new_boxed(transform_name, transform));
         self
     }
     pub fn cap_texture_size(mut self, cap_texture_sizes: Option<ModelTextureSize>) -> Self {
@@ -260,11 +259,11 @@ impl AsyncAssetKey<AssetResult<Arc<AbsAssetUrl>>> for PipeImage {
         } else {
             None
         };
-        let path = ctx.in_root.relative_path(&self.source.path());
+        let path = ctx.in_root.relative_path(self.source.path());
         let mut data = Cursor::new(Vec::new());
         tokio::task::block_in_place(|| {
             if let Some(transform) = &self.transform {
-                transform.transform(&mut image, second_image.as_ref().map(|x| &**x));
+                transform.transform(&mut image, second_image.as_deref());
                 extension = format!("{}.png", transform.name());
             }
             if let Some(size) = self.cap_texture_sizes {

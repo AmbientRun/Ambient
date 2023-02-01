@@ -132,10 +132,8 @@ async fn peek_in_blocking() {
 
     let asset = tokio::task::spawn_blocking(move || {
         for _ in 0..100 {
-            eprintln!("Peeking");
             let asset = TestAssetKey { name: "foo".into() }.peek(&assets);
             if let Some(asset) = asset {
-                eprintln!("Got value: {asset:?}");
                 return asset;
             }
 
@@ -156,10 +154,8 @@ async fn get_in_blocking() {
 
     let asset = tokio::task::spawn_blocking(move || {
         for _ in 0..100 {
-            eprintln!("Peeking");
             let asset = TestAssetKey { name: "foo".into() }.in_background().get(&assets).now_or_never();
             if let Some(asset) = asset {
-                eprintln!("Got value: {asset:?}");
                 return asset;
             }
 

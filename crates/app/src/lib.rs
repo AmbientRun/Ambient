@@ -7,7 +7,7 @@ pub use elements_core::gpu;
 use elements_core::{
     app_start_time, asset_cache, async_ecs::async_ecs_systems, bounding::bounding_systems, camera::camera_systems, frame_index, gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate}, hierarchy::dump_world_hierarchy_to_tmp_file, mouse_position, on_frame_system, remove_at_time_system, runtime, time, transform::TransformSystem, window_scale_factor, RuntimeKey, TimeResourcesSystem, WindowKey, WindowSyncSystem, WinitEventsSystem
 };
-use elements_ecs::{components, DynSystem, EntityData, FrameEvent, System, SystemGroup, World};
+use elements_ecs::{components, Debuggable, DynSystem, EntityData, FrameEvent, MakeDefault, System, SystemGroup, World};
 use elements_element::elements_system;
 use elements_gizmos::{gizmos, Gizmos};
 use elements_gpu::{
@@ -29,7 +29,12 @@ use crate::renderers::ExamplesRender;
 
 mod renderers;
 
+fn default_title() -> String {
+    "elements".into()
+}
+
 components!("app", {
+    @[MakeDefault[default_title], Debuggable]
     window_title: String,
     fps_stats: FpsSample,
 });

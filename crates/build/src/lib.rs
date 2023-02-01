@@ -16,7 +16,7 @@ pub mod pipelines;
 /// src/**  This is where you store Rust source files
 /// target  This is the output directory, and is created when building
 /// Elements.toml  This is a metadata file to describe the project
-pub async fn build(assets: &AssetCache, path: PathBuf) {
+pub async fn build(_assets: &AssetCache, path: PathBuf) {
     let target_path = path.join("target");
     let assets_path = path.join("assets");
     build_assets(assets_path, target_path).await;
@@ -48,11 +48,11 @@ async fn build_assets(assets_path: PathBuf, target_path: PathBuf) {
         }),
         on_status: Arc::new(|msg| {
             log::info!("{}", msg);
-            async { () }.boxed()
+            async {}.boxed()
         }),
         on_error: Arc::new(|err| {
             log::error!("{:?}", err);
-            async { () }.boxed()
+            async {}.boxed()
         }),
     };
     ProcessCtxKey.insert(&ctx.assets, ctx.clone());

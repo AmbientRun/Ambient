@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use elements_core::{
     asset_cache, async_ecs::async_run, runtime, transform::{rotation, scale, translation}
 };
-use elements_ecs::{components, query, EntityData, EntityId, SystemGroup, World};
+use elements_ecs::{components, query, EntityData, EntityId, Networked, Store, SystemGroup, World};
 use elements_editor_derive::ElementEditor;
 use elements_model::model_def;
 use elements_std::{
@@ -24,14 +24,20 @@ use crate::{
 };
 
 components!("physics", {
+    @[Networked, Store]
     collider: ColliderDef,
+    @[Networked, Store]
     density: f32,
+    @[Networked, Store]
     collider_type: ColliderType,
     collider_shapes: Vec<PxShape>,
     collider_shapes_convex: Vec<PxShape>,
     on_collider_loaded: EventDispatcher<dyn Fn(&mut World, EntityId) + Sync + Send>,
+    @[Networked, Store]
     mass: f32,
+    @[Networked, Store]
     character_controller_height: f32,
+    @[Networked, Store]
     character_controller_radius: f32,
 });
 

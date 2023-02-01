@@ -1,9 +1,9 @@
 use std::{collections::HashMap, fmt::Debug, marker::Send};
 
-use elements_ecs::{
-    with_component_registry, ArchetypeFilter, Component, ComponentValue, EntityData, EntityId, IComponent, IndexExt, SystemGroup, World
+use elements_ecs::{ArchetypeFilter, Component, ComponentValue, EntityData, EntityId, IndexExt, SystemGroup, World};
+use elements_network::{
+    assert_networked, server::{ServerState, SharedServerState}
 };
-use elements_network::server::{ServerState, SharedServerState};
 use futures::Future;
 use parking_lot::MutexGuard;
 use tracing::info_span;
@@ -205,7 +205,7 @@ where
 }
 
 pub struct IntentRegistry {
-    handlers: HashMap<usize, Box<dyn for<'x> Handler<'x>>>,
+    handlers: HashMap<u32, Box<dyn for<'x> Handler<'x>>>,
 }
 
 impl Debug for IntentRegistry {
@@ -264,18 +264,18 @@ impl IntentRegistry {
         Arg: ComponentValue,
         RevertState: ComponentValue + Debug,
     {
-        let idx_to_id = with_component_registry(|r| r.idx_to_id().clone());
-        let name = idx_to_id.get(&intent.get_index()).cloned().unwrap_or_else(|| intent.get_index().to_string());
+        let name = intent.path();
+        assert_networked(intent.desc());
         let handler = IntentHandler { name, intent, intent_revert, apply, revert, merge };
 
-        self.handlers.insert(intent.get_index(), Box::new(handler));
+        self.handlers.insert(intent.index(), Box::new(handler));
     }
 
-    pub fn get_intent_name(&self, intent: usize) -> Option<String> {
+    pub fn get_intent_name(&self, intent: u32) -> Option<String> {
         Some(self.handlers.get(&intent)?.name().to_string())
     }
 
-    pub fn apply_intent(&self, state: SharedServerState, intent_arg: usize, user_id: &str, id: EntityId) {
+    pub fn apply_intent(&self, state: SharedServerState, intent_arg: u32, user_id: &str, id: EntityId) {
         let mut guard = state.lock();
         let ctx = IntentContext::from_guard(&mut guard, user_id);
 
@@ -300,7 +300,7 @@ impl IntentRegistry {
     /// Reverts an intent
     ///
     /// Intent must be previously applied
-    pub fn revert_intent(&self, state: SharedServerState, intent_arg: usize, user_id: &str, id: EntityId) {
+    pub fn revert_intent(&self, state: SharedServerState, intent_arg: u32, user_id: &str, id: EntityId) {
         let mut guard = state.lock();
         let ctx = IntentContext::from_guard(&mut guard, user_id);
 
@@ -321,15 +321,17 @@ pub fn registry_systems() -> SystemGroup {
 #[cfg(test)]
 mod test {
 
-    use elements_ecs::components;
+    use elements_ecs::{components, Networked, Store};
 
     use super::*;
 
     #[test]
     fn registry() {
         components!("intent", {
-           intent_add: f32,
-           intent_add_revert: f32,
+            @[Networked, Store]
+            intent_add: f32,
+            @[Networked, Store]
+            intent_add_revert: f32,
         });
 
         init_components();

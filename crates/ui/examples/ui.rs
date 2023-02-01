@@ -66,7 +66,7 @@ impl ElementComponent for Example {
     fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
         let (count, _set_count) = hooks.use_state(0);
         hooks.provide_context(|| MyContext(format!("context {count}")));
-        println!("Render example {count}");
+        eprintln!("Render example {count}");
         if count < 5 {
             Two {
                 first: UIBase.el().set(width(), 150.).set(height(), 30.).with_background(Color::rgba(0.5, 1., 0.5, 1.)),

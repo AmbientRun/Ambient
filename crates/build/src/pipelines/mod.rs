@@ -103,12 +103,12 @@ pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
                 (file, pipeline)
             }))
         })
-        .then(|(file, pipeline)| async move {
-            let root = file.join(".").unwrap();
+        .map(|(pipeline_file, pipeline)| {
+            let root = pipeline_file.join(".").unwrap();
             let ctx = PipelineCtx {
                 process_ctx: ctx.clone(),
                 pipeline: Arc::new(pipeline.clone()),
-                pipeline_file: file.clone(),
+                pipeline_file,
                 root_path: ctx.in_root.relative_path(root.path()),
             };
             tokio::spawn(async move { pipeline.process(ctx).await })
@@ -138,7 +138,7 @@ pub struct ProcessCtx {
 }
 impl ProcessCtx {
     pub fn has_input_file(&self, url: &AbsAssetUrl) -> bool {
-        self.files.iter().position(|x| x == url).is_some()
+        self.files.iter().any(|x| x == url)
     }
     pub fn find_file_res(&self, glob_pattern: impl AsRef<str>) -> anyhow::Result<&AbsAssetUrl> {
         self.find_file(&glob_pattern).with_context(|| format!("Failed to find file with pattern {}", glob_pattern.as_ref()))

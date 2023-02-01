@@ -193,8 +193,6 @@ impl ElementTree {
                     on_spawn: if creating { Some(Vec::new()) } else { None },
                 };
 
-                // eprintln!("Calling part::render on: {key}");
-
                 let new_super = part.render(world, &mut hooks);
                 let on_spawn = std::mem::take(&mut hooks.on_spawn);
 
@@ -459,7 +457,7 @@ impl ElementTree {
     }
     pub fn dump_to_tmp_file(&self) {
         std::fs::write("tmp/elements.txt", self.dump(0)).expect("Unable to write file");
-        println!("Wrote elements to tmp/elements.txt");
+        tracing::info!("Wrote elements to tmp/elements.txt");
     }
 }
 impl std::fmt::Display for ElementTree {

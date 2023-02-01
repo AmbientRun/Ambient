@@ -16,13 +16,13 @@ mod internal;
 /// Implemented by all [Component]s.
 pub trait IComponent {
     #[doc(hidden)]
-    fn index(&self) -> u64;
+    fn index(&self) -> u32;
 }
 
 /// A component (piece of entity data). See [crate::entity::get_component] and [crate::entity::set_component].
 #[derive(Debug)]
 pub struct Component<T> {
-    index: u64,
+    index: u32,
     _phantom: PhantomData<T>,
 }
 impl<T> Clone for Component<T> {
@@ -33,12 +33,12 @@ impl<T> Clone for Component<T> {
 impl<T> Copy for Component<T> {}
 impl<T> Component<T> {
     #[doc(hidden)]
-    pub const fn new(index: u64) -> Self {
+    pub const fn new(index: u32) -> Self {
         Self { index, _phantom: PhantomData }
     }
 }
 impl<T> IComponent for Component<T> {
-    fn index(&self) -> u64 {
+    fn index(&self) -> u32 {
         self.index
     }
 }
@@ -454,7 +454,7 @@ impl<'a> ToParam for Option<&'a str> {
 
 /// Contains event data
 #[derive(Clone)]
-pub struct Components(pub(crate) HashMap<u64, crate::host::ComponentTypeResult>);
+pub struct Components(pub(crate) HashMap<u32, crate::host::ComponentTypeResult>);
 impl Components {
     /// Creates a new `Components`
     pub fn new() -> Self {
@@ -499,7 +499,7 @@ impl Components {
         crate::entity::spawn(self, persistent)
     }
 
-    pub(crate) fn call_with<R>(&self, callback: impl FnOnce(&[(u64, host::ComponentTypeParam<'_>)]) -> R) -> R {
+    pub(crate) fn call_with<R>(&self, callback: impl FnOnce(&[(u32, host::ComponentTypeParam<'_>)]) -> R) -> R {
         let data = internal::create_owned_types(&self.0);
         let data = internal::create_borrowed_types(&data);
         callback(&data)
@@ -512,7 +512,7 @@ pub trait ComponentsTuple {
     type Data;
 
     #[doc(hidden)]
-    fn as_indices(&self) -> Vec<u64>;
+    fn as_indices(&self) -> Vec<u32>;
     #[doc(hidden)]
     fn from_component_types(component_types: Vec<host::ComponentTypeResult>) -> Option<Self::Data>;
 }
@@ -524,7 +524,7 @@ macro_rules! tuple_impls {
             #[allow(unused_parens)]
             type Data = ($($name),+);
 
-            fn as_indices(&self) -> Vec<u64> {
+            fn as_indices(&self) -> Vec<u32> {
                 #[allow(non_snake_case)]
                 let ($($name,)+) = self;
                 vec![$($name.index(),)*]
@@ -554,7 +554,7 @@ tuple_impls! { A B C D E F G H I }
 impl<T: SupportedComponentTypeGet> ComponentsTuple for Component<T> {
     type Data = T;
 
-    fn as_indices(&self) -> Vec<u64> {
+    fn as_indices(&self) -> Vec<u32> {
         vec![self.index()]
     }
     fn from_component_types(component_types: Vec<host::ComponentTypeResult>) -> Option<Self::Data> {
@@ -565,7 +565,7 @@ impl<T: SupportedComponentTypeGet> ComponentsTuple for Component<T> {
 impl ComponentsTuple for () {
     type Data = ();
 
-    fn as_indices(&self) -> Vec<u64> {
+    fn as_indices(&self) -> Vec<u32> {
         vec![]
     }
     fn from_component_types(component_types: Vec<host::ComponentTypeResult>) -> Option<Self::Data> {
@@ -663,7 +663,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> GeneralQueryBuilder<C
 
 /// An ECS query that calls a callback when entities containing components
 /// marked with [ChangeQuery::track_change] have those components change.
-pub struct ChangeQuery<Components: ComponentsTuple + Copy + Clone + 'static>(QueryBuilderImpl<Components>, Vec<u64>);
+pub struct ChangeQuery<Components: ComponentsTuple + Copy + Clone + 'static>(QueryBuilderImpl<Components>, Vec<u32>);
 impl<Components: ComponentsTuple + Copy + Clone + 'static> ChangeQuery<Components> {
     /// Creates a new [ChangeQuery] that will find entities that have the specified `components`
     /// that will call its bound function when components marked by [Self::track_change]
@@ -792,13 +792,13 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryImpl<Components>
 }
 
 struct QueryBuilderImpl<Components: ComponentsTuple + Copy + Clone + 'static> {
-    components: Vec<u64>,
-    include: Vec<u64>,
-    exclude: Vec<u64>,
+    components: Vec<u32>,
+    include: Vec<u32>,
+    exclude: Vec<u32>,
     _data: PhantomData<Components>,
 }
 impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryBuilderImpl<Components> {
-    fn new(components: Vec<u64>) -> QueryBuilderImpl<Components> {
+    fn new(components: Vec<u32>) -> QueryBuilderImpl<Components> {
         Self { components, include: vec![], exclude: vec![], _data: PhantomData }
     }
     pub fn requires(&mut self, include: impl ComponentsTuple) {
@@ -807,7 +807,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryBuilderImpl<Comp
     pub fn excludes(&mut self, exclude: impl ComponentsTuple) {
         self.exclude.extend_from_slice(&exclude.as_indices());
     }
-    fn build_impl(self, changed: &[u64], event: host::QueryEvent) -> u64 {
+    fn build_impl(self, changed: &[u32], event: host::QueryEvent) -> u64 {
         host::entity_query2(host::Query { components: &self.components, include: &self.include, exclude: &self.exclude, changed }, event)
     }
 }

@@ -25,7 +25,7 @@ elements_object = {path = "../crates/object"}
 elements_physics = {path = "../crates/physics"}
 elements_primitives = {path = "../crates/primitives"}
 elements_renderer = {path = "../crates/renderer"}
-elements_renderer_debugger = {path = "../crates/renderer_debugger"}
+elements_debugger = {path = "../crates/debugger"}
 elements_rpc = {path = "../crates/rpc"}
 elements_scripting_host = {path = "../crates/scripting/host"}
 elements_std = {path = "../crates/std"}

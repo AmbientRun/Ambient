@@ -9,7 +9,7 @@ use elements_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use elements_renderer::RenderTarget;
 use elements_rpc::RpcRegistry;
 use elements_std::{fps_counter::FpsSample, log_result, to_byte_unit, CallbackFn, Cb};
-use elements_ui::{height, width, Button, Centered, FlowColumn, FlowRow, Image, Text, Throbber, WindowSized};
+use elements_ui::{Button, Centered, FlowColumn, FlowRow, Image, Text, Throbber};
 use futures::{io::BufReader, AsyncBufReadExt, AsyncReadExt, Future, StreamExt};
 use glam::UVec2;
 use parking_lot::Mutex;
@@ -204,7 +204,6 @@ impl ElementComponent for GameClientView {
         let reg = game_state.lock().world.resource(event_registry()).clone();
 
         let task = {
-            let render_target = render_target.clone();
             let runtime = world.resource(runtime()).clone();
 
             hooks.use_memo_with((), move |()| {

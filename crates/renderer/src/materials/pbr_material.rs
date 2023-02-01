@@ -275,18 +275,18 @@ impl PbrMaterialFromUrl {
             name: self.name.clone(),
             source: self.source.clone(),
 
-            base_color: if let Some(x) = &self.base_color { Some(base_url.relative_path(x.path()).into()) } else { None },
-            opacity: if let Some(x) = &self.opacity { Some(base_url.relative_path(x.path()).into()) } else { None },
-            normalmap: if let Some(x) = &self.normalmap { Some(base_url.relative_path(x.path()).into()) } else { None },
-            metallic_roughness: if let Some(x) = &self.metallic_roughness { Some(base_url.relative_path(x.path()).into()) } else { None },
+            base_color: self.base_color.as_ref().map(|x| base_url.relative_path(x.path()).into()),
+            opacity: self.opacity.as_ref().map(|x| base_url.relative_path(x.path()).into()),
+            normalmap: self.normalmap.as_ref().map(|x| base_url.relative_path(x.path()).into()),
+            metallic_roughness: self.metallic_roughness.as_ref().map(|x| base_url.relative_path(x.path()).into()),
 
-            base_color_factor: self.base_color_factor.clone(),
-            emissive_factor: self.emissive_factor.clone(),
-            transparent: self.transparent.clone(),
-            alpha_cutoff: self.alpha_cutoff.clone(),
-            double_sided: self.double_sided.clone(),
-            metallic: self.metallic.clone(),
-            roughness: self.roughness.clone(),
+            base_color_factor: self.base_color_factor,
+            emissive_factor: self.emissive_factor,
+            transparent: self.transparent,
+            alpha_cutoff: self.alpha_cutoff,
+            double_sided: self.double_sided,
+            metallic: self.metallic,
+            roughness: self.roughness,
         }
     }
 }

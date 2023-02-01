@@ -4,12 +4,12 @@ use clap::{Parser, Subcommand};
 use elements_app::{AppBuilder, ExamplesSystem};
 use elements_cameras::UICamera;
 use elements_core::camera::active_camera;
+use elements_debugger::RendererDebugger;
 use elements_ecs::{EntityData, SystemGroup, World};
 use elements_element::{element_component, Element, ElementComponentExt, Hooks};
 use elements_network::{
     client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce}, events::ServerEventRegistry
 };
-use elements_renderer_debugger::RendererDebugger;
 use elements_std::{asset_cache::AssetCache, Cb};
 use elements_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
 
@@ -17,7 +17,9 @@ pub mod components;
 mod new_project;
 mod server;
 
+use anyhow::Context;
 use player::PlayerRawInputHandler;
+use server::QUIC_INTERFACE_PORT;
 use tilt_runtime_player as player;
 
 #[derive(Parser, Clone)]
@@ -58,7 +60,7 @@ enum Commands {
     },
     /// Join a multiplayer session
     Join {
-        ip: Option<SocketAddr>,
+        host: Option<String>,
         #[clap(short, long)]
         user_id: Option<String>,
     },
@@ -149,7 +151,7 @@ fn MainApp(world: &mut World, hooks: &mut Hooks, server_addr: SocketAddr, user_i
     ])
 }
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     env_logger::init();
     components::init().unwrap();
     let runtime = tokio::runtime::Builder::new_multi_thread().enable_all().build().unwrap();
@@ -159,9 +161,9 @@ fn main() {
 
     if let Commands::New { name } = cli.command {
         if let Err(err) = new_project::new_project(&name) {
-            println!("Failed to create project: {:?}", err);
+            eprintln!("Failed to create project: {err:?}");
         }
-        return;
+        return Ok(());
     }
 
     let current_dir = std::env::current_dir().unwrap();
@@ -173,11 +175,18 @@ fn main() {
         runtime.block_on(elements_build::build(&assets, project_path.clone()));
     }
 
-    let server_addr = if let Commands::Join { ip, .. } = &cli.command {
-        ip.clone().unwrap_or_else(|| format!("127.0.0.1:9000").parse().unwrap())
+    let server_addr = if let Commands::Join { host, .. } = &cli.command {
+        if let Some(mut host) = host.clone() {
+            if !host.contains(':') {
+                host = format!("{host}:{QUIC_INTERFACE_PORT}");
+            }
+            host.parse().with_context(|| format!("Invalid address for host {host}"))?
+        } else {
+            format!("127.0.0.1:{QUIC_INTERFACE_PORT}").parse().unwrap()
+        }
     } else {
         let port = server::start_server(&runtime, assets.clone(), cli.clone(), project_path);
-        println!("Server running on port {port}");
+        eprintln!("Server running on port {port}");
         format!("127.0.0.1:{port}").parse().unwrap()
     };
     let user_id = cli.command.user_id().unwrap_or("user").to_string();
@@ -195,4 +204,5 @@ fn main() {
             }
         });
     }
+    Ok(())
 }

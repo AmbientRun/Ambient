@@ -168,7 +168,7 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
                 p[3] = 255;
             }
         }
-        let path = asset_crate.images.insert(&format!("{}", index), img).path;
+        let path = asset_crate.images.insert(&format!("{index}"), img).path;
         images.push(path);
     }
 

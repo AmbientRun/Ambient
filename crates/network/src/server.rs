@@ -6,7 +6,7 @@ use anyhow::bail;
 use bytes::Bytes;
 use elements_core::{asset_cache, no_sync};
 use elements_ecs::{
-    components, dont_store, query, ArchetypeFilter, EntityData, EntityId, FrameEvent, System, SystemGroup, World, WorldStream, WorldStreamCompEvent, WorldStreamFilter
+    components, dont_store, query, ArchetypeFilter, ComponentDesc, EntityData, EntityId, FrameEvent, System, SystemGroup, World, WorldStream, WorldStreamCompEvent, WorldStreamFilter
 };
 use elements_std::{
     asset_cache::AssetCache, fps_counter::{FpsCounter, FpsSample}, log_result
@@ -232,7 +232,7 @@ impl GameServer {
         create_server_systems: Arc<dyn Fn(&mut World) -> SystemGroup + Sync + Send>,
         create_on_forking_systems: Arc<dyn Fn() -> SystemGroup<ForkingEvent> + Sync + Send>,
         create_shutdown_systems: Arc<dyn Fn() -> SystemGroup<ShutdownEvent> + Sync + Send>,
-        is_sync_component: Arc<dyn Fn(&dyn elements_ecs::IComponent, WorldStreamCompEvent) -> bool + Sync + Send>,
+        is_sync_component: Arc<dyn Fn(ComponentDesc, WorldStreamCompEvent) -> bool + Sync + Send>,
     ) -> SharedServerState {
         let Self { mut incoming, .. } = self;
         let assets = world.resource(asset_cache()).clone();

@@ -112,7 +112,7 @@ impl ExamplesRender {
         std::fs::create_dir_all("tmp").unwrap();
         let mut f = std::fs::File::create("tmp/renderer.txt").expect("Unable to create file");
         self.dump(&mut f);
-        println!("Wrote renderer to tmp/renderer.txt");
+        tracing::info!("Wrote renderer to tmp/renderer.txt");
     }
     #[allow(dead_code)]
     pub fn n_entities(&self) -> usize {

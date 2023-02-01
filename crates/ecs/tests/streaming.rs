@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use elements_ecs::{components, ArchetypeFilter, EntityData, IComponent, Query, World, WorldDiff, WorldStream, WorldStreamFilter};
+use elements_ecs::{components, ArchetypeFilter, EntityData, Query, World, WorldDiff, WorldStream, WorldStreamFilter};
 use itertools::Itertools;
 
 components!("test", {
@@ -86,12 +86,12 @@ fn dump_content_string(world: &World) -> String {
                     .get_components(id)
                     .unwrap()
                     .into_iter()
-                    .map(|comp| {
-                        let value = comp.clone_value_from_world(world, id).unwrap();
-                        format!("{}: {}", comp.get_index(), comp.debug_value(&value))
+                    .map(|desc| {
+                        let value = world.get_entry(id, desc).unwrap();
+                        format!("{:?}: {:?}", desc, desc.as_debug(&value))
                     })
                     .join(", ");
-                Some(format!("[{} {}]", id, data))
+                Some(format!("[{id} {data}]"))
             } else {
                 None
             }

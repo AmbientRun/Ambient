@@ -1,14 +1,14 @@
 [workspace]
-default-members = ["runtime"]
-exclude = ["crates/scripting", "runtime/crates/scripting/guest/rust"]
+default-members = ["app"]
+exclude = ["crates/scripting", "app/crates/scripting/guest/rust"]
 members = [
   "crates/*",
   "crates/scripting/host_build",
   "crates/scripting/host",
   "libs/*",
-  "runtime",
-  "runtime/crates/player", # Explicitly specify member crates due to https://github.com/rust-lang/cargo/issues/6745
-  "runtime/crates/scripting/host",
+  "app",
+  "app/crates/player", # Explicitly specify member crates due to https://github.com/rust-lang/cargo/issues/6745
+  "app/crates/scripting/host",
 ]
 resolver = "2"
 

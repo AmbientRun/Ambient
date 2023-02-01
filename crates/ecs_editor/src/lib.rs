@@ -1,6 +1,6 @@
 use std::{collections::HashMap, time::Duration};
 
-use elements_ecs::{with_component_registry, EntityData, EntityId, IComponent, Query, World, WorldDiff};
+use elements_ecs::{with_component_registry, ComponentDesc, EntityData, EntityId, Query, World, WorldDiff};
 use elements_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use elements_renderer::color;
 use elements_std::Cb;
@@ -18,18 +18,18 @@ pub struct ECSEditor {
 impl ElementComponent for ECSEditor {
     fn render(self: Box<Self>, world: &mut World, hooks: &mut Hooks) -> Element {
         let Self { get_world, on_change } = *self;
-        let (components, set_components) = hooks.use_state(HashMap::<Box<dyn IComponent>, bool>::new());
+        let (components, set_components) = hooks.use_state(HashMap::<ComponentDesc, bool>::new());
         let (entity_datas, set_entity_datas) = hooks.use_state(Vec::new());
         let (entities, set_entities) = hooks.use_state(Vec::new());
         use_interval_deps(world, hooks, Duration::from_millis(500), false, components.clone(), {
             let get_world = get_world.clone();
             move |components| {
                 let mut query = Query::all();
-                for (comp, incl) in components {
+                for (&comp, incl) in components {
                     if *incl {
-                        query = query.incl_ref(comp.as_ref());
+                        query = query.incl_ref(comp);
                     } else {
-                        query = query.excl_ref(comp.as_ref());
+                        query = query.excl_ref(comp);
                     }
                 }
                 let set_entity_datas = set_entity_datas.clone();
@@ -43,8 +43,7 @@ impl ElementComponent for ECSEditor {
             }
         });
 
-        let render_component = |id: &str, comp: &dyn IComponent| {
-            let comp = comp.clone_boxed();
+        let render_component = |id: &str, comp: ComponentDesc| {
             let toggled = components.get(&comp).cloned();
             let components = components.clone();
             let set_components = set_components.clone();
@@ -52,13 +51,11 @@ impl ElementComponent for ECSEditor {
             let entities = entities.clone();
             FlowRow::el([
                 Button::new("\u{f6bf}", {
-                    let comp = comp.clone();
                     move |world| {
-                        let comp = comp.clone();
                         let entities = entities.clone();
                         let mut diff = WorldDiff::new();
                         for id in &entities {
-                            diff = diff.remove_component(*id, comp.as_ref());
+                            diff = diff.remove_component(*id, comp);
                         }
                         on_change(world, diff);
                     }
@@ -79,12 +76,12 @@ impl ElementComponent for ECSEditor {
                         let mut comps = components.clone();
                         if let Some(v) = comps.get(&comp).cloned() {
                             if v {
-                                comps.insert(comp.clone_boxed(), false);
+                                comps.insert(comp, false);
                             } else {
                                 comps.remove(&comp);
                             }
                         } else {
-                            comps.insert(comp.clone_boxed(), true);
+                            comps.insert(comp, true);
                         }
                         set_components(comps);
                     }),
@@ -94,9 +91,9 @@ impl ElementComponent for ECSEditor {
         FlowColumn::el([
             FlowRow::el(with_component_registry(|r| {
                 r.all()
-                    .filter_map(|c| Some((r.get_id_for_opt(c.as_ref())?, c)))
+                    .map(|c| (c.path(), c))
                     .sorted_by_key(|(id, _)| id.to_string())
-                    .map(|(id, comp)| render_component(id, comp.as_ref()))
+                    .map(|(path, comp)| render_component(&path, comp))
                     .collect_vec()
             }))
             .set(fit_horizontal(), Fit::Parent)
@@ -122,29 +119,25 @@ struct EntityEditor {
 impl ElementComponent for EntityEditor {
     fn render(self: Box<Self>, _world: &mut World, _hooks: &mut Hooks) -> Element {
         let Self { id, data, on_change } = *self;
-        with_component_registry(|r| {
-            FlowRow::el([
-                FlowColumn::el([
-                    Text::el(format!("{id}")),
-                    Button::new("\u{f6bf}", move |world| on_change(world, WorldDiff::new().despawn(vec![id])))
-                        .style(ButtonStyle::Flat)
-                        .el(),
-                ]),
-                FlowColumn::el(
-                    data.iter()
-                        .map(|unit| {
-                            FlowRow::el([
-                                Text::el(format!("{}:", r.get_id_for_opt(unit.component()).unwrap_or("unknown component")))
-                                    .set(color(), vec4(1., 1., 0., 1.)),
-                                Text::el(if unit.component().is_extended() { ellipsis_text(unit.debug_value()) } else { "-".to_string() }),
-                            ])
-                            .set(space_between_items(), STREET)
-                        })
-                        .collect_vec(),
-                ),
-            ])
-            .set(space_between_items(), STREET)
-        })
+
+        FlowRow::el([
+            FlowColumn::el([
+                Text::el(id.to_string()),
+                Button::new("\u{f6bf}", move |world| on_change(world, WorldDiff::new().despawn(vec![id]))).style(ButtonStyle::Flat).el(),
+            ]),
+            FlowColumn::el(
+                data.iter()
+                    .map(|entry| {
+                        FlowRow::el([
+                            Text::el(format!("{}:", entry.desc().path())).set(color(), vec4(1., 1., 0., 1.)),
+                            Text::el(ellipsis_text(format!("{:?}", entry.as_debug()))),
+                        ])
+                        .set(space_between_items(), STREET)
+                    })
+                    .collect_vec(),
+            ),
+        ])
+        .set(space_between_items(), STREET)
     }
 }
 

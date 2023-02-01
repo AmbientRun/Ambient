@@ -3,7 +3,7 @@ use std::sync::Arc;
 use elements_core::{
     bounding::world_bounding_sphere, camera::{fovy, get_active_camera}, gpu_components, gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent}, hierarchy::children, main_scene, transform::translation
 };
-use elements_ecs::{components, query, ECSError, EntityId, SystemGroup, World};
+use elements_ecs::{components, query, ECSError, EntityId, Networked, Store, SystemGroup, World};
 use elements_gpu::mesh_buffer::GpuMesh;
 use glam::Vec3;
 
@@ -11,10 +11,15 @@ use crate::primitives;
 
 components!("rendering", {
     mesh_lods: Vec<Arc<GpuMesh>>,
+    @[Networked, Store]
     lod_cutoffs: [f32; 20],
+    @[Networked, Store]
     cpu_lod: usize,
+    @[Networked, Store]
     cpu_lod_group: (),
+    @[Networked, Store]
     cpu_lod_visible: bool,
+    @[Networked, Store]
     gpu_lod: (),
 });
 gpu_components! {

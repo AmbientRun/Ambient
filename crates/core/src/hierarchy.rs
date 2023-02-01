@@ -1,6 +1,6 @@
 use std::{collections::HashSet, fs::File, path::PathBuf};
 
-use elements_ecs::{components, query, Component, ComponentValue, ECSError, EntityId, World};
+use elements_ecs::{components, query, Component, ComponentValue, Debuggable, ECSError, EntityId, Networked, Store, World};
 use elements_std::{asset_cache::SyncAssetKeyExt, download_asset::AssetsCacheDir};
 use itertools::Itertools;
 use yaml_rust::YamlEmitter;
@@ -8,7 +8,9 @@ use yaml_rust::YamlEmitter;
 use crate::{asset_cache, name};
 
 components!("ecs", {
+    @[Debuggable, Networked, Store]
     parent: EntityId,
+    @[Debuggable, Networked, Store]
     children: Vec<EntityId>,
 });
 
@@ -81,7 +83,7 @@ pub fn dump_world_hierarchy_to_tmp_file(world: &World) {
     let mut f = File::create(&path).expect("Unable to create file");
     dump_world_hierarchy(world, &mut f);
 
-    println!("Wrote hierarchy to {path:?}");
+    log::info!("Wrote hierarchy to {path:?}");
 }
 pub fn dump_world_hierarchy(world: &World, f: &mut dyn std::io::Write) {
     use yaml_rust::yaml::Yaml;

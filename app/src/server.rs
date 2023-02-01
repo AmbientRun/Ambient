@@ -7,7 +7,7 @@ use axum::{
     http::{Method, StatusCode}, response::IntoResponse, routing::{get, get_service}, Router
 };
 use elements_core::{app_start_time, asset_cache, dtime, no_sync, remove_at_time, time};
-use elements_ecs::{EntityData, SystemGroup, World, WorldStreamCompEvent};
+use elements_ecs::{components, ComponentDesc, EntityData, Networked, Serializable, SystemGroup, World, WorldStreamCompEvent};
 use elements_network::{
     bi_stream_handlers, client::GameRpcArgs, datagram_handlers, server::{ForkingEvent, GameServer, ShutdownEvent}
 };
@@ -46,15 +46,15 @@ fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
         vec![Box::new(elements_physics::on_shutdown_systems()), Box::new(scripting::server::on_shutdown_systems())],
     )
 }
-fn is_sync_component(component: &dyn elements_ecs::IComponent, _event: WorldStreamCompEvent) -> bool {
-    let res = component.is_extended() && component.clone_boxed() != remove_at_time();
 
-    res
+fn is_sync_component(component: ComponentDesc, _: WorldStreamCompEvent) -> bool {
+    component.attribute::<Networked>().is_some()
 }
 
 pub fn create_rpc_registry() -> RpcRegistry<GameRpcArgs> {
     let mut reg = RpcRegistry::new();
     elements_network::rpc::register_rpcs(&mut reg);
+    elements_debugger::register_rpcs(&mut reg);
     reg
 }
 
@@ -112,7 +112,7 @@ pub(crate) fn start_server(runtime: &tokio::runtime::Runtime, assets: AssetCache
     scripting::server::init_all_components();
     let public_host =
         cli.public_host.or_else(|| local_ip_address::local_ip().ok().map(|x| x.to_string())).unwrap_or("localhost".to_string());
-    println!("Using public host: {public_host}");
+    eprintln!("Using public host: {public_host}");
     ServerBaseUrlKey.insert(&assets, AbsAssetUrl::parse(format!("http://{}:{HTTP_INTERFACE_PORT}/assets/", public_host)).unwrap());
 
     start_http_interface(runtime, &project_path);

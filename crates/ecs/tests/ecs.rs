@@ -151,14 +151,14 @@ fn content_version_should_remain_on_remove() {
     let mut world = World::new("content_version_should_remain_one");
     let x = EntityData::new().set(a(), 5.).set(b(), 2.).spawn(&mut world);
     let y = EntityData::new().set(a(), 5.).set(b(), 2.).spawn(&mut world);
-    let x_start = world.get_component_content_version(x, &a()).unwrap();
-    let y_start = world.get_component_content_version(y, &a()).unwrap();
+    let x_start = world.get_component_content_version(x, a().index()).unwrap();
+    let y_start = world.get_component_content_version(y, a().index()).unwrap();
     world.remove_component(x, b()).unwrap();
-    assert_eq!(x_start, world.get_component_content_version(x, &a()).unwrap());
-    assert_eq!(y_start, world.get_component_content_version(y, &a()).unwrap());
+    assert_eq!(x_start, world.get_component_content_version(x, a().index()).unwrap());
+    assert_eq!(y_start, world.get_component_content_version(y, a().index()).unwrap());
     world.remove_component(y, b()).unwrap();
-    assert_eq!(x_start, world.get_component_content_version(x, &a()).unwrap());
-    assert_eq!(y_start, world.get_component_content_version(y, &a()).unwrap());
+    assert_eq!(x_start, world.get_component_content_version(x, a().index()).unwrap());
+    assert_eq!(y_start, world.get_component_content_version(y, a().index()).unwrap());
 }
 
 #[test]

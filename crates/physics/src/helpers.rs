@@ -207,7 +207,7 @@ pub fn scale_shape(shape: PxShape, scale: Vec3) {
     }
 
     // Update the local pose to scale the offset along with the colliders scale
-    shape.set_local_pose(&PxTransform::from_mat(Mat4::from_rotation_translation(base_rot, scale * base_pos)));
+    shape.set_local_pose(&PxTransform::new(scale * base_pos, base_rot));
 }
 
 #[tracing::instrument(skip(world), level = "info")]

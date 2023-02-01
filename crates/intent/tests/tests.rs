@@ -1,7 +1,7 @@
 use std::{collections::BTreeMap, sync::Arc};
 
 use anyhow::bail;
-use elements_ecs::{components, query, query_mut, EntityData, EntityId, FrameEvent, System, World};
+use elements_ecs::{components, query, query_mut, EntityData, EntityId, FrameEvent, Networked, Store, System, World};
 use elements_intent::{
     common_intent_systems, intent_registry, logic::{create_intent, push_intent, redo_intent, undo_head}, use_old_state, IntentRegistry
 };
@@ -11,13 +11,20 @@ use parking_lot::Mutex;
 use pretty_assertions::assert_eq;
 
 components!("intent", {
+    @[Networked, Store]
     intent_add: f32,
+    @[Networked, Store]
     intent_add_undo: Vec<(EntityId, f32)>,
+    @[Networked, Store]
     intent_mul: f32,
+    @[Networked, Store]
     intent_mul_undo: Vec<(EntityId, f32)>,
+    @[Networked, Store]
     intent_fail: (),
+    @[Networked, Store]
     intent_fail_undo: (),
 
+    @[Networked, Store]
     value: f32,
 });
 
@@ -254,8 +261,6 @@ async fn enqueued_collapse() {
         assert!(world.exists(x));
         assert!(world.exists(y));
         assert!(world.exists(z));
-
-        dbg!(x, y, z);
     }
     let w = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), -4.0, Some(collapse_id)));
 

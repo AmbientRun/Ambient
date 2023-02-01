@@ -4,9 +4,9 @@ use elements_core::hierarchy::children;
 use elements_ecs::EntityData;
 use elements_model_import::{model_crate::ModelCrate, MaterialFilter, ModelTextureSize, ModelTransform, TextureResolver};
 use elements_physics::collider::{collider_type, ColliderType};
-use elements_std::asset_url::{AbsAssetUrl, AssetType};
+use elements_std::asset_url::AssetType;
 use futures::FutureExt;
-use relative_path::{RelativePath, RelativePathBuf};
+use relative_path::RelativePath;
 use serde::{Deserialize, Serialize};
 
 use super::{
@@ -145,10 +145,8 @@ fn create_texture_resolver(ctx: &PipelineCtx) -> TextureResolver {
         async move {
             let path: PathBuf = path.into();
             let filename = path.file_name().unwrap().to_str().unwrap().to_string();
-            if let Some(file) =
-                ctx.process_ctx.files.iter().find_map(|file| if file.path().as_str().contains(&filename) { Some(file) } else { None })
-            {
-                match download_image(&ctx.process_ctx.assets, &file).await {
+            if let Some(file) = ctx.process_ctx.files.iter().find(|file| file.path().as_str().contains(&filename)) {
+                match download_image(&ctx.process_ctx.assets, file).await {
                     Ok(img) => Some(img.into_rgba8()),
                     Err(err) => {
                         log::error!("Failed to import image {:?}: {:?}", path, err);

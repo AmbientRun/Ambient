@@ -1,5 +1,5 @@
 [package]
-name = "elements_renderer_debugger"
+name = "elements_debugger"
 version.workspace = true
 edition = "2021"
 
@@ -15,6 +15,9 @@ elements_gpu = { path = "../gpu" }
 elements_core = { path = "../core" }
 elements_gizmos = { path = "../gizmos" }
 elements_element_component = { path = "../element_component" }
+elements_rpc = { path = "../rpc" }
+elements_network = { path = "../network" }
 winit.workspace = true
 glam.workspace = true
 wgpu.workspace = true
+log.workspace = true
