@@ -78,22 +78,24 @@ pub fn server_systems_final() -> SystemGroup {
 pub fn client_systems() -> SystemGroup {
     SystemGroup::new(
         "player/client_systems",
-        vec![query((player_camera(), user_id())).spawned().to_system(|q, world, qs, _| {
+        vec![query(player_camera()).spawned().to_system(|q, world, qs, _| {
             // TEMP: This synchronises server cameras to the client. This is a temporary solution until this
             // is moved to/controlled by clientside scripting.
 
             let local = world.resource(local_user_id()).clone();
-            for (id, (_, player_id)) in q.collect_cloned(world, qs) {
-                if player_id == local {
-                    world.add_component(id, active_camera(), 0.).unwrap();
-                    world.add_component(id, main_scene(), ()).unwrap();
-
-                    log::info!("Adding audio listener to: {id} {player_id:?}");
-                    // Add a listener on the local camera for each client
-                    world
-                        .add_component(id, audio_listener(), Arc::new(Mutex::new(AudioListener::new(Mat4::IDENTITY, Vec3::X * 0.2))))
-                        .unwrap();
+            for (id, _) in q.collect_cloned(world, qs) {
+                let camera_user_id = world.get_ref(id, user_id());
+                // Activate this camera if no user ID was specified or if this user ID matches
+                // our local user ID
+                if !camera_user_id.map_or(true, |uid| *uid == local) {
+                    continue;
                 }
+
+                world.add_component(id, active_camera(), 0.).unwrap();
+                world.add_component(id, main_scene(), ()).unwrap();
+
+                log::info!("Adding audio listener to: {id}");
+                world.add_component(id, audio_listener(), Arc::new(Mutex::new(AudioListener::new(Mat4::IDENTITY, Vec3::X * 0.2)))).unwrap();
             }
         })],
     )
