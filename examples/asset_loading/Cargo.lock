@@ -62,6 +62,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "25a2bc672d1148e28034f176e01fffebb08b35768468cc954630da77a1449005"
 
 [[package]]
+name = "interface_macros"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.139"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -73,10 +81,6 @@ version = "0.1.0"
 dependencies = [
  "tilt_runtime_scripting_interface",
 ]
-
-[[package]]
-name = "main-macro"
-version = "0.1.0"
 
 [[package]]
 name = "memchr"
@@ -199,7 +203,7 @@ dependencies = [
  "anyhow",
  "bincode",
  "glam",
- "main-macro",
+ "interface_macros",
  "once_cell",
  "paste",
  "rand",
