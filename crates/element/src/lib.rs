@@ -115,6 +115,13 @@ impl Element {
         }
         self
     }
+    /// See [`Element::init`]; adds each entry in the EntityData to init
+    pub fn init_extend(mut self, entity_data: EntityData) -> Self {
+        for unit in entity_data.into_iter() {
+            self.config.init_components.set_writer(unit.desc(), Arc::new(move |_, ed| ed.set_entry(unit.clone())));
+        }
+        self
+    }
     #[deprecated(
         note = "Warning; this only removes components on the current element. TODO: Make this remove components on the super element too."
     )]

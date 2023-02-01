@@ -1798,6 +1798,7 @@ dependencies = [
  "elements_gpu",
  "elements_std",
  "glam 0.22.0",
+ "serde",
 ]
 
 [[package]]

@@ -99,7 +99,10 @@ impl Commands {
 }
 
 fn client_systems() -> SystemGroup {
-    SystemGroup::new("client", vec![Box::new(elements_decals::client_systems()), Box::new(player::client_systems())])
+    SystemGroup::new(
+        "client",
+        vec![Box::new(elements_decals::client_systems()), Box::new(elements_primitives::systems()), Box::new(player::client_systems())],
+    )
 }
 
 #[element_component]
