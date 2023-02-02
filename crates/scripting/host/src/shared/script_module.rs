@@ -1,5 +1,5 @@
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashMap,
     fmt::Display,
     marker::PhantomData,
     path::{Path, PathBuf},
@@ -8,9 +8,7 @@ use std::{
 
 use anyhow::Context;
 use async_trait::async_trait;
-use elements_ecs::{EntityId, EntityUid, World};
-use elements_std::asset_url::ObjectRef;
-use glam::Vec3;
+use elements_ecs::{EntityId, World};
 use indoc::indoc;
 use parking_lot::{Mutex, RwLock};
 use serde::{Deserialize, Serialize};
@@ -199,22 +197,6 @@ impl<'de> Deserialize<'de> for ScriptModuleBytecode {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub enum Parameter {
-    EntityUid(Option<EntityUid>),
-    ObjectRef(ObjectRef),
-    Integer(i32),
-    Float(f32),
-    Vec3(Vec3),
-    String(String),
-    Bool(bool),
-}
-impl Default for Parameter {
-    fn default() -> Self {
-        Parameter::Integer(0)
-    }
-}
-
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct File {
     // TODO(mithun): consider using an enum of Plaintext(String)/Binary(Bytes) files so that people can include binary assets
@@ -235,32 +217,6 @@ impl File {
 pub struct ScriptModuleErrors {
     pub compiletime: Vec<String>,
     pub runtime: Vec<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ScriptModuleBundle {
-    pub name: String,
-    pub files: FileMap,
-    pub description: String,
-    #[serde(default)]
-    pub external_component_ids: HashSet<String>,
-}
-impl ScriptModuleBundle {
-    pub fn to_json(
-        name: &str,
-        sm: &ScriptModule,
-        description: &str,
-        external_component_ids: &HashSet<String>,
-    ) -> String {
-        let files = sm.files().clone();
-        serde_json::to_string_pretty(&ScriptModuleBundle {
-            name: name.to_owned(),
-            files,
-            description: description.to_owned(),
-            external_component_ids: external_component_ids.clone(),
-        })
-        .unwrap()
-    }
 }
 
 pub struct ScriptModuleState<
