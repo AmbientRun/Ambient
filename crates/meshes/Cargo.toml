@@ -10,3 +10,4 @@ edition = "2021"
 elements_std = { path = "../std" }
 elements_gpu = { path = "../gpu" }
 glam.workspace = true
+serde.workspace = true

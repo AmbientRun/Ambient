@@ -2,9 +2,10 @@ use std::f32::consts::PI;
 
 use elements_std::mesh::Mesh;
 use glam::{vec2, vec3, Vec2, Vec3};
+use serde::{Deserialize, Serialize};
 
 /// A sphere made of sectors and stacks
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct UVSphereMesh {
     /// The radius of the sphere.
     pub radius: f32,

@@ -99,7 +99,10 @@ impl Commands {
 }
 
 fn client_systems() -> SystemGroup {
-    SystemGroup::new("client", vec![Box::new(elements_decals::client_systems()), Box::new(player::client_systems())])
+    SystemGroup::new(
+        "client",
+        vec![Box::new(elements_decals::client_systems()), Box::new(elements_primitives::systems()), Box::new(player::client_systems())],
+    )
 }
 
 #[element_component]
@@ -189,7 +192,7 @@ fn main() -> anyhow::Result<()> {
         eprintln!("Server running on port {port}");
         format!("127.0.0.1:{port}").parse().unwrap()
     };
-    let user_id = cli.command.user_id().unwrap_or("user").to_string();
+    let user_id = cli.command.user_id().map(|x| x.to_string()).unwrap_or_else(|| format!("user_{}", friendly_id::create()));
     let handle = runtime.handle().clone();
     if cli.command.should_run() {
         AppBuilder::simple().ui_renderer(true).with_runtime(runtime).with_asset_cache(assets).run(|app, _runtime| {

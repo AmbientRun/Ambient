@@ -224,11 +224,13 @@ impl AssetUrl {
             AssetUrl::Relative(path) => path.as_str(),
         }
     }
-    pub fn join(&self, path: impl Into<RelativePathBuf>) -> Result<Self, url::ParseError> {
-        let path: RelativePathBuf = path.into();
+    pub fn join(&self, path: impl AsRef<str>) -> Result<Self, url::ParseError> {
         match self {
-            AssetUrl::Absolute(url) => Ok(Self::Absolute(AbsAssetUrl(url.0.join(path.as_str())?))),
-            AssetUrl::Relative(p) => Ok(Self::Relative(p.join(path))),
+            AssetUrl::Absolute(url) => Ok(Self::Absolute(AbsAssetUrl(url.0.join(path.as_ref())?))),
+            AssetUrl::Relative(p) => Ok(Self::Relative(
+                // The Url::join method has some intricacies so we want these to behave the same
+                Url::parse(&format!("http://localhost/{}", p.as_str())).unwrap().join(path.as_ref())?.path()[1..].into(),
+            )),
         }
     }
     pub fn parent(&self) -> Option<Self> {
@@ -342,7 +344,7 @@ impl<T: GetAssetType> TypedAssetUrl<T> {
     pub fn resolve(&self, base_url: &AbsAssetUrl) -> Result<AbsAssetUrl, url::ParseError> {
         self.0.resolve(base_url)
     }
-    pub fn join<Y: GetAssetType>(&self, path: impl Into<RelativePathBuf>) -> Result<TypedAssetUrl<Y>, url::ParseError> {
+    pub fn join<Y: GetAssetType>(&self, path: impl AsRef<str>) -> Result<TypedAssetUrl<Y>, url::ParseError> {
         Ok(TypedAssetUrl::<Y>(self.0.join(path)?, PhantomData))
     }
     pub fn parent<Y: GetAssetType>(&self) -> Option<TypedAssetUrl<Y>> {
@@ -557,6 +559,9 @@ fn test_join() {
     );
     let model = crat.model();
     assert_eq!(model.to_string(), "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/1.7.0/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json0/models/main.json");
+
+    let anim = TypedAssetUrl::<AnimationAssetType>::parse("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap();
+    assert_eq!(anim.model_crate().unwrap().model().to_string(), "assets/Capoeira.fbx/models/main.json".to_string());
 }
 
 /// Invoking this method will show a UI for selecting an asset from the asset db, and will then return the result of that

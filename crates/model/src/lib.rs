@@ -12,7 +12,7 @@ use elements_renderer::{
     }, primitives, RenderPrimitive, StandardShaderKey
 };
 use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetUrl, ModelAssetType, TypedAssetUrl}, download_asset::{AssetError, BytesFromUrl, JsonFromUrl}, log_result, math::Line
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetUrl, ModelAssetType, ServerBaseUrlKey, TypedAssetUrl}, download_asset::{AssetError, BytesFromUrl, JsonFromUrl}, log_result, math::Line
 };
 use futures::StreamExt;
 use glam::{vec4, Vec3};
@@ -216,11 +216,13 @@ impl ModelDef {
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<Model>, AssetError>> for ModelDef {
     async fn load(self, assets: AssetCache) -> Result<Arc<Model>, AssetError> {
-        let data = BytesFromUrl::new(self.0.clone().unwrap_abs(), true).get(&assets).await?;
+        let base_url = ServerBaseUrlKey.get(&assets);
+        let url = self.0.clone().resolve(&base_url).unwrap();
+        let data = BytesFromUrl::new(url.clone(), true).get(&assets).await?;
         let semaphore = ModelLoadSemaphore.get(&assets);
         let _permit = semaphore.acquire().await;
         let mut model = tokio::task::block_in_place(|| Model::from_slice(&data))?;
-        model.load(&assets, &self.0.unwrap_abs()).await?;
+        model.load(&assets, &url).await?;
         Ok(Arc::new(model))
     }
 }

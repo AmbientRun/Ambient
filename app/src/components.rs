@@ -10,6 +10,7 @@ pub(crate) fn init() -> anyhow::Result<()> {
     elements_scripting_host::shared::init_components();
     elements_decals::init_components();
     elements_world_audio::init_components();
+    elements_primitives::init_components();
 
     tilt_runtime_core::init_all_components();
     crate::player::init_all_components();

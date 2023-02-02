@@ -56,7 +56,9 @@ See [installing](./docs/src/installing.md) for more details.
 
 ## Examples
 
-Each example in the [examples](./examples/) directory can be run with e.g. `tilt run --project_path=examples/hello_world`.
+Each example in the [examples](./examples/) directory can be run with the tilt runtime: `cd examples/hello_world` and then `tilt run`.
+They can also be run in multiplayer mode; `cd examples/tictactoe` and then `tilt serve` to start a serve. Anyone can now join
+with `tilt join [IP_OF_SERVER]`. Note that content is always streamed so the user joining only needs the tilt cli to join the session.
 
 ## Contributing
 

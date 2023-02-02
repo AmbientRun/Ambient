@@ -3,6 +3,21 @@ name = "name"
 description = ""
 type = "String"
 
+["core::app::main_scene"]
+name = "Main scene"
+description = ""
+type = "Empty"
+
+["core::primitives::quad"]
+name = "Quad"
+description = ""
+type = "Empty"
+
+["core::primitives::cube"]
+name = "Cube"
+description = ""
+type = "Empty"
+
 ["core::camera::active_camera"]
 name = "Active Camera"
 description = "No description provided"
