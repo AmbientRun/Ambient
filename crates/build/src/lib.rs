@@ -1,6 +1,7 @@
 use std::{path::PathBuf, sync::Arc};
 
 use elements_asset_cache::{AssetCache, SyncAssetKeyExt};
+use elements_project::Manifest as ProjectManifest;
 use elements_std::asset_url::AbsAssetUrl;
 use futures::FutureExt;
 use itertools::Itertools;
@@ -16,7 +17,7 @@ pub mod pipelines;
 /// src/**  This is where you store Rust source files
 /// target  This is the output directory, and is created when building
 /// Elements.toml  This is a metadata file to describe the project
-pub async fn build(_assets: &AssetCache, path: PathBuf) {
+pub async fn build(_assets: &AssetCache, path: PathBuf, _manifest: &ProjectManifest) {
     let target_path = path.join("target");
     let assets_path = path.join("assets");
     build_assets(assets_path, target_path).await;

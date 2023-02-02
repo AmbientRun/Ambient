@@ -15,6 +15,7 @@ elements_core = { path = "../core" }
 elements_ecs = { path = "../ecs" }
 elements_world_audio = { path = "../world_audio" }
 elements_physics = { path = "../physics" }
+elements_project = { path = "../project" }
 elements_decals = { path = "../decals" }
 unity_parser = { path = "../../libs/unity_parser" }
 walkdir.workspace = true

@@ -66,6 +66,7 @@ enum Commands {
     },
 }
 impl Commands {
+    /// Will this command build assets?
     fn should_build(&self) -> bool {
         match self {
             Commands::New { .. } => false,
@@ -76,6 +77,7 @@ impl Commands {
             Commands::Join { .. } => false,
         }
     }
+    /// Will this client run the application?
     fn should_run(&self) -> bool {
         match self {
             Commands::New { .. } => false,
@@ -85,6 +87,10 @@ impl Commands {
             Commands::View { .. } => true,
             Commands::Join { .. } => true,
         }
+    }
+    /// Will this join an external server?
+    fn should_join(&self) -> bool {
+        matches!(self, Commands::Join { .. })
     }
     fn user_id(&self) -> Option<&str> {
         match self {
@@ -174,8 +180,15 @@ fn main() -> anyhow::Result<()> {
     let project_path =
         if project_path.is_absolute() { project_path } else { elements_std::path::normalize(&current_dir.join(project_path)) };
 
+    let manifest = if !cli.command.should_join() {
+        let contents = std::fs::read_to_string(project_path.join("tilt.toml"))?;
+        Some(elements_project::Manifest::from_str(&contents)?)
+    } else {
+        None
+    };
+
     if cli.command.should_build() {
-        runtime.block_on(elements_build::build(&assets, project_path.clone()));
+        runtime.block_on(elements_build::build(&assets, project_path.clone(), manifest.as_ref().unwrap()));
     }
 
     let server_addr = if let Commands::Join { host, .. } = &cli.command {
@@ -188,7 +201,7 @@ fn main() -> anyhow::Result<()> {
             format!("127.0.0.1:{QUIC_INTERFACE_PORT}").parse().unwrap()
         }
     } else {
-        let port = server::start_server(&runtime, assets.clone(), cli.clone(), project_path);
+        let port = server::start_server(&runtime, assets.clone(), cli.clone(), project_path, manifest.as_ref().unwrap());
         eprintln!("Server running on port {port}");
         format!("127.0.0.1:{port}").parse().unwrap()
     };

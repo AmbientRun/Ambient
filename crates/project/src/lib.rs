@@ -5,6 +5,7 @@ use serde::Deserialize;
 #[derive(Deserialize, Debug)]
 pub struct Manifest {
     pub project: Project,
+    #[serde(default)]
     pub components: HashMap<String, Component>,
 }
 impl Manifest {

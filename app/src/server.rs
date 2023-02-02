@@ -98,7 +98,13 @@ async fn handle_error(_err: std::io::Error) -> impl IntoResponse {
     (StatusCode::INTERNAL_SERVER_ERROR, "Something went wrong...")
 }
 
-pub(crate) fn start_server(runtime: &tokio::runtime::Runtime, assets: AssetCache, cli: Cli, project_path: PathBuf) -> u16 {
+pub(crate) fn start_server(
+    runtime: &tokio::runtime::Runtime,
+    assets: AssetCache,
+    cli: Cli,
+    project_path: PathBuf,
+    _manifest: &elements_project::Manifest,
+) -> u16 {
     log::info!("Creating server");
     let server = runtime.block_on(async move {
         GameServer::new_with_port_in_range(QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10))

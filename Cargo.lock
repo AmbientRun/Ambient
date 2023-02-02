@@ -1507,6 +1507,7 @@ dependencies = [
  "elements_model",
  "elements_model_import",
  "elements_physics",
+ "elements_project",
  "elements_renderer",
  "elements_std",
  "elements_world_audio",
