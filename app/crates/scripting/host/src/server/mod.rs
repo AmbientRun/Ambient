@@ -83,7 +83,11 @@ pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
     elements_scripting_host::server::on_shutdown_systems(script_module_state())
 }
 
-pub async fn initialize(world: &mut World, project_path: PathBuf) -> anyhow::Result<()> {
+pub async fn initialize(
+    world: &mut World,
+    project_path: PathBuf,
+    manifest: &elements_project::Manifest,
+) -> anyhow::Result<()> {
     let rust_path = elements_std::path::normalize(&std::env::current_dir()?.join("rust"));
 
     let messenger = Arc::new(
@@ -151,10 +155,9 @@ pub async fn initialize(world: &mut World, project_path: PathBuf) -> anyhow::Res
                 spawn_script(
                     world,
                     name.as_ref(),
-                    String::new(),
+                    manifest.project.description.clone().unwrap_or_default(),
                     true,
                     files,
-                    Default::default(),
                 )?;
             }
         }

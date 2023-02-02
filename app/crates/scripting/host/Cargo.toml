@@ -9,6 +9,7 @@ version.workspace = true
 elements_ecs = { path = "../../../../crates/ecs" }
 elements_input = { path = "../../../../crates/input" }
 elements_network = { path = "../../../../crates/network" }
+elements_project = { path = "../../../../crates/project" }
 elements_scripting_host = { path = "../../../../crates/scripting/host" }
 elements_std = { path = "../../../../crates/std" }
 elements_ui = { path = "../../../../crates/ui" }

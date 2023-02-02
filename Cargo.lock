@@ -1988,6 +1988,7 @@ dependencies = [
 name = "elements_project"
 version = "0.1.0"
 dependencies = [
+ "elements_ecs",
  "serde",
  "toml",
 ]
@@ -2054,6 +2055,7 @@ dependencies = [
  "elements_network",
  "elements_object",
  "elements_physics",
+ "elements_project",
  "elements_std",
  "flume",
  "fs_extra",
@@ -5593,6 +5595,7 @@ dependencies = [
  "elements_ecs",
  "elements_input",
  "elements_network",
+ "elements_project",
  "elements_scripting_host",
  "elements_std",
  "elements_ui",

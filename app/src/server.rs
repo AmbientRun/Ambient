@@ -103,7 +103,7 @@ pub(crate) fn start_server(
     assets: AssetCache,
     cli: Cli,
     project_path: PathBuf,
-    _manifest: &elements_project::Manifest,
+    manifest: &elements_project::Manifest,
 ) -> u16 {
     log::info!("Creating server");
     let server = runtime.block_on(async move {
@@ -123,13 +123,14 @@ pub(crate) fn start_server(
 
     start_http_interface(runtime, &project_path);
 
+    let manifest = manifest.clone();
     runtime.spawn(async move {
         let mut server_world = World::new_with_config("server", 1, true);
         server_world.init_shape_change_tracking();
 
         server_world.add_components(server_world.resource_entity(), create_server_resources(assets.clone())).unwrap();
 
-        scripting::server::initialize(&mut server_world, project_path.clone()).await.unwrap();
+        scripting::server::initialize(&mut server_world, project_path.clone(), &manifest).await.unwrap();
 
         if let Commands::View { asset_path, .. } = cli.command.clone() {
             let asset_path = AbsAssetUrl::from_file_path(project_path.join("target").join(asset_path).join("objects/main.json"));

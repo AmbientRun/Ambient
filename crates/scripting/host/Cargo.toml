@@ -13,6 +13,7 @@ elements_ecs = { path = "../../ecs" }
 elements_network = { path = "../../network" }
 elements_object = { path = "../../object" }
 elements_physics = { path = "../../physics" }
+elements_project = { path = "../../project" }
 elements_std = { path = "../../std" }
 physxx = { path = "../../../libs/physxx" }
 

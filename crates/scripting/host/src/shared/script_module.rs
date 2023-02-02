@@ -32,8 +32,6 @@ pub type FileMap = HashMap<PathBuf, File>;
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct ScriptModule {
     files: FileMap,
-    pub description: String,
-    pub external_component_ids: HashSet<String>,
 }
 impl Display for ScriptModule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -41,11 +39,9 @@ impl Display for ScriptModule {
     }
 }
 impl ScriptModule {
-    pub fn new(description: impl Into<String>, external_component_ids: HashSet<String>) -> Self {
+    pub fn new() -> Self {
         ScriptModule {
             files: HashMap::new(),
-            description: description.into(),
-            external_component_ids,
         }
     }
 
@@ -60,7 +56,6 @@ impl ScriptModule {
             let filename = PathBuf::from(filename);
             let contents = contents
                 .replace("{{name}}", &util::sanitize(&name))
-                .replace("{{description}}", &self.description)
                 .replace("{{scripting_interface}}", scripting_interface);
             let file = File::new_at_now(contents);
 
@@ -251,13 +246,18 @@ pub struct ScriptModuleBundle {
     pub external_component_ids: HashSet<String>,
 }
 impl ScriptModuleBundle {
-    pub fn to_json(name: &str, sm: &ScriptModule) -> String {
+    pub fn to_json(
+        name: &str,
+        sm: &ScriptModule,
+        description: &str,
+        external_component_ids: &HashSet<String>,
+    ) -> String {
         let files = sm.files().clone();
         serde_json::to_string_pretty(&ScriptModuleBundle {
             name: name.to_owned(),
             files,
-            description: sm.description.clone(),
-            external_component_ids: sm.external_component_ids.clone(),
+            description: description.to_owned(),
+            external_component_ids: external_component_ids.clone(),
         })
         .unwrap()
     }
