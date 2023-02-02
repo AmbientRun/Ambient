@@ -63,9 +63,6 @@ required-features = []
         scripts_main_src.join("lib.rs"),
         r#"use tilt_runtime_scripting_interface::*;
 
-pub mod components;
-pub mod params;
-
 #[main]
 pub async fn main() -> EventResult {
     loop {

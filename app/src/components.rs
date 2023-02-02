@@ -15,7 +15,8 @@ pub(crate) fn init() -> anyhow::Result<()> {
     tilt_runtime_core::init_all_components();
     crate::player::init_all_components();
 
-    load_from_toml(include_str!("components.toml"))?;
+    // Temporary: this information should move to the ECS through attributes
+    load_from_toml(include_str!("../tilt.toml"))?;
 
     Ok(())
 }
@@ -32,27 +33,23 @@ fn load_from_toml(manifest: &str) -> anyhow::Result<()> {
             element_type: Option<String>,
         },
     }
-    impl ComponentTypeToml {
-        fn type_str(&self) -> (&str, Option<&str>) {
-            match self {
-                ComponentTypeToml::String(type_) => (type_.as_str(), None),
-                ComponentTypeToml::ContainerType { type_, element_type } => (type_.as_str(), element_type.as_deref()),
-            }
-        }
-    }
     impl TryFrom<ComponentTypeToml> for PrimitiveComponentType {
         type Error = &'static str;
 
         fn try_from(value: ComponentTypeToml) -> Result<Self, Self::Error> {
-            let (ty, element_ty) = value.type_str();
-            match ty {
-                "Vec" => Ok(PrimitiveComponentType::Vec {
-                    variants: Box::new(PrimitiveComponentType::try_from(element_ty.ok_or("expected element_type")?)?),
-                }),
-                "Option" => Ok(PrimitiveComponentType::Option {
-                    variants: Box::new(PrimitiveComponentType::try_from(element_ty.ok_or("expected element_type")?)?),
-                }),
-                _ => PrimitiveComponentType::try_from(ty),
+            match value {
+                ComponentTypeToml::String(ty) => PrimitiveComponentType::try_from(ty.as_str()),
+                ComponentTypeToml::ContainerType { type_, element_type } => {
+                    let element_ty = element_type.as_deref().map(PrimitiveComponentType::try_from).transpose()?.map(Box::new);
+                    match element_ty {
+                        Some(element_ty) => match type_.as_str() {
+                            "Vec" => Ok(PrimitiveComponentType::Vec { variants: element_ty }),
+                            "Option" => Ok(PrimitiveComponentType::Option { variants: element_ty }),
+                            _ => Err("invalid container type"),
+                        },
+                        None => PrimitiveComponentType::try_from(type_.as_str()),
+                    }
+                }
             }
         }
     }
@@ -66,13 +63,20 @@ fn load_from_toml(manifest: &str) -> anyhow::Result<()> {
         type_: ComponentTypeToml,
     }
 
-    let components: HashMap<String, ComponentToml> = toml::from_str(manifest)?;
-    let components: Vec<_> = components
-        .into_iter()
-        .map(|(id, component)| Ok((id, PrimitiveComponentType::try_from(component.type_)?)))
-        .collect::<Result<_, _>>()
-        .map_err(|e: &'static str| anyhow::anyhow!("{e}"))?;
-    ComponentRegistry::get_mut().add_external_from_iterator(components.into_iter());
+    #[derive(Deserialize, Debug)]
+    struct Manifest {
+        components: HashMap<String, ComponentToml>,
+    }
+
+    let manifest: Manifest = toml::from_str(&manifest)?;
+    ComponentRegistry::get_mut().add_external_from_iterator(
+        manifest
+            .components
+            .into_iter()
+            .map(|(id, component)| Ok((id, PrimitiveComponentType::try_from(component.type_).map_err(|e| anyhow::anyhow!("{e}"))?)))
+            .collect::<anyhow::Result<Vec<_>>>()?
+            .into_iter(),
+    );
 
     Ok(())
 }
