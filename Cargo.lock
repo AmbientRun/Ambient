@@ -1984,6 +1984,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "elements_project"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "toml",
+]
+
+[[package]]
 name = "elements_renderer"
 version = "0.0.1"
 dependencies = [
@@ -5544,6 +5552,7 @@ dependencies = [
  "elements_object",
  "elements_physics",
  "elements_primitives",
+ "elements_project",
  "elements_renderer",
  "elements_rpc",
  "elements_scripting_host",
@@ -5561,7 +5570,6 @@ dependencies = [
  "tilt_runtime_core",
  "tilt_runtime_scripting_host",
  "tokio",
- "toml",
  "tower-http",
  "walkdir",
 ]

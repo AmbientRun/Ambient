@@ -24,6 +24,7 @@ elements_network = {path = "../crates/network"}
 elements_object = {path = "../crates/object"}
 elements_physics = {path = "../crates/physics"}
 elements_primitives = {path = "../crates/primitives"}
+elements_project = {path = "../crates/project"}
 elements_renderer = {path = "../crates/renderer"}
 elements_debugger = {path = "../crates/debugger"}
 elements_rpc = {path = "../crates/rpc"}
@@ -48,7 +49,6 @@ log.workspace = true
 parking_lot.workspace = true
 serde.workspace = true
 tokio.workspace = true
-toml.workspace = true
 tower-http.workspace = true
 walkdir.workspace = true
 friendly_id.workspace = true
