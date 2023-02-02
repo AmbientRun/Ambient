@@ -61,16 +61,17 @@ pub async fn main() -> EventResult {
             let mut x = cell % 3;
             let mut y = cell / 3;
 
-            if delta.keys.contains(&KeyCode::Left) {
+            let keys = &delta.keys;
+            if keys.contains(&KeyCode::Left) || keys.contains(&KeyCode::A) {
                 x = (x + 3 - 1) % 3;
             }
-            if delta.keys.contains(&KeyCode::Right) {
+            if keys.contains(&KeyCode::Right) || keys.contains(&KeyCode::D) {
                 x = (x + 1) % 3;
             }
-            if delta.keys.contains(&KeyCode::Up) {
+            if keys.contains(&KeyCode::Up) || keys.contains(&KeyCode::W) {
                 y = (y + 3 - 1) % 3;
             }
-            if delta.keys.contains(&KeyCode::Down) {
+            if keys.contains(&KeyCode::Down) || keys.contains(&KeyCode::S) {
                 y = (y + 1) % 3;
             }
             let cell = y * 3 + x;
