@@ -51,7 +51,7 @@ pub use glam::{self, f32::*, Vec2Swizzles, Vec3Swizzles, Vec4Swizzles};
 pub use once_cell;
 pub use rand::prelude::*;
 
-interface_macros::tilt_project!();
+interface_macros::tilt_project!(extend = []);
 
 #[inline]
 /// Helper function that returns the [std::default::Default::default] for the type `T`.

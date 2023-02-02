@@ -32,8 +32,8 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
 #[proc_macro]
 pub fn tilt_project(input: TokenStream) -> TokenStream {
-    let extend_paths = if input.is_empty() {
-        vec![]
+    let extend_paths: Option<Vec<Vec<String>>> = if input.is_empty() {
+        None
     } else {
         syn::custom_keyword!(extend);
 
@@ -64,10 +64,17 @@ pub fn tilt_project(input: TokenStream) -> TokenStream {
         }
 
         let extend = syn::parse_macro_input!(input as Extend);
-        extend.elems.into_iter().map(|p| p.segments.into_iter().map(|s| s.ident.to_string()).collect()).collect()
+        Some(extend.elems.into_iter().map(|p| p.segments.into_iter().map(|s| s.ident.to_string()).collect()).collect())
     };
 
-    TokenStream::from(tilt_project_impl(tilt_project_read_file("tilt.toml".to_string()).unwrap(), &extend_paths).unwrap())
+    TokenStream::from(
+        tilt_project_impl(
+            tilt_project_read_file("tilt.toml".to_string()).unwrap(),
+            extend_paths.as_ref().map(|a| a.as_slice()).unwrap_or_default(),
+            extend_paths.is_some(),
+        )
+        .unwrap(),
+    )
 }
 
 fn tilt_project_read_file(file_path: String) -> anyhow::Result<(String, String)> {
@@ -79,9 +86,34 @@ fn tilt_project_read_file(file_path: String) -> anyhow::Result<(String, String)>
     Ok((file_path_str, contents))
 }
 
-fn tilt_project_impl((file_path, contents): (String, String), extend_paths: &[Vec<String>]) -> anyhow::Result<proc_macro2::TokenStream> {
+fn tilt_project_impl(
+    (file_path, contents): (String, String),
+    extend_paths: &[Vec<String>],
+    global_namespace: bool,
+) -> anyhow::Result<proc_macro2::TokenStream> {
     use serde::Deserialize;
     use std::collections::BTreeMap;
+
+    #[derive(Deserialize, Debug)]
+    struct Manifest {
+        project: Project,
+        components: BTreeMap<String, Component>,
+    }
+
+    #[derive(Deserialize, Debug)]
+    pub struct Project {
+        name: String,
+        organization: Option<String>,
+    }
+
+    #[derive(Deserialize, Debug)]
+    #[allow(dead_code)]
+    struct Component {
+        name: String,
+        description: String,
+        #[serde(rename = "type")]
+        type_: ComponentType,
+    }
 
     #[derive(Deserialize, Debug)]
     #[serde(untagged)]
@@ -142,20 +174,6 @@ fn tilt_project_impl((file_path, contents): (String, String), extend_paths: &[Ve
         }
     }
 
-    #[derive(Deserialize, Debug)]
-    #[allow(dead_code)]
-    struct Component {
-        name: String,
-        description: String,
-        #[serde(rename = "type")]
-        type_: ComponentType,
-    }
-
-    #[derive(Deserialize, Debug)]
-    struct Manifest {
-        components: BTreeMap<String, Component>,
-    }
-
     let manifest: Manifest = toml::from_str(&contents)?;
 
     #[derive(Debug)]
@@ -210,11 +228,11 @@ fn tilt_project_impl((file_path, contents): (String, String), extend_paths: &[Ve
         insert_into_root(&mut root, &subpath, TreeNodeInner::UseAll(path.clone()))?;
     }
 
-    fn expand_tree(tree_node: &TreeNode) -> anyhow::Result<proc_macro2::TokenStream> {
+    fn expand_tree(tree_node: &TreeNode, project_path: &[String]) -> anyhow::Result<proc_macro2::TokenStream> {
         let name = tree_node.path.last().map(|s| s.as_str()).unwrap_or_default();
         match &tree_node.inner {
             TreeNodeInner::Module(module) => {
-                let children = module.values().map(|child| expand_tree(child)).collect::<Result<Vec<_>, _>>()?;
+                let children = module.values().map(|child| expand_tree(child, project_path)).collect::<Result<Vec<_>, _>>()?;
 
                 Ok(if name.is_empty() {
                     quote! {
@@ -234,7 +252,7 @@ fn tilt_project_impl((file_path, contents): (String, String), extend_paths: &[Ve
                 let name_uppercase_ident: syn::Ident = syn::parse_str(&name.to_ascii_uppercase())?;
                 let component_ty = component.type_.to_token_stream()?;
                 let doc_comment = format!("{}: {}", component.name, component.description);
-                let id = tree_node.path.join("::");
+                let id = [project_path, &tree_node.path].concat().join("::");
 
                 Ok(quote! {
                     static #name_uppercase_ident: crate::LazyComponent<#component_ty> = crate::lazy_component!(#id);
@@ -251,7 +269,12 @@ fn tilt_project_impl((file_path, contents): (String, String), extend_paths: &[Ve
         }
     }
 
-    let expanded_tree = expand_tree(&TreeNode::new(vec![], TreeNodeInner::Module(root)))?;
+    let project_path: Vec<_> = if global_namespace {
+        vec![]
+    } else {
+        manifest.project.organization.iter().chain(std::iter::once(&manifest.project.name)).cloned().collect()
+    };
+    let expanded_tree = expand_tree(&TreeNode::new(vec![], TreeNodeInner::Module(root)), &project_path)?;
     Ok(quote!(
         const _PROJECT_MANIFEST: &'static str = include_str!(#file_path);
         #[allow(missing_docs)]
@@ -266,8 +289,11 @@ mod tests {
     use crate::tilt_project_impl;
 
     #[test]
-    fn can_generate_components_from_manifest() {
+    fn can_generate_components_from_manifest_in_global_namespace() {
         let manifest = indoc::indoc! {r#"
+        [project]
+        name = "runtime_components"
+
         [components]
         "core::app::main_scene" = { name = "Main Scene", description = "", type = "Empty" }
         "core::app::name" = { name = "name", description = "", type = "String" }
@@ -316,13 +342,16 @@ mod tests {
             }
         };
 
-        let result = tilt_project_impl(("tilty.toml".to_string(), manifest.to_string()), &[]).unwrap();
+        let result = tilt_project_impl(("tilty.toml".to_string(), manifest.to_string()), &[], true).unwrap();
         assert_eq!(result.to_string(), expected_output.to_string());
     }
 
     #[test]
-    fn can_extend_existing_components() {
+    fn can_extend_existing_components_in_global_namespace() {
         let manifest = indoc::indoc! {r#"
+        [project]
+        name = "runtime_components"
+
         [components]
         "core::app::main_scene" = { name = "Main Scene", description = "", type = "Empty" }
         "core::camera::active_camera" = { name = "Active Camera", description = "No description provided", type = "F32" }
@@ -371,8 +400,64 @@ mod tests {
                 vec!["base".to_string(), "components".to_string(), "core".to_string(), "camera".to_string()],
                 vec!["base".to_string(), "components".to_string(), "core".to_string(), "player".to_string()],
             ],
+            true,
         )
         .unwrap();
+
+        assert_eq!(result.to_string(), expected_output.to_string());
+    }
+
+    #[test]
+    fn can_generate_components_from_manifest() {
+        let manifest = indoc::indoc! {r#"
+        [project]
+        name = "my_project"
+
+        [components]
+        a_cool_component = { name = "Cool Component", description = "", type = "Empty" }
+        "#};
+
+        let expected_output = quote::quote! {
+            const _PROJECT_MANIFEST: &'static str = include_str!("tilty.toml");
+            #[allow(missing_docs)]
+            pub mod components {
+                static A_COOL_COMPONENT: crate::LazyComponent<()> = crate::lazy_component!("my_project::a_cool_component");
+                #[doc = "Cool Component: "]
+                pub fn a_cool_component() -> crate::Component<()> {
+                    *A_COOL_COMPONENT
+                }
+            }
+        };
+
+        let result = tilt_project_impl(("tilty.toml".to_string(), manifest.to_string()), &[], false).unwrap();
+
+        assert_eq!(result.to_string(), expected_output.to_string());
+    }
+
+    #[test]
+    fn can_generate_components_from_manifest_with_org() {
+        let manifest = indoc::indoc! {r#"
+        [project]
+        name = "my_project"
+        organization = "evil_corp"
+
+        [components]
+        a_cool_component = { name = "Cool Component", description = "", type = "Empty" }
+        "#};
+
+        let expected_output = quote::quote! {
+            const _PROJECT_MANIFEST: &'static str = include_str!("tilty.toml");
+            #[allow(missing_docs)]
+            pub mod components {
+                static A_COOL_COMPONENT: crate::LazyComponent<()> = crate::lazy_component!("evil_corp::my_project::a_cool_component");
+                #[doc = "Cool Component: "]
+                pub fn a_cool_component() -> crate::Component<()> {
+                    *A_COOL_COMPONENT
+                }
+            }
+        };
+
+        let result = tilt_project_impl(("tilty.toml".to_string(), manifest.to_string()), &[], false).unwrap();
 
         assert_eq!(result.to_string(), expected_output.to_string());
     }
