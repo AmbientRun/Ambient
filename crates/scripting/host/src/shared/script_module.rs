@@ -11,7 +11,6 @@ use async_trait::async_trait;
 use elements_ecs::{EntityId, EntityUid, World};
 use elements_std::asset_url::ObjectRef;
 use glam::Vec3;
-use indexmap::IndexMap;
 use indoc::indoc;
 use parking_lot::{Mutex, RwLock};
 use serde::{Deserialize, Serialize};
@@ -35,7 +34,6 @@ pub struct ScriptModule {
     files: FileMap,
     pub description: String,
     pub external_component_ids: HashSet<String>,
-    pub enabled: bool,
 }
 impl Display for ScriptModule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -43,15 +41,10 @@ impl Display for ScriptModule {
     }
 }
 impl ScriptModule {
-    pub fn new(
-        description: impl Into<String>,
-        external_component_ids: HashSet<String>,
-        enabled: bool,
-    ) -> Self {
+    pub fn new(description: impl Into<String>, external_component_ids: HashSet<String>) -> Self {
         ScriptModule {
             files: HashMap::new(),
             description: description.into(),
-            enabled,
             external_component_ids,
         }
     }
@@ -124,10 +117,6 @@ impl ScriptModule {
     pub fn remove(&mut self, relative_path: &Path) {
         let relative_path = elements_std::path::normalize(relative_path);
         self.files.remove(&relative_path);
-    }
-
-    pub fn enabled(&self) -> bool {
-        self.enabled
     }
 }
 impl ScriptModule {
@@ -230,8 +219,6 @@ impl Default for Parameter {
         Parameter::Integer(0)
     }
 }
-
-pub type ParametersMap = IndexMap<String, IndexMap<String, Parameter>>;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct File {

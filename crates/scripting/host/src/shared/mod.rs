@@ -38,6 +38,8 @@ components!("scripting::shared", {
     script_module: ScriptModule,
     script_module_bytecode: ScriptModuleBytecode,
     @[Networked, Store]
+    script_module_enabled: bool,
+    @[Networked, Store]
     script_module_compiled: (),
     @[Networked, Store]
     script_module_errors: ScriptModuleErrors,
@@ -229,10 +231,14 @@ pub fn reload_all<
     make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context + Send + Sync>,
     add_to_linker: Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
 ) {
-    let scripts = query((script_module(), script_module_bytecode()))
-        .iter(world, None)
-        .map(|(id, (sm, bc))| (id, sm.enabled.then(|| bc.clone())))
-        .collect_vec();
+    let scripts = query((
+        script_module(),
+        script_module_bytecode(),
+        script_module_enabled(),
+    ))
+    .iter(world, None)
+    .map(|(id, (_, bc, enabled))| (id, enabled.then(|| bc.clone())))
+    .collect_vec();
 
     reload(
         world,
@@ -532,7 +538,7 @@ pub fn spawn_script(
         anyhow::bail!("a script module by the name {name} already exists");
     }
 
-    let mut sm = ScriptModule::new(description, external_component_ids, enabled);
+    let mut sm = ScriptModule::new(description, external_component_ids);
     sm.insert_multiple(
         name,
         &world
@@ -547,6 +553,7 @@ pub fn spawn_script(
         .set(elements_core::name(), name.to_string())
         .set(uid(), elements_ecs::EntityUid::create())
         .set(script_module(), sm)
+        .set(script_module_enabled(), enabled)
         .spawn(world))
 }
 
@@ -592,7 +599,7 @@ fn build_template(
     let scripts_path = template_path.join("scripts");
     util::write_workspace_files(&scripts_path, &[dummy_name.to_string()], true);
 
-    let mut dummy_module = ScriptModule::new("Dummy module", Default::default(), true);
+    let mut dummy_module = ScriptModule::new("Dummy module", Default::default());
     dummy_module.populate_files(dummy_name, primary_scripting_interface_name);
     let _dummy_bytecode = compile(
         &dummy_module,

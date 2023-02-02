@@ -9,7 +9,7 @@ use elements_core::name;
 use elements_ecs::{query, EntityId, World};
 use indoc::indoc;
 
-use super::script_module;
+use super::{script_module, script_module_enabled};
 
 pub fn write_files_to_directory(
     base_path: &Path,
@@ -32,10 +32,10 @@ pub fn write_files_to_directory(
 }
 
 pub fn all_module_names_sanitized(world: &World, include_disabled_modules: bool) -> Vec<String> {
-    query(script_module())
+    query((script_module(), script_module_enabled()))
         .iter(world, None)
-        .filter_map(|(id, sm)| {
-            (include_disabled_modules || sm.enabled).then(|| sanitize(&get_module_name(world, id)))
+        .filter_map(|(id, (_, enabled))| {
+            (include_disabled_modules || *enabled).then(|| sanitize(&get_module_name(world, id)))
         })
         .collect()
 }

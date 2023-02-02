@@ -23,8 +23,8 @@ use crate::shared::{
     install_dirs,
     interface::Host,
     messenger, reload, reload_all, run_all, rustc, script_module, script_module_bytecode,
-    script_module_compiled, script_module_errors, scripting_interface_name, scripts_path, unload,
-    update_errors,
+    script_module_compiled, script_module_enabled, script_module_errors, scripting_interface_name,
+    scripts_path, unload, update_errors,
     util::{
         all_module_names_sanitized, get_module_name, remove_old_script_modules,
         write_workspace_files,
@@ -104,7 +104,7 @@ pub fn systems<
                             .unwrap();
                     }
                 }),
-            query(script_module().changed()).to_system({
+            query((script_module().changed(), script_module_enabled().changed())).to_system({
                 let make_wasm_context = make_wasm_context;
                 let add_to_linker = add_to_linker;
                 move |q, world, qs, _| {
@@ -113,8 +113,8 @@ pub fn systems<
                     let mut tasks = vec![];
                     let mut to_disable = vec![];
                     let now = Instant::now();
-                    for (id, sm) in q.iter(world, qs) {
-                        if sm.enabled {
+                    for (id, (_, enabled)) in q.iter(world, qs) {
+                        if *enabled {
                             tasks.push((id, now));
                         } else {
                             to_disable.push(id);
@@ -183,29 +183,32 @@ pub fn systems<
                     .collect_vec();
                 world.resource_mut(compilation_tasks()).extend(tasks);
             })),
-            query((script_module(), script_module_bytecode().changed())).to_system(
-                move |q, world, qs, _| {
-                    profiling::scope!("script module wasm recreation");
-                    let scripts = q
-                        .iter(world, qs)
-                        .map(|(id, (sm, smb))| (id, sm.enabled.then(|| smb.clone())))
-                        .collect_vec();
+            query((
+                script_module(),
+                script_module_bytecode().changed(),
+                script_module_enabled(),
+            ))
+            .to_system(move |q, world, qs, _| {
+                profiling::scope!("script module wasm recreation");
+                let scripts = q
+                    .iter(world, qs)
+                    .map(|(id, (_, smb, enabled))| (id, enabled.then(|| smb.clone())))
+                    .collect_vec();
 
-                    // Script module bytecode changed, recreate the WASM state
-                    reload(
-                        world,
-                        state_component,
-                        make_wasm_context(world),
-                        add_to_linker(world),
-                        &scripts,
-                    );
+                // Script module bytecode changed, recreate the WASM state
+                reload(
+                    world,
+                    state_component,
+                    make_wasm_context(world),
+                    add_to_linker(world),
+                    &scripts,
+                );
 
-                    let messenger = world.resource(messenger()).clone();
-                    for (id, _) in &scripts {
-                        (messenger)(world, *id, MessageType::Info, "Updated");
-                    }
-                },
-            ),
+                let messenger = world.resource(messenger()).clone();
+                for (id, _) in &scripts {
+                    (messenger)(world, *id, MessageType::Info, "Updated");
+                }
+            }),
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("script module frame event");
                 // trigger frame event
