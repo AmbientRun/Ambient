@@ -155,7 +155,6 @@ pub async fn initialize(world: &mut World, project_path: PathBuf) -> anyhow::Res
                     true,
                     files,
                     Default::default(),
-                    Default::default(),
                 )?;
             }
         }

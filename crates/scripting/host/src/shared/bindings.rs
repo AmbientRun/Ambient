@@ -20,12 +20,6 @@ use elements_ecs::PrimitiveComponentType as PCT;
 
 macro_rules! define_component_types {
     ($(($type:ty, $value:ident)),*) => { paste! {
-        pub(crate) static SUPPORTED_COMPONENT_TYPES: Lazy<Vec< (TypeId, &str) >> = Lazy::new(|| vec![$(
-            (TypeId::of::<$type>(), stringify!($type)),
-            (TypeId::of::<Vec<$type>>(), stringify!(Vec<$type>)),
-            (TypeId::of::<Option<$type>>(), stringify!(Option<$type>))
-        ),*]);
-
         fn read_primitive_component_from_world(
             world: &World,
             entity_id: EntityId,

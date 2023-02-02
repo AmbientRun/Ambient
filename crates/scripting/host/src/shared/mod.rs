@@ -522,7 +522,6 @@ pub fn spawn_script(
     description: String,
     enabled: bool,
     files: FileMap,
-    parameters: ParametersMap,
     external_component_ids: HashSet<String>,
 ) -> anyhow::Result<EntityId> {
     if query(())
@@ -533,7 +532,7 @@ pub fn spawn_script(
         anyhow::bail!("a script module by the name {name} already exists");
     }
 
-    let mut sm = ScriptModule::new(description, parameters, external_component_ids, enabled);
+    let mut sm = ScriptModule::new(description, external_component_ids, enabled);
     sm.insert_multiple(
         name,
         &world
@@ -593,8 +592,7 @@ fn build_template(
     let scripts_path = template_path.join("scripts");
     util::write_workspace_files(&scripts_path, &[dummy_name.to_string()], true);
 
-    let mut dummy_module =
-        ScriptModule::new("Dummy module", Default::default(), Default::default(), true);
+    let mut dummy_module = ScriptModule::new("Dummy module", Default::default(), true);
     dummy_module.populate_files(dummy_name, primary_scripting_interface_name);
     let _dummy_bytecode = compile(
         &dummy_module,

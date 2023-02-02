@@ -1,9 +1,4 @@
-use std::{
-    collections::HashMap,
-    path::PathBuf,
-    sync::Arc,
-    time::{Duration, Instant},
-};
+use std::{collections::HashMap, path::PathBuf, sync::Arc, time::Instant};
 
 use anyhow::Context;
 use elements_core::name;
@@ -115,21 +110,14 @@ pub fn systems<
                 move |q, world, qs, _| {
                     profiling::scope!("script module changed");
                     // Script module (files/enabled) changed, issue compilation tasks.
-                    // If the last edit was a parameter, defer the compilation so that users can
-                    // edit parameters without forcing a compilation task to be issued on each keystroke.
                     let mut tasks = vec![];
                     let mut to_disable = vec![];
                     let now = Instant::now();
                     for (id, sm) in q.iter(world, qs) {
-                        match (sm.enabled, sm.last_updated_by_parameters()) {
-                            (true, true) => tasks.push((
-                                id,
-                                now + Duration::from_secs(PARAMETER_CHANGE_DEBOUNCE_SECONDS),
-                            )),
-                            (true, false) => tasks.push((id, now)),
-                            (false, _) => {
-                                to_disable.push(id);
-                            }
+                        if sm.enabled {
+                            tasks.push((id, now));
+                        } else {
+                            to_disable.push(id);
                         }
                     }
 

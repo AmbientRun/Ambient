@@ -1,6 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
-    fmt::{Display, Write},
+    fmt::Display,
     marker::PhantomData,
     path::{Path, PathBuf},
     sync::Arc,
@@ -8,7 +8,7 @@ use std::{
 
 use anyhow::Context;
 use async_trait::async_trait;
-use elements_ecs::{with_component_registry, EntityId, EntityUid, World};
+use elements_ecs::{EntityId, EntityUid, World};
 use elements_std::asset_url::ObjectRef;
 use glam::Vec3;
 use indexmap::IndexMap;
@@ -34,8 +34,6 @@ pub type FileMap = HashMap<PathBuf, File>;
 pub struct ScriptModule {
     files: FileMap,
     pub description: String,
-    pub parameters: ParametersMap,
-    last_updated_by_parameters: bool,
     pub external_component_ids: HashSet<String>,
     pub enabled: bool,
 }
@@ -47,17 +45,14 @@ impl Display for ScriptModule {
 impl ScriptModule {
     pub fn new(
         description: impl Into<String>,
-        parameters: ParametersMap,
         external_component_ids: HashSet<String>,
         enabled: bool,
     ) -> Self {
         ScriptModule {
             files: HashMap::new(),
             description: description.into(),
-            parameters,
             enabled,
             external_component_ids,
-            last_updated_by_parameters: false,
         }
     }
 
@@ -67,16 +62,7 @@ impl ScriptModule {
         &self.files
     }
 
-    pub fn system_controlled_files() -> HashSet<PathBuf> {
-        ["src/params.rs", "src/components.rs"]
-            .into_iter()
-            .map(|p| p.into())
-            .collect()
-    }
-
     pub fn populate_files(&mut self, name: &str, scripting_interface: &str) {
-        self.regenerate_params_file(scripting_interface);
-        self.regenerate_components_file(scripting_interface);
         for (filename, contents) in Self::STATIC_FILE_TEMPLATES {
             let filename = PathBuf::from(filename);
             let contents = contents
@@ -87,14 +73,6 @@ impl ScriptModule {
 
             self.files.entry(filename).or_insert(file);
         }
-        self.last_updated_by_parameters = false;
-    }
-
-    pub fn update_parameters(&mut self, parameters: ParametersMap, scripting_interface: &str) {
-        self.parameters = parameters;
-        self.last_updated_by_parameters = true;
-        self.regenerate_params_file(scripting_interface);
-        self.regenerate_components_file(scripting_interface);
     }
 
     /// Ignores system-controlled files
@@ -105,11 +83,7 @@ impl ScriptModule {
         primary_scripting_interface: &str,
         files: &FileMap,
     ) -> anyhow::Result<()> {
-        let system_controlled_files = Self::system_controlled_files();
         for (relative_path, new_file) in files {
-            if system_controlled_files.contains(relative_path) {
-                continue;
-            }
             self.insert(scripting_interfaces, relative_path, new_file)?;
         }
         self.populate_files(module_name, primary_scripting_interface);
@@ -123,9 +97,6 @@ impl ScriptModule {
         new_file: &File,
     ) -> anyhow::Result<()> {
         let relative_path = elements_std::path::normalize(relative_path);
-        if ScriptModule::system_controlled_files().contains(&relative_path) {
-            anyhow::bail!("{relative_path:?} is system-controlled and cannot be updated");
-        }
 
         if relative_path == Path::new("Cargo.toml") {
             if let Some(old_cargo) = self.files.get(Path::new("Cargo.toml")) {
@@ -152,21 +123,11 @@ impl ScriptModule {
 
     pub fn remove(&mut self, relative_path: &Path) {
         let relative_path = elements_std::path::normalize(relative_path);
-        if ScriptModule::system_controlled_files()
-            .iter()
-            .any(|pb| pb == &relative_path)
-        {
-            return;
-        }
         self.files.remove(&relative_path);
     }
 
     pub fn enabled(&self) -> bool {
         self.enabled
-    }
-
-    pub fn last_updated_by_parameters(&self) -> bool {
-        self.last_updated_by_parameters
     }
 }
 impl ScriptModule {
@@ -191,8 +152,6 @@ impl ScriptModule {
             "src/lib.rs",
             indoc! {r#"
                 use {{scripting_interface}}::*;
-                pub mod params;
-                pub mod components;
 
                 #[main]
                 pub async fn main() -> EventResult {
@@ -201,151 +160,6 @@ impl ScriptModule {
             "#},
         ),
     ];
-
-    fn regenerate_params_file(&mut self, scripting_interface: &str) {
-        let mut contents = String::new();
-        let _ = writeln!(contents, "#![allow(unused_imports)]");
-        for (category, parameters) in &self.parameters {
-            let category = category.trim().replace(' ', "_").to_lowercase();
-            if category.is_empty() {
-                continue;
-            }
-
-            let _ = writeln!(contents, "pub mod {category} {{");
-            let _ = writeln!(contents, "    use {scripting_interface}::*;");
-            for (key, value) in parameters {
-                let key = key.trim().replace(' ', "_").to_uppercase();
-                if key.is_empty() {
-                    continue;
-                }
-                let value = match value {
-                    Parameter::EntityUid(Some(uid)) => {
-                        format!("EntityUid = EntityUid::new(\"{uid}\")")
-                    }
-                    Parameter::EntityUid(None) => continue,
-                    Parameter::ObjectRef(url) => {
-                        format!(r#"ObjectRef = ObjectRef::new("{url}")"#)
-                    }
-                    Parameter::Integer(v) => format!("i32 = {v}"),
-                    Parameter::Float(v) => format!("f32 = {v} as f32"),
-                    Parameter::Vec3(v) => {
-                        format!(
-                            "Vec3 = vec3({} as f32, {} as f32, {} as f32)",
-                            v.x, v.y, v.z
-                        )
-                    }
-                    Parameter::String(v) => format!(r#"&str = {v:?}"#),
-                    Parameter::Bool(v) => format!("bool = {v}"),
-                };
-
-                let _ = writeln!(contents, "    pub const {key}: {value};");
-            }
-            let _ = writeln!(contents, "}}");
-        }
-
-        self.files
-            .insert("src/params.rs".into(), File::new_at_now(contents));
-    }
-
-    fn regenerate_components_file(&mut self, scripting_interface: &str) {
-        enum ComponentTreeNode {
-            Category(HashMap<String, ComponentTreeNode>),
-            Component { typename: &'static str, id: String },
-        }
-        impl Default for ComponentTreeNode {
-            fn default() -> Self {
-                ComponentTreeNode::Category(Default::default())
-            }
-        }
-        impl ComponentTreeNode {
-            fn insert(&mut self, id_portion: &str, id: &str, typename: &'static str) {
-                if let ComponentTreeNode::Category(hm) = self {
-                    let (prefix, suffix) = id_portion.split_once("::").unwrap_or(("", id_portion));
-                    if prefix.is_empty() {
-                        hm.insert(
-                            suffix.to_string(),
-                            ComponentTreeNode::Component {
-                                typename,
-                                id: id.to_string(),
-                            },
-                        );
-                    } else {
-                        hm.entry(prefix.to_string())
-                            .or_default()
-                            .insert(suffix, id, typename);
-                    }
-                }
-            }
-        }
-
-        let supported_types: HashMap<_, _> = bindings::SUPPORTED_COMPONENT_TYPES
-            .iter()
-            .copied()
-            .collect();
-
-        // log::info!("Supported types: {supported_types:#?}");
-        let mut root = ComponentTreeNode::default();
-        with_component_registry(|registry| {
-            for component in registry.all_external() {
-                if let Some(typename) = supported_types.get(&component.type_id()) {
-                    let path = component.path();
-                    root.insert(&path, &path, typename);
-                } else {
-                    log::error!(
-                        "Type {:?}:{:?} is not supported",
-                        component.type_id(),
-                        component.type_name()
-                    );
-                }
-            }
-        });
-
-        fn write_to_file(
-            output: &mut String,
-            name: &str,
-            component: &ComponentTreeNode,
-            depth: usize,
-            scripting_interface: &str,
-        ) {
-            let space = " ".repeat(depth * 4);
-            match component {
-                ComponentTreeNode::Category(hm) => {
-                    if name.is_empty() {
-                        for (key, value) in hm {
-                            write_to_file(output, key, value, 0, scripting_interface);
-                        }
-                    } else {
-                        writeln!(output, "{space}pub mod {name} {{").ok();
-                        writeln!(output, "{space}    use {scripting_interface}::*;").ok();
-                        for (key, value) in hm {
-                            write_to_file(output, key, value, depth + 1, scripting_interface);
-                        }
-                        writeln!(output, "{space}}}").ok();
-                    }
-                }
-                ComponentTreeNode::Component { typename, id, .. } => {
-                    writeln!(
-                        output,
-                        r#"{space}static {}: LazyComponent<{typename}> = lazy_component!("{id}");"#,
-                        name.to_uppercase()
-                    )
-                    .ok();
-                    writeln!(
-                        output,
-                        "{space}pub fn {name}() -> Component<{typename}> {{ *{} }}",
-                        name.to_uppercase()
-                    )
-                    .ok();
-                }
-            }
-        }
-        let mut contents = String::new();
-        let _ = writeln!(contents, "#![allow(unused_imports)]");
-        write_to_file(&mut contents, "", &root, 0, scripting_interface);
-
-        self.files
-            .insert("src/components.rs".into(), File::new_at_now(contents));
-    }
 }
 
 #[derive(Clone)]
@@ -446,21 +260,16 @@ pub struct ScriptModuleBundle {
     pub name: String,
     pub files: FileMap,
     pub description: String,
-    pub parameters: ParametersMap,
     #[serde(default)]
     pub external_component_ids: HashSet<String>,
 }
 impl ScriptModuleBundle {
     pub fn to_json(name: &str, sm: &ScriptModule) -> String {
-        let mut files = sm.files().clone();
-        for path in ScriptModule::system_controlled_files() {
-            files.remove(&path);
-        }
+        let files = sm.files().clone();
         serde_json::to_string_pretty(&ScriptModuleBundle {
             name: name.to_owned(),
             files,
             description: sm.description.clone(),
-            parameters: sm.parameters.clone(),
             external_component_ids: sm.external_component_ids.clone(),
         })
         .unwrap()
