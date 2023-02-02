@@ -25,10 +25,10 @@ impl PipelineCtx {
         &self.process_ctx.assets
     }
     pub fn in_root(&self) -> AbsAssetUrl {
-        self.process_ctx.in_root.push(&self.root_path).unwrap()
+        self.process_ctx.in_root.push(&self.root_path).unwrap().as_directory()
     }
     pub fn out_root(&self) -> AbsAssetUrl {
-        self.process_ctx.out_root.push(&self.root_path).unwrap()
+        self.process_ctx.out_root.push(&self.root_path).unwrap().as_directory()
     }
     pub fn pipeline_path(&self) -> RelativePathBuf {
         let path = self.process_ctx.in_root.relative_path(&self.pipeline_file.path());

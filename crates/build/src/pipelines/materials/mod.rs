@@ -36,6 +36,7 @@ pub enum MaterialsImporter {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MaterialsPipeline {
     pub importer: Box<MaterialsImporter>,
+    #[serde(default)]
     pub output_decals: bool,
 }
 
