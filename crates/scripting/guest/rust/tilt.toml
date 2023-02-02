@@ -40,6 +40,8 @@
 "core::player::local_user_id" = { name = "Local User Id", description = "No description provided", type = "String" }
 "core::player::player" = { name = "Player", description = "No description provided", type = "Empty" }
 "core::player::user_id" = { name = "User Id", description = "No description provided", type = "String" }
+"core::primitives::cube" = { name = "cube", description = "Makes the entity it's attached to a cube.", type = "Empty" }
+"core::primitives::quad" = { name = "quad", description = "Makes the entity it's attached to a quad.", type = "Empty" }
 "core::rendering::cast_shadows" = { name = "Cast Shadows", description = "No description provided", type = "Empty" }
 "core::rendering::color" = { name = "Color", description = "No description provided", type = "Vec4" }
 "core::rendering::double_sided" = { name = "Double Sided", description = "No description provided", type = "Bool" }
