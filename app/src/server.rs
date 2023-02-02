@@ -123,6 +123,8 @@ pub(crate) fn start_server(
 
     start_http_interface(runtime, &project_path);
 
+    crate::components::load_from_toml(manifest, false).unwrap();
+
     let manifest = manifest.clone();
     runtime.spawn(async move {
         let mut server_world = World::new_with_config("server", 1, true);

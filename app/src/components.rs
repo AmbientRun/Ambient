@@ -18,17 +18,26 @@ pub(crate) fn init() -> anyhow::Result<()> {
     crate::player::init_all_components();
 
     // Temporary: this information should move to the ECS through attributes
-    load_from_toml(&Manifest::from_str(include_str!("../tilt.toml"))?)?;
+    load_from_toml(&Manifest::from_str(include_str!("../tilt.toml"))?, true)?;
 
     Ok(())
 }
 
-fn load_from_toml(manifest: &Manifest) -> anyhow::Result<()> {
+pub fn load_from_toml(manifest: &Manifest, global_namespace: bool) -> anyhow::Result<()> {
+    let project_path: Vec<_> = if global_namespace {
+        vec![]
+    } else {
+        manifest.project.organization.iter().chain(std::iter::once(&manifest.project.name)).cloned().collect()
+    };
+
     ComponentRegistry::get_mut().add_external_from_iterator(
         manifest
             .components
             .iter()
-            .map(|(id, component)| Ok((id.to_owned(), convert_manifest_type_to_primitive_type(&component.type_)?)))
+            .map(|(id, component)| {
+                let full_path = project_path.iter().map(|s| s.as_str()).chain(id.split("::")).collect::<Vec<_>>();
+                Ok((full_path.join("::"), convert_manifest_type_to_primitive_type(&component.type_)?))
+            })
             .collect::<Result<Vec<_>, _>>()
             .map_err(|e: &str| anyhow::anyhow!("{e}"))?
             .into_iter(),
