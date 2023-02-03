@@ -23,20 +23,18 @@ use crate::shared::{
     install_dirs,
     interface::Host,
     messenger, reload, reload_all, run_all, rustc, script_module, script_module_bytecode,
-    script_module_compiled, script_module_enabled, script_module_errors, scripting_interface_name,
-    scripts_path, unload, update_errors,
+    script_module_compiled, script_module_enabled, script_module_errors, script_module_owned_files,
+    script_module_path, scripting_interface_name, unload, update_errors,
     util::{
-        all_module_names_sanitized, get_module_name, remove_old_script_modules,
-        write_workspace_files,
+        all_module_names_sanitized, get_module_name, remove_old_script_modules, write_module_files,
     },
-    workspace_path, MessageType, ScriptContext, ScriptModuleBytecode, ScriptModuleErrors,
-    ScriptModuleState, WasmContext,
+    MessageType, ScriptContext, ScriptModuleBytecode, ScriptModuleErrors, ScriptModuleState,
+    WasmContext,
 };
 
 pub mod bindings;
 pub(crate) mod implementation;
 
-pub const PARAMETER_CHANGE_DEBOUNCE_SECONDS: u64 = 2;
 pub const MINIMUM_RUST_VERSION: (u32, u32, u32) = (1, 65, 0);
 pub const MAXIMUM_ERROR_COUNT: usize = 10;
 
@@ -58,16 +56,7 @@ pub fn systems<
     add_to_linker_component: Component<
         Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
     >,
-    update_workspace_toml: bool,
 ) -> SystemGroup {
-    // Update the scripts whenever the external components change.
-    let (update_tx, update_rx) = flume::unbounded();
-    ComponentRegistry::get_mut()
-        .on_external_components_change
-        .add(Arc::new(move || {
-            update_tx.send(()).unwrap();
-        }));
-
     let make_wasm_context = move |w: &World| w.resource(make_wasm_context_component).clone();
     let add_to_linker = move |w: &World| w.resource(add_to_linker_component).clone();
 
@@ -90,10 +79,9 @@ pub fn systems<
                     let ids = q.iter(world, qs).map(|(id, _)| id).collect_vec();
                     for id in ids {
                         let name = get_module_name(world, id);
-                        world
-                            .get_mut(id, script_module())
-                            .unwrap()
-                            .populate_files(&name, &scripting_interface_name);
+                        if let Ok(owned_files) = world.get_mut(id, script_module_owned_files()) {
+                            owned_files.populate(&name, &scripting_interface_name);
+                        }
 
                         world
                             .add_component(
@@ -104,39 +92,41 @@ pub fn systems<
                             .unwrap();
                     }
                 }),
-            query((script_module().changed(), script_module_enabled().changed())).to_system({
-                let make_wasm_context = make_wasm_context;
-                let add_to_linker = add_to_linker;
-                move |q, world, qs, _| {
-                    profiling::scope!("script module changed");
-                    // Script module (files/enabled) changed, issue compilation tasks.
-                    let mut tasks = vec![];
-                    let mut to_disable = vec![];
-                    let now = Instant::now();
-                    for (id, (_, enabled)) in q.iter(world, qs) {
-                        if *enabled {
-                            tasks.push((id, now));
-                        } else {
-                            to_disable.push(id);
+            query((script_module().changed(), script_module_enabled().changed()))
+                .optional_changed(script_module_owned_files())
+                .to_system({
+                    let make_wasm_context = make_wasm_context;
+                    let add_to_linker = add_to_linker;
+                    move |q, world, qs, _| {
+                        profiling::scope!("script module changed");
+                        // Script module (files/enabled) changed, issue compilation tasks.
+                        let mut tasks = vec![];
+                        let mut to_disable = vec![];
+                        let now = Instant::now();
+                        for (id, (_, enabled)) in q.iter(world, qs) {
+                            if *enabled {
+                                tasks.push((id, now));
+                            } else {
+                                to_disable.push(id);
+                            }
+                        }
+
+                        world
+                            .resource_mut(deferred_compilation_tasks())
+                            .extend(tasks);
+
+                        for id in to_disable {
+                            reload(
+                                world,
+                                state_component,
+                                make_wasm_context(world),
+                                add_to_linker(world),
+                                &[(id, None)],
+                            );
+                            world.remove_component(id, state_component).unwrap();
                         }
                     }
-
-                    world
-                        .resource_mut(deferred_compilation_tasks())
-                        .extend(tasks);
-
-                    for id in to_disable {
-                        reload(
-                            world,
-                            state_component,
-                            make_wasm_context(world),
-                            add_to_linker(world),
-                            &[(id, None)],
-                        );
-                        world.remove_component(id, state_component).unwrap();
-                    }
-                }
-            }),
+                }),
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("script module compilation deferred execution");
                 // run deferred compilation tasks if they're ready to go
@@ -153,34 +143,25 @@ pub fn systems<
                     ready_ids
                 };
 
-                let workspace_path = world.resource(workspace_path()).clone();
-                let scripts_path = world.resource(scripts_path()).clone();
-
-                if !ready_ids.is_empty() {
-                    // Write all workspace-related state to disk.
-                    let members = all_module_names_sanitized(world, false);
-                    write_workspace_files(&workspace_path, &members, update_workspace_toml);
-                    remove_old_script_modules(&scripts_path, &members);
-                }
-
                 let install_dirs = world.resource(install_dirs()).clone();
                 let tasks = ready_ids
                     .into_iter()
-                    .filter_map(|id| {
-                        let script_module = world.get_ref(id, script_module()).ok()?;
+                    .map(|id| {
+                        let owned_files = world.get_ref(id, script_module_owned_files()).ok();
+                        let script_path = world.get_ref(id, script_module_path())?;
 
-                        Some((
+                        anyhow::Ok((
                             id,
                             Arc::new(compile(
-                                script_module,
                                 install_dirs.clone(),
-                                workspace_path.clone(),
-                                scripts_path.clone(),
+                                script_path.clone(),
                                 get_module_name(world, id),
+                                owned_files,
                             )),
                         ))
                     })
-                    .collect_vec();
+                    .collect::<Result<Vec<_>, _>>()
+                    .unwrap();
                 world.resource_mut(compilation_tasks()).extend(tasks);
             })),
             query((
@@ -335,16 +316,6 @@ pub fn systems<
                 }
                 update_errors(world, state_component, &errors, false);
             })),
-            Box::new(FnSystem::new(move |world, _| {
-                if update_rx.drain().count() == 0 {
-                    return;
-                }
-
-                let scripting_interface_name = world.resource(scripting_interface_name()).clone();
-                for (_, sm, name) in query_mut(script_module(), name()).iter(world, None) {
-                    sm.populate_files(name, &scripting_interface_name);
-                }
-            })),
         ],
     )
 }
@@ -413,10 +384,6 @@ pub async fn initialize<
     //
     // e.g. world/, not world/scripting_interface
     scripting_interface_root_path: PathBuf,
-    // Where the root Cargo.toml for your scripts are
-    workspace_path: PathBuf,
-    // Where the scripts are located
-    scripts_path: PathBuf,
 
     (make_wasm_context_component, make_wasm_context): (
         Component<Arc<dyn Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context + Send + Sync>>,
@@ -434,8 +401,6 @@ pub async fn initialize<
         primary_scripting_interface_name,
         rust_path,
         scripting_interface_root_path.clone(),
-        workspace_path,
-        scripts_path,
     )
     .await?;
 

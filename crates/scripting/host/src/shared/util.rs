@@ -40,32 +40,28 @@ pub fn all_module_names_sanitized(world: &World, include_disabled_modules: bool)
         .collect()
 }
 
-pub fn write_workspace_files(
-    workspace_path: &Path,
-    script_module_sanitized_names: &[String],
-    write_workspace_toml: bool,
-) {
-    let vscode_dir = workspace_path.join(".vscode");
-    let mut workspace_files = vec![
+pub fn write_module_files(path: &Path) {
+    let vscode_dir = path.join(".vscode");
+    let files: Vec<(PathBuf, String)> = vec![
         (
-            workspace_path.join("rust-toolchain.toml"),
+            path.join("rust-toolchain.toml"),
             indoc! {r#"
             [toolchain]
             targets = ["wasm32-wasi"]
             "#}
-            .into(),
+            .to_string(),
         ),
         (
-            workspace_path.join(".cargo").join("config.toml"),
+            path.join(".cargo").join("config.toml"),
             indoc! {r#"
             [build]
             target = "wasm32-wasi"
             "#}
-            .into(),
+            .to_string(),
         ),
         (
             vscode_dir.join("extensions.json"),
-            r#"{"recommendations": ["rust-lang.rust-analyzer"]}"#.into(),
+            r#"{"recommendations": ["rust-lang.rust-analyzer"]}"#.to_string(),
         ),
         (
             vscode_dir.join("settings.json"),
@@ -74,17 +70,11 @@ pub fn write_workspace_files(
                 "rust-analyzer.cargo.target": "wasm32-wasi"
             }
             "#}
-            .into(),
+            .to_string(),
         ),
     ];
-    if write_workspace_toml {
-        workspace_files.push((
-            workspace_path.join("Cargo.toml"),
-            format!("[workspace]\nmembers = {script_module_sanitized_names:?}"),
-        ));
-    }
 
-    for (path, contents) in workspace_files {
+    for (path, contents) in files {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent).unwrap();
         }

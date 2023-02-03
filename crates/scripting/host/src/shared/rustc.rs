@@ -103,9 +103,9 @@ pub fn update_rust(dirs: &InstallDirs) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub fn build_module_in_workspace(
+pub fn build_module(
     dirs: &InstallDirs,
-    workspace_path: &Path,
+    working_directory: &Path,
     package_name: &str,
 ) -> anyhow::Result<Vec<u8>> {
     Ok(std::fs::read(
@@ -122,7 +122,7 @@ pub fn build_module_in_workspace(
                 "--package",
                 package_name,
             ],
-            Some(workspace_path),
+            Some(working_directory),
         ))?
         .into_iter()
         .find(|p| p.extension().unwrap_or_default() == "wasm")

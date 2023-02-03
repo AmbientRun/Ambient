@@ -1,15 +1,17 @@
-use components::core::{
+use palette::{FromColor, Hsl, Srgb};
+use tilt_runtime_scripting_interface::components::core::{
     app::main_scene,
     camera::{
         active_camera, aspect_ratio, aspect_ratio_from_window, fovy, near, perspective_infinite_reverse, projection, projection_view,
     },
     ecs::dont_store,
     primitives::cube,
-    rendering::{color, outline, transparency_group},
+    rendering::{color, outline},
     transform::{inv_local_to_world, local_to_world, lookat_center, lookat_up, rotation, scale, translation},
 };
-use palette::{FromColor, Hsl, Srgb};
 use tilt_runtime_scripting_interface::{player::KeyCode, *};
+
+tilt_project!();
 
 #[main]
 pub async fn main() -> EventResult {
@@ -53,9 +55,7 @@ pub async fn main() -> EventResult {
         for (i, player) in player::get_all().into_iter().enumerate() {
             let player_color = Srgb::from_color(Hsl::from_components((360. * i as f32 / n_players as f32, 1., 0.5)));
             let player_color = vec4(player_color.red, player_color.green, player_color.blue, 1.);
-            // TODO: We're using transparency_group to store the state here, but should be done
-            // with a custom component once that's implemented
-            let cell = entity::get_component(player, transparency_group()).unwrap_or_default();
+            let cell = entity::get_component(player, components::cell()).unwrap_or_default();
             let Some((delta, _)) = player::get_raw_input_delta(player) else { continue; };
 
             let mut x = cell % 3;
@@ -76,7 +76,7 @@ pub async fn main() -> EventResult {
             }
             let cell = y * 3 + x;
             entity::add_component_if_required(cells[cell as usize], outline(), player_color);
-            entity::set_component(player, transparency_group(), cell);
+            entity::set_component(player, components::cell(), cell);
 
             if delta.keys.contains(&KeyCode::Space) {
                 entity::set_component(cells[cell as usize], color(), player_color);

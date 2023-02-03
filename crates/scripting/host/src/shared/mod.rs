@@ -20,7 +20,7 @@ use std::{
 use anyhow::Context;
 use elements_ecs::{
     components, query, uid, uid_lookup, Component, ComponentEntry, EntityData, EntityId, Networked,
-    Store, World, COMPONENT_ENTITY_ID_MIGRATERS,
+    Store, World,
 };
 use elements_network::player::player;
 use host_guest_state::GetBaseHostGuestState;
@@ -29,13 +29,16 @@ use itertools::Itertools;
 use parking_lot::RwLock;
 use rustc::InstallDirs;
 pub use script_module::*;
-use util::{get_module_name, sanitize, write_files_to_directory};
+use util::{get_module_name, write_files_to_directory};
 use wasi_common::WasiCtx;
 use wasmtime::Linker;
 
 components!("scripting::shared", {
     @[Networked, Store]
-    script_module: ScriptModule,
+    script_module: (),
+    @[Networked, Store]
+    script_module_owned_files: ScriptModuleOwnedFiles,
+    @[Store]
     script_module_bytecode: ScriptModuleBytecode,
     @[Networked, Store]
     script_module_enabled: bool,
@@ -43,6 +46,8 @@ components!("scripting::shared", {
     script_module_compiled: (),
     @[Networked, Store]
     script_module_errors: ScriptModuleErrors,
+    @[Store]
+    script_module_path: PathBuf,
 
     // resources
     @[Networked, Store]
@@ -64,12 +69,6 @@ components!("scripting::shared", {
     /// e.g. world/, not world/scripting_interface
     @[Networked, Store]
     scripting_interface_root_path: PathBuf,
-    /// Where the root Cargo.toml for your scripts are
-    @[Networked, Store]
-    workspace_path: PathBuf,
-    /// Where the scripts are located
-    @[Networked, Store]
-    scripts_path: PathBuf,
 });
 
 pub const PARAMETER_CHANGE_DEBOUNCE_SECONDS: u64 = 2;
@@ -120,17 +119,11 @@ pub async fn initialize(
     //
     // e.g. world/, not world/scripting_interface
     scripting_interface_root_path: PathBuf,
-    // Where the root Cargo.toml for your scripts are
-    workspace_path: PathBuf,
-    // Where the scripts are located
-    scripts_path: PathBuf,
 ) -> anyhow::Result<()> {
     assert!(scripting_interfaces.contains_key(primary_scripting_interface_name));
-    assert!(
-        [&rust_path, &scripting_interface_root_path, &workspace_path]
-            .iter()
-            .all(|p| p.is_absolute())
-    );
+    assert!([&rust_path, &scripting_interface_root_path]
+        .iter()
+        .all(|p| p.is_absolute()));
 
     let install_dirs = InstallDirs {
         rustup_path: rust_path.join("rustup"),
@@ -170,8 +163,6 @@ pub async fn initialize(
         self::scripting_interface_root_path(),
         scripting_interface_root_path,
     );
-    world.add_resource(self::workspace_path(), workspace_path);
-    world.add_resource(self::scripts_path(), scripts_path);
 
     Ok(())
 }
@@ -482,7 +473,8 @@ pub fn spawn_script(
     name: &str,
     description: String,
     enabled: bool,
-    files: FileMap,
+    script_path: PathBuf,
+    files: Option<FileMap>,
 ) -> anyhow::Result<EntityId> {
     if query(())
         .incl(script_module())
@@ -492,48 +484,55 @@ pub fn spawn_script(
         anyhow::bail!("a script module by the name {name} already exists");
     }
 
-    let mut sm = ScriptModule::new();
-    sm.insert_multiple(
-        name,
-        &world
-            .resource(scripting_interfaces())
-            .keys()
-            .map(|s| s.as_str())
-            .collect::<Vec<_>>(),
-        world.resource(scripting_interface_name()).as_ref(),
-        &files,
-    )?;
-    Ok(EntityData::new()
+    let mut ed = EntityData::new()
         .set(elements_core::name(), name.to_string())
         .set(uid(), elements_ecs::EntityUid::create())
-        .set(script_module(), sm)
+        .set_default(script_module())
         .set(script_module_enabled(), enabled)
-        .set(elements_project::description(), description)
-        .spawn(world))
+        .set(script_module_path(), script_path)
+        .set_default(script_module_errors())
+        .set(elements_project::description(), description);
+
+    if let Some(files) = files {
+        let mut owned_files = ScriptModuleOwnedFiles::new();
+        owned_files.insert_multiple(
+            name,
+            &world
+                .resource(scripting_interfaces())
+                .keys()
+                .map(|s| s.as_str())
+                .collect::<Vec<_>>(),
+            world.resource(scripting_interface_name()).as_ref(),
+            &files,
+        )?;
+        ed.set_self(script_module_owned_files(), owned_files);
+    }
+
+    Ok(ed.spawn(world))
 }
 
 pub fn compile(
-    sm: &ScriptModule,
     install_dirs: InstallDirs,
-    workspace_path: PathBuf,
-    scripts_path: PathBuf,
+    script_path: PathBuf,
     name: String,
+    files: Option<&ScriptModuleOwnedFiles>,
 ) -> std::thread::JoinHandle<anyhow::Result<Vec<u8>>> {
-    let files = sm.files().clone();
+    let files = files.map(|f| f.files().clone());
 
     std::thread::spawn(move || {
-        // Remove the directory to ensure there aren't any old files left around
-        let script_path = scripts_path.join(sanitize(&name));
-        let _ = std::fs::remove_dir_all(&script_path);
-        write_files_to_directory(
-            &script_path,
-            &files
-                .iter()
-                .map(|(p, f)| (p.clone(), f.contents.clone()))
-                .collect_vec(),
-        )?;
+        if let Some(files) = files {
+            // Remove the directory to ensure there aren't any old files left around
+            let _ = std::fs::remove_dir_all(&script_path);
+            write_files_to_directory(
+                &script_path,
+                &files
+                    .iter()
+                    .map(|(p, f)| (p.clone(), f.contents.clone()))
+                    .collect_vec(),
+            )?;
+        }
 
-        rustc::build_module_in_workspace(&install_dirs, &workspace_path, &name)
+        rustc::build_module(&install_dirs, &script_path, &name)
     })
 }
 
@@ -550,14 +549,4 @@ fn run_and_catch_panics<R>(f: impl FnOnce() -> anyhow::Result<R>) -> Result<R, S
             },
         }),
     }
-}
-
-pub fn register_entity_id_migraters() {
-    COMPONENT_ENTITY_ID_MIGRATERS
-        .lock()
-        .push(|world, entity, old_to_new_ids| {
-            if let Ok(script) = world.get_mut(entity, script_module()) {
-                script.migrate_ids(old_to_new_ids);
-            }
-        })
 }

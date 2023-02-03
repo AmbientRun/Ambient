@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use std::{path::PathBuf, sync::Arc};
 
 use elements_ecs::{components, EntityId, SystemGroup, World};
 use elements_network::server::{ForkingEvent, ShutdownEvent};
@@ -8,7 +8,7 @@ use elements_scripting_host::{
     },
     shared::{
         host_guest_state::BaseHostGuestState, spawn_script, util::get_module_name, BaseWasmContext,
-        File, MessageType, ScriptModuleState, WasmContext,
+        MessageType, ScriptModuleState, WasmContext,
     },
     Linker, WasiCtx,
 };
@@ -67,7 +67,6 @@ pub fn systems() -> SystemGroup {
         script_module_state(),
         make_wasm_context(),
         add_to_linker(),
-        false,
     )
 }
 
@@ -115,8 +114,6 @@ pub async fn initialize(
         SCRIPTING_INTERFACE_NAME,
         rust_path.clone(),
         project_path.join("interfaces"),
-        project_path.clone(),
-        project_path.join("scripts"),
         (
             make_wasm_context(),
             Arc::new(|ctx, state| WasmServerContext::new(ctx, state)),
@@ -128,38 +125,15 @@ pub async fn initialize(
     )
     .await?;
 
-    let scripts_path = project_path.join("scripts");
-    if scripts_path.exists() {
-        for path in std::fs::read_dir(scripts_path)?
-            .filter_map(Result::ok)
-            .map(|de| de.path())
-            .filter(|p| p.is_dir())
-            .filter(|p| p.join("Cargo.toml").exists())
-        {
-            if let Some(file_name) = path.file_name() {
-                let name = file_name.to_string_lossy();
-
-                let files: HashMap<PathBuf, File> = walkdir::WalkDir::new(&path)
-                    .into_iter()
-                    .filter_map(Result::ok)
-                    .filter(|de| de.path().is_file())
-                    .map(|de| {
-                        Ok((
-                            de.path().strip_prefix(&path)?.to_path_buf(),
-                            File::new_at_now(std::fs::read_to_string(de.path())?),
-                        ))
-                    })
-                    .collect::<anyhow::Result<_>>()?;
-
-                spawn_script(
-                    world,
-                    name.as_ref(),
-                    manifest.project.description.clone().unwrap_or_default(),
-                    true,
-                    files,
-                )?;
-            }
-        }
+    if project_path.join("Cargo.toml").exists() {
+        spawn_script(
+            world,
+            &manifest.project.name,
+            manifest.project.description.clone().unwrap_or_default(),
+            true,
+            project_path,
+            None,
+        )?;
     }
 
     Ok(())

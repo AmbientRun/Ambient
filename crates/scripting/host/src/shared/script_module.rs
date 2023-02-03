@@ -28,28 +28,26 @@ use super::{
 
 pub type FileMap = HashMap<PathBuf, File>;
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub struct ScriptModule {
+pub struct ScriptModuleOwnedFiles {
     files: FileMap,
 }
-impl Display for ScriptModule {
+impl Display for ScriptModuleOwnedFiles {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "ScriptModule")
     }
 }
-impl ScriptModule {
+impl ScriptModuleOwnedFiles {
     pub fn new() -> Self {
-        ScriptModule {
+        ScriptModuleOwnedFiles {
             files: HashMap::new(),
         }
     }
-
-    pub fn migrate_ids(&mut self, _old_to_new_ids: &HashMap<EntityId, EntityId>) {}
 
     pub fn files(&self) -> &HashMap<PathBuf, File> {
         &self.files
     }
 
-    pub fn populate_files(&mut self, name: &str, scripting_interface: &str) {
+    pub fn populate(&mut self, name: &str, scripting_interface: &str) {
         for (filename, contents) in Self::STATIC_FILE_TEMPLATES {
             let filename = PathBuf::from(filename);
             let contents = contents
@@ -72,7 +70,7 @@ impl ScriptModule {
         for (relative_path, new_file) in files {
             self.insert(scripting_interfaces, relative_path, new_file)?;
         }
-        self.populate_files(module_name, primary_scripting_interface);
+        self.populate(module_name, primary_scripting_interface);
         Ok(())
     }
 
@@ -112,7 +110,7 @@ impl ScriptModule {
         self.files.remove(&relative_path);
     }
 }
-impl ScriptModule {
+impl ScriptModuleOwnedFiles {
     const STATIC_FILE_TEMPLATES: &[(&'static str, &'static str)] = &[
         (
             "Cargo.toml",

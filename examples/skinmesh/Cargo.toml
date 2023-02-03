@@ -1,5 +1,11 @@
-[workspace]
-members = [
-    "scripts/*",
-    "interfaces/*"
-]
+[package]
+name = "skinmesh"
+edition = "2021"
+version = "0.1.0"
+
+[dependencies]
+tilt_runtime_scripting_interface = { path = "interfaces/tilt_runtime_scripting_interface" }
+
+[lib]
+crate-type = ["cdylib"]
+required-features = []

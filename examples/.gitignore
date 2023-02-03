@@ -1,6 +1,4 @@
 */interfaces
 */.vscode
-*/scripts/*/src/components.rs
-*/scripts/*/src/params.rs
 */Cargo.lock
 */rust-toolchain.toml
