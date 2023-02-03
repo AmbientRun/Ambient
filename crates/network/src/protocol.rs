@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
-use elements_ecs::WorldDiff;
+use elements_ecs::{ComponentRegistry, PrimitiveComponentType, WorldDiff};
 use futures::{io::BufReader, StreamExt};
+use itertools::Itertools;
 use quinn::{NewConnection, RecvStream};
 
 use crate::{next_bincode_bi_stream, open_bincode_bi_stream, IncomingStream, NetworkError, OutgoingStream};
@@ -23,6 +24,7 @@ impl ClientProtocol {
 
         // The server will acknowledge and send the credentials back
         let client_info: ClientInfo = rx.next().await?;
+        ComponentRegistry::get_mut().add_external_from_iterator(client_info.external_components.iter().cloned());
 
         // Great, the server knows who we are.
         // Two streams are opened
@@ -79,8 +81,10 @@ impl ServerProtocol {
 
         log::info!("Received handshake from {user_id:?}");
 
+        let external_components = ComponentRegistry::get().all_external().map(|(desc, pc)| (desc.path(), pc.ty.clone())).collect();
+
         // Respond
-        let client_info = ClientInfo { user_id };
+        let client_info = ClientInfo { user_id, external_components };
         log::info!("Responding with: {client_info:?}");
         tx.send(&client_info).await?;
 
@@ -107,4 +111,5 @@ impl ServerProtocol {
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct ClientInfo {
     pub user_id: String,
+    pub external_components: Vec<(String, PrimitiveComponentType)>,
 }
