@@ -167,8 +167,8 @@ impl ComponentRegistry {
         self.components.get(idx as usize).unwrap().primitive_component.clone()
     }
 
-    pub fn all_external(&self) -> impl Iterator<Item = ComponentDesc> + '_ {
-        self.components.iter().filter(|v| v.primitive_component.is_some()).map(|x| x.desc)
+    pub fn all_external(&self) -> impl Iterator<Item = (ComponentDesc, &PrimitiveComponent)> + '_ {
+        self.components.iter().filter_map(|v| Some((v.desc, v.primitive_component.as_ref()?)))
     }
 
     pub fn all(&self) -> impl Iterator<Item = ComponentDesc> + '_ {
