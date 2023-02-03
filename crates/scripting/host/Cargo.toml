@@ -20,6 +20,7 @@ physxx = { path = "../../../libs/physxx" }
 anyhow.workspace = true
 async-trait.workspace = true
 base64.workspace = true
+cargo_toml.workspace = true
 chrono.workspace = true
 flume.workspace = true
 fs_extra.workspace = true
@@ -36,9 +37,7 @@ serde_bytes.workspace = true
 serde_json.workspace = true
 serde.workspace = true
 slotmap.workspace = true
-
-cargo_toml = "0.14.0"
-toml = "0.5.10"
+toml.workspace = true
 
 wasi-common.workspace = true
 wasmtime-wasi.workspace = true

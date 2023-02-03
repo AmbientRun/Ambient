@@ -32,8 +32,7 @@ tokio = { version = "1.20", features = ["full"] }
 bytemuck = { version = "1.10", features = ["derive"] }
 glam = { version = "0.22", features = ["bytemuck", "serde", "rand"] }
 nalgebra = { version = "0.29.0", features = ["convert-glam017"] }
-# TODO(fred): gltf hasn't bumped their version with the latest image dependency (0.24), so using git version for now
-gltf = { git = "https://github.com/gltf-rs/gltf.git", rev = "55480254efb4b1f55c87187210149b80e3c29f16" }
+gltf = "1.1.0"
 ordered-float = { version = "2.10.0", features = ["serde"] }
 derive_more = "0.99.11"
 image = "0.24.5"
@@ -79,7 +78,11 @@ yaml-rust = { version = "0.5", package = "yaml-rust-davvid" }
 tokio-util = { version = "0.7.0", features = ["codec"] }
 maplit = "1.0.2"
 directories = "3.0"
-rust-s3 = "0.28.1"
+rust-s3 = { version = "0.28.1", default-features = false, features = [
+    "tags",
+    "tokio-rustls-tls",
+    "fail-on-err",
+] }
 chrono = { version = "0.4", features = ["serde"] }
 argon2 = "0.3.1"
 manual_future = "0.1.1"
@@ -161,10 +164,12 @@ walkdir = "2"
 relative-path = { version = "1.7", features = ["serde"] }
 pin-project = "1.0"
 abort-on-drop = "0.2"
-toml = "0.5.10"
+toml = "0.7.1"
+futures-signals = "0.3"
 percent-encoding = "2.2.0"
-indoc = "1.0"
+indoc = "2.0"
 local-ip-address = "0.5.1"
+cargo_toml = "0.15.0"
 
 # Patch cap-std until wasmtime/wit-bindgen can be updated
 [patch.crates-io]

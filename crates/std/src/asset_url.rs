@@ -168,7 +168,7 @@ impl AbsAssetUrl {
     }
     pub async fn download_toml<T: DeserializeOwned>(&self, assets: &AssetCache) -> anyhow::Result<T> {
         let content = self.download_bytes(assets).await?;
-        Ok(toml::from_slice(&content)?)
+        Ok(toml::from_str(&std::str::from_utf8(&content)?)?)
     }
 }
 impl From<PathBuf> for AbsAssetUrl {
