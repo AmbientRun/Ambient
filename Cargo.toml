@@ -1,6 +1,10 @@
 [workspace]
 default-members = ["app"]
-exclude = ["crates/scripting", "app/crates/scripting/guest/rust"]
+exclude = [
+    "crates/scripting",
+    "app/crates/scripting/guest/rust",
+    "examples/"
+]
 members = [
   "crates/*",
   "crates/scripting/host_build",
