@@ -1,6 +1,5 @@
 use std::{collections::HashMap, path::PathBuf, sync::Arc, time::Instant};
 
-use anyhow::Context;
 use elements_ecs::{
     components, query, uid, Component, ComponentEntry, EntityData, EntityId, FnSystem, SystemGroup,
     World,
@@ -18,11 +17,10 @@ use wasmtime::Linker;
 
 use crate::shared::{
     compile, host_guest_state::GetBaseHostGuestState, install_dirs, interface::Host, messenger,
-    reload, reload_all, run_all, rustc, script_module, script_module_bytecode,
-    script_module_compiled, script_module_enabled, script_module_errors, script_module_owned_files,
-    script_module_path, scripting_interface_name, unload, update_errors, util::get_module_name,
-    MessageType, ScriptContext, ScriptModuleBytecode, ScriptModuleErrors, ScriptModuleState,
-    WasmContext,
+    reload, reload_all, run_all, script_module, script_module_bytecode, script_module_compiled,
+    script_module_enabled, script_module_errors, script_module_owned_files, script_module_path,
+    scripting_interface_name, unload, update_errors, util::get_module_name, MessageType,
+    ScriptContext, ScriptModuleBytecode, ScriptModuleErrors, ScriptModuleState, WasmContext,
 };
 
 pub mod bindings;
@@ -34,7 +32,6 @@ pub const MAXIMUM_ERROR_COUNT: usize = 10;
 components!("scripting::server", {
     deferred_compilation_tasks: HashMap<EntityId, Instant>,
     compilation_tasks: HashMap<EntityId, Arc<std::thread::JoinHandle<anyhow::Result<Vec<u8>>>>>,
-    docs_path: PathBuf,
 });
 
 pub fn systems<
@@ -397,16 +394,8 @@ pub async fn initialize<
     )
     .await?;
 
-    let install_dirs = world.resource(super::shared::install_dirs()).clone();
-
     world.add_resource(deferred_compilation_tasks(), HashMap::new());
     world.add_resource(compilation_tasks(), HashMap::new());
-    let interface = scripting_interface_root_path.join(primary_scripting_interface_name);
-    log::info!("Documenting scripting interface {interface:?}");
-    let new_docs_path = rustc::document_module(&install_dirs, &interface)
-        .context("failed to document scripting interface")?;
-    log::info!("Documented scripting interface: {new_docs_path:?}");
-    world.add_resource(docs_path(), new_docs_path);
     world.add_resource(make_wasm_context_component, make_wasm_context);
     world.add_resource(add_to_linker_component, add_to_linker);
 
