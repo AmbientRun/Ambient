@@ -1,10 +1,9 @@
 use std::{collections::HashMap, path::PathBuf, sync::Arc, time::Instant};
 
 use anyhow::Context;
-use elements_core::name;
 use elements_ecs::{
-    components, query, query_mut, uid, Component, ComponentEntry, ComponentRegistry, EntityData,
-    EntityId, FnSystem, SystemGroup, World,
+    components, query, uid, Component, ComponentEntry, EntityData, EntityId, FnSystem, SystemGroup,
+    World,
 };
 use elements_network::{
     player::player,
@@ -18,16 +17,10 @@ use wasi_common::WasiCtx;
 use wasmtime::Linker;
 
 use crate::shared::{
-    compile,
-    host_guest_state::GetBaseHostGuestState,
-    install_dirs,
-    interface::Host,
-    messenger, reload, reload_all, run_all, rustc, script_module, script_module_bytecode,
+    compile, host_guest_state::GetBaseHostGuestState, install_dirs, interface::Host, messenger,
+    reload, reload_all, run_all, rustc, script_module, script_module_bytecode,
     script_module_compiled, script_module_enabled, script_module_errors, script_module_owned_files,
-    script_module_path, scripting_interface_name, unload, update_errors,
-    util::{
-        all_module_names_sanitized, get_module_name, remove_old_script_modules, write_module_files,
-    },
+    script_module_path, scripting_interface_name, unload, update_errors, util::get_module_name,
     MessageType, ScriptContext, ScriptModuleBytecode, ScriptModuleErrors, ScriptModuleState,
     WasmContext,
 };

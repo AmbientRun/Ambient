@@ -12,7 +12,7 @@ pub mod rustc;
 
 mod script_module;
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashMap,
     path::{Path, PathBuf},
     sync::Arc,
 };

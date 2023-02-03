@@ -7,7 +7,7 @@ use elements_core::{camera::active_camera, main_scene, on_frame, runtime};
 use elements_ecs::{query, query_mut, EntityData, SystemGroup, World};
 use elements_element::{element_component, Element, Hooks};
 use elements_input::{
-    on_app_focus_change, on_app_keyboard_input, on_app_mouse_input, on_app_mouse_motion, on_app_mouse_wheel, ElementState, MouseButton, MouseScrollDelta
+    on_app_focus_change, on_app_keyboard_input, on_app_mouse_input, on_app_mouse_motion, on_app_mouse_wheel, ElementState, MouseScrollDelta
 };
 use elements_network::{
     client::game_client, get_player_by_user_id, player::{local_user_id, player, user_id}, DatagramHandlers

@@ -1,8 +1,5 @@
-use std::collections::HashMap;
-
 use elements_ecs::{ComponentRegistry, PrimitiveComponentType};
 use elements_project::{ComponentType, Manifest};
-use serde::Deserialize;
 
 pub(crate) fn init() -> anyhow::Result<()> {
     elements_app::init_all_components();
@@ -18,7 +15,7 @@ pub(crate) fn init() -> anyhow::Result<()> {
     crate::player::init_all_components();
 
     // Temporary: this information should move to the ECS through attributes
-    load_from_toml(&Manifest::from_str(include_str!("../tilt.toml"))?, true)?;
+    load_from_toml(&Manifest::parse(include_str!("../tilt.toml"))?, true)?;
 
     Ok(())
 }

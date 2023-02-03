@@ -15,7 +15,7 @@ pub struct Manifest {
     pub components: HashMap<String, Component>,
 }
 impl Manifest {
-    pub fn from_str(manifest: &str) -> Result<Self, toml::de::Error> {
+    pub fn parse(manifest: &str) -> Result<Self, toml::de::Error> {
         toml::from_str(manifest)
     }
 }

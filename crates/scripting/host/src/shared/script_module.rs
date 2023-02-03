@@ -8,7 +8,7 @@ use std::{
 
 use anyhow::Context;
 use async_trait::async_trait;
-use elements_ecs::{EntityId, World};
+use elements_ecs::World;
 use indoc::indoc;
 use parking_lot::{Mutex, RwLock};
 use serde::{Deserialize, Serialize};

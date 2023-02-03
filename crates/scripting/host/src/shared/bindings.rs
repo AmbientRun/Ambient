@@ -1,12 +1,9 @@
-use std::any::TypeId;
-
 use elements_ecs::{
     paste::paste, with_component_registry, Component, ComponentDesc, ComponentEntry, EntityData,
     EntityId, EntityUid, World,
 };
 use elements_std::asset_url::ObjectRef;
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
-use once_cell::sync::Lazy;
 
 use super::{
     conversion::{FromBindgen, IntoBindgen},

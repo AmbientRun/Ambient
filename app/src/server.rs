@@ -6,8 +6,8 @@ use anyhow::Context;
 use axum::{
     http::{Method, StatusCode}, response::IntoResponse, routing::{get, get_service}, Router
 };
-use elements_core::{app_start_time, asset_cache, dtime, no_sync, remove_at_time, time};
-use elements_ecs::{components, ComponentDesc, EntityData, Networked, Serializable, SystemGroup, World, WorldStreamCompEvent};
+use elements_core::{app_start_time, asset_cache, dtime, no_sync, time};
+use elements_ecs::{ComponentDesc, EntityData, Networked, SystemGroup, World, WorldStreamCompEvent};
 use elements_network::{
     bi_stream_handlers, client::GameRpcArgs, datagram_handlers, server::{ForkingEvent, GameServer, ShutdownEvent}
 };
@@ -125,7 +125,7 @@ pub(crate) fn start_server(
     let public_host =
         cli.public_host.or_else(|| local_ip_address::local_ip().ok().map(|x| x.to_string())).unwrap_or("localhost".to_string());
     eprintln!("Using public host: {public_host}");
-    ServerBaseUrlKey.insert(&assets, AbsAssetUrl::parse(format!("http://{}:{HTTP_INTERFACE_PORT}/assets/", public_host)).unwrap());
+    ServerBaseUrlKey.insert(&assets, AbsAssetUrl::parse(format!("http://{public_host}:{HTTP_INTERFACE_PORT}/assets/")).unwrap());
 
     start_http_interface(runtime, &project_path);
 

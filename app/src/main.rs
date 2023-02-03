@@ -183,7 +183,7 @@ fn main() -> anyhow::Result<()> {
     let manifest = if !cli.command.should_join() {
         let contents =
             std::fs::read_to_string(project_path.join("tilt.toml")).context("No project manifest was found. Please create one.")?;
-        Some(elements_project::Manifest::from_str(&contents)?)
+        Some(elements_project::Manifest::parse(&contents)?)
     } else {
         None
     };
