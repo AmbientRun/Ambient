@@ -413,8 +413,6 @@ pub async fn initialize<
     //
     // e.g. world/, not world/scripting_interface
     scripting_interface_root_path: PathBuf,
-    // Where the scripting templates should be stored
-    templates_path: PathBuf,
     // Where the root Cargo.toml for your scripts are
     workspace_path: PathBuf,
     // Where the scripts are located
@@ -436,7 +434,6 @@ pub async fn initialize<
         primary_scripting_interface_name,
         rust_path,
         scripting_interface_root_path.clone(),
-        templates_path,
         workspace_path,
         scripts_path,
     )

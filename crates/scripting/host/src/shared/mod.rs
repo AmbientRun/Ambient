@@ -64,9 +64,6 @@ components!("scripting::shared", {
     /// e.g. world/, not world/scripting_interface
     @[Networked, Store]
     scripting_interface_root_path: PathBuf,
-    /// Where the scripting templates should be stored
-    @[Networked, Store]
-    templates_path: PathBuf,
     /// Where the root Cargo.toml for your scripts are
     @[Networked, Store]
     workspace_path: PathBuf,
@@ -123,22 +120,17 @@ pub async fn initialize(
     //
     // e.g. world/, not world/scripting_interface
     scripting_interface_root_path: PathBuf,
-    // Where the scripting templates should be stored
-    templates_path: PathBuf,
     // Where the root Cargo.toml for your scripts are
     workspace_path: PathBuf,
     // Where the scripts are located
     scripts_path: PathBuf,
 ) -> anyhow::Result<()> {
     assert!(scripting_interfaces.contains_key(primary_scripting_interface_name));
-    assert!([
-        &rust_path,
-        &scripting_interface_root_path,
-        &templates_path,
-        &workspace_path
-    ]
-    .iter()
-    .all(|p| p.is_absolute()));
+    assert!(
+        [&rust_path, &scripting_interface_root_path, &workspace_path]
+            .iter()
+            .all(|p| p.is_absolute())
+    );
 
     let install_dirs = InstallDirs {
         rustup_path: rust_path.join("rustup"),
@@ -170,42 +162,6 @@ pub async fn initialize(
         primary_scripting_interface_name.to_owned(),
     );
 
-    // To speed up compilation of new maps with this version, we precompile a dummy script using the
-    // scripting interface. Its resulting target folder will then be copied into this project's
-    // scripts folder when there is not already a target folder available.
-    if !templates_path.exists() {
-        log::info!("no precompiled template available, building");
-        build_template(
-            &install_dirs,
-            &templates_path,
-            &scripting_interfaces,
-            primary_scripting_interface_name,
-        )
-        .context("failed to build script template")?;
-        log::info!("finished building precompiled template");
-    }
-
-    let target_dir = workspace_path.join("target");
-    if !target_dir
-        .join("wasm32-wasi")
-        .join("release")
-        .join("dummy.wasm")
-        .exists()
-    {
-        log::info!("world does not have compiled scripts, copying precompiled template");
-        std::fs::create_dir_all(&target_dir)
-            .context("failed to create target directory for world")?;
-        fs_extra::dir::copy(
-            templates_path.join("scripts").join("target"),
-            &workspace_path,
-            &fs_extra::dir::CopyOptions {
-                overwrite: true,
-                ..Default::default()
-            },
-        )
-        .context("failed to copy scripts to target")?;
-    }
-
     world.add_resource(self::messenger(), messenger);
     world.add_resource(self::scripting_interfaces(), scripting_interfaces);
     world.add_resource(self::rust_path(), rust_path);
@@ -214,7 +170,6 @@ pub async fn initialize(
         self::scripting_interface_root_path(),
         scripting_interface_root_path,
     );
-    world.add_resource(self::templates_path(), templates_path);
     world.add_resource(self::workspace_path(), workspace_path);
     world.add_resource(self::scripts_path(), scripts_path);
 
@@ -580,40 +535,6 @@ pub fn compile(
 
         rustc::build_module_in_workspace(&install_dirs, &workspace_path, &name)
     })
-}
-
-fn build_template(
-    install_dirs: &InstallDirs,
-    template_path: &Path,
-    scripting_interfaces: &HashMap<String, Vec<(PathBuf, String)>>,
-    primary_scripting_interface_name: &str,
-) -> Result<(), anyhow::Error> {
-    let _ = std::fs::remove_dir_all(template_path);
-    std::fs::create_dir_all(template_path)?;
-
-    write_scripting_interfaces(scripting_interfaces, &template_path.join("interfaces"))
-        .context("failed to write scripting interface for template")?;
-
-    let dummy_name = "dummy";
-
-    let scripts_path = template_path.join("scripts");
-    util::write_workspace_files(&scripts_path, &[dummy_name.to_string()], true);
-
-    let mut dummy_module = ScriptModule::new();
-    dummy_module.populate_files(dummy_name, primary_scripting_interface_name);
-    let _dummy_bytecode = compile(
-        &dummy_module,
-        install_dirs.clone(),
-        scripts_path.to_owned(),
-        scripts_path.clone(),
-        dummy_name.to_owned(),
-    )
-    .join()
-    .unwrap()
-    .context("failed to build dummy module")?;
-    let _ = std::fs::remove_dir_all(scripts_path.join(dummy_name));
-
-    Ok(())
 }
 
 fn run_and_catch_panics<R>(f: impl FnOnce() -> anyhow::Result<R>) -> Result<R, String> {

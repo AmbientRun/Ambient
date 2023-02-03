@@ -115,7 +115,6 @@ pub async fn initialize(
         SCRIPTING_INTERFACE_NAME,
         rust_path.clone(),
         project_path.join("interfaces"),
-        rust_path.join("templates"),
         project_path.clone(),
         project_path.join("scripts"),
         (
