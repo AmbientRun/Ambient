@@ -28,7 +28,6 @@ pub fn with_component_registry<R>(f: impl FnOnce(&ComponentRegistry) -> R + Sync
 
 pub(crate) struct RegistryComponent {
     pub(crate) desc: ComponentDesc,
-    pub(crate) primitive_component_type: Option<PrimitiveComponentType>,
     pub(crate) primitive_component: Option<PrimitiveComponent>,
 }
 
@@ -92,7 +91,7 @@ impl ComponentRegistry {
 
                 let desc = ComponentDesc::new(index, vtable);
 
-                self.components.push(RegistryComponent { desc, primitive_component_type: None, primitive_component: None });
+                self.components.push(RegistryComponent { desc, primitive_component: None });
 
                 index
             }
@@ -136,7 +135,6 @@ impl ComponentRegistry {
         let entry = &mut self.components[index as usize];
 
         let prim = PrimitiveComponent { ty: ty.clone(), desc: entry.desc };
-        entry.primitive_component_type = Some(ty);
         entry.primitive_component = Some(prim.clone());
 
         // TODO: externally defined attributes
@@ -170,7 +168,7 @@ impl ComponentRegistry {
     }
 
     pub fn all_external(&self) -> impl Iterator<Item = ComponentDesc> + '_ {
-        self.components.iter().filter(|v| v.primitive_component_type.is_some()).map(|x| x.desc)
+        self.components.iter().filter(|v| v.primitive_component.is_some()).map(|x| x.desc)
     }
 
     pub fn all(&self) -> impl Iterator<Item = ComponentDesc> + '_ {
