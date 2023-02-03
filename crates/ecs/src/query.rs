@@ -619,6 +619,7 @@ pub fn query_mut<'a, RW: ComponentQuery<'a> + Clone + 'static, R: ComponentQuery
     TypedReadWriteQuery::new(read_write_components, read_components)
 }
 
+#[derive(Clone)]
 pub struct TypedReadQuery<R> {
     read_components: R,
     pub query: Query,

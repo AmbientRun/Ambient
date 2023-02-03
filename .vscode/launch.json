@@ -19,7 +19,7 @@
                 "DIMS_DISABLE_TIMEOUT": "true"
             },
             "args": [
-                "--project-path=examples/skinmesh",
+                "--project-path=examples/physics",
                 "run"
             ],
             "cwd": "${workspaceFolder}",

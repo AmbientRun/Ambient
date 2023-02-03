@@ -143,6 +143,26 @@ name = "Synced Resources"
 description = "No description provided"
 type = "Empty"
 
+["core::physics::plane_collider"]
+name = "Plane collider"
+description = ""
+type = "Empty"
+
+["core::physics::box_collider"]
+name = "Box collider"
+description = ""
+type = "Vec3"
+
+["core::physics::sphere_collider"]
+name = "Sphere collider"
+description = ""
+type = "F32"
+
+["core::physics::dynamic"]
+name = "Dynamic = true, static = false"
+description = ""
+type = "Bool"
+
 ["core::physics::character_controller_height"]
 name = "Character Controller Height"
 description = "No description provided"

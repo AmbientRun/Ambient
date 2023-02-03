@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use elements_core::transform::{rotation, translation};
-use elements_ecs::{components, query, Networked, Store, SystemGroup};
+use elements_ecs::{components, query, Debuggable, Networked, Store, SystemGroup};
 use elements_std::asset_cache::SyncAssetKey;
 use glam::{Quat, Vec3};
 use physxx::{articulation_reduced_coordinate::*, *};
@@ -19,7 +19,7 @@ components!("physics", {
     articulation_link: PxArticulationLinkRef,
     articulation_cache: Option<PxArticulationCacheRef>,
     character_controller: PxControllerRef,
-    @[Networked, Store]
+    @[Debuggable, Networked, Store]
     physics_controlled: (),
 });
 

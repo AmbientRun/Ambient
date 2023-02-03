@@ -191,6 +191,7 @@ pub fn physics_server_systems() -> SystemGroup {
                     controller.release();
                 }
             }),
+            Box::new(collider::server_systems()),
         ],
     )
 }
