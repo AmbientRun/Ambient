@@ -20,6 +20,7 @@ tilt_runtime_core = { path = "../../core" }
 wit-bindgen-host-wasmtime-rust = { git = "https://github.com/bytecodealliance/wit-bindgen.git", rev = "181093b58f49b194ee34be2d986d737f4f553d3d" }
 
 anyhow.workspace = true
+cargo_toml.workspace = true
 glam.workspace = true
 log.workspace = true
 parking_lot.workspace = true

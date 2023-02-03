@@ -5613,6 +5613,7 @@ name = "tilt_runtime_scripting_host"
 version = "0.0.1"
 dependencies = [
  "anyhow",
+ "cargo_toml",
  "elements_ecs",
  "elements_input",
  "elements_network",
