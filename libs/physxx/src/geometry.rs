@@ -28,6 +28,19 @@ pub trait PxGeometry {
 }
 
 #[derive(Clone)]
+pub struct PxPlaneGeometry(physx_sys::PxPlaneGeometry);
+impl PxPlaneGeometry {
+    pub fn new() -> Self {
+        Self(unsafe { physx_sys::PxPlaneGeometry_new() })
+    }
+}
+impl PxGeometry for PxPlaneGeometry {
+    fn as_geometry_ptr(&self) -> *const physx_sys::PxGeometry {
+        &self.0 as *const physx_sys::PxPlaneGeometry as *const physx_sys::PxGeometry
+    }
+}
+
+#[derive(Clone)]
 pub struct PxSphereGeometry(physx_sys::PxSphereGeometry);
 impl PxSphereGeometry {
     pub fn new(radius: f32) -> Self {

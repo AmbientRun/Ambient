@@ -31,13 +31,17 @@ version = "0.0.1"
 "core::network::is_remote_entity" = { name = "Is Remote Entity", description = "No description provided", type = "Empty" }
 "core::network::persistent_resources" = { name = "Persistent Resources", description = "No description provided", type = "Empty" }
 "core::network::synced_resources" = { name = "Synced Resources", description = "No description provided", type = "Empty" }
+"core::physics::box_collider" = { name = "Box collider", description = "", type = "Vec3" }
 "core::physics::character_controller_height" = { name = "Character Controller Height", description = "No description provided", type = "F32" }
 "core::physics::character_controller_radius" = { name = "Character Controller Radius", description = "No description provided", type = "F32" }
 "core::physics::collider_loads" = { name = "Collider Loads", description = "No description provided", type = { type = "Vec", element_type = "EntityId" } }
 "core::physics::density" = { name = "Density", description = "No description provided", type = "F32" }
+"core::physics::dynamic" = { name = "Dynamic", description = "Dynamic = true, static = false", type = "Bool" }
 "core::physics::make_physics_static" = { name = "Make Physics Static", description = "No description provided", type = "Bool" }
 "core::physics::mass" = { name = "Mass", description = "No description provided", type = "F32" }
 "core::physics::physics_controlled" = { name = "Physics Controlled", description = "No description provided", type = "Empty" }
+"core::physics::plane_collider" = { name = "Plane collider", description = "", type = "Empty" }
+"core::physics::sphere_collider" = { name = "Sphere collider", description = "", type = "F32" }
 "core::physics::unit_mass" = { name = "Unit Mass", description = "No description provided", type = "F32" }
 "core::physics::unit_velocity" = { name = "Unit Velocity", description = "No description provided", type = "Vec3" }
 "core::physics::unit_yaw" = { name = "Unit Yaw", description = "No description provided", type = "F32" }

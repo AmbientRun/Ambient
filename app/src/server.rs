@@ -25,12 +25,16 @@ fn server_systems() -> SystemGroup {
     SystemGroup::new(
         "server",
         vec![
+            elements_physics::fetch_simulation_system(),
+            Box::new(elements_physics::physx::sync_ecs_physics()),
             Box::new(elements_core::async_ecs::async_ecs_systems()),
             Box::new(elements_core::transform::TransformSystem::new()),
             elements_core::remove_at_time_system(),
+            Box::new(elements_physics::physics_server_systems()),
             Box::new(player::server_systems()),
             Box::new(scripting::server::systems()),
             Box::new(player::server_systems_final()),
+            elements_physics::run_simulation_system(),
         ],
     )
 }
@@ -59,7 +63,9 @@ pub fn create_rpc_registry() -> RpcRegistry<GameRpcArgs> {
 }
 
 fn create_server_resources(assets: AssetCache) -> EntityData {
-    let mut server_resources = EntityData::new().set(asset_cache(), assets).set(no_sync(), ());
+    let mut server_resources = EntityData::new().set(asset_cache(), assets.clone()).set(no_sync(), ());
+
+    elements_physics::create_server_resources(&assets, &mut server_resources);
 
     server_resources.append_self(elements_core::async_ecs::async_ecs_resources());
     server_resources.set_self(elements_core::runtime(), tokio::runtime::Handle::current());

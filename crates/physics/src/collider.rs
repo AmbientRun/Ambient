@@ -1,21 +1,23 @@
-use std::{collections::HashMap, fmt::Debug, ops::Deref, sync::Arc};
+use std::{collections::HashMap, f32::consts::PI, fmt::Debug, ops::Deref, sync::Arc};
 
 use anyhow::Context;
 use async_trait::async_trait;
 use elements_core::{
     asset_cache, async_ecs::async_run, runtime, transform::{rotation, scale, translation}
 };
-use elements_ecs::{components, query, EntityData, EntityId, Networked, Store, SystemGroup, World};
+use elements_ecs::{
+    components, query, Component, ComponentQuery, ComponentValueBase, Debuggable, EntityData, EntityId, Networked, QueryEvent, QueryState, Store, SystemGroup, TypedReadQuery, World
+};
 use elements_editor_derive::ElementEditor;
 use elements_model::model_def;
 use elements_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, ColliderAssetType, TypedAssetUrl}, download_asset::{AssetError, JsonFromUrl}, events::EventDispatcher
 };
 use futures::future::try_join_all;
-use glam::{vec3, Mat4, Vec3};
+use glam::{vec3, Mat4, Quat, Vec3};
 use itertools::Itertools;
 use physxx::{
-    AsPxActor, AsPxRigidActor, PxActor, PxActorFlag, PxBase, PxBoxGeometry, PxControllerDesc, PxControllerShapeDesc, PxConvexMeshGeometry, PxGeometry, PxMaterial, PxMeshScale, PxRigidActor, PxRigidBody, PxRigidBodyFlag, PxRigidDynamicRef, PxRigidStaticRef, PxShape, PxShapeFlag, PxSphereGeometry, PxTransform, PxTriangleMeshGeometry, PxUserData
+    AsPxActor, AsPxRigidActor, PxActor, PxActorFlag, PxBase, PxBoxGeometry, PxControllerDesc, PxControllerShapeDesc, PxConvexMeshGeometry, PxGeometry, PxMaterial, PxMeshScale, PxPlaneGeometry, PxRigidActor, PxRigidBody, PxRigidBodyFlag, PxRigidDynamicRef, PxRigidStaticRef, PxShape, PxShapeFlag, PxSphereGeometry, PxTransform, PxTriangleMeshGeometry, PxUserData
 };
 use serde::{Deserialize, Serialize};
 
@@ -24,20 +26,36 @@ use crate::{
 };
 
 components!("physics", {
-    @[Networked, Store]
+
+    /// x,y,z is the normal, w is the distance
+    @[Debuggable, Networked, Store]
+    plane_collider: (),
+
+    /// x,y,z is the size
+    @[Debuggable, Networked, Store]
+    box_collider: Vec3,
+
+    /// The value defines the radius
+    @[Debuggable, Networked, Store]
+    sphere_collider: f32,
+
+    @[Debuggable, Networked, Store]
+    dynamic: bool,
+
+    @[Debuggable, Networked, Store]
     collider: ColliderDef,
-    @[Networked, Store]
+    @[Debuggable, Networked, Store]
     density: f32,
-    @[Networked, Store]
+    @[Debuggable, Networked, Store]
     collider_type: ColliderType,
     collider_shapes: Vec<PxShape>,
     collider_shapes_convex: Vec<PxShape>,
     on_collider_loaded: EventDispatcher<dyn Fn(&mut World, EntityId) + Sync + Send>,
-    @[Networked, Store]
+    @[Debuggable, Networked, Store]
     mass: f32,
-    @[Networked, Store]
+    @[Debuggable, Networked, Store]
     character_controller_height: f32,
-    @[Networked, Store]
+    @[Debuggable, Networked, Store]
     character_controller_radius: f32,
 });
 
@@ -67,18 +85,47 @@ impl Default for ColliderType {
     }
 }
 
+fn changed_or_missing<'a, T: ComponentValueBase, R: ComponentQuery<'a> + Clone + 'static>(
+    q: &TypedReadQuery<R>,
+    world: &'a World,
+    qs: Option<&'a mut QueryState>,
+    missing_component: Component<T>,
+) -> Vec<(EntityId, <R as ComponentQuery<'a>>::DataCloned)> {
+    let updated = q.collect_cloned(world, qs);
+    let mut missing_q = q.clone();
+    missing_q.query.event = QueryEvent::Frame;
+    let missing = missing_q.excl(missing_component).iter_cloned(world, None).collect_vec();
+
+    updated.into_iter().chain(missing.into_iter()).sorted_by_key(|x| x.0).dedup_by(|x, y| x.0 == y.0).collect_vec()
+}
+
 pub fn server_systems() -> SystemGroup {
     SystemGroup::new(
         "physics/collider/server",
         vec![
+            query(plane_collider().changed()).to_system(|q, world, qs, _| {
+                for (id, _) in changed_or_missing(q, world, qs, collider()) {
+                    world.add_component(id, collider(), ColliderDef::Plane).unwrap();
+                }
+            }),
+            query(sphere_collider().changed()).to_system(|q, world, qs, _| {
+                for (id, radius) in changed_or_missing(q, world, qs, collider()) {
+                    world.add_component(id, collider(), ColliderDef::Sphere { radius, center: Vec3::ZERO }).unwrap();
+                }
+            }),
+            query(box_collider().changed()).to_system(|q, world, qs, _| {
+                for (id, size) in changed_or_missing(q, world, qs, collider()) {
+                    world.add_component(id, collider(), ColliderDef::Box { size, center: Vec3::ZERO }).unwrap();
+                }
+            }),
+            query(dynamic()).spawned().to_system(|q, world, qs, _| {
+                for (id, dynamic) in changed_or_missing(q, world, qs, collider_type()) {
+                    world.add_component(id, collider_type(), if dynamic { ColliderType::Dynamic } else { ColliderType::Static }).unwrap();
+                }
+            }),
             query((character_controller_height().changed(), character_controller_radius().changed(), translation())).to_system(
                 |q, world, qs, _| {
-                    let updated = q.collect_cloned(world, qs);
-                    let missing = query((character_controller_height(), character_controller_radius(), translation()))
-                        .excl(character_controller())
-                        .collect_cloned(world, None);
-                    let all =
-                        updated.into_iter().chain(missing.into_iter()).sorted_by_key(|x| x.0).dedup_by(|x, y| x.0 == y.0).collect_vec();
+                    let all = changed_or_missing(q, world, qs, character_controller());
 
                     for (id, (height, radius, pos)) in all {
                         if let Ok(old) = world.get(id, character_controller()) {
@@ -109,9 +156,7 @@ pub fn server_systems() -> SystemGroup {
                 },
             ),
             query((collider().changed(),)).optional_changed(model_def()).optional_changed(density()).to_system(|q, world, qs, _| {
-                let updated = q.collect_cloned(world, qs);
-                let missing = query((collider(),)).excl(collider_shapes()).collect_cloned(world, None);
-                let all = updated.into_iter().chain(missing.into_iter()).sorted_by_key(|x| x.0).dedup_by(|x, y| x.0 == y.0).collect_vec();
+                let all = changed_or_missing(q, world, qs, collider_shapes());
 
                 let mut by_collider = HashMap::new();
                 for (id, (collider_def,)) in all {
@@ -249,6 +294,7 @@ pub enum ColliderDef {
         #[serde(default = "vec3_zero_value")]
         center: Vec3,
     },
+    Plane,
 }
 
 type ColliderSpawner = Box<dyn Fn(&Physics, Vec3) -> (Vec<PxShape>, Vec<PxShape>) + Sync + Send>;
@@ -291,6 +337,13 @@ impl ColliderDef {
                     density,
                     base_pose: Mat4::from_scale_rotation_translation(Vec3::splat(radius), Default::default(), center * scale),
                 });
+                (vec![shape.clone()], vec![shape])
+            })),
+            ColliderDef::Plane => Ok(Box::new(move |physics, _scale| {
+                let geometry = PxPlaneGeometry::new();
+                let shape = PxShape::new(physics.physics, &geometry, &[&material], Some(true), None);
+                shape.set_local_pose(&PxTransform::from_rotation(Quat::from_rotation_y(-PI / 2.)));
+                shape.set_user_data(PxShapeUserData { entity: EntityId::null(), density, base_pose: Mat4::from_rotation_y(-PI / 2.) });
                 (vec![shape.clone()], vec![shape])
             })),
             ColliderDef::Asset { collider } => {

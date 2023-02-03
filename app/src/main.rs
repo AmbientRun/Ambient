@@ -181,7 +181,8 @@ fn main() -> anyhow::Result<()> {
         if project_path.is_absolute() { project_path } else { elements_std::path::normalize(&current_dir.join(project_path)) };
 
     let manifest = if !cli.command.should_join() {
-        let contents = std::fs::read_to_string(project_path.join("tilt.toml"))?;
+        let contents =
+            std::fs::read_to_string(project_path.join("tilt.toml")).context("No project manifest was found. Please create one.")?;
         Some(elements_project::Manifest::from_str(&contents)?)
     } else {
         None
