@@ -32,6 +32,7 @@ profiling.workspace = true
 ordered-float.workspace = true
 once_cell.workspace = true
 tokio.workspace = true
+log.workspace = true
 
 [dev-dependencies]
 elements_app = { path = "../app" }

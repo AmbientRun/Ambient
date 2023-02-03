@@ -46,5 +46,8 @@ pub async fn main() -> EventResult {
         .with(color(), vec4(1., 0., 0., 1.))
         .spawn(false);
 
+    let shape_ref = ObjectRef::new("assets/Shape.glb/objects/main.json");
+    entity::spawn_template(&shape_ref, Vec3::new(-3.0, -3.0, 10.0), None, None, false);
+
     EventOk
 }
