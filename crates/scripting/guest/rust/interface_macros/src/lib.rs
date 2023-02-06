@@ -102,7 +102,7 @@ fn tilt_project_impl(
 
     #[derive(Deserialize, Debug)]
     pub struct Project {
-        name: String,
+        id: String,
         organization: Option<String>,
     }
 
@@ -272,7 +272,7 @@ fn tilt_project_impl(
     let project_path: Vec<_> = if global_namespace {
         vec![]
     } else {
-        manifest.project.organization.iter().chain(std::iter::once(&manifest.project.name)).cloned().collect()
+        manifest.project.organization.iter().chain(std::iter::once(&manifest.project.id)).cloned().collect()
     };
     let expanded_tree = expand_tree(&TreeNode::new(vec![], TreeNodeInner::Module(root)), &project_path)?;
     Ok(quote!(

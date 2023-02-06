@@ -8,7 +8,7 @@ use crate::{Component, ComponentType, Identifier, IdentifierPath, Manifest, Proj
 fn can_parse_tictactoe_toml() {
     const TOML: &str = r#"
     [project]
-    name = "tictactoe"
+    id = "tictactoe"
     version = "0.0.1"
 
     [components]
@@ -19,7 +19,7 @@ fn can_parse_tictactoe_toml() {
         Manifest::parse(TOML),
         Ok(Manifest {
             project: Project {
-                name: Identifier::new("tictactoe").unwrap(),
+                id: Identifier::new("tictactoe").unwrap(),
                 version: Version::new(0, 0, 1),
                 description: None,
                 authors: vec![],

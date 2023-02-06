@@ -27,7 +27,7 @@ impl Manifest {
         let project_path: Vec<_> = if global_namespace {
             vec![]
         } else {
-            self.project.organization.iter().chain(std::iter::once(&self.project.name)).cloned().collect()
+            self.project.organization.iter().chain(std::iter::once(&self.project.id)).cloned().collect()
         };
 
         self.components
@@ -42,7 +42,7 @@ impl Manifest {
 
 #[derive(Deserialize, Clone, Debug, PartialEq)]
 pub struct Project {
-    pub name: Identifier,
+    pub id: Identifier,
     pub version: Version,
     pub description: Option<String>,
     #[serde(default)]
