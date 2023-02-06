@@ -1,4 +1,6 @@
-use elements_ecs::{components, query, query_mut, Component, ECSError, EntityData, EntityId, Networked, Store, SystemGroup, World};
+use elements_ecs::{
+    components, ensure_has_component, query, query_mut, Component, ECSError, EntityData, EntityId, Networked, Store, SystemGroup, World
+};
 use elements_std::{
     math::Line, shapes::{BoundingBox, Plane, Ray, AABB}
 };
@@ -59,6 +61,11 @@ pub fn camera_systems() -> SystemGroup {
                     }
                 }
             }),
+            ensure_has_component(perspective_infinite_reverse(), near(), 0.1),
+            ensure_has_component(perspective_infinite_reverse(), fovy(), 1.),
+            ensure_has_component(perspective_infinite_reverse(), aspect_ratio(), 1.),
+            ensure_has_component(perspective_infinite_reverse(), projection(), Default::default()),
+            ensure_has_component(perspective_infinite_reverse(), projection_view(), Default::default()),
             query_mut((projection(),), (near(), fovy(), aspect_ratio())).incl(perspective_infinite_reverse()).to_system(
                 |q, world, qs, _| {
                     for (_, (projection,), (&near, &fovy, &aspect_ratio)) in q.iter(world, qs) {
