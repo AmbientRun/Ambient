@@ -34,9 +34,9 @@ pub async fn main() -> EventResult {
         for (_, _) in players {
             entity::game_object_base()
                 .with_default(cube())
-                .with(scale(), vec3(0.3, 0.3, 0.3))
-                .with(translation(), vec3(rand::random::<f32>(), rand::random::<f32>(), rand::random::<f32>()) * 5.)
-                .with(color(), vec4(rand::random::<f32>(), rand::random::<f32>(), rand::random::<f32>(), 1.))
+                .with(scale(), Vec3::ONE * 0.3)
+                .with(translation(), rand::random::<Vec3>() * 5.)
+                .with(color(), rand::random::<Vec3>().extend(1.))
                 .spawn(false);
         }
     });

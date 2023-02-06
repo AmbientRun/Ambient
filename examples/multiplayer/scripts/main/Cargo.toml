@@ -6,6 +6,10 @@ version = "0.1.0"
 [dependencies]
 rand = "0.8.5"
 
+[dependencies.glam]
+version = "*"
+features = ["rand"]
+
 [dependencies.tilt_runtime_scripting_interface]
 path = "../../interfaces/tilt_runtime_scripting_interface"
 features = []
