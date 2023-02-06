@@ -7,7 +7,7 @@ use axum::{
     http::{Method, StatusCode}, response::IntoResponse, routing::{get, get_service}, Router
 };
 use elements_core::{app_start_time, asset_cache, dtime, no_sync, time};
-use elements_ecs::{ComponentDesc, EntityData, Networked, SystemGroup, World, WorldStreamCompEvent};
+use elements_ecs::{ComponentDesc, ComponentRegistry, EntityData, Networked, SystemGroup, World, WorldStreamCompEvent};
 use elements_network::{
     bi_stream_handlers, client::GameRpcArgs, datagram_handlers, server::{ForkingEvent, GameServer, ShutdownEvent}
 };
@@ -129,7 +129,7 @@ pub(crate) fn start_server(
 
     start_http_interface(runtime, &project_path);
 
-    crate::components::load_from_toml(manifest, false).unwrap();
+    ComponentRegistry::get_mut().add_external_from_iterator(manifest.all_defined_components(false).unwrap().into_iter());
 
     let manifest = manifest.clone();
     runtime.spawn(async move {

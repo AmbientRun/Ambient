@@ -1,5 +1,5 @@
-use elements_ecs::{ComponentRegistry, PrimitiveComponentType};
-use elements_project::{ComponentType, Manifest};
+use elements_ecs::ComponentRegistry;
+use elements_project::Manifest;
 
 pub(crate) fn init() -> anyhow::Result<()> {
     elements_app::init_all_components();
@@ -15,47 +15,8 @@ pub(crate) fn init() -> anyhow::Result<()> {
     crate::player::init_all_components();
 
     // Temporary: this information should move to the ECS through attributes
-    load_from_toml(&Manifest::parse(include_str!("../tilt.toml"))?, true)?;
+    let manifest = Manifest::parse(include_str!("../tilt.toml"))?;
+    ComponentRegistry::get_mut().add_external_from_iterator(manifest.all_defined_components(true).map_err(anyhow::Error::msg)?.into_iter());
 
     Ok(())
-}
-
-pub fn load_from_toml(manifest: &Manifest, global_namespace: bool) -> anyhow::Result<()> {
-    let project_path: Vec<_> = if global_namespace {
-        vec![]
-    } else {
-        manifest.project.organization.iter().chain(std::iter::once(&manifest.project.name)).cloned().collect()
-    };
-
-    ComponentRegistry::get_mut().add_external_from_iterator(
-        manifest
-            .components
-            .iter()
-            .map(|(id, component)| {
-                let full_path = project_path.iter().map(|s| s.as_str()).chain(id.split("::")).collect::<Vec<_>>();
-                Ok((full_path.join("::"), convert_manifest_type_to_primitive_type(&component.type_)?))
-            })
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(|e: &str| anyhow::anyhow!("{e}"))?
-            .into_iter(),
-    );
-
-    Ok(())
-}
-
-fn convert_manifest_type_to_primitive_type(ty: &ComponentType) -> Result<PrimitiveComponentType, &'static str> {
-    match ty {
-        ComponentType::String(ty) => PrimitiveComponentType::try_from(ty.as_str()),
-        ComponentType::ContainerType { type_, element_type } => {
-            let element_ty = element_type.as_deref().map(PrimitiveComponentType::try_from).transpose()?;
-            match element_ty {
-                Some(element_ty) => match type_.as_str() {
-                    "Vec" => element_ty.to_vec_type().ok_or("invalid element type for Vec"),
-                    "Option" => element_ty.to_option_type().ok_or("invalid element type for Option"),
-                    _ => Err("invalid container type"),
-                },
-                None => PrimitiveComponentType::try_from(type_.as_str()),
-            }
-        }
-    }
 }
