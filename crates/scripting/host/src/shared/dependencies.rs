@@ -63,6 +63,7 @@ const MATH: &[&str] = &[
     "num-rational",
     "num",
     "noise",
+    "glam",
 ];
 
 const PARSER_TOOLING: &[&str] = &["nom", "pest", "chumsky"];

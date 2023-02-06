@@ -19,7 +19,7 @@
                 "DIMS_DISABLE_TIMEOUT": "true"
             },
             "args": [
-                "--project-path=examples/physics",
+                "--project-path=examples/multiplayer",
                 "run"
             ],
             "cwd": "${workspaceFolder}",
