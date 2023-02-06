@@ -1,13 +1,10 @@
 use palette::{FromColor, Hsl, Srgb};
 use tilt_runtime_scripting_interface::components::core::{
     app::main_scene,
-    camera::{
-        active_camera, aspect_ratio, aspect_ratio_from_window, fovy, near, perspective_infinite_reverse, projection, projection_view,
-    },
-    ecs::dont_store,
+    camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},
     primitives::cube,
     rendering::{color, outline},
-    transform::{inv_local_to_world, local_to_world, lookat_center, lookat_up, rotation, scale, translation},
+    transform::{lookat_center, scale, translation},
 };
 use tilt_runtime_scripting_interface::{player::KeyCode, *};
 

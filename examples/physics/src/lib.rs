@@ -1,7 +1,5 @@
 use components::core::{
-    app::main_scene, camera::{
-        active_camera, aspect_ratio, aspect_ratio_from_window, fovy, near, perspective_infinite_reverse, projection, projection_view
-    }, ecs::dont_store, game_objects::player_camera, physics::{box_collider, dynamic, physics_controlled, plane_collider}, player::{player, user_id}, primitives::{cube, quad}, rendering::color, transform::{inv_local_to_world, local_to_world, lookat_center, lookat_up, rotation, scale, translation}
+    app::main_scene, camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse}, physics::{box_collider, dynamic, physics_controlled}, primitives::cube, transform::{lookat_center, scale, translation}
 };
 use tilt_runtime_scripting_interface::*;
 

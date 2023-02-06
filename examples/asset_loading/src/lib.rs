@@ -1,10 +1,7 @@
 use tilt_runtime_scripting_interface::components::core::{
     app::main_scene,
-    camera::{
-        active_camera, aspect_ratio, aspect_ratio_from_window, fovy, near, perspective_infinite_reverse, projection, projection_view,
-    },
-    ecs::dont_store,
-    transform::{inv_local_to_world, local_to_world, rotation, translation},
+    camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},
+    transform::{lookat_center, translation},
 };
 use tilt_runtime_scripting_interface::*;
 
