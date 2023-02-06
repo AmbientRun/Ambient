@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use elements_ecs::primitive_component_definitions;
 
-use crate::{Component, ComponentType, Identifier, IdentifierPath, Manifest, Project};
+use crate::{Component, ComponentType, Identifier, IdentifierPath, Manifest, Project, Version, VersionError};
 
 #[test]
 fn can_parse_tictactoe_toml() {
@@ -20,7 +20,7 @@ fn can_parse_tictactoe_toml() {
         Ok(Manifest {
             project: Project {
                 name: Identifier::new("tictactoe").unwrap(),
-                version: "0.0.1".to_string(),
+                version: Version::new(0, 0, 1),
                 description: None,
                 authors: vec![],
                 organization: None
@@ -53,6 +53,21 @@ fn can_validate_identifiers() {
     assert_eq!(I::new("cool_component_00"), Ok(I("cool_component_00".to_string())));
 
     assert_eq!(IP::new("my::cool_component_00"), Ok(IP(vec![I("my".to_string()), I("cool_component_00".to_string())])));
+}
+
+#[test]
+fn can_parse_versions() {
+    use Version as V;
+
+    assert_eq!(V::new_from_str("1"), Ok(V::new(1, 0, 0)));
+    assert_eq!(V::new_from_str("1.0"), Ok(V::new(1, 0, 0)));
+    assert_eq!(V::new_from_str("1.0.0"), Ok(V::new(1, 0, 0)));
+    assert_eq!(V::new_from_str("1.2.3"), Ok(V::new(1, 2, 3)));
+
+    assert_eq!(V::new_from_str(""), Err(VersionError::TooFewComponents));
+    assert_eq!(V::new_from_str("0.0.0"), Err(VersionError::AllZero));
+    assert!(matches!(V::new_from_str("1.2.3patch"), Err(VersionError::InvalidNumber(_))));
+    assert_eq!(V::new_from_str("1.2.3.4"), Err(VersionError::TooManyComponents));
 }
 
 #[test]

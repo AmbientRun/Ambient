@@ -1,7 +1,8 @@
 use std::{collections::HashMap, fmt::Display};
 
 use elements_ecs::{components, Networked, PrimitiveComponentType, Store};
-use serde::{Deserialize, Serialize};
+use serde::{de::Visitor, Deserialize, Serialize};
+use thiserror::Error;
 
 #[cfg(test)]
 mod tests;
@@ -42,7 +43,7 @@ impl Manifest {
 #[derive(Deserialize, Clone, Debug, PartialEq)]
 pub struct Project {
     pub name: Identifier,
-    pub version: String,
+    pub version: Version,
     pub description: Option<String>,
     #[serde(default)]
     pub authors: Vec<String>,
@@ -185,4 +186,85 @@ impl Display for Identifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&self.0)
     }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Version {
+    major: u32,
+    minor: u32,
+    patch: u32,
+}
+impl Version {
+    pub fn new(major: u32, minor: u32, patch: u32) -> Self {
+        Self { major, minor, patch }
+    }
+
+    pub fn new_from_str(id: &str) -> Result<Self, VersionError> {
+        if id.trim().is_empty() {
+            return Err(VersionError::TooFewComponents);
+        }
+
+        let mut segments = id.split('.');
+        let major = segments.next().ok_or(VersionError::TooFewComponents)?.parse()?;
+        let minor = segments.next().map(|s| s.parse()).transpose()?.unwrap_or(0);
+        let patch = segments.next().map(|s| s.parse()).transpose()?.unwrap_or(0);
+
+        if segments.next().is_some() {
+            return Err(VersionError::TooManyComponents);
+        }
+
+        if [major, minor, patch].iter().all(|v| *v == 0) {
+            return Err(VersionError::AllZero);
+        }
+
+        Ok(Self { major, minor, patch })
+    }
+}
+impl Display for Version {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}.{}.{}", self.major, self.minor, self.patch)
+    }
+}
+impl Serialize for Version {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.to_string().serialize(serializer)
+    }
+}
+impl<'de> Deserialize<'de> for Version {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_str(VersionVisitor)
+    }
+}
+struct VersionVisitor;
+impl<'de> Visitor<'de> for VersionVisitor {
+    type Value = Version;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("a semantic dot-separated version with up to three components")
+    }
+
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        Version::new_from_str(v).map_err(serde::de::Error::custom)
+    }
+}
+
+#[derive(Error, Debug, PartialEq)]
+pub enum VersionError {
+    #[error("invalid number in version segment")]
+    InvalidNumber(#[from] std::num::ParseIntError),
+    #[error("too few components in version (at least one required)")]
+    TooFewComponents,
+    #[error("too many components (at most three required)")]
+    TooManyComponents,
+    #[error("all components were zero")]
+    AllZero,
 }
