@@ -47,6 +47,9 @@ impl PxFoundationRef {
     pub fn new() -> Self {
         unsafe { Self(physx_sys::physx_create_foundation()) }
     }
+    pub fn get() -> Self {
+        unsafe { Self(physx_sys::PxPhysics_getFoundation_mut(PxPhysicsRef::get().0)) }
+    }
     pub fn release(self) {
         unsafe { physx_sys::PxFoundation_release_mut(self.0) }
     }
@@ -105,7 +108,7 @@ unsafe impl Send for PxDefaultCpuDispatcherRef {}
 #[derive(Debug)]
 pub struct PxMaterial(*mut physx_sys::PxMaterial);
 impl PxMaterial {
-    pub fn new(physics: &PxPhysicsRef, static_friction: f32, dynamic_friction: f32, restitution: f32) -> Self {
+    pub fn new(physics: PxPhysicsRef, static_friction: f32, dynamic_friction: f32, restitution: f32) -> Self {
         Self(unsafe { physx_sys::PxPhysics_createMaterial_mut(physics.0, static_friction, dynamic_friction, restitution) })
     }
     pub(crate) fn from_ptr(ptr: *mut physx_sys::PxMaterial) -> Self {

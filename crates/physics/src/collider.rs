@@ -39,6 +39,11 @@ components!("physics", {
     @[Debuggable, Networked, Store]
     sphere_collider: f32,
 
+    /// The value defines the radius
+    @[Debuggable, Networked, Store]
+    collider_from_url: String,
+
+
     @[Debuggable, Networked, Store]
     dynamic: bool,
 
@@ -116,6 +121,14 @@ pub fn server_systems() -> SystemGroup {
             query(box_collider().changed()).to_system(|q, world, qs, _| {
                 for (id, size) in changed_or_missing(q, world, qs, collider()) {
                     world.add_component(id, collider(), ColliderDef::Box { size, center: Vec3::ZERO }).unwrap();
+                }
+            }),
+            query(collider_from_url().changed()).to_system(|q, world, qs, _| {
+                for (id, url) in changed_or_missing(q, world, qs, collider()) {
+                    match TypedAssetUrl::parse(&url) {
+                        Ok(url) => world.add_component(id, collider(), ColliderDef::Asset { collider: url }).unwrap(),
+                        Err(err) => log::warn!("Failed to load collider from {}: {:?}", url, err),
+                    }
                 }
             }),
             query(dynamic()).spawned().to_system(|q, world, qs, _| {
@@ -206,67 +219,70 @@ pub fn server_systems() -> SystemGroup {
                     });
                 }
             }),
-            query((collider_shapes().changed(), translation(), rotation())).optional_changed(collider_type()).to_system(
-                |q, world, qs, _| {
-                    let physics = world.resource(physics()).clone();
-                    let force_static = world.get(world.resource_entity(), make_physics_static()).unwrap_or(false);
-                    for (id, (mut shapes, pos, rot)) in q.collect_cloned(world, qs) {
-                        let collider_type = world.get(id, collider_type()).unwrap_or(ColliderType::Static);
-                        if let Ok(actor) = world.get(id, rigid_actor()) {
-                            if let Some(scene) = actor.get_scene() {
-                                scene.remove_actor(&actor, false);
-                            }
-                        }
-                        let actor = if collider_type == ColliderType::Dynamic && !force_static {
-                            world.add_component(id, physics_controlled(), ()).unwrap();
-                            PxRigidDynamicRef::new(physics.physics, &PxTransform::new(pos, rot)).as_rigid_actor()
-                        } else {
-                            world.remove_component(id, physics_controlled()).unwrap();
-                            PxRigidStaticRef::new(physics.physics, &PxTransform::new(pos, rot)).as_rigid_actor()
-                        };
-                        if let Some(actor) = actor.to_rigid_body() {
-                            actor.set_rigid_body_flag(PxRigidBodyFlag::ENABLE_CCD, true);
-                        }
-                        actor.as_actor().set_user_data(PxActorUserData { serialize: true });
-                        for shape in actor.get_shapes() {
-                            actor.detach_shape(&shape, false);
-                        }
-                        for shape in shapes.iter_mut() {
-                            if !actor.attach_shape(shape) {
-                                panic!("Failed to attach shape");
-                            }
-                            shape.update_user_data::<PxShapeUserData>(&|ud| ud.entity = id);
-                        }
-                        if let Some(actor) = actor.to_rigid_dynamic() {
-                            let densities = actor
-                                .get_shapes()
-                                .iter()
-                                .map(|shape| shape.get_user_data::<PxShapeUserData>().unwrap().density)
-                                .collect_vec();
-                            actor.update_mass_and_inertia(densities, None, None);
-                            world.add_component(id, mass(), actor.get_mass()).unwrap();
-                        } else {
-                            world.remove_component(id, mass()).ok();
-                        }
-                        let first_shape = shapes[0].clone();
-                        world
-                            .add_components(id, EntityData::new().set(physics_shape(), first_shape.clone()).set(rigid_actor(), actor))
-                            .unwrap();
-                        actor.set_actor_flag(PxActorFlag::VISUALIZATION, false);
-                        if collider_type != ColliderType::Dynamic && collider_type != ColliderType::Static {
-                            actor.set_actor_flag(PxActorFlag::DISABLE_SIMULATION, true);
-                        }
-                        let scene = collider_type.scene().get_scene(world);
-                        scene.add_actor(&actor);
-                        world.resource_mut(crate::collider_loads()).push(id);
-                        if let Ok(event) = world.get_ref(id, on_collider_loaded()).cloned() {
-                            for handler in event.iter() {
-                                (*handler)(world, id);
-                            }
+            query(collider_shapes().changed()).optional_changed(collider_type()).to_system(|q, world, qs, _| {
+                let physics = world.resource(physics()).clone();
+                let force_static = world.get(world.resource_entity(), make_physics_static()).unwrap_or(false);
+                let build_actor = |world: &mut World, id: EntityId, mut shapes: Vec<PxShape>| {
+                    let pos = world.get(id, translation()).unwrap_or_default();
+                    let rot = world.get(id, rotation()).unwrap_or_default();
+                    let collider_type = world.get(id, collider_type()).unwrap_or(ColliderType::Static);
+                    if let Ok(actor) = world.get(id, rigid_actor()) {
+                        if let Some(scene) = actor.get_scene() {
+                            scene.remove_actor(&actor, false);
                         }
                     }
-                },
-            ),
+                    let actor = if collider_type == ColliderType::Dynamic && !force_static {
+                        world.add_component(id, physics_controlled(), ()).unwrap();
+                        PxRigidDynamicRef::new(physics.physics, &PxTransform::new(pos, rot)).as_rigid_actor()
+                    } else {
+                        world.remove_component(id, physics_controlled()).unwrap();
+                        PxRigidStaticRef::new(physics.physics, &PxTransform::new(pos, rot)).as_rigid_actor()
+                    };
+                    if let Some(actor) = actor.to_rigid_body() {
+                        actor.set_rigid_body_flag(PxRigidBodyFlag::ENABLE_CCD, true);
+                    }
+                    actor.as_actor().set_user_data(PxActorUserData { serialize: true });
+                    for shape in actor.get_shapes() {
+                        actor.detach_shape(&shape, false);
+                    }
+                    for shape in shapes.iter_mut() {
+                        if !actor.attach_shape(shape) {
+                            log::error!("Failed to attach shape to entity {}", id);
+                            actor.as_actor().remove_user_data::<PxActorUserData>();
+                            actor.release();
+                            return;
+                        }
+                        shape.update_user_data::<PxShapeUserData>(&|ud| ud.entity = id);
+                    }
+                    if let Some(actor) = actor.to_rigid_dynamic() {
+                        let densities =
+                            actor.get_shapes().iter().map(|shape| shape.get_user_data::<PxShapeUserData>().unwrap().density).collect_vec();
+                        actor.update_mass_and_inertia(densities, None, None);
+                        world.add_component(id, mass(), actor.get_mass()).unwrap();
+                    } else {
+                        world.remove_component(id, mass()).ok();
+                    }
+                    let first_shape = shapes[0].clone();
+                    world
+                        .add_components(id, EntityData::new().set(physics_shape(), first_shape.clone()).set(rigid_actor(), actor))
+                        .unwrap();
+                    actor.set_actor_flag(PxActorFlag::VISUALIZATION, false);
+                    if collider_type != ColliderType::Dynamic && collider_type != ColliderType::Static {
+                        actor.set_actor_flag(PxActorFlag::DISABLE_SIMULATION, true);
+                    }
+                    let scene = collider_type.scene().get_scene(world);
+                    scene.add_actor(&actor);
+                    world.resource_mut(crate::collider_loads()).push(id);
+                    if let Ok(event) = world.get_ref(id, on_collider_loaded()).cloned() {
+                        for handler in event.iter() {
+                            (*handler)(world, id);
+                        }
+                    }
+                };
+                for (id, shapes) in q.collect_cloned(world, qs) {
+                    build_actor(world, id, shapes);
+                }
+            }),
         ],
     )
 }

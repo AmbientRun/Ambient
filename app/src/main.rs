@@ -10,7 +10,9 @@ use elements_element::{element_component, Element, ElementComponentExt, Hooks};
 use elements_network::{
     client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce}, events::ServerEventRegistry
 };
-use elements_std::{asset_cache::AssetCache, Cb};
+use elements_std::{
+    asset_cache::{AssetCache, SyncAssetKeyExt}, Cb
+};
 use elements_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
 
 pub mod components;
@@ -19,6 +21,7 @@ mod player;
 mod server;
 
 use anyhow::Context;
+use elements_physics::physx::PhysicsKey;
 use player::PlayerRawInputHandler;
 use server::QUIC_INTERFACE_PORT;
 
@@ -162,9 +165,10 @@ fn MainApp(world: &mut World, hooks: &mut Hooks, server_addr: SocketAddr, user_i
 
 fn main() -> anyhow::Result<()> {
     env_logger::init();
-    components::init().unwrap();
-    let runtime = tokio::runtime::Builder::new_multi_thread().enable_all().build().unwrap();
+    components::init()?;
+    let runtime = tokio::runtime::Builder::new_multi_thread().enable_all().build()?;
     let assets = AssetCache::new(runtime.handle().clone());
+    PhysicsKey.get(&assets); // Load physics
 
     let cli = Cli::parse();
 
@@ -175,7 +179,7 @@ fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    let current_dir = std::env::current_dir().unwrap();
+    let current_dir = std::env::current_dir()?;
     let project_path = cli.project_path.clone().map(|x| x.into()).unwrap_or_else(|| current_dir.clone());
     let project_path =
         if project_path.is_absolute() { project_path } else { elements_std::path::normalize(&current_dir.join(project_path)) };
@@ -189,7 +193,12 @@ fn main() -> anyhow::Result<()> {
     };
 
     if cli.command.should_build() {
-        runtime.block_on(elements_build::build(&assets, project_path.clone(), manifest.as_ref().unwrap()));
+        runtime.block_on(elements_build::build(
+            PhysicsKey.get(&assets),
+            &assets,
+            project_path.clone(),
+            manifest.as_ref().expect("no manifest"),
+        ));
     }
 
     let server_addr = if let Commands::Join { host, .. } = &cli.command {
@@ -199,12 +208,12 @@ fn main() -> anyhow::Result<()> {
             }
             host.parse().with_context(|| format!("Invalid address for host {host}"))?
         } else {
-            format!("127.0.0.1:{QUIC_INTERFACE_PORT}").parse().unwrap()
+            format!("127.0.0.1:{QUIC_INTERFACE_PORT}").parse()?
         }
     } else {
-        let port = server::start_server(&runtime, assets.clone(), cli.clone(), project_path, manifest.as_ref().unwrap());
+        let port = server::start_server(&runtime, assets.clone(), cli.clone(), project_path, manifest.as_ref().expect("no manifest"));
         eprintln!("Server running on port {port}");
-        format!("127.0.0.1:{port}").parse().unwrap()
+        format!("127.0.0.1:{port}").parse()?
     };
     let user_id = cli.command.user_id().map(|x| x.to_string()).unwrap_or_else(|| format!("user_{}", friendly_id::create()));
     let handle = runtime.handle().clone();

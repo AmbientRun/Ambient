@@ -14,17 +14,17 @@ async fn init(world: &mut World) -> PxSceneRef {
     let _gpu = world.resource(gpu()).clone();
     let assets = world.resource(asset_cache()).clone();
     let physics = PhysicsKey.get(&assets);
-    world.add_resource(elements_physics::physx::physics(), (*physics).clone());
+    world.add_resource(elements_physics::physx::physics(), physics.clone());
 
     let scene = {
-        let mut scene_desc = PxSceneDesc::new(&physics.physics);
+        let mut scene_desc = PxSceneDesc::new(physics.physics);
         scene_desc.set_cpu_dispatcher(&physics.dispatcher);
         scene_desc.set_gravity(vec3(0., 0., -9.82));
         PxSceneRef::new(&physics.physics, &scene_desc)
     };
 
     // Ground plane
-    let physics_material = PxMaterial::new(&physics.physics, 0.5, 0.5, 0.6);
+    let physics_material = PxMaterial::new(physics.physics, 0.5, 0.5, 0.6);
     let ground_static = PxRigidStaticRef::new_plane(physics.physics, vec3(0., 0., 1.), 0., &physics_material);
     scene.add_actor(&ground_static);
     Quad.el().set(scale(), Vec3::ONE * 40.).set(color(), vec4(0.5, 0.5, 0.5, 1.)).set(rigid_static(), ground_static).spawn_static(world);

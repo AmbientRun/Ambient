@@ -54,9 +54,9 @@ pub fn init_all_components() {
 pub const GRAVITY: f32 = 9.82;
 pub fn create_server_resources(assets: &AssetCache, server_resources: &mut EntityData) {
     let physics = PhysicsKey.get(assets);
-    server_resources.set_self(crate::physx::physics(), (*physics).clone());
+    server_resources.set_self(crate::physx::physics(), physics.clone());
 
-    let mut main_scene_desc = PxSceneDesc::new(&physics.physics);
+    let mut main_scene_desc = PxSceneDesc::new(physics.physics);
     main_scene_desc.set_cpu_dispatcher(&physics.dispatcher);
     main_scene_desc.set_gravity(vec3(0., 0., -GRAVITY));
     main_scene_desc.update_flags(|flags| flags | PxSceneFlags::ENABLE_CCD);
@@ -82,11 +82,11 @@ pub fn create_server_resources(assets: &AssetCache, server_resources: &mut Entit
 
     let main_controller_manager = PxControllerManagerRef::new(&main_scene, true);
 
-    let mut picking_scene_desc = PxSceneDesc::new(&physics.physics);
+    let mut picking_scene_desc = PxSceneDesc::new(physics.physics);
     picking_scene_desc.set_cpu_dispatcher(&physics.dispatcher);
     let picking_scene = PxSceneRef::new(&physics.physics, &picking_scene_desc);
 
-    let mut trigger_areas_desc = PxSceneDesc::new(&physics.physics);
+    let mut trigger_areas_desc = PxSceneDesc::new(physics.physics);
     trigger_areas_desc.set_cpu_dispatcher(&physics.dispatcher);
     let trigger_areas = PxSceneRef::new(&physics.physics, &trigger_areas_desc);
 
@@ -94,7 +94,7 @@ pub fn create_server_resources(assets: &AssetCache, server_resources: &mut Entit
     server_resources.set_self(crate::picking_scene(), picking_scene);
     server_resources.set_self(crate::trigger_areas_scene(), trigger_areas);
     server_resources.set_self(self::main_controller_manager(), main_controller_manager);
-    server_resources.set_self(self::wood_physics_material(), PxMaterial::new(&physics.physics, 0.5, 0.5, 0.6));
+    server_resources.set_self(self::wood_physics_material(), PxMaterial::new(physics.physics, 0.5, 0.5, 0.6));
 }
 
 #[derive(Debug, Clone)]
@@ -152,7 +152,7 @@ pub struct PxWoodMaterialKey;
 impl SyncAssetKey<PxMaterial> for PxWoodMaterialKey {
     fn load(&self, assets: AssetCache) -> PxMaterial {
         let physics = PhysicsKey.get(&assets);
-        PxMaterial::new(&physics.physics, 0.5, 0.5, 0.6)
+        PxMaterial::new(physics.physics, 0.5, 0.5, 0.6)
     }
 }
 

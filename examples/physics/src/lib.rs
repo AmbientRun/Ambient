@@ -31,17 +31,12 @@ pub async fn main() -> EventResult {
         .with(box_collider(), vec3(2., 2., 2.))
         .with(dynamic(), true)
         .with_default(physics_controlled())
-        .with(translation(), vec3(0., 0., 10.))
+        .with(translation(), vec3(0., 0., 5.))
+        .with(scale(), vec3(0.5, 0.5, 0.5))
         .spawn(false);
 
-    entity::game_object_base()
-        .with_default(quad())
-        .with_default(plane_collider())
-        .with(dynamic(), false)
-        .with_default(physics_controlled())
-        .with(scale(), vec3(5., 5., 5.))
-        .with(color(), vec4(1., 0., 0., 1.))
-        .spawn(false);
+    let shape_ref = ObjectRef::new("assets/Shape.glb/objects/main.json");
+    entity::spawn_template(&shape_ref, Vec3::new(0.0, 0.0, 0.0), None, None, false);
 
     EventOk
 }

@@ -1958,6 +1958,7 @@ dependencies = [
  "futures",
  "glam 0.22.0",
  "itertools",
+ "log",
  "once_cell",
  "ordered-float 2.10.0",
  "parking_lot",
