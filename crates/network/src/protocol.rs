@@ -1,7 +1,6 @@
 use anyhow::{Context, Result};
 use elements_ecs::{ComponentRegistry, PrimitiveComponentType, WorldDiff};
 use futures::{io::BufReader, StreamExt};
-use itertools::Itertools;
 use quinn::{NewConnection, RecvStream};
 
 use crate::{next_bincode_bi_stream, open_bincode_bi_stream, IncomingStream, NetworkError, OutgoingStream};
@@ -81,7 +80,7 @@ impl ServerProtocol {
 
         log::info!("Received handshake from {user_id:?}");
 
-        let external_components = ComponentRegistry::get().all_external().map(|(desc, pc)| (desc.path(), pc.ty.clone())).collect();
+        let external_components = ComponentRegistry::get().all_external().map(|(desc, pc)| (desc.path(), pc.ty)).collect();
 
         // Respond
         let client_info = ClientInfo { user_id, external_components };

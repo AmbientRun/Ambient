@@ -1,6 +1,6 @@
 use std::collections::{hash_map::Entry, BTreeMap, HashMap};
 
-use elements_std::{asset_url::AbsAssetUrl, events::EventDispatcher};
+use elements_std::events::EventDispatcher;
 use once_cell::sync::Lazy;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
@@ -48,26 +48,7 @@ impl ComponentRegistry {
     pub fn get_mut() -> RwLockWriteGuard<'static, Self> {
         COMPONENT_REGISTRY.write()
     }
-    /// When decorating is true, the components read from the source will be assumed to already exist and we'll just add
-    /// metadata to them
-    pub fn add_external(&mut self, source: AbsAssetUrl) {
-        let data: Vec<u8> = if let Some(path) = source.to_file_path().unwrap() {
-            std::fs::read(path).unwrap()
-        } else {
-            reqwest::blocking::get(source.0).unwrap().bytes().unwrap().into()
-        };
 
-        #[derive(Deserialize)]
-        struct Entry {
-            id: String,
-            #[serde(rename = "type")]
-            type_: PrimitiveComponentType,
-        }
-        let components: Vec<Entry> = serde_json::from_slice(&data).unwrap();
-        self.add_external_from_iterator(components.into_iter().map(|c| (c.id, c.type_)))
-    }
-    /// When decorating is true, the components read from the source will be assumed to already exist and we'll just add
-    /// metadata to them
     pub fn add_external_from_iterator(&mut self, components: impl Iterator<Item = (String, PrimitiveComponentType)>) {
         for (id, type_) in components {
             type_.register(self, &id);

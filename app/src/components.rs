@@ -47,11 +47,11 @@ fn convert_manifest_type_to_primitive_type(ty: &ComponentType) -> Result<Primiti
     match ty {
         ComponentType::String(ty) => PrimitiveComponentType::try_from(ty.as_str()),
         ComponentType::ContainerType { type_, element_type } => {
-            let element_ty = element_type.as_deref().map(PrimitiveComponentType::try_from).transpose()?.map(Box::new);
+            let element_ty = element_type.as_deref().map(PrimitiveComponentType::try_from).transpose()?;
             match element_ty {
                 Some(element_ty) => match type_.as_str() {
-                    "Vec" => Ok(PrimitiveComponentType::Vec { variants: element_ty }),
-                    "Option" => Ok(PrimitiveComponentType::Option { variants: element_ty }),
+                    "Vec" => element_ty.to_vec_type().ok_or("invalid element type for Vec"),
+                    "Option" => element_ty.to_option_type().ok_or("invalid element type for Option"),
                     _ => Err("invalid container type"),
                 },
                 None => PrimitiveComponentType::try_from(type_.as_str()),

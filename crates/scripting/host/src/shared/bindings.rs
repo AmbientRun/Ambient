@@ -1,6 +1,6 @@
 use elements_ecs::{
-    paste::paste, with_component_registry, Component, ComponentDesc, ComponentEntry, EntityData,
-    EntityId, EntityUid, World,
+    paste::paste, primitive_component_definitions, with_component_registry, Component,
+    ComponentDesc, ComponentEntry, EntityData, EntityId, EntityUid, World,
 };
 use elements_std::asset_url::ObjectRef;
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
@@ -16,7 +16,7 @@ pub type ComponentsParam<'a> = Vec<(u32, sif::ComponentTypeParam<'a>)>;
 use elements_ecs::PrimitiveComponentType as PCT;
 
 macro_rules! define_component_types {
-    ($(($type:ty, $value:ident)),*) => { paste! {
+    ($(($value:ident, $type:ty)),*) => { paste! {
         fn read_primitive_component_from_world(
             world: &World,
             entity_id: EntityId,
@@ -40,7 +40,6 @@ macro_rules! define_component_types {
                 PCT::[<Vec $value>]    => CTR::TypeList(CLTR::[<Type $value>](get::<Vec<$type>>(world, entity_id, c)?),),
                 PCT::[<Option $value>] => CTR::TypeOption(COTR::[<Type $value>](get::<Option<$type>>(world, entity_id, c)?),),
                 )*
-                _ => unreachable!(),
             })
         }
 
@@ -67,7 +66,6 @@ macro_rules! define_component_types {
                 PCT::[<Vec $value>]    => CTR::TypeList(CLTR::[<Type $value>](get::<Vec<$type>>(world, entity_accessor, c).clone()),),
                 PCT::[<Option $value>] => CTR::TypeOption(COTR::[<Type $value>](get::<Option<$type>>(world, entity_accessor, c).clone()),),
                 )*
-                _ => unreachable!(),
             })
         }
 
@@ -107,7 +105,6 @@ macro_rules! define_component_types {
                             PCT::[<Vec $value>]    => CTR::TypeList(CLTR::[<Type $value>](get::<Vec<$type>>(cu)?),),
                             PCT::[<Option $value>] => CTR::TypeOption(COTR::[<Type $value>](get::<Option<$type>>(cu)?),),
                             )*
-                            _ => unreachable!(),
                         };
 
                         Some((index, value))
@@ -172,21 +169,4 @@ macro_rules! define_component_types {
     }};
 }
 
-define_component_types!(
-    ((), Empty),
-    (bool, Bool),
-    (EntityId, EntityId),
-    (f32, F32),
-    (f64, F64),
-    (Mat4, Mat4),
-    (i32, I32),
-    (Quat, Quat),
-    (String, String),
-    (u32, U32),
-    (u64, U64),
-    (Vec2, Vec2),
-    (Vec3, Vec3),
-    (Vec4, Vec4),
-    (ObjectRef, ObjectRef),
-    (EntityUid, EntityUid)
-);
+primitive_component_definitions!(define_component_types);
