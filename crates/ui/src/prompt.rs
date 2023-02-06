@@ -158,7 +158,7 @@ pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + ComponentValue>(
         ScrollArea(
             FlowColumn::el([
                 Text::el(title).header_style(),
-                value.clone().editor(Some(Cb(set_value)), Default::default()),
+                value.clone().editor(Cb(set_value), Default::default()),
                 FlowRow(vec![
                     Button::new("Ok", {
                         let set_screen = set_screen.clone();

@@ -70,7 +70,7 @@ pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 
                             } else {
                                 UIBase.el().set(width(), button_size).set(height(), 1.)
                             },
-                            T::editor(
+                            T::edit_or_view(
                                 item.clone(),
                                 Some(Cb(Arc::new(closure!(clone value, clone on_change, |item| {
                                     let mut value = value.clone();
@@ -102,8 +102,11 @@ pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 
 }
 
 impl<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static> Editor for Vec<T> {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
-        ListEditor { value: self, on_change }.el()
+    fn editor(self, on_change: Cb<dyn Fn(Self) + Sync + Send>, _: EditorOpts) -> Element {
+        ListEditor { value: self, on_change: Some(on_change) }.el()
+    }
+    fn view(self, _: EditorOpts) -> Element {
+        ListEditor { value: self, on_change: None }.el()
     }
 }
 
@@ -123,7 +126,7 @@ impl<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static> Elem
             item_opts: self.item_opts,
             add_presets: self.add_presets,
             add_title: self.add_title,
-            item_editor: Cb(Arc::new(T::editor)),
+            item_editor: Cb(Arc::new(T::edit_or_view)),
         }
         .el()
     }
@@ -312,7 +315,7 @@ impl<
                     .sorted_by_key(|(key, _)| key.clone())
                     .map(closure!(clone value, clone on_change, |(key, item)| {
                         FlowRow(vec![
-                            K::editor(
+                            K::edit_or_view(
                                 key.clone(),
                                 on_change.clone().map(|on_change| {
                                     Cb(Arc::new(closure!(clone key, clone on_change, clone value, |new_key| {
@@ -324,7 +327,7 @@ impl<
                                 }),
                                 Default::default(),
                             ),
-                            V::editor(
+                            V::edit_or_view(
                                 item,
                                 on_change.clone().map(|on_change| {
                                     Cb(Arc::new(closure!(clone value, clone on_change, |item| {
@@ -359,8 +362,12 @@ impl<
         V: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static,
     > Editor for HashMap<K, V>
 {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
-        KeyValueEditor { value: self, on_change }.el()
+    fn editor(self, on_change: Cb<dyn Fn(Self) + Sync + Send>, _: EditorOpts) -> Element {
+        KeyValueEditor { value: self, on_change: Some(on_change) }.el()
+    }
+
+    fn view(self, _: EditorOpts) -> Element {
+        KeyValueEditor { value: self, on_change: None }.el()
     }
 }
 
@@ -411,17 +418,13 @@ where
     K: std::hash::Hash + Eq + Send + Sync + Debug + 'static + Clone + Editor + Default,
     V: Send + Sync + Debug + 'static + Clone + Editor + Default,
 {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Send + Sync>>, opts: EditorOpts) -> Element {
-        if let Some(on_change) = on_change {
-            IndexMapEditor::new(self, on_change, false).el()
-        } else {
-            let fields = self
-                .into_iter()
-                .map(|(k, v)| FlowColumn(vec![K::editor(k, None, opts.clone()), V::editor(v, None, opts.clone())]).el())
-                .collect_vec();
+    fn editor(self, on_change: Cb<dyn Fn(Self) + Send + Sync>, opts: EditorOpts) -> Element {
+        IndexMapEditor::new(self, on_change, false).el()
+    }
 
-            FlowColumn(fields).el().set(space_between_items(), STREET)
-        }
+    fn view(self, opts: EditorOpts) -> Element {
+        let fields = self.into_iter().map(|(k, v)| FlowColumn(vec![K::view(k, opts.clone()), V::view(v, opts.clone())]).el()).collect_vec();
+        FlowColumn(fields).el().set(space_between_items(), STREET)
     }
 }
 
@@ -445,7 +448,7 @@ where
             let parent = parent.clone();
             let on_change = on_change.clone();
             let old_key = key.clone();
-            K::editor(
+            K::edit_or_view(
                 key.clone(),
                 Some(Cb(Arc::new(move |key| {
                     let mut map = parent.deref().clone();
@@ -461,7 +464,7 @@ where
             let key = key.clone();
             let on_change = on_change.clone();
             let parent = parent.clone();
-            V::editor(
+            V::edit_or_view(
                 value,
                 Some(Cb(Arc::new(move |value| {
                     let mut map = parent.deref().clone();

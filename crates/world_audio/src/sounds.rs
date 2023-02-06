@@ -27,16 +27,8 @@ components!("audio", {
 pub struct AttenuationEditorVisual(Attenuation);
 
 impl Editor for AttenuationEditorVisual {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, opts: elements_ui::EditorOpts) -> elements_element::Element {
-        let editor = Attenuation::editor(
-            *self,
-            Some(Cb::new(move |v| {
-                if let Some(on_change) = on_change.as_ref() {
-                    on_change(v.into())
-                }
-            })),
-            opts,
-        );
+    fn editor(self, on_change: Cb<dyn Fn(Self) + Sync + Send>, opts: elements_ui::EditorOpts) -> elements_element::Element {
+        let editor = Attenuation::editor(*self, Cb::new(move |v| on_change(v.into())), opts);
 
         let x_max = self.inverse(0.01);
 

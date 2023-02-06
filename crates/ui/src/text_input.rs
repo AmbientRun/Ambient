@@ -110,6 +110,7 @@ pub fn TextInput(
         el
     }
 }
+
 impl TextInput {
     pub fn new(value: String, on_change: Cb<dyn Fn(String) + Sync + Send>) -> Self {
         Self { value, on_change, on_submit: None, password: false, placeholder: None }
@@ -127,13 +128,14 @@ impl TextInput {
         self
     }
 }
+
 impl Editor for String {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
-        if let Some(on_change) = on_change {
-            TextInput::new(self, on_change).placeholder(Some("Empty")).el()
-        } else {
-            Text.el().set(text(), self)
-        }
+    fn editor(self, on_change: Cb<dyn Fn(Self) + Sync + Send>, _: EditorOpts) -> Element {
+        TextInput::new(self, on_change).placeholder(Some("Empty")).el()
+    }
+
+    fn view(self, opts: EditorOpts) -> Element {
+        Text.el().set(text(), self)
     }
 }
 

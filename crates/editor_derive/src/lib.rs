@@ -68,8 +68,12 @@ fn do_derive_element_editor(input: TokenStream) -> TokenStream {
         }
 
         impl #ui_crate::Editor for #type_name {
-            fn editor(self, on_change: Option<#ui_crate::Cb<dyn Fn(Self) + ::std::marker::Sync + ::std::marker::Send>>, opts: #ui_crate::EditorOpts) -> #ui_crate::element::Element {
-                #editor_name { value: self, on_change, opts }.into()
+            fn editor(self, on_change: #ui_crate::ChangeCb<Self>, opts: #ui_crate::EditorOpts) -> #ui_crate::element::Element {
+                #editor_name { value: self, on_change: Some(on_change), opts }.into()
+            }
+
+            fn view(self, opts: #ui_crate::EditorOpts) -> #ui_crate::element::Element {
+                #editor_name { value: self, on_change: None, opts }.into()
             }
         }
 
@@ -195,7 +199,7 @@ fn enum_to_tokens(ui_crate: &Ident, type_name: Ident, variants: Punctuated<Varia
     let inner = if has_inline {
         let variants_readonly_items = variants.iter().enumerate().map(|(i, _)| {
             quote! {
-                #type_name::editor(create_variant(#i), None, Default::default()),
+                #type_name::view(create_variant(#i), Default::default()),
             }
         });
         quote! {
@@ -305,6 +309,7 @@ fn fields_editor(
         } else {
             quote! { { #(#fields_expanded),* } }
         };
+
         let on_change_cb = quote! {
             on_change.clone().map(|on_change|
                 #ui_crate::Cb(::std::sync::Arc::new({
@@ -315,6 +320,7 @@ fn fields_editor(
                 }) as ::std::sync::Arc<dyn Fn(#field_ty) + ::std::marker::Sync + ::std::marker::Send>)
             )
         };
+
         let editor = if slider {
             let field_ty_name = field_ty_colon.to_token_stream().to_string();
             let is_float_slider = match &field_ty_name as &str {
@@ -346,7 +352,7 @@ fn fields_editor(
             }
         } else {
             quote! {
-                <#field_ty_colon as elements_ui::Editor>::editor(#field_name.clone(), #on_change_cb, Default::default())
+                <#field_ty_colon as elements_ui::Editor>::edit_or_view(#field_name.clone(), #on_change_cb, Default::default())
             }
         };
 
@@ -403,6 +409,7 @@ fn fields_editor(
         }
     }
 }
+
 fn type_with_colon(ty: &Type) -> Type {
     let mut ty = ty.clone();
     if let Type::Path(TypePath { path: Path { segments, .. }, .. }) = &mut ty {

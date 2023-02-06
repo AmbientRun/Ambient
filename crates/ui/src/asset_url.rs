@@ -8,8 +8,15 @@ use elements_std::{
 use crate::{align_vertical, space_between_items, Align, Button, ButtonStyle, Editor, EditorOpts, FlowRow, Text, STREET};
 
 impl<T: GetAssetType + 'static> Editor for TypedAssetUrl<T> {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _opts: EditorOpts) -> Element {
-        AssetUrlEditor { value: self, on_change }.el()
+    fn editor(self, on_change: Cb<dyn Fn(Self) + Sync + Send>, _opts: EditorOpts) -> Element {
+        AssetUrlEditor { value: self, on_change: Some(on_change) }.el()
+    }
+
+    fn view(self, opts: EditorOpts) -> Element
+    where
+        Self: Sized,
+    {
+        AssetUrlEditor { value: self, on_change: None }.el()
     }
 }
 #[derive(Debug, Clone)]
@@ -43,10 +50,18 @@ impl<T: GetAssetType + 'static> ElementComponent for AssetUrlEditor<T> {
 }
 
 impl<T: GetAssetType + 'static> Editor for AssetUrlCollection<T> {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _opts: EditorOpts) -> Element {
-        AssetUrlCollectionEditor { value: self, on_change }.el()
+    fn editor(self, on_change: Cb<dyn Fn(Self) + Sync + Send>, _opts: EditorOpts) -> Element {
+        AssetUrlCollectionEditor { value: self, on_change: Some(on_change) }.el()
+    }
+
+    fn view(self, opts: EditorOpts) -> Element
+    where
+        Self: Sized,
+    {
+        AssetUrlCollectionEditor { value: self, on_change: None }.el()
     }
 }
+
 #[derive(Debug, Clone)]
 pub struct AssetUrlCollectionEditor<T: GetAssetType> {
     pub value: AssetUrlCollection<T>,

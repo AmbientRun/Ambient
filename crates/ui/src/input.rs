@@ -10,13 +10,14 @@ use elements_std::{
     events::EventDispatcher, math::{interpolate, interpolate_clamped, Saturate}, Cb
 };
 use glam::*;
+use itertools::Itertools;
 use winit::{
     event::{ElementState, Event, WindowEvent}, window::CursorIcon
 };
 
 use super::{Editor, EditorOpts, FlowColumn, FlowRow, Focus, Text, UIBase, UIExt};
 use crate::{
-    background_color, border_radius, layout::*, primary_color, text_input::TextInput, Button, ButtonStyle, Corners, FontAwesomeIcon, Rectangle, STREET
+    background_color, border_radius, layout::*, primary_color, text_input::TextInput, Button, ButtonStyle, ChangeCb, Corners, FontAwesomeIcon, Rectangle, STREET
 };
 
 #[derive(Debug, Clone)]
@@ -97,64 +98,67 @@ pub type U64Input = ParseableInput<u64>;
 pub type UsizeInput = ParseableInput<usize>;
 
 impl Editor for Duration {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
-        if let Some(on_change) = on_change {
-            CustomParseInput {
-                value: self,
-                on_change,
-                parse: Cb::new(|v| v.parse::<f32>().ok().map(Duration::from_secs_f32)),
-                to_string: Cb::new(|v| format!("{:.3}", v.as_secs_f32())),
-            }
-            .el()
-        } else {
-            Text::el(format!("{}", self.as_secs_f32()))
+    fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
+        CustomParseInput {
+            value: self,
+            on_change,
+            parse: Cb::new(|v| v.parse::<f32>().ok().map(Duration::from_secs_f32)),
+            to_string: Cb::new(|v| format!("{:.3}", v.as_secs_f32())),
         }
+        .el()
+    }
+
+    fn view(self, opts: EditorOpts) -> Element
+    where
+        Self: Sized,
+    {
+        Text::el(format!("{}", self.as_secs_f32()))
     }
 }
 
 impl Editor for f32 {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
-        if let Some(on_change) = on_change {
-            F32Input { value: self, on_change }.el()
-        } else {
-            Text::el(format!("{self}"))
-        }
+    fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
+        F32Input { value: self, on_change }.el()
+    }
+
+    fn view(self, opts: EditorOpts) -> Element {
+        Text::el(format!("{self}"))
     }
 }
 impl Editor for i32 {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
-        if let Some(on_change) = on_change {
-            I32Input { value: self, on_change }.el()
-        } else {
-            Text::el(format!("{self}"))
-        }
+    fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
+        I32Input { value: self, on_change }.el()
+    }
+
+    fn view(self, opts: EditorOpts) -> Element {
+        Text::el(format!("{self}"))
     }
 }
 impl Editor for u32 {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
-        if let Some(on_change) = on_change {
-            U32Input { value: self, on_change }.el()
-        } else {
-            Text::el(format!("{self}"))
-        }
+    fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
+        U32Input { value: self, on_change }.el()
+    }
+
+    fn view(self, opts: EditorOpts) -> Element {
+        Text::el(format!("{self}"))
     }
 }
 impl Editor for u64 {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
-        if let Some(on_change) = on_change {
-            U64Input { value: self, on_change }.el()
-        } else {
-            Text::el(format!("{self}"))
-        }
+    fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
+        U64Input { value: self, on_change }.el()
+    }
+
+    fn view(self, opts: EditorOpts) -> Element {
+        Text::el(format!("{self}"))
     }
 }
 impl Editor for usize {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
-        if let Some(on_change) = on_change {
-            UsizeInput { value: self, on_change }.el()
-        } else {
-            Text::el(format!("{self}"))
-        }
+    fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
+        UsizeInput { value: self, on_change }.el()
+    }
+
+    fn view(self, opts: EditorOpts) -> Element {
+        Text::el(format!("{self}"))
     }
 }
 
@@ -178,10 +182,12 @@ impl ElementComponent for Checkbox {
 }
 
 impl Editor for bool {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
-        if let Some(on_change) = on_change {
-            Checkbox { value: self, on_change }.el()
-        } else if self {
+    fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
+        Checkbox { value: self, on_change }.el()
+    }
+
+    fn view(self, opts: EditorOpts) -> Element {
+        if self {
             FontAwesomeIcon::el(0xf14a, false)
         } else {
             FontAwesomeIcon::el(0xf0c8, false)
@@ -200,6 +206,7 @@ pub struct Slider {
     pub round: Option<u32>,
     pub suffix: Option<&'static str>,
 }
+
 impl ElementComponent for Slider {
     fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
         let Slider { value, min, max, width: slider_width, logarithmic, round, suffix, .. } = *self;
@@ -312,7 +319,7 @@ impl ElementComponent for Slider {
                     }
                 },
             ),
-            FlowRow::el([f32::editor(value, on_change_raw, EditorOpts::default()), suffix.map(|s| Text::el(s)).unwrap_or_default()]),
+            FlowRow::el([f32::edit_or_view(value, on_change_raw, EditorOpts::default()), suffix.map(|s| Text::el(s)).unwrap_or_default()]),
         ])
         .set(space_between_items(), STREET)
     }
@@ -430,7 +437,7 @@ impl ElementComponent for SystemTimeEditor {
     }
 }
 impl Editor for SystemTime {
-    fn editor(self, _: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
+    fn editor(self, _: ChangeCb<Self>, _: EditorOpts) -> Element {
         SystemTimeEditor { value: self, on_change: None }.el()
     }
 }
@@ -452,6 +459,7 @@ impl ElementComponent for EditorRow {
         FlowRow(vec![Text::el(title).set(margin(), Borders::right(STREET)), editor]).el()
     }
 }
+
 #[derive(Debug, Clone)]
 pub struct EditorColumn(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(EditorColumn);
@@ -461,144 +469,56 @@ impl ElementComponent for EditorColumn {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct Vec2Editor {
-    pub value: Vec2,
-    pub on_change: Cb<dyn Fn(Vec2) + Sync + Send>,
-}
-impl ElementComponent for Vec2Editor {
-    fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
-        let Self { value, on_change } = *self;
-        EditorColumn(vec![
-            EditorRow::el(
-                "X",
-                F32Input::new(value.x, {
-                    let on_change = on_change.clone();
-                    move |x| on_change(vec2(x, value.y))
-                })
-                .el(),
-            ),
-            EditorRow::el(
-                "Y",
-                F32Input::new(value.y, {
-                    let on_change = on_change.clone();
-                    move |y| on_change(vec2(value.x, y))
-                })
-                .el(),
-            ),
-        ])
-        .el()
-    }
-}
 impl Editor for Vec2 {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
-        if let Some(on_change) = on_change {
-            Vec2Editor { value: self, on_change }.el()
-        } else {
-            Text::el(format!("{self}"))
-        }
+    fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
+        ArrayEditor { value: self.to_array(), on_change: Cb::new(move |v| (on_change)(Self::from(v))) }.el()
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct Vec3Editor {
-    pub value: Vec3,
-    pub on_change: Cb<dyn Fn(Vec3) + Sync + Send>,
-}
-impl ElementComponent for Vec3Editor {
-    fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
-        let Self { value, on_change } = *self;
-        EditorColumn(vec![
-            EditorRow::el(
-                "X",
-                F32Input::new(value.x, {
-                    let on_change = on_change.clone();
-                    move |x| on_change(vec3(x, value.y, value.z))
-                })
-                .el(),
-            ),
-            EditorRow::el(
-                "Y",
-                F32Input::new(value.y, {
-                    let on_change = on_change.clone();
-                    move |y| on_change(vec3(value.x, y, value.z))
-                })
-                .el(),
-            ),
-            EditorRow::el(
-                "Z",
-                F32Input::new(value.z, {
-                    let on_change = on_change.clone();
-                    move |z| on_change(vec3(value.x, value.y, z))
-                })
-                .el(),
-            ),
-        ])
-        .el()
-    }
-}
 impl Editor for Vec3 {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
-        if let Some(on_change) = on_change {
-            Vec3Editor { value: self, on_change }.el()
-        } else {
-            Text::el(format!("{self}"))
-        }
+    fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
+        ArrayEditor { value: self.to_array(), on_change: Cb::new(move |v| (on_change)(Self::from(v))) }.el()
+    }
+}
+
+impl Editor for Vec4 {
+    fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
+        ArrayEditor { value: self.to_array(), on_change: Cb::new(move |v| (on_change)(Self::from(v))) }.el()
     }
 }
 
 #[derive(Debug, Clone)]
-pub struct Vec4Editor {
-    pub value: Vec4,
-    pub on_change: Cb<dyn Fn(Vec4) + Sync + Send>,
+pub struct ArrayEditor<const C: usize, T> {
+    pub value: [T; C],
+    pub on_change: Cb<dyn Fn([T; C]) + Sync + Send>,
 }
-impl ElementComponent for Vec4Editor {
+
+impl<const C: usize, T: 'static + Clone + Debug + Editor + Send + Sync> ElementComponent for ArrayEditor<C, T> {
     fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
         let Self { value, on_change } = *self;
-        EditorColumn(vec![
-            EditorRow::el(
-                "X",
-                F32Input::new(value.x, {
+        EditorColumn(
+            value
+                .iter()
+                .enumerate()
+                .map(|(i, v)| {
+                    let value = value.clone();
                     let on_change = on_change.clone();
-                    move |x| on_change(vec4(x, value.y, value.z, value.w))
+                    v.clone().editor(
+                        Cb::new(move |v| {
+                            let mut value = value.clone();
+                            value[i] = v;
+                            on_change(value)
+                        }),
+                        Default::default(),
+                    )
                 })
-                .el(),
-            ),
-            EditorRow::el(
-                "Y",
-                F32Input::new(value.y, {
-                    let on_change = on_change.clone();
-                    move |y| on_change(vec4(value.x, y, value.z, value.w))
-                })
-                .el(),
-            ),
-            EditorRow::el(
-                "Z",
-                F32Input::new(value.z, {
-                    let on_change = on_change.clone();
-                    move |z| on_change(vec4(value.x, value.y, z, value.w))
-                })
-                .el(),
-            ),
-            EditorRow::el(
-                "W",
-                F32Input::new(value.w, {
-                    let on_change = on_change.clone();
-                    move |w| on_change(vec4(value.x, value.y, value.z, w))
-                })
-                .el(),
-            ),
-        ])
+                .collect_vec(),
+        )
         .el()
     }
 }
-impl Editor for Vec4 {
-    fn editor(self, on_change: Option<Cb<dyn Fn(Self) + Sync + Send>>, _: EditorOpts) -> Element {
-        if let Some(on_change) = on_change {
-            Vec4Editor { value: self, on_change }.el()
-        } else {
-            // Removed unneccesary clone
-            Text::el(format!("{self}"))
-        }
+impl<const C: usize, T: 'static + Clone + Debug + Editor + Send + Sync> Editor for [T; C] {
+    fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
+        ArrayEditor { value: self, on_change }.el()
     }
 }

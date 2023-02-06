@@ -31,8 +31,8 @@ impl ElementComponent for Example {
                 }
                 .el(),
             ),
-            row("Vec3", Vec3::editor(vector3, Some(Cb(set_vector3)), Default::default())),
-            row("IndexMap", IndexMap::editor(index_map, Some(Cb(set_index_map)), Default::default())),
+            row("Vec3", Vec3::editor(vector3, Cb(set_vector3), Default::default())),
+            row("IndexMap", IndexMap::editor(index_map, Cb(set_index_map), Default::default())),
             row("ListEditor", ListEditor { value: list, on_change: Some(Cb(set_list)) }.el()),
             row(
                 "MinimalListEditor",

@@ -140,7 +140,7 @@ impl ElementComponent for AssetTimelineVisualizer {
                     .style(ButtonStyle::Flat)
                     .el(),
                 ]),
-                FlowRow::el([Text::el("Limit:"), Option::<usize>::editor(limit, Some(Cb(set_limit)), Default::default())]),
+                FlowRow::el([Text::el("Limit:"), Option::<usize>::editor(limit, Cb(set_limit), Default::default())]),
             ])
             .keyboard(),
         );
