@@ -1,15 +1,17 @@
-use std::{ops::Deref, sync::Arc};
+use std::{marker::PhantomData, ops::Deref, sync::Arc};
 
 use elements_core::{
     name, transform::{euler_rotation, scale, translation}
 };
 use elements_ecs::{AttributeConstructor, Component, ComponentAttribute, ComponentEntry, ComponentValue};
-use elements_element::{Element, ElementComponentExt};
+use elements_element::{element_component, Element, ElementComponent, ElementComponentExt};
 use elements_renderer::color;
 use elements_std::{time::Timeout, Cb};
 use parking_lot::Mutex;
 
-use crate::{Button, ButtonStyle, DurationEditor, EditableDuration, FlowRow, Text};
+use crate::{
+    align_vertical, space_between_items, Button, ButtonStyle, DialogScreen, DurationEditor, EditableDuration, EditorPrompt, FlowColumn, FlowRow, ScreenContainer, ScrollArea, StylesExt, Text, STREET
+};
 
 #[derive(Clone, Debug)]
 pub struct EditorOpts {
@@ -126,12 +128,14 @@ impl<T: Default + Editor + 'static> Editor for Option<T> {
 }
 
 type EditFn<T> = fn(ComponentEntryEditor, ChangeCb<T>, EditorOpts) -> Element;
+type ViewFn = fn(ComponentEntryEditor, EditorOpts) -> Element;
 
 #[derive(Clone)]
 /// Created through the `Editable` attribute
 pub struct ComponentEntryEditor {
     pub entry: ComponentEntry,
     edit: EditFn<Self>,
+    view: ViewFn,
 }
 
 impl ComponentEntryEditor {
@@ -150,17 +154,22 @@ impl Editor for ComponentEntryEditor {
     fn editor(self, on_change: ChangeCb<Self>, opts: EditorOpts) -> Element {
         (self.edit)(self, on_change, opts)
     }
+
+    fn view(self, opts: EditorOpts) -> Element {
+        (self.view)(self, opts)
+    }
 }
 
 #[derive(Copy, Clone)]
 pub struct Editable {
     edit: EditFn<ComponentEntryEditor>,
+    view: ViewFn,
 }
 
 impl Editable {
     /// Create an editor for this component entry
     pub fn edit(&self, entry: ComponentEntry) -> ComponentEntryEditor {
-        ComponentEntryEditor { entry, edit: self.edit }
+        ComponentEntryEditor { entry, edit: self.edit, view: self.view }
     }
 }
 
@@ -182,6 +191,10 @@ where
                     opts,
                 )
             },
+            view: |editor, opts| {
+                let entry = editor.entry;
+                T::view(entry.into_inner(), opts)
+            },
         };
 
         store.set(editable);
@@ -201,4 +214,63 @@ pub fn hydrate_editable() {
     set(scale());
     set(color());
     set(name());
+}
+
+/// Delegates a type editor to edit in a new `screen`
+#[derive(Debug, Clone)]
+pub struct OffscreenEditor<T> {
+    pub value: T,
+    pub editor: Element,
+    pub on_change: ChangeCb<T>,
+    pub title: String,
+}
+
+impl<T: std::fmt::Debug + ComponentValue + Editor> ElementComponent for OffscreenEditor<T> {
+    fn render(self: Box<Self>, world: &mut elements_ecs::World, hooks: &mut elements_element::Hooks) -> Element {
+        let Self { title, value, on_change, editor } = *self;
+
+        let (screen, set_screen) = hooks.use_state(None);
+        FlowRow(vec![
+            ScreenContainer(screen).el(),
+            Button::new("\u{fb4e} Edit", move |_| {
+                set_screen(Some(
+                    DialogScreen(
+                        ScrollArea(
+                            FlowColumn::el([
+                                Text::el(title.clone()).header_style(),
+                                editor.clone(),
+                                FlowRow(vec![
+                                    Button::new(
+                                        "Ok",
+                                        closure!(clone set_screen, |_| {
+                                            set_screen(None);
+                                        }),
+                                    )
+                                    .style(ButtonStyle::Primary)
+                                    .el(),
+                                    Button::new(
+                                        "Cancel",
+                                        closure!(clone set_screen, |_| {
+                                            set_screen(None);
+                                        }),
+                                    )
+                                    .style(ButtonStyle::Flat)
+                                    .el(),
+                                ])
+                                .el()
+                                .set(space_between_items(), STREET)
+                                .set(align_vertical(), crate::Align::Center),
+                            ])
+                            .set(space_between_items(), STREET),
+                        )
+                        .el(),
+                    )
+                    .el(),
+                ));
+            })
+            .style(ButtonStyle::Flat)
+            .el(),
+        ])
+        .el()
+    }
 }

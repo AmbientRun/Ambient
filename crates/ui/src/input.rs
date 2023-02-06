@@ -17,7 +17,7 @@ use winit::{
 
 use super::{Editor, EditorOpts, FlowColumn, FlowRow, Focus, Text, UIBase, UIExt};
 use crate::{
-    background_color, border_radius, layout::*, primary_color, text_input::TextInput, Button, ButtonStyle, ChangeCb, Corners, FontAwesomeIcon, Rectangle, STREET
+    background_color, border_radius, layout::*, primary_color, text_input::TextInput, Button, ButtonStyle, ChangeCb, Corners, FontAwesomeIcon, OffscreenEditor, Rectangle, STREET
 };
 
 #[derive(Debug, Clone)]
@@ -477,8 +477,17 @@ impl Editor for Vec2 {
 
 impl Editor for Vec3 {
     fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
-        ArrayEditor { value: self.to_array(), on_change: Cb::new(move |v| (on_change)(Self::from(v))), field_names: Some(&["X", "Y", "Z"]) }
-            .el()
+        let editor = ArrayEditor {
+            value: self.to_array(),
+            on_change: {
+                let on_change = on_change.clone();
+                Cb::new(move |v| (on_change)(Self::from(v)))
+            },
+            field_names: Some(&["X", "Y", "Z"]),
+        }
+        .el();
+
+        OffscreenEditor { value: self, editor, on_change, title: "Vec3".to_string() }.el()
     }
 }
 
