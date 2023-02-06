@@ -224,9 +224,8 @@ pub fn reload<
     add_to_linker: Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
     scripts: &[(EntityId, Option<ScriptModuleBytecode>)],
 ) {
-    let players = query(player()).collect_ids(world, None);
     for (script_id, bytecode) in scripts {
-        let mut errors = unload(world, state_component, *script_id, &players, "reloading");
+        let mut errors = unload(world, state_component, *script_id, "reloading");
 
         if let Some(bytecode) = bytecode {
             if !bytecode.0.is_empty() {
@@ -237,7 +236,6 @@ pub fn reload<
                     make_wasm_context.clone(),
                     add_to_linker.clone(),
                     &bytecode.0,
-                    &players,
                     &mut errors,
                 );
             }
@@ -259,7 +257,6 @@ pub fn load<
     make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context + Send + Sync>,
     add_to_linker: Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
     bytecode: &[u8],
-    players: &[EntityId],
     errors: &mut Vec<(EntityId, String)>,
 ) {
     let messenger = world.resource(messenger()).clone();
@@ -292,23 +289,6 @@ pub fn load<
                 &ScriptContext::new(world, "core/module_load", EntityData::new()),
             ));
 
-            // Run the PlayerJoin event for all players to simulate the world being loaded
-            // in for the module.
-            errors.extend(players.iter().filter_map(|player_id| {
-                let script_context = ScriptContext::new(
-                    world,
-                    "core/player_join",
-                    vec![ComponentEntry::new(elements_ecs::id(), *player_id)].into(),
-                );
-                run(
-                    world,
-                    state_component,
-                    script_id,
-                    sms.clone(),
-                    &script_context,
-                )
-            }));
-
             world
                 .add_component(script_id, state_component, sms)
                 .unwrap();
@@ -325,27 +305,19 @@ pub fn unload<
     world: &mut World,
     state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
     script_id: EntityId,
-    players: &[EntityId],
     reason: &str,
 ) -> Vec<(EntityId, String)> {
-    // TODO: replace with explicit ModuleUnload/ModuleLoad events
-    // Run PlayerLeave events for all players in the world for the module.
-    let errors = players
-        .iter()
-        .filter_map(|player_id| {
-            run(
-                world,
-                state_component,
-                script_id,
-                world.get_cloned(script_id, state_component).ok()?,
-                &ScriptContext::new(
-                    world,
-                    "core/player_leave",
-                    vec![ComponentEntry::new(elements_ecs::id(), *player_id)].into(),
-                ),
-            )
-        })
-        .collect_vec();
+    let Ok(sms) = world.get_cloned(script_id, state_component) else { return vec![]; };
+
+    let errors = run(
+        world,
+        state_component,
+        script_id,
+        sms,
+        &ScriptContext::new(world, "core/module_unload", EntityData::new()),
+    )
+    .into_iter()
+    .collect_vec();
 
     let spawned_entities = world
         .get_mut(script_id, state_component)
@@ -385,8 +357,6 @@ pub fn update_errors<
     errors: &[(EntityId, String)],
     runtime: bool,
 ) {
-    let players = query(player()).collect_ids(world, None);
-
     let messenger = world.resource(messenger()).clone();
     for (id, err) in errors {
         messenger(
@@ -410,7 +380,7 @@ pub fn update_errors<
             };
             error_stream.push(err.clone());
             if error_stream.len() > MAXIMUM_ERROR_COUNT {
-                unload(world, state_component, *id, &players, "too many errors");
+                unload(world, state_component, *id, "too many errors");
             }
         }
     }

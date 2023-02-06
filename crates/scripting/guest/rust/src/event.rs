@@ -1,15 +1,17 @@
 use crate::{host, Components};
 
-/// Triggered when the game server first starts
-pub const GAME_START: &str = "core/game_start";
-/// Triggered each frame
+/// Fired each frame.
 pub const FRAME: &str = "core/frame";
-/// Triggered on a collision. Components will contain the `ids` of the objects
+/// Fired on a collision. Components will contain the `ids` of the objects.
 pub const COLLISION: &str = "core/collision";
-/// Triggered when a collider is loaded. Components will contain the `id` of the object
+/// Fired when a collider is loaded. Components will contain the `id` of the object.
 pub const COLLIDER_LOAD: &str = "core/collider_load";
-/// Triggered when an entity is spawned. Components will contain the `id` and `uid` of the object
+/// Fired when an entity is spawned. Components will contain the `id` and `uid` of the object.
 pub const ENTITY_SPAWN: &str = "core/entity_spawn";
+/// Fired when the module is loaded.
+pub const MODULE_LOAD: &str = "core/module_load";
+/// Fired when the module is unloaded.
+pub const MODULE_UNLOAD: &str = "core/module_unload";
 
 /// Sends an event
 pub fn send(name: impl AsRef<str>, data: Components) {

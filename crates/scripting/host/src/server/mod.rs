@@ -4,10 +4,7 @@ use elements_ecs::{
     components, query, uid, Component, ComponentEntry, EntityData, EntityId, FnSystem, SystemGroup,
     World,
 };
-use elements_network::{
-    player::player,
-    server::{ForkingEvent, ShutdownEvent},
-};
+use elements_network::server::{ForkingEvent, ShutdownEvent};
 use elements_physics::{collider_loads, collisions, PxShapeUserData};
 use itertools::Itertools;
 use parking_lot::RwLock;
@@ -338,9 +335,8 @@ pub fn on_shutdown_systems<
         "core/scripting/server/on_shutdown_systems",
         vec![Box::new(FnSystem::new(move |world, _| {
             let scripts = query(()).incl(script_module()).collect_ids(world, None);
-            let players = query(player()).collect_ids(world, None);
             for script_id in scripts {
-                let errors = unload(world, state_component, script_id, &players, "shutting down");
+                let errors = unload(world, state_component, script_id, "shutting down");
                 update_errors(world, state_component, &errors, true);
             }
         }))],
