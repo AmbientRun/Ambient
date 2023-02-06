@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use elements_ecs::primitive_component_definitions;
 
-use crate::{Component, ComponentType, Manifest, Project};
+use crate::{Component, ComponentType, Identifier, IdentifierPath, Manifest, Project};
 
 #[test]
 fn can_parse_tictactoe_toml() {
@@ -19,14 +19,14 @@ fn can_parse_tictactoe_toml() {
         Manifest::parse(TOML),
         Ok(Manifest {
             project: Project {
-                name: "tictactoe".to_string(),
+                name: Identifier::new("tictactoe").unwrap(),
                 version: "0.0.1".to_string(),
                 description: None,
                 authors: vec![],
                 organization: None
             },
             components: HashMap::from_iter([(
-                "cell".to_string(),
+                IdentifierPath::new("cell").unwrap(),
                 Component {
                     name: "Cell".to_string(),
                     description: "The ID of the cell this player is in".to_string(),
@@ -35,6 +35,24 @@ fn can_parse_tictactoe_toml() {
             )])
         })
     )
+}
+
+#[test]
+fn can_validate_identifiers() {
+    use Identifier as I;
+    use IdentifierPath as IP;
+
+    assert_eq!(I::new(""), Err("identifier must not be empty"));
+    assert_eq!(I::new("5asd"), Err("identifier must start with a lowercase ASCII character"));
+    assert_eq!(I::new("_asd"), Err("identifier must start with a lowercase ASCII character"));
+    assert_eq!(I::new("mY_COOL_COMPONENT"), Err("identifier must be snake-case ASCII"));
+    assert_eq!(I::new("cool_component!"), Err("identifier must be snake-case ASCII"));
+    assert_eq!(I::new("cool-component"), Err("identifier must be snake-case ASCII"));
+
+    assert_eq!(I::new("cool_component"), Ok(I("cool_component".to_string())));
+    assert_eq!(I::new("cool_component_00"), Ok(I("cool_component_00".to_string())));
+
+    assert_eq!(IP::new("my::cool_component_00"), Ok(IP(vec![I("my".to_string()), I("cool_component_00".to_string())])));
 }
 
 #[test]

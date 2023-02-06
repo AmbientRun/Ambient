@@ -130,13 +130,13 @@ pub async fn initialize(
         let toml = cargo_toml::Manifest::from_str(&std::fs::read_to_string(&cargo_toml_path)?)?;
 
         match toml.package {
-            Some(package) if package.name == manifest.project.name => {}
+            Some(package) if package.name == manifest.project.name.as_ref() => {}
             Some(package) => {
                 anyhow::bail!("The name of the package in the Cargo.toml ({}) does not match the project's name ({})", package.name, manifest.project.name);
             }
             None => anyhow::bail!(
                 "No [package] present in Cargo.toml for project {}",
-                manifest.project.name
+                manifest.project.name.as_ref()
             ),
         }
 

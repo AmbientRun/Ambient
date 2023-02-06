@@ -9,6 +9,7 @@ use std::{
 use anyhow::Context;
 use async_trait::async_trait;
 use elements_ecs::World;
+use elements_project::Identifier;
 use indoc::indoc;
 use parking_lot::{Mutex, RwLock};
 use serde::{Deserialize, Serialize};
@@ -47,7 +48,7 @@ impl ScriptModuleOwnedFiles {
         &self.files
     }
 
-    pub fn populate(&mut self, name: &str, scripting_interface: &str) {
+    pub fn populate(&mut self, name: &Identifier, scripting_interface: &str) {
         for (filename, contents) in Self::STATIC_FILE_TEMPLATES {
             let filename = PathBuf::from(filename);
             let contents = contents
@@ -62,7 +63,7 @@ impl ScriptModuleOwnedFiles {
     /// Ignores system-controlled files
     pub fn insert_multiple(
         &mut self,
-        module_name: &str,
+        module_name: &Identifier,
         scripting_interfaces: &[&str],
         primary_scripting_interface: &str,
         files: &FileMap,

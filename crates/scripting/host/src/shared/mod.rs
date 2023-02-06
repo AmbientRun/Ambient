@@ -23,6 +23,7 @@ use elements_ecs::{
     Store, World,
 };
 use elements_network::player::player;
+use elements_project::Identifier;
 use host_guest_state::GetBaseHostGuestState;
 use interface::write_scripting_interfaces;
 use itertools::Itertools;
@@ -470,7 +471,7 @@ pub fn run<
 
 pub fn spawn_script(
     world: &mut World,
-    name: &str,
+    name: &Identifier,
     description: String,
     enabled: bool,
     script_path: PathBuf,
@@ -479,7 +480,7 @@ pub fn spawn_script(
     if query(())
         .incl(script_module())
         .iter(world, None)
-        .any(|(id, _)| get_module_name(world, id) == name)
+        .any(|(id, _)| &get_module_name(world, id) == name)
     {
         anyhow::bail!("a script module by the name {name} already exists");
     }

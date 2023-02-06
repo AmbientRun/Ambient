@@ -7,6 +7,7 @@ use std::{
 
 use elements_core::name;
 use elements_ecs::{query, EntityId, World};
+use elements_project::Identifier;
 use indoc::indoc;
 
 use super::{script_module, script_module_enabled};
@@ -115,6 +116,6 @@ where
     Ok(val.replace('_', ":").parse()?)
 }
 
-pub fn get_module_name(world: &World, id: EntityId) -> String {
-    world.get_cloned(id, name()).unwrap_or(id.to_string())
+pub fn get_module_name(world: &World, id: EntityId) -> Identifier {
+    Identifier::new(world.get_cloned(id, name()).unwrap()).unwrap()
 }

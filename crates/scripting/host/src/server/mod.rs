@@ -20,7 +20,7 @@ use crate::shared::{
     reload, reload_all, run_all, script_module, script_module_bytecode, script_module_compiled,
     script_module_enabled, script_module_errors, script_module_owned_files, script_module_path,
     scripting_interface_name, unload, update_errors, util::get_module_name, MessageType,
-    ScriptContext, ScriptModuleBytecode, ScriptModuleErrors, ScriptModuleState, WasmContext,
+    ScriptContext, ScriptModuleBytecode, ScriptModuleState, WasmContext,
 };
 
 pub mod bindings;
@@ -72,14 +72,6 @@ pub fn systems<
                         if let Ok(owned_files) = world.get_mut(id, script_module_owned_files()) {
                             owned_files.populate(&name, &scripting_interface_name);
                         }
-
-                        world
-                            .add_component(
-                                id,
-                                script_module_errors(),
-                                ScriptModuleErrors::default(),
-                            )
-                            .unwrap();
                     }
                 }),
             query((script_module().changed(), script_module_enabled().changed()))
@@ -145,7 +137,7 @@ pub fn systems<
                             Arc::new(compile(
                                 install_dirs.clone(),
                                 script_path.clone(),
-                                get_module_name(world, id),
+                                get_module_name(world, id).to_string(),
                                 owned_files,
                             )),
                         ))
