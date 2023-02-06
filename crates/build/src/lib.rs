@@ -1,6 +1,7 @@
 use std::{path::PathBuf, sync::Arc};
 
 use elements_asset_cache::{AssetCache, SyncAssetKeyExt};
+use elements_physics::physx::{Physics, PhysicsKey};
 use elements_std::asset_url::AbsAssetUrl;
 use futures::FutureExt;
 use itertools::Itertools;
@@ -16,13 +17,13 @@ pub mod pipelines;
 /// src/**  This is where you store Rust source files
 /// target  This is the output directory, and is created when building
 /// Elements.toml  This is a metadata file to describe the project
-pub async fn build(_assets: &AssetCache, path: PathBuf) {
+pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf) {
     let target_path = path.join("target");
     let assets_path = path.join("assets");
-    build_assets(assets_path, target_path).await;
+    build_assets(physics, assets_path, target_path).await;
 }
 
-async fn build_assets(assets_path: PathBuf, target_path: PathBuf) {
+async fn build_assets(physics: Physics, assets_path: PathBuf, target_path: PathBuf) {
     let files = WalkDir::new(&assets_path)
         .into_iter()
         .filter_map(|e| e.ok())
@@ -30,6 +31,7 @@ async fn build_assets(assets_path: PathBuf, target_path: PathBuf) {
         .map(|x| AbsAssetUrl::from_file_path(x.into_path()))
         .collect_vec();
     let assets = AssetCache::new_with_config(tokio::runtime::Handle::current(), None);
+    PhysicsKey.insert(&assets, physics);
     let ctx = ProcessCtx {
         assets: assets.clone(),
         files: Arc::new(files),

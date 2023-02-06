@@ -25,9 +25,9 @@ components!("physics", {
 
 #[derive(Debug)]
 pub struct PhysicsKey;
-impl SyncAssetKey<Arc<Physics>> for PhysicsKey {
-    fn load(&self, _assets: elements_std::asset_cache::AssetCache) -> Arc<Physics> {
-        Arc::new(Physics::new())
+impl SyncAssetKey<Physics> for PhysicsKey {
+    fn load(&self, _assets: elements_std::asset_cache::AssetCache) -> Physics {
+        Physics::new()
     }
 }
 
@@ -49,7 +49,7 @@ impl Physics {
         pvd.connect(&pvd_transport, PxPvdInstrumentationFlags::All);
         let physics = PxPhysicsRef::new_with_pvd(&foundation, &pvd);
         px_init_extensions(&physics, &pvd);
-        let mut cooking = PxCookingParams::new(&physics);
+        let mut cooking = PxCookingParams::new(physics);
         cooking.0.meshWeldTolerance = 0.2;
         cooking.0.meshPreprocessParams.mBits = physxx::sys::PxMeshPreprocessingFlag::eWELD_VERTICES;
         Self {

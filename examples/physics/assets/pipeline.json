@@ -4,8 +4,7 @@
             "type": "Models",
             "collider": {
                 "type": "FromModel"
-            },
-            "collider_type": "Dynamic"
+            }
         }
     }
 ]

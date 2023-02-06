@@ -10,7 +10,7 @@ use crate::{
 
 pub struct PxSceneDesc(physx_sys::PxSceneDesc);
 impl PxSceneDesc {
-    pub fn new(physics: &PxPhysicsRef) -> Self {
+    pub fn new(physics: PxPhysicsRef) -> Self {
         Self(unsafe {
             let mut scene_desc = physx_sys::PxSceneDesc_new(physx_sys::PxPhysics_getTolerancesScale(physics.0));
 

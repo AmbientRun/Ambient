@@ -8,7 +8,7 @@ use crate::{
 pub struct PxCookingParams(pub physx_sys::PxCookingParams);
 impl PxCookingParams {
     /// Create a new cooking params.
-    pub fn new(physics: &PxPhysicsRef) -> Self {
+    pub fn new(physics: PxPhysicsRef) -> Self {
         Self(unsafe { physx_sys::PxCookingParams_new(physics.get_tolerances_scale()) })
     }
 }

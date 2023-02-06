@@ -222,7 +222,7 @@ pub fn server_systems() -> SystemGroup {
             query(collider_shapes().changed()).optional_changed(collider_type()).to_system(|q, world, qs, _| {
                 let physics = world.resource(physics()).clone();
                 let force_static = world.get(world.resource_entity(), make_physics_static()).unwrap_or(false);
-                for (id, mut shapes) in q.collect_cloned(world, qs) {
+                let build_actor = |world: &mut World, id: EntityId, mut shapes: Vec<PxShape>| {
                     let pos = world.get(id, translation()).unwrap_or_default();
                     let rot = world.get(id, rotation()).unwrap_or_default();
                     let collider_type = world.get(id, collider_type()).unwrap_or(ColliderType::Static);
@@ -247,7 +247,10 @@ pub fn server_systems() -> SystemGroup {
                     }
                     for shape in shapes.iter_mut() {
                         if !actor.attach_shape(shape) {
-                            panic!("Failed to attach shape");
+                            log::error!("Failed to attach shape to entity {}", id);
+                            actor.as_actor().remove_user_data::<PxActorUserData>();
+                            actor.release();
+                            return;
                         }
                         shape.update_user_data::<PxShapeUserData>(&|ud| ud.entity = id);
                     }
@@ -275,6 +278,9 @@ pub fn server_systems() -> SystemGroup {
                             (*handler)(world, id);
                         }
                     }
+                };
+                for (id, shapes) in q.collect_cloned(world, qs) {
+                    build_actor(world, id, shapes);
                 }
             }),
         ],

@@ -10,7 +10,9 @@ use elements_element::{element_component, Element, ElementComponentExt, Hooks};
 use elements_network::{
     client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce}, events::ServerEventRegistry
 };
-use elements_std::{asset_cache::AssetCache, Cb};
+use elements_std::{
+    asset_cache::{AssetCache, SyncAssetKeyExt}, Cb
+};
 use elements_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
 
 pub mod components;
@@ -19,6 +21,7 @@ mod player;
 mod server;
 
 use anyhow::Context;
+use elements_physics::physx::PhysicsKey;
 use player::PlayerRawInputHandler;
 use server::QUIC_INTERFACE_PORT;
 
@@ -159,6 +162,7 @@ fn main() -> anyhow::Result<()> {
     components::init().unwrap();
     let runtime = tokio::runtime::Builder::new_multi_thread().enable_all().build().unwrap();
     let assets = AssetCache::new(runtime.handle().clone());
+    PhysicsKey.get(&assets); // Load physics
 
     let cli = Cli::parse();
 
@@ -175,7 +179,7 @@ fn main() -> anyhow::Result<()> {
         if project_path.is_absolute() { project_path } else { elements_std::path::normalize(&current_dir.join(project_path)) };
 
     if cli.command.should_build() {
-        runtime.block_on(elements_build::build(&assets, project_path.clone()));
+        runtime.block_on(elements_build::build(PhysicsKey.get(&assets), &assets, project_path.clone()));
     }
 
     let server_addr = if let Commands::Join { host, .. } = &cli.command {
