@@ -9,6 +9,7 @@ fn can_parse_tictactoe_toml() {
     const TOML: &str = r#"
     [project]
     id = "tictactoe"
+    name = "Tic Tac Toe"
     version = "0.0.1"
 
     [components]
@@ -20,6 +21,7 @@ fn can_parse_tictactoe_toml() {
         Ok(Manifest {
             project: Project {
                 id: Identifier::new("tictactoe").unwrap(),
+                name: Some("Tic Tac Toe".to_string()),
                 version: Version::new(0, 0, 1),
                 description: None,
                 authors: vec![],

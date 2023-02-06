@@ -43,6 +43,7 @@ impl Manifest {
 #[derive(Deserialize, Clone, Debug, PartialEq)]
 pub struct Project {
     pub id: Identifier,
+    pub name: Option<String>,
     pub version: Version,
     pub description: Option<String>,
     #[serde(default)]

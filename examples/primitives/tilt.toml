@@ -1,3 +1,4 @@
 [project]
 id = "primitives"
+name = "Primitives"
 version = "0.0.1"
