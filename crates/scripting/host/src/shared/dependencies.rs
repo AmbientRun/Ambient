@@ -207,6 +207,7 @@ mod tests {
                 edition = "2021"
                 version = "0.1.0"
                 description = "a cool description"
+
                 [dependencies.tilt_base_scripting_interface]
                 path = "../../tilt_base_scripting_interface"
                 features = []
@@ -243,6 +244,7 @@ mod tests {
                 edition = "2021"
                 version = "0.1.0"
                 description = "a cool description"
+
                 [dependencies.tilt_base_scripting_interface]
                 path = "../../tilt_base_scripting_interface"
                 features = []
