@@ -108,7 +108,7 @@ impl Editor for Duration {
         .el()
     }
 
-    fn view(self, opts: EditorOpts) -> Element
+    fn view(self, _: EditorOpts) -> Element
     where
         Self: Sized,
     {
@@ -121,7 +121,7 @@ impl Editor for f32 {
         F32Input { value: self, on_change }.el()
     }
 
-    fn view(self, opts: EditorOpts) -> Element {
+    fn view(self, _: EditorOpts) -> Element {
         Text::el(format!("{self}"))
     }
 }
@@ -130,7 +130,7 @@ impl Editor for i32 {
         I32Input { value: self, on_change }.el()
     }
 
-    fn view(self, opts: EditorOpts) -> Element {
+    fn view(self, _: EditorOpts) -> Element {
         Text::el(format!("{self}"))
     }
 }
@@ -139,7 +139,7 @@ impl Editor for u32 {
         U32Input { value: self, on_change }.el()
     }
 
-    fn view(self, opts: EditorOpts) -> Element {
+    fn view(self, _: EditorOpts) -> Element {
         Text::el(format!("{self}"))
     }
 }
@@ -148,7 +148,7 @@ impl Editor for u64 {
         U64Input { value: self, on_change }.el()
     }
 
-    fn view(self, opts: EditorOpts) -> Element {
+    fn view(self, _: EditorOpts) -> Element {
         Text::el(format!("{self}"))
     }
 }
@@ -157,7 +157,7 @@ impl Editor for usize {
         UsizeInput { value: self, on_change }.el()
     }
 
-    fn view(self, opts: EditorOpts) -> Element {
+    fn view(self, _: EditorOpts) -> Element {
         Text::el(format!("{self}"))
     }
 }
@@ -186,7 +186,7 @@ impl Editor for bool {
         Checkbox { value: self, on_change }.el()
     }
 
-    fn view(self, opts: EditorOpts) -> Element {
+    fn view(self, _: EditorOpts) -> Element {
         if self {
             FontAwesomeIcon::el(0xf14a, false)
         } else {
@@ -471,54 +471,88 @@ impl ElementComponent for EditorColumn {
 
 impl Editor for Vec2 {
     fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
-        ArrayEditor { value: self.to_array(), on_change: Cb::new(move |v| (on_change)(Self::from(v))) }.el()
+        ArrayEditor { value: self.to_array(), on_change: Cb::new(move |v| (on_change)(Self::from(v))), field_names: Some(&["X", "Y"]) }.el()
     }
 }
 
 impl Editor for Vec3 {
     fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
-        ArrayEditor { value: self.to_array(), on_change: Cb::new(move |v| (on_change)(Self::from(v))) }.el()
+        ArrayEditor { value: self.to_array(), on_change: Cb::new(move |v| (on_change)(Self::from(v))), field_names: Some(&["X", "Y", "Z"]) }
+            .el()
     }
 }
 
 impl Editor for Vec4 {
     fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
-        ArrayEditor { value: self.to_array(), on_change: Cb::new(move |v| (on_change)(Self::from(v))) }.el()
+        ArrayEditor {
+            value: self.to_array(),
+            on_change: Cb::new(move |v| (on_change)(Self::from(v))),
+            field_names: Some(&["X", "Y", "Z", "W"]),
+        }
+        .el()
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct ArrayEditor<const C: usize, T> {
     pub value: [T; C],
+    pub field_names: Option<&'static [&'static str; C]>,
     pub on_change: Cb<dyn Fn([T; C]) + Sync + Send>,
 }
 
 impl<const C: usize, T: 'static + Clone + Debug + Editor + Send + Sync> ElementComponent for ArrayEditor<C, T> {
     fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
-        let Self { value, on_change } = *self;
-        EditorColumn(
-            value
-                .iter()
-                .enumerate()
-                .map(|(i, v)| {
-                    let value = value.clone();
-                    let on_change = on_change.clone();
-                    v.clone().editor(
-                        Cb::new(move |v| {
-                            let mut value = value.clone();
-                            value[i] = v;
-                            on_change(value)
-                        }),
-                        Default::default(),
-                    )
-                })
-                .collect_vec(),
-        )
-        .el()
+        let Self { value, on_change, field_names } = *self;
+
+        if let Some(field_names) = field_names {
+            EditorColumn(
+                value
+                    .iter()
+                    .enumerate()
+                    .zip_eq(field_names)
+                    .map(|((i, v), &name)| {
+                        let value = value.clone();
+                        let on_change = on_change.clone();
+                        EditorRow::el(
+                            name,
+                            v.clone().editor(
+                                Cb::new(move |v| {
+                                    let mut value = value.clone();
+                                    value[i] = v;
+                                    on_change(value)
+                                }),
+                                Default::default(),
+                            ),
+                        )
+                    })
+                    .collect_vec(),
+            )
+            .el()
+        } else {
+            EditorColumn(
+                value
+                    .iter()
+                    .enumerate()
+                    .map(|(i, v)| {
+                        let value = value.clone();
+                        let on_change = on_change.clone();
+                        v.clone().editor(
+                            Cb::new(move |v| {
+                                let mut value = value.clone();
+                                value[i] = v;
+                                on_change(value)
+                            }),
+                            Default::default(),
+                        )
+                    })
+                    .collect_vec(),
+            )
+            .el()
+        }
     }
 }
 impl<const C: usize, T: 'static + Clone + Debug + Editor + Send + Sync> Editor for [T; C] {
     fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
-        ArrayEditor { value: self, on_change }.el()
+        ArrayEditor { value: self, on_change, field_names: None }.el()
     }
 }
