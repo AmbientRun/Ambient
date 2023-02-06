@@ -115,7 +115,7 @@ impl ComponentRegistry {
 
         let entry = &mut self.components[index as usize];
 
-        let prim = PrimitiveComponent { ty: ty.clone(), desc: entry.desc };
+        let prim = PrimitiveComponent { ty, desc: entry.desc };
         entry.primitive_component = Some(prim.clone());
 
         // Hydrate the store with the primitive component attributes

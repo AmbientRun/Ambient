@@ -19,10 +19,9 @@ use std::{
 
 use anyhow::Context;
 use elements_ecs::{
-    components, query, uid, uid_lookup, Component, ComponentEntry, EntityData, EntityId, Networked,
+    components, query, uid, uid_lookup, Component, EntityData, EntityId, Networked,
     Store, World,
 };
-use elements_network::player::player;
 use elements_project::Identifier;
 use host_guest_state::GetBaseHostGuestState;
 use interface::write_scripting_interfaces;
