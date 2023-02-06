@@ -637,6 +637,7 @@ impl<
                         move |_, new_value| value.set(new_value)
                     }),
                     on_cancel: Some(Cb::new(|_| {})),
+                    validator: None,
                 }
                 .el(),
             ));

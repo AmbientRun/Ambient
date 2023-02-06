@@ -150,6 +150,7 @@ pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + Sync + Send + 'static>
     set_screen: Cb<dyn Fn(Option<Element>) + Sync + Send>,
     on_ok: Cb<dyn Fn(&mut World, T) + Sync + Send>,
     on_cancel: Option<Cb<dyn Fn(&mut World) + Sync + Send>>,
+    validator: Option<Cb<dyn Fn(&T) -> bool + Sync + Send>>,
 ) -> Element {
     let (value, set_value) = hooks.use_state(value);
     DialogScreen(
@@ -158,13 +159,15 @@ pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + Sync + Send + 'static>
                 Text::el(title).header_style(),
                 T::editor(value.clone(), Some(Cb(set_value)), Default::default()),
                 FlowRow(vec![
-                    Button::new(
-                        "Ok",
-                        closure!(clone set_screen, |world| {
+                    Button::new("Ok", {
+                        let set_screen = set_screen.clone();
+                        let value = value.clone();
+                        move |world| {
                             set_screen(None);
                             on_ok(world, value.clone());
-                        }),
-                    )
+                        }
+                    })
+                    .disabled(validator.map(|vv| !vv(&value)).unwrap_or(false))
                     .style(ButtonStyle::Primary)
                     .el(),
                     if let Some(on_cancel) = on_cancel {
@@ -195,6 +198,6 @@ impl<T: Editor + std::fmt::Debug + Clone + Sync + Send + 'static> EditorPrompt<T
         set_screen: Cb<dyn Fn(Option<Element>) + Sync + Send>,
         on_ok: impl Fn(&mut World, T) + Sync + Send + 'static,
     ) -> Self {
-        Self { title: title.into(), value, set_screen, on_ok: Cb::new(on_ok), on_cancel: None }
+        Self { title: title.into(), value, set_screen, on_ok: Cb::new(on_ok), on_cancel: None, validator: None }
     }
 }
