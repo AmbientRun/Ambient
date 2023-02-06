@@ -1,0 +1,15 @@
+[package]
+name = "main"
+edition = "2021"
+version = "0.1.0"
+
+[dependencies]
+rand = "0.8.5"
+
+[dependencies.tilt_runtime_scripting_interface]
+path = "../../interfaces/tilt_runtime_scripting_interface"
+features = []
+
+[lib]
+crate-type = ["cdylib"]
+required-features = []
