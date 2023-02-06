@@ -3,12 +3,15 @@ use std::collections::HashMap;
 use elements_ecs::{components, Networked, PrimitiveComponentType, Store};
 use serde::Deserialize;
 
+#[cfg(test)]
+mod tests;
+
 components!("project", {
     @[Networked, Store]
     description: String,
 });
 
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Deserialize, Clone, Debug, PartialEq)]
 pub struct Manifest {
     pub project: Project,
     #[serde(default)]
@@ -36,7 +39,7 @@ impl Manifest {
     }
 }
 
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Deserialize, Clone, Debug, PartialEq)]
 pub struct Project {
     pub name: String,
     pub version: String,
@@ -46,7 +49,7 @@ pub struct Project {
     pub organization: Option<String>,
 }
 
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Deserialize, Clone, Debug, PartialEq)]
 pub struct Component {
     pub name: String,
     pub description: String,
@@ -54,7 +57,7 @@ pub struct Component {
     pub type_: ComponentType,
 }
 
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Deserialize, Clone, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum ComponentType {
     String(String),

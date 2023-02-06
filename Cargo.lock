@@ -1990,7 +1990,9 @@ name = "elements_project"
 version = "0.1.0"
 dependencies = [
  "elements_ecs",
+ "paste",
  "serde",
+ "thiserror",
  "toml 0.7.1",
 ]
 

@@ -8,3 +8,7 @@ elements_ecs = { path = "../ecs" }
 
 serde.workspace = true
 toml.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+paste.workspace = true
