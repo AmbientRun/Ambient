@@ -18,7 +18,9 @@ pub mod pipelines;
 /// src/**  This is where you store Rust source files
 /// target  This is the output directory, and is created when building
 /// Elements.toml  This is a metadata file to describe the project
-pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, _manifest: &ProjectManifest) {
+pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, manifest: &ProjectManifest) {
+    elements_ecs::ComponentRegistry::get_mut().add_external_from_iterator(manifest.all_defined_components(false).unwrap().into_iter());
+
     let target_path = path.join("target");
     let assets_path = path.join("assets");
     build_assets(physics, assets_path, target_path).await;
