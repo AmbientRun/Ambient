@@ -19,7 +19,7 @@
                 "DIMS_DISABLE_TIMEOUT": "true"
             },
             "args": [
-                "--project-path=examples/multiplayer",
+                "--project-path=examples/primitives",
                 "run"
             ],
             "cwd": "${workspaceFolder}",

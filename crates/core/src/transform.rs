@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use elements_ecs::{
-    components, query, query_mut, Debuggable, ECSError, EntityId, FrameEvent, Networked, QueryState, Store, System, SystemGroup, World
+    components, ensure_has_component, query, query_mut, Component, ComponentQuery, ComponentValue, Debuggable, DynSystem, ECSError, EntityId, FrameEvent, Networked, QueryState, Store, System, SystemGroup, TypedReadQuery, World
 };
 use glam::*;
 
@@ -214,6 +214,11 @@ impl TransformSystem {
                                 *local_to_world = Mat4::from_quat(rotation);
                             }
                         }),
+                    // Make sure lookat has all the components
+                    ensure_has_component(lookat_center(), local_to_world(), Default::default()),
+                    ensure_has_component(lookat_center(), inv_local_to_world(), Default::default()),
+                    ensure_has_component(lookat_center(), translation(), Default::default()),
+                    ensure_has_component(lookat_center(), lookat_up(), Vec3::Z),
                     query_mut(
                         (local_to_world(), inv_local_to_world()),
                         (translation().changed(), lookat_center().changed(), lookat_up().changed()),
