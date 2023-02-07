@@ -22,6 +22,7 @@ mod server;
 
 use anyhow::Context;
 use elements_physics::physx::PhysicsKey;
+use log::LevelFilter;
 use player::PlayerRawInputHandler;
 use server::QUIC_INTERFACE_PORT;
 
@@ -166,22 +167,36 @@ fn MainApp(world: &mut World, hooks: &mut Hooks, server_addr: SocketAddr, user_i
 fn main() -> anyhow::Result<()> {
     // Initialize the logger and lower the log level for modules we don't need to hear from by default.
     {
-        const WARN_MODULES: &[&str] = &[
-            "wgpu_core",
-            "wgpu_hal",
-            "elements_gpu",
-            "elements_network",
-            "elements_model",
-            "elements_build",
-            "elements_physics",
-            "tracing",
+        const MODULES: &[(LevelFilter, &[&str])] = &[
+            (
+                LevelFilter::Error,
+                &[
+                    // Warns about extra syntactic elements; we are not concerned with these.
+                    "fbxcel",
+                ],
+            ),
+            (
+                LevelFilter::Warn,
+                &[
+                    "elements_gpu",
+                    "elements_network",
+                    "elements_model",
+                    "elements_build",
+                    "elements_physics",
+                    "tracing",
+                    "wgpu_core",
+                    "wgpu_hal",
+                ],
+            ),
         ];
 
         let mut builder = env_logger::builder();
-        builder.filter_level(log::LevelFilter::Info);
+        builder.filter_level(LevelFilter::Info);
 
-        for module in WARN_MODULES {
-            builder.filter_module(module, log::LevelFilter::Warn);
+        for (level, modules) in MODULES {
+            for module in *modules {
+                builder.filter_module(module, *level);
+            }
         }
 
         builder.parse_default_env().try_init()?;
