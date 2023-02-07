@@ -16,7 +16,7 @@ use elements_std::unwrap_log_err;
 use elements_world_audio::audio_listener;
 use glam::{Mat4, Vec3};
 use parking_lot::Mutex;
-pub use tilt_runtime_core::player::{prev_raw_input, raw_input, RawInput};
+pub use elements_runtime_core::player::{prev_raw_input, raw_input, RawInput};
 
 const PLAYER_INPUT_DATAGRAM_ID: u32 = 5;
 

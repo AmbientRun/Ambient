@@ -340,11 +340,11 @@ name = "tictactoe"
 version = "0.1.0"
 dependencies = [
  "palette",
- "tilt_runtime_scripting_interface",
+ "elements_runtime_scripting_interface",
 ]
 
 [[package]]
-name = "tilt_base_scripting_interface"
+name = "elements_base_scripting_interface"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -360,10 +360,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "tilt_runtime_scripting_interface"
+name = "elements_runtime_scripting_interface"
 version = "0.1.0"
 dependencies = [
- "tilt_base_scripting_interface",
+ "elements_base_scripting_interface",
  "wit-bindgen-guest-rust",
 ]
 

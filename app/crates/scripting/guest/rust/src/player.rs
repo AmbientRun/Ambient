@@ -6,7 +6,7 @@ use crate::{
     EntityId, Vec2,
 };
 
-pub use tilt_base_scripting_interface::player::*;
+pub use elements_base_scripting_interface::player::*;
 
 #[allow(missing_docs)]
 /// The code associated with a key on the keyboard.

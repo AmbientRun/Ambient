@@ -1,6 +1,6 @@
 # Asset pipeline
 
-Tilt supports processing and loading a number of assets. You can place a file that ends with `pipeline.json` anywhere in your
+Elements supports processing and loading a number of assets. You can place a file that ends with `pipeline.json` anywhere in your
 project folder which will specify how the assets will be processed. You can also prepend anything you'd like to the filename,
 so for instance `hello_pipeline.json` will also work.
 
@@ -19,11 +19,11 @@ The following will load `.glb` and `.fbx` files in the folder or any of the sub-
 
 ```json
 [
-    {
-        "pipeline": {
-            "type": "Models"
-        }
+  {
+    "pipeline": {
+      "type": "Models"
     }
+  }
 ]
 ```
 
@@ -33,36 +33,34 @@ The following will filter to just files that contain `table`, scale it down, and
 
 ```json
 [
-    {
-        "pipeline": {
-            "type": "Models",
-            "collider": {
-                "type": "FromModel"
-            },
-            "material_overrides": [
-                {
-                "filter": {
-                    "type": "ByName",
-                    "name": "wood"
-                },
-                "material": {
-                    "base_color": "wood_albedo.png",
-                    "metalic": 0.5,
-                    "roughness": 0.2
-                }
-                }
-            ],
-            "transforms": [
-                {
-                    "type": "Scale",
-                    "scale": 0.1
-                }
-            ]
-        },
-        "sources": ["**/*table*"],
-        "tags": [
-            "Man made"
-        ]
-    }
+  {
+    "pipeline": {
+      "type": "Models",
+      "collider": {
+        "type": "FromModel"
+      },
+      "material_overrides": [
+        {
+          "filter": {
+            "type": "ByName",
+            "name": "wood"
+          },
+          "material": {
+            "base_color": "wood_albedo.png",
+            "metalic": 0.5,
+            "roughness": 0.2
+          }
+        }
+      ],
+      "transforms": [
+        {
+          "type": "Scale",
+          "scale": 0.1
+        }
+      ]
+    },
+    "sources": ["**/*table*"],
+    "tags": ["Man made"]
+  }
 ]
 ```

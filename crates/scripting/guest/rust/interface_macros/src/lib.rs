@@ -31,7 +31,7 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
 }
 
 #[proc_macro]
-pub fn tilt_project(input: TokenStream) -> TokenStream {
+pub fn elements_project(input: TokenStream) -> TokenStream {
     let extend_paths: Option<Vec<Vec<String>>> = if input.is_empty() {
         None
     } else {
@@ -68,8 +68,8 @@ pub fn tilt_project(input: TokenStream) -> TokenStream {
     };
 
     TokenStream::from(
-        tilt_project_impl(
-            tilt_project_read_file("tilt.toml".to_string()).unwrap(),
+        elements_project_impl(
+            elements_project_read_file("elements.toml".to_string()).unwrap(),
             extend_paths.as_ref().map(|a| a.as_slice()).unwrap_or_default(),
             extend_paths.is_some(),
         )
@@ -77,7 +77,7 @@ pub fn tilt_project(input: TokenStream) -> TokenStream {
     )
 }
 
-fn tilt_project_read_file(file_path: String) -> anyhow::Result<(String, String)> {
+fn elements_project_read_file(file_path: String) -> anyhow::Result<(String, String)> {
     let file_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").context("no manifest dir")?).join(&file_path);
     let file_path_str = format!("{}", file_path.display());
 
@@ -86,7 +86,7 @@ fn tilt_project_read_file(file_path: String) -> anyhow::Result<(String, String)>
     Ok((file_path_str, contents))
 }
 
-fn tilt_project_impl(
+fn elements_project_impl(
     (file_path, contents): (String, String),
     extend_paths: &[Vec<String>],
     global_namespace: bool,
@@ -286,7 +286,7 @@ fn tilt_project_impl(
 
 #[cfg(test)]
 mod tests {
-    use crate::tilt_project_impl;
+    use crate::elements_project_impl;
 
     #[test]
     fn can_generate_components_from_manifest_in_global_namespace() {
@@ -303,7 +303,7 @@ mod tests {
         "#};
 
         let expected_output = quote::quote! {
-            const _PROJECT_MANIFEST: &'static str = include_str!("tilty.toml");
+            const _PROJECT_MANIFEST: &'static str = include_str!("elementsy.toml");
             #[allow(missing_docs)]
             pub mod components {
                 pub mod core {
@@ -342,7 +342,7 @@ mod tests {
             }
         };
 
-        let result = tilt_project_impl(("tilty.toml".to_string(), manifest.to_string()), &[], true).unwrap();
+        let result = elements_project_impl(("elementsy.toml".to_string(), manifest.to_string()), &[], true).unwrap();
         assert_eq!(result.to_string(), expected_output.to_string());
     }
 
@@ -359,7 +359,7 @@ mod tests {
         "#};
 
         let expected_output = quote::quote! {
-            const _PROJECT_MANIFEST: &'static str = include_str!("tilty.toml");
+            const _PROJECT_MANIFEST: &'static str = include_str!("elementsy.toml");
             #[allow(missing_docs)]
             pub mod components {
                 pub mod core {
@@ -393,8 +393,8 @@ mod tests {
             }
         };
 
-        let result = tilt_project_impl(
-            ("tilty.toml".to_string(), manifest.to_string()),
+        let result = elements_project_impl(
+            ("elementsy.toml".to_string(), manifest.to_string()),
             &[
                 vec!["base".to_string(), "components".to_string(), "core".to_string(), "app".to_string()],
                 vec!["base".to_string(), "components".to_string(), "core".to_string(), "camera".to_string()],
@@ -418,7 +418,7 @@ mod tests {
         "#};
 
         let expected_output = quote::quote! {
-            const _PROJECT_MANIFEST: &'static str = include_str!("tilty.toml");
+            const _PROJECT_MANIFEST: &'static str = include_str!("elementsy.toml");
             #[allow(missing_docs)]
             pub mod components {
                 static A_COOL_COMPONENT: crate::LazyComponent<()> = crate::lazy_component!("my_project::a_cool_component");
@@ -429,7 +429,7 @@ mod tests {
             }
         };
 
-        let result = tilt_project_impl(("tilty.toml".to_string(), manifest.to_string()), &[], false).unwrap();
+        let result = elements_project_impl(("elementsy.toml".to_string(), manifest.to_string()), &[], false).unwrap();
 
         assert_eq!(result.to_string(), expected_output.to_string());
     }
@@ -446,7 +446,7 @@ mod tests {
         "#};
 
         let expected_output = quote::quote! {
-            const _PROJECT_MANIFEST: &'static str = include_str!("tilty.toml");
+            const _PROJECT_MANIFEST: &'static str = include_str!("elementsy.toml");
             #[allow(missing_docs)]
             pub mod components {
                 static A_COOL_COMPONENT: crate::LazyComponent<()> = crate::lazy_component!("evil_corp::my_project::a_cool_component");
@@ -457,7 +457,7 @@ mod tests {
             }
         };
 
-        let result = tilt_project_impl(("tilty.toml".to_string(), manifest.to_string()), &[], false).unwrap();
+        let result = elements_project_impl(("elementsy.toml".to_string(), manifest.to_string()), &[], false).unwrap();
 
         assert_eq!(result.to_string(), expected_output.to_string());
     }

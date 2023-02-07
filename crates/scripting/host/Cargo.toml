@@ -46,4 +46,4 @@ wasmtime.workspace = true
 wit-bindgen-host-wasmtime-rust = { git = "https://github.com/bytecodealliance/wit-bindgen.git", rev = "181093b58f49b194ee34be2d986d737f4f553d3d" }
 
 [build-dependencies]
-tilt_scripting_host_build = { path = "../host_build" }
+elements_scripting_host_build = { path = "../host_build" }

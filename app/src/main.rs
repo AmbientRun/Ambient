@@ -44,7 +44,7 @@ struct Cli {
 
 #[derive(Subcommand, Clone)]
 enum Commands {
-    /// Create a new Tilt project
+    /// Create a new Elements project
     New { name: Option<String> },
     /// Builds and runs the project locally
     Run {
@@ -190,7 +190,7 @@ fn main() -> anyhow::Result<()> {
 
     let manifest = if !cli.command.should_join() {
         let contents =
-            std::fs::read_to_string(project_path.join("tilt.toml")).context("No project manifest was found. Please create one.")?;
+            std::fs::read_to_string(project_path.join("elements.toml")).context("No project manifest was found. Please create one.")?;
         Some(elements_project::Manifest::parse(&contents)?)
     } else {
         None

@@ -1,5 +1,5 @@
 [package]
-name = "tilt_scripting_host_build"
+name = "elements_scripting_host_build"
 version.workspace = true
 edition = "2021"
 
