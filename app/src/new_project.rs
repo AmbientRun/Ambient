@@ -15,7 +15,7 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
 
     let dot_cargo = project_path.join(".cargo");
     let src = project_path.join("src");
-    std::fs::create_dir_all(&project_path).context("Failed to create project directory")?;
+    std::fs::create_dir_all(project_path).context("Failed to create project directory")?;
     std::fs::create_dir_all(&dot_cargo).context("Failed to create .cargo directory")?;
     std::fs::create_dir_all(&src).context("Failed to create src directory")?;
 
@@ -86,7 +86,7 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
     )
     .context("Failed to create src/lib.rs")?;
 
-    println!("Project {name} with id {id} created at {project_path:?}");
+    log::info!("Project {name} with id {id} created at {project_path:?}");
 
     Ok(())
 }
