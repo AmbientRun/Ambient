@@ -9,6 +9,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "224afbd727c3d6e4b90103ece64b8d1b67fbb1973b1046c2281eed3f3803f800"
 
 [[package]]
+name = "async"
+version = "0.1.0"
+dependencies = [
+ "elements_runtime_scripting_interface",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -36,6 +43,30 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "elements_base_scripting_interface"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bincode",
+ "glam",
+ "interface_macros",
+ "once_cell",
+ "paste",
+ "rand",
+ "serde",
+ "wasi",
+ "wit-bindgen-guest-rust",
+]
+
+[[package]]
+name = "elements_runtime_scripting_interface"
+version = "0.1.0"
+dependencies = [
+ "elements_base_scripting_interface",
+ "wit-bindgen-guest-rust",
+]
+
+[[package]]
 name = "getrandom"
 version = "0.2.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -48,9 +79,9 @@ dependencies = [
 
 [[package]]
 name = "glam"
-version = "0.21.3"
+version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "518faa5064866338b013ff9b2350dc318e14cc4fcd6cb8206d7e7c9886c98815"
+checksum = "12f597d56c1bd55a811a1be189459e8fad2bbc272616375602443bdfb37fa774"
 dependencies = [
  "rand",
 ]
@@ -68,13 +99,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6d621efb26863f0e9924c6ac577e8275e5e6b77455db64ffa6c65c904e9e132c"
 dependencies = [
  "unicode-segmentation",
-]
-
-[[package]]
-name = "hello_world"
-version = "0.1.0"
-dependencies = [
- "tilt_runtime_scripting_interface",
 ]
 
 [[package]]
@@ -241,30 +265,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
-]
-
-[[package]]
-name = "tilt_base_scripting_interface"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "bincode",
- "glam",
- "interface_macros",
- "once_cell",
- "paste",
- "rand",
- "serde",
- "wasi",
- "wit-bindgen-guest-rust",
-]
-
-[[package]]
-name = "tilt_runtime_scripting_interface"
-version = "0.1.0"
-dependencies = [
- "tilt_base_scripting_interface",
- "wit-bindgen-guest-rust",
 ]
 
 [[package]]

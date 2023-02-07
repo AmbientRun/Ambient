@@ -1,0 +1,4 @@
+[project]
+id = "async"
+name = "Async"
+version = "0.0.1"

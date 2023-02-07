@@ -1,5 +1,5 @@
 [package]
-name = "hello_world"
+name = "async"
 edition = "2021"
 version = "0.1.0"
 
