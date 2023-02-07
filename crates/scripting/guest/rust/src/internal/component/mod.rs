@@ -1,11 +1,7 @@
 use crate::{
     event, host,
-    internal::{
-        conversion::{FromBindgen, IntoBindgen},
-        runtime::on_async,
-        ObjectRef,
-    },
-    on, EntityId, EntityUid, EventOk, Mat4, Quat, Vec2, Vec3, Vec4,
+    internal::conversion::{FromBindgen, IntoBindgen},
+    on, on_async, EntityId, EntityUid, EventOk, Mat4, ObjectRef, Quat, Vec2, Vec3, Vec4,
 };
 
 use once_cell::sync::Lazy;
@@ -70,7 +66,7 @@ pub trait ToParam {
 }
 
 /// Implemented by all types you can use with [crate::entity::get_component].
-pub trait SupportedComponentTypeGet: Send + Sync
+pub trait SupportedComponentTypeGet
 where
     Self: Sized,
 {
@@ -79,7 +75,7 @@ where
 }
 
 /// Implemented by all types you can use with [crate::entity::set_component].
-pub trait SupportedComponentTypeSet: Send + Sync
+pub trait SupportedComponentTypeSet
 where
     Self: Sized,
 {
@@ -534,7 +530,7 @@ impl Components {
 }
 
 /// A tuple of [Component]s. Used with [GeneralQuery], [EventQuery] and [ChangeQuery].
-pub trait ComponentsTuple: Send + Sync {
+pub trait ComponentsTuple {
     /// The types of the data stored in this tuple
     type Data;
 
@@ -668,17 +664,14 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> GeneralQuery<Componen
     }
 
     /// Consume this query and call `callback` (`fn`) each frame with the result of the query.
-    pub fn bind(
-        self,
-        callback: impl Fn(Vec<(EntityId, Components::Data)>) + Send + Sync + 'static,
-    ) {
+    pub fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static) {
         self.0.bind(callback)
     }
 
     /// Consume this query and call `callback` (`async fn`) each frame with the result of the query.
     pub fn bind_async<R: Future<Output = ()>>(
         self,
-        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + Send + Sync + 'static,
+        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + 'static,
     ) {
         self.0.bind_async(callback)
     }
@@ -745,10 +738,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> ChangeQuery<Component
 
     /// Each time the components marked by [Self::track_change] change,
     /// the `callback` (`fn`) is called with the result of the query.
-    pub fn bind(
-        self,
-        callback: impl Fn(Vec<(EntityId, Components::Data)>) + Send + Sync + 'static,
-    ) {
+    pub fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static) {
         self.build().bind(callback)
     }
 
@@ -756,7 +746,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> ChangeQuery<Component
     /// the `callback` (`async fn`) is called with the result of the query.
     pub fn bind_async<R: Future<Output = ()>>(
         self,
-        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + Send + Sync + 'static,
+        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + 'static,
     ) {
         self.build().bind_async(callback)
     }
@@ -796,10 +786,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> EventQuery<Components
 
     /// Each time the entity associated with `components` experiences the event,
     /// the `callback` (`fn`) is called with the result of the query.
-    pub fn bind(
-        self,
-        callback: impl Fn(Vec<(EntityId, Components::Data)>) + Send + Sync + 'static,
-    ) {
+    pub fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static) {
         self.build().bind(callback)
     }
 
@@ -807,7 +794,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> EventQuery<Components
     /// the `callback` (`async fn`) is called with the result of the query.
     pub fn bind_async<R: Future<Output = ()>>(
         self,
-        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + Send + Sync + 'static,
+        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + 'static,
     ) {
         self.build().bind_async(callback)
     }
@@ -846,7 +833,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryImpl<Components>
             .collect()
     }
 
-    fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + Send + Sync + 'static) {
+    fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static) {
         on(event::FRAME, move |_| {
             let results = self.evaluate();
             if !results.is_empty() {
@@ -857,7 +844,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryImpl<Components>
     }
     fn bind_async<R: Future<Output = ()>>(
         self,
-        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + Send + Sync + 'static,
+        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + 'static,
     ) {
         on_async(event::FRAME, move |_| async move {
             let results = self.evaluate();

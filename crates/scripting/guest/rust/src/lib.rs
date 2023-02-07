@@ -28,25 +28,25 @@ pub mod physics;
 /// Player-related functionality.
 pub mod player;
 
+/// Global functions and types for your convenience.
 mod global;
 pub use global::*;
 
-pub(crate) mod internal;
-
+/// Internal implementation details. The relevant details are exported.
+mod internal;
 pub use internal::{
-    async_helpers::*,
     component::{
         change_query, despawn_query, internal_get_component, query, spawn_query, ChangeQuery,
         Component, Components, ComponentsTuple, EventQuery, GeneralQuery, GeneralQueryBuilder,
         LazyComponent, QueryEvent, SupportedComponentTypeGet, SupportedComponentTypeSet,
     },
-    runtime::{frametime, on, on_async, once, once_async, run_async, time, EventOk, EventResult},
     shared::INTERFACE_VERSION,
-    EntityId, EntityUid, ObjectRef,
 };
 
+/// Macros to wire up your project to the runtime.
 pub use interface_macros::{elements_project, main};
 
+/// Re-exports from other crates.
 pub use anyhow::{anyhow, Context as AnyhowContext};
 pub use glam::{self, f32::*, Vec2Swizzles, Vec3Swizzles, Vec4Swizzles};
 pub use once_cell;
