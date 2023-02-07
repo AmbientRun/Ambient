@@ -14,6 +14,7 @@ pretty_assertions.workspace = true
 itertools.workspace = true
 syn.workspace = true
 proc-macro-crate.workspace = true
+convert_case.workspace = true
 
 [dev-dependencies]
 elements_ui = { path = "../ui" }

@@ -6,7 +6,7 @@ use proc_macro2::{Ident, Span, TokenStream};
 use proc_macro_crate::{crate_name, FoundCrate};
 use quote::{quote, ToTokens};
 use syn::{
-    punctuated::Punctuated, token::Comma, AngleBracketedGenericArguments, Data, DataEnum, DataStruct, DeriveInput, Field, Fields, FieldsNamed, FieldsUnnamed, Lit, Path, PathArguments, Token, Type, TypePath, Variant
+    punctuated::Punctuated, spanned::Spanned, token::Comma, AngleBracketedGenericArguments, Data, DataEnum, DataStruct, DeriveInput, Field, Fields, FieldsNamed, FieldsUnnamed, Lit, LitStr, Path, PathArguments, Token, Type, TypePath, Variant
 };
 
 mod attributes;
@@ -16,7 +16,7 @@ mod test;
 use attributes::*;
 use inline_string::*;
 
-#[proc_macro_derive(ElementEditor, attributes(editor, editor_inline))]
+#[proc_macro_derive(ElementEditor, attributes(editor, editor_inline, prompt))]
 pub fn derive_element_editor(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     do_derive_element_editor(input.into()).into()
 }
@@ -43,10 +43,42 @@ fn do_derive_element_editor(input: TokenStream) -> TokenStream {
         Err(err) => panic!("Missing crate `elements_ui`. {err:?}"),
     };
 
+    let attributes = EditorAttrs::parse(&input.attrs);
     let editor_name = Ident::new(&format!("{}Editor", input.ident), input.ident.span());
     let type_name = input.ident.clone();
 
-    let body = body_to_tokens(&ui_crate, type_name.clone(), input);
+    let editor_impl = if let Some(title) = attributes.prompt.as_ref() {
+        let title = title.clone().unwrap_or_else(|| LitStr::new(&type_name.to_string(), Span::call_site()));
+
+        quote! {
+            impl #ui_crate::Editor for #type_name {
+                fn editor(self, on_change: #ui_crate::ChangeCb<Self>, opts: #ui_crate::EditorOpts) -> #ui_crate::element::Element {
+                    let editor = #ui_crate::Cb::new(|value, on_change, opts| #editor_name { value, on_change, opts }.into());
+                    #ui_crate::OffscreenEditor { title: #title.into(), opts, value: self, on_confirm: Some(on_change), editor }.into()
+                }
+
+                fn view(self, opts: #ui_crate::EditorOpts) -> #ui_crate::element::Element {
+                    let editor = #ui_crate::Cb::new(|value, on_change, opts| #editor_name { value, on_change, opts }.into());
+                    #ui_crate::OffscreenEditor { title: #title.into(), opts, value: self, on_confirm: None, editor }.into()
+                }
+            }
+        }
+    } else {
+        quote! {
+
+            impl #ui_crate::Editor for #type_name {
+                fn editor(self, on_change: #ui_crate::ChangeCb<Self>, opts: #ui_crate::EditorOpts) -> #ui_crate::element::Element {
+                    #editor_name { value: self, on_change: Some(on_change), opts }.into()
+                }
+
+                fn view(self, opts: #ui_crate::EditorOpts) -> #ui_crate::element::Element {
+                    #editor_name { value: self, on_change: None, opts }.into()
+                }
+            }
+        }
+    };
+
+    let body = body_to_tokens(&ui_crate, attributes, type_name.clone(), input);
 
     quote! {
 
@@ -67,21 +99,11 @@ fn do_derive_element_editor(input: TokenStream) -> TokenStream {
             }
         }
 
-        impl #ui_crate::Editor for #type_name {
-            fn editor(self, on_change: #ui_crate::ChangeCb<Self>, opts: #ui_crate::EditorOpts) -> #ui_crate::element::Element {
-                #editor_name { value: self, on_change: Some(on_change), opts }.into()
-            }
-
-            fn view(self, opts: #ui_crate::EditorOpts) -> #ui_crate::element::Element {
-                #editor_name { value: self, on_change: None, opts }.into()
-            }
-        }
-
+        #editor_impl
     }
 }
 
-fn body_to_tokens(ui_crate: &Ident, type_name: Ident, input: DeriveInput) -> TokenStream {
-    let attrs = EditorAttrs::parse(&input.attrs);
+fn body_to_tokens(ui_crate: &Ident, attrs: EditorAttrs, type_name: Ident, input: DeriveInput) -> TokenStream {
     match input.data {
         Data::Struct(DataStruct { fields: Fields::Named(fields), .. }) => {
             let inline = inline_text(attrs.inline);
@@ -155,12 +177,14 @@ fn enum_to_tokens(ui_crate: &Ident, type_name: Ident, variants: Punctuated<Varia
             Fields::Unit => quote! { #type_name::#variant_ident => #i, },
         }
     });
+
     let variant_constructor = create_enum_variant_constructor(type_name.clone(), &variants);
     let mut has_inline = false;
     let field_editors = variants.iter().enumerate().map(|(_, variant)| {
         let inline = inline_text(EditorAttrs::parse(&variant.attrs).inline);
         has_inline = has_inline || inline.is_some();
         let variant_ident = &variant.ident;
+
         match &variant.fields {
             Fields::Named(FieldsNamed { named, .. }) => {
                 let editors = fields_editor(ui_crate, quote! { #type_name::#variant_ident }, named, inline, false);
@@ -176,6 +200,7 @@ fn enum_to_tokens(ui_crate: &Ident, type_name: Ident, variants: Punctuated<Varia
                     let name = Ident::new(&format!("field_{i}"), Span::call_site());
                     quote! { #name }
                 });
+
                 quote! { #type_name::#variant_ident(#(#field_destruct),*) => #editors, }
             }
             Fields::Unit => {
@@ -275,16 +300,17 @@ fn fields_editor(
     unnamed: bool,
 ) -> TokenStream {
     let field_editors = fields.iter().enumerate().filter_map(|(i, field)| {
-        let field_name = if unnamed { Some(Ident::new(&format!("field_{i}"), Span::call_site())) } else { field.ident.clone() };
+        let field_name = field.ident.clone().unwrap_or_else(|| Ident::new(&format!("field_{i}"), field.span()));
+
         let field_ty = field.ty.clone();
         let field_ty_colon = type_with_colon(&field_ty);
 
-        let field_text_name = format!("{}", field_name.clone().unwrap());
-        let EditorAttrs { hidden, slider, value_max, value_min, logarithmic, editor: custom_editor, round, .. } =
-            EditorAttrs::parse(&field.attrs);
-        if hidden {
+        let attrs = EditorAttrs::parse(&field.attrs);
+
+        if attrs.hidden {
             return None;
         }
+
         let other_fields_cloned = fields.iter().filter(|f| f.ident != field.ident).map(|f| {
             let f_ident = &f.ident;
             quote! { let #f_ident = #f_ident.clone(); }
@@ -321,7 +347,7 @@ fn fields_editor(
             )
         };
 
-        let editor = if slider {
+        let editor = if attrs.slider {
             let field_ty_name = field_ty_colon.to_token_stream().to_string();
             let is_float_slider = match &field_ty_name as &str {
                 "f32" => true,
@@ -329,10 +355,16 @@ fn fields_editor(
                 _ => panic!("Slider is not supported for {field_ty_name}"),
             };
             let (slider, round) = if is_float_slider {
+                let round = attrs.round;
                 (quote! { Slider }, quote! { round: Some(#round), })
             } else {
                 (quote! { IntegerSlider }, TokenStream::new())
             };
+
+            let value_min = attrs.value_min;
+            let value_max = attrs.value_max;
+            let logarithmic = attrs.logarithmic;
+
             quote! {
                 #slider {
                     value: #field_name.clone(),
@@ -345,10 +377,19 @@ fn fields_editor(
                     #round
                 }.el()
             }
-        } else if let Some(Lit::Str(custom_editor)) = custom_editor {
+        } else if let Some(Lit::Str(custom_editor)) = attrs.editor {
             let custom_editor: Ident = custom_editor.parse().unwrap();
             quote! {
                 #custom_editor(#field_name.clone(), #on_change_cb, Default::default())
+            }
+        } else if let Some(title) = attrs.prompt {
+            let title = title.unwrap_or_else(|| LitStr::new(&field_name.to_string(), field.span()));
+
+            quote! {
+                {
+                    let editor = #ui_crate::Cb::new( <#field_ty_colon as elements_ui::Editor>::edit_or_view );
+                    #ui_crate::OffscreenEditor { title: #title.into(), value: #field_name.clone(), on_confirm: #on_change_cb, opts: Default::default(), editor }.into()
+                }
             }
         } else {
             quote! {
@@ -356,7 +397,7 @@ fn fields_editor(
             }
         };
 
-        Some((field_text_name, editor))
+        Some((field_name.to_string(), editor))
     });
 
     if let Some(inline) = inline {

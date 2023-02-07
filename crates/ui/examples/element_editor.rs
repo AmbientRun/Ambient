@@ -11,7 +11,10 @@ use glam::*;
 pub struct MyStruct {
     a_float: f32,
     one_string: String,
+    #[editor(prompt)]
+    longer_string: String,
     sub_struct: SubStruct,
+    #[editor(prompt = "List")]
     my_list: Vec<f32>,
     #[editor(slider, min = -180., max = 180.)]
     slider: f32,

@@ -1725,6 +1725,7 @@ dependencies = [
 name = "elements_editor_derive"
 version = "0.0.1"
 dependencies = [
+ "convert_case 0.6.0",
  "elements_ui",
  "itertools",
  "pretty_assertions",

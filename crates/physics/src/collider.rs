@@ -300,6 +300,7 @@ fn vec3_zero_value() -> Vec3 {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, ElementEditor)]
+#[editor(prompt = "Collider Definition")]
 pub enum ColliderDef {
     Asset {
         collider: TypedAssetUrl<ColliderAssetType>,
