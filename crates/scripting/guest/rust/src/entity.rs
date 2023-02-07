@@ -4,7 +4,8 @@ use super::{
         component::{Component, IComponent, ToParam},
         conversion::{FromBindgen, IntoBindgen},
     },
-    until_this, Components, EntityId, EntityUid, Mat4, ObjectRef, Quat, SupportedComponentTypeGet, SupportedComponentTypeSet, Vec3,
+    until_this, Components, EntityId, EntityUid, Mat4, ObjectRef, Quat, SupportedComponentTypeGet,
+    SupportedComponentTypeSet, Vec3,
 };
 
 pub use crate::host::{AnimationAction, AnimationController};
@@ -17,7 +18,9 @@ pub use crate::host::{AnimationAction, AnimationController};
 ///
 /// Returns `spawned_entity_uid`.
 pub fn spawn(components: &Components, persistent: bool) -> EntityUid {
-    components.call_with(|data| host::entity_spawn(data, persistent)).from_bindgen()
+    components
+        .call_with(|data| host::entity_spawn(data, persistent))
+        .from_bindgen()
 }
 
 /// Spawns an entity using the `object_ref` template at `position`, with
@@ -31,7 +34,13 @@ pub fn spawn(components: &Components, persistent: bool) -> EntityUid {
 /// the entity is spawned.
 ///
 /// Returns `spawned_entity_uid`.
-pub fn spawn_template(object_ref: &ObjectRef, position: Vec3, rotation: Option<Quat>, scale: Option<Vec3>, persistent: bool) -> EntityUid {
+pub fn spawn_template(
+    object_ref: &ObjectRef,
+    position: Vec3,
+    rotation: Option<Quat>,
+    scale: Option<Vec3>,
+    persistent: bool,
+) -> EntityUid {
     host::entity_spawn_template(
         object_ref.into_bindgen(),
         position.into_bindgen(),
@@ -48,7 +57,10 @@ pub fn spawn_template(object_ref: &ObjectRef, position: Vec3, rotation: Option<Q
 // TODO(mithun): revisit once we think about the spawning situation some more
 pub async fn wait_for_spawn(uid: &EntityUid) -> EntityId {
     let uid = uid.clone();
-    let event = until_this(super::event::ENTITY_SPAWN, move |ed| ed.get(components::core::ecs::uid()).unwrap() == uid).await;
+    let event = until_this(super::event::ENTITY_SPAWN, move |ed| {
+        ed.get(components::core::ecs::uid()).unwrap() == uid
+    })
+    .await;
     event.get(components::core::ecs::id()).unwrap()
 }
 
@@ -68,7 +80,10 @@ pub fn get_position(entity: EntityId) -> Option<Vec3> {
 }
 /// Sets the position of `entity` to `position`.
 pub fn set_position(entity: EntityId, position: Vec3) {
-    let (rotation, scale) = (get_rotation(entity).unwrap_or_default(), get_scale(entity).unwrap_or(Vec3::ONE));
+    let (rotation, scale) = (
+        get_rotation(entity).unwrap_or_default(),
+        get_scale(entity).unwrap_or(Vec3::ONE),
+    );
 
     host::entity_set_transform(
         entity.into_bindgen(),
@@ -82,7 +97,10 @@ pub fn get_rotation(entity: EntityId) -> Option<Quat> {
 }
 /// Sets the rotation of `entity` to `rotation`.
 pub fn set_rotation(entity: EntityId, rotation: Quat) {
-    let (translation, scale) = (get_position(entity).unwrap_or_default(), get_scale(entity).unwrap_or(Vec3::ONE));
+    let (translation, scale) = (
+        get_position(entity).unwrap_or_default(),
+        get_scale(entity).unwrap_or(Vec3::ONE),
+    );
 
     host::entity_set_transform(
         entity.into_bindgen(),
@@ -96,7 +114,10 @@ pub fn get_scale(entity: EntityId) -> Option<Vec3> {
 }
 /// Sets the scale of `entity` to `scale`.
 pub fn set_scale(entity: EntityId, scale: Vec3) {
-    let (rotation, translation) = (get_rotation(entity).unwrap_or_default(), get_position(entity).unwrap_or_default());
+    let (rotation, translation) = (
+        get_rotation(entity).unwrap_or_default(),
+        get_position(entity).unwrap_or_default(),
+    );
 
     host::entity_set_transform(
         entity.into_bindgen(),
@@ -141,12 +162,22 @@ pub fn in_area(position: Vec3, radius: f32) -> Vec<EntityId> {
 }
 
 /// Retrieves the component `component` for `entity` if it exists, or `None` if it doesn't.
-pub fn get_component<T: SupportedComponentTypeGet>(entity: EntityId, component: Component<T>) -> Option<T> {
-    T::from_result(host::entity_get_component(entity.into_bindgen(), component.index())?)
+pub fn get_component<T: SupportedComponentTypeGet>(
+    entity: EntityId,
+    component: Component<T>,
+) -> Option<T> {
+    T::from_result(host::entity_get_component(
+        entity.into_bindgen(),
+        component.index(),
+    )?)
 }
 
 /// Sets the component `component` for `entity` with `value`.
-pub fn set_component<T: SupportedComponentTypeSet>(entity: EntityId, component: Component<T>, value: T) {
+pub fn set_component<T: SupportedComponentTypeSet>(
+    entity: EntityId,
+    component: Component<T>,
+    value: T,
+) {
     let owned = value.into_owned_param();
     host::entity_set_component(entity.into_bindgen(), component.index(), owned.as_param())
 }
@@ -157,7 +188,10 @@ pub fn set_components(entity: EntityId, components: Components) {
 }
 
 /// Checks if the `entity` has a `component`.
-pub fn has_component<T: SupportedComponentTypeGet>(entity: EntityId, component: Component<T>) -> bool {
+pub fn has_component<T: SupportedComponentTypeGet>(
+    entity: EntityId,
+    component: Component<T>,
+) -> bool {
     host::entity_has_component(entity.into_bindgen(), component.index())
 }
 
@@ -191,7 +225,9 @@ pub fn remove_components(entity: EntityId, components: &[&dyn IComponent]) {
 ///
 /// This will not set the component if the value is the same, which will prevent change events from
 /// being unnecessarily fired.
-pub fn mutate_component<T: SupportedComponentTypeGet + SupportedComponentTypeSet + Clone + PartialEq>(
+pub fn mutate_component<
+    T: SupportedComponentTypeGet + SupportedComponentTypeSet + Clone + PartialEq,
+>(
     entity: EntityId,
     component: Component<T>,
     mutator: impl FnOnce(&mut T),
@@ -210,7 +246,9 @@ pub fn mutate_component<T: SupportedComponentTypeGet + SupportedComponentTypeSet
 ///
 /// This will not set the component if the value is the same, which will prevent change events from
 /// being unnecessarily fired.
-pub fn mutate_component_with_default<T: SupportedComponentTypeGet + SupportedComponentTypeSet + Clone + PartialEq>(
+pub fn mutate_component_with_default<
+    T: SupportedComponentTypeGet + SupportedComponentTypeSet + Clone + PartialEq,
+>(
     entity: EntityId,
     component: Component<T>,
     default: T,

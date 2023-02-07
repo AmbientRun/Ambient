@@ -13,42 +13,68 @@ pub(crate) trait GuestConvert {
 impl GuestConvert for guest::EntityId {
     type Item = host::EntityId;
     fn guest_convert(self) -> Self::Item {
-        Self::Item { namespace: self.namespace, id: self.id, gen: self.gen }
+        Self::Item {
+            namespace: self.namespace,
+            id: self.id,
+            gen: self.gen,
+        }
     }
 }
 
 impl GuestConvert for guest::Vec2 {
     type Item = host::Vec2;
     fn guest_convert(self) -> Self::Item {
-        Self::Item { x: self.x, y: self.y }
+        Self::Item {
+            x: self.x,
+            y: self.y,
+        }
     }
 }
 
 impl GuestConvert for guest::Vec3 {
     type Item = host::Vec3;
     fn guest_convert(self) -> Self::Item {
-        Self::Item { x: self.x, y: self.y, z: self.z }
+        Self::Item {
+            x: self.x,
+            y: self.y,
+            z: self.z,
+        }
     }
 }
 
 impl GuestConvert for guest::Vec4 {
     type Item = host::Vec4;
     fn guest_convert(self) -> Self::Item {
-        Self::Item { x: self.x, y: self.y, z: self.z, w: self.w }
+        Self::Item {
+            x: self.x,
+            y: self.y,
+            z: self.z,
+            w: self.w,
+        }
     }
 }
 
 impl GuestConvert for guest::Quat {
     type Item = host::Quat;
     fn guest_convert(self) -> Self::Item {
-        Self::Item { x: self.x, y: self.y, z: self.z, w: self.w }
+        Self::Item {
+            x: self.x,
+            y: self.y,
+            z: self.z,
+            w: self.w,
+        }
     }
 }
 
 impl GuestConvert for guest::Mat4 {
     type Item = host::Mat4;
     fn guest_convert(self) -> Self::Item {
-        Self::Item { x: self.x.guest_convert(), y: self.y.guest_convert(), z: self.z.guest_convert(), w: self.w.guest_convert() }
+        Self::Item {
+            x: self.x.guest_convert(),
+            y: self.y.guest_convert(),
+            z: self.z.guest_convert(),
+            w: self.w.guest_convert(),
+        }
     }
 }
 

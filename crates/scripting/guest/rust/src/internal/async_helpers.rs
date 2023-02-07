@@ -40,7 +40,10 @@ pub async fn sleep(seconds: f32) {
 /// Useful for waiting until a particular event has happened in the game world.
 ///
 /// This must be used with `.await` in either an `async fn` or an `async` block.
-pub async fn until_this(event: &str, condition: impl Fn(&Components) -> bool + Send + Sync + 'static) -> Components {
+pub async fn until_this(
+    event: &str,
+    condition: impl Fn(&Components) -> bool + Send + Sync + 'static,
+) -> Components {
     let ret = Arc::new(Mutex::new(None));
 
     fn register_callback(

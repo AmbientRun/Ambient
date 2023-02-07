@@ -109,7 +109,9 @@ pub(super) enum ComponentType<'a> {
     TypeOption(ComponentOptionType<'a>),
 }
 
-pub(super) fn create_owned_types(data: &HashMap<u32, host::ComponentTypeResult>) -> Vec<(u32, ComponentType)> {
+pub(super) fn create_owned_types(
+    data: &HashMap<u32, host::ComponentTypeResult>,
+) -> Vec<(u32, ComponentType)> {
     data.iter()
         .map(|(id, component)| {
             (
@@ -123,67 +125,143 @@ pub(super) fn create_owned_types(data: &HashMap<u32, host::ComponentTypeResult>)
                     host::ComponentTypeResult::TypeMat4(v) => ComponentType::TypeMat4(*v),
                     host::ComponentTypeResult::TypeI32(v) => ComponentType::TypeI32(*v),
                     host::ComponentTypeResult::TypeQuat(v) => ComponentType::TypeQuat(*v),
-                    host::ComponentTypeResult::TypeString(v) => ComponentType::TypeString(v.clone()),
+                    host::ComponentTypeResult::TypeString(v) => {
+                        ComponentType::TypeString(v.clone())
+                    }
                     host::ComponentTypeResult::TypeU32(v) => ComponentType::TypeU32(*v),
                     host::ComponentTypeResult::TypeU64(v) => ComponentType::TypeU64(*v),
                     host::ComponentTypeResult::TypeVec2(v) => ComponentType::TypeVec2(*v),
                     host::ComponentTypeResult::TypeVec3(v) => ComponentType::TypeVec3(*v),
                     host::ComponentTypeResult::TypeVec4(v) => ComponentType::TypeVec4(*v),
-                    host::ComponentTypeResult::TypeObjectRef(v) => ComponentType::TypeObjectRef(host::ObjectRefParam { id: &v.id }),
-                    host::ComponentTypeResult::TypeEntityUid(v) => ComponentType::TypeEntityUid(host::EntityUidParam { id: &v.id }),
+                    host::ComponentTypeResult::TypeObjectRef(v) => {
+                        ComponentType::TypeObjectRef(host::ObjectRefParam { id: &v.id })
+                    }
+                    host::ComponentTypeResult::TypeEntityUid(v) => {
+                        ComponentType::TypeEntityUid(host::EntityUidParam { id: &v.id })
+                    }
                     host::ComponentTypeResult::TypeList(v) => ComponentType::TypeList(match v {
-                        host::ComponentListTypeResult::TypeEmpty(v) => ComponentListType::TypeEmpty(v.clone()),
-                        host::ComponentListTypeResult::TypeBool(v) => ComponentListType::TypeBool(v.clone()),
-                        host::ComponentListTypeResult::TypeEntityId(v) => ComponentListType::TypeEntityId(v.clone()),
-                        host::ComponentListTypeResult::TypeF32(v) => ComponentListType::TypeF32(v.clone()),
-                        host::ComponentListTypeResult::TypeF64(v) => ComponentListType::TypeF64(v.clone()),
-                        host::ComponentListTypeResult::TypeMat4(v) => ComponentListType::TypeMat4(v.clone()),
-                        host::ComponentListTypeResult::TypeI32(v) => ComponentListType::TypeI32(v.clone()),
-                        host::ComponentListTypeResult::TypeQuat(v) => ComponentListType::TypeQuat(v.clone()),
+                        host::ComponentListTypeResult::TypeEmpty(v) => {
+                            ComponentListType::TypeEmpty(v.clone())
+                        }
+                        host::ComponentListTypeResult::TypeBool(v) => {
+                            ComponentListType::TypeBool(v.clone())
+                        }
+                        host::ComponentListTypeResult::TypeEntityId(v) => {
+                            ComponentListType::TypeEntityId(v.clone())
+                        }
+                        host::ComponentListTypeResult::TypeF32(v) => {
+                            ComponentListType::TypeF32(v.clone())
+                        }
+                        host::ComponentListTypeResult::TypeF64(v) => {
+                            ComponentListType::TypeF64(v.clone())
+                        }
+                        host::ComponentListTypeResult::TypeMat4(v) => {
+                            ComponentListType::TypeMat4(v.clone())
+                        }
+                        host::ComponentListTypeResult::TypeI32(v) => {
+                            ComponentListType::TypeI32(v.clone())
+                        }
+                        host::ComponentListTypeResult::TypeQuat(v) => {
+                            ComponentListType::TypeQuat(v.clone())
+                        }
                         host::ComponentListTypeResult::TypeString(v) => {
                             ComponentListType::TypeString(v.iter().map(|v| v.as_str()).collect())
                         }
-                        host::ComponentListTypeResult::TypeU32(v) => ComponentListType::TypeU32(v.clone()),
-                        host::ComponentListTypeResult::TypeU64(v) => ComponentListType::TypeU64(v.clone()),
-                        host::ComponentListTypeResult::TypeVec2(v) => ComponentListType::TypeVec2(v.clone()),
-                        host::ComponentListTypeResult::TypeVec3(v) => ComponentListType::TypeVec3(v.clone()),
-                        host::ComponentListTypeResult::TypeVec4(v) => ComponentListType::TypeVec4(v.clone()),
+                        host::ComponentListTypeResult::TypeU32(v) => {
+                            ComponentListType::TypeU32(v.clone())
+                        }
+                        host::ComponentListTypeResult::TypeU64(v) => {
+                            ComponentListType::TypeU64(v.clone())
+                        }
+                        host::ComponentListTypeResult::TypeVec2(v) => {
+                            ComponentListType::TypeVec2(v.clone())
+                        }
+                        host::ComponentListTypeResult::TypeVec3(v) => {
+                            ComponentListType::TypeVec3(v.clone())
+                        }
+                        host::ComponentListTypeResult::TypeVec4(v) => {
+                            ComponentListType::TypeVec4(v.clone())
+                        }
                         host::ComponentListTypeResult::TypeObjectRef(v) => {
-                            ComponentListType::TypeObjectRef(v.iter().map(|v| host::ObjectRefParam { id: &v.id }).collect())
+                            ComponentListType::TypeObjectRef(
+                                v.iter()
+                                    .map(|v| host::ObjectRefParam { id: &v.id })
+                                    .collect(),
+                            )
                         }
                         host::ComponentListTypeResult::TypeEntityUid(v) => {
-                            ComponentListType::TypeEntityUid(v.iter().map(|v| host::EntityUidParam { id: &v.id }).collect())
+                            ComponentListType::TypeEntityUid(
+                                v.iter()
+                                    .map(|v| host::EntityUidParam { id: &v.id })
+                                    .collect(),
+                            )
                         }
                     }),
-                    host::ComponentTypeResult::TypeOption(v) => ComponentType::TypeOption(match v {
-                        host::ComponentOptionTypeResult::TypeEmpty(v) => ComponentOptionType::TypeEmpty(*v),
-                        host::ComponentOptionTypeResult::TypeBool(v) => ComponentOptionType::TypeBool(*v),
-                        host::ComponentOptionTypeResult::TypeEntityId(v) => ComponentOptionType::TypeEntityId(*v),
-                        host::ComponentOptionTypeResult::TypeF32(v) => ComponentOptionType::TypeF32(*v),
-                        host::ComponentOptionTypeResult::TypeF64(v) => ComponentOptionType::TypeF64(*v),
-                        host::ComponentOptionTypeResult::TypeMat4(v) => ComponentOptionType::TypeMat4(*v),
-                        host::ComponentOptionTypeResult::TypeI32(v) => ComponentOptionType::TypeI32(*v),
-                        host::ComponentOptionTypeResult::TypeQuat(v) => ComponentOptionType::TypeQuat(*v),
-                        host::ComponentOptionTypeResult::TypeString(v) => ComponentOptionType::TypeString(v.as_deref()),
-                        host::ComponentOptionTypeResult::TypeU32(v) => ComponentOptionType::TypeU32(*v),
-                        host::ComponentOptionTypeResult::TypeU64(v) => ComponentOptionType::TypeU64(*v),
-                        host::ComponentOptionTypeResult::TypeVec2(v) => ComponentOptionType::TypeVec2(*v),
-                        host::ComponentOptionTypeResult::TypeVec3(v) => ComponentOptionType::TypeVec3(*v),
-                        host::ComponentOptionTypeResult::TypeVec4(v) => ComponentOptionType::TypeVec4(*v),
-                        host::ComponentOptionTypeResult::TypeObjectRef(v) => {
-                            ComponentOptionType::TypeObjectRef(v.as_ref().map(|v| host::ObjectRefParam { id: &v.id }))
-                        }
-                        host::ComponentOptionTypeResult::TypeEntityUid(v) => {
-                            ComponentOptionType::TypeEntityUid(v.as_ref().map(|v| host::EntityUidParam { id: &v.id }))
-                        }
-                    }),
+                    host::ComponentTypeResult::TypeOption(v) => {
+                        ComponentType::TypeOption(match v {
+                            host::ComponentOptionTypeResult::TypeEmpty(v) => {
+                                ComponentOptionType::TypeEmpty(*v)
+                            }
+                            host::ComponentOptionTypeResult::TypeBool(v) => {
+                                ComponentOptionType::TypeBool(*v)
+                            }
+                            host::ComponentOptionTypeResult::TypeEntityId(v) => {
+                                ComponentOptionType::TypeEntityId(*v)
+                            }
+                            host::ComponentOptionTypeResult::TypeF32(v) => {
+                                ComponentOptionType::TypeF32(*v)
+                            }
+                            host::ComponentOptionTypeResult::TypeF64(v) => {
+                                ComponentOptionType::TypeF64(*v)
+                            }
+                            host::ComponentOptionTypeResult::TypeMat4(v) => {
+                                ComponentOptionType::TypeMat4(*v)
+                            }
+                            host::ComponentOptionTypeResult::TypeI32(v) => {
+                                ComponentOptionType::TypeI32(*v)
+                            }
+                            host::ComponentOptionTypeResult::TypeQuat(v) => {
+                                ComponentOptionType::TypeQuat(*v)
+                            }
+                            host::ComponentOptionTypeResult::TypeString(v) => {
+                                ComponentOptionType::TypeString(v.as_deref())
+                            }
+                            host::ComponentOptionTypeResult::TypeU32(v) => {
+                                ComponentOptionType::TypeU32(*v)
+                            }
+                            host::ComponentOptionTypeResult::TypeU64(v) => {
+                                ComponentOptionType::TypeU64(*v)
+                            }
+                            host::ComponentOptionTypeResult::TypeVec2(v) => {
+                                ComponentOptionType::TypeVec2(*v)
+                            }
+                            host::ComponentOptionTypeResult::TypeVec3(v) => {
+                                ComponentOptionType::TypeVec3(*v)
+                            }
+                            host::ComponentOptionTypeResult::TypeVec4(v) => {
+                                ComponentOptionType::TypeVec4(*v)
+                            }
+                            host::ComponentOptionTypeResult::TypeObjectRef(v) => {
+                                ComponentOptionType::TypeObjectRef(
+                                    v.as_ref().map(|v| host::ObjectRefParam { id: &v.id }),
+                                )
+                            }
+                            host::ComponentOptionTypeResult::TypeEntityUid(v) => {
+                                ComponentOptionType::TypeEntityUid(
+                                    v.as_ref().map(|v| host::EntityUidParam { id: &v.id }),
+                                )
+                            }
+                        })
+                    }
                 },
             )
         })
         .collect()
 }
 
-pub(super) fn create_borrowed_types<'a>(data: &'a [(u32, ComponentType)]) -> Vec<(u32, host::ComponentTypeParam<'a>)> {
+pub(super) fn create_borrowed_types<'a>(
+    data: &'a [(u32, ComponentType)],
+) -> Vec<(u32, host::ComponentTypeParam<'a>)> {
     data.iter()
         .map(|(id, ct)| {
             (
@@ -197,16 +275,24 @@ pub(super) fn create_borrowed_types<'a>(data: &'a [(u32, ComponentType)]) -> Vec
                     ComponentType::TypeMat4(v) => host::ComponentTypeParam::TypeMat4(*v),
                     ComponentType::TypeI32(v) => host::ComponentTypeParam::TypeI32(*v),
                     ComponentType::TypeQuat(v) => host::ComponentTypeParam::TypeQuat(*v),
-                    ComponentType::TypeString(v) => host::ComponentTypeParam::TypeString(v.as_str()),
+                    ComponentType::TypeString(v) => {
+                        host::ComponentTypeParam::TypeString(v.as_str())
+                    }
                     ComponentType::TypeU32(v) => host::ComponentTypeParam::TypeU32(*v),
                     ComponentType::TypeU64(v) => host::ComponentTypeParam::TypeU64(*v),
                     ComponentType::TypeVec2(v) => host::ComponentTypeParam::TypeVec2(*v),
                     ComponentType::TypeVec3(v) => host::ComponentTypeParam::TypeVec3(*v),
                     ComponentType::TypeVec4(v) => host::ComponentTypeParam::TypeVec4(*v),
-                    ComponentType::TypeObjectRef(v) => host::ComponentTypeParam::TypeObjectRef(host::ObjectRefParam { id: v.id }),
-                    ComponentType::TypeEntityUid(v) => host::ComponentTypeParam::TypeEntityUid(host::EntityUidParam { id: v.id }),
+                    ComponentType::TypeObjectRef(v) => {
+                        host::ComponentTypeParam::TypeObjectRef(host::ObjectRefParam { id: v.id })
+                    }
+                    ComponentType::TypeEntityUid(v) => {
+                        host::ComponentTypeParam::TypeEntityUid(host::EntityUidParam { id: v.id })
+                    }
                     ComponentType::TypeList(v) => host::ComponentTypeParam::TypeList(v.as_main()),
-                    ComponentType::TypeOption(v) => host::ComponentTypeParam::TypeOption(v.as_main()),
+                    ComponentType::TypeOption(v) => {
+                        host::ComponentTypeParam::TypeOption(v.as_main())
+                    }
                 },
             )
         })

@@ -36,8 +36,9 @@ pub(crate) mod internal;
 pub use internal::{
     async_helpers::*,
     component::{
-        change_query, despawn_query, internal_get_component, query, spawn_query, ChangeQuery, Component, Components, ComponentsTuple,
-        EventQuery, GeneralQuery, GeneralQueryBuilder, LazyComponent, QueryEvent, SupportedComponentTypeGet, SupportedComponentTypeSet,
+        change_query, despawn_query, internal_get_component, query, spawn_query, ChangeQuery,
+        Component, Components, ComponentsTuple, EventQuery, GeneralQuery, GeneralQueryBuilder,
+        LazyComponent, QueryEvent, SupportedComponentTypeGet, SupportedComponentTypeSet,
     },
     runtime::{frametime, on, on_async, once, once_async, run_async, time, EventOk, EventResult},
     shared::INTERFACE_VERSION,

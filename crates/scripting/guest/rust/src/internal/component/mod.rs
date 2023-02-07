@@ -27,14 +27,20 @@ pub struct Component<T> {
 }
 impl<T> Clone for Component<T> {
     fn clone(&self) -> Self {
-        Self { index: self.index, _phantom: PhantomData }
+        Self {
+            index: self.index,
+            _phantom: PhantomData,
+        }
     }
 }
 impl<T> Copy for Component<T> {}
 impl<T> Component<T> {
     #[doc(hidden)]
     pub const fn new(index: u32) -> Self {
-        Self { index, _phantom: PhantomData }
+        Self {
+            index,
+            _phantom: PhantomData,
+        }
     }
 }
 impl<T> IComponent for Component<T> {
@@ -286,9 +292,9 @@ define_vec_opt_component_types!(
 impl SupportedComponentTypeGet for Vec<ObjectRef> {
     fn from_result(result: host::ComponentTypeResult) -> Option<Self> {
         match result {
-            host::ComponentTypeResult::TypeList(host::ComponentListTypeResult::TypeObjectRef(v)) => {
-                Some(v.into_iter().map(|v| v.from_bindgen()).collect())
-            }
+            host::ComponentTypeResult::TypeList(host::ComponentListTypeResult::TypeObjectRef(
+                v,
+            )) => Some(v.into_iter().map(|v| v.from_bindgen()).collect()),
             _ => None,
         }
     }
@@ -303,7 +309,9 @@ impl<'a> SupportedComponentTypeSet for &'a Vec<ObjectRef> {
     }
 
     fn into_owned_param(self) -> Self::OwnedParam {
-        self.iter().map(|v| host::ObjectRefParam { id: v.as_ref() }).collect()
+        self.iter()
+            .map(|v| host::ObjectRefParam { id: v.as_ref() })
+            .collect()
     }
 }
 impl<'a> ToParam for Vec<host::ObjectRefParam<'a>> {
@@ -315,7 +323,9 @@ impl<'a> ToParam for Vec<host::ObjectRefParam<'a>> {
 impl SupportedComponentTypeGet for Option<ObjectRef> {
     fn from_result(result: host::ComponentTypeResult) -> Option<Self> {
         match result {
-            host::ComponentTypeResult::TypeOption(host::ComponentOptionTypeResult::TypeObjectRef(v)) => Some(v.from_bindgen()),
+            host::ComponentTypeResult::TypeOption(
+                host::ComponentOptionTypeResult::TypeObjectRef(v),
+            ) => Some(v.from_bindgen()),
             _ => None,
         }
     }
@@ -324,25 +334,30 @@ impl<'a> SupportedComponentTypeSet for &'a Option<ObjectRef> {
     type OwnedParam = Option<host::ObjectRefParam<'a>>;
 
     fn into_result(self) -> host::ComponentTypeResult {
-        host::ComponentTypeResult::TypeOption(host::ComponentOptionTypeResult::TypeObjectRef(self.clone().into_bindgen()))
+        host::ComponentTypeResult::TypeOption(host::ComponentOptionTypeResult::TypeObjectRef(
+            self.clone().into_bindgen(),
+        ))
     }
 
     fn into_owned_param(self) -> Self::OwnedParam {
-        self.as_ref().map(|s| host::ObjectRefParam { id: s.as_ref() })
+        self.as_ref()
+            .map(|s| host::ObjectRefParam { id: s.as_ref() })
     }
 }
 impl<'a> ToParam for Option<host::ObjectRefParam<'a>> {
     fn as_param(&self) -> host::ComponentTypeParam<'_> {
-        host::ComponentTypeParam::TypeOption(host::ComponentOptionTypeParam::TypeObjectRef(self.clone()))
+        host::ComponentTypeParam::TypeOption(host::ComponentOptionTypeParam::TypeObjectRef(
+            self.clone(),
+        ))
     }
 }
 
 impl SupportedComponentTypeGet for Vec<EntityUid> {
     fn from_result(result: host::ComponentTypeResult) -> Option<Self> {
         match result {
-            host::ComponentTypeResult::TypeList(host::ComponentListTypeResult::TypeEntityUid(v)) => {
-                Some(v.into_iter().map(|v| v.from_bindgen()).collect())
-            }
+            host::ComponentTypeResult::TypeList(host::ComponentListTypeResult::TypeEntityUid(
+                v,
+            )) => Some(v.into_iter().map(|v| v.from_bindgen()).collect()),
             _ => None,
         }
     }
@@ -357,7 +372,9 @@ impl<'a> SupportedComponentTypeSet for &'a Vec<EntityUid> {
     }
 
     fn into_owned_param(self) -> Self::OwnedParam {
-        self.iter().map(|v| host::EntityUidParam { id: v.as_ref() }).collect()
+        self.iter()
+            .map(|v| host::EntityUidParam { id: v.as_ref() })
+            .collect()
     }
 }
 impl<'a> ToParam for Vec<host::EntityUidParam<'a>> {
@@ -369,7 +386,9 @@ impl<'a> ToParam for Vec<host::EntityUidParam<'a>> {
 impl SupportedComponentTypeGet for Option<EntityUid> {
     fn from_result(result: host::ComponentTypeResult) -> Option<Self> {
         match result {
-            host::ComponentTypeResult::TypeOption(host::ComponentOptionTypeResult::TypeEntityUid(v)) => Some(v.from_bindgen()),
+            host::ComponentTypeResult::TypeOption(
+                host::ComponentOptionTypeResult::TypeEntityUid(v),
+            ) => Some(v.from_bindgen()),
             _ => None,
         }
     }
@@ -378,16 +397,21 @@ impl<'a> SupportedComponentTypeSet for &'a Option<EntityUid> {
     type OwnedParam = Option<host::EntityUidParam<'a>>;
 
     fn into_result(self) -> host::ComponentTypeResult {
-        host::ComponentTypeResult::TypeOption(host::ComponentOptionTypeResult::TypeEntityUid(self.clone().into_bindgen()))
+        host::ComponentTypeResult::TypeOption(host::ComponentOptionTypeResult::TypeEntityUid(
+            self.clone().into_bindgen(),
+        ))
     }
 
     fn into_owned_param(self) -> Self::OwnedParam {
-        self.as_ref().map(|s| host::EntityUidParam { id: s.as_ref() })
+        self.as_ref()
+            .map(|s| host::EntityUidParam { id: s.as_ref() })
     }
 }
 impl<'a> ToParam for Option<host::EntityUidParam<'a>> {
     fn as_param(&self) -> host::ComponentTypeParam<'_> {
-        host::ComponentTypeParam::TypeOption(host::ComponentOptionTypeParam::TypeEntityUid(self.clone()))
+        host::ComponentTypeParam::TypeOption(host::ComponentOptionTypeParam::TypeEntityUid(
+            self.clone(),
+        ))
     }
 }
 
@@ -423,7 +447,9 @@ impl<'a> ToParam for Vec<&'a str> {
 impl SupportedComponentTypeGet for Option<String> {
     fn from_result(result: host::ComponentTypeResult) -> Option<Self> {
         match result {
-            host::ComponentTypeResult::TypeOption(host::ComponentOptionTypeResult::TypeString(v)) => Some(v.from_bindgen()),
+            host::ComponentTypeResult::TypeOption(host::ComponentOptionTypeResult::TypeString(
+                v,
+            )) => Some(v.from_bindgen()),
             _ => None,
         }
     }
@@ -432,7 +458,9 @@ impl<'a> SupportedComponentTypeSet for &'a Option<String> {
     type OwnedParam = Option<&'a str>;
 
     fn into_result(self) -> host::ComponentTypeResult {
-        host::ComponentTypeResult::TypeOption(host::ComponentOptionTypeResult::TypeString(self.clone().into_bindgen()))
+        host::ComponentTypeResult::TypeOption(host::ComponentOptionTypeResult::TypeString(
+            self.clone().into_bindgen(),
+        ))
     }
 
     fn into_owned_param(self) -> Self::OwnedParam {
@@ -476,7 +504,10 @@ impl Components {
     }
 
     /// Adds the default value for `T` to this `EntityData` and returns `self` to allow for easy chaining
-    pub fn with_default<T: SupportedComponentTypeSet + Default>(mut self, component: Component<T>) -> Self {
+    pub fn with_default<T: SupportedComponentTypeSet + Default>(
+        mut self,
+        component: Component<T>,
+    ) -> Self {
         self.set_default(component);
         self
     }
@@ -492,7 +523,10 @@ impl Components {
         crate::entity::spawn(self, persistent)
     }
 
-    pub(crate) fn call_with<R>(&self, callback: impl FnOnce(&[(u32, host::ComponentTypeParam<'_>)]) -> R) -> R {
+    pub(crate) fn call_with<R>(
+        &self,
+        callback: impl FnOnce(&[(u32, host::ComponentTypeParam<'_>)]) -> R,
+    ) -> R {
         let data = internal::create_owned_types(&self.0);
         let data = internal::create_borrowed_types(&data);
         callback(&data)
@@ -572,28 +606,36 @@ impl ComponentsTuple for () {
 ///
 /// Building a query is somewhat expensive, but they are cheap to copy and evaluate, so it's
 /// recommended that you build your queries once and reuse them elsewhere.
-pub fn query<Components: ComponentsTuple + Copy + Clone + 'static>(components: Components) -> GeneralQueryBuilder<Components> {
+pub fn query<Components: ComponentsTuple + Copy + Clone + 'static>(
+    components: Components,
+) -> GeneralQueryBuilder<Components> {
     GeneralQuery::create(components)
 }
 
 /// Creates a new [ChangeQuery] that will find entities that have the specified `components`
 /// that will call its bound function when components marked by [ChangeQuery::track_change]
 /// change.
-pub fn change_query<Components: ComponentsTuple + Copy + Clone + 'static>(components: Components) -> ChangeQuery<Components> {
+pub fn change_query<Components: ComponentsTuple + Copy + Clone + 'static>(
+    components: Components,
+) -> ChangeQuery<Components> {
     ChangeQuery::create(components)
 }
 
 /// Creates a new [EventQuery] that will find entities that have the specified `components`
 /// that will call its bound function when an entity with those components are spawned / seen
 /// for the first time by this query.
-pub fn spawn_query<Components: ComponentsTuple + Copy + Clone + 'static>(components: Components) -> EventQuery<Components> {
+pub fn spawn_query<Components: ComponentsTuple + Copy + Clone + 'static>(
+    components: Components,
+) -> EventQuery<Components> {
     EventQuery::create(QueryEvent::Spawn, components)
 }
 
 /// Creates a new [EventQuery] that will find entities that have the specified `components`
 /// that will call its bound function when an entity with those components are despawned / seen
 /// for the last time by this query.
-pub fn despawn_query<Components: ComponentsTuple + Copy + Clone + 'static>(components: Components) -> EventQuery<Components> {
+pub fn despawn_query<Components: ComponentsTuple + Copy + Clone + 'static>(
+    components: Components,
+) -> EventQuery<Components> {
     EventQuery::create(QueryEvent::Despawn, components)
 }
 
@@ -607,7 +649,9 @@ pub enum QueryEvent {
 
 #[derive(Clone, Copy)]
 /// An ECS query used to find entities in the world.
-pub struct GeneralQuery<Components: ComponentsTuple + Copy + Clone + 'static>(QueryImpl<Components>);
+pub struct GeneralQuery<Components: ComponentsTuple + Copy + Clone + 'static>(
+    QueryImpl<Components>,
+);
 impl<Components: ComponentsTuple + Copy + Clone + 'static> GeneralQuery<Components> {
     /// Creates a new [GeneralQueryBuilder] that will find entities that have the specified `components`
     /// and can be [built|`GeneralQueryBuilder::build`] to create a [GeneralQuery].
@@ -624,7 +668,10 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> GeneralQuery<Componen
     }
 
     /// Consume this query and call `callback` (`fn`) each frame with the result of the query.
-    pub fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + Send + Sync + 'static) {
+    pub fn bind(
+        self,
+        callback: impl Fn(Vec<(EntityId, Components::Data)>) + Send + Sync + 'static,
+    ) {
         self.0.bind(callback)
     }
 
@@ -637,7 +684,9 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> GeneralQuery<Componen
     }
 }
 /// Build a [GeneralQuery] for the ECS. This is how you find entities in the game world.
-pub struct GeneralQueryBuilder<Components: ComponentsTuple + Copy + Clone + 'static>(QueryBuilderImpl<Components>);
+pub struct GeneralQueryBuilder<Components: ComponentsTuple + Copy + Clone + 'static>(
+    QueryBuilderImpl<Components>,
+);
 impl<Components: ComponentsTuple + Copy + Clone + 'static> GeneralQueryBuilder<Components> {
     /// The entities must include the components in `requires`.
     pub fn requires(mut self, requires: impl ComponentsTuple) -> Self {
@@ -653,13 +702,18 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> GeneralQueryBuilder<C
 
     /// Builds a [GeneralQuery].
     pub fn build(self) -> GeneralQuery<Components> {
-        GeneralQuery(QueryImpl::new(self.0.build_impl(&[], host::QueryEvent::Frame)))
+        GeneralQuery(QueryImpl::new(
+            self.0.build_impl(&[], host::QueryEvent::Frame),
+        ))
     }
 }
 
 /// An ECS query that calls a callback when entities containing components
 /// marked with [ChangeQuery::track_change] have those components change.
-pub struct ChangeQuery<Components: ComponentsTuple + Copy + Clone + 'static>(QueryBuilderImpl<Components>, Vec<u32>);
+pub struct ChangeQuery<Components: ComponentsTuple + Copy + Clone + 'static>(
+    QueryBuilderImpl<Components>,
+    Vec<u32>,
+);
 impl<Components: ComponentsTuple + Copy + Clone + 'static> ChangeQuery<Components> {
     /// Creates a new [ChangeQuery] that will find entities that have the specified `components`
     /// that will call its bound function when components marked by [Self::track_change]
@@ -691,7 +745,10 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> ChangeQuery<Component
 
     /// Each time the components marked by [Self::track_change] change,
     /// the `callback` (`fn`) is called with the result of the query.
-    pub fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + Send + Sync + 'static) {
+    pub fn bind(
+        self,
+        callback: impl Fn(Vec<(EntityId, Components::Data)>) + Send + Sync + 'static,
+    ) {
         self.build().bind(callback)
     }
 
@@ -705,13 +762,19 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> ChangeQuery<Component
     }
 
     fn build(self) -> QueryImpl<Components> {
-        assert!(!self.1.is_empty(), "No components specified for tracking. Did you call `ChangeQuery::track_change`?");
+        assert!(
+            !self.1.is_empty(),
+            "No components specified for tracking. Did you call `ChangeQuery::track_change`?"
+        );
         QueryImpl::new(self.0.build_impl(&self.1, host::QueryEvent::Frame))
     }
 }
 
 /// An ECS query that calls a callback when its associated event occurs.
-pub struct EventQuery<Components: ComponentsTuple + Copy + Clone + 'static>(QueryBuilderImpl<Components>, QueryEvent);
+pub struct EventQuery<Components: ComponentsTuple + Copy + Clone + 'static>(
+    QueryBuilderImpl<Components>,
+    QueryEvent,
+);
 impl<Components: ComponentsTuple + Copy + Clone + 'static> EventQuery<Components> {
     /// Creates a new [EventQuery] that will find entities that have the specified `components`
     /// that will call its bound function when the `event` occurs.
@@ -733,7 +796,10 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> EventQuery<Components
 
     /// Each time the entity associated with `components` experiences the event,
     /// the `callback` (`fn`) is called with the result of the query.
-    pub fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + Send + Sync + 'static) {
+    pub fn bind(
+        self,
+        callback: impl Fn(Vec<(EntityId, Components::Data)>) + Send + Sync + 'static,
+    ) {
         self.build().bind(callback)
     }
 
@@ -758,7 +824,10 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> EventQuery<Components
 }
 
 #[derive(Clone, Copy)]
-struct QueryImpl<Components: ComponentsTuple + Copy + Clone + 'static>(u64, PhantomData<Components>);
+struct QueryImpl<Components: ComponentsTuple + Copy + Clone + 'static>(
+    u64,
+    PhantomData<Components>,
+);
 impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryImpl<Components> {
     fn new(id: u64) -> Self {
         Self(id, PhantomData)
@@ -768,7 +837,11 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryImpl<Components>
         host::query_eval(self.0)
             .into_iter()
             .map(|(id, components)| {
-                (id.from_bindgen(), Components::from_component_types(components).expect("invalid type conversion on component query"))
+                (
+                    id.from_bindgen(),
+                    Components::from_component_types(components)
+                        .expect("invalid type conversion on component query"),
+                )
             })
             .collect()
     }
@@ -782,7 +855,10 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryImpl<Components>
             EventOk
         })
     }
-    fn bind_async<R: Future<Output = ()>>(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + Send + Sync + 'static) {
+    fn bind_async<R: Future<Output = ()>>(
+        self,
+        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + Send + Sync + 'static,
+    ) {
         on_async(event::FRAME, move |_| async move {
             let results = self.evaluate();
             if !results.is_empty() {
@@ -801,7 +877,12 @@ struct QueryBuilderImpl<Components: ComponentsTuple + Copy + Clone + 'static> {
 }
 impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryBuilderImpl<Components> {
     fn new(components: Vec<u32>) -> QueryBuilderImpl<Components> {
-        Self { components, include: vec![], exclude: vec![], _data: PhantomData }
+        Self {
+            components,
+            include: vec![],
+            exclude: vec![],
+            _data: PhantomData,
+        }
     }
     pub fn requires(&mut self, include: impl ComponentsTuple) {
         self.include.extend_from_slice(&include.as_indices());
@@ -810,6 +891,14 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryBuilderImpl<Comp
         self.exclude.extend_from_slice(&exclude.as_indices());
     }
     fn build_impl(self, changed: &[u32], event: host::QueryEvent) -> u64 {
-        host::entity_query2(host::Query { components: &self.components, include: &self.include, exclude: &self.exclude, changed }, event)
+        host::entity_query2(
+            host::Query {
+                components: &self.components,
+                include: &self.include,
+                exclude: &self.exclude,
+                changed,
+            },
+            event,
+        )
     }
 }

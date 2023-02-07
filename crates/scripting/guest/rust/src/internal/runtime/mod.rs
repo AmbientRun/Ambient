@@ -29,8 +29,10 @@ pub type EventResult = anyhow::Result<()>;
 #[allow(non_upper_case_globals)]
 pub const EventOk: EventResult = Ok(());
 
-type EventCallbackFn = Box<dyn Fn(&Components) -> Pin<Box<dyn Future<Output = EventResult>>> + Send + Sync>;
-type EventCallbackFnOnce = Box<dyn FnOnce(&Components) -> Pin<Box<dyn Future<Output = EventResult>>> + Send + Sync>;
+type EventCallbackFn =
+    Box<dyn Fn(&Components) -> Pin<Box<dyn Future<Output = EventResult>>> + Send + Sync>;
+type EventCallbackFnOnce =
+    Box<dyn FnOnce(&Components) -> Pin<Box<dyn Future<Output = EventResult>>> + Send + Sync>;
 
 type CallbackMap = HashMap<String, Vec<EventCallbackFn>>;
 type OnceCallbackMap = HashMap<String, Vec<EventCallbackFnOnce>>;
@@ -43,10 +45,16 @@ struct Callbacks {
 impl Callbacks {
     fn append(&mut self, other: &mut Callbacks) {
         for (event_name, mut new_callbacks) in other.callbacks.drain() {
-            self.callbacks.entry(event_name).or_default().append(&mut new_callbacks);
+            self.callbacks
+                .entry(event_name)
+                .or_default()
+                .append(&mut new_callbacks);
         }
         for (event_name, mut new_callbacks) in other.once_callbacks.drain() {
-            self.once_callbacks.entry(event_name).or_default().append(&mut new_callbacks);
+            self.once_callbacks
+                .entry(event_name)
+                .or_default()
+                .append(&mut new_callbacks);
         }
     }
 }
@@ -61,14 +69,16 @@ struct SchedulerState {
 impl SchedulerState {
     fn execute_futures(&mut self) {
         let mut futures = std::mem::take(&mut self.futures);
-        futures.retain_mut(|f| match f.as_mut().poll(&mut Context::from_waker(&self.waker)) {
-            Poll::Ready(Ok(_)) => false,
-            Poll::Ready(Err(e)) => {
-                eprintln!("Error while handling future: {e:?}");
-                false
-            }
-            Poll::Pending => true,
-        });
+        futures.retain_mut(
+            |f| match f.as_mut().poll(&mut Context::from_waker(&self.waker)) {
+                Poll::Ready(Ok(_)) => false,
+                Poll::Ready(Err(e)) => {
+                    eprintln!("Error while handling future: {e:?}");
+                    false
+                }
+                Poll::Pending => true,
+            },
+        );
         self.futures = futures;
     }
 }
@@ -81,7 +91,10 @@ struct FrameState {
 }
 impl FrameState {
     const fn new() -> Self {
-        Self { time: 0.0, frametime: 0.0 }
+        Self {
+            time: 0.0,
+            frametime: 0.0,
+        }
     }
 }
 struct GlobalState {
@@ -95,7 +108,11 @@ struct GlobalState {
 unsafe impl Sync for GlobalState {}
 impl GlobalState {
     const fn new() -> Self {
-        GlobalState { scheduler: RefCell::new(None), pending_scheduler: RefCell::new(None), frame: RefCell::new(FrameState::new()) }
+        GlobalState {
+            scheduler: RefCell::new(None),
+            pending_scheduler: RefCell::new(None),
+            frame: RefCell::new(FrameState::new()),
+        }
     }
 
     fn initialize(&self) {
@@ -103,7 +120,9 @@ impl GlobalState {
             futures: Default::default(),
             waker: unsafe { Waker::from_raw(RawWaker::new(std::ptr::null(), &RAW_WAKER)) },
         });
-        *self.pending_scheduler.borrow_mut() = Some(PendingSchedulerState { futures: Default::default() });
+        *self.pending_scheduler.borrow_mut() = Some(PendingSchedulerState {
+            futures: Default::default(),
+        });
     }
 
     fn scheduler_mut(&self) -> RefMut<SchedulerState> {
@@ -134,7 +153,12 @@ impl GlobalState {
 
 static GLOBAL_STATE: GlobalState = GlobalState::new();
 
-static RAW_WAKER: RawWakerVTable = RawWakerVTable::new(|_| RawWaker::new(std::ptr::null(), &RAW_WAKER), |_| {}, |_| {}, |_| {});
+static RAW_WAKER: RawWakerVTable = RawWakerVTable::new(
+    |_| RawWaker::new(std::ptr::null(), &RAW_WAKER),
+    |_| {},
+    |_| {},
+    |_| {},
+);
 
 struct Guest;
 impl guest::Guest for Guest {
@@ -142,10 +166,19 @@ impl guest::Guest for Guest {
         GLOBAL_STATE.initialize();
     }
 
-    fn exec(ctx: guest::RunContext, event_name: String, components: Vec<(u32, guest::ComponentType)>) {
+    fn exec(
+        ctx: guest::RunContext,
+        event_name: String,
+        components: Vec<(u32, guest::ComponentType)>,
+    ) {
         use guest_conversion::GuestConvert;
 
-        let components = Components(components.into_iter().map(|(id, ct)| (id, ct.guest_convert())).collect());
+        let components = Components(
+            components
+                .into_iter()
+                .map(|(id, ct)| (id, ct.guest_convert()))
+                .collect(),
+        );
 
         {
             let mut frame = GLOBAL_STATE.frame_mut();
@@ -170,7 +203,11 @@ impl guest::Guest for Guest {
                     }
                 }
 
-                for callback in callbacks.once_callbacks.remove(event_name.as_str()).unwrap_or_default() {
+                for callback in callbacks
+                    .once_callbacks
+                    .remove(event_name.as_str())
+                    .unwrap_or_default()
+                {
                     futures.push(callback(&components));
                 }
             }
@@ -206,9 +243,18 @@ pub fn on(event: &str, callback: impl Fn(&Components) -> EventResult + Send + Sy
 /// If you only want to be notified once, use [once_async].
 ///
 /// The `callback` is a `async fn`. This can be a closure (e.g. `|args| { ... }`).
-pub fn on_async<R: Future<Output = EventResult> + 'static>(event: &str, callback: impl Fn(&Components) -> R + Send + Sync + 'static) {
+pub fn on_async<R: Future<Output = EventResult> + 'static>(
+    event: &str,
+    callback: impl Fn(&Components) -> R + Send + Sync + 'static,
+) {
     crate::host::event_subscribe(event);
-    PENDING_CALLBACKS.lock().unwrap().callbacks.entry(event.to_string()).or_default().push(Box::new(move |args| Box::pin(callback(args))));
+    PENDING_CALLBACKS
+        .lock()
+        .unwrap()
+        .callbacks
+        .entry(event.to_string())
+        .or_default()
+        .push(Box::new(move |args| Box::pin(callback(args))));
 }
 
 /// `once` calls `callback` when `event` occurs, but only once.
@@ -216,7 +262,10 @@ pub fn on_async<R: Future<Output = EventResult> + 'static>(event: &str, callback
 /// If you want to be notified every time the `event` occurs, use [on].
 ///
 /// The `callback` is a `fn`. This can be a closure (e.g. `|args| { ... }`).
-pub fn once(event: &str, callback: impl FnOnce(&Components) -> EventResult + Send + Sync + 'static) {
+pub fn once(
+    event: &str,
+    callback: impl FnOnce(&Components) -> EventResult + Send + Sync + 'static,
+) {
     once_async(event, |args| std::future::ready(callback(args)))
 }
 
@@ -225,7 +274,10 @@ pub fn once(event: &str, callback: impl FnOnce(&Components) -> EventResult + Sen
 /// If you want to be notified every time the `event` occurs, use [on_async].
 ///
 /// The `callback` is a `async fn`. This can be a closure (e.g. `|args| { ... }`).
-pub fn once_async<R: Future<Output = EventResult> + 'static>(event: &str, callback: impl FnOnce(&Components) -> R + Send + Sync + 'static) {
+pub fn once_async<R: Future<Output = EventResult> + 'static>(
+    event: &str,
+    callback: impl FnOnce(&Components) -> R + Send + Sync + 'static,
+) {
     crate::host::event_subscribe(event);
     PENDING_CALLBACKS
         .lock()
@@ -252,5 +304,8 @@ pub fn once_async<R: Future<Output = EventResult> + 'static>(event: &str, callba
 /// });
 /// ```
 pub fn run_async(future: impl Future<Output = EventResult> + 'static) {
-    GLOBAL_STATE.pending_scheduler_mut().futures.push(Box::pin(future));
+    GLOBAL_STATE
+        .pending_scheduler_mut()
+        .futures
+        .push(Box::pin(future));
 }

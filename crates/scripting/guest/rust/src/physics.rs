@@ -82,6 +82,15 @@ pub fn raycast_first(origin: Vec3, direction: Vec3) -> Option<RaycastHit> {
     host::physics_raycast_first(origin.into_bindgen(), direction.into_bindgen())
         .map(|(entity, distance)| raycast_result_to_hit(origin, direction, entity, distance))
 }
-fn raycast_result_to_hit(origin: Vec3, direction: Vec3, entity: host::EntityId, distance: f32) -> RaycastHit {
-    RaycastHit { position: origin + direction * distance, distance, entity: entity.from_bindgen() }
+fn raycast_result_to_hit(
+    origin: Vec3,
+    direction: Vec3,
+    entity: host::EntityId,
+    distance: f32,
+) -> RaycastHit {
+    RaycastHit {
+        position: origin + direction * distance,
+        distance,
+        entity: entity.from_bindgen(),
+    }
 }

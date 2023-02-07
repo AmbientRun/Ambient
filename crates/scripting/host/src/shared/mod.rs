@@ -19,8 +19,7 @@ use std::{
 
 use anyhow::Context;
 use elements_ecs::{
-    components, query, uid, uid_lookup, Component, EntityData, EntityId, Networked,
-    Store, World,
+    components, query, uid, uid_lookup, Component, EntityData, EntityId, Networked, Store, World,
 };
 use elements_project::Identifier;
 use host_guest_state::GetBaseHostGuestState;
