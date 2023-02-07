@@ -1,5 +1,5 @@
-//! # The Tilt Scripting Interface
-//! Welcome to the Tilt scripting interface!
+//! # The Elements Scripting Interface
+//! Welcome to the Elements scripting interface!
 
 #![deny(missing_docs)]
 
@@ -14,4 +14,4 @@ pub mod player;
 
 pub(crate) mod internal;
 
-pub use tilt_base_scripting_interface::*;
+pub use elements_base_scripting_interface::*;

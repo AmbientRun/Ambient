@@ -1,7 +1,7 @@
 use components::core::{
     app::main_scene, camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse}, player::{player, user_id}, primitives::cube, rendering::color, transform::{lookat_center, scale, translation}
 };
-use tilt_runtime_scripting_interface::*;
+use elements_runtime_scripting_interface::*;
 
 #[main]
 pub async fn main() -> EventResult {
