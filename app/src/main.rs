@@ -45,7 +45,7 @@ struct Cli {
 #[derive(Subcommand, Clone)]
 enum Commands {
     /// Create a new Tilt project
-    New { name: String },
+    New { name: Option<String> },
     /// Builds and runs the project locally
     Run {
         #[clap(short, long)]
@@ -172,17 +172,21 @@ fn main() -> anyhow::Result<()> {
 
     let cli = Cli::parse();
 
-    if let Commands::New { name } = cli.command {
-        if let Err(err) = new_project::new_project(&name) {
-            eprintln!("Failed to create project: {err:?}");
-        }
-        return Ok(());
-    }
-
     let current_dir = std::env::current_dir()?;
     let project_path = cli.project_path.clone().map(|x| x.into()).unwrap_or_else(|| current_dir.clone());
     let project_path =
         if project_path.is_absolute() { project_path } else { elements_std::path::normalize(&current_dir.join(project_path)) };
+
+    if project_path.exists() && !project_path.is_dir() {
+        anyhow::bail!("Project path {project_path:?} exists and is not a directory.");
+    }
+
+    if let Commands::New { name } = cli.command {
+        if let Err(err) = new_project::new_project(&project_path, name.as_deref()) {
+            eprintln!("Failed to create project: {err:?}");
+        }
+        return Ok(());
+    }
 
     let manifest = if !cli.command.should_join() {
         let contents =
