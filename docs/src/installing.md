@@ -1,9 +1,9 @@
 # Installing
 
-You need [Rust](https://www.rust-lang.org/) to install the Tilt runtime. Then run:
+You need [Rust](https://www.rust-lang.org/) to install the Elements runtime. Then run:
 
 ```sh
-cargo install tilt
+cargo install elements
 ```
 
 ## Dependencies: Linux/Ubuntu

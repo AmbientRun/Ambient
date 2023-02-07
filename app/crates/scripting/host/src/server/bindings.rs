@@ -2,11 +2,11 @@ use std::sync::Arc;
 
 use elements_ecs::{EntityId, World};
 use elements_input::MouseButton;
+use elements_runtime_core::player::RawInput;
 use elements_scripting_host::shared::host_guest_state::BaseHostGuestState;
 use elements_ui::VirtualKeyCode;
 use glam::Vec2;
 use parking_lot::RwLock;
-use tilt_runtime_core::player::RawInput;
 
 use super::{implementation as trsi, interface::host};
 
@@ -24,45 +24,45 @@ impl Bindings {
 
 impl host::Host for Bindings {
     fn player_get_raw_input(&mut self, player: host::EntityId) -> Option<host::PlayerRawInput> {
-        trsi::player::get_raw_input(&self.world(), player.from_tilt_runtime_bindgen())
-            .into_tilt_runtime_bindgen()
+        trsi::player::get_raw_input(&self.world(), player.from_elements_runtime_bindgen())
+            .into_elements_runtime_bindgen()
     }
 
     fn player_get_prev_raw_input(
         &mut self,
         player: host::EntityId,
     ) -> Option<host::PlayerRawInput> {
-        trsi::player::get_prev_raw_input(&self.world(), player.from_tilt_runtime_bindgen())
-            .into_tilt_runtime_bindgen()
+        trsi::player::get_prev_raw_input(&self.world(), player.from_elements_runtime_bindgen())
+            .into_elements_runtime_bindgen()
     }
 }
 
 /// Converts from a Rust representation to a wit-bindgen representation.
-trait IntoTiltRuntimeBindgen {
+trait IntoElementsRuntimeBindgen {
     type Item;
-    fn into_tilt_runtime_bindgen(self) -> Self::Item;
+    fn into_elements_runtime_bindgen(self) -> Self::Item;
 }
 
-impl<T> IntoTiltRuntimeBindgen for Option<T>
+impl<T> IntoElementsRuntimeBindgen for Option<T>
 where
-    T: IntoTiltRuntimeBindgen,
+    T: IntoElementsRuntimeBindgen,
 {
     type Item = Option<T::Item>;
-    fn into_tilt_runtime_bindgen(self) -> Self::Item {
-        self.map(|i| i.into_tilt_runtime_bindgen())
+    fn into_elements_runtime_bindgen(self) -> Self::Item {
+        self.map(|i| i.into_elements_runtime_bindgen())
     }
 }
 
 /// Converts from a wit-bindgen representation to a Rust representation.
 #[allow(clippy::wrong_self_convention)]
-trait FromTiltRuntimeBindgen {
+trait FromElementsRuntimeBindgen {
     type Item;
-    fn from_tilt_runtime_bindgen(self) -> Self::Item;
+    fn from_elements_runtime_bindgen(self) -> Self::Item;
 }
 
-impl FromTiltRuntimeBindgen for host::EntityId {
+impl FromElementsRuntimeBindgen for host::EntityId {
     type Item = EntityId;
-    fn from_tilt_runtime_bindgen(self) -> Self::Item {
+    fn from_elements_runtime_bindgen(self) -> Self::Item {
         EntityId {
             namespace: self.namespace,
             id: self.id as usize,
@@ -71,9 +71,9 @@ impl FromTiltRuntimeBindgen for host::EntityId {
     }
 }
 
-impl IntoTiltRuntimeBindgen for Vec2 {
+impl IntoElementsRuntimeBindgen for Vec2 {
     type Item = host::Vec2;
-    fn into_tilt_runtime_bindgen(self) -> Self::Item {
+    fn into_elements_runtime_bindgen(self) -> Self::Item {
         host::Vec2 {
             x: self.x,
             y: self.y,
@@ -81,31 +81,31 @@ impl IntoTiltRuntimeBindgen for Vec2 {
     }
 }
 
-impl IntoTiltRuntimeBindgen for RawInput {
+impl IntoElementsRuntimeBindgen for RawInput {
     type Item = host::PlayerRawInput;
 
-    fn into_tilt_runtime_bindgen(self) -> Self::Item {
+    fn into_elements_runtime_bindgen(self) -> Self::Item {
         Self::Item {
             keys: self
                 .keys
                 .into_iter()
-                .map(|k| k.into_tilt_runtime_bindgen())
+                .map(|k| k.into_elements_runtime_bindgen())
                 .collect(),
-            mouse_position: self.mouse_position.into_tilt_runtime_bindgen(),
+            mouse_position: self.mouse_position.into_elements_runtime_bindgen(),
             mouse_wheel: self.mouse_wheel,
             mouse_buttons: self
                 .mouse_buttons
                 .into_iter()
-                .map(|b| b.into_tilt_runtime_bindgen())
+                .map(|b| b.into_elements_runtime_bindgen())
                 .collect(),
         }
     }
 }
 
-impl IntoTiltRuntimeBindgen for VirtualKeyCode {
+impl IntoElementsRuntimeBindgen for VirtualKeyCode {
     type Item = host::VirtualKeyCode;
 
-    fn into_tilt_runtime_bindgen(self) -> Self::Item {
+    fn into_elements_runtime_bindgen(self) -> Self::Item {
         match self {
             Self::Key1 => Self::Item::Key1,
             Self::Key2 => Self::Item::Key2,
@@ -274,10 +274,10 @@ impl IntoTiltRuntimeBindgen for VirtualKeyCode {
     }
 }
 
-impl IntoTiltRuntimeBindgen for MouseButton {
+impl IntoElementsRuntimeBindgen for MouseButton {
     type Item = host::MouseButton;
 
-    fn into_tilt_runtime_bindgen(self) -> Self::Item {
+    fn into_elements_runtime_bindgen(self) -> Self::Item {
         match self {
             Self::Left => Self::Item::Left,
             Self::Right => Self::Item::Right,

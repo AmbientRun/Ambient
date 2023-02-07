@@ -20,7 +20,7 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
     std::fs::create_dir_all(&src).context("Failed to create src directory")?;
 
     std::fs::write(
-        project_path.join("tilt.toml"),
+        project_path.join("elements.toml"),
         indoc! {r#"
             [project]
             id = "{{id}}"
@@ -30,7 +30,7 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
         .replace("{{id}}", id.as_ref())
         .replace("{{name}}", name),
     )
-    .context("Failed to create tilt.toml")?;
+    .context("Failed to create elements.toml")?;
 
     std::fs::write(
         project_path.join("Cargo.toml"),
@@ -41,7 +41,7 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
             version = "0.1.0"
 
             [dependencies]
-            tilt_runtime_scripting_interface = { path = "interfaces/tilt_runtime_scripting_interface" }
+            elements_runtime_scripting_interface = { path = "interfaces/elements_runtime_scripting_interface" }
 
             [lib]
             crate-type = ["cdylib"]
@@ -71,7 +71,7 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
     std::fs::write(
         src.join("lib.rs"),
         indoc! {r#"
-            use tilt_runtime_scripting_interface::*;
+            use elements_runtime_scripting_interface::*;
 
             #[main]
             pub async fn main() -> EventResult {

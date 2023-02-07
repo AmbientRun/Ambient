@@ -13,11 +13,11 @@ pub(crate) fn init() -> anyhow::Result<()> {
     elements_primitives::init_components();
     elements_project::init_components();
 
-    tilt_runtime_core::init_all_components();
+    elements_runtime_core::init_all_components();
     crate::player::init_all_components();
 
     // Temporary: this information should move to the ECS through attributes
-    let manifest = Manifest::parse(include_str!("../tilt.toml"))?;
+    let manifest = Manifest::parse(include_str!("../elements.toml"))?;
     ComponentRegistry::get_mut().add_external_from_iterator(manifest.all_defined_components(true).map_err(anyhow::Error::msg)?.into_iter());
 
     Ok(())

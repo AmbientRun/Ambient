@@ -5,7 +5,7 @@ use components::core::{
     player::{player, user_id},
     transform::{inv_local_to_world, local_to_world, rotation, translation},
 };
-use tilt_runtime_scripting_interface::{player::KeyCode, *};
+use elements_runtime_scripting_interface::{player::KeyCode, *};
 
 struct CameraState {
     radius: f32,

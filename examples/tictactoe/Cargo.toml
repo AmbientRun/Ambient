@@ -4,7 +4,7 @@ edition = "2021"
 version = "0.1.0"
 
 [dependencies]
-tilt_runtime_scripting_interface = { path = "interfaces/tilt_runtime_scripting_interface" }
+elements_runtime_scripting_interface = { path = "interfaces/elements_runtime_scripting_interface" }
 palette = "0.6.1"
 
 [lib]

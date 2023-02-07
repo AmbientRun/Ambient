@@ -135,7 +135,7 @@ checksum = "d01a5bd0424d00070b0098dd17ebca6f961a959dead1dbcbbbc1d1cd8d3deeba"
 name = "physics"
 version = "0.1.0"
 dependencies = [
- "tilt_runtime_scripting_interface",
+ "elements_runtime_scripting_interface",
 ]
 
 [[package]]
@@ -244,7 +244,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "tilt_base_scripting_interface"
+name = "elements_base_scripting_interface"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -260,10 +260,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "tilt_runtime_scripting_interface"
+name = "elements_runtime_scripting_interface"
 version = "0.1.0"
 dependencies = [
- "tilt_base_scripting_interface",
+ "elements_base_scripting_interface",
  "wit-bindgen-guest-rust",
 ]
 

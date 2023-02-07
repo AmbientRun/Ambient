@@ -16,7 +16,7 @@ use elements_rpc::RpcRegistry;
 use elements_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, ServerBaseUrlKey}
 };
-use tilt_runtime_scripting_host as scripting;
+use elements_runtime_scripting_host as scripting;
 use tower_http::{cors::CorsLayer, services::ServeDir};
 
 use crate::{player, Cli, Commands};

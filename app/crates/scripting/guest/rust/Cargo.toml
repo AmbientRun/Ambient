@@ -1,9 +1,9 @@
 [package]
 edition = "2021"
-name = "tilt_runtime_scripting_interface"
+name = "elements_runtime_scripting_interface"
 version = "0.1.0"
 
 [dependencies]
-# make sure this is synchronised with the version used by tilt_runtime_scripting_host
-tilt_base_scripting_interface = {path = "../tilt_base_scripting_interface"}
+# make sure this is synchronised with the version used by elements_runtime_scripting_host
+elements_base_scripting_interface = {path = "../elements_base_scripting_interface"}
 wit-bindgen-guest-rust = {git = "https://github.com/bytecodealliance/wit-bindgen.git", rev = "181093b58f49b194ee34be2d986d737f4f553d3d"}

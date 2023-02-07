@@ -33,7 +33,7 @@ pub fn bundle_scripting_interface(
         "Cargo.toml",
         "rust-toolchain.toml",
         "rustfmt.toml",
-        "tilt.toml",
+        "elements.toml",
     ]
     .into_iter()
     .map(|p| interface_path.join(p))

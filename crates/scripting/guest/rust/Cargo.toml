@@ -1,6 +1,6 @@
 [package]
 edition = "2021"
-name = "tilt_base_scripting_interface"
+name = "elements_base_scripting_interface"
 version = "0.1.0"
 
 [dependencies]
