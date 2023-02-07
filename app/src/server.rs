@@ -119,12 +119,11 @@ pub(crate) fn start_server(
             .unwrap()
     });
     let port = server.port;
-    log::info!("Server created on port {port}");
 
     scripting::server::init_all_components();
     let public_host =
         cli.public_host.or_else(|| local_ip_address::local_ip().ok().map(|x| x.to_string())).unwrap_or("localhost".to_string());
-    eprintln!("Using public host: {public_host}");
+    log::info!("Created server, running at {public_host}:{port}");
     ServerBaseUrlKey.insert(&assets, AbsAssetUrl::parse(format!("http://{public_host}:{HTTP_INTERFACE_PORT}/assets/")).unwrap());
 
     start_http_interface(runtime, &project_path);

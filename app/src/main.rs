@@ -164,7 +164,28 @@ fn MainApp(world: &mut World, hooks: &mut Hooks, server_addr: SocketAddr, user_i
 }
 
 fn main() -> anyhow::Result<()> {
-    env_logger::init();
+    // Initialize the logger and lower the log level for modules we don't need to hear from by default.
+    {
+        const WARN_MODULES: &[&str] = &[
+            "wgpu_core",
+            "wgpu_hal",
+            "elements_gpu",
+            "elements_network",
+            "elements_model",
+            "elements_build",
+            "elements_physics",
+            "tracing",
+        ];
+
+        let mut builder = env_logger::builder();
+        builder.filter_level(log::LevelFilter::Info);
+
+        for module in WARN_MODULES {
+            builder.filter_module(module, log::LevelFilter::Warn);
+        }
+
+        builder.parse_default_env().try_init()?;
+    }
     components::init()?;
     let runtime = tokio::runtime::Builder::new_multi_thread().enable_all().build()?;
     let assets = AssetCache::new(runtime.handle().clone());
@@ -216,7 +237,6 @@ fn main() -> anyhow::Result<()> {
         }
     } else {
         let port = server::start_server(&runtime, assets.clone(), cli.clone(), project_path, manifest.as_ref().expect("no manifest"));
-        eprintln!("Server running on port {port}");
         format!("127.0.0.1:{port}").parse()?
     };
     let user_id = cli.command.user_id().map(|x| x.to_string()).unwrap_or_else(|| format!("user_{}", friendly_id::create()));

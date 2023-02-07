@@ -93,8 +93,6 @@ pub fn client_systems() -> SystemGroup {
 
                 world.add_component(id, active_camera(), 0.).unwrap();
                 world.add_component(id, main_scene(), ()).unwrap();
-
-                log::info!("Adding audio listener to: {id}");
                 world.add_component(id, audio_listener(), Arc::new(Mutex::new(AudioListener::new(Mat4::IDENTITY, Vec3::X * 0.2)))).unwrap();
             }
         })],
