@@ -30,7 +30,7 @@ pub async fn main() -> EventResult {
                     .with(user_id(), player_user_id)
                     .with_default(player_camera())
                     .with_default(dont_store())
-                    .with(translation(), vec3(0.0, camera_state.borrow().radius, 0.0))
+                    .with(translation(), vec3(0.0, camera_state.read().radius, 0.0))
                     .with(rotation(), Quat::from_rotation_x(90.0f32.to_radians()))
                     .with_default(local_to_world())
                     .with_default(inv_local_to_world())
@@ -61,7 +61,7 @@ pub async fn main() -> EventResult {
         let camera_state = camera_state.clone();
         move |cameras| {
             for (id, _) in cameras {
-                let camera_state = camera_state.borrow();
+                let camera_state = camera_state.read();
                 let yaw = camera_state.yaw;
 
                 entity::set_position(id, Quat::from_rotation_z(yaw) * (Vec3::Y * camera_state.radius));
@@ -79,7 +79,7 @@ pub async fn main() -> EventResult {
             let right = new.keys.contains(&KeyCode::D);
             let horizontal = ((left as u32 as f32) - (right as u32 as f32)) * dt;
 
-            let mut camera_state = camera_state.borrow_mut();
+            let mut camera_state = camera_state.write();
             camera_state.radius = (camera_state.radius - (delta.mouse_wheel * dt)).max(2.0);
             camera_state.yaw += horizontal;
         }

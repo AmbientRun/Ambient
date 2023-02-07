@@ -1,8 +1,7 @@
 use std::{
-    cell::RefCell,
     future::Future,
     pin::Pin,
-    rc::Rc,
+    sync::{Arc, Mutex},
     task::{Context, Poll},
 };
 
@@ -41,23 +40,20 @@ pub async fn sleep(seconds: f32) {
 /// Useful for waiting until a particular event has happened in the game world.
 ///
 /// This must be used with `.await` in either an `async fn` or an `async` block.
-pub async fn until_this(
-    event: &str,
-    condition: impl Fn(&Components) -> bool + 'static,
-) -> Components {
-    let ret = Rc::new(RefCell::new(None));
+pub async fn until_this(event: &str, condition: impl Fn(&Components) -> bool + Send + Sync + 'static) -> Components {
+    let ret = Arc::new(Mutex::new(None));
 
     fn register_callback(
         event: String,
-        condition: impl Fn(&Components) -> bool + 'static,
-        ret: Rc<RefCell<Option<Components>>>,
+        condition: impl Fn(&Components) -> bool + Send + Sync + 'static,
+        ret: Arc<Mutex<Option<Components>>>,
     ) {
         once(&event, {
             let event = event.clone();
             move |args: &Components| {
                 if condition(args) {
                     let args = args.clone();
-                    *ret.borrow_mut() = Some(args);
+                    *ret.lock().unwrap() = Some(args);
                 } else {
                     register_callback(event, condition, ret);
                 }
@@ -67,14 +63,14 @@ pub async fn until_this(
     }
     register_callback(event.to_string(), condition, ret.clone());
 
-    struct WhenFuture<Args>(Rc<RefCell<Option<Args>>>);
+    struct WhenFuture<Args>(Arc<Mutex<Option<Args>>>);
     impl<Args> Future for WhenFuture<Args> {
         type Output = Args;
 
         fn poll(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Self::Output> {
-            let is_ready = self.0.borrow().is_some();
+            let is_ready = self.0.lock().unwrap().is_some();
             if is_ready {
-                Poll::Ready(self.0.borrow_mut().take().unwrap())
+                Poll::Ready(self.0.lock().unwrap().take().unwrap())
             } else {
                 Poll::Pending
             }
