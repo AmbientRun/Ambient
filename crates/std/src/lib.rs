@@ -1,4 +1,3 @@
-#![feature(async_closure)]
 #![feature(coerce_unsized)]
 #![feature(unsize)]
 use std::{

@@ -1,4 +1,3 @@
-#![feature(async_closure)]
 #![feature(map_many_mut)]
 use std::{
     collections::HashMap, io::ErrorKind, net::{IpAddr, Ipv4Addr, SocketAddr}, sync::Arc, time::Duration

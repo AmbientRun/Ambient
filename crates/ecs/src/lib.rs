@@ -1,6 +1,3 @@
-#![allow(incomplete_features)]
-#![feature(type_alias_impl_trait)]
-
 use core::fmt;
 use std::{
     collections::{HashMap, HashSet}, fmt::{Debug, Formatter}, fs::File, iter::once, path::Path, sync::atomic::{AtomicU64, Ordering}
