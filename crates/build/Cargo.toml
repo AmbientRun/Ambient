@@ -16,6 +16,7 @@ elements_ecs = { path = "../ecs" }
 elements_world_audio = { path = "../world_audio" }
 elements_physics = { path = "../physics" }
 elements_project = { path = "../project" }
+elements_rustc = { path = "../rustc" }
 elements_decals = { path = "../decals" }
 unity_parser = { path = "../../libs/unity_parser" }
 walkdir.workspace = true
@@ -36,6 +37,6 @@ glob.workspace = true
 yaml-rust.workspace = true
 tracing.workspace = true
 parking_lot.workspace = true
-toml.workspace = true
 async-trait.workspace = true
 dyn-clonable.workspace = true
+cargo_toml.workspace = true

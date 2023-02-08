@@ -1,4 +1,3 @@
-pub mod dependencies;
 pub(crate) mod implementation;
 pub mod util;
 
@@ -15,45 +14,33 @@ use elements_ecs::{
     components, query, uid, uid_lookup, Component, EntityData, EntityId, Networked, Store, World,
 };
 use elements_project::Identifier;
-use elements_rustc as rustc;
 use host_guest_state::GetBaseHostGuestState;
 use interface::write_scripting_interfaces;
 use itertools::Itertools;
 use parking_lot::RwLock;
-use rustc::Rust;
 pub use script_module::*;
-use util::{get_module_name, write_files_to_directory};
+use util::get_module_name;
 use wasi_common::WasiCtx;
 use wasmtime::Linker;
 
 components!("scripting::shared", {
     @[Networked, Store]
     script_module: (),
-    @[Networked, Store]
-    script_module_owned_files: ScriptModuleOwnedFiles,
     @[Store]
     script_module_bytecode: ScriptModuleBytecode,
     @[Networked, Store]
     script_module_enabled: bool,
     @[Networked, Store]
-    script_module_compiled: (),
-    @[Networked, Store]
     script_module_errors: ScriptModuleErrors,
-    @[Store]
-    script_module_path: PathBuf,
 
     // resources
     @[Networked, Store]
     scripting_interface_name: String,
-
     /// used to signal messages from the scripting host/runtime
     messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
     /// all available scripting interfaces
     @[Networked, Store]
     scripting_interfaces: HashMap<String, Vec<(PathBuf, String)>>,
-
-    /// Where Rust can be found
-    rust_installation: Rust,
     /// Where the scripting interfaces should be installed, not the path to the scripting interface itself
     ///
     /// e.g. world/, not world/scripting_interface
@@ -101,19 +88,15 @@ pub async fn initialize(
 
     primary_scripting_interface_name: &str,
 
-    // Where Rust should be installed
-    rust_path: PathBuf,
     // Where the scripting interfaces should be installed, not the path to the scripting interface itself
     //
     // e.g. world/, not world/scripting_interface
     scripting_interface_root_path: PathBuf,
 ) -> anyhow::Result<()> {
     assert!(scripting_interfaces.contains_key(primary_scripting_interface_name));
-    assert!([&rust_path, &scripting_interface_root_path]
+    assert!([&scripting_interface_root_path]
         .iter()
         .all(|p| p.is_absolute()));
-
-    let installation = Rust::install_or_get(&rust_path).await?;
 
     write_scripting_interfaces(&scripting_interfaces, &scripting_interface_root_path)?;
     world.add_resource(
@@ -123,7 +106,6 @@ pub async fn initialize(
 
     world.add_resource(self::messenger(), messenger);
     world.add_resource(self::scripting_interfaces(), scripting_interfaces);
-    world.add_resource(self::rust_installation(), installation);
     world.add_resource(
         self::scripting_interface_root_path(),
         scripting_interface_root_path,
@@ -151,13 +133,16 @@ pub fn reload_all<
     .map(|(id, (_, bc, enabled))| (id, enabled.then(|| bc.clone())))
     .collect_vec();
 
-    reload(
-        world,
-        state_component,
-        make_wasm_context,
-        add_to_linker,
-        &scripts,
-    );
+    for (script_id, bytecode) in scripts {
+        reload(
+            world,
+            state_component,
+            make_wasm_context.clone(),
+            add_to_linker.clone(),
+            script_id,
+            bytecode,
+        );
+    }
 }
 
 pub fn run_all<
@@ -186,27 +171,26 @@ pub fn reload<
     state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
     make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context + Send + Sync>,
     add_to_linker: Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
-    scripts: &[(EntityId, Option<ScriptModuleBytecode>)],
+    script_id: EntityId,
+    bytecode: Option<ScriptModuleBytecode>,
 ) {
-    for (script_id, bytecode) in scripts {
-        let mut errors = unload(world, state_component, *script_id, "reloading");
+    let mut errors = unload(world, state_component, script_id, "reloading");
 
-        if let Some(bytecode) = bytecode {
-            if !bytecode.0.is_empty() {
-                load(
-                    world,
-                    state_component,
-                    *script_id,
-                    make_wasm_context.clone(),
-                    add_to_linker.clone(),
-                    &bytecode.0,
-                    &mut errors,
-                );
-            }
+    if let Some(bytecode) = bytecode {
+        if !bytecode.0.is_empty() {
+            load(
+                world,
+                state_component,
+                script_id,
+                make_wasm_context.clone(),
+                add_to_linker.clone(),
+                &bytecode.0,
+                &mut errors,
+            );
         }
-
-        update_errors(world, state_component, &errors, true);
     }
+
+    update_errors(world, state_component, &errors, true);
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -408,8 +392,6 @@ pub fn spawn_script(
     name: &Identifier,
     description: String,
     enabled: bool,
-    script_path: PathBuf,
-    files: Option<FileMap>,
 ) -> anyhow::Result<EntityId> {
     if query(())
         .incl(script_module())
@@ -419,56 +401,15 @@ pub fn spawn_script(
         anyhow::bail!("a script module by the name {name} already exists");
     }
 
-    let mut ed = EntityData::new()
+    let ed = EntityData::new()
         .set(elements_core::name(), name.to_string())
         .set(uid(), elements_ecs::EntityUid::create())
         .set_default(script_module())
         .set(script_module_enabled(), enabled)
-        .set(script_module_path(), script_path)
         .set_default(script_module_errors())
         .set(elements_project::description(), description);
 
-    if let Some(files) = files {
-        let mut owned_files = ScriptModuleOwnedFiles::new();
-        owned_files.insert_multiple(
-            name,
-            &world
-                .resource(scripting_interfaces())
-                .keys()
-                .map(|s| s.as_str())
-                .collect::<Vec<_>>(),
-            world.resource(scripting_interface_name()).as_ref(),
-            &files,
-        )?;
-        ed.set_self(script_module_owned_files(), owned_files);
-    }
-
     Ok(ed.spawn(world))
-}
-
-pub fn compile(
-    rust: Rust,
-    script_path: PathBuf,
-    name: String,
-    files: Option<&ScriptModuleOwnedFiles>,
-) -> std::thread::JoinHandle<anyhow::Result<Vec<u8>>> {
-    let files = files.map(|f| f.files().clone());
-
-    std::thread::spawn(move || {
-        if let Some(files) = files {
-            // Remove the directory to ensure there aren't any old files left around
-            let _ = std::fs::remove_dir_all(&script_path);
-            write_files_to_directory(
-                &script_path,
-                &files
-                    .iter()
-                    .map(|(p, f)| (p.clone(), f.contents.clone()))
-                    .collect_vec(),
-            )?;
-        }
-
-        rust.build(&script_path, &name)
-    })
 }
 
 fn run_and_catch_panics<R>(f: impl FnOnce() -> anyhow::Result<R>) -> Result<R, String> {

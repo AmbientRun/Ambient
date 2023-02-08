@@ -1,8 +1,7 @@
-use std::{collections::HashMap, path::PathBuf, sync::Arc, time::Instant};
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 use elements_ecs::{
-    components, query, uid, Component, ComponentEntry, EntityData, EntityId, FnSystem, SystemGroup,
-    World,
+    query, uid, Component, ComponentEntry, EntityData, EntityId, FnSystem, SystemGroup, World,
 };
 use elements_network::server::{ForkingEvent, ShutdownEvent};
 use elements_physics::{collider_loads, collisions, PxShapeUserData};
@@ -13,23 +12,15 @@ use wasi_common::WasiCtx;
 use wasmtime::Linker;
 
 use crate::shared::{
-    compile, host_guest_state::GetBaseHostGuestState, interface::Host, messenger, reload,
-    reload_all, run_all, rust_installation, script_module, script_module_bytecode,
-    script_module_compiled, script_module_enabled, script_module_errors, script_module_owned_files,
-    script_module_path, scripting_interface_name, unload, update_errors, util::get_module_name,
-    MessageType, ScriptContext, ScriptModuleBytecode, ScriptModuleState, WasmContext,
+    host_guest_state::GetBaseHostGuestState, interface::Host, reload, reload_all, run_all,
+    script_module, script_module_bytecode, script_module_enabled, unload, update_errors,
+    MessageType, ScriptContext, ScriptModuleState, WasmContext,
 };
 
 pub mod bindings;
 pub(crate) mod implementation;
 
-pub const MINIMUM_RUST_VERSION: (u32, u32, u32) = (1, 65, 0);
 pub const MAXIMUM_ERROR_COUNT: usize = 10;
-
-components!("scripting::server", {
-    deferred_compilation_tasks: HashMap<EntityId, Instant>,
-    compilation_tasks: HashMap<EntityId, Arc<std::thread::JoinHandle<anyhow::Result<Vec<u8>>>>>,
-});
 
 pub fn systems<
     Bindings: Send + Sync + Host + 'static,
@@ -50,128 +41,30 @@ pub fn systems<
     SystemGroup::new(
         "elements/scripting/server",
         vec![
-            // If the script module exists, but does not have bytecode, populate its initial files.
-            // This is only necessary the first time it's created, which is why we exclude any entities
-            // that have bytecode on them. This exclusion also prevents this system from triggering when
-            // the world is forked.
-            query(script_module())
-                .excl(script_module_bytecode())
-                .spawned()
-                .to_system(|q, world, qs, _| {
-                    profiling::scope!("script module spawn population");
-
-                    let scripting_interface_name =
-                        world.resource(scripting_interface_name()).clone();
-
-                    let ids = q.iter(world, qs).map(|(id, _)| id).collect_vec();
-                    for id in ids {
-                        let name = get_module_name(world, id);
-                        if let Ok(owned_files) = world.get_mut(id, script_module_owned_files()) {
-                            owned_files.populate(&name, &scripting_interface_name);
-                        }
-                    }
-                }),
-            query((script_module().changed(), script_module_enabled().changed()))
-                .optional_changed(script_module_owned_files())
-                .to_system({
-                    let make_wasm_context = make_wasm_context;
-                    let add_to_linker = add_to_linker;
-                    move |q, world, qs, _| {
-                        profiling::scope!("script module changed");
-                        // Script module (files/enabled) changed, issue compilation tasks.
-                        let mut tasks = vec![];
-                        let mut to_disable = vec![];
-                        let now = Instant::now();
-                        for (id, (_, enabled)) in q.iter(world, qs) {
-                            if *enabled {
-                                tasks.push((id, now));
-                            } else {
-                                to_disable.push(id);
-                            }
-                        }
-
-                        world
-                            .resource_mut(deferred_compilation_tasks())
-                            .extend(tasks);
-
-                        for id in to_disable {
-                            reload(
-                                world,
-                                state_component,
-                                make_wasm_context(world),
-                                add_to_linker(world),
-                                &[(id, None)],
-                            );
-                            world.remove_component(id, state_component).unwrap();
-                        }
-                    }
-                }),
-            Box::new(FnSystem::new(move |world, _| {
-                profiling::scope!("script module compilation deferred execution");
-                // run deferred compilation tasks if they're ready to go
-                let ready_ids = {
-                    let deferred_tasks = world.resource_mut(deferred_compilation_tasks());
-                    let ready_ids = deferred_tasks
-                        .iter()
-                        .filter(|(_, i)| Instant::now() > **i)
-                        .map(|(id, _)| *id)
+            query((script_module_bytecode(), script_module_enabled().changed())).to_system(
+                move |q, world, qs, _| {
+                    profiling::scope!("script module reloads");
+                    let modules = q
+                        .iter(world, qs)
+                        .filter(|(id, (_, enabled))| {
+                            let has_state = world.has_component(*id, state_component);
+                            **enabled != has_state
+                        })
+                        .map(|(id, (bytecode, enabled))| (id, (bytecode.clone(), *enabled)))
                         .collect_vec();
-                    for id in &ready_ids {
-                        deferred_tasks.remove(id);
-                    }
-                    ready_ids
-                };
 
-                let installation = world.resource(rust_installation());
-                let tasks = ready_ids
-                    .into_iter()
-                    .map(|id| {
-                        let owned_files = world.get_ref(id, script_module_owned_files()).ok();
-                        let script_path = world.get_ref(id, script_module_path())?;
-                        let name = get_module_name(world, id).to_string();
-
-                        world.resource(messenger())(world, id, MessageType::Info, "Building");
-
-                        anyhow::Ok((
+                    for (id, (bytecode, enabled)) in modules {
+                        reload(
+                            world,
+                            state_component,
+                            make_wasm_context(world),
+                            add_to_linker(world),
                             id,
-                            Arc::new(compile(
-                                installation.clone(),
-                                script_path.clone(),
-                                name,
-                                owned_files,
-                            )),
-                        ))
-                    })
-                    .collect::<Result<Vec<_>, _>>()
-                    .unwrap();
-                world.resource_mut(compilation_tasks()).extend(tasks);
-            })),
-            query((
-                script_module(),
-                script_module_bytecode().changed(),
-                script_module_enabled(),
-            ))
-            .to_system(move |q, world, qs, _| {
-                profiling::scope!("script module wasm recreation");
-                let scripts = q
-                    .iter(world, qs)
-                    .map(|(id, (_, smb, enabled))| (id, enabled.then(|| smb.clone())))
-                    .collect_vec();
-
-                // Script module bytecode changed, recreate the WASM state
-                reload(
-                    world,
-                    state_component,
-                    make_wasm_context(world),
-                    add_to_linker(world),
-                    &scripts,
-                );
-
-                let messenger = world.resource(messenger()).clone();
-                for (id, _) in &scripts {
-                    (messenger)(world, *id, MessageType::Info, "Updated");
-                }
-            }),
+                            enabled.then_some(bytecode),
+                        );
+                    }
+                },
+            ),
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("script module frame event");
                 // trigger frame event
@@ -231,6 +124,7 @@ pub fn systems<
                 }
             })),
             query(uid()).spawned().to_system(move |q, world, qs, _| {
+                profiling::scope!("script module entity spawn");
                 for (id, uid) in q.collect_cloned(world, qs) {
                     run_all(
                         world,
@@ -247,57 +141,6 @@ pub fn systems<
                     );
                 }
             }),
-            Box::new(FnSystem::new(move |world, _| {
-                profiling::scope!("script module process compilation tasks");
-                // process all compilation tasks and store their result or report errors
-                let mut successful_updates = vec![];
-                let mut errors = vec![];
-
-                {
-                    let tasks = world.resource_mut(compilation_tasks());
-                    let completed_tasks = tasks
-                        .iter()
-                        .filter(|(_, t)| t.is_finished() && Arc::strong_count(t) == 1)
-                        .map(|(id, _)| *id)
-                        .collect_vec();
-
-                    for id in completed_tasks {
-                        let task = match tasks.remove(&id) {
-                            Some(task) => task,
-                            None => continue,
-                        };
-                        let task = Arc::try_unwrap(task).unwrap();
-                        let result = task.join();
-
-                        match result.unwrap() {
-                            Ok(bytecode) => successful_updates.push((id, bytecode)),
-                            Err(err) => errors.push((id, err.to_string())),
-                        };
-                    }
-                }
-
-                for id in successful_updates
-                    .iter()
-                    .map(|t| t.0)
-                    .chain(errors.iter().map(|t| t.0))
-                {
-                    world
-                        .set(id, script_module_errors(), Default::default())
-                        .unwrap();
-                }
-
-                for (id, bytecode) in successful_updates {
-                    world
-                        .add_components(
-                            id,
-                            EntityData::new()
-                                .set(script_module_bytecode(), ScriptModuleBytecode(bytecode))
-                                .set(script_module_compiled(), ()),
-                        )
-                        .unwrap();
-                }
-                update_errors(world, state_component, &errors, false);
-            })),
         ],
     )
 }
@@ -359,8 +202,6 @@ pub async fn initialize<
 
     primary_scripting_interface_name: &str,
 
-    // Where Rust should be installed
-    rust_path: PathBuf,
     // Where the scripting interfaces should be installed, not the path to the scripting interface itself
     //
     // e.g. world/, not world/scripting_interface
@@ -380,13 +221,9 @@ pub async fn initialize<
         messenger,
         scripting_interfaces,
         primary_scripting_interface_name,
-        rust_path,
         scripting_interface_root_path.clone(),
     )
     .await?;
-
-    world.add_resource(deferred_compilation_tasks(), HashMap::new());
-    world.add_resource(compilation_tasks(), HashMap::new());
     world.add_resource(make_wasm_context_component, make_wasm_context);
     world.add_resource(add_to_linker_component, add_to_linker);
 

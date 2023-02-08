@@ -20,128 +20,11 @@ use wasi_common::{
 
 use super::{
     bindings,
-    dependencies::{self, clean_cargo_toml},
     guest_conversion::GuestConvert,
     host_guest_state::GetBaseHostGuestState,
     interface::guest::{Guest, GuestData, RunContext},
     util, ScriptContext,
 };
-
-pub type FileMap = HashMap<PathBuf, File>;
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub struct ScriptModuleOwnedFiles {
-    files: FileMap,
-}
-impl Display for ScriptModuleOwnedFiles {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "ScriptModule")
-    }
-}
-impl ScriptModuleOwnedFiles {
-    pub fn new() -> Self {
-        ScriptModuleOwnedFiles {
-            files: HashMap::new(),
-        }
-    }
-
-    pub fn files(&self) -> &HashMap<PathBuf, File> {
-        &self.files
-    }
-
-    pub fn populate(&mut self, name: &Identifier, scripting_interface: &str) {
-        for (filename, contents) in Self::STATIC_FILE_TEMPLATES {
-            let filename = PathBuf::from(filename);
-            let contents = contents
-                .replace("{{name}}", &util::sanitize(&name))
-                .replace("{{scripting_interface}}", scripting_interface);
-            let file = File::new_at_now(contents);
-
-            self.files.entry(filename).or_insert(file);
-        }
-    }
-
-    /// Ignores system-controlled files
-    pub fn insert_multiple(
-        &mut self,
-        module_name: &Identifier,
-        scripting_interfaces: &[&str],
-        primary_scripting_interface: &str,
-        files: &FileMap,
-    ) -> anyhow::Result<()> {
-        for (relative_path, new_file) in files {
-            self.insert(scripting_interfaces, relative_path, new_file)?;
-        }
-        self.populate(module_name, primary_scripting_interface);
-        Ok(())
-    }
-
-    pub fn insert(
-        &mut self,
-        scripting_interfaces: &[&str],
-        relative_path: &Path,
-        new_file: &File,
-    ) -> anyhow::Result<()> {
-        let relative_path = elements_std::path::normalize(relative_path);
-
-        if relative_path == Path::new("Cargo.toml") {
-            if let Some(old_cargo) = self.files.get(Path::new("Cargo.toml")) {
-                self.files.insert(
-                    relative_path,
-                    File::new_at_now(dependencies::merge_cargo_toml(
-                        scripting_interfaces,
-                        &old_cargo.contents,
-                        &new_file.contents,
-                    )?),
-                );
-            } else {
-                self.files.insert(
-                    relative_path,
-                    File::new_at_now(clean_cargo_toml(scripting_interfaces, &new_file.contents)?),
-                );
-            }
-        } else {
-            self.files.insert(relative_path, new_file.clone());
-        }
-
-        Ok(())
-    }
-
-    pub fn remove(&mut self, relative_path: &Path) {
-        let relative_path = elements_std::path::normalize(relative_path);
-        self.files.remove(&relative_path);
-    }
-}
-impl ScriptModuleOwnedFiles {
-    const STATIC_FILE_TEMPLATES: &[(&'static str, &'static str)] = &[
-        (
-            "Cargo.toml",
-            indoc! {r#"
-                [package]
-                edition = "2021"
-                name = "{{name}}"
-                description = "{{description}}"
-                version = "0.1.0"
-
-                [lib]
-                crate-type = ["cdylib"]
-
-                [dependencies]
-                {{scripting_interface}} = {path = "../../interfaces/{{scripting_interface}}"}
-            "#},
-        ),
-        (
-            "src/lib.rs",
-            indoc! {r#"
-                use {{scripting_interface}}::*;
-
-                #[main]
-                pub async fn main() -> EventResult {
-                    EventOk
-                }
-            "#},
-        ),
-    ];
-}
 
 #[derive(Clone)]
 pub struct ScriptModuleBytecode(pub Vec<u8>);
@@ -193,22 +76,6 @@ impl<'de> Deserialize<'de> for ScriptModuleBytecode {
         }
 
         deserializer.deserialize_str(ScriptModuleBytecodeVisitor)
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-pub struct File {
-    // TODO(mithun): consider using an enum of Plaintext(String)/Binary(Bytes) files so that people can include binary assets
-    // in their crates
-    pub contents: String,
-    pub last_modified: chrono::DateTime<chrono::Utc>,
-}
-impl File {
-    pub fn new_at_now(contents: String) -> Self {
-        Self {
-            contents,
-            last_modified: chrono::Utc::now(),
-        }
     }
 }
 

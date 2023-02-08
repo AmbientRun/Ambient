@@ -7,8 +7,9 @@ use elements_scripting_host::{
         Bindings as ElementsBindings, WasmServerContext as ElementsWasmServerContext,
     },
     shared::{
-        host_guest_state::BaseHostGuestState, spawn_script, util::get_module_name, BaseWasmContext,
-        MessageType, ScriptModuleState, WasmContext,
+        host_guest_state::BaseHostGuestState, script_module_bytecode, spawn_script,
+        util::get_module_name, BaseWasmContext, MessageType, ScriptModuleBytecode,
+        ScriptModuleState, WasmContext,
     },
     Linker, WasiCtx,
 };
@@ -58,7 +59,6 @@ impl WasmContext<ElementsBindings> for WasmServerContext {
 }
 
 pub fn init_all_components() {
-    elements_scripting_host::server::init_components();
     init_components();
 }
 
@@ -87,8 +87,6 @@ pub async fn initialize(
     project_path: PathBuf,
     manifest: &elements_project::Manifest,
 ) -> anyhow::Result<()> {
-    let rust_path = elements_std::path::normalize(&std::env::current_dir()?.join("rust"));
-
     let messenger = Arc::new(
         |world: &World, id: EntityId, type_: MessageType, message: &str| {
             let name = get_module_name(world, id);
@@ -112,7 +110,6 @@ pub async fn initialize(
         messenger,
         get_scripting_interfaces(),
         SCRIPTING_INTERFACE_NAME,
-        rust_path.clone(),
         project_path.join("interfaces"),
         (
             make_wasm_context(),
@@ -125,29 +122,19 @@ pub async fn initialize(
     )
     .await?;
 
-    let cargo_toml_path = project_path.join("Cargo.toml");
-    if cargo_toml_path.exists() {
-        let toml = cargo_toml::Manifest::from_str(&std::fs::read_to_string(&cargo_toml_path)?)?;
+    let main_wasm_path = project_path
+        .join("target")
+        .join(format!("{}.wasm", manifest.project.id));
+    if main_wasm_path.exists() {
+        let bytecode = std::fs::read(main_wasm_path)?;
 
-        match toml.package {
-            Some(package) if package.name == manifest.project.id.as_ref() => {}
-            Some(package) => {
-                anyhow::bail!("The name of the package in the Cargo.toml ({}) does not match the project's ID ({})", package.name, manifest.project.id);
-            }
-            None => anyhow::bail!(
-                "No [package] present in Cargo.toml for project {}",
-                manifest.project.id.as_ref()
-            ),
-        }
-
-        spawn_script(
+        let id = spawn_script(
             world,
             &manifest.project.id,
             manifest.project.description.clone().unwrap_or_default(),
             true,
-            project_path,
-            None,
         )?;
+        world.add_component(id, script_module_bytecode(), ScriptModuleBytecode(bytecode))?;
     }
 
     Ok(())

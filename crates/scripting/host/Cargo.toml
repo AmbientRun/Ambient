@@ -14,14 +14,12 @@ elements_network = { path = "../../network" }
 elements_object = { path = "../../object" }
 elements_physics = { path = "../../physics" }
 elements_project = { path = "../../project" }
-elements_rustc = { path = "../../rustc" }
 elements_std = { path = "../../std" }
 physxx = { path = "../../../libs/physxx" }
 
 anyhow.workspace = true
 async-trait.workspace = true
 base64.workspace = true
-cargo_toml.workspace = true
 chrono.workspace = true
 flume.workspace = true
 fs_extra.workspace = true
@@ -30,7 +28,6 @@ indexmap.workspace = true
 indoc.workspace = true
 itertools.workspace = true
 log.workspace = true
-once_cell.workspace = true
 parking_lot.workspace = true
 profiling.workspace = true
 reqwest.workspace = true
@@ -38,7 +35,6 @@ serde_bytes.workspace = true
 serde_json.workspace = true
 serde.workspace = true
 slotmap.workspace = true
-toml.workspace = true
 
 wasi-common.workspace = true
 wasmtime-wasi.workspace = true
