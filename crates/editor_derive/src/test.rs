@@ -24,8 +24,12 @@ fn test_base(body: TokenStream) -> TokenStream {
         }
 
         impl elements_ui::Editor for Test {
-            fn editor(value: Self, on_change: Option<elements_ui::Cb<dyn Fn(Self) + ::std::marker::Sync + ::std::marker::Send>>, opts: elements_ui::EditorOpts) -> elements_ui::element::Element {
-                TestEditor { value, on_change, opts }.into()
+            fn editor(self, on_change: elements_ui::ChangeCb<Self>, opts: elements_ui::EditorOpts) -> elements_ui::element::Element {
+                TestEditor { value: self, on_change: Some(on_change), opts }.into()
+            }
+
+            fn view(self, opts: elements_ui::EditorOpts) -> elements_ui::element::Element {
+                TestEditor { value: self, on_change: None, opts }.into()
             }
         }
 
@@ -49,7 +53,7 @@ fn test_struct() {
 
                 EditorRow::el(
                     "my_f32_field",
-                    <f32 as elements_ui::Editor>::editor(my_f32_field.clone(), on_change.clone().map(|on_change| elements_ui::Cb(::std::sync::Arc::new({
+                    <f32 as elements_ui::Editor>::edit_or_view(my_f32_field.clone(), on_change.clone().map(|on_change| elements_ui::Cb(::std::sync::Arc::new({
                         let my_option = my_option.clone();
                         move |v| {
                             on_change.0(Test { my_f32_field: v, my_option: my_option.clone() });
@@ -59,7 +63,7 @@ fn test_struct() {
 
                 EditorRow::el(
                     "my_option",
-                    <Option::<bool> as elements_ui::Editor>::editor(my_option.clone(), on_change.clone().map(|on_change| elements_ui::Cb(::std::sync::Arc::new({
+                    <Option::<bool> as elements_ui::Editor>::edit_or_view(my_option.clone(), on_change.clone().map(|on_change| elements_ui::Cb(::std::sync::Arc::new({
                         let my_f32_field = my_f32_field.clone();
                         move |v| {
                             on_change.0(Test { my_f32_field: my_f32_field.clone(), my_option: v });
@@ -122,7 +126,7 @@ fn test_enum() {
 
                     EditorRow::el(
                         "testy",
-                        <f32 as elements_ui::Editor>::editor(testy.clone(), on_change.clone().map(|on_change| elements_ui::Cb(::std::sync::Arc::new({
+                        <f32 as elements_ui::Editor>::edit_or_view(testy.clone(), on_change.clone().map(|on_change| elements_ui::Cb(::std::sync::Arc::new({
                             move |v| {
                                 on_change.0(Test::Second { testy: v });
                             }
@@ -135,7 +139,7 @@ fn test_enum() {
 
                     EditorRow::el(
                         "",
-                        <f32 as elements_ui::Editor>::editor(field_0.clone(), on_change.clone().map(|on_change| elements_ui::Cb(::std::sync::Arc::new({
+                        <f32 as elements_ui::Editor>::edit_or_view(field_0.clone(), on_change.clone().map(|on_change| elements_ui::Cb(::std::sync::Arc::new({
                             move |v| {
                                 on_change.0(Test::Third(v));
                             }
@@ -200,7 +204,7 @@ fn test_enum_inline() {
                 Test::First { testy } => FlowRow(vec![
 
                     Text::el("Hello "),
-                    <f32 as elements_ui::Editor>::editor(testy.clone(), on_change.clone().map(|on_change| elements_ui::Cb(::std::sync::Arc::new({
+                    <f32 as elements_ui::Editor>::edit_or_view(testy.clone(), on_change.clone().map(|on_change| elements_ui::Cb(::std::sync::Arc::new({
                         move |v| {
                             on_change.0(Test::First { testy: v });
                         }
@@ -217,7 +221,7 @@ fn test_enum_inline() {
                             move |index| on_change.0(create_variant(index))
                         )),
                         items: vec![
-                            Test::editor(create_variant(0usize), None, Default::default()),
+                            Test::view(create_variant(0usize), Default::default()),
                         ],
                         inline: true
                     }.el()
