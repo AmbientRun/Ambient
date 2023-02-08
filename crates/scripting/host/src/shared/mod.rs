@@ -9,13 +9,8 @@ pub mod host_guest_state;
 pub mod interface;
 
 mod script_module;
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
-use anyhow::Context;
 use elements_ecs::{
     components, query, uid, uid_lookup, Component, EntityData, EntityId, Networked, Store, World,
 };
@@ -25,7 +20,7 @@ use host_guest_state::GetBaseHostGuestState;
 use interface::write_scripting_interfaces;
 use itertools::Itertools;
 use parking_lot::RwLock;
-use rustc::InstallDirs;
+use rustc::Rust;
 pub use script_module::*;
 use util::{get_module_name, write_files_to_directory};
 use wasi_common::WasiCtx;
@@ -57,11 +52,8 @@ components!("scripting::shared", {
     @[Networked, Store]
     scripting_interfaces: HashMap<String, Vec<(PathBuf, String)>>,
 
-    /// Where Rust should be installed
-    @[Networked, Store]
-    rust_path: PathBuf,
-    /// Where the Rust applications are installed. Should be underneath [rust_path].
-    install_dirs: InstallDirs,
+    /// Where Rust can be found
+    rust_installation: Rust,
     /// Where the scripting interfaces should be installed, not the path to the scripting interface itself
     ///
     /// e.g. world/, not world/scripting_interface
@@ -69,8 +61,6 @@ components!("scripting::shared", {
     scripting_interface_root_path: PathBuf,
 });
 
-pub const PARAMETER_CHANGE_DEBOUNCE_SECONDS: u64 = 2;
-pub const MINIMUM_RUST_VERSION: (u32, u32, u32) = (1, 65, 0);
 pub const MAXIMUM_ERROR_COUNT: usize = 10;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -123,29 +113,7 @@ pub async fn initialize(
         .iter()
         .all(|p| p.is_absolute()));
 
-    let install_dirs = InstallDirs {
-        rustup_path: rust_path.join("rustup"),
-        cargo_path: rust_path.join("cargo"),
-    };
-
-    if !rust_path.exists() {
-        let rustup_init_path = Path::new("./rustup-init");
-        let err = rustc::download_and_install(&install_dirs, rustup_init_path)
-            .await
-            .err();
-        if let Some(err) = err {
-            std::fs::remove_dir_all(&rust_path)?;
-            std::fs::remove_file(rustup_init_path)?;
-            return Err(err);
-        }
-    }
-
-    // Update Rust if we're below our minimum supported Rust version.
-    if rustc::get_installed_version(&install_dirs).context("failed to get rustc version")?
-        < MINIMUM_RUST_VERSION
-    {
-        rustc::update_rust(&install_dirs).context("failed to update rust")?;
-    }
+    let installation = Rust::install_or_get(&rust_path).await?;
 
     write_scripting_interfaces(&scripting_interfaces, &scripting_interface_root_path)?;
     world.add_resource(
@@ -155,8 +123,7 @@ pub async fn initialize(
 
     world.add_resource(self::messenger(), messenger);
     world.add_resource(self::scripting_interfaces(), scripting_interfaces);
-    world.add_resource(self::rust_path(), rust_path);
-    world.add_resource(self::install_dirs(), install_dirs);
+    world.add_resource(self::rust_installation(), installation);
     world.add_resource(
         self::scripting_interface_root_path(),
         scripting_interface_root_path,
@@ -480,7 +447,7 @@ pub fn spawn_script(
 }
 
 pub fn compile(
-    install_dirs: InstallDirs,
+    rust: Rust,
     script_path: PathBuf,
     name: String,
     files: Option<&ScriptModuleOwnedFiles>,
@@ -500,7 +467,7 @@ pub fn compile(
             )?;
         }
 
-        rustc::build_module(&install_dirs, &script_path, &name)
+        rust.build(&script_path, &name)
     })
 }
 

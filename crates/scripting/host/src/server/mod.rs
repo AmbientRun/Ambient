@@ -13,11 +13,11 @@ use wasi_common::WasiCtx;
 use wasmtime::Linker;
 
 use crate::shared::{
-    compile, host_guest_state::GetBaseHostGuestState, install_dirs, interface::Host, messenger,
-    reload, reload_all, run_all, script_module, script_module_bytecode, script_module_compiled,
-    script_module_enabled, script_module_errors, script_module_owned_files, script_module_path,
-    scripting_interface_name, unload, update_errors, util::get_module_name, MessageType,
-    ScriptContext, ScriptModuleBytecode, ScriptModuleState, WasmContext,
+    compile, host_guest_state::GetBaseHostGuestState, interface::Host, messenger, reload,
+    reload_all, run_all, rust_installation, script_module, script_module_bytecode,
+    script_module_compiled, script_module_enabled, script_module_errors, script_module_owned_files,
+    script_module_path, scripting_interface_name, unload, update_errors, util::get_module_name,
+    MessageType, ScriptContext, ScriptModuleBytecode, ScriptModuleState, WasmContext,
 };
 
 pub mod bindings;
@@ -122,7 +122,7 @@ pub fn systems<
                     ready_ids
                 };
 
-                let install_dirs = world.resource(install_dirs()).clone();
+                let installation = world.resource(rust_installation());
                 let tasks = ready_ids
                     .into_iter()
                     .map(|id| {
@@ -132,7 +132,7 @@ pub fn systems<
                         anyhow::Ok((
                             id,
                             Arc::new(compile(
-                                install_dirs.clone(),
+                                installation.clone(),
                                 script_path.clone(),
                                 get_module_name(world, id).to_string(),
                                 owned_files,
