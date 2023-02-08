@@ -1,16 +1,8 @@
-use std::{
-    collections::HashMap,
-    fmt::Display,
-    marker::PhantomData,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::{marker::PhantomData, sync::Arc};
 
 use anyhow::Context;
 use async_trait::async_trait;
 use elements_ecs::World;
-use elements_project::Identifier;
-use indoc::indoc;
 use parking_lot::{Mutex, RwLock};
 use serde::{Deserialize, Serialize};
 use wasi_common::{
@@ -23,7 +15,7 @@ use super::{
     guest_conversion::GuestConvert,
     host_guest_state::GetBaseHostGuestState,
     interface::guest::{Guest, GuestData, RunContext},
-    util, ScriptContext,
+    ScriptContext,
 };
 
 #[derive(Clone)]

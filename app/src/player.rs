@@ -12,11 +12,11 @@ use elements_input::{
 use elements_network::{
     client::game_client, get_player_by_user_id, player::{local_user_id, player, user_id}, DatagramHandlers
 };
+pub use elements_runtime_core::player::{prev_raw_input, raw_input, RawInput};
 use elements_std::unwrap_log_err;
 use elements_world_audio::audio_listener;
 use glam::{Mat4, Vec3};
 use parking_lot::Mutex;
-pub use elements_runtime_core::player::{prev_raw_input, raw_input, RawInput};
 
 const PLAYER_INPUT_DATAGRAM_ID: u32 = 5;
 
