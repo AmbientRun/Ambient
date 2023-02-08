@@ -107,8 +107,14 @@ impl ServerProtocol {
 }
 
 /// Contains things such as username (TODO) and user_id
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
 pub struct ClientInfo {
     pub user_id: String,
     pub external_components: Vec<(String, PrimitiveComponentType)>,
+}
+
+impl std::fmt::Debug for ClientInfo {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ClientInfo").field("user_id", &self.user_id).finish_non_exhaustive()
+    }
 }
