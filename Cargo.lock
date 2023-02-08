@@ -2041,7 +2041,7 @@ dependencies = [
 
 [[package]]
 name = "elements_project"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "elements_ecs",
  "paste",
@@ -2130,6 +2130,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "elements_rustc"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "itertools",
+ "log",
+ "reqwest",
+ "serde_json",
+]
+
+[[package]]
 name = "elements_scripting_host"
 version = "0.0.1"
 dependencies = [
@@ -2146,6 +2157,7 @@ dependencies = [
  "elements_object",
  "elements_physics",
  "elements_project",
+ "elements_rustc",
  "elements_scripting_host_build",
  "elements_std",
  "flume",
