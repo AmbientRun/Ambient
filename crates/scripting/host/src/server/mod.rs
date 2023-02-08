@@ -128,13 +128,16 @@ pub fn systems<
                     .map(|id| {
                         let owned_files = world.get_ref(id, script_module_owned_files()).ok();
                         let script_path = world.get_ref(id, script_module_path())?;
+                        let name = get_module_name(world, id).to_string();
+
+                        world.resource(messenger())(world, id, MessageType::Info, "Building");
 
                         anyhow::Ok((
                             id,
                             Arc::new(compile(
                                 installation.clone(),
                                 script_path.clone(),
-                                get_module_name(world, id).to_string(),
+                                name,
                                 owned_files,
                             )),
                         ))
