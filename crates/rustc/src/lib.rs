@@ -1,5 +1,6 @@
 use std::{
     ffi::OsStr,
+    fmt::Display,
     path::{Path, PathBuf},
     process::Command,
     str::FromStr,
@@ -8,21 +9,35 @@ use std::{
 use anyhow::Context;
 use itertools::Itertools;
 
-pub const MINIMUM_RUST_VERSION: (u32, u32, u32) = (1, 65, 0);
+const MINIMUM_RUST_VERSION: Version = Version((1, 65, 0));
 
 #[derive(Clone)]
 pub struct Rust(Installation);
 impl Rust {
     /// Gets the system installation of Rust, or downloads one if not available
     pub async fn install_or_get(rust_path: &Path) -> anyhow::Result<Self> {
-        let installation = if !rust_path.exists() {
-            Installation::download_and_install(rust_path).await?
-        } else {
-            let installation = Installation::from_existing_installation(rust_path)?;
-            if installation.get_installed_version()? < MINIMUM_RUST_VERSION {
-                installation.update()?;
+        let installation = match Installation::System.get_installed_version() {
+            Ok(version) if version >= MINIMUM_RUST_VERSION => {
+                log::debug!("Using system rustc ({version})");
+                Installation::System
             }
-            installation
+            _ if !rust_path.exists() => {
+                log::debug!("No rustc detected, downloading and installing");
+                Installation::download_and_install(rust_path).await?
+            }
+            _ => {
+                let installation = Installation::from_existing_installation(rust_path)?;
+                let mut version = installation.get_installed_version()?;
+
+                if version < MINIMUM_RUST_VERSION {
+                    log::debug!("Downloaded rustc is out of date ({version}), updating");
+                    installation.update()?;
+                    version = installation.get_installed_version()?;
+                }
+
+                log::debug!("Using downloaded rustc ({version})");
+                installation
+            }
         };
 
         Ok(Self(installation))
@@ -84,7 +99,7 @@ enum Installation {
 }
 impl Installation {
     async fn download_and_install(rust_path: &Path) -> anyhow::Result<Self> {
-        log::info!("downloading rustup");
+        log::info!("Downloading rustup");
 
         std::fs::create_dir_all(rust_path).context("failed to create rust_path")?;
         let (rustup_path, cargo_path) = Self::paths(rust_path);
@@ -122,7 +137,7 @@ impl Installation {
                 .context("failed to set rustup-init permissions")?;
         }
 
-        log::info!("executing rustup");
+        log::info!("Executing rustup");
         let mut rust_deleter = DeleteOnExit::new(rust_path.to_owned());
         let mut command = Command::new(&rustup_init_path);
         silence_output_window(&mut command);
@@ -152,13 +167,13 @@ impl Installation {
             cargo_path,
         };
 
-        log::info!("installing wasm32-wasi");
+        log::info!("Installing wasm32-wasi");
         handle_command_failure(
             "add rustup target wasm32-wasi",
             installation.run("rustup", ["target", "add", "wasm32-wasi"], None),
         )?;
 
-        log::info!("setting rustup default");
+        log::info!("Setting rustup default");
         handle_command_failure(
             "set rustup default",
             installation.run("rustup", ["default", "stable"], None),
@@ -201,26 +216,26 @@ impl Installation {
             anyhow::bail!("rustup update should only be called on downloaded installations");
         }
 
-        log::info!("running rustup update");
+        log::info!("Running rustup update");
         handle_command_failure("run rustup update", self.run("rustup", ["update"], None))?;
 
         Ok(())
     }
 
-    fn get_installed_version(&self) -> anyhow::Result<(u32, u32, u32)> {
-        let version =
-            handle_command_failure("get version", self.run("rustc", ["--version"], None))?;
-        version
-            .split_whitespace()
-            .nth(1)
-            .context("failed to extract version component (1)")?
-            .split('-')
-            .next()
-            .context("failed to extract version component (2)")?
-            .split('.')
-            .map(|i| i.parse().unwrap_or_default())
-            .collect_tuple::<(u32, u32, u32)>()
-            .context("failed to collect version into tuple")
+    fn get_installed_version(&self) -> anyhow::Result<Version> {
+        Ok(Version(
+            handle_command_failure("get version", self.run("rustc", ["--version"], None))?
+                .split_whitespace()
+                .nth(1)
+                .context("failed to extract version component (1)")?
+                .split('-')
+                .next()
+                .context("failed to extract version component (2)")?
+                .split('.')
+                .map(|i| i.parse().unwrap_or_default())
+                .collect_tuple()
+                .context("failed to collect version into tuple")?,
+        ))
     }
 
     fn run(
@@ -355,6 +370,15 @@ fn silence_output_window(command: &mut Command) {
 
 #[cfg(not(target_os = "windows"))]
 fn silence_output_window(_: &mut Command) {}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+struct Version((u32, u32, u32));
+impl Display for Version {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let (major, minor, patch) = self.0;
+        write!(f, "{major}.{minor}.{patch}")
+    }
+}
 
 struct DeleteOnExit {
     path: PathBuf,
