@@ -49,14 +49,14 @@ components!("rendering", {
     gpu_primitives: [GpuRenderPrimitive; MAX_PRIMITIVE_COUNT],
     renderer_shader: Arc<RendererShader>,
     material: SharedMaterial,
-    @[Debuggable, Networked, Store]
+    @[MakeDefault, Debuggable, Networked, Store]
     overlay: (),
-    @[Debuggable, Networked, Store]
+    @[MakeDefault, Debuggable, Networked, Store]
     color: Vec4,
     renderer_stats: String,
-    @[Debuggable, Networked, Store]
+    @[MakeDefault, Debuggable, Networked, Store]
     double_sided: bool,
-    @[Debuggable, Networked, Store]
+    @[MakeDefault, Debuggable, Networked, Store]
     cast_shadows: (),
     /// Higher number is higher priority
     @[Debuggable, Networked, Store]

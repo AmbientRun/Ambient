@@ -5,7 +5,7 @@ use elements_core::{
 };
 use elements_ecs::{AttributeConstructor, Component, ComponentAttribute, ComponentEntry, ComponentValue, World};
 use elements_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
-use elements_renderer::color;
+use elements_renderer::{cast_shadows, color, overlay};
 use elements_std::{time::Timeout, Cb};
 use parking_lot::Mutex;
 
@@ -214,6 +214,9 @@ pub fn hydrate_editable() {
     set(scale());
     set(color());
     set(name());
+
+    set(overlay());
+    set(cast_shadows());
 }
 
 /// Delegates a type editor to edit in a new `screen`
