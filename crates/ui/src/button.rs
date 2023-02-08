@@ -4,6 +4,7 @@ use std::{
     }
 };
 
+use closure::closure;
 use elements_core::{runtime, window};
 use elements_ecs::World;
 use elements_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};

@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use closure::closure;
 use elements_core::on_window_event;
 use elements_ecs::World;
 use elements_element::{Element, ElementComponent, ElementComponentExt, Hooks};

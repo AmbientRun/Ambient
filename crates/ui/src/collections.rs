@@ -1,5 +1,6 @@
 use std::{collections::HashMap, fmt::Debug, hash::Hash, ops::Deref, sync::Arc};
 
+use closure::closure;
 use elements_core::on_window_event;
 use elements_ecs::{EntityId, World};
 use elements_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};

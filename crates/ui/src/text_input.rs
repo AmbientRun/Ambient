@@ -1,5 +1,6 @@
 use std::{self, sync::Arc, time::Duration};
 
+use closure::closure;
 use elements_core::{transform::translation, window};
 use elements_ecs::{EntityId, World};
 use elements_element::{element_component, Element, ElementComponentExt, Hooks};
@@ -35,24 +36,25 @@ pub fn TextInput(
             }
         })
     }));
-    let el = if value.is_empty() && !focused && let Some(placeholder) = placeholder {
-            Text.el().set(text(), placeholder).set(color(), vec4(1., 1., 1., 0.2))
-        } else {
-            Text.el()
-                .set(text(), if password { value.chars().map(|_| '*').collect() } else { value.clone() })
-                .set(color(), vec4(0.9, 0.9, 0.9, 1.))
-        }
-        .init(layout(), Layout::Flow)
-        .set(fit_horizontal(), Fit::None)
-        .set(fit_vertical(), Fit::None)
-        .set(min_width(), 3.)
-        .set(min_height(), 13.)
-        .on_spawned(move |_, id| set_self_id(id))
-        .on_mouse_up(move |_, id, _| {
-            set_focus(Focus(Some(id)));
-        })
-        .on_mouse_enter(|world, _| world.resource(window()).set_cursor_icon(CursorIcon::Text))
-        .on_mouse_leave(|world, _| world.resource(window()).set_cursor_icon(CursorIcon::Default));
+    let el = if value.is_empty() && !focused && placeholder.is_some() {
+        Text.el().set(text(), placeholder.unwrap()).set(color(), vec4(1., 1., 1., 0.2))
+    } else {
+        Text.el()
+            .set(text(), if password { value.chars().map(|_| '*').collect() } else { value.clone() })
+            .set(color(), vec4(0.9, 0.9, 0.9, 1.))
+    }
+    .init(layout(), Layout::Flow)
+    .set(fit_horizontal(), Fit::None)
+    .set(fit_vertical(), Fit::None)
+    .set(min_width(), 3.)
+    .set(min_height(), 13.)
+    .on_spawned(move |_, id| set_self_id(id))
+    .on_mouse_up(move |_, id, _| {
+        set_focus(Focus(Some(id)));
+    })
+    .on_mouse_enter(|world, _| world.resource(window()).set_cursor_icon(CursorIcon::Text))
+    .on_mouse_leave(|world, _| world.resource(window()).set_cursor_icon(CursorIcon::Default));
+
     if focused {
         el.set(align_horizontal(), Align::End)
             .children(vec![Cursor.el()])

@@ -1,13 +1,10 @@
-#![feature(let_chains)]
-#[macro_use]
-extern crate closure;
-
 use std::{
     collections::HashMap, fmt::Debug, ops::Deref, sync::{
         atomic::{AtomicBool, Ordering}, Arc
     }
 };
 
+use closure::closure;
 use elements_core::{hierarchy::children, on_frame, on_window_event, transform::*, window, window_logical_size, window_physical_size};
 pub use elements_ecs::{EntityId, SystemGroup, World};
 pub use elements_editor_derive::ElementEditor;

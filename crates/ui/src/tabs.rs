@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 
+use closure::closure;
 use elements_ecs::World;
 use elements_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use elements_std::Cb;
