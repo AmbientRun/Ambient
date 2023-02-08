@@ -39,6 +39,7 @@ impl Rust {
                 installation
             }
         };
+        installation.install_wasm32_wasi()?;
 
         Ok(Self(installation))
     }
@@ -168,10 +169,7 @@ impl Installation {
         };
 
         log::info!("Installing wasm32-wasi");
-        handle_command_failure(
-            "add rustup target wasm32-wasi",
-            installation.run("rustup", ["target", "add", "wasm32-wasi"], None),
-        )?;
+        installation.install_wasm32_wasi()?;
 
         log::info!("Setting rustup default");
         handle_command_failure(
@@ -218,6 +216,15 @@ impl Installation {
 
         log::info!("Running rustup update");
         handle_command_failure("run rustup update", self.run("rustup", ["update"], None))?;
+
+        Ok(())
+    }
+
+    fn install_wasm32_wasi(&self) -> anyhow::Result<()> {
+        handle_command_failure(
+            "add rustup target wasm32-wasi",
+            self.run("rustup", ["target", "add", "wasm32-wasi"], None),
+        )?;
 
         Ok(())
     }
