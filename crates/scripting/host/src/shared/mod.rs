@@ -8,8 +8,6 @@ pub mod guest_conversion;
 pub mod host_guest_state;
 pub mod interface;
 
-pub mod rustc;
-
 mod script_module;
 use std::{
     collections::HashMap,
@@ -22,6 +20,7 @@ use elements_ecs::{
     components, query, uid, uid_lookup, Component, EntityData, EntityId, Networked, Store, World,
 };
 use elements_project::Identifier;
+use elements_rustc as rustc;
 use host_guest_state::GetBaseHostGuestState;
 use interface::write_scripting_interfaces;
 use itertools::Itertools;

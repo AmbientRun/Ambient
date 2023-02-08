@@ -9,11 +9,6 @@ pub fn bundle_scripting_interface(
     // additional directories to include
     directories: &[&str],
 ) {
-    // Store TARGET for rustup fetch
-    println!(
-        "cargo:rustc-env=TARGET={}",
-        std::env::var("TARGET").unwrap()
-    );
     println!(
         "cargo:rerun-if-changed={}",
         interface_path.as_os_str().to_string_lossy()
