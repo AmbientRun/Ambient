@@ -7,12 +7,18 @@ pub use host::*;
 
 use super::util::write_files_to_directory;
 
-wit_bindgen_host_wasmtime_rust::export!("../guest/rust/src/internal/host.wit");
-wit_bindgen_host_wasmtime_rust::import!("../guest/rust/src/internal/guest.wit");
+wit_bindgen_host_wasmtime_rust::export!(
+    "../../../guest/rust/crates/elements_base_scripting_interface/src/internal/host.wit"
+);
+wit_bindgen_host_wasmtime_rust::import!(
+    "../../../guest/rust/crates/elements_base_scripting_interface/src/internal/guest.wit"
+);
 
 pub mod shared {
     // extremely bad no good hack necessary because of https://github.com/bytecodealliance/wit-bindgen/issues/293
-    include!("../../../guest/rust/src/internal/shared.rs");
+    include!(
+        "../../../../../guest/rust/crates/elements_base_scripting_interface/src/internal/shared.rs"
+    );
 }
 
 pub const SCRIPTING_INTERFACE_NAME: &str = "elements_base_scripting_interface";

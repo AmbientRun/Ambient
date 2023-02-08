@@ -1,0 +1,11 @@
+[package]
+name = "physics"
+edition = "2021"
+version = "0.1.0"
+
+[dependencies]
+elements_runtime_scripting_interface = { path = "../../crates/elements_runtime_scripting_interface" }
+
+[lib]
+crate-type = ["cdylib"]
+required-features = []

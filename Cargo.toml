@@ -2,7 +2,6 @@
 default-members = ["app"]
 exclude = [
     "crates/scripting",
-    "app/crates/scripting/guest/rust",
     "examples/"
 ]
 members = [

@@ -1,0 +1,12 @@
+[package]
+name = "multiplayer"
+edition = "2021"
+version = "0.1.0"
+
+[dependencies]
+rand = "0.8.5"
+elements_runtime_scripting_interface = { path = "../../crates/elements_runtime_scripting_interface" }
+
+[lib]
+crate-type = ["cdylib"]
+required-features = []

@@ -1,0 +1,12 @@
+[package]
+name = "tictactoe"
+edition = "2021"
+version = "0.1.0"
+
+[dependencies]
+elements_runtime_scripting_interface = { path = "../../crates/elements_runtime_scripting_interface" }
+palette = "0.6.1"
+
+[lib]
+crate-type = ["cdylib"]
+required-features = []
