@@ -5,7 +5,7 @@ use downcast_rs::{impl_downcast, DowncastSync};
 use elements_core::{
     gpu_components, gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldShaderModuleKey, GpuWorldSyncEvent}, mesh, transform::get_world_rotation
 };
-use elements_ecs::{components, query_mut, Debuggable, EntityId, Networked, Store, SystemGroup, World};
+use elements_ecs::{components, query_mut, Debuggable, EntityId, MakeDefault, Networked, Store, SystemGroup, World};
 use elements_gpu::{
     mesh_buffer::{get_mesh_buffer_types, GpuMesh, MESH_BUFFER_TYPES_WGSL}, shader_module::{BindGroupDesc, Shader, ShaderModule, ShaderModuleIdentifier}, wgsl_utils::wgsl_interpolate
 };
