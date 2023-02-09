@@ -33,8 +33,6 @@ elements_std = {path = "../crates/std"}
 elements_ui = {path = "../crates/ui"}
 elements_world_audio = {path = "../crates/world_audio"}
 
-elements_runtime_scripting_host = {path = "crates/scripting/host"}
-
 anyhow.workspace = true
 axum.workspace = true
 bincode.workspace = true

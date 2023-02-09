@@ -6,20 +6,21 @@ use anyhow::Context;
 use axum::{
     http::{Method, StatusCode}, response::IntoResponse, routing::{get, get_service}, Router
 };
-use elements_core::{app_start_time, asset_cache, dtime, no_sync, remove_at_time, time};
-use elements_ecs::{components, ComponentDesc, ComponentRegistry, EntityData, Networked, SystemGroup, World, WorldStreamCompEvent};
+use elements_core::{app_start_time, asset_cache, dtime, no_sync, time};
+use elements_ecs::{ComponentDesc, ComponentRegistry, EntityData, Networked, SystemGroup, World, WorldStreamCompEvent};
 use elements_network::{
     bi_stream_handlers, client::GameRpcArgs, datagram_handlers, server::{ForkingEvent, GameServer, ShutdownEvent}
 };
 use elements_object::ObjectFromUrl;
 use elements_rpc::RpcRegistry;
-use elements_runtime_scripting_host as scripting;
 use elements_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, ServerBaseUrlKey}
 };
 use tower_http::{cors::CorsLayer, services::ServeDir};
 
 use crate::{player, Cli, Commands};
+
+mod scripting;
 
 fn server_systems() -> SystemGroup {
     SystemGroup::new(
@@ -32,7 +33,7 @@ fn server_systems() -> SystemGroup {
             elements_core::remove_at_time_system(),
             Box::new(elements_physics::physics_server_systems()),
             Box::new(player::server_systems()),
-            Box::new(scripting::server::systems()),
+            Box::new(scripting::systems()),
             Box::new(player::server_systems_final()),
             elements_physics::run_simulation_system(),
         ],
@@ -41,13 +42,13 @@ fn server_systems() -> SystemGroup {
 fn on_forking_systems() -> SystemGroup<ForkingEvent> {
     SystemGroup::new(
         "on_forking_systems",
-        vec![Box::new(elements_physics::on_forking_systems()), Box::new(scripting::server::on_forking_systems())],
+        vec![Box::new(elements_physics::on_forking_systems()), Box::new(scripting::on_forking_systems())],
     )
 }
 fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
     SystemGroup::new(
         "on_shutdown_systems",
-        vec![Box::new(elements_physics::on_shutdown_systems()), Box::new(scripting::server::on_shutdown_systems())],
+        vec![Box::new(elements_physics::on_shutdown_systems()), Box::new(scripting::on_shutdown_systems())],
     )
 }
 
@@ -120,7 +121,7 @@ pub(crate) fn start_server(
     });
     let port = server.port;
 
-    scripting::server::init_all_components();
+    scripting::init_all_components();
     let public_host =
         cli.public_host.or_else(|| local_ip_address::local_ip().ok().map(|x| x.to_string())).unwrap_or("localhost".to_string());
     log::info!("Created server, running at {public_host}:{port}");
@@ -137,7 +138,7 @@ pub(crate) fn start_server(
 
         server_world.add_components(server_world.resource_entity(), create_server_resources(assets.clone())).unwrap();
 
-        scripting::server::initialize(&mut server_world, project_path.clone(), &manifest).await.unwrap();
+        scripting::initialize(&mut server_world, project_path.clone(), &manifest).await.unwrap();
 
         if let Commands::View { asset_path, .. } = cli.command.clone() {
             let asset_path = AbsAssetUrl::from_file_path(project_path.join("target").join(asset_path).join("objects/main.json"));

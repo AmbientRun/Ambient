@@ -5,11 +5,10 @@ exclude = [
     "examples/"
 ]
 members = [
-  "crates/*",
-  "crates/scripting/host",
-  "libs/*",
-  "app",
-  "app/crates/scripting/host",
+    "crates/*",
+    "crates/scripting/host",
+    "libs/*",
+    "app",
 ]
 resolver = "2"
 
