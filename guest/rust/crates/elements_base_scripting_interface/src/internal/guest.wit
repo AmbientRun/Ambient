@@ -9,9 +9,8 @@ exec: func(ctx: run-context, event-name: string, event-data: list<tuple<u32, com
 // TEMPORARY: until we move to the component model, we have to duplicate definitions
 // and convert between the import and guest representations... :(
 record entity-id {
-    namespace: u8,
-    id: u64,
-    gen: s32,
+    id0: u64,
+    id1: u64,
 }
 
 record vec2 {

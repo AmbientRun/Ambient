@@ -3,6 +3,7 @@ use std::ops::Bound;
 use elements_ecs::{
     components, index_system, ArchetypeFilter, EntityData, FrameEvent, Index, IndexColumns, IndexField, IndexKey, System, World
 };
+use elements_std::IntoSorted;
 use itertools::Itertools;
 
 components!("test", {
@@ -83,15 +84,15 @@ fn simple_index_exact() {
 
     let start = IndexKey::min(vec![IndexField::exact(a(), 5)]);
     let end = IndexKey::max(vec![IndexField::exact(a(), 5)]);
-    assert_eq!(index.range(&start..&end).map(|x| x.id().unwrap()).collect_vec(), [x, dup]);
+    assert_eq!(index.range(&start..&end).map(|x| x.id().unwrap()).sorted().collect_vec(), vec![x, dup].into_sorted());
 
     let y = world.spawn(EntityData::new().set(a(), 3));
     index.insert_entity(&world, y);
-    assert_eq!(index.range(&start..).map(|x| x.id().unwrap()).collect_vec(), [x, dup]);
+    assert_eq!(index.range(&start..).map(|x| x.id().unwrap()).sorted().collect_vec(), vec![x, dup].into_sorted());
 
     let z = world.spawn(EntityData::new().set(a(), 7));
     index.insert_entity(&world, z);
-    assert_eq!(index.range(&start..).map(|x| x.id().unwrap()).collect_vec(), [x, dup, z]);
+    assert_eq!(index.range(&start..).map(|x| x.id().unwrap()).sorted().collect_vec(), vec![x, dup, z].into_sorted());
 }
 
 #[test]
@@ -111,5 +112,5 @@ fn multiple_for_exact_value() {
 
     let start = Bound::Included(IndexKey::min(vec![IndexField::exact(a(), 5)]));
     let end = Bound::Included(IndexKey::max(vec![IndexField::exact(a(), 5)]));
-    assert_eq!(index.range((start, end)).map(|x| x.id().unwrap()).collect_vec(), vec![y, z]);
+    assert_eq!(index.range((start, end)).map(|x| x.id().unwrap()).sorted().collect_vec(), vec![y, z].into_iter().sorted().collect_vec());
 }

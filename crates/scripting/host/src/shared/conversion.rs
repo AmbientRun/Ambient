@@ -24,21 +24,15 @@ pub trait FromBindgen {
 impl IntoBindgen for EntityId {
     type Item = host::EntityId;
     fn into_bindgen(self) -> Self::Item {
-        host::EntityId {
-            namespace: self.namespace,
-            id: self.id as u64,
-            gen: self.gen,
-        }
+        let (id0, id1) = self.to_u64s();
+
+        host::EntityId { id0, id1 }
     }
 }
 impl FromBindgen for host::EntityId {
     type Item = EntityId;
     fn from_bindgen(self) -> Self::Item {
-        EntityId {
-            namespace: self.namespace,
-            id: self.id as usize,
-            gen: self.gen,
-        }
+        EntityId::from_u64s(self.id0, self.id1)
     }
 }
 

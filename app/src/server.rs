@@ -6,8 +6,8 @@ use anyhow::Context;
 use axum::{
     http::{Method, StatusCode}, response::IntoResponse, routing::{get, get_service}, Router
 };
-use elements_core::{app_start_time, asset_cache, dtime, no_sync, time};
-use elements_ecs::{ComponentDesc, ComponentRegistry, EntityData, Networked, SystemGroup, World, WorldStreamCompEvent};
+use elements_core::{app_start_time, asset_cache, dtime, no_sync, remove_at_time, time};
+use elements_ecs::{components, ComponentDesc, ComponentRegistry, EntityData, Networked, SystemGroup, World, WorldStreamCompEvent};
 use elements_network::{
     bi_stream_handlers, client::GameRpcArgs, datagram_handlers, server::{ForkingEvent, GameServer, ShutdownEvent}
 };
@@ -132,7 +132,7 @@ pub(crate) fn start_server(
 
     let manifest = manifest.clone();
     runtime.spawn(async move {
-        let mut server_world = World::new_with_config("server", 1, true);
+        let mut server_world = World::new_with_config("server", true);
         server_world.init_shape_change_tracking();
 
         server_world.add_components(server_world.resource_entity(), create_server_resources(assets.clone())).unwrap();

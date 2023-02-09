@@ -34,10 +34,8 @@ pub async fn rpc_fork_instance(args: GameRpcArgs, RpcForkInstance { resources, s
     let id = id.unwrap_or(friendly_id::create());
     if !state.instances.contains_key(&id) {
         let new_instance = {
-            let namespace = state.next_namespace();
             let instance = state.get_player_world_instance(&args.user_id).unwrap();
             let mut world = instance.world.clone();
-            world.set_namespace(namespace);
 
             for (id, _) in query(user_id()).collect_cloned(&world, None) {
                 world.despawn(id);
