@@ -107,7 +107,7 @@ pub struct Serializable {
     ser: fn(&ComponentEntry) -> &dyn erased_serde::Serialize,
     deser: fn(ComponentDesc, &mut dyn erased_serde::Deserializer) -> Result<ComponentEntry, erased_serde::Error>,
 }
-
+impl ComponentAttribute for Serializable {}
 impl<T> AttributeConstructor<T, ()> for Serializable
 where
     T: ComponentValue + Serialize + for<'de> Deserialize<'de>,
@@ -123,7 +123,6 @@ where
         });
     }
 }
-
 impl Serializable {
     /// Serialize a value
     pub fn serialize<'a>(&self, entry: &'a ComponentEntry) -> &'a dyn erased_serde::Serialize {
@@ -157,13 +156,12 @@ impl<'de> serde::de::DeserializeSeed<'de> for ComponentDeserializer {
 pub struct Debuggable {
     debug: fn(&dyn Any) -> &dyn Debug,
 }
-
+impl ComponentAttribute for Debuggable {}
 impl Debuggable {
     pub(crate) fn as_debug<'a>(&self, value: &'a dyn Any) -> &'a dyn Debug {
         (self.debug)(value)
     }
 }
-
 impl<T> AttributeConstructor<T, ()> for Debuggable
 where
     T: 'static + Debug,
@@ -178,20 +176,18 @@ where
 pub struct MakeDefault {
     make_default: Arc<dyn Fn(ComponentDesc) -> ComponentEntry + Send + Sync>,
 }
-
+impl ComponentAttribute for MakeDefault {}
 impl MakeDefault {
     /// Construct the default value of this component
     pub fn make_default(&self, desc: ComponentDesc) -> ComponentEntry {
         (self.make_default)(desc)
     }
 }
-
 impl<T: ComponentValue + Default> AttributeConstructor<T, ()> for MakeDefault {
     fn construct(store: &mut AttributeStore, _: ()) {
         store.set(Self { make_default: Arc::new(move |desc| ComponentEntry::from_raw_parts(desc, T::default())) })
     }
 }
-
 impl<T: ComponentValue, F: 'static + Send + Sync + Fn() -> T> AttributeConstructor<T, F> for MakeDefault {
     fn construct(store: &mut AttributeStore, func: F) {
         store.set(Self { make_default: Arc::new(move |desc| ComponentEntry::from_raw_parts(desc, func())) })
@@ -203,22 +199,7 @@ impl<T: ComponentValue, F: 'static + Send + Sync + Fn() -> T> AttributeConstruct
 /// Provides `Serializable`
 #[derive(Debug, Clone, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Store;
-/// Synchronize the component over the network to the clients
-///
-/// Provides `Serializable`
-#[derive(Debug, Clone, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Networked;
-
-impl<T> AttributeConstructor<T, ()> for Networked
-where
-    T: ComponentValue + Serialize + for<'de> Deserialize<'de>,
-{
-    fn construct(store: &mut AttributeStore, params: ()) {
-        <Serializable as AttributeConstructor<T, ()>>::construct(store, params);
-        store.set(Self);
-    }
-}
-
+impl ComponentAttribute for Store {}
 impl<T> AttributeConstructor<T, ()> for Store
 where
     T: ComponentValue + Serialize + for<'de> Deserialize<'de>,
@@ -229,12 +210,29 @@ where
     }
 }
 
+/// Synchronize the component over the network to the clients
+///
+/// Provides `Serializable`
+#[derive(Debug, Clone, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Networked;
+impl ComponentAttribute for Networked {}
+impl<T> AttributeConstructor<T, ()> for Networked
+where
+    T: ComponentValue + Serialize + for<'de> Deserialize<'de>,
+{
+    fn construct(store: &mut AttributeStore, params: ()) {
+        <Serializable as AttributeConstructor<T, ()>>::construct(store, params);
+        store.set(Self);
+    }
+}
+
 pub(crate) struct ComponentPath(pub String);
+impl ComponentAttribute for ComponentPath {}
 
 /// A user-friendly name annotation, as opposed to the ID. (e.g. "Player Health" vs "player_health").
 #[derive(Clone)]
 pub struct Name(pub String);
-
+impl ComponentAttribute for Name {}
 impl<T: ComponentValue> AttributeConstructor<T, &'static str> for Name {
     fn construct(store: &mut AttributeStore, value: &'static str) {
         store.set(Self(value.to_string()))
@@ -244,18 +242,19 @@ impl<T: ComponentValue> AttributeConstructor<T, &'static str> for Name {
 /// A user-friendly description. (e.g. "The player's health from 0 to 1.")
 #[derive(Clone)]
 pub struct Description(pub String);
-
+impl ComponentAttribute for Description {}
 impl<T: ComponentValue> AttributeConstructor<T, &'static str> for Description {
     fn construct(store: &mut AttributeStore, value: &'static str) {
         store.set(Self(value.to_string()))
     }
 }
 
-impl ComponentAttribute for Serializable {}
-impl ComponentAttribute for Debuggable {}
-impl ComponentAttribute for MakeDefault {}
-impl ComponentAttribute for Store {}
-impl ComponentAttribute for Networked {}
-impl ComponentAttribute for ComponentPath {}
-impl ComponentAttribute for Name {}
-impl ComponentAttribute for Description {}
+/// Indicates that this component was externally added.
+#[derive(Clone)]
+pub struct External;
+impl ComponentAttribute for External {}
+impl<T: ComponentValue> AttributeConstructor<T, ()> for External {
+    fn construct(store: &mut AttributeStore, _: ()) {
+        store.set(Self)
+    }
+}

@@ -80,7 +80,7 @@ impl ServerProtocol {
 
         log::info!("Received handshake from {user_id:?}");
 
-        let external_components = ComponentRegistry::get().all_external().map(|(desc, pc)| (desc.path(), pc.ty)).collect();
+        let external_components = ComponentRegistry::get().all_external().map(|pc| (pc.desc.path(), pc.ty)).collect();
 
         // Respond
         let client_info = ClientInfo { user_id, external_components };

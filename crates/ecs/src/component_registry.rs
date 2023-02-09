@@ -95,11 +95,17 @@ impl ComponentRegistry {
         slot.desc
     }
 
-    pub fn register_external(&mut self, path: String, vtable: &'static ComponentVTable<()>, attributes: AttributeStore) -> ComponentDesc {
+    pub(crate) fn register_external(
+        &mut self,
+        path: String,
+        vtable: &'static ComponentVTable<()>,
+        mut attributes: AttributeStore,
+    ) -> ComponentDesc {
         assert_eq!(None, vtable.path, "Static name does not match provided name");
 
         log::debug!("Registering external component: {path}");
 
+        attributes.set(External);
         self.register(path, vtable, Some(attributes))
     }
 
@@ -151,8 +157,14 @@ impl ComponentRegistry {
         self.components.get(idx as usize).unwrap().primitive_component.clone()
     }
 
-    pub fn all_external(&self) -> impl Iterator<Item = (ComponentDesc, &PrimitiveComponent)> + '_ {
-        self.components.iter().filter_map(|v| Some((v.desc, v.primitive_component.as_ref()?)))
+    /// Returns an iterator over all primitive components and their descs.
+    pub fn all_primitive(&self) -> impl Iterator<Item = &PrimitiveComponent> + '_ {
+        self.components.iter().filter_map(|v| Some(v.primitive_component.as_ref()?))
+    }
+
+    /// Returns an iterator over all primitive components that were externally defined and their descs.
+    pub fn all_external(&self) -> impl Iterator<Item = &PrimitiveComponent> + '_ {
+        self.all_primitive().filter(|pc| pc.desc.attribute::<External>().is_some())
     }
 
     pub fn all(&self) -> impl Iterator<Item = ComponentDesc> + '_ {
