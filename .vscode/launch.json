@@ -1,649 +1,816 @@
 {
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "elements [debug]",
-      "cargo": {
-        "args": ["build"],
-        "filter": {
-          "name": "elements",
-          "kind": "bin"
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "elements [debug]",
+            "cargo": {
+                "args": [
+                    "build"
+                ],
+                "filter": {
+                    "name": "elements",
+                    "kind": "bin"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info,wgpu=warn,naga=warn,quinn=warn,sentry=debug,sentry-anyhow=debug,sentry-core=debug,fbxcel=error",
+                "DIMS_DISABLE_TIMEOUT": "true"
+            },
+            "args": [
+                "--project-path=guest/rust/examples/primitives",
+                "run"
+            ],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "elements [release]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--release"
+                ],
+                "filter": {
+                    "name": "elements",
+                    "kind": "bin"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info,wgpu=warn,naga=warn,quinn=warn,sentry=debug,sentry-anyhow=debug,sentry-core=debug,fbxcel=error",
+                "DIMS_DISABLE_TIMEOUT": "true"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "name": "elements (Windows, Internal server) [debug]",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/target/debug/elements.exe",
+            "env": {
+                "RUST_LOG": "dims=info,dims_shared=info,elements=info"
+            },
+            "args": [
+                "--internal-server"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceRoot}",
+            "environment": [],
+            "externalConsole": true
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/app/hello_world' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=hello_world",
+                    "--package=elements_app"
+                ],
+                "filter": {
+                    "name": "hello_world",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "warning"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/asset_timeline' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=asset_timeline",
+                    "--package=elements_asset_timeline"
+                ],
+                "filter": {
+                    "name": "asset_timeline",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/decals/decals' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=decals",
+                    "--package=elements_decals",
+                    "--features=hotload-includes"
+                ],
+                "filter": {
+                    "name": "decals",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/ecs_editor' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=ecs_editor",
+                    "--package=elements_ecs_editor",
+                    "--release"
+                ],
+                "filter": {
+                    "name": "ecs_editor",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/gizmos' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=gizmos",
+                    "--package=elements_gizmos"
+                ],
+                "filter": {
+                    "name": "gizmos",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/model_import/assimp' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=assimp",
+                    "--package=elements_model_import"
+                ],
+                "filter": {
+                    "name": "assimp",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info",
+                "RUST_BACKTRACE": "1"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/model_import/fbx' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=fbx",
+                    "--package=elements_model_import"
+                ],
+                "filter": {
+                    "name": "fbx",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info",
+                "RUST_BACKTRACE": "1"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/model_import/gltf' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=gltf",
+                    "--package=elements_model_import"
+                ],
+                "filter": {
+                    "name": "gltf",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "dims=info,elements_model_import=info,elements=info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/model_import/model_loading' [release]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=model_loading",
+                    "--package=elements_model_import",
+                    "--release"
+                ],
+                "filter": {
+                    "name": "model_loading",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/model_import/skinmesh' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=skinmesh",
+                    "--package=elements_model_import"
+                ],
+                "filter": {
+                    "name": "skinmesh",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/physics/physics' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=physics",
+                    "--package=elements_physics"
+                ],
+                "filter": {
+                    "name": "physics",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/renderer/billboard' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=billboard",
+                    "--package=elements_renderer"
+                ],
+                "filter": {
+                    "name": "billboard",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/renderer/custom_material' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=custom_material",
+                    "--package=elements_renderer"
+                ],
+                "filter": {
+                    "name": "custom_material",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "env": {
+                "RUST_BACKTRACE": "1"
+            },
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/renderer/instancing' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=instancing",
+                    "--package=elements_renderer"
+                ],
+                "filter": {
+                    "name": "instancing",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/renderer/lod' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=lod",
+                    "--package=elements_renderer"
+                ],
+                "filter": {
+                    "name": "lod",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/renderer/pbr' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=pbr",
+                    "--package=elements_renderer"
+                ],
+                "filter": {
+                    "name": "pbr",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/renderer/renderer_update' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=renderer_update",
+                    "--package=elements_renderer"
+                ],
+                "filter": {
+                    "name": "renderer_update",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/renderer/shadow_test' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=shadow_test",
+                    "--package=elements_renderer"
+                ],
+                "filter": {
+                    "name": "shadow_test",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/renderer/texture' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=texture",
+                    "--package=elements_renderer"
+                ],
+                "filter": {
+                    "name": "texture",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/renderer/translucency' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=translucency",
+                    "--package=elements_renderer"
+                ],
+                "filter": {
+                    "name": "translucency",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/ui/button' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=button",
+                    "--package=elements_ui"
+                ],
+                "filter": {
+                    "name": "button",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "elements=info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/ui/dock_layout' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=dock_layout",
+                    "--package=elements_ui"
+                ],
+                "filter": {
+                    "name": "dock_layout",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "elements=info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/ui/element_editor' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=element_editor",
+                    "--package=elements_ui"
+                ],
+                "filter": {
+                    "name": "element_editor",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/ui/flow_layout' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=flow_layout",
+                    "--package=elements_ui"
+                ],
+                "filter": {
+                    "name": "flow_layout",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "elements=info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/ui/image' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=image",
+                    "--package=elements_ui"
+                ],
+                "filter": {
+                    "name": "image",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/ui/input' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=input",
+                    "--package=elements_ui"
+                ],
+                "filter": {
+                    "name": "input",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/ui/rect' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=rect",
+                    "--package=elements_ui"
+                ],
+                "filter": {
+                    "name": "rect",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "elements=info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/ui/screens' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=screens",
+                    "--package=elements_ui"
+                ],
+                "filter": {
+                    "name": "screens",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/ui/slider' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=slider",
+                    "--package=elements_ui"
+                ],
+                "filter": {
+                    "name": "slider",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "elements=info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/ui/text' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=text",
+                    "--package=elements_ui"
+                ],
+                "filter": {
+                    "name": "text",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/ui/todo' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=todo",
+                    "--package=elements_ui"
+                ],
+                "filter": {
+                    "name": "todo",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info"
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'elements/ui/ui' [debug]",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=ui",
+                    "--package=elements_ui"
+                ],
+                "filter": {
+                    "name": "ui",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Test elements",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--workspace"
+                ],
+                "filter": {
+                    "name": "elements",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
         }
-      },
-      "env": {
-        "RUST_LOG": "info,wgpu=warn,naga=warn,quinn=warn,sentry=debug,sentry-anyhow=debug,sentry-core=debug,fbxcel=error",
-        "DIMS_DISABLE_TIMEOUT": "true"
-      },
-      "args": ["--project-path=examples/primitives", "run"],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "elements [release]",
-      "cargo": {
-        "args": ["build", "--release"],
-        "filter": {
-          "name": "elements",
-          "kind": "bin"
-        }
-      },
-      "env": {
-        "RUST_LOG": "info,wgpu=warn,naga=warn,quinn=warn,sentry=debug,sentry-anyhow=debug,sentry-core=debug,fbxcel=error",
-        "DIMS_DISABLE_TIMEOUT": "true"
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "name": "elements (Windows, Internal server) [debug]",
-      "type": "cppvsdbg",
-      "request": "launch",
-      "program": "${workspaceRoot}/target/debug/elements.exe",
-      "env": {
-        "RUST_LOG": "dims=info,dims_shared=info,elements=info"
-      },
-      "args": ["--internal-server"],
-      "stopAtEntry": false,
-      "cwd": "${workspaceRoot}",
-      "environment": [],
-      "externalConsole": true
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/app/hello_world' [debug]",
-      "cargo": {
-        "args": ["build", "--example=hello_world", "--package=elements_app"],
-        "filter": {
-          "name": "hello_world",
-          "kind": "example"
-        }
-      },
-      "env": {
-        "RUST_LOG": "warning"
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/asset_timeline' [debug]",
-      "cargo": {
-        "args": [
-          "build",
-          "--example=asset_timeline",
-          "--package=elements_asset_timeline"
-        ],
-        "filter": {
-          "name": "asset_timeline",
-          "kind": "example"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/decals/decals' [debug]",
-      "cargo": {
-        "args": [
-          "build",
-          "--example=decals",
-          "--package=elements_decals",
-          "--features=hotload-includes"
-        ],
-        "filter": {
-          "name": "decals",
-          "kind": "example"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/ecs_editor' [debug]",
-      "cargo": {
-        "args": [
-          "build",
-          "--example=ecs_editor",
-          "--package=elements_ecs_editor",
-          "--release"
-        ],
-        "filter": {
-          "name": "ecs_editor",
-          "kind": "example"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/gizmos' [debug]",
-      "cargo": {
-        "args": ["build", "--example=gizmos", "--package=elements_gizmos"],
-        "filter": {
-          "name": "gizmos",
-          "kind": "example"
-        }
-      },
-      "env": {
-        "RUST_LOG": "info"
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/model_import/assimp' [debug]",
-      "cargo": {
-        "args": [
-          "build",
-          "--example=assimp",
-          "--package=elements_model_import"
-        ],
-        "filter": {
-          "name": "assimp",
-          "kind": "example"
-        }
-      },
-      "env": {
-        "RUST_LOG": "info",
-        "RUST_BACKTRACE": "1"
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/model_import/fbx' [debug]",
-      "cargo": {
-        "args": ["build", "--example=fbx", "--package=elements_model_import"],
-        "filter": {
-          "name": "fbx",
-          "kind": "example"
-        }
-      },
-      "env": {
-        "RUST_LOG": "info",
-        "RUST_BACKTRACE": "1"
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/model_import/gltf' [debug]",
-      "cargo": {
-        "args": ["build", "--example=gltf", "--package=elements_model_import"],
-        "filter": {
-          "name": "gltf",
-          "kind": "example"
-        }
-      },
-      "env": {
-        "RUST_LOG": "dims=info,elements_model_import=info,elements=info"
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/model_import/model_loading' [release]",
-      "cargo": {
-        "args": [
-          "build",
-          "--example=model_loading",
-          "--package=elements_model_import",
-          "--release"
-        ],
-        "filter": {
-          "name": "model_loading",
-          "kind": "example"
-        }
-      },
-      "env": {
-        "RUST_LOG": "info"
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/model_import/skinmesh' [debug]",
-      "cargo": {
-        "args": [
-          "build",
-          "--example=skinmesh",
-          "--package=elements_model_import"
-        ],
-        "filter": {
-          "name": "skinmesh",
-          "kind": "example"
-        }
-      },
-      "env": {
-        "RUST_LOG": "info"
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/physics/physics' [debug]",
-      "cargo": {
-        "args": ["build", "--example=physics", "--package=elements_physics"],
-        "filter": {
-          "name": "physics",
-          "kind": "example"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/renderer/billboard' [debug]",
-      "cargo": {
-        "args": ["build", "--example=billboard", "--package=elements_renderer"],
-        "filter": {
-          "name": "billboard",
-          "kind": "example"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/renderer/custom_material' [debug]",
-      "cargo": {
-        "args": [
-          "build",
-          "--example=custom_material",
-          "--package=elements_renderer"
-        ],
-        "filter": {
-          "name": "custom_material",
-          "kind": "example"
-        }
-      },
-      "args": [],
-      "env": {
-        "RUST_BACKTRACE": "1"
-      },
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/renderer/instancing' [debug]",
-      "cargo": {
-        "args": [
-          "build",
-          "--example=instancing",
-          "--package=elements_renderer"
-        ],
-        "filter": {
-          "name": "instancing",
-          "kind": "example"
-        }
-      },
-      "env": {
-        "RUST_LOG": "info"
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/renderer/lod' [debug]",
-      "cargo": {
-        "args": ["build", "--example=lod", "--package=elements_renderer"],
-        "filter": {
-          "name": "lod",
-          "kind": "example"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/renderer/pbr' [debug]",
-      "cargo": {
-        "args": ["build", "--example=pbr", "--package=elements_renderer"],
-        "filter": {
-          "name": "pbr",
-          "kind": "example"
-        }
-      },
-      "env": {
-        "RUST_LOG": "info"
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/renderer/renderer_update' [debug]",
-      "cargo": {
-        "args": [
-          "build",
-          "--example=renderer_update",
-          "--package=elements_renderer"
-        ],
-        "filter": {
-          "name": "renderer_update",
-          "kind": "example"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/renderer/shadow_test' [debug]",
-      "cargo": {
-        "args": [
-          "build",
-          "--example=shadow_test",
-          "--package=elements_renderer"
-        ],
-        "filter": {
-          "name": "shadow_test",
-          "kind": "example"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/renderer/texture' [debug]",
-      "cargo": {
-        "args": ["build", "--example=texture", "--package=elements_renderer"],
-        "filter": {
-          "name": "texture",
-          "kind": "example"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/renderer/translucency' [debug]",
-      "cargo": {
-        "args": [
-          "build",
-          "--example=translucency",
-          "--package=elements_renderer"
-        ],
-        "filter": {
-          "name": "translucency",
-          "kind": "example"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/ui/button' [debug]",
-      "cargo": {
-        "args": ["build", "--example=button", "--package=elements_ui"],
-        "filter": {
-          "name": "button",
-          "kind": "example"
-        }
-      },
-      "env": {
-        "RUST_LOG": "elements=info"
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/ui/dock_layout' [debug]",
-      "cargo": {
-        "args": ["build", "--example=dock_layout", "--package=elements_ui"],
-        "filter": {
-          "name": "dock_layout",
-          "kind": "example"
-        }
-      },
-      "env": {
-        "RUST_LOG": "elements=info"
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/ui/element_editor' [debug]",
-      "cargo": {
-        "args": ["build", "--example=element_editor", "--package=elements_ui"],
-        "filter": {
-          "name": "element_editor",
-          "kind": "example"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/ui/flow_layout' [debug]",
-      "cargo": {
-        "args": ["build", "--example=flow_layout", "--package=elements_ui"],
-        "filter": {
-          "name": "flow_layout",
-          "kind": "example"
-        }
-      },
-      "env": {
-        "RUST_LOG": "elements=info"
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/ui/image' [debug]",
-      "cargo": {
-        "args": ["build", "--example=image", "--package=elements_ui"],
-        "filter": {
-          "name": "image",
-          "kind": "example"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/ui/input' [debug]",
-      "cargo": {
-        "args": ["build", "--example=input", "--package=elements_ui"],
-        "filter": {
-          "name": "input",
-          "kind": "example"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/ui/rect' [debug]",
-      "cargo": {
-        "args": ["build", "--example=rect", "--package=elements_ui"],
-        "filter": {
-          "name": "rect",
-          "kind": "example"
-        }
-      },
-      "env": {
-        "RUST_LOG": "elements=info"
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/ui/screens' [debug]",
-      "cargo": {
-        "args": ["build", "--example=screens", "--package=elements_ui"],
-        "filter": {
-          "name": "screens",
-          "kind": "example"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/ui/slider' [debug]",
-      "cargo": {
-        "args": ["build", "--example=slider", "--package=elements_ui"],
-        "filter": {
-          "name": "slider",
-          "kind": "example"
-        }
-      },
-      "env": {
-        "RUST_LOG": "elements=info"
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/ui/text' [debug]",
-      "cargo": {
-        "args": ["build", "--example=text", "--package=elements_ui"],
-        "filter": {
-          "name": "text",
-          "kind": "example"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/ui/todo' [debug]",
-      "cargo": {
-        "args": ["build", "--example=todo", "--package=elements_ui"],
-        "filter": {
-          "name": "todo",
-          "kind": "example"
-        }
-      },
-      "env": {
-        "RUST_LOG": "info"
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Example 'elements/ui/ui' [debug]",
-      "cargo": {
-        "args": ["build", "--example=ui", "--package=elements_ui"],
-        "filter": {
-          "name": "ui",
-          "kind": "example"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Test elements",
-      "cargo": {
-        "args": ["test", "--workspace"],
-        "filter": {
-          "name": "elements",
-          "kind": "lib"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
-    }
-  ]
+    ]
 }
