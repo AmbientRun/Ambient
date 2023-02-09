@@ -1,6 +1,8 @@
 [workspace]
-
 members = [
   "crates/*",
   "examples/*",
 ]
+
+[patch.crates-io]
+elements_runtime_scripting_interface = { path = "crates/elements_runtime_scripting_interface" }
