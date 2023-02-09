@@ -302,7 +302,9 @@ fn elements_project_impl(
                 let name_ident: syn::Ident = syn::parse_str(name)?;
                 let name_uppercase_ident: syn::Ident = syn::parse_str(&name.to_ascii_uppercase())?;
                 let component_ty = component.type_.to_token_stream()?;
-                let doc_comment = format!("{}: {}", component.name, component.description);
+                let doc_comment = format!("**{}**\n\n{}", component.name, component.description)
+                    .trim()
+                    .to_string();
                 let id = [project_path, &tree_node.path].concat().join("::");
 
                 Ok(quote! {
@@ -355,7 +357,8 @@ mod tests {
     fn can_generate_components_from_manifest_in_global_namespace() {
         let manifest = indoc::indoc! {r#"
         [project]
-        name = "runtime_components"
+        id = "runtime_components"
+        name = "Runtime Components"
 
         [components]
         "core::app::main_scene" = { name = "Main Scene", description = "", type = "Empty" }
@@ -372,31 +375,31 @@ mod tests {
                 pub mod core {
                     pub mod app {
                         static MAIN_SCENE: crate::LazyComponent<()> = crate::lazy_component!("core::app::main_scene");
-                        #[doc = "Main Scene: "]
+                        #[doc = "**Main Scene**"]
                         pub fn main_scene() -> crate::Component<()> {
                             *MAIN_SCENE
                         }
                         static NAME: crate::LazyComponent<String> = crate::lazy_component!("core::app::name");
-                        #[doc = "name: "]
+                        #[doc = "**name**"]
                         pub fn name() -> crate::Component<String> {
                             *NAME
                         }
                     }
                     pub mod camera {
                         static ACTIVE_CAMERA: crate::LazyComponent<f32> = crate::lazy_component!("core::camera::active_camera");
-                        #[doc = "Active Camera: No description provided"]
+                        #[doc = "**Active Camera**\n\nNo description provided"]
                         pub fn active_camera() -> crate::Component<f32> {
                             *ACTIVE_CAMERA
                         }
                         static ASPECT_RATIO: crate::LazyComponent<f32> = crate::lazy_component!("core::camera::aspect_ratio");
-                        #[doc = "Aspect Ratio: "]
+                        #[doc = "**Aspect Ratio**"]
                         pub fn aspect_ratio() -> crate::Component<f32> {
                             *ASPECT_RATIO
                         }
                     }
                     pub mod rendering {
                         static JOINTS: crate::LazyComponent< Vec<crate::EntityId> > = crate::lazy_component!("core::rendering::joints");
-                        #[doc = "Joints: No description provided"]
+                        #[doc = "**Joints**\n\nNo description provided"]
                         pub fn joints() -> crate::Component< Vec<crate::EntityId> > {
                             *JOINTS
                         }
@@ -418,7 +421,8 @@ mod tests {
     fn can_extend_existing_components_in_global_namespace() {
         let manifest = indoc::indoc! {r#"
         [project]
-        name = "runtime_components"
+        id = "runtime_components"
+        name = "Runtime Components"
 
         [components]
         "core::app::main_scene" = { name = "Main Scene", description = "", type = "Empty" }
@@ -434,7 +438,7 @@ mod tests {
                     pub mod app {
                         pub use base::components::core::app::*;
                         static MAIN_SCENE: crate::LazyComponent<()> = crate::lazy_component!("core::app::main_scene");
-                        #[doc = "Main Scene: "]
+                        #[doc = "**Main Scene**"]
                         pub fn main_scene() -> crate::Component<()> {
                             *MAIN_SCENE
                         }
@@ -442,7 +446,7 @@ mod tests {
                     pub mod camera {
                         pub use base::components::core::camera::*;
                         static ACTIVE_CAMERA: crate::LazyComponent<f32> = crate::lazy_component!("core::camera::active_camera");
-                        #[doc = "Active Camera: No description provided"]
+                        #[doc = "**Active Camera**\n\nNo description provided"]
                         pub fn active_camera() -> crate::Component<f32> {
                             *ACTIVE_CAMERA
                         }
@@ -452,7 +456,7 @@ mod tests {
                     }
                     pub mod rendering {
                         static JOINTS: crate::LazyComponent< Vec<crate::EntityId> > = crate::lazy_component!("core::rendering::joints");
-                        #[doc = "Joints: No description provided"]
+                        #[doc = "**Joints**\n\nNo description provided"]
                         pub fn joints() -> crate::Component< Vec<crate::EntityId> > {
                             *JOINTS
                         }
@@ -494,7 +498,8 @@ mod tests {
     fn can_generate_components_from_manifest() {
         let manifest = indoc::indoc! {r#"
         [project]
-        name = "my_project"
+        id = "my_project"
+        name = "My Project"
 
         [components]
         a_cool_component = { name = "Cool Component", description = "", type = "Empty" }
@@ -505,7 +510,7 @@ mod tests {
             #[allow(missing_docs)]
             pub mod components {
                 static A_COOL_COMPONENT: crate::LazyComponent<()> = crate::lazy_component!("my_project::a_cool_component");
-                #[doc = "Cool Component: "]
+                #[doc = "**Cool Component**"]
                 pub fn a_cool_component() -> crate::Component<()> {
                     *A_COOL_COMPONENT
                 }
@@ -526,7 +531,8 @@ mod tests {
     fn can_generate_components_from_manifest_with_org() {
         let manifest = indoc::indoc! {r#"
         [project]
-        name = "my_project"
+        id = "my_project"
+        name = "My Project"
         organization = "evil_corp"
 
         [components]
@@ -538,7 +544,7 @@ mod tests {
             #[allow(missing_docs)]
             pub mod components {
                 static A_COOL_COMPONENT: crate::LazyComponent<()> = crate::lazy_component!("evil_corp::my_project::a_cool_component");
-                #[doc = "Cool Component: "]
+                #[doc = "**Cool Component**"]
                 pub fn a_cool_component() -> crate::Component<()> {
                     *A_COOL_COMPONENT
                 }
