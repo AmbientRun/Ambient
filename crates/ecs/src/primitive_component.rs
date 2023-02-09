@@ -1,3 +1,5 @@
+use std::{any::TypeId, collections::HashMap};
+
 use elements_std::asset_url::ObjectRef;
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
 use once_cell::sync::Lazy;
@@ -12,7 +14,7 @@ pub static PRIMITIVE_ATTRIBUTE_REGISTRY: Lazy<RwLock<PrimitiveAttributeRegistry>
 
 macro_rules! make_primitive_component_with_attrs {
     ($(($value:ident, $type:ty, [$($attr: ty),*])),*) => { paste! {
-        #[derive(Debug,  Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+        #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
         pub struct PrimitiveComponent {
             pub ty: PrimitiveComponentType,
             pub desc: ComponentDesc,
@@ -144,6 +146,14 @@ macro_rules! make_primitive_component_with_attrs {
                 &self.ty == other
             }
         }
+
+        pub static TYPE_ID_TO_PRIMITIVE_TYPE: Lazy<HashMap<TypeId, PrimitiveComponentType>> = Lazy::new(|| {
+            HashMap::from_iter([
+                $((TypeId::of::<$type>(), PrimitiveComponentType::$value),)*
+                $((TypeId::of::<Vec<$type>>(), PrimitiveComponentType::[<Vec $value>]),)*
+                $((TypeId::of::<Option<$type>>(), PrimitiveComponentType::[<Option $value>]),)*
+            ])
+        });
     } };
 }
 

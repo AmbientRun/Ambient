@@ -73,7 +73,11 @@ impl ComponentRegistry {
 
                 let desc = ComponentDesc::new(index, vtable);
 
-                self.components.push(RegistryComponent { desc, primitive_component: None });
+                // If a PrimitiveComponentType can be created from this component's type, create a PrimitiveComponent for it
+                let primitive_component =
+                    TYPE_ID_TO_PRIMITIVE_TYPE.get(&(vtable.get_type_id)()).copied().map(|ty| PrimitiveComponent { ty, desc });
+
+                self.components.push(RegistryComponent { desc, primitive_component });
 
                 index
             }
