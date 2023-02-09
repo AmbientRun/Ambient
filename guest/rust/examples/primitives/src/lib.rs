@@ -5,7 +5,7 @@ use components::core::{
     rendering::color,
     transform::{lookat_center, scale, translation},
 };
-use elements_base_scripting_interface::*;
+use elements_scripting_interface::*;
 
 #[main]
 pub async fn main() -> EventResult {

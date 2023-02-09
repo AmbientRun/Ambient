@@ -3,7 +3,7 @@ use components::core::{
     camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},
     transform::{lookat_center, translation},
 };
-use elements_base_scripting_interface::{
+use elements_scripting_interface::{
     entity::{AnimationAction, AnimationController},
     player::KeyCode,
     *,

@@ -1,6 +1,6 @@
 [package]
 edition = "2021"
-name = "elements_base_scripting_interface"
+name = "elements_scripting_interface"
 version = "0.0.1"
 
 [dependencies]
