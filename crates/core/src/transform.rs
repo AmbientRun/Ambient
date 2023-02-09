@@ -499,6 +499,7 @@ pub fn get_world_transform(world: &World, entity: EntityId) -> Result<Mat4, ECSE
                 world.get(entity, translation()).unwrap_or(Vec3::ZERO),
             )),
             ECSError::NoSuchEntity { .. } => Err(err),
+            ECSError::AddedResourceToEntity { .. } => Err(err),
         },
     }
 }
@@ -509,6 +510,7 @@ pub fn get_world_position(world: &World, entity: EntityId) -> Result<Vec3, ECSEr
         Err(err) => match err {
             ECSError::EntityDoesntHaveComponent { .. } => world.get(entity, translation()),
             ECSError::NoSuchEntity { .. } => Err(err),
+            ECSError::AddedResourceToEntity { .. } => Err(err),
         },
     }
 }
@@ -522,6 +524,7 @@ pub fn get_world_rotation(world: &World, entity: EntityId) -> Result<Quat, ECSEr
         Err(err) => match err {
             ECSError::EntityDoesntHaveComponent { .. } => world.get(entity, rotation()),
             ECSError::NoSuchEntity { .. } => Err(err),
+            ECSError::AddedResourceToEntity { .. } => Err(err),
         },
     }
 }

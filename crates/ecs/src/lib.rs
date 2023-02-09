@@ -387,6 +387,13 @@ impl World {
     }
 
     pub fn add_components(&mut self, entity_id: EntityId, data: EntityData) -> Result<(), ECSError> {
+        // Safety check against adding a resource to an entity
+        if entity_id != self.resource_entity() {
+            if let Some(component) = data.iter().find(|c| c.has_attribute::<Resource>()) {
+                return Err(ECSError::AddedResourceToEntity { component_path: component.path(), entity_id });
+            }
+        }
+
         if let Some(events) = &mut self.shape_change_events {
             events.add_event(WorldChange::AddComponents(entity_id, data.clone()));
         }
@@ -563,12 +570,14 @@ unsafe impl Sync for World {}
 // TODO(fred): Move this into the actual components instead
 pub static COMPONENT_ENTITY_ID_MIGRATERS: Mutex<Vec<fn(&mut World, EntityId, &HashMap<EntityId, EntityId>)>> = Mutex::new(Vec::new());
 
-#[derive(Debug, Clone, Serialize, Deserialize, Error)]
+#[derive(Debug, Clone, Serialize, Deserialize, Error, PartialEq)]
 pub enum ECSError {
     #[error("Entity doesn't have component: {component_index} {name}")]
     EntityDoesntHaveComponent { component_index: usize, name: String },
     #[error("No such entity: {entity_id}")]
     NoSuchEntity { entity_id: EntityId },
+    #[error("Attempted to add resource component `{component_path}` to non-resource entity {entity_id}")]
+    AddedResourceToEntity { component_path: String, entity_id: EntityId },
 }
 
 struct MapEntity {

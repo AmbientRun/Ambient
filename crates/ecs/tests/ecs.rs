@@ -1,4 +1,4 @@
-use elements_ecs::{components, query, query_mut, EntityData, EntityId, Query, QueryState, World};
+use elements_ecs::{components, query, query_mut, ECSError, EntityData, EntityId, Query, QueryState, Resource, World};
 use itertools::Itertools;
 
 components!("test", {
@@ -8,6 +8,8 @@ components!("test", {
     b: f32,
     c: f32,
     counter: usize,
+    @[Resource]
+    a_resource: (),
 });
 
 fn init() {
@@ -202,4 +204,21 @@ fn fresh_moveout_event_reader_should_work() {
 
     world.despawn(id);
     assert_eq!(despawn_query.iter(&world, Some(&mut despawn_query_state)).count(), 1);
+}
+
+#[test]
+fn errors_on_adding_a_resource_to_an_entity() {
+    init();
+    let mut world = World::new("errors_on_adding_a_resource_to_an_entity");
+    let entity_id = world.spawn(EntityData::new());
+    assert_eq!(
+        world.add_component(entity_id, a_resource(), ()),
+        Err(ECSError::AddedResourceToEntity { component_path: "core::test::a_resource".to_string(), entity_id })
+    );
+}
+
+#[test]
+fn can_add_a_resource() {
+    init();
+    World::new("can_add_a_resource").add_resource(a_resource(), ());
 }
