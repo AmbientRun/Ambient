@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
-use elements_ecs::{components, ArchetypeId, System, World};
+use elements_ecs::{components, ArchetypeId, Resource, System, World};
 use elements_gpu::{
     gpu::Gpu, shader_module::ShaderModule, typed_buffer::{TypedBuffer, UntypedBuffer}
 };
@@ -18,6 +18,7 @@ pub use sync::*;
 pub use update::*;
 
 components!("rendering", {
+    @[Resource]
     gpu_world: Arc<Mutex<GpuWorld>>,
 });
 

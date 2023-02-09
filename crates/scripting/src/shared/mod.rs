@@ -11,7 +11,8 @@ mod script_module;
 use std::sync::Arc;
 
 use elements_ecs::{
-    components, query, uid, uid_lookup, Component, EntityData, EntityId, Networked, Store, World,
+    components, query, uid, uid_lookup, Component, EntityData, EntityId, Networked, Resource,
+    Store, World,
 };
 use elements_project::Identifier;
 use host_guest_state::GetBaseHostGuestState;
@@ -32,8 +33,8 @@ components!("scripting::shared", {
     @[Networked, Store]
     script_module_errors: ScriptModuleErrors,
 
-    // resources
     /// used to signal messages from the scripting host/runtime
+    @[Resource]
     messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
 });
 

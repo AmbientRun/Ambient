@@ -66,6 +66,10 @@ impl AttributeStore {
         self.inner.get(&TypeId::of::<A>()).map(|v| v.downcast_ref::<A>().expect("Invalid type"))
     }
 
+    pub fn has<A: ComponentAttribute>(&self) -> bool {
+        self.inner.contains_key(&TypeId::of::<A>())
+    }
+
     /// Appends all attributes from `other` into self by cloning
     pub fn append(&mut self, other: &Self) {
         self.inner.extend(other.inner.iter().map(|(&k, v)| (k, v.clone())))
@@ -254,6 +258,16 @@ impl<T: ComponentValue> AttributeConstructor<T, &'static str> for Description {
 pub struct External;
 impl ComponentAttribute for External {}
 impl<T: ComponentValue> AttributeConstructor<T, ()> for External {
+    fn construct(store: &mut AttributeStore, _: ()) {
+        store.set(Self)
+    }
+}
+
+/// Indicates that this component should be used as a resource only.
+#[derive(Clone)]
+pub struct Resource;
+impl ComponentAttribute for Resource {}
+impl<T: ComponentValue> AttributeConstructor<T, ()> for Resource {
     fn construct(store: &mut AttributeStore, _: ()) {
         store.set(Self)
     }

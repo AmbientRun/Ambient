@@ -1,4 +1,4 @@
-use elements_ecs::components;
+use elements_ecs::{components, Resource};
 use glam::{Mat4, Vec2};
 
 pub mod render;
@@ -9,6 +9,7 @@ use glam::Vec3;
 pub use traits::*;
 
 components!("gizmos", {
+    @[Resource]
     gizmos: Gizmos,
 });
 

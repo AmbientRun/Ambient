@@ -1,10 +1,11 @@
 use elements_core::transform::{rotation, translation};
-use elements_ecs::{components, query, Debuggable, Description, Name, Networked, Store, SystemGroup};
+use elements_ecs::{components, query, Debuggable, Description, Name, Networked, Resource, Store, SystemGroup};
 use elements_std::asset_cache::SyncAssetKey;
 use glam::{Quat, Vec3};
 use physxx::{articulation_reduced_coordinate::*, *};
 
 components!("physics", {
+    @[Resource]
     physics: Physics,
     actor_aggregate: PxAggregateRef,
     rigid_actor: PxRigidActorRef,

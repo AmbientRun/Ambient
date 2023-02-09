@@ -3,7 +3,7 @@ use std::sync::Arc;
 use collider::collider_shapes;
 use elements_core::asset_cache;
 use elements_ecs::{
-    components, query, Debuggable, Description, DynSystem, EntityData, EntityId, FnSystem, Name, Networked, Store, SystemGroup, World
+    components, query, Debuggable, Description, DynSystem, EntityData, EntityId, FnSystem, Name, Networked, Resource, Store, SystemGroup, World
 };
 use elements_network::server::{ForkingEvent, ShutdownEvent};
 use elements_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
@@ -28,12 +28,17 @@ pub mod physx;
 pub mod rc_asset;
 
 components!("physics", {
+    @[Resource]
     main_physics_scene: PxSceneRef,
+    @[Resource]
     picking_scene: PxSceneRef,
+    @[Resource]
     trigger_areas_scene: PxSceneRef,
+    @[Resource]
     main_controller_manager: PxControllerManagerRef,
+    @[Resource]
     wood_physics_material: PxMaterial,
-    @[Debuggable]
+    @[Debuggable, Resource]
     collisions: Arc<Mutex<Vec<(PxRigidActorRef, PxRigidActorRef)>>>,
 
     @[
@@ -55,13 +60,13 @@ components!("physics", {
     ]
     unit_yaw: f32,
     @[
-        Debuggable, Networked, Store,
+        Debuggable, Networked, Store, Resource,
         Name["Collider loads"],
         Description["Contains all colliders that were loaded in this physics tick."]
     ]
     collider_loads: Vec<EntityId>,
     @[
-        Debuggable, Networked, Store,
+        Debuggable, Networked, Store, Resource,
         Name["Make physics static"],
         Description["All physics objects will be made static when loaded."]
     ]

@@ -6,7 +6,7 @@ use std::{
 };
 
 use elements_ecs::{
-    components, query, Debuggable, Description, DynSystem, EntityId, FrameEvent, Name, Networked, QueryState, Store, System, World
+    components, query, Debuggable, Description, DynSystem, EntityId, FrameEvent, Name, Networked, QueryState, Resource, Store, System, World
 };
 use elements_gpu::{gpu::Gpu, mesh_buffer::GpuMesh};
 
@@ -26,26 +26,38 @@ pub mod transform;
 components!("app", {
     @[Debuggable, Networked, Store, Name["Name"], Description["A human-friendly name for this entity."]]
     name: String,
+    @[Resource]
     runtime: tokio::runtime::Handle,
+    @[Resource]
     gpu: Arc<Gpu>,
     mesh: Arc<GpuMesh>,
+    @[Resource]
     window: Arc<Window>,
+    @[Resource]
     window_scale_factor: f64,
     /// The logical size is the physical size divided by the scale factor
+    @[Resource]
     window_logical_size: UVec2,
     /// The physical size is the actual number of pixels on the screen
+    @[Resource]
     window_physical_size: UVec2,
     /// Mouse position in screen space
+    @[Resource]
     mouse_position: Vec2,
     @[Debuggable, Networked, Store, Name["Main scene"], Description["If attached, this entity belongs to the main scene."]]
     main_scene: (),
     @[Debuggable, Networked, Store, Name["UI scene"], Description["If attached, this entity belongs to the UI scene."]]
     ui_scene: (),
+    @[Resource]
     asset_cache: AssetCache,
 
+    @[Resource]
     time: Duration,
+    @[Resource]
     dtime: f32,
+    @[Resource]
     app_start_time: Duration,
+    @[Resource]
     frame_index: usize,
     @[Debuggable, Store]
     remove_at_time: Duration,

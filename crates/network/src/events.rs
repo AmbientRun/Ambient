@@ -2,7 +2,7 @@ use std::{any::type_name, io, sync::Arc};
 
 use anyhow::Context;
 use dashmap::DashMap;
-use elements_ecs::{components, query, EntityId, World};
+use elements_ecs::{components, query, EntityId, Resource, World};
 use elements_std::Cb;
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 use crate::{client_game_state::ClientGameState, server::player_event_stream};
 
 components!("network", {
+    @[Resource]
     event_registry: Arc<ServerEventRegistry>,
 });
 

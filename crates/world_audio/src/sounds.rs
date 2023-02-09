@@ -3,7 +3,7 @@ use std::sync::Arc;
 use anyhow::Context;
 use derive_more::{Deref, DerefMut, From, Into};
 use elements_audio::{hrtf::HrtfLib, Attenuation, AudioEmitter, AudioListener, AudioMixer, Sound, Source};
-use elements_ecs::{components, query, EntityId, World};
+use elements_ecs::{components, query, EntityId, Resource, World};
 use elements_element::ElementComponentExt;
 use elements_std::Cb;
 use elements_ui::{
@@ -15,10 +15,12 @@ use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
 
 components!("audio", {
+    @[Resource]
     hrtf_lib: Arc<HrtfLib>,
     audio_emitter: Arc<Mutex<AudioEmitter>>,
     audio_listener: Arc<Mutex<AudioListener>>,
 
+    @[Resource]
     audio_mixer: AudioMixer,
 });
 

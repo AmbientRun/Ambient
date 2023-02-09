@@ -1,8 +1,9 @@
 use std::time::Instant;
 
-use elements_ecs::{components, EntityData, FnSystem, SystemGroup, World};
+use elements_ecs::{components, EntityData, FnSystem, Resource, SystemGroup, World};
 
 components!("ecs", {
+    @[Resource]
     async_run: AsyncRun,
 });
 

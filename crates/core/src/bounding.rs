@@ -1,6 +1,8 @@
 use std::collections::HashSet;
 
-use elements_ecs::{components, query_mut, Debuggable, EntityId, FramedEventsReader, Networked, Store, System, SystemGroup, World};
+use elements_ecs::{
+    components, query_mut, Debuggable, EntityId, FramedEventsReader, Networked, Resource, Store, System, SystemGroup, World
+};
 use elements_std::{
     shapes::{Sphere, AABB}, sparse_vec::SparseVec
 };
@@ -14,7 +16,7 @@ use crate::{
 components!("rendering", {
     @[Debuggable, Networked, Store]
     visibility_from: EntityId,
-    @[Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store, Resource]
     local_bounding_aabb: AABB,
     @[Debuggable, Networked, Store]
     world_bounding_aabb: AABB,

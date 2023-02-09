@@ -4,7 +4,7 @@ mod registry;
 use std::{fmt::Debug, sync::Arc, time::SystemTime};
 
 use elements_ecs::{
-    components, index_system, query, ArchetypeFilter, Component, ComponentValue, Debuggable, EntityData, EntityId, Index, IndexColumns, Networked, QueryState, Store, SystemGroup, World
+    components, index_system, query, ArchetypeFilter, Component, ComponentValue, Debuggable, EntityData, EntityId, Index, IndexColumns, Networked, QueryState, Resource, Store, SystemGroup, World
 };
 use elements_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use elements_network::{
@@ -42,17 +42,17 @@ components!("intent", {
     @[Debuggable, Networked, Store]
     intent_no_state: (),
 
-    @[Debuggable]
+    @[Debuggable, Resource]
     intent_registry: Arc<IntentRegistry>,
 
     // Index
-    @[Debuggable]
+    @[Debuggable, Resource]
     intent_index: Index,
     @[Debuggable]
     intent_id_index: Index,
-    @[Debuggable]
+    @[Debuggable, Resource]
     intent_index_reverted: Index,
-    @[Debuggable]
+    @[Debuggable, Resource]
     intent_index_applied: Index,
 });
 

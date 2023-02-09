@@ -5,7 +5,9 @@ use downcast_rs::{impl_downcast, DowncastSync};
 use elements_core::{
     gpu_components, gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldShaderModuleKey, GpuWorldSyncEvent}, mesh, transform::get_world_rotation
 };
-use elements_ecs::{components, query_mut, Debuggable, Description, EntityId, MakeDefault, Name, Networked, Store, SystemGroup, World};
+use elements_ecs::{
+    components, query_mut, Debuggable, Description, EntityId, MakeDefault, Name, Networked, Resource, Store, SystemGroup, World
+};
 use elements_gpu::{
     mesh_buffer::{get_mesh_buffer_types, GpuMesh, MESH_BUFFER_TYPES_WGSL}, shader_module::{BindGroupDesc, Shader, ShaderModule, ShaderModuleIdentifier}, wgsl_utils::wgsl_interpolate
 };
@@ -49,6 +51,7 @@ components!("rendering", {
     gpu_primitives: [GpuRenderPrimitive; MAX_PRIMITIVE_COUNT],
     renderer_shader: Arc<RendererShader>,
     material: SharedMaterial,
+    @[Resource]
     renderer_stats: String,
     @[
         MakeDefault, Debuggable, Networked, Store,

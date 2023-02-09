@@ -2,7 +2,7 @@ use elements_app::AppBuilder;
 use elements_core::{
     asset_cache, bounding::world_bounding_sphere, camera::{active_camera, far, near, Camera, Projection}, main_scene, transform::*
 };
-use elements_ecs::{query, FnSystem, World};
+use elements_ecs::{query, FnSystem, Resource, World};
 use elements_element::ElementComponentExt;
 use elements_gizmos::{gizmos, GizmoPrimitive};
 use elements_primitives::Cube;
@@ -130,6 +130,7 @@ impl GizmoState {
 }
 
 elements_ecs::components!("renderer", {
+    @[Resource]
     gizmo_state: GizmoState,
 });
 

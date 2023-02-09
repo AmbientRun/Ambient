@@ -6,7 +6,7 @@ use std::{
 use bytes::Bytes;
 use client::GameRpcArgs;
 use elements_ecs::{
-    components, query, Component, ComponentValue, Debuggable, Description, EntityId, Name, Networked, Serializable, Store, World
+    components, query, Component, ComponentValue, Debuggable, Description, EntityId, Name, Networked, Resource, Serializable, Store, World
 };
 use elements_rpc::{RpcError, RpcRegistry};
 use elements_std::{asset_cache::AssetCache, log_error, log_result};
@@ -58,7 +58,9 @@ pub mod player {
 use player::*;
 
 components!("network", {
+    @[Resource]
     bi_stream_handlers: BiStreamHandlers,
+    @[Resource]
     datagram_handlers: DatagramHandlers,
 
     /// Works like `world.resource_entity` for server worlds, except it's also persisted to disk, and synchronized to clients

@@ -94,7 +94,7 @@ components!("ecs", {
         Description["A unique ID that can be used to preserve the identity of an entity, even when it is recreated."]
     ]
     uid: EntityUid,
-    @[Debuggable]
+    @[Debuggable, Resource]
     uid_lookup: UidLookup,
 });
 
