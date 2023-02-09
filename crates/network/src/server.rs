@@ -119,7 +119,6 @@ pub struct ServerState {
     pub create_server_systems: Arc<dyn Fn(&mut World) -> SystemGroup + Sync + Send>,
     pub create_on_forking_systems: Arc<dyn Fn() -> SystemGroup<ForkingEvent> + Sync + Send>,
     pub create_shutdown_systems: Arc<dyn Fn() -> SystemGroup<ShutdownEvent> + Sync + Send>,
-    namespace_generator: u8,
 }
 impl ServerState {
     pub fn new_local() -> Self {
@@ -138,7 +137,6 @@ impl ServerState {
             create_server_systems: Arc::new(|_| SystemGroup::new("", vec![])),
             create_on_forking_systems: Arc::new(|| SystemGroup::new("", vec![])),
             create_shutdown_systems: Arc::new(|| SystemGroup::new("", vec![])),
-            namespace_generator: 0,
         }
     }
     pub fn new(
@@ -147,14 +145,7 @@ impl ServerState {
         create_on_forking_systems: Arc<dyn Fn() -> SystemGroup<ForkingEvent> + Sync + Send>,
         create_shutdown_systems: Arc<dyn Fn() -> SystemGroup<ShutdownEvent> + Sync + Send>,
     ) -> Self {
-        Self {
-            instances,
-            players: Default::default(),
-            create_server_systems,
-            create_on_forking_systems,
-            create_shutdown_systems,
-            namespace_generator: 0,
-        }
+        Self { instances, players: Default::default(), create_server_systems, create_on_forking_systems, create_shutdown_systems }
     }
 
     pub fn step(&mut self) {
@@ -189,10 +180,6 @@ impl ServerState {
         let old_instance = self.instances.get_mut(instance_id).unwrap();
         sys.run(&mut old_instance.world, &ShutdownEvent);
         self.instances.remove(instance_id);
-    }
-    pub fn next_namespace(&mut self) -> u8 {
-        self.namespace_generator = (self.namespace_generator + 1) % 100;
-        10 + self.namespace_generator
     }
 }
 

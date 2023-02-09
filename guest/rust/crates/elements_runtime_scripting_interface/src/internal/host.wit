@@ -1,7 +1,6 @@
 record entity-id {
-    namespace: u8,
-    id: u64,
-    gen: s32,
+    id0: u64,
+    id1: u64,
 }
 
 record vec2 {

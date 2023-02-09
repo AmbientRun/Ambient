@@ -2,21 +2,19 @@
 #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
 pub struct EntityId {
     #[doc(hidden)]
-    pub namespace: u8,
+    pub id0: u64,
     #[doc(hidden)]
-    pub id: u64,
-    #[doc(hidden)]
-    pub gen: i32,
+    pub id1: u64,
 }
 impl EntityId {
     #[doc(hidden)]
-    pub const fn new(namespace: u8, id: u64, gen: i32) -> Self {
-        Self { namespace, id, gen }
+    pub const fn new(id0: u64, id1: u64) -> Self {
+        Self { id0, id1 }
     }
 }
 impl std::fmt::Display for EntityId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}:{}:{}", self.namespace, self.id, self.gen)
+        write!(f, "{}", ((self.id0 as u128) << 64) + self.id1 as u128)
     }
 }
 impl std::fmt::Debug for EntityId {

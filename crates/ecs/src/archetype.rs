@@ -133,6 +133,7 @@ pub struct Archetype {
     pub(super) active_components: ComponentSet,
     pub(super) movein_events: FramedEvents<EntityId>,
     pub(super) moveout_events: FramedEvents<(EntityId, EntityData)>,
+    pub(super) query_markers: AtomicRefCell<Vec<u64>>,
 }
 impl Archetype {
     pub(super) fn new(arch_id: ArchetypeId, components: Vec<ComponentDesc>) -> Self {
@@ -149,6 +150,7 @@ impl Archetype {
             active_components,
             movein_events: FramedEvents::new(),
             moveout_events: FramedEvents::new(),
+            query_markers: Default::default(),
         }
     }
     pub fn entity_count(&self) -> usize {
@@ -172,6 +174,7 @@ impl Archetype {
     pub fn movein(&mut self, ids: Vec<EntityId>, entity: EntityMoveData) {
         let index = self.entity_indices_to_ids.len();
         self.entity_indices_to_ids.extend(ids.iter().cloned());
+        self.query_markers.borrow_mut().resize(self.entity_indices_to_ids.len(), 0);
         for comp in entity.content.into_iter() {
             let arch_comp = self.components.get_mut(comp.data.index() as _).expect("Entity does not fit archetype");
             (unsafe { &mut **arch_comp.data.0.get() }).append_cloned(comp.data, ids.len());
@@ -185,6 +188,7 @@ impl Archetype {
 
     fn swap_remove_quiet(&mut self, index: usize, version: u64) -> EntityMoveData {
         self.entity_indices_to_ids.swap_remove(index);
+        self.query_markers.borrow_mut().swap_remove(index);
         let mut entity_data = EntityMoveData::new(self.active_components.clone());
 
         for arch_comp in self.components.iter_mut() {
@@ -289,6 +293,18 @@ impl Archetype {
     /// Data version is like get_component_content_version except it always updates
     pub fn get_component_data_version(&self, component: ComponentDesc) -> Option<u64> {
         self.components.get(component.index() as _).map(|arch_comp| arch_comp.data_version.0.load(Ordering::Acquire))
+    }
+
+    /// This returns true if the value hasn't been set for this entity before. I.e.:
+    /// mark(5, 3) -> false
+    /// mark(5, 3) -> true
+    /// mark(5, 4) -> false
+    pub(crate) fn query_mark(&self, index: usize, value: u64) -> bool {
+        let mut marks = self.query_markers.borrow_mut();
+        let cell = &mut marks[index];
+        let changed = *cell != value;
+        *cell = value;
+        changed
     }
 
     pub(super) fn reset_events(&mut self) {

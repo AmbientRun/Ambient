@@ -1,5 +1,5 @@
 use std::{
-    fmt::{self, Debug}, num::ParseIntError, str::FromStr
+    fmt::{self, Debug}, hash::{BuildHasher, Hasher}, num::ParseIntError, str::FromStr
 };
 
 use derive_more::Display;
@@ -8,22 +8,48 @@ use serde::{
     de::{self, Visitor}, Deserialize, Deserializer, Serialize, Serializer
 };
 
-#[derive(Debug, Clone, Copy, Display, Eq, PartialEq, Hash, PartialOrd, Ord)]
-#[display(fmt = "{namespace}:{id}:{gen}")]
-pub struct EntityId {
-    pub namespace: u8,
-    pub id: usize,
-    pub gen: i32,
-}
+#[derive(Clone, Copy, Eq, PartialEq, Hash, PartialOrd, Ord)]
+pub struct EntityId(pub u128);
 impl EntityId {
-    pub(super) fn new(namespace: u8, id: usize, gen: i32) -> Self {
-        Self { namespace, id, gen }
+    pub fn new() -> Self {
+        Self(rand::random())
     }
     pub fn null() -> Self {
-        Self { namespace: 0, id: 0, gen: -1 }
+        Self(0)
     }
     pub fn is_null(&self) -> bool {
-        self.gen == -1
+        self.0 == 0
+    }
+    pub fn resources() -> Self {
+        Self(1)
+    }
+    pub fn is_resources(&self) -> bool {
+        self.0 == 1
+    }
+    pub fn from_u64s(a: u64, b: u64) -> Self {
+        let bytes = [a.to_le_bytes(), b.to_le_bytes()].concat();
+        Self(u128::from_le_bytes(bytes.try_into().unwrap()))
+    }
+    pub fn to_u64s(&self) -> (u64, u64) {
+        let bytes: [u8; 16] = self.0.to_le_bytes();
+        (u64::from_le_bytes(bytes[0..8].try_into().unwrap()), u64::from_le_bytes(bytes[8..].try_into().unwrap()))
+    }
+    pub fn to_base64(&self) -> String {
+        base64::encode_config(self.0.to_le_bytes(), base64::URL_SAFE_NO_PAD)
+    }
+    pub fn from_base64(value: &str) -> Result<Self, base64::DecodeError> {
+        let bytes = base64::decode_config(value, base64::URL_SAFE_NO_PAD)?;
+        Ok(Self(u128::from_le_bytes(bytes.try_into().unwrap())))
+    }
+}
+impl std::fmt::Display for EntityId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.to_base64())
+    }
+}
+impl std::fmt::Debug for EntityId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "EntityId({}, {})", self.to_base64(), self.0)
     }
 }
 impl Default for EntityId {
@@ -32,17 +58,15 @@ impl Default for EntityId {
     }
 }
 impl FromStr for EntityId {
-    type Err = ParseIntError;
+    type Err = base64::DecodeError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let ss: Vec<&str> = s.split(':').collect();
-
-        Ok(EntityId { namespace: ss[0].parse()?, id: ss[1].parse()?, gen: ss[2].parse()? })
+        EntityId::from_base64(s)
     }
 }
 impl Serialize for EntityId {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(&self.to_string())
+        serializer.serialize_str(&self.to_base64())
     }
 }
 impl<'de> Deserialize<'de> for EntityId {
@@ -62,11 +86,89 @@ impl<'de> Deserialize<'de> for EntityId {
             where
                 E: de::Error,
             {
-                v.parse().map_err(de::Error::custom)
+                EntityId::from_base64(v).map_err(de::Error::custom)
             }
         }
 
         deserializer.deserialize_str(EntityIdVisitor)
+    }
+}
+
+#[test]
+fn test_entity_id_bytes() {
+    for _ in 0..100 {
+        let id = EntityId::new();
+        let (a, b) = id.to_u64s();
+        assert_eq!(id, EntityId::from_u64s(a, b));
+    }
+    let id = EntityId(u128::MAX);
+    let (a, b) = id.to_u64s();
+    assert_eq!(id, EntityId::from_u64s(a, b));
+    let id = EntityId(u128::MIN);
+    let (a, b) = id.to_u64s();
+    assert_eq!(id, EntityId::from_u64s(a, b));
+}
+#[test]
+fn test_entity_id_serialization() {
+    for _ in 0..100 {
+        let id = EntityId::new();
+        assert_eq!(id, serde_json::from_str(&serde_json::to_string(&id).unwrap()).unwrap());
+    }
+}
+
+/// This just pipes a u64 value through
+pub struct EntityIdHasher(u64);
+impl Hasher for EntityIdHasher {
+    fn finish(&self) -> u64 {
+        self.0
+    }
+    fn write(&mut self, _bytes: &[u8]) {
+        unreachable!()
+    }
+
+    fn write_u8(&mut self, _i: u8) {
+        unreachable!()
+    }
+    fn write_u16(&mut self, _i: u16) {
+        unreachable!()
+    }
+    fn write_u32(&mut self, i: u32) {
+        unreachable!();
+    }
+    fn write_u64(&mut self, _i: u64) {
+        unreachable!()
+    }
+    fn write_u128(&mut self, i: u128) {
+        self.0 = i as u64;
+    }
+    fn write_usize(&mut self, _i: usize) {
+        unreachable!()
+    }
+    fn write_i8(&mut self, _i: i8) {
+        unreachable!()
+    }
+    fn write_i16(&mut self, _i: i16) {
+        unreachable!()
+    }
+    fn write_i32(&mut self, _i: i32) {
+        unreachable!()
+    }
+    fn write_i64(&mut self, _i: i64) {
+        unreachable!()
+    }
+    fn write_i128(&mut self, _i: i128) {
+        unreachable!()
+    }
+    fn write_isize(&mut self, _i: isize) {
+        unreachable!()
+    }
+}
+#[derive(Clone)]
+pub struct EntityIdHashBuilder;
+impl BuildHasher for EntityIdHashBuilder {
+    type Hasher = EntityIdHasher;
+    fn build_hasher(&self) -> Self::Hasher {
+        EntityIdHasher(0)
     }
 }
 
@@ -77,113 +179,7 @@ pub struct EntityLocation {
     pub gen: i32,
 }
 impl EntityLocation {
-    fn empty() -> Self {
+    pub(crate) fn empty() -> Self {
         Self { archetype: 0, index: 0, gen: -2 }
     }
-    fn is_empty(&self) -> bool {
-        self.gen < 0
-    }
-}
-
-#[derive(Clone)]
-pub(super) struct EntityLocations {
-    local_namespace: u8,
-    pub(super) allocated: Vec<Vec<EntityLocation>>,
-    freed: Vec<EntityId>,
-}
-impl EntityLocations {
-    pub(super) fn new(local_namespace: u8) -> Self {
-        Self { local_namespace, allocated: vec![Vec::new(); 256], freed: Vec::new() }
-    }
-    pub(super) fn get(&self, id: EntityId) -> Option<EntityLocation> {
-        if let Some(loc) = self.allocated[id.namespace as usize].get(id.id) {
-            if loc.gen == id.gen {
-                return Some(*loc);
-            }
-        }
-        None
-    }
-    pub(super) fn get_mut(&mut self, id: EntityId) -> Option<&mut EntityLocation> {
-        if let Some(loc) = self.allocated[id.namespace as usize].get_mut(id.id) {
-            if loc.gen == id.gen {
-                return Some(loc);
-            }
-        }
-        None
-    }
-    pub(super) fn exists(&self, id: EntityId) -> bool {
-        self.get(id).is_some()
-    }
-    pub(super) fn allocate(&mut self, count: usize) -> Vec<EntityId> {
-        let freed = self.freed.split_off((self.freed.len() as i32 - count as i32).max(0) as usize);
-        let mut freed_new = freed
-            .into_iter()
-            .map(|old_id| {
-                let id = EntityId::new(self.local_namespace, old_id.id, old_id.gen + 1);
-                self.allocated[self.local_namespace as usize][id.id] = EntityLocation { archetype: 0, index: 0, gen: id.gen };
-                id
-            })
-            .collect_vec();
-        if freed_new.len() == count {
-            freed_new
-        } else {
-            let remaining_count = count - freed_new.len();
-            let alloced = (0..remaining_count)
-                .map(|i| EntityId::new(self.local_namespace, self.allocated[self.local_namespace as usize].len() + i, 0))
-                .collect_vec();
-            self.allocated[self.local_namespace as usize].extend(alloced.iter().map(|id| EntityLocation {
-                archetype: 0,
-                index: 0,
-                gen: id.gen,
-            }));
-            freed_new.extend(alloced.into_iter());
-            freed_new
-        }
-    }
-    pub(super) fn allocate_mirror(&mut self, id: EntityId) -> bool {
-        if self.allocated[id.namespace as usize].len() <= id.id {
-            self.allocated[id.namespace as usize].resize_with(id.id + 1, EntityLocation::empty);
-        }
-        if !self.allocated[id.namespace as usize][id.id].is_empty() {
-            return false;
-        }
-        self.allocated[id.namespace as usize][id.id] = EntityLocation { archetype: 0, index: 0, gen: id.gen };
-        true
-    }
-    pub(super) fn free(&mut self, removed_entity_loc: EntityLocation, removed_id: EntityId, swapped_id: EntityId) {
-        if removed_id.namespace == self.local_namespace {
-            self.freed.push(removed_id);
-        }
-        self.allocated[removed_id.namespace as usize][removed_id.id] = EntityLocation::empty();
-        if removed_id != swapped_id {
-            self.on_swap_remove(removed_entity_loc, swapped_id);
-        }
-    }
-    pub(super) fn on_swap_remove(&mut self, removed_entity_loc: EntityLocation, swapped_id: EntityId) {
-        self.allocated[swapped_id.namespace as usize][swapped_id.id].index = removed_entity_loc.index;
-    }
-    #[allow(dead_code)]
-    pub(super) fn namespace(&self) -> u8 {
-        self.local_namespace
-    }
-    pub(super) fn set_namespace(&mut self, local_namespace: u8) {
-        assert_ne!(self.local_namespace, local_namespace);
-        self.local_namespace = local_namespace;
-        self.freed.clear();
-    }
-    // fn on_archetype_removed(&mut self, arch_id: usize) {
-    //     for loc in self.allocated.iter_mut() {
-    //         if loc.archetype > arch_id {
-    //             loc.archetype -= 1;
-    //         }
-    //     }
-    // }
-}
-
-#[test]
-fn test_mirror() {
-    let mut locs = EntityLocations::new(0);
-    let remote_id = EntityId { namespace: 1, id: 10, gen: 5 };
-    locs.allocate_mirror(remote_id);
-    assert!(locs.get(remote_id).is_some());
 }

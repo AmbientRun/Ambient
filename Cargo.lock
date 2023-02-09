@@ -1678,6 +1678,7 @@ version = "0.0.1"
 dependencies = [
  "anyhow",
  "atomic_refcell",
+ "base64",
  "bit-set",
  "bit-vec",
  "derive_more",
@@ -1693,6 +1694,7 @@ dependencies = [
  "parking_lot",
  "paste",
  "profiling 1.0.6",
+ "rand",
  "reqwest",
  "serde",
  "serde_json",
