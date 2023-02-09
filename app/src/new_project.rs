@@ -6,16 +6,15 @@ use elements_project::Identifier;
 use indoc::indoc;
 
 pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Result<()> {
-    let name = name
-        .map(anyhow::Ok)
-        .unwrap_or_else(|| project_path.file_name().and_then(|s| s.to_str()).context("project path has no terminating segment"))?;
+    let project_path = if let Some(name) = name { project_path.join(name) } else { project_path.to_owned() };
+    let name = project_path.file_name().and_then(|s| s.to_str()).context("project path has no terminating segment")?;
 
     let id = name.to_case(convert_case::Case::Snake);
     let id = Identifier::new(id).map_err(anyhow::Error::msg)?;
 
     let dot_cargo = project_path.join(".cargo");
     let src = project_path.join("src");
-    std::fs::create_dir_all(project_path).context("Failed to create project directory")?;
+    std::fs::create_dir_all(&project_path).context("Failed to create project directory")?;
     std::fs::create_dir_all(&dot_cargo).context("Failed to create .cargo directory")?;
     std::fs::create_dir_all(&src).context("Failed to create src directory")?;
 
