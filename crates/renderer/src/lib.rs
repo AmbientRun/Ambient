@@ -53,67 +53,67 @@ components!("rendering", {
     @[
         MakeDefault, Debuggable, Networked, Store,
         Name["Overlay"],
-        Description["Render this entity with an overlay"]
+        Description["If attached, this entity will be rendered with an overlay."]
     ]
     overlay: (),
     @[
         MakeDefault, Debuggable, Networked, Store,
         Name["Color"],
-        Description["Tints the entity this color if non-zero"]
+        Description["This entity will be tinted with the specified color if the color is not black."]
     ]
     color: Vec4,
     @[
         MakeDefault, Debuggable, Networked, Store,
         Name["Double-sided"],
-        Description["Render with double-sided rendering"]
+        Description["If this is set, the entity will be rendered with double-sided rendering."]
     ]
     double_sided: bool,
     @[
         MakeDefault, Debuggable, Networked, Store,
         Name["Cast shadows"],
-        Description["This entity casts shadows"]
+        Description["If attached, this entity will cast shadows."]
     ]
     cast_shadows: (),
     @[
         Debuggable, Networked, Store,
         Name["Sun"],
-        Description["Marks this entity as a sun (i.e. its rotation will be used to control the global light direction); higher numbers are higher priority"]
+        Description["Marks this entity as a sun (i.e. its rotation will be used to control the global light direction). The entity with the highest `sun` value takes precedence."]
     ]
     sun: f32,
     @[
         Debuggable, Networked, Store,
         Name["Light diffuse"],
-        Description["The diffuse light color of the active sun"]
+        Description["The diffuse light color of the `sun`."]
     ]
     light_diffuse: Vec3,
     @[
         Debuggable, Networked, Store,
         Name["Light ambient"],
-        Description["The ambient light color of the active sun"]
+        Description["The ambient light color of the `sun`."]
     ]
     light_ambient: Vec3,
     @[
         Debuggable, Networked, Store,
         Name["Fog color"],
-        Description["The color of the global fog"]
+        Description["The color of the fog for this `sun`."]
     ]
     fog_color: Vec3,
     @[
         Debuggable, Networked, Store,
         Name["Fog height fall-off"],
-        Description["The height at which the global fog will fall off (i.e. stop being visible)"]
+        Description["The height at which the fog will fall off (i.e. stop being visible) for this `sun`."]
     ]
     fog_height_falloff: f32,
     @[
         Debuggable, Networked, Store,
         Name["Fog density"],
-        Description["The density of the global fog"]
+        Description["The density of the fog for this `sun`."]
     ]
     fog_density: f32,
     @[
         Debuggable, Networked, Store,
         Name["Transparency group"],
-        Description["Transparent objects are sorted by (transparency_group, z-depth)"]
+        Description["Controls when this transparent object will be rendered. Transparent objects are sorted by (transparency_group, z-depth)."]
     ]
     transparency_group: i32,
 });

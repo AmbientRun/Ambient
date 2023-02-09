@@ -13,7 +13,7 @@ pub mod spherical;
 components!("camera", {
     @[Networked, Store]
     camera_movement_speed: f32,
-    @[Networked, Store, Name["UI Camera"], Description["This camera is used to render UI"]]
+    @[Networked, Store, Name["UI camera"], Description["This entity is a camera that is used to render UI. Ensure that you have the remaining camera components."]]
     ui_camera: (),
 });
 

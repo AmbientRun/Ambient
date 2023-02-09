@@ -20,13 +20,13 @@ components!("rendering", {
     @[
         Networked, Store,
         Name["Joints"],
-        Description["The joints that compose this skinned mesh"]
+        Description["Contains the joints that comprise this skinned mesh."]
     ]
     joints: Vec<EntityId>,
     @[
         Networked, Store,
         Name["Joint Matrices"],
-        Description["The matrices corresponding to the joints of a skinned mesh"]
+        Description["Contains the matrices for each joint of this skinned mesh. This should be used in combination with `joints`."]
     ]
     joint_matrices: Vec<glam::Mat4>,
 

@@ -39,31 +39,31 @@ components!("physics", {
     @[
         Debuggable, Networked, Store,
         Name["Unit velocity"],
-        Description["The velocity of a character/unit"]
+        Description["The velocity of a character/unit."]
     ]
     unit_velocity: Vec3,
     @[
         Debuggable, Networked, Store,
         Name["Unit mass"],
-        Description["The mass of a character/unit"]
+        Description["The mass of a character/unit."]
     ]
     unit_mass: f32,
     @[
         Debuggable, Networked, Store,
         Name["Unit yaw"],
-        Description["The yaw of a character/unit"]
+        Description["The yaw of a character/unit."]
     ]
     unit_yaw: f32,
     @[
         Debuggable, Networked, Store,
         Name["Collider loads"],
-        Description["All colliders that were loaded in this physics tick"]
+        Description["Contains all colliders that were loaded in this physics tick."]
     ]
     collider_loads: Vec<EntityId>,
     @[
         Debuggable, Networked, Store,
         Name["Make physics static"],
-        Description["When placed on the world's resources, all physics objects will be made static when loaded"]
+        Description["All physics objects will be made static when loaded."]
     ]
     make_physics_static: bool,
 });

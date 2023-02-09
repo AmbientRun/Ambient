@@ -42,14 +42,14 @@ components!("model", {
 
     @[Networked, Store]
     pbr_renderer_primitives_from_url: Vec<PbrRenderPrimitiveFromUrl>,
-    @[Debuggable, Networked, Store, Name["Model animatable"], Description["Controls whether this model can be animated"]]
+    @[Debuggable, Networked, Store, Name["Model animatable"], Description["Controls whether this model can be animated."]]
     model_animatable: bool,
     @[Networked, Store]
     model_skins: Vec<ModelSkin>,
     @[Networked, Store]
     model_skin_ix: usize,
 
-    @[Debuggable, Networked, Store, Name["Model loaded"], Description["Indicates that this enitty has a model spawned on it"]]
+    @[Debuggable, Networked, Store, Name["Model loaded"], Description["If attached, this entity has a model attached to it."]]
     model_loaded: (),
     @[Debuggable, Networked, Store]
     is_model_node: (),

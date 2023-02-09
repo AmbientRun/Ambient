@@ -17,7 +17,7 @@ components!("physics", {
     articulation_link: PxArticulationLinkRef,
     articulation_cache: Option<PxArticulationCacheRef>,
     character_controller: PxControllerRef,
-    @[Debuggable, Networked, Store, Name["Physics controlled"], Description["Indicates that this entity should be controlled by the physics system"]]
+    @[Debuggable, Networked, Store, Name["Physics controlled"], Description["If attached, this entity will be controlled by physics. Note that this requires the entity to have a collider."]]
     physics_controlled: (),
 });
 

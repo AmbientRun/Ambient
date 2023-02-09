@@ -15,9 +15,9 @@ use elements_std::{
 use glam::{vec3, Mat4, Quat, Vec3, Vec4};
 
 components!("primitives", {
-    @[Networked, Store, Name["Cube"], Description["Makes the entity it's attached to a cube"]]
+    @[Networked, Store, Name["Cube"], Description["If attached to an entity, the entity will be converted to a cube primitive."]]
     cube: (),
-    @[Networked, Store, Name["Quad"], Description["Makes the entity it's attached to a quad"]]
+    @[Networked, Store, Name["Quad"], Description["If attached to an entity, the entity will be converted to a quad primitive."]]
     quad: (),
     @[Networked, Store]
     sphere: UVSphereMesh,

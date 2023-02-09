@@ -10,9 +10,9 @@ use yaml_rust::YamlEmitter;
 use crate::{asset_cache, name};
 
 components!("ecs", {
-    @[Debuggable, Networked, Store, Name["Parent"], Description["The parent of this entity"]]
+    @[Debuggable, Networked, Store, Name["Parent"], Description["The parent of this entity."]]
     parent: EntityId,
-    @[Debuggable, Networked, Store, Name["Children"], Description["The children of this entity"]]
+    @[Debuggable, Networked, Store, Name["Children"], Description["The children of this entity."]]
     children: Vec<EntityId>,
 });
 

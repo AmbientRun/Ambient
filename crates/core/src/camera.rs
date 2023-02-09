@@ -25,73 +25,73 @@ components!("camera", {
     @[
         Networked, Store,
         Name["Perspective-infinite-reverse projection"],
-        Description["This camera will use a perspective-infinite-reverse projection matrix; this is well-suited for rendering large worlds as it has no far plane"]
+        Description["If attached, this camera will use a perspective-infinite-reverse projection matrix, which is well-suited for rendering large worlds as it has no far plane. Ensure `near` is set."]
     ]
     perspective_infinite_reverse: (),
     @[
         Networked, Store,
         Name["Perspective projection"],
-        Description["This camera will use a standard perspective projection matrix; `near` and `far` must be set"]
+        Description["If attached, this camera will use a standard perspective projection matrix. Ensure that `near` and `far` are set."]
     ]
     perspective: (),
     @[
         Networked, Store,
         Name["Near plane"],
-        Description["The near plane of this camera"]
+        Description["The near plane of this camera, measured in metres."]
     ]
     near: f32,
     @[
         Networked, Store,
         Name["Far plane"],
-        Description["The far plane of this camera"]
+        Description["The far plane of this camera, measured in metres."]
     ]
     far: f32,
     @[
         Networked, Store,
         Name["Field of View Y"],
-        Description["The field of view of this camera in the Y/vertical direction, measured in radians"]
+        Description["The field of view of this camera in the Y/vertical direction, measured in radians."]
     ]
     fovy: f32,
     @[
         Networked, Store,
         Name["Aspect ratio"],
-        Description["The aspect ratio of this camera"]
+        Description["The aspect ratio of this camera. If `aspect_ratio_from_window` is set, this will be automatically updated to match the window."]
     ]
     aspect_ratio: f32,
     @[
         Networked, Store,
         Name["Aspect ratio from window"],
-        Description["When set, the aspect_ratio component will be the aspect ratio of the window"]
+        Description["If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window."]
     ]
     aspect_ratio_from_window: (),
     @[
         Networked, Store,
         Name["Projection"],
-        Description["The projection matrix of this camera; can be driven by other components"]
+        Description["The projection matrix of this camera. This can be driven by other components, including `perspective` and `perspective_infinite_reverse`."]
     ]
     projection: glam::Mat4,
     @[
         Networked, Store,
         Name["Projection-view"],
-        Description["The composition of the projection and view (inverse-local-to-world) matrices"]
+        Description["The composition of the projection and view (inverse-local-to-world) matrices."]
     ]
     projection_view: glam::Mat4,
     @[
         Networked, Store,
         Name["Active camera"],
-        Description["The camera being used for rendering; higher value means higher priority"]
+        Description["The camera with the highest `active_camera` value will be used for rendering."]
     ]
     active_camera: f32,
     @[
         Networked, Store,
         Name["Fog"],
-        Description["Whether or not this camera sees fog"]
+        Description["If attached, this camera will see/render fog."]
     ]
     fog: (),
     @[
         Networked, Store,
         Name["Shadows far plane"],
-        Description["The far plane for the shadow camera"]
+        Description["The far plane for the shadow camera, measured in metres."]
     ]
     shadows_far: f32,
 });

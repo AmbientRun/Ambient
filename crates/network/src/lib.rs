@@ -38,19 +38,19 @@ pub mod player {
         @[
             Networked, Store,
             Name["Player"],
-            Description["This entity is a player (note that this is a logical construct; a player's body may be separate from the player itself)"]
+            Description["This entity is a player. Note that this is a logical construct; a player's body may be separate from the player itself."]
         ]
         player: (),
         @[
             Networked, Store,
             Name["User ID"],
-            Description["The user ID. Can be attached to more than just the player; will also be attached to their sub-entities, like their head and such"]
+            Description["An identifier attached to all things owned by a user, and supplied by the user. This can be attached to more than just the player; by convention, it is also attached to related entities, including their camera and body."]
         ]
         user_id: String,
         @[
             Networked, Store,
             Name["Local user ID"],
-            Description["The user ID of the local player"]
+            Description["The user ID of the local player."]
         ]
         local_user_id: String,
     });
@@ -65,21 +65,21 @@ components!("network", {
     @[
         Debuggable, Networked,
         Name["Persistent resources"],
-        Description["Global resources that are persisted to disk and synchronized to clients"]
+        Description["If attached, this entity contains global resources that are persisted to disk and synchronized to clients."]
     ]
     persistent_resources: (),
     /// Works like `world.resource_entity` for server worlds, except it's synchronized to clients. State is not persisted to disk.
     @[
         Debuggable, Networked,
         Name["Synced resources"],
-        Description["Global resources that are synchronized to clients, but not persisted"]
+        Description["If attached, this entity contains global resources that are synchronized to clients, but not persisted."]
     ]
     synced_resources: (),
 
     @[
         Debuggable, Networked,
         Name["Is remote entity"],
-        Description["This entity was not spawned locally (e.g. if this is the client, it was spawned by the server)"]
+        Description["If attached, this entity was not spawned locally (e.g. if this is the client, it was spawned by the server)."]
     ]
     is_remote_entity: (),
 });

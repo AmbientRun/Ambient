@@ -17,19 +17,19 @@ components!("transform", {
     @[
         MakeDefault, Debuggable, Networked, Store,
         Name["Translation"],
-        Description["The translation/position of this entity"]
+        Description["The translation/position of this entity."]
     ]
     translation: Vec3,
     @[
         MakeDefault[vec3_one], Debuggable, Networked, Store,
         Name["Scale"],
-        Description["The scale of this entity"]
+        Description["The scale of this entity."]
     ]
     scale: Vec3,
     @[
         Debuggable, Networked, Store,
         Name["Rotation"],
-        Description["The rotation of this entity"]
+        Description["The rotation of this entity."]
     ]
     rotation: Quat,
     @[
@@ -41,33 +41,33 @@ components!("transform", {
     @[
         Debuggable, Networked, Store,
         Name["Look-at center"],
-        Description["The position that this entity should be looking at"]
+        Description["The position that this entity should be looking at."]
     ]
     lookat_center: Vec3,
     @[
         Debuggable, Networked, Store,
         Name["Look-at up"],
-        Description["When combined with `lookat_center`, the up vector for this entity"]
+        Description["When combined with `lookat_center`, the up vector for this entity."]
     ]
     lookat_up: Vec3,
 
     @[
         Debuggable, Networked, Store,
         Name["Local to World"],
-        Description["Transformation from the entity's local space to worldspace"]
+        Description["Transformation from the entity's local space to worldspace."]
     ]
     local_to_world: Mat4,
     @[
         Debuggable, Networked, Store,
         Name["Inverse Local to World"],
-        Description["Converts a world position to a local position; driven by `local_to_world`"]
+        Description["Converts a world position to a local position. This is automatically updated."]
     ]
     inv_local_to_world: Mat4,
 
     @[
         Debuggable, Networked, Store,
         Name["Local to Parent"],
-        Description["Transformation from the entity's local space to the parent's space"]
+        Description["Transformation from the entity's local space to the parent's space."]
     ]
     local_to_parent: Mat4,
     @[
@@ -79,26 +79,26 @@ components!("transform", {
     @[
         Debuggable, Networked, Store,
         Name["Mesh to World"],
-        Description["Transformation from mesh-space to world space; driven by `mesh_to_local` and `local_to_world`"]
+        Description["Transformation from mesh-space to world space. This is automatically updated when `mesh_to_local` and `local_to_world` change."]
     ]
     mesh_to_world: Mat4,
     @[
         Debuggable, Networked, Store,
         Name["Spherical billboard"],
-        Description["Ensures that this entity is always aligned with the camera"]
+        Description["If attached, this ensures that this entity is always aligned with the camera."]
     ]
     spherical_billboard: (),
     @[
         Debuggable, Networked, Store,
         Name["Cylindrical billboard Z"],
-        Description["Ensures this entity is always aligned with the camera, except on the Z-axis; useful for trees and such"]
+        Description["If attached, this ensures this entity is always aligned with the camera, except on the Z-axis. This is useful for decorations that the player will be looking at from roughly the same altitude."]
     ]
     cylindrical_billboard_z: (),
 
     @[
         Debuggable, Networked, Store,
         Name["Reset scale"],
-        Description["When this component is applied to a transform hierarchy, the scale will be reset at that point (and only rotation/translation considered)"]
+        Description["If attached to a transform hierarchy, the scale will be reset at that point, with only rotation/translation considered."]
     ]
     reset_scale: (),
 

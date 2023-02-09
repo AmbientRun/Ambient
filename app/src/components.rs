@@ -40,6 +40,10 @@ pub(crate) mod dev {
                 let Some(name) = desc.name() else { continue };
                 let Some(description) = desc.description() else { continue };
 
+                if !description.ends_with('.') {
+                    log::warn!("`{}`'s description did not end in a full stop. Is it grammatical?", component.desc.path());
+                }
+
                 let mut table = toml_edit::InlineTable::new();
                 table.insert("name", name.into());
                 table.insert("description", description.into());

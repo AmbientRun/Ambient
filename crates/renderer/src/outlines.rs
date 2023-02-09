@@ -19,13 +19,13 @@ components!("rendering", {
     @[
         Networked, Store,
         Name["Outline"],
-        Description["Render this entity with an outline"]
+        Description["If attached, this entity will be rendered with an outline with the color specified."]
     ]
     outline: Vec4,
     @[
         Networked, Store,
         Name["Outline (recursive)"],
-        Description["Render this entity with an outline, and make sure all child entities have the same outline"]
+        Description["If attached, this entity and all of its children will be rendered with an outline with the color specified. You do not need to attach `outline` if you have attached `outline_recursive`."]
     ]
     outline_recursive: Vec4,
 });

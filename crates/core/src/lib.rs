@@ -24,7 +24,7 @@ pub mod camera;
 pub mod transform;
 
 components!("app", {
-    @[Debuggable, Networked, Store, Name["Name"], Description["A human-friendly name for this entity"]]
+    @[Debuggable, Networked, Store, Name["Name"], Description["A human-friendly name for this entity."]]
     name: String,
     runtime: tokio::runtime::Handle,
     gpu: Arc<Gpu>,
@@ -37,9 +37,9 @@ components!("app", {
     window_physical_size: UVec2,
     /// Mouse position in screen space
     mouse_position: Vec2,
-    @[Debuggable, Networked, Store, Name["Main scene"], Description["This entity belongs to the main scene"]]
+    @[Debuggable, Networked, Store, Name["Main scene"], Description["If attached, this entity belongs to the main scene."]]
     main_scene: (),
-    @[Debuggable, Networked, Store, Name["UI scene"], Description["This entity belongs to the UI scene"]]
+    @[Debuggable, Networked, Store, Name["UI scene"], Description["If attached, this entity belongs to the UI scene."]]
     ui_scene: (),
     asset_cache: AssetCache,
 

@@ -73,25 +73,25 @@ components!("ecs", {
     @[
         Networked, Store, Debuggable,
         Name["ID"],
-        Description["The ID of the entity"]
+        Description["The ID of the entity."]
     ]
     id: EntityId,
     @[
         Networked, Store, Debuggable,
         Name["IDs"],
-        Description["A generic list of entity IDs, with no semantic meaning"]
+        Description["A generic list of entity IDs, with no semantic meaning."]
     ]
     ids: Vec<EntityId>,
     @[
         Networked, Store, Debuggable,
         Name["Don't store"],
-        Description["Indicates that this entity shouldn't be stored on disk"]
+        Description["Indicates that this entity shouldn't be stored on disk."]
     ]
     dont_store: (),
     @[
         Networked, Store, Debuggable,
         Name["UID"],
-        Description["A unique ID that can be used to preserve the identity of an entity, even when it is recreated"]
+        Description["A unique ID that can be used to preserve the identity of an entity, even when it is recreated."]
     ]
     uid: EntityUid,
     @[Debuggable]
