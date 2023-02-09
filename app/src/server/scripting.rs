@@ -3,20 +3,13 @@ use std::{path::PathBuf, sync::Arc};
 use elements_ecs::{components, EntityId, SystemGroup, World};
 use elements_network::server::{ForkingEvent, ShutdownEvent};
 use elements_scripting_host::{
-    server::bindings::{
-        Bindings as ElementsBindings, WasmServerContext as ElementsWasmServerContext,
-    },
-    shared::{
-        host_guest_state::BaseHostGuestState, script_module_bytecode, spawn_script,
-        util::get_module_name, BaseWasmContext, MessageType, ScriptModuleBytecode,
-        ScriptModuleState, WasmContext,
-    },
-    Linker, WasiCtx,
+    server::bindings::{Bindings as ElementsBindings, WasmServerContext}, shared::{
+        host_guest_state::BaseHostGuestState, script_module_bytecode, spawn_script, util::get_module_name, MessageType, ScriptModuleBytecode, ScriptModuleState
+    }, Linker, WasiCtx
 };
 use parking_lot::RwLock;
 
-pub type ScriptModuleServerState =
-    ScriptModuleState<ElementsBindings, WasmServerContext, BaseHostGuestState>;
+pub type ScriptModuleServerState = ScriptModuleState<ElementsBindings, WasmServerContext, BaseHostGuestState>;
 
 components!("scripting::server", {
     // component
@@ -26,99 +19,48 @@ components!("scripting::server", {
     add_to_linker: Arc<dyn Fn(&mut Linker<WasmServerContext>) -> anyhow::Result<()> + Send + Sync>,
 });
 
-pub struct WasmServerContext {
-    pub elements_context: ElementsWasmServerContext,
-}
-impl WasmServerContext {
-    pub fn new(wasi: WasiCtx, shared_state: Arc<RwLock<BaseHostGuestState>>) -> Self {
-        Self {
-            elements_context: ElementsWasmServerContext::new(wasi, shared_state.clone()),
-        }
-    }
-
-    pub fn link(linker: &mut Linker<WasmServerContext>) -> anyhow::Result<()> {
-        ElementsWasmServerContext::link(linker, |cx| &mut cx.elements_context)
-    }
-}
-impl WasmContext<ElementsBindings> for WasmServerContext {
-    fn base_wasm_context_mut(&mut self) -> &mut BaseWasmContext {
-        self.elements_context.base_wasm_context_mut()
-    }
-}
-
 pub fn init_all_components() {
     init_components();
 }
 
 pub fn systems() -> SystemGroup {
-    elements_scripting_host::server::systems(
-        script_module_state(),
-        make_wasm_context(),
-        add_to_linker(),
-    )
+    elements_scripting_host::server::systems(script_module_state(), make_wasm_context(), add_to_linker())
 }
 
 pub fn on_forking_systems() -> SystemGroup<ForkingEvent> {
-    elements_scripting_host::server::on_forking_systems(
-        script_module_state(),
-        make_wasm_context(),
-        add_to_linker(),
-    )
+    elements_scripting_host::server::on_forking_systems(script_module_state(), make_wasm_context(), add_to_linker())
 }
 
 pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
     elements_scripting_host::server::on_shutdown_systems(script_module_state())
 }
 
-pub async fn initialize(
-    world: &mut World,
-    project_path: PathBuf,
-    manifest: &elements_project::Manifest,
-) -> anyhow::Result<()> {
-    let messenger = Arc::new(
-        |world: &World, id: EntityId, type_: MessageType, message: &str| {
-            let name = get_module_name(world, id);
-            let (prefix, level) = match type_ {
-                MessageType::Info => ("info", log::Level::Info),
-                MessageType::Error => ("error", log::Level::Error),
-                MessageType::Stdout => ("stdout", log::Level::Info),
-                MessageType::Stderr => ("stderr", log::Level::Warn),
-            };
+pub async fn initialize(world: &mut World, project_path: PathBuf, manifest: &elements_project::Manifest) -> anyhow::Result<()> {
+    let messenger = Arc::new(|world: &World, id: EntityId, type_: MessageType, message: &str| {
+        let name = get_module_name(world, id);
+        let (prefix, level) = match type_ {
+            MessageType::Info => ("info", log::Level::Info),
+            MessageType::Error => ("error", log::Level::Error),
+            MessageType::Stdout => ("stdout", log::Level::Info),
+            MessageType::Stderr => ("stderr", log::Level::Warn),
+        };
 
-            log::log!(
-                level,
-                "[{name}] {prefix}: {}",
-                message.strip_suffix('\n').unwrap_or(message)
-            );
-        },
-    );
+        log::log!(level, "[{name}] {prefix}: {}", message.strip_suffix('\n').unwrap_or(message));
+    });
 
     elements_scripting_host::server::initialize(
         world,
         messenger,
-        (
-            make_wasm_context(),
-            Arc::new(|ctx, state| WasmServerContext::new(ctx, state)),
-        ),
-        (
-            add_to_linker(),
-            Arc::new(|linker| WasmServerContext::link(linker)),
-        ),
+        (make_wasm_context(), Arc::new(|ctx, state| WasmServerContext::new(ctx, state))),
+        (add_to_linker(), Arc::new(|linker| WasmServerContext::link(linker, |c| c))),
     )
     .await?;
 
-    let main_wasm_path = project_path
-        .join("target")
-        .join(format!("{}.wasm", manifest.project.id));
+    let main_wasm_path = project_path.join("target").join(format!("{}.wasm", manifest.project.id));
     if main_wasm_path.exists() {
         let bytecode = std::fs::read(main_wasm_path)?;
 
-        let id = spawn_script(
-            world,
-            &manifest.project.id,
-            manifest.project.description.clone().unwrap_or_default(),
-            true,
-        )?;
+        let id = spawn_script(world, &manifest.project.id, manifest.project.description.clone().unwrap_or_default(), true)?;
         world.add_component(id, script_module_bytecode(), ScriptModuleBytecode(bytecode))?;
     }
 
