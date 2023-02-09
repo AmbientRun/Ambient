@@ -1,5 +1,10 @@
 use components::core::{
-    app::main_scene, camera::{active_camera, perspective_infinite_reverse}, player::{player, user_id}, primitives::cube, rendering::color, transform::{lookat_center, scale, translation}
+    app::main_scene,
+    camera::{active_camera, perspective_infinite_reverse},
+    player::{player, user_id},
+    primitives::cube,
+    rendering::color,
+    transform::{lookat_center, scale, translation},
 };
 use elements_base_scripting_interface::{components::core::camera::aspect_ratio_from_window, *};
 
@@ -21,7 +26,8 @@ pub async fn main() -> EventResult {
     spawn_query(player()).bind(move |players| {
         // For each player joining, spawn a random colored box somewhere
         for _ in players {
-            let cube_position = rand::random::<Vec3>() * CUBE_REGION - vec3(0.0, 2.0 * CUBE_SIZE, 0.0);
+            let cube_position =
+                rand::random::<Vec3>() * CUBE_REGION - vec3(0.0, 2.0 * CUBE_SIZE, 0.0);
             entity::game_object_base()
                 .with_default(cube())
                 .with(scale(), Vec3::ONE * CUBE_SIZE)

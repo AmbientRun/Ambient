@@ -1,4 +1,3 @@
-use palette::{FromColor, Hsl, Srgb};
 use elements_base_scripting_interface::components::core::{
     app::main_scene,
     camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},
@@ -7,6 +6,7 @@ use elements_base_scripting_interface::components::core::{
     transform::{lookat_center, scale, translation},
 };
 use elements_base_scripting_interface::{player::KeyCode, *};
+use palette::{FromColor, Hsl, Srgb};
 
 elements_project!();
 
@@ -40,7 +40,11 @@ pub async fn main() -> EventResult {
         }
         let n_players = player::get_all().len();
         for (i, player) in player::get_all().into_iter().enumerate() {
-            let player_color = Srgb::from_color(Hsl::from_components((360. * i as f32 / n_players as f32, 1., 0.5)));
+            let player_color = Srgb::from_color(Hsl::from_components((
+                360. * i as f32 / n_players as f32,
+                1.,
+                0.5,
+            )));
             let player_color = vec4(player_color.red, player_color.green, player_color.blue, 1.);
             let cell = entity::get_component(player, components::cell()).unwrap_or_default();
             let Some((delta, _)) = player::get_raw_input_delta(player) else { continue; };

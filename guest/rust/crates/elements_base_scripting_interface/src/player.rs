@@ -423,7 +423,11 @@ impl FromBindgen for host::PlayerRawInput {
             keys: self.keys.into_iter().map(|k| k.from_bindgen()).collect(),
             mouse_position: self.mouse_position.from_bindgen(),
             mouse_wheel: self.mouse_wheel,
-            mouse_buttons: self.mouse_buttons.into_iter().map(|b| b.from_bindgen()).collect(),
+            mouse_buttons: self
+                .mouse_buttons
+                .into_iter()
+                .map(|b| b.from_bindgen())
+                .collect(),
         }
     }
 }

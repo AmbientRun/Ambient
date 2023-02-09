@@ -1,5 +1,9 @@
 use components::core::{
-    app::main_scene, camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse}, primitives::{cube, quad}, rendering::color, transform::{lookat_center, scale, translation}
+    app::main_scene,
+    camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},
+    primitives::{cube, quad},
+    rendering::color,
+    transform::{lookat_center, scale, translation},
 };
 use elements_base_scripting_interface::*;
 
@@ -14,8 +18,15 @@ pub async fn main() -> EventResult {
         .with(aspect_ratio_from_window(), ())
         .spawn(false);
 
-    entity::game_object_base().with_default(cube()).with(translation(), vec3(0., 0., 1.)).spawn(false);
-    entity::game_object_base().with_default(quad()).with(scale(), vec3(5., 5., 5.)).with(color(), vec4(1., 0., 0., 1.)).spawn(false);
+    entity::game_object_base()
+        .with_default(cube())
+        .with(translation(), vec3(0., 0., 1.))
+        .spawn(false);
+    entity::game_object_base()
+        .with_default(quad())
+        .with(scale(), vec3(5., 5., 5.))
+        .with(color(), vec4(1., 0., 0., 1.))
+        .spawn(false);
 
     EventOk
 }

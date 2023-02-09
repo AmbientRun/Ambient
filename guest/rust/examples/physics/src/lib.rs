@@ -1,5 +1,9 @@
 use components::core::{
-    app::main_scene, camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse}, physics::{box_collider, dynamic, physics_controlled}, primitives::cube, transform::{lookat_center, scale, translation}
+    app::main_scene,
+    camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},
+    physics::{box_collider, dynamic, physics_controlled},
+    primitives::cube,
+    transform::{lookat_center, scale, translation},
 };
 use elements_base_scripting_interface::*;
 

@@ -64,13 +64,27 @@ pub fn elements_project(input: TokenStream) -> TokenStream {
         }
 
         let extend = syn::parse_macro_input!(input as Extend);
-        Some(extend.elems.into_iter().map(|p| p.segments.into_iter().map(|s| s.ident.to_string()).collect()).collect())
+        Some(
+            extend
+                .elems
+                .into_iter()
+                .map(|p| {
+                    p.segments
+                        .into_iter()
+                        .map(|s| s.ident.to_string())
+                        .collect()
+                })
+                .collect(),
+        )
     };
 
     TokenStream::from(
         elements_project_impl(
             elements_project_read_file("elements.toml".to_string()).unwrap(),
-            extend_paths.as_ref().map(|a| a.as_slice()).unwrap_or_default(),
+            extend_paths
+                .as_ref()
+                .map(|a| a.as_slice())
+                .unwrap_or_default(),
             extend_paths.is_some(),
         )
         .unwrap(),
@@ -78,7 +92,8 @@ pub fn elements_project(input: TokenStream) -> TokenStream {
 }
 
 fn elements_project_read_file(file_path: String) -> anyhow::Result<(String, String)> {
-    let file_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").context("no manifest dir")?).join(&file_path);
+    let file_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").context("no manifest dir")?)
+        .join(&file_path);
     let file_path_str = format!("{}", file_path.display());
 
     let contents = std::fs::read_to_string(&file_path)?;
@@ -159,11 +174,19 @@ fn elements_project_impl(
 
         fn to_token_stream(&self) -> anyhow::Result<proc_macro2::TokenStream> {
             match self {
-                ComponentType::String(ty) => Self::convert_primitive_type_to_rust_type(ty).context("invalid primitive type"),
-                ComponentType::ContainerType { type_, element_type } => {
-                    let container_ty = Self::convert_container_type_to_rust_type(&type_).context("invalid container type")?;
-                    let element_ty =
-                        element_type.as_deref().map(Self::convert_primitive_type_to_rust_type).context("invalid element type")?;
+                ComponentType::String(ty) => {
+                    Self::convert_primitive_type_to_rust_type(ty).context("invalid primitive type")
+                }
+                ComponentType::ContainerType {
+                    type_,
+                    element_type,
+                } => {
+                    let container_ty = Self::convert_container_type_to_rust_type(&type_)
+                        .context("invalid container type")?;
+                    let element_ty = element_type
+                        .as_deref()
+                        .map(Self::convert_primitive_type_to_rust_type)
+                        .context("invalid element type")?;
                     Ok(if let Some(element_ty) = element_ty {
                         quote! { #container_ty < #element_ty > }
                     } else {
@@ -195,7 +218,11 @@ fn elements_project_impl(
     }
 
     let mut root = BTreeMap::new();
-    fn insert_into_root(root: &mut BTreeMap<String, TreeNode>, segments: &[String], inner: TreeNodeInner) -> anyhow::Result<()> {
+    fn insert_into_root(
+        root: &mut BTreeMap<String, TreeNode>,
+        segments: &[String],
+        inner: TreeNodeInner,
+    ) -> anyhow::Result<()> {
         let mut manifest_head = root;
         let (leaf_id, modules) = segments.split_last().context("empty segments")?;
 
@@ -205,7 +232,10 @@ fn elements_project_impl(
 
             let new_head = manifest_head
                 .entry(segment.to_string())
-                .or_insert(TreeNode::new(segments_so_far.clone(), TreeNodeInner::Module(Default::default())));
+                .or_insert(TreeNode::new(
+                    segments_so_far.clone(),
+                    TreeNodeInner::Module(Default::default()),
+                ));
 
             manifest_head = match &mut new_head.inner {
                 TreeNodeInner::Module(module) => module,
@@ -213,26 +243,46 @@ fn elements_project_impl(
             };
         }
 
-        manifest_head.insert(leaf_id.clone(), TreeNode::new(segments.into_iter().map(|s| s.to_string()).collect(), inner));
+        manifest_head.insert(
+            leaf_id.clone(),
+            TreeNode::new(segments.into_iter().map(|s| s.to_string()).collect(), inner),
+        );
 
         Ok(())
     }
     for (id, component) in manifest.components {
-        insert_into_root(&mut root, &id.split("::").map(|s| s.to_string()).collect::<Vec<_>>(), TreeNodeInner::Component(component))?;
+        insert_into_root(
+            &mut root,
+            &id.split("::").map(|s| s.to_string()).collect::<Vec<_>>(),
+            TreeNodeInner::Component(component),
+        )?;
     }
     for path in extend_paths {
-        let components_index = path.iter().position(|s| s == "components").context("expected components:: in extend path")?;
+        let components_index = path
+            .iter()
+            .position(|s| s == "components")
+            .context("expected components:: in extend path")?;
         let mut subpath = path[components_index + 1..path.len()].to_vec();
         subpath.push("#use_all#".to_string());
 
         insert_into_root(&mut root, &subpath, TreeNodeInner::UseAll(path.clone()))?;
     }
 
-    fn expand_tree(tree_node: &TreeNode, project_path: &[String]) -> anyhow::Result<proc_macro2::TokenStream> {
-        let name = tree_node.path.last().map(|s| s.as_str()).unwrap_or_default();
+    fn expand_tree(
+        tree_node: &TreeNode,
+        project_path: &[String],
+    ) -> anyhow::Result<proc_macro2::TokenStream> {
+        let name = tree_node
+            .path
+            .last()
+            .map(|s| s.as_str())
+            .unwrap_or_default();
         match &tree_node.inner {
             TreeNodeInner::Module(module) => {
-                let children = module.values().map(|child| expand_tree(child, project_path)).collect::<Result<Vec<_>, _>>()?;
+                let children = module
+                    .values()
+                    .map(|child| expand_tree(child, project_path))
+                    .collect::<Result<Vec<_>, _>>()?;
 
                 Ok(if name.is_empty() {
                     quote! {
@@ -261,7 +311,10 @@ fn elements_project_impl(
                 })
             }
             TreeNodeInner::UseAll(path) => {
-                let path = path.into_iter().map(|s| syn::parse_str::<syn::Ident>(&s)).collect::<Result<Vec<_>, _>>()?;
+                let path = path
+                    .into_iter()
+                    .map(|s| syn::parse_str::<syn::Ident>(&s))
+                    .collect::<Result<Vec<_>, _>>()?;
                 Ok(quote! {
                     pub use #(#path::)* *;
                 })
@@ -272,9 +325,18 @@ fn elements_project_impl(
     let project_path: Vec<_> = if global_namespace {
         vec![]
     } else {
-        manifest.project.organization.iter().chain(std::iter::once(&manifest.project.id)).cloned().collect()
+        manifest
+            .project
+            .organization
+            .iter()
+            .chain(std::iter::once(&manifest.project.id))
+            .cloned()
+            .collect()
     };
-    let expanded_tree = expand_tree(&TreeNode::new(vec![], TreeNodeInner::Module(root)), &project_path)?;
+    let expanded_tree = expand_tree(
+        &TreeNode::new(vec![], TreeNodeInner::Module(root)),
+        &project_path,
+    )?;
     Ok(quote!(
         const _PROJECT_MANIFEST: &'static str = include_str!(#file_path);
         #[allow(missing_docs)]
@@ -342,7 +404,12 @@ mod tests {
             }
         };
 
-        let result = elements_project_impl(("elementsy.toml".to_string(), manifest.to_string()), &[], true).unwrap();
+        let result = elements_project_impl(
+            ("elementsy.toml".to_string(), manifest.to_string()),
+            &[],
+            true,
+        )
+        .unwrap();
         assert_eq!(result.to_string(), expected_output.to_string());
     }
 
@@ -396,9 +463,24 @@ mod tests {
         let result = elements_project_impl(
             ("elementsy.toml".to_string(), manifest.to_string()),
             &[
-                vec!["base".to_string(), "components".to_string(), "core".to_string(), "app".to_string()],
-                vec!["base".to_string(), "components".to_string(), "core".to_string(), "camera".to_string()],
-                vec!["base".to_string(), "components".to_string(), "core".to_string(), "player".to_string()],
+                vec![
+                    "base".to_string(),
+                    "components".to_string(),
+                    "core".to_string(),
+                    "app".to_string(),
+                ],
+                vec![
+                    "base".to_string(),
+                    "components".to_string(),
+                    "core".to_string(),
+                    "camera".to_string(),
+                ],
+                vec![
+                    "base".to_string(),
+                    "components".to_string(),
+                    "core".to_string(),
+                    "player".to_string(),
+                ],
             ],
             true,
         )
@@ -429,7 +511,12 @@ mod tests {
             }
         };
 
-        let result = elements_project_impl(("elementsy.toml".to_string(), manifest.to_string()), &[], false).unwrap();
+        let result = elements_project_impl(
+            ("elementsy.toml".to_string(), manifest.to_string()),
+            &[],
+            false,
+        )
+        .unwrap();
 
         assert_eq!(result.to_string(), expected_output.to_string());
     }
@@ -457,7 +544,12 @@ mod tests {
             }
         };
 
-        let result = elements_project_impl(("elementsy.toml".to_string(), manifest.to_string()), &[], false).unwrap();
+        let result = elements_project_impl(
+            ("elementsy.toml".to_string(), manifest.to_string()),
+            &[],
+            false,
+        )
+        .unwrap();
 
         assert_eq!(result.to_string(), expected_output.to_string());
     }

@@ -17,20 +17,29 @@ pub trait FromBindgen {
 impl IntoBindgen for EntityId {
     type Item = sif::EntityId;
     fn into_bindgen(self) -> Self::Item {
-        sif::EntityId { id0: self.id0, id1: self.id1 }
+        sif::EntityId {
+            id0: self.id0,
+            id1: self.id1,
+        }
     }
 }
 impl FromBindgen for sif::EntityId {
     type Item = EntityId;
     fn from_bindgen(self) -> Self::Item {
-        EntityId { id0: self.id0, id1: self.id1 }
+        EntityId {
+            id0: self.id0,
+            id1: self.id1,
+        }
     }
 }
 
 impl IntoBindgen for Vec2 {
     type Item = sif::Vec2;
     fn into_bindgen(self) -> Self::Item {
-        sif::Vec2 { x: self.x, y: self.y }
+        sif::Vec2 {
+            x: self.x,
+            y: self.y,
+        }
     }
 }
 impl FromBindgen for sif::Vec2 {
@@ -43,7 +52,11 @@ impl FromBindgen for sif::Vec2 {
 impl IntoBindgen for Vec3 {
     type Item = sif::Vec3;
     fn into_bindgen(self) -> Self::Item {
-        sif::Vec3 { x: self.x, y: self.y, z: self.z }
+        sif::Vec3 {
+            x: self.x,
+            y: self.y,
+            z: self.z,
+        }
     }
 }
 impl FromBindgen for sif::Vec3 {
@@ -56,7 +69,12 @@ impl FromBindgen for sif::Vec3 {
 impl IntoBindgen for Vec4 {
     type Item = sif::Vec4;
     fn into_bindgen(self) -> Self::Item {
-        sif::Vec4 { x: self.x, y: self.y, z: self.z, w: self.w }
+        sif::Vec4 {
+            x: self.x,
+            y: self.y,
+            z: self.z,
+            w: self.w,
+        }
     }
 }
 impl FromBindgen for sif::Vec4 {
@@ -69,7 +87,12 @@ impl FromBindgen for sif::Vec4 {
 impl IntoBindgen for Quat {
     type Item = sif::Quat;
     fn into_bindgen(self) -> Self::Item {
-        sif::Quat { x: self.x, y: self.y, z: self.z, w: self.w }
+        sif::Quat {
+            x: self.x,
+            y: self.y,
+            z: self.z,
+            w: self.w,
+        }
     }
 }
 impl FromBindgen for sif::Quat {
@@ -93,7 +116,12 @@ impl IntoBindgen for Mat4 {
 impl FromBindgen for sif::Mat4 {
     type Item = Mat4;
     fn from_bindgen(self) -> Self::Item {
-        Mat4::from_cols(self.x.from_bindgen(), self.y.from_bindgen(), self.z.from_bindgen(), self.w.from_bindgen())
+        Mat4::from_cols(
+            self.x.from_bindgen(),
+            self.y.from_bindgen(),
+            self.z.from_bindgen(),
+            self.w.from_bindgen(),
+        )
     }
 }
 
@@ -106,7 +134,9 @@ impl<'a> IntoBindgen for &'a ObjectRef {
 impl IntoBindgen for ObjectRef {
     type Item = sif::ObjectRefResult;
     fn into_bindgen(self) -> Self::Item {
-        Self::Item { id: self.as_ref().to_owned() }
+        Self::Item {
+            id: self.as_ref().to_owned(),
+        }
     }
 }
 impl<'a> FromBindgen for sif::ObjectRefParam<'a> {
@@ -131,7 +161,9 @@ impl<'a> IntoBindgen for &'a EntityUid {
 impl IntoBindgen for EntityUid {
     type Item = sif::EntityUidResult;
     fn into_bindgen(self) -> Self::Item {
-        Self::Item { id: self.as_ref().to_owned() }
+        Self::Item {
+            id: self.as_ref().to_owned(),
+        }
     }
 }
 impl<'a> FromBindgen for sif::EntityUidParam<'a> {

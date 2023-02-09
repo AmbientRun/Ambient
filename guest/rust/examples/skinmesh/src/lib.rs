@@ -27,7 +27,11 @@ pub async fn main() -> EventResult {
     entity::set_animation_controller(
         unit_entity,
         AnimationController {
-            actions: &[AnimationAction { clip_url: "assets/Capoeira.fbx/animations/mixamo.com.anim", looping: true, weight: 1. }],
+            actions: &[AnimationAction {
+                clip_url: "assets/Capoeira.fbx/animations/mixamo.com.anim",
+                looping: true,
+                weight: 1.,
+            }],
             apply_base_pose: false,
         },
     );
