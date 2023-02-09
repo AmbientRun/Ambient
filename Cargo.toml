@@ -6,7 +6,6 @@ exclude = [
 ]
 members = [
   "crates/*",
-  "crates/scripting/host_build",
   "crates/scripting/host",
   "libs/*",
   "app",

@@ -15,10 +15,7 @@ use elements_scripting_host::{
 };
 use parking_lot::RwLock;
 
-use self::{
-    bindings::Bindings,
-    interface::{get_scripting_interfaces, SCRIPTING_INTERFACE_NAME},
-};
+use self::bindings::Bindings;
 
 mod bindings;
 mod implementation;
@@ -108,9 +105,6 @@ pub async fn initialize(
     elements_scripting_host::server::initialize(
         world,
         messenger,
-        get_scripting_interfaces(),
-        SCRIPTING_INTERFACE_NAME,
-        project_path.join("interfaces"),
         (
             make_wasm_context(),
             Arc::new(|ctx, state| WasmServerContext::new(ctx, state)),

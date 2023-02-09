@@ -8,14 +8,13 @@ pub mod host_guest_state;
 pub mod interface;
 
 mod script_module;
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use std::sync::Arc;
 
 use elements_ecs::{
     components, query, uid, uid_lookup, Component, EntityData, EntityId, Networked, Store, World,
 };
 use elements_project::Identifier;
 use host_guest_state::GetBaseHostGuestState;
-use interface::write_scripting_interfaces;
 use itertools::Itertools;
 use parking_lot::RwLock;
 pub use script_module::*;
@@ -34,18 +33,8 @@ components!("scripting::shared", {
     script_module_errors: ScriptModuleErrors,
 
     // resources
-    @[Networked, Store]
-    scripting_interface_name: String,
     /// used to signal messages from the scripting host/runtime
     messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
-    /// all available scripting interfaces
-    @[Networked, Store]
-    scripting_interfaces: HashMap<String, Vec<(PathBuf, String)>>,
-    /// Where the scripting interfaces should be installed, not the path to the scripting interface itself
-    ///
-    /// e.g. world/, not world/scripting_interface
-    @[Networked, Store]
-    scripting_interface_root_path: PathBuf,
 });
 
 pub const MAXIMUM_ERROR_COUNT: usize = 10;
@@ -82,34 +71,9 @@ impl ScriptContext {
 #[allow(clippy::too_many_arguments)]
 pub async fn initialize(
     world: &mut World,
-
     messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
-    scripting_interfaces: HashMap<String, Vec<(PathBuf, String)>>,
-
-    primary_scripting_interface_name: &str,
-
-    // Where the scripting interfaces should be installed, not the path to the scripting interface itself
-    //
-    // e.g. world/, not world/scripting_interface
-    scripting_interface_root_path: PathBuf,
 ) -> anyhow::Result<()> {
-    assert!(scripting_interfaces.contains_key(primary_scripting_interface_name));
-    assert!([&scripting_interface_root_path]
-        .iter()
-        .all(|p| p.is_absolute()));
-
-    write_scripting_interfaces(&scripting_interfaces, &scripting_interface_root_path)?;
-    world.add_resource(
-        scripting_interface_name(),
-        primary_scripting_interface_name.to_owned(),
-    );
-
     world.add_resource(self::messenger(), messenger);
-    world.add_resource(self::scripting_interfaces(), scripting_interfaces);
-    world.add_resource(
-        self::scripting_interface_root_path(),
-        scripting_interface_root_path,
-    );
 
     Ok(())
 }

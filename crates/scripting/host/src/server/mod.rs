@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use std::sync::Arc;
 
 use elements_ecs::{
     query, uid, Component, ComponentEntry, EntityData, EntityId, FnSystem, SystemGroup, World,
@@ -198,14 +198,6 @@ pub async fn initialize<
     world: &mut World,
 
     messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
-    scripting_interfaces: HashMap<String, Vec<(PathBuf, String)>>,
-
-    primary_scripting_interface_name: &str,
-
-    // Where the scripting interfaces should be installed, not the path to the scripting interface itself
-    //
-    // e.g. world/, not world/scripting_interface
-    scripting_interface_root_path: PathBuf,
 
     (make_wasm_context_component, make_wasm_context): (
         Component<Arc<dyn Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context + Send + Sync>>,
@@ -216,14 +208,7 @@ pub async fn initialize<
         Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
     ),
 ) -> anyhow::Result<()> {
-    super::shared::initialize(
-        world,
-        messenger,
-        scripting_interfaces,
-        primary_scripting_interface_name,
-        scripting_interface_root_path.clone(),
-    )
-    .await?;
+    super::shared::initialize(world, messenger).await?;
     world.add_resource(make_wasm_context_component, make_wasm_context);
     world.add_resource(add_to_linker_component, add_to_linker);
 

@@ -2109,7 +2109,6 @@ dependencies = [
  "elements_network",
  "elements_project",
  "elements_scripting_host",
- "elements_scripting_host_build",
  "elements_std",
  "elements_ui",
  "glam 0.22.0",
@@ -2147,7 +2146,6 @@ dependencies = [
  "elements_object",
  "elements_physics",
  "elements_project",
- "elements_scripting_host_build",
  "elements_std",
  "flume",
  "fs_extra",
@@ -2168,14 +2166,6 @@ dependencies = [
  "wasmtime",
  "wasmtime-wasi",
  "wit-bindgen-host-wasmtime-rust",
-]
-
-[[package]]
-name = "elements_scripting_host_build"
-version = "0.0.1"
-dependencies = [
- "serde_json",
- "walkdir",
 ]
 
 [[package]]

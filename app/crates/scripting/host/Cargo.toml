@@ -25,6 +25,3 @@ serde_json.workspace = true
 walkdir.workspace = true
 
 [dev-dependencies]
-
-[build-dependencies]
-elements_scripting_host_build = { path = "../../../../crates/scripting/host_build" }
