@@ -138,6 +138,8 @@ impl ECSDeserializationWarnings {
 
 #[cfg(test)]
 mod test {
+    use std::str::FromStr;
+
     use crate::{serialization::DeserWorldWithWarnings, *};
 
     components!("test", {
@@ -159,7 +161,7 @@ mod test {
         let id = EntityData::new().set(ser_test3(), "hi".to_string()).spawn(&mut world);
 
         let ser = serde_json::to_string(&world).unwrap();
-        assert_eq!(&ser, &format!("{{\"1\":{{}},\"{id}\":{{\"core::test::ser_test3\":\"hi\"}}}}"));
+        assert_eq!(&ser, &format!("{{\"AQAAAAAAAAAAAAAAAAAAAA\":{{}},\"{id}\":{{\"core::test::ser_test3\":\"hi\"}}}}"));
 
         let deser: DeserWorldWithWarnings = serde_json::from_str(&ser).unwrap();
         assert_eq!(deser.world.get_ref(id, ser_test3()).unwrap(), "hi");
@@ -174,7 +176,7 @@ mod test {
         let mut world = World::new("test");
         world.add_resource(ser_test3(), "hi".to_string());
         let ser = serde_json::to_string(&world).unwrap();
-        assert_eq!(&ser, r#"{"1":{"core::test::ser_test3":"hi"}}"#);
+        assert_eq!(&ser, r#"{"AQAAAAAAAAAAAAAAAAAAAA":{"core::test::ser_test3":"hi"}}"#);
         let deser: World = serde_json::from_str(&ser).unwrap();
         assert_eq!(deser.resource(ser_test3()), "hi");
     }
@@ -192,13 +194,13 @@ mod test {
     #[test]
     pub fn test_deserialize_bad_world() {
         init();
-        let source = r#"{"1":{},"123":{"core::test::ser_test3":{"bad":3},"missing":{"hi":5},"core::test::ser_test4":"hello"}}"#;
+        let source = r#"{"AQAAAAAAAAAAAAAAAAAAAA":{},"L9wH6h4qgcNBfRv2Rv2FIQ":{"core::test::ser_test3":{"bad":3},"missing":{"hi":5},"core::test::ser_test4":"hello"}}"#;
 
         let deser: DeserWorldWithWarnings = serde_json::from_str(source).unwrap();
-        assert_eq!(deser.world.get_ref(EntityId(123), ser_test4()).unwrap(), "hello");
+        assert_eq!(deser.world.get_ref(EntityId::from_str("L9wH6h4qgcNBfRv2Rv2FIQ").unwrap(), ser_test4()).unwrap(), "hello");
         assert_eq!(deser.warnings.warnings.len(), 2);
         let ser = serde_json::to_string(&deser.world).unwrap();
-        assert_eq!(&ser, r#"{"1":{},"123":{"core::test::ser_test4":"hello"}}"#);
+        assert_eq!(&ser, r#"{"AQAAAAAAAAAAAAAAAAAAAA":{},"L9wH6h4qgcNBfRv2Rv2FIQ":{"core::test::ser_test4":"hello"}}"#);
 
         assert!(serde_json::from_str::<World>(source).is_err());
     }
