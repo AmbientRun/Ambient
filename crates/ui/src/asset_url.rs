@@ -12,7 +12,7 @@ impl<T: GetAssetType + 'static> Editor for TypedAssetUrl<T> {
         AssetUrlEditor { value: self, on_change: Some(on_change) }.el()
     }
 
-    fn view(self, opts: EditorOpts) -> Element
+    fn view(self, _opts: EditorOpts) -> Element
     where
         Self: Sized,
     {
@@ -54,7 +54,7 @@ impl<T: GetAssetType + 'static> Editor for AssetUrlCollection<T> {
         AssetUrlCollectionEditor { value: self, on_change: Some(on_change) }.el()
     }
 
-    fn view(self, opts: EditorOpts) -> Element
+    fn view(self, _opts: EditorOpts) -> Element
     where
         Self: Sized,
     {

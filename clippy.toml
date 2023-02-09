@@ -1,0 +1,7 @@
+disallowed-macros = [
+    # { path = "std::eprintln", reason = "prefer tracing over raw stdout" },
+    # { path = "std::println", reason = "prefer tracing over raw stdout" },
+    { path = "std::dbg", reason = "prefer tracing over raw stdout" },
+    { path = "std::todo", reason = "Using `todo` is not informative" },
+]
+allow-dbg-in-tests = true

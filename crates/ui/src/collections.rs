@@ -418,7 +418,7 @@ where
     K: std::hash::Hash + Eq + Send + Sync + Debug + 'static + Clone + Editor + Default,
     V: Send + Sync + Debug + 'static + Clone + Editor + Default,
 {
-    fn editor(self, on_change: Cb<dyn Fn(Self) + Send + Sync>, opts: EditorOpts) -> Element {
+    fn editor(self, on_change: Cb<dyn Fn(Self) + Send + Sync>, _opts: EditorOpts) -> Element {
         IndexMapEditor::new(self, on_change, false).el()
     }
 

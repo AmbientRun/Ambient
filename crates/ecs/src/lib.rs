@@ -163,8 +163,8 @@ impl World {
     /// Spawn an entity which lives remotely, and is just mirrored locally; i.e. the id is managed
     /// on the remote side. Returns false if the id already exists
     pub fn spawn_mirrored(&mut self, entity_id: EntityId, entity_data: EntityData) -> bool {
-        if !self.locs.contains_key(&entity_id) {
-            self.locs.insert(entity_id, EntityLocation::empty());
+        if let std::collections::hash_map::Entry::Vacant(e) = self.locs.entry(entity_id) {
+            e.insert(EntityLocation::empty());
             self.spawn_with_ids(EntityMoveData::from_entity_data(entity_data, self.version() + 1), vec![entity_id]);
             true
         } else {

@@ -6,13 +6,12 @@ use elements_core::{
 use elements_ecs::{query, World};
 use elements_element::{element_component, Element, ElementComponentExt, Hooks};
 use elements_gizmos::{gizmos, GizmoPrimitive};
-use elements_gpu::std_assets::PixelTextureViewKey;
 use elements_network::client::{GameClient, GameRpcArgs};
 use elements_renderer::{RenderTarget, Renderer};
 use elements_rpc::RpcRegistry;
 use elements_std::{asset_cache::SyncAssetKeyExt, color::Color, download_asset::AssetsCacheDir, line_hash, Cb};
 use elements_ui::{
-    fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dock, Dropdown, Fit, FlowColumn, FlowRow, Image, UIExt, VirtualKeyCode
+    fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit, FlowColumn, FlowRow, Image, UIExt, VirtualKeyCode
 };
 use glam::Vec3;
 use winit::event::ModifiersState;
@@ -32,14 +31,14 @@ pub fn register_rpcs(reg: &mut RpcRegistry<GameRpcArgs>) {
 }
 
 #[element_component]
-pub fn RendererDebugger(world: &mut World, hooks: &mut Hooks, get_state: GetRendererState) -> Element {
+pub fn RendererDebugger(_world: &mut World, hooks: &mut Hooks, get_state: GetRendererState) -> Element {
     let (show_shadows, set_show_shadows) = hooks.use_state(false);
     let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
     FlowColumn::el([
         FlowRow(vec![
             Button::new("Dump Client World", {
                 let get_state = get_state.clone();
-                move |world| {
+                move |_world| {
                     get_state(&mut |_, _, world| dump_world_hierarchy_to_tmp_file(world));
                 }
             })
@@ -48,7 +47,7 @@ pub fn RendererDebugger(world: &mut World, hooks: &mut Hooks, get_state: GetRend
             .style(ButtonStyle::Flat)
             .el(),
             Button::new("Dump Server World", {
-                let game_client = game_client.clone();
+                let game_client = game_client;
                 move |world| {
                     let game_client = game_client.clone();
                     let cache_dir = AssetsCacheDir.get(world.resource(asset_cache()));
@@ -178,7 +177,7 @@ fn ShaderDebug(_: &mut World, hooks: &mut Hooks, get_state: GetRendererState) ->
 
     let mut params = Default::default();
     get_state(&mut |renderer, _, _| {
-        params = renderer.shader_debug_params.clone();
+        params = renderer.shader_debug_params;
     });
     let metallic_roughness = params.metallic_roughness;
     let normals = params.normals;

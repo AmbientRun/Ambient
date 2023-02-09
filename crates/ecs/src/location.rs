@@ -1,9 +1,7 @@
 use std::{
-    fmt::{self, Debug}, hash::{BuildHasher, Hasher}, num::ParseIntError, str::FromStr
+    fmt::{self, Debug}, hash::{BuildHasher, Hasher}, str::FromStr
 };
 
-use derive_more::Display;
-use itertools::Itertools;
 use serde::{
     de::{self, Visitor}, Deserialize, Deserializer, Serialize, Serializer
 };
@@ -132,7 +130,7 @@ impl Hasher for EntityIdHasher {
     fn write_u16(&mut self, _i: u16) {
         unreachable!()
     }
-    fn write_u32(&mut self, i: u32) {
+    fn write_u32(&mut self, _i: u32) {
         unreachable!();
     }
     fn write_u64(&mut self, _i: u64) {

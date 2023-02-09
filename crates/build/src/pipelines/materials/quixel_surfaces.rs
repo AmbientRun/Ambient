@@ -23,7 +23,7 @@ pub async fn pipeline(ctx: &PipelineCtx, _config: MaterialsPipeline) -> Vec<OutA
         move |ctx, file| async move {
             let mut res = Vec::new();
             let quixel_id = QuixelId::from_full(file.last_dir_name().unwrap()).unwrap();
-            let quixel_json: serde_json::Value = file.download_json(&ctx.assets()).await.unwrap();
+            let quixel_json: serde_json::Value = file.download_json(ctx.assets()).await.unwrap();
             let in_root_url = file.join(".").unwrap();
             let surface = QuixelSurfaceDef::from_quixel_json(&ctx, &quixel_id, &quixel_json, &in_root_url);
             let mut asset_crate = ModelCrate::new();

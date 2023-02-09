@@ -11,7 +11,7 @@ use elements_std::{time::Timeout, Cb};
 use parking_lot::Mutex;
 
 use crate::{
-    align_vertical, space_between_items, Button, ButtonStyle, DialogScreen, DurationEditor, EditableDuration, EditorPrompt, FlowColumn, FlowRow, ScreenContainer, ScrollArea, StylesExt, Text, STREET
+    align_vertical, space_between_items, Button, ButtonStyle, DialogScreen, DurationEditor, EditableDuration, FlowColumn, FlowRow, ScreenContainer, ScrollArea, StylesExt, Text, STREET
 };
 
 #[derive(Clone, Debug)]
@@ -268,7 +268,7 @@ impl<T: Debug + ComponentValue + Editor> ElementComponent for OffscreenEditor<T>
 
 #[element_component]
 fn EditorScreen<T: Debug + ComponentValue + Editor>(
-    world: &mut World,
+    _world: &mut World,
     hooks: &mut Hooks,
     value: T,
     title: String,
@@ -283,7 +283,7 @@ fn EditorScreen<T: Debug + ComponentValue + Editor>(
         ScrollArea(
             FlowColumn::el([
                 Text::el(title).header_style(),
-                editor(value.clone(), if edit { Some(Cb(set_value.clone())) } else { None }, opts.clone()),
+                editor(value.clone(), if edit { Some(Cb(set_value.clone())) } else { None }, opts),
                 FlowRow(vec![
                     Button::new_once("Ok", move |_| on_confirm(value)).style(ButtonStyle::Primary).el(),
                     Button::new_once("Cancel", move |_| on_cancel()).style(ButtonStyle::Flat).el(),

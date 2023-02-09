@@ -17,7 +17,7 @@ use winit::{
 
 use super::{Editor, EditorOpts, FlowColumn, FlowRow, Focus, Text, UIBase, UIExt};
 use crate::{
-    background_color, border_radius, layout::*, primary_color, text_input::TextInput, Button, ButtonStyle, ChangeCb, Corners, FontAwesomeIcon, OffscreenEditor, Rectangle, STREET
+    background_color, border_radius, layout::*, primary_color, text_input::TextInput, Button, ButtonStyle, ChangeCb, Corners, FontAwesomeIcon, Rectangle, STREET
 };
 
 #[derive(Debug, Clone)]

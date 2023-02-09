@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use elements_core::transform::{rotation, translation};
 use elements_ecs::{components, query, Debuggable, Networked, Store, SystemGroup};
 use elements_std::asset_cache::SyncAssetKey;

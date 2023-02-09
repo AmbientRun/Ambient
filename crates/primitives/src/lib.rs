@@ -62,12 +62,12 @@ fn quad_data(assets: &AssetCache) -> EntityData {
 fn sphere_data(assets: &AssetCache, sphere: &UVSphereMesh) -> EntityData {
     let bound_sphere = Sphere::new(Vec3::ZERO, sphere.radius);
     EntityData::new()
-        .set(mesh(), GpuMesh::from_mesh(assets.clone(), &Mesh::from(sphere.clone())))
+        .set(mesh(), GpuMesh::from_mesh(assets.clone(), &Mesh::from(*sphere)))
         .set_default(local_to_world())
         .set_default(mesh_to_world())
         .set_default(translation())
-        .set(renderer_shader(), get_flat_shader(&assets))
-        .set(material(), FlatMaterialKey::white().get(&assets))
+        .set(renderer_shader(), get_flat_shader(assets))
+        .set(material(), FlatMaterialKey::white().get(assets))
         .set(primitives(), vec![])
         .set_default(gpu_primitives())
         .set(color(), Vec4::ONE)

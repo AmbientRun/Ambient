@@ -429,12 +429,10 @@ impl Query {
             let read = state.get_movein_reader(arch.id);
             for (_, id) in read.iter(&arch.movein_events) {
                 if let Some(loc) = world.locs.get(id) {
-                    if loc.archetype == arch.id {
-                        if state.entered.insert(*id) {
-                            let process = world.archetypes[loc.archetype].query_mark(loc.index, state.ticker);
-                            if process {
-                                state.entities.push(EntityAccessor::World { id: *id });
-                            }
+                    if loc.archetype == arch.id && state.entered.insert(*id) {
+                        let process = world.archetypes[loc.archetype].query_mark(loc.index, state.ticker);
+                        if process {
+                            state.entities.push(EntityAccessor::World { id: *id });
                         }
                     }
                 }

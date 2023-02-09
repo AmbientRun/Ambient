@@ -21,8 +21,8 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                 model_crate
                     .import(&ctx.process_ctx.assets, &file, true, config.force_assimp, create_texture_resolver(&ctx))
                     .await
-                    .with_context(|| format!("Failed to import model {}", file))?;
-                model_crate.model_mut().set_name(&file.path().file_name().unwrap());
+                    .with_context(|| format!("Failed to import model {file}"))?;
+                model_crate.model_mut().set_name(file.path().file_name().unwrap());
                 model_crate.create_object_from_model();
 
                 let out_model_path = ctx.in_root().relative_path(file.path());

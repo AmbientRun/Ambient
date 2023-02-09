@@ -134,7 +134,7 @@ impl Editor for String {
         TextInput::new(self, on_change).placeholder(Some("Empty")).el()
     }
 
-    fn view(self, opts: EditorOpts) -> Element {
+    fn view(self, _opts: EditorOpts) -> Element {
         Text.el().set(text(), self)
     }
 }

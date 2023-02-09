@@ -160,7 +160,7 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                         name: file.path().file_name().unwrap().to_string(),
                         tags: Default::default(),
                         categories: Default::default(),
-                        preview: OutAssetPreview::FromModel { url: model_crate_url.model().abs().unwrap().into() },
+                        preview: OutAssetPreview::FromModel { url: model_crate_url.model().abs().unwrap() },
                         content: OutAssetContent::Content(model_crate_url.object().abs().unwrap()),
                         source: Some(file.clone()),
                     });
@@ -231,25 +231,25 @@ impl UnityMaterials {
                 None
             };
 
-            let docs = download_unity_yaml(self.ctx.assets(), &material_url).await?;
+            let docs = download_unity_yaml(self.ctx.assets(), material_url).await?;
             let mat = unity_parser::mat::Material::from_yaml(&docs[0])?;
             let metallic_r_ao_g_smothness_a = if let Some(file) = get_texture(&mat.metallic_r_ao_g_smothness_a) {
-                Some((download_image(self.ctx.assets(), &file).await?.into_rgba8(), file))
+                Some((download_image(self.ctx.assets(), file).await?.into_rgba8(), file))
             } else {
                 None
             };
             let metallic_gloss_map = if let Some(file) = get_texture(&mat.metallic_gloss_map) {
-                Some((download_image(self.ctx.assets(), &file).await?.into_rgba8(), file))
+                Some((download_image(self.ctx.assets(), file).await?.into_rgba8(), file))
             } else {
                 None
             };
             let occlusion_map = if let Some(file) = get_texture(&mat.occlusion_map) {
-                Some((download_image(self.ctx.assets(), &file).await?.into_rgba8(), file))
+                Some((download_image(self.ctx.assets(), file).await?.into_rgba8(), file))
             } else {
                 None
             };
             let base_color = if let Some(file) = get_texture(&mat.main_tex) {
-                let mut image = download_image(self.ctx.assets(), &file).await?.into_rgba8();
+                let mut image = download_image(self.ctx.assets(), file).await?.into_rgba8();
                 // Pre-multiply AO
                 if let Some((maos, _)) = &occlusion_map {
                     for (b, m) in image.pixels_mut().zip(maos.pixels()) {
@@ -283,14 +283,14 @@ impl UnityMaterials {
                 None
             };
             let normalmap = if let Some(file) = get_texture(&mat.bump_map) {
-                let image = download_image(self.ctx.assets(), &file).await?.into_rgba8();
+                let image = download_image(self.ctx.assets(), file).await?.into_rgba8();
                 Some((image, file.clone()))
             } else {
                 None
             };
             let get_image = |image_and_file: Option<(image::RgbaImage, AbsAssetUrl)>| {
                 if let Some((mut image, file)) = image_and_file {
-                    let out_image_path = self.ctx.in_root().relative_path(&file.path()).prejoin("materials").with_extension("png");
+                    let out_image_path = self.ctx.in_root().relative_path(file.path()).prejoin("materials").with_extension("png");
                     let ctx = self.ctx.clone();
                     let config = config.clone();
                     async move {
@@ -436,7 +436,7 @@ impl MeshModels {
     async fn get(&mut self, ctx: &PipelineCtx, mesh_url: &AbsAssetUrl) -> anyhow::Result<Arc<ModelCrate>> {
         if !self.models.contains_key(mesh_url) {
             let mut tmp_model = ModelCrate::new();
-            tmp_model.import(&ctx.assets(), mesh_url, false, self.force_assimp, create_texture_resolver(ctx)).await?;
+            tmp_model.import(ctx.assets(), mesh_url, false, self.force_assimp, create_texture_resolver(ctx)).await?;
             tmp_model.update_transforms();
             // dump_world_hierarchy_to_tmp_file(tmp_model.model_world());
             self.models.insert(mesh_url.clone(), Arc::new(tmp_model));
@@ -460,9 +460,9 @@ async fn primitives_from_unity_mesh_renderer(
     let mesh_guid = mesh_filter.mesh.guid.as_ref().unwrap().clone();
     let mesh_url = ctx.guid_lookup.get(&mesh_guid).unwrap().clone();
     let mesh_meta_url = ctx.ctx.get_downloadable_url(&mesh_url.add_extension("meta")).unwrap();
-    let mesh_meta = download_unity_yaml(&ctx.ctx.assets(), &mesh_meta_url).await.unwrap();
+    let mesh_meta = download_unity_yaml(ctx.ctx.assets(), mesh_meta_url).await.unwrap();
     if mesh_url.extension_is("asset") {
-        let asset = download_unity_yaml(&ctx.ctx.assets(), &mesh_url).await.unwrap();
+        let asset = download_unity_yaml(ctx.ctx.assets(), &mesh_url).await.unwrap();
         let mut mesh = unity_parser::asset::Asset::from_yaml(asset[0].clone()).mesh;
         let mat_ref = mesh_renderer.materials[0].clone();
         let mut mat = ctx.materials_lookup.lock().await.get_by_guid(ctx.config, ctx.guid_lookup, &mat_ref).await.unwrap();

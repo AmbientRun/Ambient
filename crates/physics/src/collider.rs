@@ -268,9 +268,7 @@ pub fn server_systems() -> SystemGroup {
                         world.remove_component(id, mass()).ok();
                     }
                     let first_shape = shapes[0].clone();
-                    world
-                        .add_components(id, EntityData::new().set(physics_shape(), first_shape.clone()).set(rigid_actor(), actor))
-                        .unwrap();
+                    world.add_components(id, EntityData::new().set(physics_shape(), first_shape).set(rigid_actor(), actor)).unwrap();
                     actor.set_actor_flag(PxActorFlag::VISUALIZATION, false);
                     if collider_type != ColliderType::Dynamic && collider_type != ColliderType::Static {
                         actor.set_actor_flag(PxActorFlag::DISABLE_SIMULATION, true);
