@@ -36,10 +36,10 @@ version = "0.0.1"
 "core::physics::character_controller_height" = { name = "Character controller height", description = "The height of the physics character controller attached to this entity. If an entity has both this and a `character_controller_radius`, it will be given a physical character collider.", type = "F32" }
 "core::physics::character_controller_radius" = { name = "Character controller radius", description = "The radius of the physics character controller attached to this entity. If an entity has both this and a `character_controller_height`, it will be given a physical character collider.", type = "F32" }
 "core::physics::collider_from_url" = { name = "Collider from URL", description = "This entity will load its physics collider from the URL. The value is the URL to load from.", type = "String" }
-"core::physics::collider_loads" = { name = "Collider loads", description = "Contains all colliders that were loaded in this physics tick.", type = { type = "Vec", element_type = "EntityId" } }
+"core::physics::collider_loads" = { name = "Collider loads", description = "_Resource_: Contains all colliders that were loaded in this physics tick.", type = { type = "Vec", element_type = "EntityId" } }
 "core::physics::density" = { name = "Density", description = "The density of this entity. This is used to update the `mass` when the entity is rescaled.", type = "F32" }
 "core::physics::dynamic" = { name = "Dynamic", description = "If this is true, the entity will be dynamic (i.e. be able to move). Otherwise, it will be static.", type = "Bool" }
-"core::physics::make_physics_static" = { name = "Make physics static", description = "All physics objects will be made static when loaded.", type = "Bool" }
+"core::physics::make_physics_static" = { name = "Make physics static", description = "_Resource_: All physics objects will be made static when loaded.", type = "Bool" }
 "core::physics::mass" = { name = "Mass", description = "The mass of this entity, measured in kilograms.", type = "F32" }
 "core::physics::physics_controlled" = { name = "Physics controlled", description = "If attached, this entity will be controlled by physics. Note that this requires the entity to have a collider.", type = "Empty" }
 "core::physics::plane_collider" = { name = "Plane collider", description = "If attached, this entity will have a plane physics collider. `x, y, z` is the normal, and `w` is the distance.", type = "Empty" }

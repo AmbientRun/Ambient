@@ -17,6 +17,8 @@ pub(crate) fn init() -> anyhow::Result<()> {
 
 #[cfg(not(feature = "production"))]
 pub(crate) mod dev {
+    use elements_ecs::Resource;
+
     pub fn build_components_toml() -> toml_edit::Document {
         let mut doc = toml_edit::Document::new();
         {
@@ -43,6 +45,8 @@ pub(crate) mod dev {
                 if !description.ends_with('.') {
                     log::warn!("`{}`'s description did not end in a full stop. Is it grammatical?", component.desc.path());
                 }
+
+                let description = if desc.has_attribute::<Resource>() { format!("_Resource_: {description}") } else { description };
 
                 let mut table = toml_edit::InlineTable::new();
                 table.insert("name", name.into());
