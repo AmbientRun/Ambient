@@ -1,6 +1,6 @@
 //! Provides time related functionality like Clocks and TimeInfo. Also extends Duration for easier
 //! construction like 5.secs().
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime};
 
 use itertools::{Itertools, PeekingNext};
 use thiserror::Error;
@@ -284,6 +284,55 @@ pub fn parse_duration(mut s: &str) -> Result<Duration, DurationParseError> {
     }
 
     Ok(dur)
+}
+
+pub fn from_now(time: SystemTime) -> Option<String> {
+    let duration = SystemTime::now().duration_since(time).ok()?;
+    Some(format!("{} ago", pretty_duration(duration)))
+}
+pub fn pretty_duration(duration: Duration) -> String {
+    let mut secs = duration.as_secs();
+    if secs == 0 {
+        return format!("{} ms", duration.as_millis());
+    }
+
+    let years = secs / (86400.0 * 365.2422) as u64;
+    secs %= (86400.0 * 365.2422) as u64;
+
+    let days = secs / 86400;
+    secs %= 86400;
+
+    let hours = secs / 3600;
+    secs %= 3600;
+
+    let minutes = secs / 60;
+    secs %= 60;
+
+    let mut res = Vec::new();
+
+    if years > 0 {
+        res.push(format!("{years} years"))
+    }
+
+    if days > 0 {
+        res.push(format!("{days} days"))
+    }
+
+    if years == 0 && days == 0 {
+        if hours > 0 {
+            res.push(format!("{hours} hours"))
+        }
+
+        if minutes > 0 {
+            res.push(format!("{minutes} minutes"))
+        }
+
+        if secs > 0 {
+            res.push(format!("{secs} seconds"))
+        }
+    }
+
+    res.join(" ")
 }
 
 #[cfg(test)]

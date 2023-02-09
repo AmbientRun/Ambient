@@ -20,7 +20,7 @@ fn main() {
         .map(|path| -> std::io::Result<_> {
             Ok(File {
                 absolute_path: working_dir.join(path).canonicalize().unwrap(),
-                contents: std::fs::read_to_string(&path)?,
+                contents: std::fs::read_to_string(path)?,
             })
         })
         .collect::<Result<_, _>>()
