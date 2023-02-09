@@ -304,6 +304,10 @@ impl<'de> Deserialize<'de> for ComponentDesc {
 }
 
 #[macro_export]
+/// Defines components to use within the ECS.
+///
+/// If the type is captured by [crate::PrimitiveComponent] and have a [crate::Name] and [crate::Description], these will be accessible by scripting.
+/// Please make sure to update the interface components if you update scripting-visible components.
 macro_rules! components {
     ($ns: literal, { $($(#[$outer:meta])* $(@[$($attr: ty$([ $params: tt ])?),*])? $vis: vis $name:ident: $ty:ty,)*}) => {
         $(

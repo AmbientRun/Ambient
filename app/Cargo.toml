@@ -10,6 +10,7 @@ elements_audio = {path = "../crates/audio"}
 elements_build = {path = "../crates/build"}
 elements_cameras = {path = "../crates/cameras"}
 elements_core = {path = "../crates/core"}
+elements_debugger = {path = "../crates/debugger"}
 elements_decals = {path = "../crates/decals"}
 elements_ecs = {path = "../crates/ecs"}
 elements_editor_derive = {path = "../crates/editor_derive"}
@@ -26,7 +27,6 @@ elements_physics = {path = "../crates/physics"}
 elements_primitives = {path = "../crates/primitives"}
 elements_project = {path = "../crates/project"}
 elements_renderer = {path = "../crates/renderer"}
-elements_debugger = {path = "../crates/debugger"}
 elements_rpc = {path = "../crates/rpc"}
 elements_scripting = {path = "../crates/scripting"}
 elements_std = {path = "../crates/std"}
@@ -40,6 +40,7 @@ byteorder.workspace = true
 clap.workspace = true
 convert_case.workspace = true
 env_logger.workspace = true
+friendly_id.workspace = true
 futures.workspace = true
 glam.workspace = true
 indoc.workspace = true
@@ -50,7 +51,12 @@ serde.workspace = true
 tokio.workspace = true
 tower-http.workspace = true
 walkdir.workspace = true
-friendly_id.workspace = true
+
+toml_edit = { optional = true, workspace = true }
 
 [dev-dependencies]
 glam.workspace = true
+
+[features]
+default = ["dep:toml_edit"]
+production = []

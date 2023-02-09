@@ -22,6 +22,21 @@ macro_rules! make_primitive_component_with_attrs {
 
         #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
         #[derive(serde::Serialize, serde::Deserialize)]
+        pub enum PrimitiveComponentContainerType {
+            Vec,
+            Option
+        }
+        impl PrimitiveComponentContainerType {
+            pub fn as_str(&self) -> &'static str {
+                match self {
+                    Self::Vec => "Vec",
+                    Self::Option => "Option",
+                }
+            }
+        }
+
+        #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+        #[derive(serde::Serialize, serde::Deserialize)]
         pub enum PrimitiveComponentType {
             $($value), *,
             $([< Vec $value >]), *,
@@ -97,6 +112,14 @@ macro_rules! make_primitive_component_with_attrs {
                 )*
             }
 
+            /// Not defined for the container types; use [Self::decompose_container_type].
+            pub fn as_str(&self) -> Option<&'static str> {
+                match self {
+                    $(Self::$value => Some(stringify!($value)),)*
+                    _ => None,
+                }
+            }
+
             pub fn to_vec_type(&self) -> Option<Self> {
                 match self {
                     $(Self::$value => Some(Self::[<Vec $value>]),)*
@@ -107,6 +130,14 @@ macro_rules! make_primitive_component_with_attrs {
             pub fn to_option_type(&self) -> Option<Self> {
                 match self {
                     $(Self::$value => Some(Self::[<Option $value>]),)*
+                    _ => None
+                }
+            }
+
+            pub fn decompose_container_type(&self) -> Option<(PrimitiveComponentContainerType, Self)> {
+                match self {
+                    $(Self::[<Vec $value>] => Some((PrimitiveComponentContainerType::Vec, Self::$value)),)*
+                    $(Self::[<Option $value>] => Some((PrimitiveComponentContainerType::Option, Self::$value)),)*
                     _ => None
                 }
             }

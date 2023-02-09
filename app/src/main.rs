@@ -35,6 +35,7 @@ struct Cli {
     project_path: Option<String>,
 
     /// Provide a public address or ip to the instance, which will allow users to connect to this instance over the internet
+    ///
     /// Defaults to localhost
     #[arg(long)]
     public_host: Option<String>,
@@ -68,6 +69,9 @@ enum Commands {
         #[clap(short, long)]
         user_id: Option<String>,
     },
+    /// Updates all scripting interfaces with the core primitive components (not for users)
+    #[cfg(not(feature = "production"))]
+    UpdateInterfaceComponents,
 }
 impl Commands {
     /// Will this command build assets?
@@ -79,6 +83,8 @@ impl Commands {
             Commands::Serve => true,
             Commands::View { .. } => true,
             Commands::Join { .. } => false,
+            #[cfg(not(feature = "production"))]
+            Commands::UpdateInterfaceComponents => false,
         }
     }
     /// Will this client run the application?
@@ -90,6 +96,8 @@ impl Commands {
             Commands::Serve => false,
             Commands::View { .. } => true,
             Commands::Join { .. } => true,
+            #[cfg(not(feature = "production"))]
+            Commands::UpdateInterfaceComponents => false,
         }
     }
     /// Will this join an external server?
@@ -104,6 +112,8 @@ impl Commands {
             Commands::Serve => None,
             Commands::View { user_id, .. } => user_id.as_deref(),
             Commands::Join { user_id, .. } => user_id.as_deref(),
+            #[cfg(not(feature = "production"))]
+            Commands::UpdateInterfaceComponents => None,
         }
     }
 }
@@ -221,6 +231,19 @@ fn main() -> anyhow::Result<()> {
     if let Commands::New { name } = cli.command {
         if let Err(err) = new_project::new_project(&project_path, name.as_deref()) {
             eprintln!("Failed to create project: {err:?}");
+        }
+        return Ok(());
+    }
+
+    #[cfg(not(feature = "production"))]
+    if let Commands::UpdateInterfaceComponents = cli.command {
+        let toml = components::dev::build_components_toml().to_string();
+
+        // Assume we are being run within the codebase.
+        for guest_path in std::fs::read_dir("guest/").unwrap().filter_map(Result::ok).map(|de| de.path()).filter(|de| de.is_dir()) {
+            let toml_path = guest_path.join("interface").join("elements.toml");
+            std::fs::write(&toml_path, &toml)?;
+            log::info!("Interface updated at {toml_path:?}");
         }
         return Ok(());
     }
