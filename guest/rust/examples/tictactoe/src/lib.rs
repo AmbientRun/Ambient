@@ -1,12 +1,12 @@
 use palette::{FromColor, Hsl, Srgb};
-use elements_runtime_scripting_interface::components::core::{
+use elements_base_scripting_interface::components::core::{
     app::main_scene,
     camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},
     primitives::cube,
     rendering::{color, outline},
     transform::{lookat_center, scale, translation},
 };
-use elements_runtime_scripting_interface::{player::KeyCode, *};
+use elements_base_scripting_interface::{player::KeyCode, *};
 
 elements_project!();
 

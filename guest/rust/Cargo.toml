@@ -5,4 +5,4 @@ members = [
 ]
 
 [patch.crates-io]
-elements_runtime_scripting_interface = { path = "crates/elements_runtime_scripting_interface" }
+elements_base_scripting_interface = { path = "crates/elements_base_scripting_interface" }

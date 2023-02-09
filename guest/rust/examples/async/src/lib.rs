@@ -1,4 +1,4 @@
-use elements_runtime_scripting_interface::*;
+use elements_base_scripting_interface::*;
 
 #[main]
 pub async fn main() -> EventResult {

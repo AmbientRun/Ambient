@@ -12,7 +12,7 @@ use wasi_common::WasiCtx;
 use wasmtime::Linker;
 
 use crate::shared::{
-    host_guest_state::GetBaseHostGuestState, interface::Host, reload, reload_all, run_all,
+    host_guest_state::GetBaseHostGuestState, interface::host::Host, reload, reload_all, run_all,
     script_module, script_module_bytecode, script_module_enabled, unload, update_errors,
     MessageType, ScriptContext, ScriptModuleState, WasmContext,
 };

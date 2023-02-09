@@ -135,7 +135,7 @@ checksum = "d01a5bd0424d00070b0098dd17ebca6f961a959dead1dbcbbbc1d1cd8d3deeba"
 name = "physics"
 version = "0.1.0"
 dependencies = [
- "elements_runtime_scripting_interface",
+ "elements_base_scripting_interface",
 ]
 
 [[package]]
@@ -260,7 +260,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "elements_runtime_scripting_interface"
+name = "elements_base_scripting_interface"
 version = "0.1.0"
 dependencies = [
  "elements_base_scripting_interface",

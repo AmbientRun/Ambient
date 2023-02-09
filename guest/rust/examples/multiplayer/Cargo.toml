@@ -5,7 +5,7 @@ version = "0.0.1"
 
 [dependencies]
 rand = "0.8.5"
-elements_runtime_scripting_interface = "0.0.1"
+elements_base_scripting_interface = "0.0.1"
 
 [lib]
 crate-type = ["cdylib"]

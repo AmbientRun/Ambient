@@ -15,12 +15,6 @@ use elements_scripting_host::{
 };
 use parking_lot::RwLock;
 
-use self::bindings::Bindings;
-
-mod bindings;
-mod implementation;
-mod interface;
-
 pub type ScriptModuleServerState =
     ScriptModuleState<ElementsBindings, WasmServerContext, BaseHostGuestState>;
 
@@ -34,19 +28,16 @@ components!("scripting::server", {
 
 pub struct WasmServerContext {
     pub elements_context: ElementsWasmServerContext,
-    pub dims_bindings: Bindings,
 }
 impl WasmServerContext {
     pub fn new(wasi: WasiCtx, shared_state: Arc<RwLock<BaseHostGuestState>>) -> Self {
         Self {
             elements_context: ElementsWasmServerContext::new(wasi, shared_state.clone()),
-            dims_bindings: Bindings::new(shared_state),
         }
     }
 
     pub fn link(linker: &mut Linker<WasmServerContext>) -> anyhow::Result<()> {
-        ElementsWasmServerContext::link(linker, |cx| &mut cx.elements_context)?;
-        interface::host::add_to_linker(linker, |cx| &mut cx.dims_bindings)
+        ElementsWasmServerContext::link(linker, |cx| &mut cx.elements_context)
     }
 }
 impl WasmContext<ElementsBindings> for WasmServerContext {

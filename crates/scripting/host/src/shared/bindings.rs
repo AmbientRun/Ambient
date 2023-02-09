@@ -8,10 +8,10 @@ use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
 use super::{
     conversion::{FromBindgen, IntoBindgen},
     implementation::entity::get_component_type,
-    interface as sif,
+    interface::host,
 };
 
-pub type ComponentsParam<'a> = Vec<(u32, sif::ComponentTypeParam<'a>)>;
+pub type ComponentsParam<'a> = Vec<(u32, host::ComponentTypeParam<'a>)>;
 
 use elements_ecs::PrimitiveComponentType as PCT;
 
@@ -21,9 +21,9 @@ macro_rules! define_component_types {
             world: &World,
             entity_id: EntityId,
             primitive_component: elements_ecs::PrimitiveComponent,
-        ) -> Option<sif::ComponentTypeResult> {
+        ) -> Option<host::ComponentTypeResult> {
             use elements_ecs::PrimitiveComponentType as PCT;
-            use sif::{ComponentTypeResult as CTR, ComponentListTypeResult as CLTR, ComponentOptionTypeResult as COTR};
+            use host::{ComponentTypeResult as CTR, ComponentListTypeResult as CLTR, ComponentOptionTypeResult as COTR};
 
             fn get<T: IntoBindgen + Clone + Send + Sync + 'static>(
                 world: &World,
@@ -47,9 +47,9 @@ macro_rules! define_component_types {
             world: &World,
             entity_accessor: &elements_ecs::EntityAccessor,
             primitive_component: elements_ecs::PrimitiveComponent,
-        ) -> Option<sif::ComponentTypeResult> {
+        ) -> Option<host::ComponentTypeResult> {
             use elements_ecs::PrimitiveComponentType as PCT;
-            use sif::{ComponentTypeResult as CTR, ComponentListTypeResult as CLTR, ComponentOptionTypeResult as COTR};
+            use host::{ComponentTypeResult as CTR, ComponentListTypeResult as CLTR, ComponentOptionTypeResult as COTR};
 
             fn get<T: IntoBindgen + Clone + Send + Sync + 'static>(
                 world: &World,
@@ -73,13 +73,13 @@ macro_rules! define_component_types {
             world: &World,
             entity_id: EntityId,
             index: u32,
-        ) -> Option<sif::ComponentTypeResult> {
+        ) -> Option<host::ComponentTypeResult> {
             let primitive_component = with_component_registry(|r| r.get_primitive_component(index))?;
             read_primitive_component_from_world(world, entity_id, primitive_component)
         }
 
-        pub(crate) fn convert_entity_data_to_components(ed: &EntityData) -> Vec<(u32, sif::ComponentTypeResult)> {
-            use sif::{
+        pub(crate) fn convert_entity_data_to_components(ed: &EntityData) -> Vec<(u32, host::ComponentTypeResult)> {
+            use host::{
                 ComponentListTypeResult as CLTR, ComponentOptionTypeResult as COTR,
                 ComponentTypeResult as CTR,
             };
@@ -116,7 +116,7 @@ macro_rules! define_component_types {
         pub(crate) fn convert_components_to_entity_data(
             components: ComponentsParam<'_>,
         ) -> EntityData {
-            use sif::{
+            use host::{
                 ComponentListTypeParam as CLTP, ComponentOptionTypeParam as COTP,
                 ComponentTypeParam as CTP,
             };
@@ -144,21 +144,21 @@ macro_rules! define_component_types {
             world: &mut World,
             entity_id: EntityId,
             index: u32,
-            value: sif::ComponentTypeParam<'_>,
+            value: host::ComponentTypeParam<'_>,
         ) {
             match value {
                 $(
-                sif::ComponentTypeParam::[<Type $value >](value) => {
+                host::ComponentTypeParam::[<Type $value >](value) => {
                     if let Some(component) = get_component_type::<$type>(index) {
                         world.add_component(entity_id, component, value.from_bindgen()).unwrap();
                     }
                 }
-                sif::ComponentTypeParam::TypeList(sif::ComponentListTypeParam::[<Type $value >](value)) => {
+                host::ComponentTypeParam::TypeList(host::ComponentListTypeParam::[<Type $value >](value)) => {
                     if let Some(component) = get_component_type::<Vec<$type>>(index) {
                         world.add_component(entity_id, component, value.from_bindgen()).unwrap();
                     }
                 }
-                sif::ComponentTypeParam::TypeOption(sif::ComponentOptionTypeParam::[<Type $value >](value)) => {
+                host::ComponentTypeParam::TypeOption(host::ComponentOptionTypeParam::[<Type $value >](value)) => {
                     if let Some(component) = get_component_type::<Option<$type>>(index) {
                         world.add_component(entity_id, component, value.from_bindgen()).unwrap();
                     }

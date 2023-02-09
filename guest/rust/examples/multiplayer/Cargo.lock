@@ -52,7 +52,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "elements_runtime_scripting_interface"
+name = "elements_base_scripting_interface"
 version = "0.1.0"
 dependencies = [
  "elements_base_scripting_interface",
@@ -138,7 +138,7 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 name = "multiplayer"
 version = "0.1.0"
 dependencies = [
- "elements_runtime_scripting_interface",
+ "elements_base_scripting_interface",
  "rand",
 ]
 

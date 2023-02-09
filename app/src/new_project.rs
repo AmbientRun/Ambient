@@ -41,7 +41,7 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
             version = "0.1.0"
 
             [dependencies]
-            elements_runtime_scripting_interface = { path = "interfaces/elements_runtime_scripting_interface" }
+            elements_base_scripting_interface = { path = "interfaces/elements_base_scripting_interface" }
 
             [lib]
             crate-type = ["cdylib"]
@@ -71,7 +71,7 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
     std::fs::write(
         src.join("lib.rs"),
         indoc! {r#"
-            use elements_runtime_scripting_interface::*;
+            use elements_base_scripting_interface::*;
 
             #[main]
             pub async fn main() -> EventResult {

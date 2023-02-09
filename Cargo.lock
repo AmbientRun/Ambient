@@ -2142,6 +2142,7 @@ dependencies = [
  "elements_app",
  "elements_core",
  "elements_ecs",
+ "elements_input",
  "elements_network",
  "elements_object",
  "elements_physics",

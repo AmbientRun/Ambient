@@ -340,7 +340,7 @@ name = "tictactoe"
 version = "0.1.0"
 dependencies = [
  "palette",
- "elements_runtime_scripting_interface",
+ "elements_base_scripting_interface",
 ]
 
 [[package]]
@@ -360,7 +360,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "elements_runtime_scripting_interface"
+name = "elements_base_scripting_interface"
 version = "0.1.0"
 dependencies = [
  "elements_base_scripting_interface",
