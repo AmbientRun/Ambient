@@ -181,7 +181,8 @@ impl ComponentDesc {
         }
     }
 
-    pub fn name(&self) -> String {
+    /// Returns the last segment of the component path. Do not use this as a unique identifier; use [Self::path] instead.
+    pub fn path_last(&self) -> String {
         if let Some(path) = self.vtable.path {
             path.rsplit_once("::").map(|v| v.1).unwrap_or(path).into()
         } else {
@@ -417,7 +418,7 @@ mod test {
 
         let component = foo();
 
-        assert_eq!(component.name(), "foo");
+        assert_eq!(component.path_last(), "foo");
 
         assert!(component.attribute::<Serializable>().is_some());
 

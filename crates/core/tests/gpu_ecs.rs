@@ -62,7 +62,7 @@ impl TestCommon {
 
         let module = GpuWorldShaderModuleKey { read_only: true }.get(&self.assets);
         let bind_group = self.gpu_world.lock().create_bind_group(true);
-        GpuRun::new("gpu_ecs", format!("return get_entity_{}(vec2<u32>(u32(input.x), u32(input.y)));", component.name()))
+        GpuRun::new("gpu_ecs", format!("return get_entity_{}(vec2<u32>(u32(input.x), u32(input.y)));", component.path_last()))
             .add_module(module)
             .add_bind_group("ENTITIES_BIND_GROUP", bind_group)
             .run(&self.assets, loc)
@@ -76,7 +76,10 @@ impl TestCommon {
         let bind_group = self.gpu_world.lock().create_bind_group(false);
         let _res: Vec4 = GpuRun::new(
             "gpu_ecs",
-            format!("set_entity_{}(vec2<u32>(u32(input.x), u32(input.y)), vec4<f32>(input.z)); return vec4<f32>(0.);", component.name()),
+            format!(
+                "set_entity_{}(vec2<u32>(u32(input.x), u32(input.y)), vec4<f32>(input.z)); return vec4<f32>(0.);",
+                component.path_last()
+            ),
         )
         .add_module(module)
         .add_bind_group("ENTITIES_BIND_GROUP", bind_group)
