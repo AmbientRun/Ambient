@@ -1392,7 +1392,6 @@ dependencies = [
  "elements_project",
  "elements_renderer",
  "elements_rpc",
- "elements_runtime_core",
  "elements_runtime_scripting_host",
  "elements_scripting_host",
  "elements_std",
@@ -1822,6 +1821,7 @@ dependencies = [
  "elements_ecs",
  "elements_std",
  "glam 0.22.0",
+ "serde",
  "tracing",
  "winit",
 ]
@@ -2100,16 +2100,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "elements_runtime_core"
-version = "0.0.1"
-dependencies = [
- "elements_ecs",
- "elements_input",
- "glam 0.22.0",
- "serde",
-]
-
-[[package]]
 name = "elements_runtime_scripting_host"
 version = "0.0.1"
 dependencies = [
@@ -2118,7 +2108,6 @@ dependencies = [
  "elements_input",
  "elements_network",
  "elements_project",
- "elements_runtime_core",
  "elements_scripting_host",
  "elements_scripting_host_build",
  "elements_std",

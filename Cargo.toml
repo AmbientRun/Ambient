@@ -10,7 +10,6 @@ members = [
   "crates/scripting/host",
   "libs/*",
   "app",
-  "app/crates/core", # Explicitly specify member crates due to https://github.com/rust-lang/cargo/issues/6745
   "app/crates/scripting/host",
 ]
 resolver = "2"

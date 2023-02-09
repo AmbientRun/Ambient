@@ -1,8 +1,7 @@
 use std::sync::Arc;
 
 use elements_ecs::{EntityId, World};
-use elements_input::MouseButton;
-use elements_runtime_core::player::RawInput;
+use elements_input::{MouseButton, PlayerRawInput};
 use elements_scripting_host::shared::host_guest_state::BaseHostGuestState;
 use elements_ui::VirtualKeyCode;
 use glam::Vec2;
@@ -81,7 +80,7 @@ impl IntoElementsRuntimeBindgen for Vec2 {
     }
 }
 
-impl IntoElementsRuntimeBindgen for RawInput {
+impl IntoElementsRuntimeBindgen for PlayerRawInput {
     type Item = host::PlayerRawInput;
 
     fn into_elements_runtime_bindgen(self) -> Self::Item {

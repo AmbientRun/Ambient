@@ -7,12 +7,11 @@ use elements_core::{camera::active_camera, main_scene, on_frame, runtime};
 use elements_ecs::{query, query_mut, EntityData, SystemGroup, World};
 use elements_element::{element_component, Element, Hooks};
 use elements_input::{
-    on_app_focus_change, on_app_keyboard_input, on_app_mouse_input, on_app_mouse_motion, on_app_mouse_wheel, ElementState, MouseScrollDelta
+    on_app_focus_change, on_app_keyboard_input, on_app_mouse_input, on_app_mouse_motion, on_app_mouse_wheel, player_prev_raw_input, player_raw_input, ElementState, MouseScrollDelta, PlayerRawInput
 };
 use elements_network::{
     client::game_client, get_player_by_user_id, player::{local_user_id, player, user_id}, DatagramHandlers
 };
-pub use elements_runtime_core::player::{prev_raw_input, raw_input, RawInput};
 use elements_std::unwrap_log_err;
 use elements_world_audio::audio_listener;
 use glam::{Mat4, Vec3};
@@ -41,11 +40,11 @@ pub fn register_datagram_handler(handlers: &mut DatagramHandlers) {
     handlers.insert(
         PLAYER_INPUT_DATAGRAM_ID,
         Arc::new(|state, _assets, user_id, data| {
-            let input: RawInput = unwrap_log_err!(bincode::deserialize(&data));
+            let input: PlayerRawInput = unwrap_log_err!(bincode::deserialize(&data));
             let mut state = state.lock();
             if let Some(world) = state.get_player_world_mut(user_id) {
                 if let Some(player_id) = get_player_by_user_id(world, user_id) {
-                    world.set(player_id, raw_input(), input).ok();
+                    world.set(player_id, player_raw_input(), input).ok();
                 }
             }
         }),
@@ -58,7 +57,9 @@ pub fn server_systems() -> SystemGroup {
         vec![query(player()).spawned().to_system(|q, world, qs, _| {
             let player_ids = q.collect_ids(world, qs);
             for player_id in player_ids {
-                world.add_components(player_id, EntityData::new().set_default(raw_input()).set_default(prev_raw_input())).ok();
+                world
+                    .add_components(player_id, EntityData::new().set_default(player_raw_input()).set_default(player_prev_raw_input()))
+                    .ok();
             }
         })],
     )
@@ -67,7 +68,7 @@ pub fn server_systems() -> SystemGroup {
 pub fn server_systems_final() -> SystemGroup {
     SystemGroup::new(
         "player/server_systems_final",
-        vec![query_mut(prev_raw_input(), raw_input()).to_system(|q, world, qs, _| {
+        vec![query_mut(player_prev_raw_input(), player_raw_input()).to_system(|q, world, qs, _| {
             for (_, prev, input) in q.iter(world, qs) {
                 *prev = input.clone();
             }
@@ -103,7 +104,7 @@ pub fn client_systems() -> SystemGroup {
 pub fn PlayerRawInputHandler(_: &mut World, hooks: &mut Hooks) -> Element {
     const PIXELS_PER_LINE: f32 = 5.0;
 
-    let input = hooks.use_ref_with(RawInput::default);
+    let input = hooks.use_ref_with(PlayerRawInput::default);
     let (has_focus, set_has_focus) = hooks.use_state(false);
 
     Element::new()

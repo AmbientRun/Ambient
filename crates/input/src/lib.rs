@@ -1,8 +1,9 @@
-use std::cmp::Reverse;
+use std::{cmp::Reverse, collections::HashSet};
 
 use elements_ecs::{components, query, EntityId, QueryState, System, SystemGroup, World};
 use elements_std::events::EventDispatcher;
 use glam::{vec2, Vec2};
+use serde::{Deserialize, Serialize};
 pub use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, MouseButton, MouseScrollDelta, VirtualKeyCode, WindowEvent};
 use winit::event::{ModifiersState, ScanCode};
 
@@ -22,6 +23,14 @@ pub struct KeyboardEvent {
     pub is_focused: bool,
 }
 
+#[derive(Clone, Default, Debug, Serialize, Deserialize)]
+pub struct PlayerRawInput {
+    pub keys: HashSet<VirtualKeyCode>,
+    pub mouse_position: Vec2,
+    pub mouse_wheel: f32,
+    pub mouse_buttons: HashSet<MouseButton>,
+}
+
 components!("input", {
     on_app_received_character: EventCallback<char>,
     on_app_keyboard_input: EventDispatcher<dyn Fn(&mut World, EntityId, &KeyboardEvent) -> bool + Sync + Send>,
@@ -30,6 +39,9 @@ components!("input", {
     on_app_mouse_wheel: EventCallback<MouseScrollDelta>,
     on_app_modifiers_change: EventCallback<ModifiersState, ()>,
     on_app_focus_change: EventCallback<bool, ()>,
+
+    player_raw_input: PlayerRawInput,
+    player_prev_raw_input: PlayerRawInput,
 });
 
 pub fn init_all_components() {

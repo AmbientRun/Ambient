@@ -12,3 +12,4 @@ elements_ecs = { path = "../ecs" }
 elements_core = { path = "../core" }
 winit.workspace = true
 glam.workspace = true
+serde.workspace = true

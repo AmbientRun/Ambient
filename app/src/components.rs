@@ -13,7 +13,6 @@ pub(crate) fn init() -> anyhow::Result<()> {
     elements_primitives::init_components();
     elements_project::init_components();
 
-    elements_runtime_core::init_all_components();
     crate::player::init_all_components();
 
     // Temporary: this information should move to the ECS through attributes
