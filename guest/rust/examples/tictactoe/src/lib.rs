@@ -8,8 +8,6 @@ use elements_scripting_interface::components::core::{
 use elements_scripting_interface::{player::KeyCode, *};
 use palette::{FromColor, Hsl, Srgb};
 
-elements_project!();
-
 #[main]
 pub async fn main() -> EventResult {
     entity::game_object_base()

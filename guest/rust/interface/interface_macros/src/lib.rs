@@ -5,9 +5,9 @@ use quote::quote;
 
 mod elements_project;
 
-/// Makes your main() function accessible to the scripting host.
+/// Makes your `main()` function accessible to the scripting host, and generates a `components` module with your project's components.
 ///
-/// If you do not add this attribute to your main() function, your script will not run.
+/// If you do not add this attribute to your `main()` function, your script will not run.
 #[proc_macro_attribute]
 pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let item = syn::parse_macro_input!(item as syn::ItemFn);
@@ -16,7 +16,11 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
         panic!("the `{fn_name}` function must be async");
     }
 
+    let project_boilerplate = elements_project_pm2(None).unwrap();
+
     quote! {
+        #project_boilerplate
+
         #item
 
         #[no_mangle]
@@ -86,10 +90,7 @@ fn elements_project_pm2(
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     elements_project::implementation(
         elements_project::read_file("elements.toml".to_string()).unwrap(),
-        extend_paths
-            .as_ref()
-            .map(|a| a.as_slice())
-            .unwrap_or_default(),
+        extend_paths.as_deref().unwrap_or_default(),
         extend_paths.is_some(),
     )
 }

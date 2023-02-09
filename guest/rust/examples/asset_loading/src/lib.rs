@@ -5,8 +5,6 @@ use elements_scripting_interface::components::core::{
 };
 use elements_scripting_interface::*;
 
-elements_project!();
-
 #[main]
 pub async fn main() -> EventResult {
     entity::game_object_base()

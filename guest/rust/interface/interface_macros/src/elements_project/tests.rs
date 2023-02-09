@@ -142,6 +142,30 @@ fn can_extend_existing_components_in_global_namespace() {
 }
 
 #[test]
+fn can_accept_no_components() {
+    let manifest = indoc::indoc! {r#"
+        [project]
+        id = "my_project"
+        name = "My Project"
+        "#};
+
+    let expected_output = quote::quote! {
+        const _PROJECT_MANIFEST: &'static str = include_str!("elementsy.toml");
+        #[allow(missing_docs)]
+        pub mod components {}
+    };
+
+    let result = implementation(
+        ("elementsy.toml".to_string(), manifest.to_string()),
+        &[],
+        false,
+    )
+    .unwrap();
+
+    assert_eq!(result.to_string(), expected_output.to_string());
+}
+
+#[test]
 fn can_generate_components_from_manifest() {
     let manifest = indoc::indoc! {r#"
         [project]

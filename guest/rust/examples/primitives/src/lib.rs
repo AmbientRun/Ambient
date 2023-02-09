@@ -1,11 +1,13 @@
-use components::core::{
-    app::main_scene,
-    camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},
-    primitives::{cube, quad},
-    rendering::color,
-    transform::{lookat_center, scale, translation},
+use elements_scripting_interface::{
+    components::core::{
+        app::main_scene,
+        camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},
+        primitives::{cube, quad},
+        rendering::color,
+        transform::{lookat_center, scale, translation},
+    },
+    *,
 };
-use elements_scripting_interface::*;
 
 #[main]
 pub async fn main() -> EventResult {

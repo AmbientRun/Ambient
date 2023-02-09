@@ -29,8 +29,7 @@ pub use internal::component::{
     LazyComponent, QueryEvent, SupportedComponentTypeGet, SupportedComponentTypeSet,
 };
 
-// Macros to wire up your project to the runtime.
-pub use interface_macros::{elements_project, main};
+pub use interface_macros::main;
 
 /// Re-exports from other crates.
 pub use anyhow::{anyhow, Context as AnyhowContext};

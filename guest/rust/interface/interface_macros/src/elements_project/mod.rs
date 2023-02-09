@@ -9,7 +9,7 @@ mod tests;
 
 pub fn read_file(file_path: String) -> anyhow::Result<(String, String)> {
     let file_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").context("no manifest dir")?)
-        .join(&file_path);
+        .join(file_path);
     let file_path_str = format!("{}", file_path.display());
 
     let contents = std::fs::read_to_string(&file_path)?;
@@ -70,7 +70,7 @@ pub fn implementation(
 
         manifest_head.insert(
             leaf_id.clone(),
-            TreeNode::new(segments.into_iter().map(|s| s.to_string()).collect(), inner),
+            TreeNode::new(segments.iter().map(|s| s.to_string()).collect(), inner),
         );
 
         Ok(())
@@ -139,8 +139,8 @@ pub fn implementation(
             }
             TreeNodeInner::UseAll(path) => {
                 let path = path
-                    .into_iter()
-                    .map(|s| syn::parse_str::<syn::Ident>(&s))
+                    .iter()
+                    .map(|s| syn::parse_str::<syn::Ident>(s))
                     .collect::<Result<Vec<_>, _>>()?;
                 Ok(quote! {
                     pub use #(#path::)* *;
@@ -176,6 +176,7 @@ pub fn implementation(
 #[derive(Deserialize, Debug)]
 struct Manifest {
     project: Project,
+    #[serde(default)]
     components: BTreeMap<String, Component>,
 }
 
@@ -245,7 +246,7 @@ impl ComponentType {
                 type_,
                 element_type,
             } => {
-                let container_ty = Self::convert_container_type_to_rust_type(&type_)
+                let container_ty = Self::convert_container_type_to_rust_type(type_)
                     .context("invalid container type")?;
                 let element_ty = element_type
                     .as_deref()

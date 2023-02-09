@@ -77,12 +77,12 @@ impl Executor {
             let mut callbacks = self.current_callbacks.borrow_mut();
             if let Some(callbacks) = callbacks.on.get(event_name) {
                 for callback in callbacks {
-                    new_futures.push(callback(&components));
+                    new_futures.push(callback(components));
                 }
             }
 
             for callback in callbacks.once.remove(event_name).unwrap_or_default() {
-                new_futures.push(callback(&components));
+                new_futures.push(callback(components));
             }
 
             // This must be done as a separate step as `callback` could mutate `self.incoming`.
