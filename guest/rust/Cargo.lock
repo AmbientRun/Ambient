@@ -19,14 +19,14 @@ dependencies = [
 
 [[package]]
 name = "asset_loading"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "elements_runtime_scripting_interface",
 ]
 
 [[package]]
 name = "async"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "elements_runtime_scripting_interface",
 ]
@@ -60,7 +60,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "elements_base_scripting_interface"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "anyhow",
  "bincode",
@@ -76,7 +76,7 @@ dependencies = [
 
 [[package]]
 name = "elements_runtime_scripting_interface"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "elements_base_scripting_interface",
  "wit-bindgen-guest-rust",
@@ -150,7 +150,7 @@ checksum = "6fe2b9d82064e8a0226fddb3547f37f28eaa46d0fc210e275d835f08cf3b76a7"
 
 [[package]]
 name = "interface_macros"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "anyhow",
  "indoc",
@@ -175,7 +175,7 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
 name = "multiplayer"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "elements_runtime_scripting_interface",
  "rand",
@@ -279,7 +279,7 @@ dependencies = [
 
 [[package]]
 name = "physics"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "elements_runtime_scripting_interface",
 ]
@@ -292,7 +292,7 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 
 [[package]]
 name = "primitives"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "elements_runtime_scripting_interface",
 ]
@@ -393,7 +393,7 @@ checksum = "7bd3e3206899af3f8b12af284fafc038cc1dc2b41d1b89dd17297221c5d225de"
 
 [[package]]
 name = "skinmesh"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "elements_runtime_scripting_interface",
 ]
@@ -411,7 +411,7 @@ dependencies = [
 
 [[package]]
 name = "tictactoe"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "elements_runtime_scripting_interface",
  "palette",

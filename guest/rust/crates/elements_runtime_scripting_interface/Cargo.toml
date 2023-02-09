@@ -1,7 +1,7 @@
 [package]
 edition = "2021"
 name = "elements_runtime_scripting_interface"
-version = "0.1.0"
+version = "0.0.1"
 
 [dependencies]
 # make sure this is synchronised with the version used by elements_runtime_scripting_host

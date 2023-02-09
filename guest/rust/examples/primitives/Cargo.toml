@@ -1,7 +1,7 @@
 [package]
 name = "primitives"
 edition = "2021"
-version = "0.1.0"
+version = "0.0.1"
 
 [dependencies]
 elements_runtime_scripting_interface = { path = "../../crates/elements_runtime_scripting_interface" }
