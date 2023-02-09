@@ -265,7 +265,7 @@ impl World {
             let arch = self.archetypes.get(loc.archetype).expect("Archetype doesn't exist");
             match arch.get_component_mut(loc.index, entity_id, component, self.version()) {
                 Some(d) => Ok(d),
-                None => Err(ECSError::EntityDoesntHaveComponent { component_index: component.desc().index() as _, name: component.name() }),
+                None => Err(ECSError::EntityDoesntHaveComponent { component_index: component.desc().index() as _, name: component.path() }),
             }
         } else {
             Err(ECSError::NoSuchEntity { entity_id })
@@ -283,7 +283,7 @@ impl World {
             match arch.get_component(loc.index, component) {
                 Some(d) => Ok(d),
                 None => {
-                    Err(ECSError::EntityDoesntHaveComponent { component_index: component.desc().index() as usize, name: component.name() })
+                    Err(ECSError::EntityDoesntHaveComponent { component_index: component.desc().index() as usize, name: component.path() })
                 }
             }
         } else {
@@ -295,7 +295,7 @@ impl World {
             let arch = self.archetypes.get(loc.archetype).expect("Archetype doesn't exist");
             match arch.get_component_buffer_untyped(component) {
                 Some(d) => Ok(d.clone_value_boxed(loc.index)),
-                None => Err(ECSError::EntityDoesntHaveComponent { component_index: component.index() as usize, name: component.name() }),
+                None => Err(ECSError::EntityDoesntHaveComponent { component_index: component.index() as usize, name: component.path() }),
             }
         } else {
             Err(ECSError::NoSuchEntity { entity_id })
@@ -409,7 +409,7 @@ impl World {
     pub fn resource<T: ComponentValue>(&self, component: Component<T>) -> &T {
         match self.resource_opt(component) {
             Some(val) => val,
-            None => panic!("Resource {} does not exist", component.name()),
+            None => panic!("Resource {} does not exist", component.path()),
         }
     }
     pub fn resource_mut_opt<T: ComponentValue>(&mut self, component: Component<T>) -> Option<&mut T> {

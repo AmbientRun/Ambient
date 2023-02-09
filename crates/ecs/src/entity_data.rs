@@ -169,7 +169,7 @@ impl Debug for EntityData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut out = f.debug_struct("EntityData");
         for entry in self.content.iter() {
-            out.field(&entry.desc().name(), &entry.as_debug());
+            out.field(&entry.desc().path(), &entry.as_debug());
         }
         out.finish()
     }

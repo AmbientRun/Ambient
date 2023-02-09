@@ -171,12 +171,12 @@ impl Debug for ComponentEntry {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if f.alternate() {
             f.debug_struct("ComponentEntry")
-                .field("name", &self.name())
+                .field("path", &self.path())
                 .field("index", &self.index())
                 .field("value", self.as_debug())
                 .finish()
         } else {
-            f.debug_tuple("ComponentEntry").field(&self.name()).field(self.as_debug()).finish()
+            f.debug_tuple("ComponentEntry").field(&self.path()).field(self.as_debug()).finish()
         }
     }
 }

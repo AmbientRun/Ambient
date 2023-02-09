@@ -232,7 +232,7 @@ impl Archetype {
                 d.on_write(id, index, version);
                 Ok(d.data.0.get_mut().set(index, entry))
             }
-            None => Err(ECSError::EntityDoesntHaveComponent { component_index: entry.desc().index() as usize, name: entry.name() }),
+            None => Err(ECSError::EntityDoesntHaveComponent { component_index: entry.desc().index() as usize, name: entry.path() }),
         }
     }
 
