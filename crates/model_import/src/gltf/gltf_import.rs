@@ -136,7 +136,7 @@ fn new_image_data(image: DynamicImage) -> gltf::image::Data {
         DynamicImage::ImageRgba16(_) => Format::R16G16B16A16,
         DynamicImage::ImageRgb32F(_) => Format::R32G32B32FLOAT,
         DynamicImage::ImageRgba32F(_) => Format::R32G32B32A32FLOAT,
-        _ => todo!(),
+        _ => panic!("Unsupported image format"),
     };
     let (width, height) = image.dimensions();
     let pixels = image.into_bytes();

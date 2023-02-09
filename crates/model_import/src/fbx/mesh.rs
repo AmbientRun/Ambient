@@ -24,7 +24,7 @@ impl FbxMappingInformationType {
             "ByVertex" => Self::ByVertex,
             "ByPolygon" => Self::ByPolygon,
             "AllSame" => Self::AllSame,
-            _ => todo!(),
+            _ => panic!("Unsuppored FBX node type"),
         }
     }
 }
@@ -42,7 +42,7 @@ impl FbxReferenceInformationType {
         {
             "Direct" => Self::Direct,
             "IndexToDirect" => Self::IndexToDirect,
-            _ => todo!(),
+            _ => panic!("Unsupported node type"),
         }
     }
 }
@@ -176,12 +176,12 @@ impl FbxGeometry {
                     normal: self.normals.as_ref().map(|normals| match normals.info_type {
                         FbxMappingInformationType::ByPolygonVertex => normals.normals[polygon_vertex_index],
                         FbxMappingInformationType::ByVertex => normals.normals[vertex_index],
-                        _ => todo!(),
+                        _ => unimplemented!(),
                     }),
                     tangent: self.tangents.as_ref().map(|tangents| match tangents.info_type {
                         FbxMappingInformationType::ByPolygonVertex => tangents.tangents[polygon_vertex_index],
                         FbxMappingInformationType::ByVertex => tangents.tangents[vertex_index],
-                        _ => todo!(),
+                        _ => unimplemented!(),
                     }),
                     uvs: self
                         .uvs
@@ -204,7 +204,7 @@ impl FbxGeometry {
                                     FbxReferenceInformationType::IndexToDirect => uv.uv_indices.as_ref().unwrap()[vertex_index] as usize,
                                 }]
                             }
-                            _ => todo!(),
+                            _ => unimplemented!(),
                         })
                         .collect(),
                     joint_indices: vertex_joint_indices[vertex_index].clone(),

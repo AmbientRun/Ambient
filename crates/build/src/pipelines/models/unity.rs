@@ -209,7 +209,7 @@ impl UnityMaterials {
         } else if unity_ref.type_ == Some(3) {
             Ok(Default::default())
         } else {
-            todo!()
+            panic!("Unsupported unity ref")
         }
     }
     async fn get_unity_material(

@@ -472,7 +472,7 @@ impl TextureReader {
                             wgpu::TextureFormat::Depth32Float => {
                                 DynamicImage::ImageLuma8(image::GrayImage::from_raw(self.size.width, self.size.height, as_u8s).unwrap())
                             }
-                            _ => todo!(),
+                            _ => panic!("Unsupported depth texture format"),
                         }
                     })
                     .collect_vec(),
@@ -591,7 +591,7 @@ impl NTextureChannels for wgpu::TextureFormat {
             wgpu::TextureFormat::Rgba32Sint => 4,
             wgpu::TextureFormat::Rgba32Float => 4,
             wgpu::TextureFormat::Depth32Float => 1,
-            _ => todo!(),
+            _ => panic!("Unsupported texture format"),
         }
     }
 }

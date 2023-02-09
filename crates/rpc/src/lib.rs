@@ -117,6 +117,6 @@ mod tests {
         let req = reg.serialize_req(testy, 6);
         let resp = reg.run_req((), &req).await.unwrap();
         let resp = reg.deserialize_resp(testy, &resp).unwrap();
-        eprintln!("resp={resp:?}");
+        println!("resp={resp:?}");
     }
 }

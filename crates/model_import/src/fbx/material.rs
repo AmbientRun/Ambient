@@ -204,7 +204,7 @@ impl FbxVideo {
             } else if self.filename.to_lowercase().ends_with(".bmp") {
                 image::ImageFormat::Bmp
             } else {
-                todo!("Unsupported texture format: {:?}", self.filename)
+                panic!("Unsupported texture format: {:?}", self.filename)
             };
             Some(image::load_from_memory_with_format(&content.0, format).unwrap().to_rgba8())
         } else {

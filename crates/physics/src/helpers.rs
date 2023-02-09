@@ -306,7 +306,7 @@ pub fn weld_two(world: &mut World, first: EntityId, second: EntityId) {
                 if joint.to_revolute_joint().is_some() {
                     world.remove_component(entity, revolute_joint()).ok();
                 } else {
-                    todo!()
+                    unimplemented!()
                 }
                 joint.release();
             }
@@ -319,7 +319,7 @@ pub fn weld_two(world: &mut World, first: EntityId, second: EntityId) {
             if joint.to_revolute_joint().is_some() {
                 world.remove_component(entity, revolute_joint()).ok();
             } else {
-                todo!()
+                unimplemented!()
             }
             joint.release();
         }

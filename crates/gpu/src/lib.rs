@@ -16,6 +16,6 @@ pub fn texture_format_to_wgsl_storage_format(format: wgpu::TextureFormat) -> &'s
     match format {
         wgpu::TextureFormat::R32Float => "r32float",
         wgpu::TextureFormat::Rgba32Float => "rgba32float",
-        _ => todo!(),
+        _ => panic!("Unsupported texture storage format"),
     }
 }

@@ -138,8 +138,8 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
                 let img = image::GrayAlphaImage::from_raw(image.width, image.height, image.pixels.clone()).unwrap();
                 image::DynamicImage::ImageLumaA8(img).into_rgba8()
             }
-            gltf::image::Format::R16 => todo!(),
-            gltf::image::Format::R16G16 => todo!(),
+            gltf::image::Format::R16 => unimplemented!(),
+            gltf::image::Format::R16G16 => unimplemented!(),
             gltf::image::Format::R16G16B16 => {
                 let img = image::ImageBuffer::<image::Rgb<u16>, Vec<u16>>::from_raw(
                     image.width,
@@ -149,8 +149,8 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
                 .unwrap();
                 image::DynamicImage::ImageRgb16(img).into_rgba8()
             }
-            gltf::image::Format::R32G32B32FLOAT => todo!(),
-            gltf::image::Format::R32G32B32A32FLOAT => todo!(),
+            gltf::image::Format::R32G32B32FLOAT => unimplemented!(),
+            gltf::image::Format::R32G32B32A32FLOAT => unimplemented!(),
         };
         let mut is_mr = false;
         for mat in import.document.materials() {

@@ -343,8 +343,8 @@ mod test {
         reg.register(
             intent_add(),
             intent_add_revert(),
-            |_ctx, _arg| todo!(),
-            |_ctx, _revert| todo!(),
+            |_ctx, _arg| unreachable!(),
+            |_ctx, _revert| unreachable!(),
             |_, old_state, new_arg, _| (*old_state, *new_arg),
         );
     }

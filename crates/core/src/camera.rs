@@ -163,7 +163,7 @@ impl Projection {
             Projection::Perspective { fovy, aspect_ratio, near, far: _ } => {
                 Projection::Perspective { fovy, aspect_ratio, near, far: new_far }
             }
-            Projection::Identity => todo!(),
+            Projection::Identity => panic!("Identity projection is not supported"),
         }
     }
     pub fn fovy(&self) -> Option<f32> {
@@ -219,7 +219,7 @@ impl Projection {
                 .set(self::far(), far)
                 .set(self::fovy(), fovy)
                 .set(self::aspect_ratio(), aspect_ratio),
-            Projection::Identity => todo!(),
+            Projection::Identity => panic!("Identity projection is not supported"),
         }
     }
     pub fn view_space_frustum(&self) -> CameraViewSpaceFrustum {

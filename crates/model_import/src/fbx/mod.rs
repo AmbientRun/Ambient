@@ -260,7 +260,7 @@ impl FbxDoc {
                         Some("SpecularColor") => doc.materials.get_mut(&from).unwrap().specular_color_texture = Some(to),
                         Some("ShininessExponent") => doc.materials.get_mut(&from).unwrap().shininess_exponent_texture = Some(to),
                         Some("ReflectionFactor") => doc.materials.get_mut(&from).unwrap().reflection_factor_texture = Some(to),
-                        _ => todo!("Unrecognized texture: {:?}", property),
+                        _ => panic!("Unrecognized texture: {:?}", property),
                     },
                     ("Video", "Texture") => doc.textures.get_mut(&from).unwrap().video = Some(to),
                     ("Model", "Model") => {

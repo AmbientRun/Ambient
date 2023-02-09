@@ -320,7 +320,7 @@ fn fields_editor(
             let is_float_slider = match &field_ty_name as &str {
                 "f32" => true,
                 "i32" => false,
-                _ => todo!(),
+                _ => panic!("Slider is not supported for {field_ty_name}"),
             };
             let (slider, round) = if is_float_slider {
                 (quote! { Slider }, quote! { round: Some(#round), })

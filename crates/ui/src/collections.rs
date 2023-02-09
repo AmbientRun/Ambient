@@ -97,7 +97,7 @@ pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 
             .el(),
         ])
     } else {
-        todo!()
+        unimplemented!()
     }
 }
 

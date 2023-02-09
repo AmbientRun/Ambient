@@ -42,10 +42,6 @@ impl Sound {
         self.mixer.inner.waiters.lock().push((self.id, signal));
         thread::park()
     }
-
-    pub fn stop(&self) {
-        todo!()
-    }
 }
 
 pub struct SoundFut {
@@ -241,8 +237,8 @@ impl AudioMixer {
 
     /// Get the total number of pending tracks for all sinks
     #[must_use]
-    pub fn playing_sinks(&self) -> u32 {
-        todo!()
+    pub fn playing_sinks(&self) -> usize {
+        self.inner.sources.lock().len()
         // self.playing_sinks.load(std::sync::atomic::Ordering::Relaxed)
     }
 }
