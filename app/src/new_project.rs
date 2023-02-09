@@ -40,7 +40,7 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
             version = "0.1.0"
 
             [dependencies]
-            elements_scripting_interface = { path = "interfaces/elements_scripting_interface" }
+            elements_scripting_interface = "0.0.1"
 
             [lib]
             crate-type = ["cdylib"]
