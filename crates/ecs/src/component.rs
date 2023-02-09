@@ -219,6 +219,10 @@ impl ComponentDesc {
         Self { index, vtable }
     }
 
+    pub fn has_attribute<A: ComponentAttribute>(&self) -> bool {
+        (self.vtable.attributes)(*self).has::<A>()
+    }
+
     pub fn attribute<A: ComponentAttribute>(&self) -> Option<AttributeGuard<A>> {
         let guard = (self.vtable.attributes)(*self);
         MappedRwLockReadGuard::try_map(guard, |store| store.get::<A>()).ok()
@@ -434,7 +438,7 @@ mod test {
 
         assert_eq!(component.path_last(), "foo");
 
-        assert!(component.attribute::<Serializable>().is_some());
+        assert!(component.has_attribute::<Serializable>());
 
         let p = Person { name: "Adam".into(), age: 28 };
         let entry = ComponentEntry::new(person(), p);

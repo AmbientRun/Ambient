@@ -206,7 +206,7 @@ impl WorldChange {
                         let mut ed = EntityData::new();
                         for comp in components {
                             // Only serializable components
-                            if comp.attribute::<Serializable>().is_some() {
+                            if comp.has_attribute::<Serializable>() {
                                 ed.set_entry(world.get_entry(id, comp).unwrap());
                             }
                         }

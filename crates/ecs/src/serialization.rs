@@ -24,8 +24,7 @@ struct SerWorldEntity<'a> {
 }
 impl<'a> Serialize for SerWorldEntity<'a> {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let comps =
-            self.world.get_components(self.id).unwrap().into_iter().filter(|x| x.attribute::<Serializable>().is_some()).collect_vec();
+        let comps = self.world.get_components(self.id).unwrap().into_iter().filter(|x| x.has_attribute::<Serializable>()).collect_vec();
 
         let mut entity = serializer.serialize_map(Some(comps.len()))?;
         for comp in comps {

@@ -140,7 +140,7 @@ impl World {
             let mut entity = world.clone_entity(id).unwrap();
             if serialiable_only {
                 for comp in entity.components() {
-                    if comp.attribute::<Serializable>().is_none() {
+                    if !comp.has_attribute::<Serializable>() {
                         entity.remove_raw(comp);
                     }
                 }

@@ -129,11 +129,11 @@ impl ServerWorldExt for World {
 }
 
 pub fn assert_networked(desc: elements_ecs::ComponentDesc) {
-    if desc.attribute::<Networked>().is_none() {
+    if !desc.has_attribute::<Networked>() {
         panic!("Attempt to access sync {desc:#?} which is not marked as `Networked`. Attributes: {:?}", desc.attributes());
     }
 
-    if desc.attribute::<Serializable>().is_none() {
+    if !desc.has_attribute::<Serializable>() {
         panic!("Sync component {desc:#?} is not serializable. Attributes: {:?}", desc.attributes());
     }
 }
@@ -141,7 +141,7 @@ pub fn assert_networked(desc: elements_ecs::ComponentDesc) {
 fn assert_persisted(desc: elements_ecs::ComponentDesc) {
     assert_networked(desc);
 
-    if desc.attribute::<Store>().is_none() {
+    if !desc.has_attribute::<Store>() {
         panic!("Attempt to access persisted resource {desc:?} which is not `Store`");
     }
 }

@@ -53,7 +53,7 @@ fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
 }
 
 fn is_sync_component(component: ComponentDesc, _: WorldStreamCompEvent) -> bool {
-    component.attribute::<Networked>().is_some()
+    component.has_attribute::<Networked>()
 }
 
 pub fn create_rpc_registry() -> RpcRegistry<GameRpcArgs> {

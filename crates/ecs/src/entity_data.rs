@@ -177,7 +177,7 @@ impl Debug for EntityData {
 
 impl Serialize for EntityData {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let len = self.content.iter().filter(|v| v.attribute::<Serializable>().is_some()).count();
+        let len = self.content.iter().filter(|v| v.has_attribute::<Serializable>()).count();
 
         let mut map = serializer.serialize_map(Some(len))?;
         for entry in self.content.iter() {

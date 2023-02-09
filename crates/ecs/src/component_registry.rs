@@ -164,7 +164,7 @@ impl ComponentRegistry {
 
     /// Returns an iterator over all primitive components that were externally defined and their descs.
     pub fn all_external(&self) -> impl Iterator<Item = &PrimitiveComponent> + '_ {
-        self.all_primitive().filter(|pc| pc.desc.attribute::<External>().is_some())
+        self.all_primitive().filter(|pc| pc.desc.has_attribute::<External>())
     }
 
     pub fn all(&self) -> impl Iterator<Item = ComponentDesc> + '_ {
