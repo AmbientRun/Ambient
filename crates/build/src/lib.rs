@@ -21,6 +21,12 @@ pub mod pipelines;
 /// target  This is the output directory, and is created when building
 /// elements.toml  This is a metadata file to describe the project
 pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, manifest: &ProjectManifest) {
+    log::info!(
+        "Building project `{}` ({})",
+        manifest.project.id,
+        manifest.project.name.as_deref().unwrap_or_else(|| manifest.project.id.as_ref())
+    );
+
     elements_ecs::ComponentRegistry::get_mut().add_external_from_iterator(manifest.all_defined_components(false).unwrap().into_iter());
 
     let target_path = path.join("target");
