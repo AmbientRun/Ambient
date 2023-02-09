@@ -25,6 +25,8 @@ pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, manife
 
     let target_path = path.join("target");
     let assets_path = path.join("assets");
+
+    std::fs::create_dir_all(&target_path).unwrap();
     build_assets(physics, &assets_path, &target_path).await;
     build_scripts(&path, manifest, &target_path).await.unwrap();
 }
