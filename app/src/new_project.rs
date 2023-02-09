@@ -9,6 +9,10 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
     let project_path = if let Some(name) = name { project_path.join(name) } else { project_path.to_owned() };
     let name = project_path.file_name().and_then(|s| s.to_str()).context("project path has no terminating segment")?;
 
+    if project_path.is_dir() && std::fs::read_dir(&project_path)?.next().is_some() {
+        anyhow::bail!("project path {project_path:?} is not empty");
+    }
+
     let id = name.to_case(convert_case::Case::Snake);
     let id = Identifier::new(id).map_err(anyhow::Error::msg)?;
 
