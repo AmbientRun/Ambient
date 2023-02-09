@@ -30,6 +30,7 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
     }.into()
 }
 
+/// Parses your project's manifest and generates components and other boilerplate.
 #[proc_macro]
 pub fn elements_project(input: TokenStream) -> TokenStream {
     let extend_paths: Option<Vec<Vec<String>>> = if input.is_empty() {

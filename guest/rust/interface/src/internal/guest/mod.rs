@@ -3,7 +3,7 @@ use once_cell::sync::Lazy;
 use super::executor::{FrameState, EXECUTOR};
 use crate::Components;
 
-wit_bindgen_guest_rust::export!("src/internal/guest.wit");
+wit_bindgen_guest_rust::export!("wit/guest.wit");
 
 mod conversion;
 

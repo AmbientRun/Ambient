@@ -729,7 +729,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> ChangeQuery<Component
 
     /// The query will return results when these components change values.
     ///
-    /// Note that this does *not* implicitly [requires] the components; this allows you to track
+    /// Note that this does *not* implicitly [Self::requires] the components; this allows you to track
     /// changes for entities that do not have all of the tracked components.
     pub fn track_change(mut self, changes: impl ComponentsTuple) -> Self {
         self.1.extend_from_slice(&changes.as_indices());
