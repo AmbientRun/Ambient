@@ -96,6 +96,7 @@ pub struct World {
     shape_change_events: Option<FramedEvents<WorldChange>>,
     /// Used for reset_events. Prevents change events in queries when you use reset_events
     ignore_query_inits: bool,
+    query_ticker: CloneableAtomicU64,
 }
 impl World {
     pub fn new(name: &'static str) -> Self {
@@ -113,6 +114,7 @@ impl World {
             version: CloneableAtomicU64::new(0),
             shape_change_events: None,
             ignore_query_inits: false,
+            query_ticker: CloneableAtomicU64::new(0),
         };
         if resources {
             world.spawn_mirrored(EntityId::resources(), EntityData::new());

@@ -219,12 +219,6 @@ impl<'a, T: ComponentValue> ComponentQuery<'a> for Component<T> {
         acc.get(world, *self).clone()
     }
 }
-// -- Reduce compile times
-// -- If the user uses such a large query they may consider splitting up the
-// query
-// tuple_impls! { A B C D E F G H I J }
-// tuple_impls! { A B C D E F G H I J K }
-// tuple_impls! { A B C D E F G H I J K L }
 
 impl<'a> ComponentQuery<'a> for () {
     type Data = ();
@@ -244,66 +238,14 @@ impl<T: ComponentValue> ComponentsTupleAppend<T> for () {
     }
 }
 
-// TODO: This will just grow forever, need to figure out something more clever
-// #[derive(Debug, Clone, Copy)]
-// struct EntityMark {
-//     value: u64,
-//     gen: i32,
-// }
-#[derive(Debug, Clone)]
-struct EntityMarker {
-    marks: HashMap<EntityId, u64, EntityIdHashBuilder>,
-}
-impl EntityMarker {
-    fn new() -> Self {
-        Self { marks: HashMap::with_hasher(EntityIdHashBuilder) }
-    }
-    fn prepare_for_query(&mut self, world: &World) {
-        // if self.marks.len() < world.locs.allocated.len() {
-        //     self.marks.resize(world.locs.allocated.len(), Vec::new());
-        // }
-        // for (i, vals) in world.locs.allocated.iter().enumerate() {
-        //     if self.marks[i].len() < vals.len() {
-        //         self.marks[i].resize(vals.len(), EntityMark { value: 0, gen: -1 });
-        //     }
-        // }
-    }
-    /// This returns true if the value hasn't been set for this entity before. I.e.:
-    /// mark(5, 3) -> false
-    /// mark(5, 3) -> true
-    /// mark(5, 4) -> false
-    fn mark(&mut self, id: EntityId, value: u64) -> bool {
-        match self.marks.entry(id) {
-            std::collections::hash_map::Entry::Occupied(mut o) => {
-                if *o.get() == value {
-                    false
-                } else {
-                    *o.get_mut() = value;
-                    true
-                }
-            }
-            std::collections::hash_map::Entry::Vacant(v) => {
-                v.insert(value);
-                true
-            }
-        }
-        // let cell = &mut self.marks[id.namespace as usize][id.id];
-        // let changed = cell.gen != id.gen || cell.value != value;
-        // cell.value = value;
-        // cell.gen = id.gen;
-        // changed
-    }
-}
-
 #[derive(Debug, Clone)]
 pub struct QueryState {
     inited: bool,
     change_readers: SparseVec<SparseVec<FramedEventsReader<EntityId>>>,
     movein_readers: SparseVec<FramedEventsReader<EntityId>>,
     moveout_readers: SparseVec<FramedEventsReader<(EntityId, EntityData)>>,
-    processed: EntityMarker,
-    processed_ticker: u64,
-    spawned: EntityMarker,
+    ticker: u64,
+    entered: HashSet<EntityId>,
     world_version: u64,
     entities: Vec<EntityAccessor>,
 }
@@ -314,9 +256,8 @@ impl QueryState {
             change_readers: SparseVec::new(),
             movein_readers: SparseVec::new(),
             moveout_readers: SparseVec::new(),
-            processed: EntityMarker::new(),
-            processed_ticker: 1,
-            spawned: EntityMarker::new(),
+            ticker: 0,
+            entered: Default::default(),
             world_version: 0,
             entities: Vec::new(),
         }
@@ -332,9 +273,7 @@ impl QueryState {
         self.moveout_readers.get_mut_or_insert_with(arch, FramedEventsReader::new)
     }
     pub(super) fn prepare_for_query(&mut self, world: &World) {
-        self.processed.prepare_for_query(world);
-        self.processed_ticker += 1;
-        self.spawned.prepare_for_query(world);
+        self.ticker = world.query_ticker.0.fetch_add(1, Ordering::SeqCst) + 1;
     }
 }
 
@@ -466,7 +405,7 @@ impl Query {
                         if let Some(loc) = world.locs.get(&entity_id) {
                             if loc.archetype == arch.id
                                 && arch_comp.get_content_version(loc.index) > state.world_version
-                                && state.processed.mark(entity_id, state.processed_ticker)
+                                && arch.query_mark(loc.index, state.ticker)
                             {
                                 state.entities.push(EntityAccessor::World { id: entity_id });
                             }
@@ -481,7 +420,7 @@ impl Query {
             state.entities.extend(self.filter.iter_entities(world));
             for ea in state.entities.iter() {
                 let id = ea.id();
-                state.spawned.mark(id, 1);
+                state.entered.insert(id);
             }
             return;
         }
@@ -491,9 +430,8 @@ impl Query {
             for (_, id) in read.iter(&arch.movein_events) {
                 if let Some(loc) = world.locs.get(id) {
                     if loc.archetype == arch.id {
-                        let spawn = state.spawned.mark(*id, 1);
-                        if spawn {
-                            let process = state.processed.mark(*id, state.processed_ticker);
+                        if state.entered.insert(*id) {
+                            let process = world.archetypes[loc.archetype].query_mark(loc.index, state.ticker);
                             if process {
                                 state.entities.push(EntityAccessor::World { id: *id });
                             }
@@ -504,7 +442,7 @@ impl Query {
             let read = state.get_moveout_reader(arch.id);
             for (_, (id, _)) in read.iter(&arch.moveout_events) {
                 if !self.filter.matches_entity(world, *id) {
-                    state.spawned.mark(*id, 0);
+                    state.entered.remove(id);
                 }
             }
         }
