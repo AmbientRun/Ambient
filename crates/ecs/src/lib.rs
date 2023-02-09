@@ -70,17 +70,29 @@ impl<'a> Debug for DebugWorldArchetypes<'a> {
 }
 
 components!("ecs", {
-    @[Networked, Store, Debuggable]
+    @[
+        Networked, Store, Debuggable,
+        Name["ID"],
+        Description["The ID of the entity"]
+    ]
     id: EntityId,
-    @[Networked, Store, Debuggable]
+    @[
+        Networked, Store, Debuggable,
+        Name["IDs"],
+        Description["A generic list of entity IDs, with no semantic meaning"]
+    ]
     ids: Vec<EntityId>,
-    /// Generic component that indicates the entity shouldn't be stored on disk
-    @[Networked, Store, Debuggable]
+    @[
+        Networked, Store, Debuggable,
+        Name["Don't store"],
+        Description["Indicates that this entity shouldn't be stored on disk"]
+    ]
     dont_store: (),
-
-    /// User-editable entities need to have a `uid` component, so that intent history and selection can
-    /// work, even if the actual entity in the world is destroyed and then re-created
-    @[Networked, Store, Debuggable]
+    @[
+        Networked, Store, Debuggable,
+        Name["UID"],
+        Description["A unique ID that can be used to preserve the identity of an entity, even when it is recreated"]
+    ]
     uid: EntityUid,
     @[Debuggable]
     uid_lookup: UidLookup,

@@ -2,7 +2,9 @@ use std::sync::Arc;
 
 use collider::collider_shapes;
 use elements_core::asset_cache;
-use elements_ecs::{components, query, Debuggable, DynSystem, EntityData, EntityId, FnSystem, Networked, Store, SystemGroup, World};
+use elements_ecs::{
+    components, query, Debuggable, Description, DynSystem, EntityData, EntityId, FnSystem, Name, Networked, Store, SystemGroup, World
+};
 use elements_network::server::{ForkingEvent, ShutdownEvent};
 use elements_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 use glam::{vec3, Mat4, Vec3};
@@ -31,18 +33,38 @@ components!("physics", {
     trigger_areas_scene: PxSceneRef,
     main_controller_manager: PxControllerManagerRef,
     wood_physics_material: PxMaterial,
-    @[Debuggable, Networked, Store]
-    unit_velocity: Vec3,
-    @[Debuggable, Networked, Store]
-    unit_mass: f32,
-    @[Debuggable, Networked, Store]
-    unit_yaw: f32,
     @[Debuggable]
     collisions: Arc<Mutex<Vec<(PxRigidActorRef, PxRigidActorRef)>>>,
-    @[Debuggable, Networked, Store]
+
+    @[
+        Debuggable, Networked, Store,
+        Name["Unit velocity"],
+        Description["The velocity of a character/unit"]
+    ]
+    unit_velocity: Vec3,
+    @[
+        Debuggable, Networked, Store,
+        Name["Unit mass"],
+        Description["The mass of a character/unit"]
+    ]
+    unit_mass: f32,
+    @[
+        Debuggable, Networked, Store,
+        Name["Unit yaw"],
+        Description["The yaw of a character/unit"]
+    ]
+    unit_yaw: f32,
+    @[
+        Debuggable, Networked, Store,
+        Name["Collider loads"],
+        Description["All colliders that were loaded in this physics tick"]
+    ]
     collider_loads: Vec<EntityId>,
-    /// Put this on world.resources to make all physics objects static when loaded
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Make physics static"],
+        Description["When placed on the world's resources, all physics objects will be made static when loaded"]
+    ]
     make_physics_static: bool,
 });
 pub fn init_all_components() {

@@ -10,7 +10,7 @@ use serde::{
 };
 
 use crate::{
-    component_traits::IComponentBuffer, with_component_registry, AttributeGuard, AttributeStoreGuard, AttributeStoreGuardMut, ComponentAttribute, ComponentEntry, ComponentPath, ComponentVTable, Debuggable, Serializable
+    component_traits::IComponentBuffer, with_component_registry, AttributeGuard, AttributeStoreGuard, AttributeStoreGuardMut, ComponentAttribute, ComponentEntry, ComponentPath, ComponentVTable, Debuggable, Description, Name, Serializable
 };
 
 pub trait ComponentValueBase: Send + Sync + Downcast + 'static {
@@ -172,7 +172,7 @@ impl Ord for ComponentDesc {
 }
 
 impl ComponentDesc {
-    /// Returns the fully qualified component path
+    /// The fully qualified component path.
     pub fn path(&self) -> String {
         if let Some(path) = self.vtable.path {
             path.to_string()
@@ -181,7 +181,7 @@ impl ComponentDesc {
         }
     }
 
-    /// Returns the last segment of the component path. Do not use this as a unique identifier; use [Self::path] instead.
+    /// The last segment of the component path. Do not use this as a unique identifier; use [Self::path] instead.
     pub fn path_last(&self) -> String {
         if let Some(path) = self.vtable.path {
             path.rsplit_once("::").map(|v| v.1).unwrap_or(path).into()
@@ -189,6 +189,16 @@ impl ComponentDesc {
             let path = &self.attribute::<ComponentPath>().expect("No path for component").0;
             path.rsplit_once("::").map(|v| v.1).unwrap_or(path).into()
         }
+    }
+
+    /// A human-friendly name, if available. Corresponds to the [Name] attribute.
+    pub fn name(&self) -> Option<String> {
+        Some(self.attribute::<Name>()?.0.clone())
+    }
+
+    /// A human-friendly description, if available. Corresponds to the [Description] attribute.
+    pub fn description(&self) -> Option<String> {
+        Some(self.attribute::<Description>()?.0.clone())
     }
 
     pub fn type_name(&self) -> &'static str {

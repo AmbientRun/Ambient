@@ -5,7 +5,7 @@ use std::sync::{
 use elements_core::{
     asset_cache, gpu_components, gpu_ecs::{GpuComponentFormat, GpuWorldSyncEvent, MappedComponentToGpuSystem}, transform::{inv_local_to_world, local_to_world}
 };
-use elements_ecs::{components, query, Commands, EntityId, Networked, Store, SystemGroup};
+use elements_ecs::{components, query, Commands, Description, EntityId, Name, Networked, Store, SystemGroup};
 use elements_gpu::{
     gpu::{Gpu, GpuKey}, typed_buffer::TypedBuffer
 };
@@ -17,9 +17,17 @@ use parking_lot::Mutex;
 components!("rendering", {
     @[Networked, Store]
     inverse_bind_matrices: Arc<Vec<glam::Mat4>>,
-    @[Networked, Store]
+    @[
+        Networked, Store,
+        Name["Joints"],
+        Description["The joints that compose this skinned mesh"]
+    ]
     joints: Vec<EntityId>,
-    @[Networked, Store]
+    @[
+        Networked, Store,
+        Name["Joint Matrices"],
+        Description["The matrices corresponding to the joints of a skinned mesh"]
+    ]
     joint_matrices: Vec<glam::Mat4>,
 
     skin: Skin,

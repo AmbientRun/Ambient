@@ -5,7 +5,7 @@ use downcast_rs::{impl_downcast, DowncastSync};
 use elements_core::{
     gpu_components, gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldShaderModuleKey, GpuWorldSyncEvent}, mesh, transform::get_world_rotation
 };
-use elements_ecs::{components, query_mut, Debuggable, EntityId, MakeDefault, Networked, Store, SystemGroup, World};
+use elements_ecs::{components, query_mut, Debuggable, Description, EntityId, MakeDefault, Name, Networked, Store, SystemGroup, World};
 use elements_gpu::{
     mesh_buffer::{get_mesh_buffer_types, GpuMesh, MESH_BUFFER_TYPES_WGSL}, shader_module::{BindGroupDesc, Shader, ShaderModule, ShaderModuleIdentifier}, wgsl_utils::wgsl_interpolate
 };
@@ -49,30 +49,72 @@ components!("rendering", {
     gpu_primitives: [GpuRenderPrimitive; MAX_PRIMITIVE_COUNT],
     renderer_shader: Arc<RendererShader>,
     material: SharedMaterial,
-    @[MakeDefault, Debuggable, Networked, Store]
-    overlay: (),
-    @[MakeDefault, Debuggable, Networked, Store]
-    color: Vec4,
     renderer_stats: String,
-    @[MakeDefault, Debuggable, Networked, Store]
+    @[
+        MakeDefault, Debuggable, Networked, Store,
+        Name["Overlay"],
+        Description["Render this entity with an overlay"]
+    ]
+    overlay: (),
+    @[
+        MakeDefault, Debuggable, Networked, Store,
+        Name["Color"],
+        Description["Tints the entity this color if non-zero"]
+    ]
+    color: Vec4,
+    @[
+        MakeDefault, Debuggable, Networked, Store,
+        Name["Double-sided"],
+        Description["Render with double-sided rendering"]
+    ]
     double_sided: bool,
-    @[MakeDefault, Debuggable, Networked, Store]
+    @[
+        MakeDefault, Debuggable, Networked, Store,
+        Name["Cast shadows"],
+        Description["This entity casts shadows"]
+    ]
     cast_shadows: (),
-    /// Higher number is higher priority
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Sun"],
+        Description["Marks this entity as a sun (i.e. its rotation will be used to control the global light direction); higher numbers are higher priority"]
+    ]
     sun: f32,
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Light diffuse"],
+        Description["The diffuse light color of the active sun"]
+    ]
     light_diffuse: Vec3,
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Light ambient"],
+        Description["The ambient light color of the active sun"]
+    ]
     light_ambient: Vec3,
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Fog color"],
+        Description["The color of the global fog"]
+    ]
     fog_color: Vec3,
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Fog height fall-off"],
+        Description["The height at which the global fog will fall off (i.e. stop being visible)"]
+    ]
     fog_height_falloff: f32,
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Fog density"],
+        Description["The density of the global fog"]
+    ]
     fog_density: f32,
-    /// Transparent objects are sorted by (transparency_group, z-depth)
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Transparency group"],
+        Description["Transparent objects are sorted by (transparency_group, z-depth)"]
+    ]
     transparency_group: i32,
 });
 gpu_components! {

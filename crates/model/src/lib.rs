@@ -4,7 +4,9 @@ use async_trait::async_trait;
 use elements_core::{
     asset_cache, async_ecs::{async_run, AsyncRun}, bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere}, hierarchy::{children, despawn_recursive}, main_scene, runtime, transform::{get_world_position, inv_local_to_world, local_to_world, mesh_to_world}
 };
-use elements_ecs::{components, query, ComponentDesc, Debuggable, EntityData, EntityId, Networked, Store, SystemGroup, World};
+use elements_ecs::{
+    components, query, ComponentDesc, Debuggable, Description, EntityData, EntityId, Name, Networked, Store, SystemGroup, World
+};
 use elements_gpu::mesh_buffer::GpuMeshFromUrl;
 use elements_renderer::{
     color, gpu_primitives, materials::{
@@ -38,18 +40,16 @@ components!("model", {
     @[Debuggable, Networked, Store]
     model_def: ModelDef,
 
-
     @[Networked, Store]
     pbr_renderer_primitives_from_url: Vec<PbrRenderPrimitiveFromUrl>,
-    @[Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store, Name["Model animatable"], Description["Controls whether this model can be animated"]]
     model_animatable: bool,
     @[Networked, Store]
     model_skins: Vec<ModelSkin>,
     @[Networked, Store]
     model_skin_ix: usize,
 
-    /// Can be used to detect if the entity has a model spawned on it
-    @[Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store, Name["Model loaded"], Description["Indicates that this enitty has a model spawned on it"]]
     model_loaded: (),
     @[Debuggable, Networked, Store]
     is_model_node: (),

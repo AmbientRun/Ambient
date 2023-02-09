@@ -3,7 +3,7 @@ use std::sync::Arc;
 use elements_core::{
     gpu_components, gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent}, hierarchy::children
 };
-use elements_ecs::{components, query, ArchetypeFilter, Component, Networked, Store, SystemGroup, World};
+use elements_ecs::{components, query, ArchetypeFilter, Component, Description, Name, Networked, Store, SystemGroup, World};
 use elements_gpu::{
     gpu::{Gpu, GpuKey}, mesh_buffer::MeshBuffer, shader_module::{BindGroupDesc, GraphicsPipeline, GraphicsPipelineInfo, Shader}, texture::Texture
 };
@@ -16,10 +16,17 @@ use wgpu::{BindGroup, BindGroupLayoutEntry, BindingType, PrimitiveTopology, Shad
 use super::{FSMain, RendererCollectState, RendererResources, RendererTarget, ShaderModule, TreeRenderer, TreeRendererConfig};
 
 components!("rendering", {
-    @[Networked, Store]
+    @[
+        Networked, Store,
+        Name["Outline"],
+        Description["Render this entity with an outline"]
+    ]
     outline: Vec4,
-    // Outline this entity and make sure all child entities have the same outline
-    @[Networked, Store]
+    @[
+        Networked, Store,
+        Name["Outline (recursive)"],
+        Description["Render this entity with an outline, and make sure all child entities have the same outline"]
+    ]
     outline_recursive: Vec4,
 });
 gpu_components! {

@@ -6,7 +6,7 @@ use elements_core::{
     asset_cache, async_ecs::async_run, runtime, transform::{rotation, scale, translation}
 };
 use elements_ecs::{
-    components, query, Component, ComponentQuery, ComponentValueBase, Debuggable, EntityData, EntityId, MakeDefault, Networked, QueryEvent, QueryState, Store, SystemGroup, TypedReadQuery, World
+    components, query, Component, ComponentQuery, ComponentValueBase, Debuggable, Description, EntityData, EntityId, MakeDefault, Name, Networked, QueryEvent, QueryState, Store, SystemGroup, TypedReadQuery, World
 };
 use elements_editor_derive::ElementEditor;
 use elements_model::model_def;
@@ -31,41 +31,69 @@ fn one() -> f32 {
 }
 
 components!("physics", {
-
-    /// x,y,z is the normal, w is the distance
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Plane collider"],
+        Description["Plane physics collider; x, y, z is the normal, w is the distance"]
+    ]
     plane_collider: (),
-
-    /// x,y,z is the size
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Box collider"],
+        Description["Box physics collider; x, y, z is the size"]
+    ]
     box_collider: Vec3,
-
-    /// The value defines the radius
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Sphere collider"],
+        Description["Sphere physics collider; value is radius"]
+    ]
     sphere_collider: f32,
-
-    /// The value defines the radius
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Collider from URL"],
+        Description["URL-loaded physics collider; value is the URL to load from"]
+    ]
     collider_from_url: String,
-
-
-    @[Debuggable, Networked, Store]
-    dynamic: bool,
 
     @[MakeDefault, Editable, Networked, Store]
     collider: ColliderDef,
-    @[MakeDefault[one], Editable, Networked, Store]
-    density: f32,
     @[MakeDefault, Editable, Networked, Store]
     collider_type: ColliderType,
     collider_shapes: Vec<PxShape>,
     collider_shapes_convex: Vec<PxShape>,
     on_collider_loaded: EventDispatcher<dyn Fn(&mut World, EntityId) + Sync + Send>,
-    @[Debuggable, MakeDefault[one], Editable, Networked, Store]
+
+    @[
+        Debuggable, Networked, Store,
+        Name["Dynamic"],
+        Description["Dynamic = true, static = false"]
+    ]
+    dynamic: bool,
+    @[
+        Debuggable, MakeDefault[one], Editable, Networked, Store,
+        Name["Mass"],
+        Description["The mass of this entity, measured in kilograms"]
+    ]
     mass: f32,
-    @[MakeDefault, Networked, Store]
+    @[
+        MakeDefault[one], Editable, Networked, Store,
+        Name["Density"],
+        Description["The density of this entity; used for rescaling operations"]
+    ]
+    density: f32,
+
+    @[
+        MakeDefault, Networked, Store,
+        Name["Character controller height"],
+        Description["The height of the physics character controller attached to this entity"]
+    ]
     character_controller_height: f32,
-    @[MakeDefault, Networked, Store]
+    @[
+        MakeDefault, Networked, Store,
+        Name["Character controller radius"],
+        Description["The radius of the physics character controller attached to this entity"]
+    ]
     character_controller_radius: f32,
 });
 

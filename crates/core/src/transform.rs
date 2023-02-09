@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use elements_ecs::{
-    components, ensure_has_component, query, query_mut, Debuggable, ECSError, EntityId, FrameEvent, MakeDefault, Networked, QueryState, Store, System, SystemGroup, World
+    components, ensure_has_component, query, query_mut, Debuggable, Description, ECSError, EntityId, FrameEvent, MakeDefault, Name, Networked, QueryState, Store, System, SystemGroup, World
 };
 use glam::*;
 
@@ -14,39 +14,92 @@ fn vec3_one() -> Vec3 {
 }
 
 components!("transform", {
-
-    @[MakeDefault, Debuggable, Networked, Store]
+    @[
+        MakeDefault, Debuggable, Networked, Store,
+        Name["Translation"],
+        Description["The translation/position of this entity"]
+    ]
     translation: Vec3,
-    @[MakeDefault[vec3_one], Debuggable, Networked, Store]
+    @[
+        MakeDefault[vec3_one], Debuggable, Networked, Store,
+        Name["Scale"],
+        Description["The scale of this entity"]
+    ]
     scale: Vec3,
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Rotation"],
+        Description["The rotation of this entity"]
+    ]
     rotation: Quat,
-    @[MakeDefault, Debuggable, Networked, Store]
+    @[
+        MakeDefault, Debuggable, Networked, Store,
+        Name["Euler rotation"],
+        Description["The Euler rotation of this entity in ZYX order."]
+    ]
     euler_rotation: Vec3,
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Look-at center"],
+        Description["The position that this entity should be looking at"]
+    ]
     lookat_center: Vec3,
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Look-at up"],
+        Description["When combined with `lookat_center`, the up vector for this entity"]
+    ]
     lookat_up: Vec3,
 
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Local to World"],
+        Description["Transformation from the entity's local space to worldspace"]
+    ]
     local_to_world: Mat4,
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Inverse Local to World"],
+        Description["Converts a world position to a local position; driven by `local_to_world`"]
+    ]
     inv_local_to_world: Mat4,
 
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Local to Parent"],
+        Description["Transformation from the entity's local space to the parent's space"]
+    ]
     local_to_parent: Mat4,
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Mesh to Local"],
+        Description["Transformation from mesh-space to the entity's local space."]
+    ]
     mesh_to_local: Mat4,
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Mesh to World"],
+        Description["Transformation from mesh-space to world space; driven by `mesh_to_local` and `local_to_world`"]
+    ]
     mesh_to_world: Mat4,
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Spherical billboard"],
+        Description["Ensures that this entity is always aligned with the camera"]
+    ]
     spherical_billboard: (),
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Cylindrical billboard Z"],
+        Description["Ensures this entity is always aligned with the camera, except on the Z-axis; useful for trees and such"]
+    ]
     cylindrical_billboard_z: (),
 
-    /// When this component is applied to a transform hierarchy, the scale will be reset
-    /// at that point (and only rotation/translation considered)
-    @[Debuggable, Networked, Store]
+    @[
+        Debuggable, Networked, Store,
+        Name["Reset scale"],
+        Description["When this component is applied to a transform hierarchy, the scale will be reset at that point (and only rotation/translation considered)"]
+    ]
     reset_scale: (),
 
     // FBX

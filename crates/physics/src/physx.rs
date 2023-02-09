@@ -1,5 +1,5 @@
 use elements_core::transform::{rotation, translation};
-use elements_ecs::{components, query, Debuggable, Networked, Store, SystemGroup};
+use elements_ecs::{components, query, Debuggable, Description, Name, Networked, Store, SystemGroup};
 use elements_std::asset_cache::SyncAssetKey;
 use glam::{Quat, Vec3};
 use physxx::{articulation_reduced_coordinate::*, *};
@@ -17,7 +17,7 @@ components!("physics", {
     articulation_link: PxArticulationLinkRef,
     articulation_cache: Option<PxArticulationCacheRef>,
     character_controller: PxControllerRef,
-    @[Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store, Name["Physics controlled"], Description["Indicates that this entity should be controlled by the physics system"]]
     physics_controlled: (),
 });
 

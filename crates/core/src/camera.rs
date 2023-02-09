@@ -1,5 +1,5 @@
 use elements_ecs::{
-    components, ensure_has_component, query, query_mut, Component, ECSError, EntityData, EntityId, Networked, Store, SystemGroup, World
+    components, ensure_has_component, query, query_mut, Component, Description, ECSError, EntityData, EntityId, Name, Networked, Store, SystemGroup, World
 };
 use elements_std::{
     math::Line, shapes::{BoundingBox, Plane, Ray, AABB}
@@ -22,29 +22,77 @@ pub struct OrthographicRect {
 
 components!("camera", {
     orthographic: OrthographicRect,
-    @[Networked, Store]
+    @[
+        Networked, Store,
+        Name["Perspective-infinite-reverse projection"],
+        Description["This camera will use a perspective-infinite-reverse projection matrix; this is well-suited for rendering large worlds as it has no far plane"]
+    ]
     perspective_infinite_reverse: (),
-    @[Networked, Store]
+    @[
+        Networked, Store,
+        Name["Perspective projection"],
+        Description["This camera will use a standard perspective projection matrix; `near` and `far` must be set"]
+    ]
     perspective: (),
-    @[Networked, Store]
+    @[
+        Networked, Store,
+        Name["Near plane"],
+        Description["The near plane of this camera"]
+    ]
     near: f32,
-    @[Networked, Store]
+    @[
+        Networked, Store,
+        Name["Far plane"],
+        Description["The far plane of this camera"]
+    ]
     far: f32,
-    @[Networked, Store]
+    @[
+        Networked, Store,
+        Name["Field of View Y"],
+        Description["The field of view of this camera in the Y/vertical direction, measured in radians"]
+    ]
     fovy: f32,
-    @[Networked, Store]
+    @[
+        Networked, Store,
+        Name["Aspect ratio"],
+        Description["The aspect ratio of this camera"]
+    ]
     aspect_ratio: f32,
-    @[Networked, Store]
+    @[
+        Networked, Store,
+        Name["Aspect ratio from window"],
+        Description["When set, the aspect_ratio component will be the aspect ratio of the window"]
+    ]
     aspect_ratio_from_window: (),
-    @[Networked, Store]
+    @[
+        Networked, Store,
+        Name["Projection"],
+        Description["The projection matrix of this camera; can be driven by other components"]
+    ]
     projection: glam::Mat4,
-    @[Networked, Store]
+    @[
+        Networked, Store,
+        Name["Projection-view"],
+        Description["The composition of the projection and view (inverse-local-to-world) matrices"]
+    ]
     projection_view: glam::Mat4,
-    @[Networked, Store]
-    active_camera: f32, // Higher value means higher priority
-    @[Networked, Store]
+    @[
+        Networked, Store,
+        Name["Active camera"],
+        Description["The camera being used for rendering; higher value means higher priority"]
+    ]
+    active_camera: f32,
+    @[
+        Networked, Store,
+        Name["Fog"],
+        Description["Whether or not this camera sees fog"]
+    ]
     fog: (),
-    @[Networked, Store]
+    @[
+        Networked, Store,
+        Name["Shadows far plane"],
+        Description["The far plane for the shadow camera"]
+    ]
     shadows_far: f32,
 });
 

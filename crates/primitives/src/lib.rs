@@ -1,7 +1,7 @@
 use elements_core::{
     asset_cache, bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere}, main_scene, mesh, transform::{local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation}
 };
-use elements_ecs::{components, query, EntityData, EntityId, Networked, Store, SystemGroup, World};
+use elements_ecs::{components, query, Description, EntityData, EntityId, Name, Networked, Store, SystemGroup, World};
 use elements_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use elements_gpu::mesh_buffer::GpuMesh;
 pub use elements_meshes::UVSphereMesh;
@@ -15,9 +15,9 @@ use elements_std::{
 use glam::{vec3, Mat4, Quat, Vec3, Vec4};
 
 components!("primitives", {
-    @[Networked, Store]
+    @[Networked, Store, Name["Cube"], Description["Makes the entity it's attached to a cube"]]
     cube: (),
-    @[Networked, Store]
+    @[Networked, Store, Name["Quad"], Description["Makes the entity it's attached to a quad"]]
     quad: (),
     @[Networked, Store]
     sphere: UVSphereMesh,

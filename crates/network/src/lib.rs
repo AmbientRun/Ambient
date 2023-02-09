@@ -5,7 +5,9 @@ use std::{
 
 use bytes::Bytes;
 use client::GameRpcArgs;
-use elements_ecs::{components, query, Component, ComponentValue, Debuggable, EntityId, Networked, Serializable, Store, World};
+use elements_ecs::{
+    components, query, Component, ComponentValue, Debuggable, Description, EntityId, Name, Networked, Serializable, Store, World
+};
 use elements_rpc::{RpcError, RpcRegistry};
 use elements_std::{asset_cache::AssetCache, log_error, log_result};
 use futures::{Future, SinkExt, StreamExt};
@@ -30,16 +32,26 @@ pub mod rpc;
 pub mod server;
 
 pub mod player {
-    use elements_ecs::{components, Networked, Store};
+    use elements_ecs::{components, Description, Name, Networked, Store};
 
     components!("player", {
-        @[Networked, Store]
+        @[
+            Networked, Store,
+            Name["Player"],
+            Description["This entity is a player (note that this is a logical construct; a player's body may be separate from the player itself)"]
+        ]
         player: (),
-        // The identifier of the user. Can be attached to more than just the player;
-        // will also be attached to their sub-entities, like their head and such.
-        @[Networked, Store]
+        @[
+            Networked, Store,
+            Name["User ID"],
+            Description["The user ID. Can be attached to more than just the player; will also be attached to their sub-entities, like their head and such"]
+        ]
         user_id: String,
-        @[Networked, Store]
+        @[
+            Networked, Store,
+            Name["Local user ID"],
+            Description["The user ID of the local player"]
+        ]
         local_user_id: String,
     });
 }
@@ -50,13 +62,25 @@ components!("network", {
     datagram_handlers: DatagramHandlers,
 
     /// Works like `world.resource_entity` for server worlds, except it's also persisted to disk, and synchronized to clients
-    @[Debuggable, Networked]
+    @[
+        Debuggable, Networked,
+        Name["Persistent resources"],
+        Description["Global resources that are persisted to disk and synchronized to clients"]
+    ]
     persistent_resources: (),
     /// Works like `world.resource_entity` for server worlds, except it's synchronized to clients. State is not persisted to disk.
-    @[Debuggable, Networked]
+    @[
+        Debuggable, Networked,
+        Name["Synced resources"],
+        Description["Global resources that are synchronized to clients, but not persisted"]
+    ]
     synced_resources: (),
 
-    @[Debuggable, Networked]
+    @[
+        Debuggable, Networked,
+        Name["Is remote entity"],
+        Description["This entity was not spawned locally (e.g. if this is the client, it was spawned by the server)"]
+    ]
     is_remote_entity: (),
 });
 

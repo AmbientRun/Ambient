@@ -1,5 +1,5 @@
 use elements_core::{camera::*, transform::*, ui_scene, window_logical_size};
-use elements_ecs::{components, query_mut, Networked, Store, SystemGroup, World};
+use elements_ecs::{components, query_mut, Description, Name, Networked, Store, SystemGroup, World};
 use elements_element::{element_component, Element, Hooks};
 use elements_std::shapes::BoundingBox;
 use glam::{Mat4, Quat, Vec3};
@@ -13,7 +13,7 @@ pub mod spherical;
 components!("camera", {
     @[Networked, Store]
     camera_movement_speed: f32,
-    @[Networked, Store]
+    @[Networked, Store, Name["UI Camera"], Description["This camera is used to render UI"]]
     ui_camera: (),
 });
 

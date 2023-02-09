@@ -231,9 +231,31 @@ where
 
 pub(crate) struct ComponentPath(pub String);
 
+/// A user-friendly name annotation, as opposed to the ID. (e.g. "Player Health" vs "player_health").
+#[derive(Clone)]
+pub struct Name(pub String);
+
+impl<T: ComponentValue> AttributeConstructor<T, &'static str> for Name {
+    fn construct(store: &mut AttributeStore, value: &'static str) {
+        store.set(Self(value.to_string()))
+    }
+}
+
+/// A user-friendly description. (e.g. "The player's health from 0 to 1.")
+#[derive(Clone)]
+pub struct Description(pub String);
+
+impl<T: ComponentValue> AttributeConstructor<T, &'static str> for Description {
+    fn construct(store: &mut AttributeStore, value: &'static str) {
+        store.set(Self(value.to_string()))
+    }
+}
+
 impl ComponentAttribute for Serializable {}
 impl ComponentAttribute for Debuggable {}
 impl ComponentAttribute for MakeDefault {}
 impl ComponentAttribute for Store {}
 impl ComponentAttribute for Networked {}
 impl ComponentAttribute for ComponentPath {}
+impl ComponentAttribute for Name {}
+impl ComponentAttribute for Description {}

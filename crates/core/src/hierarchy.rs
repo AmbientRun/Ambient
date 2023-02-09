@@ -1,6 +1,8 @@
 use std::{collections::HashSet, fs::File, path::PathBuf};
 
-use elements_ecs::{components, query, Component, ComponentValue, Debuggable, ECSError, EntityId, Networked, Store, World};
+use elements_ecs::{
+    components, query, Component, ComponentValue, Debuggable, Description, ECSError, EntityId, Name, Networked, Store, World
+};
 use elements_std::{asset_cache::SyncAssetKeyExt, download_asset::AssetsCacheDir};
 use itertools::Itertools;
 use yaml_rust::YamlEmitter;
@@ -8,9 +10,9 @@ use yaml_rust::YamlEmitter;
 use crate::{asset_cache, name};
 
 components!("ecs", {
-    @[Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store, Name["Parent"], Description["The parent of this entity"]]
     parent: EntityId,
-    @[Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store, Name["Children"], Description["The children of this entity"]]
     children: Vec<EntityId>,
 });
 
