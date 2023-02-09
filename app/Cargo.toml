@@ -28,7 +28,7 @@ elements_project = {path = "../crates/project"}
 elements_renderer = {path = "../crates/renderer"}
 elements_debugger = {path = "../crates/debugger"}
 elements_rpc = {path = "../crates/rpc"}
-elements_scripting_host = {path = "../crates/scripting/host"}
+elements_scripting = {path = "../crates/scripting"}
 elements_std = {path = "../crates/std"}
 elements_ui = {path = "../crates/ui"}
 elements_world_audio = {path = "../crates/world_audio"}

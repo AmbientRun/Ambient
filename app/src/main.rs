@@ -178,11 +178,12 @@ fn main() -> anyhow::Result<()> {
             (
                 LevelFilter::Warn,
                 &[
-                    "elements_gpu",
-                    "elements_network",
-                    "elements_model",
                     "elements_build",
+                    "elements_gpu",
+                    "elements_model",
+                    "elements_network",
                     "elements_physics",
+                    "elements_std",
                     "tracing",
                     "wgpu_core",
                     "wgpu_hal",

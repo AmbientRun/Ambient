@@ -1392,7 +1392,7 @@ dependencies = [
  "elements_project",
  "elements_renderer",
  "elements_rpc",
- "elements_scripting_host",
+ "elements_scripting",
  "elements_std",
  "elements_ui",
  "elements_world_audio",
@@ -2112,7 +2112,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "elements_scripting_host"
+name = "elements_scripting"
 version = "0.0.1"
 dependencies = [
  "anyhow",

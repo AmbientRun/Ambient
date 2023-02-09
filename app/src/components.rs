@@ -7,7 +7,7 @@ pub(crate) fn init() -> anyhow::Result<()> {
     elements_app::init_all_components();
     elements_network::init_all_components();
     elements_physics::init_all_components();
-    elements_scripting_host::shared::init_components();
+    elements_scripting::shared::init_components();
     elements_decals::init_components();
     elements_world_audio::init_components();
     elements_primitives::init_components();

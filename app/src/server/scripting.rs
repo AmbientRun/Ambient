@@ -2,7 +2,7 @@ use std::{path::PathBuf, sync::Arc};
 
 use elements_ecs::{components, EntityId, SystemGroup, World};
 use elements_network::server::{ForkingEvent, ShutdownEvent};
-use elements_scripting_host::{
+use elements_scripting::{
     server::bindings::{Bindings as ElementsBindings, WasmServerContext}, shared::{
         host_guest_state::BaseHostGuestState, script_module_bytecode, spawn_script, util::get_module_name, MessageType, ScriptModuleBytecode, ScriptModuleState
     }, Linker, WasiCtx
@@ -24,15 +24,15 @@ pub fn init_all_components() {
 }
 
 pub fn systems() -> SystemGroup {
-    elements_scripting_host::server::systems(script_module_state(), make_wasm_context(), add_to_linker())
+    elements_scripting::server::systems(script_module_state(), make_wasm_context(), add_to_linker())
 }
 
 pub fn on_forking_systems() -> SystemGroup<ForkingEvent> {
-    elements_scripting_host::server::on_forking_systems(script_module_state(), make_wasm_context(), add_to_linker())
+    elements_scripting::server::on_forking_systems(script_module_state(), make_wasm_context(), add_to_linker())
 }
 
 pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
-    elements_scripting_host::server::on_shutdown_systems(script_module_state())
+    elements_scripting::server::on_shutdown_systems(script_module_state())
 }
 
 pub async fn initialize(world: &mut World, project_path: PathBuf, manifest: &elements_project::Manifest) -> anyhow::Result<()> {
@@ -48,7 +48,7 @@ pub async fn initialize(world: &mut World, project_path: PathBuf, manifest: &ele
         log::log!(level, "[{name}] {prefix}: {}", message.strip_suffix('\n').unwrap_or(message));
     });
 
-    elements_scripting_host::server::initialize(
+    elements_scripting::server::initialize(
         world,
         messenger,
         (make_wasm_context(), Arc::new(|ctx, state| WasmServerContext::new(ctx, state))),
