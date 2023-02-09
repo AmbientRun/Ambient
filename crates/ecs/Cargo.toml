@@ -36,3 +36,4 @@ friendly_id.workspace = true
 reqwest.workspace = true
 glam.workspace = true
 rand.workspace = true
+base64.workspace = true

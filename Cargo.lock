@@ -1678,6 +1678,7 @@ version = "0.0.1"
 dependencies = [
  "anyhow",
  "atomic_refcell",
+ "base64",
  "bit-set",
  "bit-vec",
  "derive_more",

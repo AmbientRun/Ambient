@@ -8,7 +8,7 @@ use serde::{
     de::{self, Visitor}, Deserialize, Deserializer, Serialize, Serializer
 };
 
-#[derive(Debug, Clone, Copy, Display, Eq, PartialEq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Clone, Copy, Eq, PartialEq, Hash, PartialOrd, Ord)]
 pub struct EntityId(pub u128);
 impl EntityId {
     pub fn new() -> Self {
@@ -27,12 +27,29 @@ impl EntityId {
         self.0 == 1
     }
     pub fn from_u64s(a: u64, b: u64) -> Self {
-        Self(((a as u128) << 64) + b as u128)
+        let bytes = [a.to_le_bytes(), b.to_le_bytes()].concat();
+        Self(u128::from_le_bytes(bytes.try_into().unwrap()))
     }
     pub fn to_u64s(&self) -> (u64, u64) {
-        let high_byte: u64 = (self.0 >> 64) as u64;
-        let low_byte: u64 = (self.0 & 0xffffffff) as u64;
-        (high_byte, low_byte)
+        let bytes: [u8; 16] = self.0.to_le_bytes();
+        (u64::from_le_bytes(bytes[0..8].try_into().unwrap()), u64::from_le_bytes(bytes[8..].try_into().unwrap()))
+    }
+    pub fn to_base64(&self) -> String {
+        base64::encode_config(self.0.to_le_bytes(), base64::URL_SAFE_NO_PAD)
+    }
+    pub fn from_base64(value: &str) -> Result<Self, base64::DecodeError> {
+        let bytes = base64::decode_config(value, base64::URL_SAFE_NO_PAD)?;
+        Ok(Self(u128::from_le_bytes(bytes.try_into().unwrap())))
+    }
+}
+impl std::fmt::Display for EntityId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.to_base64())
+    }
+}
+impl std::fmt::Debug for EntityId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "EntityId({}, {})", self.to_base64(), self.0)
     }
 }
 impl Default for EntityId {
@@ -41,10 +58,61 @@ impl Default for EntityId {
     }
 }
 impl FromStr for EntityId {
-    type Err = ParseIntError;
+    type Err = base64::DecodeError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(EntityId(s.parse()?))
+        EntityId::from_base64(s)
+    }
+}
+impl Serialize for EntityId {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(&self.to_base64())
+    }
+}
+impl<'de> Deserialize<'de> for EntityId {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct EntityIdVisitor;
+
+        impl<'de> Visitor<'de> for EntityIdVisitor {
+            type Value = EntityId;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("struct EntityId")
+            }
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                EntityId::from_base64(v).map_err(de::Error::custom)
+            }
+        }
+
+        deserializer.deserialize_str(EntityIdVisitor)
+    }
+}
+
+#[test]
+fn test_entity_id_bytes() {
+    for _ in 0..100 {
+        let id = EntityId::new();
+        let (a, b) = id.to_u64s();
+        assert_eq!(id, EntityId::from_u64s(a, b));
+    }
+    let id = EntityId(u128::MAX);
+    let (a, b) = id.to_u64s();
+    assert_eq!(id, EntityId::from_u64s(a, b));
+    let id = EntityId(u128::MIN);
+    let (a, b) = id.to_u64s();
+    assert_eq!(id, EntityId::from_u64s(a, b));
+}
+#[test]
+fn test_entity_id_serialization() {
+    for _ in 0..100 {
+        let id = EntityId::new();
+        assert_eq!(id, serde_json::from_str(&serde_json::to_string(&id).unwrap()).unwrap());
     }
 }
 
