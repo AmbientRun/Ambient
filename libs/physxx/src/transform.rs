@@ -3,11 +3,6 @@ use std::fmt;
 #[derive(Clone, Copy)]
 pub struct PxTransform(pub(crate) physx_sys::PxTransform);
 impl PxTransform {
-    #[deprecated = "Implicitely ignores scale. Consider using `from_translation_rotation` instead"]
-    pub fn from_mat(mat: glam::Mat4) -> Self {
-        let (_, rot, pos) = mat.to_scale_rotation_translation();
-        Self::new(pos, rot)
-    }
     pub fn from_translation(translation: glam::Vec3) -> Self {
         Self(unsafe { physx_sys::PxTransform_new_1(&to_physx_vec3(translation)) })
     }

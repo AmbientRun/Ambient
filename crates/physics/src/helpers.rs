@@ -300,7 +300,12 @@ pub fn weld_two(world: &mut World, first: EntityId, second: EntityId) {
             if can_have_joint(&a1) {
                 joint.set_actors(Some(first_actor), a1);
                 let p0 = joint.get_local_pose(0).to_mat4();
-                joint.set_local_pose(0, &PxTransform::from_mat(first_inv_global * second_global * p0));
+                let pose_matrix = first_inv_global * second_global * p0;
+                let (scale, rotation, translation) = pose_matrix.to_scale_rotation_translation();
+                if (scale.length() - 1.0).abs() > f32::EPSILON {
+                    panic!("Pose matrix had a non-unit scale, which is unsupported by PhysX. E1 {first} | E2 {second} | Scale: {scale:?} | Rotation: {rotation:?} | Translation: {translation:?} | pose_matrix: {pose_matrix:?} | first_inv_global: {first_inv_global:?} | second_global: {second_global:?} | p0: {p0:?}");
+                }
+                joint.set_local_pose(0, &PxTransform::new(translation, rotation));
             } else {
                 let entity = joint.get_user_data::<EntityId>().unwrap();
                 if joint.to_revolute_joint().is_some() {
@@ -313,7 +318,12 @@ pub fn weld_two(world: &mut World, first: EntityId, second: EntityId) {
         } else if can_have_joint(&a0) {
             joint.set_actors(a0, Some(first_actor));
             let p0 = joint.get_local_pose(1).to_mat4();
-            joint.set_local_pose(1, &PxTransform::from_mat(first_inv_global * second_global * p0));
+            let pose_matrix = first_inv_global * second_global * p0;
+            let (scale, rotation, translation) = pose_matrix.to_scale_rotation_translation();
+            if (scale.length() - 1.0).abs() > f32::EPSILON {
+                panic!("Pose matrix had a non-unit scale, which is unsupported by PhysX. E1 {first} | E2 {second} | Scale: {scale:?} | Rotation: {rotation:?} | Translation: {translation:?} | pose_matrix: {pose_matrix:?} | first_inv_global: {first_inv_global:?} | second_global: {second_global:?} | p0: {p0:?}");
+            }
+            joint.set_local_pose(1, &PxTransform::new(translation, rotation));
         } else {
             let entity = joint.get_user_data::<EntityId>().unwrap();
             if joint.to_revolute_joint().is_some() {
@@ -328,7 +338,11 @@ pub fn weld_two(world: &mut World, first: EntityId, second: EntityId) {
     second_actor.release();
     scene.fetch_results(true);
     for (shape, new_local_pose) in shapes.into_iter() {
-        shape.set_local_pose(&PxTransform::from_mat(new_local_pose));
+        let (scale, rotation, translation) = new_local_pose.to_scale_rotation_translation();
+        if (scale.length() - 1.0).abs() > f32::EPSILON {
+            panic!("New local pose had a non-unit scale, which is unsupported by PhysX. E1 {first} | E2 {second} | Scale: {scale:?} | Rotation: {rotation:?} | Translation: {translation:?} | new_local_pose: {new_local_pose:?}");
+        }
+        shape.set_local_pose(&PxTransform::new(translation, rotation));
         if !first_actor.attach_shape(&shape) {
             panic!("Failed to attach shape");
         }
