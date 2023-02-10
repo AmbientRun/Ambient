@@ -4,13 +4,13 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "kiwir [debug]",
+            "name": "kiwi [debug]",
             "cargo": {
                 "args": [
                     "build"
                 ],
                 "filter": {
-                    "name": "kiwir",
+                    "name": "kiwi",
                     "kind": "bin"
                 }
             },
@@ -30,14 +30,14 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "kiwir [release]",
+            "name": "kiwi [release]",
             "cargo": {
                 "args": [
                     "build",
                     "--release"
                 ],
                 "filter": {
-                    "name": "kiwir",
+                    "name": "kiwi",
                     "kind": "bin"
                 }
             },
@@ -52,12 +52,12 @@
             ]
         },
         {
-            "name": "kiwir (Windows, Internal server) [debug]",
+            "name": "kiwi (Windows, Internal server) [debug]",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/target/debug/kiwir.exe",
+            "program": "${workspaceRoot}/target/debug/kiwi.exe",
             "env": {
-                "RUST_LOG": "dims=info,dims_shared=info,kiwir=info"
+                "RUST_LOG": "dims=info,dims_shared=info,kiwi=info"
             },
             "args": [
                 "--internal-server"
