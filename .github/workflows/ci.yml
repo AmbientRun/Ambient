@@ -23,3 +23,5 @@ jobs:
         run: cargo build --workspace
       - name: Run tests
         run: cargo test --workspace
+      - name: Run Clippy (ignoring deprecations)
+        run: cargo clippy --workspace
