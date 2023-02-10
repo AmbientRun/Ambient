@@ -13,7 +13,7 @@ use kiwi_renderer::{
     gpu_primitives, material, materials::flat_material::{get_flat_shader, FlatMaterial}, primitives, renderer_shader, Material, MaterialShader, SharedMaterial, StandardShaderKey, MATERIAL_BIND_GROUP
 };
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, asset_url::AbsAssetUrl, math::SphericalCoords
+    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, asset_url::AbsAssetUrl, friendly_id, math::SphericalCoords
 };
 use wgpu::BindGroup;
 
@@ -41,7 +41,7 @@ impl CustomMaterial {
         let gpu = GpuKey.get(&assets);
         let layout = CustomMaterialShaderKey.get(&assets).shader.first_layout(&assets);
         Self {
-            id: friendly_id::create(),
+            id: friendly_id(),
             bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
                 layout: &layout,
                 entries: &[],

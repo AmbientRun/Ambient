@@ -14,7 +14,7 @@ use kiwi_renderer::{
     gpu_primitives, material, primitives, renderer_shader, Material, MaterialShader, RendererShader, SharedMaterial, StandardShaderKey, MATERIAL_BIND_GROUP
 };
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, color::Color, include_file
+    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, color::Color, friendly_id, include_file
 };
 use wgpu::BindGroup;
 
@@ -185,7 +185,7 @@ impl RectMaterial {
             &[params],
         );
         Self {
-            id: friendly_id::create(),
+            id: friendly_id(),
             bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
                 layout: &layout,
                 entries: &[wgpu::BindGroupEntry {

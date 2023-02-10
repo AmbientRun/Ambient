@@ -6,6 +6,7 @@ pub mod disk_cache;
 pub mod download_asset;
 pub mod encode;
 pub mod fps_counter;
+pub mod id;
 pub mod math;
 pub mod mesh;
 pub mod ordered_glam;
@@ -14,4 +15,5 @@ pub mod sparse_vec;
 pub mod time;
 
 pub use encode::sha256_digest;
+pub use id::friendly_id;
 pub use time::{from_now, pretty_duration, FromDuration, IntoDuration};

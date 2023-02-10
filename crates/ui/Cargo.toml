@@ -30,7 +30,6 @@ parking_lot.workspace = true
 thiserror.workspace = true
 ordered-float.workspace = true
 tokio.workspace = true
-friendly_id.workspace = true
 bytemuck.workspace = true
 convert_case.workspace = true
 anyhow.workspace = true

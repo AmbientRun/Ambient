@@ -1,5 +1,6 @@
 use std::{borrow::Borrow, collections::HashMap, fmt::Display};
 
+use kiwi_std::friendly_id;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -10,7 +11,7 @@ use crate::{query, uid, EntityId, World};
 pub struct EntityUid(pub String);
 impl EntityUid {
     pub fn create() -> Self {
-        Self(friendly_id::create())
+        Self(friendly_id())
     }
 }
 impl Display for EntityUid {

@@ -23,7 +23,6 @@ wgpu.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 bytemuck.workspace = true
-friendly_id.workspace = true
 async-trait.workspace = true
 url.workspace = true
 

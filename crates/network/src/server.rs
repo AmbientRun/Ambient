@@ -11,7 +11,7 @@ use kiwi_ecs::{
     components, dont_store, query, ArchetypeFilter, ComponentDesc, EntityData, EntityId, FrameEvent, System, SystemGroup, World, WorldStream, WorldStreamCompEvent, WorldStreamFilter
 };
 use kiwi_std::{
-    asset_cache::AssetCache, fps_counter::{FpsCounter, FpsSample}, log_result
+    asset_cache::AssetCache, fps_counter::{FpsCounter, FpsSample}, friendly_id, log_result
 };
 use once_cell::sync::OnceCell;
 use parking_lot::Mutex;
@@ -108,7 +108,7 @@ impl Player {
     }
 
     pub fn new_local(instance: String) -> Self {
-        Self { instance, abort_handle: Arc::new(OnceCell::new()), connection_id: friendly_id::create() }
+        Self { instance, abort_handle: Arc::new(OnceCell::new()), connection_id: friendly_id() }
     }
 }
 
@@ -315,7 +315,7 @@ impl GameServer {
 /// Setup the protocol and enter the update loop for a new connected client
 #[tracing::instrument(skip_all)]
 fn run_connection(connection: NewConnection, state: SharedServerState, world_stream_filter: WorldStreamFilter, assets: AssetCache) {
-    let connection_id = friendly_id::create();
+    let connection_id = friendly_id();
     let handle = Arc::new(OnceCell::new());
     handle
         .set({

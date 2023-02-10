@@ -6,7 +6,7 @@ use kiwi_gpu::{
     gpu::{Gpu, GpuKey}, shader_module::{BindGroupDesc, ShaderModule}, std_assets::{DefaultNormalMapViewKey, DefaultSamplerKey, PixelTextureViewKey}, texture::{Texture, TextureView}, texture_loaders::{SplitTextureFromUrl, TextureFromUrl}
 };
 use kiwi_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetUrl}, download_asset::AssetError, include_file
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetUrl}, download_asset::AssetError, friendly_id, include_file
 };
 use serde::{Deserialize, Serialize};
 use wgpu::{util::DeviceExt, BindGroup};
@@ -143,7 +143,7 @@ impl PbrMaterial {
         });
         let sampler = DefaultSamplerKey.get(&assets);
         Self {
-            id: friendly_id::create(),
+            id: friendly_id(),
             bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
                 layout: &layout,
                 entries: &[

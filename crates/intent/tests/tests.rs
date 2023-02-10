@@ -7,6 +7,7 @@ use kiwi_intent::{
     common_intent_systems, intent_registry, logic::{create_intent, push_intent, redo_intent, undo_head}, use_old_state, IntentRegistry
 };
 use kiwi_network::server::{Player, ServerState, SharedServerState, MAIN_INSTANCE_ID};
+use kiwi_std::friendly_id;
 use parking_lot::Mutex;
 use pretty_assertions::assert_eq;
 
@@ -222,7 +223,7 @@ async fn enqueued_collapse() {
     // Create test entities
     let mut values = create_test_entities(&state, &user_id);
 
-    let collapse_id = friendly_id::create();
+    let collapse_id = friendly_id();
 
     let x = push_intent(state.clone(), user_id.clone(), create_intent(intent_add(), 2.0, Some(collapse_id.clone())));
     let y = push_intent(state.clone(), user_id.clone(), create_intent(intent_mul(), 0.5, None));
@@ -339,7 +340,7 @@ async fn enqueue2_redo() {
         world.add_resource(intent_registry(), Arc::new(reg));
     }
 
-    let collapse_id = friendly_id::create();
+    let collapse_id = friendly_id();
 
     // Create test entities
     let mut values = create_test_entities(&state, &user_id);
@@ -442,7 +443,7 @@ async fn undo_push() {
         world.add_resource(intent_registry(), Arc::new(reg));
     }
 
-    let collapse_id = friendly_id::create();
+    let collapse_id = friendly_id();
 
     // Create test entities
     let mut values = create_test_entities(&state, &user_id);
@@ -507,7 +508,7 @@ async fn redo_collapsed() {
         world.add_resource(intent_registry(), Arc::new(reg));
     }
 
-    let collapse_id = friendly_id::create();
+    let collapse_id = friendly_id();
 
     // Create test entities
     let mut values = create_test_entities(&state, &user_id);
@@ -572,7 +573,7 @@ async fn collapse() {
         world.add_resource(intent_registry(), Arc::new(reg));
     }
 
-    let collapse_id = friendly_id::create();
+    let collapse_id = friendly_id();
 
     // Create test entities
     let mut values = create_test_entities(&state, &user_id);

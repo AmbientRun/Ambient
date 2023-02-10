@@ -2,6 +2,7 @@ use std::time::SystemTime;
 
 use kiwi_ecs::{query, Component, ComponentValue, EntityData, EntityId, IndexField, IndexKey, World};
 use kiwi_network::server::SharedServerState;
+use kiwi_std::friendly_id;
 
 use crate::{
     intent, intent_applied, intent_id, intent_index, intent_index_applied, intent_index_reverted, intent_registry, intent_reverted, intent_timestamp, intent_user_id
@@ -41,7 +42,7 @@ pub fn create_intent<T: ComponentValue>(intent_arg: Component<T>, arg: T, collap
         .set(intent(), intent_arg.index())
         .set(intent_timestamp(), SystemTime::now())
         .set(intent_arg, arg)
-        .set(intent_id(), collapse_id.unwrap_or_else(friendly_id::create))
+        .set(intent_id(), collapse_id.unwrap_or_else(friendly_id))
 }
 
 /// Reverts the head intent iff it is the specified intent

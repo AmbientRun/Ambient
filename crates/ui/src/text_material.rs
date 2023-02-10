@@ -5,7 +5,7 @@ use kiwi_gpu::{
 };
 use kiwi_renderer::{Material, MaterialShader, RendererShader, StandardShaderKey, MATERIAL_BIND_GROUP};
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, include_file
+    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, friendly_id, include_file
 };
 use wgpu::BindGroup;
 
@@ -59,7 +59,7 @@ impl TextMaterial {
         let gpu = GpuKey.get(&assets);
         let material = TextMaterialShaderKey.get(&assets);
         Self {
-            id: friendly_id::create(),
+            id: friendly_id(),
             bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
                 layout: &material.shader.first_layout(&assets),
                 entries: &[

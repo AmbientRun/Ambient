@@ -11,7 +11,7 @@ use kiwi_network::{
     client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce}, events::ServerEventRegistry
 };
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt}, Cb
+    asset_cache::{AssetCache, SyncAssetKeyExt}, friendly_id, Cb
 };
 use kiwi_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
 
@@ -267,7 +267,7 @@ fn main() -> anyhow::Result<()> {
         let port = server::start_server(&runtime, assets.clone(), cli.clone(), project_path, manifest.as_ref().expect("no manifest"));
         format!("127.0.0.1:{port}").parse()?
     };
-    let user_id = cli.command.user_id().map(|x| x.to_string()).unwrap_or_else(|| format!("user_{}", friendly_id::create()));
+    let user_id = cli.command.user_id().map(|x| x.to_string()).unwrap_or_else(|| format!("user_{}", friendly_id()));
     let handle = runtime.handle().clone();
     if cli.command.should_run() {
         AppBuilder::simple().ui_renderer(true).with_runtime(runtime).with_asset_cache(assets).run(|app, _runtime| {

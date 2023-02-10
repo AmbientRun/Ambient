@@ -11,7 +11,7 @@ use kiwi_network::client::GameRpcArgs;
 use kiwi_physics::collider::collider;
 use kiwi_rpc::RpcRegistry;
 use kiwi_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetUrl, ServerBaseUrlKey}, download_asset::{AssetError, BytesFromUrl}, unwrap_log_err
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetUrl, ServerBaseUrlKey}, download_asset::{AssetError, BytesFromUrl}, friendly_id, unwrap_log_err
 };
 use serde::{Deserialize, Serialize};
 use tokio::sync::oneshot;
@@ -21,7 +21,7 @@ use tokio::sync::oneshot;
 pub struct MultiEntityUID(EntityUid);
 impl MultiEntityUID {
     pub fn new() -> Self {
-        Self(EntityUid(friendly_id::create()))
+        Self(EntityUid(friendly_id()))
     }
     pub fn get_uid(&self, index: usize) -> EntityUid {
         EntityUid(format!("{}_{}", self.0, index))

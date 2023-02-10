@@ -32,7 +32,6 @@ derive_more = "0.99.11"
 image = "0.24.5"
 itertools = "0.10.3"
 ndarray = { version = "0.15.3", features = ["serde"] }
-friendly_id = "0.3.0"
 rand = "0.8.0"
 glyph_brush = "0.7.4"
 log = "0.4"

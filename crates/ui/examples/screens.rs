@@ -3,6 +3,7 @@ use kiwi_cameras::UICamera;
 use kiwi_core::camera::active_camera;
 use kiwi_ecs::World;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
+use kiwi_std::friendly_id;
 use kiwi_ui::*;
 
 #[derive(Debug, Clone)]
@@ -41,7 +42,7 @@ impl ElementComponent for SubScreen {
     fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
         let Self { on_back } = *self;
         let (screen, set_screen) = hooks.use_state(None);
-        let (id, _) = hooks.use_state_with(|| friendly_id::create());
+        let (id, _) = hooks.use_state_with(friendly_id);
         PageScreen(vec![
             ScreenContainer(screen).el(),
             Text::el(format!("SubScreen {id}")),

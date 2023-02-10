@@ -5,7 +5,7 @@ use kiwi_gpu::{
 };
 use kiwi_renderer::{Material, MaterialShader, RendererShader, SharedMaterial, MATERIAL_BIND_GROUP};
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, include_file
+    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, friendly_id, include_file
 };
 use wgpu::{util::DeviceExt, BindGroup};
 
@@ -71,7 +71,7 @@ impl LoadingMaterial {
             contents: bytemuck::cast_slice(&[params]),
         });
         Self {
-            id: friendly_id::create(),
+            id: friendly_id(),
             bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
                 layout: &layout,
                 entries: &[wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::Buffer(buffer.as_entire_buffer_binding()) }],

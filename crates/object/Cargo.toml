@@ -18,7 +18,6 @@ glam.workspace = true
 serde.workspace = true
 tokio.workspace = true
 thiserror.workspace = true
-friendly_id.workspace = true
 anyhow.workspace = true
 async-trait.workspace = true
 log.workspace = true

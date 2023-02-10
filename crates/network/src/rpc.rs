@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use kiwi_ecs::{query, EntityData, System, WorldDiff};
 use kiwi_rpc::RpcRegistry;
+use kiwi_std::friendly_id;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -31,7 +32,7 @@ pub struct RpcForkInstance {
 /// This clones the current world instance of the player, and returns the id to the new instance.
 pub async fn rpc_fork_instance(args: GameRpcArgs, RpcForkInstance { resources, synced_res, id }: RpcForkInstance) -> String {
     let mut state = args.state.lock();
-    let id = id.unwrap_or(friendly_id::create());
+    let id = id.unwrap_or(friendly_id());
     if !state.instances.contains_key(&id) {
         let new_instance = {
             let instance = state.get_player_world_instance(&args.user_id).unwrap();

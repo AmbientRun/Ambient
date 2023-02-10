@@ -5,6 +5,7 @@ use std::{
 use itertools::Itertools;
 use kiwi_core::hierarchy::{children, parent};
 use kiwi_ecs::{query, Component, EntityData, EntityId, SystemGroup, World};
+use kiwi_std::friendly_id;
 use parking_lot::Mutex;
 use tracing::debug_span;
 
@@ -38,7 +39,7 @@ pub(crate) struct ElementInstance {
 impl ElementInstance {
     pub fn new(config: ElementConfig, parent_entity: Option<EntityId>, element_parent: ElementParent) -> Self {
         Self {
-            id: friendly_id::create(),
+            id: friendly_id(),
             super_: None,
             children: Vec::new(),
             parent: element_parent,

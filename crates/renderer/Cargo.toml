@@ -22,7 +22,6 @@ profiling.workspace = true
 bytemuck.workspace = true
 smallvec.workspace = true
 log.workspace = true
-friendly_id.workspace = true
 parking_lot.workspace = true
 async-trait.workspace = true
 anyhow.workspace = true
