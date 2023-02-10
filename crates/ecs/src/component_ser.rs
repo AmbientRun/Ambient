@@ -1,4 +1,4 @@
-// NOTE(mithun): see explanation in elements/ecs/src/component.rs
+// NOTE(mithun): see explanation in crates/ecs/src/component.rs
 #![allow(clippy::borrowed_box)]
 use std::fmt;
 

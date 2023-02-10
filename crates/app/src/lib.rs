@@ -30,7 +30,7 @@ use crate::renderers::ExamplesRender;
 mod renderers;
 
 fn default_title() -> String {
-    "elements".into()
+    "kiwi".into()
 }
 
 components!("app", {

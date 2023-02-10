@@ -46,7 +46,7 @@ struct Cli {
 
 #[derive(Subcommand, Clone)]
 enum Commands {
-    /// Create a new Elements project
+    /// Create a new Kiwi project
     New { name: Option<String> },
     /// Builds and runs the project locally
     Run {

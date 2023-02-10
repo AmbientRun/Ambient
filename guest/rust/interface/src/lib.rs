@@ -1,5 +1,5 @@
-//! # The Elements Scripting Interface
-//! Welcome to the Elements scripting interface!
+//! # The Kiwi API
+//! Welcome to the Kiwi API!
 #![deny(missing_docs)]
 
 #[allow(missing_docs)]

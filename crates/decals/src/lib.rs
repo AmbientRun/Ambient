@@ -61,7 +61,7 @@ impl SyncAssetKey<Arc<RendererShader>> for DecalShaderKey {
 
 pub fn client_systems() -> SystemGroup {
     SystemGroup::new(
-        "elements/decals_client",
+        "decals_client",
         vec![query(decal().changed()).to_system(|q, world, qs, _| {
             for (id, decal) in q.collect_cloned(world, qs) {
                 let decal = if let Some(url) = decal.abs() {

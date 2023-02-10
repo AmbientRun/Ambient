@@ -39,7 +39,7 @@ pub fn systems<
     let add_to_linker = move |w: &World| w.resource(add_to_linker_component).clone();
 
     SystemGroup::new(
-        "elements/scripting/server",
+        "core/scripting/server",
         vec![
             query((script_module_bytecode(), script_module_enabled().changed())).to_system(
                 move |q, world, qs, _| {
