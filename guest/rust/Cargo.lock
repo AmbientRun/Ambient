@@ -126,7 +126,7 @@ checksum = "6fe2b9d82064e8a0226fddb3547f37f28eaa46d0fc210e275d835f08cf3b76a7"
 
 [[package]]
 name = "interface_macros"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "anyhow",
  "indoc",
@@ -139,7 +139,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_api"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "anyhow",
  "bincode",

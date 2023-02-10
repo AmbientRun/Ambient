@@ -44,7 +44,7 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
             version = "0.1.0"
 
             [dependencies]
-            kiwi_api = "0.0.1"
+            kiwi_api = "0.0.3"
 
             [lib]
             crate-type = ["cdylib"]
