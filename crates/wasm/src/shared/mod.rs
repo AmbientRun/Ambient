@@ -1,10 +1,8 @@
-pub(crate) mod implementation;
-pub mod util;
-
 pub(crate) mod bindings;
 pub mod conversion;
 pub mod guest_conversion;
 pub mod host_guest_state;
+pub(crate) mod implementation;
 pub mod interface;
 
 mod module;
@@ -19,7 +17,6 @@ use kiwi_ecs::{
 use kiwi_project::Identifier;
 pub use module::*;
 use parking_lot::RwLock;
-use util::get_module_name;
 use wasi_common::WasiCtx;
 use wasmtime::Linker;
 
@@ -371,6 +368,10 @@ pub fn spawn_module(
         .set(kiwi_project::description(), description);
 
     Ok(ed.spawn(world))
+}
+
+pub fn get_module_name(world: &World, id: EntityId) -> Identifier {
+    Identifier::new(world.get_cloned(id, kiwi_core::name()).unwrap()).unwrap()
 }
 
 fn run_and_catch_panics<R>(f: impl FnOnce() -> anyhow::Result<R>) -> Result<R, String> {

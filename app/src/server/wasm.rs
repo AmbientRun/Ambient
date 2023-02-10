@@ -4,7 +4,7 @@ use kiwi_ecs::{components, EntityId, SystemGroup, World};
 use kiwi_network::server::{ForkingEvent, ShutdownEvent};
 use kiwi_wasm::{
     server::bindings::{Bindings as ElementsBindings, WasmServerContext}, shared::{
-        host_guest_state::BaseHostGuestState, module_bytecode, spawn_module, util::get_module_name, MessageType, ModuleBytecode, ModuleState
+        get_module_name, host_guest_state::BaseHostGuestState, module_bytecode, spawn_module, MessageType, ModuleBytecode, ModuleState
     }, Linker, WasiCtx
 };
 use parking_lot::RwLock;
