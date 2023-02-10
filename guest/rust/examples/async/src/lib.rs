@@ -1,4 +1,4 @@
-use kiwi_scripting_interface::*;
+use kiwi_api::*;
 
 #[main]
 pub async fn main() -> EventResult {

@@ -1,4 +1,4 @@
-use kiwi_scripting_interface::{
+use kiwi_api::{
     components::core::{
         app::main_scene,
         camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},

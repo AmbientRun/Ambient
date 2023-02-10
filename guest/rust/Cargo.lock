@@ -21,14 +21,14 @@ dependencies = [
 name = "asset_loading"
 version = "0.0.1"
 dependencies = [
- "kiwi_scripting_interface",
+ "kiwi_api",
 ]
 
 [[package]]
 name = "async"
 version = "0.0.1"
 dependencies = [
- "kiwi_scripting_interface",
+ "kiwi_api",
 ]
 
 [[package]]
@@ -138,7 +138,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "kiwi_scripting_interface"
+name = "kiwi_api"
 version = "0.0.1"
 dependencies = [
  "anyhow",
@@ -169,7 +169,7 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 name = "multiplayer"
 version = "0.0.1"
 dependencies = [
- "kiwi_scripting_interface",
+ "kiwi_api",
  "rand",
 ]
 
@@ -273,7 +273,7 @@ dependencies = [
 name = "physics"
 version = "0.0.1"
 dependencies = [
- "kiwi_scripting_interface",
+ "kiwi_api",
 ]
 
 [[package]]
@@ -286,7 +286,7 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 name = "primitives"
 version = "0.0.1"
 dependencies = [
- "kiwi_scripting_interface",
+ "kiwi_api",
 ]
 
 [[package]]
@@ -387,7 +387,7 @@ checksum = "7bd3e3206899af3f8b12af284fafc038cc1dc2b41d1b89dd17297221c5d225de"
 name = "skinmesh"
 version = "0.0.1"
 dependencies = [
- "kiwi_scripting_interface",
+ "kiwi_api",
 ]
 
 [[package]]
@@ -405,7 +405,7 @@ dependencies = [
 name = "tictactoe"
 version = "0.0.1"
 dependencies = [
- "kiwi_scripting_interface",
+ "kiwi_api",
  "palette",
 ]
 

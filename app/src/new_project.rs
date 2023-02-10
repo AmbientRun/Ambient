@@ -44,7 +44,7 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
             version = "0.1.0"
 
             [dependencies]
-            kiwi_scripting_interface = "0.0.1"
+            kiwi_api = "0.0.1"
 
             [lib]
             crate-type = ["cdylib"]
@@ -74,7 +74,7 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
     std::fs::write(
         src.join("lib.rs"),
         indoc! {r#"
-            use kiwi_scripting_interface::*;
+            use kiwi_api::*;
 
             #[main]
             pub async fn main() -> EventResult {
