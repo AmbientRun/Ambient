@@ -3,7 +3,8 @@
 You need [Rust](https://www.rust-lang.org/) to install the Kiwi Runtime. Then run:
 
 ```sh
-cargo install kiwi
+git clone https://github.com/KiwiOrg/Kiwi.git && cd Kiwi
+cargo install --path app
 ```
 
 ## Dependencies: Linux/Ubuntu

@@ -21,7 +21,8 @@ See the [documentation](https://kiwiorg.github.io/Kiwi/) for a getting started g
 ## Installing
 
 ```sh
-cargo install kiwi
+git clone https://github.com/KiwiOrg/Kiwi.git && cd Kiwi
+cargo install --path app
 ```
 
 See [installing](https://kiwiorg.github.io/Kiwi/installing.html) for more details.
