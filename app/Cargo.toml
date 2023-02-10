@@ -1,6 +1,6 @@
 [package]
 edition = "2021"
-name = "kiwir"
+name = "kiwi"
 version.workspace = true
 
 [dependencies]

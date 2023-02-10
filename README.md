@@ -23,7 +23,7 @@ See the [documentation](./docs) for a getting started guide.
 ## Installing
 
 ```sh
-cargo install kiwir
+cargo install kiwi
 ```
 
 See [installing](./docs/src/installing.md) for more details.
@@ -57,9 +57,9 @@ See [installing](./docs/src/installing.md) for more details.
 
 ## Examples
 
-Each example in the [examples](./examples/) directory can be run with the kiwi runtime: `cd examples/hello_world` and then `kiwir run`.
-They can also be run in multiplayer mode; `cd examples/tictactoe` and then `kiwir serve` to start a serve. Anyone can now join
-with `kiwir join [IP_OF_SERVER]`. Note that content is always streamed so the user joining only needs the kiwi cli to join the session.
+Each example in the [examples](./examples/) directory can be run with the kiwi runtime: `cd examples/hello_world` and then `kiwi run`.
+They can also be run in multiplayer mode; `cd examples/tictactoe` and then `kiwi serve` to start a serve. Anyone can now join
+with `kiwi join [IP_OF_SERVER]`. Note that content is always streamed so the user joining only needs the kiwi cli to join the session.
 
 ## Contributing
 
