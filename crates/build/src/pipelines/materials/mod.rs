@@ -3,20 +3,20 @@ use std::{io::Cursor, sync::Arc};
 use anyhow::Context;
 use async_trait::async_trait;
 use dyn_clonable::*;
-use elements_asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt};
-use elements_decals::decal;
-use elements_ecs::EntityData;
-use elements_model_import::{
-    model_crate::{cap_texture_size, ModelCrate}, ModelTextureSize
-};
-use elements_physics::collider::{collider, collider_type};
-use elements_renderer::materials::pbr_material::PbrMaterialFromUrl;
-use elements_std::{
-    asset_url::{AbsAssetUrl, AssetType, AssetUrl}, download_asset::AssetResult
-};
 use futures::{future::BoxFuture, FutureExt};
 use glam::{Vec3, Vec4};
 use image::{ImageOutputFormat, RgbaImage};
+use kiwi_asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt};
+use kiwi_decals::decal;
+use kiwi_ecs::EntityData;
+use kiwi_model_import::{
+    model_crate::{cap_texture_size, ModelCrate}, ModelTextureSize
+};
+use kiwi_physics::collider::{collider, collider_type};
+use kiwi_renderer::materials::pbr_material::PbrMaterialFromUrl;
+use kiwi_std::{
+    asset_url::{AbsAssetUrl, AssetType, AssetUrl}, download_asset::AssetResult
+};
 use serde::{Deserialize, Serialize};
 
 use super::{
@@ -79,8 +79,8 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
                 model_crate.create_object(
                     EntityData::new()
                         .set(decal(), decal_path.into())
-                        .set(collider(), elements_physics::collider::ColliderDef::Box { size: Vec3::ONE, center: Vec3::ZERO })
-                        .set(collider_type(), elements_physics::collider::ColliderType::Picking),
+                        .set(collider(), kiwi_physics::collider::ColliderDef::Box { size: Vec3::ONE, center: Vec3::ZERO })
+                        .set(collider_type(), kiwi_physics::collider::ColliderType::Picking),
                 );
                 let model_url = ctx.write_model_crate(&model_crate, &model_path).await;
                 res.push(OutAsset {

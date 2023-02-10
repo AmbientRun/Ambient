@@ -1,21 +1,21 @@
 [package]
-name = "elements_scripting"
+name = "kiwi_scripting"
 version.workspace = true
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-elements_animation = { path = "../animation" }
-elements_app = { path = "../app" }
-elements_core = { path = "../core" }
-elements_ecs = { path = "../ecs" }
-elements_input = { path = "../input" }
-elements_network = { path = "../network" }
-elements_object = { path = "../object" }
-elements_physics = { path = "../physics" }
-elements_project = { path = "../project" }
-elements_std = { path = "../std" }
+kiwi_animation = { path = "../animation" }
+kiwi_app = { path = "../app" }
+kiwi_core = { path = "../core" }
+kiwi_ecs = { path = "../ecs" }
+kiwi_input = { path = "../input" }
+kiwi_network = { path = "../network" }
+kiwi_object = { path = "../object" }
+kiwi_physics = { path = "../physics" }
+kiwi_project = { path = "../project" }
+kiwi_std = { path = "../std" }
 physxx = { path = "../../libs/physxx" }
 
 anyhow.workspace = true
@@ -44,4 +44,4 @@ wasmtime.workspace = true
 wit-bindgen-host-wasmtime-rust = { git = "https://github.com/bytecodealliance/wit-bindgen.git", rev = "181093b58f49b194ee34be2d986d737f4f553d3d" }
 
 [build-dependencies]
-elements_std = { path = "../std", default-features = false }
+kiwi_std = { path = "../std", default-features = false }

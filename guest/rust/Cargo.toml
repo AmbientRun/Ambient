@@ -8,4 +8,4 @@ members = [
 version = "0.0.1"
 
 [patch.crates-io]
-elements_scripting_interface = { path = "interface" }
+kiwi_scripting_interface = { path = "interface" }

@@ -1,22 +1,22 @@
 
 [package]
-name = "elements_physics"
+name = "kiwi_physics"
 version.workspace = true
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-elements_ecs = { path = "../ecs" }
-elements_element = { path = "../element" }
-elements_ui = { path = "../ui" }
-elements_std = { path = "../std" }
-elements_editor_derive = { path = "../editor_derive" }
-elements_core = { path = "../core" }
-elements_meshes = { path = "../meshes" }
-elements_network = { path = "../network" }
-elements_gizmos = { path = "../gizmos" }
-elements_model = { path = "../model" }
+kiwi_ecs = { path = "../ecs" }
+kiwi_element = { path = "../element" }
+kiwi_ui = { path = "../ui" }
+kiwi_std = { path = "../std" }
+kiwi_editor_derive = { path = "../editor_derive" }
+kiwi_core = { path = "../core" }
+kiwi_meshes = { path = "../meshes" }
+kiwi_network = { path = "../network" }
+kiwi_gizmos = { path = "../gizmos" }
+kiwi_model = { path = "../model" }
 physxx = { path = "../../libs/physxx" }
 serde.workspace = true
 serde_json.workspace = true
@@ -35,7 +35,7 @@ tokio.workspace = true
 log.workspace = true
 
 [dev-dependencies]
-elements_app = { path = "../app" }
-elements_renderer = { path = "../renderer" }
-elements_primitives = { path = "../primitives" }
-elements_cameras = { path = "../cameras" }
+kiwi_app = { path = "../app" }
+kiwi_renderer = { path = "../renderer" }
+kiwi_primitives = { path = "../primitives" }
+kiwi_cameras = { path = "../cameras" }

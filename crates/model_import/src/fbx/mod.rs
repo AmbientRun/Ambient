@@ -3,13 +3,6 @@ use std::{
 };
 
 use anyhow::Context;
-use elements_core::{
-    hierarchy::{children, parent}, transform::local_to_parent
-};
-use elements_ecs::World;
-use elements_model::{model_skins, Model, ModelSkin};
-use elements_renderer::skinning;
-use elements_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use fbxcel::tree::{
     any::AnyTree, v7400::{NodeHandle, Tree}
 };
@@ -17,6 +10,13 @@ use futures::future::join_all;
 use glam::{Mat4, Vec3};
 use indexmap::IndexMap;
 use itertools::Itertools;
+use kiwi_core::{
+    hierarchy::{children, parent}, transform::local_to_parent
+};
+use kiwi_ecs::World;
+use kiwi_model::{model_skins, Model, ModelSkin};
+use kiwi_renderer::skinning;
+use kiwi_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use relative_path::RelativePathBuf;
 
 use self::{
@@ -105,7 +105,7 @@ pub async fn import_from_fbx_reader(
                 });
             }
             world.add_resource(model_skins(), skins);
-            world.add_resource(elements_core::name(), name);
+            world.add_resource(kiwi_core::name(), name);
 
             let roots = doc.models.values_mut().filter_map(|model| if model.is_root { Some(model.id) } else { None }).collect_vec();
 

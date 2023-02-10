@@ -1,20 +1,20 @@
 use std::f32::consts::PI;
 
-use elements_app::AppBuilder;
-use elements_core::{
+use glam::*;
+use kiwi_app::AppBuilder;
+use kiwi_core::{
     asset_cache, camera::active_camera, main_scene, transform::{rotation, scale, translation}
 };
-use elements_decals::DecalShaderKey;
-use elements_ecs::World;
-use elements_element::ElementComponentExt;
-use elements_primitives::{Cube, Quad};
-use elements_renderer::{
+use kiwi_decals::DecalShaderKey;
+use kiwi_ecs::World;
+use kiwi_element::ElementComponentExt;
+use kiwi_primitives::{Cube, Quad};
+use kiwi_renderer::{
     cast_shadows, color, material, materials::{
         flat_material::FlatMaterial, pbr_material::{PbrMaterial, PbrMaterialShaderKey}
     }, renderer_shader, SharedMaterial
 };
-use elements_std::{asset_cache::SyncAssetKeyExt, math::SphericalCoords};
-use glam::*;
+use kiwi_std::{asset_cache::SyncAssetKeyExt, math::SphericalCoords};
 
 fn init(world: &mut World) {
     Cube.el().set(color(), vec4(0.5, 0.5, 0.5, 1.)).set(translation(), Vec3::Z).set_default(cast_shadows()).spawn_static(world);
@@ -36,7 +36,7 @@ fn init(world: &mut World) {
         .set(material(), transparent)
         .spawn_static(world);
 
-    elements_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
+    kiwi_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
         .set(active_camera(), 0.)
         .set(main_scene(), ())
         .spawn(world);

@@ -21,14 +21,14 @@ dependencies = [
 name = "asset_loading"
 version = "0.0.1"
 dependencies = [
- "elements_scripting_interface",
+ "kiwi_scripting_interface",
 ]
 
 [[package]]
 name = "async"
 version = "0.0.1"
 dependencies = [
- "elements_scripting_interface",
+ "kiwi_scripting_interface",
 ]
 
 [[package]]
@@ -57,22 +57,6 @@ name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
-
-[[package]]
-name = "elements_scripting_interface"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "bincode",
- "glam",
- "interface_macros",
- "once_cell",
- "paste",
- "rand",
- "serde",
- "wasi",
- "wit-bindgen-guest-rust",
-]
 
 [[package]]
 name = "find-crate"
@@ -154,6 +138,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "kiwi_scripting_interface"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "bincode",
+ "glam",
+ "interface_macros",
+ "once_cell",
+ "paste",
+ "rand",
+ "serde",
+ "wasi",
+ "wit-bindgen-guest-rust",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.139"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -169,7 +169,7 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 name = "multiplayer"
 version = "0.0.1"
 dependencies = [
- "elements_scripting_interface",
+ "kiwi_scripting_interface",
  "rand",
 ]
 
@@ -273,7 +273,7 @@ dependencies = [
 name = "physics"
 version = "0.0.1"
 dependencies = [
- "elements_scripting_interface",
+ "kiwi_scripting_interface",
 ]
 
 [[package]]
@@ -286,7 +286,7 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 name = "primitives"
 version = "0.0.1"
 dependencies = [
- "elements_scripting_interface",
+ "kiwi_scripting_interface",
 ]
 
 [[package]]
@@ -387,7 +387,7 @@ checksum = "7bd3e3206899af3f8b12af284fafc038cc1dc2b41d1b89dd17297221c5d225de"
 name = "skinmesh"
 version = "0.0.1"
 dependencies = [
- "elements_scripting_interface",
+ "kiwi_scripting_interface",
 ]
 
 [[package]]
@@ -405,7 +405,7 @@ dependencies = [
 name = "tictactoe"
 version = "0.0.1"
 dependencies = [
- "elements_scripting_interface",
+ "kiwi_scripting_interface",
  "palette",
 ]
 

@@ -43,7 +43,7 @@ fn main() {
                 .unwrap();
 
             let target_path =
-                elements_std::path::normalize(&working_dir.join(target_wit_dir.join(filename)));
+                kiwi_std::path::normalize(&working_dir.join(target_wit_dir.join(filename)));
 
             let absolute_path_relative_to_common: PathBuf = {
                 let mut target_path_it = target_path.iter();

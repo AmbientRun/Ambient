@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
-use elements_ecs::{
+use itertools::Itertools;
+use kiwi_ecs::{
     query, uid, Component, ComponentEntry, EntityData, EntityId, FnSystem, SystemGroup, World,
 };
-use elements_network::server::{ForkingEvent, ShutdownEvent};
-use elements_physics::{collider_loads, collisions, PxShapeUserData};
-use itertools::Itertools;
+use kiwi_network::server::{ForkingEvent, ShutdownEvent};
+use kiwi_physics::{collider_loads, collisions, PxShapeUserData};
 use parking_lot::RwLock;
 use physxx::{PxRigidActor, PxRigidActorRef, PxUserData};
 use wasi_common::WasiCtx;
@@ -99,7 +99,7 @@ pub fn systems<
                         &ScriptContext::new(
                             world,
                             "core/collision",
-                            vec![ComponentEntry::new(elements_ecs::ids(), ids)].into(),
+                            vec![ComponentEntry::new(kiwi_ecs::ids(), ids)].into(),
                         ),
                     );
                 }
@@ -118,7 +118,7 @@ pub fn systems<
                         &ScriptContext::new(
                             world,
                             "core/collider_load",
-                            vec![ComponentEntry::new(elements_ecs::id(), id)].into(),
+                            vec![ComponentEntry::new(kiwi_ecs::id(), id)].into(),
                         ),
                     );
                 }
@@ -133,8 +133,8 @@ pub fn systems<
                             world,
                             "core/entity_spawn",
                             vec![
-                                ComponentEntry::new(elements_ecs::id(), id),
-                                ComponentEntry::new(elements_ecs::uid(), uid),
+                                ComponentEntry::new(kiwi_ecs::id(), id),
+                                ComponentEntry::new(kiwi_ecs::uid(), uid),
                             ]
                             .into(),
                         ),

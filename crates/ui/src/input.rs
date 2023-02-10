@@ -2,15 +2,15 @@ use std::{
     self, f32::consts::E, fmt::Debug, hash::Hash, str::FromStr, sync::Arc, time::{Duration, SystemTime}
 };
 
-use elements_core::{mouse_position, on_event, transform::translation, window, window_scale_factor};
-use elements_ecs::{ComponentValue, EntityId, World};
-use elements_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
-use elements_input::MouseButton;
-use elements_std::{
-    events::EventDispatcher, math::{interpolate, interpolate_clamped, Saturate}, Cb
-};
 use glam::*;
 use itertools::Itertools;
+use kiwi_core::{mouse_position, on_event, transform::translation, window, window_scale_factor};
+use kiwi_ecs::{ComponentValue, EntityId, World};
+use kiwi_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
+use kiwi_input::MouseButton;
+use kiwi_std::{
+    events::EventDispatcher, math::{interpolate, interpolate_clamped, Saturate}, Cb
+};
 use winit::{
     event::{ElementState, Event, WindowEvent}, window::CursorIcon
 };
@@ -312,7 +312,7 @@ impl ElementComponent for Slider {
                         let scale_factor = *world.resource(window_scale_factor());
                         let mouse_pos = *world.resource(mouse_position()) / scale_factor as f32;
 
-                        let screen_to_local = world.get(id, elements_core::transform::mesh_to_world()).unwrap_or_default().inverse();
+                        let screen_to_local = world.get(id, kiwi_core::transform::mesh_to_world()).unwrap_or_default().inverse();
                         let mouse_pos_relative = screen_to_local * Vec4::from((mouse_pos, 0.0, 1.0));
 
                         on_change_factor((mouse_pos_relative.x / slider_width).saturate());
@@ -388,8 +388,8 @@ impl From<&EditableDuration> for Duration {
     }
 }
 use convert_case::{Case, Casing};
-use elements_renderer::color;
-use elements_std::time::parse_duration;
+use kiwi_renderer::color;
+use kiwi_std::time::parse_duration;
 
 impl From<String> for EditableDuration {
     fn from(s: String) -> Self {

@@ -4,15 +4,15 @@ use std::{
 
 use anyhow::bail;
 use bytes::Bytes;
-use elements_core::{asset_cache, no_sync};
-use elements_ecs::{
-    components, dont_store, query, ArchetypeFilter, ComponentDesc, EntityData, EntityId, FrameEvent, System, SystemGroup, World, WorldStream, WorldStreamCompEvent, WorldStreamFilter
-};
-use elements_std::{
-    asset_cache::AssetCache, fps_counter::{FpsCounter, FpsSample}, log_result
-};
 use flume::Sender;
 use futures::StreamExt;
+use kiwi_core::{asset_cache, no_sync};
+use kiwi_ecs::{
+    components, dont_store, query, ArchetypeFilter, ComponentDesc, EntityData, EntityId, FrameEvent, System, SystemGroup, World, WorldStream, WorldStreamCompEvent, WorldStreamFilter
+};
+use kiwi_std::{
+    asset_cache::AssetCache, fps_counter::{FpsCounter, FpsSample}, log_result
+};
 use once_cell::sync::OnceCell;
 use parking_lot::Mutex;
 use quinn::{Endpoint, Incoming, NewConnection, RecvStream, SendStream};
@@ -88,7 +88,7 @@ impl WorldInstance {
         query((player(),)).iter(&self.world, None).count()
     }
     pub fn step(&mut self, time: Duration) {
-        self.world.set(self.world.resource_entity(), elements_core::time(), time).unwrap();
+        self.world.set(self.world.resource_entity(), kiwi_core::time(), time).unwrap();
         self.systems.run(&mut self.world, &FrameEvent);
         self.world.next_frame();
     }

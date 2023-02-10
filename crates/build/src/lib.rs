@@ -2,12 +2,12 @@ use std::{
     path::{Path, PathBuf}, sync::Arc
 };
 
-use elements_asset_cache::{AssetCache, SyncAssetKeyExt};
-use elements_physics::physx::{Physics, PhysicsKey};
-use elements_project::Manifest as ProjectManifest;
-use elements_std::asset_url::AbsAssetUrl;
 use futures::FutureExt;
 use itertools::Itertools;
+use kiwi_asset_cache::{AssetCache, SyncAssetKeyExt};
+use kiwi_physics::physx::{Physics, PhysicsKey};
+use kiwi_project::Manifest as ProjectManifest;
+use kiwi_std::asset_url::AbsAssetUrl;
 use pipelines::{ProcessCtx, ProcessCtxKey};
 use walkdir::WalkDir;
 
@@ -27,7 +27,7 @@ pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, manife
         manifest.project.name.as_deref().unwrap_or_else(|| manifest.project.id.as_ref())
     );
 
-    elements_ecs::ComponentRegistry::get_mut().add_external_from_iterator(manifest.all_defined_components(false).unwrap().into_iter());
+    kiwi_ecs::ComponentRegistry::get_mut().add_external_from_iterator(manifest.all_defined_components(false).unwrap().into_iter());
 
     let target_path = path.join("target");
     let assets_path = path.join("assets");
@@ -97,8 +97,8 @@ async fn build_scripts(path: &Path, manifest: &ProjectManifest, target_path: &Pa
         None => anyhow::bail!("No [package] present in Cargo.toml for project {}", manifest.project.id.as_ref()),
     }
 
-    let rust_path = elements_std::path::normalize(&std::env::current_dir()?.join("rust"));
-    let rustc = elements_rustc::Rust::install_or_get(&rust_path).await?;
+    let rust_path = kiwi_std::path::normalize(&std::env::current_dir()?.join("rust"));
+    let rustc = kiwi_rustc::Rust::install_or_get(&rust_path).await?;
     let bytecode = rustc.build(path, manifest.project.id.as_ref())?;
 
     tokio::fs::write(target_path.join(format!("{}.wasm", manifest.project.id)), bytecode).await?;

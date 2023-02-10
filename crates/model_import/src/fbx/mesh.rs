@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
-use elements_std::mesh::Mesh;
 use fbxcel::tree::v7400::NodeHandle;
 use glam::{uvec4, vec2, vec3, vec4, Mat4, Vec2, Vec3};
 use indexmap::IndexMap;
 use itertools::Itertools;
+use kiwi_std::mesh::Mesh;
 
 use super::{read_matrix, FbxGlobalSettings};
 

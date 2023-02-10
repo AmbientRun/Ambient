@@ -1,18 +1,18 @@
-use elements_core::{
+use glam::{vec3, Mat4, Quat, Vec3, Vec4};
+use kiwi_core::{
     asset_cache, bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere}, main_scene, mesh, transform::{local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation}
 };
-use elements_ecs::{components, query, Description, EntityData, EntityId, Name, Networked, Store, SystemGroup, World};
-use elements_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use elements_gpu::mesh_buffer::GpuMesh;
-pub use elements_meshes::UVSphereMesh;
-use elements_meshes::{CubeMeshKey, QuadMeshKey};
-use elements_renderer::{
+use kiwi_ecs::{components, query, Description, EntityData, EntityId, Name, Networked, Store, SystemGroup, World};
+use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use kiwi_gpu::mesh_buffer::GpuMesh;
+pub use kiwi_meshes::UVSphereMesh;
+use kiwi_meshes::{CubeMeshKey, QuadMeshKey};
+use kiwi_renderer::{
     color, gpu_primitives, material, materials::flat_material::{get_flat_shader, FlatMaterialKey}, primitives, renderer_shader
 };
-use elements_std::{
+use kiwi_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt}, mesh::Mesh, shapes::{Sphere, AABB}
 };
-use glam::{vec3, Mat4, Quat, Vec3, Vec4};
 
 components!("primitives", {
     @[Networked, Store, Name["Cube"], Description["If attached to an entity, the entity will be converted to a cube primitive."]]

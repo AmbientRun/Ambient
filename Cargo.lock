@@ -1359,869 +1359,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "90e5c1c8368803113bf0c9584fc495a58b86dc8a29edbf8fe877d21d9507e797"
 
 [[package]]
-name = "elements_animation"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "async-trait",
- "convert_case 0.6.0",
- "derive_more",
- "elements_core",
- "elements_ecs",
- "elements_editor_derive",
- "elements_element",
- "elements_model",
- "elements_std",
- "elements_ui",
- "glam 0.22.0",
- "itertools",
- "ordered-float 2.10.0",
- "serde",
-]
-
-[[package]]
-name = "elements_app"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "elements_animation",
- "elements_cameras",
- "elements_core",
- "elements_ecs",
- "elements_element",
- "elements_gizmos",
- "elements_gpu",
- "elements_input",
- "elements_model",
- "elements_primitives",
- "elements_renderer",
- "elements_std",
- "elements_ui",
- "glam 0.22.0",
- "parking_lot",
- "profiling 1.0.6",
- "puffin",
- "puffin_http",
- "thread-priority",
- "tokio",
- "tracing",
- "wgpu",
- "winit",
-]
-
-[[package]]
-name = "elements_asset_cache"
-version = "0.0.1"
-dependencies = [
- "abort-on-drop",
- "anyhow",
- "as-any",
- "async-trait",
- "chrono",
- "futures",
- "itertools",
- "parking_lot",
- "pin-project",
- "pretty_assertions",
- "serde",
- "thiserror",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "elements_asset_timeline"
-version = "0.0.1"
-dependencies = [
- "async-trait",
- "chrono",
- "elements_app",
- "elements_cameras",
- "elements_core",
- "elements_ecs",
- "elements_element",
- "elements_model",
- "elements_renderer",
- "elements_std",
- "elements_ui",
- "env_logger 0.9.3",
- "glam 0.22.0",
- "itertools",
- "tokio",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "elements_audio"
-version = "0.0.1"
-dependencies = [
- "approx",
- "async-trait",
- "byteorder",
- "circular-queue",
- "color-eyre",
- "cpal",
- "dashmap",
- "derivative",
- "derive_more",
- "elements_std",
- "elements_ui",
- "flume",
- "glam 0.22.0",
- "hound",
- "itertools",
- "lewton",
- "log",
- "lyon",
- "macroquad",
- "num",
- "ordered-float 2.10.0",
- "parking_lot",
- "pretty_assertions",
- "rand",
- "rand_chacha",
- "rayon",
- "rustfft",
- "serde",
- "slotmap",
- "static_assertions",
- "thiserror",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "elements_build"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "async-recursion",
- "async-trait",
- "cargo_toml",
- "convert_case 0.6.0",
- "dyn-clonable",
- "elements_asset_cache",
- "elements_core",
- "elements_decals",
- "elements_ecs",
- "elements_model",
- "elements_model_import",
- "elements_physics",
- "elements_project",
- "elements_renderer",
- "elements_rustc",
- "elements_std",
- "elements_world_audio",
- "futures",
- "glam 0.22.0",
- "glob",
- "image",
- "itertools",
- "log",
- "parking_lot",
- "relative-path",
- "serde",
- "serde_json",
- "slugify",
- "tokio",
- "tracing",
- "unity_parser",
- "walkdir",
- "yaml-rust-davvid",
-]
-
-[[package]]
-name = "elements_cameras"
-version = "0.0.1"
-dependencies = [
- "derive_more",
- "elements_core",
- "elements_ecs",
- "elements_element",
- "elements_std",
- "glam 0.22.0",
- "winit",
-]
-
-[[package]]
-name = "elements_core"
-version = "0.0.1"
-dependencies = [
- "bytemuck",
- "derive_more",
- "elements_ecs",
- "elements_gpu",
- "elements_std",
- "flume",
- "glam 0.22.0",
- "itertools",
- "lazy_static",
- "log",
- "maplit",
- "ordered-float 2.10.0",
- "parking_lot",
- "paste",
- "profiling 1.0.6",
- "tokio",
- "wgpu",
- "winit",
- "yaml-rust-davvid",
-]
-
-[[package]]
-name = "elements_curve"
-version = "0.0.1"
-dependencies = [
- "elements_std",
- "glam 0.22.0",
-]
-
-[[package]]
-name = "elements_debugger"
-version = "0.0.1"
-dependencies = [
- "elements_core",
- "elements_ecs",
- "elements_element",
- "elements_element_component",
- "elements_gizmos",
- "elements_gpu",
- "elements_network",
- "elements_renderer",
- "elements_rpc",
- "elements_std",
- "elements_ui",
- "glam 0.22.0",
- "log",
- "wgpu",
- "winit",
-]
-
-[[package]]
-name = "elements_decals"
-version = "0.0.1"
-dependencies = [
- "elements_app",
- "elements_asset_cache",
- "elements_cameras",
- "elements_core",
- "elements_ecs",
- "elements_element",
- "elements_gpu",
- "elements_meshes",
- "elements_primitives",
- "elements_renderer",
- "elements_std",
- "elements_ui",
- "env_logger 0.9.3",
- "glam 0.22.0",
- "log",
-]
-
-[[package]]
-name = "elements_ecs"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "atomic_refcell",
- "base64",
- "bit-set",
- "bit-vec",
- "derive_more",
- "downcast-rs",
- "elements_std",
- "erased-serde",
- "friendly_id",
- "glam 0.22.0",
- "itertools",
- "lazy_static",
- "log",
- "once_cell",
- "parking_lot",
- "paste",
- "profiling 1.0.6",
- "rand",
- "reqwest",
- "serde",
- "serde_json",
- "serde_yaml",
- "smallvec",
- "thiserror",
- "tokio",
- "yaml-rust-davvid",
-]
-
-[[package]]
-name = "elements_ecs_editor"
-version = "0.0.1"
-dependencies = [
- "elements_app",
- "elements_cameras",
- "elements_core",
- "elements_ecs",
- "elements_element",
- "elements_renderer",
- "elements_std",
- "elements_ui",
- "env_logger 0.9.3",
- "glam 0.22.0",
- "itertools",
-]
-
-[[package]]
-name = "elements_editor_derive"
-version = "0.0.1"
-dependencies = [
- "convert_case 0.6.0",
- "elements_ui",
- "itertools",
- "pretty_assertions",
- "proc-macro-crate",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "elements_element"
-version = "0.0.1"
-dependencies = [
- "as-any",
- "atomic_refcell",
- "closure",
- "derivative",
- "dyn-clonable",
- "elements_core",
- "elements_ecs",
- "elements_element_component",
- "elements_std",
- "friendly_id",
- "futures",
- "itertools",
- "parking_lot",
- "profiling 1.0.6",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "elements_element_component"
-version = "0.0.1"
-dependencies = [
- "itertools",
- "proc-macro-crate",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "elements_gizmos"
-version = "0.0.1"
-dependencies = [
- "bytemuck",
- "dashmap",
- "elements_app",
- "elements_cameras",
- "elements_core",
- "elements_ecs",
- "elements_gpu",
- "elements_meshes",
- "elements_renderer",
- "elements_std",
- "glam 0.22.0",
- "log",
- "once_cell",
- "profiling 1.0.6",
- "serde",
- "wgpu",
-]
-
-[[package]]
-name = "elements_gpu"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "async-trait",
- "bytemuck",
- "byteorder",
- "elements_std",
- "futures",
- "glam 0.22.0",
- "image",
- "itertools",
- "log",
- "ndarray",
- "ordered-float 2.10.0",
- "parking_lot",
- "thiserror",
- "tokio",
- "tracing",
- "wgpu",
- "winit",
-]
-
-[[package]]
-name = "elements_input"
-version = "0.0.1"
-dependencies = [
- "elements_core",
- "elements_ecs",
- "elements_std",
- "glam 0.22.0",
- "serde",
- "tracing",
- "winit",
-]
-
-[[package]]
-name = "elements_intent"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "atomic_refcell",
- "elements_ecs",
- "elements_editor_derive",
- "elements_element",
- "elements_network",
- "elements_rpc",
- "elements_std",
- "elements_ui",
- "friendly_id",
- "futures",
- "itertools",
- "parking_lot",
- "pretty_assertions",
- "profiling 1.0.6",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "elements_meshes"
-version = "0.0.1"
-dependencies = [
- "elements_gpu",
- "elements_std",
- "glam 0.22.0",
- "serde",
-]
-
-[[package]]
-name = "elements_model"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "async-trait",
- "bytemuck",
- "elements_core",
- "elements_ecs",
- "elements_editor_derive",
- "elements_gpu",
- "elements_meshes",
- "elements_renderer",
- "elements_std",
- "elements_ui",
- "friendly_id",
- "futures",
- "glam 0.22.0",
- "itertools",
- "serde",
- "tokio",
- "tracing",
- "url",
- "wgpu",
-]
-
-[[package]]
-name = "elements_model_import"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "async-recursion",
- "async-trait",
- "base64",
- "bincode",
- "bytemuck",
- "elements_animation",
- "elements_app",
- "elements_cameras",
- "elements_core",
- "elements_ecs",
- "elements_editor_derive",
- "elements_element",
- "elements_gizmos",
- "elements_model",
- "elements_physics",
- "elements_primitives",
- "elements_renderer",
- "elements_std",
- "elements_ui",
- "env_logger 0.9.3",
- "fbxcel",
- "futures",
- "glam 0.22.0",
- "gltf",
- "image",
- "indexmap",
- "itertools",
- "log",
- "ordered-float 2.10.0",
- "physxx",
- "relative-path",
- "reqwest",
- "russimp",
- "serde",
- "serde_json",
- "tokio",
- "winit",
-]
-
-[[package]]
-name = "elements_network"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "bincode",
- "bytes",
- "dashmap",
- "elements_app",
- "elements_core",
- "elements_ecs",
- "elements_element",
- "elements_gizmos",
- "elements_gpu",
- "elements_renderer",
- "elements_rpc",
- "elements_std",
- "elements_ui",
- "flume",
- "friendly_id",
- "futures",
- "glam 0.22.0",
- "itertools",
- "log",
- "manual_future",
- "once_cell",
- "parking_lot",
- "profiling 1.0.6",
- "quinn",
- "rand",
- "rustls",
- "serde",
- "thiserror",
- "tokio",
- "tokio-util",
- "tracing",
- "wgpu",
- "winit",
-]
-
-[[package]]
-name = "elements_object"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "async-trait",
- "elements_core",
- "elements_decals",
- "elements_ecs",
- "elements_model",
- "elements_network",
- "elements_physics",
- "elements_rpc",
- "elements_std",
- "friendly_id",
- "glam 0.22.0",
- "log",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
-]
-
-[[package]]
-name = "elements_physics"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "async-trait",
- "elements_app",
- "elements_cameras",
- "elements_core",
- "elements_ecs",
- "elements_editor_derive",
- "elements_element",
- "elements_gizmos",
- "elements_meshes",
- "elements_model",
- "elements_network",
- "elements_primitives",
- "elements_renderer",
- "elements_std",
- "elements_ui",
- "futures",
- "glam 0.22.0",
- "itertools",
- "log",
- "once_cell",
- "ordered-float 2.10.0",
- "parking_lot",
- "physxx",
- "profiling 1.0.6",
- "rand",
- "serde",
- "serde_json",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "elements_primitives"
-version = "0.0.1"
-dependencies = [
- "elements_core",
- "elements_ecs",
- "elements_element",
- "elements_gpu",
- "elements_meshes",
- "elements_renderer",
- "elements_std",
- "glam 0.22.0",
-]
-
-[[package]]
-name = "elements_project"
-version = "0.0.1"
-dependencies = [
- "elements_ecs",
- "paste",
- "serde",
- "thiserror",
- "toml 0.7.1",
-]
-
-[[package]]
-name = "elements_renderer"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "async-trait",
- "bytemuck",
- "derive_more",
- "downcast-rs",
- "elements_app",
- "elements_cameras",
- "elements_core",
- "elements_ecs",
- "elements_element",
- "elements_gizmos",
- "elements_gpu",
- "elements_meshes",
- "elements_model_import",
- "elements_primitives",
- "elements_std",
- "env_logger 0.9.3",
- "friendly_id",
- "glam 0.22.0",
- "itertools",
- "log",
- "ordered-float 2.10.0",
- "parking_lot",
- "profiling 1.0.6",
- "serde",
- "smallvec",
- "wgpu",
- "winit",
-]
-
-[[package]]
-name = "elements_rpc"
-version = "0.0.1"
-dependencies = [
- "bincode",
- "futures",
- "lazy_static",
- "serde",
- "thiserror",
- "tokio",
-]
-
-[[package]]
-name = "elements_rustc"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "itertools",
- "log",
- "reqwest",
- "serde_json",
-]
-
-[[package]]
-name = "elements_scripting"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "async-trait",
- "base64",
- "chrono",
- "elements_animation",
- "elements_app",
- "elements_core",
- "elements_ecs",
- "elements_input",
- "elements_network",
- "elements_object",
- "elements_physics",
- "elements_project",
- "elements_std",
- "flume",
- "fs_extra",
- "glam 0.22.0",
- "indexmap",
- "indoc",
- "itertools",
- "log",
- "parking_lot",
- "physxx",
- "profiling 1.0.6",
- "reqwest",
- "serde",
- "serde_bytes",
- "serde_json",
- "slotmap",
- "wasi-common",
- "wasmtime",
- "wasmtime-wasi",
- "wit-bindgen-host-wasmtime-rust",
-]
-
-[[package]]
-name = "elements_std"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "as-any",
- "async-trait",
- "bincode",
- "bytemuck",
- "chrono",
- "convert_case 0.6.0",
- "data-encoding",
- "elements_asset_cache",
- "futures",
- "glam 0.22.0",
- "hex",
- "itertools",
- "log",
- "once_cell",
- "ordered-float 2.10.0",
- "parking_lot",
- "percent-encoding",
- "pin-project",
- "profiling 1.0.6",
- "rand",
- "relative-path",
- "reqwest",
- "ring",
- "sentry-anyhow",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "toml 0.7.1",
- "tracing",
- "url",
- "wgpu",
- "yaml-rust-davvid",
-]
-
-[[package]]
-name = "elements_ui"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "async-trait",
- "bytemuck",
- "clipboard",
- "closure",
- "convert_case 0.6.0",
- "elements_app",
- "elements_cameras",
- "elements_core",
- "elements_ecs",
- "elements_editor_derive",
- "elements_element",
- "elements_gpu",
- "elements_input",
- "elements_meshes",
- "elements_renderer",
- "elements_std",
- "env_logger 0.9.3",
- "fixed-vec-deque",
- "friendly_id",
- "futures",
- "glam 0.22.0",
- "glyph_brush",
- "indexmap",
- "itertools",
- "log",
- "ordered-float 2.10.0",
- "parking_lot",
- "rand",
- "serde",
- "thiserror",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "wgpu",
- "winit",
-]
-
-[[package]]
-name = "elements_world_audio"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "atomic_refcell",
- "closure",
- "dashmap",
- "derive_more",
- "elements_app",
- "elements_audio",
- "elements_cameras",
- "elements_core",
- "elements_ecs",
- "elements_element",
- "elements_network",
- "elements_primitives",
- "elements_renderer",
- "elements_std",
- "elements_ui",
- "flume",
- "futures",
- "glam 0.22.0",
- "indexmap",
- "itertools",
- "log",
- "once_cell",
- "ordered-float 2.10.0",
- "parking_lot",
- "profiling 1.0.6",
- "rand",
- "rand_chacha",
- "serde",
- "serde_json",
- "slotmap",
- "thiserror",
- "tokio",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
 name = "encoding_rs"
 version = "0.8.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3316,6 +2453,869 @@ dependencies = [
 ]
 
 [[package]]
+name = "kiwi_animation"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "convert_case 0.6.0",
+ "derive_more",
+ "glam 0.22.0",
+ "itertools",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_editor_derive",
+ "kiwi_element",
+ "kiwi_model",
+ "kiwi_std",
+ "kiwi_ui",
+ "ordered-float 2.10.0",
+ "serde",
+]
+
+[[package]]
+name = "kiwi_app"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "glam 0.22.0",
+ "kiwi_animation",
+ "kiwi_cameras",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_element",
+ "kiwi_gizmos",
+ "kiwi_gpu",
+ "kiwi_input",
+ "kiwi_model",
+ "kiwi_primitives",
+ "kiwi_renderer",
+ "kiwi_std",
+ "kiwi_ui",
+ "parking_lot",
+ "profiling 1.0.6",
+ "puffin",
+ "puffin_http",
+ "thread-priority",
+ "tokio",
+ "tracing",
+ "wgpu",
+ "winit",
+]
+
+[[package]]
+name = "kiwi_asset_cache"
+version = "0.0.1"
+dependencies = [
+ "abort-on-drop",
+ "anyhow",
+ "as-any",
+ "async-trait",
+ "chrono",
+ "futures",
+ "itertools",
+ "parking_lot",
+ "pin-project",
+ "pretty_assertions",
+ "serde",
+ "thiserror",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "kiwi_asset_timeline"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "env_logger 0.9.3",
+ "glam 0.22.0",
+ "itertools",
+ "kiwi_app",
+ "kiwi_cameras",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_element",
+ "kiwi_model",
+ "kiwi_renderer",
+ "kiwi_std",
+ "kiwi_ui",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "kiwi_audio"
+version = "0.0.1"
+dependencies = [
+ "approx",
+ "async-trait",
+ "byteorder",
+ "circular-queue",
+ "color-eyre",
+ "cpal",
+ "dashmap",
+ "derivative",
+ "derive_more",
+ "flume",
+ "glam 0.22.0",
+ "hound",
+ "itertools",
+ "kiwi_std",
+ "kiwi_ui",
+ "lewton",
+ "log",
+ "lyon",
+ "macroquad",
+ "num",
+ "ordered-float 2.10.0",
+ "parking_lot",
+ "pretty_assertions",
+ "rand",
+ "rand_chacha",
+ "rayon",
+ "rustfft",
+ "serde",
+ "slotmap",
+ "static_assertions",
+ "thiserror",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "kiwi_build"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "async-recursion",
+ "async-trait",
+ "cargo_toml",
+ "convert_case 0.6.0",
+ "dyn-clonable",
+ "futures",
+ "glam 0.22.0",
+ "glob",
+ "image",
+ "itertools",
+ "kiwi_asset_cache",
+ "kiwi_core",
+ "kiwi_decals",
+ "kiwi_ecs",
+ "kiwi_model",
+ "kiwi_model_import",
+ "kiwi_physics",
+ "kiwi_project",
+ "kiwi_renderer",
+ "kiwi_rustc",
+ "kiwi_std",
+ "kiwi_world_audio",
+ "log",
+ "parking_lot",
+ "relative-path",
+ "serde",
+ "serde_json",
+ "slugify",
+ "tokio",
+ "tracing",
+ "unity_parser",
+ "walkdir",
+ "yaml-rust-davvid",
+]
+
+[[package]]
+name = "kiwi_cameras"
+version = "0.0.1"
+dependencies = [
+ "derive_more",
+ "glam 0.22.0",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_element",
+ "kiwi_std",
+ "winit",
+]
+
+[[package]]
+name = "kiwi_core"
+version = "0.0.1"
+dependencies = [
+ "bytemuck",
+ "derive_more",
+ "flume",
+ "glam 0.22.0",
+ "itertools",
+ "kiwi_ecs",
+ "kiwi_gpu",
+ "kiwi_std",
+ "lazy_static",
+ "log",
+ "maplit",
+ "ordered-float 2.10.0",
+ "parking_lot",
+ "paste",
+ "profiling 1.0.6",
+ "tokio",
+ "wgpu",
+ "winit",
+ "yaml-rust-davvid",
+]
+
+[[package]]
+name = "kiwi_curve"
+version = "0.0.1"
+dependencies = [
+ "glam 0.22.0",
+ "kiwi_std",
+]
+
+[[package]]
+name = "kiwi_debugger"
+version = "0.0.1"
+dependencies = [
+ "glam 0.22.0",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_element",
+ "kiwi_element_component",
+ "kiwi_gizmos",
+ "kiwi_gpu",
+ "kiwi_network",
+ "kiwi_renderer",
+ "kiwi_rpc",
+ "kiwi_std",
+ "kiwi_ui",
+ "log",
+ "wgpu",
+ "winit",
+]
+
+[[package]]
+name = "kiwi_decals"
+version = "0.0.1"
+dependencies = [
+ "env_logger 0.9.3",
+ "glam 0.22.0",
+ "kiwi_app",
+ "kiwi_asset_cache",
+ "kiwi_cameras",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_element",
+ "kiwi_gpu",
+ "kiwi_meshes",
+ "kiwi_primitives",
+ "kiwi_renderer",
+ "kiwi_std",
+ "kiwi_ui",
+ "log",
+]
+
+[[package]]
+name = "kiwi_ecs"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "atomic_refcell",
+ "base64",
+ "bit-set",
+ "bit-vec",
+ "derive_more",
+ "downcast-rs",
+ "erased-serde",
+ "friendly_id",
+ "glam 0.22.0",
+ "itertools",
+ "kiwi_std",
+ "lazy_static",
+ "log",
+ "once_cell",
+ "parking_lot",
+ "paste",
+ "profiling 1.0.6",
+ "rand",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "smallvec",
+ "thiserror",
+ "tokio",
+ "yaml-rust-davvid",
+]
+
+[[package]]
+name = "kiwi_ecs_editor"
+version = "0.0.1"
+dependencies = [
+ "env_logger 0.9.3",
+ "glam 0.22.0",
+ "itertools",
+ "kiwi_app",
+ "kiwi_cameras",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_element",
+ "kiwi_renderer",
+ "kiwi_std",
+ "kiwi_ui",
+]
+
+[[package]]
+name = "kiwi_editor_derive"
+version = "0.0.1"
+dependencies = [
+ "convert_case 0.6.0",
+ "itertools",
+ "kiwi_ui",
+ "pretty_assertions",
+ "proc-macro-crate",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "kiwi_element"
+version = "0.0.1"
+dependencies = [
+ "as-any",
+ "atomic_refcell",
+ "closure",
+ "derivative",
+ "dyn-clonable",
+ "friendly_id",
+ "futures",
+ "itertools",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_element_component",
+ "kiwi_std",
+ "parking_lot",
+ "profiling 1.0.6",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "kiwi_element_component"
+version = "0.0.1"
+dependencies = [
+ "itertools",
+ "proc-macro-crate",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "kiwi_gizmos"
+version = "0.0.1"
+dependencies = [
+ "bytemuck",
+ "dashmap",
+ "glam 0.22.0",
+ "kiwi_app",
+ "kiwi_cameras",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_gpu",
+ "kiwi_meshes",
+ "kiwi_renderer",
+ "kiwi_std",
+ "log",
+ "once_cell",
+ "profiling 1.0.6",
+ "serde",
+ "wgpu",
+]
+
+[[package]]
+name = "kiwi_gpu"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "bytemuck",
+ "byteorder",
+ "futures",
+ "glam 0.22.0",
+ "image",
+ "itertools",
+ "kiwi_std",
+ "log",
+ "ndarray",
+ "ordered-float 2.10.0",
+ "parking_lot",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "wgpu",
+ "winit",
+]
+
+[[package]]
+name = "kiwi_input"
+version = "0.0.1"
+dependencies = [
+ "glam 0.22.0",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_std",
+ "serde",
+ "tracing",
+ "winit",
+]
+
+[[package]]
+name = "kiwi_intent"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "atomic_refcell",
+ "friendly_id",
+ "futures",
+ "itertools",
+ "kiwi_ecs",
+ "kiwi_editor_derive",
+ "kiwi_element",
+ "kiwi_network",
+ "kiwi_rpc",
+ "kiwi_std",
+ "kiwi_ui",
+ "parking_lot",
+ "pretty_assertions",
+ "profiling 1.0.6",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "kiwi_meshes"
+version = "0.0.1"
+dependencies = [
+ "glam 0.22.0",
+ "kiwi_gpu",
+ "kiwi_std",
+ "serde",
+]
+
+[[package]]
+name = "kiwi_model"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "bytemuck",
+ "friendly_id",
+ "futures",
+ "glam 0.22.0",
+ "itertools",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_editor_derive",
+ "kiwi_gpu",
+ "kiwi_meshes",
+ "kiwi_renderer",
+ "kiwi_std",
+ "kiwi_ui",
+ "serde",
+ "tokio",
+ "tracing",
+ "url",
+ "wgpu",
+]
+
+[[package]]
+name = "kiwi_model_import"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "async-recursion",
+ "async-trait",
+ "base64",
+ "bincode",
+ "bytemuck",
+ "env_logger 0.9.3",
+ "fbxcel",
+ "futures",
+ "glam 0.22.0",
+ "gltf",
+ "image",
+ "indexmap",
+ "itertools",
+ "kiwi_animation",
+ "kiwi_app",
+ "kiwi_cameras",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_editor_derive",
+ "kiwi_element",
+ "kiwi_gizmos",
+ "kiwi_model",
+ "kiwi_physics",
+ "kiwi_primitives",
+ "kiwi_renderer",
+ "kiwi_std",
+ "kiwi_ui",
+ "log",
+ "ordered-float 2.10.0",
+ "physxx",
+ "relative-path",
+ "reqwest",
+ "russimp",
+ "serde",
+ "serde_json",
+ "tokio",
+ "winit",
+]
+
+[[package]]
+name = "kiwi_network"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "bincode",
+ "bytes",
+ "dashmap",
+ "flume",
+ "friendly_id",
+ "futures",
+ "glam 0.22.0",
+ "itertools",
+ "kiwi_app",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_element",
+ "kiwi_gizmos",
+ "kiwi_gpu",
+ "kiwi_renderer",
+ "kiwi_rpc",
+ "kiwi_std",
+ "kiwi_ui",
+ "log",
+ "manual_future",
+ "once_cell",
+ "parking_lot",
+ "profiling 1.0.6",
+ "quinn",
+ "rand",
+ "rustls",
+ "serde",
+ "thiserror",
+ "tokio",
+ "tokio-util",
+ "tracing",
+ "wgpu",
+ "winit",
+]
+
+[[package]]
+name = "kiwi_object"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "friendly_id",
+ "glam 0.22.0",
+ "kiwi_core",
+ "kiwi_decals",
+ "kiwi_ecs",
+ "kiwi_model",
+ "kiwi_network",
+ "kiwi_physics",
+ "kiwi_rpc",
+ "kiwi_std",
+ "log",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
+name = "kiwi_physics"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "futures",
+ "glam 0.22.0",
+ "itertools",
+ "kiwi_app",
+ "kiwi_cameras",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_editor_derive",
+ "kiwi_element",
+ "kiwi_gizmos",
+ "kiwi_meshes",
+ "kiwi_model",
+ "kiwi_network",
+ "kiwi_primitives",
+ "kiwi_renderer",
+ "kiwi_std",
+ "kiwi_ui",
+ "log",
+ "once_cell",
+ "ordered-float 2.10.0",
+ "parking_lot",
+ "physxx",
+ "profiling 1.0.6",
+ "rand",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "kiwi_primitives"
+version = "0.0.1"
+dependencies = [
+ "glam 0.22.0",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_element",
+ "kiwi_gpu",
+ "kiwi_meshes",
+ "kiwi_renderer",
+ "kiwi_std",
+]
+
+[[package]]
+name = "kiwi_project"
+version = "0.0.1"
+dependencies = [
+ "kiwi_ecs",
+ "paste",
+ "serde",
+ "thiserror",
+ "toml 0.7.1",
+]
+
+[[package]]
+name = "kiwi_renderer"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "bytemuck",
+ "derive_more",
+ "downcast-rs",
+ "env_logger 0.9.3",
+ "friendly_id",
+ "glam 0.22.0",
+ "itertools",
+ "kiwi_app",
+ "kiwi_cameras",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_element",
+ "kiwi_gizmos",
+ "kiwi_gpu",
+ "kiwi_meshes",
+ "kiwi_model_import",
+ "kiwi_primitives",
+ "kiwi_std",
+ "log",
+ "ordered-float 2.10.0",
+ "parking_lot",
+ "profiling 1.0.6",
+ "serde",
+ "smallvec",
+ "wgpu",
+ "winit",
+]
+
+[[package]]
+name = "kiwi_rpc"
+version = "0.0.1"
+dependencies = [
+ "bincode",
+ "futures",
+ "lazy_static",
+ "serde",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
+name = "kiwi_rustc"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "itertools",
+ "log",
+ "reqwest",
+ "serde_json",
+]
+
+[[package]]
+name = "kiwi_scripting"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "base64",
+ "chrono",
+ "flume",
+ "fs_extra",
+ "glam 0.22.0",
+ "indexmap",
+ "indoc",
+ "itertools",
+ "kiwi_animation",
+ "kiwi_app",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_input",
+ "kiwi_network",
+ "kiwi_object",
+ "kiwi_physics",
+ "kiwi_project",
+ "kiwi_std",
+ "log",
+ "parking_lot",
+ "physxx",
+ "profiling 1.0.6",
+ "reqwest",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "slotmap",
+ "wasi-common",
+ "wasmtime",
+ "wasmtime-wasi",
+ "wit-bindgen-host-wasmtime-rust",
+]
+
+[[package]]
+name = "kiwi_std"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "as-any",
+ "async-trait",
+ "bincode",
+ "bytemuck",
+ "chrono",
+ "convert_case 0.6.0",
+ "data-encoding",
+ "futures",
+ "glam 0.22.0",
+ "hex",
+ "itertools",
+ "kiwi_asset_cache",
+ "log",
+ "once_cell",
+ "ordered-float 2.10.0",
+ "parking_lot",
+ "percent-encoding",
+ "pin-project",
+ "profiling 1.0.6",
+ "rand",
+ "relative-path",
+ "reqwest",
+ "ring",
+ "sentry-anyhow",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "toml 0.7.1",
+ "tracing",
+ "url",
+ "wgpu",
+ "yaml-rust-davvid",
+]
+
+[[package]]
+name = "kiwi_ui"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "bytemuck",
+ "clipboard",
+ "closure",
+ "convert_case 0.6.0",
+ "env_logger 0.9.3",
+ "fixed-vec-deque",
+ "friendly_id",
+ "futures",
+ "glam 0.22.0",
+ "glyph_brush",
+ "indexmap",
+ "itertools",
+ "kiwi_app",
+ "kiwi_cameras",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_editor_derive",
+ "kiwi_element",
+ "kiwi_gpu",
+ "kiwi_input",
+ "kiwi_meshes",
+ "kiwi_renderer",
+ "kiwi_std",
+ "log",
+ "ordered-float 2.10.0",
+ "parking_lot",
+ "rand",
+ "serde",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "wgpu",
+ "winit",
+]
+
+[[package]]
+name = "kiwi_world_audio"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "atomic_refcell",
+ "closure",
+ "dashmap",
+ "derive_more",
+ "flume",
+ "futures",
+ "glam 0.22.0",
+ "indexmap",
+ "itertools",
+ "kiwi_app",
+ "kiwi_audio",
+ "kiwi_cameras",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_element",
+ "kiwi_network",
+ "kiwi_primitives",
+ "kiwi_renderer",
+ "kiwi_std",
+ "kiwi_ui",
+ "log",
+ "once_cell",
+ "ordered-float 2.10.0",
+ "parking_lot",
+ "profiling 1.0.6",
+ "rand",
+ "rand_chacha",
+ "serde",
+ "serde_json",
+ "slotmap",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "kiwir"
 version = "0.0.1"
 dependencies = [
@@ -3325,39 +3325,39 @@ dependencies = [
  "byteorder",
  "clap 4.0.32",
  "convert_case 0.6.0",
- "elements_animation",
- "elements_app",
- "elements_audio",
- "elements_build",
- "elements_cameras",
- "elements_core",
- "elements_debugger",
- "elements_decals",
- "elements_ecs",
- "elements_editor_derive",
- "elements_element",
- "elements_gizmos",
- "elements_gpu",
- "elements_input",
- "elements_meshes",
- "elements_model",
- "elements_model_import",
- "elements_network",
- "elements_object",
- "elements_physics",
- "elements_primitives",
- "elements_project",
- "elements_renderer",
- "elements_rpc",
- "elements_scripting",
- "elements_std",
- "elements_ui",
- "elements_world_audio",
  "env_logger 0.9.3",
  "friendly_id",
  "futures",
  "glam 0.22.0",
  "indoc",
+ "kiwi_animation",
+ "kiwi_app",
+ "kiwi_audio",
+ "kiwi_build",
+ "kiwi_cameras",
+ "kiwi_core",
+ "kiwi_debugger",
+ "kiwi_decals",
+ "kiwi_ecs",
+ "kiwi_editor_derive",
+ "kiwi_element",
+ "kiwi_gizmos",
+ "kiwi_gpu",
+ "kiwi_input",
+ "kiwi_meshes",
+ "kiwi_model",
+ "kiwi_model_import",
+ "kiwi_network",
+ "kiwi_object",
+ "kiwi_physics",
+ "kiwi_primitives",
+ "kiwi_project",
+ "kiwi_renderer",
+ "kiwi_rpc",
+ "kiwi_scripting",
+ "kiwi_std",
+ "kiwi_ui",
+ "kiwi_world_audio",
  "local-ip-address",
  "log",
  "parking_lot",
@@ -6023,9 +6023,9 @@ name = "unity_parser"
 version = "0.0.1"
 dependencies = [
  "anyhow",
- "elements_std",
  "glam 0.22.0",
  "itertools",
+ "kiwi_std",
  "yaml-rust-davvid",
 ]
 

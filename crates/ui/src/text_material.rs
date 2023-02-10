@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
-use elements_gpu::{
+use kiwi_gpu::{
     gpu::{Gpu, GpuKey}, shader_module::BindGroupDesc, std_assets::DefaultSamplerKey, texture::TextureView
 };
-use elements_renderer::{Material, MaterialShader, RendererShader, StandardShaderKey, MATERIAL_BIND_GROUP};
-use elements_std::{
+use kiwi_renderer::{Material, MaterialShader, RendererShader, StandardShaderKey, MATERIAL_BIND_GROUP};
+use kiwi_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, include_file
 };
 use wgpu::BindGroup;
@@ -15,7 +15,7 @@ impl SyncAssetKey<Arc<MaterialShader>> for TextMaterialShaderKey {
     fn load(&self, _: AssetCache) -> Arc<MaterialShader> {
         Arc::new(MaterialShader {
             id: "text_material_shader".to_string(),
-            shader: elements_gpu::shader_module::ShaderModule::new(
+            shader: kiwi_gpu::shader_module::ShaderModule::new(
                 "TextMaterial",
                 include_file!("text_material.wgsl"),
                 vec![BindGroupDesc {

@@ -5,11 +5,11 @@ use std::{
 };
 
 use async_trait::async_trait;
-use elements_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::AbsAssetUrl, download_asset::{AssetResult, MeshFromUrl}, mesh::Mesh
-};
 use glam::{UVec4, Vec2, Vec4};
 use itertools::Itertools;
+use kiwi_std::{
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::AbsAssetUrl, download_asset::{AssetResult, MeshFromUrl}, mesh::Mesh
+};
 use parking_lot::Mutex;
 use wgpu::RenderPass;
 

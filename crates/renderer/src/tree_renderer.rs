@@ -2,12 +2,12 @@ use std::{
     collections::{HashMap, HashSet}, sync::Arc
 };
 
-use elements_ecs::{query, ArchetypeFilter, EntityId, FramedEventsReader, QueryState, World};
-use elements_gpu::{
-    gpu::Gpu, multi_buffer::{MultiBufferSizeStrategy, SubBufferId, TypedMultiBuffer}, shader_module::{GraphicsPipeline, GraphicsPipelineInfo}
-};
 use glam::{uvec2, UVec2};
 use itertools::Itertools;
+use kiwi_ecs::{query, ArchetypeFilter, EntityId, FramedEventsReader, QueryState, World};
+use kiwi_gpu::{
+    gpu::Gpu, multi_buffer::{MultiBufferSizeStrategy, SubBufferId, TypedMultiBuffer}, shader_module::{GraphicsPipeline, GraphicsPipelineInfo}
+};
 use wgpu::DepthBiasState;
 
 use super::{

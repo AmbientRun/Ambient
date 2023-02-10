@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use elements_ecs::{EntityData, EntityUid, PrimitiveComponent, Query, QueryState, World};
+use kiwi_ecs::{EntityData, EntityUid, PrimitiveComponent, Query, QueryState, World};
 
 pub type QueryStateMap =
     slotmap::SlotMap<slotmap::DefaultKey, (Query, QueryState, Vec<PrimitiveComponent>)>;

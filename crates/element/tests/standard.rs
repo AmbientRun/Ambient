@@ -1,5 +1,5 @@
-use elements_ecs::{query, World};
-use elements_element::{Element, ElementComponent, ElementComponentExt, Hooks, Memo};
+use kiwi_ecs::{query, World};
+use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks, Memo};
 mod common;
 use common::*;
 

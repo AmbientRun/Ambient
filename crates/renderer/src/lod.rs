@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
-use elements_core::{
+use glam::Vec3;
+use kiwi_core::{
     bounding::world_bounding_sphere, camera::{fovy, get_active_camera}, gpu_components, gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent}, hierarchy::children, main_scene, transform::translation
 };
-use elements_ecs::{components, query, ECSError, EntityId, Networked, Store, SystemGroup, World};
-use elements_gpu::mesh_buffer::GpuMesh;
-use glam::Vec3;
+use kiwi_ecs::{components, query, ECSError, EntityId, Networked, Store, SystemGroup, World};
+use kiwi_gpu::mesh_buffer::GpuMesh;
 
 use crate::primitives;
 

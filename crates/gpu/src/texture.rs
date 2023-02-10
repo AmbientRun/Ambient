@@ -6,10 +6,10 @@ use std::{
 
 use bytemuck::Pod;
 use byteorder::{ByteOrder, LittleEndian};
-use elements_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use glam::{uvec2, UVec4, Vec4};
 use image::{io::Reader as ImageReader, DynamicImage, Rgba, RgbaImage};
 use itertools::Itertools;
+use kiwi_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use ndarray::{s, Array, Array2, Array4, Dimension};
 use ordered_float::OrderedFloat;
 use wgpu::util::DeviceExt;

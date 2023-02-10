@@ -1,17 +1,17 @@
 use std::{f32::consts::TAU, sync::Arc};
 
-use elements_app::{App, AppBuilder};
-use elements_audio::{track::Track, Attenuation, AudioEmitter, AudioListener, AudioStream, Source};
-use elements_core::{
+use glam::{vec3, vec4, Mat4, Vec3};
+use kiwi_app::{App, AppBuilder};
+use kiwi_audio::{track::Track, Attenuation, AudioEmitter, AudioListener, AudioStream, Source};
+use kiwi_core::{
     asset_cache, camera::{active_camera, far, near}, main_scene, transform::{scale, translation}
 };
-use elements_element::ElementComponentExt;
-use elements_primitives::Cube;
-use elements_renderer::{cast_shadows, color};
-use elements_std::math::SphericalCoords;
-use elements_ui::World;
-use elements_world_audio::{audio_emitter, audio_listener, play_sound_on_entity, systems::setup_audio};
-use glam::{vec3, vec4, Mat4, Vec3};
+use kiwi_element::ElementComponentExt;
+use kiwi_primitives::Cube;
+use kiwi_renderer::{cast_shadows, color};
+use kiwi_std::math::SphericalCoords;
+use kiwi_ui::World;
+use kiwi_world_audio::{audio_emitter, audio_listener, play_sound_on_entity, systems::setup_audio};
 use parking_lot::Mutex;
 use tokio::runtime::Handle;
 
@@ -43,7 +43,7 @@ fn spawn_emitters(world: &mut World) {
 }
 
 fn init(app: &mut App, _: Handle) {
-    app.systems.add(Box::new(elements_world_audio::systems::spatial_audio_systems()));
+    app.systems.add(Box::new(kiwi_world_audio::systems::spatial_audio_systems()));
 
     let world = &mut app.world;
     let _assets = world.resource(asset_cache()).clone();
@@ -52,7 +52,7 @@ fn init(app: &mut App, _: Handle) {
     let size = 128.0;
     Cube.el().set(scale(), vec3(size, size, 1.)).set_default(cast_shadows()).spawn_static(world);
 
-    elements_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
+    kiwi_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
         .set(active_camera(), 0.)
         .set(audio_listener(), Arc::new(Mutex::new(AudioListener::new(Mat4::IDENTITY, Vec3::X * 0.3))))
         .set(main_scene(), ())
@@ -65,7 +65,7 @@ fn init(app: &mut App, _: Handle) {
 
 fn main() {
     tracing_subscriber::fmt().init();
-    elements_world_audio::init_components();
+    kiwi_world_audio::init_components();
 
     let stream = AudioStream::new().unwrap();
 

@@ -1,12 +1,12 @@
-use elements_app::AppBuilder;
-use elements_core::{asset_cache, camera::active_camera, main_scene};
-use elements_ecs::World;
-use elements_element::ElementComponentExt;
-use elements_meshes::{CubeMeshKey, SphereMeshKey};
-use elements_primitives::Cube;
-use elements_renderer::lod::{cpu_lod, lod_cutoffs, mesh_lods};
-use elements_std::{asset_cache::SyncAssetKeyExt, math::SphericalCoords};
 use glam::*;
+use kiwi_app::AppBuilder;
+use kiwi_core::{asset_cache, camera::active_camera, main_scene};
+use kiwi_ecs::World;
+use kiwi_element::ElementComponentExt;
+use kiwi_meshes::{CubeMeshKey, SphereMeshKey};
+use kiwi_primitives::Cube;
+use kiwi_renderer::lod::{cpu_lod, lod_cutoffs, mesh_lods};
+use kiwi_std::{asset_cache::SyncAssetKeyExt, math::SphericalCoords};
 
 fn init(world: &mut World) {
     let assets = world.resource(asset_cache()).clone();
@@ -29,7 +29,7 @@ fn init(world: &mut World) {
         .set(cpu_lod(), 0_usize)
         .spawn_static(world);
 
-    elements_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
+    kiwi_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
         .set(active_camera(), 0.)
         .set(main_scene(), ())
         .spawn(world);

@@ -1,8 +1,8 @@
 use std::{sync::Arc, time::Duration};
 
-use elements_core::hierarchy::children;
-use elements_ecs::World;
-use elements_element::{Element, ElementComponent, ElementComponentExt, ElementTree, Hooks};
+use kiwi_core::hierarchy::children;
+use kiwi_ecs::World;
+use kiwi_element::{Element, ElementComponent, ElementComponentExt, ElementTree, Hooks};
 mod common;
 use common::*;
 

@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
-use elements_ecs::{ComponentRegistry, PrimitiveComponentType, WorldDiff};
 use futures::{io::BufReader, StreamExt};
+use kiwi_ecs::{ComponentRegistry, PrimitiveComponentType, WorldDiff};
 use quinn::{NewConnection, RecvStream};
 
 use crate::{next_bincode_bi_stream, open_bincode_bi_stream, IncomingStream, NetworkError, OutgoingStream};

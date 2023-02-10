@@ -4,34 +4,34 @@ name = "kiwir"
 version.workspace = true
 
 [dependencies]
-elements_animation = {path = "../crates/animation"}
-elements_app = {path = "../crates/app"}
-elements_audio = {path = "../crates/audio"}
-elements_build = {path = "../crates/build"}
-elements_cameras = {path = "../crates/cameras"}
-elements_core = {path = "../crates/core"}
-elements_debugger = {path = "../crates/debugger"}
-elements_decals = {path = "../crates/decals"}
-elements_ecs = {path = "../crates/ecs"}
-elements_editor_derive = {path = "../crates/editor_derive"}
-elements_element = {path = "../crates/element"}
-elements_gizmos = {path = "../crates/gizmos"}
-elements_gpu = {path = "../crates/gpu"}
-elements_input = {path = "../crates/input"}
-elements_meshes = {path = "../crates/meshes"}
-elements_model = {path = "../crates/model"}
-elements_model_import = {path = "../crates/model_import"}
-elements_network = {path = "../crates/network"}
-elements_object = {path = "../crates/object"}
-elements_physics = {path = "../crates/physics"}
-elements_primitives = {path = "../crates/primitives"}
-elements_project = {path = "../crates/project"}
-elements_renderer = {path = "../crates/renderer"}
-elements_rpc = {path = "../crates/rpc"}
-elements_scripting = {path = "../crates/scripting"}
-elements_std = {path = "../crates/std"}
-elements_ui = {path = "../crates/ui"}
-elements_world_audio = {path = "../crates/world_audio"}
+kiwi_animation = {path = "../crates/animation"}
+kiwi_app = {path = "../crates/app"}
+kiwi_audio = {path = "../crates/audio"}
+kiwi_build = {path = "../crates/build"}
+kiwi_cameras = {path = "../crates/cameras"}
+kiwi_core = {path = "../crates/core"}
+kiwi_debugger = {path = "../crates/debugger"}
+kiwi_decals = {path = "../crates/decals"}
+kiwi_ecs = {path = "../crates/ecs"}
+kiwi_editor_derive = {path = "../crates/editor_derive"}
+kiwi_element = {path = "../crates/element"}
+kiwi_gizmos = {path = "../crates/gizmos"}
+kiwi_gpu = {path = "../crates/gpu"}
+kiwi_input = {path = "../crates/input"}
+kiwi_meshes = {path = "../crates/meshes"}
+kiwi_model = {path = "../crates/model"}
+kiwi_model_import = {path = "../crates/model_import"}
+kiwi_network = {path = "../crates/network"}
+kiwi_object = {path = "../crates/object"}
+kiwi_physics = {path = "../crates/physics"}
+kiwi_primitives = {path = "../crates/primitives"}
+kiwi_project = {path = "../crates/project"}
+kiwi_renderer = {path = "../crates/renderer"}
+kiwi_rpc = {path = "../crates/rpc"}
+kiwi_scripting = {path = "../crates/scripting"}
+kiwi_std = {path = "../crates/std"}
+kiwi_ui = {path = "../crates/ui"}
+kiwi_world_audio = {path = "../crates/world_audio"}
 
 anyhow.workspace = true
 axum.workspace = true

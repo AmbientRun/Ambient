@@ -1,8 +1,8 @@
 use std::{path::PathBuf, sync::Arc};
 
-use elements_ecs::{components, EntityId, SystemGroup, World};
-use elements_network::server::{ForkingEvent, ShutdownEvent};
-use elements_scripting::{
+use kiwi_ecs::{components, EntityId, SystemGroup, World};
+use kiwi_network::server::{ForkingEvent, ShutdownEvent};
+use kiwi_scripting::{
     server::bindings::{Bindings as ElementsBindings, WasmServerContext}, shared::{
         host_guest_state::BaseHostGuestState, script_module_bytecode, spawn_script, util::get_module_name, MessageType, ScriptModuleBytecode, ScriptModuleState
     }, Linker, WasiCtx
@@ -24,18 +24,18 @@ pub fn init_all_components() {
 }
 
 pub fn systems() -> SystemGroup {
-    elements_scripting::server::systems(script_module_state(), make_wasm_context(), add_to_linker())
+    kiwi_scripting::server::systems(script_module_state(), make_wasm_context(), add_to_linker())
 }
 
 pub fn on_forking_systems() -> SystemGroup<ForkingEvent> {
-    elements_scripting::server::on_forking_systems(script_module_state(), make_wasm_context(), add_to_linker())
+    kiwi_scripting::server::on_forking_systems(script_module_state(), make_wasm_context(), add_to_linker())
 }
 
 pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
-    elements_scripting::server::on_shutdown_systems(script_module_state())
+    kiwi_scripting::server::on_shutdown_systems(script_module_state())
 }
 
-pub async fn initialize(world: &mut World, project_path: PathBuf, manifest: &elements_project::Manifest) -> anyhow::Result<()> {
+pub async fn initialize(world: &mut World, project_path: PathBuf, manifest: &kiwi_project::Manifest) -> anyhow::Result<()> {
     let messenger = Arc::new(|world: &World, id: EntityId, type_: MessageType, message: &str| {
         let name = get_module_name(world, id);
         let (prefix, level) = match type_ {
@@ -48,7 +48,7 @@ pub async fn initialize(world: &mut World, project_path: PathBuf, manifest: &ele
         log::log!(level, "[{name}] {prefix}: {}", message.strip_suffix('\n').unwrap_or(message));
     });
 
-    elements_scripting::server::initialize(
+    kiwi_scripting::server::initialize(
         world,
         messenger,
         (make_wasm_context(), Arc::new(|ctx, state| WasmServerContext::new(ctx, state))),

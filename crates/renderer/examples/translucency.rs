@@ -1,11 +1,11 @@
-use elements_app::AppBuilder;
-use elements_core::{asset_cache, camera::active_camera, main_scene, transform::*};
-use elements_ecs::World;
-use elements_element::ElementComponentExt;
-use elements_primitives::{Cube, Quad};
-use elements_renderer::{material, materials::flat_material::FlatMaterial, SharedMaterial};
-use elements_std::math::SphericalCoords;
 use glam::*;
+use kiwi_app::AppBuilder;
+use kiwi_core::{asset_cache, camera::active_camera, main_scene, transform::*};
+use kiwi_ecs::World;
+use kiwi_element::ElementComponentExt;
+use kiwi_primitives::{Cube, Quad};
+use kiwi_renderer::{material, materials::flat_material::FlatMaterial, SharedMaterial};
+use kiwi_std::math::SphericalCoords;
 
 fn init(world: &mut World) {
     let assets = world.resource(asset_cache()).clone();
@@ -19,7 +19,7 @@ fn init(world: &mut World) {
     Cube.el().set(material(), transparent.clone()).set(translation(), vec3(0., 0., 2.)).set(scale(), vec3(0.2, 2., 1.)).spawn_static(world);
     Cube.el().set(material(), transparent).set(translation(), vec3(4., 0., 0.)).spawn_static(world);
 
-    elements_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
+    kiwi_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
         .set(active_camera(), 0.)
         .set(main_scene(), ())
         .spawn(world);

@@ -1,10 +1,10 @@
 use anyhow::Context;
-use elements_core::transform::translation;
-use elements_ecs::{
+use glam::Vec3;
+use kiwi_core::transform::translation;
+use kiwi_ecs::{
     query as ecs_query, with_component_registry, Component, ComponentValue, EntityId, QueryEvent,
     QueryState, World,
 };
-use glam::Vec3;
 use slotmap::Key;
 
 use crate::shared::host_guest_state::QueryStateMap;
@@ -36,7 +36,7 @@ pub fn query(world: &mut World, index: u32) -> Vec<EntityId> {
         None => return vec![],
     };
 
-    elements_ecs::Query::new(elements_ecs::ArchetypeFilter::new().incl_ref(desc))
+    kiwi_ecs::Query::new(kiwi_ecs::ArchetypeFilter::new().incl_ref(desc))
         .iter(world, None)
         .map(|ea| ea.id())
         .collect()
@@ -50,9 +50,9 @@ pub fn query2(
     query_event: QueryEvent,
 ) -> anyhow::Result<u64> {
     fn get_components(
-        registry: &elements_ecs::ComponentRegistry,
+        registry: &kiwi_ecs::ComponentRegistry,
         components: impl Iterator<Item = u32> + Sync + Send,
-    ) -> anyhow::Result<Vec<elements_ecs::PrimitiveComponent>> {
+    ) -> anyhow::Result<Vec<kiwi_ecs::PrimitiveComponent>> {
         components
             .map(|c| {
                 registry
@@ -71,7 +71,7 @@ pub fn query2(
         ))
     })?;
 
-    let mut query = elements_ecs::Query::new(elements_ecs::ArchetypeFilter::new());
+    let mut query = kiwi_ecs::Query::new(kiwi_ecs::ArchetypeFilter::new());
     query.event = query_event;
     for component in &components {
         query = query.incl_ref(component.as_component());

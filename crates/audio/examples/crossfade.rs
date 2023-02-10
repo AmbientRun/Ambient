@@ -2,7 +2,7 @@ use std::{
     f32::consts::TAU, time::{Duration, Instant}
 };
 
-use elements_audio::{AudioStream, Frame, SampleRate, SineWave, Source};
+use kiwi_audio::{AudioStream, Frame, SampleRate, SineWave, Source};
 
 #[derive(Debug, Clone)]
 pub struct BinauralSine {

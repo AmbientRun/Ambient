@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fmt::Display};
 
-use elements_ecs::{components, Networked, PrimitiveComponentType, Store};
+use kiwi_ecs::{components, Networked, PrimitiveComponentType, Store};
 use serde::{de::Visitor, Deserialize, Serialize};
 use thiserror::Error;
 

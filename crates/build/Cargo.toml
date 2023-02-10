@@ -1,23 +1,23 @@
 [package]
-name = "elements_build"
+name = "kiwi_build"
 version.workspace = true
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-elements_std = { path = "../std" }
-elements_asset_cache = { path = "../asset_cache" }
-elements_model_import = { path = "../model_import" }
-elements_model = { path = "../model" }
-elements_renderer = { path = "../renderer" }
-elements_core = { path = "../core" }
-elements_ecs = { path = "../ecs" }
-elements_world_audio = { path = "../world_audio" }
-elements_physics = { path = "../physics" }
-elements_project = { path = "../project" }
-elements_rustc = { path = "../rustc" }
-elements_decals = { path = "../decals" }
+kiwi_std = { path = "../std" }
+kiwi_asset_cache = { path = "../asset_cache" }
+kiwi_model_import = { path = "../model_import" }
+kiwi_model = { path = "../model" }
+kiwi_renderer = { path = "../renderer" }
+kiwi_core = { path = "../core" }
+kiwi_ecs = { path = "../ecs" }
+kiwi_world_audio = { path = "../world_audio" }
+kiwi_physics = { path = "../physics" }
+kiwi_project = { path = "../project" }
+kiwi_rustc = { path = "../rustc" }
+kiwi_decals = { path = "../decals" }
 unity_parser = { path = "../../libs/unity_parser" }
 walkdir.workspace = true
 futures.workspace = true

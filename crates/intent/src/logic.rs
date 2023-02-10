@@ -1,7 +1,7 @@
 use std::time::SystemTime;
 
-use elements_ecs::{query, Component, ComponentValue, EntityData, EntityId, IndexField, IndexKey, World};
-use elements_network::server::SharedServerState;
+use kiwi_ecs::{query, Component, ComponentValue, EntityData, EntityId, IndexField, IndexKey, World};
+use kiwi_network::server::SharedServerState;
 
 use crate::{
     intent, intent_applied, intent_id, intent_index, intent_index_applied, intent_index_reverted, intent_registry, intent_reverted, intent_timestamp, intent_user_id
@@ -16,7 +16,7 @@ fn despawn_reverted_intents(world: &mut World, user_id: &str) {
 }
 
 /// Pushes and applied the intent
-pub fn push_intent(state: SharedServerState, user_id: String, mut data: EntityData) -> elements_ecs::EntityId {
+pub fn push_intent(state: SharedServerState, user_id: String, mut data: EntityData) -> kiwi_ecs::EntityId {
     let (reg, id, intent) = {
         let mut guard = state.lock();
         let world = guard.get_player_world_mut(&user_id).unwrap();

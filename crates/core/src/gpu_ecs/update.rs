@@ -1,11 +1,11 @@
 use std::{collections::HashMap, sync::Arc};
 
-use elements_ecs::{ArchetypeFilter, World};
-use elements_gpu::{
+use glam::{uvec4, UVec4};
+use kiwi_ecs::{ArchetypeFilter, World};
+use kiwi_gpu::{
     gpu::{Gpu, GpuKey}, shader_module::{BindGroupDesc, ComputePipeline, Shader, ShaderModule, ShaderModuleIdentifier}, typed_buffer::TypedBuffer
 };
-use elements_std::asset_cache::{AssetCache, SyncAssetKeyExt};
-use glam::{uvec4, UVec4};
+use kiwi_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 
 use super::{gpu_world, GpuWorldShaderModuleKey, ENTITIES_BIND_GROUP};
 

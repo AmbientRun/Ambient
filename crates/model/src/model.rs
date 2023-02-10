@@ -1,20 +1,20 @@
 use std::{collections::HashMap, path::Path, sync::Arc};
 
-use elements_core::{
+use futures::future::join_all;
+use glam::{Mat4, Vec3, Vec4};
+use itertools::Itertools;
+use kiwi_core::{
     asset_cache, bounding::{local_bounding_aabb, visibility_from, world_bounding_aabb, world_bounding_sphere}, hierarchy::{children, parent}, main_scene, name, transform::{
         fbx_complex_transform, fbx_post_rotation, fbx_pre_rotation, fbx_rotation_offset, fbx_rotation_pivot, fbx_scaling_offset, fbx_scaling_pivot, inv_local_to_world, local_to_parent, local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation
     }
 };
-use elements_ecs::{query, ComponentDesc, EntityData, EntityId, World};
-use elements_renderer::{
+use kiwi_ecs::{query, ComponentDesc, EntityData, EntityId, World};
+use kiwi_renderer::{
     cast_shadows, color, gpu_primitives, lod::cpu_lod_visible, primitives, skinning::{self, Skin, SkinsBuffer, SkinsBufferKey}
 };
-use elements_std::{
+use kiwi_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::AbsAssetUrl, download_asset::AssetError, shapes::AABB
 };
-use futures::future::join_all;
-use glam::{Mat4, Vec3, Vec4};
-use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
 use super::{
@@ -82,7 +82,7 @@ impl Model {
         self.0.resource_opt(name())
     }
     pub fn set_name(&mut self, name: &str) {
-        self.0.add_resource(elements_core::name(), name.to_string());
+        self.0.add_resource(kiwi_core::name(), name.to_string());
     }
     pub fn roots(&self) -> Vec<EntityId> {
         self.0.resource_opt(children()).cloned().unwrap_or_default()

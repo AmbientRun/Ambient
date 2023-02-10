@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 
-use elements_audio::{Source, VorbisFromUrl};
-use elements_std::{
+use kiwi_audio::{Source, VorbisFromUrl};
+use kiwi_std::{
     self, asset_cache::{AssetCache, AsyncAssetKeyExt}, asset_url::AbsAssetUrl
 };
 use rand::{thread_rng, Rng, SeedableRng};

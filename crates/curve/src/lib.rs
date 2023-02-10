@@ -1,6 +1,6 @@
 use std::ops::{Add, Mul, Sub};
 
-use elements_std::math::interpolate;
+use kiwi_std::math::interpolate;
 
 pub struct CurvePoint<T> {
     pub input: f32,
@@ -79,8 +79,8 @@ where
 
 #[test]
 fn test() {
-    use elements_std::math::Round100;
     use glam::{vec3, Vec3};
+    use kiwi_std::math::Round100;
     assert_eq!(Curve::new_looping(vec![CurvePoint::new(5., Vec3::X)], 24.).sample(0.).unwrap().round100(), Vec3::X);
     let b = Curve::new_looping(vec![CurvePoint::new(6., Vec3::X), CurvePoint::new(18., Vec3::Y)], 24.);
     assert_eq!(b.sample(0.).unwrap().round100(), vec3(0.5, 0.5, 0.));

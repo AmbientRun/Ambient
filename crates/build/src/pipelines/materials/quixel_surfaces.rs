@@ -1,13 +1,13 @@
 use std::sync::Arc;
 
 use convert_case::{Case, Casing};
-use elements_model_import::{dotdot_path, model_crate::ModelCrate};
-use elements_renderer::materials::pbr_material::PbrMaterialFromUrl;
-use elements_std::{
-    asset_cache::AssetCache, asset_url::{AbsAssetUrl, AssetType}
-};
 use futures::future::join_all;
 use itertools::Itertools;
+use kiwi_model_import::{dotdot_path, model_crate::ModelCrate};
+use kiwi_renderer::materials::pbr_material::PbrMaterialFromUrl;
+use kiwi_std::{
+    asset_cache::AssetCache, asset_url::{AbsAssetUrl, AssetType}
+};
 
 use super::{
     super::{models::quixel::QuixelId, OutAsset, OutAssetContent, OutAssetPreview, PipelineCtx}, MaterialsPipeline

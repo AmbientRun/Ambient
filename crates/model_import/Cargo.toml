@@ -1,21 +1,21 @@
 [package]
-name = "elements_model_import"
+name = "kiwi_model_import"
 version.workspace = true
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-elements_std = { path = "../std" }
-elements_core = { path = "../core" }
-elements_ecs = { path = "../ecs" }
-elements_renderer = { path = "../renderer" }
-elements_element = { path = "../element" }
-elements_ui = { path = "../ui" }
-elements_physics = { path = "../physics" }
-elements_model = { path = "../model" }
-elements_animation = { path = "../animation" }
-elements_editor_derive = { path = "../editor_derive" }
+kiwi_std = { path = "../std" }
+kiwi_core = { path = "../core" }
+kiwi_ecs = { path = "../ecs" }
+kiwi_renderer = { path = "../renderer" }
+kiwi_element = { path = "../element" }
+kiwi_ui = { path = "../ui" }
+kiwi_physics = { path = "../physics" }
+kiwi_model = { path = "../model" }
+kiwi_animation = { path = "../animation" }
+kiwi_editor_derive = { path = "../editor_derive" }
 physxx = { path = "../../libs/physxx" }
 glam.workspace = true
 env_logger.workspace = true
@@ -49,9 +49,9 @@ russimp = { git = "https://github.com/FredrikNoren/russimp.git", features = [
 ] }
 
 [dev-dependencies]
-elements_app = { path = "../app" }
-elements_element = { path = "../element" }
-elements_gizmos = { path = "../gizmos" }
-elements_primitives = { path = "../primitives" }
-elements_cameras = { path = "../cameras" }
+kiwi_app = { path = "../app" }
+kiwi_element = { path = "../element" }
+kiwi_gizmos = { path = "../gizmos" }
+kiwi_primitives = { path = "../primitives" }
+kiwi_cameras = { path = "../cameras" }
 winit.workspace = true

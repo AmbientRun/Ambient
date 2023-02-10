@@ -5,12 +5,12 @@ use std::{
 
 use bytes::Bytes;
 use client::GameRpcArgs;
-use elements_ecs::{
+use futures::{Future, SinkExt, StreamExt};
+use kiwi_ecs::{
     components, query, Component, ComponentValue, Debuggable, Description, EntityId, Name, Networked, Resource, Serializable, Store, World
 };
-use elements_rpc::{RpcError, RpcRegistry};
-use elements_std::{asset_cache::AssetCache, log_error, log_result};
-use futures::{Future, SinkExt, StreamExt};
+use kiwi_rpc::{RpcError, RpcRegistry};
+use kiwi_std::{asset_cache::AssetCache, log_error, log_result};
 use quinn::{
     ClientConfig, Connection, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, Incoming, NewConnection, RecvStream, SendStream, ServerConfig, TransportConfig
 };
@@ -32,7 +32,7 @@ pub mod rpc;
 pub mod server;
 
 pub mod player {
-    use elements_ecs::{components, Description, Name, Networked, Store};
+    use kiwi_ecs::{components, Description, Name, Networked, Store};
 
     components!("player", {
         @[
@@ -128,7 +128,7 @@ impl ServerWorldExt for World {
     }
 }
 
-pub fn assert_networked(desc: elements_ecs::ComponentDesc) {
+pub fn assert_networked(desc: kiwi_ecs::ComponentDesc) {
     if !desc.has_attribute::<Networked>() {
         panic!("Attempt to access sync {desc:#?} which is not marked as `Networked`. Attributes: {:?}", desc.attributes());
     }
@@ -138,7 +138,7 @@ pub fn assert_networked(desc: elements_ecs::ComponentDesc) {
     }
 }
 
-fn assert_persisted(desc: elements_ecs::ComponentDesc) {
+fn assert_persisted(desc: kiwi_ecs::ComponentDesc) {
     assert_networked(desc);
 
     if !desc.has_attribute::<Store>() {

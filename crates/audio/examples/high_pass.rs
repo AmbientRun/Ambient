@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use elements_audio::{track::Track, AudioStream, Source};
+use kiwi_audio::{track::Track, AudioStream, Source};
 
 fn main() {
     let stream = AudioStream::new().unwrap();

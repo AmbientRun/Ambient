@@ -1,11 +1,11 @@
-use elements_scripting_interface::components::core::{
+use kiwi_scripting_interface::components::core::{
     app::main_scene,
     camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},
     primitives::cube,
     rendering::{color, outline},
     transform::{lookat_center, scale, translation},
 };
-use elements_scripting_interface::{player::KeyCode, *};
+use kiwi_scripting_interface::{player::KeyCode, *};
 use palette::{FromColor, Hsl, Srgb};
 
 #[main]

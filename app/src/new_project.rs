@@ -2,8 +2,8 @@ use std::path::Path;
 
 use anyhow::Context;
 use convert_case::Casing;
-use elements_project::Identifier;
 use indoc::indoc;
+use kiwi_project::Identifier;
 
 pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Result<()> {
     let project_path = if let Some(name) = name { project_path.join(name) } else { project_path.to_owned() };
@@ -44,7 +44,7 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
             version = "0.1.0"
 
             [dependencies]
-            elements_scripting_interface = "0.0.1"
+            kiwi_scripting_interface = "0.0.1"
 
             [lib]
             crate-type = ["cdylib"]
@@ -74,7 +74,7 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
     std::fs::write(
         src.join("lib.rs"),
         indoc! {r#"
-            use elements_scripting_interface::*;
+            use kiwi_scripting_interface::*;
 
             #[main]
             pub async fn main() -> EventResult {

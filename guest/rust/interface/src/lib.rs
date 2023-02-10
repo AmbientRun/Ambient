@@ -42,7 +42,7 @@ pub use rand::prelude::*;
 #[doc(hidden)]
 pub const INTERFACE_VERSION: u32 = include!("../wit/INTERFACE_VERSION");
 
-interface_macros::elements_project!(extend = []);
+interface_macros::kiwi_project!(extend = []);
 
 #[inline]
 /// Helper function that returns the [std::default::Default::default] for the type `T`.

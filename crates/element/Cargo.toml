@@ -1,16 +1,16 @@
 
 [package]
-name = "elements_element"
+name = "kiwi_element"
 version.workspace = true
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-elements_ecs = { path = "../ecs" }
-elements_std = { path = "../std" }
-elements_core = { path = "../core" }
-elements_element_component = { path = "../element_component" }
+kiwi_ecs = { path = "../ecs" }
+kiwi_std = { path = "../std" }
+kiwi_core = { path = "../core" }
+kiwi_element_component = { path = "../element_component" }
 itertools.workspace = true
 as-any.workspace = true
 dyn-clonable.workspace = true

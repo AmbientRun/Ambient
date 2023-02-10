@@ -1,5 +1,5 @@
 [package]
-name = "elements_input"
+name = "kiwi_input"
 version.workspace = true
 edition = "2021"
 
@@ -7,9 +7,9 @@ edition = "2021"
 
 [dependencies]
 tracing.workspace = true
-elements_std = { path = "../std" }
-elements_ecs = { path = "../ecs" }
-elements_core = { path = "../core" }
+kiwi_std = { path = "../std" }
+kiwi_ecs = { path = "../ecs" }
+kiwi_core = { path = "../core" }
 winit.workspace = true
 glam.workspace = true
 serde.workspace = true

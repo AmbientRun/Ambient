@@ -1,20 +1,20 @@
 use std::sync::Arc;
 
-use elements_app::AppBuilder;
-use elements_core::{asset_cache, camera::active_camera, hierarchy::set_component_recursive, main_scene, mesh, transform::*};
-use elements_ecs::{EntityData, World};
-use elements_gpu::{
+use glam::*;
+use kiwi_app::AppBuilder;
+use kiwi_core::{asset_cache, camera::active_camera, hierarchy::set_component_recursive, main_scene, mesh, transform::*};
+use kiwi_ecs::{EntityData, World};
+use kiwi_gpu::{
     gpu::GpuKey, shader_module::{BindGroupDesc, ShaderModule}
 };
-use elements_meshes::QuadMeshKey;
-use elements_model_import::model_crate::ModelCrate;
-use elements_renderer::{
+use kiwi_meshes::QuadMeshKey;
+use kiwi_model_import::model_crate::ModelCrate;
+use kiwi_renderer::{
     gpu_primitives, material, materials::flat_material::{get_flat_shader, FlatMaterial}, primitives, renderer_shader, Material, MaterialShader, SharedMaterial, StandardShaderKey, MATERIAL_BIND_GROUP
 };
-use elements_std::{
+use kiwi_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, asset_url::AbsAssetUrl, math::SphericalCoords
 };
-use glam::*;
 use wgpu::BindGroup;
 
 #[derive(Clone, Debug)]
@@ -91,7 +91,7 @@ async fn init(world: &mut World) {
         .set(main_scene(), ())
         .spawn(world);
 
-    elements_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
+    kiwi_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
         .set(active_camera(), 0.)
         .set(main_scene(), ())
         .spawn(world);

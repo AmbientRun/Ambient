@@ -1,9 +1,9 @@
-use elements_ecs::{
+use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
+use kiwi_ecs::{
     paste::paste, primitive_component_definitions, with_component_registry, Component,
     ComponentDesc, ComponentEntry, EntityData, EntityId, EntityUid, World,
 };
-use elements_std::asset_url::ObjectRef;
-use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
+use kiwi_std::asset_url::ObjectRef;
 
 use super::{
     conversion::{FromBindgen, IntoBindgen},
@@ -13,16 +13,16 @@ use super::{
 
 pub type ComponentsParam<'a> = Vec<(u32, host::ComponentTypeParam<'a>)>;
 
-use elements_ecs::PrimitiveComponentType as PCT;
+use kiwi_ecs::PrimitiveComponentType as PCT;
 
 macro_rules! define_component_types {
     ($(($value:ident, $type:ty)),*) => { paste! {
         fn read_primitive_component_from_world(
             world: &World,
             entity_id: EntityId,
-            primitive_component: elements_ecs::PrimitiveComponent,
+            primitive_component: kiwi_ecs::PrimitiveComponent,
         ) -> Option<host::ComponentTypeResult> {
-            use elements_ecs::PrimitiveComponentType as PCT;
+            use kiwi_ecs::PrimitiveComponentType as PCT;
             use host::{ComponentTypeResult as CTR, ComponentListTypeResult as CLTR, ComponentOptionTypeResult as COTR};
 
             fn get<T: IntoBindgen + Clone + Send + Sync + 'static>(
@@ -45,15 +45,15 @@ macro_rules! define_component_types {
 
         pub(crate) fn read_primitive_component_from_entity_accessor(
             world: &World,
-            entity_accessor: &elements_ecs::EntityAccessor,
-            primitive_component: elements_ecs::PrimitiveComponent,
+            entity_accessor: &kiwi_ecs::EntityAccessor,
+            primitive_component: kiwi_ecs::PrimitiveComponent,
         ) -> Option<host::ComponentTypeResult> {
-            use elements_ecs::PrimitiveComponentType as PCT;
+            use kiwi_ecs::PrimitiveComponentType as PCT;
             use host::{ComponentTypeResult as CTR, ComponentListTypeResult as CLTR, ComponentOptionTypeResult as COTR};
 
             fn get<T: IntoBindgen + Clone + Send + Sync + 'static>(
                 world: &World,
-                entity_accessor: &elements_ecs::EntityAccessor,
+                entity_accessor: &kiwi_ecs::EntityAccessor,
                 component: ComponentDesc,
             ) -> <T as IntoBindgen>::Item {
                 entity_accessor.get(world, Component::<T>::new(component)).clone().into_bindgen()

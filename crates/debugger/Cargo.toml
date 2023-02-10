@@ -1,22 +1,22 @@
 [package]
-name = "elements_debugger"
+name = "kiwi_debugger"
 version.workspace = true
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-elements_element = { path = "../element" }
-elements_ui = { path = "../ui" }
-elements_ecs = { path = "../ecs" }
-elements_std = { path = "../std" }
-elements_renderer = { path = "../renderer" }
-elements_gpu = { path = "../gpu" }
-elements_core = { path = "../core" }
-elements_gizmos = { path = "../gizmos" }
-elements_element_component = { path = "../element_component" }
-elements_rpc = { path = "../rpc" }
-elements_network = { path = "../network" }
+kiwi_element = { path = "../element" }
+kiwi_ui = { path = "../ui" }
+kiwi_ecs = { path = "../ecs" }
+kiwi_std = { path = "../std" }
+kiwi_renderer = { path = "../renderer" }
+kiwi_gpu = { path = "../gpu" }
+kiwi_core = { path = "../core" }
+kiwi_gizmos = { path = "../gizmos" }
+kiwi_element_component = { path = "../element_component" }
+kiwi_rpc = { path = "../rpc" }
+kiwi_network = { path = "../network" }
 winit.workspace = true
 glam.workspace = true
 wgpu.workspace = true

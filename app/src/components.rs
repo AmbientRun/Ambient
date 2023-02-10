@@ -1,14 +1,14 @@
 pub(crate) fn init() -> anyhow::Result<()> {
-    elements_ecs::PrimitiveComponentType::register_attributes();
+    kiwi_ecs::PrimitiveComponentType::register_attributes();
 
-    elements_app::init_all_components();
-    elements_network::init_all_components();
-    elements_physics::init_all_components();
-    elements_scripting::shared::init_components();
-    elements_decals::init_components();
-    elements_world_audio::init_components();
-    elements_primitives::init_components();
-    elements_project::init_components();
+    kiwi_app::init_all_components();
+    kiwi_network::init_all_components();
+    kiwi_physics::init_all_components();
+    kiwi_scripting::shared::init_components();
+    kiwi_decals::init_components();
+    kiwi_world_audio::init_components();
+    kiwi_primitives::init_components();
+    kiwi_project::init_components();
 
     crate::player::init_all_components();
 
@@ -17,7 +17,7 @@ pub(crate) fn init() -> anyhow::Result<()> {
 
 #[cfg(not(feature = "production"))]
 pub(crate) mod dev {
-    use elements_ecs::Resource;
+    use kiwi_ecs::Resource;
 
     pub fn build_components_toml() -> toml_edit::Document {
         let mut doc = toml_edit::Document::new();
@@ -31,7 +31,7 @@ pub(crate) mod dev {
         }
 
         {
-            let component_registry = elements_ecs::ComponentRegistry::get();
+            let component_registry = kiwi_ecs::ComponentRegistry::get();
 
             let mut all_primitive = component_registry.all_primitive().collect::<Vec<_>>();
             all_primitive.sort_by_key(|pc| pc.desc.path());

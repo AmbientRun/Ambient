@@ -1,4 +1,4 @@
-pub use elements_asset_cache as asset_cache;
+pub use kiwi_asset_cache as asset_cache;
 pub mod asset_url;
 pub mod barc;
 pub mod color;

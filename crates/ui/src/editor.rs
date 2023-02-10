@@ -1,13 +1,13 @@
 use std::{fmt::Debug, ops::Deref, sync::Arc};
 
 use closure::closure;
-use elements_core::{
+use kiwi_core::{
     name, transform::{euler_rotation, scale, translation}
 };
-use elements_ecs::{AttributeConstructor, Component, ComponentAttribute, ComponentEntry, ComponentValue, World};
-use elements_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
-use elements_renderer::{cast_shadows, color, overlay};
-use elements_std::{time::Timeout, Cb};
+use kiwi_ecs::{AttributeConstructor, Component, ComponentAttribute, ComponentEntry, ComponentValue, World};
+use kiwi_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
+use kiwi_renderer::{cast_shadows, color, overlay};
+use kiwi_std::{time::Timeout, Cb};
 use parking_lot::Mutex;
 
 use crate::{
@@ -180,7 +180,7 @@ impl<T> AttributeConstructor<T, ()> for Editable
 where
     T: ComponentValue + Editor,
 {
-    fn construct(store: &mut elements_ecs::AttributeStore, _: ()) {
+    fn construct(store: &mut kiwi_ecs::AttributeStore, _: ()) {
         let editable = Editable {
             edit: |editor, on_change, opts| {
                 let entry = editor.entry;
@@ -202,7 +202,7 @@ where
     }
 }
 
-/// Adds the `Editable` attribute to multiple components where depending on `elements_ui` is not
+/// Adds the `Editable` attribute to multiple components where depending on `kiwi_ui` is not
 /// possible.
 pub fn hydrate_editable() {
     fn set<T: ComponentValue + Editor>(component: Component<T>) {
@@ -231,7 +231,7 @@ pub struct OffscreenEditor<T> {
 }
 
 impl<T: Debug + ComponentValue + Editor> ElementComponent for OffscreenEditor<T> {
-    fn render(self: Box<Self>, _: &mut elements_ecs::World, hooks: &mut elements_element::Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut kiwi_ecs::World, hooks: &mut kiwi_element::Hooks) -> Element {
         let Self { title, value, on_confirm, editor, opts } = *self;
 
         let (screen, set_screen) = hooks.use_state(None);

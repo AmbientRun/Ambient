@@ -3,11 +3,11 @@
 // the borrowed boxes.)
 // At some point, we should revisit this and try to make it work again, but that was not
 // a good use of time.
-// error[E0277]: can't compare `&dyn elements_ecs::IComponent` with `elements_ecs::Component<dims_game_objects::player_input::PlayerInput>`
-//     = help: the trait `std::cmp::PartialEq<elements_ecs::Component<dims_game_objects::player_input::PlayerInput>>` is not implemented for `&dyn elements_ecs::IComponent`
+// error[E0277]: can't compare `&dyn kiwi_ecs::IComponent` with `kiwi_ecs::Component<dims_game_objects::player_input::PlayerInput>`
+//     = help: the trait `std::cmp::PartialEq<kiwi_ecs::Component<dims_game_objects::player_input::PlayerInput>>` is not implemented for `&dyn kiwi_ecs::IComponent`
 //     = help: the following other types implement trait `std::cmp::PartialEq<Rhs>`:
-//               <(dyn elements_ecs::IComponent + 'a) as std::cmp::PartialEq<elements_ecs::Component<T>>>
-//               <(dyn elements_ecs::IComponent + 'a) as std::cmp::PartialEq>
+//               <(dyn kiwi_ecs::IComponent + 'a) as std::cmp::PartialEq<kiwi_ecs::Component<T>>>
+//               <(dyn kiwi_ecs::IComponent + 'a) as std::cmp::PartialEq>
 #![allow(clippy::borrowed_box)]
 
 use std::{self, any::Any};

@@ -1,13 +1,13 @@
-use elements_app::AppBuilder;
-use elements_core::{
+use glam::*;
+use kiwi_app::AppBuilder;
+use kiwi_core::{
     asset_cache, camera::{active_camera, far}, main_scene, transform::*
 };
-use elements_ecs::World;
-use elements_element::ElementComponentExt;
-use elements_model_import::model_crate::ModelCrate;
-use elements_primitives::Quad;
-use elements_std::{asset_url::AbsAssetUrl, math::SphericalCoords};
-use glam::*;
+use kiwi_ecs::World;
+use kiwi_element::ElementComponentExt;
+use kiwi_model_import::model_crate::ModelCrate;
+use kiwi_primitives::Quad;
+use kiwi_std::{asset_url::AbsAssetUrl, math::SphericalCoords};
 
 async fn init(world: &mut World) {
     let assets = world.resource(asset_cache()).clone();
@@ -26,7 +26,7 @@ async fn init(world: &mut World) {
 
     model.spawn(world, &Default::default());
 
-    elements_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
+    kiwi_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
         .set(active_camera(), 0.)
         .set(main_scene(), ())
         .set(far(), 2000.)

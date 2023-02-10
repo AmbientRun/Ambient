@@ -2,17 +2,17 @@ use std::{f32::consts::PI, sync::Arc};
 
 use derive_more::*;
 use downcast_rs::{impl_downcast, DowncastSync};
-use elements_core::{
+use glam::{uvec4, UVec2, UVec4, Vec3, Vec4};
+use kiwi_core::{
     gpu_components, gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldShaderModuleKey, GpuWorldSyncEvent}, mesh, transform::get_world_rotation
 };
-use elements_ecs::{
+use kiwi_ecs::{
     components, query_mut, Debuggable, Description, EntityId, MakeDefault, Name, Networked, Resource, Store, SystemGroup, World
 };
-use elements_gpu::{
+use kiwi_gpu::{
     mesh_buffer::{get_mesh_buffer_types, GpuMesh, MESH_BUFFER_TYPES_WGSL}, shader_module::{BindGroupDesc, Shader, ShaderModule, ShaderModuleIdentifier}, wgsl_utils::wgsl_interpolate
 };
-use elements_std::{asset_cache::*, include_file};
-use glam::{uvec4, UVec2, UVec4, Vec3, Vec4};
+use kiwi_std::{asset_cache::*, include_file};
 use serde::{Deserialize, Serialize};
 
 mod collect;
@@ -31,8 +31,8 @@ mod transparent_renderer;
 mod tree_renderer;
 pub use collect::*;
 pub use culling::*;
-use elements_ecs::{query, Component};
 pub use globals::*;
+use kiwi_ecs::{query, Component};
 pub use materials::*;
 use ordered_float::OrderedFloat;
 pub use outlines::*;

@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
-use elements_ecs::{Component, ComponentDesc, ComponentValue, EntityData, EntityId, World};
-use elements_std::events::EventDispatcher;
+use kiwi_ecs::{Component, ComponentDesc, ComponentValue, EntityData, EntityId, World};
+use kiwi_std::events::EventDispatcher;
 
 use crate::ElementComponent;
 

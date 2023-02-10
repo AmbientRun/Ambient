@@ -1,5 +1,5 @@
 [package]
-name = "elements_asset_cache"
+name = "kiwi_asset_cache"
 version.workspace = true
 edition = "2021"
 

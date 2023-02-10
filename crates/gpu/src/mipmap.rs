@@ -1,6 +1,6 @@
 use std::num::NonZeroU32;
 
-use elements_std::asset_cache::{AssetCache, SyncAssetKeyExt};
+use kiwi_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 
 use super::blit::BlitterKey;
 

@@ -1,7 +1,7 @@
 use std::{num::NonZeroU8, sync::Arc};
 
-use elements_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 use glam::{uvec4, UVec4};
+use kiwi_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 
 use crate::{
     gpu::GpuKey, texture::{Texture, TextureView}

@@ -2,16 +2,16 @@ use std::sync::{
     atomic::{AtomicU32, Ordering}, Arc
 };
 
-use elements_core::{
-    asset_cache, gpu_components, gpu_ecs::{GpuComponentFormat, GpuWorldSyncEvent, MappedComponentToGpuSystem}, transform::{inv_local_to_world, local_to_world}
-};
-use elements_ecs::{components, query, Commands, Description, EntityId, Name, Networked, Store, SystemGroup};
-use elements_gpu::{
-    gpu::{Gpu, GpuKey}, typed_buffer::TypedBuffer
-};
-use elements_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 use glam::Mat4;
 use itertools::Itertools;
+use kiwi_core::{
+    asset_cache, gpu_components, gpu_ecs::{GpuComponentFormat, GpuWorldSyncEvent, MappedComponentToGpuSystem}, transform::{inv_local_to_world, local_to_world}
+};
+use kiwi_ecs::{components, query, Commands, Description, EntityId, Name, Networked, Store, SystemGroup};
+use kiwi_gpu::{
+    gpu::{Gpu, GpuKey}, typed_buffer::TypedBuffer
+};
+use kiwi_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 use parking_lot::Mutex;
 
 components!("rendering", {

@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
-use elements_gpu::{
+use glam::Vec4;
+use kiwi_gpu::{
     gpu::{Gpu, GpuKey}, shader_module::{BindGroupDesc, ShaderModule}
 };
-use elements_std::{
+use kiwi_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, include_file
 };
-use glam::Vec4;
 use wgpu::{util::DeviceExt, BindGroup};
 
 use super::super::{Material, MaterialShader, RendererShader, MATERIAL_BIND_GROUP};

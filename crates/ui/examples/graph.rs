@@ -1,17 +1,17 @@
 use std::f32::consts::TAU;
 
-use elements_app::AppBuilder;
-use elements_cameras::UICamera;
-use elements_core::{camera::active_camera, runtime};
-use elements_ecs::World;
-use elements_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use elements_std::{time::Clock, IntoDuration};
-use elements_ui::{
-    self, graph::{Graph, GraphScaleKind, GraphStyle}, *
-};
 use fixed_vec_deque::FixedVecDeque;
 use glam::{vec2, vec4, Vec2};
 use itertools::Itertools;
+use kiwi_app::AppBuilder;
+use kiwi_cameras::UICamera;
+use kiwi_core::{camera::active_camera, runtime};
+use kiwi_ecs::World;
+use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use kiwi_std::{time::Clock, IntoDuration};
+use kiwi_ui::{
+    self, graph::{Graph, GraphScaleKind, GraphStyle}, *
+};
 use rand::{prelude::StdRng, Rng, SeedableRng};
 
 #[derive(Debug, Clone)]
