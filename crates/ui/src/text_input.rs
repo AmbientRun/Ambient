@@ -93,9 +93,7 @@ pub fn TextInput(
                             }
                             VirtualKeyCode::V => {
                                 if command && state == &ElementState::Pressed {
-                                    use clipboard::{ClipboardContext, ClipboardProvider};
-                                    let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
-                                    if let Ok(paste) = ctx.get_contents() {
+                                    if let Ok(paste) = arboard::Clipboard::new().unwrap().get_text() {
                                         on_change.0(format!("{value}{paste}"));
                                     }
                                 }

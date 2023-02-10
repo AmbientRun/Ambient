@@ -23,7 +23,6 @@ futures.workspace = true
 closure.workspace = true
 log.workspace = true
 wgpu.workspace = true
-clipboard.workspace = true
 indexmap.workspace = true
 serde.workspace = true
 async-trait.workspace = true
@@ -36,6 +35,7 @@ bytemuck.workspace = true
 convert_case.workspace = true
 anyhow.workspace = true
 tracing.workspace = true
+arboard.workspace = true
 
 [dev-dependencies]
 kiwi_app = { path = "../app" }
