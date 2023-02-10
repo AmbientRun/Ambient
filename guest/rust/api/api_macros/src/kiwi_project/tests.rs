@@ -34,7 +34,7 @@ fn can_generate_components_from_manifest_in_global_namespace() {
                 }
                 pub mod camera {
                     static ACTIVE_CAMERA: crate::LazyComponent<f32> = crate::lazy_component!("core::camera::active_camera");
-                    #[doc = "**Active Camera**\n\nNo description provided"]
+                    #[doc = "**Active Camera**: No description provided"]
                     pub fn active_camera() -> crate::Component<f32> {
                         *ACTIVE_CAMERA
                     }
@@ -46,7 +46,7 @@ fn can_generate_components_from_manifest_in_global_namespace() {
                 }
                 pub mod rendering {
                     static JOINTS: crate::LazyComponent< Vec<crate::EntityId> > = crate::lazy_component!("core::rendering::joints");
-                    #[doc = "**Joints**\n\nNo description provided"]
+                    #[doc = "**Joints**: No description provided"]
                     pub fn joints() -> crate::Component< Vec<crate::EntityId> > {
                         *JOINTS
                     }
@@ -89,7 +89,7 @@ fn can_extend_existing_components_in_global_namespace() {
                 pub mod camera {
                     pub use base::components::core::camera::*;
                     static ACTIVE_CAMERA: crate::LazyComponent<f32> = crate::lazy_component!("core::camera::active_camera");
-                    #[doc = "**Active Camera**\n\nNo description provided"]
+                    #[doc = "**Active Camera**: No description provided"]
                     pub fn active_camera() -> crate::Component<f32> {
                         *ACTIVE_CAMERA
                     }
@@ -99,7 +99,7 @@ fn can_extend_existing_components_in_global_namespace() {
                 }
                 pub mod rendering {
                     static JOINTS: crate::LazyComponent< Vec<crate::EntityId> > = crate::lazy_component!("core::rendering::joints");
-                    #[doc = "**Joints**\n\nNo description provided"]
+                    #[doc = "**Joints**: No description provided"]
                     pub fn joints() -> crate::Component< Vec<crate::EntityId> > {
                         *JOINTS
                     }
@@ -170,7 +170,7 @@ fn can_generate_components_from_manifest() {
         [components."a_cool_component_2"]
         type = "Empty"
         name = "Cool Component 2"
-        description = "The cool-er component"
+        description = "The cool-er component.\nBuy now in stores!"
         attributes = ["Store", "Networked"]
         "#};
 
@@ -185,7 +185,7 @@ fn can_generate_components_from_manifest() {
             }
 
             static A_COOL_COMPONENT_2: crate::LazyComponent<()> = crate::lazy_component!("my_project::a_cool_component_2");
-            #[doc = "**Cool Component 2**\n\nThe cool-er component\n\n*Attributes*: Store, Networked"]
+            #[doc = "**Cool Component 2**: The cool-er component.\n\nBuy now in stores!\n\n*Attributes*: Store, Networked"]
             pub fn a_cool_component_2() -> crate::Component<()> {
                 *A_COOL_COMPONENT_2
             }

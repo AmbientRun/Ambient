@@ -25,13 +25,13 @@ components!("camera", {
     @[
         Networked, Store,
         Name["Perspective-infinite-reverse projection"],
-        Description["If attached, this camera will use a perspective-infinite-reverse projection matrix, which is well-suited for rendering large worlds as it has no far plane. Ensure `near` is set."]
+        Description["If attached, this camera will use a perspective-infinite-reverse projection matrix.\nThis is well-suited for rendering large worlds as it has no far plane. Ensure `near` is set."]
     ]
     perspective_infinite_reverse: (),
     @[
         Networked, Store,
         Name["Perspective projection"],
-        Description["If attached, this camera will use a standard perspective projection matrix. Ensure that `near` and `far` are set."]
+        Description["If attached, this camera will use a standard perspective projection matrix.\nEnsure that `near` and `far` are set."]
     ]
     perspective: (),
     @[
@@ -55,7 +55,7 @@ components!("camera", {
     @[
         Networked, Store,
         Name["Aspect ratio"],
-        Description["The aspect ratio of this camera. If `aspect_ratio_from_window` is set, this will be automatically updated to match the window."]
+        Description["The aspect ratio of this camera.\nIf `aspect_ratio_from_window` is set, this will be automatically updated to match the window."]
     ]
     aspect_ratio: f32,
     @[
@@ -67,7 +67,7 @@ components!("camera", {
     @[
         Networked, Store,
         Name["Projection"],
-        Description["The projection matrix of this camera. This can be driven by other components, including `perspective` and `perspective_infinite_reverse`."]
+        Description["The projection matrix of this camera.\nThis can be driven by other components, including `perspective` and `perspective_infinite_reverse`."]
     ]
     projection: glam::Mat4,
     @[

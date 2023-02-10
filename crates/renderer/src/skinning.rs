@@ -26,7 +26,7 @@ components!("rendering", {
     @[
         Networked, Store,
         Name["Joint Matrices"],
-        Description["Contains the matrices for each joint of this skinned mesh. This should be used in combination with `joints`."]
+        Description["Contains the matrices for each joint of this skinned mesh.\nThis should be used in combination with `joints`."]
     ]
     joint_matrices: Vec<glam::Mat4>,
 

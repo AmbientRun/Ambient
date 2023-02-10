@@ -38,13 +38,13 @@ pub mod player {
         @[
             Networked, Store,
             Name["Player"],
-            Description["This entity is a player. Note that this is a logical construct; a player's body may be separate from the player itself."]
+            Description["This entity is a player.\nNote that this is a logical construct; a player's body may be separate from the player itself."]
         ]
         player: (),
         @[
             Networked, Store,
             Name["User ID"],
-            Description["An identifier attached to all things owned by a user, and supplied by the user. This can be attached to more than just the player; by convention, it is also attached to related entities, including their camera and body."]
+            Description["An identifier attached to all things owned by a user, and supplied by the user.\nThis can be attached to more than just the player; by convention, it is also attached to related entities, including their camera and body."]
         ]
         user_id: String,
         @[

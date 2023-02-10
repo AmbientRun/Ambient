@@ -126,21 +126,19 @@ pub fn implementation(
                 let name_ident: syn::Ident = syn::parse_str(name)?;
                 let name_uppercase_ident: syn::Ident = syn::parse_str(&name.to_ascii_uppercase())?;
                 let component_ty = component.type_.to_token_stream()?;
-                let attributes_str = if component.attributes.is_empty() {
-                    String::new()
-                } else {
-                    format!("*Attributes*: {}", component.attributes.clone().join(", "))
-                };
 
-                let doc_comment = [
-                    format!("**{}**", component.name),
-                    component.description.clone(),
-                    attributes_str,
-                ]
-                .into_iter()
-                .filter(|s| !s.is_empty())
-                .collect::<Vec<_>>()
-                .join("\n\n");
+                let mut doc_comment = format!("**{}**", component.name);
+
+                if !component.description.is_empty() {
+                    doc_comment += &format!(": {}", component.description.replace('\n', "\n\n"));
+                }
+
+                if !component.attributes.is_empty() {
+                    doc_comment += &format!(
+                        "\n\n*Attributes*: {}",
+                        component.attributes.clone().join(", ")
+                    )
+                }
 
                 let id = [project_path, &tree_node.path].concat().join("::");
 

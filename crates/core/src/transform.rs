@@ -60,7 +60,7 @@ components!("transform", {
     @[
         Debuggable, Networked, Store,
         Name["Inverse Local to World"],
-        Description["Converts a world position to a local position. This is automatically updated."]
+        Description["Converts a world position to a local position.\nThis is automatically updated."]
     ]
     inv_local_to_world: Mat4,
 
@@ -79,7 +79,7 @@ components!("transform", {
     @[
         Debuggable, Networked, Store,
         Name["Mesh to World"],
-        Description["Transformation from mesh-space to world space. This is automatically updated when `mesh_to_local` and `local_to_world` change."]
+        Description["Transformation from mesh-space to world space.\nThis is automatically updated when `mesh_to_local` and `local_to_world` change."]
     ]
     mesh_to_world: Mat4,
     @[
@@ -91,7 +91,7 @@ components!("transform", {
     @[
         Debuggable, Networked, Store,
         Name["Cylindrical billboard Z"],
-        Description["If attached, this ensures this entity is always aligned with the camera, except on the Z-axis. This is useful for decorations that the player will be looking at from roughly the same altitude."]
+        Description["If attached, this ensures this entity is always aligned with the camera, except on the Z-axis.\nThis is useful for decorations that the player will be looking at from roughly the same altitude."]
     ]
     cylindrical_billboard_z: (),
 

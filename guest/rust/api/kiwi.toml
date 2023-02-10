@@ -31,7 +31,9 @@ attributes = ["Networked", "Store"]
 [components."core::camera::aspect_ratio"]
 type = "F32"
 name = "Aspect ratio"
-description = "The aspect ratio of this camera. If `aspect_ratio_from_window` is set, this will be automatically updated to match the window."
+description = """
+The aspect ratio of this camera.
+If `aspect_ratio_from_window` is set, this will be automatically updated to match the window."""
 attributes = ["Networked", "Store"]
 
 [components."core::camera::aspect_ratio_from_window"]
@@ -67,19 +69,25 @@ attributes = ["Networked", "Store"]
 [components."core::camera::perspective"]
 type = "Empty"
 name = "Perspective projection"
-description = "If attached, this camera will use a standard perspective projection matrix. Ensure that `near` and `far` are set."
+description = """
+If attached, this camera will use a standard perspective projection matrix.
+Ensure that `near` and `far` are set."""
 attributes = ["Networked", "Store"]
 
 [components."core::camera::perspective_infinite_reverse"]
 type = "Empty"
 name = "Perspective-infinite-reverse projection"
-description = "If attached, this camera will use a perspective-infinite-reverse projection matrix, which is well-suited for rendering large worlds as it has no far plane. Ensure `near` is set."
+description = """
+If attached, this camera will use a perspective-infinite-reverse projection matrix.
+This is well-suited for rendering large worlds as it has no far plane. Ensure `near` is set."""
 attributes = ["Networked", "Store"]
 
 [components."core::camera::projection"]
 type = "Mat4"
 name = "Projection"
-description = "The projection matrix of this camera. This can be driven by other components, including `perspective` and `perspective_infinite_reverse`."
+description = """
+The projection matrix of this camera.
+This can be driven by other components, including `perspective` and `perspective_infinite_reverse`."""
 attributes = ["Networked", "Store"]
 
 [components."core::camera::projection_view"]
@@ -97,7 +105,9 @@ attributes = ["Networked", "Store"]
 [components."core::camera::ui_camera"]
 type = "Empty"
 name = "UI camera"
-description = "This entity is a camera that is used to render UI. Ensure that you have the remaining camera components."
+description = """
+This entity is a camera that is used to render UI.
+Ensure that you have the remaining camera components."""
 attributes = ["Networked", "Store"]
 
 [components."core::ecs::children"]
@@ -169,25 +179,33 @@ attributes = ["Debuggable", "Networked"]
 [components."core::physics::box_collider"]
 type = "Vec3"
 name = "Box collider"
-description = "If attached, this entity will have a box physics collider. `x, y, z` is the size of the box."
+description = """
+If attached, this entity will have a box physics collider.
+`x, y, z` is the size of the box."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::physics::character_controller_height"]
 type = "F32"
 name = "Character controller height"
-description = "The height of the physics character controller attached to this entity. If an entity has both this and a `character_controller_radius`, it will be given a physical character collider."
+description = """
+The height of the physics character controller attached to this entity.
+If an entity has both this and a `character_controller_radius`, it will be given a physical character collider."""
 attributes = ["Networked", "Store"]
 
 [components."core::physics::character_controller_radius"]
 type = "F32"
 name = "Character controller radius"
-description = "The radius of the physics character controller attached to this entity. If an entity has both this and a `character_controller_height`, it will be given a physical character collider."
+description = """
+The radius of the physics character controller attached to this entity.
+If an entity has both this and a `character_controller_height`, it will be given a physical character collider."""
 attributes = ["Networked", "Store"]
 
 [components."core::physics::collider_from_url"]
 type = "String"
 name = "Collider from URL"
-description = "This entity will load its physics collider from the URL. The value is the URL to load from."
+description = """
+This entity will load its physics collider from the URL.
+The value is the URL to load from."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::physics::collider_loads"]
@@ -199,7 +217,9 @@ attributes = ["Debuggable", "Networked", "Resource", "Store"]
 [components."core::physics::density"]
 type = "F32"
 name = "Density"
-description = "The density of this entity. This is used to update the `mass` when the entity is rescaled."
+description = """
+The density of this entity.
+This is used to update the `mass` when the entity is rescaled."""
 attributes = ["Networked", "Store"]
 
 [components."core::physics::dynamic"]
@@ -223,19 +243,25 @@ attributes = ["Debuggable", "Networked", "Store"]
 [components."core::physics::physics_controlled"]
 type = "Empty"
 name = "Physics controlled"
-description = "If attached, this entity will be controlled by physics. Note that this requires the entity to have a collider."
+description = """
+If attached, this entity will be controlled by physics.
+Note that this requires the entity to have a collider."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::physics::plane_collider"]
 type = "Empty"
 name = "Plane collider"
-description = "If attached, this entity will have a plane physics collider. `x, y, z` is the normal, and `w` is the distance."
+description = """
+If attached, this entity will have a plane physics collider.
+`x, y, z` is the normal, and `w` is the distance."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::physics::sphere_collider"]
 type = "F32"
 name = "Sphere collider"
-description = "If attached, this entity will have a sphere physics collider. The value corresponds to the radius of the sphere."
+description = """
+If attached, this entity will have a sphere physics collider.
+The value corresponds to the radius of the sphere."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::physics::unit_mass"]
@@ -265,13 +291,17 @@ attributes = ["Networked", "Store"]
 [components."core::player::player"]
 type = "Empty"
 name = "Player"
-description = "This entity is a player. Note that this is a logical construct; a player's body may be separate from the player itself."
+description = """
+This entity is a player.
+Note that this is a logical construct; a player's body may be separate from the player itself."""
 attributes = ["Networked", "Store"]
 
 [components."core::player::user_id"]
 type = "String"
 name = "User ID"
-description = "An identifier attached to all things owned by a user, and supplied by the user. This can be attached to more than just the player; by convention, it is also attached to related entities, including their camera and body."
+description = """
+An identifier attached to all things owned by a user, and supplied by the user.
+This can be attached to more than just the player; by convention, it is also attached to related entities, including their camera and body."""
 attributes = ["Networked", "Store"]
 
 [components."core::primitives::cube"]
@@ -325,7 +355,9 @@ attributes = ["Debuggable", "Networked", "Store"]
 [components."core::rendering::joint_matrices"]
 type = { type = "Vec", element_type = "Mat4" }
 name = "Joint Matrices"
-description = "Contains the matrices for each joint of this skinned mesh. This should be used in combination with `joints`."
+description = """
+Contains the matrices for each joint of this skinned mesh.
+This should be used in combination with `joints`."""
 attributes = ["Networked", "Store"]
 
 [components."core::rendering::joints"]
@@ -355,7 +387,9 @@ attributes = ["Networked", "Store"]
 [components."core::rendering::outline_recursive"]
 type = "Vec4"
 name = "Outline (recursive)"
-description = "If attached, this entity and all of its children will be rendered with an outline with the color specified. You do not need to attach `outline` if you have attached `outline_recursive`."
+description = """
+If attached, this entity and all of its children will be rendered with an outline with the color specified.
+You do not need to attach `outline` if you have attached `outline_recursive`."""
 attributes = ["Networked", "Store"]
 
 [components."core::rendering::overlay"]
@@ -379,7 +413,9 @@ attributes = ["Debuggable", "Networked", "Store"]
 [components."core::transform::cylindrical_billboard_z"]
 type = "Empty"
 name = "Cylindrical billboard Z"
-description = "If attached, this ensures this entity is always aligned with the camera, except on the Z-axis. This is useful for decorations that the player will be looking at from roughly the same altitude."
+description = """
+If attached, this ensures this entity is always aligned with the camera, except on the Z-axis.
+This is useful for decorations that the player will be looking at from roughly the same altitude."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::transform::euler_rotation"]
@@ -391,7 +427,9 @@ attributes = ["Debuggable", "Networked", "Store"]
 [components."core::transform::inv_local_to_world"]
 type = "Mat4"
 name = "Inverse Local to World"
-description = "Converts a world position to a local position. This is automatically updated."
+description = """
+Converts a world position to a local position.
+This is automatically updated."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::transform::local_to_parent"]
@@ -427,7 +465,9 @@ attributes = ["Debuggable", "Networked", "Store"]
 [components."core::transform::mesh_to_world"]
 type = "Mat4"
 name = "Mesh to World"
-description = "Transformation from mesh-space to world space. This is automatically updated when `mesh_to_local` and `local_to_world` change."
+description = """
+Transformation from mesh-space to world space.
+This is automatically updated when `mesh_to_local` and `local_to_world` change."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::transform::reset_scale"]

@@ -34,25 +34,25 @@ components!("physics", {
     @[
         Debuggable, Networked, Store,
         Name["Plane collider"],
-        Description["If attached, this entity will have a plane physics collider. `x, y, z` is the normal, and `w` is the distance."]
+        Description["If attached, this entity will have a plane physics collider.\n`x, y, z` is the normal, and `w` is the distance."]
     ]
     plane_collider: (),
     @[
         Debuggable, Networked, Store,
         Name["Box collider"],
-        Description["If attached, this entity will have a box physics collider. `x, y, z` is the size of the box."]
+        Description["If attached, this entity will have a box physics collider.\n`x, y, z` is the size of the box."]
     ]
     box_collider: Vec3,
     @[
         Debuggable, Networked, Store,
         Name["Sphere collider"],
-        Description["If attached, this entity will have a sphere physics collider. The value corresponds to the radius of the sphere."]
+        Description["If attached, this entity will have a sphere physics collider.\nThe value corresponds to the radius of the sphere."]
     ]
     sphere_collider: f32,
     @[
         Debuggable, Networked, Store,
         Name["Collider from URL"],
-        Description["This entity will load its physics collider from the URL. The value is the URL to load from."]
+        Description["This entity will load its physics collider from the URL.\nThe value is the URL to load from."]
     ]
     collider_from_url: String,
 
@@ -79,20 +79,20 @@ components!("physics", {
     @[
         MakeDefault[one], Editable, Networked, Store,
         Name["Density"],
-        Description["The density of this entity. This is used to update the `mass` when the entity is rescaled."]
+        Description["The density of this entity.\nThis is used to update the `mass` when the entity is rescaled."]
     ]
     density: f32,
 
     @[
         MakeDefault, Networked, Store,
         Name["Character controller height"],
-        Description["The height of the physics character controller attached to this entity. If an entity has both this and a `character_controller_radius`, it will be given a physical character collider."]
+        Description["The height of the physics character controller attached to this entity.\nIf an entity has both this and a `character_controller_radius`, it will be given a physical character collider."]
     ]
     character_controller_height: f32,
     @[
         MakeDefault, Networked, Store,
         Name["Character controller radius"],
-        Description["The radius of the physics character controller attached to this entity. If an entity has both this and a `character_controller_height`, it will be given a physical character collider."]
+        Description["The radius of the physics character controller attached to this entity.\nIf an entity has both this and a `character_controller_height`, it will be given a physical character collider."]
     ]
     character_controller_radius: f32,
 });
