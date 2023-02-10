@@ -67,7 +67,7 @@ impl WorldDiff {
         let in_both = to_entities.iter().filter(|id| from_entities.contains(id)).cloned().collect_vec();
 
         let spawned = spawned.into_iter().map(|id| WorldChange::Spawn(Some(id), filter.read_entity_components(to, id).into()));
-        let despanwed = despawned.into_iter().map(|id| WorldChange::Despawn(id));
+        let despanwed = despawned.into_iter().map(WorldChange::Despawn);
         let updated = in_both.into_iter().flat_map(|id| {
             let from_comps: HashMap<_, _> = filter.get_entity_components(from, id).into_iter().map(|v| (v.index(), v)).collect();
             let to_comps: HashMap<_, _> = filter.get_entity_components(to, id).into_iter().map(|v| (v.index(), v)).collect();

@@ -47,7 +47,7 @@ impl<T: ToString + PartialEq + Default + Clone + Debug + Sync + Send + 'static> 
 impl<T: ToString + PartialEq + Default + Clone + Debug + Sync + Send + 'static> ElementComponent for Tabs<T> {
     fn render(self: Box<Self>, _: &mut World, hooks: &mut Hooks) -> Element {
         let (value, set_value) = hooks.use_state(T::default());
-        let selected_tab = self.tabs.iter().find(|it| it.0 == value).map(|it| it.1.clone()).unwrap_or(Cb::new(|| Element::new()));
+        let selected_tab = self.tabs.iter().find(|it| it.0 == value).map(|it| it.1.clone()).unwrap_or(Cb::new(Element::new));
         let key = value.to_string();
 
         FlowColumn::el([

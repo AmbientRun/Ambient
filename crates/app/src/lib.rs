@@ -186,7 +186,7 @@ impl AppBuilder {
     }
     pub fn build(self) -> anyhow::Result<App> {
         crate::init_all_components();
-        let event_loop = self.event_loop.unwrap_or_else(|| EventLoop::new());
+        let event_loop = self.event_loop.unwrap_or_else(EventLoop::new);
         let window = self.window_builder.unwrap_or_default();
         let window = Arc::new(window.build(&event_loop).unwrap());
 

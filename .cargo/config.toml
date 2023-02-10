@@ -7,7 +7,6 @@ rustflags = [
   "-Aclippy::new_without_default",
   # Does not change much for us, and increases iteration time
   "-Aclippy::or-fun-call",
-  "-Aclippy::redundant-closure",
   # We have a lot of complex types
   "-Aclippy::type_complexity",
   "-Dclippy::disallowed-macros",
