@@ -23,7 +23,7 @@ use util::get_module_name;
 use wasi_common::WasiCtx;
 use wasmtime::Linker;
 
-components!("scripting::shared", {
+components!("wasm::shared", {
     @[Networked, Store]
     script_module: (),
     @[Store]
@@ -33,7 +33,7 @@ components!("scripting::shared", {
     @[Networked, Store]
     script_module_errors: ScriptModuleErrors,
 
-    /// used to signal messages from the scripting host/runtime
+    /// used to signal messages from the WASM host/runtime
     @[Resource]
     messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
 });
@@ -337,10 +337,10 @@ pub fn run<
     // TODO(philpax): come up with a more intelligent dispatch scheme than this
     // This can very easily result in an infinite loop.
     // Things to fix include:
-    // - don't let a script trigger an event on itself
-    // - don't let two scripts chat with each other indefinitely (shunt them to the next tick)
+    // - don't let a module trigger an event on itself
+    // - don't let two modules chat with each other indefinitely (shunt them to the next tick)
     // - don't do the event dispatch in this function and instead do it *after* initial
-    //   execution of all scripts
+    //   execution of all modules
     for (event_name, event_data) in events_to_run {
         run_all(
             world,
@@ -363,7 +363,7 @@ pub fn spawn_script(
         .iter(world, None)
         .any(|(id, _)| &get_module_name(world, id) == name)
     {
-        anyhow::bail!("a script module by the name {name} already exists");
+        anyhow::bail!("a WASM module by the name {name} already exists");
     }
 
     let ed = EntityData::new()

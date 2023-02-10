@@ -168,7 +168,7 @@ impl<
 
         // Initialise the runtime.
         guest_exports.init(&mut store)?;
-        // Call the script's main function.
+        // Call the module's main function.
         guest_instance
             .get_func(&mut store, "call_main")
             .context("not a func")?

@@ -11,7 +11,7 @@ use super::{
 pub use crate::host::{AnimationAction, AnimationController};
 
 /// Spawns an entity containing the `components`. If `persistent` is set, this entity will not be
-/// removed when this script is unloaded.
+/// removed when this module is unloaded.
 ///
 /// This is an asynchronous operation; use [wait_for_spawn] to get notified when
 /// the entity is spawned.
@@ -25,7 +25,7 @@ pub fn spawn(components: &Components, persistent: bool) -> EntityUid {
 
 /// Spawns an entity using the `object_ref` template at `position`, with
 /// `rotation` and `scale`. If `persistent` is set, this entity will not be
-/// removed when this script is unloaded.
+/// removed when this module is unloaded.
 ///
 /// If `rotation` and/or `scale` are `None`, the entity will be spawned with
 /// reasonable defaults.

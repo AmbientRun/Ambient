@@ -1,5 +1,5 @@
 [package]
-name = "kiwi_scripting"
+name = "kiwi_wasm"
 version.workspace = true
 edition = "2021"
 

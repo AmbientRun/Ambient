@@ -39,11 +39,11 @@ pub fn systems<
     let add_to_linker = move |w: &World| w.resource(add_to_linker_component).clone();
 
     SystemGroup::new(
-        "core/scripting/server",
+        "core/wasm/server",
         vec![
             query((script_module_bytecode(), script_module_enabled().changed())).to_system(
                 move |q, world, qs, _| {
-                    profiling::scope!("script module reloads");
+                    profiling::scope!("WASM module reloads");
                     let modules = q
                         .iter(world, qs)
                         .filter(|(id, (_, enabled))| {
@@ -66,7 +66,7 @@ pub fn systems<
                 },
             ),
             Box::new(FnSystem::new(move |world, _| {
-                profiling::scope!("script module frame event");
+                profiling::scope!("WASM module frame event");
                 // trigger frame event
                 run_all(
                     world,
@@ -75,7 +75,7 @@ pub fn systems<
                 );
             })),
             Box::new(FnSystem::new(move |world, _| {
-                profiling::scope!("script module collision event");
+                profiling::scope!("WASM module collision event");
                 // trigger collision event
                 let collisions = match world.resource_opt(collisions()) {
                     Some(collisions) => collisions.lock().clone(),
@@ -105,7 +105,7 @@ pub fn systems<
                 }
             })),
             Box::new(FnSystem::new(move |world, _| {
-                profiling::scope!("script module collider loads");
+                profiling::scope!("WASM module collider loads");
                 // trigger collider loads
                 let collider_loads = match world.resource_opt(collider_loads()) {
                     Some(collider_loads) => collider_loads.clone(),
@@ -124,7 +124,7 @@ pub fn systems<
                 }
             })),
             query(uid()).spawned().to_system(move |q, world, qs, _| {
-                profiling::scope!("script module entity spawn");
+                profiling::scope!("WASM module entity spawn");
                 for (id, uid) in q.collect_cloned(world, qs) {
                     run_all(
                         world,
@@ -159,7 +159,7 @@ pub fn on_forking_systems<
     >,
 ) -> SystemGroup<ForkingEvent> {
     SystemGroup::new(
-        "core/scripting/server/on_forking_systems",
+        "core/wasm/server/on_forking_systems",
         vec![Box::new(FnSystem::new(move |world, _| {
             let make_wasm_context = world.resource(make_wasm_context_component).clone();
             let add_to_linker = world.resource(add_to_linker_component).clone();
@@ -178,7 +178,7 @@ pub fn on_shutdown_systems<
     state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
 ) -> SystemGroup<ShutdownEvent> {
     SystemGroup::new(
-        "core/scripting/server/on_shutdown_systems",
+        "core/wasm/server/on_shutdown_systems",
         vec![Box::new(FnSystem::new(move |world, _| {
             let scripts = query(()).incl(script_module()).collect_ids(world, None);
             for script_id in scripts {

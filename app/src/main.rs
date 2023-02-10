@@ -69,7 +69,7 @@ enum Commands {
         #[clap(short, long)]
         user_id: Option<String>,
     },
-    /// Updates all scripting interfaces with the core primitive components (not for users)
+    /// Updates all WASM APIs with the core primitive components (not for users)
     #[cfg(not(feature = "production"))]
     UpdateInterfaceComponents,
 }

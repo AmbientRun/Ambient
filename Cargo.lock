@@ -2342,9 +2342,9 @@ dependencies = [
  "kiwi_project",
  "kiwi_renderer",
  "kiwi_rpc",
- "kiwi_scripting",
  "kiwi_std",
  "kiwi_ui",
+ "kiwi_wasm",
  "kiwi_world_audio",
  "local-ip-address",
  "log",
@@ -3051,45 +3051,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "kiwi_scripting"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "async-trait",
- "chrono",
- "data-encoding",
- "flume",
- "fs_extra",
- "glam 0.22.0",
- "indexmap",
- "indoc",
- "itertools",
- "kiwi_animation",
- "kiwi_app",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_input",
- "kiwi_network",
- "kiwi_object",
- "kiwi_physics",
- "kiwi_project",
- "kiwi_std",
- "log",
- "parking_lot",
- "physxx",
- "profiling 1.0.6",
- "reqwest",
- "serde",
- "serde_bytes",
- "serde_json",
- "slotmap",
- "wasi-common",
- "wasmtime",
- "wasmtime-wasi",
- "wit-bindgen-host-wasmtime-rust",
-]
-
-[[package]]
 name = "kiwi_std"
 version = "0.0.3"
 dependencies = [
@@ -3168,6 +3129,45 @@ dependencies = [
  "tracing-subscriber",
  "wgpu",
  "winit",
+]
+
+[[package]]
+name = "kiwi_wasm"
+version = "0.0.3"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "chrono",
+ "data-encoding",
+ "flume",
+ "fs_extra",
+ "glam 0.22.0",
+ "indexmap",
+ "indoc",
+ "itertools",
+ "kiwi_animation",
+ "kiwi_app",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_input",
+ "kiwi_network",
+ "kiwi_object",
+ "kiwi_physics",
+ "kiwi_project",
+ "kiwi_std",
+ "log",
+ "parking_lot",
+ "physxx",
+ "profiling 1.0.6",
+ "reqwest",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "slotmap",
+ "wasi-common",
+ "wasmtime",
+ "wasmtime-wasi",
+ "wit-bindgen-host-wasmtime-rust",
 ]
 
 [[package]]

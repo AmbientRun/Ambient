@@ -20,7 +20,7 @@ use tower_http::{cors::CorsLayer, services::ServeDir};
 
 use crate::{player, Cli, Commands};
 
-mod scripting;
+mod wasm;
 
 fn server_systems() -> SystemGroup {
     SystemGroup::new(
@@ -33,17 +33,17 @@ fn server_systems() -> SystemGroup {
             kiwi_core::remove_at_time_system(),
             Box::new(kiwi_physics::physics_server_systems()),
             Box::new(player::server_systems()),
-            Box::new(scripting::systems()),
+            Box::new(wasm::systems()),
             Box::new(player::server_systems_final()),
             kiwi_physics::run_simulation_system(),
         ],
     )
 }
 fn on_forking_systems() -> SystemGroup<ForkingEvent> {
-    SystemGroup::new("on_forking_systems", vec![Box::new(kiwi_physics::on_forking_systems()), Box::new(scripting::on_forking_systems())])
+    SystemGroup::new("on_forking_systems", vec![Box::new(kiwi_physics::on_forking_systems()), Box::new(wasm::on_forking_systems())])
 }
 fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
-    SystemGroup::new("on_shutdown_systems", vec![Box::new(kiwi_physics::on_shutdown_systems()), Box::new(scripting::on_shutdown_systems())])
+    SystemGroup::new("on_shutdown_systems", vec![Box::new(kiwi_physics::on_shutdown_systems()), Box::new(wasm::on_shutdown_systems())])
 }
 
 fn is_sync_component(component: ComponentDesc, _: WorldStreamCompEvent) -> bool {
@@ -115,7 +115,7 @@ pub(crate) fn start_server(
     });
     let port = server.port;
 
-    scripting::init_all_components();
+    wasm::init_all_components();
     let public_host =
         cli.public_host.or_else(|| local_ip_address::local_ip().ok().map(|x| x.to_string())).unwrap_or("localhost".to_string());
     log::info!("Created server, running at {public_host}:{port}");
@@ -132,7 +132,7 @@ pub(crate) fn start_server(
 
         server_world.add_components(server_world.resource_entity(), create_server_resources(assets.clone())).unwrap();
 
-        scripting::initialize(&mut server_world, project_path.clone(), &manifest).await.unwrap();
+        wasm::initialize(&mut server_world, project_path.clone(), &manifest).await.unwrap();
 
         if let Commands::View { asset_path, .. } = cli.command.clone() {
             let asset_path = AbsAssetUrl::from_file_path(project_path.join("target").join(asset_path).join("objects/main.json"));

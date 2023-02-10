@@ -2,7 +2,7 @@ pub(crate) fn init() -> anyhow::Result<()> {
     kiwi_app::init_all_components();
     kiwi_network::init_all_components();
     kiwi_physics::init_all_components();
-    kiwi_scripting::shared::init_components();
+    kiwi_wasm::shared::init_components();
     kiwi_decals::init_components();
     kiwi_world_audio::init_components();
     kiwi_primitives::init_components();
