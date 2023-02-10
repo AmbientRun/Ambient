@@ -66,7 +66,7 @@ downcast-rs = "1.2.0"
 yaml-rust = { version = "0.5", package = "yaml-rust-davvid" }
 tokio-util = { version = "0.7.0", features = ["codec"] }
 maplit = "1.0.2"
-chrono = { version = "0.4", features = ["serde"] }
+chrono = { version = "0.4", default-features = false, features = ["serde", "clock"] }
 manual_future = "0.1.1"
 base64 = "0.13.0"
 env_logger = "0.10.0"
