@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fmt::Display};
 
-use elements_ecs::{components, Networked, PrimitiveComponentType, Store};
+use elements_ecs::{components, ExternalComponentAttributes, ExternalComponentDesc, Networked, PrimitiveComponentType, Store};
 use serde::{de::Visitor, Deserialize, Serialize};
 use thiserror::Error;
 
@@ -23,7 +23,7 @@ impl Manifest {
         toml::from_str(manifest)
     }
 
-    pub fn all_defined_components(&self, global_namespace: bool) -> Result<Vec<(String, PrimitiveComponentType)>, &'static str> {
+    pub fn all_defined_components(&self, global_namespace: bool) -> Result<Vec<ExternalComponentDesc>, &'static str> {
         let project_path: Vec<_> = if global_namespace {
             vec![]
         } else {
@@ -34,7 +34,17 @@ impl Manifest {
             .iter()
             .map(|(id, component)| {
                 let full_path = IdentifierPath(project_path.iter().chain(id.0.iter()).cloned().collect());
-                Ok((full_path.to_string(), (&component.type_).try_into()?))
+                Ok(ExternalComponentDesc {
+                    path: full_path.to_string(),
+                    ty: (&component.type_).try_into()?,
+                    attributes: ExternalComponentAttributes {
+                        name: Some(component.name.clone()),
+                        description: Some(component.description.clone()),
+                        debuggable: true,
+                        networked: true,
+                        store: true,
+                    },
+                })
             })
             .collect::<Result<Vec<_>, _>>()
     }

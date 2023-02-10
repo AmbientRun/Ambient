@@ -129,7 +129,7 @@ pub(crate) fn start_server(
 
     start_http_interface(runtime, &project_path);
 
-    ComponentRegistry::get_mut().add_external_from_iterator(manifest.all_defined_components(false).unwrap().into_iter());
+    ComponentRegistry::get_mut().add_external(manifest.all_defined_components(false).unwrap());
 
     let manifest = manifest.clone();
     runtime.spawn(async move {

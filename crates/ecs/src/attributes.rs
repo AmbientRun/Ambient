@@ -5,7 +5,7 @@ use std::{
 use downcast_rs::{impl_downcast, Downcast};
 use serde::{Deserialize, Serialize};
 
-use crate::{ComponentDesc, ComponentEntry, ComponentValue, PrimitiveComponentType};
+use crate::{ComponentDesc, ComponentEntry, ComponentValue};
 
 /// Represents a single attribute attached to a component
 pub trait ComponentAttribute: 'static + Send + Sync + Downcast {
@@ -16,31 +16,7 @@ pub trait ComponentAttribute: 'static + Send + Sync + Downcast {
 
 impl_downcast!(ComponentAttribute);
 
-pub struct PrimitiveAttributeRegistry {
-    inner: HashMap<PrimitiveComponentType, AttributeStore>,
-}
-
-impl PrimitiveAttributeRegistry {
-    pub fn new() -> Self {
-        Self { inner: Default::default() }
-    }
-
-    pub fn set(&mut self, ty: PrimitiveComponentType, attributes: AttributeStore) {
-        self.inner.insert(ty, attributes);
-    }
-
-    pub fn get(&self, ty: &PrimitiveComponentType) -> Option<&AttributeStore> {
-        self.inner.get(ty)
-    }
-}
-
-impl Default for PrimitiveAttributeRegistry {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct AttributeStore {
     inner: HashMap<TypeId, Arc<dyn ComponentAttribute>>,
 }
@@ -237,8 +213,8 @@ impl ComponentAttribute for ComponentPath {}
 #[derive(Clone)]
 pub struct Name(pub String);
 impl ComponentAttribute for Name {}
-impl<T: ComponentValue> AttributeConstructor<T, &'static str> for Name {
-    fn construct(store: &mut AttributeStore, value: &'static str) {
+impl<T: ComponentValue> AttributeConstructor<T, &str> for Name {
+    fn construct(store: &mut AttributeStore, value: &str) {
         store.set(Self(value.to_string()))
     }
 }
@@ -247,8 +223,8 @@ impl<T: ComponentValue> AttributeConstructor<T, &'static str> for Name {
 #[derive(Clone)]
 pub struct Description(pub String);
 impl ComponentAttribute for Description {}
-impl<T: ComponentValue> AttributeConstructor<T, &'static str> for Description {
-    fn construct(store: &mut AttributeStore, value: &'static str) {
+impl<T: ComponentValue> AttributeConstructor<T, &str> for Description {
+    fn construct(store: &mut AttributeStore, value: &str) {
         store.set(Self(value.to_string()))
     }
 }

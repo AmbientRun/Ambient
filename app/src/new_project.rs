@@ -41,7 +41,7 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
             [package]
             name = "{{id}}"
             edition = "2021"
-            version = "0.1.0"
+            version = "0.0.1"
 
             [dependencies]
             elements_scripting_interface = "0.0.1"

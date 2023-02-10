@@ -32,6 +32,33 @@ pub(crate) struct RegistryComponent {
     pub(crate) primitive_component: Option<PrimitiveComponent>,
 }
 
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ExternalComponentDesc {
+    pub path: String,
+    pub ty: PrimitiveComponentType,
+    pub attributes: ExternalComponentAttributes,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ExternalComponentAttributes {
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub debuggable: bool,
+    pub networked: bool,
+    pub store: bool,
+}
+impl ExternalComponentAttributes {
+    pub fn from_existing_component(desc: ComponentDesc) -> Self {
+        Self {
+            name: desc.attribute::<Name>().map(|n| n.0.clone()),
+            description: desc.attribute::<Description>().map(|n| n.0.clone()),
+            debuggable: desc.has_attribute::<Debuggable>(),
+            networked: desc.has_attribute::<Networked>(),
+            store: desc.has_attribute::<Store>(),
+        }
+    }
+}
+
 #[derive(Default)]
 pub struct ComponentRegistry {
     pub(crate) components: Vec<RegistryComponent>,
@@ -50,9 +77,9 @@ impl ComponentRegistry {
         COMPONENT_REGISTRY.write()
     }
 
-    pub fn add_external_from_iterator(&mut self, components: impl Iterator<Item = (String, PrimitiveComponentType)>) {
-        for (id, type_) in components {
-            type_.register(self, &id);
+    pub fn add_external(&mut self, components: Vec<ExternalComponentDesc>) {
+        for desc in components {
+            desc.ty.register(self, &desc.path, desc.attributes);
         }
 
         for handler in self.on_external_components_change.iter() {
@@ -114,32 +141,6 @@ impl ComponentRegistry {
         self.register(path.into(), vtable, Default::default())
     }
 
-    /// Sets the primitive component for an existing component
-    pub fn set_primitive_component(&mut self, path: &str, ty: PrimitiveComponentType) -> Option<PrimitiveComponent> {
-        let index = *match self.component_paths.get(path) {
-            Some(v) => v,
-            None => {
-                log::error!("Attempt to set primitive type for unknown component: {path:?}");
-                return None;
-            }
-        };
-
-        let entry = &mut self.components[index as usize];
-
-        let prim = PrimitiveComponent { ty, desc: entry.desc };
-        entry.primitive_component = Some(prim.clone());
-
-        // Hydrate the store with the primitive component attributes
-        if let Some(src) = PRIMITIVE_ATTRIBUTE_REGISTRY.read().get(&ty) {
-            let mut dst = (entry.desc.vtable.attributes_init)(entry.desc);
-            dst.append(src);
-        } else {
-            log::warn!("No primitive attributes for {ty:?}");
-        }
-
-        Some(prim)
-    }
-
     pub fn path_to_index(&self, path: &str) -> Option<u32> {
         self.component_paths.get(path).copied()
     }
@@ -163,8 +164,12 @@ impl ComponentRegistry {
     }
 
     /// Returns an iterator over all primitive components that were externally defined and their descs.
-    pub fn all_external(&self) -> impl Iterator<Item = &PrimitiveComponent> + '_ {
-        self.all_primitive().filter(|pc| pc.desc.has_attribute::<External>())
+    pub fn all_external(&self) -> impl Iterator<Item = ExternalComponentDesc> + '_ {
+        self.all_primitive().filter(|pc| pc.desc.has_attribute::<External>()).map(|pc| ExternalComponentDesc {
+            path: pc.desc.path(),
+            ty: pc.ty,
+            attributes: ExternalComponentAttributes::from_existing_component(pc.desc),
+        })
     }
 
     pub fn all(&self) -> impl Iterator<Item = ComponentDesc> + '_ {

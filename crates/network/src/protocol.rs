@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use elements_ecs::{ComponentRegistry, PrimitiveComponentType, WorldDiff};
+use elements_ecs::{ComponentRegistry, ExternalComponentDesc, WorldDiff};
 use futures::{io::BufReader, StreamExt};
 use quinn::{NewConnection, RecvStream};
 
@@ -23,7 +23,7 @@ impl ClientProtocol {
 
         // The server will acknowledge and send the credentials back
         let client_info: ClientInfo = rx.next().await?;
-        ComponentRegistry::get_mut().add_external_from_iterator(client_info.external_components.iter().cloned());
+        ComponentRegistry::get_mut().add_external(client_info.external_components.clone());
 
         // Great, the server knows who we are.
         // Two streams are opened
@@ -80,7 +80,7 @@ impl ServerProtocol {
 
         log::info!("Received handshake from {user_id:?}");
 
-        let external_components = ComponentRegistry::get().all_external().map(|pc| (pc.desc.path(), pc.ty)).collect();
+        let external_components = ComponentRegistry::get().all_external().collect();
 
         // Respond
         let client_info = ClientInfo { user_id, external_components };
@@ -110,7 +110,7 @@ impl ServerProtocol {
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
 pub struct ClientInfo {
     pub user_id: String,
-    pub external_components: Vec<(String, PrimitiveComponentType)>,
+    pub external_components: Vec<ExternalComponentDesc>,
 }
 
 impl std::fmt::Debug for ClientInfo {

@@ -1,6 +1,4 @@
 pub(crate) fn init() -> anyhow::Result<()> {
-    elements_ecs::PrimitiveComponentType::register_attributes();
-
     elements_app::init_all_components();
     elements_network::init_all_components();
     elements_physics::init_all_components();
