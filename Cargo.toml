@@ -24,7 +24,6 @@ futures = { version = "0.3", default-features = false, features = ["std"] }
 tokio = { version = "1.20", features = ["full"] }
 bytemuck = { version = "1.10", features = ["derive"] }
 glam = { version = "0.22", features = ["bytemuck", "serde", "rand"] }
-nalgebra = { version = "0.29.0", features = ["convert-glam017"] }
 gltf = "1.1.0"
 ordered-float = { version = "2.10.0", features = ["serde"] }
 derive_more = "0.99.11"
@@ -33,7 +32,6 @@ itertools = "0.10.3"
 ndarray = { version = "0.15.3", features = ["serde"] }
 friendly_id = "0.3.0"
 rand = "0.8.0"
-rand_pcg = "0.3.1"
 glyph_brush = "0.7.4"
 log = "0.4"
 dyn-clonable = "0.9.0"
@@ -65,25 +63,15 @@ thread-priority = "0.8.2"
 once_cell = "1.13.0"
 smallvec = "1.8.0"
 downcast-rs = "1.2.0"
-noise = { version = "0.7.0", default-features = false }
-withers_derive = "0.2.0"
 yaml-rust = { version = "0.5", package = "yaml-rust-davvid" }
 tokio-util = { version = "0.7.0", features = ["codec"] }
 maplit = "1.0.2"
-directories = "3.0"
-rust-s3 = { version = "0.28.1", default-features = false, features = [
-    "tags",
-    "tokio-rustls-tls",
-    "fail-on-err",
-] }
 chrono = { version = "0.4", features = ["serde"] }
-argon2 = "0.3.1"
 manual_future = "0.1.1"
 base64 = "0.13.0"
 env_logger = "0.9.0"
 async-recursion = "1.0.0"
 anyhow = { version = "1.0", features = ["backtrace"] }
-aes-gcm = "0.9.4"
 clipboard = { version = "0.5.0" }
 open = "2.0.2"
 bitflags = "1.3"
@@ -122,7 +110,6 @@ slotmap = "1.0.6"
 atomic_refcell = "0.1.8"
 flume = { version = "0.10", features = ["async"] }
 tokio-postgres = "0.7.6"
-machine-uid = "0.2.0"
 im = "15.1.0"
 axum = "0.5.7"
 tower-http = { version = "0.3.0", features = ["cors", "fs"] }
@@ -133,19 +120,12 @@ hex = "0.4.3"
 ring = "0.16.20"
 data-encoding = "2.3.2"
 convert_case = "0.6.0"
-cloud-storage = { version = "0.11.1", default-features = false, features = [
-    "rustls-tls",
-    "global-client",
-] }
 wasmtime = "1.0"
 wasmtime-wasi = "1.0"
 wasi-common = "1.0"
 which = "4.3.0"
 fs_extra = "1.2.0"
 sanitize-filename = "0.4.0"
-firestore_grpc = "0.137.0"
-gcp_auth = "0.7.3"
-wry = "0.22.5"
 slugify = "0.1.0"
 serde_yaml = "0.8.26"
 bit-set = "0.5.3"
