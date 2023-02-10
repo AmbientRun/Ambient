@@ -13,7 +13,7 @@ fn can_parse_tictactoe_toml() {
     version = "0.0.1"
 
     [components]
-    cell = { type = "I32", name = "Cell", description = "The ID of the cell this player is in" }
+    cell = { type = "I32", name = "Cell", description = "The ID of the cell this player is in", attributes = ["Store"] }
     "#;
 
     assert_eq!(
@@ -32,7 +32,8 @@ fn can_parse_tictactoe_toml() {
                 Component {
                     name: "Cell".to_string(),
                     description: "The ID of the cell this player is in".to_string(),
-                    type_: ComponentType::String("I32".to_string())
+                    type_: ComponentType::String("I32".to_string()),
+                    attributes: vec!["Store".to_string()]
                 }
             )])
         })

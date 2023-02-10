@@ -2,6 +2,7 @@ use std::{marker::PhantomData, sync::Arc};
 
 use anyhow::Context;
 use async_trait::async_trait;
+use data_encoding::BASE64;
 use kiwi_ecs::World;
 use parking_lot::{Mutex, RwLock};
 use serde::{Deserialize, Serialize};
@@ -23,7 +24,7 @@ pub struct ScriptModuleBytecode(pub Vec<u8>);
 impl std::fmt::Debug for ScriptModuleBytecode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("ScriptModuleBytecode")
-            .field(&base64::encode(&self.0))
+            .field(&BASE64.encode(&self.0))
             .finish()
     }
 }
@@ -37,7 +38,7 @@ impl Serialize for ScriptModuleBytecode {
     where
         S: serde::Serializer,
     {
-        serializer.serialize_str(&base64::encode(&self.0))
+        serializer.serialize_str(&BASE64.encode(&self.0))
     }
 }
 impl<'de> Deserialize<'de> for ScriptModuleBytecode {
@@ -59,7 +60,8 @@ impl<'de> Deserialize<'de> for ScriptModuleBytecode {
             where
                 E: de::Error,
             {
-                base64::decode(v)
+                BASE64
+                    .decode(v.as_bytes())
                     .map_err(|err| {
                         E::custom(format!("failed to decode base64-encoded string: {err}"))
                     })

@@ -18,14 +18,14 @@ profiling = { git = "https://github.com/PlayDims/profiling", features = [
 ] }
 tracing = "0.1.35"
 wgpu = "0.14.2"
-winit = { version = "0.27.5", features = ["serde"] }
+winit = { version = "0.28.1", features = ["serde"] }
 wgpu-subscriber = "0.1.0"
 futures = { version = "0.3", default-features = false, features = ["std"] }
 tokio = { version = "1.20", features = ["full"] }
 bytemuck = { version = "1.10", features = ["derive"] }
 glam = { version = "0.22", features = ["bytemuck", "serde", "rand"] }
 gltf = "1.1.0"
-ordered-float = { version = "2.10.0", features = ["serde"] }
+ordered-float = { version = "3.4.0", features = ["serde"] }
 derive_more = "0.99.11"
 image = "0.24.5"
 itertools = "0.10.3"
@@ -58,8 +58,7 @@ reqwest = { version = "0.11.11", default-features = false, features = [
 ] }
 url = { version = "2", features = ["serde"] }
 thiserror = "1.0"
-regex = "1.5.4"
-thread-priority = "0.8.2"
+thread-priority = "0.10.0"
 once_cell = "1.13.0"
 smallvec = "1.8.0"
 downcast-rs = "1.2.0"
@@ -69,18 +68,16 @@ maplit = "1.0.2"
 chrono = { version = "0.4", features = ["serde"] }
 manual_future = "0.1.1"
 base64 = "0.13.0"
-env_logger = "0.9.0"
+env_logger = "0.10.0"
 async-recursion = "1.0.0"
 anyhow = { version = "1.0", features = ["backtrace"] }
 clipboard = { version = "0.5.0" }
-open = "2.0.2"
 bitflags = "1.3"
 quinn = "0.8.5"
 rustls = { version = "0.20.6", features = ["dangerous_configuration", "quic"] }
 webpki = "0.22.0"
 parking_lot = { version = "0.12.0", features = ["deadlock_detection", "serde"] }
 clap = { version = "4.0", features = ["derive"] }
-zip = "0.5.13"
 rand_core = { version = "0.6", features = ["std"] }
 git-version = { git = "https://github.com/fusion-engineering/rust-git-version" }
 sentry = { version = "0.27.0", default-features = false, features = [
@@ -111,7 +108,7 @@ atomic_refcell = "0.1.8"
 flume = { version = "0.10", features = ["async"] }
 tokio-postgres = "0.7.6"
 im = "15.1.0"
-axum = "0.5.7"
+axum = "0.6.4"
 tower-http = { version = "0.3.0", features = ["cors", "fs"] }
 tower = "0.4.13"
 indexmap = { version = "1.8.2", features = ["serde"] }
@@ -123,11 +120,10 @@ convert_case = "0.6.0"
 wasmtime = "1.0"
 wasmtime-wasi = "1.0"
 wasi-common = "1.0"
-which = "4.3.0"
 fs_extra = "1.2.0"
 sanitize-filename = "0.4.0"
 slugify = "0.1.0"
-serde_yaml = "0.8.26"
+serde_yaml = "0.9.17"
 bit-set = "0.5.3"
 bit-vec = "0.6.3"
 semver = "1.0.14"

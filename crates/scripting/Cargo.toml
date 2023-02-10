@@ -20,7 +20,7 @@ physxx = { path = "../../libs/physxx" }
 
 anyhow.workspace = true
 async-trait.workspace = true
-base64.workspace = true
+data-encoding.workspace = true
 chrono.workspace = true
 flume.workspace = true
 fs_extra.workspace = true

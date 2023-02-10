@@ -2,6 +2,7 @@ use std::{
     fmt::{self, Debug}, hash::{BuildHasher, Hasher}, str::FromStr
 };
 
+use data_encoding::BASE64URL_NOPAD;
 use serde::{
     de::{self, Visitor}, Deserialize, Deserializer, Serialize, Serializer
 };
@@ -33,10 +34,10 @@ impl EntityId {
         (u64::from_le_bytes(bytes[0..8].try_into().unwrap()), u64::from_le_bytes(bytes[8..].try_into().unwrap()))
     }
     pub fn to_base64(&self) -> String {
-        base64::encode_config(self.0.to_le_bytes(), base64::URL_SAFE_NO_PAD)
+        BASE64URL_NOPAD.encode(&self.0.to_le_bytes())
     }
-    pub fn from_base64(value: &str) -> Result<Self, base64::DecodeError> {
-        let bytes = base64::decode_config(value, base64::URL_SAFE_NO_PAD)?;
+    pub fn from_base64(value: &str) -> Result<Self, data_encoding::DecodeError> {
+        let bytes = BASE64URL_NOPAD.decode(value.as_bytes())?;
         Ok(Self(u128::from_le_bytes(bytes.try_into().unwrap())))
     }
 }
@@ -56,7 +57,7 @@ impl Default for EntityId {
     }
 }
 impl FromStr for EntityId {
-    type Err = base64::DecodeError;
+    type Err = data_encoding::DecodeError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         EntityId::from_base64(s)

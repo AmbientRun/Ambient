@@ -16,10 +16,6 @@ pub trait PxBase: Sync + Send + as_any::AsAny {
     fn to_fixed_joint(&self) -> Option<PxFixedJointRef>;
     fn to_revolute_joint(&self) -> Option<PxRevoluteJointRef>;
 }
-impl as_any::Downcast for dyn PxBase {}
-impl as_any::Downcast for dyn PxBase + Send {}
-impl as_any::Downcast for dyn PxBase + Sync {}
-impl as_any::Downcast for dyn PxBase + Send + Sync {}
 impl<T: AsPxBase + 'static> PxBase for T {
     fn get_concrete_type(&self) -> u16 {
         unsafe { physx_sys::PxBase_getConcreteType(self.as_base().0) }
