@@ -123,7 +123,7 @@ pub fn register_rpcs(reg: &mut RpcRegistry<GameRpcArgs>) {
 
 pub fn common_intent_systems() -> SystemGroup {
     SystemGroup::new(
-        "dims/intents/common",
+        "intents/common",
         vec![
             Box::new(index_system(
                 ArchetypeFilter::new().excl(intent_reverted()),

@@ -194,7 +194,7 @@ unsafe extern "C" fn main_physx_scene_filter_shader(mut info: *mut physxx::sys::
 
 pub fn physics_server_systems() -> SystemGroup {
     SystemGroup::new(
-        "dims/physics",
+        "physics",
         vec![
             query((physics_shape(),)).despawned().to_system(|q, world, qs, _| {
                 for (id, (shape,)) in q.iter(world, qs) {
@@ -251,7 +251,7 @@ pub fn fetch_simulation_system() -> DynSystem {
 
 pub fn on_forking_systems() -> SystemGroup<ForkingEvent> {
     SystemGroup::new(
-        "dims/physics/on_forking_systems",
+        "physics/on_forking_systems",
         vec![Box::new(FnSystem::new(|world, _| {
             let mut ed = EntityData::new();
             create_server_resources(world.resource(asset_cache()), &mut ed);
@@ -298,7 +298,7 @@ pub fn on_forking_systems() -> SystemGroup<ForkingEvent> {
 }
 pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
     SystemGroup::new(
-        "dims/physics/on_shutdown_systems",
+        "physics/on_shutdown_systems",
         vec![Box::new(FnSystem::new(|world, _| {
             world.resource(main_physics_scene()).fetch_results(true);
             release_px_scene(*world.resource(main_physics_scene()));
