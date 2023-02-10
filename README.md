@@ -24,7 +24,7 @@ See the [documentation](https://kiwiorg.github.io/Kiwi/) for a getting started g
 cargo install kiwi
 ```
 
-See [installing](./docs/src/installing.md) for more details.
+See [installing](https://kiwiorg.github.io/Kiwi/installing.html) for more details.
 
 ## Roadmap
 
