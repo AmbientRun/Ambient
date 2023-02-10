@@ -62,7 +62,7 @@ pub(crate) mod dev {
                 table.insert("description", value(description));
                 {
                     let attrs = ExternalComponentAttributes::from_existing_component(desc);
-                    table.insert("attributes", value(toml_edit::Array::from_iter(attrs.flag_iter())));
+                    table.insert("attributes", value(toml_edit::Array::from_iter(attrs.flags.iter())));
                 }
 
                 components.insert(&component.desc.path(), toml_edit::Item::Table(table));

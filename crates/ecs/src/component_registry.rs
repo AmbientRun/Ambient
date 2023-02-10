@@ -43,35 +43,63 @@ pub struct ExternalComponentDesc {
 pub struct ExternalComponentAttributes {
     pub name: Option<String>,
     pub description: Option<String>,
-    pub debuggable: bool,
-    pub networked: bool,
-    pub store: bool,
-    pub resource: bool,
+    pub flags: ExternalComponentFlagAttributes,
 }
 impl ExternalComponentAttributes {
     pub fn from_existing_component(desc: ComponentDesc) -> Self {
         Self {
             name: desc.attribute::<Name>().map(|n| n.0.clone()),
             description: desc.attribute::<Description>().map(|n| n.0.clone()),
-            debuggable: desc.has_attribute::<Debuggable>(),
-            networked: desc.has_attribute::<Networked>(),
-            store: desc.has_attribute::<Store>(),
-            resource: desc.has_attribute::<Resource>(),
+            flags: ExternalComponentFlagAttributes::from_existing_component(desc),
         }
     }
+}
 
-    /// Iterator over all set flags
-    pub fn flag_iter(&self) -> impl Iterator<Item = &'static str> {
-        [
-            self.debuggable.then_some("Debuggable"),
-            self.networked.then_some("Networked"),
-            self.resource.then_some("Resource"),
-            self.store.then_some("Store"),
-        ]
-        .into_iter()
-        .flatten()
+macro_rules! define_external_component_attribute_flags {
+    ($(($field_name:ident, $type_name:ty)),*) => {
+        #[derive(Serialize, Deserialize, Clone, Debug, Default)]
+        pub struct ExternalComponentFlagAttributes {
+            $(pub $field_name: bool,)*
+        }
+        impl ExternalComponentFlagAttributes {
+            pub fn from_existing_component(desc: ComponentDesc) -> Self {
+                Self {
+                    $($field_name: desc.has_attribute::<$type_name>(),)*
+                }
+            }
+
+            pub fn iter(&self) -> impl Iterator<Item = &'static str> {
+                [
+                    $(self.$field_name.then_some(stringify!($type_name)),)*
+                ]
+                .into_iter()
+                .flatten()
+            }
+
+            pub fn construct_for_store<T: Debug + Serialize + for<'de> Deserialize<'de> + Clone + ComponentValue>(&self, store: &mut AttributeStore) {
+                $(
+                    if self.$field_name {
+                        <$type_name as AttributeConstructor<T, _>>::construct(store, ());
+                    }
+                )*
+            }
+        }
+        impl<'a> FromIterator<&'a str> for ExternalComponentFlagAttributes {
+            fn from_iter<T: IntoIterator<Item = &'a str>>(iter: T) -> Self {
+                let mut flags = Self::default();
+                for flag_str in iter {
+                    match flag_str {
+                        $(stringify!($type_name) => { flags.$field_name = true; },)*
+                        _ => panic!("Unexpected attribute flag: {flag_str}"),
+                    }
+                }
+                flags
+            }
+        }
     }
 }
+
+define_external_component_attribute_flags![(debuggable, Debuggable), (networked, Networked), (resource, Resource), (store, Store)];
 
 #[derive(Default)]
 pub struct ComponentRegistry {

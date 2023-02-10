@@ -3,5 +3,8 @@ id = "asset_loading"
 name = "Asset Loading"
 version = "0.0.1"
 
-[components]
-is_the_best = { type = "Bool", name = "Is The Best", description = "Declares whether or not the entity this is attached is the best." }
+[components.is_the_best]
+type = "Bool"
+name = "Is The Best"
+description = "Declares whether or not the entity this is attached is the best."
+attributes = ["Networked", "Debuggable"]

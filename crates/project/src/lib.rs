@@ -1,6 +1,8 @@
 use std::{collections::HashMap, fmt::Display};
 
-use kiwi_ecs::{components, ExternalComponentAttributes, ExternalComponentDesc, Networked, PrimitiveComponentType, Store};
+use kiwi_ecs::{
+    components, ExternalComponentAttributes, ExternalComponentDesc, ExternalComponentFlagAttributes, Networked, PrimitiveComponentType, Store
+};
 use serde::{de::Visitor, Deserialize, Serialize};
 use thiserror::Error;
 
@@ -40,10 +42,7 @@ impl Manifest {
                     attributes: ExternalComponentAttributes {
                         name: Some(component.name.clone()),
                         description: Some(component.description.clone()),
-                        debuggable: true,
-                        networked: true,
-                        store: true,
-                        resource: false,
+                        flags: ExternalComponentFlagAttributes::from_iter(component.attributes.iter().map(|s| s.as_str())),
                     },
                 })
             })
@@ -68,6 +67,8 @@ pub struct Component {
     pub description: String,
     #[serde(rename = "type")]
     pub type_: ComponentType,
+    #[serde(default)]
+    pub attributes: Vec<String>,
 }
 
 #[derive(Deserialize, Clone, Debug, PartialEq)]

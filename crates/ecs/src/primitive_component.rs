@@ -6,7 +6,7 @@ use once_cell::sync::Lazy;
 use paste::paste;
 
 use crate::{
-    AttributeConstructor, AttributeStore, ComponentDesc, ComponentRegistry, ComponentVTable, Debuggable, Description, EntityId, EntityUid, ExternalComponentAttributes, Name, Networked, Store
+    AttributeConstructor, AttributeStore, ComponentDesc, ComponentRegistry, ComponentVTable, Description, EntityId, EntityUid, ExternalComponentAttributes, Name
 };
 
 /// A mapping from enum names to Rust types. Instantiate this with a macro that takes `$(($value:ident, $type:ty)),*`.
@@ -43,15 +43,7 @@ macro_rules! build_attribute_registration {
         if let Some(description) = $attributes.description {
             <Description as AttributeConstructor<$type, _>>::construct(&mut $store, &description);
         }
-        if $attributes.debuggable {
-            <Debuggable as AttributeConstructor<$type, _>>::construct(&mut $store, ());
-        }
-        if $attributes.networked {
-            <Networked as AttributeConstructor<$type, _>>::construct(&mut $store, ());
-        }
-        if $attributes.store {
-            <Store as AttributeConstructor<$type, _>>::construct(&mut $store, ());
-        }
+        $attributes.flags.construct_for_store::<$type>(&mut $store);
 
         static VTABLE: &ComponentVTable<$type> = &ComponentVTable::construct_external();
         unsafe { VTABLE.erase() }
