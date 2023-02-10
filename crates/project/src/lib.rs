@@ -43,6 +43,7 @@ impl Manifest {
                         debuggable: true,
                         networked: true,
                         store: true,
+                        resource: false,
                     },
                 })
             })

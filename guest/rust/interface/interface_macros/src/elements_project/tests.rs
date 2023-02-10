@@ -174,6 +174,12 @@ fn can_generate_components_from_manifest() {
 
         [components]
         a_cool_component = { name = "Cool Component", description = "", type = "Empty" }
+
+        [components."a_cool_component_2"]
+        type = "Empty"
+        name = "Cool Component 2"
+        description = "The cool-er component"
+        attributes = ["Store", "Networked"]
         "#};
 
     let expected_output = quote::quote! {
@@ -184,6 +190,12 @@ fn can_generate_components_from_manifest() {
             #[doc = "**Cool Component**"]
             pub fn a_cool_component() -> crate::Component<()> {
                 *A_COOL_COMPONENT
+            }
+
+            static A_COOL_COMPONENT_2: crate::LazyComponent<()> = crate::lazy_component!("my_project::a_cool_component_2");
+            #[doc = "**Cool Component 2**\n\nThe cool-er component\n\n*Attributes*: Store, Networked"]
+            pub fn a_cool_component_2() -> crate::Component<()> {
+                *A_COOL_COMPONENT_2
             }
         }
     };

@@ -46,6 +46,7 @@ pub struct ExternalComponentAttributes {
     pub debuggable: bool,
     pub networked: bool,
     pub store: bool,
+    pub resource: bool,
 }
 impl ExternalComponentAttributes {
     pub fn from_existing_component(desc: ComponentDesc) -> Self {
@@ -55,7 +56,20 @@ impl ExternalComponentAttributes {
             debuggable: desc.has_attribute::<Debuggable>(),
             networked: desc.has_attribute::<Networked>(),
             store: desc.has_attribute::<Store>(),
+            resource: desc.has_attribute::<Resource>(),
         }
+    }
+
+    /// Iterator over all set flags
+    pub fn flag_iter(&self) -> impl Iterator<Item = &'static str> {
+        [
+            self.debuggable.then_some("Debuggable"),
+            self.networked.then_some("Networked"),
+            self.resource.then_some("Resource"),
+            self.store.then_some("Store"),
+        ]
+        .into_iter()
+        .filter_map(|v| v)
     }
 }
 

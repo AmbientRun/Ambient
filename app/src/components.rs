@@ -15,7 +15,7 @@ pub(crate) fn init() -> anyhow::Result<()> {
 
 #[cfg(not(feature = "production"))]
 pub(crate) mod dev {
-    use elements_ecs::Resource;
+    use elements_ecs::ExternalComponentAttributes;
 
     pub fn build_components_toml() -> toml_edit::Document {
         let mut doc = toml_edit::Document::new();
@@ -35,7 +35,10 @@ pub(crate) mod dev {
             all_primitive.sort_by_key(|pc| pc.desc.path());
 
             let mut components = toml_edit::Table::new();
+            components.set_implicit(true);
             for component in all_primitive {
+                use toml_edit::value;
+
                 let desc = component.desc;
                 let Some(name) = desc.name() else { continue };
                 let Some(description) = desc.description() else { continue };
@@ -44,23 +47,25 @@ pub(crate) mod dev {
                     log::warn!("`{}`'s description did not end in a full stop. Is it grammatical?", component.desc.path());
                 }
 
-                let description = if desc.has_attribute::<Resource>() { format!("_Resource_: {description}") } else { description };
-
-                let mut table = toml_edit::InlineTable::new();
-                table.insert("name", name.into());
-                table.insert("description", description.into());
+                let mut table = toml_edit::Table::new();
                 table.insert(
                     "type",
                     match component.ty.decompose_container_type() {
-                        Some((container_type, element_type)) => toml_edit::InlineTable::from_iter([
+                        Some((container_type, element_type)) => value(toml_edit::InlineTable::from_iter([
                             ("type", container_type.as_str()),
                             ("element_type", element_type.as_str().expect("invalid container type")),
-                        ])
-                        .into(),
-                        None => component.ty.as_str().expect("invalid component type").into(),
+                        ])),
+                        None => value(component.ty.as_str().expect("invalid component type")),
                     },
                 );
-                components.insert(&component.desc.path(), toml_edit::value(table));
+                table.insert("name", value(name));
+                table.insert("description", value(description));
+                {
+                    let attrs = ExternalComponentAttributes::from_existing_component(desc);
+                    table.insert("attributes", value(toml_edit::Array::from_iter(attrs.flag_iter())));
+                }
+
+                components.insert(&component.desc.path(), toml_edit::Item::Table(table));
             }
             doc.insert("components", toml_edit::Item::Table(components));
         }

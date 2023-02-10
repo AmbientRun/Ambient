@@ -4,80 +4,458 @@ id = "runtime_components"
 name = "Runtime Components"
 version = "0.0.1"
 
-[components]
-"core::app::main_scene" = { name = "Main scene", description = "If attached, this entity belongs to the main scene.", type = "Empty" }
-"core::app::name" = { name = "Name", description = "A human-friendly name for this entity.", type = "String" }
-"core::app::ui_scene" = { name = "UI scene", description = "If attached, this entity belongs to the UI scene.", type = "Empty" }
-"core::camera::active_camera" = { name = "Active camera", description = "The camera with the highest `active_camera` value will be used for rendering.", type = "F32" }
-"core::camera::aspect_ratio" = { name = "Aspect ratio", description = "The aspect ratio of this camera. If `aspect_ratio_from_window` is set, this will be automatically updated to match the window.", type = "F32" }
-"core::camera::aspect_ratio_from_window" = { name = "Aspect ratio from window", description = "If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window.", type = "Empty" }
-"core::camera::far" = { name = "Far plane", description = "The far plane of this camera, measured in metres.", type = "F32" }
-"core::camera::fog" = { name = "Fog", description = "If attached, this camera will see/render fog.", type = "Empty" }
-"core::camera::fovy" = { name = "Field of View Y", description = "The field of view of this camera in the Y/vertical direction, measured in radians.", type = "F32" }
-"core::camera::near" = { name = "Near plane", description = "The near plane of this camera, measured in metres.", type = "F32" }
-"core::camera::perspective" = { name = "Perspective projection", description = "If attached, this camera will use a standard perspective projection matrix. Ensure that `near` and `far` are set.", type = "Empty" }
-"core::camera::perspective_infinite_reverse" = { name = "Perspective-infinite-reverse projection", description = "If attached, this camera will use a perspective-infinite-reverse projection matrix, which is well-suited for rendering large worlds as it has no far plane. Ensure `near` is set.", type = "Empty" }
-"core::camera::projection" = { name = "Projection", description = "The projection matrix of this camera. This can be driven by other components, including `perspective` and `perspective_infinite_reverse`.", type = "Mat4" }
-"core::camera::projection_view" = { name = "Projection-view", description = "The composition of the projection and view (inverse-local-to-world) matrices.", type = "Mat4" }
-"core::camera::shadows_far" = { name = "Shadows far plane", description = "The far plane for the shadow camera, measured in metres.", type = "F32" }
-"core::camera::ui_camera" = { name = "UI camera", description = "This entity is a camera that is used to render UI. Ensure that you have the remaining camera components.", type = "Empty" }
-"core::ecs::children" = { name = "Children", description = "The children of this entity.", type = { type = "Vec", element_type = "EntityId" } }
-"core::ecs::dont_store" = { name = "Don't store", description = "Indicates that this entity shouldn't be stored on disk.", type = "Empty" }
-"core::ecs::id" = { name = "ID", description = "The ID of the entity.", type = "EntityId" }
-"core::ecs::ids" = { name = "IDs", description = "A generic list of entity IDs, with no semantic meaning.", type = { type = "Vec", element_type = "EntityId" } }
-"core::ecs::parent" = { name = "Parent", description = "The parent of this entity.", type = "EntityId" }
-"core::ecs::uid" = { name = "UID", description = "A unique ID that can be used to preserve the identity of an entity, even when it is recreated.", type = "EntityUid" }
-"core::model::model_animatable" = { name = "Model animatable", description = "Controls whether this model can be animated.", type = "Bool" }
-"core::model::model_loaded" = { name = "Model loaded", description = "If attached, this entity has a model attached to it.", type = "Empty" }
-"core::network::is_remote_entity" = { name = "Is remote entity", description = "If attached, this entity was not spawned locally (e.g. if this is the client, it was spawned by the server).", type = "Empty" }
-"core::network::persistent_resources" = { name = "Persistent resources", description = "If attached, this entity contains global resources that are persisted to disk and synchronized to clients.", type = "Empty" }
-"core::network::synced_resources" = { name = "Synced resources", description = "If attached, this entity contains global resources that are synchronized to clients, but not persisted.", type = "Empty" }
-"core::physics::box_collider" = { name = "Box collider", description = "If attached, this entity will have a box physics collider. `x, y, z` is the size of the box.", type = "Vec3" }
-"core::physics::character_controller_height" = { name = "Character controller height", description = "The height of the physics character controller attached to this entity. If an entity has both this and a `character_controller_radius`, it will be given a physical character collider.", type = "F32" }
-"core::physics::character_controller_radius" = { name = "Character controller radius", description = "The radius of the physics character controller attached to this entity. If an entity has both this and a `character_controller_height`, it will be given a physical character collider.", type = "F32" }
-"core::physics::collider_from_url" = { name = "Collider from URL", description = "This entity will load its physics collider from the URL. The value is the URL to load from.", type = "String" }
-"core::physics::collider_loads" = { name = "Collider loads", description = "_Resource_: Contains all colliders that were loaded in this physics tick.", type = { type = "Vec", element_type = "EntityId" } }
-"core::physics::density" = { name = "Density", description = "The density of this entity. This is used to update the `mass` when the entity is rescaled.", type = "F32" }
-"core::physics::dynamic" = { name = "Dynamic", description = "If this is true, the entity will be dynamic (i.e. be able to move). Otherwise, it will be static.", type = "Bool" }
-"core::physics::make_physics_static" = { name = "Make physics static", description = "_Resource_: All physics objects will be made static when loaded.", type = "Bool" }
-"core::physics::mass" = { name = "Mass", description = "The mass of this entity, measured in kilograms.", type = "F32" }
-"core::physics::physics_controlled" = { name = "Physics controlled", description = "If attached, this entity will be controlled by physics. Note that this requires the entity to have a collider.", type = "Empty" }
-"core::physics::plane_collider" = { name = "Plane collider", description = "If attached, this entity will have a plane physics collider. `x, y, z` is the normal, and `w` is the distance.", type = "Empty" }
-"core::physics::sphere_collider" = { name = "Sphere collider", description = "If attached, this entity will have a sphere physics collider. The value corresponds to the radius of the sphere.", type = "F32" }
-"core::physics::unit_mass" = { name = "Unit mass", description = "The mass of a character/unit.", type = "F32" }
-"core::physics::unit_velocity" = { name = "Unit velocity", description = "The velocity of a character/unit.", type = "Vec3" }
-"core::physics::unit_yaw" = { name = "Unit yaw", description = "The yaw of a character/unit.", type = "F32" }
-"core::player::local_user_id" = { name = "Local user ID", description = "The user ID of the local player.", type = "String" }
-"core::player::player" = { name = "Player", description = "This entity is a player. Note that this is a logical construct; a player's body may be separate from the player itself.", type = "Empty" }
-"core::player::user_id" = { name = "User ID", description = "An identifier attached to all things owned by a user, and supplied by the user. This can be attached to more than just the player; by convention, it is also attached to related entities, including their camera and body.", type = "String" }
-"core::primitives::cube" = { name = "Cube", description = "If attached to an entity, the entity will be converted to a cube primitive.", type = "Empty" }
-"core::primitives::quad" = { name = "Quad", description = "If attached to an entity, the entity will be converted to a quad primitive.", type = "Empty" }
-"core::rendering::cast_shadows" = { name = "Cast shadows", description = "If attached, this entity will cast shadows.", type = "Empty" }
-"core::rendering::color" = { name = "Color", description = "This entity will be tinted with the specified color if the color is not black.", type = "Vec4" }
-"core::rendering::double_sided" = { name = "Double-sided", description = "If this is set, the entity will be rendered with double-sided rendering.", type = "Bool" }
-"core::rendering::fog_color" = { name = "Fog color", description = "The color of the fog for this `sun`.", type = "Vec3" }
-"core::rendering::fog_density" = { name = "Fog density", description = "The density of the fog for this `sun`.", type = "F32" }
-"core::rendering::fog_height_falloff" = { name = "Fog height fall-off", description = "The height at which the fog will fall off (i.e. stop being visible) for this `sun`.", type = "F32" }
-"core::rendering::joint_matrices" = { name = "Joint Matrices", description = "Contains the matrices for each joint of this skinned mesh. This should be used in combination with `joints`.", type = { type = "Vec", element_type = "Mat4" } }
-"core::rendering::joints" = { name = "Joints", description = "Contains the joints that comprise this skinned mesh.", type = { type = "Vec", element_type = "EntityId" } }
-"core::rendering::light_ambient" = { name = "Light ambient", description = "The ambient light color of the `sun`.", type = "Vec3" }
-"core::rendering::light_diffuse" = { name = "Light diffuse", description = "The diffuse light color of the `sun`.", type = "Vec3" }
-"core::rendering::outline" = { name = "Outline", description = "If attached, this entity will be rendered with an outline with the color specified.", type = "Vec4" }
-"core::rendering::outline_recursive" = { name = "Outline (recursive)", description = "If attached, this entity and all of its children will be rendered with an outline with the color specified. You do not need to attach `outline` if you have attached `outline_recursive`.", type = "Vec4" }
-"core::rendering::overlay" = { name = "Overlay", description = "If attached, this entity will be rendered with an overlay.", type = "Empty" }
-"core::rendering::sun" = { name = "Sun", description = "Marks this entity as a sun (i.e. its rotation will be used to control the global light direction). The entity with the highest `sun` value takes precedence.", type = "F32" }
-"core::rendering::transparency_group" = { name = "Transparency group", description = "Controls when this transparent object will be rendered. Transparent objects are sorted by (transparency_group, z-depth).", type = "I32" }
-"core::transform::cylindrical_billboard_z" = { name = "Cylindrical billboard Z", description = "If attached, this ensures this entity is always aligned with the camera, except on the Z-axis. This is useful for decorations that the player will be looking at from roughly the same altitude.", type = "Empty" }
-"core::transform::euler_rotation" = { name = "Euler rotation", description = "The Euler rotation of this entity in ZYX order.", type = "Vec3" }
-"core::transform::inv_local_to_world" = { name = "Inverse Local to World", description = "Converts a world position to a local position. This is automatically updated.", type = "Mat4" }
-"core::transform::local_to_parent" = { name = "Local to Parent", description = "Transformation from the entity's local space to the parent's space.", type = "Mat4" }
-"core::transform::local_to_world" = { name = "Local to World", description = "Transformation from the entity's local space to worldspace.", type = "Mat4" }
-"core::transform::lookat_center" = { name = "Look-at center", description = "The position that this entity should be looking at.", type = "Vec3" }
-"core::transform::lookat_up" = { name = "Look-at up", description = "When combined with `lookat_center`, the up vector for this entity.", type = "Vec3" }
-"core::transform::mesh_to_local" = { name = "Mesh to Local", description = "Transformation from mesh-space to the entity's local space.", type = "Mat4" }
-"core::transform::mesh_to_world" = { name = "Mesh to World", description = "Transformation from mesh-space to world space. This is automatically updated when `mesh_to_local` and `local_to_world` change.", type = "Mat4" }
-"core::transform::reset_scale" = { name = "Reset scale", description = "If attached to a transform hierarchy, the scale will be reset at that point, with only rotation/translation considered.", type = "Empty" }
-"core::transform::rotation" = { name = "Rotation", description = "The rotation of this entity.", type = "Quat" }
-"core::transform::scale" = { name = "Scale", description = "The scale of this entity.", type = "Vec3" }
-"core::transform::spherical_billboard" = { name = "Spherical billboard", description = "If attached, this ensures that this entity is always aligned with the camera.", type = "Empty" }
-"core::transform::translation" = { name = "Translation", description = "The translation/position of this entity.", type = "Vec3" }
+[components."core::app::main_scene"]
+type = "Empty"
+name = "Main scene"
+description = "If attached, this entity belongs to the main scene."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::app::name"]
+type = "String"
+name = "Name"
+description = "A human-friendly name for this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::app::ui_scene"]
+type = "Empty"
+name = "UI scene"
+description = "If attached, this entity belongs to the UI scene."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::camera::active_camera"]
+type = "F32"
+name = "Active camera"
+description = "The camera with the highest `active_camera` value will be used for rendering."
+attributes = ["Networked", "Store"]
+
+[components."core::camera::aspect_ratio"]
+type = "F32"
+name = "Aspect ratio"
+description = "The aspect ratio of this camera. If `aspect_ratio_from_window` is set, this will be automatically updated to match the window."
+attributes = ["Networked", "Store"]
+
+[components."core::camera::aspect_ratio_from_window"]
+type = "Empty"
+name = "Aspect ratio from window"
+description = "If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window."
+attributes = ["Networked", "Store"]
+
+[components."core::camera::far"]
+type = "F32"
+name = "Far plane"
+description = "The far plane of this camera, measured in metres."
+attributes = ["Networked", "Store"]
+
+[components."core::camera::fog"]
+type = "Empty"
+name = "Fog"
+description = "If attached, this camera will see/render fog."
+attributes = ["Networked", "Store"]
+
+[components."core::camera::fovy"]
+type = "F32"
+name = "Field of View Y"
+description = "The field of view of this camera in the Y/vertical direction, measured in radians."
+attributes = ["Networked", "Store"]
+
+[components."core::camera::near"]
+type = "F32"
+name = "Near plane"
+description = "The near plane of this camera, measured in metres."
+attributes = ["Networked", "Store"]
+
+[components."core::camera::perspective"]
+type = "Empty"
+name = "Perspective projection"
+description = "If attached, this camera will use a standard perspective projection matrix. Ensure that `near` and `far` are set."
+attributes = ["Networked", "Store"]
+
+[components."core::camera::perspective_infinite_reverse"]
+type = "Empty"
+name = "Perspective-infinite-reverse projection"
+description = "If attached, this camera will use a perspective-infinite-reverse projection matrix, which is well-suited for rendering large worlds as it has no far plane. Ensure `near` is set."
+attributes = ["Networked", "Store"]
+
+[components."core::camera::projection"]
+type = "Mat4"
+name = "Projection"
+description = "The projection matrix of this camera. This can be driven by other components, including `perspective` and `perspective_infinite_reverse`."
+attributes = ["Networked", "Store"]
+
+[components."core::camera::projection_view"]
+type = "Mat4"
+name = "Projection-view"
+description = "The composition of the projection and view (inverse-local-to-world) matrices."
+attributes = ["Networked", "Store"]
+
+[components."core::camera::shadows_far"]
+type = "F32"
+name = "Shadows far plane"
+description = "The far plane for the shadow camera, measured in metres."
+attributes = ["Networked", "Store"]
+
+[components."core::camera::ui_camera"]
+type = "Empty"
+name = "UI camera"
+description = "This entity is a camera that is used to render UI. Ensure that you have the remaining camera components."
+attributes = ["Networked", "Store"]
+
+[components."core::ecs::children"]
+type = { type = "Vec", element_type = "EntityId" }
+name = "Children"
+description = "The children of this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ecs::dont_store"]
+type = "Empty"
+name = "Don't store"
+description = "Indicates that this entity shouldn't be stored on disk."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ecs::id"]
+type = "EntityId"
+name = "ID"
+description = "The ID of the entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ecs::ids"]
+type = { type = "Vec", element_type = "EntityId" }
+name = "IDs"
+description = "A generic list of entity IDs, with no semantic meaning."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ecs::parent"]
+type = "EntityId"
+name = "Parent"
+description = "The parent of this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ecs::uid"]
+type = "EntityUid"
+name = "UID"
+description = "A unique ID that can be used to preserve the identity of an entity, even when it is recreated."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::model::model_animatable"]
+type = "Bool"
+name = "Model animatable"
+description = "Controls whether this model can be animated."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::model::model_loaded"]
+type = "Empty"
+name = "Model loaded"
+description = "If attached, this entity has a model attached to it."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::network::is_remote_entity"]
+type = "Empty"
+name = "Is remote entity"
+description = "If attached, this entity was not spawned locally (e.g. if this is the client, it was spawned by the server)."
+attributes = ["Debuggable", "Networked"]
+
+[components."core::network::persistent_resources"]
+type = "Empty"
+name = "Persistent resources"
+description = "If attached, this entity contains global resources that are persisted to disk and synchronized to clients."
+attributes = ["Debuggable", "Networked"]
+
+[components."core::network::synced_resources"]
+type = "Empty"
+name = "Synced resources"
+description = "If attached, this entity contains global resources that are synchronized to clients, but not persisted."
+attributes = ["Debuggable", "Networked"]
+
+[components."core::physics::box_collider"]
+type = "Vec3"
+name = "Box collider"
+description = "If attached, this entity will have a box physics collider. `x, y, z` is the size of the box."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::physics::character_controller_height"]
+type = "F32"
+name = "Character controller height"
+description = "The height of the physics character controller attached to this entity. If an entity has both this and a `character_controller_radius`, it will be given a physical character collider."
+attributes = ["Networked", "Store"]
+
+[components."core::physics::character_controller_radius"]
+type = "F32"
+name = "Character controller radius"
+description = "The radius of the physics character controller attached to this entity. If an entity has both this and a `character_controller_height`, it will be given a physical character collider."
+attributes = ["Networked", "Store"]
+
+[components."core::physics::collider_from_url"]
+type = "String"
+name = "Collider from URL"
+description = "This entity will load its physics collider from the URL. The value is the URL to load from."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::physics::collider_loads"]
+type = { type = "Vec", element_type = "EntityId" }
+name = "Collider loads"
+description = "Contains all colliders that were loaded in this physics tick."
+attributes = ["Debuggable", "Networked", "Resource", "Store"]
+
+[components."core::physics::density"]
+type = "F32"
+name = "Density"
+description = "The density of this entity. This is used to update the `mass` when the entity is rescaled."
+attributes = ["Networked", "Store"]
+
+[components."core::physics::dynamic"]
+type = "Bool"
+name = "Dynamic"
+description = "If this is true, the entity will be dynamic (i.e. be able to move). Otherwise, it will be static."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::physics::make_physics_static"]
+type = "Bool"
+name = "Make physics static"
+description = "All physics objects will be made static when loaded."
+attributes = ["Debuggable", "Networked", "Resource", "Store"]
+
+[components."core::physics::mass"]
+type = "F32"
+name = "Mass"
+description = "The mass of this entity, measured in kilograms."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::physics::physics_controlled"]
+type = "Empty"
+name = "Physics controlled"
+description = "If attached, this entity will be controlled by physics. Note that this requires the entity to have a collider."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::physics::plane_collider"]
+type = "Empty"
+name = "Plane collider"
+description = "If attached, this entity will have a plane physics collider. `x, y, z` is the normal, and `w` is the distance."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::physics::sphere_collider"]
+type = "F32"
+name = "Sphere collider"
+description = "If attached, this entity will have a sphere physics collider. The value corresponds to the radius of the sphere."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::physics::unit_mass"]
+type = "F32"
+name = "Unit mass"
+description = "The mass of a character/unit."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::physics::unit_velocity"]
+type = "Vec3"
+name = "Unit velocity"
+description = "The velocity of a character/unit."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::physics::unit_yaw"]
+type = "F32"
+name = "Unit yaw"
+description = "The yaw of a character/unit."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::player::local_user_id"]
+type = "String"
+name = "Local user ID"
+description = "The user ID of the local player."
+attributes = ["Networked", "Store"]
+
+[components."core::player::player"]
+type = "Empty"
+name = "Player"
+description = "This entity is a player. Note that this is a logical construct; a player's body may be separate from the player itself."
+attributes = ["Networked", "Store"]
+
+[components."core::player::user_id"]
+type = "String"
+name = "User ID"
+description = "An identifier attached to all things owned by a user, and supplied by the user. This can be attached to more than just the player; by convention, it is also attached to related entities, including their camera and body."
+attributes = ["Networked", "Store"]
+
+[components."core::primitives::cube"]
+type = "Empty"
+name = "Cube"
+description = "If attached to an entity, the entity will be converted to a cube primitive."
+attributes = ["Networked", "Store"]
+
+[components."core::primitives::quad"]
+type = "Empty"
+name = "Quad"
+description = "If attached to an entity, the entity will be converted to a quad primitive."
+attributes = ["Networked", "Store"]
+
+[components."core::rendering::cast_shadows"]
+type = "Empty"
+name = "Cast shadows"
+description = "If attached, this entity will cast shadows."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rendering::color"]
+type = "Vec4"
+name = "Color"
+description = "This entity will be tinted with the specified color if the color is not black."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rendering::double_sided"]
+type = "Bool"
+name = "Double-sided"
+description = "If this is set, the entity will be rendered with double-sided rendering."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rendering::fog_color"]
+type = "Vec3"
+name = "Fog color"
+description = "The color of the fog for this `sun`."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rendering::fog_density"]
+type = "F32"
+name = "Fog density"
+description = "The density of the fog for this `sun`."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rendering::fog_height_falloff"]
+type = "F32"
+name = "Fog height fall-off"
+description = "The height at which the fog will fall off (i.e. stop being visible) for this `sun`."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rendering::joint_matrices"]
+type = { type = "Vec", element_type = "Mat4" }
+name = "Joint Matrices"
+description = "Contains the matrices for each joint of this skinned mesh. This should be used in combination with `joints`."
+attributes = ["Networked", "Store"]
+
+[components."core::rendering::joints"]
+type = { type = "Vec", element_type = "EntityId" }
+name = "Joints"
+description = "Contains the joints that comprise this skinned mesh."
+attributes = ["Networked", "Store"]
+
+[components."core::rendering::light_ambient"]
+type = "Vec3"
+name = "Light ambient"
+description = "The ambient light color of the `sun`."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rendering::light_diffuse"]
+type = "Vec3"
+name = "Light diffuse"
+description = "The diffuse light color of the `sun`."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rendering::outline"]
+type = "Vec4"
+name = "Outline"
+description = "If attached, this entity will be rendered with an outline with the color specified."
+attributes = ["Networked", "Store"]
+
+[components."core::rendering::outline_recursive"]
+type = "Vec4"
+name = "Outline (recursive)"
+description = "If attached, this entity and all of its children will be rendered with an outline with the color specified. You do not need to attach `outline` if you have attached `outline_recursive`."
+attributes = ["Networked", "Store"]
+
+[components."core::rendering::overlay"]
+type = "Empty"
+name = "Overlay"
+description = "If attached, this entity will be rendered with an overlay."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rendering::sun"]
+type = "F32"
+name = "Sun"
+description = "Marks this entity as a sun (i.e. its rotation will be used to control the global light direction). The entity with the highest `sun` value takes precedence."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rendering::transparency_group"]
+type = "I32"
+name = "Transparency group"
+description = "Controls when this transparent object will be rendered. Transparent objects are sorted by (transparency_group, z-depth)."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::transform::cylindrical_billboard_z"]
+type = "Empty"
+name = "Cylindrical billboard Z"
+description = "If attached, this ensures this entity is always aligned with the camera, except on the Z-axis. This is useful for decorations that the player will be looking at from roughly the same altitude."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::transform::euler_rotation"]
+type = "Vec3"
+name = "Euler rotation"
+description = "The Euler rotation of this entity in ZYX order."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::transform::inv_local_to_world"]
+type = "Mat4"
+name = "Inverse Local to World"
+description = "Converts a world position to a local position. This is automatically updated."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::transform::local_to_parent"]
+type = "Mat4"
+name = "Local to Parent"
+description = "Transformation from the entity's local space to the parent's space."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::transform::local_to_world"]
+type = "Mat4"
+name = "Local to World"
+description = "Transformation from the entity's local space to worldspace."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::transform::lookat_center"]
+type = "Vec3"
+name = "Look-at center"
+description = "The position that this entity should be looking at."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::transform::lookat_up"]
+type = "Vec3"
+name = "Look-at up"
+description = "When combined with `lookat_center`, the up vector for this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::transform::mesh_to_local"]
+type = "Mat4"
+name = "Mesh to Local"
+description = "Transformation from mesh-space to the entity's local space."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::transform::mesh_to_world"]
+type = "Mat4"
+name = "Mesh to World"
+description = "Transformation from mesh-space to world space. This is automatically updated when `mesh_to_local` and `local_to_world` change."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::transform::reset_scale"]
+type = "Empty"
+name = "Reset scale"
+description = "If attached to a transform hierarchy, the scale will be reset at that point, with only rotation/translation considered."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::transform::rotation"]
+type = "Quat"
+name = "Rotation"
+description = "The rotation of this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::transform::scale"]
+type = "Vec3"
+name = "Scale"
+description = "The scale of this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::transform::spherical_billboard"]
+type = "Empty"
+name = "Spherical billboard"
+description = "If attached, this ensures that this entity is always aligned with the camera."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::transform::translation"]
+type = "Vec3"
+name = "Translation"
+description = "The translation/position of this entity."
+attributes = ["Debuggable", "Networked", "Store"]
