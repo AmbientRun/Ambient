@@ -7,7 +7,7 @@ pub mod guest_conversion;
 pub mod host_guest_state;
 pub mod interface;
 
-mod script_module;
+mod module;
 use std::sync::Arc;
 
 use host_guest_state::GetBaseHostGuestState;
@@ -17,21 +17,21 @@ use kiwi_ecs::{
     Store, World,
 };
 use kiwi_project::Identifier;
+pub use module::*;
 use parking_lot::RwLock;
-pub use script_module::*;
 use util::get_module_name;
 use wasi_common::WasiCtx;
 use wasmtime::Linker;
 
 components!("wasm::shared", {
     @[Networked, Store]
-    script_module: (),
+    module: (),
     @[Store]
-    script_module_bytecode: ScriptModuleBytecode,
+    module_bytecode: ModuleBytecode,
     @[Networked, Store]
-    script_module_enabled: bool,
+    module_enabled: bool,
     @[Networked, Store]
-    script_module_errors: ScriptModuleErrors,
+    module_errors: ModuleErrors,
 
     /// used to signal messages from the WASM host/runtime
     @[Resource]
@@ -49,13 +49,13 @@ pub enum MessageType {
 }
 
 #[derive(Debug, Clone)]
-pub struct ScriptContext {
+pub struct RunContext {
     pub event_name: String,
     pub event_data: EntityData,
     pub time: f32,
     pub frametime: f32,
 }
-impl ScriptContext {
+impl RunContext {
     pub fn new(world: &World, event_name: &str, event_data: EntityData) -> Self {
         let time = kiwi_app::get_time_since_app_start(world).as_secs_f32();
         let frametime = *world.resource(kiwi_core::dtime());
@@ -85,26 +85,22 @@ pub fn reload_all<
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
     world: &mut World,
-    state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
+    state_component: Component<ModuleState<Bindings, Context, HostGuestState>>,
     make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context + Send + Sync>,
     add_to_linker: Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
 ) {
-    let scripts = query((
-        script_module(),
-        script_module_bytecode(),
-        script_module_enabled(),
-    ))
-    .iter(world, None)
-    .map(|(id, (_, bc, enabled))| (id, enabled.then(|| bc.clone())))
-    .collect_vec();
+    let modules = query((module(), module_bytecode(), module_enabled()))
+        .iter(world, None)
+        .map(|(id, (_, bc, enabled))| (id, enabled.then(|| bc.clone())))
+        .collect_vec();
 
-    for (script_id, bytecode) in scripts {
+    for (module_id, bytecode) in modules {
         reload(
             world,
             state_component,
             make_wasm_context.clone(),
             add_to_linker.clone(),
-            script_id,
+            module_id,
             bytecode,
         );
     }
@@ -116,8 +112,8 @@ pub fn run_all<
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
     world: &mut World,
-    state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
-    context: &ScriptContext,
+    state_component: Component<ModuleState<Bindings, Context, HostGuestState>>,
+    context: &RunContext,
 ) {
     let errors: Vec<(EntityId, String)> = query(state_component)
         .collect_cloned(world, None)
@@ -133,20 +129,20 @@ pub fn reload<
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
     world: &mut World,
-    state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
+    state_component: Component<ModuleState<Bindings, Context, HostGuestState>>,
     make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context + Send + Sync>,
     add_to_linker: Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
-    script_id: EntityId,
-    bytecode: Option<ScriptModuleBytecode>,
+    module_id: EntityId,
+    bytecode: Option<ModuleBytecode>,
 ) {
-    let mut errors = unload(world, state_component, script_id, "reloading");
+    let mut errors = unload(world, state_component, module_id, "reloading");
 
     if let Some(bytecode) = bytecode {
         if !bytecode.0.is_empty() {
             load(
                 world,
                 state_component,
-                script_id,
+                module_id,
                 make_wasm_context.clone(),
                 add_to_linker.clone(),
                 &bytecode.0,
@@ -165,8 +161,8 @@ pub fn load<
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
     world: &mut World,
-    state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
-    script_id: EntityId,
+    state_component: Component<ModuleState<Bindings, Context, HostGuestState>>,
+    module_id: EntityId,
     make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context + Send + Sync>,
     add_to_linker: Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
     bytecode: &[u8],
@@ -174,16 +170,16 @@ pub fn load<
 ) {
     let messenger = world.resource(messenger()).clone();
     let result = run_and_catch_panics(|| {
-        ScriptModuleState::new(
+        ModuleState::new(
             bytecode,
             Box::new({
                 let messenger = messenger.clone();
                 move |world, msg| {
-                    messenger(world, script_id, MessageType::Stdout, msg);
+                    messenger(world, module_id, MessageType::Stdout, msg);
                 }
             }),
             Box::new(move |world, msg| {
-                messenger(world, script_id, MessageType::Stderr, msg);
+                messenger(world, module_id, MessageType::Stderr, msg);
             }),
             move |ctx, state| make_wasm_context(ctx, state),
             move |linker| add_to_linker(linker),
@@ -197,16 +193,16 @@ pub fn load<
             errors.extend(run(
                 world,
                 state_component,
-                script_id,
+                module_id,
                 sms.clone(),
-                &ScriptContext::new(world, "core/module_load", EntityData::new()),
+                &RunContext::new(world, "core/module_load", EntityData::new()),
             ));
 
             world
-                .add_component(script_id, state_component, sms)
+                .add_component(module_id, state_component, sms)
                 .unwrap();
         }
-        Err(err) => errors.push((script_id, err)),
+        Err(err) => errors.push((module_id, err)),
     }
 }
 
@@ -216,32 +212,32 @@ pub fn unload<
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
     world: &mut World,
-    state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
-    script_id: EntityId,
+    state_component: Component<ModuleState<Bindings, Context, HostGuestState>>,
+    module_id: EntityId,
     reason: &str,
 ) -> Vec<(EntityId, String)> {
-    let Ok(sms) = world.get_cloned(script_id, state_component) else { return vec![]; };
+    let Ok(sms) = world.get_cloned(module_id, state_component) else { return vec![]; };
 
     let errors = run(
         world,
         state_component,
-        script_id,
+        module_id,
         sms,
-        &ScriptContext::new(world, "core/module_unload", EntityData::new()),
+        &RunContext::new(world, "core/module_unload", EntityData::new()),
     )
     .into_iter()
     .collect_vec();
 
     let spawned_entities = world
-        .get_mut(script_id, state_component)
+        .get_mut(module_id, state_component)
         .map(|sms| std::mem::take(&mut sms.shared_state().write().base_mut().spawned_entities))
         .unwrap_or_default();
 
-    if let Ok(script_module_errors) = world.get_mut(script_id, script_module_errors()) {
-        script_module_errors.runtime.clear();
+    if let Ok(module_errors) = world.get_mut(module_id, module_errors()) {
+        module_errors.runtime.clear();
     }
 
-    world.remove_component(script_id, state_component).unwrap();
+    world.remove_component(module_id, state_component).unwrap();
 
     for uid in spawned_entities {
         if let Ok(id) = world.resource(uid_lookup()).get(&uid) {
@@ -252,7 +248,7 @@ pub fn unload<
     let messenger = world.resource(messenger()).clone();
     messenger(
         world,
-        script_id,
+        module_id,
         MessageType::Info,
         &format!("Unloaded (reason: {reason})"),
     );
@@ -266,7 +262,7 @@ pub fn update_errors<
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
     world: &mut World,
-    state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
+    state_component: Component<ModuleState<Bindings, Context, HostGuestState>>,
     errors: &[(EntityId, String)],
     runtime: bool,
 ) {
@@ -286,10 +282,10 @@ pub fn update_errors<
             ),
         );
 
-        if let Ok(script_module_errors) = world.get_mut(*id, script_module_errors()) {
+        if let Ok(module_errors) = world.get_mut(*id, module_errors()) {
             let error_stream = match runtime {
-                true => &mut script_module_errors.runtime,
-                false => &mut script_module_errors.compiletime,
+                true => &mut module_errors.runtime,
+                false => &mut module_errors.compiletime,
             };
             error_stream.push(err.clone());
             if error_stream.len() > MAXIMUM_ERROR_COUNT {
@@ -305,13 +301,13 @@ pub fn run<
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
     world: &mut World,
-    state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
+    state_component: Component<ModuleState<Bindings, Context, HostGuestState>>,
     id: EntityId,
-    mut state: ScriptModuleState<Bindings, Context, HostGuestState>,
-    context: &ScriptContext,
+    mut state: ModuleState<Bindings, Context, HostGuestState>,
+    context: &RunContext,
 ) -> Option<(EntityId, String)> {
     profiling::scope!(
-        "run_script",
+        "run",
         format!("{} - {}", get_module_name(world, id), context.event_name)
     );
 
@@ -345,21 +341,21 @@ pub fn run<
         run_all(
             world,
             state_component,
-            &ScriptContext::new(world, &event_name, event_data),
+            &RunContext::new(world, &event_name, event_data),
         );
     }
 
     err
 }
 
-pub fn spawn_script(
+pub fn spawn_module(
     world: &mut World,
     name: &Identifier,
     description: String,
     enabled: bool,
 ) -> anyhow::Result<EntityId> {
     if query(())
-        .incl(script_module())
+        .incl(module())
         .iter(world, None)
         .any(|(id, _)| &get_module_name(world, id) == name)
     {
@@ -369,9 +365,9 @@ pub fn spawn_script(
     let ed = EntityData::new()
         .set(kiwi_core::name(), name.to_string())
         .set(uid(), kiwi_ecs::EntityUid::create())
-        .set_default(script_module())
-        .set(script_module_enabled(), enabled)
-        .set_default(script_module_errors())
+        .set_default(module())
+        .set(module_enabled(), enabled)
+        .set_default(module_errors())
         .set(kiwi_project::description(), description);
 
     Ok(ed.spawn(world))

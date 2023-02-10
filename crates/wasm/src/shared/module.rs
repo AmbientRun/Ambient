@@ -15,25 +15,25 @@ use super::{
     bindings,
     guest_conversion::GuestConvert,
     host_guest_state::GetBaseHostGuestState,
-    interface::guest::{Guest, GuestData, RunContext},
-    ScriptContext,
+    interface::guest::{Guest, GuestData, RunContext as GuestRunContext},
+    RunContext,
 };
 
 #[derive(Clone)]
-pub struct ScriptModuleBytecode(pub Vec<u8>);
-impl std::fmt::Debug for ScriptModuleBytecode {
+pub struct ModuleBytecode(pub Vec<u8>);
+impl std::fmt::Debug for ModuleBytecode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("ScriptModuleBytecode")
+        f.debug_tuple("ModuleBytecode")
             .field(&BASE64.encode(&self.0))
             .finish()
     }
 }
-impl std::fmt::Display for ScriptModuleBytecode {
+impl std::fmt::Display for ModuleBytecode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "ScriptModuleBytecode({} bytes)", self.0.len())
+        write!(f, "ModuleBytecode({} bytes)", self.0.len())
     }
 }
-impl Serialize for ScriptModuleBytecode {
+impl Serialize for ModuleBytecode {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -41,16 +41,16 @@ impl Serialize for ScriptModuleBytecode {
         serializer.serialize_str(&BASE64.encode(&self.0))
     }
 }
-impl<'de> Deserialize<'de> for ScriptModuleBytecode {
+impl<'de> Deserialize<'de> for ModuleBytecode {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
         use serde::de::{self, Visitor};
 
-        struct ScriptModuleBytecodeVisitor;
-        impl<'de> Visitor<'de> for ScriptModuleBytecodeVisitor {
-            type Value = ScriptModuleBytecode;
+        struct ModuleBytecodeVisitor;
+        impl<'de> Visitor<'de> for ModuleBytecodeVisitor {
+            type Value = ModuleBytecode;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
                 formatter.write_str("a base64-encoded string of bytes")
@@ -65,21 +65,21 @@ impl<'de> Deserialize<'de> for ScriptModuleBytecode {
                     .map_err(|err| {
                         E::custom(format!("failed to decode base64-encoded string: {err}"))
                     })
-                    .map(ScriptModuleBytecode)
+                    .map(ModuleBytecode)
             }
         }
 
-        deserializer.deserialize_str(ScriptModuleBytecodeVisitor)
+        deserializer.deserialize_str(ModuleBytecodeVisitor)
     }
 }
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
-pub struct ScriptModuleErrors {
+pub struct ModuleErrors {
     pub compiletime: Vec<String>,
     pub runtime: Vec<String>,
 }
 
-pub struct ScriptModuleState<
+pub struct ModuleState<
     Bindings: Send + Sync + 'static,
     Context: WasmContext<Bindings>,
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
@@ -97,7 +97,7 @@ impl<
         Bindings: Send + Sync + 'static,
         Context: WasmContext<Bindings>,
         HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
-    > Clone for ScriptModuleState<Bindings, Context, HostGuestState>
+    > Clone for ModuleState<Bindings, Context, HostGuestState>
 {
     fn clone(&self) -> Self {
         Self {
@@ -115,17 +115,17 @@ impl<
         Bindings: Send + Sync + 'static,
         Context: WasmContext<Bindings>,
         HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
-    > std::fmt::Debug for ScriptModuleState<Bindings, Context, HostGuestState>
+    > std::fmt::Debug for ModuleState<Bindings, Context, HostGuestState>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ScriptModuleState").finish()
+        f.debug_struct("ModuleState").finish()
     }
 }
 impl<
         Bindings: Send + Sync + 'static,
         Context: WasmContext<Bindings>,
         HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
-    > ScriptModuleState<Bindings, Context, HostGuestState>
+    > ModuleState<Bindings, Context, HostGuestState>
 {
     pub fn new(
         bytecode: &[u8],
@@ -185,8 +185,8 @@ impl<
         })
     }
 
-    pub fn run(&mut self, world: &mut World, context: &ScriptContext) -> anyhow::Result<()> {
-        let ScriptContext {
+    pub fn run(&mut self, world: &mut World, context: &RunContext) -> anyhow::Result<()> {
+        let RunContext {
             event_name,
             event_data,
             time,
@@ -211,7 +211,7 @@ impl<
 
         Ok(self.guest_exports.exec(
             &mut *self.store.lock(),
-            RunContext {
+            GuestRunContext {
                 time: *time,
                 frametime: *frametime,
             },

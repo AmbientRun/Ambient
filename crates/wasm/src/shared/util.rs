@@ -10,7 +10,7 @@ use kiwi_core::name;
 use kiwi_ecs::{query, EntityId, World};
 use kiwi_project::Identifier;
 
-use super::{script_module, script_module_enabled};
+use super::{module, module_enabled};
 
 pub fn write_files_to_directory(
     base_path: &Path,
@@ -33,7 +33,7 @@ pub fn write_files_to_directory(
 }
 
 pub fn all_module_names_sanitized(world: &World, include_disabled_modules: bool) -> Vec<String> {
-    query((script_module(), script_module_enabled()))
+    query((module(), module_enabled()))
         .iter(world, None)
         .filter_map(|(id, (_, enabled))| {
             (include_disabled_modules || *enabled).then(|| sanitize(&get_module_name(world, id)))
@@ -83,9 +83,9 @@ pub fn write_module_files(path: &Path) {
     }
 }
 
-pub fn remove_old_script_modules(scripts_dir: &Path, script_module_sanitized_names: &[String]) {
+pub fn remove_old_modules(modules_dir: &Path, module_sanitized_names: &[String]) {
     // Remove all directories that are not within the current working set of modules.
-    if let Ok(entries) = std::fs::read_dir(scripts_dir) {
+    if let Ok(entries) = std::fs::read_dir(modules_dir) {
         for path in entries
             .filter_map(Result::ok)
             .map(|de| de.path())
@@ -94,7 +94,7 @@ pub fn remove_old_script_modules(scripts_dir: &Path, script_module_sanitized_nam
                 let dir_name = p.file_name().unwrap_or_default().to_string_lossy();
                 let should_be_kept = dir_name == "target"
                     || dir_name.starts_with('.')
-                    || script_module_sanitized_names
+                    || module_sanitized_names
                         .iter()
                         .any(|m| m.as_str() == dir_name);
                 !should_be_kept
