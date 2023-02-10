@@ -223,7 +223,7 @@ impl<
     }
 }
 
-// TODO(mithun): come up with a more optimal way to do this that doesn't
+// TODO(philpax): come up with a more optimal way to do this that doesn't
 // implicitly require unsafe and mutex locking
 struct WasiOutputFile(
     Box<dyn Fn(&World, &str) + Sync + Send>,

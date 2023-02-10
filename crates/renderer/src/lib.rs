@@ -80,7 +80,7 @@ components!("rendering", {
     @[
         Debuggable, Networked, Store,
         Name["Sun"],
-        Description["Marks this entity as a sun (i.e. its rotation will be used to control the global light direction). The entity with the highest `sun` value takes precedence."]
+        Description["Marks this entity as a sun (i.e. its rotation will be used to control the global light direction).\nThe entity with the highest `sun` value takes precedence."]
     ]
     sun: f32,
     @[

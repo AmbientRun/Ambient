@@ -304,7 +304,7 @@ impl App {
     pub fn run(mut self) {
         let event_loop = self.event_loop.take().unwrap();
         event_loop.run(move |event, _, control_flow| {
-            // HACK(mithun): treat dpi changes as resize events. ideally we'd handle this in handle_event proper,
+            // HACK(philpax): treat dpi changes as resize events. ideally we'd handle this in handle_event proper,
             // but https://github.com/rust-windowing/winit/issues/1968 restricts us
             if let Event::WindowEvent { window_id, event: WindowEvent::ScaleFactorChanged { new_inner_size, scale_factor } } = &event {
                 *self.world.resource_mut(window_scale_factor()) = *scale_factor;

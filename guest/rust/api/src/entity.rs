@@ -54,7 +54,7 @@ pub fn spawn_template(
 /// Waits until `uid` has fully spawned. Note that this may never resolve if the entity
 /// does not complete spawning, or the UID in question refers to an entity that does
 /// not exist.
-// TODO(mithun): revisit once we think about the spawning situation some more
+// TODO(philpax): revisit once we think about the spawning situation some more
 pub async fn wait_for_spawn(uid: &EntityUid) -> EntityId {
     let uid = uid.clone();
     let event = until_this(super::event::ENTITY_SPAWN, move |ed| {

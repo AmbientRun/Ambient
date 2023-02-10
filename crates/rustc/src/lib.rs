@@ -109,7 +109,7 @@ impl Installation {
 
         let target = env!("TARGET").to_string();
 
-        // HACK(mithun): the -msvc toolchain requires msvc build tools, which rustup is not guaranteed
+        // HACK(philpax): the -msvc toolchain requires msvc build tools, which rustup is not guaranteed
         // to install. instead, we force the -gnu toolchain, which shouldn't require those tools:
         // x86_64-pc-windows-msvc -> x86_64-pc-windows-gnu
         #[cfg(target_os = "windows")]

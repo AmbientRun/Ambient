@@ -69,7 +69,7 @@ impl ExternalComponentAttributes {
             self.store.then_some("Store"),
         ]
         .into_iter()
-        .filter_map(|v| v)
+        .flatten()
     }
 }
 
@@ -174,7 +174,7 @@ impl ComponentRegistry {
 
     /// Returns an iterator over all primitive components and their descs.
     pub fn all_primitive(&self) -> impl Iterator<Item = &PrimitiveComponent> + '_ {
-        self.components.iter().filter_map(|v| Some(v.primitive_component.as_ref()?))
+        self.components.iter().filter_map(|v| v.primitive_component.as_ref())
     }
 
     /// Returns an iterator over all primitive components that were externally defined and their descs.

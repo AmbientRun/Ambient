@@ -1,15 +1,3 @@
-// TODO(mithun): I spent two hours trying to make `PartialEq` work correctly
-// with a reference to an unboxed IComponent (which is what you get when you remove
-// the borrowed boxes.)
-// At some point, we should revisit this and try to make it work again, but that was not
-// a good use of time.
-// error[E0277]: can't compare `&dyn kiwi_ecs::IComponent` with `kiwi_ecs::Component<dims_game_objects::player_input::PlayerInput>`
-//     = help: the trait `std::cmp::PartialEq<kiwi_ecs::Component<dims_game_objects::player_input::PlayerInput>>` is not implemented for `&dyn kiwi_ecs::IComponent`
-//     = help: the following other types implement trait `std::cmp::PartialEq<Rhs>`:
-//               <(dyn kiwi_ecs::IComponent + 'a) as std::cmp::PartialEq<kiwi_ecs::Component<T>>>
-//               <(dyn kiwi_ecs::IComponent + 'a) as std::cmp::PartialEq>
-#![allow(clippy::borrowed_box)]
-
 use std::{self, any::Any};
 
 use downcast_rs::impl_downcast;

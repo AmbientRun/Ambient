@@ -114,7 +114,7 @@ fn do_derive_element_component(input: TokenStream, item: TokenStream) -> TokenSt
     let body = item.block;
 
     let inputs = item.sig.inputs.into_iter().collect_vec();
-    // NOTE(mithun): It is technically possible to support destructuring, but it's a niche use-case
+    // NOTE(philpax): It is technically possible to support destructuring, but it's a niche use-case
     // for this particular application. Feel free to change it if you feel otherwise!
     assert!(
         inputs

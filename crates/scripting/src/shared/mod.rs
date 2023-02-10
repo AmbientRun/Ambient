@@ -334,7 +334,7 @@ pub fn run<
     world.set(id, state_component, state).ok();
 
     let err = result.err().map(|err| (id, err));
-    // TODO(mithun): come up with a more intelligent dispatch scheme than this
+    // TODO(philpax): come up with a more intelligent dispatch scheme than this
     // This can very easily result in an infinite loop.
     // Things to fix include:
     // - don't let a script trigger an event on itself
