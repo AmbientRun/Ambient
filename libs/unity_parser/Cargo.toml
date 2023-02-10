@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-elements_std = { path = "../../crates/std" }
+kiwi_std = { path = "../../crates/std" }
 yaml-rust.workspace = true
 itertools.workspace = true
 glam.workspace = true

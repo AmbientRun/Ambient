@@ -1,11 +1,11 @@
-use elements_ecs::{
-    components, ensure_has_component, query, query_mut, Component, Description, ECSError, EntityData, EntityId, Name, Networked, Store, SystemGroup, World
-};
-use elements_std::{
-    math::Line, shapes::{BoundingBox, Plane, Ray, AABB}
-};
 use glam::{vec3, Mat4, Vec2, Vec3, Vec3Swizzles};
 use itertools::Itertools;
+use kiwi_ecs::{
+    components, ensure_has_component, query, query_mut, Component, Description, ECSError, EntityData, EntityId, Name, Networked, Store, SystemGroup, World
+};
+use kiwi_std::{
+    math::Line, shapes::{BoundingBox, Plane, Ray, AABB}
+};
 use ordered_float::OrderedFloat;
 
 use crate::{
@@ -140,12 +140,12 @@ pub fn camera_systems() -> SystemGroup {
     )
 }
 
-/// Elements uses a left handed reverse-z NDC. This function will produce a correct perspective matrix for that
+/// Kiwi uses a left handed reverse-z NDC. This function will produce a correct perspective matrix for that
 pub fn perspective_reverse(fov_y_radians: f32, aspect_ratio: f32, z_near: f32, z_far: f32) -> Mat4 {
     // far and near and swapped on purpose
     Mat4::perspective_lh(fov_y_radians, aspect_ratio, z_far, z_near)
 }
-/// Elements uses a left handed reverse-z NDC. This function will produce a correct orthographic matrix for that
+/// Kiwi uses a left handed reverse-z NDC. This function will produce a correct orthographic matrix for that
 pub fn orthographic_reverse(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) -> Mat4 {
     // far and near and swapped on purpose
     Mat4::orthographic_lh(left, right, bottom, top, far, near)

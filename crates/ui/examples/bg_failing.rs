@@ -1,11 +1,11 @@
-use elements_app::AppBuilder;
-use elements_cameras::UICamera;
-use elements_core::{asset_cache, camera::active_camera, runtime};
-use elements_ecs::World;
-use elements_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use elements_gpu::std_assets::PixelTextureViewKey;
-use elements_std::{asset_cache::SyncAssetKeyExt, color::Color};
-use elements_ui::{FlowColumn, Image, Text, UIExt};
+use kiwi_app::AppBuilder;
+use kiwi_cameras::UICamera;
+use kiwi_core::{asset_cache, camera::active_camera, runtime};
+use kiwi_ecs::World;
+use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use kiwi_gpu::std_assets::PixelTextureViewKey;
+use kiwi_std::{asset_cache::SyncAssetKeyExt, color::Color};
+use kiwi_ui::{FlowColumn, Image, Text, UIExt};
 
 #[derive(Debug, Clone)]
 struct Example;
@@ -20,7 +20,7 @@ impl ElementComponent for Example {
         hooks.use_memo_with((), move |_| {
             runtime.spawn(async move {
                 log::info!("Spawning task");
-                use elements_std::IntoDuration;
+                use kiwi_std::IntoDuration;
                 tokio::time::sleep(5.secs()).await;
                 set_k(5.0)
             });

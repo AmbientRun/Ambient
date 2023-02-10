@@ -1,4 +1,4 @@
-use elements_scripting_interface::{
+use kiwi_api::{
     components::core::{
         app::main_scene,
         camera::aspect_ratio_from_window,

@@ -1,6 +1,6 @@
 use std::{collections::HashSet, sync::Arc};
 
-use elements_std::asset_url::{AbsAssetUrl, AssetType};
+use kiwi_std::asset_url::{AbsAssetUrl, AssetType};
 
 #[derive(Debug, Clone)]
 pub enum OutAssetContent {

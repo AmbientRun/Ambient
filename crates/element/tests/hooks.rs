@@ -2,8 +2,8 @@ use std::sync::{
     atomic::{AtomicU32, Ordering}, Arc
 };
 
-use elements_ecs::World;
-use elements_element::{Element, ElementComponent, ElementComponentExt, ElementTree, Hooks};
+use kiwi_ecs::World;
+use kiwi_element::{Element, ElementComponent, ElementComponentExt, ElementTree, Hooks};
 mod common;
 use common::*;
 

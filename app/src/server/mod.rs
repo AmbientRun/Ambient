@@ -6,14 +6,14 @@ use anyhow::Context;
 use axum::{
     http::{Method, StatusCode}, response::IntoResponse, routing::{get, get_service}, Router
 };
-use elements_core::{app_start_time, asset_cache, dtime, no_sync, time};
-use elements_ecs::{ComponentDesc, ComponentRegistry, EntityData, Networked, SystemGroup, World, WorldStreamCompEvent};
-use elements_network::{
+use kiwi_core::{app_start_time, asset_cache, dtime, no_sync, time};
+use kiwi_ecs::{ComponentDesc, ComponentRegistry, EntityData, Networked, SystemGroup, World, WorldStreamCompEvent};
+use kiwi_network::{
     bi_stream_handlers, client::GameRpcArgs, datagram_handlers, server::{ForkingEvent, GameServer, ShutdownEvent}
 };
-use elements_object::ObjectFromUrl;
-use elements_rpc::RpcRegistry;
-use elements_std::{
+use kiwi_object::ObjectFromUrl;
+use kiwi_rpc::RpcRegistry;
+use kiwi_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, ServerBaseUrlKey}
 };
 use tower_http::{cors::CorsLayer, services::ServeDir};
@@ -26,30 +26,24 @@ fn server_systems() -> SystemGroup {
     SystemGroup::new(
         "server",
         vec![
-            elements_physics::fetch_simulation_system(),
-            Box::new(elements_physics::physx::sync_ecs_physics()),
-            Box::new(elements_core::async_ecs::async_ecs_systems()),
-            Box::new(elements_core::transform::TransformSystem::new()),
-            elements_core::remove_at_time_system(),
-            Box::new(elements_physics::physics_server_systems()),
+            kiwi_physics::fetch_simulation_system(),
+            Box::new(kiwi_physics::physx::sync_ecs_physics()),
+            Box::new(kiwi_core::async_ecs::async_ecs_systems()),
+            Box::new(kiwi_core::transform::TransformSystem::new()),
+            kiwi_core::remove_at_time_system(),
+            Box::new(kiwi_physics::physics_server_systems()),
             Box::new(player::server_systems()),
             Box::new(scripting::systems()),
             Box::new(player::server_systems_final()),
-            elements_physics::run_simulation_system(),
+            kiwi_physics::run_simulation_system(),
         ],
     )
 }
 fn on_forking_systems() -> SystemGroup<ForkingEvent> {
-    SystemGroup::new(
-        "on_forking_systems",
-        vec![Box::new(elements_physics::on_forking_systems()), Box::new(scripting::on_forking_systems())],
-    )
+    SystemGroup::new("on_forking_systems", vec![Box::new(kiwi_physics::on_forking_systems()), Box::new(scripting::on_forking_systems())])
 }
 fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
-    SystemGroup::new(
-        "on_shutdown_systems",
-        vec![Box::new(elements_physics::on_shutdown_systems()), Box::new(scripting::on_shutdown_systems())],
-    )
+    SystemGroup::new("on_shutdown_systems", vec![Box::new(kiwi_physics::on_shutdown_systems()), Box::new(scripting::on_shutdown_systems())])
 }
 
 fn is_sync_component(component: ComponentDesc, _: WorldStreamCompEvent) -> bool {
@@ -58,25 +52,25 @@ fn is_sync_component(component: ComponentDesc, _: WorldStreamCompEvent) -> bool 
 
 pub fn create_rpc_registry() -> RpcRegistry<GameRpcArgs> {
     let mut reg = RpcRegistry::new();
-    elements_network::rpc::register_rpcs(&mut reg);
-    elements_debugger::register_rpcs(&mut reg);
+    kiwi_network::rpc::register_rpcs(&mut reg);
+    kiwi_debugger::register_rpcs(&mut reg);
     reg
 }
 
 fn create_server_resources(assets: AssetCache) -> EntityData {
     let mut server_resources = EntityData::new().set(asset_cache(), assets.clone()).set(no_sync(), ());
 
-    elements_physics::create_server_resources(&assets, &mut server_resources);
+    kiwi_physics::create_server_resources(&assets, &mut server_resources);
 
-    server_resources.append_self(elements_core::async_ecs::async_ecs_resources());
-    server_resources.set_self(elements_core::runtime(), tokio::runtime::Handle::current());
+    server_resources.append_self(kiwi_core::async_ecs::async_ecs_resources());
+    server_resources.set_self(kiwi_core::runtime(), tokio::runtime::Handle::current());
     let now = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
     server_resources.set_self(time(), now);
     server_resources.set_self(app_start_time(), now);
     server_resources.set_self(dtime(), 1. / 60.);
 
     let mut handlers = HashMap::new();
-    elements_network::register_rpc_bi_stream_handler(&mut handlers, create_rpc_registry());
+    kiwi_network::register_rpc_bi_stream_handler(&mut handlers, create_rpc_registry());
     server_resources.set_self(bi_stream_handlers(), handlers);
 
     let mut handlers = HashMap::new();
@@ -110,7 +104,7 @@ pub(crate) fn start_server(
     assets: AssetCache,
     cli: Cli,
     project_path: PathBuf,
-    manifest: &elements_project::Manifest,
+    manifest: &kiwi_project::Manifest,
 ) -> u16 {
     log::info!("Creating server");
     let server = runtime.block_on(async move {

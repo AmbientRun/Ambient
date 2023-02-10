@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use elements_ecs::{lookup_uid, with_component_registry, QueryEvent, World};
-use elements_physics::helpers::PhysicsObjectCollection;
 use itertools::Itertools;
+use kiwi_ecs::{lookup_uid, with_component_registry, QueryEvent, World};
+use kiwi_physics::helpers::PhysicsObjectCollection;
 use parking_lot::RwLock;
 use wit_bindgen_host_wasmtime_rust::Le;
 
@@ -20,7 +20,7 @@ use crate::{
 
 pub struct WasmServerContext {
     pub base_context: BaseWasmContext,
-    pub elements_bindings: Bindings,
+    pub kiwi_bindings: Bindings,
 }
 impl WasmServerContext {
     pub fn new(
@@ -29,7 +29,7 @@ impl WasmServerContext {
     ) -> Self {
         Self {
             base_context: BaseWasmContext::new(wasi),
-            elements_bindings: Bindings::new(shared_state.clone()),
+            kiwi_bindings: Bindings::new(shared_state.clone()),
         }
     }
 
@@ -37,7 +37,7 @@ impl WasmServerContext {
         linker: &mut wasmtime::Linker<T>,
         projection: impl Fn(&mut T) -> &mut Self + Send + Sync + Copy + 'static,
     ) -> anyhow::Result<()> {
-        host::add_to_linker(linker, move |cx| &mut projection(cx).elements_bindings)
+        host::add_to_linker(linker, move |cx| &mut projection(cx).kiwi_bindings)
     }
 }
 impl WasmContext<Bindings> for WasmServerContext {

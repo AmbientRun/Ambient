@@ -4,8 +4,8 @@ use std::{
 
 use as_any::Downcast;
 use atomic_refcell::AtomicRefCell;
-use elements_core::runtime;
-use elements_ecs::{ComponentQuery, ComponentValue, FrameEvent, QueryState, TypedReadQuery, World};
+use kiwi_core::runtime;
+use kiwi_ecs::{ComponentQuery, ComponentValue, FrameEvent, QueryState, TypedReadQuery, World};
 use parking_lot::Mutex;
 use tokio::task::JoinHandle;
 use tracing::info_span;

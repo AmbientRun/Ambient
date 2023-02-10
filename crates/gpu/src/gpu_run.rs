@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
-use elements_std::{
+use kiwi_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt}, CowStr
 };
 use wgpu::{BindGroup, BindGroupLayoutEntry, BufferUsages, ShaderStages};
@@ -126,8 +126,8 @@ impl GpuRun {
 mod test {
     use std::sync::Arc;
 
-    use elements_std::asset_cache::{AssetCache, SyncAssetKeyExt};
     use glam::{Vec2, Vec4, Vec4Swizzles};
+    use kiwi_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 
     use crate::{gpu::GpuKey, gpu_run::GpuRun};
 

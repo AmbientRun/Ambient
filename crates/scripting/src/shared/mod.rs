@@ -10,13 +10,13 @@ pub mod interface;
 mod script_module;
 use std::sync::Arc;
 
-use elements_ecs::{
+use host_guest_state::GetBaseHostGuestState;
+use itertools::Itertools;
+use kiwi_ecs::{
     components, query, uid, uid_lookup, Component, EntityData, EntityId, Networked, Resource,
     Store, World,
 };
-use elements_project::Identifier;
-use host_guest_state::GetBaseHostGuestState;
-use itertools::Itertools;
+use kiwi_project::Identifier;
 use parking_lot::RwLock;
 pub use script_module::*;
 use util::get_module_name;
@@ -57,8 +57,8 @@ pub struct ScriptContext {
 }
 impl ScriptContext {
     pub fn new(world: &World, event_name: &str, event_data: EntityData) -> Self {
-        let time = elements_app::get_time_since_app_start(world).as_secs_f32();
-        let frametime = *world.resource(elements_core::dtime());
+        let time = kiwi_app::get_time_since_app_start(world).as_secs_f32();
+        let frametime = *world.resource(kiwi_core::dtime());
 
         Self {
             event_name: event_name.to_string(),
@@ -367,12 +367,12 @@ pub fn spawn_script(
     }
 
     let ed = EntityData::new()
-        .set(elements_core::name(), name.to_string())
-        .set(uid(), elements_ecs::EntityUid::create())
+        .set(kiwi_core::name(), name.to_string())
+        .set(uid(), kiwi_ecs::EntityUid::create())
         .set_default(script_module())
         .set(script_module_enabled(), enabled)
         .set_default(script_module_errors())
-        .set(elements_project::description(), description);
+        .set(kiwi_project::description(), description);
 
     Ok(ed.spawn(world))
 }

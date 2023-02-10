@@ -1,6 +1,6 @@
 [package]
-name = "interface_macros"
-version = "0.0.1"
+name = "kiwi_api_macros"
+version.workspace = true
 edition = "2021"
 
 [lib]

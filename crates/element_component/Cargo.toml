@@ -1,6 +1,6 @@
 
 [package]
-name = "elements_element_component"
+name = "kiwi_element_component"
 version.workspace = true
 edition = "2021"
 

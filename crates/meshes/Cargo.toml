@@ -1,13 +1,13 @@
 
 [package]
-name = "elements_meshes"
+name = "kiwi_meshes"
 version.workspace = true
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-elements_std = { path = "../std" }
-elements_gpu = { path = "../gpu" }
+kiwi_std = { path = "../std" }
+kiwi_gpu = { path = "../gpu" }
 glam.workspace = true
 serde.workspace = true

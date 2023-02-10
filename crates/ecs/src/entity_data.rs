@@ -2,8 +2,8 @@ use std::{
     self, fmt::{self, Debug}, iter::Flatten
 };
 
-use elements_std::sparse_vec::SparseVec;
 use itertools::Itertools;
+use kiwi_std::sparse_vec::SparseVec;
 use serde::{
     de::{self, DeserializeSeed, MapAccess, Visitor}, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer
 };

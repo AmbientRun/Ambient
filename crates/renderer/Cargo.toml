@@ -1,16 +1,16 @@
 [package]
-name = "elements_renderer"
+name = "kiwi_renderer"
 version.workspace = true
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-elements_std = { path = "../std" }
-elements_ecs = { path = "../ecs" }
-elements_gpu = { path = "../gpu" }
-elements_core = { path = "../core" }
-elements_meshes = { path = "../meshes" }
+kiwi_std = { path = "../std" }
+kiwi_ecs = { path = "../ecs" }
+kiwi_gpu = { path = "../gpu" }
+kiwi_core = { path = "../core" }
+kiwi_meshes = { path = "../meshes" }
 wgpu.workspace = true
 glam.workspace = true
 itertools.workspace = true
@@ -28,14 +28,14 @@ async-trait.workspace = true
 anyhow.workspace = true
 
 [dev-dependencies]
-elements_app = { path = "../app" }
-elements_element = { path = "../element" }
-elements_gizmos = { path = "../gizmos" }
-elements_model_import = { path = "../model_import" }
-elements_cameras = { path = "../cameras" }
-elements_primitives = { path = "../primitives" }
+kiwi_app = { path = "../app" }
+kiwi_element = { path = "../element" }
+kiwi_gizmos = { path = "../gizmos" }
+kiwi_model_import = { path = "../model_import" }
+kiwi_cameras = { path = "../cameras" }
+kiwi_primitives = { path = "../primitives" }
 env_logger.workspace = true
 winit.workspace = true
 
 [features]
-hotload-includes = ['elements_std/hotload-includes']
+hotload-includes = ['kiwi_std/hotload-includes']

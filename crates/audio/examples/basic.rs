@@ -1,6 +1,6 @@
 use std::time::{Duration, Instant};
 
-use elements_audio::{AudioStream, SineWave, Source};
+use kiwi_audio::{AudioStream, SineWave, Source};
 
 fn main() {
     let stream = AudioStream::new().unwrap();

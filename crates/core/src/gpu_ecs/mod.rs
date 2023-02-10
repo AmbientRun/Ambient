@@ -1,19 +1,19 @@
 use std::{collections::HashMap, sync::Arc};
 
-use elements_ecs::{components, ArchetypeId, Resource, System, World};
-use elements_gpu::{
+use itertools::Itertools;
+use kiwi_ecs::{components, ArchetypeId, Resource, System, World};
+use kiwi_gpu::{
     gpu::Gpu, shader_module::ShaderModule, typed_buffer::{TypedBuffer, UntypedBuffer}
 };
-use elements_std::asset_cache::{AssetCache, SyncAssetKey};
-use itertools::Itertools;
+use kiwi_std::asset_cache::{AssetCache, SyncAssetKey};
 use parking_lot::Mutex;
 
 mod component;
 mod sync;
 mod update;
 pub use component::*;
-use elements_gpu::{gpu::GpuKey, shader_module::BindGroupDesc};
-use elements_std::asset_cache::SyncAssetKeyExt;
+use kiwi_gpu::{gpu::GpuKey, shader_module::BindGroupDesc};
+use kiwi_std::asset_cache::SyncAssetKeyExt;
 pub use sync::*;
 pub use update::*;
 

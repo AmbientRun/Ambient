@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
 use anyhow::Context;
-use elements_model_import::model_crate::ModelCrate;
-use elements_std::{
-    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, ModelCrateAssetType, TypedAssetUrl}
-};
 use futures::{future::join_all, Future};
 use itertools::Itertools;
+use kiwi_model_import::model_crate::ModelCrate;
+use kiwi_std::{
+    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, ModelCrateAssetType, TypedAssetUrl}
+};
 use relative_path::{RelativePath, RelativePathBuf};
 use tokio::sync::Semaphore;
 

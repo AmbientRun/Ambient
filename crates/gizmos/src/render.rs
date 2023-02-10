@@ -1,17 +1,17 @@
 use std::{fmt::Debug, sync::Arc};
 
 use bytemuck::{Pod, Zeroable};
-use elements_core::{asset_cache, camera::Camera, main_scene};
-use elements_ecs::World;
-use elements_gpu::{
+use glam::{vec2, Mat4, Quat, Vec2, Vec3};
+use kiwi_core::{asset_cache, camera::Camera, main_scene};
+use kiwi_ecs::World;
+use kiwi_gpu::{
     gpu::{Gpu, GpuKey}, mesh_buffer::{GpuMesh, MeshBuffer}, shader_module::{BindGroupDesc, GraphicsPipeline, GraphicsPipelineInfo, Shader, ShaderModule}, typed_buffer::TypedBuffer
 };
-use elements_meshes::QuadMeshKey;
-use elements_renderer::{get_overlay_module, get_resources_module, RendererTarget, SubRenderer};
-use elements_std::{
+use kiwi_meshes::QuadMeshKey;
+use kiwi_renderer::{get_overlay_module, get_resources_module, RendererTarget, SubRenderer};
+use kiwi_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt}, include_file
 };
-use glam::{vec2, Mat4, Quat, Vec2, Vec3};
 use once_cell::sync::OnceCell;
 use wgpu::{BindGroup, BindGroupEntry, BindGroupLayoutEntry, BlendState, BufferUsages, ColorTargetState, ColorWrites, ShaderStages};
 

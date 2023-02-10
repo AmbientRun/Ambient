@@ -16,7 +16,7 @@ fn can_generate_components_from_manifest_in_global_namespace() {
         "#};
 
     let expected_output = quote::quote! {
-        const _PROJECT_MANIFEST: &'static str = include_str!("elementsy.toml");
+        const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
         #[allow(missing_docs)]
         pub mod components {
             pub mod core {
@@ -55,12 +55,8 @@ fn can_generate_components_from_manifest_in_global_namespace() {
         }
     };
 
-    let result = implementation(
-        ("elementsy.toml".to_string(), manifest.to_string()),
-        &[],
-        true,
-    )
-    .unwrap();
+    let result =
+        implementation(("kiwi.toml".to_string(), manifest.to_string()), &[], true).unwrap();
     assert_eq!(result.to_string(), expected_output.to_string());
 }
 
@@ -78,7 +74,7 @@ fn can_extend_existing_components_in_global_namespace() {
         "#};
 
     let expected_output = quote::quote! {
-        const _PROJECT_MANIFEST: &'static str = include_str!("elementsy.toml");
+        const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
         #[allow(missing_docs)]
         pub mod components {
             pub mod core {
@@ -113,7 +109,7 @@ fn can_extend_existing_components_in_global_namespace() {
     };
 
     let result = implementation(
-        ("elementsy.toml".to_string(), manifest.to_string()),
+        ("kiwi.toml".to_string(), manifest.to_string()),
         &[
             vec![
                 "base".to_string(),
@@ -150,17 +146,13 @@ fn can_accept_no_components() {
         "#};
 
     let expected_output = quote::quote! {
-        const _PROJECT_MANIFEST: &'static str = include_str!("elementsy.toml");
+        const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
         #[allow(missing_docs)]
         pub mod components {}
     };
 
-    let result = implementation(
-        ("elementsy.toml".to_string(), manifest.to_string()),
-        &[],
-        false,
-    )
-    .unwrap();
+    let result =
+        implementation(("kiwi.toml".to_string(), manifest.to_string()), &[], false).unwrap();
 
     assert_eq!(result.to_string(), expected_output.to_string());
 }
@@ -183,7 +175,7 @@ fn can_generate_components_from_manifest() {
         "#};
 
     let expected_output = quote::quote! {
-        const _PROJECT_MANIFEST: &'static str = include_str!("elementsy.toml");
+        const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
         #[allow(missing_docs)]
         pub mod components {
             static A_COOL_COMPONENT: crate::LazyComponent<()> = crate::lazy_component!("my_project::a_cool_component");
@@ -200,12 +192,8 @@ fn can_generate_components_from_manifest() {
         }
     };
 
-    let result = implementation(
-        ("elementsy.toml".to_string(), manifest.to_string()),
-        &[],
-        false,
-    )
-    .unwrap();
+    let result =
+        implementation(("kiwi.toml".to_string(), manifest.to_string()), &[], false).unwrap();
 
     assert_eq!(result.to_string(), expected_output.to_string());
 }
@@ -223,7 +211,7 @@ fn can_generate_components_from_manifest_with_org() {
         "#};
 
     let expected_output = quote::quote! {
-        const _PROJECT_MANIFEST: &'static str = include_str!("elementsy.toml");
+        const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
         #[allow(missing_docs)]
         pub mod components {
             static A_COOL_COMPONENT: crate::LazyComponent<()> = crate::lazy_component!("evil_corp::my_project::a_cool_component");
@@ -234,12 +222,8 @@ fn can_generate_components_from_manifest_with_org() {
         }
     };
 
-    let result = implementation(
-        ("elementsy.toml".to_string(), manifest.to_string()),
-        &[],
-        false,
-    )
-    .unwrap();
+    let result =
+        implementation(("kiwi.toml".to_string(), manifest.to_string()), &[], false).unwrap();
 
     assert_eq!(result.to_string(), expected_output.to_string());
 }

@@ -1,9 +1,9 @@
 use std::{fmt::Debug, time::Duration};
 
-use elements_core::{asset_cache, runtime};
-use elements_ecs::World;
-use elements_element::Hooks;
-use elements_std::asset_cache::{Asset, AsyncAssetKeyExt};
+use kiwi_core::{asset_cache, runtime};
+use kiwi_ecs::World;
+use kiwi_element::Hooks;
+use kiwi_std::asset_cache::{Asset, AsyncAssetKeyExt};
 
 pub fn use_interval<F: Fn() + Sync + Send + 'static>(hooks: &mut Hooks, seconds: f32, cb: F) {
     hooks.use_spawn(move |world| {

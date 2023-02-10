@@ -2,7 +2,7 @@
 [project]
 id = "runtime_components"
 name = "Runtime Components"
-version = "0.0.1"
+version = "0.0.3"
 
 [components."core::app::main_scene"]
 type = "Empty"

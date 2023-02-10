@@ -1,9 +1,9 @@
-use elements_scripting_interface::components::core::{
+use kiwi_api::components::core::{
     app::main_scene,
     camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},
     transform::{lookat_center, translation},
 };
-use elements_scripting_interface::*;
+use kiwi_api::*;
 
 #[main]
 pub async fn main() -> EventResult {

@@ -1,7 +1,7 @@
 use std::time::Instant;
 
-use elements_audio::{track::Track, AudioStream, Source};
-use elements_std::IntoDuration;
+use kiwi_audio::{track::Track, AudioStream, Source};
+use kiwi_std::IntoDuration;
 
 fn main() -> color_eyre::Result<()> {
     let stream = AudioStream::new()?;

@@ -1,19 +1,19 @@
 use std::{net::SocketAddr, sync::Arc};
 
 use clap::{Parser, Subcommand};
-use elements_app::{AppBuilder, ExamplesSystem};
-use elements_cameras::UICamera;
-use elements_core::camera::active_camera;
-use elements_debugger::RendererDebugger;
-use elements_ecs::{EntityData, SystemGroup, World};
-use elements_element::{element_component, Element, ElementComponentExt, Hooks};
-use elements_network::{
+use kiwi_app::{AppBuilder, ExamplesSystem};
+use kiwi_cameras::UICamera;
+use kiwi_core::camera::active_camera;
+use kiwi_debugger::RendererDebugger;
+use kiwi_ecs::{EntityData, SystemGroup, World};
+use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
+use kiwi_network::{
     client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce}, events::ServerEventRegistry
 };
-use elements_std::{
+use kiwi_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt}, Cb
 };
-use elements_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
+use kiwi_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
 
 pub mod components;
 mod new_project;
@@ -21,7 +21,7 @@ mod player;
 mod server;
 
 use anyhow::Context;
-use elements_physics::physx::PhysicsKey;
+use kiwi_physics::physx::PhysicsKey;
 use log::LevelFilter;
 use player::PlayerRawInputHandler;
 use server::QUIC_INTERFACE_PORT;
@@ -46,7 +46,7 @@ struct Cli {
 
 #[derive(Subcommand, Clone)]
 enum Commands {
-    /// Create a new Elements project
+    /// Create a new Kiwi project
     New { name: Option<String> },
     /// Builds and runs the project locally
     Run {
@@ -121,7 +121,7 @@ impl Commands {
 fn client_systems() -> SystemGroup {
     SystemGroup::new(
         "client",
-        vec![Box::new(elements_decals::client_systems()), Box::new(elements_primitives::systems()), Box::new(player::client_systems())],
+        vec![Box::new(kiwi_decals::client_systems()), Box::new(kiwi_primitives::systems()), Box::new(player::client_systems())],
     )
 }
 
@@ -161,7 +161,7 @@ fn MainApp(world: &mut World, hooks: &mut Hooks, server_addr: SocketAddr, user_i
             resolution,
             on_disconnect: Cb::new(move || {}),
             init_world: Cb::new(UseOnce::new(Box::new(move |world, _render_target| {
-                world.add_resource(elements_network::events::event_registry(), Arc::new(ServerEventRegistry::new()));
+                world.add_resource(kiwi_network::events::event_registry(), Arc::new(ServerEventRegistry::new()));
             }))),
             on_loaded: Cb::new(move |_game_state, _game_client| Ok(Box::new(|| {}))),
             error_view: Cb(Arc::new(move |error| Dock(vec![Text::el("Error").header_style(), Text::el(error)]).el())),
@@ -187,17 +187,7 @@ fn main() -> anyhow::Result<()> {
             ),
             (
                 LevelFilter::Warn,
-                &[
-                    "elements_build",
-                    "elements_gpu",
-                    "elements_model",
-                    "elements_network",
-                    "elements_physics",
-                    "elements_std",
-                    "tracing",
-                    "wgpu_core",
-                    "wgpu_hal",
-                ],
+                &["kiwi_build", "kiwi_gpu", "kiwi_model", "kiwi_network", "kiwi_physics", "kiwi_std", "tracing", "wgpu_core", "wgpu_hal"],
             ),
         ];
 
@@ -221,8 +211,7 @@ fn main() -> anyhow::Result<()> {
 
     let current_dir = std::env::current_dir()?;
     let project_path = cli.project_path.clone().map(|x| x.into()).unwrap_or_else(|| current_dir.clone());
-    let project_path =
-        if project_path.is_absolute() { project_path } else { elements_std::path::normalize(&current_dir.join(project_path)) };
+    let project_path = if project_path.is_absolute() { project_path } else { kiwi_std::path::normalize(&current_dir.join(project_path)) };
 
     if project_path.exists() && !project_path.is_dir() {
         anyhow::bail!("Project path {project_path:?} exists and is not a directory.");
@@ -241,7 +230,7 @@ fn main() -> anyhow::Result<()> {
 
         // Assume we are being run within the codebase.
         for guest_path in std::fs::read_dir("guest/").unwrap().filter_map(Result::ok).map(|de| de.path()).filter(|de| de.is_dir()) {
-            let toml_path = guest_path.join("interface").join("elements.toml");
+            let toml_path = guest_path.join("api").join("kiwi.toml");
             std::fs::write(&toml_path, &toml)?;
             log::info!("Interface updated at {toml_path:?}");
         }
@@ -250,14 +239,14 @@ fn main() -> anyhow::Result<()> {
 
     let manifest = if !cli.command.should_join() {
         let contents =
-            std::fs::read_to_string(project_path.join("elements.toml")).context("No project manifest was found. Please create one.")?;
-        Some(elements_project::Manifest::parse(&contents)?)
+            std::fs::read_to_string(project_path.join("kiwi.toml")).context("No project manifest was found. Please create one.")?;
+        Some(kiwi_project::Manifest::parse(&contents)?)
     } else {
         None
     };
 
     if cli.command.should_build() {
-        runtime.block_on(elements_build::build(
+        runtime.block_on(kiwi_build::build(
             PhysicsKey.get(&assets),
             &assets,
             project_path.clone(),

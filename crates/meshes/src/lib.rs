@@ -8,12 +8,12 @@ use std::sync::Arc;
 
 pub use capsule::*;
 pub use cube::*;
-use elements_gpu::mesh_buffer::GpuMesh;
-use elements_std::{
-    asset_cache::{AssetCache, SyncAssetKey}, mesh::Mesh
-};
 use glam::*;
 pub use grid::*;
+use kiwi_gpu::mesh_buffer::GpuMesh;
+use kiwi_std::{
+    asset_cache::{AssetCache, SyncAssetKey}, mesh::Mesh
+};
 pub use uvsphere::*;
 
 #[derive(Debug, Clone)]

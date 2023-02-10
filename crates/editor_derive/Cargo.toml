@@ -1,6 +1,6 @@
 
 [package]
-name = "elements_editor_derive"
+name = "kiwi_editor_derive"
 version.workspace = true
 edition = "2021"
 
@@ -17,5 +17,5 @@ proc-macro-crate.workspace = true
 convert_case.workspace = true
 
 [dev-dependencies]
-elements_ui = { path = "../ui" }
+kiwi_ui = { path = "../ui" }
 pretty_assertions = "1.3"

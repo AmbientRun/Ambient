@@ -1,8 +1,11 @@
 [workspace]
 members = [
-  "interface",
+  "api",
   "examples/*",
 ]
 
+[workspace.package]
+version = "0.0.3"
+
 [patch.crates-io]
-elements_scripting_interface = { path = "interface" }
+kiwi_api = { path = "api" }

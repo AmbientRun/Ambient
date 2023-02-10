@@ -1,8 +1,8 @@
 use std::{sync::Arc, time::Duration};
 
 use async_trait::async_trait;
-use elements_asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt};
 use futures::FutureExt;
+use kiwi_asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt};
 use pretty_assertions::assert_eq;
 use tokio::{
     runtime, time::{sleep, timeout}

@@ -1,11 +1,11 @@
 use std::{io::Cursor, sync::Arc};
 
 use circular_queue::CircularQueue;
-use elements_audio::{
-    blt::Lpf, hrtf::HrtfLib, track::Track, util::{div_ceil, AvgIter}, AudioEmitter, AudioListener, AudioStream, DynamicMix, Frame, SineWave, Source
-};
 use glam::{vec2, vec3, Mat3, Mat4, Vec3, Vec3Swizzles};
 use itertools::izip;
+use kiwi_audio::{
+    blt::Lpf, hrtf::HrtfLib, track::Track, util::{div_ceil, AvgIter}, AudioEmitter, AudioListener, AudioStream, DynamicMix, Frame, SineWave, Source
+};
 use lyon::{
     lyon_tessellation::{BuffersBuilder, StrokeOptions, StrokeTessellator, VertexBuffers}, math::point
 };
@@ -137,7 +137,7 @@ async fn main() {
 
     let spatial = Arc::new(Mutex::new(AudioEmitter {
         pos: Vec3::Z,
-        attenuation: elements_audio::Attenuation::InversePoly {
+        attenuation: kiwi_audio::Attenuation::InversePoly {
             quad: 0.0,
             lin: 0.0,
             constant: 1.0,

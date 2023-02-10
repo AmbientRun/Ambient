@@ -2,15 +2,15 @@ use std::sync::Arc;
 
 use anyhow::Context;
 use derive_more::{Deref, DerefMut, From, Into};
-use elements_audio::{hrtf::HrtfLib, Attenuation, AudioEmitter, AudioListener, AudioMixer, Sound, Source};
-use elements_ecs::{components, query, EntityId, Resource, World};
-use elements_element::ElementComponentExt;
-use elements_std::Cb;
-use elements_ui::{
-    graph::{Graph, GraphStyle}, Editor, FlowColumn
-};
 use glam::{vec2, vec4};
 use itertools::Itertools;
+use kiwi_audio::{hrtf::HrtfLib, Attenuation, AudioEmitter, AudioListener, AudioMixer, Sound, Source};
+use kiwi_ecs::{components, query, EntityId, Resource, World};
+use kiwi_element::ElementComponentExt;
+use kiwi_std::Cb;
+use kiwi_ui::{
+    graph::{Graph, GraphStyle}, Editor, FlowColumn
+};
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
 
@@ -24,12 +24,12 @@ components!("audio", {
     audio_mixer: AudioMixer,
 });
 
-/// TODO: hook this into the Attenuation inside elements_audio
+/// TODO: hook this into the Attenuation inside kiwi_audio
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, DerefMut, Deref, From, Into)]
 pub struct AttenuationEditorVisual(Attenuation);
 
 impl Editor for AttenuationEditorVisual {
-    fn editor(self, on_change: Cb<dyn Fn(Self) + Sync + Send>, opts: elements_ui::EditorOpts) -> elements_element::Element {
+    fn editor(self, on_change: Cb<dyn Fn(Self) + Sync + Send>, opts: kiwi_ui::EditorOpts) -> kiwi_element::Element {
         let editor = Attenuation::editor(*self, Cb::new(move |v| on_change(v.into())), opts);
 
         let x_max = self.inverse(0.01);

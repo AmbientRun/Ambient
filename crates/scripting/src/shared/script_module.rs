@@ -2,7 +2,7 @@ use std::{marker::PhantomData, sync::Arc};
 
 use anyhow::Context;
 use async_trait::async_trait;
-use elements_ecs::World;
+use kiwi_ecs::World;
 use parking_lot::{Mutex, RwLock};
 use serde::{Deserialize, Serialize};
 use wasi_common::{

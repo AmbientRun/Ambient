@@ -4,13 +4,13 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "elements [debug]",
+            "name": "kiwi [debug]",
             "cargo": {
                 "args": [
                     "build"
                 ],
                 "filter": {
-                    "name": "elements",
+                    "name": "kiwi",
                     "kind": "bin"
                 }
             },
@@ -30,14 +30,14 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "elements [release]",
+            "name": "kiwi [release]",
             "cargo": {
                 "args": [
                     "build",
                     "--release"
                 ],
                 "filter": {
-                    "name": "elements",
+                    "name": "kiwi",
                     "kind": "bin"
                 }
             },
@@ -52,12 +52,12 @@
             ]
         },
         {
-            "name": "elements (Windows, Internal server) [debug]",
+            "name": "kiwi (Windows, Internal server) [debug]",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/target/debug/elements.exe",
+            "program": "${workspaceRoot}/target/debug/kiwi.exe",
             "env": {
-                "RUST_LOG": "dims=info,dims_shared=info,elements=info"
+                "RUST_LOG": "dims=info,dims_shared=info,kiwi=info"
             },
             "args": [
                 "--internal-server"
@@ -70,12 +70,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/app/hello_world' [debug]",
+            "name": "Example 'crates/app/hello_world' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=hello_world",
-                    "--package=elements_app"
+                    "--package=kiwi_app"
                 ],
                 "filter": {
                     "name": "hello_world",
@@ -94,12 +94,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/asset_timeline' [debug]",
+            "name": "Example 'crates/asset_timeline' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=asset_timeline",
-                    "--package=elements_asset_timeline"
+                    "--package=kiwi_asset_timeline"
                 ],
                 "filter": {
                     "name": "asset_timeline",
@@ -115,12 +115,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/decals/decals' [debug]",
+            "name": "Example 'crates/decals/decals' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=decals",
-                    "--package=elements_decals",
+                    "--package=kiwi_decals",
                     "--features=hotload-includes"
                 ],
                 "filter": {
@@ -137,12 +137,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/ecs_editor' [debug]",
+            "name": "Example 'crates/ecs_editor' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=ecs_editor",
-                    "--package=elements_ecs_editor",
+                    "--package=kiwi_ecs_editor",
                     "--release"
                 ],
                 "filter": {
@@ -159,12 +159,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/gizmos' [debug]",
+            "name": "Example 'crates/gizmos' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=gizmos",
-                    "--package=elements_gizmos"
+                    "--package=kiwi_gizmos"
                 ],
                 "filter": {
                     "name": "gizmos",
@@ -183,12 +183,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/model_import/assimp' [debug]",
+            "name": "Example 'crates/model_import/assimp' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=assimp",
-                    "--package=elements_model_import"
+                    "--package=kiwi_model_import"
                 ],
                 "filter": {
                     "name": "assimp",
@@ -208,12 +208,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/model_import/fbx' [debug]",
+            "name": "Example 'crates/model_import/fbx' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=fbx",
-                    "--package=elements_model_import"
+                    "--package=kiwi_model_import"
                 ],
                 "filter": {
                     "name": "fbx",
@@ -233,12 +233,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/model_import/gltf' [debug]",
+            "name": "Example 'crates/model_import/gltf' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=gltf",
-                    "--package=elements_model_import"
+                    "--package=kiwi_model_import"
                 ],
                 "filter": {
                     "name": "gltf",
@@ -246,7 +246,7 @@
                 }
             },
             "env": {
-                "RUST_LOG": "dims=info,elements_model_import=info,elements=info"
+                "RUST_LOG": "dims=info,kiwi_model_import=info,elements=info"
             },
             "args": [],
             "cwd": "${workspaceFolder}",
@@ -257,12 +257,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/model_import/model_loading' [release]",
+            "name": "Example 'crates/model_import/model_loading' [release]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=model_loading",
-                    "--package=elements_model_import",
+                    "--package=kiwi_model_import",
                     "--release"
                 ],
                 "filter": {
@@ -282,12 +282,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/model_import/skinmesh' [debug]",
+            "name": "Example 'crates/model_import/skinmesh' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=skinmesh",
-                    "--package=elements_model_import"
+                    "--package=kiwi_model_import"
                 ],
                 "filter": {
                     "name": "skinmesh",
@@ -306,12 +306,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/physics/physics' [debug]",
+            "name": "Example 'crates/physics/physics' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=physics",
-                    "--package=elements_physics"
+                    "--package=kiwi_physics"
                 ],
                 "filter": {
                     "name": "physics",
@@ -327,12 +327,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/renderer/billboard' [debug]",
+            "name": "Example 'crates/renderer/billboard' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=billboard",
-                    "--package=elements_renderer"
+                    "--package=kiwi_renderer"
                 ],
                 "filter": {
                     "name": "billboard",
@@ -348,12 +348,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/renderer/custom_material' [debug]",
+            "name": "Example 'crates/renderer/custom_material' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=custom_material",
-                    "--package=elements_renderer"
+                    "--package=kiwi_renderer"
                 ],
                 "filter": {
                     "name": "custom_material",
@@ -372,12 +372,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/renderer/instancing' [debug]",
+            "name": "Example 'crates/renderer/instancing' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=instancing",
-                    "--package=elements_renderer"
+                    "--package=kiwi_renderer"
                 ],
                 "filter": {
                     "name": "instancing",
@@ -396,12 +396,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/renderer/lod' [debug]",
+            "name": "Example 'crates/renderer/lod' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=lod",
-                    "--package=elements_renderer"
+                    "--package=kiwi_renderer"
                 ],
                 "filter": {
                     "name": "lod",
@@ -417,12 +417,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/renderer/pbr' [debug]",
+            "name": "Example 'crates/renderer/pbr' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=pbr",
-                    "--package=elements_renderer"
+                    "--package=kiwi_renderer"
                 ],
                 "filter": {
                     "name": "pbr",
@@ -441,12 +441,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/renderer/renderer_update' [debug]",
+            "name": "Example 'crates/renderer/renderer_update' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=renderer_update",
-                    "--package=elements_renderer"
+                    "--package=kiwi_renderer"
                 ],
                 "filter": {
                     "name": "renderer_update",
@@ -462,12 +462,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/renderer/shadow_test' [debug]",
+            "name": "Example 'crates/renderer/shadow_test' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=shadow_test",
-                    "--package=elements_renderer"
+                    "--package=kiwi_renderer"
                 ],
                 "filter": {
                     "name": "shadow_test",
@@ -483,12 +483,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/renderer/texture' [debug]",
+            "name": "Example 'crates/renderer/texture' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=texture",
-                    "--package=elements_renderer"
+                    "--package=kiwi_renderer"
                 ],
                 "filter": {
                     "name": "texture",
@@ -504,12 +504,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/renderer/translucency' [debug]",
+            "name": "Example 'crates/renderer/translucency' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=translucency",
-                    "--package=elements_renderer"
+                    "--package=kiwi_renderer"
                 ],
                 "filter": {
                     "name": "translucency",
@@ -525,12 +525,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/ui/button' [debug]",
+            "name": "Example 'crates/ui/button' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=button",
-                    "--package=elements_ui"
+                    "--package=kiwi_ui"
                 ],
                 "filter": {
                     "name": "button",
@@ -538,7 +538,7 @@
                 }
             },
             "env": {
-                "RUST_LOG": "elements=info"
+                "RUST_LOG": "info"
             },
             "args": [],
             "cwd": "${workspaceFolder}",
@@ -549,12 +549,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/ui/dock_layout' [debug]",
+            "name": "Example 'crates/ui/dock_layout' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=dock_layout",
-                    "--package=elements_ui"
+                    "--package=kiwi_ui"
                 ],
                 "filter": {
                     "name": "dock_layout",
@@ -573,12 +573,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/ui/element_editor' [debug]",
+            "name": "Example 'crates/ui/element_editor' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=element_editor",
-                    "--package=elements_ui"
+                    "--package=kiwi_ui"
                 ],
                 "filter": {
                     "name": "element_editor",
@@ -594,12 +594,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/ui/flow_layout' [debug]",
+            "name": "Example 'crates/ui/flow_layout' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=flow_layout",
-                    "--package=elements_ui"
+                    "--package=kiwi_ui"
                 ],
                 "filter": {
                     "name": "flow_layout",
@@ -618,12 +618,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/ui/image' [debug]",
+            "name": "Example 'crates/ui/image' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=image",
-                    "--package=elements_ui"
+                    "--package=kiwi_ui"
                 ],
                 "filter": {
                     "name": "image",
@@ -639,12 +639,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/ui/input' [debug]",
+            "name": "Example 'crates/ui/input' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=input",
-                    "--package=elements_ui"
+                    "--package=kiwi_ui"
                 ],
                 "filter": {
                     "name": "input",
@@ -660,12 +660,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/ui/rect' [debug]",
+            "name": "Example 'crates/ui/rect' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=rect",
-                    "--package=elements_ui"
+                    "--package=kiwi_ui"
                 ],
                 "filter": {
                     "name": "rect",
@@ -684,12 +684,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/ui/screens' [debug]",
+            "name": "Example 'crates/ui/screens' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=screens",
-                    "--package=elements_ui"
+                    "--package=kiwi_ui"
                 ],
                 "filter": {
                     "name": "screens",
@@ -705,12 +705,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/ui/slider' [debug]",
+            "name": "Example 'crates/ui/slider' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=slider",
-                    "--package=elements_ui"
+                    "--package=kiwi_ui"
                 ],
                 "filter": {
                     "name": "slider",
@@ -729,12 +729,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/ui/text' [debug]",
+            "name": "Example 'crates/ui/text' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=text",
-                    "--package=elements_ui"
+                    "--package=kiwi_ui"
                 ],
                 "filter": {
                     "name": "text",
@@ -750,12 +750,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/ui/todo' [debug]",
+            "name": "Example 'crates/ui/todo' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=todo",
-                    "--package=elements_ui"
+                    "--package=kiwi_ui"
                 ],
                 "filter": {
                     "name": "todo",
@@ -774,12 +774,12 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Example 'elements/ui/ui' [debug]",
+            "name": "Example 'crates/ui/ui' [debug]",
             "cargo": {
                 "args": [
                     "build",
                     "--example=ui",
-                    "--package=elements_ui"
+                    "--package=kiwi_ui"
                 ],
                 "filter": {
                     "name": "ui",

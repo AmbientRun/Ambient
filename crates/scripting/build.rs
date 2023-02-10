@@ -32,7 +32,7 @@ fn main() {
         .map(|de| de.path())
         .filter(|de| de.is_dir())
     {
-        let target_wit_dir = guest_path.join("interface").join("wit");
+        let target_wit_dir = guest_path.join("api").join("wit");
         std::fs::create_dir_all(&target_wit_dir).unwrap();
 
         for file in &files {
@@ -43,7 +43,7 @@ fn main() {
                 .unwrap();
 
             let target_path =
-                elements_std::path::normalize(&working_dir.join(target_wit_dir.join(filename)));
+                kiwi_std::path::normalize(&working_dir.join(target_wit_dir.join(filename)));
 
             let absolute_path_relative_to_common: PathBuf = {
                 let mut target_path_it = target_path.iter();

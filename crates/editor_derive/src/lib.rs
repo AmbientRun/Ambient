@@ -37,10 +37,10 @@ fn do_derive_element_editor(input: TokenStream) -> TokenStream {
     //     _ => quote!(crate),
     // };
 
-    let ui_crate = match crate_name("elements_ui") {
+    let ui_crate = match crate_name("kiwi_ui") {
         Ok(FoundCrate::Itself) => Ident::new("crate", Span::call_site()),
         Ok(FoundCrate::Name(name)) => Ident::new(&name, Span::call_site()),
-        Err(err) => panic!("Missing crate `elements_ui`. {err:?}"),
+        Err(err) => panic!("Missing crate `kiwi_ui`. {err:?}"),
     };
 
     let attributes = EditorAttrs::parse(&input.attrs);
@@ -387,13 +387,13 @@ fn fields_editor(
 
             quote! {
                 {
-                    let editor = #ui_crate::Cb::new( <#field_ty_colon as elements_ui::Editor>::edit_or_view );
+                    let editor = #ui_crate::Cb::new( <#field_ty_colon as kiwi_ui::Editor>::edit_or_view );
                     #ui_crate::OffscreenEditor { title: #title.into(), value: #field_name.clone(), on_confirm: #on_change_cb, opts: Default::default(), editor }.into()
                 }
             }
         } else {
             quote! {
-                <#field_ty_colon as elements_ui::Editor>::edit_or_view(#field_name.clone(), #on_change_cb, Default::default())
+                <#field_ty_colon as kiwi_ui::Editor>::edit_or_view(#field_name.clone(), #on_change_cb, Default::default())
             }
         };
 

@@ -1,12 +1,12 @@
-use elements_animation::{animation_controller, AnimationController};
-use elements_ecs::{uid, EntityData, EntityId, EntityUid, World};
-use elements_object::{fire_spawn_by_url, MultiEntityUID, SpawnConfig};
-use elements_physics::helpers as eph;
 use glam::{Mat4, Quat, Vec3};
+use kiwi_animation::{animation_controller, AnimationController};
+use kiwi_ecs::{uid, EntityData, EntityId, EntityUid, World};
+use kiwi_object::{fire_spawn_by_url, MultiEntityUID, SpawnConfig};
+use kiwi_physics::helpers as eph;
 
 pub fn spawn(world: &mut World, data: EntityData) -> EntityUid {
     let uid = EntityUid::create();
-    data.set(elements_ecs::uid(), uid.clone()).spawn(world);
+    data.set(kiwi_ecs::uid(), uid.clone()).spawn(world);
     uid
 }
 

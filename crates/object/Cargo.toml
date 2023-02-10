@@ -1,19 +1,19 @@
 [package]
-name = "elements_object"
+name = "kiwi_object"
 version.workspace = true
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-elements_ecs = { path = "../ecs" }
-elements_core = { path = "../core" }
-elements_model = { path = "../model" }
-elements_network = { path = "../network" }
-elements_physics = { path = "../physics" }
-elements_rpc = { path = "../rpc" }
-elements_std = { path = "../std" }
-elements_decals = { path = "../decals" }
+kiwi_ecs = { path = "../ecs" }
+kiwi_core = { path = "../core" }
+kiwi_model = { path = "../model" }
+kiwi_network = { path = "../network" }
+kiwi_physics = { path = "../physics" }
+kiwi_rpc = { path = "../rpc" }
+kiwi_std = { path = "../std" }
+kiwi_decals = { path = "../decals" }
 glam.workspace = true
 serde.workspace = true
 tokio.workspace = true

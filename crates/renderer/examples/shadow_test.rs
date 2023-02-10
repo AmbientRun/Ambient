@@ -1,15 +1,15 @@
-use elements_app::AppBuilder;
-use elements_core::{
-    asset_cache, bounding::world_bounding_sphere, camera::{active_camera, far, near, Camera, Projection}, main_scene, transform::*
-};
-use elements_ecs::{query, FnSystem, Resource, World};
-use elements_element::ElementComponentExt;
-use elements_gizmos::{gizmos, GizmoPrimitive};
-use elements_primitives::Cube;
-use elements_renderer::{cast_shadows, color, RendererSettings};
-use elements_std::{line_hash, math::SphericalCoords};
 use env_logger::Env;
 use glam::*;
+use kiwi_app::AppBuilder;
+use kiwi_core::{
+    asset_cache, bounding::world_bounding_sphere, camera::{active_camera, far, near, Camera, Projection}, main_scene, transform::*
+};
+use kiwi_ecs::{query, FnSystem, Resource, World};
+use kiwi_element::ElementComponentExt;
+use kiwi_gizmos::{gizmos, GizmoPrimitive};
+use kiwi_primitives::Cube;
+use kiwi_renderer::{cast_shadows, color, RendererSettings};
+use kiwi_std::{line_hash, math::SphericalCoords};
 use winit::event::{ElementState, Event, VirtualKeyCode, WindowEvent};
 
 fn init(world: &mut World) {
@@ -76,7 +76,7 @@ fn init(world: &mut World) {
         }
     }
 
-    elements_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
+    kiwi_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
         .set(active_camera(), 0.)
         .set(main_scene(), ())
         .set(near(), 1.)
@@ -129,7 +129,7 @@ impl GizmoState {
     }
 }
 
-elements_ecs::components!("renderer", {
+kiwi_ecs::components!("renderer", {
     @[Resource]
     gizmo_state: GizmoState,
 });

@@ -5,10 +5,10 @@ use std::{
     str::FromStr,
 };
 
-use elements_core::name;
-use elements_ecs::{query, EntityId, World};
-use elements_project::Identifier;
 use indoc::indoc;
+use kiwi_core::name;
+use kiwi_ecs::{query, EntityId, World};
+use kiwi_project::Identifier;
 
 use super::{script_module, script_module_enabled};
 

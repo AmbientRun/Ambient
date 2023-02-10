@@ -1,14 +1,14 @@
 use std::{sync::Arc, time::Instant};
 
-use elements_core::{
+use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
+use kiwi_core::{
     camera::{far, fog, get_active_camera, projection_view}, transform::{get_world_position, get_world_rotation, local_to_world}
 };
-use elements_ecs::{Component, World};
-use elements_gpu::{
+use kiwi_ecs::{Component, World};
+use kiwi_gpu::{
     gpu::{Gpu, GpuKey}, shader_module::BindGroupDesc, std_assets::DefaultSamplerKey, texture::{Texture, TextureView}
 };
-use elements_std::asset_cache::{AssetCache, SyncAssetKeyExt};
-use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
+use kiwi_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use wgpu::BindGroup;
 
 use super::{fog_color, get_active_sun, light_ambient, light_diffuse, RenderTarget, ShadowCameraData};

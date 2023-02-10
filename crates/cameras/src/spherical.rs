@@ -1,6 +1,6 @@
 use derive_more::Display;
-use elements_ecs::{components, query_mut, EntityData, SystemGroup};
-use elements_std::math::SphericalCoords;
+use kiwi_ecs::{components, query_mut, EntityData, SystemGroup};
+use kiwi_std::math::SphericalCoords;
 use winit::event::{DeviceEvent, ElementState, Event, MouseScrollDelta, VirtualKeyCode, WindowEvent};
 
 use super::*;

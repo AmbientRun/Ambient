@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use elements_ecs::{components, query_mut, Resource, World};
-use elements_std::events::EventDispatcher;
 use itertools::Itertools;
+use kiwi_ecs::{components, query_mut, Resource, World};
+use kiwi_std::events::EventDispatcher;
 
 components!("test", {
     prop_a: (),
@@ -16,8 +16,8 @@ components!("test", {
 });
 
 pub fn initialize() -> World {
-    elements_core::hierarchy::init_components();
-    elements_element::init_components();
+    kiwi_core::hierarchy::init_components();
+    kiwi_element::init_components();
     init_components();
 
     let mut world = World::new("initialize");

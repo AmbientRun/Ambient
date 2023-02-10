@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use elements_ecs::{query_mut, World};
-use elements_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use kiwi_ecs::{query_mut, World};
+use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 mod common;
 use common::*;
 

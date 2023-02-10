@@ -1,13 +1,13 @@
 
 [package]
-name = "elements_gpu"
+name = "kiwi_gpu"
 version.workspace = true
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-elements_std = { path = "../std" }
+kiwi_std = { path = "../std" }
 bytemuck.workspace = true
 winit.workspace = true
 wgpu.workspace = true
@@ -27,4 +27,4 @@ anyhow.workspace = true
 tracing.workspace = true
 
 [features]
-hotload-includes = ['elements_std/hotload-includes']
+hotload-includes = ['kiwi_std/hotload-includes']

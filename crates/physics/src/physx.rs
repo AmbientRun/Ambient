@@ -1,7 +1,7 @@
-use elements_core::transform::{rotation, translation};
-use elements_ecs::{components, query, Debuggable, Description, Name, Networked, Resource, Store, SystemGroup};
-use elements_std::asset_cache::SyncAssetKey;
 use glam::{Quat, Vec3};
+use kiwi_core::transform::{rotation, translation};
+use kiwi_ecs::{components, query, Debuggable, Description, Name, Networked, Resource, Store, SystemGroup};
+use kiwi_std::asset_cache::SyncAssetKey;
 use physxx::{articulation_reduced_coordinate::*, *};
 
 components!("physics", {
@@ -25,7 +25,7 @@ components!("physics", {
 #[derive(Debug)]
 pub struct PhysicsKey;
 impl SyncAssetKey<Physics> for PhysicsKey {
-    fn load(&self, _assets: elements_std::asset_cache::AssetCache) -> Physics {
+    fn load(&self, _assets: kiwi_std::asset_cache::AssetCache) -> Physics {
         Physics::new()
     }
 }

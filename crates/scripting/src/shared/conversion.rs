@@ -1,9 +1,9 @@
 use std::time::SystemTime;
 
-use elements_animation as ea;
-use elements_ecs::{EntityId, EntityUid};
-use elements_std::asset_url::{ObjectRef, TypedAssetUrl};
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
+use kiwi_animation as ea;
+use kiwi_ecs::{EntityId, EntityUid};
+use kiwi_std::asset_url::{ObjectRef, TypedAssetUrl};
 use wit_bindgen_host_wasmtime_rust::{Endian, Le};
 
 use super::interface::host;
@@ -288,7 +288,7 @@ impl FromBindgen for host::AnimationController<'_> {
     }
 }
 
-impl IntoBindgen for elements_input::PlayerRawInput {
+impl IntoBindgen for kiwi_input::PlayerRawInput {
     type Item = host::PlayerRawInput;
 
     fn into_bindgen(self) -> Self::Item {
@@ -305,7 +305,7 @@ impl IntoBindgen for elements_input::PlayerRawInput {
     }
 }
 
-impl IntoBindgen for elements_input::VirtualKeyCode {
+impl IntoBindgen for kiwi_input::VirtualKeyCode {
     type Item = host::VirtualKeyCode;
 
     fn into_bindgen(self) -> Self::Item {
@@ -477,7 +477,7 @@ impl IntoBindgen for elements_input::VirtualKeyCode {
     }
 }
 
-impl IntoBindgen for elements_input::MouseButton {
+impl IntoBindgen for kiwi_input::MouseButton {
     type Item = host::MouseButton;
 
     fn into_bindgen(self) -> Self::Item {

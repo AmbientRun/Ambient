@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use elements_audio::{track::Track, AudioStream, Source};
+use kiwi_audio::{track::Track, AudioStream, Source};
 
 fn main() {
     let track = Track::from_wav(

@@ -1,7 +1,7 @@
 use std::time::Duration;
 
-use elements_audio::{track::Track, AudioStream, Source};
-use elements_std::time::IntoDuration;
+use kiwi_audio::{track::Track, AudioStream, Source};
+use kiwi_std::time::IntoDuration;
 use rand::{seq::SliceRandom, thread_rng};
 
 fn main() -> color_eyre::Result<()> {

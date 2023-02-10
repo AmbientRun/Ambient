@@ -1,20 +1,20 @@
 use std::sync::Arc;
 
-use elements_asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt};
-use elements_core::{
+use glam::{Vec3, Vec4};
+use kiwi_asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt};
+use kiwi_core::{
     asset_cache, async_ecs::async_run, bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere}, main_scene, mesh, runtime, transform::{local_to_world, mesh_to_world}
 };
-use elements_ecs::{components, query, EntityData, MakeDefault, Networked, Store, SystemGroup};
-use elements_gpu::shader_module::{Shader, ShaderModule};
-use elements_meshes::CubeMeshKey;
-use elements_renderer::{
+use kiwi_ecs::{components, query, EntityData, MakeDefault, Networked, Store, SystemGroup};
+use kiwi_gpu::shader_module::{Shader, ShaderModule};
+use kiwi_meshes::CubeMeshKey;
+use kiwi_renderer::{
     color, get_forward_module, gpu_primitives, material, pbr_material::{PbrMaterialFromUrl, PbrMaterialShaderKey}, primitives, renderer_shader, MaterialShader, RendererShader
 };
-use elements_std::{
+use kiwi_std::{
     asset_url::{MaterialAssetType, TypedAssetUrl}, download_asset::JsonFromUrl, include_file, shapes::AABB, unwrap_log_err, unwrap_log_warn
 };
-use elements_ui::Editable;
-use glam::{Vec3, Vec4};
+use kiwi_ui::Editable;
 
 components!("decals", {
     @[MakeDefault, Editable, Networked, Store]
@@ -61,7 +61,7 @@ impl SyncAssetKey<Arc<RendererShader>> for DecalShaderKey {
 
 pub fn client_systems() -> SystemGroup {
     SystemGroup::new(
-        "elements/decals_client",
+        "decals_client",
         vec![query(decal().changed()).to_system(|q, world, qs, _| {
             for (id, decal) in q.collect_cloned(world, qs) {
                 let decal = if let Some(url) = decal.abs() {

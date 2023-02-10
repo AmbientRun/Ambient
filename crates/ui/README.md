@@ -1,6 +1,6 @@
-# Elements UI
+# Kiwi UI
 
-The Elements UI is based on React for components, and Windows Forms for layout.
+The Kiwi UI is based on React for components, and Windows Forms for layout.
 To read more about the react side of things, see the [elements documentation](../element/README.md).
 
 ## Layout

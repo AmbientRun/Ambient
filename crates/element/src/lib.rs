@@ -7,8 +7,8 @@ use std::{any::Any, sync::Arc};
 
 use as_any::AsAny;
 use dyn_clonable::clonable;
-use elements_ecs::{components, Component, ComponentDesc, ComponentValue, EntityData, EntityId, SystemGroup, World};
-use elements_std::events::EventDispatcher;
+use kiwi_ecs::{components, Component, ComponentDesc, ComponentValue, EntityData, EntityId, SystemGroup, World};
+use kiwi_std::events::EventDispatcher;
 use parking_lot::Mutex;
 
 mod element_config;
@@ -16,8 +16,8 @@ mod hooks;
 mod standard;
 mod tree;
 use element_config::*;
-pub use elements_element_component::element_component;
 pub use hooks::*;
+pub use kiwi_element_component::element_component;
 pub use standard::*;
 pub use tree::*;
 
@@ -190,7 +190,7 @@ impl Default for Element {
     }
 }
 
-pub fn elements_system() -> SystemGroup {
+pub fn kiwi_system() -> SystemGroup {
     ElementTree::systems_for_component(element_tree())
 }
 
@@ -206,7 +206,7 @@ macro_rules! define_el_function_for_vec_element_newtype {
 }
 
 pub fn render_parented_with_component(world: &mut World, id: EntityId, handle: Component<ShareableElementTree>, mut element: Element) {
-    use elements_core::{
+    use kiwi_core::{
         hierarchy::{children, parent}, transform::{local_to_parent, local_to_world}
     };
     element = element.set(parent(), id);

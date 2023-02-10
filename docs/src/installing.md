@@ -1,9 +1,9 @@
 # Installing
 
-You need [Rust](https://www.rust-lang.org/) to install the Elements runtime. Then run:
+You need [Rust](https://www.rust-lang.org/) to install the Kiwi Runtime. Then run:
 
 ```sh
-cargo install elements
+cargo install kiwi
 ```
 
 ## Dependencies: Linux/Ubuntu

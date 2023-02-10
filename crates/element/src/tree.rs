@@ -2,9 +2,9 @@ use std::{
     any::TypeId, collections::{HashMap, HashSet}, fmt::Write, sync::Arc
 };
 
-use elements_core::hierarchy::{children, parent};
-use elements_ecs::{query, Component, EntityData, EntityId, SystemGroup, World};
 use itertools::Itertools;
+use kiwi_core::hierarchy::{children, parent};
+use kiwi_ecs::{query, Component, EntityData, EntityId, SystemGroup, World};
 use parking_lot::Mutex;
 use tracing::debug_span;
 

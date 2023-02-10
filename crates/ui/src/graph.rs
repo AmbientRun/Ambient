@@ -1,16 +1,16 @@
 use std::iter::once;
 
-use elements_core::{
-    asset_cache, transform::{mesh_to_local, rotation, translation}, ui_scene
-};
-use elements_element::{Element, ElementComponent, ElementComponentExt};
-use elements_gpu::{self, mesh_buffer::MeshBufferKey};
-use elements_renderer::{
-    color, gpu_primitives, material, materials::flat_material::{FlatMaterial, FlatShaderKey}, primitives, renderer_shader, SharedMaterial
-};
-use elements_std::{asset_cache::SyncAssetKeyExt, mesh::Mesh};
 use glam::{vec2, vec3, Quat, Vec2, Vec3, Vec4};
 use itertools::Itertools;
+use kiwi_core::{
+    asset_cache, transform::{mesh_to_local, rotation, translation}, ui_scene
+};
+use kiwi_element::{Element, ElementComponent, ElementComponentExt};
+use kiwi_gpu::{self, mesh_buffer::MeshBufferKey};
+use kiwi_renderer::{
+    color, gpu_primitives, material, materials::flat_material::{FlatMaterial, FlatShaderKey}, primitives, renderer_shader, SharedMaterial
+};
+use kiwi_std::{asset_cache::SyncAssetKeyExt, mesh::Mesh};
 
 use crate::{height, mesh_to_local_from_size, rect::Rectangle, width, Text, UIBase};
 
@@ -138,7 +138,7 @@ impl Default for Graph {
 }
 
 impl ElementComponent for Graph {
-    fn render(self: Box<Self>, world: &mut elements_ecs::World, _hooks: &mut elements_element::Hooks) -> elements_element::Element {
+    fn render(self: Box<Self>, world: &mut kiwi_ecs::World, _hooks: &mut kiwi_element::Hooks) -> kiwi_element::Element {
         let assets = world.resource(asset_cache()).clone();
         let Self { points, guide_style, style, width, height, max_value, x_scale, y_scale, x_bounds, y_bounds } = *self;
 
@@ -226,7 +226,7 @@ impl ElementComponent for Graph {
             .init(material(), SharedMaterial::new(FlatMaterial::new(assets, style.color, None)))
             .init(color(), Vec4::ONE)
             .init(ui_scene(), ())
-            .set(elements_core::mesh(), mesh)
+            .set(kiwi_core::mesh(), mesh)
     }
 }
 
@@ -241,7 +241,7 @@ struct Guide {
 }
 
 impl ElementComponent for Guide {
-    fn render(self: Box<Self>, _: &mut elements_ecs::World, _: &mut elements_element::Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut kiwi_ecs::World, _: &mut kiwi_element::Hooks) -> Element {
         let Self { style, scale, len, dir, align, show_0, .. } = *self;
 
         let rot = Quat::from_rotation_arc(Vec3::X, dir.extend(0.0));
@@ -288,7 +288,7 @@ struct Tick {
 }
 
 impl ElementComponent for Tick {
-    fn render(self: Box<Self>, _: &mut elements_ecs::World, _: &mut elements_element::Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut kiwi_ecs::World, _: &mut kiwi_element::Hooks) -> Element {
         let Self { style, height, pos, text_rot, val } = *self;
         Rectangle
             .el()

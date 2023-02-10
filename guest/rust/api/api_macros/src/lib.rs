@@ -1,9 +1,10 @@
 extern crate proc_macro;
 
+use anyhow::Context;
 use proc_macro::TokenStream;
 use quote::quote;
 
-mod elements_project;
+mod kiwi_project;
 
 /// Makes your `main()` function accessible to the scripting host, and generates a `components` module with your project's components.
 ///
@@ -16,7 +17,7 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
         panic!("the `{fn_name}` function must be async");
     }
 
-    let project_boilerplate = elements_project_pm2(None).unwrap();
+    let project_boilerplate = kiwi_project_pm2(None).unwrap();
 
     quote! {
         #project_boilerplate
@@ -35,7 +36,7 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
 /// Parses your project's manifest and generates components and other boilerplate.
 #[proc_macro]
-pub fn elements_project(input: TokenStream) -> TokenStream {
+pub fn kiwi_project(input: TokenStream) -> TokenStream {
     let extend_paths: Option<Vec<Vec<String>>> = if input.is_empty() {
         None
     } else {
@@ -82,14 +83,16 @@ pub fn elements_project(input: TokenStream) -> TokenStream {
         )
     };
 
-    TokenStream::from(elements_project_pm2(extend_paths).unwrap())
+    TokenStream::from(kiwi_project_pm2(extend_paths).unwrap())
 }
 
-fn elements_project_pm2(
+fn kiwi_project_pm2(
     extend_paths: Option<Vec<Vec<String>>>,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    elements_project::implementation(
-        elements_project::read_file("elements.toml".to_string()).unwrap(),
+    kiwi_project::implementation(
+        kiwi_project::read_file("kiwi.toml".to_string())
+            .context("Failed to load kiwi.toml")
+            .unwrap(),
         extend_paths.as_deref().unwrap_or_default(),
         extend_paths.is_some(),
     )

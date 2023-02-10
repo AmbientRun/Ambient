@@ -11,5 +11,5 @@ pub enum Error {
     #[error("There are no more available sinks")]
     NoAvailableSink,
     #[error(transparent)]
-    AudioError(#[from] Arc<elements_audio::Error>),
+    AudioError(#[from] Arc<kiwi_audio::Error>),
 }

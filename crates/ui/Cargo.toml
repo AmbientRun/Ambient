@@ -1,20 +1,20 @@
 [package]
-name = "elements_ui"
+name = "kiwi_ui"
 version.workspace = true
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-elements_std = { path = "../std" }
-elements_ecs = { path = "../ecs" }
-elements_gpu = { path = "../gpu" }
-elements_core = { path = "../core" }
-elements_meshes = { path = "../meshes" }
-elements_element = { path = "../element" }
-elements_input = { path = "../input" }
-elements_renderer = { path = "../renderer" }
-elements_editor_derive = { path = "../editor_derive" }
+kiwi_std = { path = "../std" }
+kiwi_ecs = { path = "../ecs" }
+kiwi_gpu = { path = "../gpu" }
+kiwi_core = { path = "../core" }
+kiwi_meshes = { path = "../meshes" }
+kiwi_element = { path = "../element" }
+kiwi_input = { path = "../input" }
+kiwi_renderer = { path = "../renderer" }
+kiwi_editor_derive = { path = "../editor_derive" }
 glyph_brush.workspace = true
 glam.workspace = true
 winit.workspace = true
@@ -38,8 +38,8 @@ anyhow.workspace = true
 tracing.workspace = true
 
 [dev-dependencies]
-elements_app = { path = "../app" }
-elements_cameras = { path = "../cameras" }
+kiwi_app = { path = "../app" }
+kiwi_cameras = { path = "../cameras" }
 fixed-vec-deque.workspace = true
 tokio.workspace = true
 itertools.workspace = true
@@ -48,4 +48,4 @@ env_logger.workspace = true
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [features]
-hotload-includes = ['elements_std/hotload-includes']
+hotload-includes = ['kiwi_std/hotload-includes']

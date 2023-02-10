@@ -1,10 +1,10 @@
 use std::{collections::HashMap, fmt::Debug, marker::Send};
 
-use elements_ecs::{ArchetypeFilter, Component, ComponentValue, EntityData, EntityId, IndexExt, SystemGroup, World};
-use elements_network::{
+use futures::Future;
+use kiwi_ecs::{ArchetypeFilter, Component, ComponentValue, EntityData, EntityId, IndexExt, SystemGroup, World};
+use kiwi_network::{
     assert_networked, server::{ServerState, SharedServerState}
 };
-use futures::Future;
 use parking_lot::MutexGuard;
 use tracing::info_span;
 
@@ -248,7 +248,7 @@ impl IntentRegistry {
     /// **Note**: The lock on the world will be held for the whole duration of the async intent.
     ///
     /// This is to prevent deadlocks and swept under the rug when intents are partially applied.
-    /// If this is not desired, consider [`tokio::spawn`] or [`elements_core::AsyncRun`].
+    /// If this is not desired, consider [`tokio::spawn`] or [`kiwi_core::AsyncRun`].
     pub fn register<Arg, RevertState, Apply, Revert, Merge>(
         &mut self,
         intent: Component<Arg>,
@@ -321,7 +321,7 @@ pub fn registry_systems() -> SystemGroup {
 #[cfg(test)]
 mod test {
 
-    use elements_ecs::{components, Networked, Store};
+    use kiwi_ecs::{components, Networked, Store};
 
     use super::*;
 
