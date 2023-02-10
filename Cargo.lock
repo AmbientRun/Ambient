@@ -2454,7 +2454,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "anyhow",
  "axum",
@@ -2507,7 +2507,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_animation"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2528,7 +2528,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_app"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "anyhow",
  "glam 0.22.0",
@@ -2558,7 +2558,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_asset_cache"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "abort-on-drop",
  "anyhow",
@@ -2578,7 +2578,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_asset_timeline"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "async-trait",
  "chrono",
@@ -2601,7 +2601,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_audio"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "approx",
  "async-trait",
@@ -2640,7 +2640,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_build"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "anyhow",
  "async-recursion",
@@ -2680,7 +2680,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_cameras"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "derive_more",
  "glam 0.22.0",
@@ -2693,7 +2693,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_core"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "bytemuck",
  "derive_more",
@@ -2718,7 +2718,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_curve"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "glam 0.22.0",
  "kiwi_std",
@@ -2726,7 +2726,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_debugger"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "glam 0.22.0",
  "kiwi_core",
@@ -2747,7 +2747,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_decals"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "env_logger 0.9.3",
  "glam 0.22.0",
@@ -2768,7 +2768,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_ecs"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "anyhow",
  "atomic_refcell",
@@ -2801,7 +2801,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_ecs_editor"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "env_logger 0.9.3",
  "glam 0.22.0",
@@ -2818,7 +2818,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_editor_derive"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "convert_case 0.6.0",
  "itertools",
@@ -2832,7 +2832,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_element"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "as-any",
  "atomic_refcell",
@@ -2854,7 +2854,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_element_component"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "itertools",
  "proc-macro-crate",
@@ -2865,7 +2865,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_gizmos"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "bytemuck",
  "dashmap",
@@ -2887,7 +2887,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_gpu"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2911,7 +2911,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_input"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "glam 0.22.0",
  "kiwi_core",
@@ -2924,7 +2924,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_intent"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "anyhow",
  "atomic_refcell",
@@ -2947,7 +2947,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_meshes"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "glam 0.22.0",
  "kiwi_gpu",
@@ -2957,7 +2957,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_model"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2983,7 +2983,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_model_import"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "anyhow",
  "async-recursion",
@@ -3027,7 +3027,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_network"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "anyhow",
  "bincode",
@@ -3067,7 +3067,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_object"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3090,7 +3090,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_physics"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3126,7 +3126,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_primitives"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "glam 0.22.0",
  "kiwi_core",
@@ -3140,7 +3140,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_project"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "kiwi_ecs",
  "paste",
@@ -3151,7 +3151,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_renderer"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3185,7 +3185,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_rpc"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "bincode",
  "futures",
@@ -3197,7 +3197,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_rustc"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "anyhow",
  "itertools",
@@ -3208,7 +3208,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_scripting"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3247,7 +3247,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_std"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "anyhow",
  "as-any",
@@ -3287,7 +3287,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_ui"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3329,7 +3329,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_world_audio"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "anyhow",
  "atomic_refcell",
@@ -4305,7 +4305,7 @@ dependencies = [
 
 [[package]]
 name = "physxx"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "as-any",
  "bitflags",
@@ -6020,7 +6020,7 @@ checksum = "402bb19d8e03f1d1a7450e2bd613980869438e0666331be3e073089124aa1adc"
 
 [[package]]
 name = "unity_parser"
-version = "0.0.1"
+version = "0.0.3"
 dependencies = [
  "anyhow",
  "glam 0.22.0",

@@ -10,7 +10,7 @@ resolver = "2"
 
 # Also update gust/rust/Cargo.toml
 [workspace.package]
-version = "0.0.1"
+version = "0.0.3"
 
 [workspace.dependencies]
 profiling = { git = "https://github.com/PlayDims/profiling", features = [
