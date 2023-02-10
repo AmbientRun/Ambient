@@ -125,7 +125,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6fe2b9d82064e8a0226fddb3547f37f28eaa46d0fc210e275d835f08cf3b76a7"
 
 [[package]]
-name = "interface_macros"
+name = "kiwi_api"
+version = "0.0.3"
+dependencies = [
+ "anyhow",
+ "bincode",
+ "glam",
+ "kiwi_api_macros",
+ "once_cell",
+ "paste",
+ "rand",
+ "serde",
+ "wasi",
+ "wit-bindgen-guest-rust",
+]
+
+[[package]]
+name = "kiwi_api_macros"
 version = "0.0.3"
 dependencies = [
  "anyhow",
@@ -135,22 +151,6 @@ dependencies = [
  "serde",
  "syn",
  "toml 0.7.2",
-]
-
-[[package]]
-name = "kiwi_api"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "bincode",
- "glam",
- "interface_macros",
- "once_cell",
- "paste",
- "rand",
- "serde",
- "wasi",
- "wit-bindgen-guest-rust",
 ]
 
 [[package]]

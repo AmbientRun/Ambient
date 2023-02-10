@@ -32,7 +32,7 @@ fn main() {
         .map(|de| de.path())
         .filter(|de| de.is_dir())
     {
-        let target_wit_dir = guest_path.join("interface").join("wit");
+        let target_wit_dir = guest_path.join("api").join("wit");
         std::fs::create_dir_all(&target_wit_dir).unwrap();
 
         for file in &files {

@@ -1,6 +1,6 @@
 [workspace]
 members = [
-  "interface",
+  "api",
   "examples/*",
 ]
 
@@ -8,4 +8,4 @@ members = [
 version = "0.0.3"
 
 [patch.crates-io]
-kiwi_api = { path = "interface" }
+kiwi_api = { path = "api" }
