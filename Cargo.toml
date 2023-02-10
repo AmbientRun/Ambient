@@ -8,6 +8,7 @@ members = [
 ]
 resolver = "2"
 
+# Also update gust/rust/Cargo.toml
 [workspace.package]
 version = "0.0.1"
 
