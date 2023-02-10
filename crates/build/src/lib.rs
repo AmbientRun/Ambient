@@ -19,7 +19,7 @@ pub mod pipelines;
 /// assets/**  Here assets such as .glb files are stored. Any files found in this directory will be processed
 /// src/**  This is where you store Rust source files
 /// target  This is the output directory, and is created when building
-/// elements.toml  This is a metadata file to describe the project
+/// kiwi.toml  This is a metadata file to describe the project
 pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, manifest: &ProjectManifest) {
     log::info!(
         "Building project `{}` ({})",

@@ -230,7 +230,7 @@ fn main() -> anyhow::Result<()> {
 
         // Assume we are being run within the codebase.
         for guest_path in std::fs::read_dir("guest/").unwrap().filter_map(Result::ok).map(|de| de.path()).filter(|de| de.is_dir()) {
-            let toml_path = guest_path.join("interface").join("elements.toml");
+            let toml_path = guest_path.join("interface").join("kiwi.toml");
             std::fs::write(&toml_path, &toml)?;
             log::info!("Interface updated at {toml_path:?}");
         }
@@ -239,7 +239,7 @@ fn main() -> anyhow::Result<()> {
 
     let manifest = if !cli.command.should_join() {
         let contents =
-            std::fs::read_to_string(project_path.join("elements.toml")).context("No project manifest was found. Please create one.")?;
+            std::fs::read_to_string(project_path.join("kiwi.toml")).context("No project manifest was found. Please create one.")?;
         Some(kiwi_project::Manifest::parse(&contents)?)
     } else {
         None
