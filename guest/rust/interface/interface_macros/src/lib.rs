@@ -1,5 +1,6 @@
 extern crate proc_macro;
 
+use anyhow::Context;
 use proc_macro::TokenStream;
 use quote::quote;
 
@@ -89,7 +90,9 @@ fn kiwi_project_pm2(
     extend_paths: Option<Vec<Vec<String>>>,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     kiwi_project::implementation(
-        kiwi_project::read_file("kiwi.toml".to_string()).unwrap(),
+        kiwi_project::read_file("kiwi.toml".to_string())
+            .context("Failed to load kiwi.toml")
+            .unwrap(),
         extend_paths.as_deref().unwrap_or_default(),
         extend_paths.is_some(),
     )

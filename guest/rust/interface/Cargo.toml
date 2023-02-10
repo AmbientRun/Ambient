@@ -1,6 +1,6 @@
 [package]
 edition = "2021"
-name = "kiwi_scripting_interface"
+name = "kiwi_api"
 version.workspace = true
 
 [dependencies]
