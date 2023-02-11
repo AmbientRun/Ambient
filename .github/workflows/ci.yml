@@ -39,4 +39,4 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-
       - name: Run tests
-        run: cargo test --workspace
+        run: cargo test --workspace --release
