@@ -6,9 +6,9 @@ use quote::quote;
 
 mod kiwi_project;
 
-/// Makes your `main()` function accessible to the scripting host, and generates a `components` module with your project's components.
+/// Makes your `main()` function accessible to the WASM host, and generates a `components` module with your project's components.
 ///
-/// If you do not add this attribute to your `main()` function, your script will not run.
+/// If you do not add this attribute to your `main()` function, your module will not run.
 #[proc_macro_attribute]
 pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let item = syn::parse_macro_input!(item as syn::ItemFn);

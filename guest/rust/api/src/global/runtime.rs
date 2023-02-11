@@ -63,7 +63,7 @@ pub fn once_async<R: Future<Output = EventResult> + 'static>(
     );
 }
 
-/// Runs the given async block (`future`). This lets your script set up behaviour
+/// Runs the given async block (`future`). This lets your module set up behaviour
 /// to run concurrently, like a long-running task.
 ///
 /// This is similar to [tokio::spawn](https://docs.rs/tokio/latest/tokio/fn.spawn.html),

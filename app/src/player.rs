@@ -81,7 +81,7 @@ pub fn client_systems() -> SystemGroup {
         "player/client_systems",
         vec![query(player_camera()).spawned().to_system(|q, world, qs, _| {
             // TEMP: This synchronises server cameras to the client. This is a temporary solution until this
-            // is moved to/controlled by clientside scripting.
+            // is moved to/controlled by clientside WASM.
 
             let local = world.resource(local_user_id()).clone();
             for (id, _) in q.collect_cloned(world, qs) {

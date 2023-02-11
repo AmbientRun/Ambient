@@ -509,7 +509,7 @@ impl Components {
     }
 
     /// Spawns an entity with these components. If `persistent` is set, this entity will not be
-    /// removed when this script is unloaded.
+    /// removed when this module is unloaded.
     ///
     /// This is an asynchronous operation; use [crate::entity::wait_for_spawn] to get notified when
     /// the entity is spawned.

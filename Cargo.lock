@@ -1248,6 +1248,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 
 [[package]]
+name = "dunce"
+version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0bd4b30a6560bbd9b4620f4de34c3f14f60848e58a9b7216801afcb4c7b31c3c"
+
+[[package]]
 name = "dyn-clonable"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2342,9 +2348,9 @@ dependencies = [
  "kiwi_project",
  "kiwi_renderer",
  "kiwi_rpc",
- "kiwi_scripting",
  "kiwi_std",
  "kiwi_ui",
+ "kiwi_wasm",
  "kiwi_world_audio",
  "local-ip-address",
  "log",
@@ -3051,45 +3057,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "kiwi_scripting"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "async-trait",
- "chrono",
- "data-encoding",
- "flume",
- "fs_extra",
- "glam 0.22.0",
- "indexmap",
- "indoc",
- "itertools",
- "kiwi_animation",
- "kiwi_app",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_input",
- "kiwi_network",
- "kiwi_object",
- "kiwi_physics",
- "kiwi_project",
- "kiwi_std",
- "log",
- "parking_lot",
- "physxx",
- "profiling 1.0.6",
- "reqwest",
- "serde",
- "serde_bytes",
- "serde_json",
- "slotmap",
- "wasi-common",
- "wasmtime",
- "wasmtime-wasi",
- "wit-bindgen-host-wasmtime-rust",
-]
-
-[[package]]
 name = "kiwi_std"
 version = "0.0.3"
 dependencies = [
@@ -3168,6 +3135,46 @@ dependencies = [
  "tracing-subscriber",
  "wgpu",
  "winit",
+]
+
+[[package]]
+name = "kiwi_wasm"
+version = "0.0.3"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "chrono",
+ "data-encoding",
+ "dunce",
+ "flume",
+ "fs_extra",
+ "glam 0.22.0",
+ "indexmap",
+ "indoc",
+ "itertools",
+ "kiwi_animation",
+ "kiwi_app",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_input",
+ "kiwi_network",
+ "kiwi_object",
+ "kiwi_physics",
+ "kiwi_project",
+ "kiwi_std",
+ "log",
+ "parking_lot",
+ "physxx",
+ "profiling 1.0.6",
+ "reqwest",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "slotmap",
+ "wasi-common",
+ "wasmtime",
+ "wasmtime-wasi",
+ "wit-bindgen-host-wasmtime-rust",
 ]
 
 [[package]]

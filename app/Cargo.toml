@@ -28,7 +28,7 @@ kiwi_primitives = {path = "../crates/primitives"}
 kiwi_project = {path = "../crates/project"}
 kiwi_renderer = {path = "../crates/renderer"}
 kiwi_rpc = {path = "../crates/rpc"}
-kiwi_scripting = {path = "../crates/scripting"}
+kiwi_wasm = {path = "../crates/wasm"}
 kiwi_std = {path = "../crates/std"}
 kiwi_ui = {path = "../crates/ui"}
 kiwi_world_audio = {path = "../crates/world_audio"}

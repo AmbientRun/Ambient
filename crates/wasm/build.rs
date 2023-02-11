@@ -18,8 +18,14 @@ fn main() {
     let files: Vec<_> = filenames_to_copy
         .iter()
         .map(|path| -> std::io::Result<_> {
+            let absolute_path = working_dir.join(path).canonicalize().unwrap();
+
+            // De-UNC the path.
+            #[cfg(target_os = "windows")]
+            let absolute_path = dunce::simplified(&absolute_path).to_owned();
+
             Ok(File {
-                absolute_path: working_dir.join(path).canonicalize().unwrap(),
+                absolute_path,
                 contents: std::fs::read_to_string(path)?,
             })
         })
@@ -45,13 +51,16 @@ fn main() {
             let target_path =
                 kiwi_std::path::normalize(&working_dir.join(target_wit_dir.join(filename)));
 
-            let absolute_path_relative_to_common: PathBuf = {
+            let absolute_path_relative_to_common = {
                 let mut target_path_it = target_path.iter();
 
                 file.absolute_path
+                    .clone()
                     .iter()
                     .skip_while(|segment| target_path_it.next() == Some(segment))
-                    .collect()
+                    .map(|segment| segment.to_string_lossy())
+                    .collect::<Vec<_>>()
+                    .join("/")
             };
 
             std::fs::write(

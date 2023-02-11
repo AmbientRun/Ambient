@@ -12,9 +12,9 @@ use wasi_common::WasiCtx;
 use wasmtime::Linker;
 
 use crate::shared::{
-    host_guest_state::GetBaseHostGuestState, interface::host::Host, reload, reload_all, run_all,
-    script_module, script_module_bytecode, script_module_enabled, unload, update_errors,
-    MessageType, ScriptContext, ScriptModuleState, WasmContext,
+    host_guest_state::GetBaseHostGuestState, interface::host::Host, module, module_bytecode,
+    module_enabled, reload, reload_all, run_all, unload, update_errors, MessageType, ModuleState,
+    RunContext, WasmContext,
 };
 
 pub mod bindings;
@@ -27,7 +27,7 @@ pub fn systems<
     Context: WasmContext<Bindings> + Send + Sync + 'static,
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
-    state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
+    state_component: Component<ModuleState<Bindings, Context, HostGuestState>>,
     make_wasm_context_component: Component<
         Arc<dyn Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context + Send + Sync>,
     >,
@@ -39,11 +39,11 @@ pub fn systems<
     let add_to_linker = move |w: &World| w.resource(add_to_linker_component).clone();
 
     SystemGroup::new(
-        "core/scripting/server",
+        "core/wasm/server",
         vec![
-            query((script_module_bytecode(), script_module_enabled().changed())).to_system(
+            query((module_bytecode(), module_enabled().changed())).to_system(
                 move |q, world, qs, _| {
-                    profiling::scope!("script module reloads");
+                    profiling::scope!("WASM module reloads");
                     let modules = q
                         .iter(world, qs)
                         .filter(|(id, (_, enabled))| {
@@ -66,16 +66,16 @@ pub fn systems<
                 },
             ),
             Box::new(FnSystem::new(move |world, _| {
-                profiling::scope!("script module frame event");
+                profiling::scope!("WASM module frame event");
                 // trigger frame event
                 run_all(
                     world,
                     state_component,
-                    &ScriptContext::new(world, "core/frame", EntityData::new()),
+                    &RunContext::new(world, "core/frame", EntityData::new()),
                 );
             })),
             Box::new(FnSystem::new(move |world, _| {
-                profiling::scope!("script module collision event");
+                profiling::scope!("WASM module collision event");
                 // trigger collision event
                 let collisions = match world.resource_opt(collisions()) {
                     Some(collisions) => collisions.lock().clone(),
@@ -96,7 +96,7 @@ pub fn systems<
                     run_all(
                         world,
                         state_component,
-                        &ScriptContext::new(
+                        &RunContext::new(
                             world,
                             "core/collision",
                             vec![ComponentEntry::new(kiwi_ecs::ids(), ids)].into(),
@@ -105,7 +105,7 @@ pub fn systems<
                 }
             })),
             Box::new(FnSystem::new(move |world, _| {
-                profiling::scope!("script module collider loads");
+                profiling::scope!("WASM module collider loads");
                 // trigger collider loads
                 let collider_loads = match world.resource_opt(collider_loads()) {
                     Some(collider_loads) => collider_loads.clone(),
@@ -115,7 +115,7 @@ pub fn systems<
                     run_all(
                         world,
                         state_component,
-                        &ScriptContext::new(
+                        &RunContext::new(
                             world,
                             "core/collider_load",
                             vec![ComponentEntry::new(kiwi_ecs::id(), id)].into(),
@@ -124,12 +124,12 @@ pub fn systems<
                 }
             })),
             query(uid()).spawned().to_system(move |q, world, qs, _| {
-                profiling::scope!("script module entity spawn");
+                profiling::scope!("WASM module entity spawn");
                 for (id, uid) in q.collect_cloned(world, qs) {
                     run_all(
                         world,
                         state_component,
-                        &ScriptContext::new(
+                        &RunContext::new(
                             world,
                             "core/entity_spawn",
                             vec![
@@ -150,7 +150,7 @@ pub fn on_forking_systems<
     Context: WasmContext<Bindings> + Send + Sync + 'static,
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
-    state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
+    state_component: Component<ModuleState<Bindings, Context, HostGuestState>>,
     make_wasm_context_component: Component<
         Arc<dyn Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context + Send + Sync>,
     >,
@@ -159,12 +159,12 @@ pub fn on_forking_systems<
     >,
 ) -> SystemGroup<ForkingEvent> {
     SystemGroup::new(
-        "core/scripting/server/on_forking_systems",
+        "core/wasm/server/on_forking_systems",
         vec![Box::new(FnSystem::new(move |world, _| {
             let make_wasm_context = world.resource(make_wasm_context_component).clone();
             let add_to_linker = world.resource(add_to_linker_component).clone();
 
-            // Reset the states of all the scripts when we fork.
+            // Reset the states of all the modules when we fork.
             reload_all(world, state_component, make_wasm_context, add_to_linker);
         }))],
     )
@@ -175,14 +175,14 @@ pub fn on_shutdown_systems<
     Context: WasmContext<Bindings> + Send + Sync + 'static,
     HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
 >(
-    state_component: Component<ScriptModuleState<Bindings, Context, HostGuestState>>,
+    state_component: Component<ModuleState<Bindings, Context, HostGuestState>>,
 ) -> SystemGroup<ShutdownEvent> {
     SystemGroup::new(
-        "core/scripting/server/on_shutdown_systems",
+        "core/wasm/server/on_shutdown_systems",
         vec![Box::new(FnSystem::new(move |world, _| {
-            let scripts = query(()).incl(script_module()).collect_ids(world, None);
-            for script_id in scripts {
-                let errors = unload(world, state_component, script_id, "shutting down");
+            let modules = query(()).incl(module()).collect_ids(world, None);
+            for module_id in modules {
+                let errors = unload(world, state_component, module_id, "shutting down");
                 update_errors(world, state_component, &errors, true);
             }
         }))],
