@@ -8,10 +8,12 @@ use kiwi_debugger::RendererDebugger;
 use kiwi_ecs::{EntityData, SystemGroup, World};
 use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
 use kiwi_network::{
-    client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce}, events::ServerEventRegistry
+    client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce},
+    events::ServerEventRegistry,
 };
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt}, friendly_id, Cb
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    cb, friendly_id, Cb,
 };
 use kiwi_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
 
@@ -133,7 +135,7 @@ fn GameView(_world: &mut World, hooks: &mut Hooks) -> Element {
     let show_debug = true;
     if show_debug {
         RendererDebugger {
-            get_state: Cb::new(move |cb| {
+            get_state: cb(move |cb| {
                 let mut game_state = state.game_state.lock();
                 let game_state = &mut *game_state;
                 cb(&mut game_state.renderer, &render_target.0, &mut game_state.world);
@@ -159,14 +161,14 @@ fn MainApp(world: &mut World, hooks: &mut Hooks, server_addr: SocketAddr, user_i
             server_addr,
             user_id,
             resolution,
-            on_disconnect: Cb::new(move || {}),
-            init_world: Cb::new(UseOnce::new(Box::new(move |world, _render_target| {
+            on_disconnect: cb(move || {}),
+            init_world: cb(UseOnce::new(Box::new(move |world, _render_target| {
                 world.add_resource(kiwi_network::events::event_registry(), Arc::new(ServerEventRegistry::new()));
             }))),
-            on_loaded: Cb::new(move |_game_state, _game_client| Ok(Box::new(|| {}))),
-            error_view: Cb(Arc::new(move |error| Dock(vec![Text::el("Error").header_style(), Text::el(error)]).el())),
-            systems_and_resources: Cb::new(|| (client_systems(), EntityData::new())),
-            create_rpc_registry: Cb::new(server::create_rpc_registry),
+            on_loaded: cb(move |_game_state, _game_client| Ok(Box::new(|| {}))),
+            error_view: cb(move |error| Dock(vec![Text::el("Error").header_style(), Text::el(error)]).el()),
+            systems_and_resources: cb(|| (client_systems(), EntityData::new())),
+            create_rpc_registry: cb(server::create_rpc_registry),
             on_in_entities: None,
             ui: GameView.el(),
         }

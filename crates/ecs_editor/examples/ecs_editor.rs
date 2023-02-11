@@ -4,7 +4,7 @@ use kiwi_core::{async_ecs::async_run, camera::active_camera};
 use kiwi_ecs::{EntityData, World};
 use kiwi_ecs_editor::ECSEditor;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
-use kiwi_std::Cb;
+use kiwi_std::{cb, Cb};
 use kiwi_ui::{FocusRoot, ScrollArea, WindowSized};
 
 #[derive(Debug, Clone)]
@@ -13,11 +13,11 @@ impl ElementComponent for ECSEditorUIWorld {
     fn render(self: Box<Self>, world: &mut World, _hooks: &mut Hooks) -> Element {
         let async_run = world.resource(async_run()).clone();
         ECSEditor {
-            get_world: Cb::new(move |run| {
+            get_world: cb(move |run| {
                 let run = run.clone();
                 async_run.run(move |world| run(world));
             }),
-            on_change: Cb::new(|world, diff| {
+            on_change: cb(|world, diff| {
                 diff.apply(world, EntityData::new(), false);
             }),
         }

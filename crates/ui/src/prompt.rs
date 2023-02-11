@@ -1,9 +1,10 @@
 use kiwi_ecs::{ComponentValue, World};
 use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
-use kiwi_std::Cb;
+use kiwi_std::{cb, Cb};
 
 use crate::{
-    align_vertical, space_between_items, Button, ButtonStyle, DialogScreen, Editor, FlowColumn, FlowRow, ScrollArea, StylesExt, Text, TextInput, STREET
+    align_vertical, space_between_items, Button, ButtonStyle, DialogScreen, Editor, FlowColumn, FlowRow, ScrollArea, StylesExt, Text,
+    TextInput, STREET,
 };
 
 #[element_component]
@@ -76,7 +77,7 @@ pub fn Prompt(
     DialogScreen(
         FlowColumn::el([
             Text::el(title).header_style(),
-            TextInput::new(value.clone(), Cb(set_value)).placeholder(placeholder.or(Some("Enter value".to_string()))).el(),
+            TextInput::new(value.clone(), set_value).placeholder(placeholder.or(Some("Enter value".to_string()))).el(),
             FlowRow::el([
                 Button::new("Ok", move |world| {
                     on_ok(world, value.clone());
@@ -110,7 +111,7 @@ impl Prompt {
         Self {
             title: title.into(),
             placeholder: None,
-            on_ok: Cb::new(move |world, value| {
+            on_ok: cb(move |world, value| {
                 on_ok(world, value);
                 set_screen(None);
             }),
@@ -126,14 +127,14 @@ impl Prompt {
         Self {
             title: title.into(),
             placeholder: None,
-            on_ok: Cb::new({
+            on_ok: cb({
                 let set_screen = set_screen.clone();
                 move |world, value| {
                     on_ok(world, value);
                     set_screen(None);
                 }
             }),
-            on_cancel: Some(Cb::new(move |_| set_screen(None))),
+            on_cancel: Some(cb(move |_| set_screen(None))),
         }
     }
     pub fn placeholder(mut self, placeholder: impl Into<String>) -> Self {
@@ -158,7 +159,7 @@ pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + ComponentValue>(
         ScrollArea(
             FlowColumn::el([
                 Text::el(title).header_style(),
-                value.clone().editor(Cb(set_value), Default::default()),
+                value.clone().editor(set_value, Default::default()),
                 FlowRow(vec![
                     Button::new("Ok", {
                         let set_screen = set_screen.clone();
@@ -200,6 +201,6 @@ impl<T: Editor + std::fmt::Debug + Clone + ComponentValue> EditorPrompt<T> {
         set_screen: Cb<dyn Fn(Option<Element>) + Sync + Send>,
         on_ok: impl Fn(&mut World, T) + Sync + Send + 'static,
     ) -> Self {
-        Self { title: title.into(), value, set_screen, on_ok: Cb::new(on_ok), on_cancel: None, validator: None }
+        Self { title: title.into(), value, set_screen, on_ok: cb(on_ok), on_cancel: None, validator: None }
     }
 }

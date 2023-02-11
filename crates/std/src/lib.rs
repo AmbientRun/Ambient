@@ -1,5 +1,3 @@
-#![cfg_attr(feature = "cb", feature(coerce_unsized))]
-#![cfg_attr(feature = "cb", feature(unsize))]
 use std::borrow::Cow;
 
 #[cfg(feature = "uncategorized")]

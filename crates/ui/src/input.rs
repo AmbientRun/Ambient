@@ -1,5 +1,11 @@
 use std::{
-    self, f32::consts::E, fmt::Debug, hash::Hash, str::FromStr, sync::Arc, time::{Duration, SystemTime}
+    self,
+    f32::consts::E,
+    fmt::Debug,
+    hash::Hash,
+    str::FromStr,
+    sync::Arc,
+    time::{Duration, SystemTime},
 };
 
 use glam::*;
@@ -9,15 +15,20 @@ use kiwi_ecs::{ComponentValue, EntityId, World};
 use kiwi_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_input::MouseButton;
 use kiwi_std::{
-    events::EventDispatcher, math::{interpolate, interpolate_clamped, Saturate}, Cb
+    cb, cb_arc,
+    events::EventDispatcher,
+    math::{interpolate, interpolate_clamped, Saturate},
+    Cb,
 };
 use winit::{
-    event::{ElementState, Event, WindowEvent}, window::CursorIcon
+    event::{ElementState, Event, WindowEvent},
+    window::CursorIcon,
 };
 
 use super::{Editor, EditorOpts, FlowColumn, FlowRow, Focus, Text, UIBase, UIExt};
 use crate::{
-    background_color, border_radius, layout::*, primary_color, text_input::TextInput, Button, ButtonStyle, ChangeCb, Corners, FontAwesomeIcon, Rectangle, STREET
+    background_color, border_radius, layout::*, primary_color, text_input::TextInput, Button, ButtonStyle, ChangeCb, Corners,
+    FontAwesomeIcon, Rectangle, STREET,
 };
 
 #[derive(Debug, Clone)]
@@ -27,7 +38,7 @@ pub struct ParseableInput<T: FromStr + Debug + std::fmt::Display + Clone + Sync 
 }
 impl<T: FromStr + Debug + std::fmt::Display + Clone + Sync + Send + 'static> ParseableInput<T> {
     pub fn new(value: T, on_change: impl Fn(T) + Sync + Send + 'static) -> Self {
-        Self { value, on_change: Cb::new(on_change) }
+        Self { value, on_change: cb(on_change) }
     }
 }
 impl<T: FromStr + Debug + std::fmt::Display + Clone + Sync + Send + 'static> ElementComponent for ParseableInput<T> {
@@ -44,12 +55,12 @@ impl<T: FromStr + Debug + std::fmt::Display + Clone + Sync + Send + 'static> Ele
         }
         TextInput::new(
             text.unwrap_or_else(|| value.to_string()),
-            Cb(Arc::new(move |text| {
+            cb(move |text| {
                 if let Ok(value) = text.parse::<T>() {
                     on_change.0(value);
                 }
                 set_text(Some(text));
-            })),
+            }),
         )
         .el()
         .on_spawned(move |_, id| set_self_id(id))
@@ -79,12 +90,12 @@ impl<T: Debug + ComponentValue> ElementComponent for CustomParseInput<T> {
         }
         TextInput::new(
             text.unwrap_or_else(|| to_string(&value)),
-            Cb(Arc::new(move |text| {
+            cb(move |text| {
                 if let Some(value) = parse(&text) {
                     on_change.0(value);
                 }
                 set_text(Some(text));
-            })),
+            }),
         )
         .el()
         .on_spawned(move |_, id| set_self_id(id))
@@ -102,8 +113,8 @@ impl Editor for Duration {
         CustomParseInput {
             value: self,
             on_change,
-            parse: Cb::new(|v| v.parse::<f32>().ok().map(Duration::from_secs_f32)),
-            to_string: Cb::new(|v| format!("{:.3}", v.as_secs_f32())),
+            parse: cb(|v| v.parse::<f32>().ok().map(Duration::from_secs_f32)),
+            to_string: cb(|v| format!("{:.3}", v.as_secs_f32())),
         }
         .el()
     }
@@ -169,7 +180,7 @@ pub struct Checkbox {
 }
 impl Checkbox {
     pub fn new(value: bool, on_change: impl Fn(bool) + Sync + Send + 'static) -> Self {
-        Self { value, on_change: Cb(Arc::new(on_change)) }
+        Self { value, on_change: cb(on_change) }
     }
 }
 impl ElementComponent for Checkbox {
@@ -242,10 +253,10 @@ impl ElementComponent for Slider {
         // Sets the value with some sanitization
         let on_change_raw = self
             .on_change
-            .map(|f| Cb(Arc::new(move |value: f32| f(cleanup_value(value, min, max, round))) as Arc<dyn Fn(f32) + Sync + Send>));
+            .map(|f| cb_arc(Arc::new(move |value: f32| f(cleanup_value(value, min, max, round))) as Arc<dyn Fn(f32) + Sync + Send>));
         // Sets the value after converting from [0-1] to the value range
         let on_change_factor = on_change_raw.clone().map(|f| {
-            Cb(Arc::new(move |p: f32| f(if logarithmic { p.powf(E) } else { p } * (max - min) + min)) as Arc<dyn Fn(f32) + Sync + Send>)
+            cb_arc(Arc::new(move |p: f32| f(if logarithmic { p.powf(E) } else { p } * (max - min) + min)) as Arc<dyn Fn(f32) + Sync + Send>)
         });
 
         let rectangle = Rectangle
@@ -341,7 +352,7 @@ impl ElementComponent for IntegerSlider {
         Slider {
             value: value as f32,
             on_change: on_change
-                .map(|on_change| Cb(Arc::new(move |value: f32| on_change.0(value as i32)) as Arc<dyn Fn(f32) + Sync + Send>)),
+                .map(|on_change| cb_arc(Arc::new(move |value: f32| on_change.0(value as i32)) as Arc<dyn Fn(f32) + Sync + Send>)),
             min: min as f32,
             max: max as f32,
             width,
@@ -414,7 +425,7 @@ impl DurationEditor {
 impl ElementComponent for DurationEditor {
     fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
         let Self { value: EditableDuration { input, dur, valid }, on_change } = *self;
-        let input = TextInput::new(input, Cb(Arc::new(move |upd: String| on_change(EditableDuration::from(upd))))).el();
+        let input = TextInput::new(input, cb(move |upd: String| on_change(EditableDuration::from(upd)))).el();
         let value = Text::el(format!("{dur:#?}"));
 
         if valid {
@@ -471,25 +482,20 @@ impl ElementComponent for EditorColumn {
 
 impl Editor for Vec2 {
     fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
-        ArrayEditor { value: self.to_array(), on_change: Cb::new(move |v| (on_change)(Self::from(v))), field_names: Some(&["X", "Y"]) }.el()
+        ArrayEditor { value: self.to_array(), on_change: cb(move |v| (on_change)(Self::from(v))), field_names: Some(&["X", "Y"]) }.el()
     }
 }
 
 impl Editor for Vec3 {
     fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
-        ArrayEditor { value: self.to_array(), on_change: Cb::new(move |v| (on_change)(Self::from(v))), field_names: Some(&["X", "Y", "Z"]) }
-            .el()
+        ArrayEditor { value: self.to_array(), on_change: cb(move |v| (on_change)(Self::from(v))), field_names: Some(&["X", "Y", "Z"]) }.el()
     }
 }
 
 impl Editor for Vec4 {
     fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
-        ArrayEditor {
-            value: self.to_array(),
-            on_change: Cb::new(move |v| (on_change)(Self::from(v))),
-            field_names: Some(&["X", "Y", "Z", "W"]),
-        }
-        .el()
+        ArrayEditor { value: self.to_array(), on_change: cb(move |v| (on_change)(Self::from(v))), field_names: Some(&["X", "Y", "Z", "W"]) }
+            .el()
     }
 }
 
@@ -516,7 +522,7 @@ impl<const C: usize, T: 'static + Clone + Debug + Editor + Send + Sync> ElementC
                         EditorRow::el(
                             name,
                             v.clone().editor(
-                                Cb::new(move |v| {
+                                cb(move |v| {
                                     let mut value = value.clone();
                                     value[i] = v;
                                     on_change(value)
@@ -537,7 +543,7 @@ impl<const C: usize, T: 'static + Clone + Debug + Editor + Send + Sync> ElementC
                         let value = value.clone();
                         let on_change = on_change.clone();
                         v.clone().editor(
-                            Cb::new(move |v| {
+                            cb(move |v| {
                                 let mut value = value.clone();
                                 value[i] = v;
                                 on_change(value)
