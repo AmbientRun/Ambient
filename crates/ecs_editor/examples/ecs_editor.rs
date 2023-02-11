@@ -4,7 +4,7 @@ use kiwi_core::{async_ecs::async_run, camera::active_camera};
 use kiwi_ecs::{EntityData, World};
 use kiwi_ecs_editor::ECSEditor;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
-use kiwi_std::{cb, Cb};
+use kiwi_std::cb;
 use kiwi_ui::{FocusRoot, ScrollArea, WindowSized};
 
 #[derive(Debug, Clone)]
