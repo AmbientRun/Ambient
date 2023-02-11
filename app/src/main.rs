@@ -13,7 +13,7 @@ use kiwi_network::{
 };
 use kiwi_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
-    cb, friendly_id, Cb,
+    cb, friendly_id,
 };
 use kiwi_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
 
@@ -189,7 +189,18 @@ fn main() -> anyhow::Result<()> {
             ),
             (
                 LevelFilter::Warn,
-                &["kiwi_build", "kiwi_gpu", "kiwi_model", "kiwi_network", "kiwi_physics", "kiwi_std", "tracing", "wgpu_core", "wgpu_hal"],
+                &[
+                    "kiwi_build",
+                    "kiwi_gpu",
+                    "kiwi_model",
+                    "kiwi_network",
+                    "kiwi_physics",
+                    "kiwi_std",
+                    "naga",
+                    "tracing",
+                    "wgpu_core",
+                    "wgpu_hal",
+                ],
             ),
         ];
 
