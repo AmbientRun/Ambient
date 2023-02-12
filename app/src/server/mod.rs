@@ -86,7 +86,7 @@ pub const QUIC_INTERFACE_PORT: u16 = 9000;
 fn start_http_interface(runtime: &tokio::runtime::Runtime, project_path: &Path) {
     let router = Router::new()
         .route("/ping", get(|| async move { "ok" }))
-        .route("/assets", get_service(ServeDir::new(project_path.join("target"))).handle_error(handle_error))
+        .nest_service("/assets", get_service(ServeDir::new(project_path.join("target"))).handle_error(handle_error))
         .layer(CorsLayer::new().allow_origin(tower_http::cors::Any).allow_methods(vec![Method::GET]).allow_headers(tower_http::cors::Any));
 
     runtime.spawn(async move {
