@@ -6,7 +6,8 @@ use proc_macro2::{Ident, Span, TokenStream};
 use proc_macro_crate::{crate_name, FoundCrate};
 use quote::{quote, ToTokens};
 use syn::{
-    punctuated::Punctuated, spanned::Spanned, token::Comma, AngleBracketedGenericArguments, Data, DataEnum, DataStruct, DeriveInput, Field, Fields, FieldsNamed, FieldsUnnamed, Lit, LitStr, Path, PathArguments, Token, Type, TypePath, Variant
+    punctuated::Punctuated, spanned::Spanned, token::Comma, AngleBracketedGenericArguments, Data, DataEnum, DataStruct, DeriveInput, Field,
+    Fields, FieldsNamed, FieldsUnnamed, Lit, LitStr, Path, PathArguments, Token, Type, TypePath, Variant,
 };
 
 mod attributes;
@@ -53,12 +54,12 @@ fn do_derive_element_editor(input: TokenStream) -> TokenStream {
         quote! {
             impl #ui_crate::Editor for #type_name {
                 fn editor(self, on_change: #ui_crate::ChangeCb<Self>, opts: #ui_crate::EditorOpts) -> #ui_crate::element::Element {
-                    let editor = #ui_crate::Cb::new(|value, on_change, opts| #editor_name { value, on_change, opts }.into());
+                    let editor = #ui_crate::cb(|value, on_change, opts| #editor_name { value, on_change, opts }.into());
                     #ui_crate::OffscreenEditor { title: #title.into(), opts, value: self, on_confirm: Some(on_change), editor }.into()
                 }
 
                 fn view(self, opts: #ui_crate::EditorOpts) -> #ui_crate::element::Element {
-                    let editor = #ui_crate::Cb::new(|value, on_change, opts| #editor_name { value, on_change, opts }.into());
+                    let editor = #ui_crate::cb(|value, on_change, opts| #editor_name { value, on_change, opts }.into());
                     #ui_crate::OffscreenEditor { title: #title.into(), opts, value: self, on_confirm: None, editor }.into()
                 }
             }
@@ -219,7 +220,7 @@ fn enum_to_tokens(ui_crate: &Ident, type_name: Ident, variants: Punctuated<Varia
         }
     };
     let on_change_cb = quote! {
-        #ui_crate::Cb(::std::sync::Arc::new(move |index| on_change.0(create_variant(index))))
+        #ui_crate::cb(move |index| on_change.0(create_variant(index)))
     };
     let inner = if has_inline {
         let variants_readonly_items = variants.iter().enumerate().map(|(i, _)| {
@@ -338,7 +339,7 @@ fn fields_editor(
 
         let on_change_cb = quote! {
             on_change.clone().map(|on_change|
-                #ui_crate::Cb(::std::sync::Arc::new({
+                #ui_crate::cb_arc(::std::sync::Arc::new({
                     #(#other_fields_cloned)*
                     move |v| {
                         on_change.0(#type_ctor #fields_expanded);
@@ -387,7 +388,7 @@ fn fields_editor(
 
             quote! {
                 {
-                    let editor = #ui_crate::Cb::new( <#field_ty_colon as kiwi_ui::Editor>::edit_or_view );
+                    let editor = #ui_crate::cb( <#field_ty_colon as kiwi_ui::Editor>::edit_or_view );
                     #ui_crate::OffscreenEditor { title: #title.into(), value: #field_name.clone(), on_confirm: #on_change_cb, opts: Default::default(), editor }.into()
                 }
             }

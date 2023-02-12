@@ -53,7 +53,7 @@ fn test_struct() {
 
                 EditorRow::el(
                     "my_f32_field",
-                    <f32 as kiwi_ui::Editor>::edit_or_view(my_f32_field.clone(), on_change.clone().map(|on_change| kiwi_ui::Cb(::std::sync::Arc::new({
+                    <f32 as kiwi_ui::Editor>::edit_or_view(my_f32_field.clone(), on_change.clone().map(|on_change| kiwi_ui::cb_arc(::std::sync::Arc::new({
                         let my_option = my_option.clone();
                         move |v| {
                             on_change.0(Test { my_f32_field: v, my_option: my_option.clone() });
@@ -63,7 +63,7 @@ fn test_struct() {
 
                 EditorRow::el(
                     "my_option",
-                    <Option::<bool> as kiwi_ui::Editor>::edit_or_view(my_option.clone(), on_change.clone().map(|on_change| kiwi_ui::Cb(::std::sync::Arc::new({
+                    <Option::<bool> as kiwi_ui::Editor>::edit_or_view(my_option.clone(), on_change.clone().map(|on_change| kiwi_ui::cb_arc(::std::sync::Arc::new({
                         let my_f32_field = my_f32_field.clone();
                         move |v| {
                             on_change.0(Test { my_f32_field: my_f32_field.clone(), my_option: v });
@@ -103,9 +103,9 @@ fn test_enum() {
                             Test::Second { .. } => 1usize,
                             Test::Third(_) => 2usize,
                         },
-                        on_change: kiwi_ui::Cb(::std::sync::Arc::new(
+                        on_change: kiwi_ui::cb(
                             move |index| on_change.0(create_variant(index))
-                        )),
+                        ),
                         items: vec![
                             Text::el("First"),
                             Text::el("Second"),
@@ -126,7 +126,7 @@ fn test_enum() {
 
                     EditorRow::el(
                         "testy",
-                        <f32 as kiwi_ui::Editor>::edit_or_view(testy.clone(), on_change.clone().map(|on_change| kiwi_ui::Cb(::std::sync::Arc::new({
+                        <f32 as kiwi_ui::Editor>::edit_or_view(testy.clone(), on_change.clone().map(|on_change| kiwi_ui::cb_arc(::std::sync::Arc::new({
                             move |v| {
                                 on_change.0(Test::Second { testy: v });
                             }
@@ -139,7 +139,7 @@ fn test_enum() {
 
                     EditorRow::el(
                         "",
-                        <f32 as kiwi_ui::Editor>::edit_or_view(field_0.clone(), on_change.clone().map(|on_change| kiwi_ui::Cb(::std::sync::Arc::new({
+                        <f32 as kiwi_ui::Editor>::edit_or_view(field_0.clone(), on_change.clone().map(|on_change| kiwi_ui::cb_arc(::std::sync::Arc::new({
                             move |v| {
                                 on_change.0(Test::Third(v));
                             }
@@ -204,7 +204,7 @@ fn test_enum_inline() {
                 Test::First { testy } => FlowRow(vec![
 
                     Text::el("Hello "),
-                    <f32 as kiwi_ui::Editor>::edit_or_view(testy.clone(), on_change.clone().map(|on_change| kiwi_ui::Cb(::std::sync::Arc::new({
+                    <f32 as kiwi_ui::Editor>::edit_or_view(testy.clone(), on_change.clone().map(|on_change| kiwi_ui::cb_arc(::std::sync::Arc::new({
                         move |v| {
                             on_change.0(Test::First { testy: v });
                         }
@@ -217,9 +217,9 @@ fn test_enum_inline() {
                 if let Some(on_change) = on_change {
                     kiwi_ui::DropdownSelect {
                         content: field_editors,
-                        on_select: kiwi_ui::Cb(::std::sync::Arc::new(
+                        on_select: kiwi_ui::cb(
                             move |index| on_change.0(create_variant(index))
-                        )),
+                        ),
                         items: vec![
                             Test::view(create_variant(0usize), Default::default()),
                         ],
@@ -254,7 +254,7 @@ fn test_custom_editor() {
 
                 EditorRow::el(
                     "my_f32_field",
-                    test_editor(my_f32_field.clone(), on_change.clone().map(|on_change| kiwi_ui::Cb(::std::sync::Arc::new({
+                    test_editor(my_f32_field.clone(), on_change.clone().map(|on_change| kiwi_ui::cb_arc(::std::sync::Arc::new({
                         move |v| {
                             on_change.0(Test { my_f32_field: v });
                         }

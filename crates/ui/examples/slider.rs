@@ -16,7 +16,7 @@ impl ElementComponent for Example {
         FocusRoot::el([FlowColumn::el([
             Slider {
                 value: f32_value,
-                on_change: Some(Cb(set_f32_value)),
+                on_change: Some(set_f32_value),
                 min: 0.,
                 max: 100.,
                 width: 100.,
@@ -27,7 +27,7 @@ impl ElementComponent for Example {
             .el(),
             Slider {
                 value: f32_exp_value,
-                on_change: Some(Cb(set_f32_exp_value)),
+                on_change: Some(set_f32_exp_value),
                 min: 0.1,
                 max: 1000.,
                 width: 100.,
@@ -38,7 +38,7 @@ impl ElementComponent for Example {
             .el(),
             IntegerSlider {
                 value: i32_value,
-                on_change: Some(Cb(set_i32_value)),
+                on_change: Some(set_i32_value),
                 min: 0,
                 max: 100,
                 width: 100.,

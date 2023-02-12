@@ -9,7 +9,8 @@ use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_renderer::color;
 use kiwi_std::color::Color;
 use kiwi_ui::{
-    layout::{height, width}, Throbber, *
+    layout::{height, width},
+    Throbber, *,
 };
 
 #[derive(Debug, Clone)]
@@ -56,7 +57,7 @@ struct InputTest;
 impl ElementComponent for InputTest {
     fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
         let (value, set_value) = hooks.use_state("".to_string());
-        FlowColumn::el([Throbber.el(), TextInput::new(value, Cb(set_value)).el()])
+        FlowColumn::el([Throbber.el(), TextInput::new(value, set_value).el()])
     }
 }
 

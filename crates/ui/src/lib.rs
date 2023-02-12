@@ -1,7 +1,10 @@
 use std::{
-    collections::HashMap, fmt::Debug, sync::{
-        atomic::{AtomicBool, Ordering}, Arc
-    }
+    collections::HashMap,
+    fmt::Debug,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
 };
 
 use closure::closure;
@@ -13,9 +16,10 @@ pub use kiwi_editor_derive::ElementEditor;
 pub use kiwi_element as element;
 use kiwi_element::{define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_input::{
-    on_app_mouse_input, on_app_mouse_motion, on_app_mouse_wheel, picking::{mouse_pickable, on_mouse_enter, on_mouse_hover, on_mouse_input, on_mouse_leave, on_mouse_wheel}
+    on_app_mouse_input, on_app_mouse_motion, on_app_mouse_wheel,
+    picking::{mouse_pickable, on_mouse_enter, on_mouse_hover, on_mouse_input, on_mouse_leave, on_mouse_wheel},
 };
-pub use kiwi_std::Cb;
+pub use kiwi_std::{cb, cb_arc, Cb};
 use kiwi_std::{color::Color, shapes::AABB};
 use parking_lot::Mutex;
 use winit::event::{ElementState, ModifiersState, MouseButton, MouseScrollDelta, WindowEvent};
@@ -290,7 +294,7 @@ impl ElementComponent for FocusRoot {
 
 impl Default for HighjackMouse {
     fn default() -> Self {
-        Self { on_mouse_move: Cb::new(|_, _, _| {}), on_click: Cb::new(|_| {}), hide_mouse: false }
+        Self { on_mouse_move: cb(|_, _, _| {}), on_click: cb(|_| {}), hide_mouse: false }
     }
 }
 
@@ -521,7 +525,7 @@ impl<
     pub fn to_editor_prompt_screen_callback(
         &self,
         title: impl Into<String>,
-        set_screen: Arc<dyn Fn(Option<Element>) + Send + Sync>,
+        set_screen: Cb<dyn Fn(Option<Element>) + Send + Sync>,
     ) -> impl Fn() + Sync + Send {
         let value = self.clone();
         let title = title.into();
@@ -530,12 +534,12 @@ impl<
                 EditorPrompt {
                     title: title.clone(),
                     value: value.get_cloned(),
-                    set_screen: Cb(set_screen.clone()),
-                    on_ok: Cb::new({
+                    set_screen: set_screen.clone(),
+                    on_ok: cb({
                         let value = value.clone();
                         move |_, new_value| value.set(new_value)
                     }),
-                    on_cancel: Some(Cb::new(|_| {})),
+                    on_cancel: Some(cb(|_| {})),
                     validator: None,
                 }
                 .el(),

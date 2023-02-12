@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use closure::closure;
 use kiwi_ecs::World;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use kiwi_std::Cb;
+use kiwi_std::{cb, Cb};
 
 use crate::{space_between_items, Button, FlowColumn, FlowRow, STREET};
 
@@ -40,19 +40,18 @@ impl<T: ToString + PartialEq + Default + Clone + Debug + Sync + Send + 'static> 
     }
 
     pub fn with_tab(mut self, tab: T, callback: impl Fn() -> Element + Sync + Send + 'static) -> Self {
-        self.tabs.push((tab, Cb::new(callback)));
+        self.tabs.push((tab, cb(callback)));
         self
     }
 }
 impl<T: ToString + PartialEq + Default + Clone + Debug + Sync + Send + 'static> ElementComponent for Tabs<T> {
     fn render(self: Box<Self>, _: &mut World, hooks: &mut Hooks) -> Element {
         let (value, set_value) = hooks.use_state(T::default());
-        let selected_tab = self.tabs.iter().find(|it| it.0 == value).map(|it| it.1.clone()).unwrap_or(Cb::new(|| Element::new()));
+        let selected_tab = self.tabs.iter().find(|it| it.0 == value).map(|it| it.1.clone()).unwrap_or(cb(|| Element::new()));
         let key = value.to_string();
 
         FlowColumn::el([
-            TabBar { tabs: self.tabs.iter().map(|it| it.0.clone()).collect(), value, on_change: Cb::new(move |value| set_value(value)) }
-                .el(),
+            TabBar { tabs: self.tabs.iter().map(|it| it.0.clone()).collect(), value, on_change: cb(move |value| set_value(value)) }.el(),
             selected_tab().key(key),
         ])
         .set(space_between_items(), STREET)

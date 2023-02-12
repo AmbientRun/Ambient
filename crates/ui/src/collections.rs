@@ -7,7 +7,7 @@ use kiwi_core::on_window_event;
 use kiwi_ecs::{EntityId, World};
 use kiwi_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_input::{on_app_keyboard_input, KeyboardEvent};
-use kiwi_std::{color::Color, Cb};
+use kiwi_std::{cb, cb_arc, color::Color, Cb};
 use winit::event::{ElementState, VirtualKeyCode, WindowEvent};
 
 use super::{Button, ButtonStyle, Dropdown, Editor, EditorOpts, FlowColumn, FlowRow, Focus, UIBase, UIExt};
@@ -72,11 +72,11 @@ pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 
                             },
                             T::edit_or_view(
                                 item.clone(),
-                                Some(Cb(Arc::new(closure!(clone value, clone on_change, |item| {
+                                Some(cb(closure!(clone value, clone on_change, |item| {
                                     let mut value = value.clone();
                                     value[i] = item;
                                     on_change.0(value);
-                                })))),
+                                }))),
                                 Default::default(),
                             ),
                         ])
@@ -126,7 +126,7 @@ impl<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static> Elem
             item_opts: self.item_opts,
             add_presets: self.add_presets,
             add_title: self.add_title,
-            item_editor: Cb(Arc::new(T::edit_or_view)),
+            item_editor: cb(T::edit_or_view),
         }
         .el()
     }
@@ -155,14 +155,14 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                         MinimalListEditorItem {
                             value: item.clone(),
                             on_change: on_change.clone().map(|on_change| {
-                                Cb(Arc::new(closure!(clone value, clone on_change, |item| {
+                                cb_arc(Arc::new(closure!(clone value, clone on_change, |item| {
                                     let mut value = value.clone();
                                     value[i] = item;
                                     on_change.0(value);
                                 })) as Arc<dyn Fn(T) + Sync + Send>)
                             }),
                             on_delete: on_change.clone().map(|on_change| {
-                                Cb(Arc::new(closure!(clone value, clone on_change, || {
+                                cb_arc(Arc::new(closure!(clone value, clone on_change, || {
                                     let mut value = value.clone();
                                     value.remove(i);
                                     on_change.0(value);
@@ -318,7 +318,7 @@ impl<
                             K::edit_or_view(
                                 key.clone(),
                                 on_change.clone().map(|on_change| {
-                                    Cb(Arc::new(closure!(clone key, clone on_change, clone value, |new_key| {
+                                    cb_arc(Arc::new(closure!(clone key, clone on_change, clone value, |new_key| {
                                         let mut value = value.clone();
                                         let item = value.remove(&key).unwrap();
                                         value.insert(new_key, item);
@@ -330,7 +330,7 @@ impl<
                             V::edit_or_view(
                                 item,
                                 on_change.clone().map(|on_change| {
-                                    Cb(Arc::new(closure!(clone value, clone on_change, |item| {
+                                    cb_arc(Arc::new(closure!(clone value, clone on_change, |item| {
                                         let mut value = value.clone();
                                         value.insert(key.clone(), item);
                                         on_change.0(value);
@@ -450,12 +450,12 @@ where
             let old_key = key.clone();
             K::edit_or_view(
                 key.clone(),
-                Some(Cb(Arc::new(move |key| {
+                Some(cb(move |key| {
                     let mut map = parent.deref().clone();
                     let val = map.remove(&old_key).expect("Missing key in map");
                     map.insert(key, val);
                     on_change(map);
-                }))),
+                })),
                 Default::default(),
             )
         };
@@ -466,12 +466,12 @@ where
             let parent = parent.clone();
             V::edit_or_view(
                 value,
-                Some(Cb(Arc::new(move |value| {
+                Some(cb(move |value| {
                     let mut map = parent.deref().clone();
                     map.insert(key.clone(), value);
 
                     on_change(map)
-                }))),
+                })),
                 Default::default(),
             )
         };

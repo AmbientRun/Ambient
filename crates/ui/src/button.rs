@@ -1,7 +1,9 @@
 use std::{
-    fmt::Debug, sync::{
-        atomic::{AtomicBool, Ordering}, Arc
-    }
+    fmt::Debug,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
 };
 
 use closure::closure;
@@ -12,16 +14,18 @@ use kiwi_ecs::World;
 use kiwi_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_input::{on_app_focus_change, on_app_keyboard_input, on_app_mouse_input, KeyboardEvent};
 use kiwi_renderer::color;
-use kiwi_std::{color::Color, Callback, Cb};
+use kiwi_std::{cb, color::Color, Callback, Cb};
 use parking_lot::Mutex;
 pub use winit::event::VirtualKeyCode;
 use winit::{
-    event::{ElementState, ModifiersState}, window::CursorIcon
+    event::{ElementState, ModifiersState},
+    window::CursorIcon,
 };
 
 use super::{FlowColumn, FlowRow, Text, UIBase, UIElement, UIExt};
 use crate::{
-    border_color, border_radius, border_thickness, cutout_color, font_style, layout::*, primary_color, secondary_color, Corners, FontStyle, Tooltip
+    border_color, border_radius, border_thickness, cutout_color, font_style, layout::*, primary_color, secondary_color, Corners, FontStyle,
+    Tooltip,
 };
 
 #[derive(Clone, Debug)]
@@ -34,7 +38,7 @@ pub enum ButtonCb {
 pub type ButtonCallback<Ret = ()> = Cb<dyn Fn(&mut World) -> Ret + Sync + Send>;
 
 impl ButtonCb {
-    pub fn invoke(&self, world: &mut World, set_is_working: Arc<dyn Fn(bool) + Sync + Send>) {
+    pub fn invoke(&self, world: &mut World, set_is_working: Cb<dyn Fn(bool) + Sync + Send>) {
         match self {
             ButtonCb::Sync(cb) => cb.0(world),
             ButtonCb::Async(cb) => {
@@ -251,10 +255,10 @@ pub fn Button(
             hotkey,
             hotkey_modifier,
             content,
-            on_is_pressed_changed: Some(Cb(set_is_pressed)),
-            on_invoke: Cb(Arc::new(move |world| {
+            on_is_pressed_changed: Some(set_is_pressed),
+            on_invoke: cb(move |world| {
                 on_invoked.invoke(world, set_is_working.clone());
-            })),
+            }),
         }
         .el()
     } else {
@@ -264,9 +268,9 @@ pub fn Button(
 impl Button {
     pub fn new<T: Into<UIElement>>(content: T, on_invoked: impl Fn(&mut World) + Sync + Send + 'static) -> Self {
         let content: UIElement = content.into();
-        Self::new_inner(content, Arc::new(on_invoked))
+        Self::new_inner(content, cb(on_invoked))
     }
-    pub fn new_inner<T: Into<UIElement>>(content: T, on_invoked: Arc<dyn Fn(&mut World) + Sync + Send + 'static>) -> Self {
+    pub fn new_inner<T: Into<UIElement>>(content: T, on_invoked: Cb<dyn Fn(&mut World) + Sync + Send + 'static>) -> Self {
         let content: UIElement = content.into();
         Self {
             content: content.0,
@@ -276,7 +280,7 @@ impl Button {
             hotkey: None,
             hotkey_modifier: ModifiersState::empty(),
             tooltip: None,
-            on_invoked: ButtonCb::Sync(Cb(on_invoked)),
+            on_invoked: ButtonCb::Sync(on_invoked),
             on_is_pressed_changed: None,
         }
     }
@@ -304,7 +308,7 @@ impl Button {
             hotkey: None,
             hotkey_modifier: ModifiersState::empty(),
             tooltip: None,
-            on_invoked: ButtonCb::Async(Cb(Arc::new(move |_w| on_invoked().boxed()))),
+            on_invoked: ButtonCb::Async(cb(move |_w| on_invoked().boxed())),
             on_is_pressed_changed: None,
         }
     }
@@ -359,7 +363,7 @@ impl Button {
         self
     }
     pub fn on_is_pressed_changed(mut self, handle: impl Fn(&mut World, bool) + Sync + Send + 'static) -> Self {
-        self.on_is_pressed_changed = Some(Cb(Arc::new(handle)));
+        self.on_is_pressed_changed = Some(cb(handle));
         self
     }
 }
@@ -374,7 +378,7 @@ pub struct Hotkey {
 }
 impl Hotkey {
     pub fn new(hotkey: VirtualKeyCode, on_invoke: impl Fn(&mut World) + Sync + Send + 'static, content: Element) -> Self {
-        Self { hotkey, hotkey_modifier: ModifiersState::empty(), on_invoke: Cb(Arc::new(on_invoke)), content, on_is_pressed_changed: None }
+        Self { hotkey, hotkey_modifier: ModifiersState::empty(), on_invoke: cb(on_invoke), content, on_is_pressed_changed: None }
     }
     pub fn hotkey_modifier(mut self, hotkey_modifier: ModifiersState) -> Self {
         self.hotkey_modifier = hotkey_modifier;

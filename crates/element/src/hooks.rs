@@ -1,18 +1,23 @@
 use std::{
-    any::{type_name, TypeId}, collections::{HashMap, HashSet}, fmt::Debug, future::Future, sync::Arc
+    any::{type_name, TypeId},
+    collections::{HashMap, HashSet},
+    fmt::Debug,
+    future::Future,
+    sync::Arc,
 };
 
 use as_any::Downcast;
 use atomic_refcell::AtomicRefCell;
 use kiwi_core::runtime;
 use kiwi_ecs::{ComponentQuery, ComponentValue, FrameEvent, QueryState, TypedReadQuery, World};
+use kiwi_std::{cb, Cb};
 use parking_lot::Mutex;
 use tokio::task::JoinHandle;
 use tracing::info_span;
 
 use crate::{AnyCloneable, ElementTree, HookContext, InstanceId};
 
-pub type Setter<T> = Arc<dyn Fn(T) + Sync + Send>;
+pub type Setter<T> = Cb<dyn Fn(T) + Sync + Send>;
 
 pub type SpawnFn = Box<dyn FnOnce(&mut World) -> DespawnFn + Sync + Send>;
 pub type DespawnFn = Box<dyn FnOnce(&mut World) + Sync + Send>;
@@ -49,7 +54,7 @@ impl<'a> Hooks<'a> {
         let element = self.element.clone();
         (
             value,
-            Arc::new(move |new_value| {
+            cb(move |new_value| {
                 environment.lock().set_states.push(StateUpdate {
                     instance_id: element.clone(),
                     index,
@@ -62,9 +67,9 @@ impl<'a> Hooks<'a> {
 
     /// Provides a function that, when called, will cause this [Element] to be re-rendered.
     // TODO: consider a more efficient implementation?
-    pub fn use_rerender_signal(&mut self) -> Arc<dyn Fn() + Sync + Send> {
+    pub fn use_rerender_signal(&mut self) -> Cb<dyn Fn() + Sync + Send> {
         let (_, signal) = self.use_state(());
-        Arc::new(move || signal(()))
+        cb(move || signal(()))
     }
 
     /// Provide a value which is accessible to all children further down the
@@ -81,7 +86,7 @@ impl<'a> Hooks<'a> {
             .or_insert_with(|| HookContext { value: Box::new(default_value()), listeners: HashSet::new() });
         let environment = self.environment.clone();
         let element = self.element.clone();
-        Arc::new(move |new_value| {
+        cb(move |new_value| {
             environment.lock().set_contexts.push(ContextUpdate {
                 instance_id: element.clone(),
                 type_id: TypeId::of::<T>(),
@@ -107,7 +112,7 @@ impl<'a> Hooks<'a> {
             let environment = self.environment.clone();
             Some((
                 value,
-                Arc::new(move |new_value| {
+                cb(move |new_value| {
                     environment.lock().set_contexts.push(ContextUpdate {
                         instance_id: provider.clone(),
                         type_id,
