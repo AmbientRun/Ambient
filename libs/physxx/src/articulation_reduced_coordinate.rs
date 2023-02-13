@@ -133,20 +133,3 @@ impl PxArticulationCacheRef {
 }
 unsafe impl Sync for PxArticulationCacheRef {}
 unsafe impl Send for PxArticulationCacheRef {}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::*;
-    #[test]
-    fn create_destroy_articulation() {
-        let foundation = PxFoundationRef::new();
-        let physics = PxPhysicsRef::new(&foundation);
-        let dispatcher = PxDefaultCpuDispatcherRef::new(2);
-        let mut scene_desc = PxSceneDesc::new(physics);
-        scene_desc.set_cpu_dispatcher(&dispatcher);
-        let scene = PxSceneRef::new(&physics, &scene_desc);
-        let articulation = PxArticulationRef::new(&physics);
-        scene.add_articulation(&articulation);
-    }
-}

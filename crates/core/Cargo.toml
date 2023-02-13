@@ -24,6 +24,7 @@ ordered-float.workspace = true
 tokio.workspace = true
 parking_lot.workspace = true
 flume.workspace = true
+serde.workspace = true
 
 [dev-dependencies]
 maplit.workspace = true

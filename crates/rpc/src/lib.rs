@@ -1,6 +1,7 @@
-#![feature(cursor_remaining)]
 use std::{
-    collections::HashMap, io::{BufRead, Cursor, Write}, sync::Arc
+    collections::HashMap,
+    io::{BufRead, Cursor, Write},
+    sync::Arc,
 };
 
 use futures::{future::BoxFuture, Future, FutureExt};
@@ -69,7 +70,11 @@ impl<Args: Send + 'static> RpcRegistry<Args> {
         }
         let name = name[0..(name.len() - 1)].to_string();
         match self.registry.get(&name) {
-            Some(func) => func(args, reader.remaining_slice()).await,
+            Some(func) => {
+                let buf = reader.get_ref();
+                let pos = (reader.position() as usize).min(buf.len());
+                func(args, &buf[pos..]).await
+            }
             None => Err(RpcError::NoSuchFunction(name)),
         }
     }

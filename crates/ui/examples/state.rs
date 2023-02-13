@@ -91,14 +91,10 @@ impl ElementComponent for Main {
 
         let (show_b, set_show_b) = hooks.use_state(true);
         if show_b {
-            FlowColumn::el([
-                A { value, set_value: Cb(set_value) }.el(),
-                Button::new("Hide", move |_| set_show_b(false)).el(),
-                B { shared }.el(),
-            ])
+            FlowColumn::el([A { value, set_value }.el(), Button::new("Hide", move |_| set_show_b(false)).el(), B { shared }.el()])
         } else {
             FlowColumn::el([
-                A { value, set_value: Cb(set_value) }.el(),
+                A { value, set_value }.el(),
                 Button::new("Show", move |_| set_show_b(true)).el(),
                 // B { shared }.el(),
             ])

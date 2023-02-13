@@ -19,7 +19,7 @@
                 "DIMS_DISABLE_TIMEOUT": "true"
             },
             "args": [
-                "--project-path=guest/rust/examples/primitives",
+                "--project-path=guest/rust/examples/skinmesh",
                 "run"
             ],
             "cwd": "${workspaceFolder}",

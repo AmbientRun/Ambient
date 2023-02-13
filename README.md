@@ -16,7 +16,7 @@ Features:
 - **Asset pipeline & streaming**: The runtime supports building and loading multiple file formats, such as .glb and .fbx. The assets are always streamed over the network.
 - **Powerful renderer**: The Kiwi renderer is “gpu driven”, with culling and lodding happening on the gpu side. It’s PBR by default, supports cascading shadow maps, and instances everything that can be instanced.
 
-See the [documentation](https://kiwiorg.github.io/Kiwi/) for a getting started guide.
+See the [documentation](https://kiwiorg.github.io/Kiwi/) for a getting started guide, or browse the [examples](https://github.com/KiwiOrg/Kiwi/tree/main/guest/rust/examples).
 
 ## Installing
 
@@ -56,7 +56,7 @@ See [installing](https://kiwiorg.github.io/Kiwi/installing.html) for more detail
 
 ## Examples
 
-Each example in the [examples](./examples/) directory can be run with the kiwi runtime: `cd examples/hello_world` and then `kiwi run`.
+Each example in the [examples](./guest/rust/examples/) directory can be run with the kiwi runtime: `cd guest/rust/examples/tictactoe` and then `kiwi run`.
 They can also be run in multiplayer mode; `cd examples/tictactoe` and then `kiwi serve` to start a serve. Anyone can now join
 with `kiwi join [IP_OF_SERVER]`. Note that content is always streamed so the user joining only needs the kiwi cli to join the session.
 

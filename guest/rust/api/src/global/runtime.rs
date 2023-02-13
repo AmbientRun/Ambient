@@ -1,6 +1,9 @@
 use std::{cell::RefCell, future::Future, rc::Rc, task::Poll};
 
-use crate::{internal::executor::EXECUTOR, Components, EventResult};
+use crate::{
+    global::EventResult,
+    internal::{component::Components, executor::EXECUTOR, host},
+};
 
 /// The time, relative to when the application started, in seconds.
 /// This can be used to time how long something takes.
@@ -26,12 +29,12 @@ pub fn on(event: &str, callback: impl Fn(&Components) -> EventResult + 'static) 
 ///
 /// If you only want to be notified once, use [once_async].
 ///
-/// The `callback` is a `async fn`. This can be a closure (e.g. `|args| { ... }`).
+/// The `callback` is a `async fn`. This can be a closure (e.g. `|args| async move { ... }`).
 pub fn on_async<R: Future<Output = EventResult> + 'static>(
     event: &str,
     callback: impl Fn(&Components) -> R + 'static,
 ) {
-    crate::host::event_subscribe(event);
+    host::event_subscribe(event);
     EXECUTOR.register_callback(
         event.to_string(),
         Box::new(move |args| Box::pin(callback(args))),
@@ -51,19 +54,19 @@ pub fn once(event: &str, callback: impl FnOnce(&Components) -> EventResult + 'st
 ///
 /// If you want to be notified every time the `event` occurs, use [on_async].
 ///
-/// The `callback` is a `async fn`. This can be a closure (e.g. `|args| { ... }`).
+/// The `callback` is a `async fn`. This can be a closure (e.g. `|args| async move { ... }`).
 pub fn once_async<R: Future<Output = EventResult> + 'static>(
     event: &str,
     callback: impl FnOnce(&Components) -> R + 'static,
 ) {
-    crate::host::event_subscribe(event);
+    host::event_subscribe(event);
     EXECUTOR.register_callback_once(
         event.to_string(),
         Box::new(move |args| Box::pin(callback(args))),
     );
 }
 
-/// Runs the given async block (`future`). This lets your script set up behaviour
+/// Runs the given async block (`future`). This lets your module set up behaviour
 /// to run concurrently, like a long-running task.
 ///
 /// This is similar to [tokio::spawn](https://docs.rs/tokio/latest/tokio/fn.spawn.html),

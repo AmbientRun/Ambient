@@ -1,5 +1,8 @@
 use std::{
-    fmt::{Debug, Display}, net::SocketAddr, sync::Arc, time::Duration
+    fmt::{Debug, Display},
+    net::SocketAddr,
+    sync::Arc,
+    time::Duration,
 };
 
 use anyhow::Context;
@@ -10,14 +13,21 @@ use kiwi_ecs::{components, query, EntityData, EntityId, SystemGroup, World, Worl
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_renderer::RenderTarget;
 use kiwi_rpc::RpcRegistry;
-use kiwi_std::{fps_counter::FpsSample, log_result, to_byte_unit, CallbackFn, Cb};
+use kiwi_std::{cb, fps_counter::FpsSample, log_result, to_byte_unit, CallbackFn, Cb};
 use kiwi_ui::{Button, Centered, FlowColumn, FlowRow, Image, Text, Throbber};
 use parking_lot::Mutex;
 use quinn::{Connection, NewConnection};
 use serde::{de::DeserializeOwned, Serialize};
 
 use crate::{
-    client_game_state::ClientGameState, create_client_endpoint_random_port, events::event_registry, is_remote_entity, log_network_result, player, protocol::{ClientInfo, ClientProtocol}, rpc_request, server::SharedServerState, user_id, NetworkError
+    client_game_state::ClientGameState,
+    create_client_endpoint_random_port,
+    events::event_registry,
+    is_remote_entity, log_network_result, player,
+    protocol::{ClientInfo, ClientProtocol},
+    rpc_request,
+    server::SharedServerState,
+    user_id, NetworkError,
 };
 
 components!("network", {
@@ -85,7 +95,7 @@ impl GameClient {
     ) -> Cb<impl Fn(Req)> {
         let runtime = runtime.clone();
         let (connection, rpc_registry) = (self.connection.clone(), self.rpc_registry.clone());
-        Cb::new(move |req| {
+        cb(move |req| {
             let (connection, rpc_registry) = (connection.clone(), rpc_registry.clone());
             runtime.spawn(async move {
                 log_network_result!(rpc_request(&connection, rpc_registry, func, req, Self::SIZE_LIMIT).await);

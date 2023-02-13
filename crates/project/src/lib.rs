@@ -1,7 +1,8 @@
 use std::{collections::HashMap, fmt::Display};
 
 use kiwi_ecs::{
-    components, ExternalComponentAttributes, ExternalComponentDesc, ExternalComponentFlagAttributes, Networked, PrimitiveComponentType, Store
+    components, ExternalComponentAttributes, ExternalComponentDesc, ExternalComponentFlagAttributes, Networked, PrimitiveComponentType,
+    Store,
 };
 use serde::{de::Visitor, Deserialize, Serialize};
 use thiserror::Error;

@@ -2,11 +2,13 @@
 extern crate lazy_static;
 
 use std::{
-    sync::Arc, time::{Duration, Instant, SystemTime}
+    sync::Arc,
+    time::{Duration, Instant, SystemTime},
 };
 
 use kiwi_ecs::{
-    components, query, Debuggable, Description, DynSystem, EntityId, FrameEvent, Name, Networked, QueryState, Resource, Store, System, World
+    components, query, Debuggable, Description, DynSystem, EntityId, FrameEvent, Name, Networked, QueryState, Resource, Store, System,
+    World,
 };
 use kiwi_gpu::{gpu::Gpu, mesh_buffer::GpuMesh};
 
@@ -15,9 +17,12 @@ pub mod gpu_ecs;
 pub mod hierarchy;
 use glam::{uvec2, vec2, UVec2, Vec2};
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKey}, events::EventDispatcher, math::interpolate
+    asset_cache::{AssetCache, SyncAssetKey},
+    events::EventDispatcher,
+    math::interpolate,
 };
 pub use paste;
+use serde::{Deserialize, Serialize};
 use winit::{event::Event, window::Window};
 pub mod bounding;
 pub mod camera;
@@ -44,12 +49,52 @@ components!("app", {
     /// Mouse position in screen space
     @[Resource]
     mouse_position: Vec2,
-    @[Debuggable, Networked, Store, Name["Main scene"], Description["If attached, this entity belongs to the main scene."]]
+    @[
+        Debuggable, Networked, Store,
+        Name["Main scene"],
+        Description["If attached, this entity belongs to the main scene."]
+    ]
     main_scene: (),
-    @[Debuggable, Networked, Store, Name["UI scene"], Description["If attached, this entity belongs to the UI scene."]]
+    @[
+        Debuggable, Networked, Store,
+        Name["UI scene"],
+        Description["If attached, this entity belongs to the UI scene."]
+    ]
     ui_scene: (),
     @[Resource]
     asset_cache: AssetCache,
+    @[
+        Debuggable, Networked, Store,
+        Name["Map seed"],
+        Description["A random number seed for this map."]
+    ]
+    map_seed: u64,
+    @[
+        Debuggable, Networked, Store,
+        Name["Snap to ground"],
+        Description["This object should automatically be moved with the terrain if the terrain is changed.\nThe value is the offset from the terrain."]
+    ]
+    snap_to_ground: f32,
+    @[
+        Debuggable, Networked, Store,
+        Name["Selectable"],
+        Description["If attached, this object can be selected in the editor."]
+    ]
+    selectable: (),
+    @[
+        Debuggable, Networked, Store, Resource,
+        Name["Session start time"],
+        Description["When the current server session was started."]
+    ]
+    session_start: SystemTime,
+    @[
+        Debuggable, Networked, Store,
+        Name["Tags"],
+        Description["Tags for categorizing this entity."]
+    ]
+    tags: Vec<String>,
+    @[Debuggable, Networked, Store]
+    game_mode: GameMode,
 
     @[Resource]
     time: Duration,
@@ -219,4 +264,11 @@ impl System for WindowSyncSystem {
             world.set_if_changed(world.resource_entity(), self::window_scale_factor(), window.scale_factor()).unwrap();
         }
     }
+}
+
+#[derive(Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Debug, Hash, Default)]
+pub enum GameMode {
+    #[default]
+    Edit,
+    Play,
 }

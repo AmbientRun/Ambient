@@ -74,15 +74,11 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
     std::fs::write(
         src.join("lib.rs"),
         indoc! {r#"
-            use kiwi_api::*;
+            use kiwi_api::prelude::*;
 
             #[main]
             pub async fn main() -> EventResult {
-                loop {
-                    println!("Hello, world! It is {}", time());
-                    sleep(0.5).await;
-                }
-
+                println!("Hello, Kiwi!");
                 EventOk
             }
     "#},

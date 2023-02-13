@@ -17,7 +17,7 @@ impl ElementComponent for RootScreen {
             Button::new("Open sub screen", move |_| {
                 set_screen(Some(
                     SubScreen {
-                        on_back: Cb::new({
+                        on_back: cb({
                             let set_screen = set_screen.clone();
                             move || {
                                 set_screen(None);
@@ -52,7 +52,7 @@ impl ElementComponent for SubScreen {
                 move |_| {
                     set_screen(Some(
                         SubScreen {
-                            on_back: Cb::new({
+                            on_back: cb({
                                 let set_screen = set_screen.clone();
                                 move || {
                                     set_screen(None);
@@ -67,12 +67,12 @@ impl ElementComponent for SubScreen {
             Button::new("Prompt", {
                 let set_screen = set_screen.clone();
                 move |_| {
-                    set_screen(Some(Prompt::new("Testy", Cb(set_screen.clone()), |_, _| {}).el()));
+                    set_screen(Some(Prompt::new("Testy", set_screen.clone(), |_, _| {}).el()));
                 }
             })
             .el(),
             Button::new("Editor Prompt", move |_| {
-                set_screen(Some(EditorPrompt::new("Testy", "Something".to_string(), Cb(set_screen.clone()), |_, _| {}).el()));
+                set_screen(Some(EditorPrompt::new("Testy", "Something".to_string(), set_screen.clone(), |_, _| {}).el()));
             })
             .el(),
         ])

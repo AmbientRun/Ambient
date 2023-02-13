@@ -6,7 +6,7 @@ use kiwi_api::{
         primitives::cube,
         transform::{lookat_center, scale, translation},
     },
-    *,
+    prelude::*,
 };
 
 #[main]

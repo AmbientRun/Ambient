@@ -55,34 +55,49 @@ pub async fn rpc_fork_instance(args: GameRpcArgs, RpcForkInstance { resources, s
     }
     id
 }
-pub async fn rpc_join_instance(args: GameRpcArgs, instance_id: String) {
+pub async fn rpc_join_instance(args: GameRpcArgs, new_instance_id: String) {
     let mut state = args.state.lock();
     let old_instance_id = state.players.get(&args.user_id).unwrap().instance.clone();
-    if old_instance_id == instance_id {
+    if old_instance_id == new_instance_id {
         return;
     }
-    let old_player_count = {
-        let [old_instance, new_instance] = state.instances.get_many_mut([&old_instance_id, &instance_id]).unwrap();
-        let old_player_count = old_instance.player_count();
 
-        new_instance.broadcast_diffs();
-        let diff = WorldDiff::from_a_to_b(old_instance.world_stream.filter().clone(), &old_instance.world, &new_instance.world);
+    let instances = &mut state.instances;
 
-        let mut ed = old_instance.despawn_player(&args.user_id).unwrap();
-        let entity_stream = ed.remove_self(player_entity_stream()).unwrap();
-        new_instance.spawn_player(create_player_entity_data(
-            &args.user_id,
-            entity_stream.clone(),
+    // Borrow the new world mutably to broadcast its diffs.
+    instances.get_mut(&new_instance_id).unwrap().broadcast_diffs();
+
+    // Borrow both worlds immutably to extract the old world's player count and the diff between the two, and
+    // to broadcast the latest diffs for the new instance.
+    let (old_player_count, diff) = {
+        let (old_instance, new_instance) = instances.get(&old_instance_id).zip(instances.get(&new_instance_id)).unwrap();
+        (
+            old_instance.player_count(),
+            WorldDiff::from_a_to_b(old_instance.world_stream.filter().clone(), &old_instance.world, &new_instance.world),
+        )
+    };
+
+    // Borrow the old world mutably to remove the player and their streams.
+    let (entities_tx, events_tx, stats_tx) = {
+        let mut ed = instances.get_mut(&old_instance_id).unwrap().despawn_player(&args.user_id).unwrap();
+        (
+            ed.remove_self(player_entity_stream()).unwrap(),
             ed.remove_self(player_event_stream()).unwrap(),
             ed.remove_self(player_stats_stream()).unwrap(),
-        ));
-        state.players.get_mut(&args.user_id).unwrap().instance = instance_id.to_string();
-
-        let msg = bincode::serialize(&diff).unwrap();
-        entity_stream.send(msg).ok();
-
-        old_player_count
+        )
     };
+
+    // Borrow the new world mutably to spawn the player in with their old streams.
+    instances.get_mut(&new_instance_id).unwrap().spawn_player(create_player_entity_data(
+        &args.user_id,
+        entities_tx.clone(),
+        events_tx,
+        stats_tx,
+    ));
+    state.players.get_mut(&args.user_id).unwrap().instance = new_instance_id.to_string();
+
+    let msg = bincode::serialize(&diff).unwrap();
+    entities_tx.send(msg).ok();
 
     // Remove old instance
     if old_player_count == 1 && old_instance_id != MAIN_INSTANCE_ID {

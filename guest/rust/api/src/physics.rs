@@ -1,7 +1,9 @@
-use super::{
-    host,
-    internal::conversion::{FromBindgen, IntoBindgen},
-    EntityId, Vec3,
+use crate::{
+    global::{EntityId, Vec3},
+    internal::{
+        conversion::{FromBindgen, IntoBindgen},
+        host,
+    },
 };
 
 /// Applies a `force` (a [Vec3]) to all of the `entities` specified.

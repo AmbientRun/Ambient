@@ -7,10 +7,13 @@ use kiwi_ecs::World;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_renderer::color;
 use kiwi_std::{
-    asset_cache::{AssetKey, AssetLifetime, AssetTimeline, AssetsTimeline}, color::Color, pretty_duration, to_byte_unit, Cb
+    asset_cache::{AssetKey, AssetLifetime, AssetTimeline, AssetsTimeline},
+    color::Color,
+    pretty_duration, to_byte_unit,
 };
 use kiwi_ui::{
-    docking, fit_horizontal, height, margin, use_interval, width, Borders, Button, ButtonStyle, Dock, Docking, Editor, Fit, FlowColumn, FlowRow, Rectangle, StylesExt, Text, Tooltip, UIBase, UIExt, STREET
+    docking, fit_horizontal, height, margin, use_interval, width, Borders, Button, ButtonStyle, Dock, Docking, Editor, Fit, FlowColumn,
+    FlowRow, Rectangle, StylesExt, Text, Tooltip, UIBase, UIExt, STREET,
 };
 
 #[derive(Debug, Clone)]
@@ -140,7 +143,7 @@ impl ElementComponent for AssetTimelineVisualizer {
                     .style(ButtonStyle::Flat)
                     .el(),
                 ]),
-                FlowRow::el([Text::el("Limit:"), Option::<usize>::editor(limit, Cb(set_limit), Default::default())]),
+                FlowRow::el([Text::el("Limit:"), Option::<usize>::editor(limit, set_limit, Default::default())]),
             ])
             .keyboard(),
         );

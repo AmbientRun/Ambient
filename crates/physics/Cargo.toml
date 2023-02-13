@@ -17,6 +17,7 @@ kiwi_meshes = { path = "../meshes" }
 kiwi_network = { path = "../network" }
 kiwi_gizmos = { path = "../gizmos" }
 kiwi_model = { path = "../model" }
+kiwi_primitives = { path = "../primitives" }
 physxx = { path = "../../libs/physxx" }
 serde.workspace = true
 serde_json.workspace = true

@@ -5,7 +5,7 @@ use itertools::Itertools;
 use kiwi_ecs::{with_component_registry, ComponentDesc, EntityData, EntityId, Query, World, WorldDiff};
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_renderer::color;
-use kiwi_std::Cb;
+use kiwi_std::{cb, Cb};
 use kiwi_ui::{fit_horizontal, space_between_items, use_interval_deps, Button, ButtonStyle, Fit, FlowColumn, FlowRow, Text, UIExt, STREET};
 
 #[derive(Debug, Clone)]
@@ -32,7 +32,7 @@ impl ElementComponent for ECSEditor {
                 }
                 let set_entity_datas = set_entity_datas.clone();
                 let set_entities = set_entities.clone();
-                get_world(Cb::new(move |world| {
+                get_world(cb(move |world| {
                     set_entities(query.iter(world, None).map(|ea| ea.id()).collect());
                     set_entity_datas(
                         query.iter(world, None).take(20).map(|ea| (ea.id(), world.clone_entity(ea.id()).unwrap())).collect_vec(),

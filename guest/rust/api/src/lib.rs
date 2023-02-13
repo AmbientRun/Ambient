@@ -1,52 +1,39 @@
-//! # The Kiwi API
-//! Welcome to the Kiwi API!
+//! # The Kiwi Rust API
+//!
+//! Welcome to the Kiwi Rust API! This API allows you to write logic for the Kiwi Runtime in Rust.
+//!
+//! Kiwi has first-class support for Rust. Please report any issues you encounter to the repository.
 #![deny(missing_docs)]
 
-#[allow(missing_docs)]
-mod host {
-    wit_bindgen_guest_rust::import!("wit/host.wit");
-    pub use self::host::*;
-}
-
+/// ECS-related functionality not directly related to entities.
+pub mod ecs;
 /// Entity-related functionality, including manipulation, creation, removal, and search.
 pub mod entity;
 /// Event-related functionality, including sending events and standard events.
 pub mod event;
+/// Global functions and types for your convenience.
+pub mod global;
 /// Physics-related functionality, including applying forces, changing physical properties, and more.
 pub mod physics;
 /// Player-related functionality.
 pub mod player;
 
-/// Global functions and types for your convenience.
-mod global;
-pub use global::*;
+/// Helpful imports that almost all Kiwi projects will use.
+pub mod prelude;
 
-/// Internal implementation details. The relevant details are exported.
+/// Internal implementation details.
 mod internal;
-pub use internal::component::{
-    change_query, despawn_query, internal_get_component, query, spawn_query, ChangeQuery,
-    Component, Components, ComponentsTuple, EventQuery, GeneralQuery, GeneralQueryBuilder,
-    LazyComponent, QueryEvent, SupportedComponentTypeGet, SupportedComponentTypeSet,
-};
 
 pub use kiwi_api_macros::main;
 
 /// Re-exports from other crates.
-pub use anyhow::{anyhow, Context as AnyhowContext};
-pub use glam::{self, f32::*, Vec2Swizzles, Vec3Swizzles, Vec4Swizzles};
+pub use anyhow;
+pub use glam;
 pub use once_cell;
-pub use rand::prelude::*;
 
-/// The version of this scripting interface. If this version is different to that of the running
-/// host version, the script will panic and refuse to run.
-#[doc(hidden)]
-pub const INTERFACE_VERSION: u32 = include!("../wit/INTERFACE_VERSION");
-
-kiwi_api_macros::kiwi_project!(extend = []);
-
-#[inline]
-/// Helper function that returns the [std::default::Default::default] for the type `T`.
-/// Most useful with struct update syntax, or with initializing components.
-pub fn default<T: Default>() -> T {
-    std::default::Default::default()
-}
+// Hi there! This macro generates the components that are exposed to you as a Kiwi API user.
+// These components are generated from the `kiwi.toml` at the root of this crate.
+// We suggest that you look at the docs for this crate, or look at the `kiwi.toml`.
+// Your IDE should also tell you about the components present here and show their corresponding
+// doc comments.
+kiwi_api_macros::api_project!();

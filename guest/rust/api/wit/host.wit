@@ -1,4 +1,4 @@
-/* This file was copied from "crates/scripting/wit/host.wit". Do not edit it directly. */
+/* This file was copied from "crates/wasm/wit/host.wit". Do not edit it directly. */
 record entity-id {
     id0: u64,
     id1: u64,

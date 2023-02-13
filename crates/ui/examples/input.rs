@@ -19,26 +19,26 @@ impl ElementComponent for Example {
         let (minimal_list, set_minimal_list) = hooks.use_state(vec!["First".to_string(), "Second".to_string()]);
         let row = |name, editor| FlowRow(vec![Text::el(name).set(min_width(), 110.), editor]).el();
         FocusRoot(vec![FlowColumn(vec![
-            row("TextInput", TextInput::new(text, Cb(set_text)).el()),
+            row("TextInput", TextInput::new(text, set_text).el()),
             // Button::new("Focus test", |_| {}).hotkey(winit::event::VirtualKeyCode::Back).el(),
             row(
                 "DropDownSelect",
                 DropdownSelect {
                     content: Text::el("Select"),
-                    on_select: Cb::new(|_| {}),
+                    on_select: cb(|_| {}),
                     items: vec![Text::el("First"), Text::el("Second")],
                     inline: false,
                 }
                 .el(),
             ),
-            row("Vec3", Vec3::editor(vector3, Cb(set_vector3), Default::default())),
-            row("IndexMap", IndexMap::editor(index_map, Cb(set_index_map), Default::default())),
-            row("ListEditor", ListEditor { value: list, on_change: Some(Cb(set_list)) }.el()),
+            row("Vec3", Vec3::editor(vector3, set_vector3, Default::default())),
+            row("IndexMap", IndexMap::editor(index_map, set_index_map, Default::default())),
+            row("ListEditor", ListEditor { value: list, on_change: Some(set_list) }.el()),
             row(
                 "MinimalListEditor",
                 MinimalListEditor {
                     value: minimal_list,
-                    on_change: Some(Cb(set_minimal_list)),
+                    on_change: Some(set_minimal_list),
                     item_opts: Default::default(),
                     add_presets: None,
                     add_title: "Add".to_string(),

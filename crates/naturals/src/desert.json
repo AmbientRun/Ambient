@@ -1,0 +1,1033 @@
+[
+    {
+        "grid_size": 0.22499989,
+        "elements": [
+            {
+                "enabled": true,
+                "models": [
+                    {
+                        "Quixel": {
+                            "quixel_id": "Plants_3d_sktne_2K_3dplant_ms",
+                            "start_variation": 0,
+                            "count": 5
+                        }
+                    }
+                ],
+                "max_texture_size": "X128",
+                "color": {
+                    "r": 1.0,
+                    "g": 1.0,
+                    "b": 1.0
+                },
+                "scale_min": 0.9999999,
+                "scale_max": 2.3649998,
+                "scale_power": 1.0,
+                "rotation_x": -0.02801466,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 0.0,
+                "rotation_xy_jitter": 0.0,
+                "rotation_straightness": 0.0,
+                "position_normal_offset": 0.0,
+                "position_z_offset": 0.0,
+                "normal_miplevel": 0.0,
+                "cluster_noise_scale": 1.0,
+                "soil_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 1.0,
+                        "y0": 0.0,
+                        "y1": 0.0
+                    }
+                },
+                "elevation": {
+                    "Interpolate": {
+                        "x0": 0.0,
+                        "x1": 10.0,
+                        "y0": 0.12592603,
+                        "y1": 0.3518521
+                    }
+                },
+                "water_depth": {
+                    "Interpolate": {
+                        "x0": 0.0,
+                        "x1": 0.1,
+                        "y0": 0.98518527,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 50.0,
+                        "y0": 0.5518519,
+                        "y1": 0.033333335
+                    }
+                },
+                "cluster_noise": {
+                    "Constant": {
+                        "value": 1.0
+                    }
+                }
+            },
+            {
+                "enabled": true,
+                "models": [
+                    {
+                        "Quixel": {
+                            "quixel_id": "Plants_3d_scxn5_2K_3dplant_ms",
+                            "start_variation": 0,
+                            "count": 4
+                        }
+                    }
+                ],
+                "max_texture_size": "X128",
+                "color": {
+                    "r": 1.0059259,
+                    "g": 1.0029633,
+                    "b": 1.019259
+                },
+                "scale_min": 0.42419603,
+                "scale_max": 2.1213553,
+                "scale_power": 1.6966684,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 1.0,
+                "rotation_xy_jitter": 0.085185245,
+                "rotation_straightness": 0.2370372,
+                "position_normal_offset": 0.0,
+                "position_z_offset": 0.0,
+                "normal_miplevel": 0.0,
+                "cluster_noise_scale": 2.6881723,
+                "soil_depth": {
+                    "SmoothStep": {
+                        "x0": 1.0,
+                        "x1": 2.0,
+                        "y0": 0.10999993,
+                        "y1": 0.11592594
+                    }
+                },
+                "elevation": {
+                    "Constant": {
+                        "value": 0.45925936
+                    }
+                },
+                "water_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 0.1,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 10.0,
+                        "x1": 35.0,
+                        "y0": 0.0,
+                        "y1": 0.19444445
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 0.3,
+                        "x1": 0.4,
+                        "y0": 0.096296184,
+                        "y1": 1.0
+                    }
+                }
+            },
+            {
+                "enabled": true,
+                "models": [
+                    {
+                        "Quixel": {
+                            "quixel_id": "Plants_3d_tlpjdhwia_2K_3dplant_ms",
+                            "start_variation": 0,
+                            "count": 16
+                        }
+                    }
+                ],
+                "max_texture_size": "X128",
+                "color": {
+                    "r": 0.68148124,
+                    "g": 0.6296295,
+                    "b": 0.7777781
+                },
+                "scale_min": 0.9151031,
+                "scale_max": 5.9136214,
+                "scale_power": 1.9166667,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 0.7066667,
+                "rotation_xy_jitter": 0.07037032,
+                "rotation_straightness": 1.0,
+                "position_normal_offset": 0.0,
+                "position_z_offset": 0.0,
+                "normal_miplevel": 0.0,
+                "cluster_noise_scale": 2.352379,
+                "soil_depth": {
+                    "SmoothStep": {
+                        "x0": 2.5,
+                        "x1": 4.0,
+                        "y0": 0.0,
+                        "y1": 0.80370367
+                    }
+                },
+                "elevation": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 37.0,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "water_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 0.1,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 50.0,
+                        "y0": 0.28888872,
+                        "y1": 0.018518405
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 0.7,
+                        "x1": 0.8,
+                        "y0": 0.025926039,
+                        "y1": 1.0
+                    }
+                }
+            },
+            {
+                "enabled": true,
+                "models": [
+                    {
+                        "Quixel": {
+                            "quixel_id": "Plants_3d_tbdpec3r_2K_3dplant_ms",
+                            "start_variation": 0,
+                            "count": 6
+                        }
+                    }
+                ],
+                "max_texture_size": "X128",
+                "color": {
+                    "r": 0.8755555,
+                    "g": 0.8711114,
+                    "b": 0.86222196
+                },
+                "scale_min": 0.29405457,
+                "scale_max": 1.5028707,
+                "scale_power": 1.2200006,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 1.0,
+                "rotation_xy_jitter": 0.033333335,
+                "rotation_straightness": 0.103703834,
+                "position_normal_offset": 0.0,
+                "position_z_offset": 0.0,
+                "normal_miplevel": 0.0,
+                "cluster_noise_scale": 1.4485557,
+                "soil_depth": {
+                    "SmoothStep": {
+                        "x0": 0.0,
+                        "x1": 3.0,
+                        "y0": 0.0,
+                        "y1": 0.7214815
+                    }
+                },
+                "elevation": {
+                    "Constant": {
+                        "value": 0.4722224
+                    }
+                },
+                "water_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 0.1,
+                        "y0": 0.69629633,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 35.0,
+                        "y0": 0.49259236,
+                        "y1": 0.0
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 0.5,
+                        "x1": 0.6,
+                        "y0": 0.04814792,
+                        "y1": 1.0
+                    }
+                }
+            },
+            {
+                "enabled": true,
+                "models": [
+                    {
+                        "Quixel": {
+                            "quixel_id": "Plants_3d_rbdoo_2K_3dplant_ms",
+                            "start_variation": 0,
+                            "count": 3
+                        }
+                    }
+                ],
+                "max_texture_size": "X128",
+                "color": {
+                    "r": 0.9259257,
+                    "g": 0.90370417,
+                    "b": 0.9703702
+                },
+                "scale_min": 0.45973074,
+                "scale_max": 1.9403177,
+                "scale_power": 1.2933328,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 1.0,
+                "rotation_xy_jitter": 0.033333335,
+                "rotation_straightness": 0.08888889,
+                "position_normal_offset": 0.0,
+                "position_z_offset": 0.0,
+                "normal_miplevel": 0.0,
+                "cluster_noise_scale": 1.224294,
+                "soil_depth": {
+                    "SmoothStep": {
+                        "x0": 0.0,
+                        "x1": 3.0,
+                        "y0": 0.0,
+                        "y1": 0.74074066
+                    }
+                },
+                "elevation": {
+                    "Constant": {
+                        "value": 0.49629635
+                    }
+                },
+                "water_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 0.1,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 30.0,
+                        "y0": 0.6888887,
+                        "y1": 0.0
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 0.6,
+                        "x1": 0.7,
+                        "y0": 0.05185191,
+                        "y1": 1.0
+                    }
+                }
+            },
+            {
+                "enabled": true,
+                "models": [
+                    {
+                        "Quixel": {
+                            "quixel_id": "Plants_3d_qmBr2_2K_3dplant_ms",
+                            "start_variation": 0,
+                            "count": 3
+                        }
+                    }
+                ],
+                "max_texture_size": "X128",
+                "color": {
+                    "r": 0.48148125,
+                    "g": 0.5851854,
+                    "b": 0.51111144
+                },
+                "scale_min": 0.6111086,
+                "scale_max": 1.9403177,
+                "scale_power": 1.1833345,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 1.0,
+                "rotation_xy_jitter": 0.033333335,
+                "rotation_straightness": 0.19259253,
+                "position_normal_offset": 0.0,
+                "position_z_offset": 0.0,
+                "normal_miplevel": 0.26666668,
+                "cluster_noise_scale": 2.2728293,
+                "soil_depth": {
+                    "BellCurve": {
+                        "center": 1.7,
+                        "width": 0.6,
+                        "y0": 0.0,
+                        "y1": 1.0
+                    }
+                },
+                "elevation": {
+                    "Constant": {
+                        "value": 0.75555557
+                    }
+                },
+                "water_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 0.1,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 45.0,
+                        "y0": 0.79629636,
+                        "y1": 0.0
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 0.4,
+                        "x1": 0.5,
+                        "y0": 0.014814759,
+                        "y1": 1.0
+                    }
+                }
+            }
+        ]
+    },
+    {
+        "grid_size": 4.3325005,
+        "elements": [
+            {
+                "enabled": true,
+                "models": [
+                    {
+                        "Unity": {
+                            "package_path": "assets/models/Unity/NatureManufacture Assets",
+                            "prefab_path": "Dynamic Nature - Mountain Tree Pack/Prefabs/Standard",
+                            "prefabs": [
+                                "Fir_05_Standalone.prefab",
+                                "Fir_06_Forest.prefab",
+                                "Fir_07_Forest.prefab",
+                                "Fir_08_Dead_Forest.prefab"
+                            ]
+                        }
+                    }
+                ],
+                "max_texture_size": "X512",
+                "color": {
+                    "r": 1.0,
+                    "g": 1.0,
+                    "b": 1.0
+                },
+                "scale_min": 0.32932925,
+                "scale_max": 2.1325984,
+                "scale_power": 1.4033327,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 1.0,
+                "rotation_xy_jitter": 0.007407464,
+                "rotation_straightness": 1.0,
+                "position_normal_offset": 0.0,
+                "position_z_offset": -0.4629631,
+                "normal_miplevel": 0.0,
+                "cluster_noise_scale": 1.9897945,
+                "soil_depth": {
+                    "SmoothStep": {
+                        "x0": 10.0,
+                        "x1": 15.0,
+                        "y0": 0.0,
+                        "y1": 0.22222222
+                    }
+                },
+                "elevation": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 100.0,
+                        "y0": 0.61481494,
+                        "y1": 0.040740628
+                    }
+                },
+                "water_depth": {
+                    "Interpolate": {
+                        "x0": 0.0,
+                        "x1": 0.1,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 10.0,
+                        "x1": 50.0,
+                        "y0": 1.0,
+                        "y1": 0.011111111
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 0.5,
+                        "x1": 0.6,
+                        "y0": 0.022222223,
+                        "y1": 1.0
+                    }
+                }
+            },
+            {
+                "enabled": true,
+                "models": [
+                    {
+                        "Quixel": {
+                            "quixel_id": "Nature_Rock_veosbjk_2K_3d_ms",
+                            "start_variation": 0,
+                            "count": 1
+                        }
+                    }
+                ],
+                "max_texture_size": "X512",
+                "color": {
+                    "r": 1.0,
+                    "g": 1.0,
+                    "b": 1.0
+                },
+                "scale_min": 3.2479792,
+                "scale_max": 30.0,
+                "scale_power": 2.283331,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 1.0,
+                "rotation_xy_jitter": 0.040740795,
+                "rotation_straightness": 0.0,
+                "position_normal_offset": -1.5740681,
+                "position_z_offset": 1.388897,
+                "normal_miplevel": 0.15555623,
+                "cluster_noise_scale": 1.900713,
+                "soil_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 5.0,
+                        "y0": 0.6777776,
+                        "y1": 0.16666667
+                    }
+                },
+                "elevation": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 10.0,
+                        "y0": 0.50370365,
+                        "y1": 0.018518575
+                    }
+                },
+                "water_depth": {
+                    "Interpolate": {
+                        "x0": 0.0,
+                        "x1": 1.0,
+                        "y0": 0.23333333,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 35.0,
+                        "y0": 0.30000034,
+                        "y1": 0.0
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 0.3,
+                        "x1": 0.5,
+                        "y0": 0.02592587,
+                        "y1": 1.0
+                    }
+                }
+            },
+            {
+                "enabled": true,
+                "models": [
+                    {
+                        "Quixel": {
+                            "quixel_id": "Nature_Rock_Boulder_ulmfcft_4K_3d_ms",
+                            "start_variation": 0,
+                            "count": 1
+                        }
+                    }
+                ],
+                "max_texture_size": "X512",
+                "color": {
+                    "r": 1.0,
+                    "g": 1.0,
+                    "b": 1.0
+                },
+                "scale_min": 0.13616662,
+                "scale_max": 11.938244,
+                "scale_power": 2.5116646,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 1.0,
+                "rotation_xy_jitter": 0.040740795,
+                "rotation_straightness": 0.07037067,
+                "position_normal_offset": -0.1851902,
+                "position_z_offset": -0.37036514,
+                "normal_miplevel": 0.42222288,
+                "cluster_noise_scale": 2.8668573,
+                "soil_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 5.0,
+                        "y0": 0.23703715,
+                        "y1": 0.0
+                    }
+                },
+                "elevation": {
+                    "InterpolateClamped": {
+                        "x0": 5.0,
+                        "x1": 33.0,
+                        "y0": 0.18148142,
+                        "y1": 0.040740628
+                    }
+                },
+                "water_depth": {
+                    "Interpolate": {
+                        "x0": 0.0,
+                        "x1": 1.0,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 30.0,
+                        "y0": 0.29259253,
+                        "y1": 0.0
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 0.5,
+                        "x1": 0.6,
+                        "y0": 0.022222223,
+                        "y1": 1.0
+                    }
+                }
+            },
+            {
+                "enabled": true,
+                "models": [
+                    {
+                        "Quixel": {
+                            "quixel_id": "Nature_Rock_ulccfbr_2K_3d_ms",
+                            "start_variation": 0,
+                            "count": 1
+                        }
+                    }
+                ],
+                "max_texture_size": "X512",
+                "color": {
+                    "r": 1.0,
+                    "g": 1.0,
+                    "b": 1.0
+                },
+                "scale_min": 0.12465752,
+                "scale_max": 3.739116,
+                "scale_power": 1.0366666,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 1.0,
+                "rotation_xy_jitter": 1.0,
+                "rotation_straightness": 0.41851857,
+                "position_normal_offset": 0.0,
+                "position_z_offset": -0.18518257,
+                "normal_miplevel": 0.0,
+                "cluster_noise_scale": 1.508414,
+                "soil_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 5.0,
+                        "y0": 0.34444445,
+                        "y1": 0.47777778
+                    }
+                },
+                "elevation": {
+                    "InterpolateClamped": {
+                        "x0": 5.0,
+                        "x1": 33.0,
+                        "y0": 0.4296295,
+                        "y1": 0.1518519
+                    }
+                },
+                "water_depth": {
+                    "Interpolate": {
+                        "x0": 0.0,
+                        "x1": 1.0,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 25.0,
+                        "y0": 0.6888889,
+                        "y1": 0.0
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 0.7,
+                        "x1": 0.8,
+                        "y0": 0.014814928,
+                        "y1": 1.0
+                    }
+                }
+            },
+            {
+                "enabled": true,
+                "models": [
+                    {
+                        "Quixel": {
+                            "quixel_id": "Rock_Sandstone_uk4cdch_2K_3d_ms",
+                            "start_variation": 0,
+                            "count": 1
+                        }
+                    }
+                ],
+                "max_texture_size": "X512",
+                "color": {
+                    "r": 1.0,
+                    "g": 1.0,
+                    "b": 1.0
+                },
+                "scale_min": 0.6111086,
+                "scale_max": 3.3848834,
+                "scale_power": 1.7700006,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 1.0,
+                "rotation_xy_jitter": 0.018518405,
+                "rotation_straightness": 0.39259246,
+                "position_normal_offset": -0.9259205,
+                "position_z_offset": 0.0,
+                "normal_miplevel": 0.35555625,
+                "cluster_noise_scale": 2.8668609,
+                "soil_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 5.0,
+                        "y0": 0.2925927,
+                        "y1": 0.07777778
+                    }
+                },
+                "elevation": {
+                    "InterpolateClamped": {
+                        "x0": 5.0,
+                        "x1": 33.0,
+                        "y0": 0.4407408,
+                        "y1": 0.14814827
+                    }
+                },
+                "water_depth": {
+                    "Interpolate": {
+                        "x0": 0.0,
+                        "x1": 1.0,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 25.0,
+                        "y0": 0.75555557,
+                        "y1": 0.0
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 0.65,
+                        "x1": 0.75,
+                        "y0": 0.018518575,
+                        "y1": 1.0
+                    }
+                }
+            }
+        ]
+    },
+    {
+        "grid_size": 0.46249998,
+        "elements": [
+            {
+                "enabled": true,
+                "models": [
+                    {
+                        "Quixel": {
+                            "quixel_id": "Rock_uk4qahn_2K_3d_ms",
+                            "start_variation": 0,
+                            "count": 1
+                        }
+                    }
+                ],
+                "max_texture_size": "X512",
+                "color": {
+                    "r": 1.0,
+                    "g": 1.0,
+                    "b": 1.0
+                },
+                "scale_min": 1.4506596,
+                "scale_max": 7.939443,
+                "scale_power": 2.273334,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": -1.6575559,
+                "rotation_z_jitter": 0.02592587,
+                "rotation_xy_jitter": 0.04814826,
+                "rotation_straightness": 0.0,
+                "position_normal_offset": -5.046302,
+                "position_z_offset": -0.60185814,
+                "normal_miplevel": 0.8777791,
+                "cluster_noise_scale": 1.0,
+                "soil_depth": {
+                    "Constant": {
+                        "value": 0.4
+                    }
+                },
+                "elevation": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 5.0,
+                        "y0": 0.0,
+                        "y1": 0.5259259
+                    }
+                },
+                "water_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 1.0,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 50.0,
+                        "x1": 75.0,
+                        "y0": 0.0,
+                        "y1": 0.19259271
+                    }
+                },
+                "cluster_noise": {
+                    "Constant": {
+                        "value": 1.0
+                    }
+                }
+            }
+        ]
+    },
+    {
+        "grid_size": 3.08,
+        "elements": [
+            {
+                "enabled": true,
+                "models": [
+                    {
+                        "Quixel": {
+                            "quixel_id": "Other_udugcdmfa_2K_3d_ms",
+                            "start_variation": 0,
+                            "count": 1
+                        }
+                    },
+                    {
+                        "Quixel": {
+                            "quixel_id": "Other_udugdfvfa_2K_3d_ms",
+                            "start_variation": 0,
+                            "count": 1
+                        }
+                    },
+                    {
+                        "Quixel": {
+                            "quixel_id": "Other_ueopfjiga_4K_3d_ms",
+                            "start_variation": 0,
+                            "count": 1
+                        }
+                    },
+                    {
+                        "Quixel": {
+                            "quixel_id": "Other_udugdanfa_4K_3d_ms",
+                            "start_variation": 0,
+                            "count": 1
+                        }
+                    },
+                    {
+                        "Quixel": {
+                            "quixel_id": "Plants_3d_scxn5_2K_3dplant_ms",
+                            "start_variation": 0,
+                            "count": 1
+                        }
+                    }
+                ],
+                "max_texture_size": "X128",
+                "color": {
+                    "r": 1.0,
+                    "g": 1.0,
+                    "b": 1.0
+                },
+                "scale_min": 0.28345302,
+                "scale_max": 2.7306745,
+                "scale_power": 1.0,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 1.0,
+                "rotation_xy_jitter": 0.011111111,
+                "rotation_straightness": 0.93333334,
+                "position_normal_offset": 0.0,
+                "position_z_offset": 0.0,
+                "normal_miplevel": 0.0,
+                "cluster_noise_scale": 1.5236208,
+                "soil_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.2,
+                        "x1": 1.0,
+                        "y0": 0.05,
+                        "y1": 0.59444445
+                    }
+                },
+                "elevation": {
+                    "InterpolateClamped": {
+                        "x0": 1.0,
+                        "x1": 100.0,
+                        "y0": 0.0,
+                        "y1": 1.0
+                    }
+                },
+                "water_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 0.01,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 10.0,
+                        "x1": 0.0,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 5.0,
+                        "x1": 1.0,
+                        "y0": 0.65,
+                        "y1": 0.5611111
+                    }
+                }
+            }
+        ]
+    },
+    {
+        "grid_size": 1.5399998,
+        "elements": [
+            {
+                "enabled": true,
+                "models": [
+                    {
+                        "Quixel": {
+                            "quixel_id": "Tree_Stump_qlEtl_2K_3d_ms",
+                            "start_variation": 0,
+                            "count": 1
+                        }
+                    }
+                ],
+                "max_texture_size": "X512",
+                "color": {
+                    "r": 1.0,
+                    "g": 1.0,
+                    "b": 1.0
+                },
+                "scale_min": 1.0,
+                "scale_max": 1.0,
+                "scale_power": 1.0,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 0.0,
+                "rotation_xy_jitter": 0.0,
+                "rotation_straightness": 0.0,
+                "position_normal_offset": 0.0,
+                "position_z_offset": 0.0,
+                "normal_miplevel": 0.0,
+                "cluster_noise_scale": 1.0,
+                "soil_depth": {
+                    "InterpolateClamped": {
+                        "x0": 2.0,
+                        "x1": 10.0,
+                        "y0": 0.055555556,
+                        "y1": 0.24444444
+                    }
+                },
+                "elevation": {
+                    "InterpolateClamped": {
+                        "x0": 3.0,
+                        "x1": 50.0,
+                        "y0": 0.0,
+                        "y1": 1.0
+                    }
+                },
+                "water_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 0.01,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 10.0,
+                        "x1": 1.0,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 0.3,
+                        "x1": 0.4,
+                        "y0": 0.15555556,
+                        "y1": 0.17222223
+                    }
+                }
+            }
+        ]
+    }
+]

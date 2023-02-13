@@ -2,13 +2,14 @@ extern crate proc_macro;
 
 use anyhow::Context;
 use proc_macro::TokenStream;
+use proc_macro2::Span;
 use quote::quote;
 
 mod kiwi_project;
 
-/// Makes your `main()` function accessible to the scripting host, and generates a `components` module with your project's components.
+/// Makes your `main()` function accessible to the WASM host, and generates a `components` module with your project's components.
 ///
-/// If you do not add this attribute to your `main()` function, your script will not run.
+/// If you do not add this attribute to your `main()` function, your module will not run.
 #[proc_macro_attribute]
 pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let item = syn::parse_macro_input!(item as syn::ItemFn);
@@ -17,7 +18,10 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
         panic!("the `{fn_name}` function must be async");
     }
 
-    let project_boilerplate = kiwi_project_pm2(None).unwrap();
+    let spans = Span::call_site();
+    let mut path = syn::Path::from(syn::Ident::new("kiwi_api", spans));
+    path.leading_colon = Some(syn::Token![::](spans));
+    let project_boilerplate = kiwi_project_pm2(false, path.clone()).unwrap();
 
     quote! {
         #project_boilerplate
@@ -29,71 +33,29 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
             if INTERFACE_VERSION != runtime_interface_version {
                 panic!("This module was compiled with interface version {{INTERFACE_VERSION}}, but the host is running with version {{runtime_interface_version}}.");
             }
-            run_async(#fn_name());
+            #path::global::run_async(#fn_name());
         }
     }.into()
 }
 
-/// Parses your project's manifest and generates components and other boilerplate.
+/// Generates global components and other boilerplate for the API crate.
 #[proc_macro]
-pub fn kiwi_project(input: TokenStream) -> TokenStream {
-    let extend_paths: Option<Vec<Vec<String>>> = if input.is_empty() {
-        None
-    } else {
-        syn::custom_keyword!(extend);
-
-        struct Extend {
-            elems: syn::punctuated::Punctuated<syn::Path, syn::token::Comma>,
-        }
-        impl syn::parse::Parse for Extend {
-            fn parse(input: syn::parse::ParseStream<'_>) -> syn::Result<Self> {
-                let _extend_token = input.parse::<extend>()?;
-                let _equal_token = input.parse::<syn::Token![=]>()?;
-
-                let content;
-                let _bracket_token = syn::bracketed!(content in input);
-                let mut elems = syn::punctuated::Punctuated::new();
-
-                while !content.is_empty() {
-                    let first: syn::Path = content.parse()?;
-                    elems.push_value(first);
-                    if content.is_empty() {
-                        break;
-                    }
-                    let punct = content.parse()?;
-                    elems.push_punct(punct);
-                }
-
-                Ok(Self { elems })
-            }
-        }
-
-        let extend = syn::parse_macro_input!(input as Extend);
-        Some(
-            extend
-                .elems
-                .into_iter()
-                .map(|p| {
-                    p.segments
-                        .into_iter()
-                        .map(|s| s.ident.to_string())
-                        .collect()
-                })
-                .collect(),
+pub fn api_project(_input: TokenStream) -> TokenStream {
+    TokenStream::from(
+        kiwi_project_pm2(
+            true,
+            syn::Path::from(syn::Ident::new("crate", Span::call_site())),
         )
-    };
-
-    TokenStream::from(kiwi_project_pm2(extend_paths).unwrap())
+        .unwrap(),
+    )
 }
 
-fn kiwi_project_pm2(
-    extend_paths: Option<Vec<Vec<String>>>,
-) -> anyhow::Result<proc_macro2::TokenStream> {
+fn kiwi_project_pm2(global: bool, api_name: syn::Path) -> anyhow::Result<proc_macro2::TokenStream> {
     kiwi_project::implementation(
         kiwi_project::read_file("kiwi.toml".to_string())
             .context("Failed to load kiwi.toml")
             .unwrap(),
-        extend_paths.as_deref().unwrap_or_default(),
-        extend_paths.is_some(),
+        api_name,
+        global,
     )
 }

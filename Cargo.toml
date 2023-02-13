@@ -16,7 +16,7 @@ resolver = "2"
 version = "0.0.3"
 
 [workspace.dependencies]
-profiling = { git = "https://github.com/PlayDims/profiling", features = [
+profiling = { git = "https://github.com/PlayDims/profiling", rev = "9a5fbd8119e68a927e354f163cfff15370fa9744", features = [
     "profile-with-puffin",
 ] }
 tracing = "0.1.35"
@@ -33,6 +33,7 @@ image = "0.24.5"
 itertools = "0.10.3"
 ndarray = { version = "0.15.3", features = ["serde"] }
 rand = "0.8.0"
+rand_pcg = "0.3.1"
 glyph_brush = "0.7.4"
 log = "0.4"
 dyn-clonable = "0.9.0"
@@ -49,6 +50,9 @@ derivative = "2.2.0"
 async-trait = "0.1.56"
 png = "0.17.2"
 puffin = "0.13.3"
+futures-signals = "0.3"
+open = "2.0.2"
+which = "4.3.0"
 puffin_http = "0.10.0"
 fbxcel = { version = "0.9.0", features = ["tree"] }
 reqwest = { version = "0.11.11", default-features = false, features = [
@@ -132,9 +136,11 @@ local-ip-address = "0.5.1"
 cargo_toml = "0.15.0"
 toml_edit = "0.19.3"
 arboard = "3.2.0"
+noise = { version = "0.7.0", default-features = false }
 
 # Patch cap-std until wasmtime/wit-bindgen can be updated
 [patch.crates-io]
-cap-std = { git = "https://github.com/bytecodealliance/cap-std.git", branch = "0.26-with-a-0.25-version-number" }
-cap-primitives = { git = "https://github.com/bytecodealliance/cap-std.git", branch = "0.26-with-a-0.25-version-number" }
-cap-fs-ext = { git = "https://github.com/bytecodealliance/cap-std.git", branch = "0.26-with-a-0.25-version-number" }
+# branch = 0.26-with-a-0.25-version-number
+cap-std = { git = "https://github.com/bytecodealliance/cap-std.git", rev = "535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b" }
+cap-primitives = { git = "https://github.com/bytecodealliance/cap-std.git", rev = "535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b" }
+cap-fs-ext = { git = "https://github.com/bytecodealliance/cap-std.git", rev = "535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b" }

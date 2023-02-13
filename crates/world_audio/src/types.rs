@@ -1,6 +1,3 @@
-// // TODO(#560): fix this horrible hack and find a way to properly share definitions between host and
-// // guest.
-// include!("../../scripting/interface/src/audio.rs");
 /// This file contains the type definitions for the audio library and is intended to be used by
 /// both the client and the host.
 ///

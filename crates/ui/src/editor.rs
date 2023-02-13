@@ -2,16 +2,18 @@ use std::{fmt::Debug, ops::Deref, sync::Arc};
 
 use closure::closure;
 use kiwi_core::{
-    name, transform::{euler_rotation, scale, translation}
+    name,
+    transform::{euler_rotation, scale, translation},
 };
 use kiwi_ecs::{AttributeConstructor, Component, ComponentAttribute, ComponentEntry, ComponentValue, World};
 use kiwi_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_renderer::{cast_shadows, color, overlay};
-use kiwi_std::{time::Timeout, Cb};
+use kiwi_std::{cb, time::Timeout, Cb};
 use parking_lot::Mutex;
 
 use crate::{
-    align_vertical, space_between_items, Button, ButtonStyle, DialogScreen, DurationEditor, EditableDuration, FlowColumn, FlowRow, ScreenContainer, ScrollArea, StylesExt, Text, STREET
+    align_vertical, space_between_items, Button, ButtonStyle, DialogScreen, DurationEditor, EditableDuration, FlowColumn, FlowRow,
+    ScreenContainer, ScrollArea, StylesExt, Text, STREET,
 };
 
 #[derive(Clone, Debug)]
@@ -43,7 +45,7 @@ pub trait Editor {
     where
         Self: Sized,
     {
-        self.editor(Cb::new(|_| {}), opts)
+        self.editor(cb(|_| {}), opts)
     }
 }
 
@@ -55,7 +57,7 @@ impl Editor for EditableDuration {
 
 impl<T: Editor + 'static> Editor for Box<T> {
     fn editor(self, on_change: ChangeCb<Self>, opts: EditorOpts) -> Element {
-        T::editor(*self, Cb(Arc::new(move |new_value| (on_change)(Box::new(new_value))) as Arc<dyn Fn(T) + Sync + Send>), opts)
+        T::editor(*self, cb(move |new_value| (on_change)(Box::new(new_value))), opts)
     }
 }
 
@@ -64,7 +66,7 @@ where
     T: 'static + Send + Sync + Clone + Editor,
 {
     fn editor(self, on_change: ChangeCb<Self>, opts: EditorOpts) -> Element {
-        T::editor(self.deref().clone(), Cb::new(move |v: T| on_change(Arc::new(v))) as Cb<dyn Fn(T) + Sync + Send>, opts)
+        T::editor(self.deref().clone(), cb(move |v: T| on_change(Arc::new(v))) as Cb<dyn Fn(T) + Sync + Send>, opts)
     }
 }
 
@@ -76,7 +78,7 @@ where
         let v: T = self.lock().clone();
         T::editor(
             v,
-            Cb::new(move |v: T| {
+            cb(move |v: T| {
                 // Update the shared value
                 *self.lock() = v;
                 // Give the same value which is now internally mutated
@@ -97,7 +99,7 @@ impl Editor for Timeout {
     fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
         DurationEditor::new(
             EditableDuration::new(self.duration(), true, self.duration().as_secs().to_string()),
-            Cb::new(move |v| (on_change)(Timeout::new(v.dur()))),
+            cb(move |v| (on_change)(Timeout::new(v.dur()))),
         )
         .el()
     }
@@ -108,7 +110,7 @@ impl<T: Default + Editor + 'static> Editor for Option<T> {
         if let Some(inner_value) = self {
             FlowRow(vec![
                 Button::new("\u{f056}", closure!(clone on_change, |_| on_change.0(None))).style(ButtonStyle::Flat).el(),
-                T::editor(inner_value, Cb(Arc::new(closure!(clone on_change, |value| on_change.0(Some(value))))), opts),
+                T::editor(inner_value, cb(closure!(clone on_change, |value| on_change.0(Some(value)))), opts),
             ])
             .el()
         } else {
@@ -187,7 +189,7 @@ where
                 let desc = entry.desc();
                 T::editor(
                     entry.into_inner(),
-                    Cb::new(move |v| (on_change)(ComponentEntryEditor { entry: ComponentEntry::from_raw_parts(desc, v), ..editor }))
+                    cb(move |v| (on_change)(ComponentEntryEditor { entry: ComponentEntry::from_raw_parts(desc, v), ..editor }))
                         as ChangeCb<T>,
                     opts,
                 )
@@ -244,13 +246,13 @@ impl<T: Debug + ComponentValue + Editor> ElementComponent for OffscreenEditor<T>
                         value: value.clone(),
                         title: title.clone(),
                         edit: on_confirm.is_some(),
-                        on_confirm: Cb::new(closure!(clone on_confirm, clone set_screen, |value| {
+                        on_confirm: cb(closure!(clone on_confirm, clone set_screen, |value| {
                             if let Some(on_confirm) = on_confirm.as_ref() {
                                 on_confirm(value);
                             }
                             set_screen(None);
                         })),
-                        on_cancel: Cb::new(closure!(clone set_screen, || {
+                        on_cancel: cb(closure!(clone set_screen, || {
                             set_screen(None);
                         })),
                         editor: editor.clone(),
@@ -283,7 +285,7 @@ fn EditorScreen<T: Debug + ComponentValue + Editor>(
         ScrollArea(
             FlowColumn::el([
                 Text::el(title).header_style(),
-                editor(value.clone(), if edit { Some(Cb(set_value.clone())) } else { None }, opts),
+                editor(value.clone(), if edit { Some(set_value.clone()) } else { None }, opts),
                 FlowRow(vec![
                     Button::new_once("Ok", move |_| on_confirm(value)).style(ButtonStyle::Primary).el(),
                     Button::new_once("Cancel", move |_| on_cancel()).style(ButtonStyle::Flat).el(),

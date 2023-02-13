@@ -7,9 +7,10 @@ use itertools::Itertools;
 use kiwi_audio::{hrtf::HrtfLib, Attenuation, AudioEmitter, AudioListener, AudioMixer, Sound, Source};
 use kiwi_ecs::{components, query, EntityId, Resource, World};
 use kiwi_element::ElementComponentExt;
-use kiwi_std::Cb;
+use kiwi_std::{cb, Cb};
 use kiwi_ui::{
-    graph::{Graph, GraphStyle}, Editor, FlowColumn
+    graph::{Graph, GraphStyle},
+    Editor, FlowColumn,
 };
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
@@ -30,7 +31,7 @@ pub struct AttenuationEditorVisual(Attenuation);
 
 impl Editor for AttenuationEditorVisual {
     fn editor(self, on_change: Cb<dyn Fn(Self) + Sync + Send>, opts: kiwi_ui::EditorOpts) -> kiwi_element::Element {
-        let editor = Attenuation::editor(*self, Cb::new(move |v| on_change(v.into())), opts);
+        let editor = Attenuation::editor(*self, cb(move |v| on_change(v.into())), opts);
 
         let x_max = self.inverse(0.01);
 

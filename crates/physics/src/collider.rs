@@ -34,7 +34,7 @@ components!("physics", {
     @[
         Debuggable, Networked, Store,
         Name["Plane collider"],
-        Description["If attached, this entity will have a plane physics collider.\n`x, y, z` is the normal, and `w` is the distance."]
+        Description["If attached, this entity will have a plane physics collider."]
     ]
     plane_collider: (),
     @[

@@ -20,18 +20,6 @@ impl<T> State<T> {
     pub fn write(&self) -> RwLockWriteGuard<'_, T> {
         self.0.write().unwrap()
     }
-
-    #[deprecated = "use State::read"]
-    #[doc(hidden)]
-    pub fn borrow(&self) -> RwLockReadGuard<'_, T> {
-        self.read()
-    }
-
-    #[deprecated = "use State::write"]
-    #[doc(hidden)]
-    pub fn borrow_mut(&self) -> RwLockWriteGuard<'_, T> {
-        self.write()
-    }
 }
 impl<T: Display> Display for State<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

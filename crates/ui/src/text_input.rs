@@ -7,9 +7,10 @@ use kiwi_ecs::{EntityId, World};
 use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
 use kiwi_input::{on_app_keyboard_input, on_app_received_character, KeyboardEvent};
 use kiwi_renderer::color;
-use kiwi_std::Cb;
+use kiwi_std::{cb, Cb};
 use winit::{
-    event::{ElementState, VirtualKeyCode}, window::CursorIcon
+    event::{ElementState, VirtualKeyCode},
+    window::CursorIcon,
 };
 
 use super::{Editor, EditorOpts, Focus, Text, UIExt};
@@ -114,7 +115,7 @@ impl TextInput {
         Self { value, on_change, on_submit: None, password: false, placeholder: None }
     }
     pub fn on_submit(mut self, on_submit: impl Fn(String) + Sync + Send + 'static) -> Self {
-        self.on_submit = Some(Cb(Arc::new(on_submit)));
+        self.on_submit = Some(cb(on_submit));
         self
     }
     pub fn placeholder<T: Into<String>>(mut self, placeholder: Option<T>) -> Self {

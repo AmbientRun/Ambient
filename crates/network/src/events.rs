@@ -3,7 +3,7 @@ use std::{any::type_name, io, sync::Arc};
 use anyhow::Context;
 use dashmap::DashMap;
 use kiwi_ecs::{components, query, EntityId, Resource, World};
-use kiwi_std::Cb;
+use kiwi_std::{cb, Cb};
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
 
@@ -49,7 +49,7 @@ impl Handler {
             Ok(())
         };
 
-        Self { func: Cb(Arc::new(func)) }
+        Self { func: cb(func) }
     }
     pub fn run(&self, gs: &Mutex<ClientGameState>, event: Box<[u8]>) -> anyhow::Result<()> {
         (self.func)(&mut gs.lock().world, &event)

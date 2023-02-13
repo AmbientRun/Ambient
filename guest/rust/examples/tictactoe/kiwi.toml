@@ -4,4 +4,6 @@ name = "Tic Tac Toe"
 version = "0.0.1"
 
 [components]
-cell = { type = "I32", name = "Cell", description = "The ID of the cell this player is in" }
+cell = { type = "I32", name = "Cell", description = "The ID of the cell this player is in", attributes = [
+    "Debuggable",
+] }

@@ -4,16 +4,90 @@ id = "runtime_components"
 name = "Runtime Components"
 version = "0.0.3"
 
+[components.core]
+name = "Core"
+description = "Contains all core components for the Kiwi Runtime."
+
+[components."core::app"]
+name = "App"
+description = "High-level state relevant to the application (including the in-development Editor)."
+
+[components."core::camera"]
+name = "Camera"
+description = "Camera matrices, types, parameters, and more."
+
+[components."core::ecs"]
+name = "Entity Component System"
+description = "Core components for the ECS and entities."
+
+[components."core::model"]
+name = "Model"
+description = "Information about models attached to entities."
+
+[components."core::network"]
+name = "Network"
+description = "Network-related state."
+
+[components."core::object"]
+name = "Object"
+description = "External object related state (e.g. drawing objects from remote URLs)"
+
+[components."core::physics"]
+name = "Physics"
+description = "Physics functionality and state."
+
+[components."core::player"]
+name = "Player"
+description = "Components that are attached to player entities."
+
+[components."core::primitives"]
+name = "Primitives"
+description = "Components that create primitive (in the geometric sense) objects from their attached entities."
+
+[components."core::rendering"]
+name = "Rendering"
+description = "Rendering-related state, including global rendering parameters and per-entity state."
+
+[components."core::transform"]
+name = "Transform"
+description = "Entity transform state (including translation, rotation and scale), as well as other transformations for this entity."
+
 [components."core::app::main_scene"]
 type = "Empty"
 name = "Main scene"
 description = "If attached, this entity belongs to the main scene."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::app::map_seed"]
+type = "U64"
+name = "Map seed"
+description = "A random number seed for this map."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::app::name"]
 type = "String"
 name = "Name"
 description = "A human-friendly name for this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::app::selectable"]
+type = "Empty"
+name = "Selectable"
+description = "If attached, this object can be selected in the editor."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::app::snap_to_ground"]
+type = "F32"
+name = "Snap to ground"
+description = """
+This object should automatically be moved with the terrain if the terrain is changed.
+The value is the offset from the terrain."""
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::app::tags"]
+type = { type = "Vec", element_type = "String" }
+name = "Tags"
+description = "Tags for categorizing this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::app::ui_scene"]
@@ -176,6 +250,14 @@ name = "Synced resources"
 description = "If attached, this entity contains global resources that are synchronized to clients, but not persisted."
 attributes = ["Debuggable", "Networked"]
 
+[components."core::object::object_from_url"]
+type = "String"
+name = "Object from URL"
+description = """
+Load and attach an object from a URL or relative path.
+When loaded, the components from this object will add to or replace the existing components for the object."""
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::physics::box_collider"]
 type = "Vec3"
 name = "Box collider"
@@ -251,9 +333,7 @@ attributes = ["Debuggable", "Networked", "Store"]
 [components."core::physics::plane_collider"]
 type = "Empty"
 name = "Plane collider"
-description = """
-If attached, this entity will have a plane physics collider.
-`x, y, z` is the normal, and `w` is the distance."""
+description = "If attached, this entity will have a plane physics collider."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::physics::sphere_collider"]

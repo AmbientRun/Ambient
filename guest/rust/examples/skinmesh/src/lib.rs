@@ -2,11 +2,12 @@ use kiwi_api::{
     components::core::{
         app::main_scene,
         camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},
+        object::object_from_url,
         transform::{lookat_center, translation},
     },
     entity::{AnimationAction, AnimationController},
     player::KeyCode,
-    *,
+    prelude::*,
 };
 
 #[main]
@@ -20,8 +21,9 @@ pub async fn main() -> EventResult {
         .with(aspect_ratio_from_window(), ())
         .spawn(false);
 
-    let unit_ref = ObjectRef::new("assets/Peasant Man.fbx/objects/main.json");
-    let unit_uid = entity::spawn_template(&unit_ref, Vec3::new(0.0, 0.0, 1.0), None, None, false);
+    let unit_uid = entity::game_object_base()
+        .with(object_from_url(), "assets/Peasant Man.fbx".to_string())
+        .spawn(false);
     let unit_entity = entity::wait_for_spawn(&unit_uid).await;
 
     entity::set_animation_controller(
@@ -63,6 +65,28 @@ pub async fn main() -> EventResult {
                             looping: true,
                             weight: 1.,
                         }],
+                        apply_base_pose: false,
+                    },
+                );
+            }
+
+            if delta.keys.contains(&KeyCode::Key3) {
+                entity::set_animation_controller(
+                    unit_entity,
+                    AnimationController {
+                        actions: &[
+                            AnimationAction {
+                                clip_url:
+                                    "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
+                                looping: true,
+                                weight: 0.5,
+                            },
+                            AnimationAction {
+                                clip_url: "assets/Capoeira.fbx/animations/mixamo.com.anim",
+                                looping: true,
+                                weight: 0.5,
+                            },
+                        ],
                         apply_base_pose: false,
                     },
                 );

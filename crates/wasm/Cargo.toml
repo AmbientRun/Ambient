@@ -1,0 +1,50 @@
+[package]
+name = "kiwi_wasm"
+version.workspace = true
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+kiwi_animation = { path = "../animation" }
+kiwi_app = { path = "../app" }
+kiwi_core = { path = "../core" }
+kiwi_ecs = { path = "../ecs" }
+kiwi_input = { path = "../input" }
+kiwi_network = { path = "../network" }
+kiwi_object = { path = "../object" }
+kiwi_physics = { path = "../physics" }
+kiwi_project = { path = "../project" }
+kiwi_std = { path = "../std" }
+physxx = { path = "../../libs/physxx" }
+
+anyhow.workspace = true
+async-trait.workspace = true
+data-encoding.workspace = true
+chrono.workspace = true
+flume.workspace = true
+fs_extra.workspace = true
+glam.workspace = true
+indexmap.workspace = true
+indoc.workspace = true
+itertools.workspace = true
+log.workspace = true
+parking_lot.workspace = true
+profiling.workspace = true
+reqwest.workspace = true
+serde_bytes.workspace = true
+serde_json.workspace = true
+serde.workspace = true
+slotmap.workspace = true
+
+wasi-common.workspace = true
+wasmtime-wasi.workspace = true
+wasmtime.workspace = true
+# make sure this is synchronised with the version used by guest/rust/Cargo.toml
+wit-bindgen-host-wasmtime-rust = { git = "https://github.com/bytecodealliance/wit-bindgen.git", rev = "181093b58f49b194ee34be2d986d737f4f553d3d" }
+
+[target.'cfg(windows)'.build-dependencies]
+dunce = "1.0"
+
+[build-dependencies]
+kiwi_std = { path = "../std", default-features = false }

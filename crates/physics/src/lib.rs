@@ -5,16 +5,19 @@ use glam::{vec3, Mat4, Vec3};
 use helpers::release_px_scene;
 use kiwi_core::asset_cache;
 use kiwi_ecs::{
-    components, query, Debuggable, Description, DynSystem, EntityData, EntityId, FnSystem, Name, Networked, Resource, Store, SystemGroup, World
+    components, query, Debuggable, Description, DynSystem, EntityData, EntityId, FnSystem, Name, Networked, Resource, Store, SystemGroup,
+    World,
 };
 use kiwi_network::server::{ForkingEvent, ShutdownEvent};
 use kiwi_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 use parking_lot::Mutex;
 use physx::{
-    actor_aggregate, articulation_cache, articulation_link, articulation_reduce_coordinate, character_controller, fixed_joint, physics_shape, revolute_joint, rigid_actor, rigid_dynamic, rigid_static
+    actor_aggregate, articulation_cache, articulation_link, articulation_reduce_coordinate, character_controller, fixed_joint,
+    physics_shape, revolute_joint, rigid_actor, rigid_dynamic, rigid_static,
 };
 use physxx::{
-    AsPxActor, PxContactPairHeader, PxControllerManagerRef, PxMaterial, PxPvdSceneFlag, PxRigidActor, PxRigidActorRef, PxSceneDesc, PxSceneFlags, PxSceneRef, PxSimulationEventCallback, PxUserData
+    AsPxActor, PxContactPairHeader, PxControllerManagerRef, PxMaterial, PxPvdSceneFlag, PxRigidActor, PxRigidActorRef, PxSceneDesc,
+    PxSceneFlags, PxSceneRef, PxSimulationEventCallback, PxUserData,
 };
 use serde::{Deserialize, Serialize};
 
@@ -26,6 +29,7 @@ pub mod intersection;
 pub mod mesh;
 pub mod physx;
 pub mod rc_asset;
+pub mod visualization;
 
 components!("physics", {
     @[Resource]
