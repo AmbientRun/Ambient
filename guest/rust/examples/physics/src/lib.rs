@@ -2,6 +2,7 @@ use kiwi_api::{
     components::core::{
         app::main_scene,
         camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},
+        object::object_from_url,
         physics::{box_collider, dynamic, physics_controlled},
         primitives::cube,
         transform::{lookat_center, scale, translation},
@@ -29,8 +30,9 @@ pub async fn main() -> EventResult {
         .with(scale(), vec3(0.5, 0.5, 0.5))
         .spawn(false);
 
-    let shape_ref = ObjectRef::new("assets/Shape.glb/objects/main.json");
-    entity::spawn_template(&shape_ref, Vec3::new(0.0, 0.0, 0.0), None, None, false);
+    entity::game_object_base()
+        .with(object_from_url(), "assets/Shape.glb".to_string())
+        .spawn(false);
 
     EventOk
 }

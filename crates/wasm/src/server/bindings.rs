@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use itertools::Itertools;
-use kiwi_ecs::{lookup_uid, with_component_registry, QueryEvent, World};
+use kiwi_ecs::{with_component_registry, QueryEvent, World};
 use kiwi_physics::helpers::PhysicsObjectCollection;
 use parking_lot::RwLock;
 use wit_bindgen_host_wasmtime_rust::Le;
@@ -62,41 +62,11 @@ impl Bindings {
 }
 
 impl host::Host for Bindings {
-    fn entity_spawn(
-        &mut self,
-        data: ComponentsParam<'_>,
-        persistent: bool,
-    ) -> host::EntityUidResult {
+    fn entity_spawn(&mut self, data: ComponentsParam<'_>, persistent: bool) -> host::EntityId {
         let id = esei::entity::spawn(
             &mut self.world_mut(),
             convert_components_to_entity_data(data),
         );
-        if !persistent {
-            self.shared_state
-                .write()
-                .base_mut()
-                .spawned_entities
-                .insert(id.clone());
-        }
-        id.into_bindgen()
-    }
-
-    fn entity_spawn_template(
-        &mut self,
-        object_ref: host::ObjectRefParam,
-        position: host::Vec3,
-        rotation: Option<host::Quat>,
-        scale: Option<host::Vec3>,
-        persistent: bool,
-    ) -> host::EntityUidResult {
-        let id = esei::entity::spawn_template(
-            &mut self.world_mut(),
-            object_ref.id.to_string(),
-            position.from_bindgen(),
-            rotation.from_bindgen(),
-            scale.from_bindgen(),
-        )
-        .unwrap();
         if !persistent {
             self.shared_state
                 .write()
@@ -277,10 +247,6 @@ impl host::Host for Bindings {
             .1 = query_state;
 
         result
-    }
-
-    fn entity_lookup_uid(&mut self, uid: host::EntityUidParam<'_>) -> Option<host::EntityId> {
-        lookup_uid(&self.world(), &uid.from_bindgen()).into_bindgen()
     }
 
     fn entity_in_area(&mut self, position: host::Vec3, radius: f32) -> Vec<host::EntityId> {

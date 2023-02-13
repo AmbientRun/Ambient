@@ -21,13 +21,12 @@ pub async fn main() -> EventResult {
         .with(aspect_ratio_from_window(), ())
         .spawn(false);
 
-    let unit_uid = entity::game_object_base()
+    let unit_id = entity::game_object_base()
         .with(object_from_url(), "assets/Peasant Man.fbx".to_string())
         .spawn(false);
-    let unit_entity = entity::wait_for_spawn(&unit_uid).await;
 
     entity::set_animation_controller(
-        unit_entity,
+        unit_id,
         AnimationController {
             actions: &[AnimationAction {
                 clip_url: "assets/Capoeira.fbx/animations/mixamo.com.anim",
@@ -44,7 +43,7 @@ pub async fn main() -> EventResult {
 
             if delta.keys.contains(&KeyCode::Key1) {
                 entity::set_animation_controller(
-                    unit_entity,
+                    unit_id,
                     AnimationController {
                         actions: &[AnimationAction {
                             clip_url: "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
@@ -58,7 +57,7 @@ pub async fn main() -> EventResult {
 
             if delta.keys.contains(&KeyCode::Key2) {
                 entity::set_animation_controller(
-                    unit_entity,
+                    unit_id,
                     AnimationController {
                         actions: &[AnimationAction {
                             clip_url: "assets/Capoeira.fbx/animations/mixamo.com.anim",
@@ -72,7 +71,7 @@ pub async fn main() -> EventResult {
 
             if delta.keys.contains(&KeyCode::Key3) {
                 entity::set_animation_controller(
-                    unit_entity,
+                    unit_id,
                     AnimationController {
                         actions: &[
                             AnimationAction {

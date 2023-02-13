@@ -1,16 +1,17 @@
 use anyhow::Context;
 use bitflags::bitflags;
 use glam::{vec3, Vec3};
-use kiwi_ecs::{uid, ArchetypeFilter, EntityData, EntityId};
+use kiwi_core::transform::{rotation, scale};
+use kiwi_ecs::{ArchetypeFilter, ECSError, EntityData, EntityId};
 use kiwi_intent::server_push_intent;
-use kiwi_network::client::GameRpcArgs;
+use kiwi_network::{client::GameRpcArgs, server::MAIN_INSTANCE_ID};
 use kiwi_physics::visualization::{visualize_collider, visualizing};
 use kiwi_physics::{
     helpers::{convert_rigid_dynamic_to_static, convert_rigid_static_to_dynamic, unweld_multi, weld_multi},
     intersection::{intersect_frustum, raycast_filtered, rpc_pick, RaycastFilter},
 };
 use kiwi_rpc::RpcRegistry;
-use kiwi_std::{shapes::Ray, unwrap_log_err};
+use kiwi_std::{log_result, log_warning, shapes::Ray, unwrap_log_err};
 use serde::{Deserialize, Serialize};
 
 use crate::intents::{intent_select, SelectMode};
@@ -55,18 +56,16 @@ pub async fn rpc_select(args: GameRpcArgs, (method, mode): (SelectMethod, Select
         let mut state = args.state.lock();
         let world = unwrap_log_err!(state.get_player_world_mut(&args.user_id).context("No player world"));
         match method {
-            SelectMethod::Frustum(frustum) => intersect_frustum(world, &frustum)
-                .into_iter()
-                .filter(|id| world.has_component(*id, selectable()))
-                .map(|id| world.get_ref(id, uid()).cloned().unwrap())
-                .collect(),
+            SelectMethod::Frustum(frustum) => {
+                intersect_frustum(world, &frustum).into_iter().filter(|id| world.has_component(*id, selectable())).collect()
+            }
             SelectMethod::Ray(ray) => {
                 if let Some((entity, _)) = raycast_filtered(
                     world,
                     RaycastFilter { entities: Some(ArchetypeFilter::new().incl(selectable())), collider_type: None },
                     ray,
                 ) {
-                    Selection::new([world.get_ref(entity, uid()).cloned().unwrap()])
+                    Selection::new([entity])
                 } else {
                     Default::default()
                 }
