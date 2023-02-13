@@ -267,9 +267,7 @@ fn ObjectComponentsEditor(
                     Button::new(
                         FlowRow::el([Text::el(format!("Animation errors:\n{}", anim_error.split(": ").join(":\n"))).error_text_style()]),
                         move |_| {
-                            use clipboard::{ClipboardContext, ClipboardProvider};
-                            let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
-                            ctx.set_contents(anim_error.clone()).ok();
+                            arboard::Clipboard::new().unwrap().set_text(anim_error.clone()).ok();
                         },
                     )
                     .style(ButtonStyle::Flat)
