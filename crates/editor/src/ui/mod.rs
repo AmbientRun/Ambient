@@ -555,15 +555,11 @@ impl<T: Serialize + DeserializeOwned + Send + Sync + std::fmt::Debug + Clone + '
         let Self { value, on_change } = *self;
         FlowRow(vec![
             Button::new("Copy", move |_| {
-                use clipboard::{ClipboardContext, ClipboardProvider};
-                let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
-                ctx.set_contents(serde_json::to_string_pretty(&value).unwrap()).ok();
+                arboard::Clipboard::new().unwrap().set_text(serde_json::to_string_pretty(&value).unwrap()).ok();
             })
             .el(),
             Button::new("Paste", move |_| {
-                use clipboard::{ClipboardContext, ClipboardProvider};
-                let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
-                if let Ok(paste) = ctx.get_contents() {
+                if let Ok(paste) = arboard::Clipboard::new().unwrap().get_text() {
                     on_change(serde_json::from_str(&paste).unwrap());
                 }
             })
