@@ -507,7 +507,7 @@ dependencies = [
 [[package]]
 name = "cap-fs-ext"
 version = "0.25.5"
-source = "git+https://github.com/bytecodealliance/cap-std.git?branch=0.26-with-a-0.25-version-number#535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b"
+source = "git+https://github.com/bytecodealliance/cap-std.git?rev=535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b#535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b"
 dependencies = [
  "cap-primitives",
  "cap-std",
@@ -518,7 +518,7 @@ dependencies = [
 [[package]]
 name = "cap-primitives"
 version = "0.25.5"
-source = "git+https://github.com/bytecodealliance/cap-std.git?branch=0.26-with-a-0.25-version-number#535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b"
+source = "git+https://github.com/bytecodealliance/cap-std.git?rev=535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b#535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b"
 dependencies = [
  "ambient-authority",
  "fs-set-times",
@@ -545,7 +545,7 @@ dependencies = [
 [[package]]
 name = "cap-std"
 version = "0.25.5"
-source = "git+https://github.com/bytecodealliance/cap-std.git?branch=0.26-with-a-0.25-version-number#535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b"
+source = "git+https://github.com/bytecodealliance/cap-std.git?rev=535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b#535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b"
 dependencies = [
  "cap-primitives",
  "io-extras",
@@ -4148,7 +4148,7 @@ dependencies = [
 [[package]]
 name = "physx-sys"
 version = "0.4.15"
-source = "git+https://github.com/FredrikNoren/physx-rs.git#92a09a98f3825d52c84d487d0fc575fb8cf04feb"
+source = "git+https://github.com/FredrikNoren/physx-rs.git?rev=92a09a98f3825d52c84d487d0fc575fb8cf04feb#92a09a98f3825d52c84d487d0fc575fb8cf04feb"
 dependencies = [
  "cc",
 ]
@@ -4290,7 +4290,7 @@ dependencies = [
 [[package]]
 name = "profiling"
 version = "1.0.6"
-source = "git+https://github.com/PlayDims/profiling#9a5fbd8119e68a927e354f163cfff15370fa9744"
+source = "git+https://github.com/PlayDims/profiling?rev=9a5fbd8119e68a927e354f163cfff15370fa9744#9a5fbd8119e68a927e354f163cfff15370fa9744"
 dependencies = [
  "paste",
  "profiling-procmacros",
@@ -4306,7 +4306,7 @@ checksum = "74605f360ce573babfe43964cbe520294dcb081afbf8c108fc6e23036b4da2df"
 [[package]]
 name = "profiling-procmacros"
 version = "1.0.6"
-source = "git+https://github.com/PlayDims/profiling#9a5fbd8119e68a927e354f163cfff15370fa9744"
+source = "git+https://github.com/PlayDims/profiling?rev=9a5fbd8119e68a927e354f163cfff15370fa9744#9a5fbd8119e68a927e354f163cfff15370fa9744"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4647,7 +4647,7 @@ checksum = "3582f63211428f83597b51b2ddb88e2a91a9d52d12831f9d08f5e624e8977422"
 [[package]]
 name = "russimp"
 version = "1.0.4"
-source = "git+https://github.com/FredrikNoren/russimp.git#0a691d1fa625a1b549d476b97c74f93adab7e5bb"
+source = "git+https://github.com/FredrikNoren/russimp.git?rev=0a691d1fa625a1b549d476b97c74f93adab7e5bb#0a691d1fa625a1b549d476b97c74f93adab7e5bb"
 dependencies = [
  "derivative",
  "num-derive",

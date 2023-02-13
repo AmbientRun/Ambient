@@ -135,6 +135,7 @@ arboard = "3.2.0"
 
 # Patch cap-std until wasmtime/wit-bindgen can be updated
 [patch.crates-io]
-cap-std = { git = "https://github.com/bytecodealliance/cap-std.git", branch = "0.26-with-a-0.25-version-number", rev = "535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b" }
-cap-primitives = { git = "https://github.com/bytecodealliance/cap-std.git", branch = "0.26-with-a-0.25-version-number", rev = "535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b" }
-cap-fs-ext = { git = "https://github.com/bytecodealliance/cap-std.git", branch = "0.26-with-a-0.25-version-number", rev = "535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b" }
+# branch = 0.26-with-a-0.25-version-number
+cap-std = { git = "https://github.com/bytecodealliance/cap-std.git", rev = "535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b" }
+cap-primitives = { git = "https://github.com/bytecodealliance/cap-std.git", rev = "535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b" }
+cap-fs-ext = { git = "https://github.com/bytecodealliance/cap-std.git", rev = "535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b" }
