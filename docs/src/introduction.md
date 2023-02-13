@@ -29,3 +29,9 @@ To see the latest version of the API docs, run the following command in the `Kiw
 cd guest/rust
 cargo doc -p kiwi_api --open --no-deps
 ```
+
+## Setting up your IDE
+
+We recommend using VSCode with the Rust Analyzer extension.
+
+To work with the examples; open the `guest/rust` folder in VSCode to get code-completion etc.
