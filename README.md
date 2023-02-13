@@ -16,7 +16,7 @@ Features:
 - **Asset pipeline & streaming**: The runtime supports building and loading multiple file formats, such as .glb and .fbx. The assets are always streamed over the network.
 - **Powerful renderer**: The Kiwi renderer is “gpu driven”, with culling and lodding happening on the gpu side. It’s PBR by default, supports cascading shadow maps, and instances everything that can be instanced.
 
-See the [documentation](https://kiwiorg.github.io/Kiwi/) for a getting started guide.
+See the [documentation](https://kiwiorg.github.io/Kiwi/) for a getting started guide, or browse the [examples](https://github.com/KiwiOrg/Kiwi/tree/main/guest/rust/examples).
 
 ## Installing
 

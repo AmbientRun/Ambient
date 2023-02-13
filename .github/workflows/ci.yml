@@ -31,17 +31,7 @@ jobs:
           sudo add-apt-repository ppa:oibaf/graphics-drivers -y
           sudo apt-get update
           sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers
-      - name: Set up cargo cache
-        uses: actions/cache@v3
-        continue-on-error: false
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo-
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Leafwing-Studios/cargo-cache@v1
       - name: Run tests
         run: cargo test --workspace --release
