@@ -23,6 +23,7 @@ use kiwi_std::{
 };
 pub use paste;
 use winit::{event::Event, window::Window};
+use serde::{Deserialize, Serialize};
 pub mod bounding;
 pub mod camera;
 pub mod transform;
@@ -62,6 +63,10 @@ components!("app", {
     selectable: (),
     @[Debuggable, Networked, Store, Name["Session start time"], Description["When the current server session was started"]]
     session_start: SystemTime,
+    @[Debuggable, Networked, Store, Name["Tags"], Description["Tags for categorizing this entity"]]
+    tags: Vec<String>,
+    @[Debuggable, Networked, Store]
+    game_mode: GameMode,
 
     @[Resource]
     time: Duration,
@@ -231,4 +236,11 @@ impl System for WindowSyncSystem {
             world.set_if_changed(world.resource_entity(), self::window_scale_factor(), window.scale_factor()).unwrap();
         }
     }
+}
+
+#[derive(Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Debug, Hash, Default)]
+pub enum GameMode {
+    #[default]
+    Edit,
+    Play,
 }

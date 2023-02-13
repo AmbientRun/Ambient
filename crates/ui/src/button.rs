@@ -332,7 +332,7 @@ impl Button {
     pub fn new_value<T: Into<UIElement>, V: PartialEq + Copy + Send + Sync + 'static>(
         content: T,
         value: V,
-        set_value: Arc<dyn Fn(V) + Sync + Send>,
+        set_value: Cb<dyn Fn(V) + Sync + Send>,
         desired_value: V,
     ) -> Button {
         Button::new(content, move |_| set_value(desired_value)).toggled(value == desired_value)

@@ -1,0 +1,66 @@
+[package]
+name = "kiwi_editor"
+version.workspace = true
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+kiwi_app = { path = "../app" }
+kiwi_meshes = { path = "../meshes" }
+kiwi_core = { path = "../core" }
+kiwi_element = { path = "../element" }
+kiwi_ui = { path = "../ui" }
+kiwi_ecs = { path = "../ecs" }
+kiwi_network = { path = "../network" }
+kiwi_std = { path = "../std" }
+kiwi_gpu = { path = "../gpu" }
+kiwi_renderer = { path = "../renderer" }
+kiwi_input = { path = "../input" }
+kiwi_rpc = { path = "../rpc" }
+kiwi_intent = { path = "../intent" }
+kiwi_ecs_editor = { path = "../ecs_editor" }
+kiwi_physics = { path = "../physics" }
+kiwi_primitives = { path = "../primitives" }
+kiwi_model = { path = "../model" }
+kiwi_animation = { path = "../animation" }
+kiwi_cameras = { path = "../cameras" }
+kiwi_object = { path = "../object" }
+kiwi_decals = { path = "../decals" }
+kiwi_world_audio = { path = "../world_audio" }
+kiwi_terrain = { path = "../terrain" }
+kiwi_naturals = { path = "../naturals" }
+physxx = { path = "../../libs/physxx" }
+glam.workspace = true
+itertools.workspace = true
+ordered-float.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+log.workspace = true
+profiling.workspace = true
+closure.workspace = true
+wgpu.workspace = true
+winit.workspace = true
+bytemuck.workspace = true
+image.workspace = true
+quinn.workspace = true
+bitflags.workspace = true
+tracing.workspace = true
+futures.workspace = true
+tokio.workspace = true
+open.workspace = true
+clipboard.workspace = true
+which.workspace = true
+parking_lot.workspace = true
+chrono.workspace = true
+env_logger.workspace = true
+indexmap.workspace = true
+futures-signals.workspace = true
+derive_more.workspace = true
+
+[features]
+hotload-includes = [
+    'kiwi_std/hotload-includes',
+    'kiwi_decals/hotload-includes',
+]
