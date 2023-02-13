@@ -40,11 +40,11 @@ log.workspace = true
 relative-path.workspace = true
 
 [target.'cfg(target_os = "linux")'.dependencies]
-russimp = { git = "https://github.com/FredrikNoren/russimp.git", features = [
+russimp = { git = "https://github.com/FredrikNoren/russimp.git", rev = "0a691d1fa625a1b549d476b97c74f93adab7e5bb", features = [
     'static-link',
 ] }
 [target.'cfg(not(target_os = "linux"))'.dependencies]
-russimp = { git = "https://github.com/FredrikNoren/russimp.git", features = [
+russimp = { git = "https://github.com/FredrikNoren/russimp.git", rev = "0a691d1fa625a1b549d476b97c74f93adab7e5bb", features = [
     'prebuilt',
 ] }
 
