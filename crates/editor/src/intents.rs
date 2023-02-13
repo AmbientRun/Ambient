@@ -5,7 +5,7 @@ use kiwi_core::{
     self, selectable, snap_to_ground,
     transform::{get_world_transform, translation},
 };
-use kiwi_ecs::{components, uid, uid_lookup, EntityData, EntityId, EntityUid, World};
+use kiwi_ecs::{components, EntityData, EntityId, World};
 use kiwi_intent::{use_old_state, IntentContext, IntentRegistry};
 use kiwi_network::get_player_by_user_id;
 use kiwi_physics::{
@@ -60,8 +60,8 @@ components!("editor", {
     intent_place_ray_undo: Vec<IntentTransformRevert>,
     intent_set_transform: IntentTransform,
     intent_set_transform_undo: Vec<IntentTransformRevert>,
-    intent_reset_terrain_offset: (Vec<EntityUid>, f32),
-    intent_reset_terrain_offset_undo: Vec<(EntityUid, Option<f32>)>,
+    intent_reset_terrain_offset: (Vec<EntityId>, f32),
+    intent_reset_terrain_offset_undo: Vec<(EntityId, Option<f32>)>,
     intent_select: (Selection, SelectMode),
     intent_select_undo: Selection,
     intent_spawn_object_undo: (EntityId, bool, Selection),
@@ -70,8 +70,8 @@ components!("editor", {
     intent_duplicate_undo: Vec<EntityId>,
     intent_delete: Vec<EntityId>,
     intent_delete_undo: (World, Selection),
-    intent_component_change: (EntityUid, ObjectComponentChange),
-    intent_component_change_undo: (EntityUid, ObjectComponentChange),
+    intent_component_change: (EntityId, ObjectComponentChange),
+    intent_component_change_undo: (EntityId, ObjectComponentChange),
 });
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -444,9 +444,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
             intent
                 .0
                 .iter()
-                .map(|uid| {
-                    let id = world.resource(uid_lookup()).get(uid).unwrap();
-
+                .map(|&id| {
                     let transform = get_world_transform(world, id).context("No transform")?;
                     let (scale, rot, pos) = transform.to_scale_rotation_translation();
 
@@ -454,14 +452,13 @@ pub fn register_intents(reg: &mut IntentRegistry) {
 
                     let old_snap_to_ground = world.get(id, snap_to_ground()).ok();
                     transform_entity_parts(world, id, pos, rot, scale).context("Failed to transform")?;
-                    Ok((uid.clone(), old_snap_to_ground)) as anyhow::Result<_>
+                    Ok((id, old_snap_to_ground)) as anyhow::Result<_>
                 })
                 .collect::<Result<Vec<_>, _>>()
         },
         |ctx, old_offset| {
             let world = ctx.world;
             for (id, old_offset) in old_offset {
-                let id = world.resource(uid_lookup()).get(&id).unwrap();
                 if let Some(old_offset) = old_offset {
                     world.add_component(id, snap_to_ground(), old_offset).expect("Invalid entity");
                 } else {
@@ -606,16 +603,13 @@ pub fn register_intents(reg: &mut IntentRegistry) {
     reg.register(
         intent_component_change(),
         intent_component_change_undo(),
-        |ctx, (uid, change)| {
+        |ctx, (id, change)| {
             let world = ctx.world;
-            let id = world.resource(uid_lookup()).get(&uid).unwrap();
-            Ok((uid, change.apply_to_entity(world, id)))
+            Ok((id, change.apply_to_entity(world, id)))
         },
-        |ctx, (uid, revert)| {
+        |ctx, (id, revert)| {
             let world = ctx.world;
-            if let Ok(id) = world.resource(uid_lookup()).get(&uid) {
-                revert.apply_to_entity(world, id);
-            }
+            revert.apply_to_entity(world, id);
             Ok(())
         },
         use_old_state,

@@ -1,6 +1,6 @@
 use crate::{
     components, event,
-    global::{until_this, EntityId, EntityUid, Mat4, ObjectRef, Quat, Vec3},
+    global::{until_this, EntityId, Mat4, ObjectRef, Quat, Vec3},
     internal::{
         component::{
             traits::AsParam, Component, Components, SupportedComponentTypeGet,
@@ -20,23 +20,21 @@ pub use crate::internal::host::{AnimationAction, AnimationController};
 /// the entity is spawned.
 ///
 /// Returns `spawned_entity_uid`.
-pub fn spawn(components: &Components, persistent: bool) -> EntityUid {
+pub fn spawn(components: &Components, persistent: bool) -> EntityId {
     components
         .call_with(|data| host::entity_spawn(data, persistent))
         .from_bindgen()
 }
 
-/// Waits until `uid` has fully spawned. Note that this may never resolve if the entity
-/// does not complete spawning, or the UID in question refers to an entity that does
+/// Waits until `id` has spawned. Note that this may never resolve if the entity
+/// does not complete spawning, or the id in question refers to an entity that does
 /// not exist.
 // TODO(philpax): revisit once we think about the spawning situation some more
-pub async fn wait_for_spawn(uid: &EntityUid) -> EntityId {
-    let uid = uid.clone();
-    let event = until_this(event::ENTITY_SPAWN, move |ed| {
-        ed.get(components::core::ecs::uid()).unwrap() == uid
+pub async fn wait_for_spawn(id: EntityId) {
+    until_this(event::ENTITY_SPAWN, move |ed| {
+        ed.get(components::core::ecs::id()).unwrap() == id
     })
     .await;
-    event.get(components::core::ecs::id()).unwrap()
 }
 
 /// Despawns `entity` from the world. `entity` will not work with any other functions afterwards.
@@ -124,11 +122,6 @@ pub fn exists(entity: EntityId) -> bool {
 /// Gets all of the entities that have the given `component`.
 pub fn query<T>(component: Component<T>) -> Vec<EntityId> {
     host::entity_query(component.index()).from_bindgen()
-}
-
-/// Get the [EntityId] for the specified [EntityUid], if available.
-pub fn lookup_uid(uid: &EntityUid) -> Option<EntityId> {
-    host::entity_lookup_uid(uid.into_bindgen()).from_bindgen()
 }
 
 /// Gets all of the entities within `radius` of `position`.

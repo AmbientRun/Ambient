@@ -2,7 +2,7 @@ use std::time::SystemTime;
 
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
 use kiwi_animation as ea;
-use kiwi_ecs::{EntityId, EntityUid};
+use kiwi_ecs::EntityId;
 use kiwi_std::asset_url::{ObjectRef, TypedAssetUrl};
 use wit_bindgen_host_wasmtime_rust::{Endian, Le};
 
@@ -146,25 +146,6 @@ impl FromBindgen for host::ObjectRefResult {
     type Item = ObjectRef;
     fn from_bindgen(self) -> Self::Item {
         Self::Item::parse(self.id).unwrap()
-    }
-}
-
-impl IntoBindgen for EntityUid {
-    type Item = host::EntityUidResult;
-    fn into_bindgen(self) -> Self::Item {
-        Self::Item { id: self.0 }
-    }
-}
-impl<'a> FromBindgen for host::EntityUidParam<'a> {
-    type Item = EntityUid;
-    fn from_bindgen(self) -> Self::Item {
-        EntityUid(self.id.to_owned())
-    }
-}
-impl FromBindgen for host::EntityUidResult {
-    type Item = EntityUid;
-    fn from_bindgen(self) -> Self::Item {
-        EntityUid(self.id)
     }
 }
 

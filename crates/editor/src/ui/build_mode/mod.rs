@@ -4,7 +4,7 @@ use derive_more::Display;
 use futures_signals::signal::SignalExt;
 use itertools::Itertools;
 use kiwi_core::{asset_cache, async_ecs::async_run, get_mouse_clip_space_position, runtime};
-use kiwi_ecs::{uid_lookup, Component, ComponentValue, EntityId, EntityUid, World};
+use kiwi_ecs::{Component, ComponentValue, EntityId, World};
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
 use kiwi_input::{on_app_keyboard_input, MouseButton};
 use kiwi_intent::{client_push_intent, rpc_undo_head_exact};
@@ -242,7 +242,7 @@ impl ElementComponent for EditorBuildMode {
                                 EntityBrowserScreen {
                                     on_select: cb_arc(Arc::new({
                                         let set_screen = set_screen.clone();
-                                        move |id, uid| {
+                                        move |id| {
                                             set_selection(Selection::new([id]));
                                             set_screen(None);
                                         }

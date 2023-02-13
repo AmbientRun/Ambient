@@ -1,5 +1,5 @@
 use crate::{
-    global::{EntityId, EntityUid, Mat4, ObjectRef, Quat, Vec2, Vec3, Vec4},
+    global::{EntityId, Mat4, ObjectRef, Quat, Vec2, Vec3, Vec4},
     internal::{
         component::Component,
         conversion::{FromBindgen, IntoBindgen},
@@ -112,31 +112,6 @@ impl SupportedComponentTypeSet for ObjectRef {
 impl AsParam for ObjectRef {
     fn as_param(&self) -> host::ComponentTypeParam<'_> {
         host::ComponentTypeParam::TypeObjectRef(self.into_bindgen())
-    }
-}
-
-impl SupportedComponentTypeGet for EntityUid {
-    fn from_result(result: host::ComponentTypeResult) -> Option<Self> {
-        match result {
-            host::ComponentTypeResult::TypeEntityUid(v) => Some(v.from_bindgen()),
-            _ => None,
-        }
-    }
-}
-impl SupportedComponentTypeSet for EntityUid {
-    type OwnedParam = Self;
-
-    fn into_result(self) -> host::ComponentTypeResult {
-        host::ComponentTypeResult::TypeEntityUid(self.into_bindgen())
-    }
-
-    fn into_owned_param(self) -> Self::OwnedParam {
-        self
-    }
-}
-impl AsParam for EntityUid {
-    fn as_param(&self) -> host::ComponentTypeParam<'_> {
-        host::ComponentTypeParam::TypeEntityUid(self.into_bindgen())
     }
 }
 
@@ -295,69 +270,6 @@ impl<'a> SupportedComponentTypeSet for &'a Option<ObjectRef> {
 impl<'a> AsParam for Option<host::ObjectRefParam<'a>> {
     fn as_param(&self) -> host::ComponentTypeParam<'_> {
         host::ComponentTypeParam::TypeOption(host::ComponentOptionTypeParam::TypeObjectRef(
-            self.clone(),
-        ))
-    }
-}
-
-impl SupportedComponentTypeGet for Vec<EntityUid> {
-    fn from_result(result: host::ComponentTypeResult) -> Option<Self> {
-        match result {
-            host::ComponentTypeResult::TypeList(host::ComponentListTypeResult::TypeEntityUid(
-                v,
-            )) => Some(v.into_iter().map(|v| v.from_bindgen()).collect()),
-            _ => None,
-        }
-    }
-}
-impl<'a> SupportedComponentTypeSet for &'a Vec<EntityUid> {
-    type OwnedParam = Vec<host::EntityUidParam<'a>>;
-
-    fn into_result(self) -> host::ComponentTypeResult {
-        host::ComponentTypeResult::TypeList(host::ComponentListTypeResult::TypeEntityUid(
-            self.iter().map(|s| s.clone().into_bindgen()).collect(),
-        ))
-    }
-
-    fn into_owned_param(self) -> Self::OwnedParam {
-        self.iter()
-            .map(|v| host::EntityUidParam { id: v.as_ref() })
-            .collect()
-    }
-}
-impl<'a> AsParam for Vec<host::EntityUidParam<'a>> {
-    fn as_param(&self) -> host::ComponentTypeParam<'_> {
-        host::ComponentTypeParam::TypeList(host::ComponentListTypeParam::TypeEntityUid(self))
-    }
-}
-
-impl SupportedComponentTypeGet for Option<EntityUid> {
-    fn from_result(result: host::ComponentTypeResult) -> Option<Self> {
-        match result {
-            host::ComponentTypeResult::TypeOption(
-                host::ComponentOptionTypeResult::TypeEntityUid(v),
-            ) => Some(v.from_bindgen()),
-            _ => None,
-        }
-    }
-}
-impl<'a> SupportedComponentTypeSet for &'a Option<EntityUid> {
-    type OwnedParam = Option<host::EntityUidParam<'a>>;
-
-    fn into_result(self) -> host::ComponentTypeResult {
-        host::ComponentTypeResult::TypeOption(host::ComponentOptionTypeResult::TypeEntityUid(
-            self.clone().into_bindgen(),
-        ))
-    }
-
-    fn into_owned_param(self) -> Self::OwnedParam {
-        self.as_ref()
-            .map(|s| host::EntityUidParam { id: s.as_ref() })
-    }
-}
-impl<'a> AsParam for Option<host::EntityUidParam<'a>> {
-    fn as_param(&self) -> host::ComponentTypeParam<'_> {
-        host::ComponentTypeParam::TypeOption(host::ComponentOptionTypeParam::TypeEntityUid(
             self.clone(),
         ))
     }

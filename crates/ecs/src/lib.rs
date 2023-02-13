@@ -34,7 +34,6 @@ mod component_registry;
 mod component_ser;
 mod component_traits;
 mod entity_data;
-mod entity_uid;
 mod events;
 mod index;
 mod location;
@@ -49,7 +48,6 @@ pub use component_entry::*;
 pub use component_registry::*;
 pub use component_ser::*;
 pub use entity_data::*;
-pub use entity_uid::*;
 pub use events::*;
 pub use index::*;
 pub use location::*;
@@ -93,14 +91,6 @@ components!("ecs", {
         Description["Indicates that this entity shouldn't be stored on disk."]
     ]
     dont_store: (),
-    @[
-        Networked, Store, Debuggable,
-        Name["UID"],
-        Description["A unique ID that can be used to preserve the identity of an entity, even when it is recreated."]
-    ]
-    uid: EntityUid,
-    @[Debuggable, Resource]
-    uid_lookup: UidLookup,
 });
 
 #[derive(Clone)]

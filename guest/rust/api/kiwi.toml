@@ -164,12 +164,6 @@ name = "Parent"
 description = "The parent of this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::ecs::uid"]
-type = "EntityUid"
-name = "UID"
-description = "A unique ID that can be used to preserve the identity of an entity, even when it is recreated."
-attributes = ["Debuggable", "Networked", "Store"]
-
 [components."core::model::model_animatable"]
 type = "Bool"
 name = "Model animatable"

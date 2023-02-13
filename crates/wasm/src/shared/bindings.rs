@@ -1,7 +1,7 @@
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
 use kiwi_ecs::{
     paste::paste, primitive_component_definitions, with_component_registry, Component,
-    ComponentDesc, ComponentEntry, EntityData, EntityId, EntityUid, World,
+    ComponentDesc, ComponentEntry, EntityData, EntityId, World,
 };
 use kiwi_std::asset_url::ObjectRef;
 

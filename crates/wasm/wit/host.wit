@@ -44,10 +44,6 @@ record object-ref {
     id: string,
 }
 
-record entity-uid {
-    id: string,
-}
-
 /// An action in an animation.
 record animation-action {
     // we assume only URLs for now
@@ -86,7 +82,6 @@ variant component-list-type {
     type-vec3(list<vec3>),
     type-vec4(list<vec4>),
     type-object-ref(list<object-ref>),
-    type-entity-uid(list<entity-uid>),
 }
 
 variant component-option-type {
@@ -105,7 +100,6 @@ variant component-option-type {
     type-vec3(option<vec3>),
     type-vec4(option<vec4>),
     type-object-ref(option<object-ref>),
-    type-entity-uid(option<entity-uid>),
 }
 
 variant component-type {
@@ -124,7 +118,6 @@ variant component-type {
     type-vec3(vec3),
     type-vec4(vec4),
     type-object-ref(object-ref),
-    type-entity-uid(entity-uid),
     type-list(component-list-type),
     type-option(component-option-type),
 }
@@ -347,7 +340,7 @@ record player-raw-input {
 }
 
 // entity
-entity-spawn: func(data: components, persistent: bool) -> entity-uid
+entity-spawn: func(data: components, persistent: bool) -> entity-id
 entity-despawn: func(entity: entity-id) -> bool
 entity-set-animation-controller: func(entity: entity-id, animation-controller: animation-controller)
 entity-set-transform: func(entity: entity-id, transform: mat4, relative: bool)
@@ -363,7 +356,6 @@ entity-remove-components: func(entity: entity-id, indices: list<u32>)
 
 entity-exists: func(entity: entity-id) -> bool
 entity-query: func(index: u32) -> list<entity-id>
-entity-lookup-uid: func(uid: entity-uid) -> option<entity-id>
 
 record query {
     components: list<u32>,

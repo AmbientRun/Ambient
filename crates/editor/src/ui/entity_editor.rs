@@ -9,7 +9,7 @@ use kiwi_core::{
 };
 use kiwi_decals::decal;
 use kiwi_ecs::{
-    uid, with_component_registry, Component, ComponentDesc, ComponentEntry, ComponentValue, EntityData, EntityId, PrimitiveComponentType,
+    id, with_component_registry, Component, ComponentDesc, ComponentEntry, ComponentValue, EntityData, EntityId, PrimitiveComponentType,
     World,
 };
 use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
@@ -58,7 +58,6 @@ pub fn EntityEditor(world: &mut World, hooks: &mut Hooks, entity_id: EntityId) -
     let runtime = world.resource(runtime()).clone();
 
     if let Some(entity) = entity {
-        let uid = entity.get_ref(uid()).cloned().unwrap();
         let translation = entity.get_cloned(translation());
         FlowColumn(vec![
             Text::el(name).section_style(),
@@ -69,13 +68,7 @@ pub fn EntityEditor(world: &mut World, hooks: &mut Hooks, entity_id: EntityId) -
                     let game_client = game_client.clone();
                     let runtime = runtime.clone();
                     move |change| {
-                        runtime.spawn(client_push_intent(
-                            game_client.clone(),
-                            intent_component_change(),
-                            (uid.clone(), change),
-                            None,
-                            None,
-                        ));
+                        runtime.spawn(client_push_intent(game_client.clone(), intent_component_change(), (entity_id, change), None, None));
                     }
                 })),
             }

@@ -1,4 +1,4 @@
-use crate::{global::EntityUid, internal::host};
+use crate::internal::host;
 use std::{collections::HashMap, marker::PhantomData};
 
 mod borrowed_types;
@@ -99,7 +99,7 @@ impl Components {
     /// the entity is spawned.
     ///
     /// Returns `spawned_entity_uid`.
-    pub fn spawn(&self, persistent: bool) -> EntityUid {
+    pub fn spawn(&self, persistent: bool) -> crate::prelude::EntityId {
         crate::entity::spawn(self, persistent)
     }
 

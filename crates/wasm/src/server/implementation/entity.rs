@@ -1,17 +1,15 @@
 use glam::{Mat4, Quat, Vec3};
 use kiwi_animation::{animation_controller, AnimationController};
-use kiwi_ecs::{uid, EntityData, EntityId, EntityUid, World};
+use kiwi_ecs::{EntityData, EntityId, World};
 
 use kiwi_physics::helpers as eph;
 
-pub fn spawn(world: &mut World, data: EntityData) -> EntityUid {
-    let uid = EntityUid::create();
-    data.set(kiwi_ecs::uid(), uid.clone()).spawn(world);
-    uid
+pub fn spawn(world: &mut World, data: EntityData) -> EntityId {
+    data.spawn(world)
 }
 
-pub fn despawn(world: &mut World, entity: EntityId) -> Option<EntityUid> {
-    world.despawn(entity).and_then(|ed| ed.get_cloned(uid()))
+pub fn despawn(world: &mut World, entity: EntityId) -> Option<EntityId> {
+    world.despawn(entity).and_then(|ed| Some(entity))
 }
 
 pub fn set_transform(

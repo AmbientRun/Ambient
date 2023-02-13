@@ -1,5 +1,5 @@
 use itertools::Itertools;
-use kiwi_ecs::{uid_lookup, World};
+use kiwi_ecs::World;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_network::{client::GameClient, log_network_result};
 use kiwi_std::Cb;

@@ -6,7 +6,8 @@ use once_cell::sync::Lazy;
 use paste::paste;
 
 use crate::{
-    AttributeConstructor, AttributeStore, ComponentDesc, ComponentRegistry, ComponentVTable, Description, EntityId, EntityUid, ExternalComponentAttributes, Name
+    AttributeConstructor, AttributeStore, ComponentDesc, ComponentRegistry, ComponentVTable, Description, EntityId,
+    ExternalComponentAttributes, Name,
 };
 
 /// A mapping from enum names to Rust types. Instantiate this with a macro that takes `$(($value:ident, $type:ty)),*`.
@@ -28,8 +29,7 @@ macro_rules! primitive_component_definitions {
             (Vec2, Vec2),
             (Vec3, Vec3),
             (Vec4, Vec4),
-            (ObjectRef, ObjectRef),
-            (EntityUid, EntityUid)
+            (ObjectRef, ObjectRef)
         );
     };
 }

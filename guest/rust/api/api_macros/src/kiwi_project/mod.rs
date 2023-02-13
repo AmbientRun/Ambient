@@ -229,7 +229,6 @@ impl ComponentType {
             "Vec3" => Some(quote! {#api_name::global::Vec3}),
             "Vec4" => Some(quote! {#api_name::global::Vec4}),
             "ObjectRef" => Some(quote! {#api_name::global::ObjectRef}),
-            "EntityUid" => Some(quote! {#api_name::global::EntityUid}),
             _ => None,
         }
     }

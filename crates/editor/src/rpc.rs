@@ -2,7 +2,7 @@ use anyhow::Context;
 use bitflags::bitflags;
 use glam::{vec3, Vec3};
 use kiwi_core::transform::{rotation, scale};
-use kiwi_ecs::{uid, ArchetypeFilter, ECSError, EntityData, EntityId};
+use kiwi_ecs::{ArchetypeFilter, ECSError, EntityData, EntityId};
 use kiwi_intent::server_push_intent;
 use kiwi_network::{client::GameRpcArgs, server::MAIN_INSTANCE_ID};
 use kiwi_physics::visualization::{visualize_collider, visualizing};

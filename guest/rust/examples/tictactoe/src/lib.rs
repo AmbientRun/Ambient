@@ -22,13 +22,13 @@ pub async fn main() -> EventResult {
     let mut cells = Vec::new();
     for y in 0..3 {
         for x in 0..3 {
-            let uid = entity::game_object_base()
+            let id = entity::game_object_base()
                 .with_default(cube())
                 .with(translation(), vec3(x as f32, y as f32, 0.))
                 .with(scale(), vec3(0.3, 0.3, 0.3))
                 .with(color(), vec4(0.1, 0.1, 0.1, 1.))
                 .spawn(false);
-            cells.push(entity::wait_for_spawn(&uid).await);
+            cells.push(id);
         }
     }
 
