@@ -1,5 +1,6 @@
 # Runtime
 
+
 ## Coordinate system
 
 Kiwi uses a right-handed coordinate system for NDC with z from 1 to 0; i.e. reverse-z (near plane z=1, far plane z=0). For world coordinates, it uses a left-handed system. We consider x to be right, y to be back, and z to be up (same as Unreal). This means that the default camera (no view transform) is lying on its stomach, facing downwards.
