@@ -4,6 +4,54 @@ id = "runtime_components"
 name = "Runtime Components"
 version = "0.0.3"
 
+[components.core]
+name = "Core"
+description = "Contains all core components for the Kiwi Runtime."
+
+[components."core::app"]
+name = "App"
+description = "High-level state relevant to the application (including the in-development Editor)."
+
+[components."core::camera"]
+name = "Camera"
+description = "Camera matrices, types, parameters, and more."
+
+[components."core::ecs"]
+name = "Entity Component System"
+description = "Core components for the ECS and entities."
+
+[components."core::model"]
+name = "Model"
+description = "Information about models attached to entities."
+
+[components."core::network"]
+name = "Network"
+description = "Network-related state."
+
+[components."core::object"]
+name = "Object"
+description = "External object related state (e.g. drawing objects from remote URLs)"
+
+[components."core::physics"]
+name = "Physics"
+description = "Physics functionality and state."
+
+[components."core::player"]
+name = "Player"
+description = "Components that are attached to player entities."
+
+[components."core::primitives"]
+name = "Primitives"
+description = "Components that create primitive (in the geometric sense) objects from their attached entities."
+
+[components."core::rendering"]
+name = "Rendering"
+description = "Rendering-related state, including global rendering parameters and per-entity state."
+
+[components."core::transform"]
+name = "Transform"
+description = "Entity transform state (including translation, rotation and scale), as well as other transformations for this entity."
+
 [components."core::app::main_scene"]
 type = "Empty"
 name = "Main scene"
