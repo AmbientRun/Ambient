@@ -64,3 +64,7 @@ The following will filter to just files that contain `table`, scale it down, and
   }
 ]
 ```
+
+## Notes
+
+- If you're using components and hot reloading; note that the components will overwrite the current state of the entity, so should only be used for "static" data (i.e. max_hitpoint but not current_hitpoint)
