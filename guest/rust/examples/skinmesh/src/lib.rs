@@ -67,6 +67,28 @@ pub async fn main() -> EventResult {
                     },
                 );
             }
+
+            if delta.keys.contains(&KeyCode::Key3) {
+                entity::set_animation_controller(
+                    unit_entity,
+                    AnimationController {
+                        actions: &[
+                            AnimationAction {
+                                clip_url:
+                                    "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
+                                looping: true,
+                                weight: 0.5,
+                            },
+                            AnimationAction {
+                                clip_url: "assets/Capoeira.fbx/animations/mixamo.com.anim",
+                                looping: true,
+                                weight: 0.5,
+                            },
+                        ],
+                        apply_base_pose: false,
+                    },
+                );
+            }
         }
         EventOk
     });
