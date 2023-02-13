@@ -6,24 +6,36 @@ use futures::future::try_join_all;
 use glam::{vec3, Mat4, Quat, Vec3};
 use itertools::Itertools;
 use kiwi_core::{
-    asset_cache, async_ecs::async_run, runtime, transform::{rotation, scale, translation}
+    asset_cache,
+    async_ecs::async_run,
+    runtime,
+    transform::{rotation, scale, translation},
 };
 use kiwi_ecs::{
-    components, query, Component, ComponentQuery, ComponentValueBase, Debuggable, Description, EntityData, EntityId, MakeDefault, Name, Networked, QueryEvent, QueryState, Store, SystemGroup, TypedReadQuery, World
+    components, query, Component, ComponentQuery, ComponentValueBase, Debuggable, Description, EntityData, EntityId, MakeDefault, Name,
+    Networked, QueryEvent, QueryState, Store, SystemGroup, TypedReadQuery, World,
 };
 use kiwi_editor_derive::ElementEditor;
-use kiwi_model::model_def;
+use kiwi_model::model_from_url;
 use kiwi_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, ColliderAssetType, TypedAssetUrl}, download_asset::{AssetError, JsonFromUrl}, events::EventDispatcher
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt},
+    asset_url::{AbsAssetUrl, ColliderAssetType, TypedAssetUrl},
+    download_asset::{AssetError, JsonFromUrl},
+    events::EventDispatcher,
 };
 use kiwi_ui::Editable;
 use physxx::{
-    AsPxActor, AsPxRigidActor, PxActor, PxActorFlag, PxBase, PxBoxGeometry, PxControllerDesc, PxControllerShapeDesc, PxConvexMeshGeometry, PxGeometry, PxMaterial, PxMeshScale, PxPlaneGeometry, PxRigidActor, PxRigidBody, PxRigidBodyFlag, PxRigidDynamicRef, PxRigidStaticRef, PxShape, PxShapeFlag, PxSphereGeometry, PxTransform, PxTriangleMeshGeometry, PxUserData
+    AsPxActor, AsPxRigidActor, PxActor, PxActorFlag, PxBase, PxBoxGeometry, PxControllerDesc, PxControllerShapeDesc, PxConvexMeshGeometry,
+    PxGeometry, PxMaterial, PxMeshScale, PxPlaneGeometry, PxRigidActor, PxRigidBody, PxRigidBodyFlag, PxRigidDynamicRef, PxRigidStaticRef,
+    PxShape, PxShapeFlag, PxSphereGeometry, PxTransform, PxTriangleMeshGeometry, PxUserData,
 };
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    main_controller_manager, make_physics_static, mesh::{PhysxGeometry, PhysxGeometryFromUrl}, physx::{character_controller, physics, physics_controlled, physics_shape, rigid_actor, Physics}, wood_physics_material, ColliderScene, PxActorUserData, PxShapeUserData, PxWoodMaterialKey
+    main_controller_manager, make_physics_static,
+    mesh::{PhysxGeometry, PhysxGeometryFromUrl},
+    physx::{character_controller, physics, physics_controlled, physics_shape, rigid_actor, Physics},
+    wood_physics_material, ColliderScene, PxActorUserData, PxShapeUserData, PxWoodMaterialKey,
 };
 
 fn one() -> f32 {
@@ -201,7 +213,7 @@ pub fn server_systems() -> SystemGroup {
                     }
                 },
             ),
-            query((collider().changed(),)).optional_changed(model_def()).optional_changed(density()).to_system(|q, world, qs, _| {
+            query((collider().changed(),)).optional_changed(model_from_url()).optional_changed(density()).to_system(|q, world, qs, _| {
                 let all = changed_or_missing(q, world, qs, collider_shapes());
 
                 let mut by_collider = HashMap::new();

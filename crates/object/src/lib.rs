@@ -7,7 +7,7 @@ use kiwi_decals::decal;
 use kiwi_ecs::{
     components, query, query_mut, Debuggable, Description, DeserWorldWithWarnings, EntityId, Name, Networked, Store, SystemGroup, World,
 };
-use kiwi_model::{model_def, ModelDef};
+use kiwi_model::{model_from_url, ModelFromUrl};
 use kiwi_physics::collider::collider;
 use kiwi_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt},
@@ -66,8 +66,8 @@ impl AsyncAssetKey<Result<Arc<World>, AssetError>> for ObjectFromUrl {
         let DeserWorldWithWarnings { mut world, warnings } = tokio::task::block_in_place(|| serde_json::from_slice(&data))
             .with_context(|| format!("Failed to deserialize object2 from url {}", obj_url))?;
         warnings.log_warnings();
-        for (_id, (url,), _) in query_mut((model_def(),), ()).iter(&mut world, None) {
-            *url = ModelDef(url.0.resolve(&obj_url).context("Failed to resolve model url")?.into());
+        for (_id, (url,), _) in query_mut((model_from_url(),), ()).iter(&mut world, None) {
+            *url = AssetUrl::parse(&url).context("Invalid model url")?.resolve(&obj_url).context("Failed to resolve model url")?.into();
         }
         for (_id, (def,), _) in query_mut((collider(),), ()).iter(&mut world, None) {
             def.resolve(&obj_url).context("Failed to resolve collider")?;

@@ -1,14 +1,17 @@
 use std::{
-    collections::HashMap, sync::Arc, time::{Duration, SystemTime}
+    collections::HashMap,
+    sync::Arc,
+    time::{Duration, SystemTime},
 };
 
 use convert_case::{Case, Casing};
 use derive_more::Display;
 use kiwi_core::{asset_cache, hierarchy::children, time};
 use kiwi_ecs::{components, query, Debuggable, EntityId, MakeDefault, Networked, Store, SystemGroup};
-use kiwi_model::{animation_binder, model, model_def, ModelDef};
+use kiwi_model::{animation_binder, model, model_from_url, ModelFromUrl};
 use kiwi_std::{
-    asset_cache::{AssetCache, AsyncAssetKeyExt}, asset_url::{AnimationAssetType, ModelAssetType, TypedAssetUrl}
+    asset_cache::{AssetCache, AsyncAssetKeyExt},
+    asset_url::{AnimationAssetType, ModelAssetType, TypedAssetUrl},
 };
 use kiwi_ui::Editable;
 use serde::{Deserialize, Serialize};
@@ -28,7 +31,7 @@ components!("animation", {
     /// the animations base pose, so we apply the pose from the animations model to make sure they
     /// correspond
     @[Debuggable, Networked, Store]
-    animation_apply_base_pose: ModelDef,
+    animation_apply_base_pose: ModelFromUrl,
     @[Debuggable, Networked, Store]
     copy_animation_controller_to_children: (),
     @[Debuggable, Networked, Store]
@@ -176,7 +179,9 @@ pub fn animation_systems() -> SystemGroup {
                     if ctrlr.apply_base_pose {
                         if let Some(action) = ctrlr.actions.get(0) {
                             if let AnimationClipRef::FromModelAsset(def) = &action.clip {
-                                world.add_component(id, animation_apply_base_pose(), ModelDef(def.model_crate().unwrap().model())).unwrap();
+                                world
+                                    .add_component(id, animation_apply_base_pose(), ModelFromUrl(def.model_crate().unwrap().model()))
+                                    .unwrap();
                             }
                         }
                     }
@@ -203,7 +208,7 @@ pub fn animation_systems() -> SystemGroup {
                 let mut in_error = Vec::new();
                 for (id, (controller, binder)) in q.iter(world, qs) {
                     let retaget = world.get(id, animation_retargeting()).unwrap_or(AnimationRetargeting::None);
-                    let model = world.get_ref(id, model_def()).map(|def| def.0.clone()).ok();
+                    let model = world.get_ref(id, model_from_url()).ok().and_then(|def| Some(TypedAssetUrl::parse(def).ok()?));
                     // Calc
                     for action in controller.actions.iter() {
                         match action.clip.get_clip(assets.clone(), retaget, model.clone()) {

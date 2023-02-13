@@ -12,7 +12,7 @@ use kiwi_core::{
     transform::{local_to_world, translation},
 };
 use kiwi_ecs::{components, query, EntityData, EntityId, FnSystem, SystemGroup};
-use kiwi_model::{Model, ModelDef, ModelSpawnOpts, ModelSpawnRoot};
+use kiwi_model::{Model, ModelFromUrl, ModelSpawnOpts, ModelSpawnRoot};
 use kiwi_renderer::color;
 use kiwi_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
@@ -162,7 +162,7 @@ async fn update_natural_layer(
                         .0
                         .iter()
                         .filter_map(|url| {
-                            let model = Box::new(ModelDef(url.join("../models/main.json").ok()?.into())) as BoxModelKey;
+                            let model = Box::new(ModelFromUrl(url.join("../models/main.json").ok()?.into())) as BoxModelKey;
                             Some((element.clone(), model))
                         })
                         .collect_vec()
