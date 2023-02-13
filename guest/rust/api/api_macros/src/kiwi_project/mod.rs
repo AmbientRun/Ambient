@@ -19,7 +19,6 @@ pub fn read_file(file_path: String) -> anyhow::Result<(String, String)> {
 
 pub fn implementation(
     (file_path, contents): (String, String),
-    extend_paths: &[Vec<String>],
     global_namespace: bool,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     let manifest: Manifest = toml::from_str(&contents)?;
@@ -28,7 +27,6 @@ pub fn implementation(
     enum TreeNodeInner {
         Module(BTreeMap<String, TreeNode>),
         Component(Component),
-        UseAll(Vec<String>),
     }
 
     #[derive(Debug)]
@@ -81,16 +79,6 @@ pub fn implementation(
             &id.split("::").map(|s| s.to_string()).collect::<Vec<_>>(),
             TreeNodeInner::Component(component),
         )?;
-    }
-    for path in extend_paths {
-        let components_index = path
-            .iter()
-            .position(|s| s == "components")
-            .context("expected components:: in extend path")?;
-        let mut subpath = path[components_index + 1..path.len()].to_vec();
-        subpath.push("#use_all#".to_string());
-
-        insert_into_root(&mut root, &subpath, TreeNodeInner::UseAll(path.clone()))?;
     }
 
     fn expand_tree(
@@ -148,15 +136,6 @@ pub fn implementation(
                     pub fn #name_ident() -> crate::Component<#component_ty> { *#name_uppercase_ident }
                 })
             }
-            TreeNodeInner::UseAll(path) => {
-                let path = path
-                    .iter()
-                    .map(|s| syn::parse_str::<syn::Ident>(s))
-                    .collect::<Result<Vec<_>, _>>()?;
-                Ok(quote! {
-                    pub use #(#path::)* *;
-                })
-            }
         }
     }
 
@@ -178,6 +157,7 @@ pub fn implementation(
     Ok(quote!(
         const _PROJECT_MANIFEST: &'static str = include_str!(#file_path);
         #[allow(missing_docs)]
+        /// Auto-generated component definitions. These come from `kiwi.toml` in the root of the corresponding project.
         pub mod components {
             #expanded_tree
         }
