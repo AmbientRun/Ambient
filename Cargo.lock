@@ -3132,6 +3132,46 @@ dependencies = [
 ]
 
 [[package]]
+name = "kiwi_terrain"
+version = "0.0.3"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "bitflags",
+ "bytemuck",
+ "closure",
+ "flume",
+ "futures",
+ "glam 0.22.0",
+ "itertools",
+ "kiwi_app",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_editor_derive",
+ "kiwi_element",
+ "kiwi_gpu",
+ "kiwi_intent",
+ "kiwi_meshes",
+ "kiwi_network",
+ "kiwi_physics",
+ "kiwi_renderer",
+ "kiwi_std",
+ "kiwi_ui",
+ "ndarray",
+ "parking_lot",
+ "physxx",
+ "profiling 1.0.6",
+ "quinn",
+ "rand",
+ "rand_pcg",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "wgpu",
+]
+
+[[package]]
 name = "kiwi_ui"
 version = "0.0.3"
 dependencies = [
@@ -4552,6 +4592,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "77d416b86801d23dde1aa643023b775c3a462efc0ed96443add11546cdf1dca8"
 dependencies = [
  "rand_core 0.5.1",
+]
+
+[[package]]
+name = "rand_pcg"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "59cad018caf63deb318e5a4586d99a24424a364f40f1e5778c29aca23f4fc73e"
+dependencies = [
+ "rand_core",
 ]
 
 [[package]]

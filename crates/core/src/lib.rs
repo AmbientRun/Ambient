@@ -2,11 +2,13 @@
 extern crate lazy_static;
 
 use std::{
-    sync::Arc, time::{Duration, Instant, SystemTime}
+    sync::Arc,
+    time::{Duration, Instant, SystemTime},
 };
 
 use kiwi_ecs::{
-    components, query, Debuggable, Description, DynSystem, EntityId, FrameEvent, Name, Networked, QueryState, Resource, Store, System, World
+    components, query, Debuggable, Description, DynSystem, EntityId, FrameEvent, Name, Networked, QueryState, Resource, Store, System,
+    World,
 };
 use kiwi_gpu::{gpu::Gpu, mesh_buffer::GpuMesh};
 
@@ -15,7 +17,9 @@ pub mod gpu_ecs;
 pub mod hierarchy;
 use glam::{uvec2, vec2, UVec2, Vec2};
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKey}, events::EventDispatcher, math::interpolate
+    asset_cache::{AssetCache, SyncAssetKey},
+    events::EventDispatcher,
+    math::interpolate,
 };
 pub use paste;
 use winit::{event::Event, window::Window};
@@ -50,6 +54,14 @@ components!("app", {
     ui_scene: (),
     @[Resource]
     asset_cache: AssetCache,
+    @[Debuggable, Networked, Store, Name["Map seed"], Description["A random number seed for this map"]]
+    map_seed: u64,
+    @[Debuggable, Networked, Store, Name["Snap to ground"], Description["This object should automatically be moved with the terrain if the terrain is changed"]]
+    snap_to_ground: f32,
+    @[Debuggable, Networked, Store, Name["Selectable"], Description["This object can be selected in the editor"]]
+    selectable: (),
+    @[Debuggable, Networked, Store, Name["Session start time"], Description["When the current server session was started"]]
+    session_start: SystemTime,
 
     @[Resource]
     time: Duration,
