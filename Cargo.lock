@@ -2890,6 +2890,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "kiwi_naturals"
+version = "0.0.3"
+dependencies = [
+ "async-trait",
+ "bytemuck",
+ "glam 0.22.0",
+ "itertools",
+ "kiwi_app",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_editor_derive",
+ "kiwi_element",
+ "kiwi_gpu",
+ "kiwi_model",
+ "kiwi_network",
+ "kiwi_renderer",
+ "kiwi_std",
+ "kiwi_terrain",
+ "kiwi_ui",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "wgpu",
+]
+
+[[package]]
 name = "kiwi_network"
 version = "0.0.3"
 dependencies = [

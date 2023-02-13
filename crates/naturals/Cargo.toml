@@ -1,0 +1,34 @@
+
+[package]
+name = "kiwi_naturals"
+version.workspace = true
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+kiwi_app = { path = "../app" }
+kiwi_core = { path = "../core" }
+kiwi_ecs = { path = "../ecs" }
+kiwi_gpu = { path = "../gpu" }
+kiwi_renderer = { path = "../renderer" }
+kiwi_std = { path = "../std" }
+kiwi_ui = { path = "../ui" }
+kiwi_element = { path = "../element" }
+kiwi_network = { path = "../network" }
+kiwi_model = { path = "../model" }
+kiwi_editor_derive = { path = "../editor_derive" }
+kiwi_terrain = { path = "../terrain" }
+itertools.workspace = true
+rand.workspace = true
+glam.workspace = true
+async-trait.workspace = true
+serde.workspace = true
+bytemuck.workspace = true
+serde_json.workspace = true
+wgpu.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+
+[features]
+hotload-includes = ['kiwi_std/hotload-includes']

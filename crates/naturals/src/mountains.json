@@ -1,0 +1,853 @@
+[
+    {
+        "grid_size": 0.22499989,
+        "elements": [
+            {
+                "enabled": true,
+                "models": [
+                    [
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_plants_3d_sktne_2k_3dplant_ms_sktne_json0/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_plants_3d_sktne_2k_3dplant_ms_sktne_json1/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_plants_3d_sktne_2k_3dplant_ms_sktne_json2/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_plants_3d_sktne_2k_3dplant_ms_sktne_json3/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_plants_3d_sktne_2k_3dplant_ms_sktne_json4/objects/main.json"
+                    ]
+                ],
+                "color": {
+                    "r": 1.0,
+                    "g": 1.0,
+                    "b": 1.0
+                },
+                "scale_min": 1.0,
+                "scale_max": 2.3649998,
+                "scale_power": 1.0,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 0.0,
+                "rotation_xy_jitter": 0.0,
+                "rotation_straightness": 0.0,
+                "position_normal_offset": 0.0,
+                "position_z_offset": 0.0,
+                "normal_miplevel": 0.0,
+                "cluster_noise_scale": 1.0,
+                "soil_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 1.0,
+                        "y0": 0.0,
+                        "y1": 0.0
+                    }
+                },
+                "elevation": {
+                    "Interpolate": {
+                        "x0": 0.0,
+                        "x1": 10.0,
+                        "y0": 0.12592603,
+                        "y1": 0.3518521
+                    }
+                },
+                "water_depth": {
+                    "Interpolate": {
+                        "x0": 0.0,
+                        "x1": 0.1,
+                        "y0": 0.98518527,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 30.0,
+                        "x1": 50.0,
+                        "y0": 0.5518519,
+                        "y1": 0.033333335
+                    }
+                },
+                "cluster_noise": {
+                    "Constant": {
+                        "value": 1.0
+                    }
+                }
+            },
+            {
+                "enabled": true,
+                "models": [
+                    [
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmbjqia_2k_3dplant_ms_wcwmbjqia_json0/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmbjqia_2k_3dplant_ms_wcwmbjqia_json1/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmbjqia_2k_3dplant_ms_wcwmbjqia_json2/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmbjqia_2k_3dplant_ms_wcwmbjqia_json3/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmbjqia_2k_3dplant_ms_wcwmbjqia_json4/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmbjqia_2k_3dplant_ms_wcwmbjqia_json5/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmbjqia_2k_3dplant_ms_wcwmbjqia_json6/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmbjqia_2k_3dplant_ms_wcwmbjqia_json7/objects/main.json"
+                    ]
+                ],
+                "color": {
+                    "r": 0.8370368,
+                    "g": 0.7629632,
+                    "b": 0.90370345
+                },
+                "scale_min": 0.8707745,
+                "scale_max": 3.4448628,
+                "scale_power": 1.6966684,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 1.0,
+                "rotation_xy_jitter": 0.085185245,
+                "rotation_straightness": 0.2370372,
+                "position_normal_offset": 0.0,
+                "position_z_offset": 0.0,
+                "normal_miplevel": 0.0,
+                "cluster_noise_scale": 2.6881723,
+                "soil_depth": {
+                    "SmoothStep": {
+                        "x0": 2.2,
+                        "x1": 3.0,
+                        "y0": 0.0,
+                        "y1": 0.6814816
+                    }
+                },
+                "elevation": {
+                    "Constant": {
+                        "value": 0.45925936
+                    }
+                },
+                "water_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 0.1,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 35.0,
+                        "y0": 0.51111096,
+                        "y1": 0.0
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 0.3,
+                        "x1": 0.4,
+                        "y0": 0.096296184,
+                        "y1": 1.0
+                    }
+                }
+            },
+            {
+                "enabled": true,
+                "models": [
+                    [
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_fern_wdvlditia_2k_3dplant_ms_wdvlditia_json0/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_fern_wdvlditia_2k_3dplant_ms_wdvlditia_json1/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_fern_wdvlditia_2k_3dplant_ms_wdvlditia_json2/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_fern_wdvlditia_2k_3dplant_ms_wdvlditia_json3/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_fern_wdvlditia_2k_3dplant_ms_wdvlditia_json4/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_fern_wdvlditia_2k_3dplant_ms_wdvlditia_json5/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_fern_wdvlditia_2k_3dplant_ms_wdvlditia_json6/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_fern_wdvlditia_2k_3dplant_ms_wdvlditia_json7/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_fern_wdvlditia_2k_3dplant_ms_wdvlditia_json8/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_fern_wdvlditia_2k_3dplant_ms_wdvlditia_json9/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_fern_wdvlditia_2k_3dplant_ms_wdvlditia_json10/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_fern_wdvlditia_2k_3dplant_ms_wdvlditia_json11/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_fern_wdvlditia_2k_3dplant_ms_wdvlditia_json12/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_fern_wdvlditia_2k_3dplant_ms_wdvlditia_json13/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_fern_wdvlditia_2k_3dplant_ms_wdvlditia_json14/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_fern_wdvlditia_2k_3dplant_ms_wdvlditia_json15/objects/main.json"
+                    ]
+                ],
+                "color": {
+                    "r": 0.68148124,
+                    "g": 0.6296295,
+                    "b": 0.7777781
+                },
+                "scale_min": 0.9151031,
+                "scale_max": 5.0588202,
+                "scale_power": 1.9166667,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 1.0,
+                "rotation_xy_jitter": 0.07037032,
+                "rotation_straightness": 0.12592585,
+                "position_normal_offset": 0.0,
+                "position_z_offset": 0.0,
+                "normal_miplevel": 0.0,
+                "cluster_noise_scale": 2.352379,
+                "soil_depth": {
+                    "SmoothStep": {
+                        "x0": 2.5,
+                        "x1": 4.0,
+                        "y0": 0.0,
+                        "y1": 0.80370367
+                    }
+                },
+                "elevation": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 37.0,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "water_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 0.1,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 50.0,
+                        "y0": 0.28888872,
+                        "y1": 0.018518405
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 0.7,
+                        "x1": 0.8,
+                        "y0": 0.025926039,
+                        "y1": 1.0
+                    }
+                }
+            },
+            {
+                "enabled": true,
+                "models": [
+                    [
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json0/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json1/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json2/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json3/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json4/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json5/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json6/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json7/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json8/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json9/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json10/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json11/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json12/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json13/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json14/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json15/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json16/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json17/objects/main.json"
+                    ]
+                ],
+                "color": {
+                    "r": 0.8666667,
+                    "g": 0.8148149,
+                    "b": 0.8814816
+                },
+                "scale_min": 0.8947032,
+                "scale_max": 3.1376371,
+                "scale_power": 1.2200006,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 1.0,
+                "rotation_xy_jitter": 0.033333335,
+                "rotation_straightness": 0.103703834,
+                "position_normal_offset": 0.0,
+                "position_z_offset": 0.0,
+                "normal_miplevel": 0.0,
+                "cluster_noise_scale": 1.4485557,
+                "soil_depth": {
+                    "SmoothStep": {
+                        "x0": 2.2,
+                        "x1": 3.0,
+                        "y0": 0.0,
+                        "y1": 0.59259254
+                    }
+                },
+                "elevation": {
+                    "Constant": {
+                        "value": 0.51111126
+                    }
+                },
+                "water_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 0.1,
+                        "y0": 0.69629633,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 35.0,
+                        "y0": 0.49259236,
+                        "y1": 0.0
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 0.5,
+                        "x1": 0.6,
+                        "y0": 0.04814792,
+                        "y1": 1.0
+                    }
+                }
+            },
+            {
+                "enabled": true,
+                "models": [
+                    [
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_plants_3d_uchmfdyia_2k_3dplant_ms_uchmfdyia_json0/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_plants_3d_uchmfdyia_2k_3dplant_ms_uchmfdyia_json1/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_plants_3d_uchmfdyia_2k_3dplant_ms_uchmfdyia_json2/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_plants_3d_uchmfdyia_2k_3dplant_ms_uchmfdyia_json3/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_plants_3d_uchmfdyia_2k_3dplant_ms_uchmfdyia_json4/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_plants_3d_uchmfdyia_2k_3dplant_ms_uchmfdyia_json5/objects/main.json"
+                    ]
+                ],
+                "color": {
+                    "r": 0.9259257,
+                    "g": 0.90370417,
+                    "b": 0.9703702
+                },
+                "scale_min": 0.8354514,
+                "scale_max": 2.8622243,
+                "scale_power": 1.2933328,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 1.0,
+                "rotation_xy_jitter": 0.033333335,
+                "rotation_straightness": 0.08888889,
+                "position_normal_offset": 0.0,
+                "position_z_offset": 0.0,
+                "normal_miplevel": 0.0,
+                "cluster_noise_scale": 1.224294,
+                "soil_depth": {
+                    "SmoothStep": {
+                        "x0": 2.2,
+                        "x1": 3.0,
+                        "y0": 0.0,
+                        "y1": 0.6296295
+                    }
+                },
+                "elevation": {
+                    "Constant": {
+                        "value": 0.49629635
+                    }
+                },
+                "water_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 0.1,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 30.0,
+                        "y0": 0.6888887,
+                        "y1": 0.0
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 0.6,
+                        "x1": 0.7,
+                        "y0": 0.05185191,
+                        "y1": 1.0
+                    }
+                }
+            },
+            {
+                "enabled": true,
+                "models": [
+                    [
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_plants_3d_tbdpec3r_2k_3dplant_ms_tbdpec3r_json0/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_plants_3d_tbdpec3r_2k_3dplant_ms_tbdpec3r_json1/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_plants_3d_tbdpec3r_2k_3dplant_ms_tbdpec3r_json2/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_plants_3d_tbdpec3r_2k_3dplant_ms_tbdpec3r_json3/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_plants_3d_tbdpec3r_2k_3dplant_ms_tbdpec3r_json4/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_plants_3d_tbdpec3r_2k_3dplant_ms_tbdpec3r_json5/objects/main.json"
+                    ]
+                ],
+                "color": {
+                    "r": 0.48148125,
+                    "g": 0.5851854,
+                    "b": 0.51111144
+                },
+                "scale_min": 0.6111086,
+                "scale_max": 1.8189355,
+                "scale_power": 1.1833345,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 1.0,
+                "rotation_xy_jitter": 0.033333335,
+                "rotation_straightness": 0.19259253,
+                "position_normal_offset": 0.0,
+                "position_z_offset": 0.0,
+                "normal_miplevel": 0.26666668,
+                "cluster_noise_scale": 2.2728293,
+                "soil_depth": {
+                    "BellCurve": {
+                        "center": 1.7,
+                        "width": 0.6,
+                        "y0": 0.0,
+                        "y1": 1.0
+                    }
+                },
+                "elevation": {
+                    "Constant": {
+                        "value": 0.75555557
+                    }
+                },
+                "water_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 0.1,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 45.0,
+                        "y0": 0.79629636,
+                        "y1": 0.0
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 0.4,
+                        "x1": 0.5,
+                        "y0": 0.014814759,
+                        "y1": 1.0
+                    }
+                }
+            }
+        ]
+    },
+    {
+        "grid_size": 2.0225003,
+        "elements": [
+            {
+                "enabled": true,
+                "models": [
+                    [
+                        "https://playdims.com/api/v1/assetdb/crates/N2hlpNhpfg0DCEDng8xe/2.0.1/naturemanufacture_assets_dynamic_nature_mountain_tree_pack_prefabs_standard_fir_05_standalone_cheap_prefab/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/N2hlpNhpfg0DCEDng8xe/2.0.1/naturemanufacture_assets_dynamic_nature_mountain_tree_pack_prefabs_standard_fir_05_standalone_prefab/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/N2hlpNhpfg0DCEDng8xe/2.0.1/naturemanufacture_assets_dynamic_nature_mountain_tree_pack_prefabs_standard_fir_07_forest_cheap_prefab/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/N2hlpNhpfg0DCEDng8xe/2.0.1/naturemanufacture_assets_dynamic_nature_mountain_tree_pack_prefabs_standard_fir_07_forest_prefab/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/N2hlpNhpfg0DCEDng8xe/2.0.1/naturemanufacture_assets_dynamic_nature_mountain_tree_pack_prefabs_standard_fir_06_forest_prefab/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/N2hlpNhpfg0DCEDng8xe/2.0.1/naturemanufacture_assets_dynamic_nature_mountain_tree_pack_prefabs_standard_fir_06_forest_cheap_prefab/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/N2hlpNhpfg0DCEDng8xe/2.0.1/naturemanufacture_assets_dynamic_nature_mountain_tree_pack_prefabs_standard_fir_08_dead_forest_prefab/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/N2hlpNhpfg0DCEDng8xe/2.0.1/naturemanufacture_assets_dynamic_nature_mountain_tree_pack_prefabs_standard_fir_04_standalone_cheap_prefab/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/N2hlpNhpfg0DCEDng8xe/2.0.1/naturemanufacture_assets_dynamic_nature_mountain_tree_pack_prefabs_standard_fir_01_plant_prefab/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/N2hlpNhpfg0DCEDng8xe/2.0.1/naturemanufacture_assets_dynamic_nature_mountain_tree_pack_prefabs_standard_fir_08_dead_forest_cheap_prefab/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/N2hlpNhpfg0DCEDng8xe/2.0.1/naturemanufacture_assets_dynamic_nature_mountain_tree_pack_prefabs_standard_fir_04_standalone_prefab/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/N2hlpNhpfg0DCEDng8xe/2.0.1/naturemanufacture_assets_dynamic_nature_mountain_tree_pack_prefabs_standard_fir_03_medium_prefab/objects/main.json",
+                        "https://playdims.com/api/v1/assetdb/crates/N2hlpNhpfg0DCEDng8xe/2.0.1/naturemanufacture_assets_dynamic_nature_mountain_tree_pack_prefabs_standard_fir_02_small_prefab/objects/main.json"
+                    ]
+                ],
+                "color": {
+                    "r": 1.0,
+                    "g": 1.0,
+                    "b": 1.0
+                },
+                "scale_min": 0.32932925,
+                "scale_max": 2.1325984,
+                "scale_power": 1.4033327,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 1.0,
+                "rotation_xy_jitter": 0.007407464,
+                "rotation_straightness": 1.0,
+                "position_normal_offset": 0.0,
+                "position_z_offset": -0.4629631,
+                "normal_miplevel": 0.0,
+                "cluster_noise_scale": 2.272825,
+                "soil_depth": {
+                    "SmoothStep": {
+                        "x0": 2.5,
+                        "x1": 10.0,
+                        "y0": 0.0,
+                        "y1": 0.47037032
+                    }
+                },
+                "elevation": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 100.0,
+                        "y0": 0.61481494,
+                        "y1": 0.040740628
+                    }
+                },
+                "water_depth": {
+                    "Interpolate": {
+                        "x0": 0.0,
+                        "x1": 0.1,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 10.0,
+                        "x1": 50.0,
+                        "y0": 1.0,
+                        "y1": 0.011111111
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 0.5,
+                        "x1": 0.6,
+                        "y0": 0.022222223,
+                        "y1": 1.0
+                    }
+                }
+            },
+            {
+                "enabled": true,
+                "models": [
+                    [
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_nature_rock_vivrcjkaw_2k_3d_ms_vivrcjkaw_json0/objects/main.json"
+                    ]
+                ],
+                "color": {
+                    "r": 1.0,
+                    "g": 1.0,
+                    "b": 1.0
+                },
+                "scale_min": 0.25374752,
+                "scale_max": 5.824303,
+                "scale_power": 2.283331,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 1.0,
+                "rotation_xy_jitter": 0.040740795,
+                "rotation_straightness": 0.0,
+                "position_normal_offset": -1.5740681,
+                "position_z_offset": 1.388897,
+                "normal_miplevel": 0.15555623,
+                "cluster_noise_scale": 1.900713,
+                "soil_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 5.0,
+                        "y0": 0.6777776,
+                        "y1": 0.16666667
+                    }
+                },
+                "elevation": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 10.0,
+                        "y0": 0.50370365,
+                        "y1": 0.018518575
+                    }
+                },
+                "water_depth": {
+                    "Interpolate": {
+                        "x0": 0.0,
+                        "x1": 1.0,
+                        "y0": 0.23333333,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 35.0,
+                        "y0": 0.30000034,
+                        "y1": 0.0
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 0.3,
+                        "x1": 0.5,
+                        "y0": 0.02592587,
+                        "y1": 1.0
+                    }
+                }
+            },
+            {
+                "enabled": true,
+                "models": [
+                    [
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_nature_rock_vcyqebjfa_2k_3d_ms_vcyqebjfa_json0/objects/main.json"
+                    ]
+                ],
+                "color": {
+                    "r": 1.0,
+                    "g": 1.0,
+                    "b": 1.0
+                },
+                "scale_min": 0.4184459,
+                "scale_max": 2.9703867,
+                "scale_power": 2.5116646,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 1.0,
+                "rotation_xy_jitter": 0.040740795,
+                "rotation_straightness": 0.07037067,
+                "position_normal_offset": -0.1851902,
+                "position_z_offset": -0.37036514,
+                "normal_miplevel": 0.42222288,
+                "cluster_noise_scale": 2.8668573,
+                "soil_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 5.0,
+                        "y0": 0.23703715,
+                        "y1": 0.0
+                    }
+                },
+                "elevation": {
+                    "InterpolateClamped": {
+                        "x0": 5.0,
+                        "x1": 33.0,
+                        "y0": 0.18148142,
+                        "y1": 0.040740628
+                    }
+                },
+                "water_depth": {
+                    "Interpolate": {
+                        "x0": 0.0,
+                        "x1": 1.0,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 30.0,
+                        "y0": 0.29259253,
+                        "y1": 0.0
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 0.5,
+                        "x1": 0.6,
+                        "y0": 0.022222223,
+                        "y1": 1.0
+                    }
+                }
+            },
+            {
+                "enabled": true,
+                "models": [
+                    [
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_nature_rock_beach_venjcjyqx_2k_3d_ms_venjcjyqx_json0/objects/main.json"
+                    ]
+                ],
+                "color": {
+                    "r": 1.0,
+                    "g": 1.0,
+                    "b": 1.0
+                },
+                "scale_min": 0.12465752,
+                "scale_max": 3.7391193,
+                "scale_power": 1.0366666,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 1.0,
+                "rotation_xy_jitter": 1.0,
+                "rotation_straightness": 0.41851857,
+                "position_normal_offset": 0.0,
+                "position_z_offset": -0.18518257,
+                "normal_miplevel": 0.0,
+                "cluster_noise_scale": 1.508414,
+                "soil_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 5.0,
+                        "y0": 0.34444445,
+                        "y1": 0.47777778
+                    }
+                },
+                "elevation": {
+                    "InterpolateClamped": {
+                        "x0": 5.0,
+                        "x1": 33.0,
+                        "y0": 0.4296295,
+                        "y1": 0.1518519
+                    }
+                },
+                "water_depth": {
+                    "Interpolate": {
+                        "x0": 0.0,
+                        "x1": 1.0,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 25.0,
+                        "y0": 0.6888889,
+                        "y1": 0.0
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 0.7,
+                        "x1": 0.8,
+                        "y0": 0.014814928,
+                        "y1": 1.0
+                    }
+                }
+            },
+            {
+                "enabled": true,
+                "models": [
+                    [
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_rock_granite_qktcj_2k_3d_ms_qktcj_json0/objects/main.json"
+                    ]
+                ],
+                "color": {
+                    "r": 1.0,
+                    "g": 1.0,
+                    "b": 1.0
+                },
+                "scale_min": 0.6111086,
+                "scale_max": 3.2090857,
+                "scale_power": 1.7700006,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": 0.0,
+                "rotation_z_jitter": 1.0,
+                "rotation_xy_jitter": 0.018518405,
+                "rotation_straightness": 0.39259246,
+                "position_normal_offset": -0.9259205,
+                "position_z_offset": 0.0,
+                "normal_miplevel": 0.35555625,
+                "cluster_noise_scale": 2.8668609,
+                "soil_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 5.0,
+                        "y0": 0.2925927,
+                        "y1": 0.07777778
+                    }
+                },
+                "elevation": {
+                    "InterpolateClamped": {
+                        "x0": 5.0,
+                        "x1": 33.0,
+                        "y0": 0.4407408,
+                        "y1": 0.14814827
+                    }
+                },
+                "water_depth": {
+                    "Interpolate": {
+                        "x0": 0.0,
+                        "x1": 1.0,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 25.0,
+                        "y0": 0.75555557,
+                        "y1": 0.0
+                    }
+                },
+                "cluster_noise": {
+                    "Interpolate": {
+                        "x0": 0.65,
+                        "x1": 0.75,
+                        "y0": 0.018518575,
+                        "y1": 1.0
+                    }
+                }
+            }
+        ]
+    },
+    {
+        "grid_size": 0.46249998,
+        "elements": [
+            {
+                "enabled": true,
+                "models": [
+                    [
+                        "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/2.0.1/quixel_moss_rock_ti4mcgdfa_2k_3d_ms_ti4mcgdfa_json0/objects/main.json"
+                    ]
+                ],
+                "color": {
+                    "r": 1.0,
+                    "g": 1.0,
+                    "b": 1.0
+                },
+                "scale_min": 1.4506596,
+                "scale_max": 7.939443,
+                "scale_power": 2.273334,
+                "rotation_x": 0.0,
+                "rotation_y": 0.0,
+                "rotation_z": -1.6575559,
+                "rotation_z_jitter": 0.02592587,
+                "rotation_xy_jitter": 0.04814826,
+                "rotation_straightness": 0.0,
+                "position_normal_offset": -5.046302,
+                "position_z_offset": -0.60185814,
+                "normal_miplevel": 0.8777791,
+                "cluster_noise_scale": 1.0,
+                "soil_depth": {
+                    "Constant": {
+                        "value": 0.4
+                    }
+                },
+                "elevation": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 5.0,
+                        "y0": 0.0,
+                        "y1": 0.5259259
+                    }
+                },
+                "water_depth": {
+                    "InterpolateClamped": {
+                        "x0": 0.0,
+                        "x1": 1.0,
+                        "y0": 1.0,
+                        "y1": 0.0
+                    }
+                },
+                "steepness": {
+                    "InterpolateClamped": {
+                        "x0": 50.0,
+                        "x1": 75.0,
+                        "y0": 0.0,
+                        "y1": 0.19259271
+                    }
+                },
+                "cluster_noise": {
+                    "Constant": {
+                        "value": 1.0
+                    }
+                }
+            }
+        ]
+    }
+]
