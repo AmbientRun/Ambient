@@ -16,7 +16,7 @@ use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
 use kiwi_intent::client_push_intent;
 use kiwi_network::{client::GameClient, hooks::use_remote_component};
 use kiwi_physics::collider::{character_controller_height, character_controller_radius, collider, collider_type, mass};
-use kiwi_std::{asset_url::ObjectRef, cb, cb_arc, Cb, IntoDuration};
+use kiwi_std::{asset_url::ObjectRef, cb, cb_arc, Cb};
 use kiwi_ui::{
     align_horizontal, align_vertical,
     layout::{fit_horizontal, margin, Borders, Fit},
@@ -24,7 +24,6 @@ use kiwi_ui::{
     ScreenContainer, StylesExt, Text, STREET,
 };
 use serde::{Deserialize, Serialize};
-use winit::event::VirtualKeyCode;
 
 use super::EditingEntityContext;
 use crate::intents::intent_component_change;
@@ -59,15 +58,13 @@ pub fn EntityEditor(world: &mut World, hooks: &mut Hooks, entity_id: EntityId) -
 
     if let Some(entity) = entity {
         let uid = entity.get_ref(uid()).cloned().unwrap();
-        let translation = entity.get_cloned(translation());
+        let _translation = entity.get_cloned(translation());
         FlowColumn(vec![
             Text::el(name).section_style(),
             if let Some(mass) = entity.get(mass()) { Text::el(format!("{mass} kg")).small_style() } else { Element::new() },
             ObjectComponentsEditor {
                 value: entity,
                 on_change: cb_arc(Arc::new({
-                    let game_client = game_client.clone();
-                    let runtime = runtime.clone();
                     move |change| {
                         runtime.spawn(client_push_intent(
                             game_client.clone(),

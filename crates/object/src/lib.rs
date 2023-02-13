@@ -37,7 +37,7 @@ pub fn systems() -> SystemGroup {
         vec![query(object_from_url()).spawned().to_system(|q, world, qs, _| {
             let mut to_load = HashMap::<String, Vec<EntityId>>::new();
             for (id, url) in q.collect_cloned(world, qs) {
-                let url = if url.ends_with("/objects/main.json") { url } else { format!("{}/objects/main.json", url) };
+                let url = if url.ends_with("/objects/main.json") { url } else { format!("{url}/objects/main.json") };
                 to_load.entry(url).or_default().push(id);
             }
             for (url, ids) in to_load {

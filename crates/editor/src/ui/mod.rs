@@ -1,45 +1,40 @@
-use std::{collections::HashMap, fmt::Debug, io::Cursor, sync::Arc, time::Duration};
+use std::{collections::HashMap, fmt::Debug, io::Cursor};
 
 mod build_mode;
 pub mod entity_editor;
 mod terrain_mode;
 
 use build_mode::*;
-use glam::{vec3, vec4, Vec3};
+use glam::{vec3, Vec3};
 use image::{DynamicImage, ImageOutputFormat, RgbImage};
 use itertools::Itertools;
 use kiwi_core::{game_mode, runtime, transform::translation, GameMode};
-use kiwi_ecs::{ArchetypeFilter, EntityData, EntityId, World};
+use kiwi_ecs::{EntityData, EntityId, World};
 use kiwi_element::{element_component, Element, ElementComponent, ElementComponentExt, Group, Hooks, Setter};
-use kiwi_input::{
-    on_app_keyboard_input, on_app_modifiers_change, on_app_mouse_input, on_app_mouse_wheel, KeyboardEvent, MouseButton, MouseInput,
-};
 use kiwi_intent::{rpc_redo, rpc_undo_head, IntentHistoryVisualizer};
 use kiwi_naturals::{get_default_natural_layers, natural_layers, NaturalLayer, NaturalsPreset};
 use kiwi_network::{
-    client::{GameClient, GameClientRenderTarget},
-    hooks::{use_remote_first_component, use_remote_persisted_resource, use_remote_player_component, use_remote_synced_resource},
+    client::GameClient,
+    hooks::{use_remote_persisted_resource, use_remote_player_component},
     log_network_result,
     rpc::{rpc_fork_instance, rpc_get_instances_info, rpc_join_instance, RpcForkInstance},
     server::MAIN_INSTANCE_ID,
     unwrap_log_network_err,
 };
 use kiwi_physics::make_physics_static;
-use kiwi_renderer::color;
-use kiwi_std::{asset_url::AssetType, cb, color::Color, Cb};
+use kiwi_std::{cb, color::Color, Cb};
 use kiwi_terrain::{
     brushes::{Brush, BrushShape, BrushSize, BrushSmoothness, BrushStrength, HydraulicErosionConfig},
     terrain_material_def, TerrainMaterialDef,
 };
 use kiwi_ui::{
     command_modifier, height,
-    layout::{docking, padding, space_between_items, width, Borders, Docking},
-    margin, use_interval, use_window_logical_resolution, Button, Centered, Dock, Editor, FlowColumn, FlowRow, FontAwesomeIcon, Hotkey,
-    Rectangle, ScreenContainer, ScrollArea, Separator, StylesExt, Text, UIExt, WindowSized, STREET,
+    layout::{docking, space_between_items, width, Borders, Docking},
+    margin, use_interval, use_window_logical_resolution, Button, Editor, FlowColumn, FlowRow, FontAwesomeIcon, Hotkey, Rectangle,
+    ScreenContainer, ScrollArea, Separator, StylesExt, Text, UIExt, WindowSized, STREET,
 };
-use quinn::VarInt;
 use terrain_mode::*;
-use winit::event::{ElementState, ModifiersState, VirtualKeyCode};
+use winit::event::{ModifiersState, VirtualKeyCode};
 
 use crate::{selection, Selection};
 use serde::{de::DeserializeOwned, Serialize};
@@ -87,13 +82,13 @@ pub struct EditingEntityContext(pub EntityId);
 const PLAY_INSTANCE_ID: &str = "play";
 
 #[element_component]
-pub fn EditorUI(world: &mut World, hooks: &mut Hooks, on_leave: Cb<dyn Fn() + Sync + Send>) -> Element {
+pub fn EditorUI(world: &mut World, hooks: &mut Hooks) -> Element {
     let (editor_mode, set_editor_mode) = hooks.use_state(EditorMode::Build);
 
     let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
     let (hide_ui, set_hide_ui) = hooks.use_state(false);
     let (user_settings, _) = hooks.consume_context::<EditorSettings>().unwrap();
-    let (screen, set_screen) = hooks.use_state(None);
+    let (screen, _set_screen) = hooks.use_state(None);
 
     hooks.provide_context(|| EditorPrefs::default());
 
@@ -300,7 +295,7 @@ fn TerrainMaterialEditor(world: &mut World, hooks: &mut Hooks) -> Element {
 }
 
 #[element_component]
-fn EditorAtmosphereMode(world: &mut World, hooks: &mut Hooks) -> Element {
+fn EditorAtmosphereMode(_world: &mut World, _hooks: &mut Hooks) -> Element {
     // let (config, set_config) = use_remote_first_component(hooks, world, ArchetypeFilter::new().incl(sun::config()), sun::config());
     // let (latitude, set_latitude) = use_remote_first_component(hooks, world, ArchetypeFilter::new().incl(sun::latitude()), sun::latitude());
     // let (axial_tilt, set_axial_tilt) =
@@ -394,7 +389,7 @@ pub fn UploadingThumbnailDialog(_: &mut World, _: &mut Hooks) -> Element {
 }
 
 #[element_component]
-pub fn EditorPlayerInputHandler(_: &mut World, hooks: &mut Hooks) -> Element {
+pub fn EditorPlayerInputHandler(_: &mut World, _hooks: &mut Hooks) -> Element {
     // let (show_menu, _) = hooks.consume_context::<ShowMenu>().unwrap();
     // if show_menu.0 {
     //     return Element::new();
@@ -414,7 +409,7 @@ pub fn EditorPlayerInputHandler(_: &mut World, hooks: &mut Hooks) -> Element {
 }
 
 #[element_component]
-pub fn EditorPlayerMovementHandler(_: &mut World, hooks: &mut Hooks, flag_as_updated: Cb<dyn Fn(()) + Sync + Send>) -> Element {
+pub fn EditorPlayerMovementHandler(_: &mut World, _hooks: &mut Hooks, _flag_as_updated: Cb<dyn Fn(()) + Sync + Send>) -> Element {
     // let (player_input, _) = hooks.consume_context::<PlayerInputChanges>().unwrap();
 
     // Element::new()
@@ -523,7 +518,7 @@ pub fn EditorPlayerMovementHandler(_: &mut World, hooks: &mut Hooks, flag_as_upd
 //     .el()
 // }
 
-fn image_to_png(image: RgbImage) -> Vec<u8> {
+fn _image_to_png(image: RgbImage) -> Vec<u8> {
     let image = DynamicImage::ImageRgb8(image);
     let mut buff = Cursor::new(Vec::new());
     image.write_to(&mut buff, ImageOutputFormat::Png).unwrap();

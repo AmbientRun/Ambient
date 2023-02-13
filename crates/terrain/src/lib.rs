@@ -30,7 +30,7 @@ use kiwi_physics::{
     collider::{collider_type, ColliderType},
     helpers::transform_entity_parts,
     main_physics_scene,
-    physx::{character_controller, physics, physics_shape, rigid_static, Physics, PhysicsKey},
+    physx::{character_controller, physics, physics_shape, rigid_static, Physics},
     PxActorUserData, PxShapeUserData,
 };
 use kiwi_renderer::{cast_shadows, color, gpu_primitives, lod::cpu_lod, material, primitives, renderer_shader, SharedMaterial};
@@ -344,7 +344,7 @@ pub fn get_terrain_height_blerp(world: &World, point: Vec2) -> Option<f32> {
 #[derive(Debug)]
 pub struct PxTerrainMaterialKey;
 impl SyncAssetKey<PxMaterial> for PxTerrainMaterialKey {
-    fn load(&self, assets: AssetCache) -> PxMaterial {
+    fn load(&self, _assets: AssetCache) -> PxMaterial {
         PxMaterial::new(PxPhysicsRef::get(), 0.5, 0.5, 0.6)
     }
 }

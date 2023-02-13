@@ -23,7 +23,7 @@ use kiwi_primitives::Cube;
 use kiwi_renderer::{color, material, renderer_shader, Material, MaterialShader, SharedMaterial, MATERIAL_BIND_GROUP};
 use kiwi_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
-    cb, friendly_id, Cb,
+    cb, friendly_id,
 };
 use kiwi_terrain::{
     brushes::{Brush, BrushShape, BrushSize, BrushSmoothness, BrushStrength, HydraulicErosionConfig, TerrainBrushStroke},
