@@ -1,6 +1,6 @@
 [package]
 name = "kiwi_api_macros"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 [lib]

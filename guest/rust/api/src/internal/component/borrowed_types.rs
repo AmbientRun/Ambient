@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::host;
+use crate::internal::host;
 
 // aaaaaaarghhhhhhh
 // wit-bindgen generates borrowing types so I need to define my owned types for the borrowing types to borrow from

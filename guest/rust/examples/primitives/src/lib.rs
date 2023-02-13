@@ -6,7 +6,7 @@ use kiwi_api::{
         rendering::color,
         transform::{lookat_center, scale, translation},
     },
-    *,
+    prelude::*,
 };
 
 #[main]

@@ -2,6 +2,7 @@ extern crate proc_macro;
 
 use anyhow::Context;
 use proc_macro::TokenStream;
+use proc_macro2::Span;
 use quote::quote;
 
 mod kiwi_project;
@@ -17,7 +18,10 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
         panic!("the `{fn_name}` function must be async");
     }
 
-    let project_boilerplate = kiwi_project_pm2(false).unwrap();
+    let spans = Span::call_site();
+    let mut path = syn::Path::from(syn::Ident::new("kiwi_api", spans));
+    path.leading_colon = Some(syn::Token![::](spans));
+    let project_boilerplate = kiwi_project_pm2(false, path.clone()).unwrap();
 
     quote! {
         #project_boilerplate
@@ -29,7 +33,7 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
             if INTERFACE_VERSION != runtime_interface_version {
                 panic!("This module was compiled with interface version {{INTERFACE_VERSION}}, but the host is running with version {{runtime_interface_version}}.");
             }
-            run_async(#fn_name());
+            #path::global::run_async(#fn_name());
         }
     }.into()
 }
@@ -37,14 +41,21 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
 /// Generates global components and other boilerplate for the API crate.
 #[proc_macro]
 pub fn api_project(_input: TokenStream) -> TokenStream {
-    TokenStream::from(kiwi_project_pm2(true).unwrap())
+    TokenStream::from(
+        kiwi_project_pm2(
+            true,
+            syn::Path::from(syn::Ident::new("crate", Span::call_site())),
+        )
+        .unwrap(),
+    )
 }
 
-fn kiwi_project_pm2(global: bool) -> anyhow::Result<proc_macro2::TokenStream> {
+fn kiwi_project_pm2(global: bool, api_name: syn::Path) -> anyhow::Result<proc_macro2::TokenStream> {
     kiwi_project::implementation(
         kiwi_project::read_file("kiwi.toml".to_string())
             .context("Failed to load kiwi.toml")
             .unwrap(),
+        api_name,
         global,
     )
 }

@@ -5,7 +5,7 @@ use kiwi_api::components::core::{
     rendering::{color, outline},
     transform::{lookat_center, scale, translation},
 };
-use kiwi_api::{player::KeyCode, *};
+use kiwi_api::{player::KeyCode, prelude::*};
 use palette::{FromColor, Hsl, Srgb};
 
 #[main]

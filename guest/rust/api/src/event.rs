@@ -1,4 +1,4 @@
-use crate::{host, Components};
+use crate::{ecs::Components, internal::host};
 
 /// Fired each frame.
 pub const FRAME: &str = "core/frame";

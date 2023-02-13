@@ -19,6 +19,7 @@ pub fn read_file(file_path: String) -> anyhow::Result<(String, String)> {
 
 pub fn implementation(
     (file_path, contents): (String, String),
+    api_name: syn::Path,
     global_namespace: bool,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     let manifest: Manifest = toml::from_str(&contents)?;
@@ -83,6 +84,7 @@ pub fn implementation(
 
     fn expand_tree(
         tree_node: &TreeNode,
+        api_name: &syn::Path,
         project_path: &[String],
     ) -> anyhow::Result<proc_macro2::TokenStream> {
         let name = tree_node
@@ -94,26 +96,32 @@ pub fn implementation(
             TreeNodeInner::Module(module) => {
                 let children = module
                     .values()
-                    .map(|child| expand_tree(child, project_path))
+                    .map(|child| expand_tree(child, api_name, project_path))
                     .collect::<Result<Vec<_>, _>>()?;
+
+                let prelude = quote! {
+                    use #api_name::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+                };
 
                 Ok(if name.is_empty() {
                     quote! {
+                        #prelude
                         #(#children)*
                     }
                 } else {
-                    let name_ident: syn::Ident = syn::parse_str(name)?;
+                    let name_ident: syn::Path = syn::parse_str(name)?;
                     quote! {
                         pub mod #name_ident {
+                            #prelude
                             #(#children)*
                         }
                     }
                 })
             }
             TreeNodeInner::Component(component) => {
-                let name_ident: syn::Ident = syn::parse_str(name)?;
-                let name_uppercase_ident: syn::Ident = syn::parse_str(&name.to_ascii_uppercase())?;
-                let component_ty = component.type_.to_token_stream()?;
+                let name_ident: syn::Path = syn::parse_str(name)?;
+                let name_uppercase_ident: syn::Path = syn::parse_str(&name.to_ascii_uppercase())?;
+                let component_ty = component.type_.to_token_stream(api_name)?;
 
                 let mut doc_comment = format!("**{}**", component.name);
 
@@ -131,9 +139,9 @@ pub fn implementation(
                 let id = [project_path, &tree_node.path].concat().join("::");
 
                 Ok(quote! {
-                    static #name_uppercase_ident: crate::LazyComponent<#component_ty> = crate::lazy_component!(#id);
+                    static #name_uppercase_ident: Lazy<Component<#component_ty>> = Lazy::new(|| __internal_get_component(#id));
                     #[doc = #doc_comment]
-                    pub fn #name_ident() -> crate::Component<#component_ty> { *#name_uppercase_ident }
+                    pub fn #name_ident() -> Component<#component_ty> { *#name_uppercase_ident }
                 })
             }
         }
@@ -152,12 +160,13 @@ pub fn implementation(
     };
     let expanded_tree = expand_tree(
         &TreeNode::new(vec![], TreeNodeInner::Module(root)),
+        &api_name,
         &project_path,
     )?;
     Ok(quote!(
         const _PROJECT_MANIFEST: &'static str = include_str!(#file_path);
         #[allow(missing_docs)]
-        /// Auto-generated component definitions. These come from `kiwi.toml` in the root of the corresponding project.
+        /// Auto-generated component definitions. These come from `kiwi.toml` in the root of the project.
         pub mod components {
             #expanded_tree
         }
@@ -200,24 +209,27 @@ enum ComponentType {
     },
 }
 impl ComponentType {
-    fn convert_primitive_type_to_rust_type(ty: &str) -> Option<proc_macro2::TokenStream> {
+    fn convert_primitive_type_to_rust_type(
+        api_name: &syn::Path,
+        ty: &str,
+    ) -> Option<proc_macro2::TokenStream> {
         match ty {
             "Empty" => Some(quote! {()}),
             "Bool" => Some(quote! {bool}),
-            "EntityId" => Some(quote! {crate::EntityId}),
+            "EntityId" => Some(quote! {#api_name::global::EntityId}),
             "F32" => Some(quote! {f32}),
             "F64" => Some(quote! {f64}),
-            "Mat4" => Some(quote! {crate::Mat4}),
+            "Mat4" => Some(quote! {#api_name::global::Mat4}),
             "I32" => Some(quote! {i32}),
-            "Quat" => Some(quote! {crate::Quat}),
+            "Quat" => Some(quote! {#api_name::global::Quat}),
             "String" => Some(quote! {String}),
             "U32" => Some(quote! {u32}),
             "U64" => Some(quote! {u64}),
-            "Vec2" => Some(quote! {crate::Vec2}),
-            "Vec3" => Some(quote! {crate::Vec3}),
-            "Vec4" => Some(quote! {crate::Vec4}),
-            "ObjectRef" => Some(quote! {crate::ObjectRef}),
-            "EntityUid" => Some(quote! {crate::EntityUid}),
+            "Vec2" => Some(quote! {#api_name::global::Vec2}),
+            "Vec3" => Some(quote! {#api_name::global::Vec3}),
+            "Vec4" => Some(quote! {#api_name::global::Vec4}),
+            "ObjectRef" => Some(quote! {#api_name::global::ObjectRef}),
+            "EntityUid" => Some(quote! {#api_name::global::EntityUid}),
             _ => None,
         }
     }
@@ -230,11 +242,10 @@ impl ComponentType {
         }
     }
 
-    fn to_token_stream(&self) -> anyhow::Result<proc_macro2::TokenStream> {
+    fn to_token_stream(&self, api_name: &syn::Path) -> anyhow::Result<proc_macro2::TokenStream> {
         match self {
-            ComponentType::String(ty) => {
-                Self::convert_primitive_type_to_rust_type(ty).context("invalid primitive type")
-            }
+            ComponentType::String(ty) => Self::convert_primitive_type_to_rust_type(api_name, ty)
+                .context("invalid primitive type"),
             ComponentType::ContainerType {
                 type_,
                 element_type,
@@ -243,7 +254,7 @@ impl ComponentType {
                     .context("invalid container type")?;
                 let element_ty = element_type
                     .as_deref()
-                    .map(Self::convert_primitive_type_to_rust_type)
+                    .map(|ty| Self::convert_primitive_type_to_rust_type(api_name, ty))
                     .context("invalid element type")?;
                 Ok(if let Some(element_ty) = element_ty {
                     quote! { #container_ty < #element_ty > }

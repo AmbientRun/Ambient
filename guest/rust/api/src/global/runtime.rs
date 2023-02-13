@@ -1,6 +1,9 @@
 use std::{cell::RefCell, future::Future, rc::Rc, task::Poll};
 
-use crate::{internal::executor::EXECUTOR, Components, EventResult};
+use crate::{
+    global::EventResult,
+    internal::{component::Components, executor::EXECUTOR, host},
+};
 
 /// The time, relative to when the application started, in seconds.
 /// This can be used to time how long something takes.
@@ -31,7 +34,7 @@ pub fn on_async<R: Future<Output = EventResult> + 'static>(
     event: &str,
     callback: impl Fn(&Components) -> R + 'static,
 ) {
-    crate::host::event_subscribe(event);
+    host::event_subscribe(event);
     EXECUTOR.register_callback(
         event.to_string(),
         Box::new(move |args| Box::pin(callback(args))),
@@ -56,7 +59,7 @@ pub fn once_async<R: Future<Output = EventResult> + 'static>(
     event: &str,
     callback: impl FnOnce(&Components) -> R + 'static,
 ) {
-    crate::host::event_subscribe(event);
+    host::event_subscribe(event);
     EXECUTOR.register_callback_once(
         event.to_string(),
         Box::new(move |args| Box::pin(callback(args))),

@@ -1,7 +1,9 @@
 use once_cell::sync::Lazy;
 
-use super::executor::{FrameState, EXECUTOR};
-use crate::Components;
+use crate::internal::{
+    component::Components,
+    executor::{FrameState, EXECUTOR},
+};
 
 wit_bindgen_guest_rust::export!("wit/guest.wit");
 

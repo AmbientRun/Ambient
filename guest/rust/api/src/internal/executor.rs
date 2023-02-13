@@ -8,7 +8,7 @@ use std::{
 
 use once_cell::sync::Lazy;
 
-use crate::{Components, EventResult};
+use crate::{global::EventResult, internal::component::Components};
 
 type EventFuture = Pin<Box<dyn Future<Output = EventResult>>>;
 type EventCallbackFn = Box<dyn Fn(&Components) -> EventFuture>;

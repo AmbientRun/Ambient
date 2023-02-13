@@ -1,5 +1,5 @@
 /// A unique identifier for an entity in the world. This will remain the same even across
-/// undo/redo, unlike [crate::EntityId].
+/// undo/redo, unlike [super::EntityId].
 #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
 pub enum EntityUid {
     #[doc(hidden)]

@@ -1,14 +1,17 @@
-use super::{
-    components, host,
+use crate::{
+    components, event,
+    global::{until_this, EntityId, EntityUid, Mat4, ObjectRef, Quat, Vec3},
     internal::{
-        component::{Component, IComponent, ToParam},
+        component::{
+            traits::AsParam, Component, Components, SupportedComponentTypeGet,
+            SupportedComponentTypeSet, UntypedComponent,
+        },
         conversion::{FromBindgen, IntoBindgen},
+        host,
     },
-    until_this, Components, EntityId, EntityUid, Mat4, ObjectRef, Quat, SupportedComponentTypeGet,
-    SupportedComponentTypeSet, Vec3,
 };
 
-pub use crate::host::{AnimationAction, AnimationController};
+pub use crate::internal::host::{AnimationAction, AnimationController};
 
 /// Spawns an entity containing the `components`. If `persistent` is set, this entity will not be
 /// removed when this module is unloaded.
@@ -57,7 +60,7 @@ pub fn spawn_template(
 // TODO(philpax): revisit once we think about the spawning situation some more
 pub async fn wait_for_spawn(uid: &EntityUid) -> EntityId {
     let uid = uid.clone();
-    let event = until_this(super::event::ENTITY_SPAWN, move |ed| {
+    let event = until_this(event::ENTITY_SPAWN, move |ed| {
         ed.get(components::core::ecs::uid()).unwrap() == uid
     })
     .await;
@@ -216,7 +219,7 @@ pub fn remove_component<T>(entity: EntityId, component: Component<T>) {
 /// Removes the `components` from `entity`.
 ///
 /// Does nothing if the component does not exist.
-pub fn remove_components(entity: EntityId, components: &[&dyn IComponent]) {
+pub fn remove_components(entity: EntityId, components: &[&dyn UntypedComponent]) {
     let components: Vec<_> = components.iter().map(|c| c.index()).collect();
     host::entity_remove_components(entity.into_bindgen(), &components)
 }

@@ -12,3 +12,18 @@ pub use entity_id::*;
 
 mod entity_uid;
 pub use entity_uid::*;
+
+// Re-exports from other crates.
+pub use glam::{f32::*, Vec2Swizzles, Vec3Swizzles, Vec4Swizzles};
+
+#[inline]
+/// Helper function that returns the [std::default::Default::default] for the type `T`.
+/// Most useful with struct update syntax, or with initializing components.
+pub fn default<T: Default>() -> T {
+    std::default::Default::default()
+}
+
+/// The version of this WASM interface. If this version is different to that of the running
+/// host version, the module will panic and refuse to run.
+#[doc(hidden)]
+pub const INTERFACE_VERSION: u32 = include!("../../wit/INTERFACE_VERSION");

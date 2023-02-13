@@ -6,7 +6,7 @@ use kiwi_api::{
     },
     entity::{AnimationAction, AnimationController},
     player::KeyCode,
-    *,
+    prelude::*,
 };
 
 #[main]

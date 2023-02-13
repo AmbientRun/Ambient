@@ -2,8 +2,7 @@
 //! and exports
 //! once we use the component model, this can be deleted
 
-use super::guest;
-use crate::host;
+use crate::internal::{guest::guest, host};
 
 pub(crate) trait GuestConvert {
     type Item;

@@ -1,9 +1,12 @@
 use std::collections::HashSet;
 
 use crate::{
-    components, entity, host,
-    internal::conversion::{FromBindgen, IntoBindgen},
-    EntityId, Vec2,
+    components, entity,
+    global::{EntityId, Vec2},
+    internal::{
+        conversion::{FromBindgen, IntoBindgen},
+        host,
+    },
 };
 
 #[allow(missing_docs)]
