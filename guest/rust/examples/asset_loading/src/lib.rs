@@ -3,7 +3,7 @@ use kiwi_api::{
         app::main_scene,
         camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},
         object::object_from_url,
-        transform::{lookat_center, translation},
+        transform::{lookat_center, rotation, translation},
     },
     prelude::*,
 };
@@ -25,7 +25,11 @@ pub async fn main() -> EventResult {
         .spawn(false);
 
     on(event::FRAME, move |_| {
-        entity::set_rotation(cube_id, Quat::from_axis_angle(Vec3::X, time().sin()));
+        entity::set_component(
+            cube_id,
+            rotation(),
+            Quat::from_axis_angle(Vec3::X, time().sin()),
+        );
 
         EventOk
     });
