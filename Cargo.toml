@@ -132,6 +132,7 @@ local-ip-address = "0.5.1"
 cargo_toml = "0.15.0"
 toml_edit = "0.19.3"
 arboard = "3.2.0"
+noise = { version = "0.7.0", default-features = false }
 
 # Patch cap-std until wasmtime/wit-bindgen can be updated
 [patch.crates-io]
