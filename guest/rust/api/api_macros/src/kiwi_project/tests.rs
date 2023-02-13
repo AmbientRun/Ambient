@@ -23,7 +23,6 @@ fn can_generate_components_from_manifest_in_global_namespace() {
 
     let expected_output = quote::quote! {
         const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
-        #[allow(missing_docs)]
         #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
         pub mod components {
             use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
@@ -86,7 +85,6 @@ fn can_accept_no_components() {
 
     let expected_output = quote::quote! {
         const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
-        #[allow(missing_docs)]
         #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
         pub mod components {
             use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
@@ -122,7 +120,6 @@ fn can_generate_components_from_manifest() {
 
     let expected_output = quote::quote! {
         const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
-        #[allow(missing_docs)]
         #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
         pub mod components {
             use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
@@ -164,7 +161,6 @@ fn can_generate_components_from_manifest_with_org() {
 
     let expected_output = quote::quote! {
         const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
-        #[allow(missing_docs)]
         #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
         pub mod components {
             use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
@@ -172,6 +168,45 @@ fn can_generate_components_from_manifest_with_org() {
             #[doc = "**Cool Component**"]
             pub fn a_cool_component() -> Component<()> {
                 *A_COOL_COMPONENT
+            }
+        }
+    };
+
+    let result = implementation(
+        ("kiwi.toml".to_string(), manifest.to_string()),
+        api_name(),
+        false,
+    )
+    .unwrap();
+
+    assert_eq!(result.to_string(), expected_output.to_string());
+}
+
+#[test]
+fn can_generate_components_with_documented_namespace_from_manifest() {
+    let manifest = indoc::indoc! {r#"
+        [project]
+        id = "my_project"
+        name = "My Project"
+
+        [components]
+        "ns::a_cool_component" = { name = "Cool Component", description = "Cool!", type = "Empty" }
+        "ns" = { name = "Namespace", description = "A Test Namespace" }
+        "#};
+
+    let expected_output = quote::quote! {
+        const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
+        #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
+        pub mod components {
+            use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+            #[doc = "**Namespace**: A Test Namespace"]
+            pub mod ns {
+                use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+                static A_COOL_COMPONENT: Lazy<Component<()>> = Lazy::new(|| __internal_get_component("my_project::ns::a_cool_component"));
+                #[doc = "**Cool Component**: Cool!"]
+                pub fn a_cool_component() -> Component<()> {
+                    *A_COOL_COMPONENT
+                }
             }
         }
     };

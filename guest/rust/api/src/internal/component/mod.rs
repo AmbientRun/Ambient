@@ -15,7 +15,7 @@ pub trait UntypedComponent {
     fn index(&self) -> u32;
 }
 
-/// A component (piece of entity data). See [crate::entity::get_component] and [crate::entity::set_component].
+/// A component (piece of entity data). See [entity::get_component](crate::entity::get_component) and [entity::set_component](crate::entity::set_component).
 #[derive(Debug)]
 pub struct Component<T> {
     index: u32,
@@ -53,37 +53,39 @@ macro_rules! lazy_component {
     };
 }
 
-/// Contains event data
+/// Contains a group of components and associated values.
+///
+/// These can be used to spawn entities.
 #[derive(Clone)]
 pub struct Components(pub(crate) HashMap<u32, host::ComponentTypeResult>);
 impl Components {
-    /// Creates a new `Components`
+    /// Creates a new `Components`.
     pub fn new() -> Self {
         Self(Default::default())
     }
 
-    /// Gets component data if it exists
+    /// Gets the data for `component` in this, if it exists.
     pub fn get<T: SupportedComponentTypeGet>(&self, component: Component<T>) -> Option<T> {
         T::from_result(self.0.get(&component.index())?.clone())
     }
 
-    /// Set data for `component`
+    /// Adds `component` to this with `value`. It will replace an existing component if present.
     pub fn set<T: SupportedComponentTypeSet>(&mut self, component: Component<T>, value: T) {
         self.0.insert(component.index(), value.into_result());
     }
 
-    /// Sets data for `component` to the default value for `T`
+    /// Sets the `component` in this to the default value for `T`.
     pub fn set_default<T: SupportedComponentTypeSet + Default>(&mut self, component: Component<T>) {
         self.set(component, T::default())
     }
 
-    /// Adds `value` to this `EntityData` and returns `self` to allow for easy chaining
+    /// Adds `value` to this `EntityData`, and returns `self` to allow for easy chaining.
     pub fn with<T: SupportedComponentTypeSet>(mut self, component: Component<T>, value: T) -> Self {
         self.set(component, value);
         self
     }
 
-    /// Adds the default value for `T` to this `EntityData` and returns `self` to allow for easy chaining
+    /// Adds the default value for `T` to this `EntityData`, and returns `self` to allow for easy chaining.
     pub fn with_default<T: SupportedComponentTypeSet + Default>(
         mut self,
         component: Component<T>,
@@ -95,7 +97,7 @@ impl Components {
     /// Spawns an entity with these components. If `persistent` is set, this entity will not be
     /// removed when this module is unloaded.
     ///
-    /// This is an asynchronous operation; use [crate::entity::wait_for_spawn] to get notified when
+    /// This is an asynchronous operation; use [entity::wait_for_spawn](crate::entity::wait_for_spawn) to get notified when
     /// the entity is spawned.
     ///
     /// Returns `spawned_entity_uid`.

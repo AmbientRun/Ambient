@@ -17,7 +17,7 @@ pub use entity_uid::*;
 pub use glam::{f32::*, Vec2Swizzles, Vec3Swizzles, Vec4Swizzles};
 
 #[inline]
-/// Helper function that returns the [std::default::Default::default] for the type `T`.
+/// Helper function that returns the [Default](std::default::Default::default) for the type `T`.
 /// Most useful with struct update syntax, or with initializing components.
 pub fn default<T: Default>() -> T {
     std::default::Default::default()

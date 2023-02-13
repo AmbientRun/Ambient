@@ -24,13 +24,13 @@ pub fn implementation(
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     let manifest: Manifest = toml::from_str(&contents)?;
 
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     enum TreeNodeInner {
-        Module(BTreeMap<String, TreeNode>),
+        Module(BTreeMap<String, TreeNode>, Option<Namespace>),
         Component(Component),
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     struct TreeNode {
         path: Vec<String>,
         inner: TreeNodeInner,
@@ -58,27 +58,48 @@ pub fn implementation(
                 .entry(segment.to_string())
                 .or_insert(TreeNode::new(
                     segments_so_far.clone(),
-                    TreeNodeInner::Module(Default::default()),
+                    TreeNodeInner::Module(Default::default(), None),
                 ));
 
             manifest_head = match &mut new_head.inner {
-                TreeNodeInner::Module(module) => module,
+                TreeNodeInner::Module(module, _) => module,
                 _ => anyhow::bail!("found a non-module where a module was expected"),
             };
         }
 
-        manifest_head.insert(
-            leaf_id.clone(),
-            TreeNode::new(segments.iter().map(|s| s.to_string()).collect(), inner),
-        );
+        let path: Vec<_> = segments.iter().map(|s| s.to_string()).collect();
+        if let Some(leaf) = manifest_head.get_mut(leaf_id) {
+            leaf.inner = match (leaf.inner.clone(), inner.clone()) {
+                (
+                    TreeNodeInner::Module(mut existing, None),
+                    TreeNodeInner::Module(mut new, Some(ns)),
+                ) => {
+                    existing.append(&mut new);
+                    TreeNodeInner::Module(existing, Some(ns))
+                }
+                _ => anyhow::bail!(
+                    "Attempted to replace {:?} at `{}` with {:?}",
+                    leaf.inner,
+                    path.join("::"),
+                    inner
+                ),
+            };
+        } else {
+            manifest_head.insert(leaf_id.clone(), TreeNode::new(path, inner));
+        }
 
         Ok(())
     }
-    for (id, component) in manifest.components {
+    for (id, namespace_or_component) in manifest.components {
+        let node = match namespace_or_component {
+            NamespaceOrComponent::Namespace(n) => TreeNodeInner::Module(BTreeMap::new(), Some(n)),
+            NamespaceOrComponent::Component(c) => TreeNodeInner::Component(c),
+        };
+
         insert_into_root(
             &mut root,
             &id.split("::").map(|s| s.to_string()).collect::<Vec<_>>(),
-            TreeNodeInner::Component(component),
+            node,
         )?;
     }
 
@@ -93,7 +114,7 @@ pub fn implementation(
             .map(|s| s.as_str())
             .unwrap_or_default();
         match &tree_node.inner {
-            TreeNodeInner::Module(module) => {
+            TreeNodeInner::Module(module, namespace) => {
                 let children = module
                     .values()
                     .map(|child| expand_tree(child, api_name, project_path))
@@ -110,7 +131,18 @@ pub fn implementation(
                     }
                 } else {
                     let name_ident: syn::Path = syn::parse_str(name)?;
+                    let doc_comment_fragment = namespace.as_ref().map(|n| {
+                        let mut doc_comment = format!("**{}**", n.name);
+                        if !n.description.is_empty() {
+                            doc_comment += &format!(": {}", n.description.replace('\n', "\n\n"));
+                        }
+
+                        quote! {
+                            #[doc = #doc_comment]
+                        }
+                    });
                     quote! {
+                        #doc_comment_fragment
                         pub mod #name_ident {
                             #prelude
                             #(#children)*
@@ -159,13 +191,12 @@ pub fn implementation(
             .collect()
     };
     let expanded_tree = expand_tree(
-        &TreeNode::new(vec![], TreeNodeInner::Module(root)),
+        &TreeNode::new(vec![], TreeNodeInner::Module(root, None)),
         &api_name,
         &project_path,
     )?;
     Ok(quote!(
         const _PROJECT_MANIFEST: &'static str = include_str!(#file_path);
-        #[allow(missing_docs)]
         /// Auto-generated component definitions. These come from `kiwi.toml` in the root of the project.
         pub mod components {
             #expanded_tree
@@ -177,7 +208,7 @@ pub fn implementation(
 struct Manifest {
     project: Project,
     #[serde(default)]
-    components: BTreeMap<String, Component>,
+    components: BTreeMap<String, NamespaceOrComponent>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -187,7 +218,19 @@ pub struct Project {
 }
 
 #[derive(Deserialize, Debug)]
-#[allow(dead_code)]
+#[serde(untagged)]
+enum NamespaceOrComponent {
+    Component(Component),
+    Namespace(Namespace),
+}
+
+#[derive(Deserialize, Debug, Clone)]
+struct Namespace {
+    name: String,
+    description: String,
+}
+
+#[derive(Deserialize, Debug, Clone)]
 struct Component {
     name: String,
     description: String,
@@ -197,7 +240,7 @@ struct Component {
     attributes: Vec<String>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(untagged)]
 enum ComponentType {
     String(String),

@@ -1,8 +1,7 @@
 use kiwi_api::{
     components::core::{
         app::main_scene,
-        camera::aspect_ratio_from_window,
-        camera::{active_camera, perspective_infinite_reverse},
+        camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},
         player::player,
         primitives::cube,
         rendering::color,

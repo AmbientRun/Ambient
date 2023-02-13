@@ -1,7 +1,7 @@
 [package]
 edition = "2021"
 name = "kiwi_api"
-version.workspace = true
+version = { workspace = true }
 
 [dependencies]
 anyhow = "1.0"

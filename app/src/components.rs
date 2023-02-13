@@ -30,13 +30,44 @@ pub(crate) mod dev {
         }
 
         {
-            let component_registry = kiwi_ecs::ComponentRegistry::get();
-
-            let mut all_primitive = component_registry.all_primitive().collect::<Vec<_>>();
-            all_primitive.sort_by_key(|pc| pc.desc.path());
-
             let mut components = toml_edit::Table::new();
             components.set_implicit(true);
+
+            let namespaces = [
+                ("core", "Core", "Contains all core components for the Kiwi Runtime."),
+                ("core::app", "App", "High-level state relevant to the application (including the in-development Editor)."),
+                ("core::camera", "Camera", "Camera matrices, types, parameters, and more."),
+                ("core::ecs", "Entity Component System", "Core components for the ECS and entities."),
+                ("core::model", "Model", "Information about models attached to entities."),
+                ("core::network", "Network", "Network-related state."),
+                ("core::object", "Object", "External object related state (e.g. drawing objects from remote URLs)"),
+                ("core::physics", "Physics", "Physics functionality and state."),
+                ("core::player", "Player", "Components that are attached to player entities."),
+                (
+                    "core::primitives",
+                    "Primitives",
+                    "Components that create primitive (in the geometric sense) objects from their attached entities.",
+                ),
+                ("core::rendering", "Rendering", "Rendering-related state, including global rendering parameters and per-entity state."),
+                (
+                    "core::transform",
+                    "Transform",
+                    "Entity transform state (including translation, rotation and scale), as well as other transformations for this entity.",
+                ),
+            ];
+
+            for (path, name, description) in namespaces {
+                use toml_edit::value;
+
+                let mut table = toml_edit::Table::new();
+                table.insert("name", value(name));
+                table.insert("description", value(description));
+                components.insert(path, toml_edit::Item::Table(table));
+            }
+
+            let component_registry = kiwi_ecs::ComponentRegistry::get();
+            let mut all_primitive = component_registry.all_primitive().collect::<Vec<_>>();
+            all_primitive.sort_by_key(|pc| pc.desc.path());
             for component in all_primitive {
                 use toml_edit::value;
 

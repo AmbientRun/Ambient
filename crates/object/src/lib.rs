@@ -17,7 +17,11 @@ use kiwi_std::{
 };
 
 components!("object", {
-    @[Debuggable, Networked, Store, Name["Object from url"], Description["Load and attach an object from a url or relative path"]]
+    @[
+        Debuggable, Networked, Store,
+        Name["Object from URL"],
+        Description["Load and attach an object from a URL or relative path.\nWhen loaded, the components from this object will add to or replace the existing components for the object."]
+    ]
     object_from_url: String,
 });
 
