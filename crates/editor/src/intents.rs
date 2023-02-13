@@ -1,11 +1,13 @@
 use anyhow::Context;
 use glam::{Mat4, Quat, Vec3, Vec3Swizzles};
 use itertools::{izip, process_results, Itertools};
-use kiwi_core::{self, selectable, snap_to_ground, transform::get_world_transform};
-use kiwi_ecs::{components, uid, uid_lookup, EntityId, EntityUid, World};
+use kiwi_core::{
+    self, selectable, snap_to_ground,
+    transform::{get_world_transform, translation},
+};
+use kiwi_ecs::{components, uid, uid_lookup, EntityData, EntityId, EntityUid, World};
 use kiwi_intent::{use_old_state, IntentContext, IntentRegistry};
 use kiwi_network::get_player_by_user_id;
-use kiwi_object::{MultiEntityUID, SpawnConfig};
 use kiwi_physics::{
     collider::collider_shapes_convex,
     helpers::{transform_entity, transform_entity_parts},
@@ -23,10 +25,11 @@ use physxx::{PxActor, PxQueryFilterData, PxRaycastCallback, PxTransform, PxUserD
 use serde::{Deserialize, Serialize};
 
 use crate::{selection, ui::entity_editor::ObjectComponentChange, Selection};
+use kiwi_object::object_from_url;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct IntentTransformRevert {
-    uid: EntityUid,
+    uid: EntityId,
     transform: Mat4,
     snap_to_ground: Option<f32>,
 }
@@ -34,7 +37,7 @@ pub struct IntentTransformRevert {
 fn undo_transform(ctx: IntentContext, undo_state: Vec<IntentTransformRevert>) -> anyhow::Result<()> {
     let world = ctx.world;
     for state in undo_state {
-        let id = world.resource(uid_lookup()).get(&state.uid).unwrap();
+        let id = state.uid;
 
         if let Some(old_snap_to_ground) = state.snap_to_ground {
             world.add_component(id, snap_to_ground(), old_snap_to_ground).expect("Invalid entity");
@@ -61,11 +64,11 @@ components!("editor", {
     intent_reset_terrain_offset_undo: Vec<(EntityUid, Option<f32>)>,
     intent_select: (Selection, SelectMode),
     intent_select_undo: Selection,
-    intent_spawn_object_undo: (Vec<EntityUid>, bool, Selection),
-    intent_spawn_object2: IntentSpawnObject2,
+    intent_spawn_object_undo: (EntityId, bool, Selection),
+    intent_spawn_object: IntentSpawnObject,
     intent_duplicate: IntentDuplicate,
-    intent_duplicate_undo: Vec<EntityUid>,
-    intent_delete: Vec<EntityUid>,
+    intent_duplicate_undo: Vec<EntityId>,
+    intent_delete: Vec<EntityId>,
     intent_delete_undo: (World, Selection),
     intent_component_change: (EntityUid, ObjectComponentChange),
     intent_component_change_undo: (EntityUid, ObjectComponentChange),
@@ -73,7 +76,7 @@ components!("editor", {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct IntentTransform {
-    pub entities: Vec<EntityUid>,
+    pub entities: Vec<EntityId>,
     pub transforms: Vec<Mat4>,
     /// If None, use the height after the transform
     pub terrain_offset: TerrainOffset,
@@ -81,22 +84,15 @@ pub struct IntentTransform {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct IntentDuplicate {
-    pub entities: Vec<EntityUid>,
-    pub new_uids: Vec<EntityUid>,
+    pub entities: Vec<EntityId>,
+    pub new_uids: Vec<EntityId>,
     pub select: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct IntentSpawnObject {
-    pub object_id: String,
-    pub entity_uid: EntityUid,
-    pub position: Vec3,
-    pub select: bool,
-}
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct IntentSpawnObject2 {
     pub object_url: String,
-    pub entity_uid: MultiEntityUID,
+    pub entity_id: EntityId,
     pub position: Vec3,
     pub select: bool,
 }
@@ -149,13 +145,13 @@ impl Snapping {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IntentTranslate {
-    pub targets: Vec<EntityUid>,
+    pub targets: Vec<EntityId>,
     pub position: Vec3,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IntentPlaceRay {
-    pub targets: Vec<EntityUid>,
+    pub targets: Vec<EntityId>,
     pub ray: Ray,
     /// Apply snapping relative to the object the ray intersected
     pub snap: Option<f32>,
@@ -188,7 +184,7 @@ fn axis_aligned_plane(normal: Vec3) -> (Vec3, Vec3) {
 }
 
 #[profiling::function]
-fn resolve_clipping(world: &mut World, entities: &[EntityUid], ids: &[EntityId], source: Vec3, target: Intersection) -> Option<Vec3> {
+fn resolve_clipping(world: &mut World, entities: &[EntityId], ids: &[EntityId], source: Vec3, target: Intersection) -> Option<Vec3> {
     let scene = world.resource(main_physics_scene());
 
     let total_bounds: AABB = ids.iter().flat_map(|&id| Some(world.get(id, rigid_actor()).ok()?.get_world_bounds(1.0).into())).collect();
@@ -261,10 +257,8 @@ pub fn register_intents(reg: &mut IntentRegistry) {
             }
 
             let (ids, transforms): (Vec<_>, Vec<_>) = process_results(
-                targets.iter().map(|uid| -> anyhow::Result<_> {
-                    let id = world.resource(uid_lookup()).get(uid).context("Failed to resolve uid")?;
-
-                    let transform = get_world_transform(world, id).with_context(|| format!("Failed to get world transform for {uid:?}"))?;
+                targets.iter().map(|id| -> anyhow::Result<_> {
+                    let transform = get_world_transform(world, *id).with_context(|| format!("Failed to get world transform for {id:?}"))?;
 
                     Ok((id, transform))
                 }),
@@ -360,10 +354,8 @@ pub fn register_intents(reg: &mut IntentRegistry) {
             }
 
             let (ids, transforms): (Vec<_>, Vec<_>) = process_results(
-                targets.iter().map(|uid| -> anyhow::Result<_> {
-                    let id = world.resource(uid_lookup()).get(uid).context("Failed to resolve uid")?;
-
-                    let transform = get_world_transform(world, id).with_context(|| format!("Failed to get world transform for {uid:?}"))?;
+                targets.iter().map(|id| -> anyhow::Result<_> {
+                    let transform = get_world_transform(world, *id).with_context(|| format!("Failed to get world transform for {id:?}"))?;
 
                     Ok((id, transform))
                 }),
@@ -412,8 +404,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
                 .entities
                 .iter()
                 .zip_eq(intent.transforms)
-                .map(|(uid, transform)| {
-                    let id = world.resource(uid_lookup()).get(uid).unwrap();
+                .map(|(&id, transform)| {
                     let old_transform = get_world_transform(world, id).context("No transform")?;
 
                     let (scale, rot, pos) = transform.to_scale_rotation_translation();
@@ -424,14 +415,14 @@ pub fn register_intents(reg: &mut IntentRegistry) {
 
                     transform_entity_parts(world, id, pos, rot, scale).context("Failed to transform entity")?;
 
-                    Ok(IntentTransformRevert { transform: old_transform, snap_to_ground: old_snap_to_ground, uid: uid.clone() })
+                    Ok(IntentTransformRevert { transform: old_transform, snap_to_ground: old_snap_to_ground, uid: id })
                 })
                 .collect::<Result<Vec<_>, _>>()
         },
         |ctx, transforms| {
             let world = ctx.world;
             for old_state in transforms {
-                let id = world.resource(uid_lookup()).get(&old_state.uid).unwrap();
+                let id = old_state.uid;
                 if let Some(old_snap_to_ground) = old_state.snap_to_ground {
                     world.add_component(id, snap_to_ground(), old_snap_to_ground).expect("Invalid entity");
                 } else {
@@ -520,37 +511,31 @@ pub fn register_intents(reg: &mut IntentRegistry) {
     );
 
     reg.register(
-        intent_spawn_object2(),
+        intent_spawn_object(),
         intent_spawn_object_undo(),
-        |ctx, IntentSpawnObject2 { object_url, entity_uid, position, select }| {
+        |ctx, IntentSpawnObject { object_url, entity_id, position, select }| {
             let user_id = ctx.user_id;
             let world = ctx.world;
 
-            let ids = tokio::task::block_in_place(|| {
-                let mut conf = SpawnConfig::new(entity_uid.clone(), position, Quat::IDENTITY, Vec3::ONE);
-                conf.components.set_self(selectable(), ());
-                kiwi_object::spawn_preloaded_by_url(world, object_url, conf)
-            })?;
-            let uids = ids.iter().map(|id| world.get_ref(*id, uid()).unwrap().clone()).collect_vec();
+            tokio::task::block_in_place(|| {
+                let data = EntityData::new().set(translation(), position).set_default(selectable()).set(object_from_url(), object_url);
+                world.spawn_with_id(entity_id, data);
+            });
 
             let player_entity = get_player_by_user_id(world, user_id).context("Player not found")?;
             let old_selection = world.get_ref(player_entity, selection()).cloned().context("Failed to get selection")?;
-            let new_lookups = ids.iter().map(|&id| (world.get_ref(id, uid()).unwrap().clone(), id)).collect_vec();
-            world.resource_mut(uid_lookup()).extend(new_lookups);
+
             // Set the player selection to the spawned object
             if select {
-                tracing::debug!("Setting player selection to: {uids:?}");
-                world.set(player_entity, selection(), Selection::new(uids.clone())).context("Failed to set selection")?;
+                tracing::debug!("Setting player selection to: {entity_id:?}");
+                world.set(player_entity, selection(), Selection::new(vec![entity_id])).context("Failed to set selection")?;
             }
-            Ok((uids, select, old_selection))
+            Ok((entity_id, select, old_selection))
         },
-        move |ctx, (uids, select, old_selection)| {
+        move |ctx, (id, select, old_selection)| {
             let user_id = ctx.user_id.to_string();
             let world = ctx.world;
-            for uid in uids {
-                let id = world.resource_mut(uid_lookup()).remove(&uid).context("No such entity")?;
-                world.despawn(id);
-            }
+            world.despawn(id);
             if select {
                 if let Some(player_entity) = get_player_by_user_id(world, &user_id) {
                     world.set(player_entity, selection(), old_selection).ok();
@@ -566,15 +551,11 @@ pub fn register_intents(reg: &mut IntentRegistry) {
         |ctx, IntentDuplicate { entities, new_uids, select }| {
             let world = ctx.world;
             let player_entity = get_player_by_user_id(world, ctx.user_id).context("Player not found")?;
-            let ids = entities.iter().map(|id| world.resource(uid_lookup()).get(id).unwrap()).collect_vec();
-            let storage = World::from_entities(world, ids, true);
 
-            let ids = storage.spawn_into_world(world, None);
-            for (id, new_uid) in ids.iter().zip(new_uids.iter()) {
-                world.set(*id, uid(), new_uid.clone()).unwrap();
+            for (id, new_id) in entities.iter().zip(new_uids.iter()) {
+                let data = world.clone_entity(*id)?.serializable();
+                world.spawn_with_id(*new_id, data);
             }
-
-            world.resource_mut(uid_lookup()).extend(new_uids.iter().cloned().zip(ids.into_iter()));
 
             // Set the selection to the new objects
             if select {
@@ -586,7 +567,6 @@ pub fn register_intents(reg: &mut IntentRegistry) {
         |ctx, ids| {
             let world = ctx.world;
             for id in ids {
-                let id = world.resource_mut(uid_lookup()).remove(&id).unwrap();
                 world.despawn(id);
             }
             Ok(())
@@ -599,22 +579,16 @@ pub fn register_intents(reg: &mut IntentRegistry) {
         |ctx, entities| {
             let world = ctx.world;
             let player_entity = get_player_by_user_id(world, ctx.user_id).context("Player not found")?;
-            let ids = entities.iter().flat_map(|id| world.resource(uid_lookup()).get(id)).collect_vec();
-            let old = World::from_entities(world, ids.clone(), true);
+            let old = World::from_entities(world, entities.clone(), true);
 
-            for &id in ids.iter() {
-                let uid = world.get_ref(id, uid()).cloned();
+            for &id in entities.iter() {
                 world.despawn(id);
-                if let Ok(uid) = uid {
-                    world.resource_mut(uid_lookup()).remove(&uid);
-                }
             }
 
             let old_selection = {
-                let to_remove = ids.iter().flat_map(|id| world.get_ref(*id, uid()).cloned()).collect_vec();
                 let sel = world.get_mut(player_entity, selection()).unwrap();
                 let old_sel = sel.clone();
-                sel.difference(&Selection::new(to_remove));
+                sel.difference(&Selection::new(entities));
                 old_sel
             };
             Ok((old, old_selection))
@@ -622,12 +596,6 @@ pub fn register_intents(reg: &mut IntentRegistry) {
         |ctx, (entities, old_selection)| {
             let world = ctx.world;
             let ids = entities.spawn_into_world(world, None);
-            for id in ids {
-                let uid = world.get_ref(id, uid()).cloned();
-                if let Ok(uid) = uid {
-                    world.resource_mut(uid_lookup()).insert(uid, id);
-                }
-            }
             if let Some(player_entity) = get_player_by_user_id(world, ctx.user_id) {
                 world.set(player_entity, selection(), old_selection).ok();
             }

@@ -2,7 +2,9 @@ use std::fmt;
 
 use itertools::Itertools;
 use serde::{
-    de::{MapAccess, Visitor}, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer
+    de::{MapAccess, Visitor},
+    ser::SerializeMap,
+    Deserialize, Deserializer, Serialize, Serializer,
 };
 
 use crate::{dont_store, query, DeserEntityDataWithWarnings, EntityData, EntityId, Serializable, World};
@@ -57,7 +59,7 @@ impl<'de> Deserialize<'de> for World {
             {
                 let mut res = World::new_with_config_internal("deserialized-world", false);
                 while let Some((id, entity)) = map.next_entry::<EntityId, EntityData>()? {
-                    res.spawn_mirrored(id, entity);
+                    res.spawn_with_id(id, entity);
                 }
                 Ok(res)
             }
@@ -95,7 +97,7 @@ impl<'de> Deserialize<'de> for DeserWorldWithWarnings {
                 let mut res =
                     DeserWorldWithWarnings { world: World::new_with_config_internal("deserialized", false), warnings: Default::default() };
                 while let Some((id, entity)) = map.next_entry::<EntityId, DeserEntityDataWithWarnings>()? {
-                    res.world.spawn_mirrored(id, entity.entity);
+                    res.world.spawn_with_id(id, entity.entity);
                     res.warnings.warnings.extend(entity.warnings.warnings.into_iter().map(|(_, key, err)| (id, key, err)));
                 }
                 Ok(res)

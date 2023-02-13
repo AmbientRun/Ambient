@@ -56,18 +56,16 @@ pub async fn rpc_select(args: GameRpcArgs, (method, mode): (SelectMethod, Select
         let mut state = args.state.lock();
         let world = unwrap_log_err!(state.get_player_world_mut(&args.user_id).context("No player world"));
         match method {
-            SelectMethod::Frustum(frustum) => intersect_frustum(world, &frustum)
-                .into_iter()
-                .filter(|id| world.has_component(*id, selectable()))
-                .map(|id| world.get_ref(id, uid()).cloned().unwrap())
-                .collect(),
+            SelectMethod::Frustum(frustum) => {
+                intersect_frustum(world, &frustum).into_iter().filter(|id| world.has_component(*id, selectable())).collect()
+            }
             SelectMethod::Ray(ray) => {
                 if let Some((entity, _)) = raycast_filtered(
                     world,
                     RaycastFilter { entities: Some(ArchetypeFilter::new().incl(selectable())), collider_type: None },
                     ray,
                 ) {
-                    Selection::new([world.get_ref(entity, uid()).cloned().unwrap()])
+                    Selection::new([entity])
                 } else {
                     Default::default()
                 }

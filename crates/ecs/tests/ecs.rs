@@ -132,15 +132,15 @@ fn mirroring() {
     let id1 = EntityId(5);
     let id1b = EntityId(7);
     let id2 = EntityId(9);
-    world.spawn_mirrored(id1, EntityData::new().set(a(), 3.));
+    world.spawn_with_id(id1, EntityData::new().set(a(), 3.));
     world.get(id1, a()).unwrap();
     assert_eq!(query((a(),)).iter(&world, None).count(), 1);
-    world.spawn_mirrored(id2, EntityData::new().set(a(), 2.));
+    world.spawn_with_id(id2, EntityData::new().set(a(), 2.));
     world.get(id2, a()).unwrap();
     assert_eq!(query((a(),)).iter(&world, None).count(), 2);
     world.despawn(id1);
     assert_eq!(query((a(),)).iter(&world, None).count(), 1);
-    world.spawn_mirrored(id1b, EntityData::new().set(a(), 3.));
+    world.spawn_with_id(id1b, EntityData::new().set(a(), 3.));
     assert_eq!(query((a(),)).iter(&world, None).count(), 2);
     world.get(id2, a()).unwrap();
     world.despawn(id2);

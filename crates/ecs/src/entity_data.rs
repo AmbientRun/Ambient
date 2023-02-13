@@ -1,11 +1,15 @@
 use std::{
-    self, fmt::{self, Debug}, iter::Flatten
+    self,
+    fmt::{self, Debug},
+    iter::Flatten,
 };
 
 use itertools::Itertools;
 use kiwi_std::sparse_vec::SparseVec;
 use serde::{
-    de::{self, DeserializeSeed, MapAccess, Visitor}, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer
+    de::{self, DeserializeSeed, MapAccess, Visitor},
+    ser::SerializeMap,
+    Deserialize, Deserializer, Serialize, Serializer,
 };
 
 use super::{with_component_registry, Component, ComponentValue, ECSError, EntityId, World};
@@ -152,6 +156,15 @@ impl EntityData {
                 self.remove_raw(entry);
             }
         }
+    }
+    /// Removes any non-serializable components from this entity
+    pub fn serializable(mut self) -> Self {
+        for comp in self.components() {
+            if !comp.has_attribute::<Serializable>() {
+                self.remove_raw(comp);
+            }
+        }
+        self
     }
     pub fn len(&self) -> usize {
         self.content.len()

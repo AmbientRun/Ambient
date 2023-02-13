@@ -81,32 +81,6 @@ impl host::Host for Bindings {
         id.into_bindgen()
     }
 
-    fn entity_spawn_template(
-        &mut self,
-        object_ref: host::ObjectRefParam,
-        position: host::Vec3,
-        rotation: Option<host::Quat>,
-        scale: Option<host::Vec3>,
-        persistent: bool,
-    ) -> host::EntityUidResult {
-        let id = esei::entity::spawn_template(
-            &mut self.world_mut(),
-            object_ref.id.to_string(),
-            position.from_bindgen(),
-            rotation.from_bindgen(),
-            scale.from_bindgen(),
-        )
-        .unwrap();
-        if !persistent {
-            self.shared_state
-                .write()
-                .base_mut()
-                .spawned_entities
-                .insert(id.clone());
-        }
-        id.into_bindgen()
-    }
-
     fn entity_despawn(&mut self, entity: host::EntityId) -> bool {
         let entity = entity.from_bindgen();
         let despawn = esei::entity::despawn(&mut self.world_mut(), entity);

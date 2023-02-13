@@ -348,7 +348,6 @@ record player-raw-input {
 
 // entity
 entity-spawn: func(data: components, persistent: bool) -> entity-uid
-entity-spawn-template: func(object-ref: object-ref, position: vec3, rotation: option<quat>, scale: option<vec3>, persistent: bool) -> entity-uid
 entity-despawn: func(entity: entity-id) -> bool
 entity-set-animation-controller: func(entity: entity-id, animation-controller: animation-controller)
 entity-set-transform: func(entity: entity-id, transform: mat4, relative: bool)

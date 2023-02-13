@@ -26,34 +26,6 @@ pub fn spawn(components: &Components, persistent: bool) -> EntityUid {
         .from_bindgen()
 }
 
-/// Spawns an entity using the `object_ref` template at `position`, with
-/// `rotation` and `scale`. If `persistent` is set, this entity will not be
-/// removed when this module is unloaded.
-///
-/// If `rotation` and/or `scale` are `None`, the entity will be spawned with
-/// reasonable defaults.
-///
-/// This is an asynchronous operation; use [wait_for_spawn] to get notified when
-/// the entity is spawned.
-///
-/// Returns `spawned_entity_uid`.
-pub fn spawn_template(
-    object_ref: &ObjectRef,
-    position: Vec3,
-    rotation: Option<Quat>,
-    scale: Option<Vec3>,
-    persistent: bool,
-) -> EntityUid {
-    host::entity_spawn_template(
-        object_ref.into_bindgen(),
-        position.into_bindgen(),
-        rotation.into_bindgen(),
-        scale.into_bindgen(),
-        persistent,
-    )
-    .from_bindgen()
-}
-
 /// Waits until `uid` has fully spawned. Note that this may never resolve if the entity
 /// does not complete spawning, or the UID in question refers to an entity that does
 /// not exist.

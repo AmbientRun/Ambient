@@ -4,12 +4,12 @@ use derive_more::Display;
 use futures_signals::signal::SignalExt;
 use itertools::Itertools;
 use kiwi_core::{asset_cache, async_ecs::async_run, get_mouse_clip_space_position, runtime};
-use kiwi_ecs::{uid_lookup, Component, ComponentValue, EntityUid, World};
+use kiwi_ecs::{uid_lookup, Component, ComponentValue, EntityId, EntityUid, World};
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
 use kiwi_input::{on_app_keyboard_input, MouseButton};
 use kiwi_intent::{client_push_intent, rpc_undo_head_exact};
 use kiwi_network::{client::GameClient, log_network_error};
-use kiwi_object::{rpc_load_object, MultiEntityUID};
+
 use kiwi_std::{
     asset_url::{select_asset, AssetType},
     cb, cb_arc, friendly_id, Cb,
@@ -25,7 +25,7 @@ use winit::event::{ElementState, VirtualKeyCode};
 
 use super::{terrain_mode::GenerateTerrainButton, EditorPlayerInputHandler, EditorPrefs};
 use crate::{
-    intents::{intent_delete, intent_duplicate, intent_spawn_object2, IntentDuplicate, IntentSpawnObject2, SelectMode},
+    intents::{intent_delete, intent_duplicate, intent_spawn_object, IntentDuplicate, IntentSpawnObject, SelectMode},
     ui::use_player_selection,
     Selection, GRID_SIZE,
 };
@@ -129,7 +129,7 @@ impl ElementComponent for EditorBuildMode {
         let set_srt_mode = hooks.provide_context(|| None as Option<TransformMode>);
         let (screen, set_screen) = hooks.use_state(None);
 
-        let targets = hooks.use_ref_with::<Arc<[EntityUid]>>(|| Arc::from([]));
+        let targets = hooks.use_ref_with::<Arc<[EntityId]>>(|| Arc::from([]));
         let rerender = hooks.use_rerender_signal();
 
         {
@@ -141,18 +141,7 @@ impl ElementComponent for EditorBuildMode {
                 profiling::scope!("update_targets");
                 let state = game_state.lock();
 
-                let res = selection
-                    .iter()
-                    .filter_map(|uid| -> Option<_> {
-                        match state.world.resource(uid_lookup()).get(&uid) {
-                            Ok(id) if state.world.exists(id) => Some(uid),
-                            _ => {
-                                tracing::warn!("Entity: {uid} could not be resolved");
-                                None
-                            }
-                        }
-                    })
-                    .collect_vec();
+                let res = selection.iter().filter(|id| state.world.exists(*id)).collect_vec();
 
                 if Some(&res) != prev.as_ref() {
                     tracing::info!("Resolving targets: {selection:?} => {res:?}");
@@ -225,13 +214,9 @@ impl ElementComponent for EditorBuildMode {
                                         };
                                         let position = ray.origin + ray.dir * 10.;
                                         world.resource(runtime()).spawn(async move {
-                                            if let Err(err) = game_client.rpc(rpc_load_object, object_url.clone()).await {
-                                                log_network_error(&err.into());
-                                                return;
-                                            }
-                                            client_push_intent(game_client, intent_spawn_object2(), IntentSpawnObject2 {
+                                            client_push_intent(game_client, intent_spawn_object(), IntentSpawnObject {
                                                 object_url,
-                                                entity_uid: MultiEntityUID::new(),
+                                                entity_id: EntityId::new(),
                                                 position,
                                                 select: true
                                             }, None, Some(Box::new(move || {
@@ -257,8 +242,8 @@ impl ElementComponent for EditorBuildMode {
                                 EntityBrowserScreen {
                                     on_select: cb_arc(Arc::new({
                                         let set_screen = set_screen.clone();
-                                        move |_id, uid| {
-                                            set_selection(Selection::new([uid]));
+                                        move |id, uid| {
+                                            set_selection(Selection::new([id]));
                                             set_screen(None);
                                         }
                                     })),
@@ -285,7 +270,7 @@ impl ElementComponent for EditorBuildMode {
 
                                 tracing::info!("Duplicating {targets:?}");
                                 world.resource(runtime()).spawn(
-                                    client_push_intent(game_client, intent_duplicate(), IntentDuplicate { new_uids: targets.iter().map(|_| EntityUid::create()).collect(), entities: targets.to_vec(), select: true }, None, Some(Box::new(move || {
+                                    client_push_intent(game_client, intent_duplicate(), IntentDuplicate { new_uids: targets.iter().map(|_| EntityId::new()).collect(), entities: targets.to_vec(), select: true }, None, Some(Box::new(move || {
                                         tracing::info!("Entering translate move");
 
 
@@ -347,7 +332,7 @@ enum TransformMode {
 
 #[derive(Debug, Clone)]
 pub struct TransformControls {
-    targets: Arc<[EntityUid]>,
+    targets: Arc<[EntityId]>,
 }
 impl ElementComponent for TransformControls {
     fn render(self: Box<Self>, _: &mut World, hooks: &mut Hooks) -> Element {
