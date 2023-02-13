@@ -23,7 +23,11 @@ use serde::{Deserialize, Serialize};
 use tokio::sync::oneshot;
 
 components!("object", {
-    @[Debuggable, Networked, Store, Name["Object from url"], Description["Load and attach an object from a url or relative path"]]
+    @[
+        Debuggable, Networked, Store,
+        Name["Object from URL"],
+        Description["Load and attach an object from a URL or relative path.\nWhen loaded, the components from this object will add to or replace the existing components for the object."]
+    ]
     object_from_url: String,
 });
 
@@ -49,7 +53,7 @@ pub fn systems() -> SystemGroup {
                     let entity = obj.clone_entity(base_ent_id).unwrap();
                     async_run.run(move |world| {
                         for id in ids {
-                            world.add_components(id, entity.clone());
+                            world.add_components(id, entity.clone()).unwrap();
                         }
                     });
                 });

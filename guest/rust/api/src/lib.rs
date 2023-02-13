@@ -1,5 +1,8 @@
-//! # The Kiwi API
-//! Welcome to the Kiwi API!
+//! # The Kiwi Rust API
+//!
+//! Welcome to the Kiwi Rust API! This API allows you to write logic for the Kiwi Runtime in Rust.
+//!
+//! Kiwi has first-class support for Rust. Please report any issues you encounter to the repository.
 #![deny(missing_docs)]
 
 /// ECS-related functionality not directly related to entities.

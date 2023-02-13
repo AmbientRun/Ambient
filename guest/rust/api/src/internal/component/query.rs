@@ -7,7 +7,7 @@ use crate::{
 };
 
 /// Creates a new [GeneralQueryBuilder] that will find entities that have the specified `components`
-/// and can be [built|`GeneralQueryBuilder::build`] to create a [GeneralQuery].
+/// and can be [built](GeneralQueryBuilder::build) to create a [GeneralQuery].
 ///
 /// Building a query is somewhat expensive, but they are cheap to copy and evaluate, so it's
 /// recommended that you build your queries once and reuse them elsewhere.
@@ -46,9 +46,9 @@ pub fn despawn_query<Components: ComponentsTuple + Copy + Clone + 'static>(
 
 /// When this [EventQuery] should return results.
 pub enum QueryEvent {
-    /// When this collection of components is spawned
+    /// When this collection of components is spawned.
     Spawn,
-    /// When this collection of components is despawned
+    /// When this collection of components is despawned.
     Despawn,
 }
 
@@ -59,7 +59,7 @@ pub struct GeneralQuery<Components: ComponentsTuple + Copy + Clone + 'static>(
 );
 impl<Components: ComponentsTuple + Copy + Clone + 'static> GeneralQuery<Components> {
     /// Creates a new [GeneralQueryBuilder] that will find entities that have the specified `components`
-    /// and can be [built|`GeneralQueryBuilder::build`] to create a [GeneralQuery].
+    /// and can be [built](GeneralQueryBuilder::build) to create a [GeneralQuery].
     ///
     /// Building a query is somewhat expensive, but they are cheap to copy and evaluate, so it's
     /// recommended that you build your queries once and reuse them elsewhere.
@@ -118,7 +118,7 @@ pub struct ChangeQuery<Components: ComponentsTuple + Copy + Clone + 'static>(
 );
 impl<Components: ComponentsTuple + Copy + Clone + 'static> ChangeQuery<Components> {
     /// Creates a new [ChangeQuery] that will find entities that have the specified `components`
-    /// that will call its bound function when components marked by [Self::track_change]
+    /// that will call its bound function when components marked by [track_change](Self::track_change)
     /// change.
     pub fn create(components: Components) -> Self {
         Self(QueryBuilderImpl::new(components.as_indices()), vec![])
@@ -138,7 +138,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> ChangeQuery<Component
 
     /// The query will return results when these components change values.
     ///
-    /// Note that this does *not* implicitly [Self::requires] the components; this allows you to track
+    /// Note that this does *not* implicitly [requires](Self::requires) the components; this allows you to track
     /// changes for entities that do not have all of the tracked components.
     pub fn track_change(mut self, changes: impl ComponentsTuple) -> Self {
         self.1.extend_from_slice(&changes.as_indices());

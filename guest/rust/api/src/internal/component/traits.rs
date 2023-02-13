@@ -17,7 +17,7 @@ pub trait AsParam {
     fn as_param(&self) -> host::ComponentTypeParam<'_>;
 }
 
-/// Implemented by all types you can use with [crate::entity::get_component].
+/// Implemented by all types you can use with [entity::get_component](crate::entity::get_component).
 pub trait SupportedComponentTypeGet
 where
     Self: Sized,
@@ -26,7 +26,7 @@ where
     fn from_result(result: host::ComponentTypeResult) -> Option<Self>;
 }
 
-/// Implemented by all types you can use with [crate::entity::set_component].
+/// Implemented by all types you can use with [entity::set_component](crate::entity::set_component).
 pub trait SupportedComponentTypeSet
 where
     Self: Sized,

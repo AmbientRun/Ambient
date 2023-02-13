@@ -29,7 +29,7 @@ pub fn on(event: &str, callback: impl Fn(&Components) -> EventResult + 'static) 
 ///
 /// If you only want to be notified once, use [once_async].
 ///
-/// The `callback` is a `async fn`. This can be a closure (e.g. `|args| { ... }`).
+/// The `callback` is a `async fn`. This can be a closure (e.g. `|args| async move { ... }`).
 pub fn on_async<R: Future<Output = EventResult> + 'static>(
     event: &str,
     callback: impl Fn(&Components) -> R + 'static,
@@ -54,7 +54,7 @@ pub fn once(event: &str, callback: impl FnOnce(&Components) -> EventResult + 'st
 ///
 /// If you want to be notified every time the `event` occurs, use [on_async].
 ///
-/// The `callback` is a `async fn`. This can be a closure (e.g. `|args| { ... }`).
+/// The `callback` is a `async fn`. This can be a closure (e.g. `|args| async move { ... }`).
 pub fn once_async<R: Future<Output = EventResult> + 'static>(
     event: &str,
     callback: impl FnOnce(&Components) -> R + 'static,

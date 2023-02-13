@@ -22,8 +22,8 @@ use kiwi_std::{
     math::interpolate,
 };
 pub use paste;
-use winit::{event::Event, window::Window};
 use serde::{Deserialize, Serialize};
+use winit::{event::Event, window::Window};
 pub mod bounding;
 pub mod camera;
 pub mod transform;
@@ -49,21 +49,49 @@ components!("app", {
     /// Mouse position in screen space
     @[Resource]
     mouse_position: Vec2,
-    @[Debuggable, Networked, Store, Name["Main scene"], Description["If attached, this entity belongs to the main scene."]]
+    @[
+        Debuggable, Networked, Store,
+        Name["Main scene"],
+        Description["If attached, this entity belongs to the main scene."]
+    ]
     main_scene: (),
-    @[Debuggable, Networked, Store, Name["UI scene"], Description["If attached, this entity belongs to the UI scene."]]
+    @[
+        Debuggable, Networked, Store,
+        Name["UI scene"],
+        Description["If attached, this entity belongs to the UI scene."]
+    ]
     ui_scene: (),
     @[Resource]
     asset_cache: AssetCache,
-    @[Debuggable, Networked, Store, Name["Map seed"], Description["A random number seed for this map"]]
+    @[
+        Debuggable, Networked, Store,
+        Name["Map seed"],
+        Description["A random number seed for this map."]
+    ]
     map_seed: u64,
-    @[Debuggable, Networked, Store, Name["Snap to ground"], Description["This object should automatically be moved with the terrain if the terrain is changed"]]
+    @[
+        Debuggable, Networked, Store,
+        Name["Snap to ground"],
+        Description["This object should automatically be moved with the terrain if the terrain is changed.\nThe value is the offset from the terrain."]
+    ]
     snap_to_ground: f32,
-    @[Debuggable, Networked, Store, Name["Selectable"], Description["This object can be selected in the editor"]]
+    @[
+        Debuggable, Networked, Store,
+        Name["Selectable"],
+        Description["If attached, this object can be selected in the editor."]
+    ]
     selectable: (),
-    @[Debuggable, Networked, Store, Name["Session start time"], Description["When the current server session was started"]]
+    @[
+        Debuggable, Networked, Store, Resource,
+        Name["Session start time"],
+        Description["When the current server session was started."]
+    ]
     session_start: SystemTime,
-    @[Debuggable, Networked, Store, Name["Tags"], Description["Tags for categorizing this entity"]]
+    @[
+        Debuggable, Networked, Store,
+        Name["Tags"],
+        Description["Tags for categorizing this entity."]
+    ]
     tags: Vec<String>,
     @[Debuggable, Networked, Store]
     game_mode: GameMode,
