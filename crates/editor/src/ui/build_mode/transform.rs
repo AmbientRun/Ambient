@@ -262,7 +262,7 @@ impl ElementComponent for TranslationController {
 
         drop(game_state);
 
-        AxisButtons { axis, set_axis: set_axis }.el().children(vec![Group(vec![
+        AxisButtons { axis, set_axis }.el().children(vec![Group(vec![
             guide,
             HighjackMouse {
                 on_click: {
@@ -374,7 +374,7 @@ impl ElementComponent for ScaleController {
             })
         };
 
-        AxisButtons { axis, set_axis: set_axis }.el().children(vec![Group(vec![HighjackMouse {
+        AxisButtons { axis, set_axis }.el().children(vec![Group(vec![HighjackMouse {
             on_mouse_move: cb_arc(Arc::new(move |_, pos, _| update(pos))),
             on_click: cb(move |button| {
                 if button != MouseButton::Left {
@@ -500,7 +500,7 @@ impl ElementComponent for RotateController {
             .el(),
         );
 
-        AxisButtons { axis, set_axis: set_axis }.el().children(vec![Group(items).el()])
+        AxisButtons { axis, set_axis }.el().children(vec![Group(items).el()])
     }
 }
 

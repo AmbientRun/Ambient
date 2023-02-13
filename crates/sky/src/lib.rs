@@ -44,11 +44,7 @@ const VOXEL_SIZE: f32 = 0.05;
 impl CloudState {
     pub fn new(half_size: f32) -> Self {
         let generator = OpenSimplex::new(); // TODO enum noise
-        let mut tree = OctreeInfo::default();
-        tree.max_depth = MAX_DEPTH;
-        tree.half_size = half_size;
-        tree.generator = Arc::new(generator);
-        let tree = tree.build();
+        let tree = OctreeInfo { max_depth: MAX_DEPTH, half_size, generator: Arc::new(generator), ..OctreeInfo::default() }.build();
         Self { tree }
     }
 }
