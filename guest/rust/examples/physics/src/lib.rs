@@ -5,7 +5,7 @@ use kiwi_api::{
         object::object_from_url,
         physics::{box_collider, dynamic, physics_controlled},
         primitives::cube,
-        transform::{lookat_center, scale, translation},
+        transform::{lookat_center, rotation, scale, translation},
     },
     prelude::*,
 };
@@ -21,7 +21,7 @@ pub async fn main() -> EventResult {
         .with(aspect_ratio_from_window(), ())
         .spawn(false);
 
-    entity::game_object_base()
+    let cube = entity::game_object_base()
         .with_default(cube())
         .with(box_collider(), vec3(2., 2., 2.))
         .with(dynamic(), true)
@@ -33,6 +33,12 @@ pub async fn main() -> EventResult {
     entity::game_object_base()
         .with(object_from_url(), "assets/Shape.glb".to_string())
         .spawn(false);
+
+    loop {
+        sleep(5.).await;
+        entity::set_component(cube, translation(), vec3(0., 0., 5.));
+        entity::set_component(cube, rotation(), Quat::IDENTITY);
+    }
 
     EventOk
 }

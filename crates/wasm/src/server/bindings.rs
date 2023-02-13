@@ -105,21 +105,6 @@ impl host::Host for Bindings {
         .unwrap()
     }
 
-    fn entity_set_transform(
-        &mut self,
-        entity: host::EntityId,
-        transform: host::Mat4,
-        relative: bool,
-    ) {
-        esei::entity::set_transform(
-            &mut self.world_mut(),
-            entity.from_bindgen(),
-            transform.from_bindgen(),
-            relative,
-        )
-        .unwrap();
-    }
-
     fn entity_get_linear_velocity(&mut self, entity: host::EntityId) -> Option<host::Vec3> {
         esei::entity::get_linear_velocity(&mut self.world_mut(), entity.from_bindgen())
             .ok()

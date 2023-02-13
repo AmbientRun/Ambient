@@ -47,67 +47,6 @@ pub fn despawn(entity: EntityId) -> bool {
 pub fn set_animation_controller(entity: EntityId, controller: AnimationController) {
     host::entity_set_animation_controller(entity.into_bindgen(), controller)
 }
-/// Gets the position of the `entity` if it exists, or `None` if it does not.
-pub fn get_position(entity: EntityId) -> Option<Vec3> {
-    get_component(entity, components::core::transform::translation())
-}
-/// Sets the position of `entity` to `position`.
-pub fn set_position(entity: EntityId, position: Vec3) {
-    let (rotation, scale) = (
-        get_rotation(entity).unwrap_or_default(),
-        get_scale(entity).unwrap_or(Vec3::ONE),
-    );
-
-    host::entity_set_transform(
-        entity.into_bindgen(),
-        Mat4::from_scale_rotation_translation(scale, rotation, position).into_bindgen(),
-        false,
-    );
-}
-/// Gets the rotation of the `entity` if it exists, or `None` if it does not.
-pub fn get_rotation(entity: EntityId) -> Option<Quat> {
-    get_component(entity, components::core::transform::rotation())
-}
-/// Sets the rotation of `entity` to `rotation`.
-pub fn set_rotation(entity: EntityId, rotation: Quat) {
-    let (translation, scale) = (
-        get_position(entity).unwrap_or_default(),
-        get_scale(entity).unwrap_or(Vec3::ONE),
-    );
-
-    host::entity_set_transform(
-        entity.into_bindgen(),
-        Mat4::from_scale_rotation_translation(scale, rotation, translation).into_bindgen(),
-        false,
-    );
-}
-/// Gets the scale of the `entity` if it exists, or `None` if it does not.
-pub fn get_scale(entity: EntityId) -> Option<Vec3> {
-    get_component(entity, components::core::transform::scale())
-}
-/// Sets the scale of `entity` to `scale`.
-pub fn set_scale(entity: EntityId, scale: Vec3) {
-    let (rotation, translation) = (
-        get_rotation(entity).unwrap_or_default(),
-        get_position(entity).unwrap_or_default(),
-    );
-
-    host::entity_set_transform(
-        entity.into_bindgen(),
-        Mat4::from_scale_rotation_translation(scale, rotation, translation).into_bindgen(),
-        false,
-    );
-}
-/// Sets the `transform` matrix of the `entity` (i.e. position, rotation and scale at the same time).
-pub fn set_transform(entity: EntityId, transform: glam::Affine3A) {
-    let transform: Mat4 = transform.into();
-    host::entity_set_transform(entity.into_bindgen(), transform.into_bindgen(), false);
-}
-/// Applies `transform` to the `entity` (i.e. moving / rotating / scaling where it currently is).
-pub fn transform_by(entity: EntityId, transform: glam::Affine3A) {
-    let transform: Mat4 = transform.into();
-    host::entity_set_transform(entity.into_bindgen(), transform.into_bindgen(), true);
-}
 
 /// Gets the linear velocity of `entity` if it exists, or `None` if it does not.
 pub fn get_linear_velocity(entity: EntityId) -> Option<Vec3> {

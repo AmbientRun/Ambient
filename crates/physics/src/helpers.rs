@@ -6,11 +6,16 @@ use itertools::Itertools;
 use kiwi_core::transform::{get_world_position, get_world_transform, rotation, scale, translation};
 use kiwi_ecs::{query, ECSError, EntityId, World};
 use physxx::{
-    AsPxActor, AsPxRigidActor, PxActor, PxActorTypeFlag, PxBase, PxBoxGeometry, PxConvexMeshGeometry, PxJoint, PxMeshScale, PxOverlapCallback, PxQueryFilterData, PxQueryFlag, PxRevoluteJointRef, PxRigidActor, PxRigidActorRef, PxRigidBody, PxRigidBodyFlag, PxRigidDynamicRef, PxRigidStaticRef, PxSceneRef, PxShape, PxSphereGeometry, PxTransform, PxTriangleMeshGeometry, PxUserData
+    AsPxActor, AsPxRigidActor, PxActor, PxActorTypeFlag, PxBase, PxBoxGeometry, PxConvexMeshGeometry, PxJoint, PxMeshScale,
+    PxOverlapCallback, PxQueryFilterData, PxQueryFlag, PxRevoluteJointRef, PxRigidActor, PxRigidActorRef, PxRigidBody, PxRigidBodyFlag,
+    PxRigidDynamicRef, PxRigidStaticRef, PxSceneRef, PxShape, PxSphereGeometry, PxTransform, PxTriangleMeshGeometry, PxUserData,
 };
 
 use crate::{
-    collider::{collider_shapes_convex, collider_type}, main_physics_scene, physx::{character_controller, physics, physics_controlled, physics_shape, revolute_joint, rigid_dynamic, rigid_static}, unit_mass, unit_velocity, unit_yaw, ColliderScene, PxActorUserData, PxShapeUserData
+    collider::{collider_shapes_convex, collider_type},
+    main_physics_scene,
+    physx::{character_controller, physics, physics_controlled, physics_shape, revolute_joint, rigid_dynamic, rigid_static},
+    unit_mass, unit_velocity, unit_yaw, ColliderScene, PxActorUserData, PxShapeUserData,
 };
 
 pub fn convert_rigid_static_to_dynamic(world: &mut World, id: EntityId) {
@@ -106,65 +111,6 @@ pub fn get_shapes(world: &World, id: EntityId) -> impl Iterator<Item = PxShape> 
         .flat_map(|v| v.get_shapes().into_iter())
         // Convex shapes used for sweeping
         .chain(world.get_ref(id, collider_shapes_convex()).into_iter().flatten().cloned())
-}
-
-/// Transform an entity to a new position while handling physxx velocities and
-/// collider scaling.
-///
-/// The position is absolute
-#[tracing::instrument(skip(world), level = "info")]
-pub fn transform_entity_parts(world: &mut World, id: EntityId, pos: Vec3, rot: Quat, scl: Vec3) -> Result<(), ECSError> {
-    world.set(id, translation(), pos)?;
-    world.set(id, rotation(), rot)?;
-    if let Ok(body) = world.get(id, rigid_dynamic()) {
-        body.set_global_pose(&PxTransform::new(pos, rot), true);
-        body.set_linear_velocity(Vec3::ZERO, true);
-        body.set_angular_velocity(Vec3::ZERO, true);
-    } else if let Ok(body) = world.get(id, rigid_static()) {
-        body.set_global_pose(&PxTransform::new(pos, rot), true);
-    } else if let Ok(shape) = world.get_mut(id, physics_shape()) {
-        let actor = shape.get_actor().unwrap();
-
-        let old_scale = world.get(id, scale());
-
-        if let Ok(old_scale) = old_scale {
-            if old_scale.distance(scl) > 0.01 {
-                for shape in get_shapes(world, id) {
-                    scale_shape(shape, scl);
-                }
-            }
-        } else {
-            // Handled by `initial_scale` system
-        }
-
-        actor.set_global_pose(&PxTransform::new(pos, rot), true);
-        if let Some(body) = actor.to_rigid_dynamic() {
-            // Stop any rb movement when translating
-            body.set_linear_velocity(Vec3::ZERO, true);
-            body.set_angular_velocity(Vec3::ZERO, true);
-        } else {
-            // update_actor_entity_transforms(world, actor);
-        }
-    } else if let Ok(controller) = world.get(id, character_controller()) {
-        controller.set_position(pos.as_dvec3());
-        let (_, _, z) = rot.to_euler(EulerRot::XYZ);
-        world.set(id, unit_yaw(), z).ok();
-    }
-    // ignore scale if not present
-    world.set(id, scale(), scl).ok();
-    Ok(())
-}
-
-pub fn transform_entity(world: &mut World, id: EntityId, transformation: Mat4, relative: bool) -> Result<(), ECSError> {
-    let new_transform = if relative {
-        let prev_transform = get_world_transform(world, id)?;
-        transformation * prev_transform
-    } else {
-        transformation
-    };
-
-    let (scl, rot, pos) = new_transform.to_scale_rotation_translation();
-    transform_entity_parts(world, id, pos, rot, scl)
 }
 
 pub fn scale_shape(shape: PxShape, scale: Vec3) {

@@ -343,7 +343,6 @@ record player-raw-input {
 entity-spawn: func(data: components, persistent: bool) -> entity-id
 entity-despawn: func(entity: entity-id) -> bool
 entity-set-animation-controller: func(entity: entity-id, animation-controller: animation-controller)
-entity-set-transform: func(entity: entity-id, transform: mat4, relative: bool)
 entity-get-linear-velocity: func(entity: entity-id) -> option<vec3>
 entity-in-area: func(position: vec3, radius: float32) -> list<entity-id>
 

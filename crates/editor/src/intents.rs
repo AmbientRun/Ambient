@@ -3,18 +3,13 @@ use glam::{Mat4, Quat, Vec3, Vec3Swizzles};
 use itertools::{izip, process_results, Itertools};
 use kiwi_core::{
     self, selectable, snap_to_ground,
-    transform::{get_world_transform, translation},
+    transform::{get_world_transform, rotation, scale, translation},
 };
 use kiwi_ecs::{components, EntityData, EntityId, World};
 use kiwi_intent::{use_old_state, IntentContext, IntentRegistry};
 use kiwi_network::get_player_by_user_id;
-use kiwi_physics::{
-    collider::collider_shapes_convex,
-    helpers::{transform_entity, transform_entity_parts},
-    main_physics_scene,
-    physx::rigid_actor,
-    PxShapeUserData,
-};
+use kiwi_physics::{collider::collider_shapes_convex, main_physics_scene, physx::rigid_actor, PxShapeUserData};
+
 use kiwi_std::{
     log_result,
     shapes::{Ray, Shape, AABB},
@@ -45,7 +40,10 @@ fn undo_transform(ctx: IntentContext, undo_state: Vec<IntentTransformRevert>) ->
             world.remove_component(id, snap_to_ground()).expect("Invalid entity")
         }
 
-        transform_entity(world, id, state.transform, false).ok();
+        let (scl, rot, pos) = state.transform.to_scale_rotation_translation();
+        world.set_if_changed(id, translation(), pos);
+        world.set_if_changed(id, rotation(), rot);
+        world.set_if_changed(id, scale(), scl);
     }
 
     Ok(())
@@ -320,7 +318,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
                     {
                         let old_snap_to_ground = world.get(id, snap_to_ground()).ok();
 
-                        let (scale, rot, pos) = transform.to_scale_rotation_translation();
+                        let (scl, rot, pos) = transform.to_scale_rotation_translation();
 
                         // World space position
                         let new_pos = pos - midpoint + target;
@@ -328,9 +326,9 @@ pub fn register_intents(reg: &mut IntentRegistry) {
 
                         update_snap_to_ground(world, id, pos);
 
-                        let res = transform_entity_parts(world, id, new_pos, rot, scale).context("Failed to transform entity {id}");
-
-                        log_result!(res);
+                        world.set_if_changed(id, translation(), new_pos);
+                        world.set_if_changed(id, rotation(), rot);
+                        world.set_if_changed(id, scale(), scl);
 
                         Ok(IntentTransformRevert { snap_to_ground: old_snap_to_ground, transform, uid })
                     }
@@ -375,7 +373,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
                 .map(|(uid, id, transform): (_, _, Mat4)| {
                     let old_snap_to_ground = world.get(id, snap_to_ground()).ok();
 
-                    let (scale, rot, pos) = transform.to_scale_rotation_translation();
+                    let (scl, rot, pos) = transform.to_scale_rotation_translation();
 
                     // World space position
                     let new_pos = pos - midpoint + position;
@@ -383,9 +381,9 @@ pub fn register_intents(reg: &mut IntentRegistry) {
 
                     update_snap_to_ground(world, id, pos);
 
-                    let res = transform_entity_parts(world, id, new_pos, rot, scale).context("Failed to transform entity {id}");
-
-                    log_result!(res);
+                    world.set_if_changed(id, translation(), new_pos);
+                    world.set_if_changed(id, rotation(), rot);
+                    world.set_if_changed(id, scale(), scl);
 
                     Ok(IntentTransformRevert { snap_to_ground: old_snap_to_ground, transform, uid })
                 })
@@ -407,13 +405,15 @@ pub fn register_intents(reg: &mut IntentRegistry) {
                 .map(|(&id, transform)| {
                     let old_transform = get_world_transform(world, id).context("No transform")?;
 
-                    let (scale, rot, pos) = transform.to_scale_rotation_translation();
+                    let (scl, rot, pos) = transform.to_scale_rotation_translation();
 
                     let old_snap_to_ground = world.get(id, snap_to_ground()).ok();
 
                     update_snap_to_ground(world, id, pos);
 
-                    transform_entity_parts(world, id, pos, rot, scale).context("Failed to transform entity")?;
+                    world.set_if_changed(id, translation(), pos);
+                    world.set_if_changed(id, rotation(), rot);
+                    world.set_if_changed(id, scale(), scl);
 
                     Ok(IntentTransformRevert { transform: old_transform, snap_to_ground: old_snap_to_ground, uid: id })
                 })
@@ -429,7 +429,10 @@ pub fn register_intents(reg: &mut IntentRegistry) {
                     world.remove_component(id, snap_to_ground()).expect("Invalid entity")
                 }
 
-                transform_entity(world, id, old_state.transform, false).ok();
+                let (scl, rot, pos) = old_state.transform.to_scale_rotation_translation();
+                world.set_if_changed(id, translation(), pos);
+                world.set_if_changed(id, rotation(), rot);
+                world.set_if_changed(id, scale(), scl);
             }
             Ok(())
         },
@@ -446,12 +449,15 @@ pub fn register_intents(reg: &mut IntentRegistry) {
                 .iter()
                 .map(|&id| {
                     let transform = get_world_transform(world, id).context("No transform")?;
-                    let (scale, rot, pos) = transform.to_scale_rotation_translation();
+                    let (scl, rot, pos) = transform.to_scale_rotation_translation();
 
                     set_snap_to_ground(world, id, intent.1);
 
                     let old_snap_to_ground = world.get(id, snap_to_ground()).ok();
-                    transform_entity_parts(world, id, pos, rot, scale).context("Failed to transform")?;
+
+                    world.set_if_changed(id, translation(), pos);
+                    world.set_if_changed(id, rotation(), rot);
+                    world.set_if_changed(id, scale(), scl);
                     Ok((id, old_snap_to_ground)) as anyhow::Result<_>
                 })
                 .collect::<Result<Vec<_>, _>>()

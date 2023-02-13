@@ -28,7 +28,6 @@ use kiwi_gpu::{
 use kiwi_meshes::{GridMesh, GridMeshKey};
 use kiwi_physics::{
     collider::{collider_type, ColliderType},
-    helpers::transform_entity_parts,
     main_physics_scene,
     physx::{character_controller, physics, physics_shape, rigid_static, Physics},
     PxActorUserData, PxShapeUserData,
@@ -226,9 +225,10 @@ pub fn server_systems() -> SystemGroup {
                     }
                 }
 
-                for (id, _, pos, rot, scale) in new_transform {
-                    let _old_pos = world.get(id, translation()).unwrap();
-                    log_result!(transform_entity_parts(world, id, pos, rot, scale));
+                for (id, _, pos, rot, scl) in new_transform {
+                    world.set_if_changed(id, translation(), pos);
+                    world.set_if_changed(id, rotation(), rot);
+                    world.set_if_changed(id, scale(), scl);
                 }
             }),
         ],
