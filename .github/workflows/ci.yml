@@ -45,3 +45,5 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-
       - name: Run tests
         run: cargo test --workspace --release
+      - name: Run tests again
+        run: cargo test --workspace --release
