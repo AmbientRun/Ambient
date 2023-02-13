@@ -7,6 +7,7 @@ pub(crate) fn init() -> anyhow::Result<()> {
     kiwi_world_audio::init_components();
     kiwi_primitives::init_components();
     kiwi_project::init_components();
+    kiwi_object::init_components();
 
     crate::player::init_all_components();
 

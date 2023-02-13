@@ -1,20 +1,31 @@
 use std::{
-    collections::HashMap, net::SocketAddr, path::{Path, PathBuf}, sync::Arc, time::SystemTime
+    collections::HashMap,
+    net::SocketAddr,
+    path::{Path, PathBuf},
+    sync::Arc,
+    time::SystemTime,
 };
 
 use anyhow::Context;
 use axum::{
-    http::{Method, StatusCode}, response::IntoResponse, routing::{get, get_service}, Router
+    http::{Method, StatusCode},
+    response::IntoResponse,
+    routing::{get, get_service},
+    Router,
 };
 use kiwi_core::{app_start_time, asset_cache, dtime, no_sync, time};
 use kiwi_ecs::{ComponentDesc, ComponentRegistry, EntityData, Networked, SystemGroup, World, WorldStreamCompEvent};
 use kiwi_network::{
-    bi_stream_handlers, client::GameRpcArgs, datagram_handlers, server::{ForkingEvent, GameServer, ShutdownEvent}
+    bi_stream_handlers,
+    client::GameRpcArgs,
+    datagram_handlers,
+    server::{ForkingEvent, GameServer, ShutdownEvent},
 };
 use kiwi_object::ObjectFromUrl;
 use kiwi_rpc::RpcRegistry;
 use kiwi_std::{
-    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, ServerBaseUrlKey}
+    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
+    asset_url::{AbsAssetUrl, ServerBaseUrlKey},
 };
 use tower_http::{cors::CorsLayer, services::ServeDir};
 
@@ -33,6 +44,7 @@ fn server_systems() -> SystemGroup {
             kiwi_core::remove_at_time_system(),
             Box::new(kiwi_physics::physics_server_systems()),
             Box::new(player::server_systems()),
+            Box::new(kiwi_object::systems()),
             Box::new(wasm::systems()),
             Box::new(player::server_systems_final()),
             kiwi_physics::run_simulation_system(),

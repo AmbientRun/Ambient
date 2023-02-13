@@ -1,20 +1,62 @@
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 use anyhow::Context;
 use async_trait::async_trait;
 use glam::{Quat, Vec3};
-use kiwi_core::{asset_cache, async_ecs::async_run, runtime, transform};
+use kiwi_core::{asset_cache, async_ecs::async_run, hierarchy::children, runtime, transform};
 use kiwi_decals::decal;
-use kiwi_ecs::{query_mut, uid, DeserWorldWithWarnings, EntityData, EntityId, EntityUid, World};
+use kiwi_ecs::{
+    components, query, query_mut, uid, Debuggable, Description, DeserWorldWithWarnings, EntityData, EntityId, EntityUid, Name, Networked,
+    Store, SystemGroup, World,
+};
 use kiwi_model::{model_def, ModelDef};
 use kiwi_network::client::GameRpcArgs;
 use kiwi_physics::collider::collider;
 use kiwi_rpc::RpcRegistry;
 use kiwi_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetUrl, ServerBaseUrlKey}, download_asset::{AssetError, BytesFromUrl}, friendly_id, unwrap_log_err
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt},
+    asset_url::{AbsAssetUrl, AssetUrl, ServerBaseUrlKey},
+    download_asset::{AssetError, BytesFromUrl},
+    friendly_id, unwrap_log_err,
 };
 use serde::{Deserialize, Serialize};
 use tokio::sync::oneshot;
+
+components!("object", {
+    @[Debuggable, Networked, Store, Name["Object from url"], Description["Load and attach an object from a url or relative path"]]
+    object_from_url: String,
+});
+
+pub fn systems() -> SystemGroup {
+    SystemGroup::new(
+        "object",
+        vec![query(object_from_url()).spawned().to_system(|q, world, qs, _| {
+            let mut to_load = HashMap::<String, Vec<EntityId>>::new();
+            for (id, url) in q.collect_cloned(world, qs) {
+                let url = if url.ends_with("/objects/main.json") { url } else { format!("{}/objects/main.json", url) };
+                to_load.entry(url).or_default().push(id);
+            }
+            for (url, ids) in to_load {
+                let assets = world.resource(asset_cache()).clone();
+                let url = unwrap_log_err!(AssetUrl::parse(url));
+                let url = ObjectFromUrl(unwrap_log_err!(url.resolve(&ServerBaseUrlKey.get(&assets))));
+                let runtime = world.resource(runtime()).clone();
+                let async_run = world.resource(async_run()).clone();
+                runtime.spawn(async move {
+                    let obj = unwrap_log_err!(url.get(&assets).await);
+                    let base_ent_id = obj.resource(children())[0];
+                    // TODO: This only handles objects with a single entity
+                    let entity = obj.clone_entity(base_ent_id).unwrap();
+                    async_run.run(move |world| {
+                        for id in ids {
+                            world.add_components(id, entity.clone());
+                        }
+                    });
+                });
+            }
+        })],
+    )
+}
 
 /// EntityUid for a collection of entities. Use `get_uid` to get indiviual entities uids
 #[derive(Serialize, Deserialize, Debug, Clone)]

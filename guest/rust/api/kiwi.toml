@@ -10,10 +10,34 @@ name = "Main scene"
 description = "If attached, this entity belongs to the main scene."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::app::map_seed"]
+type = "U64"
+name = "Map seed"
+description = "A random number seed for this map"
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::app::name"]
 type = "String"
 name = "Name"
 description = "A human-friendly name for this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::app::selectable"]
+type = "Empty"
+name = "Selectable"
+description = "This object can be selected in the editor"
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::app::snap_to_ground"]
+type = "F32"
+name = "Snap to ground"
+description = "This object should automatically be moved with the terrain if the terrain is changed"
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::app::tags"]
+type = { type = "Vec", element_type = "String" }
+name = "Tags"
+description = "Tags for categorizing this entity"
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::app::ui_scene"]
@@ -176,6 +200,12 @@ name = "Synced resources"
 description = "If attached, this entity contains global resources that are synchronized to clients, but not persisted."
 attributes = ["Debuggable", "Networked"]
 
+[components."core::object::object_from_url"]
+type = "String"
+name = "Object from url"
+description = "Load and attach an object from a url or relative path"
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::physics::box_collider"]
 type = "Vec3"
 name = "Box collider"
@@ -251,9 +281,7 @@ attributes = ["Debuggable", "Networked", "Store"]
 [components."core::physics::plane_collider"]
 type = "Empty"
 name = "Plane collider"
-description = """
-If attached, this entity will have a plane physics collider.
-`x, y, z` is the normal, and `w` is the distance."""
+description = "If attached, this entity will have a plane physics collider."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::physics::sphere_collider"]
