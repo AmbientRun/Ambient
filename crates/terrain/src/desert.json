@@ -1,0 +1,282 @@
+{
+    "settings": {
+        "grass_depth": 3.5555556,
+        "grass_gradient": 1.7777778,
+        "rock_soil_gradient": 0.8888889,
+        "beach_gradient": 1.1851848,
+        "beach_noise_scale": 57.777775,
+        "beach_noise_steepness": 0.5074073,
+        "variation_texture_scale": 112.96305,
+        "variation_gradient": 0.5296297
+    },
+    "soft_rock1": {
+        "top_texture": {
+            "Quixel": {
+                "quixel_id": "Rock_Smooth_vgljehcg_2K_surface_ms"
+            }
+        },
+        "side_texture": {
+            "Quixel": {
+                "quixel_id": "Rock_Rough_vimldgeg_2K_surface_ms"
+            }
+        },
+        "settings": {
+            "top_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "rot_top_45_deg": 0,
+            "side_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "rot_side_45_deg": 0,
+            "top_scale": 6.0366664,
+            "side_scale": 10.0,
+            "hardness": 11.743337,
+            "angle": 2.3177779
+        }
+    },
+    "soft_rock2": {
+        "top_texture": {
+            "Quixel": {
+                "quixel_id": "Rock_Smooth_vgljehcg_2K_surface_ms"
+            }
+        },
+        "side_texture": {
+            "Quixel": {
+                "quixel_id": "Rock_Rough_vimldgeg_2K_surface_ms"
+            }
+        },
+        "settings": {
+            "top_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "rot_top_45_deg": 0,
+            "side_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "rot_side_45_deg": 0,
+            "top_scale": 6.073331,
+            "side_scale": 10.0,
+            "hardness": 11.743337,
+            "angle": 2.3177779
+        }
+    },
+    "hard_rock1": {
+        "top_texture": {
+            "Quixel": {
+                "quixel_id": "Rock_Smooth_vgljehcg_2K_surface_ms"
+            }
+        },
+        "side_texture": {
+            "Quixel": {
+                "quixel_id": "Rock_Rough_vepqchs_2K_surface_ms"
+            }
+        },
+        "settings": {
+            "top_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "rot_top_45_deg": 0,
+            "side_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "rot_side_45_deg": 0,
+            "top_scale": 6.0733323,
+            "side_scale": 10.0,
+            "hardness": 1.0,
+            "angle": 1.0
+        }
+    },
+    "hard_rock2": {
+        "top_texture": {
+            "Quixel": {
+                "quixel_id": "Rock_Smooth_vgljehcg_2K_surface_ms"
+            }
+        },
+        "side_texture": {
+            "Quixel": {
+                "quixel_id": "Rock_Rough_vepqchs_2K_surface_ms"
+            }
+        },
+        "settings": {
+            "top_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "rot_top_45_deg": 0,
+            "side_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "rot_side_45_deg": 0,
+            "top_scale": 6.036668,
+            "side_scale": 10.0,
+            "hardness": 1.0,
+            "angle": 1.0
+        }
+    },
+    "forest_floor1": {
+        "top_texture": {
+            "Quixel": {
+                "quixel_id": "Rock_Rough_vbwpedso_2K_surface_ms"
+            }
+        },
+        "side_texture": {
+            "Quixel": {
+                "quixel_id": "Rock_Smooth_vgljehcg_2K_surface_ms"
+            }
+        },
+        "settings": {
+            "top_color": [
+                1.3,
+                0.8,
+                0.8
+            ],
+            "rot_top_45_deg": 0,
+            "side_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "rot_side_45_deg": 0,
+            "top_scale": 4.093331,
+            "side_scale": 5.599998,
+            "hardness": 12.088889,
+            "angle": 1.0
+        }
+    },
+    "forest_floor2": {
+        "top_texture": {
+            "Quixel": {
+                "quixel_id": "Rock_Jagged_ujdhaaalw_2K_surface_ms"
+            }
+        },
+        "side_texture": {
+            "Quixel": {
+                "quixel_id": "Rock_Smooth_vgljehcg_2K_surface_ms"
+            }
+        },
+        "settings": {
+            "top_color": [
+                1.0,
+                0.5,
+                0.5
+            ],
+            "rot_top_45_deg": 0,
+            "side_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "rot_side_45_deg": 1,
+            "top_scale": 4.056666,
+            "side_scale": 5.563334,
+            "hardness": 15.415555,
+            "angle": 1.0
+        }
+    },
+    "grass1": {
+        "top_texture": {
+            "Quixel": {
+                "quixel_id": "Rock_Smooth_vgljehcg_2K_surface_ms"
+            }
+        },
+        "side_texture": {
+            "Quixel": {
+                "quixel_id": "Rock_Smooth_vgljehcg_2K_surface_ms"
+            }
+        },
+        "settings": {
+            "top_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "rot_top_45_deg": 0,
+            "side_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "rot_side_45_deg": 0,
+            "top_scale": 4.056666,
+            "side_scale": 5.523334,
+            "hardness": 15.415555,
+            "angle": 1.0
+        }
+    },
+    "grass2": {
+        "top_texture": {
+            "Quixel": {
+                "quixel_id": "Rock_Smooth_vgljehcg_2K_surface_ms"
+            }
+        },
+        "side_texture": {
+            "Quixel": {
+                "quixel_id": "Rock_Jagged_ujdhaaalw_2K_surface_ms"
+            }
+        },
+        "settings": {
+            "top_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "rot_top_45_deg": 0,
+            "side_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "rot_side_45_deg": 0,
+            "top_scale": 4.056666,
+            "side_scale": 5.523334,
+            "hardness": 15.415555,
+            "angle": 1.0
+        }
+    },
+    "sand": {
+        "top_texture": {
+            "Quixel": {
+                "quixel_id": "Rock_Cliffs_tkrkadal_2K_surface_ms"
+            }
+        },
+        "side_texture": {
+            "Quixel": {
+                "quixel_id": "Sand_Cliff_vdyfbhi_2K_surface_ms"
+            }
+        },
+        "settings": {
+            "top_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "rot_top_45_deg": 0,
+            "side_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "rot_side_45_deg": 0,
+            "top_scale": 3.4699981,
+            "side_scale": 3.4333332,
+            "hardness": 12.482596,
+            "angle": 1.0
+        }
+    }
+}
