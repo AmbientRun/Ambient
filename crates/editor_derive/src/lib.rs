@@ -338,14 +338,14 @@ fn fields_editor(
         };
 
         let on_change_cb = quote! {
-            on_change.clone().map(|on_change|
-                #ui_crate::cb_arc(::std::sync::Arc::new({
+            on_change.clone().map(|on_change| -> #ui_crate::Cb<dyn Fn(#field_ty) + ::std::marker::Sync + ::std::marker::Send> {
+                #ui_crate::cb({
                     #(#other_fields_cloned)*
                     move |v| {
                         on_change.0(#type_ctor #fields_expanded);
                     }
-                }) as ::std::sync::Arc<dyn Fn(#field_ty) + ::std::marker::Sync + ::std::marker::Send>)
-            )
+                })
+            })
         };
 
         let editor = if attrs.slider {

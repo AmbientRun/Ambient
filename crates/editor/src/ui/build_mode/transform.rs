@@ -4,11 +4,11 @@ use anyhow::Context;
 use glam::{vec3, Mat4, Quat, Vec2, Vec3, Vec3Swizzles};
 use itertools::Itertools;
 use kiwi_core::{mouse_position, runtime, screen_to_clip_space, transform::get_world_transform};
-use kiwi_ecs::{uid_lookup, EntityUid, World};
+use kiwi_ecs::{EntityId, World};
 use kiwi_element::{element_component, Element, ElementComponent, ElementComponentExt, Group, Hooks};
 use kiwi_network::client::GameClient;
 use kiwi_std::{
-    cb, cb_arc,
+    cb,
     shapes::{Plane, Ray, RayIntersectable},
     Cb,
 };
@@ -26,12 +26,11 @@ use crate::{
 };
 const TRANSFORM_THROTTLE: Duration = Duration::from_millis(60);
 
-fn get_world_transforms(world: &World, targets: &[EntityUid]) -> anyhow::Result<Vec<Mat4>> {
+fn get_world_transforms(world: &World, targets: &[EntityId]) -> anyhow::Result<Vec<Mat4>> {
     targets
         .iter()
-        .map(|uid| {
-            let id = world.resource(uid_lookup()).get(uid)?;
-            let transform = get_world_transform(world, id).context("No transform")?;
+        .map(|id| {
+            let transform = get_world_transform(world, *id).context("No transform")?;
             Ok(transform)
         })
         .collect()
@@ -86,7 +85,7 @@ pub struct IntialState {
     midpoint: Vec3,
 }
 
-fn initial_transforms(hooks: &mut Hooks, game_client: &GameClient, targets: Arc<[EntityUid]>) -> IntialState {
+fn initial_transforms(hooks: &mut Hooks, game_client: &GameClient, targets: Arc<[EntityId]>) -> IntialState {
     hooks.use_memo_with(targets, |targets| {
         let state = game_client.game_state.lock();
         let transforms = match get_world_transforms(&state.world, targets) {
@@ -108,7 +107,7 @@ fn initial_transforms(hooks: &mut Hooks, game_client: &GameClient, targets: Arc<
 pub(super) fn PlaceController(
     world: &mut World,
     hooks: &mut Hooks,
-    targets: Arc<[EntityUid]>,
+    targets: Arc<[EntityId]>,
     on_click: Cb<dyn Fn(MouseButton) + Sync + Send>,
 ) -> Element {
     assert_ne!(targets.len(), 0);
@@ -164,7 +163,7 @@ pub(super) fn PlaceController(
 /// for instance).
 #[derive(Debug, Clone)]
 pub(super) struct TranslationController {
-    pub targets: Arc<[EntityUid]>,
+    pub targets: Arc<[EntityId]>,
     pub on_click: Cb<dyn Fn(MouseButton) + Sync + Send>,
 }
 
@@ -325,7 +324,7 @@ impl ElementComponent for TranslationController {
 
 #[derive(Debug, Clone)]
 pub(super) struct ScaleController {
-    pub targets: Arc<[EntityUid]>,
+    pub targets: Arc<[EntityId]>,
     pub on_click: Cb<dyn Fn(MouseButton) + Sync + Send>,
 }
 impl ElementComponent for ScaleController {
@@ -376,7 +375,7 @@ impl ElementComponent for ScaleController {
         };
 
         AxisButtons { axis, set_axis }.el().children(vec![Group(vec![HighjackMouse {
-            on_mouse_move: cb_arc(Arc::new(move |_, pos, _| update(pos))),
+            on_mouse_move: cb(move |_, pos, _| update(pos)),
             on_click: cb(move |button| {
                 if button != MouseButton::Left {
                     return;
@@ -395,7 +394,7 @@ impl ElementComponent for ScaleController {
 
 #[derive(Debug, Clone)]
 pub(super) struct RotateController {
-    pub targets: Arc<[EntityUid]>,
+    pub targets: Arc<[EntityId]>,
     pub on_click: Cb<dyn Fn(MouseButton) + Sync + Send>,
 }
 
@@ -484,9 +483,9 @@ impl ElementComponent for RotateController {
 
         items.push(
             HighjackMouse {
-                on_mouse_move: cb_arc(Arc::new(move |_, pos, _| {
+                on_mouse_move: cb(move |_, pos, _| {
                     update(pos);
-                })),
+                }),
                 on_click: cb(move |button| {
                     if button != MouseButton::Left {
                         return;

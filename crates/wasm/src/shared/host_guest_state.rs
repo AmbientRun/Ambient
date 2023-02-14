@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use kiwi_ecs::{EntityData, EntityUid, PrimitiveComponent, Query, QueryState, World};
+use kiwi_ecs::{EntityData, EntityId, PrimitiveComponent, Query, QueryState, World};
 
 pub type QueryStateMap =
     slotmap::SlotMap<slotmap::DefaultKey, (Query, QueryState, Vec<PrimitiveComponent>)>;
@@ -13,7 +13,7 @@ pub struct EventSharedState {
 
 #[derive(Default, Clone)]
 pub struct BaseHostGuestState {
-    pub spawned_entities: HashSet<EntityUid>,
+    pub spawned_entities: HashSet<EntityId>,
     pub event: EventSharedState,
     pub query_states: QueryStateMap,
     world_ref: WorldRef,

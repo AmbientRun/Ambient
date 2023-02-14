@@ -2,7 +2,8 @@ use kiwi_api::{
     components::core::{
         app::main_scene,
         camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},
-        transform::{lookat_center, translation},
+        object::object_from_url,
+        transform::{lookat_center, rotation, translation},
     },
     prelude::*,
 };
@@ -18,13 +19,17 @@ pub async fn main() -> EventResult {
         .with(aspect_ratio_from_window(), ())
         .spawn(false);
 
-    let cube_ref = ObjectRef::new("assets/Cube.glb/objects/main.json");
-    let cube_uid = entity::spawn_template(&cube_ref, Vec3::new(0.0, 0.0, 1.0), None, None, false);
-    let cube_entity = entity::wait_for_spawn(&cube_uid).await;
-    entity::set_component(cube_entity, components::is_the_best(), true);
+    let cube_id = entity::game_object_base()
+        .with(object_from_url(), "assets/Cube.glb".to_string())
+        .with(components::is_the_best(), true)
+        .spawn(false);
 
     on(event::FRAME, move |_| {
-        entity::set_rotation(cube_entity, Quat::from_axis_angle(Vec3::X, time().sin()));
+        entity::set_component(
+            cube_id,
+            rotation(),
+            Quat::from_axis_angle(Vec3::X, time().sin()),
+        );
 
         EventOk
     });

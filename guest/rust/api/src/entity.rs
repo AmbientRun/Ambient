@@ -1,6 +1,6 @@
 use crate::{
     components, event,
-    global::{until_this, EntityId, EntityUid, Mat4, ObjectRef, Quat, Vec3},
+    global::{until_this, EntityId, Mat4, ObjectRef, Quat, Vec3},
     internal::{
         component::{
             traits::AsParam, Component, Components, SupportedComponentTypeGet,
@@ -20,51 +20,21 @@ pub use crate::internal::host::{AnimationAction, AnimationController};
 /// the entity is spawned.
 ///
 /// Returns `spawned_entity_uid`.
-pub fn spawn(components: &Components, persistent: bool) -> EntityUid {
+pub fn spawn(components: &Components, persistent: bool) -> EntityId {
     components
         .call_with(|data| host::entity_spawn(data, persistent))
         .from_bindgen()
 }
 
-/// Spawns an entity using the `object_ref` template at `position`, with
-/// `rotation` and `scale`. If `persistent` is set, this entity will not be
-/// removed when this module is unloaded.
-///
-/// If `rotation` and/or `scale` are `None`, the entity will be spawned with
-/// reasonable defaults.
-///
-/// This is an asynchronous operation; use [wait_for_spawn] to get notified when
-/// the entity is spawned.
-///
-/// Returns `spawned_entity_uid`.
-pub fn spawn_template(
-    object_ref: &ObjectRef,
-    position: Vec3,
-    rotation: Option<Quat>,
-    scale: Option<Vec3>,
-    persistent: bool,
-) -> EntityUid {
-    host::entity_spawn_template(
-        object_ref.into_bindgen(),
-        position.into_bindgen(),
-        rotation.into_bindgen(),
-        scale.into_bindgen(),
-        persistent,
-    )
-    .from_bindgen()
-}
-
-/// Waits until `uid` has fully spawned. Note that this may never resolve if the entity
-/// does not complete spawning, or the UID in question refers to an entity that does
+/// Waits until `id` has spawned. Note that this may never resolve if the entity
+/// does not complete spawning, or the id in question refers to an entity that does
 /// not exist.
 // TODO(philpax): revisit once we think about the spawning situation some more
-pub async fn wait_for_spawn(uid: &EntityUid) -> EntityId {
-    let uid = uid.clone();
-    let event = until_this(event::ENTITY_SPAWN, move |ed| {
-        ed.get(components::core::ecs::uid()).unwrap() == uid
+pub async fn wait_for_spawn(id: EntityId) {
+    until_this(event::ENTITY_SPAWN, move |ed| {
+        ed.get(components::core::ecs::id()).unwrap() == id
     })
     .await;
-    event.get(components::core::ecs::id()).unwrap()
 }
 
 /// Despawns `entity` from the world. `entity` will not work with any other functions afterwards.
@@ -76,67 +46,6 @@ pub fn despawn(entity: EntityId) -> bool {
 /// Set the animation (controller) for `entity`.
 pub fn set_animation_controller(entity: EntityId, controller: AnimationController) {
     host::entity_set_animation_controller(entity.into_bindgen(), controller)
-}
-/// Gets the position of the `entity` if it exists, or `None` if it does not.
-pub fn get_position(entity: EntityId) -> Option<Vec3> {
-    get_component(entity, components::core::transform::translation())
-}
-/// Sets the position of `entity` to `position`.
-pub fn set_position(entity: EntityId, position: Vec3) {
-    let (rotation, scale) = (
-        get_rotation(entity).unwrap_or_default(),
-        get_scale(entity).unwrap_or(Vec3::ONE),
-    );
-
-    host::entity_set_transform(
-        entity.into_bindgen(),
-        Mat4::from_scale_rotation_translation(scale, rotation, position).into_bindgen(),
-        false,
-    );
-}
-/// Gets the rotation of the `entity` if it exists, or `None` if it does not.
-pub fn get_rotation(entity: EntityId) -> Option<Quat> {
-    get_component(entity, components::core::transform::rotation())
-}
-/// Sets the rotation of `entity` to `rotation`.
-pub fn set_rotation(entity: EntityId, rotation: Quat) {
-    let (translation, scale) = (
-        get_position(entity).unwrap_or_default(),
-        get_scale(entity).unwrap_or(Vec3::ONE),
-    );
-
-    host::entity_set_transform(
-        entity.into_bindgen(),
-        Mat4::from_scale_rotation_translation(scale, rotation, translation).into_bindgen(),
-        false,
-    );
-}
-/// Gets the scale of the `entity` if it exists, or `None` if it does not.
-pub fn get_scale(entity: EntityId) -> Option<Vec3> {
-    get_component(entity, components::core::transform::scale())
-}
-/// Sets the scale of `entity` to `scale`.
-pub fn set_scale(entity: EntityId, scale: Vec3) {
-    let (rotation, translation) = (
-        get_rotation(entity).unwrap_or_default(),
-        get_position(entity).unwrap_or_default(),
-    );
-
-    host::entity_set_transform(
-        entity.into_bindgen(),
-        Mat4::from_scale_rotation_translation(scale, rotation, translation).into_bindgen(),
-        false,
-    );
-}
-/// Sets the `transform` matrix of the `entity` (i.e. position, rotation and scale at the same time).
-pub fn set_transform(entity: EntityId, transform: glam::Affine3A) {
-    let transform: Mat4 = transform.into();
-    host::entity_set_transform(entity.into_bindgen(), transform.into_bindgen(), false);
-}
-/// Applies `transform` to the `entity` (i.e. moving / rotating / scaling where it currently is).
-pub fn transform_by(entity: EntityId, transform: glam::Affine3A) {
-    let transform: Mat4 = transform.into();
-    host::entity_set_transform(entity.into_bindgen(), transform.into_bindgen(), true);
 }
 
 /// Gets the linear velocity of `entity` if it exists, or `None` if it does not.
@@ -152,11 +61,6 @@ pub fn exists(entity: EntityId) -> bool {
 /// Gets all of the entities that have the given `component`.
 pub fn query<T>(component: Component<T>) -> Vec<EntityId> {
     host::entity_query(component.index()).from_bindgen()
-}
-
-/// Get the [EntityId] for the specified [EntityUid], if available.
-pub fn lookup_uid(uid: &EntityUid) -> Option<EntityId> {
-    host::entity_lookup_uid(uid.into_bindgen()).from_bindgen()
 }
 
 /// Gets all of the entities within `radius` of `position`.

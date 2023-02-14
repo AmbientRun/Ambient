@@ -19,7 +19,7 @@ use kiwi_input::{
     on_app_mouse_input, on_app_mouse_motion, on_app_mouse_wheel,
     picking::{mouse_pickable, on_mouse_enter, on_mouse_hover, on_mouse_input, on_mouse_leave, on_mouse_wheel},
 };
-pub use kiwi_std::{cb, cb_arc, Cb};
+pub use kiwi_std::{cb, Cb};
 use kiwi_std::{color::Color, shapes::AABB};
 use parking_lot::Mutex;
 use winit::event::{ElementState, ModifiersState, MouseButton, MouseScrollDelta, WindowEvent};

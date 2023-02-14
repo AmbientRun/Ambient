@@ -11,8 +11,7 @@ use std::sync::Arc;
 use host_guest_state::GetBaseHostGuestState;
 use itertools::Itertools;
 use kiwi_ecs::{
-    components, query, uid, uid_lookup, Component, EntityData, EntityId, Networked, Resource,
-    Store, World,
+    components, query, Component, EntityData, EntityId, Networked, Resource, Store, World,
 };
 use kiwi_project::Identifier;
 pub use module::*;
@@ -236,10 +235,8 @@ pub fn unload<
 
     world.remove_component(module_id, state_component).unwrap();
 
-    for uid in spawned_entities {
-        if let Ok(id) = world.resource(uid_lookup()).get(&uid) {
-            world.despawn(id);
-        }
+    for id in spawned_entities {
+        world.despawn(id);
     }
 
     let messenger = world.resource(messenger()).clone();
@@ -361,7 +358,6 @@ pub fn spawn_module(
 
     let ed = EntityData::new()
         .set(kiwi_core::name(), name.to_string())
-        .set(uid(), kiwi_ecs::EntityUid::create())
         .set_default(module())
         .set(module_enabled(), enabled)
         .set_default(module_errors())

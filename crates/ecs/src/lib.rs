@@ -1,6 +1,11 @@
 use core::fmt;
 use std::{
-    collections::{HashMap, HashSet}, fmt::{Debug, Formatter}, fs::File, iter::once, path::Path, sync::atomic::{AtomicU64, Ordering}
+    collections::{HashMap, HashSet},
+    fmt::{Debug, Formatter},
+    fs::File,
+    iter::once,
+    path::Path,
+    sync::atomic::{AtomicU64, Ordering},
 };
 
 use anyhow::Context;
@@ -29,7 +34,6 @@ mod component_registry;
 mod component_ser;
 mod component_traits;
 mod entity_data;
-mod entity_uid;
 mod events;
 mod index;
 mod location;
@@ -44,7 +48,6 @@ pub use component_entry::*;
 pub use component_registry::*;
 pub use component_ser::*;
 pub use entity_data::*;
-pub use entity_uid::*;
 pub use events::*;
 pub use index::*;
 pub use location::*;
@@ -88,14 +91,6 @@ components!("ecs", {
         Description["Indicates that this entity shouldn't be stored on disk."]
     ]
     dont_store: (),
-    @[
-        Networked, Store, Debuggable,
-        Name["UID"],
-        Description["A unique ID that can be used to preserve the identity of an entity, even when it is recreated."]
-    ]
-    uid: EntityUid,
-    @[Debuggable, Resource]
-    uid_lookup: UidLookup,
 });
 
 #[derive(Clone)]
@@ -129,21 +124,17 @@ impl World {
             query_ticker: CloneableAtomicU64::new(0),
         };
         if resources {
-            world.spawn_mirrored(EntityId::resources(), EntityData::new());
+            world.spawn_with_id(EntityId::resources(), EntityData::new());
         }
         world
     }
     /// Clones all entities specified in the source world and returns a new world with them
-    pub fn from_entities(world: &World, entities: impl IntoIterator<Item = EntityId>, serialiable_only: bool) -> Self {
+    pub fn from_entities(world: &World, entities: impl IntoIterator<Item = EntityId>, serializable_only: bool) -> Self {
         let mut res = World::new_with_config("from_entities", false);
         for id in entities {
             let mut entity = world.clone_entity(id).unwrap();
-            if serialiable_only {
-                for comp in entity.components() {
-                    if !comp.has_attribute::<Serializable>() {
-                        entity.remove_raw(comp);
-                    }
-                }
+            if serializable_only {
+                entity = entity.serializable();
             }
             entity.spawn(&mut res);
         }
@@ -169,21 +160,20 @@ impl World {
         if let Some(events) = &mut self.shape_change_events {
             events.add_events(ids.iter().map(|id| WorldChange::Spawn(Some(*id), entity_data.clone())));
         }
-        self.spawn_with_ids(EntityMoveData::from_entity_data(entity_data, self.version() + 1), ids.clone());
+        self.batch_spawn_with_ids(EntityMoveData::from_entity_data(entity_data, self.version() + 1), ids.clone());
         ids
     }
-    /// Spawn an entity which lives remotely, and is just mirrored locally; i.e. the id is managed
-    /// on the remote side. Returns false if the id already exists
-    pub fn spawn_mirrored(&mut self, entity_id: EntityId, entity_data: EntityData) -> bool {
+    /// Returns false if the id already exists
+    pub fn spawn_with_id(&mut self, entity_id: EntityId, entity_data: EntityData) -> bool {
         if let std::collections::hash_map::Entry::Vacant(e) = self.locs.entry(entity_id) {
             e.insert(EntityLocation::empty());
-            self.spawn_with_ids(EntityMoveData::from_entity_data(entity_data, self.version() + 1), vec![entity_id]);
+            self.batch_spawn_with_ids(EntityMoveData::from_entity_data(entity_data, self.version() + 1), vec![entity_id]);
             true
         } else {
             false
         }
     }
-    fn spawn_with_ids(&mut self, entity_data: EntityMoveData, ids: Vec<EntityId>) {
+    pub fn batch_spawn_with_ids(&mut self, entity_data: EntityMoveData, ids: Vec<EntityId>) {
         self.inc_version();
         let arch_id = self.archetypes.iter().position(|x| x.active_components == entity_data.active_components);
         let arch_id = if let Some(arch_id) = arch_id {
@@ -378,7 +368,7 @@ impl World {
                 self.loc_changed.add_event(entity_id);
                 let mut data = arch.moveout(loc.index, entity_id, version);
                 mapping.write_to_entity_data(&mut data, version);
-                self.spawn_with_ids(data, vec![entity_id]);
+                self.batch_spawn_with_ids(data, vec![entity_id]);
             }
             Ok(())
         } else {

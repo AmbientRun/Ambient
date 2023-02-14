@@ -2,9 +2,10 @@ use kiwi_api::{
     components::core::{
         app::main_scene,
         camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},
+        object::object_from_url,
         physics::{box_collider, dynamic, physics_controlled},
         primitives::cube,
-        transform::{lookat_center, scale, translation},
+        transform::{lookat_center, rotation, scale, translation},
     },
     prelude::*,
 };
@@ -20,7 +21,7 @@ pub async fn main() -> EventResult {
         .with(aspect_ratio_from_window(), ())
         .spawn(false);
 
-    entity::game_object_base()
+    let cube = entity::game_object_base()
         .with_default(cube())
         .with(box_collider(), vec3(2., 2., 2.))
         .with(dynamic(), true)
@@ -29,8 +30,15 @@ pub async fn main() -> EventResult {
         .with(scale(), vec3(0.5, 0.5, 0.5))
         .spawn(false);
 
-    let shape_ref = ObjectRef::new("assets/Shape.glb/objects/main.json");
-    entity::spawn_template(&shape_ref, Vec3::new(0.0, 0.0, 0.0), None, None, false);
+    entity::game_object_base()
+        .with(object_from_url(), "assets/Shape.glb".to_string())
+        .spawn(false);
+
+    loop {
+        sleep(5.).await;
+        entity::set_component(cube, translation(), vec3(0., 0., 5.));
+        entity::set_component(cube, rotation(), Quat::IDENTITY);
+    }
 
     EventOk
 }

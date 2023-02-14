@@ -1,8 +1,6 @@
-use std::sync::Arc;
-
 use itertools::Itertools;
 use kiwi_core::{name, runtime, selectable, tags};
-use kiwi_ecs::{query, uid, EntityId, EntityUid, World};
+use kiwi_ecs::{query, EntityId, World};
 use kiwi_ecs_editor::ECSEditor;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_network::{
@@ -10,12 +8,12 @@ use kiwi_network::{
     is_remote_entity, log_network_result,
     rpc::rpc_world_diff,
 };
-use kiwi_std::{cb, cb_arc, Cb};
+use kiwi_std::{cb, Cb};
 use kiwi_ui::{fit_horizontal, space_between_items, Button, ButtonStyle, DialogScreen, Fit, FlowColumn, FlowRow, ScrollArea, STREET};
 
 #[derive(Debug, Clone)]
 pub struct EntityBrowser {
-    on_select: Cb<dyn Fn(EntityId, EntityUid) + Sync + Send>,
+    on_select: Cb<dyn Fn(EntityId) + Sync + Send>,
 }
 impl ElementComponent for EntityBrowser {
     fn render(self: Box<Self>, _: &mut World, hooks: &mut Hooks) -> Element {
@@ -26,20 +24,18 @@ impl ElementComponent for EntityBrowser {
         let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
         hooks.use_spawn(move |_| {
             let state = game_client.game_state.lock();
-            let entities = query(uid())
+            let entities = query(selectable())
                 .incl(is_remote_entity())
-                .incl(selectable())
                 .iter(&state.world, None)
-                .map(|(id, uid)| {
+                .map(|(id, _)| {
                     (
                         id,
-                        uid.clone(),
                         state.world.get_ref(id, name()).cloned().unwrap_or_default(),
                         state.world.get_ref(id, tags()).cloned().unwrap_or_default(),
                     )
                 })
                 .collect_vec();
-            let all_tags = entities.iter().flat_map(|entity| &entity.3).sorted().dedup().cloned().collect_vec();
+            let all_tags = entities.iter().flat_map(|entity| &entity.2).sorted().dedup().cloned().collect_vec();
             set_entities(entities);
             set_all_tags(all_tags);
             Box::new(|_| {})
@@ -75,9 +71,8 @@ impl ElementComponent for EntityBrowser {
                     .into_iter()
                     .filter(|entity| if let Some(selected_tag) = &selected_tag { entity.2.contains(selected_tag) } else { true })
                     .take(100)
-                    .map(move |(entity, uid, name, tags)| {
-                        Button::new(format!("{entity} {name} {tags:?}"), closure!(clone on_select, |_| on_select.0(entity, uid.clone())))
-                            .el()
+                    .map(move |(entity, name, tags)| {
+                        Button::new(format!("{entity} {name} {tags:?}"), closure!(clone on_select, |_| on_select.0(entity))).el()
                     })
                     .collect_vec(),
             )
@@ -90,7 +85,7 @@ impl ElementComponent for EntityBrowser {
 
 #[derive(Debug, Clone)]
 pub struct EntityBrowserScreen {
-    pub on_select: Cb<dyn Fn(EntityId, EntityUid) + Sync + Send>,
+    pub on_select: Cb<dyn Fn(EntityId) + Sync + Send>,
     pub on_back: Cb<dyn Fn() + Sync + Send>,
 }
 impl ElementComponent for EntityBrowserScreen {
@@ -131,9 +126,9 @@ impl ElementComponent for EntityBrowserScreen {
                         .memoize_subtree("")
                     } else {
                         EntityBrowser {
-                            on_select: cb_arc(Arc::new(move |id, uid| {
-                                on_select(id, uid);
-                            })),
+                            on_select: cb(move |id| {
+                                on_select(id);
+                            }),
                         }
                         .el()
                     },

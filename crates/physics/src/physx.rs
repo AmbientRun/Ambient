@@ -1,8 +1,11 @@
+use crate::helpers::{get_shapes, scale_shape};
 use glam::{Quat, Vec3};
-use kiwi_core::transform::{rotation, translation};
-use kiwi_ecs::{components, query, Debuggable, Description, Name, Networked, Resource, Store, SystemGroup};
+use kiwi_core::transform::{rotation, scale, translation};
+use kiwi_ecs::{components, query, Debuggable, Description, FnSystem, Name, Networked, QueryState, Resource, Store, SystemGroup};
 use kiwi_std::asset_cache::SyncAssetKey;
+use parking_lot::Mutex;
 use physxx::{articulation_reduced_coordinate::*, *};
+use std::sync::Arc;
 
 components!("physics", {
     @[Resource]
@@ -84,6 +87,14 @@ pub fn sync_ecs_physics() -> SystemGroup {
     let mut new_positions = Vec::new();
     let mut new_rotations = Vec::new();
 
+    let translation_rotation_qs = Arc::new(Mutex::new(QueryState::new()));
+    let translation_rotation_q = query((translation().changed(), rotation().changed())).incl(physics_controlled());
+    let translation_rotation_q2 = translation_rotation_q.query.clone();
+
+    let scale_qs = Arc::new(Mutex::new(QueryState::new()));
+    let scale_q = query(scale().changed()).incl(physics_controlled());
+    let scale_q2 = scale_q.query.clone();
+
     SystemGroup::new(
         "sync_ecs_physics",
         vec![
@@ -95,6 +106,46 @@ pub fn sync_ecs_physics() -> SystemGroup {
             query(()).incl(physics_controlled()).excl(rotation()).to_system(|q, world, qs, _| {
                 for (id, _) in q.collect_cloned(world, qs) {
                     world.add_component(id, rotation(), Quat::IDENTITY).unwrap();
+                }
+            }),
+            translation_rotation_q.to_system({
+                let translation_rotation_qs = translation_rotation_qs.clone();
+                move |q, world, _, _| {
+                    // Read back any changes that have happened during the frame to physx
+                    let mut qs = translation_rotation_qs.lock();
+                    for (id, (&pos, &rot)) in q.iter(world, Some(&mut *qs)) {
+                        if let Ok(body) = world.get(id, rigid_dynamic()) {
+                            body.set_global_pose(&PxTransform::new(pos, rot), true);
+                            body.set_linear_velocity(Vec3::ZERO, true);
+                            body.set_angular_velocity(Vec3::ZERO, true);
+                        } else if let Ok(body) = world.get(id, rigid_static()) {
+                            body.set_global_pose(&PxTransform::new(pos, rot), true);
+                        } else if let Ok(shape) = world.get_ref(id, physics_shape()) {
+                            let actor = shape.get_actor().unwrap();
+
+                            actor.set_global_pose(&PxTransform::new(pos, rot), true);
+                            if let Some(body) = actor.to_rigid_dynamic() {
+                                // Stop any rb movement when translating
+                                body.set_linear_velocity(Vec3::ZERO, true);
+                                body.set_angular_velocity(Vec3::ZERO, true);
+                            } else {
+                                // update_actor_entity_transforms(world, actor);
+                            }
+                        } else if let Ok(controller) = world.get(id, character_controller()) {
+                            controller.set_position(pos.as_dvec3());
+                        }
+                    }
+                }
+            }),
+            scale_q.to_system({
+                let scale_qs = scale_qs.clone();
+                move |q, world, _, _| {
+                    let mut qs = scale_qs.lock();
+                    for (id, &scl) in q.iter(world, Some(&mut *qs)) {
+                        for shape in get_shapes(world, id) {
+                            scale_shape(shape, scl);
+                        }
+                    }
                 }
             }),
             // Updates ecs position from physx
@@ -166,6 +217,13 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     }
                 }
             }),
+            Box::new(FnSystem::new(move |world, _| {
+                // Fast forward queries
+                let mut translation_rotation_qs = translation_rotation_qs.lock();
+                for _ in translation_rotation_q2.iter(world, Some(&mut *translation_rotation_qs)) {}
+                let mut scale_qs = scale_qs.lock();
+                for _ in scale_q2.iter(world, Some(&mut *scale_qs)) {}
+            })),
         ],
     )
 }

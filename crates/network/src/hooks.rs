@@ -6,7 +6,7 @@ use kiwi_ecs::{
     WorldDiff,
 };
 use kiwi_element::{Hooks, Setter};
-use kiwi_std::{cb, cb_arc, Cb};
+use kiwi_std::{cb, Cb};
 
 use crate::{client::GameClient, log_network_result, persistent_resources, player, rpc::rpc_world_diff, synced_resources, user_id};
 
@@ -79,7 +79,7 @@ pub fn use_remote_components<T: ComponentValue + std::fmt::Debug>(
         for (id, (value,)) in query((component.changed(),)).filter(&arch_filter).iter(&game_state.world, Some(&mut *qs_changed)) {
             let game_client = game_client.clone();
             let runtime = runtime.clone();
-            let update = cb_arc(Arc::new(move |value| {
+            let update: Cb<dyn Fn(Option<T>) + Sync + Send> = cb(move |value| {
                 let game_client = game_client.clone();
                 runtime.spawn(async move {
                     log_network_result!(
@@ -94,7 +94,7 @@ pub fn use_remote_components<T: ComponentValue + std::fmt::Debug>(
                             .await
                     );
                 });
-            }) as Arc<dyn Fn(Option<T>) + Sync + Send>);
+            });
             values.insert(id, (id, value.clone(), update));
             changed = true;
         }

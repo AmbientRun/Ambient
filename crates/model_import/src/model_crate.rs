@@ -7,20 +7,31 @@ use image::{ImageOutputFormat, RgbaImage};
 use itertools::Itertools;
 use kiwi_animation::{animation_bind_id_from_name, AnimationClip};
 use kiwi_core::{
-    bounding::local_bounding_aabb, hierarchy::children, name, transform::{local_to_parent, local_to_world, mesh_to_local, TransformSystem}
+    bounding::local_bounding_aabb,
+    hierarchy::children,
+    name,
+    transform::{local_to_parent, local_to_world, mesh_to_local, TransformSystem},
 };
 use kiwi_ecs::{query, query_mut, Component, ComponentValue, EntityData, EntityId, FrameEvent, System, World};
 use kiwi_model::{
-    animation_bind_id, model_def, model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, ModelDef, PbrRenderPrimitiveFromUrl
+    animation_bind_id, model_from_url, model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl,
 };
 use kiwi_physics::{
-    collider::{character_controller_height, character_controller_radius, collider, ColliderDef, ColliderFromUrls}, mesh::PhysxGeometryFromUrl, physx::PhysicsKey
+    collider::{character_controller_height, character_controller_radius, collider, ColliderDef, ColliderFromUrls},
+    mesh::PhysxGeometryFromUrl,
+    physx::PhysicsKey,
 };
 use kiwi_renderer::{
-    double_sided, lod::{gpu_lod, lod_cutoffs}, materials::pbr_material::PbrMaterialFromUrl
+    double_sided,
+    lod::{gpu_lod, lod_cutoffs},
+    materials::pbr_material::PbrMaterialFromUrl,
 };
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt}, asset_url::AbsAssetUrl, download_asset::AssetsCacheDir, mesh::Mesh, shapes::AABB
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    asset_url::AbsAssetUrl,
+    download_asset::AssetsCacheDir,
+    mesh::Mesh,
+    shapes::AABB,
 };
 use ordered_float::Float;
 use physxx::{PxConvexFlag, PxConvexMeshDesc, PxDefaultMemoryOutputStream, PxMeshFlag, PxTriangleMeshDesc};
@@ -432,7 +443,7 @@ impl ModelCrate {
     }
 
     pub fn create_object_from_model(&mut self) {
-        self.create_object(EntityData::new().set(model_def(), ModelDef(dotdot_path(self.models.loc.path(ModelCrate::MAIN)).into())))
+        self.create_object(EntityData::new().set(model_from_url(), dotdot_path(self.models.loc.path(ModelCrate::MAIN)).into()))
     }
 
     pub fn create_object(&mut self, data: EntityData) {

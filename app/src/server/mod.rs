@@ -149,7 +149,7 @@ pub(crate) fn start_server(
         if let Commands::View { asset_path, .. } = cli.command.clone() {
             let asset_path = AbsAssetUrl::from_file_path(project_path.join("target").join(asset_path).join("objects/main.json"));
             log::info!("Spawning asset from {:?}", asset_path);
-            let obj = ObjectFromUrl(asset_path).get(&assets).await.unwrap();
+            let obj = ObjectFromUrl(asset_path.into()).get(&assets).await.unwrap();
             obj.spawn_into_world(&mut server_world, None);
         }
         log::info!("Starting server");

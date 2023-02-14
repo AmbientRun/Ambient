@@ -1,5 +1,7 @@
 use std::{
-    marker::PhantomData, path::{Path, PathBuf}, sync::Arc
+    marker::PhantomData,
+    path::{Path, PathBuf},
+    sync::Arc,
 };
 
 use anyhow::Context;
@@ -8,12 +10,15 @@ use percent_encoding::percent_decode_str;
 use rand::seq::SliceRandom;
 use relative_path::{RelativePath, RelativePathBuf};
 use serde::{
-    de::{DeserializeOwned, Visitor}, Deserialize, Deserializer, Serialize, Serializer
+    de::{DeserializeOwned, Visitor},
+    Deserialize, Deserializer, Serialize, Serializer,
 };
 use url::Url;
 
 use crate::{
-    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, download_asset::{download, AssetsCacheDir}, Cb
+    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
+    download_asset::{download, AssetsCacheDir},
+    Cb,
 };
 
 #[derive(Debug, Clone)]
@@ -175,6 +180,12 @@ impl From<PathBuf> for AbsAssetUrl {
     fn from(value: PathBuf) -> Self {
         let value = if value.is_absolute() { value } else { std::env::current_dir().unwrap().join(value) };
         Self(Url::from_file_path(value).unwrap())
+    }
+}
+
+impl From<AbsAssetUrl> for String {
+    fn from(value: AbsAssetUrl) -> Self {
+        value.to_string()
     }
 }
 

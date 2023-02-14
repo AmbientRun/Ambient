@@ -1,49 +1,15 @@
-use glam::{Mat4, Quat, Vec3};
+use glam::Vec3;
 use kiwi_animation::{animation_controller, AnimationController};
-use kiwi_ecs::{uid, EntityData, EntityId, EntityUid, World};
-use kiwi_object::{fire_spawn_by_url, MultiEntityUID, SpawnConfig};
+use kiwi_ecs::{EntityData, EntityId, World};
+
 use kiwi_physics::helpers as eph;
 
-pub fn spawn(world: &mut World, data: EntityData) -> EntityUid {
-    let uid = EntityUid::create();
-    data.set(kiwi_ecs::uid(), uid.clone()).spawn(world);
-    uid
+pub fn spawn(world: &mut World, data: EntityData) -> EntityId {
+    data.spawn(world)
 }
 
-pub fn spawn_template(
-    world: &mut World,
-    object: String,
-    position: Vec3,
-    rotation: Option<Quat>,
-    scale: Option<Vec3>,
-) -> anyhow::Result<EntityUid> {
-    let uid = MultiEntityUID::new();
-    fire_spawn_by_url(
-        world,
-        object,
-        SpawnConfig::new(
-            uid.clone(),
-            position,
-            rotation.unwrap_or(Quat::IDENTITY),
-            scale.unwrap_or(Vec3::ONE),
-        ),
-        None,
-    )?;
-    // TODO(fred): This will only return the first entity spawned. Need async spawn to return all
-    Ok(uid.get_uid(0))
-}
-
-pub fn despawn(world: &mut World, entity: EntityId) -> Option<EntityUid> {
-    world.despawn(entity).and_then(|ed| ed.get_cloned(uid()))
-}
-
-pub fn set_transform(
-    world: &mut World,
-    entity: EntityId,
-    transform: Mat4,
-    relative: bool,
-) -> anyhow::Result<()> {
-    Ok(eph::transform_entity(world, entity, transform, relative)?)
+pub fn despawn(world: &mut World, entity: EntityId) -> Option<EntityId> {
+    world.despawn(entity).map(|_ed| entity)
 }
 
 pub fn get_linear_velocity(world: &mut World, entity: EntityId) -> anyhow::Result<Vec3> {

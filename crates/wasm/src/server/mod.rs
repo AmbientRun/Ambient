@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use itertools::Itertools;
 use kiwi_ecs::{
-    query, uid, Component, ComponentEntry, EntityData, EntityId, FnSystem, SystemGroup, World,
+    query, Component, ComponentEntry, EntityData, EntityId, FnSystem, SystemGroup, World,
 };
 use kiwi_network::server::{ForkingEvent, ShutdownEvent};
 use kiwi_physics::{collider_loads, collisions, PxShapeUserData};
@@ -123,20 +123,16 @@ pub fn systems<
                     );
                 }
             })),
-            query(uid()).spawned().to_system(move |q, world, qs, _| {
+            query(()).spawned().to_system(move |q, world, qs, _| {
                 profiling::scope!("WASM module entity spawn");
-                for (id, uid) in q.collect_cloned(world, qs) {
+                for (id, _) in q.collect_cloned(world, qs) {
                     run_all(
                         world,
                         state_component,
                         &RunContext::new(
                             world,
                             "core/entity_spawn",
-                            vec![
-                                ComponentEntry::new(kiwi_ecs::id(), id),
-                                ComponentEntry::new(kiwi_ecs::uid(), uid),
-                            ]
-                            .into(),
+                            vec![ComponentEntry::new(kiwi_ecs::id(), id)].into(),
                         ),
                     );
                 }

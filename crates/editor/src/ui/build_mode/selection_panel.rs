@@ -1,5 +1,4 @@
-use itertools::Itertools;
-use kiwi_ecs::{uid_lookup, World};
+use kiwi_ecs::World;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_network::{client::GameClient, log_network_result};
 use kiwi_std::Cb;
@@ -27,12 +26,9 @@ impl ElementComponent for SelectionPanel {
         FlowColumn(vec![
             #[allow(clippy::comparison_chain)]
             if selection.len() == 1 {
-                let state = game_client.game_state.lock();
-                if let Ok(entity_id) = state.world.resource(uid_lookup()).get(&selection.entities[0]) {
-                    EntityEditor { entity_id }.el().set(fit_horizontal(), Fit::Parent)
-                } else {
-                    Text::el("No such entity")
-                }
+                let _state = game_client.game_state.lock();
+
+                EntityEditor { entity_id: selection.entities[0] }.el().set(fit_horizontal(), Fit::Parent)
             } else {
                 Text::el(format!("{} entities", selection.len()))
             },
@@ -41,10 +37,7 @@ impl ElementComponent for SelectionPanel {
                     "Toggle collider visualization",
                     closure!(clone selection, clone game_client, || {
                         let game_client = game_client.clone();
-                        let selection = {
-                            let state = game_client.game_state.lock();
-                            selection.iter().map(|id| state.world.resource(uid_lookup()).get(&id).unwrap()).collect_vec()
-                        };
+                        let selection = selection.iter().collect();
                         async move {
                             log_network_result!(game_client.rpc(rpc_toggle_visualize_colliders, selection).await);
                         }
