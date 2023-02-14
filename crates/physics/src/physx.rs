@@ -58,7 +58,7 @@ impl Physics {
         let physics = PxPhysicsRef::new_with_pvd(&foundation, &pvd);
         px_init_extensions(&physics, &pvd);
         let mut cooking = PxCookingParams::new(physics);
-        cooking.0.meshWeldTolerance = 0.2;
+        cooking.0.meshWeldTolerance = 0.001; // 1mm precision
         cooking.0.meshPreprocessParams.mBits = physxx::sys::PxMeshPreprocessingFlag::eWELD_VERTICES;
         Self {
             serialization_registry: PxSerializationRegistryRef::new(&physics),
