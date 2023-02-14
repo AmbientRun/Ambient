@@ -11,7 +11,8 @@ use std::sync::Arc;
 use host_guest_state::GetBaseHostGuestState;
 use itertools::Itertools;
 use kiwi_ecs::{
-    components, query, Component, EntityData, EntityId, Networked, Resource, Store, World,
+    components, dont_despawn_on_unload, query, Component, EntityData, EntityId, Networked,
+    Resource, Store, World,
 };
 use kiwi_project::Identifier;
 pub use module::*;
@@ -233,7 +234,9 @@ pub fn unload<
     world.remove_component(module_id, state_component).unwrap();
 
     for id in spawned_entities {
-        world.despawn(id);
+        if !world.has_component(id, dont_despawn_on_unload()) {
+            world.despawn(id);
+        }
     }
 
     let messenger = world.resource(messenger()).clone();

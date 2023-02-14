@@ -17,12 +17,12 @@ pub async fn main() -> EventResult {
         .with(lookat_center(), vec3(0., 0., 0.))
         .with(perspective_infinite_reverse(), ())
         .with(aspect_ratio_from_window(), ())
-        .spawn(false);
+        .spawn();
 
     let cube_id = entity::game_object_base()
         .with(object_from_url(), "assets/Cube.glb".to_string())
         .with(components::is_the_best(), true)
-        .spawn(false);
+        .spawn();
 
     on(event::FRAME, move |_| {
         entity::set_component(

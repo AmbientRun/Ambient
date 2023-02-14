@@ -17,7 +17,7 @@ pub async fn main() -> EventResult {
         .with(lookat_center(), vec3(0., 0., 0.))
         .with(perspective_infinite_reverse(), ())
         .with(aspect_ratio_from_window(), ())
-        .spawn(false);
+        .spawn();
 
     let mut cells = Vec::new();
     for y in 0..3 {
@@ -27,7 +27,7 @@ pub async fn main() -> EventResult {
                 .with(translation(), vec3(x as f32, y as f32, 0.))
                 .with(scale(), vec3(0.3, 0.3, 0.3))
                 .with(color(), vec4(0.1, 0.1, 0.1, 1.))
-                .spawn(false);
+                .spawn();
             cells.push(id);
         }
     }

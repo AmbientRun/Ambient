@@ -23,7 +23,7 @@ pub async fn main() -> EventResult {
         .with(lookat_center(), vec3(0., 0., 0.))
         .with(perspective_infinite_reverse(), ())
         .with(aspect_ratio_from_window(), ())
-        .spawn(false);
+        .spawn();
 
     spawn_query(player()).bind(move |players| {
         // For each player joining, spawn a random colored box somewhere
@@ -35,7 +35,7 @@ pub async fn main() -> EventResult {
                 .with(scale(), Vec3::ONE * CUBE_SIZE)
                 .with(translation(), cube_position)
                 .with(color(), rand::random::<Vec3>().extend(1.))
-                .spawn(false);
+                .spawn();
 
             println!("Cube created at {cube_position}");
         }

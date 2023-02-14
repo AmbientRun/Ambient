@@ -62,18 +62,16 @@ impl Bindings {
 }
 
 impl host::Host for Bindings {
-    fn entity_spawn(&mut self, data: ComponentsParam<'_>, persistent: bool) -> host::EntityId {
+    fn entity_spawn(&mut self, data: ComponentsParam<'_>) -> host::EntityId {
         let id = server_impl::entity::spawn(
             &mut self.world_mut(),
             convert_components_to_entity_data(data),
         );
-        if !persistent {
-            self.shared_state
-                .write()
-                .base_mut()
-                .spawned_entities
-                .insert(id);
-        }
+        self.shared_state
+            .write()
+            .base_mut()
+            .spawned_entities
+            .insert(id);
         id.into_bindgen()
     }
 

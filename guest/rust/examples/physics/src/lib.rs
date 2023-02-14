@@ -21,7 +21,7 @@ pub async fn main() -> EventResult {
         .with(lookat_center(), vec3(0., 0., 0.))
         .with(perspective_infinite_reverse(), ())
         .with(aspect_ratio_from_window(), ())
-        .spawn(false);
+        .spawn();
 
     let cube = entity::game_object_base()
         .with_default(cube())
@@ -30,11 +30,11 @@ pub async fn main() -> EventResult {
         .with_default(physics_controlled())
         .with(translation(), vec3(0., 0., 5.))
         .with(scale(), vec3(0.5, 0.5, 0.5))
-        .spawn(false);
+        .spawn();
 
     entity::game_object_base()
         .with(object_from_url(), "assets/Shape.glb".to_string())
-        .spawn(false);
+        .spawn();
 
     on(event::COLLISION, |c| {
         // TODO: play a sound instead

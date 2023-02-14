@@ -91,6 +91,12 @@ components!("ecs", {
         Description["Indicates that this entity shouldn't be stored on disk."]
     ]
     dont_store: (),
+    @[
+        Store, Debuggable,
+        Name["Don't automatically despawn on module unload"],
+        Description["Indicates that this entity shouldn't be despawned when the module that spawned it unloads."]
+    ]
+    dont_despawn_on_unload: (),
 });
 
 #[derive(Clone)]

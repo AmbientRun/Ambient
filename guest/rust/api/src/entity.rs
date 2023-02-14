@@ -13,16 +13,15 @@ use crate::{
 
 pub use crate::internal::host::{AnimationAction, AnimationController};
 
-/// Spawns an entity containing the `components`. If `persistent` is set, this entity will not be
-/// removed when this module is unloaded.
+/// Spawns an entity containing the `components`.
 ///
 /// This is an asynchronous operation; use [wait_for_spawn] to get notified when
 /// the entity is spawned.
 ///
 /// Returns `spawned_entity_uid`.
-pub fn spawn(components: &Components, persistent: bool) -> EntityId {
+pub fn spawn(components: &Components) -> EntityId {
     components
-        .call_with(|data| host::entity_spawn(data, persistent))
+        .call_with(|data| host::entity_spawn(data))
         .from_bindgen()
 }
 

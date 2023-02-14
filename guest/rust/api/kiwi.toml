@@ -198,6 +198,12 @@ name = "Children"
 description = "The children of this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::ecs::dont_despawn_on_unload"]
+type = "Empty"
+name = "Don't automatically despawn on module unload"
+description = "Indicates that this entity shouldn't be despawned when the module that spawned it unloads."
+attributes = ["Debuggable", "Store"]
+
 [components."core::ecs::dont_store"]
 type = "Empty"
 name = "Don't store"

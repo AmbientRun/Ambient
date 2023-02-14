@@ -18,17 +18,17 @@ pub async fn main() -> EventResult {
         .with(lookat_center(), vec3(0., 0., 0.))
         .with(perspective_infinite_reverse(), ())
         .with(aspect_ratio_from_window(), ())
-        .spawn(false);
+        .spawn();
 
     entity::game_object_base()
         .with_default(cube())
         .with(translation(), vec3(0., 0., 1.))
-        .spawn(false);
+        .spawn();
     entity::game_object_base()
         .with_default(quad())
         .with(scale(), vec3(5., 5., 5.))
         .with(color(), vec4(1., 0., 0., 1.))
-        .spawn(false);
+        .spawn();
 
     EventOk
 }

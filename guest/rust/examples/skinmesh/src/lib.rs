@@ -19,11 +19,11 @@ pub async fn main() -> EventResult {
         .with(lookat_center(), vec3(0., 0., 0.))
         .with(perspective_infinite_reverse(), ())
         .with(aspect_ratio_from_window(), ())
-        .spawn(false);
+        .spawn();
 
     let unit_id = entity::game_object_base()
         .with(object_from_url(), "assets/Peasant Man.fbx".to_string())
-        .spawn(false);
+        .spawn();
 
     entity::set_animation_controller(
         unit_id,

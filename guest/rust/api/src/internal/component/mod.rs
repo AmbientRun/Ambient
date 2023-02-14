@@ -94,15 +94,14 @@ impl Components {
         self
     }
 
-    /// Spawns an entity with these components. If `persistent` is set, this entity will not be
-    /// removed when this module is unloaded.
+    /// Spawns an entity with these components.
     ///
     /// This is an asynchronous operation; use [entity::wait_for_spawn](crate::entity::wait_for_spawn) to get notified when
     /// the entity is spawned.
     ///
     /// Returns `spawned_entity_uid`.
-    pub fn spawn(&self, persistent: bool) -> crate::prelude::EntityId {
-        crate::entity::spawn(self, persistent)
+    pub fn spawn(&self) -> crate::prelude::EntityId {
+        crate::entity::spawn(self)
     }
 
     pub(crate) fn call_with<R>(
