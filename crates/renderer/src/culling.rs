@@ -135,7 +135,7 @@ impl Culling {
                 world,
                 self.config.shadow_cascades,
                 self.config.shadow_map_resolution,
-                get_sun_light_direction(world, self.config.scene).unwrap_or(Vec3::ONE.normalize()),
+                get_sun_light_direction(world, self.config.scene),
                 self.config.scene,
             );
             #[allow(clippy::needless_range_loop)]

@@ -2,11 +2,15 @@ use std::{sync::Arc, time::Instant};
 
 use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
 use kiwi_core::{
-    camera::{far, fog, get_active_camera, projection_view}, transform::{get_world_position, get_world_rotation, local_to_world}
+    camera::{far, fog, get_active_camera, projection_view},
+    transform::{get_world_position, get_world_rotation, local_to_world},
 };
 use kiwi_ecs::{Component, World};
 use kiwi_gpu::{
-    gpu::{Gpu, GpuKey}, shader_module::BindGroupDesc, std_assets::DefaultSamplerKey, texture::{Texture, TextureView}
+    gpu::{Gpu, GpuKey},
+    shader_module::BindGroupDesc,
+    std_assets::DefaultSamplerKey,
+    texture::{Texture, TextureView},
 };
 use kiwi_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use wgpu::BindGroup;
@@ -52,9 +56,9 @@ impl Default for GlobalParams {
             camera_position: Vec4::new(1.0, 0.0, 0.2, 0.0),
             camera_forward: Vec3::X,
             camera_far: 1e6,
-            sun_direction: vec3(1., 1., 1.).normalize().extend(0.),
-            sun_diffuse: Vec4::ONE * 0.8,
-            sun_ambient: Vec4::ONE * 0.2,
+            sun_direction: default_sun_direction().extend(0.),
+            sun_diffuse: Vec4::ONE * 3.0,
+            sun_ambient: Vec4::ONE * 0.05,
             fog_color: Vec4::ONE * 0.2,
             forward_camera_position: Vec4::new(1.0, 0.0, 0.2, 0.0),
             fog: 0,
@@ -64,6 +68,10 @@ impl Default for GlobalParams {
             debug_params: Default::default(),
         }
     }
+}
+
+pub fn default_sun_direction() -> Vec3 {
+    vec3(-0.2, 1., 1.).normalize()
 }
 
 pub fn globals_layout() -> BindGroupDesc {
@@ -229,12 +237,12 @@ impl ForwardGlobals {
             self.params.forward_camera_position = self.params.camera_position;
         }
         if let Some(sun) = get_active_sun(world, self.scene) {
-            self.params.sun_direction = get_world_rotation(world, sun).unwrap_or_default().mul_vec3(Vec3::X).extend(1.);
-            self.params.sun_diffuse = world.get(sun, light_diffuse()).unwrap_or(Vec3::ONE).extend(1.);
-            self.params.sun_ambient = world.get(sun, light_ambient()).unwrap_or(Vec3::ZERO).extend(1.);
-            self.params.fog_color = world.get(sun, fog_color()).unwrap_or(Vec3::ONE).extend(1.);
-            self.params.fog_height_falloff = world.get(sun, fog_height_falloff()).unwrap_or(0.5);
-            self.params.fog_density = world.get(sun, fog_density()).unwrap_or(0.5);
+            get_world_rotation(world, sun).ok().map(|value| self.params.sun_direction = value.mul_vec3(Vec3::X).extend(1.));
+            world.get(sun, light_diffuse()).ok().map(|value| self.params.sun_diffuse = value.extend(1.));
+            world.get(sun, light_ambient()).ok().map(|value| self.params.sun_ambient = value.extend(1.));
+            world.get(sun, fog_color()).ok().map(|value| self.params.fog_color = value.extend(1.));
+            world.get(sun, fog_height_falloff()).ok().map(|value| self.params.fog_height_falloff = value);
+            world.get(sun, fog_density()).ok().map(|value| self.params.fog_density = value);
         }
         self.params.time = Instant::now().duration_since(self.start_time).as_secs_f32();
         self.gpu.queue.write_buffer(&self.buffer, 0, bytemuck::cast_slice(&[self.params]));

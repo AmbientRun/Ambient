@@ -185,8 +185,11 @@ pub fn gpu_world_systems() -> SystemGroup<GpuWorldSyncEvent> {
 pub fn get_active_sun(world: &World, scene: Component<()>) -> Option<EntityId> {
     query((scene, sun())).iter(world, None).max_by_key(|(_, (_, x))| OrderedFloat(**x)).map(|(id, _)| id)
 }
-pub fn get_sun_light_direction(world: &World, scene: Component<()>) -> Option<Vec3> {
-    get_active_sun(world, scene).and_then(|sun| get_world_rotation(world, sun).ok()).map(|rot| rot.mul_vec3(Vec3::X))
+pub fn get_sun_light_direction(world: &World, scene: Component<()>) -> Vec3 {
+    get_active_sun(world, scene)
+        .and_then(|sun| get_world_rotation(world, sun).ok())
+        .map(|rot| rot.mul_vec3(Vec3::X))
+        .unwrap_or(default_sun_direction())
 }
 
 #[derive(Clone, Debug)]

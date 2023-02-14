@@ -18,7 +18,7 @@ use super::{
     cast_shadows, get_active_sun, FSMain, RendererCollectState, RendererResources, ShadowAndUIGlobals, TreeRenderer, TreeRendererConfig,
     GLOBALS_BIND_GROUP, MAX_SHADOW_CASCADES, RESOURCES_BIND_GROUP,
 };
-use crate::RendererConfig;
+use crate::{default_sun_direction, RendererConfig};
 
 pub struct ShadowsRenderer {
     renderer: TreeRenderer,
@@ -107,11 +107,11 @@ impl ShadowsRenderer {
     ) {
         let main_camera = Camera::get_active(world, main_scene()).unwrap_or_default();
 
-        let mut sun_direction = Vec3::ONE;
-        if let Some(sun) = get_active_sun(world, main_scene()) {
-            sun_direction = get_world_rotation(world, sun).unwrap().mul_vec3(Vec3::X);
-        }
-        sun_direction = sun_direction.normalize();
+        let sun_direction = if let Some(sun) = get_active_sun(world, main_scene()) {
+            get_world_rotation(world, sun).unwrap().mul_vec3(Vec3::X)
+        } else {
+            default_sun_direction()
+        };
 
         self.renderer.update(world);
 
