@@ -1,6 +1,9 @@
 use glam::{vec3, Mat4, Quat, Vec3, Vec4};
 use kiwi_core::{
-    asset_cache, bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere}, main_scene, mesh, transform::{local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation}
+    asset_cache,
+    bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere},
+    main_scene, mesh,
+    transform::{local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation},
 };
 use kiwi_ecs::{components, query, Description, EntityData, EntityId, Name, Networked, Store, SystemGroup, World};
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
@@ -8,17 +11,49 @@ use kiwi_gpu::mesh_buffer::GpuMesh;
 pub use kiwi_meshes::UVSphereMesh;
 use kiwi_meshes::{CubeMeshKey, QuadMeshKey};
 use kiwi_renderer::{
-    color, gpu_primitives, material, materials::flat_material::{get_flat_shader, FlatMaterialKey}, primitives, renderer_shader
+    color, gpu_primitives, material,
+    materials::flat_material::{get_flat_shader, FlatMaterialKey},
+    primitives, renderer_shader,
 };
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt}, mesh::Mesh, shapes::{Sphere, AABB}
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    mesh::Mesh,
+    shapes::{Sphere, AABB},
 };
 
 components!("primitives", {
-    @[Networked, Store, Name["Cube"], Description["If attached to an entity, the entity will be converted to a cube primitive."]]
+    @[
+        Networked, Store,
+        Name["Cube"],
+        Description["If attached to an entity, the entity will be converted to a cube primitive."]
+    ]
     cube: (),
-    @[Networked, Store, Name["Quad"], Description["If attached to an entity, the entity will be converted to a quad primitive."]]
+    @[
+        Networked, Store,
+        Name["Quad"],
+        Description["If attached to an entity, the entity will be converted to a quad primitive."]
+    ]
     quad: (),
+
+
+    @[
+        Networked, Store,
+        Name["Sphere radius"],
+        Description["If attached to an entity with `sphere_sectors` and `sphere_stacks`, the entity will be converted to a sphere with this radius.\nA reasonable default is 1.0."]
+    ]
+    sphere_radius: f32,
+    @[
+        Networked, Store,
+        Name["Sphere sectors"],
+        Description["If attached to an entity with `sphere_radius` and `sphere_stacks`, the entity will be converted to a sphere with this many longitudinal sectors.\nA reasonable default is 36."]
+    ]
+    sphere_sectors: u32,
+    @[
+        Networked, Store,
+        Name["Sphere stacks"],
+        Description["If attached to an entity with `sphere_radius` and `sphere_sectors`, the entity will be converted to a sphere with this many latitudinal stacks.\nA reasonable default is 18."]
+    ]
+    sphere_stacks: u32,
     @[Networked, Store]
     sphere: UVSphereMesh,
 });
@@ -101,6 +136,14 @@ pub fn systems() -> SystemGroup {
                     extend(world, id, data);
                 }
             }),
+            query((sphere_radius().changed(), sphere_sectors().changed(), sphere_stacks().changed())).spawned().to_system(
+                |q, world, qs, _| {
+                    for (id, (radius, sectors, stacks)) in q.collect_cloned(world, qs) {
+                        let uv_sphere = UVSphereMesh { radius, sectors: sectors.try_into().unwrap(), stacks: stacks.try_into().unwrap() };
+                        world.add_component(id, sphere(), uv_sphere).unwrap();
+                    }
+                },
+            ),
             query(sphere()).spawned().to_system(|q, world, qs, _| {
                 for (id, sphere) in q.collect_cloned(world, qs) {
                     let data = sphere_data(world.resource(asset_cache()), &sphere);

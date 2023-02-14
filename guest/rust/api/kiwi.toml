@@ -439,6 +439,30 @@ name = "Quad"
 description = "If attached to an entity, the entity will be converted to a quad primitive."
 attributes = ["Networked", "Store"]
 
+[components."core::primitives::sphere_radius"]
+type = "F32"
+name = "Sphere radius"
+description = """
+If attached to an entity with `sphere_sectors` and `sphere_stacks`, the entity will be converted to a sphere with this radius.
+A reasonable default is 1.0."""
+attributes = ["Networked", "Store"]
+
+[components."core::primitives::sphere_sectors"]
+type = "U32"
+name = "Sphere sectors"
+description = """
+If attached to an entity with `sphere_radius` and `sphere_stacks`, the entity will be converted to a sphere with this many longitudinal sectors.
+A reasonable default is 36."""
+attributes = ["Networked", "Store"]
+
+[components."core::primitives::sphere_stacks"]
+type = "U32"
+name = "Sphere stacks"
+description = """
+If attached to an entity with `sphere_radius` and `sphere_sectors`, the entity will be converted to a sphere with this many latitudinal stacks.
+A reasonable default is 18."""
+attributes = ["Networked", "Store"]
+
 [components."core::rendering::cast_shadows"]
 type = "Empty"
 name = "Cast shadows"

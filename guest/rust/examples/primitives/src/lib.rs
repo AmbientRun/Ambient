@@ -2,7 +2,7 @@ use kiwi_api::{
     components::core::{
         camera::{aspect_ratio_from_window, perspective_infinite_reverse},
         game_objects::player_camera,
-        primitives::{cube, quad},
+        primitives::{cube, quad, sphere_radius, sphere_sectors, sphere_stacks},
         rendering::color,
         transform::{lookat_center, scale, translation},
     },
@@ -27,6 +27,12 @@ pub async fn main() -> EventResult {
         .with_default(quad())
         .with(scale(), vec3(5., 5., 5.))
         .with(color(), vec4(1., 0., 0., 1.))
+        .spawn();
+    entity::game_object_base()
+        .with(translation(), vec3(0., 0., 2.))
+        .with(sphere_radius(), 1.0)
+        .with(sphere_sectors(), 36)
+        .with(sphere_stacks(), 18)
         .spawn();
 
     EventOk
