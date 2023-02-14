@@ -73,7 +73,6 @@ impl SyncAssetKey<RendererResources> for RendererResourcesKey {
 #[derive(Debug, Clone)]
 pub struct RendererConfig {
     pub scene: Component<()>,
-    /// Shadows will be configured by ShadowConfig
     pub shadows: bool,
     pub shadow_map_resolution: u32,
     pub shadow_cascades: u32,
@@ -82,7 +81,7 @@ pub struct RendererConfig {
 
 impl Default for RendererConfig {
     fn default() -> Self {
-        Self { scene: ui_scene(), shadows: true, shadow_map_resolution: 256, shadow_cascades: 3, lod_cutoff_scaling: 1. }
+        Self { scene: ui_scene(), shadows: true, shadow_map_resolution: 1024, shadow_cascades: 5, lod_cutoff_scaling: 1. }
     }
 }
 
@@ -130,7 +129,7 @@ pub trait SubRenderer: std::fmt::Debug + Send + Sync {
 
 pub struct Renderer {
     gpu: Arc<Gpu>,
-    config: RendererConfig,
+    pub config: RendererConfig,
     pub shader_debug_params: ShaderDebugParams,
     resources_layout: Arc<wgpu::BindGroupLayout>,
     culling: Culling,

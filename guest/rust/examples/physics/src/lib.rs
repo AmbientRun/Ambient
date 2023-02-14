@@ -6,7 +6,7 @@ use kiwi_api::{
         object::object_from_url,
         physics::{angular_velocity, box_collider, dynamic, linear_velocity, physics_controlled},
         primitives::cube,
-        rendering::color,
+        rendering::{cast_shadows, color},
         transform::{lookat_center, rotation, scale, translation},
     },
     prelude::*,
@@ -27,6 +27,7 @@ pub async fn main() -> EventResult {
         .with(box_collider(), vec3(1., 1., 1.))
         .with(dynamic(), true)
         .with_default(physics_controlled())
+        .with_default(cast_shadows())
         .with(translation(), vec3(0., 0., 5.))
         .with(scale(), vec3(0.5, 0.5, 0.5))
         .spawn();

@@ -4,7 +4,7 @@ use clap::{Parser, Subcommand};
 use kiwi_app::{AppBuilder, ExamplesSystem};
 use kiwi_cameras::UICamera;
 use kiwi_core::camera::active_camera;
-use kiwi_debugger::RendererDebugger;
+use kiwi_debugger::Debugger;
 use kiwi_ecs::{EntityData, SystemGroup, World};
 use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
 use kiwi_network::{
@@ -134,7 +134,7 @@ fn GameView(_world: &mut World, hooks: &mut Hooks) -> Element {
 
     let show_debug = true;
     if show_debug {
-        RendererDebugger {
+        Debugger {
             get_state: cb(move |cb| {
                 let mut game_state = state.game_state.lock();
                 let game_state = &mut *game_state;
