@@ -93,7 +93,7 @@ pub fn implementation(
                 node.path.join("::")
             ),
             TreeNodeInner::Module(children, Some(_)) => {
-                for (_, node) in children {
+                for node in children.values() {
                     ensure_namespace_documented(node)?;
                 }
             }
@@ -101,7 +101,7 @@ pub fn implementation(
         }
         Ok(())
     }
-    for (_, node) in &root {
+    for node in root.values() {
         ensure_namespace_documented(node)?;
     }
 

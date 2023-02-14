@@ -96,7 +96,7 @@ impl Components {
 
     /// Removes the specified component from this, and returns the value if it was present.
     pub fn remove<T: SupportedComponentTypeGet>(&mut self, component: Component<T>) -> Option<T> {
-        T::from_result(self.0.remove(&component.index())?.clone())
+        T::from_result(self.0.remove(&component.index())?)
     }
 
     /// Spawns an entity with these components.
