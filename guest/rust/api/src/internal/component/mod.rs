@@ -79,19 +79,24 @@ impl Components {
         self.set(component, T::default())
     }
 
-    /// Adds `value` to this `EntityData`, and returns `self` to allow for easy chaining.
+    /// Adds `component` to this with `value`, and returns `self` to allow for easy chaining.
     pub fn with<T: SupportedComponentTypeSet>(mut self, component: Component<T>, value: T) -> Self {
         self.set(component, value);
         self
     }
 
-    /// Adds the default value for `T` to this `EntityData`, and returns `self` to allow for easy chaining.
+    /// Sets the `component` in this to the default value for `T`, and returns `self` to allow for easy chaining.
     pub fn with_default<T: SupportedComponentTypeSet + Default>(
         mut self,
         component: Component<T>,
     ) -> Self {
         self.set_default(component);
         self
+    }
+
+    /// Removes the specified component from this, and returns the value if it was present.
+    pub fn remove<T: SupportedComponentTypeGet>(&mut self, component: Component<T>) -> Option<T> {
+        T::from_result(self.0.remove(&component.index())?.clone())
     }
 
     /// Spawns an entity with these components.
