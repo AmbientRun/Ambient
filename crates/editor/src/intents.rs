@@ -1,5 +1,5 @@
 use anyhow::Context;
-use glam::{Mat4, Quat, Vec3, Vec3Swizzles};
+use glam::{Mat4, Vec3, Vec3Swizzles};
 use itertools::{izip, process_results, Itertools};
 use kiwi_core::{
     self, selectable, snap_to_ground,
@@ -10,10 +10,7 @@ use kiwi_intent::{use_old_state, IntentContext, IntentRegistry};
 use kiwi_network::get_player_by_user_id;
 use kiwi_physics::{collider::collider_shapes_convex, main_physics_scene, physx::rigid_actor, PxShapeUserData};
 
-use kiwi_std::{
-    log_result,
-    shapes::{Ray, Shape, AABB},
-};
+use kiwi_std::shapes::{Ray, Shape, AABB};
 use kiwi_terrain::get_terrain_height;
 use ordered_float::OrderedFloat;
 use physxx::{PxActor, PxQueryFilterData, PxRaycastCallback, PxTransform, PxUserData};
@@ -41,9 +38,9 @@ fn undo_transform(ctx: IntentContext, undo_state: Vec<IntentTransformRevert>) ->
         }
 
         let (scl, rot, pos) = state.transform.to_scale_rotation_translation();
-        world.set_if_changed(id, translation(), pos);
-        world.set_if_changed(id, rotation(), rot);
-        world.set_if_changed(id, scale(), scl);
+        world.set_if_changed(id, translation(), pos).unwrap();
+        world.set_if_changed(id, rotation(), rot).unwrap();
+        world.set_if_changed(id, scale(), scl).unwrap();
     }
 
     Ok(())
@@ -326,9 +323,9 @@ pub fn register_intents(reg: &mut IntentRegistry) {
 
                         update_snap_to_ground(world, id, pos);
 
-                        world.set_if_changed(id, translation(), new_pos);
-                        world.set_if_changed(id, rotation(), rot);
-                        world.set_if_changed(id, scale(), scl);
+                        world.set_if_changed(id, translation(), new_pos).unwrap();
+                        world.set_if_changed(id, rotation(), rot).unwrap();
+                        world.set_if_changed(id, scale(), scl).unwrap();
 
                         Ok(IntentTransformRevert { snap_to_ground: old_snap_to_ground, transform, uid })
                     }
@@ -381,9 +378,9 @@ pub fn register_intents(reg: &mut IntentRegistry) {
 
                     update_snap_to_ground(world, id, pos);
 
-                    world.set_if_changed(id, translation(), new_pos);
-                    world.set_if_changed(id, rotation(), rot);
-                    world.set_if_changed(id, scale(), scl);
+                    world.set_if_changed(id, translation(), new_pos).unwrap();
+                    world.set_if_changed(id, rotation(), rot).unwrap();
+                    world.set_if_changed(id, scale(), scl).unwrap();
 
                     Ok(IntentTransformRevert { snap_to_ground: old_snap_to_ground, transform, uid })
                 })
@@ -411,9 +408,9 @@ pub fn register_intents(reg: &mut IntentRegistry) {
 
                     update_snap_to_ground(world, id, pos);
 
-                    world.set_if_changed(id, translation(), pos);
-                    world.set_if_changed(id, rotation(), rot);
-                    world.set_if_changed(id, scale(), scl);
+                    world.set_if_changed(id, translation(), pos).unwrap();
+                    world.set_if_changed(id, rotation(), rot).unwrap();
+                    world.set_if_changed(id, scale(), scl).unwrap();
 
                     Ok(IntentTransformRevert { transform: old_transform, snap_to_ground: old_snap_to_ground, uid: id })
                 })
@@ -430,9 +427,9 @@ pub fn register_intents(reg: &mut IntentRegistry) {
                 }
 
                 let (scl, rot, pos) = old_state.transform.to_scale_rotation_translation();
-                world.set_if_changed(id, translation(), pos);
-                world.set_if_changed(id, rotation(), rot);
-                world.set_if_changed(id, scale(), scl);
+                world.set_if_changed(id, translation(), pos).unwrap();
+                world.set_if_changed(id, rotation(), rot).unwrap();
+                world.set_if_changed(id, scale(), scl).unwrap();
             }
             Ok(())
         },
@@ -455,9 +452,9 @@ pub fn register_intents(reg: &mut IntentRegistry) {
 
                     let old_snap_to_ground = world.get(id, snap_to_ground()).ok();
 
-                    world.set_if_changed(id, translation(), pos);
-                    world.set_if_changed(id, rotation(), rot);
-                    world.set_if_changed(id, scale(), scl);
+                    world.set_if_changed(id, translation(), pos).unwrap();
+                    world.set_if_changed(id, rotation(), rot).unwrap();
+                    world.set_if_changed(id, scale(), scl).unwrap();
                     Ok((id, old_snap_to_ground)) as anyhow::Result<_>
                 })
                 .collect::<Result<Vec<_>, _>>()
@@ -598,7 +595,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
         },
         |ctx, (entities, old_selection)| {
             let world = ctx.world;
-            let ids = entities.spawn_into_world(world, None);
+            let _ids = entities.spawn_into_world(world, None);
             if let Some(player_entity) = get_player_by_user_id(world, ctx.user_id) {
                 world.set(player_entity, selection(), old_selection).ok();
             }

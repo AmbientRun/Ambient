@@ -72,7 +72,7 @@ impl host::Host for Bindings {
                 .write()
                 .base_mut()
                 .spawned_entities
-                .insert(id.clone());
+                .insert(id);
         }
         id.into_bindgen()
     }

@@ -1,4 +1,4 @@
-use glam::{Mat4, Quat, Vec3};
+use glam::Vec3;
 use kiwi_animation::{animation_controller, AnimationController};
 use kiwi_ecs::{EntityData, EntityId, World};
 
@@ -9,7 +9,7 @@ pub fn spawn(world: &mut World, data: EntityData) -> EntityId {
 }
 
 pub fn despawn(world: &mut World, entity: EntityId) -> Option<EntityId> {
-    world.despawn(entity).and_then(|ed| Some(entity))
+    world.despawn(entity).map(|_ed| entity)
 }
 
 pub fn get_linear_velocity(world: &mut World, entity: EntityId) -> anyhow::Result<Vec3> {

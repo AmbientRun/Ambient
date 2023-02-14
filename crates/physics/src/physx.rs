@@ -1,8 +1,5 @@
-use crate::{
-    helpers::{get_shapes, scale_shape},
-    unit_yaw,
-};
-use glam::{EulerRot, Quat, Vec3};
+use crate::helpers::{get_shapes, scale_shape};
+use glam::{Quat, Vec3};
 use kiwi_core::transform::{rotation, scale, translation};
 use kiwi_ecs::{components, query, Debuggable, Description, FnSystem, Name, Networked, QueryState, Resource, Store, SystemGroup};
 use kiwi_std::asset_cache::SyncAssetKey;
@@ -223,9 +220,9 @@ pub fn sync_ecs_physics() -> SystemGroup {
             Box::new(FnSystem::new(move |world, _| {
                 // Fast forward queries
                 let mut translation_rotation_qs = translation_rotation_qs.lock();
-                translation_rotation_q2.iter(world, Some(&mut *translation_rotation_qs));
+                for _ in translation_rotation_q2.iter(world, Some(&mut *translation_rotation_qs)) {}
                 let mut scale_qs = scale_qs.lock();
-                scale_q2.iter(world, Some(&mut *scale_qs));
+                for _ in scale_q2.iter(world, Some(&mut *scale_qs)) {}
             })),
         ],
     )

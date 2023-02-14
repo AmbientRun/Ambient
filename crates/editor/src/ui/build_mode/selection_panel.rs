@@ -1,4 +1,3 @@
-use itertools::Itertools;
 use kiwi_ecs::World;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_network::{client::GameClient, log_network_result};
@@ -27,7 +26,7 @@ impl ElementComponent for SelectionPanel {
         FlowColumn(vec![
             #[allow(clippy::comparison_chain)]
             if selection.len() == 1 {
-                let state = game_client.game_state.lock();
+                let _state = game_client.game_state.lock();
 
                 EntityEditor { entity_id: selection.entities[0] }.el().set(fit_horizontal(), Fit::Parent)
             } else {

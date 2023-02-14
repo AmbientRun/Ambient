@@ -14,8 +14,7 @@ use kiwi_core::{
 };
 use kiwi_ecs::{query, query_mut, Component, ComponentValue, EntityData, EntityId, FrameEvent, System, World};
 use kiwi_model::{
-    animation_bind_id, model_from_url, model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, ModelFromUrl,
-    PbrRenderPrimitiveFromUrl,
+    animation_bind_id, model_from_url, model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl,
 };
 use kiwi_physics::{
     collider::{character_controller_height, character_controller_radius, collider, ColliderDef, ColliderFromUrls},

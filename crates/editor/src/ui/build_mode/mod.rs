@@ -8,7 +8,7 @@ use kiwi_ecs::{Component, ComponentValue, EntityId, World};
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
 use kiwi_input::{on_app_keyboard_input, MouseButton};
 use kiwi_intent::{client_push_intent, rpc_undo_head_exact};
-use kiwi_network::{client::GameClient, log_network_error};
+use kiwi_network::client::GameClient;
 
 use kiwi_std::{
     asset_url::{select_asset, AssetType},

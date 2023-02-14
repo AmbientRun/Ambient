@@ -226,9 +226,9 @@ pub fn server_systems() -> SystemGroup {
                 }
 
                 for (id, _, pos, rot, scl) in new_transform {
-                    world.set_if_changed(id, translation(), pos);
-                    world.set_if_changed(id, rotation(), rot);
-                    world.set_if_changed(id, scale(), scl);
+                    world.set_if_changed(id, translation(), pos).unwrap();
+                    world.set_if_changed(id, rotation(), rot).unwrap();
+                    world.set_if_changed(id, scale(), scl).unwrap();
                 }
             }),
         ],
