@@ -127,7 +127,7 @@ attributes = ["Networked", "Store"]
 [components."core::camera::far"]
 type = "F32"
 name = "Far plane"
-description = "The far plane of this camera, measured in metres."
+description = "The far plane of this camera, measured in meters."
 attributes = ["Networked", "Store"]
 
 [components."core::camera::fog"]
@@ -145,7 +145,7 @@ attributes = ["Networked", "Store"]
 [components."core::camera::near"]
 type = "F32"
 name = "Near plane"
-description = "The near plane of this camera, measured in metres."
+description = "The near plane of this camera, measured in meters."
 attributes = ["Networked", "Store"]
 
 [components."core::camera::perspective"]
@@ -181,7 +181,7 @@ attributes = ["Networked", "Store"]
 [components."core::camera::shadows_far"]
 type = "F32"
 name = "Shadows far plane"
-description = "The far plane for the shadow camera, measured in metres."
+description = "The far plane for the shadow camera, measured in meters."
 attributes = ["Networked", "Store"]
 
 [components."core::camera::ui_camera"]
@@ -330,7 +330,7 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "Vec3"
 name = "Linear velocity"
 description = """
-Linear velocity (metres/second) of this entity in the physics scene.
+Linear velocity (meters/second) of this entity in the physics scene.
 Updating this component will update the entity's linear velocity in the physics scene."""
 attributes = ["Debuggable", "Networked", "Store"]
 

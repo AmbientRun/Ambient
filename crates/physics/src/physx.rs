@@ -25,7 +25,7 @@ components!("physics", {
     character_controller: PxControllerRef,
     @[Debuggable, Networked, Store, Name["Physics controlled"], Description["If attached, this entity will be controlled by physics.\nNote that this requires the entity to have a collider."]]
     physics_controlled: (),
-    @[Debuggable, Networked, Store, Name["Linear velocity"], Description["Linear velocity (metres/second) of this entity in the physics scene.\nUpdating this component will update the entity's linear velocity in the physics scene."]]
+    @[Debuggable, Networked, Store, Name["Linear velocity"], Description["Linear velocity (meters/second) of this entity in the physics scene.\nUpdating this component will update the entity's linear velocity in the physics scene."]]
     linear_velocity: Vec3,
     @[Debuggable, Networked, Store, Name["Angular velocity"], Description["Angular velocity (radians/second) of this entity in the physics scene.\nUpdating this component will update the entity's angular velocity in the physics scene."]]
     angular_velocity: Vec3,
