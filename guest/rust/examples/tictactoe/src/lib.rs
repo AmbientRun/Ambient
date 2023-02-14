@@ -12,7 +12,7 @@ use palette::{FromColor, Hsl, Srgb};
 pub async fn main() -> EventResult {
     entity::game_object_base()
         .with_default(player_camera())
-        .with(translation(), vec3(5.0, 5.0, 4.0))
+        .with(translation(), vec3(5., 5., 4.))
         .with(lookat_center(), vec3(0., 0., 0.))
         .with(perspective_infinite_reverse(), ())
         .with(aspect_ratio_from_window(), ())
@@ -24,7 +24,7 @@ pub async fn main() -> EventResult {
             let id = entity::game_object_base()
                 .with_default(cube())
                 .with(translation(), vec3(x as f32, y as f32, 0.))
-                .with(scale(), vec3(0.3, 0.3, 0.3))
+                .with(scale(), vec3(0.6, 0.6, 0.6))
                 .with(color(), vec4(0.1, 0.1, 0.1, 1.))
                 .spawn();
             cells.push(id);

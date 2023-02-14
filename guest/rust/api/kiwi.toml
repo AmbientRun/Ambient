@@ -430,13 +430,17 @@ attributes = ["Networked", "Store"]
 [components."core::primitives::cube"]
 type = "Empty"
 name = "Cube"
-description = "If attached to an entity, the entity will be converted to a cube primitive."
+description = """
+If attached to an entity, the entity will be converted to a cube primitive.
+The cube is unit-sized (i.e. 0.5 metres out to each side)."""
 attributes = ["Networked", "Store"]
 
 [components."core::primitives::quad"]
 type = "Empty"
 name = "Quad"
-description = "If attached to an entity, the entity will be converted to a quad primitive."
+description = """
+If attached to an entity, the entity will be converted to a quad primitive.
+The quad is unit-sized on the XY axes, and flat on the Z axis (i.e. 0.5 metres out to the XY axes)."""
 attributes = ["Networked", "Store"]
 
 [components."core::primitives::sphere_radius"]
@@ -444,7 +448,7 @@ type = "F32"
 name = "Sphere radius"
 description = """
 If attached to an entity with `sphere_sectors` and `sphere_stacks`, the entity will be converted to a sphere with this radius.
-A reasonable default is 1.0."""
+A reasonable default is 0.5."""
 attributes = ["Networked", "Store"]
 
 [components."core::primitives::sphere_sectors"]

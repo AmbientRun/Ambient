@@ -9,7 +9,7 @@ use kiwi_ecs::{components, query, Description, EntityData, EntityId, Name, Netwo
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_gpu::mesh_buffer::GpuMesh;
 pub use kiwi_meshes::UVSphereMesh;
-use kiwi_meshes::{CubeMeshKey, QuadMeshKey};
+use kiwi_meshes::{UnitCubeMeshKey, UnitQuadMeshKey};
 use kiwi_renderer::{
     color, gpu_primitives, material,
     materials::flat_material::{get_flat_shader, FlatMaterialKey},
@@ -25,13 +25,13 @@ components!("primitives", {
     @[
         Networked, Store,
         Name["Cube"],
-        Description["If attached to an entity, the entity will be converted to a cube primitive."]
+        Description["If attached to an entity, the entity will be converted to a cube primitive.\nThe cube is unit-sized (i.e. 0.5 metres out to each side)."]
     ]
     cube: (),
     @[
         Networked, Store,
         Name["Quad"],
-        Description["If attached to an entity, the entity will be converted to a quad primitive."]
+        Description["If attached to an entity, the entity will be converted to a quad primitive.\nThe quad is unit-sized on the XY axes, and flat on the Z axis (i.e. 0.5 metres out to the XY axes)."]
     ]
     quad: (),
 
@@ -39,7 +39,7 @@ components!("primitives", {
     @[
         Networked, Store,
         Name["Sphere radius"],
-        Description["If attached to an entity with `sphere_sectors` and `sphere_stacks`, the entity will be converted to a sphere with this radius.\nA reasonable default is 1.0."]
+        Description["If attached to an entity with `sphere_sectors` and `sphere_stacks`, the entity will be converted to a sphere with this radius.\nA reasonable default is 0.5."]
     ]
     sphere_radius: f32,
     @[
@@ -59,9 +59,9 @@ components!("primitives", {
 });
 
 fn cube_data(assets: &AssetCache) -> EntityData {
-    let aabb = AABB { min: -Vec3::ONE, max: Vec3::ONE };
+    let aabb = AABB { min: -Vec3::ONE * 0.5, max: Vec3::ONE * 0.5 };
     EntityData::new()
-        .set(mesh(), CubeMeshKey.get(assets))
+        .set(mesh(), UnitCubeMeshKey.get(assets))
         .set_default(local_to_world())
         .set_default(mesh_to_world())
         .set_default(translation())
@@ -77,9 +77,9 @@ fn cube_data(assets: &AssetCache) -> EntityData {
 }
 
 fn quad_data(assets: &AssetCache) -> EntityData {
-    let aabb = AABB { min: vec3(-1., -1., 0.), max: vec3(1., 1., 0.) };
+    let aabb = AABB { min: vec3(-0.5, -0.5, 0.), max: vec3(0.5, 0.5, 0.) };
     EntityData::new()
-        .set(mesh(), QuadMeshKey.get(assets))
+        .set(mesh(), UnitQuadMeshKey.get(assets))
         .set_default(local_to_world())
         .set_default(mesh_to_world())
         .set_default(translation())

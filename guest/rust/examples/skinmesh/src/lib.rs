@@ -14,7 +14,7 @@ use kiwi_api::{
 pub async fn main() -> EventResult {
     entity::game_object_base()
         .with_default(player_camera())
-        .with(translation(), vec3(5.0, 5.0, 4.0))
+        .with(translation(), vec3(5., 5., 4.))
         .with(lookat_center(), vec3(0., 0., 0.))
         .with(perspective_infinite_reverse(), ())
         .with(aspect_ratio_from_window(), ())

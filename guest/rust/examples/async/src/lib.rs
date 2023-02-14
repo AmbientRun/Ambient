@@ -9,7 +9,7 @@ pub async fn main() -> EventResult {
             println!(
                 "And hello from here! {} seconds have passed, and the previous tick took {}ms.",
                 time(),
-                frametime() * 1_000.0
+                frametime() * 1_000.
             );
 
             EventOk

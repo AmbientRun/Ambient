@@ -16,7 +16,7 @@ use kiwi_api::{
 pub async fn main() -> EventResult {
     entity::game_object_base()
         .with_default(player_camera())
-        .with(translation(), vec3(5.0, 5.0, 4.0))
+        .with(translation(), vec3(5., 5., 4.))
         .with(lookat_center(), vec3(0., 0., 0.))
         .with(perspective_infinite_reverse(), ())
         .with(aspect_ratio_from_window(), ())
@@ -24,7 +24,7 @@ pub async fn main() -> EventResult {
 
     let cube = entity::game_object_base()
         .with_default(cube())
-        .with(box_collider(), vec3(2., 2., 2.))
+        .with(box_collider(), vec3(1., 1., 1.))
         .with(dynamic(), true)
         .with_default(physics_controlled())
         .with(translation(), vec3(0., 0., 5.))
@@ -47,8 +47,8 @@ pub async fn main() -> EventResult {
 
         sleep(5.).await;
 
-        let new_linear_velocity = (random::<Vec3>() - 0.5) * 2.0 * max_linear_velocity;
-        let new_angular_velocity = (random::<Vec3>() - 0.5) * 2.0 * max_angular_velocity;
+        let new_linear_velocity = (random::<Vec3>() - 0.5) * 2. * max_linear_velocity;
+        let new_angular_velocity = (random::<Vec3>() - 0.5) * 2. * max_angular_velocity;
         println!("And again! Linear velocity: {new_linear_velocity:?} | Angular velocity: {new_angular_velocity:?}");
         entity::set_components(
             cube,

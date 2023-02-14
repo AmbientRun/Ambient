@@ -13,8 +13,8 @@ use kiwi_api::{
 #[main]
 pub async fn main() -> EventResult {
     const CAMERA_POSITION: Vec3 = vec3(CUBE_REGION, CUBE_REGION, CUBE_REGION);
-    const CUBE_REGION: f32 = 5.0;
-    const CUBE_SIZE: f32 = 0.3;
+    const CUBE_REGION: f32 = 5.;
+    const CUBE_SIZE: f32 = 0.6;
 
     entity::game_object_base()
         .with_default(player_camera())
@@ -27,8 +27,7 @@ pub async fn main() -> EventResult {
     spawn_query(player()).bind(move |players| {
         // For each player joining, spawn a random colored box somewhere
         for _ in players {
-            let cube_position =
-                rand::random::<Vec3>() * CUBE_REGION - vec3(0.0, 2.0 * CUBE_SIZE, 0.0);
+            let cube_position = rand::random::<Vec3>() * CUBE_REGION - vec3(0., 2. * CUBE_SIZE, 0.);
             entity::game_object_base()
                 .with_default(cube())
                 .with(scale(), Vec3::ONE * CUBE_SIZE)
