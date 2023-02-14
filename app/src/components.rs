@@ -38,6 +38,7 @@ pub(crate) mod dev {
                 ("core::app", "App", "High-level state relevant to the application (including the in-development Editor)."),
                 ("core::camera", "Camera", "Camera matrices, types, parameters, and more."),
                 ("core::ecs", "Entity Component System", "Core components for the ECS and entities."),
+                ("core::game_objects", "Game Objects", "Pre-defined game objects that implement specific behaviours."),
                 ("core::model", "Model", "Information about models attached to entities."),
                 ("core::network", "Network", "Network-related state."),
                 ("core::object", "Object", "External object related state (e.g. drawing objects from remote URLs)"),
