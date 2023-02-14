@@ -3,14 +3,20 @@ use std::iter::once;
 use glam::{vec2, vec3, Quat, Vec2, Vec3, Vec4};
 use itertools::Itertools;
 use kiwi_core::{
-    asset_cache, transform::{mesh_to_local, rotation, translation}, ui_scene
+    asset_cache,
+    transform::{mesh_to_local, rotation, translation},
+    ui_scene,
 };
 use kiwi_element::{Element, ElementComponent, ElementComponentExt};
 use kiwi_gpu::{self, mesh_buffer::MeshBufferKey};
 use kiwi_renderer::{
-    color, gpu_primitives, material, materials::flat_material::{FlatMaterial, FlatShaderKey}, primitives, renderer_shader, SharedMaterial
+    color,
+    flat_material::get_flat_shader_unlit,
+    gpu_primitives, material,
+    materials::flat_material::{FlatMaterial, FlatShaderKey},
+    primitives, renderer_shader, SharedMaterial,
 };
-use kiwi_std::{asset_cache::SyncAssetKeyExt, mesh::Mesh};
+use kiwi_std::{asset_cache::SyncAssetKeyExt, cb, mesh::Mesh};
 
 use crate::{height, mesh_to_local_from_size, rect::Rectangle, width, Text, UIBase};
 
@@ -222,7 +228,7 @@ impl ElementComponent for Graph {
             .init(crate::width(), width)
             .init(crate::height(), height)
             .init(crate::scale(), Vec3::ONE)
-            .init(renderer_shader(), FlatShaderKey { lit: false }.get(&assets))
+            .init(renderer_shader(), cb(get_flat_shader_unlit))
             .init(material(), SharedMaterial::new(FlatMaterial::new(assets, style.color, None)))
             .init(color(), Vec4::ONE)
             .init(ui_scene(), ())

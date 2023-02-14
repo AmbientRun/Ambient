@@ -2,18 +2,25 @@ use std::sync::Arc;
 
 use glam::Vec4;
 use kiwi_core::{
-    gpu_components, gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent}, hierarchy::children
+    gpu_components,
+    gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent},
+    hierarchy::children,
 };
 use kiwi_ecs::{components, query, ArchetypeFilter, Component, Description, Name, Networked, Store, SystemGroup, World};
 use kiwi_gpu::{
-    gpu::{Gpu, GpuKey}, mesh_buffer::MeshBuffer, shader_module::{BindGroupDesc, GraphicsPipeline, GraphicsPipelineInfo, Shader}, texture::Texture
+    gpu::{Gpu, GpuKey},
+    mesh_buffer::MeshBuffer,
+    shader_module::{BindGroupDesc, GraphicsPipeline, GraphicsPipelineInfo, Shader},
+    texture::Texture,
 };
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt}, include_file
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    include_file,
 };
 use wgpu::{BindGroup, BindGroupLayoutEntry, BindingType, PrimitiveTopology, ShaderStages};
 
 use super::{FSMain, RendererCollectState, RendererResources, RendererTarget, ShaderModule, TreeRenderer, TreeRendererConfig};
+use crate::RendererConfig;
 
 components!("rendering", {
     @[
@@ -47,7 +54,7 @@ pub struct Outlines {
     gpu: Arc<Gpu>,
 }
 impl Outlines {
-    pub fn new(assets: &AssetCache, config: OutlinesConfig) -> Self {
+    pub fn new(assets: &AssetCache, config: OutlinesConfig, renderer_config: RendererConfig) -> Self {
         let gpu = GpuKey.get(assets);
 
         let shader = Shader::from_modules(
@@ -88,6 +95,8 @@ impl Outlines {
             collect_state: RendererCollectState::new(assets),
             renderer: TreeRenderer::new(TreeRendererConfig {
                 gpu: gpu.clone(),
+                assets: assets.clone(),
+                renderer_config: renderer_config.clone(),
                 targets: vec![Some(wgpu::ColorTargetState {
                     format: Outlines::FORMAT,
                     blend: Some(wgpu::BlendState::ALPHA_BLENDING),

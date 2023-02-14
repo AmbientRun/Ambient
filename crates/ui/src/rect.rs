@@ -2,19 +2,27 @@ use std::sync::Arc;
 
 use glam::{Mat4, UVec3, Vec3, Vec4};
 use kiwi_core::{
-    asset_cache, mesh, transform::{mesh_to_local, scale}, ui_scene
+    asset_cache, mesh,
+    transform::{mesh_to_local, scale},
+    ui_scene,
 };
 use kiwi_ecs::{components, query, EntityData, SystemGroup, World};
 use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
 use kiwi_gpu::{
-    gpu::GpuKey, shader_module::{BindGroupDesc, ShaderModule}, typed_buffer::TypedBuffer
+    gpu::GpuKey,
+    shader_module::{BindGroupDesc, ShaderModule},
+    typed_buffer::TypedBuffer,
 };
 use kiwi_meshes::UIRectMeshKey;
 use kiwi_renderer::{
-    gpu_primitives, material, primitives, renderer_shader, Material, MaterialShader, RendererShader, SharedMaterial, StandardShaderKey, MATERIAL_BIND_GROUP
+    gpu_primitives, material, primitives, renderer_shader, Material, MaterialShader, RendererConfig, RendererShader, SharedMaterial,
+    StandardShaderKey, MATERIAL_BIND_GROUP,
 };
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, color::Color, friendly_id, include_file
+    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
+    cb,
+    color::Color,
+    friendly_id, include_file,
 };
 use wgpu::BindGroup;
 
@@ -71,7 +79,7 @@ pub fn systems() -> SystemGroup {
                     world
                         .add_components(
                             id,
-                            EntityData::new().set(mesh(), UIRectMeshKey.get(&assets)).set(renderer_shader(), get_rect_shader(&assets)),
+                            EntityData::new().set(mesh(), UIRectMeshKey.get(&assets)).set(renderer_shader(), cb(get_rect_shader)),
                         )
                         .unwrap();
                 }
@@ -136,17 +144,9 @@ impl SyncAssetKey<Arc<MaterialShader>> for RectMaterialShaderKey {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct RectShaderKey;
-
-impl SyncAssetKey<Arc<RendererShader>> for RectShaderKey {
-    fn load(&self, assets: AssetCache) -> Arc<RendererShader> {
-        StandardShaderKey { material_shader: RectMaterialShaderKey.get(&assets), lit: false }.get(&assets)
-    }
-}
-
-pub fn get_rect_shader(assets: &AssetCache) -> Arc<RendererShader> {
-    StandardShaderKey { material_shader: RectMaterialShaderKey.get(assets), lit: false }.get(assets)
+pub fn get_rect_shader(assets: &AssetCache, config: &RendererConfig) -> Arc<RendererShader> {
+    StandardShaderKey { material_shader: RectMaterialShaderKey.get(assets), lit: false, shadow_cascades: config.shadow_cascades }
+        .get(assets)
 }
 
 #[derive(Debug)]

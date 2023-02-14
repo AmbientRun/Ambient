@@ -3,16 +3,27 @@ use std::sync::Arc;
 use glam::{Vec3, Vec4};
 use kiwi_asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt};
 use kiwi_core::{
-    asset_cache, async_ecs::async_run, bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere}, main_scene, mesh, runtime, transform::{local_to_world, mesh_to_world}
+    asset_cache,
+    async_ecs::async_run,
+    bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere},
+    main_scene, mesh, runtime,
+    transform::{local_to_world, mesh_to_world},
 };
 use kiwi_ecs::{components, query, EntityData, MakeDefault, Networked, Store, SystemGroup};
 use kiwi_gpu::shader_module::{Shader, ShaderModule};
 use kiwi_meshes::CubeMeshKey;
 use kiwi_renderer::{
-    color, get_forward_module, gpu_primitives, material, pbr_material::{PbrMaterialFromUrl, PbrMaterialShaderKey}, primitives, renderer_shader, MaterialShader, RendererShader
+    color, get_forward_module, gpu_primitives, material,
+    pbr_material::{PbrMaterialFromUrl, PbrMaterialShaderKey},
+    primitives, renderer_shader, MaterialShader, RendererShader,
 };
 use kiwi_std::{
-    asset_url::{MaterialAssetType, TypedAssetUrl}, download_asset::JsonFromUrl, include_file, shapes::AABB, unwrap_log_err, unwrap_log_warn
+    asset_url::{MaterialAssetType, TypedAssetUrl},
+    cb,
+    download_asset::JsonFromUrl,
+    include_file,
+    shapes::AABB,
+    unwrap_log_err, unwrap_log_warn,
 };
 use kiwi_ui::Editable;
 
@@ -24,6 +35,7 @@ components!("decals", {
 pub struct DecalShaderKey {
     pub material_shader: Arc<MaterialShader>,
     pub lit: bool,
+    pub shadow_cascades: u32,
 }
 impl std::fmt::Debug for DecalShaderKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -37,7 +49,7 @@ impl SyncAssetKey<Arc<RendererShader>> for DecalShaderKey {
             &assets,
             id.clone(),
             [
-                &get_forward_module(&assets),
+                &get_forward_module(&assets, self.shadow_cascades),
                 &self.material_shader.shader,
                 &ShaderModule::new("DecalMaterial", include_file!("decal.wgsl"), vec![]),
             ]
@@ -81,7 +93,14 @@ pub fn client_systems() -> SystemGroup {
                             .set(material(), mat.into())
                             .set(
                                 renderer_shader(),
-                                DecalShaderKey { material_shader: PbrMaterialShaderKey.get(&assets), lit: true }.get(&assets),
+                                cb(move |assets, config| {
+                                    DecalShaderKey {
+                                        material_shader: PbrMaterialShaderKey.get(&assets),
+                                        lit: true,
+                                        shadow_cascades: config.shadow_cascades,
+                                    }
+                                    .get(&assets)
+                                }),
                             )
                             .set(mesh(), CubeMeshKey.get(&assets))
                             .set(primitives(), vec![])

@@ -6,26 +6,30 @@ use itertools::Itertools;
 use kiwi_core::{camera::Camera, gpu_ecs::ENTITIES_BIND_GROUP, main_scene, transform::*};
 use kiwi_ecs::{ArchetypeFilter, World};
 use kiwi_gpu::{
-    gpu::GpuKey, mesh_buffer::MeshBuffer, texture::{Texture, TextureView}
+    gpu::GpuKey,
+    mesh_buffer::MeshBuffer,
+    texture::{Texture, TextureView},
 };
 use kiwi_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use smallvec::SmallVec;
 use wgpu::DepthBiasState;
 
 use super::{
-    cast_shadows, get_active_sun, FSMain, RendererCollectState, RendererResources, RendererSettings, ShadowAndUIGlobals, TreeRenderer, TreeRendererConfig, GLOBALS_BIND_GROUP, MAX_SHADOW_CASCADES, RESOURCES_BIND_GROUP
+    cast_shadows, get_active_sun, FSMain, RendererCollectState, RendererResources, ShadowAndUIGlobals, TreeRenderer, TreeRendererConfig,
+    GLOBALS_BIND_GROUP, MAX_SHADOW_CASCADES, RESOURCES_BIND_GROUP,
 };
+use crate::RendererConfig;
 
 pub struct ShadowsRenderer {
     renderer: TreeRenderer,
     cascades: Vec<ShadowCascade>,
     pub shadow_texture: Arc<Texture>,
-    config: RendererSettings,
+    config: RendererConfig,
     pub shadow_view: TextureView,
 }
 
 impl ShadowsRenderer {
-    pub fn new(assets: AssetCache, renderer_resources: RendererResources, config: RendererSettings) -> Self {
+    pub fn new(assets: AssetCache, renderer_resources: RendererResources, config: RendererConfig) -> Self {
         let gpu = GpuKey.get(&assets);
 
         let shadow_texture = Arc::new(Texture::new(
@@ -52,6 +56,8 @@ impl ShadowsRenderer {
         Self {
             renderer: TreeRenderer::new(TreeRendererConfig {
                 gpu,
+                assets: assets.clone(),
+                renderer_config: config.clone(),
                 targets: vec![],
                 filter: ArchetypeFilter::new().incl(main_scene()).incl(cast_shadows()),
                 renderer_resources: renderer_resources.clone(),

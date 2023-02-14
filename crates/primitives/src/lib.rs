@@ -17,9 +17,11 @@ use kiwi_renderer::{
 };
 use kiwi_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
+    cb,
     mesh::Mesh,
     shapes::{Sphere, AABB},
 };
+use std::sync::Arc;
 
 components!("primitives", {
     @[
@@ -65,7 +67,7 @@ fn cube_data(assets: &AssetCache) -> EntityData {
         .set_default(local_to_world())
         .set_default(mesh_to_world())
         .set_default(translation())
-        .set(renderer_shader(), get_flat_shader(assets))
+        .set(renderer_shader(), cb(get_flat_shader))
         .set(material(), FlatMaterialKey::white().get(assets))
         .set(primitives(), vec![])
         .set_default(gpu_primitives())
@@ -83,7 +85,7 @@ fn quad_data(assets: &AssetCache) -> EntityData {
         .set_default(local_to_world())
         .set_default(mesh_to_world())
         .set_default(translation())
-        .set(renderer_shader(), get_flat_shader(assets))
+        .set(renderer_shader(), cb(get_flat_shader))
         .set(material(), FlatMaterialKey::white().get(assets))
         .set(primitives(), vec![])
         .set_default(gpu_primitives())
@@ -101,7 +103,7 @@ fn sphere_data(assets: &AssetCache, sphere: &UVSphereMesh) -> EntityData {
         .set_default(local_to_world())
         .set_default(mesh_to_world())
         .set_default(translation())
-        .set(renderer_shader(), get_flat_shader(assets))
+        .set(renderer_shader(), cb(get_flat_shader))
         .set(material(), FlatMaterialKey::white().get(assets))
         .set(primitives(), vec![])
         .set_default(gpu_primitives())

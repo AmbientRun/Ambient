@@ -2,15 +2,17 @@ use std::sync::Arc;
 
 use glam::Vec4;
 use kiwi_gpu::{
-    gpu::{Gpu, GpuKey}, shader_module::{BindGroupDesc, ShaderModule}
+    gpu::{Gpu, GpuKey},
+    shader_module::{BindGroupDesc, ShaderModule},
 };
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, friendly_id, include_file
+    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
+    friendly_id, include_file,
 };
 use wgpu::{util::DeviceExt, BindGroup};
 
 use super::super::{Material, MaterialShader, RendererShader, MATERIAL_BIND_GROUP};
-use crate::{SharedMaterial, StandardShaderKey};
+use crate::{RendererConfig, SharedMaterial, StandardShaderKey};
 
 #[derive(Debug)]
 pub struct FlatMaterialShaderKey;
@@ -44,20 +46,23 @@ impl SyncAssetKey<Arc<MaterialShader>> for FlatMaterialShaderKey {
 #[derive(Debug, Clone)]
 pub struct FlatShaderKey {
     pub lit: bool,
+    pub shadow_cascades: u32,
 }
 
 impl SyncAssetKey<Arc<RendererShader>> for FlatShaderKey {
     fn load(&self, assets: AssetCache) -> Arc<RendererShader> {
-        StandardShaderKey { material_shader: FlatMaterialShaderKey.get(&assets), lit: self.lit }.get(&assets)
+        StandardShaderKey { material_shader: FlatMaterialShaderKey.get(&assets), lit: self.lit, shadow_cascades: self.shadow_cascades }
+            .get(&assets)
     }
 }
 
-pub fn get_flat_shader(assets: &AssetCache) -> Arc<RendererShader> {
-    StandardShaderKey { material_shader: FlatMaterialShaderKey.get(assets), lit: true }.get(assets)
+pub fn get_flat_shader(assets: &AssetCache, config: &RendererConfig) -> Arc<RendererShader> {
+    StandardShaderKey { material_shader: FlatMaterialShaderKey.get(assets), lit: true, shadow_cascades: config.shadow_cascades }.get(assets)
 }
 
-pub fn get_flat_shader_unlit(assets: &AssetCache) -> Arc<RendererShader> {
-    StandardShaderKey { material_shader: FlatMaterialShaderKey.get(assets), lit: false }.get(assets)
+pub fn get_flat_shader_unlit(assets: &AssetCache, config: &RendererConfig) -> Arc<RendererShader> {
+    StandardShaderKey { material_shader: FlatMaterialShaderKey.get(assets), lit: false, shadow_cascades: config.shadow_cascades }
+        .get(assets)
 }
 
 #[derive(Debug)]

@@ -2,19 +2,26 @@ use std::{collections::HashMap, f32::INFINITY};
 
 use glam::{Mat4, UVec3, Vec2, Vec3, Vec3Swizzles, Vec4};
 use kiwi_core::{
-    asset_cache, bounding::world_bounding_sphere, camera::{shadow_cameras_from_world, Camera}, gpu_components, gpu_ecs::{GpuComponentFormat, GpuWorldUpdater}
+    asset_cache,
+    bounding::world_bounding_sphere,
+    camera::{shadow_cameras_from_world, Camera},
+    gpu_components,
+    gpu_ecs::{GpuComponentFormat, GpuWorldUpdater},
 };
 use kiwi_ecs::{ArchetypeFilter, Component, World};
 use kiwi_gpu::{
-    gpu::GpuKey, shader_module::{BindGroupDesc, ShaderModule, ShaderModuleIdentifier}, typed_buffer::TypedBuffer
+    gpu::GpuKey,
+    shader_module::{BindGroupDesc, ShaderModule, ShaderModuleIdentifier},
+    typed_buffer::TypedBuffer,
 };
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt}, include_file, shapes::Plane
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    include_file,
+    shapes::Plane,
 };
 use wgpu::{BindGroupLayoutEntry, BindingType, BufferBindingType, ShaderStages};
 
-use super::{RendererSettings, RendererSettingsKey};
-use crate::get_sun_light_direction;
+use crate::{get_sun_light_direction, RendererConfig};
 
 gpu_components! {
     world_bounding_sphere() => renderer_cameras_visible: GpuComponentFormat::U32Array20,
@@ -63,14 +70,13 @@ struct CullingParams {
 }
 
 pub struct Culling {
-    config: RendererSettings,
+    config: RendererConfig,
     updater: GpuWorldUpdater,
     params: TypedBuffer<CullingParams>,
-    scene: Component<()>,
 }
 
 impl Culling {
-    pub fn new(assets: &AssetCache, config: RendererSettings, scene: Component<()>) -> Self {
+    pub fn new(assets: &AssetCache, config: RendererConfig) -> Self {
         let module = ShaderModule::new(
             "CullingParams",
             include_file!("culling.wgsl"),
@@ -93,7 +99,7 @@ impl Culling {
             updater: GpuWorldUpdater::new(
                 assets.clone(),
                 "Culling".to_string(),
-                ArchetypeFilter::new().incl(world_bounding_sphere()).incl(scene),
+                ArchetypeFilter::new().incl(world_bounding_sphere()).incl(config.scene),
                 vec![module],
                 "update(entity_loc);",
             ),
@@ -104,7 +110,6 @@ impl Culling {
                 1,
                 wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::UNIFORM,
             ),
-            scene,
             config,
         }
     }
@@ -116,25 +121,22 @@ impl Culling {
         world: &World,
         binding_context: &HashMap<String, &'a wgpu::BindGroup>,
     ) {
-        let main_camera = if let Some(camera) = Camera::get_active(world, self.scene) {
+        let main_camera = if let Some(camera) = Camera::get_active(world, self.config.scene) {
             camera
         } else {
             // log::warn!("No valid camera");
             return;
         };
 
-        let mut params = CullingParams {
-            lod_cutoff_scaling: RendererSettingsKey.get(world.resource(asset_cache())).lod_cutoff_scaling,
-            main_camera: main_camera.into(),
-            ..Default::default()
-        };
+        let mut params =
+            CullingParams { lod_cutoff_scaling: self.config.lod_cutoff_scaling, main_camera: main_camera.into(), ..Default::default() };
         if self.config.shadow_cascades > 0 {
             let shadow_cameras = shadow_cameras_from_world(
                 world,
                 self.config.shadow_cascades,
                 self.config.shadow_map_resolution,
-                get_sun_light_direction(world, self.scene).unwrap_or(Vec3::ONE.normalize()),
-                self.scene,
+                get_sun_light_direction(world, self.config.scene).unwrap_or(Vec3::ONE.normalize()),
+                self.config.scene,
             );
             #[allow(clippy::needless_range_loop)]
             for i in 0..(self.config.shadow_cascades as usize) {

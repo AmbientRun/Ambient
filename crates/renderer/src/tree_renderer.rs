@@ -1,21 +1,29 @@
 use std::{
-    collections::{HashMap, HashSet}, sync::Arc
+    collections::{HashMap, HashSet},
+    sync::Arc,
 };
 
 use glam::{uvec2, UVec2};
 use itertools::Itertools;
 use kiwi_ecs::{query, ArchetypeFilter, EntityId, FramedEventsReader, QueryState, World};
 use kiwi_gpu::{
-    gpu::Gpu, multi_buffer::{MultiBufferSizeStrategy, SubBufferId, TypedMultiBuffer}, shader_module::{GraphicsPipeline, GraphicsPipelineInfo}
+    gpu::Gpu,
+    multi_buffer::{MultiBufferSizeStrategy, SubBufferId, TypedMultiBuffer},
+    shader_module::{GraphicsPipeline, GraphicsPipelineInfo},
 };
 use wgpu::DepthBiasState;
 
 use super::{
-    double_sided, lod::cpu_lod_visible, primitives, CollectPrimitive, DrawIndexedIndirect, FSMain, PrimitiveIndex, RendererCollectState, RendererResources, RendererShader, SharedMaterial, MATERIAL_BIND_GROUP, PRIMITIVES_BIND_GROUP
+    double_sided, lod::cpu_lod_visible, primitives, CollectPrimitive, DrawIndexedIndirect, FSMain, PrimitiveIndex, RendererCollectState,
+    RendererResources, RendererShader, SharedMaterial, MATERIAL_BIND_GROUP, PRIMITIVES_BIND_GROUP,
 };
+use crate::RendererConfig;
+use kiwi_std::asset_cache::AssetCache;
 
 pub struct TreeRendererConfig {
     pub gpu: Arc<Gpu>,
+    pub renderer_config: RendererConfig,
+    pub assets: AssetCache,
     pub filter: ArchetypeFilter,
     pub targets: Vec<Option<wgpu::ColorTargetState>>,
     pub renderer_resources: RendererResources,
@@ -86,7 +94,8 @@ impl TreeRenderer {
                 }
             }
             for (primitive_index, primitive) in primitives.iter().enumerate() {
-                if let Some(update) = self.insert(world, id, primitive_index, &primitive.shader, &primitive.material) {
+                let primitive_shader = (primitive.shader)(&self.config.assets, &self.config.renderer_config);
+                if let Some(update) = self.insert(world, id, primitive_index, &primitive_shader, &primitive.material) {
                     to_update.insert(update);
                 }
             }

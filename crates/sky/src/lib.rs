@@ -17,7 +17,7 @@ use kiwi_gpu::{
 };
 use kiwi_meshes::QuadMeshKey;
 use kiwi_renderer::{self, *};
-use kiwi_std::{asset_cache::*, friendly_id, include_file, line_hash};
+use kiwi_std::{asset_cache::*, cb, friendly_id, include_file, line_hash};
 use noise::OpenSimplex;
 use wgpu::{BindGroup, BufferUsages};
 
@@ -101,7 +101,7 @@ impl ElementComponent for Clouds {
         let material = CloudMaterial::new(assets.clone(), &clouds);
 
         Element::new()
-            .init(renderer_shader(), CloudShaderKey.get(&assets))
+            .init(renderer_shader(), cb(|assets, config| CloudShaderKey { shadow_cascades: config.shadow_cascades }.get(&assets)))
             .init(kiwi_renderer::material(), SharedMaterial::new(material))
             .init(cloud_state(), clouds)
             .init(overlay(), ())
@@ -128,7 +128,7 @@ pub struct CloudMaterial {
 impl CloudMaterial {
     pub fn new(assets: AssetCache, state: &CloudState) -> Self {
         let gpu = GpuKey.get(&assets);
-        let shader = CloudShaderKey.get(&assets);
+        let shader = CloudShaderKey { shadow_cascades: 1 }.get(&assets);
 
         let cloud_buffer = TypedBuffer::new(
             gpu.clone(),
@@ -165,7 +165,9 @@ pub fn get_scatter_module() -> ShaderModule {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct CloudShaderKey;
+pub struct CloudShaderKey {
+    shadow_cascades: u32,
+}
 
 impl SyncAssetKey<Arc<RendererShader>> for CloudShaderKey {
     fn load(&self, assets: AssetCache) -> Arc<RendererShader> {
@@ -190,7 +192,11 @@ impl SyncAssetKey<Arc<RendererShader>> for CloudShaderKey {
             shader: Shader::from_modules(
                 &assets,
                 id.clone(),
-                [&get_overlay_module(&assets), &get_scatter_module(), &ShaderModule::new("Clouds", shader, vec![layout.into()])],
+                [
+                    &get_overlay_module(&assets, self.shadow_cascades),
+                    &get_scatter_module(),
+                    &ShaderModule::new("Clouds", shader, vec![layout.into()]),
+                ],
             ),
             id,
             vs_main: "vs_main".to_string(),

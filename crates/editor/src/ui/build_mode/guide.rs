@@ -10,7 +10,7 @@ use kiwi_element::{Element, ElementComponent};
 use kiwi_meshes::QuadMeshKey;
 use kiwi_network::client::GameClient;
 use kiwi_renderer::{color, double_sided, gpu_primitives, material, primitives, renderer_shader, SharedMaterial, StandardShaderKey};
-use kiwi_std::{asset_cache::SyncAssetKeyExt, shapes::AABB};
+use kiwi_std::{asset_cache::SyncAssetKeyExt, cb, shapes::AABB};
 
 use super::grid_material::{GridMaterialKey, GridShaderKey};
 use crate::GRID_SIZE;
@@ -36,7 +36,13 @@ fn spawn_entity(world: &mut World, mat: SharedMaterial) -> EntityId {
         .set(color(), vec4(0.3, 0.3, 1., 1.0))
         .set(double_sided(), true)
         .set(material(), mat)
-        .set(renderer_shader(), StandardShaderKey { material_shader: GridShaderKey.get(assets), lit: false }.get(assets))
+        .set(
+            renderer_shader(),
+            cb(|assets, config| {
+                StandardShaderKey { material_shader: GridShaderKey.get(assets), lit: false, shadow_cascades: config.shadow_cascades }
+                    .get(assets)
+            }),
+        )
         .spawn(world)
 }
 

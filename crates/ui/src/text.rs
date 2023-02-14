@@ -4,7 +4,8 @@ use anyhow::Context;
 use async_trait::async_trait;
 use glam::*;
 use glyph_brush::{
-    ab_glyph::{Font, FontArc, PxScale, Rect}, BrushAction, BrushError, GlyphBrush, GlyphBrushBuilder, Section
+    ab_glyph::{Font, FontArc, PxScale, Rect},
+    BrushAction, BrushError, GlyphBrush, GlyphBrushBuilder, Section,
 };
 use kiwi_core::{asset_cache, async_ecs::async_run, gpu, mesh, name, runtime, transform::*, ui_scene, window_scale_factor};
 use kiwi_ecs::{components, query, query_mut, EntityData, SystemGroup, World};
@@ -12,13 +13,20 @@ use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
 use kiwi_gpu::{mesh_buffer::GpuMesh, texture::Texture};
 use kiwi_renderer::{color, gpu_primitives, material, primitives, renderer_shader, SharedMaterial};
 use kiwi_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, asset_url::AbsAssetUrl, download_asset::{AssetResult, BytesFromUrl}, mesh::*, shapes::AABB
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt},
+    asset_url::AbsAssetUrl,
+    cb,
+    download_asset::{AssetResult, BytesFromUrl},
+    mesh::*,
+    shapes::AABB,
 };
 use log::info;
 use parking_lot::Mutex;
 
 use crate::{
-    layout::*, text_material::{get_text_shader, TextMaterial}, UIBase, UIElement
+    layout::*,
+    text_material::{get_text_shader, TextMaterial},
+    UIBase, UIElement,
 };
 
 components!("ui", {
@@ -210,7 +218,7 @@ pub fn systems() -> SystemGroup {
                             id,
                             EntityData::new()
                                 .set(text_texture(), texture)
-                                .set(renderer_shader(), get_text_shader(&assets))
+                                .set(renderer_shader(), cb(get_text_shader))
                                 .set(material(), SharedMaterial::new(TextMaterial::new(assets.clone(), texture_view)))
                                 .set(primitives(), vec![])
                                 .set_default(gpu_primitives()),

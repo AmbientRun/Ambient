@@ -4,15 +4,20 @@ use derive_more::*;
 use downcast_rs::{impl_downcast, DowncastSync};
 use glam::{uvec4, UVec2, UVec4, Vec3, Vec4};
 use kiwi_core::{
-    gpu_components, gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldShaderModuleKey, GpuWorldSyncEvent}, mesh, transform::get_world_rotation
+    gpu_components,
+    gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldShaderModuleKey, GpuWorldSyncEvent},
+    mesh,
+    transform::get_world_rotation,
 };
 use kiwi_ecs::{
-    components, query_mut, Debuggable, Description, EntityId, MakeDefault, Name, Networked, Resource, Store, SystemGroup, World
+    components, query_mut, Debuggable, Description, EntityId, MakeDefault, Name, Networked, Resource, Store, SystemGroup, World,
 };
 use kiwi_gpu::{
-    mesh_buffer::{get_mesh_buffer_types, GpuMesh, MESH_BUFFER_TYPES_WGSL}, shader_module::{BindGroupDesc, Shader, ShaderModule, ShaderModuleIdentifier}, wgsl_utils::wgsl_interpolate
+    mesh_buffer::{get_mesh_buffer_types, GpuMesh, MESH_BUFFER_TYPES_WGSL},
+    shader_module::{BindGroupDesc, Shader, ShaderModule, ShaderModuleIdentifier},
+    wgsl_utils::wgsl_interpolate,
 };
-use kiwi_std::{asset_cache::*, include_file};
+use kiwi_std::{asset_cache::*, include_file, Cb};
 use serde::{Deserialize, Serialize};
 
 mod collect;
@@ -49,7 +54,7 @@ components!("rendering", {
     @[Debuggable]
     primitives: Vec<RenderPrimitive>,
     gpu_primitives: [GpuRenderPrimitive; MAX_PRIMITIVE_COUNT],
-    renderer_shader: Arc<RendererShader>,
+    renderer_shader: RendererShaderProducer,
     material: SharedMaterial,
     @[Resource]
     renderer_stats: String,
@@ -187,7 +192,7 @@ pub fn get_sun_light_direction(world: &World, scene: Component<()>) -> Option<Ve
 #[derive(Clone, Debug)]
 pub struct RenderPrimitive {
     pub material: SharedMaterial,
-    pub shader: Arc<RendererShader>,
+    pub shader: RendererShaderProducer,
     pub mesh: Arc<GpuMesh>,
     pub lod: usize,
 }
@@ -288,20 +293,19 @@ pub fn get_common_module(_: &AssetCache) -> ShaderModule {
 }
 
 /// Contains scene globals and shadow maps
-pub fn get_globals_module(assets: &AssetCache) -> ShaderModule {
-    let shadows = RendererSettingsKey.get(assets);
+pub fn get_globals_module(assets: &AssetCache, shadow_cascades: u32) -> ShaderModule {
     ShaderModule::new(
         "Globals",
         include_file!("globals.wgsl"),
-        vec![ShaderModuleIdentifier::constant("SHADOW_CASCADES", shadows.shadow_cascades), globals_layout().into()],
+        vec![ShaderModuleIdentifier::constant("SHADOW_CASCADES", shadow_cascades), globals_layout().into()],
     )
 }
 
-pub fn get_forward_module(assets: &AssetCache) -> ShaderModule {
+pub fn get_forward_module(assets: &AssetCache, shadow_cascades: u32) -> ShaderModule {
     [
         get_defs_module(assets),
         get_resources_module(),
-        get_globals_module(assets),
+        get_globals_module(assets, shadow_cascades),
         GpuWorldShaderModuleKey { read_only: true }.get(assets),
         get_common_module(assets),
         get_mesh_buffer_types(),
@@ -310,8 +314,8 @@ pub fn get_forward_module(assets: &AssetCache) -> ShaderModule {
     .collect()
 }
 
-pub fn get_overlay_module(assets: &AssetCache) -> ShaderModule {
-    [get_defs_module(assets), get_globals_module(assets)].iter().collect()
+pub fn get_overlay_module(assets: &AssetCache, shadow_cascades: u32) -> ShaderModule {
+    [get_defs_module(assets), get_globals_module(assets, shadow_cascades)].iter().collect()
 }
 
 pub struct MaterialShader {
@@ -393,6 +397,8 @@ impl std::fmt::Debug for RendererShader {
         f.debug_struct("RendererShader").field("id", &self.id).finish()
     }
 }
+
+pub type RendererShaderProducer = Cb<dyn Fn(&AssetCache, &RendererConfig) -> Arc<RendererShader> + Sync + Send>;
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]

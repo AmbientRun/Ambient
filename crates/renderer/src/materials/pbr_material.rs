@@ -3,16 +3,23 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use glam::Vec4;
 use kiwi_gpu::{
-    gpu::{Gpu, GpuKey}, shader_module::{BindGroupDesc, ShaderModule}, std_assets::{DefaultNormalMapViewKey, DefaultSamplerKey, PixelTextureViewKey}, texture::{Texture, TextureView}, texture_loaders::{SplitTextureFromUrl, TextureFromUrl}
+    gpu::{Gpu, GpuKey},
+    shader_module::{BindGroupDesc, ShaderModule},
+    std_assets::{DefaultNormalMapViewKey, DefaultSamplerKey, PixelTextureViewKey},
+    texture::{Texture, TextureView},
+    texture_loaders::{SplitTextureFromUrl, TextureFromUrl},
 };
 use kiwi_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetUrl}, download_asset::AssetError, friendly_id, include_file
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
+    asset_url::{AbsAssetUrl, AssetUrl},
+    download_asset::AssetError,
+    friendly_id, include_file,
 };
 use serde::{Deserialize, Serialize};
 use wgpu::{util::DeviceExt, BindGroup};
 
 use super::super::{Material, MaterialShader, RendererShader, MATERIAL_BIND_GROUP};
-use crate::StandardShaderKey;
+use crate::{RendererConfig, StandardShaderKey};
 
 #[derive(Debug)]
 pub struct PbrMaterialShaderKey;
@@ -80,12 +87,12 @@ impl SyncAssetKey<Arc<MaterialShader>> for PbrMaterialShaderKey {
     }
 }
 
-pub fn get_pbr_shader(assets: &AssetCache) -> Arc<RendererShader> {
-    StandardShaderKey { material_shader: PbrMaterialShaderKey.get(assets), lit: true }.get(assets)
+pub fn get_pbr_shader(assets: &AssetCache, config: &RendererConfig) -> Arc<RendererShader> {
+    StandardShaderKey { material_shader: PbrMaterialShaderKey.get(assets), lit: true, shadow_cascades: config.shadow_cascades }.get(assets)
 }
 
-pub fn get_pbr_shader_unlit(assets: &AssetCache) -> Arc<RendererShader> {
-    StandardShaderKey { material_shader: PbrMaterialShaderKey.get(assets), lit: false }.get(assets)
+pub fn get_pbr_shader_unlit(assets: &AssetCache, config: &RendererConfig) -> Arc<RendererShader> {
+    StandardShaderKey { material_shader: PbrMaterialShaderKey.get(assets), lit: false, shadow_cascades: config.shadow_cascades }.get(assets)
 }
 
 #[repr(C)]

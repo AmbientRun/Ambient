@@ -3,14 +3,21 @@ use std::sync::Arc;
 use glam::{vec2, Mat4, Vec2, Vec3, Vec3Swizzles};
 use kiwi_app::{gpu_world_sync_systems, world_instance_resources, world_instance_systems, AppResources};
 use kiwi_core::{
-    camera::{get_active_camera, projection_view}, gpu_ecs::GpuWorldSyncEvent, main_scene, transform::local_to_world, window_physical_size
+    camera::{get_active_camera, projection_view},
+    gpu_ecs::GpuWorldSyncEvent,
+    main_scene,
+    transform::local_to_world,
+    window_physical_size,
 };
 use kiwi_ecs::{components, query, EntityData, FrameEvent, System, SystemGroup, World};
 use kiwi_gizmos::render::GizmoRenderer;
 use kiwi_gpu::gpu::GpuKey;
 use kiwi_renderer::{RenderTarget, Renderer, RendererConfig, RendererTarget};
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt}, color::Color, math::interpolate, shapes::Ray
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    color::Color,
+    math::interpolate,
+    shapes::Ray,
 };
 
 use crate::{player, user_id};
@@ -53,16 +60,9 @@ impl ClientGameState {
             .append(client_resources);
         game_world.add_components(game_world.resource_entity(), local_resources).unwrap();
         let systems = SystemGroup::new("game", vec![Box::new(client_systems), Box::new(world_instance_systems(true))]);
-        let renderer = Renderer::new(
-            world,
-            assets.clone(),
-            RendererConfig {
-                scene: main_scene(),
-                shadows: true,
-                post_transparent: Some(Box::new(GizmoRenderer::new(&assets))),
-                ..Default::default()
-            },
-        );
+        let mut renderer =
+            Renderer::new(world, assets.clone(), RendererConfig { scene: main_scene(), shadows: true, ..Default::default() });
+        renderer.post_transparent = Some(Box::new(GizmoRenderer::new(&assets)));
 
         Self {
             world: game_world,

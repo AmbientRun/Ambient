@@ -2,19 +2,30 @@ use std::sync::Arc;
 
 use glam::uvec2;
 use kiwi_core::{
-    asset_cache, camera::*, gpu, gpu_ecs::{gpu_world, ENTITIES_BIND_GROUP}, ui_scene
+    asset_cache,
+    camera::*,
+    gpu,
+    gpu_ecs::{gpu_world, ENTITIES_BIND_GROUP},
+    ui_scene,
 };
 use kiwi_ecs::{ArchetypeFilter, Component, World};
 use kiwi_gpu::{
-    gpu::{Gpu, GpuKey}, mesh_buffer::MeshBuffer, shader_module::BindGroupDesc
+    gpu::{Gpu, GpuKey},
+    mesh_buffer::MeshBuffer,
+    shader_module::BindGroupDesc,
 };
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, color::Color
+    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
+    color::Color,
 };
 use wgpu::{BindGroupLayout, TextureView};
 
 use super::{
-    get_common_module, get_globals_module, get_resources_module, overlay_renderer::{OverlayConfig, OverlayRenderer}, shadow_renderer::ShadowsRenderer, Culling, FSMain, ForwardGlobals, Outlines, OutlinesConfig, RenderTarget, RendererCollect, RendererCollectState, TransparentRenderer, TransparentRendererConfig, TreeRenderer, TreeRendererConfig
+    get_common_module, get_globals_module, get_resources_module,
+    overlay_renderer::{OverlayConfig, OverlayRenderer},
+    shadow_renderer::ShadowsRenderer,
+    Culling, FSMain, ForwardGlobals, Outlines, OutlinesConfig, RenderTarget, RendererCollect, RendererCollectState, TransparentRenderer,
+    TransparentRendererConfig, TreeRenderer, TreeRendererConfig,
 };
 use crate::{skinning::SkinsBufferKey, ShaderDebugParams};
 pub const GLOBALS_BIND_GROUP: &str = "GLOBALS_BIND_GROUP";
@@ -41,12 +52,14 @@ pub struct RendererResources {
 }
 
 #[derive(Debug)]
-struct RendererResourcesKey;
+struct RendererResourcesKey {
+    pub shadow_cascades: u32,
+}
 impl SyncAssetKey<RendererResources> for RendererResourcesKey {
     fn load(&self, assets: AssetCache) -> RendererResources {
         let primitives = get_common_module(&assets).get_layout(PRIMITIVES_BIND_GROUP).unwrap().get(&assets);
         let resources_layout = get_resources_module().get_layout(RESOURCES_BIND_GROUP).unwrap().get(&assets);
-        let globals_layout = get_globals_module(&assets).get_layout(GLOBALS_BIND_GROUP).unwrap().get(&assets);
+        let globals_layout = get_globals_module(&assets, self.shadow_cascades).get_layout(GLOBALS_BIND_GROUP).unwrap().get(&assets);
 
         RendererResources {
             collect: Arc::new(RendererCollect::new(&assets)),
@@ -57,40 +70,19 @@ impl SyncAssetKey<RendererResources> for RendererResourcesKey {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct RendererSettingsKey;
-impl SyncAssetKey<RendererSettings> for RendererSettingsKey {
-    fn load(&self, _assets: AssetCache) -> RendererSettings {
-        RendererSettings::default()
-    }
-}
-
 #[derive(Debug, Clone)]
-pub struct RendererSettings {
-    pub shadows_enabled: bool,
+pub struct RendererConfig {
+    pub scene: Component<()>,
+    /// Shadows will be configured by ShadowConfig
+    pub shadows: bool,
     pub shadow_map_resolution: u32,
     pub shadow_cascades: u32,
     pub lod_cutoff_scaling: f32,
 }
 
-impl Default for RendererSettings {
-    fn default() -> Self {
-        Self { shadows_enabled: true, shadow_map_resolution: 256, shadow_cascades: 3, lod_cutoff_scaling: 1. }
-    }
-}
-
-#[derive(Debug)]
-pub struct RendererConfig {
-    pub scene: Component<()>,
-    /// Shadows will be configured by ShadowConfig
-    pub shadows: bool,
-    pub post_forward: Option<Box<dyn SubRenderer>>,
-    pub post_transparent: Option<Box<dyn SubRenderer>>,
-}
-
 impl Default for RendererConfig {
     fn default() -> Self {
-        Self { scene: ui_scene(), shadows: Default::default(), post_forward: Default::default(), post_transparent: Default::default() }
+        Self { scene: ui_scene(), shadows: true, shadow_map_resolution: 256, shadow_cascades: 3, lod_cutoff_scaling: 1. }
     }
 }
 
@@ -150,30 +142,32 @@ pub struct Renderer {
     transparent: TransparentRenderer,
     solids_frame: RenderTarget,
     outlines: Outlines,
+    pub post_forward: Option<Box<dyn SubRenderer>>,
+    pub post_transparent: Option<Box<dyn SubRenderer>>,
 }
 impl Renderer {
     pub fn new(_: &mut World, assets: AssetCache, config: RendererConfig) -> Self {
         let gpu = GpuKey.get(&assets);
 
-        let renderer_resources = RendererResourcesKey.get(&assets);
-        let renderer_settings = RendererSettingsKey.get(&assets);
+        let renderer_resources = RendererResourcesKey { shadow_cascades: config.shadow_cascades }.get(&assets);
 
         // Need atleast one for array<Camera, SIZE> to be valid
-        let shadow_cascades = renderer_settings.shadow_cascades;
+        let shadow_cascades = config.shadow_cascades;
 
-        let shadows = if config.shadows && renderer_settings.shadows_enabled {
-            Some(ShadowsRenderer::new(assets.clone(), renderer_resources.clone(), renderer_settings.clone()))
+        let shadows = if config.shadows && config.shadows {
+            Some(ShadowsRenderer::new(assets.clone(), renderer_resources.clone(), config.clone()))
         } else {
             None
         };
 
         Self {
-            culling: Culling::new(&assets, renderer_settings, config.scene),
+            culling: Culling::new(&assets, config.clone()),
             forward_globals: ForwardGlobals::new(gpu.clone(), renderer_resources.globals_layout.clone(), shadow_cascades, config.scene),
             forward_collect_state: RendererCollectState::new(&assets),
             shadows,
             overlays: OverlayRenderer::new(
                 assets.clone(),
+                config.clone(),
                 OverlayConfig {
                     fs_main: FSMain::Forward,
                     gpu: gpu.clone(),
@@ -183,6 +177,8 @@ impl Renderer {
             ),
             forward: TreeRenderer::new(TreeRendererConfig {
                 gpu: gpu.clone(),
+                assets: assets.clone(),
+                renderer_config: config.clone(),
                 targets: vec![Some(gpu.swapchain_format().into()), Some(wgpu::TextureFormat::Rgba8Snorm.into())],
                 filter: ArchetypeFilter::new().incl(config.scene),
                 renderer_resources: renderer_resources.clone(),
@@ -194,6 +190,8 @@ impl Renderer {
             }),
             transparent: TransparentRenderer::new(TransparentRendererConfig {
                 gpu: gpu.clone(),
+                assets: assets.clone(),
+                renderer_config: config.clone(),
                 targets: vec![Some(wgpu::ColorTargetState {
                     format: gpu.swapchain_format(),
                     blend: Some(wgpu::BlendState::ALPHA_BLENDING),
@@ -209,11 +207,17 @@ impl Renderer {
                 uvec2(1, 1),
                 Some(wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST),
             ),
-            outlines: Outlines::new(&assets, OutlinesConfig { scene: config.scene, renderer_resources: renderer_resources.clone() }),
+            outlines: Outlines::new(
+                &assets,
+                OutlinesConfig { scene: config.scene, renderer_resources: renderer_resources.clone() },
+                config.clone(),
+            ),
             resources_layout: renderer_resources.resources_layout,
             config,
             shader_debug_params: Default::default(),
             gpu,
+            post_forward: Default::default(),
+            post_transparent: Default::default(),
         }
     }
 
@@ -318,7 +322,7 @@ impl Renderer {
             }
         }
 
-        if let Some(post_forward) = &mut self.config.post_forward {
+        if let Some(post_forward) = &mut self.post_forward {
             post_forward.render(
                 world,
                 &mesh_buffer,
@@ -377,7 +381,7 @@ impl Renderer {
             }
         }
 
-        if let Some(post_transparent) = &mut self.config.post_transparent {
+        if let Some(post_transparent) = &mut self.post_transparent {
             post_transparent.render(
                 world,
                 &mesh_buffer,

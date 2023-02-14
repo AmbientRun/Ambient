@@ -71,7 +71,14 @@ impl ElementComponent for TerrainRaycastPicker {
                 .set(scale(), Vec3::ONE)
                 .set(
                     renderer_shader(),
-                    DecalShaderKey { material_shader: BrushCursorShaderMaterialKey.get(assets), lit: false }.get(assets),
+                    cb(|assets, config| {
+                        DecalShaderKey {
+                            material_shader: BrushCursorShaderMaterialKey.get(assets),
+                            lit: false,
+                            shadow_cascades: config.shadow_cascades,
+                        }
+                        .get(assets)
+                    }),
                 )
                 .set(material(), SharedMaterial::new(BrushCursorMaterial::new(assets)))
                 .spawn_static(&mut game_state.lock().world);
