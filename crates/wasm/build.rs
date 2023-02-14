@@ -57,7 +57,14 @@ fn main() {
                 file.absolute_path
                     .clone()
                     .iter()
-                    .skip_while(|segment| target_path_it.next() == Some(segment))
+                    .skip_while(|segment| {
+                        // do a case-insensitive compare to avoid issues on Windows with rust-analyzer
+                        // where the disk letter may be different case
+                        target_path_it
+                            .next()
+                            .map(|s| s.eq_ignore_ascii_case(segment))
+                            .unwrap_or(false)
+                    })
                     .map(|segment| segment.to_string_lossy())
                     .collect::<Vec<_>>()
                     .join("/")
