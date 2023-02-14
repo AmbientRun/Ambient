@@ -391,6 +391,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "sun"
+version = "0.0.1"
+dependencies = [
+ "kiwi_api",
+]
+
+[[package]]
 name = "syn"
 version = "1.0.107"
 source = "registry+https://github.com/rust-lang/crates.io-index"

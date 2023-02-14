@@ -2615,6 +2615,7 @@ dependencies = [
  "glam 0.22.0",
  "kiwi_core",
  "kiwi_ecs",
+ "kiwi_ecs_editor",
  "kiwi_element",
  "kiwi_element_component",
  "kiwi_gizmos",

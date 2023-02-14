@@ -9,12 +9,13 @@ use kiwi_core::{
     main_scene, runtime,
 };
 use kiwi_ecs::{query, World};
+use kiwi_ecs_editor::ECSEditor;
 use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
 use kiwi_gizmos::{gizmos, GizmoPrimitive};
 use kiwi_network::client::{GameClient, GameRpcArgs};
 use kiwi_renderer::{RenderTarget, Renderer};
 use kiwi_rpc::RpcRegistry;
-use kiwi_std::{asset_cache::SyncAssetKeyExt, color::Color, download_asset::AssetsCacheDir, line_hash, Cb};
+use kiwi_std::{asset_cache::SyncAssetKeyExt, cb, color::Color, download_asset::AssetsCacheDir, line_hash, Cb};
 use kiwi_ui::{
     fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit, FlowColumn, FlowRow, Image, UIExt,
     VirtualKeyCode,
@@ -38,9 +39,20 @@ pub fn register_rpcs(reg: &mut RpcRegistry<GameRpcArgs>) {
 #[element_component]
 pub fn Debugger(_world: &mut World, hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
     let (show_shadows, set_show_shadows) = hooks.use_state(false);
+    let (show_ecs, set_show_ecs) = hooks.use_state(false);
     let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
     FlowColumn::el([
         FlowRow(vec![
+            Button::new("Show entities", {
+                move |_| {
+                    set_show_ecs(!show_ecs);
+                }
+            })
+            .toggled(show_ecs)
+            .hotkey_modifier(ModifiersState::SHIFT)
+            .hotkey(VirtualKeyCode::F1)
+            .style(ButtonStyle::Flat)
+            .el(),
             Button::new("Dump Client World", {
                 let get_state = get_state.clone();
                 move |_world| {
@@ -137,6 +149,13 @@ pub fn Debugger(_world: &mut World, hooks: &mut Hooks, get_state: GetDebuggerSta
         .el()
         .set(space_between_items(), 5.),
         if show_shadows { ShadowMapsViz { get_state: get_state.clone() }.el() } else { Element::new() },
+        if show_ecs {
+            ECSEditor { get_world: cb(move |res| get_state(&mut move |_, _, world| res(world))), on_change: cb(|_, _| {}) }
+                .el()
+                .set(height(), 200.)
+        } else {
+            Element::new()
+        },
     ])
     .with_background(Color::rgba(0., 0., 0., 1.))
     .set(fit_horizontal(), Fit::Parent)
