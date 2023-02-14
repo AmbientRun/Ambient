@@ -1,6 +1,7 @@
 use std::{cell::RefCell, future::Future, rc::Rc, task::Poll};
 
 use crate::{
+    components, entity,
     global::EventResult,
     internal::{component::Components, executor::EXECUTOR, host},
 };
@@ -13,7 +14,7 @@ pub fn time() -> f32 {
 
 /// The length of the previous frame, in seconds.
 pub fn frametime() -> f32 {
-    EXECUTOR.frame_state().frametime()
+    entity::get_component(entity::resources(), components::core::app::dtime()).unwrap()
 }
 
 /// `on` calls `callback` every time `event` occurs.

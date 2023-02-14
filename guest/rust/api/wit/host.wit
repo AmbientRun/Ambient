@@ -126,7 +126,6 @@ variant component-type {
 component-get-index: func(id: string) -> option<u32>
 type components = list<tuple<u32, component-type>>
 
-
 enum virtual-key-code {
     /// The '1' key over the letters.
     key1,
@@ -356,6 +355,7 @@ entity-remove-components: func(entity: entity-id, indices: list<u32>)
 
 entity-exists: func(entity: entity-id) -> bool
 entity-query: func(index: u32) -> list<entity-id>
+entity-resources: func() -> entity-id
 
 record query {
     components: list<u32>,

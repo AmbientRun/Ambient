@@ -92,6 +92,10 @@ pub fn query2(
         .as_ffi())
 }
 
+pub fn resources(world: &World) -> EntityId {
+    world.resource_entity()
+}
+
 pub fn in_area(world: &mut World, centre: Vec3, radius: f32) -> anyhow::Result<Vec<EntityId>> {
     Ok(ecs_query((translation(),))
         .iter(world, None)

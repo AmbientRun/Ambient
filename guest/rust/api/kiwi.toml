@@ -52,6 +52,14 @@ description = "Rendering-related state, including global rendering parameters an
 name = "Transform"
 description = "Entity transform state (including translation, rotation and scale), as well as other transformations for this entity."
 
+[components."core::app::dtime"]
+type = "F32"
+name = "Delta Time"
+description = """
+How long the previous tick took in seconds.
+Also known as frametime."""
+attributes = ["Debuggable", "Resource"]
+
 [components."core::app::main_scene"]
 type = "Empty"
 name = "Main scene"
@@ -222,8 +230,8 @@ attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::model::model_from_url"]
 type = "String"
-name = "Model from url"
-description = "Load a model from the given url or relative path"
+name = "Model from URL"
+description = "Load a model from the given URL or relative path."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::model::model_loaded"]
@@ -261,7 +269,9 @@ attributes = ["Debuggable", "Networked", "Store"]
 [components."core::physics::angular_velocity"]
 type = "Vec3"
 name = "Angular velocity"
-description = "Angular velocity of this object in the physics scene"
+description = """
+Angular velocity of this entity in the physics scene.
+Updating this component will update the entity's angular velocity in the physics scene."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::physics::box_collider"]
@@ -319,7 +329,9 @@ attributes = ["Debuggable", "Networked", "Store"]
 [components."core::physics::linear_velocity"]
 type = "Vec3"
 name = "Linear velocity"
-description = "Linear velocity of this object in the physics scene"
+description = """
+Linear velocity of this entity in the physics scene.
+Updating this component will update the entity's linear velocity in the physics scene."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::physics::make_physics_static"]

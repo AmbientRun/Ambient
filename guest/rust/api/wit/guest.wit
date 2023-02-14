@@ -1,7 +1,6 @@
 /* This file was copied from "crates/wasm/wit/guest.wit". Do not edit it directly. */
 record run-context {
     time: float32,
-    frametime: float32,
 }
 
 init: func()

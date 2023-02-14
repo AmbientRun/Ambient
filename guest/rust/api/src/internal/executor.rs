@@ -145,19 +145,14 @@ impl Executor {
 #[derive(Default)]
 pub struct FrameState {
     time: f32,
-    frametime: f32,
 }
 impl FrameState {
-    pub fn new(time: f32, frametime: f32) -> Self {
-        Self { time, frametime }
+    pub fn new(time: f32) -> Self {
+        Self { time }
     }
 
     pub fn time(&self) -> f32 {
         self.time
-    }
-
-    pub fn frametime(&self) -> f32 {
-        self.frametime
     }
 }
 

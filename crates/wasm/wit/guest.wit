@@ -1,6 +1,5 @@
 record run-context {
     time: float32,
-    frametime: float32,
 }
 
 init: func()

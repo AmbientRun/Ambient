@@ -29,10 +29,6 @@ impl guest::Guest for Guest {
                 .collect(),
         );
 
-        EXECUTOR.execute(
-            FrameState::new(ctx.time, ctx.frametime),
-            event_name.as_str(),
-            &components,
-        );
+        EXECUTOR.execute(FrameState::new(ctx.time), event_name.as_str(), &components);
     }
 }

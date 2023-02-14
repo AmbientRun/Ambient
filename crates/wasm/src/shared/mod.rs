@@ -49,18 +49,15 @@ pub struct RunContext {
     pub event_name: String,
     pub event_data: EntityData,
     pub time: f32,
-    pub frametime: f32,
 }
 impl RunContext {
     pub fn new(world: &World, event_name: &str, event_data: EntityData) -> Self {
         let time = kiwi_app::get_time_since_app_start(world).as_secs_f32();
-        let frametime = *world.resource(kiwi_core::dtime());
 
         Self {
             event_name: event_name.to_string(),
             event_data,
             time,
-            frametime,
         }
     }
 }

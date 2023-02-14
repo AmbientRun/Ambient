@@ -234,6 +234,10 @@ impl host::Host for Bindings {
         result
     }
 
+    fn entity_resources(&mut self) -> host::EntityId {
+        eshi::entity::resources(&self.world()).into_bindgen()
+    }
+
     fn entity_in_area(&mut self, position: host::Vec3, radius: f32) -> Vec<host::EntityId> {
         eshi::entity::in_area(&mut self.world_mut(), position.from_bindgen(), radius)
             .unwrap()

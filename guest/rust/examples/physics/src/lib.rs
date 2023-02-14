@@ -39,6 +39,4 @@ pub async fn main() -> EventResult {
         entity::set_component(cube, translation(), vec3(0., 0., 5.));
         entity::set_component(cube, rotation(), Quat::IDENTITY);
     }
-
-    EventOk
 }

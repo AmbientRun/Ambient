@@ -1,6 +1,6 @@
 use crate::{
     components, event,
-    global::{until_this, EntityId, Mat4, ObjectRef, Quat, Vec3},
+    global::{until_this, EntityId, Quat, Vec3},
     internal::{
         component::{
             traits::AsParam, Component, Components, SupportedComponentTypeGet,
@@ -176,4 +176,11 @@ pub fn game_object_base() -> Components {
         .with(components::core::transform::translation(), Vec3::ZERO)
         .with(components::core::transform::rotation(), Quat::IDENTITY)
         .with(components::core::transform::scale(), Vec3::ONE)
+}
+
+/// Gets the resource entity which contains global state in its components.
+///
+/// Components with the `Resource` attribute can be found here.
+pub fn resources() -> EntityId {
+    host::entity_resources().from_bindgen()
 }

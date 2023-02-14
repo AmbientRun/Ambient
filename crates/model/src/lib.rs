@@ -50,7 +50,7 @@ components!("model", {
     animation_bind_id: String,
 
     model: Arc<Model>,
-    @[Debuggable, Networked, Store, Name["Model from url"], Description["Load a model from the given url or relative path"]]
+    @[Debuggable, Networked, Store, Name["Model from URL"], Description["Load a model from the given URL or relative path."]]
     model_from_url: String,
 
     @[Networked, Store]
