@@ -7,7 +7,7 @@ use kiwi_core::on_window_event;
 use kiwi_ecs::{EntityId, World};
 use kiwi_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_input::{on_app_keyboard_input, KeyboardEvent};
-use kiwi_std::{cb, cb_arc, color::Color, Cb};
+use kiwi_std::{cb, color::Color, Cb};
 use winit::event::{ElementState, VirtualKeyCode, WindowEvent};
 
 use super::{Button, ButtonStyle, Dropdown, Editor, EditorOpts, FlowColumn, FlowRow, Focus, UIBase, UIExt};
@@ -154,19 +154,19 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                     .map(|(i, item)| {
                         MinimalListEditorItem {
                             value: item.clone(),
-                            on_change: on_change.clone().map(|on_change| {
-                                cb_arc(Arc::new(closure!(clone value, clone on_change, |item| {
+                            on_change: on_change.clone().map(|on_change| -> Cb<dyn Fn(T) + Sync + Send> {
+                                cb(closure!(clone value, clone on_change, |item| {
                                     let mut value = value.clone();
                                     value[i] = item;
                                     on_change.0(value);
-                                })) as Arc<dyn Fn(T) + Sync + Send>)
+                                }))
                             }),
-                            on_delete: on_change.clone().map(|on_change| {
-                                cb_arc(Arc::new(closure!(clone value, clone on_change, || {
+                            on_delete: on_change.clone().map(|on_change| -> Cb<dyn Fn() + Sync + Send> {
+                                cb(closure!(clone value, clone on_change, || {
                                     let mut value = value.clone();
                                     value.remove(i);
                                     on_change.0(value);
-                                })) as Arc<dyn Fn() + Sync + Send>)
+                                }))
                             }),
                             item_opts: item_opts.clone(),
                             item_editor: item_editor.clone(),
@@ -317,24 +317,24 @@ impl<
                         FlowRow(vec![
                             K::edit_or_view(
                                 key.clone(),
-                                on_change.clone().map(|on_change| {
-                                    cb_arc(Arc::new(closure!(clone key, clone on_change, clone value, |new_key| {
+                                on_change.clone().map(|on_change| -> Cb<dyn Fn(K) + Sync + Send> {
+                                    cb(closure!(clone key, clone on_change, clone value, |new_key| {
                                         let mut value = value.clone();
                                         let item = value.remove(&key).unwrap();
                                         value.insert(new_key, item);
                                         on_change.0(value);
-                                    })) as Arc<dyn Fn(K) + Sync + Send>)
+                                    }))
                                 }),
                                 Default::default(),
                             ),
                             V::edit_or_view(
                                 item,
-                                on_change.clone().map(|on_change| {
-                                    cb_arc(Arc::new(closure!(clone value, clone on_change, |item| {
+                                on_change.clone().map(|on_change| -> Cb<dyn Fn(V) + Sync + Send> {
+                                    cb(closure!(clone value, clone on_change, |item| {
                                         let mut value = value.clone();
                                         value.insert(key.clone(), item);
                                         on_change.0(value);
-                                    })) as Arc<dyn Fn(V) + Sync + Send>)
+                                    }))
                                 }),
                                 Default::default(),
                             ),

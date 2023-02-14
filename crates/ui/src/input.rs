@@ -15,7 +15,7 @@ use kiwi_ecs::{ComponentValue, EntityId, World};
 use kiwi_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_input::MouseButton;
 use kiwi_std::{
-    cb, cb_arc,
+    cb,
     events::EventDispatcher,
     math::{interpolate, interpolate_clamped, Saturate},
     Cb,
@@ -251,13 +251,11 @@ impl ElementComponent for Slider {
         });
 
         // Sets the value with some sanitization
-        let on_change_raw = self
-            .on_change
-            .map(|f| cb_arc(Arc::new(move |value: f32| f(cleanup_value(value, min, max, round))) as Arc<dyn Fn(f32) + Sync + Send>));
+        let on_change_raw =
+            self.on_change.map(|f| -> Cb<dyn Fn(f32) + Sync + Send> { cb(move |value: f32| f(cleanup_value(value, min, max, round))) });
         // Sets the value after converting from [0-1] to the value range
-        let on_change_factor = on_change_raw.clone().map(|f| {
-            cb_arc(Arc::new(move |p: f32| f(if logarithmic { p.powf(E) } else { p } * (max - min) + min)) as Arc<dyn Fn(f32) + Sync + Send>)
-        });
+        let on_change_factor =
+            on_change_raw.clone().map(|f| cb(move |p: f32| f(if logarithmic { p.powf(E) } else { p } * (max - min) + min)));
 
         let rectangle = Rectangle
             .el()
@@ -351,8 +349,7 @@ impl ElementComponent for IntegerSlider {
         let Self { value, on_change, min, max, width, logarithmic, suffix } = *self;
         Slider {
             value: value as f32,
-            on_change: on_change
-                .map(|on_change| cb_arc(Arc::new(move |value: f32| on_change.0(value as i32)) as Arc<dyn Fn(f32) + Sync + Send>)),
+            on_change: on_change.map(|on_change| -> Cb<dyn Fn(f32) + Sync + Send> { cb(move |value: f32| on_change(value as i32)) }),
             min: min as f32,
             max: max as f32,
             width,

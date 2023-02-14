@@ -53,22 +53,26 @@ fn test_struct() {
 
                 EditorRow::el(
                     "my_f32_field",
-                    <f32 as kiwi_ui::Editor>::edit_or_view(my_f32_field.clone(), on_change.clone().map(|on_change| kiwi_ui::cb_arc(::std::sync::Arc::new({
-                        let my_option = my_option.clone();
-                        move |v| {
-                            on_change.0(Test { my_f32_field: v, my_option: my_option.clone() });
-                        }
-                    }) as ::std::sync::Arc<dyn Fn(f32) + ::std::marker::Sync + ::std::marker::Send>)), Default::default())
+                    <f32 as kiwi_ui::Editor>::edit_or_view(my_f32_field.clone(), on_change.clone().map(|on_change| -> kiwi_ui::Cb<dyn Fn(f32) + ::std::marker::Sync + ::std::marker::Send> {
+                        kiwi_ui::cb({
+                            let my_option = my_option.clone();
+                            move |v| {
+                                on_change.0(Test { my_f32_field: v, my_option: my_option.clone() });
+                            }
+                        })
+                    }), Default::default())
                 ),
 
                 EditorRow::el(
                     "my_option",
-                    <Option::<bool> as kiwi_ui::Editor>::edit_or_view(my_option.clone(), on_change.clone().map(|on_change| kiwi_ui::cb_arc(::std::sync::Arc::new({
-                        let my_f32_field = my_f32_field.clone();
-                        move |v| {
-                            on_change.0(Test { my_f32_field: my_f32_field.clone(), my_option: v });
-                        }
-                    }) as ::std::sync::Arc<dyn Fn(Option<bool>) + ::std::marker::Sync + ::std::marker::Send>)), Default::default())
+                    <Option::<bool> as kiwi_ui::Editor>::edit_or_view(my_option.clone(), on_change.clone().map(|on_change| -> kiwi_ui::Cb<dyn Fn(Option<bool>) + ::std::marker::Sync + ::std::marker::Send> {
+                        kiwi_ui::cb({
+                            let my_f32_field = my_f32_field.clone();
+                            move |v| {
+                                on_change.0(Test { my_f32_field: my_f32_field.clone(), my_option: v });
+                            }
+                        })
+                    }), Default::default())
                 ),
 
             ]).el()
@@ -126,11 +130,13 @@ fn test_enum() {
 
                     EditorRow::el(
                         "testy",
-                        <f32 as kiwi_ui::Editor>::edit_or_view(testy.clone(), on_change.clone().map(|on_change| kiwi_ui::cb_arc(::std::sync::Arc::new({
-                            move |v| {
-                                on_change.0(Test::Second { testy: v });
+                        <f32 as kiwi_ui::Editor>::edit_or_view(testy.clone(), on_change.clone().map(|on_change| -> kiwi_ui::Cb<dyn Fn(f32) + ::std::marker::Sync + ::std::marker::Send> {
+                            kiwi_ui::cb({
+                                move |v| {
+                                    on_change.0(Test::Second { testy: v });
+                                }
                             }
-                        }) as ::std::sync::Arc<dyn Fn(f32) + ::std::marker::Sync + ::std::marker::Send>)), Default::default())
+                        )}), Default::default())
                     ),
 
                 ]).el(),
@@ -139,11 +145,13 @@ fn test_enum() {
 
                     EditorRow::el(
                         "",
-                        <f32 as kiwi_ui::Editor>::edit_or_view(field_0.clone(), on_change.clone().map(|on_change| kiwi_ui::cb_arc(::std::sync::Arc::new({
-                            move |v| {
-                                on_change.0(Test::Third(v));
-                            }
-                        }) as ::std::sync::Arc<dyn Fn(f32) + ::std::marker::Sync + ::std::marker::Send>)), Default::default())
+                        <f32 as kiwi_ui::Editor>::edit_or_view(field_0.clone(), on_change.clone().map(|on_change| -> kiwi_ui::Cb<dyn Fn(f32) + ::std::marker::Sync + ::std::marker::Send> {
+                            kiwi_ui::cb({
+                                move |v| {
+                                    on_change.0(Test::Third(v));
+                                }
+                            })
+                        }), Default::default())
                     ),
 
                 ]).el(),
@@ -204,11 +212,13 @@ fn test_enum_inline() {
                 Test::First { testy } => FlowRow(vec![
 
                     Text::el("Hello "),
-                    <f32 as kiwi_ui::Editor>::edit_or_view(testy.clone(), on_change.clone().map(|on_change| kiwi_ui::cb_arc(::std::sync::Arc::new({
-                        move |v| {
-                            on_change.0(Test::First { testy: v });
-                        }
-                    }) as ::std::sync::Arc<dyn Fn(f32) + ::std::marker::Sync + ::std::marker::Send>)), Default::default())
+                    <f32 as kiwi_ui::Editor>::edit_or_view(testy.clone(), on_change.clone().map(|on_change| -> kiwi_ui::Cb<dyn Fn(f32) + ::std::marker::Sync + ::std::marker::Send> {
+                        kiwi_ui::cb({
+                            move |v| {
+                                on_change.0(Test::First { testy: v });
+                            }
+                        })
+                    }), Default::default())
                     .set(margin(), Borders::left(5.))
 
                 ]).el(),
@@ -254,11 +264,12 @@ fn test_custom_editor() {
 
                 EditorRow::el(
                     "my_f32_field",
-                    test_editor(my_f32_field.clone(), on_change.clone().map(|on_change| kiwi_ui::cb_arc(::std::sync::Arc::new({
-                        move |v| {
-                            on_change.0(Test { my_f32_field: v });
-                        }
-                    }) as ::std::sync::Arc<dyn Fn(f32) + ::std::marker::Sync + ::std::marker::Send>)), Default::default())
+                    test_editor(my_f32_field.clone(), on_change.clone().map(|on_change| -> kiwi_ui::Cb<dyn Fn(f32) + ::std::marker::Sync + ::std::marker::Send> {
+                        kiwi_ui::cb({
+                            move |v| {
+                                on_change.0(Test { my_f32_field: v });
+                            }
+                        })}), Default::default())
                 ),
 
             ]).el()
