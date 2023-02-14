@@ -34,7 +34,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     main_controller_manager, make_physics_static,
     mesh::{PhysxGeometry, PhysxGeometryFromUrl},
-    physx::{character_controller, physics, physics_controlled, physics_shape, rigid_actor, Physics},
+    physx::{character_controller, physics, physics_controlled, physics_shape, rigid_actor, Physics, angular_velocity, linear_velocity},
     wood_physics_material, ColliderScene, PxActorUserData, PxShapeUserData, PxWoodMaterialKey,
 };
 
@@ -278,7 +278,12 @@ pub fn server_systems() -> SystemGroup {
                     }
                     let actor = if collider_type == ColliderType::Dynamic && !force_static {
                         world.add_component(id, physics_controlled(), ()).unwrap();
-                        PxRigidDynamicRef::new(physics.physics, &PxTransform::new(pos, rot)).as_rigid_actor()
+                        let lvel = world.get(id, linear_velocity()).unwrap_or_default();
+                        let avel = world.get(id, angular_velocity()).unwrap_or_default();
+                        let mut body = PxRigidDynamicRef::new(physics.physics, &PxTransform::new(pos, rot));
+                        body.set_linear_velocity(lvel, true);
+                        body.set_angular_velocity(avel, true);
+                        body.as_rigid_actor()
                     } else {
                         world.remove_component(id, physics_controlled()).unwrap();
                         PxRigidStaticRef::new(physics.physics, &PxTransform::new(pos, rot)).as_rigid_actor()
