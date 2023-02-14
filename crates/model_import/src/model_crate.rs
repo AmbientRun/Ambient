@@ -589,8 +589,8 @@ pub fn physx_triangle_mesh_desc_from_mesh(mesh: &Mesh, flip_normals: bool, rever
     if desc.points.is_empty() || desc.indices.is_empty() {
         return None;
     }
+
     if reverse_indices {
-        // Seems like Physx expect indicies in another order than what we use. https://github.com/PlayDims/Elements/issues/197
         for i in 0..(desc.indices.len() / 3) {
             desc.indices.swap(i * 3 + 1, i * 3 + 2);
         }
