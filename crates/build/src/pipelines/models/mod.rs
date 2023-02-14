@@ -10,7 +10,10 @@ use relative_path::RelativePath;
 use serde::{Deserialize, Serialize};
 
 use super::{
-    context::PipelineCtx, download_image, materials::PipelinePbrMaterial, out_asset::{asset_id_from_url, OutAsset, OutAssetContent, OutAssetPreview}
+    context::PipelineCtx,
+    download_image,
+    materials::PipelinePbrMaterial,
+    out_asset::{asset_id_from_url, OutAsset, OutAssetContent, OutAssetPreview},
 };
 
 pub mod quixel;
@@ -96,8 +99,8 @@ impl ModelsPipeline {
         model_crate.finalize_model();
         match self.collider {
             Collider::None => {}
-            Collider::FromModel => {
-                model_crate.create_collider_from_model(&ctx.process_ctx.assets).unwrap();
+            Collider::FromModel { flip_normals, reverse_indices } => {
+                model_crate.create_collider_from_model(&ctx.process_ctx.assets, flip_normals, reverse_indices).unwrap();
             }
             Collider::Character { radius, height } => model_crate.create_character_collider(radius, height),
         }
@@ -131,7 +134,12 @@ pub enum ModelImporter {
 pub enum Collider {
     #[default]
     None,
-    FromModel,
+    FromModel {
+        #[serde(default)]
+        flip_normals: bool,
+        #[serde(default = "true_value")]
+        reverse_indices: bool,
+    },
     Character {
         radius: Option<f32>,
         height: Option<f32>,

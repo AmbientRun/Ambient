@@ -463,7 +463,7 @@ impl ModelCrate {
         world.add_component(object, character_controller_radius(), radius.unwrap_or(0.5)).unwrap();
         world.add_component(object, character_controller_height(), height.unwrap_or(2.0)).unwrap();
     }
-    pub fn create_collider_from_model(&mut self, assets: &AssetCache) -> anyhow::Result<()> {
+    pub fn create_collider_from_model(&mut self, assets: &AssetCache, flip_normals: bool, reverse_indices: bool) -> anyhow::Result<()> {
         self.update_transforms();
         let physics = PhysicsKey.get(assets);
         let create_triangle_mesh = |asset_crate: &mut ModelCrate, id: &str| -> bool {
@@ -471,7 +471,7 @@ impl ModelCrate {
                 return true;
             }
             let mesh = asset_crate.meshes.content.get(id).unwrap();
-            if let Some(desc) = physx_triangle_mesh_desc_from_mesh(mesh, false) {
+            if let Some(desc) = physx_triangle_mesh_desc_from_mesh(mesh, flip_normals, reverse_indices) {
                 let stream = PxDefaultMemoryOutputStream::new();
                 let mut res = physxx::PxTriangleMeshCookingResult::Success;
                 if !physics.cooking.cook_triangle_mesh(&desc, &stream, &mut res) {
@@ -580,7 +580,7 @@ impl<'a> ModelNodeRef<'a> {
     }
 }
 
-pub fn physx_triangle_mesh_desc_from_mesh(mesh: &Mesh, flip_normals: bool) -> Option<PxTriangleMeshDesc> {
+pub fn physx_triangle_mesh_desc_from_mesh(mesh: &Mesh, flip_normals: bool, reverse_indices: bool) -> Option<PxTriangleMeshDesc> {
     let mut desc = PxTriangleMeshDesc {
         points: mesh.positions.clone()?,
         indices: mesh.indices.clone()?,
@@ -589,9 +589,11 @@ pub fn physx_triangle_mesh_desc_from_mesh(mesh: &Mesh, flip_normals: bool) -> Op
     if desc.points.is_empty() || desc.indices.is_empty() {
         return None;
     }
-    // Seems like Physx expect indicies in another order than what we use. https://github.com/PlayDims/Elements/issues/197
-    for i in 0..(desc.indices.len() / 3) {
-        desc.indices.swap(i * 3 + 1, i * 3 + 2);
+    if reverse_indices {
+        // Seems like Physx expect indicies in another order than what we use. https://github.com/PlayDims/Elements/issues/197
+        for i in 0..(desc.indices.len() / 3) {
+            desc.indices.swap(i * 3 + 1, i * 3 + 2);
+        }
     }
     Some(desc)
 }
