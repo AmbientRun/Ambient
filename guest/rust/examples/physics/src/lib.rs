@@ -3,8 +3,9 @@ use kiwi_api::{
         app::main_scene,
         camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},
         object::object_from_url,
-        physics::{box_collider, dynamic, physics_controlled},
+        physics::{angular_velocity, box_collider, dynamic, linear_velocity, physics_controlled},
         primitives::cube,
+        rendering::color,
         transform::{lookat_center, rotation, scale, translation},
     },
     prelude::*,
@@ -35,8 +36,24 @@ pub async fn main() -> EventResult {
         .spawn(false);
 
     loop {
+        let max_linear_velocity = 2.5;
+        let max_angular_velocity = 360.0f32.to_radians();
+
         sleep(5.).await;
-        entity::set_component(cube, translation(), vec3(0., 0., 5.));
-        entity::set_component(cube, rotation(), Quat::IDENTITY);
+        entity::set_components(
+            cube,
+            Components::new()
+                .with(translation(), vec3(0., 0., 5.))
+                .with(rotation(), Quat::IDENTITY)
+                .with(
+                    linear_velocity(),
+                    (random::<Vec3>() - 0.5) * 2.0 * max_linear_velocity,
+                )
+                .with(
+                    angular_velocity(),
+                    (random::<Vec3>() - 0.5) * 2.0 * max_angular_velocity,
+                )
+                .with(color(), random::<Vec3>().extend(1.)),
+        );
     }
 }

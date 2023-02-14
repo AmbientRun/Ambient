@@ -270,7 +270,7 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "Vec3"
 name = "Angular velocity"
 description = """
-Angular velocity of this entity in the physics scene.
+Angular velocity (radians/second) of this entity in the physics scene.
 Updating this component will update the entity's angular velocity in the physics scene."""
 attributes = ["Debuggable", "Networked", "Store"]
 
@@ -330,7 +330,7 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "Vec3"
 name = "Linear velocity"
 description = """
-Linear velocity of this entity in the physics scene.
+Linear velocity (metres/second) of this entity in the physics scene.
 Updating this component will update the entity's linear velocity in the physics scene."""
 attributes = ["Debuggable", "Networked", "Store"]
 
