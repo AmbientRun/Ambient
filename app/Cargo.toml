@@ -60,3 +60,4 @@ glam.workspace = true
 [features]
 default = ["dep:toml_edit", "dep:paste"]
 production = []
+profile = ["kiwi_app/profile"]
