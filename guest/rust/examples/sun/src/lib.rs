@@ -3,7 +3,7 @@ use kiwi_api::{
         app::main_scene,
         camera::{aspect_ratio_from_window, perspective_infinite_reverse},
         game_objects::player_camera,
-        primitives::{quad, sphere_radius, sphere_sectors, sphere_stacks},
+        primitives::{quad, sphere, sphere_radius},
         rendering::{cast_shadows, color, sun},
         transform::{lookat_center, rotation, scale, translation},
     },
@@ -27,12 +27,11 @@ pub async fn main() -> EventResult {
         .spawn();
 
     entity::game_object_base()
-        .with(translation(), vec3(0., 0., 0.))
-        .with(sphere_radius(), 1.)
-        .with(sphere_sectors(), 36)
-        .with(sphere_stacks(), 18)
-        .with(color(), vec4(1., 1., 1., 1.))
         .with_default(cast_shadows())
+        .with_default(sphere())
+        .with(sphere_radius(), 1.)
+        .with(translation(), vec3(0., 0., 0.))
+        .with(color(), vec4(1., 1., 1., 1.))
         .spawn();
 
     let sun = entity::game_object_base()

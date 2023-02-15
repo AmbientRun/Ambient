@@ -447,28 +447,30 @@ If attached to an entity, the entity will be converted to a quad primitive.
 The quad is unit-sized on the XY axes, and flat on the Z axis (i.e. 0.5 metres out to the XY axes)."""
 attributes = ["Networked", "Store"]
 
+[components."core::primitives::sphere"]
+type = "Empty"
+name = "Sphere"
+description = """
+If attached to an entity, the entity will be converted to a unit-diameter sphere primitive.
+The sphere can be customized using the `sphere_radius`, `sphere_sectors` and `sphere_stacks` components."""
+attributes = ["Networked", "Store"]
+
 [components."core::primitives::sphere_radius"]
 type = "F32"
 name = "Sphere radius"
-description = """
-If attached to an entity with `sphere_sectors` and `sphere_stacks`, the entity will be converted to a sphere with this radius.
-A reasonable default is 0.5."""
+description = "Set the radius of a `sphere` entity."
 attributes = ["Networked", "Store"]
 
 [components."core::primitives::sphere_sectors"]
 type = "U32"
 name = "Sphere sectors"
-description = """
-If attached to an entity with `sphere_radius` and `sphere_stacks`, the entity will be converted to a sphere with this many longitudinal sectors.
-A reasonable default is 36."""
+description = "Set the longitudinal sectors of a `sphere` entity."
 attributes = ["Networked", "Store"]
 
 [components."core::primitives::sphere_stacks"]
 type = "U32"
 name = "Sphere stacks"
-description = """
-If attached to an entity with `sphere_radius` and `sphere_sectors`, the entity will be converted to a sphere with this many latitudinal stacks.
-A reasonable default is 18."""
+description = "Set the latitudinal stacks of a `sphere` entity."
 attributes = ["Networked", "Store"]
 
 [components."core::rendering::cast_shadows"]
