@@ -4,6 +4,7 @@ use std::path::PathBuf;
 fn main() {
     let working_dir = std::env::current_dir().unwrap();
 
+    println!("cargo:rerun-if-changed=wit");
     let filenames_to_copy: Vec<_> = std::fs::read_dir("wit")
         .unwrap()
         .map(|r| r.map(|de| de.path()))
