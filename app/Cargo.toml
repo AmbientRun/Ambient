@@ -52,10 +52,11 @@ tower-http.workspace = true
 walkdir.workspace = true
 
 toml_edit = { optional = true, workspace = true }
+paste = { optional = true, workspace = true }
 
 [dev-dependencies]
 glam.workspace = true
 
 [features]
-default = ["dep:toml_edit"]
+default = ["dep:toml_edit", "dep:paste"]
 production = []

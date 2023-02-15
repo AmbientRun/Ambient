@@ -254,7 +254,7 @@ impl<T: ComponentValue> AttributeConstructor<T, ()> for Resource {
 
 /// Provides a default for this component that will work with `MakeDefault`.
 #[derive(Clone)]
-pub struct DefaultValue<T: ComponentValue>(T);
+pub struct DefaultValue<T: ComponentValue>(pub T);
 impl<T: ComponentValue> ComponentAttribute for DefaultValue<T> {}
 impl<T: ComponentValue> AttributeConstructor<T, T> for DefaultValue<T> {
     fn construct(store: &mut AttributeStore, value: T) {

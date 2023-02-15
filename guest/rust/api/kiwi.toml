@@ -459,18 +459,21 @@ attributes = ["Networked", "Store"]
 type = "F32"
 name = "Sphere radius"
 description = "Set the radius of a `sphere` entity."
+default = 0.5
 attributes = ["Networked", "Store"]
 
 [components."core::primitives::sphere_sectors"]
 type = "U32"
 name = "Sphere sectors"
 description = "Set the longitudinal sectors of a `sphere` entity."
+default = 36
 attributes = ["Networked", "Store"]
 
 [components."core::primitives::sphere_stacks"]
 type = "U32"
 name = "Sphere stacks"
 description = "Set the latitudinal stacks of a `sphere` entity."
+default = 18
 attributes = ["Networked", "Store"]
 
 [components."core::rendering::cast_shadows"]

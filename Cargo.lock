@@ -2381,6 +2381,7 @@ dependencies = [
  "local-ip-address",
  "log",
  "parking_lot",
+ "paste",
  "serde",
  "tokio",
  "toml_edit 0.19.3",
