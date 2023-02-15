@@ -29,6 +29,10 @@ components!("physics", {
     linear_velocity: Vec3,
     @[Debuggable, Networked, Store, Name["Angular velocity"], Description["Angular velocity (radians/second) of this entity in the physics scene.\nUpdating this component will update the entity's angular velocity in the physics scene."]]
     angular_velocity: Vec3,
+    @[Debuggable, Networked, Store, Name["Contact offset"], Description["Contact offset (in meters) of this entity in the physics scene.\nUpdating this component will update the entity's contact offset for each attached shape in the physics scene."]]
+    contact_offset: f32,
+    @[Debuggable, Networked, Store, Name["Rest offset"], Description["Rest offset (in meters) of this entity in the physics scene.\nUpdating this component will update the entity's rest offset for each attached shape in the physics scene."]]
+    rest_offset: f32,
 });
 
 #[derive(Debug)]
@@ -109,6 +113,11 @@ pub fn sync_ecs_physics() -> SystemGroup {
     let angular_velocity_q = query(angular_velocity().changed()).incl(physics_controlled());
     let angular_velocity_q2 = scale_q.query.clone();
 
+    let contact_offset_qs = Arc::new(Mutex::new(QueryState::new()));
+    let contact_offset_q = query(contact_offset().changed()).incl(physics_controlled());
+    let rest_offset_qs = Arc::new(Mutex::new(QueryState::new()));
+    let rest_offset_q = query(rest_offset().changed()).incl(physics_controlled());
+
     SystemGroup::new(
         "sync_ecs_physics",
         vec![
@@ -187,6 +196,32 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     for (id, &vel) in q.iter(world, Some(&mut *qs)) {
                         if let Ok(body) = world.get(id, rigid_dynamic()) {
                             body.set_angular_velocity(vel, true);
+                        }
+                    }
+                }
+            }),
+            contact_offset_q.to_system({
+                let contact_offset_qs = contact_offset_qs.clone();
+                move |q, world, _, _| {
+                    let mut qs = contact_offset_qs.lock();
+                    for (id, &off) in q.iter(world, Some(&mut *qs)) {
+                        if let Ok(body) = world.get(id, rigid_dynamic()) {
+                            for shape in get_shapes(world, id) {
+                                shape.set_contact_offset(off);
+                            }
+                        }
+                    }
+                }
+            }),
+            rest_offset_q.to_system({
+                let rest_offset_qs = rest_offset_qs.clone();
+                move |q, world, _, _| {
+                    let mut qs = rest_offset_qs.lock();
+                    for (id, &off) in q.iter(world, Some(&mut *qs)) {
+                        if let Ok(body) = world.get(id, rigid_dynamic()) {
+                            for shape in get_shapes(world, id) {
+                                shape.set_rest_offset(off);
+                            }
                         }
                     }
                 }
