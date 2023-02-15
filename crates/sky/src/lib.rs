@@ -101,7 +101,7 @@ impl ElementComponent for Clouds {
         let material = CloudMaterial::new(assets.clone(), &clouds);
 
         Element::new()
-            .init(renderer_shader(), cb(|assets, config| CloudShaderKey { shadow_cascades: config.shadow_cascades }.get(&assets)))
+            .init(renderer_shader(), cb(|assets, config| CloudShaderKey { shadow_cascades: config.shadow_cascades }.get(assets)))
             .init(kiwi_renderer::material(), SharedMaterial::new(material))
             .init(cloud_state(), clouds)
             .init(overlay(), ())

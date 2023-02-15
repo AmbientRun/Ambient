@@ -2,8 +2,7 @@ use crate::helpers::{get_shapes, scale_shape};
 use glam::{Quat, Vec3};
 use kiwi_core::transform::{rotation, scale, translation};
 use kiwi_ecs::{
-    components, ensure_has_component, query, Debuggable, Description, EntityId, FnSystem, Name, Networked, QueryState, Resource, Store,
-    SystemGroup, World,
+    components, ensure_has_component, query, Debuggable, Description, FnSystem, Name, Networked, QueryState, Resource, Store, SystemGroup,
 };
 use kiwi_std::asset_cache::SyncAssetKey;
 use parking_lot::Mutex;
@@ -118,7 +117,6 @@ pub fn sync_ecs_physics() -> SystemGroup {
             ensure_has_component(physics_controlled(), rotation(), Quat::IDENTITY),
             query(physics_shape()).excl(rigid_dynamic()).excl(rigid_static()).to_system(|q, world, qs, _| {
                 for (id, shape) in q.collect_cloned(world, qs) {
-                    let Ok(shape) = world.get_ref(id, physics_shape()) else { continue; };
                     let Some(actor) = shape.get_actor() else { continue; };
 
                     if let Some(body) = actor.to_rigid_dynamic() {

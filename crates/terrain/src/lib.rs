@@ -745,7 +745,7 @@ impl ElementComponent for Terrain {
         Element::new()
             .set(terrain(), ())
             .init_default(terrain_cell())
-            .set(renderer_shader(), cb(|assets, config| TerrainShaderKey { shadow_cascades: config.shadow_cascades }.get(&assets)))
+            .set(renderer_shader(), cb(|assets, config| TerrainShaderKey { shadow_cascades: config.shadow_cascades }.get(assets)))
             .set(material(), terrain_material)
             .set(primitives(), vec![])
             .set_default(gpu_primitives())

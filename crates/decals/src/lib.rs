@@ -95,11 +95,11 @@ pub fn client_systems() -> SystemGroup {
                                 renderer_shader(),
                                 cb(move |assets, config| {
                                     DecalShaderKey {
-                                        material_shader: PbrMaterialShaderKey.get(&assets),
+                                        material_shader: PbrMaterialShaderKey.get(assets),
                                         lit: true,
                                         shadow_cascades: config.shadow_cascades,
                                     }
-                                    .get(&assets)
+                                    .get(assets)
                                 }),
                             )
                             .set(mesh(), CubeMeshKey.get(&assets))

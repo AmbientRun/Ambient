@@ -10,11 +10,8 @@ use kiwi_core::{
 use kiwi_element::{Element, ElementComponent, ElementComponentExt};
 use kiwi_gpu::{self, mesh_buffer::MeshBufferKey};
 use kiwi_renderer::{
-    color,
-    flat_material::get_flat_shader_unlit,
-    gpu_primitives, material,
-    materials::flat_material::{FlatMaterial, FlatShaderKey},
-    primitives, renderer_shader, SharedMaterial,
+    color, flat_material::get_flat_shader_unlit, gpu_primitives, material, materials::flat_material::FlatMaterial, primitives,
+    renderer_shader, SharedMaterial,
 };
 use kiwi_std::{asset_cache::SyncAssetKeyExt, cb, mesh::Mesh};
 

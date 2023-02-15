@@ -5,7 +5,7 @@ use kiwi_core::{
     camera::{far, fog, get_active_camera, projection_view},
     transform::{get_world_position, get_world_rotation, local_to_world},
 };
-use kiwi_ecs::{Component, World};
+use kiwi_ecs::{Component, ECSError, World};
 use kiwi_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::BindGroupDesc,
@@ -227,22 +227,29 @@ impl ForwardGlobals {
         })
     }
     pub fn update(&mut self, world: &World, shadow_cameras: &[ShadowCameraData]) {
+        let mut p = &mut self.params;
         if let Some(id) = get_active_camera(world, self.scene) {
-            self.params.projection_view = world.get(id, projection_view()).unwrap_or_default();
-            self.params.inv_projection_view = self.params.projection_view.inverse();
-            self.params.camera_position = get_world_position(world, id).unwrap_or_default().extend(1.);
-            self.params.camera_forward = world.get(id, local_to_world()).unwrap_or_default().transform_vector3(Vec3::Z);
-            self.params.camera_far = world.get(id, far()).unwrap_or(1e3);
-            self.params.fog = world.has_component(id, fog()) as i32;
-            self.params.forward_camera_position = self.params.camera_position;
+            p.projection_view = world.get(id, projection_view()).unwrap_or_default();
+            p.inv_projection_view = p.projection_view.inverse();
+            p.camera_position = get_world_position(world, id).unwrap_or_default().extend(1.);
+            p.camera_forward = world.get(id, local_to_world()).unwrap_or_default().transform_vector3(Vec3::Z);
+            p.camera_far = world.get(id, far()).unwrap_or(1e3);
+            p.fog = world.has_component(id, fog()) as i32;
+            p.forward_camera_position = p.camera_position;
         }
         if let Some(sun) = get_active_sun(world, self.scene) {
-            get_world_rotation(world, sun).ok().map(|value| self.params.sun_direction = value.mul_vec3(Vec3::X).extend(1.));
-            world.get(sun, light_diffuse()).ok().map(|value| self.params.sun_diffuse = value.extend(1.));
-            world.get(sun, light_ambient()).ok().map(|value| self.params.sun_ambient = value.extend(1.));
-            world.get(sun, fog_color()).ok().map(|value| self.params.fog_color = value.extend(1.));
-            world.get(sun, fog_height_falloff()).ok().map(|value| self.params.fog_height_falloff = value);
-            world.get(sun, fog_density()).ok().map(|value| self.params.fog_density = value);
+            fn update<T, U>(out: &mut T, input: Result<U, ECSError>, mapper: impl Fn(U) -> T) {
+                if let Ok(value) = input {
+                    *out = mapper(value);
+                }
+            }
+
+            update(&mut p.sun_direction, get_world_rotation(world, sun), |v| v.mul_vec3(Vec3::X).extend(1.));
+            update(&mut p.sun_diffuse, world.get(sun, light_diffuse()), |v| v.extend(1.));
+            update(&mut p.sun_ambient, world.get(sun, light_ambient()), |v| v.extend(1.));
+            update(&mut p.fog_color, world.get(sun, fog_color()), |v| v.extend(1.));
+            update(&mut p.fog_height_falloff, world.get(sun, fog_height_falloff()), |v| v);
+            update(&mut p.fog_density, world.get(sun, fog_density()), |v| v);
         }
         self.params.time = Instant::now().duration_since(self.start_time).as_secs_f32();
         self.gpu.queue.write_buffer(&self.buffer, 0, bytemuck::cast_slice(&[self.params]));

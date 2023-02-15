@@ -296,7 +296,7 @@ pub fn get_common_module(_: &AssetCache) -> ShaderModule {
 }
 
 /// Contains scene globals and shadow maps
-pub fn get_globals_module(assets: &AssetCache, shadow_cascades: u32) -> ShaderModule {
+pub fn get_globals_module(_assets: &AssetCache, shadow_cascades: u32) -> ShaderModule {
     ShaderModule::new(
         "Globals",
         include_file!("globals.wgsl"),

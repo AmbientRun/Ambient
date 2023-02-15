@@ -3,7 +3,7 @@ use kiwi_api::{
         app::main_scene,
         camera::{aspect_ratio_from_window, perspective_infinite_reverse},
         game_objects::player_camera,
-        primitives::{cube, quad, sphere_radius, sphere_sectors, sphere_stacks},
+        primitives::{quad, sphere_radius, sphere_sectors, sphere_stacks},
         rendering::{cast_shadows, color, sun},
         transform::{lookat_center, rotation, scale, translation},
     },

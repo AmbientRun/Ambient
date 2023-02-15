@@ -34,7 +34,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     main_controller_manager, make_physics_static,
     mesh::{PhysxGeometry, PhysxGeometryFromUrl},
-    physx::{character_controller, physics, physics_controlled, physics_shape, rigid_actor, Physics, angular_velocity, linear_velocity},
+    physx::{angular_velocity, character_controller, linear_velocity, physics, physics_controlled, physics_shape, rigid_actor, Physics},
     wood_physics_material, ColliderScene, PxActorUserData, PxShapeUserData, PxWoodMaterialKey,
 };
 
@@ -280,7 +280,7 @@ pub fn server_systems() -> SystemGroup {
                         world.add_component(id, physics_controlled(), ()).unwrap();
                         let lvel = world.get(id, linear_velocity()).unwrap_or_default();
                         let avel = world.get(id, angular_velocity()).unwrap_or_default();
-                        let mut body = PxRigidDynamicRef::new(physics.physics, &PxTransform::new(pos, rot));
+                        let body = PxRigidDynamicRef::new(physics.physics, &PxTransform::new(pos, rot));
                         body.set_linear_velocity(lvel, true);
                         body.set_angular_velocity(avel, true);
                         body.as_rigid_actor()

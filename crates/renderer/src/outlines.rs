@@ -96,7 +96,7 @@ impl Outlines {
             renderer: TreeRenderer::new(TreeRendererConfig {
                 gpu: gpu.clone(),
                 assets: assets.clone(),
-                renderer_config: renderer_config.clone(),
+                renderer_config,
                 targets: vec![Some(wgpu::ColorTargetState {
                     format: Outlines::FORMAT,
                     blend: Some(wgpu::BlendState::ALPHA_BLENDING),

@@ -21,7 +21,6 @@ use kiwi_std::{
     mesh::Mesh,
     shapes::{Sphere, AABB},
 };
-use std::sync::Arc;
 
 components!("primitives", {
     @[
