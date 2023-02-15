@@ -35,11 +35,6 @@ record mat4 {
     w: vec4,
 }
 
-enum entity-filter {
-    any,
-    player,
-}
-
 record object-ref {
     id: string,
 }

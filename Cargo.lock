@@ -3354,6 +3354,8 @@ dependencies = [
  "wasi-common",
  "wasmtime",
  "wasmtime-wasi",
+ "wit-bindgen-core",
+ "wit-bindgen-gen-guest-rust",
  "wit-bindgen-host-wasmtime-rust",
 ]
 
@@ -6067,7 +6069,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
  "cfg-if",
- "rand 0.8.5",
+ "rand 0.7.3",
  "static_assertions",
 ]
 
@@ -7137,6 +7139,16 @@ source = "git+https://github.com/bytecodealliance/wit-bindgen.git?rev=181093b58f
 dependencies = [
  "anyhow",
  "wit-parser",
+]
+
+[[package]]
+name = "wit-bindgen-gen-guest-rust"
+version = "0.2.0"
+source = "git+https://github.com/bytecodealliance/wit-bindgen.git?rev=181093b58f49b194ee34be2d986d737f4f553d3d#181093b58f49b194ee34be2d986d737f4f553d3d"
+dependencies = [
+ "heck 0.3.3",
+ "wit-bindgen-core",
+ "wit-bindgen-gen-rust-lib",
 ]
 
 [[package]]
