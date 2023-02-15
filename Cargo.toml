@@ -17,7 +17,9 @@ version = "0.0.3"
 
 [workspace.dependencies]
 # TEMP: https://github.com/aclysma/profiling/pull/45
-profiling = { git = "https://github.com/philpax/profiling.git" }
+profiling = { git = "https://github.com/philpax/profiling.git", features = [
+    "profile-with-puffin",
+] }
 tracing = "0.1.35"
 wgpu = "0.14.2"
 winit = { version = "0.28.1", features = ["serde"] }
