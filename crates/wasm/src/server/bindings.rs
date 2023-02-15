@@ -103,12 +103,6 @@ impl host::Host for Bindings {
         .unwrap()
     }
 
-    fn entity_get_linear_velocity(&mut self, entity: host::EntityId) -> Option<host::Vec3> {
-        server_impl::entity::get_linear_velocity(&mut self.world_mut(), entity.from_bindgen())
-            .ok()
-            .into_bindgen()
-    }
-
     fn component_get_index(&mut self, id: &str) -> Option<u32> {
         shared_impl::entity::get_component_index(id)
     }

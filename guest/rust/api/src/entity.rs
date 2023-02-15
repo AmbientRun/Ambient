@@ -47,11 +47,6 @@ pub fn set_animation_controller(entity: EntityId, controller: AnimationControlle
     host::entity_set_animation_controller(entity.into_bindgen(), controller)
 }
 
-/// Gets the linear velocity of `entity` if it exists, or `None` if it does not.
-pub fn get_linear_velocity(entity: EntityId) -> Option<Vec3> {
-    host::entity_get_linear_velocity(entity.into_bindgen()).from_bindgen()
-}
-
 /// Checks if the `entity` exists.
 pub fn exists(entity: EntityId) -> bool {
     host::entity_exists(entity.into_bindgen())
