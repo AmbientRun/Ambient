@@ -888,13 +888,13 @@ impl<E> std::fmt::Debug for SystemGroup<E> {
 }
 
 pub fn ensure_has_component<X: ComponentValue + 'static, T: ComponentValue + Clone + 'static>(
-    component_a: Component<X>,
-    component_b: Component<T>,
+    if_has_component: Component<X>,
+    ensure_this_component_too: Component<T>,
     value: T,
 ) -> DynSystem {
-    query(component_a).excl(component_b).to_system(move |q, world, qs, _| {
+    query(if_has_component).excl(ensure_this_component_too).to_system(move |q, world, qs, _| {
         for (id, _) in q.collect_cloned(world, qs) {
-            world.add_component(id, component_b, value.clone()).unwrap();
+            world.add_component(id, ensure_this_component_too, value.clone()).unwrap();
         }
     })
 }
