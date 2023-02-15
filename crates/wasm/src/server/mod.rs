@@ -20,7 +20,7 @@ use crate::shared::{
 pub mod bindings;
 pub(crate) mod implementation;
 
-pub const MAXIMUM_ERROR_COUNT: usize = 10;
+pub const MAXIMUM_ERROR_COUNT: usize = 5;
 
 pub fn systems<
     Bindings: Send + Sync + Host + 'static,
