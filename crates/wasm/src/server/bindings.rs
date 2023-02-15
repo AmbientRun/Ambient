@@ -63,7 +63,7 @@ impl Bindings {
 
 impl host::Host for Bindings {
     fn entity_spawn(&mut self, data: ComponentsParam<'_>) -> host::EntityId {
-        let id = server_impl::entity::spawn(
+        let id = shared_impl::entity::spawn(
             &mut self.world_mut(),
             convert_components_to_entity_data(data),
         );
@@ -77,7 +77,7 @@ impl host::Host for Bindings {
 
     fn entity_despawn(&mut self, entity: host::EntityId) -> bool {
         let entity = entity.from_bindgen();
-        let despawn = server_impl::entity::despawn(&mut self.world_mut(), entity);
+        let despawn = shared_impl::entity::despawn(&mut self.world_mut(), entity);
         if let Some(uid) = despawn {
             self.shared_state
                 .write()
@@ -95,7 +95,7 @@ impl host::Host for Bindings {
         entity: host::EntityId,
         animation_controller: host::AnimationController,
     ) {
-        server_impl::entity::set_animation_controller(
+        shared_impl::entity::set_animation_controller(
             &mut self.world_mut(),
             entity.from_bindgen(),
             animation_controller.from_bindgen(),
