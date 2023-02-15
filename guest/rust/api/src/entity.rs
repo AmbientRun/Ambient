@@ -96,6 +96,12 @@ pub fn has_component<T: SupportedComponentTypeGet>(
     host::entity_has_component(entity.into_bindgen(), component.index())
 }
 
+/// Checks if the `entity` has `components`.
+pub fn has_components(entity: EntityId, components: &[&dyn UntypedComponent]) -> bool {
+    let components: Vec<_> = components.iter().map(|c| c.index()).collect();
+    host::entity_has_components(entity.into_bindgen(), &components)
+}
+
 /// Adds the `component` with `value` to `entity` if `entity` does not already have that component.
 pub fn add_component_if_required<T: SupportedComponentTypeGet + SupportedComponentTypeSet>(
     entity: EntityId,

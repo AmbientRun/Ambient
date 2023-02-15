@@ -137,6 +137,14 @@ impl host::Host for Bindings {
         shared_impl::entity::has_component(&self.world(), entity.from_bindgen(), index)
     }
 
+    fn entity_has_components(&mut self, entity: host::EntityId, components: &[Le<u32>]) -> bool {
+        let mut set = ComponentSet::new();
+        for idx in components {
+            set.insert_by_index(idx.get() as usize);
+        }
+        self.world().has_components(entity.from_bindgen(), &set)
+    }
+
     fn entity_remove_component(&mut self, entity: host::EntityId, index: u32) {
         shared_impl::entity::remove_component(&mut self.world_mut(), entity.from_bindgen(), index)
             .unwrap()

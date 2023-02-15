@@ -348,6 +348,7 @@ entity-get-component: func(entity: entity-id, index: u32) -> option<component-ty
 entity-set-component: func(entity: entity-id, index: u32, value: component-type)
 entity-set-components: func(entity: entity-id, data: components)
 entity-has-component: func(entity: entity-id, index: u32) -> bool
+entity-has-components: func(entity: entity-id, indices: list<u32>) -> bool
 entity-remove-component: func(entity: entity-id, index: u32)
 entity-remove-components: func(entity: entity-id, indices: list<u32>)
 
