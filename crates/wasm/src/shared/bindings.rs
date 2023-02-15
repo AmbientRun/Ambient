@@ -1,7 +1,7 @@
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
 use kiwi_ecs::{
     paste::paste, primitive_component_definitions, with_component_registry, Component,
-    ComponentDesc, ComponentEntry, EntityData, EntityId, World,
+    ComponentDesc, ComponentEntry, ECSError, EntityData, EntityId, World,
 };
 use kiwi_std::asset_url::ObjectRef;
 
@@ -113,6 +113,7 @@ macro_rules! define_component_types {
             })
         }
 
+        // todo: find a nice efficient abstraction to tie these three functions together
         pub(crate) fn convert_components_to_entity_data(
             components: ComponentsParam<'_>,
         ) -> EntityData {
@@ -140,31 +141,62 @@ macro_rules! define_component_types {
             })
         }
 
-        pub(crate) fn write_component(
+        pub(crate) fn add_component(
             world: &mut World,
             entity_id: EntityId,
             index: u32,
             value: host::ComponentTypeParam<'_>,
-        ) {
+        ) -> Result<(), ECSError> {
             match value {
                 $(
                 host::ComponentTypeParam::[<Type $value >](value) => {
                     if let Some(component) = get_component_type::<$type>(index) {
-                        world.add_component(entity_id, component, value.from_bindgen()).unwrap();
+                        world.add_component(entity_id, component, value.from_bindgen())?;
                     }
                 }
                 host::ComponentTypeParam::TypeList(host::ComponentListTypeParam::[<Type $value >](value)) => {
                     if let Some(component) = get_component_type::<Vec<$type>>(index) {
-                        world.add_component(entity_id, component, value.from_bindgen()).unwrap();
+                        world.add_component(entity_id, component, value.from_bindgen())?;
                     }
                 }
                 host::ComponentTypeParam::TypeOption(host::ComponentOptionTypeParam::[<Type $value >](value)) => {
                     if let Some(component) = get_component_type::<Option<$type>>(index) {
-                        world.add_component(entity_id, component, value.from_bindgen()).unwrap();
+                        world.add_component(entity_id, component, value.from_bindgen())?;
                     }
                 }
                 ) *
             }
+
+            Ok(())
+        }
+
+        pub(crate) fn set_component(
+            world: &mut World,
+            entity_id: EntityId,
+            index: u32,
+            value: host::ComponentTypeParam<'_>,
+        ) -> Result<(), ECSError> {
+            match value {
+                $(
+                host::ComponentTypeParam::[<Type $value >](value) => {
+                    if let Some(component) = get_component_type::<$type>(index) {
+                        world.set(entity_id, component, value.from_bindgen())?;
+                    }
+                }
+                host::ComponentTypeParam::TypeList(host::ComponentListTypeParam::[<Type $value >](value)) => {
+                    if let Some(component) = get_component_type::<Vec<$type>>(index) {
+                        world.set(entity_id, component, value.from_bindgen())?;
+                    }
+                }
+                host::ComponentTypeParam::TypeOption(host::ComponentOptionTypeParam::[<Type $value >](value)) => {
+                    if let Some(component) = get_component_type::<Option<$type>>(index) {
+                        world.set(entity_id, component, value.from_bindgen())?;
+                    }
+                }
+                ) *
+            }
+
+            Ok(())
         }
     }};
 }

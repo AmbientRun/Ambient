@@ -345,10 +345,16 @@ entity-set-animation-controller: func(entity: entity-id, animation-controller: a
 entity-in-area: func(position: vec3, radius: float32) -> list<entity-id>
 
 entity-get-component: func(entity: entity-id, index: u32) -> option<component-type>
+
+entity-add-component: func(entity: entity-id, index: u32, value: component-type)
+entity-add-components: func(entity: entity-id, data: components)
+
 entity-set-component: func(entity: entity-id, index: u32, value: component-type)
 entity-set-components: func(entity: entity-id, data: components)
+
 entity-has-component: func(entity: entity-id, index: u32) -> bool
 entity-has-components: func(entity: entity-id, indices: list<u32>) -> bool
+
 entity-remove-component: func(entity: entity-id, index: u32)
 entity-remove-components: func(entity: entity-id, indices: list<u32>)
 

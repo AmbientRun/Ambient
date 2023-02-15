@@ -1,4 +1,6 @@
+use components::cell;
 use kiwi_api::components::core::{
+    self,
     camera::{aspect_ratio_from_window, perspective_infinite_reverse},
     game_objects::player_camera,
     primitives::cube,
@@ -31,6 +33,12 @@ pub async fn main() -> EventResult {
         }
     }
 
+    spawn_query(core::player::player()).bind(|ids| {
+        for (id, _) in ids {
+            entity::add_component(id, cell(), 0);
+        }
+    });
+
     on(event::FRAME, move |_| {
         for cell in &cells {
             entity::remove_component(*cell, outline());
@@ -43,7 +51,7 @@ pub async fn main() -> EventResult {
                 0.5,
             )));
             let player_color = vec4(player_color.red, player_color.green, player_color.blue, 1.);
-            let cell = entity::get_component(player, components::cell()).unwrap_or_default();
+            let cell = entity::get_component(player, components::cell()).unwrap();
             let Some((delta, _)) = player::get_raw_input_delta(player) else { continue; };
 
             let mut x = cell % 3;

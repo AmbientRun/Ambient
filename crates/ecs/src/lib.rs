@@ -251,6 +251,19 @@ impl World {
         }
     }
 
+    pub fn set_components(&mut self, entity_id: EntityId, data: EntityData) -> Result<(), ECSError> {
+        if let Some(loc) = self.locs.get(&entity_id) {
+            let version = self.inc_version();
+            let arch = self.archetypes.get_mut(loc.archetype).expect("Archetype doesn't exist");
+            for entry in data {
+                arch.replace_with_entry(entity_id, loc.index, entry, version)?;
+            }
+            Ok(())
+        } else {
+            Err(ECSError::NoSuchEntity { entity_id })
+        }
+    }
+
     /// Sets the value iff it is different to the current
     pub fn set_if_changed<T: ComponentValue + PartialEq>(
         &mut self,

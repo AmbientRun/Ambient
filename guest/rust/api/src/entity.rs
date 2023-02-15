@@ -73,6 +73,21 @@ pub fn get_component<T: SupportedComponentTypeGet>(
     )?)
 }
 
+/// Adds the component `component` for `entity` with `value`. Will replace an existing component if present.
+pub fn add_component<T: SupportedComponentTypeSet>(
+    entity: EntityId,
+    component: Component<T>,
+    value: T,
+) {
+    let owned = value.into_owned_param();
+    host::entity_add_component(entity.into_bindgen(), component.index(), owned.as_param())
+}
+
+/// Adds the components `components` for `entity` with `value`. Will replace any existing components specified in `components`.
+pub fn add_components(entity: EntityId, components: Components) {
+    components.call_with(|data| host::entity_add_components(entity.into_bindgen(), data))
+}
+
 /// Sets the component `component` for `entity` with `value`.
 pub fn set_component<T: SupportedComponentTypeSet>(
     entity: EntityId,
@@ -83,7 +98,7 @@ pub fn set_component<T: SupportedComponentTypeSet>(
     host::entity_set_component(entity.into_bindgen(), component.index(), owned.as_param())
 }
 
-/// Sets the component `components` for `entity` with `value`.
+/// Sets the components `components` for `entity` with `value`.
 pub fn set_components(entity: EntityId, components: Components) {
     components.call_with(|data| host::entity_set_components(entity.into_bindgen(), data))
 }
@@ -109,7 +124,7 @@ pub fn add_component_if_required<T: SupportedComponentTypeGet + SupportedCompone
     value: T,
 ) {
     if !has_component(entity, component) {
-        set_component(entity, component, value)
+        add_component(entity, component, value)
     }
 }
 

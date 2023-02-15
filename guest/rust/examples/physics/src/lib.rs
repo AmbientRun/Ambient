@@ -24,12 +24,13 @@ pub async fn main() -> EventResult {
 
     let cube = entity::game_object_base()
         .with_default(cube())
-        .with(box_collider(), vec3(1., 1., 1.))
+        .with(box_collider(), Vec3::ONE)
         .with(dynamic(), true)
         .with_default(physics_controlled())
         .with_default(cast_shadows())
         .with(translation(), vec3(0., 0., 5.))
         .with(scale(), vec3(0.5, 0.5, 0.5))
+        .with(color(), Vec4::ONE)
         .spawn();
 
     entity::game_object_base()

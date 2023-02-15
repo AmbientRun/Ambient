@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use itertools::Itertools;
-use kiwi_ecs::{with_component_registry, QueryEvent, World};
+use kiwi_ecs::{with_component_registry, ComponentSet, QueryEvent, World};
 use kiwi_physics::helpers::PhysicsObjectCollection;
 use parking_lot::RwLock;
 use wit_bindgen_host_wasmtime_rust::Le;
@@ -115,18 +115,36 @@ impl host::Host for Bindings {
         read_component_from_world(&self.world(), entity.from_bindgen(), index)
     }
 
+    fn entity_add_component(
+        &mut self,
+        entity: host::EntityId,
+        index: u32,
+        value: host::ComponentTypeParam,
+    ) {
+        add_component(&mut self.world_mut(), entity.from_bindgen(), index, value).unwrap()
+    }
+
+    fn entity_add_components(&mut self, entity: host::EntityId, data: ComponentsParam<'_>) {
+        self.world_mut()
+            .add_components(
+                entity.from_bindgen(),
+                convert_components_to_entity_data(data),
+            )
+            .unwrap()
+    }
+
     fn entity_set_component(
         &mut self,
         entity: host::EntityId,
         index: u32,
         value: host::ComponentTypeParam,
     ) {
-        write_component(&mut self.world_mut(), entity.from_bindgen(), index, value)
+        set_component(&mut self.world_mut(), entity.from_bindgen(), index, value).unwrap()
     }
 
     fn entity_set_components(&mut self, entity: host::EntityId, data: ComponentsParam<'_>) {
         self.world_mut()
-            .add_components(
+            .set_components(
                 entity.from_bindgen(),
                 convert_components_to_entity_data(data),
             )
