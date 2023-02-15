@@ -1,15 +1,8 @@
 use std::sync::Arc;
 
 use glam::*;
-use kiwi_core::{
-    asset_cache,
-    camera::{fovy, get_active_camera, screen_ray},
-    main_scene, mesh,
-    transform::translation,
-};
-use kiwi_ecs::{components, query, query_mut, Debuggable, Description, EntityData, EntityId, Name, Networked, Store, SystemGroup};
-use kiwi_element::{Element, ElementComponent, Hooks};
-use kiwi_gizmos::gizmos;
+use kiwi_core::{asset_cache, mesh, transform::translation};
+use kiwi_ecs::{components, query, Debuggable, Description, EntityData, Name, Networked, Store, SystemGroup};
 use kiwi_gpu::{
     gpu::GpuKey,
     shader_module::{BindGroupDesc, Shader, ShaderModule},
@@ -17,7 +10,7 @@ use kiwi_gpu::{
 };
 use kiwi_meshes::QuadMeshKey;
 use kiwi_renderer::{self, *};
-use kiwi_std::{asset_cache::*, cb, friendly_id, include_file, line_hash};
+use kiwi_std::{asset_cache::*, cb, friendly_id, include_file};
 use noise::OpenSimplex;
 use wgpu::{BindGroup, BufferUsages};
 

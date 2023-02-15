@@ -67,7 +67,7 @@ components!("primitives", {
     uv_sphere: UVSphereMesh,
 });
 
-fn cube_data(assets: &AssetCache) -> EntityData {
+pub fn cube_data(assets: &AssetCache) -> EntityData {
     let aabb = AABB { min: -Vec3::ONE * 0.5, max: Vec3::ONE * 0.5 };
     EntityData::new()
         .set(mesh(), UnitCubeMeshKey.get(assets))
@@ -85,7 +85,7 @@ fn cube_data(assets: &AssetCache) -> EntityData {
         .set(world_bounding_aabb(), aabb)
 }
 
-fn quad_data(assets: &AssetCache) -> EntityData {
+pub fn quad_data(assets: &AssetCache) -> EntityData {
     let aabb = AABB { min: vec3(-0.5, -0.5, 0.), max: vec3(0.5, 0.5, 0.) };
     EntityData::new()
         .set(mesh(), UnitQuadMeshKey.get(assets))
@@ -103,7 +103,7 @@ fn quad_data(assets: &AssetCache) -> EntityData {
         .set(world_bounding_aabb(), aabb)
 }
 
-fn sphere_data(assets: &AssetCache, sphere: &UVSphereMesh) -> EntityData {
+pub fn sphere_data(assets: &AssetCache, sphere: &UVSphereMesh) -> EntityData {
     let bound_sphere = Sphere::new(Vec3::ZERO, sphere.radius);
     EntityData::new()
         .set(mesh(), GpuMesh::from_mesh(assets.clone(), &Mesh::from(*sphere)))

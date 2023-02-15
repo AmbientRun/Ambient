@@ -4,7 +4,7 @@ use kiwi_api::{
         camera::{aspect_ratio_from_window, perspective_infinite_reverse},
         game_objects::player_camera,
         primitives::{quad, sphere, sphere_radius},
-        rendering::{cast_shadows, color, fog_density, light_diffuse, sky, sun},
+        rendering::{cast_shadows, color, fog_density, light_diffuse, sky, sun, water},
         transform::{lookat_center, rotation, scale, translation},
     },
     prelude::*,
@@ -24,6 +24,12 @@ pub async fn main() -> EventResult {
         .with_default(quad())
         .with(scale(), Vec3::ONE * 20.)
         .with(color(), vec4(1., 0., 0., 1.))
+        .with(translation(), vec3(0., 0., 0.01))
+        .spawn();
+
+    entity::game_object_base()
+        .with_default(water())
+        .with(scale(), Vec3::ONE * 2000.)
         .spawn();
 
     entity::game_object_base().with_default(sky()).spawn();

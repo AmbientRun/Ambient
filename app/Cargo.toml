@@ -33,6 +33,7 @@ kiwi_std = {path = "../crates/std"}
 kiwi_ui = {path = "../crates/ui"}
 kiwi_world_audio = {path = "../crates/world_audio"}
 kiwi_sky = {path = "../crates/sky"}
+kiwi_water = {path = "../crates/water"}
 
 anyhow.workspace = true
 axum.workspace = true

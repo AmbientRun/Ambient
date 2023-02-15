@@ -578,6 +578,12 @@ name = "Transparency group"
 description = "Controls when this transparent object will be rendered. Transparent objects are sorted by (transparency_group, z-depth)."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::rendering::water"]
+type = "Empty"
+name = "Water"
+description = "Add a realistic water plane to this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::transform::cylindrical_billboard_z"]
 type = "Empty"
 name = "Cylindrical billboard Z"

@@ -1,6 +1,6 @@
 [package]
-name = "kiwi_sky"
-version.workspace = true
+name = "kiwi_water"
+version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -13,17 +13,6 @@ kiwi_gpu = { path = "../gpu" }
 kiwi_gizmos = { path = "../gizmos" }
 kiwi_meshes = { path = "../meshes" }
 kiwi_renderer = { path = "../renderer" }
+kiwi_primitives = { path = "../primitives" }
 wgpu.workspace = true
-noise.workspace = true
 glam.workspace = true
-bytemuck.workspace = true
-derive_more.workspace = true
-ordered-float.workspace = true
-tracing.workspace = true
-
-[dev-dependencies]
-kiwi_cameras = { path = "../cameras" }
-tokio.workspace = true
-
-[features]
-hotload-includes = ['kiwi_std/hotload-includes']

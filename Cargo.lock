@@ -2378,6 +2378,7 @@ dependencies = [
  "kiwi_std",
  "kiwi_ui",
  "kiwi_wasm",
+ "kiwi_water",
  "kiwi_world_audio",
  "local-ip-address",
  "log",
@@ -3179,11 +3180,9 @@ dependencies = [
  "bytemuck",
  "derive_more",
  "glam 0.22.0",
- "kiwi_app",
  "kiwi_cameras",
  "kiwi_core",
  "kiwi_ecs",
- "kiwi_element",
  "kiwi_gizmos",
  "kiwi_gpu",
  "kiwi_meshes",
@@ -3357,6 +3356,22 @@ dependencies = [
  "wit-bindgen-core",
  "wit-bindgen-gen-guest-rust",
  "wit-bindgen-host-wasmtime-rust",
+]
+
+[[package]]
+name = "kiwi_water"
+version = "0.1.0"
+dependencies = [
+ "glam 0.22.0",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_gizmos",
+ "kiwi_gpu",
+ "kiwi_meshes",
+ "kiwi_primitives",
+ "kiwi_renderer",
+ "kiwi_std",
+ "wgpu",
 ]
 
 [[package]]
