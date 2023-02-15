@@ -8,7 +8,7 @@ use glyph_brush::{
     BrushAction, BrushError, GlyphBrush, GlyphBrushBuilder, Section,
 };
 use kiwi_core::{asset_cache, async_ecs::async_run, gpu, mesh, name, runtime, transform::*, ui_scene, window_scale_factor};
-use kiwi_ecs::{components, query, query_mut, EntityData, SystemGroup, World};
+use kiwi_ecs::{components, query, query_mut, Debuggable, Description, EntityData, Name, Networked, Store, SystemGroup, World};
 use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
 use kiwi_gpu::{mesh_buffer::GpuMesh, texture::Texture};
 use kiwi_renderer::{color, gpu_primitives, material, primitives, renderer_shader, SharedMaterial};
@@ -30,8 +30,10 @@ use crate::{
 };
 
 components!("ui", {
+    @[Debuggable, Networked, Store, Name["Text"], Description["Create a text mesh on this entity."]]
     text: String,
     text_case: TextCase,
+    @[Debuggable, Networked, Store, Name["Font size"], Description["Size of the font."]]
     font_size: f32,
     font_style: FontStyle,
     font_family: FontFamily,
@@ -196,6 +198,21 @@ pub fn systems() -> SystemGroup {
     SystemGroup::new(
         "ui/text",
         vec![
+            query(text()).excl(font_family()).to_system(|q, world, qs, _| {
+                for (id, _) in q.collect_cloned(world, qs) {
+                    world.add_component(id, font_family(), FontFamily::Default).unwrap();
+                }
+            }),
+            query(text()).excl(font_style()).to_system(|q, world, qs, _| {
+                for (id, _) in q.collect_cloned(world, qs) {
+                    world.add_component(id, font_style(), FontStyle::Regular).unwrap();
+                }
+            }),
+            query(text()).excl(font_size()).to_system(|q, world, qs, _| {
+                for (id, _) in q.collect_cloned(world, qs) {
+                    world.add_component(id, font_size(), 12.).unwrap();
+                }
+            }),
             query(()).incl(text()).excl(renderer_shader()).spawned().to_system(|q, world, qs, _| {
                 let assets = world.resource(asset_cache()).clone();
                 let gpu = world.resource(gpu()).clone();

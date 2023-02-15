@@ -55,6 +55,7 @@ pub(crate) mod dev {
                     "Transform",
                     "Entity transform state (including translation, rotation and scale), as well as other transformations for this entity.",
                 ),
+                ("core::ui", "Ui", "Anything related to ui and text."),
             ];
 
             for (path, name, description) in namespaces {

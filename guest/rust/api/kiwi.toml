@@ -56,6 +56,10 @@ description = "Rendering-related state, including global rendering parameters an
 name = "Transform"
 description = "Entity transform state (including translation, rotation and scale), as well as other transformations for this entity."
 
+[components."core::ui"]
+name = "Ui"
+description = "Anything related to ui and text."
+
 [components."core::app::dtime"]
 type = "F32"
 name = "Delta Time"
@@ -651,4 +655,16 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "Vec3"
 name = "Translation"
 description = "The translation/position of this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::font_size"]
+type = "F32"
+name = "Font size"
+description = "Size of the font."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::text"]
+type = "String"
+name = "Text"
+description = "Create a text mesh on this entity."
 attributes = ["Debuggable", "Networked", "Store"]

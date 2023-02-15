@@ -409,6 +409,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "text"
+version = "0.0.1"
+dependencies = [
+ "kiwi_api",
+]
+
+[[package]]
 name = "tictactoe"
 version = "0.0.1"
 dependencies = [

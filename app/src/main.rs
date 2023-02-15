@@ -1,7 +1,7 @@
 use std::{net::SocketAddr, sync::Arc};
 
 use clap::{Parser, Subcommand};
-use kiwi_app::{AppBuilder, ExamplesSystem};
+use kiwi_app::AppBuilder;
 use kiwi_cameras::UICamera;
 use kiwi_core::camera::active_camera;
 use kiwi_debugger::Debugger;
@@ -284,7 +284,6 @@ fn main() -> anyhow::Result<()> {
     let handle = runtime.handle().clone();
     if cli.command.should_run() {
         AppBuilder::simple().ui_renderer(true).with_runtime(runtime).with_asset_cache(assets).run(|app, _runtime| {
-            app.window_event_systems.add(Box::new(ExamplesSystem));
             MainApp { server_addr, user_id }.el().spawn_interactive(&mut app.world);
         });
     } else {
