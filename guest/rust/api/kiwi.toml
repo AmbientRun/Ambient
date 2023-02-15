@@ -558,6 +558,12 @@ name = "Overlay"
 description = "If attached, this entity will be rendered with an overlay."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::rendering::sky"]
+type = "Empty"
+name = "Sky"
+description = "Add a realistic sky box to the scene."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::rendering::sun"]
 type = "F32"
 name = "Sun"
@@ -668,8 +674,32 @@ name = "Font size"
 description = "Size of the font."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::ui::height"]
+type = "F32"
+name = "Height"
+description = "Height of a ui element"
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::min_height"]
+type = "F32"
+name = "Min height"
+description = "Min height of a ui element"
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::min_width"]
+type = "F32"
+name = "Min width"
+description = "Min width of a ui element"
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::ui::text"]
 type = "String"
 name = "Text"
 description = "Create a text mesh on this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::width"]
+type = "F32"
+name = "Width"
+description = "Width of a ui element"
 attributes = ["Debuggable", "Networked", "Store"]

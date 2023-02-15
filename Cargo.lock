@@ -2374,6 +2374,7 @@ dependencies = [
  "kiwi_project",
  "kiwi_renderer",
  "kiwi_rpc",
+ "kiwi_sky",
  "kiwi_std",
  "kiwi_ui",
  "kiwi_wasm",

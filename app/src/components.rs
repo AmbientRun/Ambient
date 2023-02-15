@@ -8,6 +8,7 @@ pub(crate) fn init() -> anyhow::Result<()> {
     kiwi_primitives::init_components();
     kiwi_project::init_components();
     kiwi_object::init_components();
+    kiwi_sky::init_components();
 
     crate::player::init_all_components();
 
