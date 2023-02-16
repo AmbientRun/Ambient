@@ -39,4 +39,7 @@ jobs:
         with:
             cache-group: "main"
       - name: Run tests
-        run: cargo test --workspace --release
+        run: cargo test --workspace
+        env:
+          CARGO_INCREMENTAL: 0
+          RUSTFLAGS: "-C debuginfo=0 -D warnings"
