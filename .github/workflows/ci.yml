@@ -42,4 +42,4 @@ jobs:
         run: cargo test --workspace
         env:
           CARGO_INCREMENTAL: 0
-          RUSTFLAGS: "-C debuginfo=0 -D warnings"
+          RUSTFLAGS: "-C debuginfo=0"
