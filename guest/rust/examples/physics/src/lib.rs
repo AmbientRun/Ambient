@@ -9,6 +9,7 @@ use kiwi_api::{
         rendering::{cast_shadows, color},
         transform::{lookat_center, rotation, scale, translation},
     },
+    physics::raycast,
     prelude::*,
 };
 
@@ -40,6 +41,15 @@ pub async fn main() -> EventResult {
     on(event::COLLISION, |c| {
         // TODO: play a sound instead
         println!("Bonk! {:?} collided", c.get(ids()).unwrap());
+        EventOk
+    });
+
+    on(event::FRAME, move |_| {
+        for hit in raycast(Vec3::Z * 20., -Vec3::Z) {
+            if hit.entity == cube {
+                println!("The raycast hit the cube: {:?}", hit);
+            }
+        }
         EventOk
     });
 

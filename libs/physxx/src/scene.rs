@@ -1,11 +1,13 @@
 use std::ptr::null_mut;
 
 use glam::Vec3;
-use physx_sys::{create_overlap_buffer, create_raycast_buffer, create_sweep_buffer, delete_overlap_callback};
+use physx_sys::{create_overlap_buffer, create_raycast_buffer, create_sweep_buffer, delete_overlap_callback, delete_raycast_callback};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    sweep::PxSweepHit, to_glam_vec3, to_physx_vec3, AsArticulationBase, AsPxActor, PxActorRef, PxAggregateRef, PxCollectionRef, PxConstraintRef, PxDefaultCpuDispatcherRef, PxGeometry, PxHitFlags, PxPhysicsRef, PxPvdSceneClientRef, PxRaycastHit, PxRigidActorRef, PxShape, PxTransform
+    sweep::PxSweepHit, to_glam_vec3, to_physx_vec3, AsArticulationBase, AsPxActor, PxActorRef, PxAggregateRef, PxCollectionRef,
+    PxConstraintRef, PxDefaultCpuDispatcherRef, PxGeometry, PxHitFlags, PxPhysicsRef, PxPvdSceneClientRef, PxRaycastHit, PxRigidActorRef,
+    PxShape, PxTransform,
 };
 
 pub struct PxSceneDesc(physx_sys::PxSceneDesc);
@@ -430,6 +432,13 @@ impl PxRaycastCallback {
     }
     pub fn touches(&self) -> Vec<PxRaycastHit> {
         self.1.iter().take(unsafe { (*self.0).nbTouches as usize }).map(PxRaycastHit::from_px).collect()
+    }
+}
+impl Drop for PxRaycastCallback {
+    fn drop(&mut self) {
+        unsafe {
+            delete_raycast_callback(self.0);
+        }
     }
 }
 
