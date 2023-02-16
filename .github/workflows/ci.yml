@@ -33,5 +33,12 @@ jobs:
           sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers
       - uses: dtolnay/rust-toolchain@stable
       - uses: Leafwing-Studios/cargo-cache@v1
+      - name: Build with timings
+        run: cargo build --workspace --timings
       - name: Run tests
         run: cargo test --workspace --release
+      - name: Upload build timings
+        uses: actions/upload-artifact@v3
+        with:
+          name: upload-build-timings
+          path: target/cargo-timings
