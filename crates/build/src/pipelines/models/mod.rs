@@ -137,7 +137,7 @@ pub enum Collider {
     FromModel {
         #[serde(default)]
         flip_normals: bool,
-        #[serde(default = "true_value")]
+        #[serde(default)]
         reverse_indices: bool,
     },
     Character {
