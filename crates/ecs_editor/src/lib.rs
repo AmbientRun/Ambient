@@ -19,6 +19,7 @@ impl ElementComponent for ECSEditor {
         let (components, set_components) = hooks.use_state(HashMap::<ComponentDesc, bool>::new());
         let (entity_datas, set_entity_datas) = hooks.use_state(Vec::new());
         let (entities, set_entities) = hooks.use_state(Vec::new());
+        let (edit_filter, set_edit_filter) = hooks.use_state(false);
         use_interval_deps(world, hooks, Duration::from_millis(500), false, components.clone(), {
             let get_world = get_world.clone();
             move |components| {
@@ -87,15 +88,20 @@ impl ElementComponent for ECSEditor {
             .set(space_between_items(), 5.)
         };
         FlowColumn::el([
-            FlowRow::el(with_component_registry(|r| {
-                r.all()
-                    .map(|c| (c.path(), c))
-                    .sorted_by_key(|(id, _)| id.to_string())
-                    .map(|(path, comp)| render_component(&path, comp))
-                    .collect_vec()
-            }))
-            .set(fit_horizontal(), Fit::Parent)
-            .set(space_between_items(), STREET),
+            Button::new("Filter", move |_| set_edit_filter(!edit_filter)).toggled(edit_filter).el(),
+            if edit_filter {
+                FlowRow::el(with_component_registry(|r| {
+                    r.all()
+                        .map(|c| (c.path(), c))
+                        .sorted_by_key(|(id, _)| id.to_string())
+                        .map(|(path, comp)| render_component(&path, comp))
+                        .collect_vec()
+                }))
+                .set(fit_horizontal(), Fit::Parent)
+                .set(space_between_items(), STREET)
+            } else {
+                Element::new()
+            },
             FlowColumn::el([
                 Text::el(format!("{} entities selected", entities.len())),
                 FlowColumn::el(

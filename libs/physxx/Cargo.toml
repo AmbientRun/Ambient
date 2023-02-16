@@ -1,6 +1,6 @@
 [package]
 name = "physxx"
-version.workspace = true
+version = { workspace = true }
 authors = ["Fredrik Norén <fredrik.jw.noren@gmail.com>"]
 edition = "2021"
 
@@ -8,10 +8,10 @@ edition = "2021"
 
 [dependencies]
 physx-sys = { git = "https://github.com/FredrikNoren/physx-rs.git", rev = "92a09a98f3825d52c84d487d0fc575fb8cf04feb" }
-glam.workspace = true
-bitflags.workspace = true
-enumflags2.workspace = true
-as-any.workspace = true
-num-traits.workspace = true
-num-derive.workspace = true
-serde.workspace = true
+glam = { workspace = true }
+bitflags = { workspace = true }
+enumflags2 = { workspace = true }
+as-any = { workspace = true }
+num-traits = { workspace = true }
+num-derive = { workspace = true }
+serde = { workspace = true }

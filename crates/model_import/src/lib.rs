@@ -10,7 +10,9 @@ use kiwi_core::{bounding::local_bounding_aabb, transform::translation};
 use kiwi_editor_derive::ElementEditor;
 use kiwi_renderer::materials::pbr_material::PbrMaterialFromUrl;
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt}, asset_url::AbsAssetUrl, download_asset::{download, AssetsCacheDir}
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    asset_url::AbsAssetUrl,
+    download_asset::{download, AssetsCacheDir},
 };
 use model_crate::{ModelCrate, ModelNodeRef};
 use relative_path::RelativePathBuf;
@@ -155,7 +157,7 @@ impl ModelImportTransform {
                 model_crate.create_object_from_model();
             }
             ModelImportTransform::CreateColliderFromModel => {
-                model_crate.create_collider_from_model(assets)?;
+                model_crate.create_collider_from_model(assets, false, true)?;
             }
             ModelImportTransform::CreateCharacterCollider => {
                 model_crate.create_character_collider(None, None);

@@ -1,11 +1,11 @@
 [package]
 name = "kiwi_rustc"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 [dependencies]
-anyhow.workspace = true
-itertools.workspace = true
-log.workspace = true
-serde_json.workspace = true
-reqwest.workspace = true
+anyhow = { workspace = true }
+itertools = { workspace = true }
+log = { workspace = true }
+serde_json = { workspace = true }
+reqwest = { workspace = true }

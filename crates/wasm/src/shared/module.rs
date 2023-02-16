@@ -190,7 +190,6 @@ impl<
             event_name,
             event_data,
             time,
-            frametime,
         } = context;
 
         self.shared_state().write().base_mut().set_world(world);
@@ -211,10 +210,7 @@ impl<
 
         Ok(self.guest_exports.exec(
             &mut *self.store.lock(),
-            GuestRunContext {
-                time: *time,
-                frametime: *frametime,
-            },
+            GuestRunContext { time: *time },
             event_name,
             &components,
         )?)

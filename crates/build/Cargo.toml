@@ -1,6 +1,6 @@
 [package]
 name = "kiwi_build"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -19,24 +19,24 @@ kiwi_project = { path = "../project" }
 kiwi_rustc = { path = "../rustc" }
 kiwi_decals = { path = "../decals" }
 unity_parser = { path = "../../libs/unity_parser" }
-walkdir.workspace = true
-futures.workspace = true
-tokio.workspace = true
-itertools.workspace = true
-serde.workspace = true
-serde_json.workspace = true
-glam.workspace = true
-async-recursion.workspace = true
-image.workspace = true
-anyhow.workspace = true
-relative-path.workspace = true
-convert_case.workspace = true
-slugify.workspace = true
-log.workspace = true
-glob.workspace = true
-yaml-rust.workspace = true
-tracing.workspace = true
-parking_lot.workspace = true
-async-trait.workspace = true
-dyn-clonable.workspace = true
-cargo_toml.workspace = true
+walkdir = { workspace = true }
+futures = { workspace = true }
+tokio = { workspace = true }
+itertools = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+glam = { workspace = true }
+async-recursion = { workspace = true }
+image = { workspace = true }
+anyhow = { workspace = true }
+relative-path = { workspace = true }
+convert_case = { workspace = true }
+slugify = { workspace = true }
+log = { workspace = true }
+glob = { workspace = true }
+yaml-rust = { workspace = true }
+tracing = { workspace = true }
+parking_lot = { workspace = true }
+async-trait = { workspace = true }
+dyn-clonable = { workspace = true }
+cargo_toml = { workspace = true }

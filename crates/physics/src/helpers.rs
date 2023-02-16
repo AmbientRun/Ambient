@@ -1,9 +1,9 @@
 use std::collections::HashSet;
 
 use anyhow::{bail, Context};
-use glam::{vec3, EulerRot, Mat4, Quat, Vec3};
+use glam::{vec3, Vec3};
 use itertools::Itertools;
-use kiwi_core::transform::{get_world_position, get_world_transform, rotation, scale, translation};
+use kiwi_core::transform::{get_world_position, rotation, translation};
 use kiwi_ecs::{query, ECSError, EntityId, World};
 use physxx::{
     AsPxActor, AsPxRigidActor, PxActor, PxActorTypeFlag, PxBase, PxBoxGeometry, PxConvexMeshGeometry, PxJoint, PxMeshScale,
@@ -14,8 +14,8 @@ use physxx::{
 use crate::{
     collider::{collider_shapes_convex, collider_type},
     main_physics_scene,
-    physx::{character_controller, physics, physics_controlled, physics_shape, revolute_joint, rigid_dynamic, rigid_static},
-    unit_mass, unit_velocity, unit_yaw, ColliderScene, PxActorUserData, PxShapeUserData,
+    physx::{physics, physics_controlled, physics_shape, revolute_joint, rigid_dynamic},
+    unit_mass, unit_velocity, ColliderScene, PxActorUserData, PxShapeUserData,
 };
 
 pub fn convert_rigid_static_to_dynamic(world: &mut World, id: EntityId) {

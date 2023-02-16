@@ -27,6 +27,7 @@ use kiwi_renderer::{
 use kiwi_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, AssetUrl, ModelAssetType, ServerBaseUrlKey, TypedAssetUrl},
+    cb,
     download_asset::{AssetError, BytesFromUrl, JsonFromUrl},
     log_result,
     math::Line,
@@ -50,7 +51,7 @@ components!("model", {
     animation_bind_id: String,
 
     model: Arc<Model>,
-    @[Debuggable, Networked, Store, Name["Model from url"], Description["Load a model from the given url or relative path"]]
+    @[Debuggable, Networked, Store, Name["Model from URL"], Description["Load a model from the given URL or relative path."]]
     model_from_url: String,
 
     @[Networked, Store]
@@ -83,7 +84,10 @@ async fn internal_spawn_models_from_defs(
         .set(
             primitives(),
             vec![RenderPrimitive {
-                shader: StandardShaderKey { material_shader: LoadingShaderKey.get(assets), lit: false }.get(assets),
+                shader: cb(move |assets, config| {
+                    StandardShaderKey { material_shader: LoadingShaderKey.get(assets), lit: false, shadow_cascades: config.shadow_cascades }
+                        .get(assets)
+                }),
                 material: mat,
                 mesh: cube,
                 lod: 0,
@@ -281,11 +285,11 @@ impl AsyncAssetKey<Result<Arc<RenderPrimitive>, AssetError>> for PbrRenderPrimit
         if let Some(mat_url) = self.material {
             let mat_def = JsonFromUrl::<PbrMaterialFromUrl>::new(mat_url.clone(), true).get(&assets).await?;
             let mat = mat_def.resolve(&mat_url)?.get(&assets).await?;
-            Ok(Arc::new(RenderPrimitive { material: mat.into(), shader: get_pbr_shader(&assets), mesh, lod: self.lod }))
+            Ok(Arc::new(RenderPrimitive { material: mat.into(), shader: cb(get_pbr_shader), mesh, lod: self.lod }))
         } else {
             Ok(Arc::new(RenderPrimitive {
                 material: FlatMaterialKey::white().get(&assets),
-                shader: get_flat_shader(&assets),
+                shader: cb(get_flat_shader),
                 mesh,
                 lod: self.lod,
             }))

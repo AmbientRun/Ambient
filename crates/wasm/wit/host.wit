@@ -35,11 +35,6 @@ record mat4 {
     w: vec4,
 }
 
-enum entity-filter {
-    any,
-    player,
-}
-
 record object-ref {
     id: string,
 }
@@ -124,7 +119,6 @@ variant component-type {
 
 component-get-index: func(id: string) -> option<u32>
 type components = list<tuple<u32, component-type>>
-
 
 enum virtual-key-code {
     /// The '1' key over the letters.
@@ -340,21 +334,28 @@ record player-raw-input {
 }
 
 // entity
-entity-spawn: func(data: components, persistent: bool) -> entity-id
+entity-spawn: func(data: components) -> entity-id
 entity-despawn: func(entity: entity-id) -> bool
 entity-set-animation-controller: func(entity: entity-id, animation-controller: animation-controller)
-entity-get-linear-velocity: func(entity: entity-id) -> option<vec3>
 entity-in-area: func(position: vec3, radius: float32) -> list<entity-id>
 
 entity-get-component: func(entity: entity-id, index: u32) -> option<component-type>
+
+entity-add-component: func(entity: entity-id, index: u32, value: component-type)
+entity-add-components: func(entity: entity-id, data: components)
+
 entity-set-component: func(entity: entity-id, index: u32, value: component-type)
 entity-set-components: func(entity: entity-id, data: components)
+
 entity-has-component: func(entity: entity-id, index: u32) -> bool
+entity-has-components: func(entity: entity-id, indices: list<u32>) -> bool
+
 entity-remove-component: func(entity: entity-id, index: u32)
 entity-remove-components: func(entity: entity-id, indices: list<u32>)
 
 entity-exists: func(entity: entity-id) -> bool
 entity-query: func(index: u32) -> list<entity-id>
+entity-resources: func() -> entity-id
 
 record query {
     components: list<u32>,

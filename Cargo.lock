@@ -1343,8 +1343,9 @@ dependencies = [
 
 [[package]]
 name = "erased-serde"
-version = "0.3.16"
-source = "git+https://github.com/FredrikNoren/erased-serde.git#997de67dc9a82e7614b2f8acf5baf85aaba5fb42"
+version = "0.3.24"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e4ca605381c017ec7a5fef5e548f1cfaa419ed0f6df6367339300db74c92aa7d"
 dependencies = [
  "serde",
 ]
@@ -2374,13 +2375,16 @@ dependencies = [
  "kiwi_project",
  "kiwi_renderer",
  "kiwi_rpc",
+ "kiwi_sky",
  "kiwi_std",
  "kiwi_ui",
  "kiwi_wasm",
+ "kiwi_water",
  "kiwi_world_audio",
  "local-ip-address",
  "log",
  "parking_lot",
+ "paste",
  "serde",
  "tokio",
  "toml_edit 0.19.3",
@@ -2429,7 +2433,7 @@ dependencies = [
  "kiwi_std",
  "kiwi_ui",
  "parking_lot",
- "profiling 1.0.6",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
  "puffin",
  "puffin_http",
  "thread-priority",
@@ -2592,7 +2596,7 @@ dependencies = [
  "ordered-float",
  "parking_lot",
  "paste",
- "profiling 1.0.6",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
  "serde",
  "tokio",
  "wgpu",
@@ -2615,6 +2619,7 @@ dependencies = [
  "glam 0.22.0",
  "kiwi_core",
  "kiwi_ecs",
+ "kiwi_ecs_editor",
  "kiwi_element",
  "kiwi_element_component",
  "kiwi_gizmos",
@@ -2670,7 +2675,7 @@ dependencies = [
  "once_cell",
  "parking_lot",
  "paste",
- "profiling 1.0.6",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
  "rand 0.8.5",
  "reqwest",
  "serde",
@@ -2746,7 +2751,7 @@ dependencies = [
  "ordered-float",
  "parking_lot",
  "physxx",
- "profiling 1.0.6",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
  "quinn",
  "serde",
  "serde_json",
@@ -2787,7 +2792,7 @@ dependencies = [
  "kiwi_element_component",
  "kiwi_std",
  "parking_lot",
- "profiling 1.0.6",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
  "tokio",
  "tracing",
 ]
@@ -2820,7 +2825,7 @@ dependencies = [
  "kiwi_std",
  "log",
  "once_cell",
- "profiling 1.0.6",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
  "serde",
  "wgpu",
 ]
@@ -2879,7 +2884,7 @@ dependencies = [
  "kiwi_ui",
  "parking_lot",
  "pretty_assertions",
- "profiling 1.0.6",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
  "tokio",
  "tracing",
 ]
@@ -3017,7 +3022,7 @@ dependencies = [
  "manual_future",
  "once_cell",
  "parking_lot",
- "profiling 1.0.6",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
  "quinn",
  "rand 0.8.5",
  "rustls",
@@ -3080,7 +3085,7 @@ dependencies = [
  "ordered-float",
  "parking_lot",
  "physxx",
- "profiling 1.0.6",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
  "rand 0.8.5",
  "serde",
  "serde_json",
@@ -3139,7 +3144,7 @@ dependencies = [
  "log",
  "ordered-float",
  "parking_lot",
- "profiling 1.0.6",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
  "serde",
  "smallvec",
  "wgpu",
@@ -3176,11 +3181,9 @@ dependencies = [
  "bytemuck",
  "derive_more",
  "glam 0.22.0",
- "kiwi_app",
  "kiwi_cameras",
  "kiwi_core",
  "kiwi_ecs",
- "kiwi_element",
  "kiwi_gizmos",
  "kiwi_gpu",
  "kiwi_meshes",
@@ -3216,7 +3219,7 @@ dependencies = [
  "parking_lot",
  "percent-encoding",
  "pin-project",
- "profiling 1.0.6",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
  "rand 0.8.5",
  "relative-path",
  "reqwest",
@@ -3262,7 +3265,7 @@ dependencies = [
  "ndarray",
  "parking_lot",
  "physxx",
- "profiling 1.0.6",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
  "quinn",
  "rand 0.8.5",
  "rand_pcg",
@@ -3342,7 +3345,7 @@ dependencies = [
  "log",
  "parking_lot",
  "physxx",
- "profiling 1.0.6",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
  "reqwest",
  "serde",
  "serde_bytes",
@@ -3351,7 +3354,25 @@ dependencies = [
  "wasi-common",
  "wasmtime",
  "wasmtime-wasi",
+ "wit-bindgen-core",
+ "wit-bindgen-gen-guest-rust",
  "wit-bindgen-host-wasmtime-rust",
+]
+
+[[package]]
+name = "kiwi_water"
+version = "0.1.0"
+dependencies = [
+ "glam 0.22.0",
+ "kiwi_core",
+ "kiwi_ecs",
+ "kiwi_gizmos",
+ "kiwi_gpu",
+ "kiwi_meshes",
+ "kiwi_primitives",
+ "kiwi_renderer",
+ "kiwi_std",
+ "wgpu",
 ]
 
 [[package]]
@@ -3383,7 +3404,7 @@ dependencies = [
  "once_cell",
  "ordered-float",
  "parking_lot",
- "profiling 1.0.6",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
  "serde",
@@ -4492,26 +4513,24 @@ dependencies = [
 
 [[package]]
 name = "profiling"
-version = "1.0.6"
-source = "git+https://github.com/PlayDims/profiling?rev=9a5fbd8119e68a927e354f163cfff15370fa9744#9a5fbd8119e68a927e354f163cfff15370fa9744"
-dependencies = [
- "paste",
- "profiling-procmacros",
- "puffin",
-]
-
-[[package]]
-name = "profiling"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "74605f360ce573babfe43964cbe520294dcb081afbf8c108fc6e23036b4da2df"
 
 [[package]]
-name = "profiling-procmacros"
-version = "1.0.6"
-source = "git+https://github.com/PlayDims/profiling?rev=9a5fbd8119e68a927e354f163cfff15370fa9744#9a5fbd8119e68a927e354f163cfff15370fa9744"
+name = "profiling"
+version = "1.0.7"
+source = "git+https://github.com/philpax/profiling.git#0167b1da12e301b2a19c90a02684527a0f54f935"
 dependencies = [
- "proc-macro2",
+ "profiling-procmacros",
+ "puffin",
+]
+
+[[package]]
+name = "profiling-procmacros"
+version = "1.0.7"
+source = "git+https://github.com/philpax/profiling.git#0167b1da12e301b2a19c90a02684527a0f54f935"
+dependencies = [
  "quote",
  "syn",
 ]
@@ -4527,13 +4546,14 @@ dependencies = [
 
 [[package]]
 name = "puffin"
-version = "0.13.3"
+version = "0.14.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b40725b2702b9c660938b8d9c56978091252374cc50d73a83b59695b8d32ec03"
+checksum = "a7b2c7a01f569fb03e2ff1f5376537f294001447bd23ce75ca51054fcd223fe4"
 dependencies = [
  "anyhow",
  "bincode",
  "byteorder",
+ "instant",
  "once_cell",
  "parking_lot",
  "ruzstd",
@@ -4543,9 +4563,9 @@ dependencies = [
 
 [[package]]
 name = "puffin_http"
-version = "0.10.1"
+version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "97416b785caf341b82fcf48ef820fffc8f661009f994c194f734193298aefe53"
+checksum = "dd0248f6b7425d45ac24cecefc9272d679b8fc18e82c5d3777e90146eb9a9f85"
 dependencies = [
  "anyhow",
  "crossbeam-channel",
@@ -5060,11 +5080,12 @@ checksum = "5583e89e108996506031660fe09baa5011b9dd0341b89029313006d1fb508d70"
 
 [[package]]
 name = "ruzstd"
-version = "0.2.4"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8cada0ef59efa6a5f4dc5e491f93d9f31e3fc7758df421ff1de8a706338e1100"
+checksum = "ffae8df4aa221781b715c27bbed0fac16b6f1e2643efb7af8a24dfc78d444493"
 dependencies = [
  "byteorder",
+ "thiserror",
  "twox-hash",
 ]
 
@@ -6754,7 +6775,7 @@ dependencies = [
  "log",
  "naga",
  "parking_lot",
- "profiling 1.0.7",
+ "profiling 1.0.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "raw-window-handle",
  "smallvec",
  "thiserror",
@@ -6790,7 +6811,7 @@ dependencies = [
  "naga",
  "objc",
  "parking_lot",
- "profiling 1.0.7",
+ "profiling 1.0.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "range-alloc",
  "raw-window-handle",
  "renderdoc-sys",
@@ -7134,6 +7155,16 @@ source = "git+https://github.com/bytecodealliance/wit-bindgen.git?rev=181093b58f
 dependencies = [
  "anyhow",
  "wit-parser",
+]
+
+[[package]]
+name = "wit-bindgen-gen-guest-rust"
+version = "0.2.0"
+source = "git+https://github.com/bytecodealliance/wit-bindgen.git?rev=181093b58f49b194ee34be2d986d737f4f553d3d#181093b58f49b194ee34be2d986d737f4f553d3d"
+dependencies = [
+ "heck 0.3.3",
+ "wit-bindgen-core",
+ "wit-bindgen-gen-rust-lib",
 ]
 
 [[package]]

@@ -1,10 +1,12 @@
 use kiwi_api::{
     components::core::{
-        app::main_scene,
-        camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},
+        camera::{aspect_ratio_from_window, perspective_infinite_reverse},
+        ecs::ids,
+        game_objects::player_camera,
         object::object_from_url,
-        physics::{box_collider, dynamic, physics_controlled},
+        physics::{angular_velocity, box_collider, dynamic, linear_velocity, physics_controlled},
         primitives::cube,
+        rendering::{cast_shadows, color},
         transform::{lookat_center, rotation, scale, translation},
     },
     prelude::*,
@@ -13,32 +15,51 @@ use kiwi_api::{
 #[main]
 pub async fn main() -> EventResult {
     entity::game_object_base()
-        .with_default(main_scene())
-        .with(active_camera(), 0.)
-        .with(translation(), vec3(5.0, 5.0, 4.0))
+        .with_default(player_camera())
+        .with(translation(), vec3(5., 5., 4.))
         .with(lookat_center(), vec3(0., 0., 0.))
         .with(perspective_infinite_reverse(), ())
         .with(aspect_ratio_from_window(), ())
-        .spawn(false);
+        .spawn();
 
     let cube = entity::game_object_base()
         .with_default(cube())
-        .with(box_collider(), vec3(2., 2., 2.))
+        .with(box_collider(), Vec3::ONE)
         .with(dynamic(), true)
         .with_default(physics_controlled())
+        .with_default(cast_shadows())
         .with(translation(), vec3(0., 0., 5.))
         .with(scale(), vec3(0.5, 0.5, 0.5))
-        .spawn(false);
+        .with(color(), Vec4::ONE)
+        .spawn();
 
     entity::game_object_base()
         .with(object_from_url(), "assets/Shape.glb".to_string())
-        .spawn(false);
+        .spawn();
+
+    on(event::COLLISION, |c| {
+        // TODO: play a sound instead
+        println!("Bonk! {:?} collided", c.get(ids()).unwrap());
+        EventOk
+    });
 
     loop {
-        sleep(5.).await;
-        entity::set_component(cube, translation(), vec3(0., 0., 5.));
-        entity::set_component(cube, rotation(), Quat::IDENTITY);
-    }
+        let max_linear_velocity = 2.5;
+        let max_angular_velocity = 360.0f32.to_radians();
 
-    EventOk
+        sleep(5.).await;
+
+        let new_linear_velocity = (random::<Vec3>() - 0.5) * 2. * max_linear_velocity;
+        let new_angular_velocity = (random::<Vec3>() - 0.5) * 2. * max_angular_velocity;
+        println!("And again! Linear velocity: {new_linear_velocity:?} | Angular velocity: {new_angular_velocity:?}");
+        entity::set_components(
+            cube,
+            Components::new()
+                .with(translation(), vec3(0., 0., 5.))
+                .with(rotation(), Quat::IDENTITY)
+                .with(linear_velocity(), new_linear_velocity)
+                .with(angular_velocity(), new_angular_velocity)
+                .with(color(), random::<Vec3>().extend(1.)),
+        );
+    }
 }

@@ -79,13 +79,13 @@ impl Components {
         self.set(component, T::default())
     }
 
-    /// Adds `value` to this `EntityData`, and returns `self` to allow for easy chaining.
+    /// Adds `component` to this with `value`, and returns `self` to allow for easy chaining.
     pub fn with<T: SupportedComponentTypeSet>(mut self, component: Component<T>, value: T) -> Self {
         self.set(component, value);
         self
     }
 
-    /// Adds the default value for `T` to this `EntityData`, and returns `self` to allow for easy chaining.
+    /// Sets the `component` in this to the default value for `T`, and returns `self` to allow for easy chaining.
     pub fn with_default<T: SupportedComponentTypeSet + Default>(
         mut self,
         component: Component<T>,
@@ -94,15 +94,19 @@ impl Components {
         self
     }
 
-    /// Spawns an entity with these components. If `persistent` is set, this entity will not be
-    /// removed when this module is unloaded.
+    /// Removes the specified component from this, and returns the value if it was present.
+    pub fn remove<T: SupportedComponentTypeGet>(&mut self, component: Component<T>) -> Option<T> {
+        T::from_result(self.0.remove(&component.index())?)
+    }
+
+    /// Spawns an entity with these components.
     ///
     /// This is an asynchronous operation; use [entity::wait_for_spawn](crate::entity::wait_for_spawn) to get notified when
     /// the entity is spawned.
     ///
     /// Returns `spawned_entity_uid`.
-    pub fn spawn(&self, persistent: bool) -> crate::prelude::EntityId {
-        crate::entity::spawn(self, persistent)
+    pub fn spawn(&self) -> crate::prelude::EntityId {
+        crate::entity::spawn(self)
     }
 
     pub(crate) fn call_with<R>(

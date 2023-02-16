@@ -1,28 +1,42 @@
 use std::{
-    sync::Arc, time::{Duration, SystemTime}
+    sync::Arc,
+    time::{Duration, SystemTime},
 };
 
 use glam::{uvec2, vec2, Vec2};
 use kiwi_cameras::assets_camera_systems;
 pub use kiwi_core::gpu;
 use kiwi_core::{
-    app_start_time, asset_cache, async_ecs::async_ecs_systems, bounding::bounding_systems, camera::camera_systems, frame_index, gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate}, hierarchy::dump_world_hierarchy_to_tmp_file, mouse_position, on_frame_system, remove_at_time_system, runtime, time, transform::TransformSystem, window_scale_factor, RuntimeKey, TimeResourcesSystem, WindowKey, WindowSyncSystem, WinitEventsSystem
+    app_start_time, asset_cache,
+    async_ecs::async_ecs_systems,
+    bounding::bounding_systems,
+    camera::camera_systems,
+    frame_index,
+    gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate},
+    hierarchy::dump_world_hierarchy_to_tmp_file,
+    mouse_position, on_frame_system, remove_at_time_system, runtime, time,
+    transform::TransformSystem,
+    window_scale_factor, RuntimeKey, TimeResourcesSystem, WindowKey, WindowSyncSystem, WinitEventsSystem,
 };
 use kiwi_ecs::{components, Debuggable, DynSystem, EntityData, FrameEvent, MakeDefault, System, SystemGroup, World};
 use kiwi_element::kiwi_system;
 use kiwi_gizmos::{gizmos, Gizmos};
 use kiwi_gpu::{
-    gpu::{Gpu, GpuKey}, mesh_buffer::MeshBufferKey
+    gpu::{Gpu, GpuKey},
+    mesh_buffer::MeshBufferKey,
 };
 use kiwi_renderer::lod::lod_system;
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt}, fps_counter::{FpsCounter, FpsSample}
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    fps_counter::{FpsCounter, FpsSample},
 };
 use parking_lot::Mutex;
 use renderers::{examples_renderer, ui_renderer, UIRender};
 use tokio::runtime::Runtime;
 use winit::{
-    event::{ElementState, Event, KeyboardInput, ModifiersState, VirtualKeyCode, WindowEvent}, event_loop::{ControlFlow, EventLoop}, window::{Window, WindowBuilder}
+    event::{ElementState, Event, KeyboardInput, ModifiersState, VirtualKeyCode, WindowEvent},
+    event_loop::{ControlFlow, EventLoop},
+    window::{Window, WindowBuilder},
 };
 
 use crate::renderers::ExamplesRender;
@@ -146,16 +160,25 @@ pub struct AppBuilder {
     pub asset_cache: Option<AssetCache>,
     pub ui_renderer: bool,
     pub main_renderer: bool,
+    pub examples_systems: bool,
 }
 impl AppBuilder {
     pub fn new() -> Self {
-        Self { event_loop: None, runtime: None, window_builder: None, asset_cache: None, ui_renderer: false, main_renderer: true }
+        Self {
+            event_loop: None,
+            runtime: None,
+            window_builder: None,
+            asset_cache: None,
+            ui_renderer: false,
+            main_renderer: true,
+            examples_systems: false,
+        }
     }
     pub fn simple() -> Self {
-        Self::new()
+        Self::new().examples_systems(true)
     }
     pub fn simple_ui() -> Self {
-        Self::new().ui_renderer(true).main_renderer(false)
+        Self::new().ui_renderer(true).main_renderer(false).examples_systems(true)
     }
     pub fn simple_dual() -> Self {
         Self::new().ui_renderer(true).main_renderer(true)
@@ -182,6 +205,10 @@ impl AppBuilder {
     }
     pub fn main_renderer(mut self, value: bool) -> Self {
         self.main_renderer = value;
+        self
+    }
+    pub fn examples_systems(mut self, value: bool) -> Self {
+        self.examples_systems = value;
         self
     }
     pub fn build(self) -> anyhow::Result<App> {
@@ -226,6 +253,19 @@ impl AppBuilder {
             }
         }
 
+        let mut window_event_systems = SystemGroup::new(
+            "window_event_systems",
+            vec![
+                Box::new(assets_camera_systems()),
+                Box::new(WinitEventsSystem::new()),
+                Box::new(kiwi_input::event_systems()),
+                Box::new(renderers::systems()),
+            ],
+        );
+        if self.examples_systems {
+            window_event_systems.add(Box::new(ExamplesSystem));
+        }
+
         Ok(App {
             window_focused: true,
             window,
@@ -233,15 +273,7 @@ impl AppBuilder {
             systems: SystemGroup::new("app", vec![Box::new(MeshBufferUpdate), Box::new(world_instance_systems(true))]),
             world,
             gpu_world_sync_systems: gpu_world_sync_systems(),
-            window_event_systems: SystemGroup::new(
-                "window_event_systems",
-                vec![
-                    Box::new(assets_camera_systems()),
-                    Box::new(WinitEventsSystem::new()),
-                    Box::new(kiwi_input::event_systems()),
-                    Box::new(renderers::systems()),
-                ],
-            ),
+            window_event_systems,
             event_loop: Some(event_loop),
 
             fps: FpsCounter::new(),

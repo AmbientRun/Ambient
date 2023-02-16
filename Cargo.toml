@@ -16,7 +16,8 @@ resolver = "2"
 version = "0.0.3"
 
 [workspace.dependencies]
-profiling = { git = "https://github.com/PlayDims/profiling", rev = "9a5fbd8119e68a927e354f163cfff15370fa9744", features = [
+# TEMP: https://github.com/aclysma/profiling/pull/45
+profiling = { git = "https://github.com/philpax/profiling.git", features = [
     "profile-with-puffin",
 ] }
 tracing = "0.1.35"
@@ -49,11 +50,11 @@ lazy_static = "1.4.0"
 derivative = "2.2.0"
 async-trait = "0.1.56"
 png = "0.17.2"
-puffin = "0.13.3"
+puffin = "0.14.3"
 futures-signals = "0.3"
 open = "2.0.2"
 which = "4.3.0"
-puffin_http = "0.10.0"
+puffin_http = "0.11.1"
 fbxcel = { version = "0.9.0", features = ["tree"] }
 reqwest = { version = "0.11.11", default-features = false, features = [
     'blocking',

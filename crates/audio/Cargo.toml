@@ -1,26 +1,26 @@
 [package]
 name = "kiwi_audio"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-flume.workspace = true
-derive_more.workspace = true
-log.workspace = true
-thiserror.workspace = true
-parking_lot.workspace = true
-tokio.workspace = true
-async-trait.workspace = true
-slotmap.workspace = true
-rand.workspace = true
-glam.workspace = true
-itertools.workspace = true
-tracing.workspace = true
-ordered-float.workspace = true
-dashmap.workspace = true
-derivative.workspace = true
+flume = { workspace = true }
+derive_more = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
+parking_lot = { workspace = true }
+tokio = { workspace = true }
+async-trait = { workspace = true }
+slotmap = { workspace = true }
+rand = { workspace = true }
+glam = { workspace = true }
+itertools = { workspace = true }
+tracing = { workspace = true }
+ordered-float = { workspace = true }
+dashmap = { workspace = true }
+derivative = { workspace = true }
 
 kiwi_ui = { path = "../ui/" }
 cpal = "0.14.1"

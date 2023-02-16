@@ -43,3 +43,5 @@ jobs:
         env:
           CARGO_INCREMENTAL: 0
           RUSTFLAGS: "-C debuginfo=0"
+      - name: Build guest/rust
+        run: cd guest/rust && cargo build --workspace

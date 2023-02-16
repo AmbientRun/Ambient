@@ -8,11 +8,11 @@ use kiwi_ecs::{Component, ComponentValue, EntityId, World};
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
 use kiwi_input::{on_app_keyboard_input, MouseButton};
 use kiwi_intent::{client_push_intent, rpc_undo_head_exact};
-use kiwi_network::{client::GameClient, log_network_error};
+use kiwi_network::client::GameClient;
 
 use kiwi_std::{
     asset_url::{select_asset, AssetType},
-    cb, cb_arc, friendly_id, Cb,
+    cb, friendly_id, Cb,
 };
 use kiwi_ui::{
     command_modifier,
@@ -240,13 +240,13 @@ impl ElementComponent for EditorBuildMode {
                             let set_selection = set_selection.clone();
                             set_screen(Some(
                                 EntityBrowserScreen {
-                                    on_select: cb_arc(Arc::new({
+                                    on_select: cb({
                                         let set_screen = set_screen.clone();
                                         move |id| {
                                             set_selection(Selection::new([id]));
                                             set_screen(None);
                                         }
-                                    })),
+                                    }),
                                     on_back: cb({
                                         let set_screen = set_screen.clone();
                                         move || set_screen(None)

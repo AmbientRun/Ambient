@@ -1,10 +1,10 @@
 use std::{net::SocketAddr, sync::Arc};
 
 use clap::{Parser, Subcommand};
-use kiwi_app::{AppBuilder, ExamplesSystem};
+use kiwi_app::AppBuilder;
 use kiwi_cameras::UICamera;
 use kiwi_core::camera::active_camera;
-use kiwi_debugger::RendererDebugger;
+use kiwi_debugger::Debugger;
 use kiwi_ecs::{EntityData, SystemGroup, World};
 use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
 use kiwi_network::{
@@ -123,7 +123,13 @@ impl Commands {
 fn client_systems() -> SystemGroup {
     SystemGroup::new(
         "client",
-        vec![Box::new(kiwi_decals::client_systems()), Box::new(kiwi_primitives::systems()), Box::new(player::client_systems())],
+        vec![
+            Box::new(kiwi_decals::client_systems()),
+            Box::new(kiwi_primitives::systems()),
+            Box::new(kiwi_sky::systems()),
+            Box::new(kiwi_water::systems()),
+            Box::new(player::client_systems()),
+        ],
     )
 }
 
@@ -134,7 +140,7 @@ fn GameView(_world: &mut World, hooks: &mut Hooks) -> Element {
 
     let show_debug = true;
     if show_debug {
-        RendererDebugger {
+        Debugger {
             get_state: cb(move |cb| {
                 let mut game_state = state.game_state.lock();
                 let game_state = &mut *game_state;
@@ -284,7 +290,6 @@ fn main() -> anyhow::Result<()> {
     let handle = runtime.handle().clone();
     if cli.command.should_run() {
         AppBuilder::simple().ui_renderer(true).with_runtime(runtime).with_asset_cache(assets).run(|app, _runtime| {
-            app.window_event_systems.add(Box::new(ExamplesSystem));
             MainApp { server_addr, user_id }.el().spawn_interactive(&mut app.world);
         });
     } else {

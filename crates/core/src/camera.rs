@@ -1,15 +1,18 @@
 use glam::{vec3, Mat4, Vec2, Vec3, Vec3Swizzles};
 use itertools::Itertools;
 use kiwi_ecs::{
-    components, ensure_has_component, query, query_mut, Component, Description, ECSError, EntityData, EntityId, Name, Networked, Store, SystemGroup, World
+    components, ensure_has_component, query, query_mut, Component, Description, ECSError, EntityData, EntityId, Name, Networked, Store,
+    SystemGroup, World,
 };
 use kiwi_std::{
-    math::Line, shapes::{BoundingBox, Plane, Ray, AABB}
+    math::Line,
+    shapes::{BoundingBox, Plane, Ray, AABB},
 };
 use ordered_float::OrderedFloat;
 
 use crate::{
-    transform::{inv_local_to_world, local_to_world}, window_physical_size
+    transform::{inv_local_to_world, local_to_world},
+    window_physical_size,
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -37,13 +40,13 @@ components!("camera", {
     @[
         Networked, Store,
         Name["Near plane"],
-        Description["The near plane of this camera, measured in metres."]
+        Description["The near plane of this camera, measured in meters."]
     ]
     near: f32,
     @[
         Networked, Store,
         Name["Far plane"],
-        Description["The far plane of this camera, measured in metres."]
+        Description["The far plane of this camera, measured in meters."]
     ]
     far: f32,
     @[
@@ -91,7 +94,7 @@ components!("camera", {
     @[
         Networked, Store,
         Name["Shadows far plane"],
-        Description["The far plane for the shadow camera, measured in metres."]
+        Description["The far plane for the shadow camera, measured in meters."]
     ]
     shadows_far: f32,
 });

@@ -1,9 +1,11 @@
 use kiwi_api::{
     components::core::{
-        app::main_scene,
-        camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},
+        camera::{aspect_ratio_from_window, perspective_infinite_reverse},
+        game_objects::player_camera,
         object::object_from_url,
-        transform::{lookat_center, translation},
+        primitives::quad,
+        rendering::color,
+        transform::{lookat_center, scale, translation},
     },
     entity::{AnimationAction, AnimationController},
     player::KeyCode,
@@ -13,17 +15,22 @@ use kiwi_api::{
 #[main]
 pub async fn main() -> EventResult {
     entity::game_object_base()
-        .with_default(main_scene())
-        .with(active_camera(), 0.)
-        .with(translation(), vec3(5.0, 5.0, 4.0))
-        .with(lookat_center(), vec3(0., 0., 0.))
+        .with_default(player_camera())
+        .with(translation(), vec3(2., 2., 3.0))
+        .with(lookat_center(), vec3(0., 0., 1.))
         .with(perspective_infinite_reverse(), ())
         .with(aspect_ratio_from_window(), ())
-        .spawn(false);
+        .spawn();
+
+    entity::game_object_base()
+        .with_default(quad())
+        .with(scale(), Vec3::ONE * 10.)
+        .with(color(), vec4(0.5, 0.5, 0.5, 1.))
+        .spawn();
 
     let unit_id = entity::game_object_base()
         .with(object_from_url(), "assets/Peasant Man.fbx".to_string())
-        .spawn(false);
+        .spawn();
 
     entity::set_animation_controller(
         unit_id,

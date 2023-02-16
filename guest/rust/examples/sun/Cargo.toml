@@ -1,0 +1,11 @@
+[package]
+name = "sun"
+edition = "2021"
+version = "0.0.1"
+
+[dependencies]
+kiwi_api = "0.0.3"
+
+[lib]
+crate-type = ["cdylib"]
+required-features = []

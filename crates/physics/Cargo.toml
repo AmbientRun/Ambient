@@ -1,7 +1,7 @@
 
 [package]
 name = "kiwi_physics"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -19,21 +19,21 @@ kiwi_gizmos = { path = "../gizmos" }
 kiwi_model = { path = "../model" }
 kiwi_primitives = { path = "../primitives" }
 physxx = { path = "../../libs/physxx" }
-serde.workspace = true
-serde_json.workspace = true
-glam.workspace = true
-itertools.workspace = true
-futures.workspace = true
-rand.workspace = true
-async-trait.workspace = true
-parking_lot.workspace = true
-tracing.workspace = true
-anyhow.workspace = true
-profiling.workspace = true
-ordered-float.workspace = true
-once_cell.workspace = true
-tokio.workspace = true
-log.workspace = true
+serde = { workspace = true }
+serde_json = { workspace = true }
+glam = { workspace = true }
+itertools = { workspace = true }
+futures = { workspace = true }
+rand = { workspace = true }
+async-trait = { workspace = true }
+parking_lot = { workspace = true }
+tracing = { workspace = true }
+anyhow = { workspace = true }
+profiling = { workspace = true }
+ordered-float = { workspace = true }
+once_cell = { workspace = true }
+tokio = { workspace = true }
+log = { workspace = true }
 
 [dev-dependencies]
 kiwi_app = { path = "../app" }

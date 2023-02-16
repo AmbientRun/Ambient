@@ -208,7 +208,7 @@ pub fn animation_systems() -> SystemGroup {
                 let mut in_error = Vec::new();
                 for (id, (controller, binder)) in q.iter(world, qs) {
                     let retaget = world.get(id, animation_retargeting()).unwrap_or(AnimationRetargeting::None);
-                    let model = world.get_ref(id, model_from_url()).ok().and_then(|def| Some(TypedAssetUrl::parse(def).ok()?));
+                    let model = world.get_ref(id, model_from_url()).ok().and_then(|def| TypedAssetUrl::parse(def).ok());
                     // Calc
                     for action in controller.actions.iter() {
                         match action.clip.get_clip(assets.clone(), retaget, model.clone()) {

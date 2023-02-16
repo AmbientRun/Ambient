@@ -5,13 +5,16 @@ use kiwi_app::{gpu, AppBuilder};
 use kiwi_core::{asset_cache, camera::active_camera, main_scene, transform::*};
 use kiwi_ecs::{EntityData, World};
 use kiwi_gpu::{
-    std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey}, texture::Texture
+    std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey},
+    texture::Texture,
 };
 use kiwi_meshes::CubeMeshKey;
 use kiwi_renderer::{
-    gpu_primitives, materials::pbr_material::{get_pbr_shader, PbrMaterial, PbrMaterialConfig, PbrMaterialParams}, primitives, RenderPrimitive, SharedMaterial
+    gpu_primitives,
+    materials::pbr_material::{get_pbr_shader, PbrMaterial, PbrMaterialConfig, PbrMaterialParams},
+    primitives, RenderPrimitive, SharedMaterial,
 };
-use kiwi_std::{asset_cache::SyncAssetKeyExt, math::SphericalCoords};
+use kiwi_std::{asset_cache::SyncAssetKeyExt, cb, math::SphericalCoords};
 
 fn init(world: &mut World) {
     let gpu = world.resource(gpu()).clone();
@@ -37,7 +40,7 @@ fn init(world: &mut World) {
     ));
 
     EntityData::new()
-        .set(primitives(), vec![RenderPrimitive { shader: get_pbr_shader(&assets), material: mat, mesh: CubeMeshKey.get(&assets), lod: 0 }])
+        .set(primitives(), vec![RenderPrimitive { shader: cb(get_pbr_shader), material: mat, mesh: CubeMeshKey.get(&assets), lod: 0 }])
         .set_default(gpu_primitives())
         .set(main_scene(), ())
         .set_default(local_to_world())

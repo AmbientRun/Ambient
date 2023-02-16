@@ -8,7 +8,7 @@ use kiwi_ecs::{EntityId, World};
 use kiwi_element::{element_component, Element, ElementComponent, ElementComponentExt, Group, Hooks};
 use kiwi_network::client::GameClient;
 use kiwi_std::{
-    cb, cb_arc,
+    cb,
     shapes::{Plane, Ray, RayIntersectable},
     Cb,
 };
@@ -375,7 +375,7 @@ impl ElementComponent for ScaleController {
         };
 
         AxisButtons { axis, set_axis }.el().children(vec![Group(vec![HighjackMouse {
-            on_mouse_move: cb_arc(Arc::new(move |_, pos, _| update(pos))),
+            on_mouse_move: cb(move |_, pos, _| update(pos)),
             on_click: cb(move |button| {
                 if button != MouseButton::Left {
                     return;
@@ -483,9 +483,9 @@ impl ElementComponent for RotateController {
 
         items.push(
             HighjackMouse {
-                on_mouse_move: cb_arc(Arc::new(move |_, pos, _| {
+                on_mouse_move: cb(move |_, pos, _| {
                     update(pos);
-                })),
+                }),
                 on_click: cb(move |button| {
                     if button != MouseButton::Left {
                         return;

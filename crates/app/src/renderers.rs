@@ -5,14 +5,17 @@ use kiwi_core::{asset_cache, gpu, main_scene, ui_scene, window};
 use kiwi_ecs::{components, query, FrameEvent, System, SystemGroup, World};
 use kiwi_gizmos::render::GizmoRenderer;
 use kiwi_gpu::{
-    blit::{Blitter, BlitterKey}, gpu::Gpu, texture::{Texture, TextureView}
+    blit::{Blitter, BlitterKey},
+    gpu::Gpu,
+    texture::{Texture, TextureView},
 };
 use kiwi_renderer::{renderer_stats, RenderTarget, Renderer, RendererConfig, RendererTarget};
 use kiwi_std::{asset_cache::SyncAssetKeyExt, color::Color};
 use kiwi_ui::app_background_color;
 use parking_lot::Mutex;
 use winit::{
-    dpi::PhysicalSize, event::{Event, WindowEvent}
+    dpi::PhysicalSize,
+    event::{Event, WindowEvent},
 };
 
 components!("app_renderers", {
@@ -77,16 +80,13 @@ impl ExamplesRender {
 
         Self {
             main: if main {
-                Some(Renderer::new(
+                let mut renderer = Renderer::new(
                     world,
                     world.resource(asset_cache()).clone(),
-                    RendererConfig {
-                        scene: main_scene(),
-                        shadows: true,
-                        post_transparent: Some(Box::new(GizmoRenderer::new(&assets))),
-                        ..Default::default()
-                    },
-                ))
+                    RendererConfig { scene: main_scene(), shadows: true, ..Default::default() },
+                );
+                renderer.post_transparent = Some(Box::new(GizmoRenderer::new(&assets)));
+                Some(renderer)
             } else {
                 None
             },
@@ -218,17 +218,14 @@ impl UIRender {
         ));
 
         let assets = world.resource(asset_cache()).clone();
+        let mut ui_renderer = Renderer::new(
+            world,
+            world.resource(asset_cache()).clone(),
+            RendererConfig { scene: ui_scene(), shadows: false, ..Default::default() },
+        );
+        ui_renderer.post_transparent = Some(Box::new(GizmoRenderer::new(&assets)));
         Self {
-            ui_renderer: Renderer::new(
-                world,
-                world.resource(asset_cache()).clone(),
-                RendererConfig {
-                    scene: ui_scene(),
-                    shadows: false,
-                    post_transparent: Some(Box::new(GizmoRenderer::new(&assets))),
-                    ..Default::default()
-                },
-            ),
+            ui_renderer,
             depth_buffer_view: Arc::new(depth_buffer.create_view(&Default::default())),
             gpu,
             normals_view: Arc::new(normals.create_view(&Default::default())),

@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use itertools::Itertools;
 use kiwi_core::{name, runtime, selectable, tags};
 use kiwi_ecs::{query, EntityId, World};
@@ -10,7 +8,7 @@ use kiwi_network::{
     is_remote_entity, log_network_result,
     rpc::rpc_world_diff,
 };
-use kiwi_std::{cb, cb_arc, Cb};
+use kiwi_std::{cb, Cb};
 use kiwi_ui::{fit_horizontal, space_between_items, Button, ButtonStyle, DialogScreen, Fit, FlowColumn, FlowRow, ScrollArea, STREET};
 
 #[derive(Debug, Clone)]
@@ -128,9 +126,9 @@ impl ElementComponent for EntityBrowserScreen {
                         .memoize_subtree("")
                     } else {
                         EntityBrowser {
-                            on_select: cb_arc(Arc::new(move |id| {
+                            on_select: cb(move |id| {
                                 on_select(id);
-                            })),
+                            }),
                         }
                         .el()
                     },

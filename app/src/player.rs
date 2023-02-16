@@ -8,10 +8,14 @@ use kiwi_core::{camera::active_camera, main_scene, on_frame, runtime};
 use kiwi_ecs::{query, query_mut, EntityData, SystemGroup, World};
 use kiwi_element::{element_component, Element, Hooks};
 use kiwi_input::{
-    on_app_focus_change, on_app_keyboard_input, on_app_mouse_input, on_app_mouse_motion, on_app_mouse_wheel, player_prev_raw_input, player_raw_input, ElementState, MouseScrollDelta, PlayerRawInput
+    on_app_focus_change, on_app_keyboard_input, on_app_mouse_input, on_app_mouse_motion, on_app_mouse_wheel, player_prev_raw_input,
+    player_raw_input, ElementState, MouseScrollDelta, PlayerRawInput,
 };
 use kiwi_network::{
-    client::game_client, get_player_by_user_id, player::{local_user_id, player, user_id}, DatagramHandlers
+    client::game_client,
+    get_player_by_user_id,
+    player::{local_user_id, player, user_id},
+    DatagramHandlers,
 };
 use kiwi_std::unwrap_log_err;
 use kiwi_world_audio::audio_listener;
@@ -21,12 +25,16 @@ const PLAYER_INPUT_DATAGRAM_ID: u32 = 5;
 
 mod components {
     pub mod game_objects {
-        use kiwi_ecs::{components, Networked};
+        use kiwi_ecs::{components, Debuggable, Description, Name, Networked};
 
         components!("game_objects", {
             // attached to a camera entity to mark it as belonging to a player
             // player is located through user_id
-            @[Networked]
+            @[
+                Networked, Debuggable,
+                Name["Player Camera"],
+                Description["If attached to a camera entity, this camera will be used as a player's primary camera.\nIf a `user_id` is specified, this camera will only be used for that player; otherwise, it will be used for every player.\nThis component is temporary and will likely be removed with the addition of clientside scripting."]
+            ]
             player_camera: (),
         });
     }

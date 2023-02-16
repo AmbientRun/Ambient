@@ -3,18 +3,22 @@ use std::{collections::HashMap, sync::Arc};
 use kiwi_core::transform::translation;
 use kiwi_ecs::{query, EntityId, QueryState, World};
 use kiwi_gpu::{
-    gpu::Gpu, mesh_buffer::{GpuMesh, MeshBuffer}, shader_module::{GraphicsPipeline, GraphicsPipelineInfo}
+    gpu::Gpu,
+    mesh_buffer::{GpuMesh, MeshBuffer},
+    shader_module::{GraphicsPipeline, GraphicsPipelineInfo},
 };
 use kiwi_meshes::QuadMeshKey;
 use kiwi_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use ordered_float::OrderedFloat;
 use wgpu::{
-    BindGroup, ColorTargetState, CommandEncoder, IndexFormat, RenderPassColorAttachment, RenderPassDepthStencilAttachment, RenderPassDescriptor, RenderPipeline
+    BindGroup, ColorTargetState, CommandEncoder, IndexFormat, RenderPassColorAttachment, RenderPassDepthStencilAttachment,
+    RenderPassDescriptor, RenderPipeline,
 };
 
 use super::{
-    material, overlay, renderer_shader, FSMain, RendererResources, RendererShader, RendererTarget, SharedMaterial, MATERIAL_BIND_GROUP
+    material, overlay, renderer_shader, FSMain, RendererResources, RendererShader, RendererTarget, SharedMaterial, MATERIAL_BIND_GROUP,
 };
+use crate::RendererConfig;
 
 struct OverlayEntity {
     id: EntityId,
@@ -31,7 +35,9 @@ pub struct OverlayConfig {
 }
 
 pub struct OverlayRenderer {
+    assets: AssetCache,
     config: OverlayConfig,
+    renderer_config: RendererConfig,
     pipelines_map: HashMap<String, usize>,
     pipelines: Vec<GraphicsPipeline>,
     mesh: Arc<GpuMesh>,
@@ -41,9 +47,11 @@ pub struct OverlayRenderer {
 }
 
 impl OverlayRenderer {
-    pub fn new(assets: AssetCache, config: OverlayConfig) -> Self {
+    pub fn new(assets: AssetCache, renderer_config: RendererConfig, config: OverlayConfig) -> Self {
         Self {
+            assets: assets.clone(),
             config,
+            renderer_config,
             entities: Vec::new(),
             spawn_qs: QueryState::new(),
             despawn_qs: QueryState::new(),
@@ -61,7 +69,7 @@ impl OverlayRenderer {
         {
             self.remove(id);
 
-            let shader = self.shader(shader).0;
+            let shader = self.shader(&shader(&self.assets, &self.renderer_config)).0;
 
             // Insert again
             self.entities.push(OverlayEntity { shader, id, depth: OrderedFloat(pos.z), material: material.clone() })

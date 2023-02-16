@@ -9,14 +9,13 @@ use kiwi_core::{
 };
 use kiwi_decals::decal;
 use kiwi_ecs::{
-    id, with_component_registry, Component, ComponentDesc, ComponentEntry, ComponentValue, EntityData, EntityId, PrimitiveComponentType,
-    World,
+    with_component_registry, Component, ComponentDesc, ComponentEntry, ComponentValue, EntityData, EntityId, PrimitiveComponentType, World,
 };
 use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
 use kiwi_intent::client_push_intent;
 use kiwi_network::{client::GameClient, hooks::use_remote_component};
 use kiwi_physics::collider::{character_controller_height, character_controller_radius, collider, collider_type, mass};
-use kiwi_std::{asset_url::ObjectRef, cb, cb_arc, Cb, IntoDuration};
+use kiwi_std::{asset_url::ObjectRef, cb, Cb};
 use kiwi_ui::{
     align_horizontal, align_vertical,
     layout::{fit_horizontal, margin, Borders, Fit},
@@ -24,7 +23,6 @@ use kiwi_ui::{
     ScreenContainer, StylesExt, Text, STREET,
 };
 use serde::{Deserialize, Serialize};
-use winit::event::VirtualKeyCode;
 
 use super::EditingEntityContext;
 use crate::intents::intent_component_change;
@@ -58,19 +56,15 @@ pub fn EntityEditor(world: &mut World, hooks: &mut Hooks, entity_id: EntityId) -
     let runtime = world.resource(runtime()).clone();
 
     if let Some(entity) = entity {
-        let translation = entity.get_cloned(translation());
+        let _translation = entity.get_cloned(translation());
         FlowColumn(vec![
             Text::el(name).section_style(),
             if let Some(mass) = entity.get(mass()) { Text::el(format!("{mass} kg")).small_style() } else { Element::new() },
             ObjectComponentsEditor {
                 value: entity,
-                on_change: cb_arc(Arc::new({
-                    let game_client = game_client.clone();
-                    let runtime = runtime.clone();
-                    move |change| {
-                        runtime.spawn(client_push_intent(game_client.clone(), intent_component_change(), (entity_id, change), None, None));
-                    }
-                })),
+                on_change: cb(move |change| {
+                    runtime.spawn(client_push_intent(game_client.clone(), intent_component_change(), (entity_id, change), None, None));
+                }),
             }
             .el()
             .set(fit_horizontal(), Fit::Parent),
@@ -157,8 +151,8 @@ fn ObjectComponentsEditor(
                     component,
                     display_name: display_name.to_string(),
                     inline: short,
-                    on_change: cb_arc(Arc::new(closure!(clone on_change, |value| on_change(ObjectComponentChange::Change(value))))),
-                    on_remove: cb_arc(Arc::new(move || on_change(ObjectComponentChange::Remove(component.into())))),
+                    on_change: cb(closure!(clone on_change, |value| on_change(ObjectComponentChange::Change(value)))),
+                    on_remove: cb(move || on_change(ObjectComponentChange::Remove(component.into()))),
                 }
                 .el(),
             ))
@@ -254,7 +248,7 @@ fn ObjectComponentsEditor(
                     let items = missing_components.iter().map(|x| Text::el(x.0.to_string())).collect_vec();
                     DropdownSelect {
                         content: Text::el("Add component"),
-                        on_select: cb_arc(Arc::new(move |index| missing_components[index].1())),
+                        on_select: cb(move |index| missing_components[index].1()),
                         items,
                         inline: false,
                     }

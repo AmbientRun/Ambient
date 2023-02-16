@@ -2,21 +2,27 @@ use std::{num::NonZeroU32, sync::Arc};
 
 use glam::Vec3;
 use kiwi_core::{
-    asset_cache, bounding::world_bounding_sphere, camera::shadow_cameras_from_world, hierarchy::{dump_world_hierarchy, dump_world_hierarchy_to_tmp_file}, main_scene, runtime
+    asset_cache,
+    bounding::world_bounding_sphere,
+    camera::shadow_cameras_from_world,
+    hierarchy::{dump_world_hierarchy, dump_world_hierarchy_to_tmp_file},
+    main_scene, runtime,
 };
 use kiwi_ecs::{query, World};
+use kiwi_ecs_editor::ECSEditor;
 use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
 use kiwi_gizmos::{gizmos, GizmoPrimitive};
 use kiwi_network::client::{GameClient, GameRpcArgs};
 use kiwi_renderer::{RenderTarget, Renderer};
 use kiwi_rpc::RpcRegistry;
-use kiwi_std::{asset_cache::SyncAssetKeyExt, color::Color, download_asset::AssetsCacheDir, line_hash, Cb};
+use kiwi_std::{asset_cache::SyncAssetKeyExt, cb, color::Color, download_asset::AssetsCacheDir, line_hash, Cb};
 use kiwi_ui::{
-    fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit, FlowColumn, FlowRow, Image, UIExt, VirtualKeyCode
+    fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit, FlowColumn, FlowRow, Image, UIExt,
+    VirtualKeyCode,
 };
 use winit::event::ModifiersState;
 
-type GetRendererState = Cb<dyn Fn(&mut dyn FnMut(&mut Renderer, &RenderTarget, &mut World)) + Sync + Send>;
+type GetDebuggerState = Cb<dyn Fn(&mut dyn FnMut(&mut Renderer, &RenderTarget, &mut World)) + Sync + Send>;
 
 pub async fn rpc_dump_world_hierarchy(args: GameRpcArgs, _: ()) -> Option<String> {
     let mut res = Vec::new();
@@ -31,11 +37,22 @@ pub fn register_rpcs(reg: &mut RpcRegistry<GameRpcArgs>) {
 }
 
 #[element_component]
-pub fn RendererDebugger(_world: &mut World, hooks: &mut Hooks, get_state: GetRendererState) -> Element {
+pub fn Debugger(_world: &mut World, hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
     let (show_shadows, set_show_shadows) = hooks.use_state(false);
+    let (show_ecs, set_show_ecs) = hooks.use_state(false);
     let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
     FlowColumn::el([
         FlowRow(vec![
+            Button::new("Show entities", {
+                move |_| {
+                    set_show_ecs(!show_ecs);
+                }
+            })
+            .toggled(show_ecs)
+            .hotkey_modifier(ModifiersState::SHIFT)
+            .hotkey(VirtualKeyCode::F1)
+            .style(ButtonStyle::Flat)
+            .el(),
             Button::new("Dump Client World", {
                 let get_state = get_state.clone();
                 move |_world| {
@@ -132,32 +149,40 @@ pub fn RendererDebugger(_world: &mut World, hooks: &mut Hooks, get_state: GetRen
         .el()
         .set(space_between_items(), 5.),
         if show_shadows { ShadowMapsViz { get_state: get_state.clone() }.el() } else { Element::new() },
+        if show_ecs {
+            ECSEditor { get_world: cb(move |res| get_state(&mut move |_, _, world| res(world))), on_change: cb(|_, _| {}) }
+                .el()
+                .set(height(), 200.)
+        } else {
+            Element::new()
+        },
     ])
     .with_background(Color::rgba(0., 0., 0., 1.))
     .set(fit_horizontal(), Fit::Parent)
 }
 
 #[element_component]
-fn ShadowMapsViz(_: &mut World, hooks: &mut Hooks, get_state: GetRendererState) -> Element {
+fn ShadowMapsViz(_: &mut World, hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
     let (shadow_cascades, _) = hooks.use_state_with(|| {
         let mut n_cascades = 0;
         get_state(&mut |renderer, _, _| {
-            n_cascades = renderer.shadows.as_ref().map(|x| x.n_cascades()).unwrap_or_default();
+            n_cascades = renderer.config.shadow_cascades;
         });
         n_cascades
     });
     FlowRow::el((0..shadow_cascades).map(|i| ShadowMapViz { get_state: get_state.clone(), cascade: i }.el()).collect::<Vec<_>>())
         .set(space_between_items(), 5.)
+        .with_background(Color::rgb(0.0, 0., 0.3))
 }
 
 #[element_component]
-fn ShadowMapViz(_: &mut World, hooks: &mut Hooks, get_state: GetRendererState, cascade: usize) -> Element {
+fn ShadowMapViz(_: &mut World, hooks: &mut Hooks, get_state: GetDebuggerState, cascade: u32) -> Element {
     let (texture, _) = hooks.use_state_with(|| {
         let mut tex = None;
         get_state(&mut |renderer, _, _| {
             tex = Some(renderer.shadows.as_ref().map(|x| {
                 Arc::new(x.shadow_texture.create_view(&wgpu::TextureViewDescriptor {
-                    base_array_layer: cascade as u32,
+                    base_array_layer: cascade,
                     array_layer_count: NonZeroU32::new(1),
                     dimension: Some(wgpu::TextureViewDimension::D2),
                     ..Default::default()
@@ -170,7 +195,7 @@ fn ShadowMapViz(_: &mut World, hooks: &mut Hooks, get_state: GetRendererState, c
 }
 
 #[element_component]
-fn ShaderDebug(_: &mut World, hooks: &mut Hooks, get_state: GetRendererState) -> Element {
+fn ShaderDebug(_: &mut World, hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
     let (show, set_show) = hooks.use_state(false);
 
     let (_, upd) = hooks.use_state(());

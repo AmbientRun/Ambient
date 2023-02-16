@@ -28,17 +28,6 @@ pub fn cb<T>(f: T) -> Cb<T> {
     Arc::new(CbDebuggable(f))
 }
 
-/// Helper for constructing a `Cb`.
-///
-/// Sometimes, it is necessary to construct the contained type more directly (due to type inference
-/// issues or unsizing). This provides a way to do that.
-pub fn cb_arc<T: ?Sized>(f: Arc<T>) -> Cb<T> {
-    assert_eq!(Arc::strong_count(&f), 1);
-
-    let inner = Arc::into_raw(f);
-    unsafe { Arc::from_raw(inner as *const CbDebuggable<T>) }
-}
-
 pub fn log_error(err: &anyhow::Error) {
     #[cfg(feature = "sentry")]
     sentry_anyhow::capture_anyhow(err);

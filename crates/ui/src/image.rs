@@ -5,14 +5,20 @@ use kiwi_core::{asset_cache, mesh, transform::*, ui_scene};
 use kiwi_ecs::World;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_gpu::{
-    std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey}, texture::TextureView, texture_loaders::{TextureFromBytes, TextureFromUrl}
+    std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey},
+    texture::TextureView,
+    texture_loaders::{TextureFromBytes, TextureFromUrl},
 };
 use kiwi_meshes::UIRectMeshKey;
 use kiwi_renderer::{
-    color, gpu_primitives, material, materials::pbr_material::{get_pbr_shader_unlit, PbrMaterial, PbrMaterialConfig, PbrMaterialParams}, primitives, renderer_shader, SharedMaterial
+    color, gpu_primitives, material,
+    materials::pbr_material::{get_pbr_shader_unlit, PbrMaterial, PbrMaterialConfig, PbrMaterialParams},
+    primitives, renderer_shader, SharedMaterial,
 };
 use kiwi_std::{
-    asset_cache::{AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::AbsAssetUrl, CowStr
+    asset_cache::{AsyncAssetKeyExt, SyncAssetKeyExt},
+    asset_url::AbsAssetUrl,
+    cb, CowStr,
 };
 
 use super::UIBase;
@@ -53,7 +59,7 @@ impl ElementComponent for Image {
             .init(mesh(), UIRectMeshKey.get(&assets))
             .init_default(mesh_to_local())
             .init_default(mesh_to_local_from_size())
-            .init(renderer_shader(), get_pbr_shader_unlit(&assets))
+            .init(renderer_shader(), cb(get_pbr_shader_unlit))
             .init(primitives(), vec![])
             .init_default(gpu_primitives())
             .init(ui_scene(), ())

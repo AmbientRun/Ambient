@@ -2,11 +2,15 @@ use std::{sync::Arc, time::Instant};
 
 use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
 use kiwi_core::{
-    camera::{far, fog, get_active_camera, projection_view}, transform::{get_world_position, get_world_rotation, local_to_world}
+    camera::{far, fog, get_active_camera, projection_view},
+    transform::{get_world_position, get_world_rotation, local_to_world},
 };
-use kiwi_ecs::{Component, World};
+use kiwi_ecs::{Component, ECSError, World};
 use kiwi_gpu::{
-    gpu::{Gpu, GpuKey}, shader_module::BindGroupDesc, std_assets::DefaultSamplerKey, texture::{Texture, TextureView}
+    gpu::{Gpu, GpuKey},
+    shader_module::BindGroupDesc,
+    std_assets::DefaultSamplerKey,
+    texture::{Texture, TextureView},
 };
 use kiwi_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use wgpu::BindGroup;
@@ -52,9 +56,9 @@ impl Default for GlobalParams {
             camera_position: Vec4::new(1.0, 0.0, 0.2, 0.0),
             camera_forward: Vec3::X,
             camera_far: 1e6,
-            sun_direction: vec3(1., 1., 1.).normalize().extend(0.),
-            sun_diffuse: Vec4::ONE * 0.8,
-            sun_ambient: Vec4::ONE * 0.2,
+            sun_direction: default_sun_direction().extend(0.),
+            sun_diffuse: Vec4::ONE * 3.0,
+            sun_ambient: Vec4::ONE * 0.05,
             fog_color: Vec4::ONE * 0.2,
             forward_camera_position: Vec4::new(1.0, 0.0, 0.2, 0.0),
             fog: 0,
@@ -64,6 +68,10 @@ impl Default for GlobalParams {
             debug_params: Default::default(),
         }
     }
+}
+
+pub fn default_sun_direction() -> Vec3 {
+    vec3(-0.2, 1., 1.).normalize()
 }
 
 pub fn globals_layout() -> BindGroupDesc {
@@ -219,22 +227,29 @@ impl ForwardGlobals {
         })
     }
     pub fn update(&mut self, world: &World, shadow_cameras: &[ShadowCameraData]) {
+        let mut p = &mut self.params;
         if let Some(id) = get_active_camera(world, self.scene) {
-            self.params.projection_view = world.get(id, projection_view()).unwrap_or_default();
-            self.params.inv_projection_view = self.params.projection_view.inverse();
-            self.params.camera_position = get_world_position(world, id).unwrap_or_default().extend(1.);
-            self.params.camera_forward = world.get(id, local_to_world()).unwrap_or_default().transform_vector3(Vec3::Z);
-            self.params.camera_far = world.get(id, far()).unwrap_or(1e3);
-            self.params.fog = world.has_component(id, fog()) as i32;
-            self.params.forward_camera_position = self.params.camera_position;
+            p.projection_view = world.get(id, projection_view()).unwrap_or_default();
+            p.inv_projection_view = p.projection_view.inverse();
+            p.camera_position = get_world_position(world, id).unwrap_or_default().extend(1.);
+            p.camera_forward = world.get(id, local_to_world()).unwrap_or_default().transform_vector3(Vec3::Z);
+            p.camera_far = world.get(id, far()).unwrap_or(1e3);
+            p.fog = world.has_component(id, fog()) as i32;
+            p.forward_camera_position = p.camera_position;
         }
         if let Some(sun) = get_active_sun(world, self.scene) {
-            self.params.sun_direction = get_world_rotation(world, sun).unwrap_or_default().mul_vec3(Vec3::X).extend(1.);
-            self.params.sun_diffuse = world.get(sun, light_diffuse()).unwrap_or(Vec3::ONE).extend(1.);
-            self.params.sun_ambient = world.get(sun, light_ambient()).unwrap_or(Vec3::ZERO).extend(1.);
-            self.params.fog_color = world.get(sun, fog_color()).unwrap_or(Vec3::ONE).extend(1.);
-            self.params.fog_height_falloff = world.get(sun, fog_height_falloff()).unwrap_or(0.5);
-            self.params.fog_density = world.get(sun, fog_density()).unwrap_or(0.5);
+            fn update<T, U>(out: &mut T, input: Result<U, ECSError>, mapper: impl Fn(U) -> T) {
+                if let Ok(value) = input {
+                    *out = mapper(value);
+                }
+            }
+
+            update(&mut p.sun_direction, get_world_rotation(world, sun), |v| v.mul_vec3(Vec3::X).extend(1.));
+            update(&mut p.sun_diffuse, world.get(sun, light_diffuse()), |v| v.extend(1.));
+            update(&mut p.sun_ambient, world.get(sun, light_ambient()), |v| v.extend(1.));
+            update(&mut p.fog_color, world.get(sun, fog_color()), |v| v.extend(1.));
+            update(&mut p.fog_height_falloff, world.get(sun, fog_height_falloff()), |v| v);
+            update(&mut p.fog_density, world.get(sun, fog_density()), |v| v);
         }
         self.params.time = Instant::now().duration_since(self.start_time).as_secs_f32();
         self.gpu.queue.write_buffer(&self.buffer, 0, bytemuck::cast_slice(&[self.params]));

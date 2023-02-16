@@ -3,18 +3,24 @@ use std::f32::consts::PI;
 use glam::*;
 use kiwi_app::AppBuilder;
 use kiwi_core::{
-    asset_cache, camera::active_camera, main_scene, transform::{rotation, scale, translation}
+    asset_cache,
+    camera::active_camera,
+    main_scene,
+    transform::{rotation, scale, translation},
 };
 use kiwi_decals::DecalShaderKey;
 use kiwi_ecs::World;
 use kiwi_element::ElementComponentExt;
 use kiwi_primitives::{Cube, Quad};
 use kiwi_renderer::{
-    cast_shadows, color, material, materials::{
-        flat_material::FlatMaterial, pbr_material::{PbrMaterial, PbrMaterialShaderKey}
-    }, renderer_shader, SharedMaterial
+    cast_shadows, color, material,
+    materials::{
+        flat_material::FlatMaterial,
+        pbr_material::{PbrMaterial, PbrMaterialShaderKey},
+    },
+    renderer_shader, SharedMaterial,
 };
-use kiwi_std::{asset_cache::SyncAssetKeyExt, math::SphericalCoords};
+use kiwi_std::{asset_cache::SyncAssetKeyExt, cb, math::SphericalCoords};
 
 fn init(world: &mut World) {
     Cube.el().set(color(), vec4(0.5, 0.5, 0.5, 1.)).set(translation(), Vec3::Z).set_default(cast_shadows()).spawn_static(world);
@@ -25,7 +31,13 @@ fn init(world: &mut World) {
     Cube.el()
         .set(scale(), vec3(2., 2., 4.))
         .set(rotation(), Quat::from_rotation_y(PI / 4.) * Quat::from_rotation_z(PI / 4.))
-        .init(renderer_shader(), DecalShaderKey { material_shader: PbrMaterialShaderKey.get(&assets), lit: true }.get(&assets))
+        .init(
+            renderer_shader(),
+            cb(move |assets, config| {
+                DecalShaderKey { material_shader: PbrMaterialShaderKey.get(assets), lit: true, shadow_cascades: config.shadow_cascades }
+                    .get(assets)
+            }),
+        )
         .init(material(), PbrMaterial::base_color_from_file(&assets, "assets/checkerboard.png").into())
         .spawn_static(world);
 

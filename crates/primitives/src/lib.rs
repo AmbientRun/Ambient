@@ -1,36 +1,80 @@
 use glam::{vec3, Mat4, Quat, Vec3, Vec4};
 use kiwi_core::{
-    asset_cache, bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere}, main_scene, mesh, transform::{local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation}
+    asset_cache,
+    bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere},
+    main_scene, mesh,
+    transform::{local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation},
 };
-use kiwi_ecs::{components, query, Description, EntityData, EntityId, Name, Networked, Store, SystemGroup, World};
+use kiwi_ecs::{
+    components, ensure_has_component_with_make_default, query, DefaultValue, Description, EntityData, EntityId, Name, Networked, Store,
+    SystemGroup, World,
+};
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_gpu::mesh_buffer::GpuMesh;
 pub use kiwi_meshes::UVSphereMesh;
-use kiwi_meshes::{CubeMeshKey, QuadMeshKey};
+use kiwi_meshes::{UnitCubeMeshKey, UnitQuadMeshKey};
 use kiwi_renderer::{
-    color, gpu_primitives, material, materials::flat_material::{get_flat_shader, FlatMaterialKey}, primitives, renderer_shader
+    color, gpu_primitives, material,
+    materials::flat_material::{get_flat_shader, FlatMaterialKey},
+    primitives, renderer_shader,
 };
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt}, mesh::Mesh, shapes::{Sphere, AABB}
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    cb,
+    mesh::Mesh,
+    shapes::{Sphere, AABB},
 };
 
 components!("primitives", {
-    @[Networked, Store, Name["Cube"], Description["If attached to an entity, the entity will be converted to a cube primitive."]]
+    @[
+        Networked, Store,
+        Name["Cube"],
+        Description["If attached to an entity, the entity will be converted to a cube primitive.\nThe cube is unit-sized (i.e. 0.5 metres out to each side)."]
+    ]
     cube: (),
-    @[Networked, Store, Name["Quad"], Description["If attached to an entity, the entity will be converted to a quad primitive."]]
+    @[
+        Networked, Store,
+        Name["Quad"],
+        Description["If attached to an entity, the entity will be converted to a quad primitive.\nThe quad is unit-sized on the XY axes, and flat on the Z axis (i.e. 0.5 metres out to the XY axes)."]
+    ]
     quad: (),
+
+    @[
+        Networked, Store,
+        Name["Sphere"],
+        Description["If attached to an entity, the entity will be converted to a unit-diameter sphere primitive.\nThe sphere can be customized using the `sphere_radius`, `sphere_sectors` and `sphere_stacks` components."]
+    ]
+    sphere: (),
+    @[
+        Networked, Store, DefaultValue<_>[0.5],
+        Name["Sphere radius"],
+        Description["Set the radius of a `sphere` entity."]
+    ]
+    sphere_radius: f32,
+    @[
+        Networked, Store, DefaultValue<_>[36],
+        Name["Sphere sectors"],
+        Description["Set the longitudinal sectors of a `sphere` entity."]
+    ]
+    sphere_sectors: u32,
+    @[
+        Networked, Store, DefaultValue<_>[18],
+        Name["Sphere stacks"],
+        Description["Set the latitudinal stacks of a `sphere` entity."]
+    ]
+    sphere_stacks: u32,
     @[Networked, Store]
-    sphere: UVSphereMesh,
+    uv_sphere: UVSphereMesh,
 });
 
-fn cube_data(assets: &AssetCache) -> EntityData {
-    let aabb = AABB { min: -Vec3::ONE, max: Vec3::ONE };
+pub fn cube_data(assets: &AssetCache) -> EntityData {
+    let aabb = AABB { min: -Vec3::ONE * 0.5, max: Vec3::ONE * 0.5 };
     EntityData::new()
-        .set(mesh(), CubeMeshKey.get(assets))
+        .set(mesh(), UnitCubeMeshKey.get(assets))
         .set_default(local_to_world())
         .set_default(mesh_to_world())
         .set_default(translation())
-        .set(renderer_shader(), get_flat_shader(assets))
+        .set(renderer_shader(), cb(get_flat_shader))
         .set(material(), FlatMaterialKey::white().get(assets))
         .set(primitives(), vec![])
         .set_default(gpu_primitives())
@@ -41,14 +85,14 @@ fn cube_data(assets: &AssetCache) -> EntityData {
         .set(world_bounding_aabb(), aabb)
 }
 
-fn quad_data(assets: &AssetCache) -> EntityData {
-    let aabb = AABB { min: vec3(-1., -1., 0.), max: vec3(1., 1., 0.) };
+pub fn quad_data(assets: &AssetCache) -> EntityData {
+    let aabb = AABB { min: vec3(-0.5, -0.5, 0.), max: vec3(0.5, 0.5, 0.) };
     EntityData::new()
-        .set(mesh(), QuadMeshKey.get(assets))
+        .set(mesh(), UnitQuadMeshKey.get(assets))
         .set_default(local_to_world())
         .set_default(mesh_to_world())
         .set_default(translation())
-        .set(renderer_shader(), get_flat_shader(assets))
+        .set(renderer_shader(), cb(get_flat_shader))
         .set(material(), FlatMaterialKey::white().get(assets))
         .set(primitives(), vec![])
         .set_default(gpu_primitives())
@@ -59,14 +103,14 @@ fn quad_data(assets: &AssetCache) -> EntityData {
         .set(world_bounding_aabb(), aabb)
 }
 
-fn sphere_data(assets: &AssetCache, sphere: &UVSphereMesh) -> EntityData {
+pub fn sphere_data(assets: &AssetCache, sphere: &UVSphereMesh) -> EntityData {
     let bound_sphere = Sphere::new(Vec3::ZERO, sphere.radius);
     EntityData::new()
         .set(mesh(), GpuMesh::from_mesh(assets.clone(), &Mesh::from(*sphere)))
         .set_default(local_to_world())
         .set_default(mesh_to_world())
         .set_default(translation())
-        .set(renderer_shader(), get_flat_shader(assets))
+        .set(renderer_shader(), cb(get_flat_shader))
         .set(material(), FlatMaterialKey::white().get(assets))
         .set(primitives(), vec![])
         .set_default(gpu_primitives())
@@ -101,7 +145,18 @@ pub fn systems() -> SystemGroup {
                     extend(world, id, data);
                 }
             }),
-            query(sphere()).spawned().to_system(|q, world, qs, _| {
+            ensure_has_component_with_make_default(sphere(), sphere_radius()),
+            ensure_has_component_with_make_default(sphere(), sphere_sectors()),
+            ensure_has_component_with_make_default(sphere(), sphere_stacks()),
+            query((sphere_radius().changed(), sphere_sectors().changed(), sphere_stacks().changed())).incl(sphere()).spawned().to_system(
+                |q, world, qs, _| {
+                    for (id, (radius, sectors, stacks)) in q.collect_cloned(world, qs) {
+                        let mesh = UVSphereMesh { radius, sectors: sectors.try_into().unwrap(), stacks: stacks.try_into().unwrap() };
+                        world.add_component(id, uv_sphere(), mesh).unwrap();
+                    }
+                },
+            ),
+            query(uv_sphere()).spawned().to_system(|q, world, qs, _| {
                 for (id, sphere) in q.collect_cloned(world, qs) {
                     let data = sphere_data(world.resource(asset_cache()), &sphere);
                     extend(world, id, data);

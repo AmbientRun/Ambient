@@ -75,7 +75,7 @@ impl Selection {
 
     pub fn union(&mut self, other: &Self) {
         for id in &other.entities {
-            self.add(id.clone())
+            self.add(*id)
         }
     }
 

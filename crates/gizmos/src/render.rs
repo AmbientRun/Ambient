@@ -5,12 +5,16 @@ use glam::{vec2, Mat4, Quat, Vec2, Vec3};
 use kiwi_core::{asset_cache, camera::Camera, main_scene};
 use kiwi_ecs::World;
 use kiwi_gpu::{
-    gpu::{Gpu, GpuKey}, mesh_buffer::{GpuMesh, MeshBuffer}, shader_module::{BindGroupDesc, GraphicsPipeline, GraphicsPipelineInfo, Shader, ShaderModule}, typed_buffer::TypedBuffer
+    gpu::{Gpu, GpuKey},
+    mesh_buffer::{GpuMesh, MeshBuffer},
+    shader_module::{BindGroupDesc, GraphicsPipeline, GraphicsPipelineInfo, Shader, ShaderModule},
+    typed_buffer::TypedBuffer,
 };
 use kiwi_meshes::QuadMeshKey;
 use kiwi_renderer::{get_overlay_module, get_resources_module, RendererTarget, SubRenderer};
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt}, include_file
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    include_file,
 };
 use once_cell::sync::OnceCell;
 use wgpu::{BindGroup, BindGroupEntry, BindGroupLayoutEntry, BlendState, BufferUsages, ColorTargetState, ColorWrites, ShaderStages};
@@ -88,7 +92,7 @@ impl SubRenderer for GizmoRenderer {
             let shader = Shader::from_modules(
                 assets,
                 "Gizmo Shader",
-                [&get_overlay_module(assets), &get_resources_module(), &ShaderModule::new("Gizmo", source, vec![layout.into()])],
+                [&get_overlay_module(assets, 1), &get_resources_module(), &ShaderModule::new("Gizmo", source, vec![layout.into()])],
             );
 
             shader.to_pipeline(

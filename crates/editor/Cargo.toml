@@ -1,6 +1,6 @@
 [package]
 name = "kiwi_editor"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -31,33 +31,33 @@ kiwi_world_audio = { path = "../world_audio" }
 kiwi_terrain = { path = "../terrain" }
 kiwi_naturals = { path = "../naturals" }
 physxx = { path = "../../libs/physxx" }
-glam.workspace = true
-itertools.workspace = true
-ordered-float.workspace = true
-serde.workspace = true
-serde_json.workspace = true
-anyhow.workspace = true
-log.workspace = true
-profiling.workspace = true
-closure.workspace = true
-wgpu.workspace = true
-winit.workspace = true
-bytemuck.workspace = true
-image.workspace = true
-quinn.workspace = true
-bitflags.workspace = true
-tracing.workspace = true
-futures.workspace = true
-tokio.workspace = true
-open.workspace = true
-arboard.workspace = true
-which.workspace = true
-parking_lot.workspace = true
-chrono.workspace = true
-env_logger.workspace = true
-indexmap.workspace = true
-futures-signals.workspace = true
-derive_more.workspace = true
+glam = { workspace = true }
+itertools = { workspace = true }
+ordered-float = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+log = { workspace = true }
+profiling = { workspace = true }
+closure = { workspace = true }
+wgpu = { workspace = true }
+winit = { workspace = true }
+bytemuck = { workspace = true }
+image = { workspace = true }
+quinn = { workspace = true }
+bitflags = { workspace = true }
+tracing = { workspace = true }
+futures = { workspace = true }
+tokio = { workspace = true }
+open = { workspace = true }
+arboard = { workspace = true }
+which = { workspace = true }
+parking_lot = { workspace = true }
+chrono = { workspace = true }
+env_logger = { workspace = true }
+indexmap = { workspace = true }
+futures-signals = { workspace = true }
+derive_more = { workspace = true }
 
 [features]
 hotload-includes = [
