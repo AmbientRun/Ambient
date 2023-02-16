@@ -1,6 +1,6 @@
 [package]
 name = "kiwi_app"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -18,17 +18,17 @@ kiwi_ui = { path = "../ui" }
 kiwi_input = { path = "../input" }
 kiwi_model = { path = "../model" }
 kiwi_animation = { path = "../animation" }
-winit.workspace = true
-glam.workspace = true
-tokio.workspace = true
-profiling.workspace = true
-anyhow.workspace = true
-thread-priority.workspace = true
-wgpu.workspace = true
+winit = { workspace = true }
+glam = { workspace = true }
+tokio = { workspace = true }
+profiling = { workspace = true }
+anyhow = { workspace = true }
+thread-priority = { workspace = true }
+wgpu = { workspace = true }
 puffin = { workspace = true, optional = true }
 puffin_http = { workspace = true, optional = true }
-tracing.workspace = true
-parking_lot.workspace = true
+tracing = { workspace = true }
+parking_lot = { workspace = true }
 
 [dev-dependencies]
 kiwi_primitives = { path = "../primitives" }

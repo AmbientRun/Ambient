@@ -1,7 +1,7 @@
 [package]
 edition = "2021"
 name = "kiwi"
-version.workspace = true
+version = { workspace = true }
 
 [dependencies]
 kiwi_animation = {path = "../crates/animation"}
@@ -35,29 +35,29 @@ kiwi_world_audio = {path = "../crates/world_audio"}
 kiwi_sky = {path = "../crates/sky"}
 kiwi_water = {path = "../crates/water"}
 
-anyhow.workspace = true
-axum.workspace = true
-bincode.workspace = true
-byteorder.workspace = true
-clap.workspace = true
-convert_case.workspace = true
-env_logger.workspace = true
-futures.workspace = true
-glam.workspace = true
-indoc.workspace = true
-local-ip-address.workspace = true
-log.workspace = true
-parking_lot.workspace = true
-serde.workspace = true
-tokio.workspace = true
-tower-http.workspace = true
-walkdir.workspace = true
+anyhow = { workspace = true }
+axum = { workspace = true }
+bincode = { workspace = true }
+byteorder = { workspace = true }
+clap = { workspace = true }
+convert_case = { workspace = true }
+env_logger = { workspace = true }
+futures = { workspace = true }
+glam = { workspace = true }
+indoc = { workspace = true }
+local-ip-address = { workspace = true }
+log = { workspace = true }
+parking_lot = { workspace = true }
+serde = { workspace = true }
+tokio = { workspace = true }
+tower-http = { workspace = true }
+walkdir = { workspace = true }
 
 toml_edit = { optional = true, workspace = true }
 paste = { optional = true, workspace = true }
 
 [dev-dependencies]
-glam.workspace = true
+glam = { workspace = true }
 
 [features]
 default = ["dep:toml_edit", "dep:paste"]

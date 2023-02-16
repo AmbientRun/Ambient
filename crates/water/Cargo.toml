@@ -14,5 +14,5 @@ kiwi_gizmos = { path = "../gizmos" }
 kiwi_meshes = { path = "../meshes" }
 kiwi_renderer = { path = "../renderer" }
 kiwi_primitives = { path = "../primitives" }
-wgpu.workspace = true
-glam.workspace = true
+wgpu = { workspace = true }
+glam = { workspace = true }

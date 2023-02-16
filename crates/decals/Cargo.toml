@@ -1,6 +1,6 @@
 [package]
 name = "kiwi_decals"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -14,15 +14,15 @@ kiwi_gpu = { path = "../gpu" }
 kiwi_std = { path = "../std" }
 kiwi_core = { path = "../core" }
 kiwi_meshes = { path = "../meshes" }
-log.workspace = true
-glam.workspace = true
+log = { workspace = true }
+glam = { workspace = true }
 
 [dev-dependencies]
 kiwi_app = { path = "../app" }
 kiwi_element = { path = "../element" }
 kiwi_primitives = { path = "../primitives" }
 kiwi_cameras = { path = "../cameras" }
-env_logger.workspace = true
+env_logger = { workspace = true }
 
 [features]
 hotload-includes = [

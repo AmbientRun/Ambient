@@ -1,14 +1,14 @@
 [package]
 name = "kiwi_project"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 [dependencies]
 kiwi_ecs = { path = "../ecs" }
 
-serde.workspace = true
-toml.workspace = true
-thiserror.workspace = true
+serde = { workspace = true }
+toml = { workspace = true }
+thiserror = { workspace = true }
 
 [dev-dependencies]
-paste.workspace = true
+paste = { workspace = true }

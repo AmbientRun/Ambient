@@ -1,6 +1,6 @@
 [package]
 name = "kiwi_ecs_editor"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -12,9 +12,9 @@ kiwi_ui = { path = "../ui" }
 kiwi_core = { path = "../core" }
 kiwi_element = { path = "../element" }
 kiwi_renderer = { path = "../renderer" }
-env_logger.workspace = true
-itertools.workspace = true
-glam.workspace = true
+env_logger = { workspace = true }
+itertools = { workspace = true }
+glam = { workspace = true }
 
 [dev-dependencies]
 kiwi_app = { path = "../app", features = ["profile"] }

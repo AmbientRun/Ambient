@@ -1,6 +1,6 @@
 [package]
 name = "kiwi_network"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -16,26 +16,26 @@ kiwi_ui = { path = "../ui" }
 kiwi_renderer = { path = "../renderer" }
 kiwi_element = { path = "../element" }
 kiwi_app = { path = "../app" }
-quinn.workspace = true
-itertools.workspace = true
-dashmap.workspace = true
-serde.workspace = true
-futures.workspace = true
-rand.workspace = true
-rustls.workspace = true
-thiserror.workspace = true
-tokio-util.workspace = true
-bincode.workspace = true
-glam.workspace = true
-winit.workspace = true
-tokio.workspace = true
-profiling.workspace = true
-log.workspace = true
-bytes.workspace = true
-parking_lot.workspace = true
-wgpu.workspace = true
-flume.workspace = true
-anyhow.workspace = true
-manual_future.workspace = true
-tracing.workspace = true
-once_cell.workspace = true
+quinn = { workspace = true }
+itertools = { workspace = true }
+dashmap = { workspace = true }
+serde = { workspace = true }
+futures = { workspace = true }
+rand = { workspace = true }
+rustls = { workspace = true }
+thiserror = { workspace = true }
+tokio-util = { workspace = true }
+bincode = { workspace = true }
+glam = { workspace = true }
+winit = { workspace = true }
+tokio = { workspace = true }
+profiling = { workspace = true }
+log = { workspace = true }
+bytes = { workspace = true }
+parking_lot = { workspace = true }
+wgpu = { workspace = true }
+flume = { workspace = true }
+anyhow = { workspace = true }
+manual_future = { workspace = true }
+tracing = { workspace = true }
+once_cell = { workspace = true }

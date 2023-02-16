@@ -1,7 +1,7 @@
 
 [package]
 name = "kiwi_terrain"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -21,26 +21,26 @@ kiwi_intent = { path = "../intent" }
 kiwi_physics = { path = "../physics" }
 kiwi_editor_derive = { path = "../editor_derive" }
 physxx = { path = "../../libs/physxx" }
-wgpu.workspace = true
-serde.workspace = true
-futures.workspace = true
-glam.workspace = true
-async-trait.workspace = true
-ndarray.workspace = true
-itertools.workspace = true
-bytemuck.workspace = true
-serde_json.workspace = true
-closure.workspace = true
-profiling.workspace = true
-bitflags.workspace = true
-rand.workspace = true
-rand_pcg.workspace = true
-tokio.workspace = true
-anyhow.workspace = true
-quinn.workspace = true
-parking_lot.workspace = true
-flume.workspace = true
-tracing.workspace = true
+wgpu = { workspace = true }
+serde = { workspace = true }
+futures = { workspace = true }
+glam = { workspace = true }
+async-trait = { workspace = true }
+ndarray = { workspace = true }
+itertools = { workspace = true }
+bytemuck = { workspace = true }
+serde_json = { workspace = true }
+closure = { workspace = true }
+profiling = { workspace = true }
+bitflags = { workspace = true }
+rand = { workspace = true }
+rand_pcg = { workspace = true }
+tokio = { workspace = true }
+anyhow = { workspace = true }
+quinn = { workspace = true }
+parking_lot = { workspace = true }
+flume = { workspace = true }
+tracing = { workspace = true }
 
 [features]
 hotload-includes = ['kiwi_std/hotload-includes']

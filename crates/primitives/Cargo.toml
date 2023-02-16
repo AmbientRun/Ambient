@@ -1,6 +1,6 @@
 [package]
 name = "kiwi_primitives"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -13,4 +13,4 @@ kiwi_gpu = { path = "../gpu" }
 kiwi_std = { path = "../std" }
 kiwi_renderer = { path = "../renderer" }
 kiwi_meshes = { path = "../meshes" }
-glam.workspace = true
+glam = { workspace = true }
