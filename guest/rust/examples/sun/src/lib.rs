@@ -7,12 +7,13 @@ use kiwi_api::{
         rendering::{cast_shadows, color, fog_density, light_diffuse, sky, sun, water},
         transform::{lookat_center, rotation, scale, translation},
     },
+    concepts::make_transformable,
     prelude::*,
 };
 
 #[main]
 pub async fn main() -> EventResult {
-    entity::game_object_base()
+    make_transformable()
         .with_default(player_camera())
         .with(translation(), vec3(5., 5., 2.))
         .with(lookat_center(), vec3(0., 0., 1.))
@@ -20,21 +21,21 @@ pub async fn main() -> EventResult {
         .with(aspect_ratio_from_window(), ())
         .spawn();
 
-    entity::game_object_base()
+    make_transformable()
         .with_default(quad())
         .with(scale(), Vec3::ONE * 20.)
         .with(color(), vec4(1., 0., 0., 1.))
         .with(translation(), vec3(0., 0., 0.01))
         .spawn();
 
-    entity::game_object_base()
+    make_transformable()
         .with_default(water())
         .with(scale(), Vec3::ONE * 2000.)
         .spawn();
 
-    entity::game_object_base().with_default(sky()).spawn();
+    make_transformable().with_default(sky()).spawn();
 
-    entity::game_object_base()
+    make_transformable()
         .with_default(cast_shadows())
         .with_default(sphere())
         .with(sphere_radius(), 1.)
@@ -42,7 +43,7 @@ pub async fn main() -> EventResult {
         .with(color(), vec4(1., 1., 1., 1.))
         .spawn();
 
-    let sun = entity::game_object_base()
+    let sun = make_transformable()
         .with_default(sun())
         .with_default(rotation())
         .with_default(main_scene())

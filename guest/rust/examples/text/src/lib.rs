@@ -9,12 +9,13 @@ use kiwi_api::{
         },
         ui::text,
     },
+    concepts::make_transformable,
     prelude::*,
 };
 
 #[main]
 pub async fn main() -> EventResult {
-    entity::game_object_base()
+    make_transformable()
         .with_default(player_camera())
         .with(translation(), vec3(5., 5., 4.))
         .with(lookat_center(), vec3(0., 0., 0.))
@@ -22,7 +23,7 @@ pub async fn main() -> EventResult {
         .with(aspect_ratio_from_window(), ())
         .spawn();
 
-    entity::game_object_base()
+    make_transformable()
         .with(text(), "Hello world".to_string())
         .with(color(), vec4(1., 1., 1., 1.))
         .with(translation(), vec3(0., 0., 0.01))

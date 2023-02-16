@@ -5,12 +5,13 @@ use kiwi_api::{
         object::object_from_url,
         transform::{lookat_center, rotation, translation},
     },
+    concepts::make_transformable,
     prelude::*,
 };
 
 #[main]
 pub async fn main() -> EventResult {
-    entity::game_object_base()
+    make_transformable()
         .with_default(player_camera())
         .with(translation(), vec3(5., 5., 4.))
         .with(lookat_center(), vec3(0., 0., 0.))
@@ -18,7 +19,7 @@ pub async fn main() -> EventResult {
         .with(aspect_ratio_from_window(), ())
         .spawn();
 
-    let cube_id = entity::game_object_base()
+    let cube_id = make_transformable()
         .with(object_from_url(), "assets/Cube.glb".to_string())
         .with(components::is_the_best(), true)
         .spawn();

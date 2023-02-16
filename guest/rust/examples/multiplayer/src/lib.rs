@@ -7,6 +7,7 @@ use kiwi_api::{
         rendering::color,
         transform::{lookat_center, scale, translation},
     },
+    concepts::make_transformable,
     prelude::*,
 };
 
@@ -16,7 +17,7 @@ pub async fn main() -> EventResult {
     const CUBE_REGION: f32 = 5.;
     const CUBE_SIZE: f32 = 0.6;
 
-    entity::game_object_base()
+    make_transformable()
         .with_default(player_camera())
         .with(translation(), CAMERA_POSITION)
         .with(lookat_center(), vec3(0., 0., 0.))
@@ -28,7 +29,7 @@ pub async fn main() -> EventResult {
         // For each player joining, spawn a random colored box somewhere
         for _ in players {
             let cube_position = rand::random::<Vec3>() * CUBE_REGION - vec3(0., 2. * CUBE_SIZE, 0.);
-            entity::game_object_base()
+            make_transformable()
                 .with_default(cube())
                 .with(scale(), Vec3::ONE * CUBE_SIZE)
                 .with(translation(), cube_position)

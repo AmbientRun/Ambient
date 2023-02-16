@@ -10,12 +10,13 @@ use kiwi_api::{
         transform::{lookat_center, rotation, scale, translation},
     },
     physics::raycast,
+    concepts::make_transformable,
     prelude::*,
 };
 
 #[main]
 pub async fn main() -> EventResult {
-    entity::game_object_base()
+    make_transformable()
         .with_default(player_camera())
         .with(translation(), vec3(5., 5., 4.))
         .with(lookat_center(), vec3(0., 0., 0.))
@@ -23,7 +24,7 @@ pub async fn main() -> EventResult {
         .with(aspect_ratio_from_window(), ())
         .spawn();
 
-    let cube = entity::game_object_base()
+    let cube = make_transformable()
         .with_default(cube())
         .with(box_collider(), Vec3::ONE)
         .with(dynamic(), true)
@@ -34,7 +35,7 @@ pub async fn main() -> EventResult {
         .with(color(), Vec4::ONE)
         .spawn();
 
-    entity::game_object_base()
+    make_transformable()
         .with(object_from_url(), "assets/Shape.glb".to_string())
         .spawn();
 

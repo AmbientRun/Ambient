@@ -7,6 +7,7 @@ use kiwi_api::{
         rendering::color,
         transform::{lookat_center, scale, translation},
     },
+    concepts::make_transformable,
     entity::{AnimationAction, AnimationController},
     player::KeyCode,
     prelude::*,
@@ -14,7 +15,7 @@ use kiwi_api::{
 
 #[main]
 pub async fn main() -> EventResult {
-    entity::game_object_base()
+    make_transformable()
         .with_default(player_camera())
         .with(translation(), vec3(2., 2., 3.0))
         .with(lookat_center(), vec3(0., 0., 1.))
@@ -22,13 +23,13 @@ pub async fn main() -> EventResult {
         .with(aspect_ratio_from_window(), ())
         .spawn();
 
-    entity::game_object_base()
+    make_transformable()
         .with_default(quad())
         .with(scale(), Vec3::ONE * 10.)
         .with(color(), vec4(0.5, 0.5, 0.5, 1.))
         .spawn();
 
-    let unit_id = entity::game_object_base()
+    let unit_id = make_transformable()
         .with(object_from_url(), "assets/Peasant Man.fbx".to_string())
         .spawn();
 

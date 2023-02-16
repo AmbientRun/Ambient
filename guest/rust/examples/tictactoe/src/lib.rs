@@ -1,18 +1,21 @@
 use components::cell;
-use kiwi_api::components::core::{
-    self,
-    camera::{aspect_ratio_from_window, perspective_infinite_reverse},
-    game_objects::player_camera,
-    primitives::cube,
-    rendering::{color, outline},
-    transform::{lookat_center, scale, translation},
+use kiwi_api::{
+    components::core::{
+        self,
+        camera::{aspect_ratio_from_window, perspective_infinite_reverse},
+        game_objects::player_camera,
+        primitives::cube,
+        rendering::{color, outline},
+        transform::{lookat_center, scale, translation},
+    },
+    concepts::make_transformable,
 };
 use kiwi_api::{player::KeyCode, prelude::*};
 use palette::{FromColor, Hsl, Srgb};
 
 #[main]
 pub async fn main() -> EventResult {
-    entity::game_object_base()
+    make_transformable()
         .with_default(player_camera())
         .with(translation(), vec3(5., 5., 4.))
         .with(lookat_center(), vec3(0., 0., 0.))
@@ -23,7 +26,7 @@ pub async fn main() -> EventResult {
     let mut cells = Vec::new();
     for y in 0..3 {
         for x in 0..3 {
-            let id = entity::game_object_base()
+            let id = make_transformable()
                 .with_default(cube())
                 .with(translation(), vec3(x as f32, y as f32, 0.))
                 .with(scale(), vec3(0.6, 0.6, 0.6))

@@ -1,6 +1,6 @@
 use crate::{
     components, event,
-    global::{until_this, EntityId, Quat, Vec3},
+    global::{until_this, EntityId, Vec3},
     internal::{
         component::{
             traits::AsParam, Component, Components, SupportedComponentTypeGet,
@@ -183,14 +183,6 @@ pub fn mutate_component_with_default<
         set_component(entity, component, default.clone());
         default
     }
-}
-
-/// Creates a [Components] that can be used as a base for a game object.
-pub fn game_object_base() -> Components {
-    Components::new()
-        .with(components::core::transform::translation(), Vec3::ZERO)
-        .with(components::core::transform::rotation(), Quat::IDENTITY)
-        .with(components::core::transform::scale(), Vec3::ONE)
 }
 
 /// Gets the resource entity which contains global state in its components.
