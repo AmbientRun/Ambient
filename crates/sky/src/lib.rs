@@ -1,15 +1,12 @@
+// This module is partially complete and has not been wired up.
+// We don't want dead code warnings from it in the meantime.
+#![allow(dead_code)]
+
 use std::sync::Arc;
 
 use glam::*;
-use kiwi_core::{
-    asset_cache,
-    camera::{fovy, get_active_camera, screen_ray},
-    main_scene, mesh,
-    transform::translation,
-};
-use kiwi_ecs::{components, query, query_mut, EntityId, SystemGroup};
-use kiwi_element::{Element, ElementComponent, Hooks};
-use kiwi_gizmos::gizmos;
+use kiwi_core::{asset_cache, mesh, transform::translation};
+use kiwi_ecs::{components, query, Debuggable, Description, EntityData, Name, Networked, Store, SystemGroup};
 use kiwi_gpu::{
     gpu::GpuKey,
     shader_module::{BindGroupDesc, Shader, ShaderModule},
@@ -17,7 +14,7 @@ use kiwi_gpu::{
 };
 use kiwi_meshes::QuadMeshKey;
 use kiwi_renderer::{self, *};
-use kiwi_std::{asset_cache::*, cb, friendly_id, include_file, line_hash};
+use kiwi_std::{asset_cache::*, cb, friendly_id, include_file};
 use noise::OpenSimplex;
 use wgpu::{BindGroup, BufferUsages};
 
@@ -27,6 +24,8 @@ mod tree;
 
 components!("rendering", {
     cloud_state: CloudState,
+    @[Debuggable, Networked, Store, Name["Sky"], Description["Add a realistic sky box to the scene."]]
+    sky: (),
 });
 
 #[derive(Debug, Clone)]
@@ -49,67 +48,66 @@ impl CloudState {
     }
 }
 
-pub fn clouds_system() -> SystemGroup {
+pub fn systems() -> SystemGroup {
     SystemGroup::new(
-        "Cloud system",
+        "sky",
         vec![
-            query_mut((cloud_state(),), (material(),)).with_commands(|q, w, qs, _, c| {
-                let camera = get_active_camera(w, main_scene()).unwrap_or(EntityId::null());
-                let cam_pos = w.get(camera, translation()).unwrap_or_default();
-                let fov = w.get(camera, fovy()).unwrap_or_default();
+            query(sky()).excl(renderer_shader()).to_system(|q, world, qs, _| {
+                let assets = world.resource(asset_cache()).clone();
+                for (id, _) in q.collect_cloned(world, qs) {
+                    let clouds = CloudState::new(100.0);
 
-                let assets = w.resource(asset_cache()).clone();
-                for (e, (state,), (mat,)) in q.iter(w, qs) {
-                    // Update the tree LOD
-                    let (_, updates) = state.tree.update_topo(NodeIndex::root(), 0, VOXEL_SIZE, fov, cam_pos);
+                    let material = CloudMaterial::new(assets.clone(), &clouds);
 
-                    // Write tree to gpu only if the tree changed
-                    if updates > 0 {
-                        let nodes = state.tree.nodes();
-
-                        let mat = mat.borrow_downcast::<CloudMaterial>();
-                        if mat.cloud_buffer.len() < nodes.len() as u64 {
-                            c.set(e, material(), CloudMaterial::new(assets.clone(), state));
-                        } else {
-                            mat.cloud_buffer.write(0, nodes);
-                        }
-                    }
+                    let data = EntityData::new()
+                        .set(renderer_shader(), cb(|assets, config| CloudShaderKey { shadow_cascades: config.shadow_cascades }.get(assets)))
+                        .set(kiwi_renderer::material(), SharedMaterial::new(material))
+                        .set(cloud_state(), clouds)
+                        .set(overlay(), ())
+                        .set(mesh(), QuadMeshKey.get(&assets))
+                        .set(primitives(), vec![])
+                        .set_default(gpu_primitives())
+                        .set(translation(), vec3(0.0, 0.0, -1.0));
+                    world.add_components(id, data).unwrap();
                 }
             }),
-            query((cloud_state(),)).to_system(|q, w, qs, _| {
-                // Visualize the clouds
-                for (_, (state,)) in q.iter(w, qs) {
-                    if let Some(camera) = get_active_camera(w, main_scene()) {
-                        let mut ray = screen_ray(w, camera, Vec2::ZERO).unwrap();
-                        ray.dir *= -1.;
-                        let hit = state.tree.raycast(&ray, DENSITY_THRESHOLD);
+            // query_mut((cloud_state(),), (material(),)).with_commands(|q, w, qs, _, c| {
+            //     let camera = get_active_camera(w, main_scene()).unwrap_or(EntityId::null());
+            //     let cam_pos = w.get(camera, translation()).unwrap_or_default();
+            //     let fov = w.get(camera, fovy()).unwrap_or_default();
 
-                        w.resource(gizmos()).scope(line_hash!()).draw(hit.into_iter().flatten()).draw(state.tree.gizmos(DENSITY_THRESHOLD));
-                    }
-                }
-            }),
+            //     let assets = w.resource(asset_cache()).clone();
+            //     for (e, (state,), (mat,)) in q.iter(w, qs) {
+            //         // Update the tree LOD
+            //         let (_, updates) = state.tree.update_topo(NodeIndex::root(), 0, VOXEL_SIZE, fov, cam_pos);
+
+            //         // Write tree to gpu only if the tree changed
+            //         if updates > 0 {
+            //             let nodes = state.tree.nodes();
+
+            //             let mat = mat.borrow_downcast::<CloudMaterial>();
+            //             if mat.cloud_buffer.len() < nodes.len() as u64 {
+            //                 c.set(e, material(), CloudMaterial::new(assets.clone(), state));
+            //             } else {
+            //                 mat.cloud_buffer.write(0, nodes);
+            //             }
+            //         }
+            //     }
+            // }),
+            // query((cloud_state(),)).to_system(|q, w, qs, _| {
+            //     // Visualize the clouds
+            //     for (_, (state,)) in q.iter(w, qs) {
+            //         if let Some(camera) = get_active_camera(w, main_scene()) {
+            //             let mut ray = screen_ray(w, camera, Vec2::ZERO).unwrap();
+            //             ray.dir *= -1.;
+            //             let hit = state.tree.raycast(&ray, DENSITY_THRESHOLD);
+
+            //             w.resource(gizmos()).scope(line_hash!()).draw(hit.into_iter().flatten()).draw(state.tree.gizmos(DENSITY_THRESHOLD));
+            //         }
+            //     }
+            // }),
         ],
     )
-}
-
-impl ElementComponent for Clouds {
-    fn render(self: Box<Self>, world: &mut kiwi_ecs::World, _: &mut Hooks) -> Element {
-        let assets = world.resource(asset_cache()).clone();
-
-        let clouds = CloudState::new(100.0);
-
-        let material = CloudMaterial::new(assets.clone(), &clouds);
-
-        Element::new()
-            .init(renderer_shader(), cb(|assets, config| CloudShaderKey { shadow_cascades: config.shadow_cascades }.get(&assets)))
-            .init(kiwi_renderer::material(), SharedMaterial::new(material))
-            .init(cloud_state(), clouds)
-            .init(overlay(), ())
-            .init(mesh(), QuadMeshKey.get(&assets))
-            .init(primitives(), vec![])
-            .init_default(gpu_primitives())
-            .init(translation(), vec3(0.0, 0.0, -1.0))
-    }
 }
 
 #[repr(C)]

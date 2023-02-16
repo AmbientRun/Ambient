@@ -34,8 +34,8 @@ fn init(world: &mut World) {
         .init(
             renderer_shader(),
             cb(move |assets, config| {
-                DecalShaderKey { material_shader: PbrMaterialShaderKey.get(&assets), lit: true, shadow_cascades: config.shadow_cascades }
-                    .get(&assets)
+                DecalShaderKey { material_shader: PbrMaterialShaderKey.get(assets), lit: true, shadow_cascades: config.shadow_cascades }
+                    .get(assets)
             }),
         )
         .init(material(), PbrMaterial::base_color_from_file(&assets, "assets/checkerboard.png").into())

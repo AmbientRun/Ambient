@@ -1,6 +1,6 @@
 [package]
 name = "kiwi_model"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -14,17 +14,17 @@ kiwi_meshes = { path = "../meshes" }
 kiwi_gpu = { path = "../gpu" }
 kiwi_editor_derive = { path = "../editor_derive" }
 kiwi_ui = { path = "../ui" }
-futures.workspace = true
-glam.workspace = true
-itertools.workspace = true
-serde.workspace = true
-anyhow.workspace = true
-wgpu.workspace = true
-tokio.workspace = true
-tracing.workspace = true
-bytemuck.workspace = true
-async-trait.workspace = true
-url.workspace = true
+futures = { workspace = true }
+glam = { workspace = true }
+itertools = { workspace = true }
+serde = { workspace = true }
+anyhow = { workspace = true }
+wgpu = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+bytemuck = { workspace = true }
+async-trait = { workspace = true }
+url = { workspace = true }
 
 [features]
 hotload-includes = ['kiwi_std/hotload-includes']

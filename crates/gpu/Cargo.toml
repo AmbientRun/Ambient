@@ -1,30 +1,30 @@
 
 [package]
 name = "kiwi_gpu"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 kiwi_std = { path = "../std" }
-bytemuck.workspace = true
-winit.workspace = true
-wgpu.workspace = true
-glam.workspace = true
-log.workspace = true
-thiserror.workspace = true
-tokio.workspace = true
-byteorder.workspace = true
-image.workspace = true
-itertools.workspace = true
-ndarray.workspace = true
-ordered-float.workspace = true
-async-trait.workspace = true
-futures.workspace = true
-parking_lot.workspace = true
-anyhow.workspace = true
-tracing.workspace = true
+bytemuck = { workspace = true }
+winit = { workspace = true }
+wgpu = { workspace = true }
+glam = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+byteorder = { workspace = true }
+image = { workspace = true }
+itertools = { workspace = true }
+ndarray = { workspace = true }
+ordered-float = { workspace = true }
+async-trait = { workspace = true }
+futures = { workspace = true }
+parking_lot = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
 
 [features]
 hotload-includes = ['kiwi_std/hotload-includes']

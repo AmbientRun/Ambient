@@ -41,6 +41,8 @@ struct Component {
     type_: ComponentType,
     #[serde(default)]
     attributes: Vec<String>,
+    #[serde(default)]
+    default: Option<toml::Value>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -254,14 +256,19 @@ fn expand_tree(
                 doc_comment += &format!(": {}", component.description.replace('\n', "\n\n"));
             }
 
+            // Metadata
             if !component.attributes.is_empty() {
                 doc_comment += &format!(
                     "\n\n*Attributes*: {}",
                     component.attributes.clone().join(", ")
                 )
             }
+            if let Some(default) = component.default.as_ref() {
+                doc_comment += &format!("\n\n*Suggested Default*: {}", default.to_string())
+            }
 
             let id = [project_path, &tree_node.path].concat().join("::");
+            let doc_comment = doc_comment.trim();
 
             Ok(quote! {
                 static #name_uppercase_ident: Lazy<Component<#component_ty>> = Lazy::new(|| __internal_get_component(#id));

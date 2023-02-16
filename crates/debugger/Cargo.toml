@@ -1,6 +1,6 @@
 [package]
 name = "kiwi_debugger"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -18,7 +18,7 @@ kiwi_element_component = { path = "../element_component" }
 kiwi_rpc = { path = "../rpc" }
 kiwi_network = { path = "../network" }
 kiwi_ecs_editor = { path = "../ecs_editor" }
-winit.workspace = true
-glam.workspace = true
-wgpu.workspace = true
-log.workspace = true
+winit = { workspace = true }
+glam = { workspace = true }
+wgpu = { workspace = true }
+log = { workspace = true }

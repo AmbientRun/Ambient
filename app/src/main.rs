@@ -123,7 +123,13 @@ impl Commands {
 fn client_systems() -> SystemGroup {
     SystemGroup::new(
         "client",
-        vec![Box::new(kiwi_decals::client_systems()), Box::new(kiwi_primitives::systems()), Box::new(player::client_systems())],
+        vec![
+            Box::new(kiwi_decals::client_systems()),
+            Box::new(kiwi_primitives::systems()),
+            Box::new(kiwi_sky::systems()),
+            Box::new(kiwi_water::systems()),
+            Box::new(player::client_systems()),
+        ],
     )
 }
 

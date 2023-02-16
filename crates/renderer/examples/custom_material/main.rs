@@ -80,8 +80,8 @@ async fn init(world: &mut World) {
         entity,
         renderer_shader(),
         cb(|assets, config| {
-            StandardShaderKey { material_shader: CustomMaterialShaderKey.get(&assets), lit: true, shadow_cascades: config.shadow_cascades }
-                .get(&assets)
+            StandardShaderKey { material_shader: CustomMaterialShaderKey.get(assets), lit: true, shadow_cascades: config.shadow_cascades }
+                .get(assets)
         }),
     );
     set_component_recursive(world, entity, material(), SharedMaterial::new(CustomMaterial::new(assets.clone())));

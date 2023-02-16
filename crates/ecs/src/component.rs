@@ -1,16 +1,22 @@
 use core::fmt;
 use std::{
-    any::{Any, TypeId}, cmp::Ordering, fmt::Debug, marker::PhantomData
+    any::{Any, TypeId},
+    cmp::Ordering,
+    fmt::Debug,
+    marker::PhantomData,
 };
 
 use downcast_rs::Downcast;
 use parking_lot::MappedRwLockReadGuard;
 use serde::{
-    self, de::{self, DeserializeSeed}, Deserialize, Serialize
+    self,
+    de::{self, DeserializeSeed},
+    Deserialize, Serialize,
 };
 
 use crate::{
-    component_traits::IComponentBuffer, with_component_registry, AttributeGuard, AttributeStoreGuard, AttributeStoreGuardMut, ComponentAttribute, ComponentEntry, ComponentPath, ComponentVTable, Debuggable, Description, Name, Serializable
+    component_traits::IComponentBuffer, with_component_registry, AttributeGuard, AttributeStoreGuard, AttributeStoreGuardMut,
+    ComponentAttribute, ComponentEntry, ComponentPath, ComponentVTable, Debuggable, Description, Name, Serializable,
 };
 
 pub trait ComponentValueBase: Send + Sync + Downcast + 'static {
@@ -313,7 +319,7 @@ impl<'de> Deserialize<'de> for ComponentDesc {
 /// If the type is captured by [crate::PrimitiveComponent] and have a [crate::Name] and [crate::Description], these will be accessible by wasm.
 /// Please make sure to update the interface components if you update WASM-visible components.
 macro_rules! components {
-    ($ns: literal, { $($(#[$outer:meta])* $(@[$($attr: ty$([ $params: tt ])?),*])? $vis: vis $name:ident: $ty:ty,)*}) => {
+    ($ns: literal, { $($(#[$outer:meta])* $(@[$($attr: ty$([ $params: expr ])?),*])? $vis: vis $name:ident: $ty:ty,)*}) => {
         $(
             $crate::paste::paste! {
                 #[allow(non_upper_case_globals)]

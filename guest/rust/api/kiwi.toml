@@ -447,28 +447,33 @@ If attached to an entity, the entity will be converted to a quad primitive.
 The quad is unit-sized on the XY axes, and flat on the Z axis (i.e. 0.5 metres out to the XY axes)."""
 attributes = ["Networked", "Store"]
 
+[components."core::primitives::sphere"]
+type = "Empty"
+name = "Sphere"
+description = """
+If attached to an entity, the entity will be converted to a unit-diameter sphere primitive.
+The sphere can be customized using the `sphere_radius`, `sphere_sectors` and `sphere_stacks` components."""
+attributes = ["Networked", "Store"]
+
 [components."core::primitives::sphere_radius"]
 type = "F32"
 name = "Sphere radius"
-description = """
-If attached to an entity with `sphere_sectors` and `sphere_stacks`, the entity will be converted to a sphere with this radius.
-A reasonable default is 0.5."""
+description = "Set the radius of a `sphere` entity."
+default = 0.5
 attributes = ["Networked", "Store"]
 
 [components."core::primitives::sphere_sectors"]
 type = "U32"
 name = "Sphere sectors"
-description = """
-If attached to an entity with `sphere_radius` and `sphere_stacks`, the entity will be converted to a sphere with this many longitudinal sectors.
-A reasonable default is 36."""
+description = "Set the longitudinal sectors of a `sphere` entity."
+default = 36
 attributes = ["Networked", "Store"]
 
 [components."core::primitives::sphere_stacks"]
 type = "U32"
 name = "Sphere stacks"
-description = """
-If attached to an entity with `sphere_radius` and `sphere_sectors`, the entity will be converted to a sphere with this many latitudinal stacks.
-A reasonable default is 18."""
+description = "Set the latitudinal stacks of a `sphere` entity."
+default = 18
 attributes = ["Networked", "Store"]
 
 [components."core::rendering::cast_shadows"]
@@ -553,6 +558,12 @@ name = "Overlay"
 description = "If attached, this entity will be rendered with an overlay."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::rendering::sky"]
+type = "Empty"
+name = "Sky"
+description = "Add a realistic sky box to the scene."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::rendering::sun"]
 type = "F32"
 name = "Sun"
@@ -565,6 +576,12 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "I32"
 name = "Transparency group"
 description = "Controls when this transparent object will be rendered. Transparent objects are sorted by (transparency_group, z-depth)."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rendering::water"]
+type = "Empty"
+name = "Water"
+description = "Add a realistic water plane to this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::transform::cylindrical_billboard_z"]
@@ -663,8 +680,32 @@ name = "Font size"
 description = "Size of the font."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::ui::height"]
+type = "F32"
+name = "Height"
+description = "Height of a ui element"
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::min_height"]
+type = "F32"
+name = "Min height"
+description = "Min height of a ui element"
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::min_width"]
+type = "F32"
+name = "Min width"
+description = "Min width of a ui element"
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::ui::text"]
 type = "String"
 name = "Text"
 description = "Create a text mesh on this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::width"]
+type = "F32"
+name = "Width"
+description = "Width of a ui element"
 attributes = ["Debuggable", "Networked", "Store"]

@@ -2,13 +2,12 @@ use std::{collections::HashMap, f32::INFINITY};
 
 use glam::{Mat4, UVec3, Vec2, Vec3, Vec3Swizzles, Vec4};
 use kiwi_core::{
-    asset_cache,
     bounding::world_bounding_sphere,
     camera::{shadow_cameras_from_world, Camera},
     gpu_components,
     gpu_ecs::{GpuComponentFormat, GpuWorldUpdater},
 };
-use kiwi_ecs::{ArchetypeFilter, Component, World};
+use kiwi_ecs::{ArchetypeFilter, World};
 use kiwi_gpu::{
     gpu::GpuKey,
     shader_module::{BindGroupDesc, ShaderModule, ShaderModuleIdentifier},

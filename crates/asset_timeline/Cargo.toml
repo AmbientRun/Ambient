@@ -1,6 +1,6 @@
 [package]
 name = "kiwi_asset_timeline"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -12,16 +12,16 @@ kiwi_ui = { path = "../ui" }
 kiwi_core = { path = "../core" }
 kiwi_element = { path = "../element" }
 kiwi_renderer = { path = "../renderer" }
-env_logger.workspace = true
-itertools.workspace = true
-chrono.workspace = true
-glam.workspace = true
-tracing.workspace = true
+env_logger = { workspace = true }
+itertools = { workspace = true }
+chrono = { workspace = true }
+glam = { workspace = true }
+tracing = { workspace = true }
 
 [dev-dependencies]
 kiwi_app = { path = "../app" }
 kiwi_cameras = { path = "../cameras" }
 kiwi_model = { path = "../model" }
-tokio.workspace = true
+tokio = { workspace = true }
 tracing-subscriber = "0.3"
-async-trait.workspace = true
+async-trait = { workspace = true }

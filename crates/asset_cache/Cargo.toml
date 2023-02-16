@@ -1,24 +1,24 @@
 [package]
 name = "kiwi_asset_cache"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde.workspace = true
-tokio.workspace = true
-as-any.workspace = true
-async-trait.workspace = true
-futures.workspace = true
-itertools.workspace = true
-thiserror.workspace = true
-anyhow.workspace = true
-parking_lot.workspace = true
-chrono.workspace = true
-tracing.workspace = true
-pin-project.workspace = true
-abort-on-drop.workspace = true
+serde = { workspace = true }
+tokio = { workspace = true }
+as-any = { workspace = true }
+async-trait = { workspace = true }
+futures = { workspace = true }
+itertools = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+parking_lot = { workspace = true }
+chrono = { workspace = true }
+tracing = { workspace = true }
+pin-project = { workspace = true }
+abort-on-drop = { workspace = true }
 
 [dev-dependencies]
-pretty_assertions.workspace = true
+pretty_assertions = { workspace = true }

@@ -251,6 +251,19 @@ impl World {
         }
     }
 
+    pub fn set_components(&mut self, entity_id: EntityId, data: EntityData) -> Result<(), ECSError> {
+        if let Some(loc) = self.locs.get(&entity_id) {
+            let version = self.inc_version();
+            let arch = self.archetypes.get_mut(loc.archetype).expect("Archetype doesn't exist");
+            for entry in data {
+                arch.replace_with_entry(entity_id, loc.index, entry, version)?;
+            }
+            Ok(())
+        } else {
+            Err(ECSError::NoSuchEntity { entity_id })
+        }
+    }
+
     /// Sets the value iff it is different to the current
     pub fn set_if_changed<T: ComponentValue + PartialEq>(
         &mut self,
@@ -310,12 +323,7 @@ impl World {
         }
     }
     pub fn has_component_index(&self, entity_id: EntityId, component_index: u32) -> bool {
-        if let Some(loc) = self.locs.get(&entity_id) {
-            let arch = self.archetypes.get(loc.archetype).expect("Archetype doesn't exist");
-            arch.active_components.contains_index(component_index as usize)
-        } else {
-            false
-        }
+        self.archetype_for_entity(entity_id).map(|arch| arch.active_components.contains_index(component_index as usize)).unwrap_or(false)
     }
     #[inline]
     pub fn has_component_ref(&self, entity_id: EntityId, component: impl Into<ComponentDesc>) -> bool {
@@ -324,6 +332,9 @@ impl World {
     #[inline]
     pub fn has_component(&self, entity_id: EntityId, component: impl Into<ComponentDesc>) -> bool {
         self.has_component_ref(entity_id, component.into())
+    }
+    pub fn has_components(&self, entity_id: EntityId, components: &ComponentSet) -> bool {
+        self.archetype_for_entity(entity_id).map(|arch| arch.active_components.is_superset(components)).unwrap_or(false)
     }
     pub fn get_components(&self, entity_id: EntityId) -> Result<Vec<ComponentDesc>, ECSError> {
         if let Some(loc) = self.locs.get(&entity_id) {
@@ -553,6 +564,11 @@ impl World {
         self.add_components(id, once(entry).collect())
     }
 }
+impl World {
+    fn archetype_for_entity(&self, id: EntityId) -> Option<&Archetype> {
+        self.locs.get(&id).map(|loc| self.archetypes.get(loc.archetype).expect("Archetype doesn't exist"))
+    }
+}
 
 impl std::fmt::Debug for World {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -703,7 +719,10 @@ impl ComponentSet {
     }
 
     pub fn insert(&mut self, component: ComponentDesc) {
-        self.0.insert(component.index() as _);
+        self.insert_by_index(component.index() as _);
+    }
+    pub fn insert_by_index(&mut self, component_index: usize) {
+        self.0.insert(component_index);
     }
     pub fn remove(&mut self, component: ComponentDesc) {
         self.remove_by_index(component.index() as _)

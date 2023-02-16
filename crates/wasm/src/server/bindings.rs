@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use itertools::Itertools;
-use kiwi_ecs::{with_component_registry, QueryEvent, World};
+use kiwi_ecs::{with_component_registry, ComponentSet, QueryEvent, World};
 use kiwi_physics::helpers::PhysicsObjectCollection;
 use parking_lot::RwLock;
 use wit_bindgen_host_wasmtime_rust::Le;
@@ -63,7 +63,7 @@ impl Bindings {
 
 impl host::Host for Bindings {
     fn entity_spawn(&mut self, data: ComponentsParam<'_>) -> host::EntityId {
-        let id = server_impl::entity::spawn(
+        let id = shared_impl::entity::spawn(
             &mut self.world_mut(),
             convert_components_to_entity_data(data),
         );
@@ -77,7 +77,7 @@ impl host::Host for Bindings {
 
     fn entity_despawn(&mut self, entity: host::EntityId) -> bool {
         let entity = entity.from_bindgen();
-        let despawn = server_impl::entity::despawn(&mut self.world_mut(), entity);
+        let despawn = shared_impl::entity::despawn(&mut self.world_mut(), entity);
         if let Some(uid) = despawn {
             self.shared_state
                 .write()
@@ -95,18 +95,12 @@ impl host::Host for Bindings {
         entity: host::EntityId,
         animation_controller: host::AnimationController,
     ) {
-        server_impl::entity::set_animation_controller(
+        shared_impl::entity::set_animation_controller(
             &mut self.world_mut(),
             entity.from_bindgen(),
             animation_controller.from_bindgen(),
         )
         .unwrap()
-    }
-
-    fn entity_get_linear_velocity(&mut self, entity: host::EntityId) -> Option<host::Vec3> {
-        server_impl::entity::get_linear_velocity(&mut self.world_mut(), entity.from_bindgen())
-            .ok()
-            .into_bindgen()
     }
 
     fn component_get_index(&mut self, id: &str) -> Option<u32> {
@@ -121,16 +115,16 @@ impl host::Host for Bindings {
         read_component_from_world(&self.world(), entity.from_bindgen(), index)
     }
 
-    fn entity_set_component(
+    fn entity_add_component(
         &mut self,
         entity: host::EntityId,
         index: u32,
         value: host::ComponentTypeParam,
     ) {
-        write_component(&mut self.world_mut(), entity.from_bindgen(), index, value)
+        add_component(&mut self.world_mut(), entity.from_bindgen(), index, value).unwrap()
     }
 
-    fn entity_set_components(&mut self, entity: host::EntityId, data: ComponentsParam<'_>) {
+    fn entity_add_components(&mut self, entity: host::EntityId, data: ComponentsParam<'_>) {
         self.world_mut()
             .add_components(
                 entity.from_bindgen(),
@@ -139,8 +133,34 @@ impl host::Host for Bindings {
             .unwrap()
     }
 
+    fn entity_set_component(
+        &mut self,
+        entity: host::EntityId,
+        index: u32,
+        value: host::ComponentTypeParam,
+    ) {
+        set_component(&mut self.world_mut(), entity.from_bindgen(), index, value).unwrap()
+    }
+
+    fn entity_set_components(&mut self, entity: host::EntityId, data: ComponentsParam<'_>) {
+        self.world_mut()
+            .set_components(
+                entity.from_bindgen(),
+                convert_components_to_entity_data(data),
+            )
+            .unwrap()
+    }
+
     fn entity_has_component(&mut self, entity: host::EntityId, index: u32) -> bool {
         shared_impl::entity::has_component(&self.world(), entity.from_bindgen(), index)
+    }
+
+    fn entity_has_components(&mut self, entity: host::EntityId, components: &[Le<u32>]) -> bool {
+        let mut set = ComponentSet::new();
+        for idx in components {
+            set.insert_by_index(idx.get() as usize);
+        }
+        self.world().has_components(entity.from_bindgen(), &set)
     }
 
     fn entity_remove_component(&mut self, entity: host::EntityId, index: u32) {

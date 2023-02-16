@@ -1,20 +1,20 @@
 
 [package]
 name = "kiwi_editor_derive"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 [lib]
 proc-macro = true
 
 [dependencies]
-proc-macro2.workspace = true
-quote.workspace = true
-pretty_assertions.workspace = true
-itertools.workspace = true
-syn.workspace = true
-proc-macro-crate.workspace = true
-convert_case.workspace = true
+proc-macro2 = { workspace = true }
+quote = { workspace = true }
+pretty_assertions = { workspace = true }
+itertools = { workspace = true }
+syn = { workspace = true }
+proc-macro-crate = { workspace = true }
+convert_case = { workspace = true }
 
 [dev-dependencies]
 kiwi_ui = { path = "../ui" }

@@ -121,10 +121,11 @@ fn can_generate_components_from_manifest() {
         a_cool_component = { name = "Cool Component", description = "", type = "Empty" }
 
         [components."a_cool_component_2"]
-        type = "Empty"
+        type = "String"
         name = "Cool Component 2"
         description = "The cool-er component.\nBuy now in stores!"
         attributes = ["Store", "Networked"]
+        default = "The Coolest"
         "#};
 
     let expected_output = quote::quote! {
@@ -138,9 +139,9 @@ fn can_generate_components_from_manifest() {
                 *A_COOL_COMPONENT
             }
 
-            static A_COOL_COMPONENT_2: Lazy<Component<()>> = Lazy::new(|| __internal_get_component("my_project::a_cool_component_2"));
-            #[doc = "**Cool Component 2**: The cool-er component.\n\nBuy now in stores!\n\n*Attributes*: Store, Networked"]
-            pub fn a_cool_component_2() -> Component<()> {
+            static A_COOL_COMPONENT_2: Lazy<Component<String>> = Lazy::new(|| __internal_get_component("my_project::a_cool_component_2"));
+            #[doc = "**Cool Component 2**: The cool-er component.\n\nBuy now in stores!\n\n*Attributes*: Store, Networked\n\n*Suggested Default*: \"The Coolest\""]
+            pub fn a_cool_component_2() -> Component<String> {
                 *A_COOL_COMPONENT_2
             }
         }

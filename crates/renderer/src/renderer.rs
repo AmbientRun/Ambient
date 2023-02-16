@@ -153,11 +153,8 @@ impl Renderer {
         // Need atleast one for array<Camera, SIZE> to be valid
         let shadow_cascades = config.shadow_cascades;
 
-        let shadows = if config.shadows && config.shadows {
-            Some(ShadowsRenderer::new(assets.clone(), renderer_resources.clone(), config.clone()))
-        } else {
-            None
-        };
+        let shadows =
+            if config.shadows { Some(ShadowsRenderer::new(assets.clone(), renderer_resources.clone(), config.clone())) } else { None };
 
         Self {
             culling: Culling::new(&assets, config.clone()),

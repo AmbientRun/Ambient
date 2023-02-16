@@ -1,7 +1,7 @@
 
 [package]
 name = "kiwi_world_audio"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -15,29 +15,29 @@ kiwi_element = { path = "../element" }
 kiwi_std = { path = "../std" }
 kiwi_audio = { path = "../audio" }
 kiwi_network = { path = "../network" }
-parking_lot.workspace = true
-anyhow.workspace = true
-log.workspace = true
-serde.workspace = true
-serde_json.workspace = true
-tokio.workspace = true
-dashmap.workspace = true
-slotmap.workspace = true
-thiserror.workspace = true
-flume.workspace = true
-futures.workspace = true
-indexmap.workspace = true
-once_cell.workspace = true
-rand.workspace = true
+parking_lot = { workspace = true }
+anyhow = { workspace = true }
+log = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+dashmap = { workspace = true }
+slotmap = { workspace = true }
+thiserror = { workspace = true }
+flume = { workspace = true }
+futures = { workspace = true }
+indexmap = { workspace = true }
+once_cell = { workspace = true }
+rand = { workspace = true }
 rand_chacha = "0.3.1"
-itertools.workspace = true
-closure.workspace = true
-glam.workspace = true
-ordered-float.workspace = true
-profiling.workspace = true
+itertools = { workspace = true }
+closure = { workspace = true }
+glam = { workspace = true }
+ordered-float = { workspace = true }
+profiling = { workspace = true }
 atomic_refcell = "0.1.8"
-tracing.workspace = true
-derive_more.workspace = true
+tracing = { workspace = true }
+derive_more = { workspace = true }
 
 [dev-dependencies]
 tracing-subscriber = "0.3"
