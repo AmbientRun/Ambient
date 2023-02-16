@@ -259,13 +259,12 @@ impl<'de> Deserialize<'de> for DeserEntityDataWithWarnings {
                 formatter.write_str("struct EntityData")
             }
 
-            fn visit_map<V>(mut self, map: V) -> Result<Self::Value, V::Error>
+            fn visit_map<V>(mut self, mut map: V) -> Result<Self::Value, V::Error>
             where
                 V: MapAccess<'de>,
             {
                 let mut res = EntityData::new();
-                let mut map = erased_serde::de::erase::MapAccess { state: map };
-                while let Some((key, value)) = map.state.next_entry::<String, serde_json::Value>()? {
+                while let Some((key, value)) = map.next_entry::<String, serde_json::Value>()? {
                     let desc = with_component_registry(|r| r.get_by_path(&key));
                     let desc = match desc {
                         Some(desc) => desc,

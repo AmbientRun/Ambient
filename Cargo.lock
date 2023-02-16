@@ -1343,8 +1343,9 @@ dependencies = [
 
 [[package]]
 name = "erased-serde"
-version = "0.3.16"
-source = "git+https://github.com/FredrikNoren/erased-serde.git#997de67dc9a82e7614b2f8acf5baf85aaba5fb42"
+version = "0.3.24"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e4ca605381c017ec7a5fef5e548f1cfaa419ed0f6df6367339300db74c92aa7d"
 dependencies = [
  "serde",
 ]
@@ -6084,7 +6085,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
  "cfg-if",
- "rand 0.7.3",
+ "rand 0.8.5",
  "static_assertions",
 ]
 
