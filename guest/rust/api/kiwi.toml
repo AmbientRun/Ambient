@@ -683,19 +683,19 @@ attributes = ["Debuggable", "Networked", "Store"]
 [components."core::ui::height"]
 type = "F32"
 name = "Height"
-description = "Height of a ui element"
+description = "The height of a UI element."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::ui::min_height"]
 type = "F32"
-name = "Min height"
-description = "Min height of a ui element"
+name = "Minimum height"
+description = "The minimum height of a UI element."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::ui::min_width"]
 type = "F32"
-name = "Min width"
-description = "Min width of a ui element"
+name = "Minimum width"
+description = "The minimum width of a UI element."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::ui::text"]
@@ -707,5 +707,14 @@ attributes = ["Debuggable", "Networked", "Store"]
 [components."core::ui::width"]
 type = "F32"
 name = "Width"
-description = "Width of a ui element"
+description = "The width of a UI element."
 attributes = ["Debuggable", "Networked", "Store"]
+
+[concepts.transformable]
+name = "Transformable"
+description = "Can be translated, rotated and scaled."
+
+[concepts.transformable.components]
+"core::transform::translation" = [0.0, 0.0, 0.0]
+"core::transform::rotation" = [0.0, 0.0, 0.0, 1.0]
+"core::transform::scale" = [1.0, 1.0, 1.0]
