@@ -37,12 +37,12 @@ fn can_generate_components_from_manifest_in_global_namespace() {
                 #[doc = "**App**"]
                 pub mod app {
                     use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
-                    static MAIN_SCENE: Lazy<Component<()>> = Lazy::new(|| __internal_get_component("core::app::main_scene"));
+                    static MAIN_SCENE: Lazy< Component<()> > = Lazy::new(|| __internal_get_component("core::app::main_scene"));
                     #[doc = "**Main Scene**"]
                     pub fn main_scene() -> Component<()> {
                         *MAIN_SCENE
                     }
-                    static NAME: Lazy<Component<String>> = Lazy::new(|| __internal_get_component("core::app::name"));
+                    static NAME: Lazy< Component<String> > = Lazy::new(|| __internal_get_component("core::app::name"));
                     #[doc = "**name**"]
                     pub fn name() -> Component<String> {
                         *NAME
@@ -51,12 +51,12 @@ fn can_generate_components_from_manifest_in_global_namespace() {
                 #[doc = "**Camera**"]
                 pub mod camera {
                     use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
-                    static ACTIVE_CAMERA: Lazy<Component<f32>> = Lazy::new(|| __internal_get_component("core::camera::active_camera"));
+                    static ACTIVE_CAMERA: Lazy< Component<f32> > = Lazy::new(|| __internal_get_component("core::camera::active_camera"));
                     #[doc = "**Active Camera**: No description provided"]
                     pub fn active_camera() -> Component<f32> {
                         *ACTIVE_CAMERA
                     }
-                    static ASPECT_RATIO: Lazy<Component<f32>> = Lazy::new(|| __internal_get_component("core::camera::aspect_ratio"));
+                    static ASPECT_RATIO: Lazy< Component<f32> > = Lazy::new(|| __internal_get_component("core::camera::aspect_ratio"));
                     #[doc = "**Aspect Ratio**"]
                     pub fn aspect_ratio() -> Component<f32> {
                         *ASPECT_RATIO
@@ -65,9 +65,9 @@ fn can_generate_components_from_manifest_in_global_namespace() {
                 #[doc = "**Rendering**"]
                 pub mod rendering {
                     use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
-                    static JOINTS: Lazy<Component<Vec<kiwi_api2::global::EntityId> >> = Lazy::new(|| __internal_get_component("core::rendering::joints"));
+                    static JOINTS: Lazy< Component < Vec< kiwi_api2::global::EntityId > > > = Lazy::new(|| __internal_get_component("core::rendering::joints"));
                     #[doc = "**Joints**: No description provided"]
-                    pub fn joints() -> Component< Vec<kiwi_api2::global::EntityId> > {
+                    pub fn joints() -> Component< Vec< kiwi_api2::global::EntityId > > {
                         *JOINTS
                     }
                 }
@@ -139,13 +139,13 @@ fn can_generate_components_from_manifest() {
         #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
         pub mod components {
             use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
-            static A_COOL_COMPONENT: Lazy<Component<()>> = Lazy::new(|| __internal_get_component("my_project::a_cool_component"));
+            static A_COOL_COMPONENT: Lazy< Component<()> > = Lazy::new(|| __internal_get_component("my_project::a_cool_component"));
             #[doc = "**Cool Component**"]
             pub fn a_cool_component() -> Component<()> {
                 *A_COOL_COMPONENT
             }
 
-            static A_COOL_COMPONENT_2: Lazy<Component<String>> = Lazy::new(|| __internal_get_component("my_project::a_cool_component_2"));
+            static A_COOL_COMPONENT_2: Lazy< Component<String> > = Lazy::new(|| __internal_get_component("my_project::a_cool_component_2"));
             #[doc = "**Cool Component 2**: The cool-er component.\n\nBuy now in stores!\n\n*Attributes*: Store, Networked\n\n*Suggested Default*: \"The Coolest\""]
             pub fn a_cool_component_2() -> Component<String> {
                 *A_COOL_COMPONENT_2
@@ -182,7 +182,7 @@ fn can_generate_component_with_contained_type() {
         #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
         pub mod components {
             use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
-            static A_COOL_COMPONENT: Lazy<Component<()>> = Lazy::new(|| __internal_get_component("my_project::a_cool_component"));
+            static A_COOL_COMPONENT: Lazy< Component<()> > = Lazy::new(|| __internal_get_component("my_project::a_cool_component"));
             #[doc = "**Cool Component**"]
             pub fn a_cool_component() -> Component<()> {
                 *A_COOL_COMPONENT
@@ -220,7 +220,7 @@ fn can_generate_components_from_manifest_with_org() {
         #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
         pub mod components {
             use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
-            static A_COOL_COMPONENT: Lazy<Component<()>> = Lazy::new(|| __internal_get_component("evil_corp::my_project::a_cool_component"));
+            static A_COOL_COMPONENT: Lazy< Component<()> > = Lazy::new(|| __internal_get_component("evil_corp::my_project::a_cool_component"));
             #[doc = "**Cool Component**"]
             pub fn a_cool_component() -> Component<()> {
                 *A_COOL_COMPONENT
@@ -261,7 +261,7 @@ fn can_generate_components_with_documented_namespace_from_manifest() {
             #[doc = "**Namespace**: A Test Namespace"]
             pub mod ns {
                 use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
-                static A_COOL_COMPONENT: Lazy<Component<()>> = Lazy::new(|| __internal_get_component("my_project::ns::a_cool_component"));
+                static A_COOL_COMPONENT: Lazy< Component<()> > = Lazy::new(|| __internal_get_component("my_project::ns::a_cool_component"));
                 #[doc = "**Cool Component**: Cool!"]
                 pub fn a_cool_component() -> Component<()> {
                     *A_COOL_COMPONENT
@@ -359,37 +359,37 @@ fn can_generate_concepts() {
                 use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
                 pub mod primitives {
                     use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
-                    static SPHERE: Lazy<Component<()>> = Lazy::new(|| __internal_get_component("my_project::core::primitives::sphere"));
+                    static SPHERE: Lazy< Component<()> > = Lazy::new(|| __internal_get_component("my_project::core::primitives::sphere"));
                     #[doc = "**Sphere**"]
                     pub fn sphere() -> Component<()> { *SPHERE }
-                    static SPHERE_RADIUS: Lazy<Component<f32>> = Lazy::new(|| __internal_get_component("my_project::core::primitives::sphere_radius"));
+                    static SPHERE_RADIUS: Lazy< Component<f32> > = Lazy::new(|| __internal_get_component("my_project::core::primitives::sphere_radius"));
                     #[doc = "**Sphere radius**"]
                     pub fn sphere_radius() -> Component<f32> { *SPHERE_RADIUS }
-                    static SPHERE_SECTORS: Lazy<Component<u32>> = Lazy::new(|| __internal_get_component("my_project::core::primitives::sphere_sectors"));
+                    static SPHERE_SECTORS: Lazy< Component<u32> > = Lazy::new(|| __internal_get_component("my_project::core::primitives::sphere_sectors"));
                     #[doc = "**Sphere sectors**"]
                     pub fn sphere_sectors() -> Component<u32> { *SPHERE_SECTORS }
-                    static SPHERE_STACKS: Lazy<Component<u32>> = Lazy::new(|| __internal_get_component("my_project::core::primitives::sphere_stacks"));
+                    static SPHERE_STACKS: Lazy< Component<u32> > = Lazy::new(|| __internal_get_component("my_project::core::primitives::sphere_stacks"));
                     #[doc = "**Sphere stacks**"]
                     pub fn sphere_stacks() -> Component<u32> { *SPHERE_STACKS }
                 }
                 pub mod rendering {
                     use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
-                    static COLOR: Lazy<Component<kiwi_api2::global::Vec4>> = Lazy::new(|| __internal_get_component("my_project::core::rendering::color"));
+                    static COLOR: Lazy< Component<kiwi_api2::global::Vec4> > = Lazy::new(|| __internal_get_component("my_project::core::rendering::color"));
                     #[doc = "**Color**"]
                     pub fn color() -> Component<kiwi_api2::global::Vec4> { *COLOR }
                 }
                 pub mod transform {
                     use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
-                    static ROTATION: Lazy<Component<kiwi_api2::global::Quat>> = Lazy::new(|| __internal_get_component("my_project::core::transform::rotation"));
+                    static ROTATION: Lazy< Component<kiwi_api2::global::Quat> > = Lazy::new(|| __internal_get_component("my_project::core::transform::rotation"));
                     #[doc = "**Rotation**"]
                     pub fn rotation() -> Component<kiwi_api2::global::Quat> { *ROTATION }
-                    static SCALE: Lazy<Component<kiwi_api2::global::Vec3>> = Lazy::new(|| __internal_get_component("my_project::core::transform::scale"));
+                    static SCALE: Lazy< Component<kiwi_api2::global::Vec3> > = Lazy::new(|| __internal_get_component("my_project::core::transform::scale"));
                     #[doc = "**Scale**"]
                     pub fn scale() -> Component<kiwi_api2::global::Vec3> { *SCALE }
-                    static SPHERICAL_BILLBOARD: Lazy<Component<()>> = Lazy::new(|| __internal_get_component("my_project::core::transform::spherical_billboard") );
+                    static SPHERICAL_BILLBOARD: Lazy< Component<()> > = Lazy::new(|| __internal_get_component("my_project::core::transform::spherical_billboard") );
                     #[doc = "**Spherical billboard**"]
                     pub fn spherical_billboard() -> Component<()> { *SPHERICAL_BILLBOARD }
-                    static TRANSLATION: Lazy<Component<kiwi_api2::global::Vec3>> = Lazy::new(|| __internal_get_component("my_project::core::transform::translation"));
+                    static TRANSLATION: Lazy< Component<kiwi_api2::global::Vec3> > = Lazy::new(|| __internal_get_component("my_project::core::transform::translation"));
                     #[doc = "**Translation**"]
                     pub fn translation() -> Component<kiwi_api2::global::Vec3> { *TRANSLATION }
                 }
@@ -397,8 +397,8 @@ fn can_generate_concepts() {
         }
         #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
         pub mod concepts {
-            use kiwi_api2::prelude::*;
             use super::components;
+            use kiwi_api2::prelude::*;
 
             #[doc = "Makes a Colored Sphere (A sphere with some color!)"]
             pub fn make_colored_sphere() -> Components {
@@ -409,8 +409,8 @@ fn can_generate_concepts() {
 
             #[doc = "Checks if the entity is a Colored Sphere (A sphere with some color!)"]
             pub fn is_colored_sphere(id: EntityId) -> bool {
-                is_sphere(id) && entity::has_components(id, [
-                    components::core::rendering::color()
+                is_sphere(id) && entity::has_components(id, &[
+                    &components::core::rendering::color()
                 ])
             }
 
@@ -426,28 +426,28 @@ fn can_generate_concepts() {
 
             #[doc = "Checks if the entity is a Sphere (A primitive sphere.)"]
             pub fn is_sphere(id: EntityId) -> bool {
-                is_transformable(id) && entity::has_components(id, [
-                    components::core::primitives::sphere(),
-                    components::core::primitives::sphere_radius(),
-                    components::core::primitives::sphere_sectors(),
-                    components::core::primitives::sphere_stacks()
+                is_transformable(id) && entity::has_components(id, &[
+                    &components::core::primitives::sphere(),
+                    &components::core::primitives::sphere_radius(),
+                    &components::core::primitives::sphere_sectors(),
+                    &components::core::primitives::sphere_stacks()
                 ])
             }
 
             #[doc = "Makes a Transformable (Can be translated, rotated and scaled.)"]
             pub fn make_transformable() -> Components {
                 Components::new()
-                    .with(components::core::transform::rotation(), Quat::new(0f32, 0f32, 0f32, 1f32))
+                    .with(components::core::transform::rotation(), Quat::from_xyzw(0f32, 0f32, 0f32, 1f32))
                     .with(components::core::transform::scale(), Vec3::new(1f32, 1f32, 1f32))
                     .with(components::core::transform::translation(), Vec3::new(0f32, 0f32, 0f32))
             }
 
             #[doc = "Checks if the entity is a Transformable (Can be translated, rotated and scaled.)"]
             pub fn is_transformable(id: EntityId) -> bool {
-                entity::has_components(id, [
-                    components::core::transform::rotation(),
-                    components::core::transform::scale(),
-                    components::core::transform::translation()
+                entity::has_components(id, &[
+                    &components::core::transform::rotation(),
+                    &components::core::transform::scale(),
+                    &components::core::transform::translation()
                 ])
             }
         }

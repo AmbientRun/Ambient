@@ -31,8 +31,8 @@ pub(super) fn generate_tokens(
         .collect::<anyhow::Result<Vec<_>>>()?;
 
     Ok(quote! {
-        use #api_name::prelude::*;
         use super::components;
+        use #api_name::prelude::*;
 
         #(#concepts_tokens)*
     })
@@ -121,8 +121,8 @@ fn generate_is(identifier: &Identifier, concept: &Concept) -> anyhow::Result<Tok
     Ok(quote! {
         #[doc = #is_comment]
         pub fn #is_ident(id: EntityId) -> bool {
-            #(#extends && )* entity::has_components(id, [
-                #(#components),*
+            #(#extends && )* entity::has_components(id, &[
+                #(&#components),*
             ])
         }
     })
@@ -198,7 +198,7 @@ fn toml_value_to_tokens_primitive(
         }
         ("Quat", toml::Value::Array(a)) => {
             let arr = toml_array_f32_to_array_tokens(path, a)?;
-            quote! { Quat::new(#arr) }
+            quote! { Quat::from_xyzw(#arr) }
         }
         ("String", toml::Value::String(s)) => quote! {#s.to_string()},
         ("U32", toml::Value::Integer(i)) => {

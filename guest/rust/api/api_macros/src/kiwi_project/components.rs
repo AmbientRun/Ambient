@@ -198,9 +198,9 @@ impl TreeNode {
                 let doc_comment = doc_comment.trim();
 
                 Ok(quote! {
-                    static #name_uppercase_ident: Lazy<Component<#component_ty>> = Lazy::new(|| __internal_get_component(#id));
+                    static #name_uppercase_ident: Lazy< Component< #component_ty > > = Lazy::new(|| __internal_get_component(#id));
                     #[doc = #doc_comment]
-                    pub fn #name_ident() -> Component<#component_ty> { *#name_uppercase_ident }
+                    pub fn #name_ident() -> Component< #component_ty > { *#name_uppercase_ident }
                 })
             }
         }
