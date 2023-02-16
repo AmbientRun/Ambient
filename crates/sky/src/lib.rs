@@ -1,3 +1,7 @@
+// This module is partially complete and has not been wired up.
+// We don't want dead code warnings from it in the meantime.
+#![allow(dead_code)]
+
 use std::sync::Arc;
 
 use glam::*;

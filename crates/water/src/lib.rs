@@ -1,20 +1,19 @@
 use kiwi_core::async_ecs::async_run;
 use std::sync::Arc;
 
-use glam::{uvec4, Vec4};
+use glam::Vec4;
 use kiwi_core::{asset_cache, main_scene, mesh, runtime};
-use kiwi_ecs::{components, query, Debuggable, Description, EntityData, Name, Networked, Store, SystemGroup, World};
+use kiwi_ecs::{components, query, Debuggable, Description, EntityData, Name, Networked, Store, SystemGroup};
 use kiwi_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::{BindGroupDesc, ShaderModule},
-    std_assets::PixelTextureKey,
     texture::Texture,
     texture_loaders::TextureFromUrl,
 };
 use kiwi_meshes::QuadMeshKey;
 use kiwi_renderer::{
-    color, material, renderer_shader, Material, MaterialShader, RenderTarget, RendererConfig, RendererShader, SharedMaterial,
-    StandardShaderKey, MATERIAL_BIND_GROUP,
+    color, material, renderer_shader, Material, MaterialShader, RendererConfig, RendererShader, SharedMaterial, StandardShaderKey,
+    MATERIAL_BIND_GROUP,
 };
 use kiwi_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
