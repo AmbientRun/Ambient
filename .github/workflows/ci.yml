@@ -33,6 +33,8 @@ jobs:
           sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers
       - uses: dtolnay/rust-toolchain@stable
       - uses: Leafwing-Studios/cargo-cache@v1
+        with:
+          cache-group: "main"
       - name: Run tests
         run: cargo test --workspace
         env:
