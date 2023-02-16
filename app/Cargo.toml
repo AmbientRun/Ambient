@@ -58,6 +58,7 @@ paste = { optional = true, workspace = true }
 
 [dev-dependencies]
 glam = { workspace = true }
+rusty-hook = "^0.11.2"
 
 [features]
 default = ["dep:toml_edit", "dep:paste"]

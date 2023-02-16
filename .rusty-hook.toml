@@ -1,0 +1,5 @@
+[hooks]
+pre-push = "cargo clippy --workspace -- -Adeprecated"
+
+[logging]
+verbose = true
