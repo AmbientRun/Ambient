@@ -4928,15 +4928,15 @@ checksum = "3582f63211428f83597b51b2ddb88e2a91a9d52d12831f9d08f5e624e8977422"
 
 [[package]]
 name = "russimp"
-version = "1.0.4"
-source = "git+https://github.com/FredrikNoren/russimp.git?rev=0a691d1fa625a1b549d476b97c74f93adab7e5bb#0a691d1fa625a1b549d476b97c74f93adab7e5bb"
+version = "1.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "afa6ae780b6c586ef53c0eed1d9a3f30d596fbee424a96e09ff4e07bf2017aae"
 dependencies = [
  "derivative",
  "num-derive",
  "num-traits",
  "num_enum",
  "russimp-sys",
- "vcpkg",
 ]
 
 [[package]]
