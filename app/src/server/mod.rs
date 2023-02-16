@@ -34,6 +34,7 @@ use crate::{player, Cli, Commands};
 mod wasm;
 
 fn server_systems() -> SystemGroup {
+    // A dummy change
     SystemGroup::new(
         "server",
         vec![
