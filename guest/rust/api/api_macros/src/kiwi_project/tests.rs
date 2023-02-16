@@ -461,10 +461,298 @@ fn can_generate_concepts() {
     )
     .unwrap();
 
-    println!("\n\n{result}\n\n");
+    assert_eq!(result.to_string(), expected_output.to_string());
+}
+
+#[test]
+fn can_generate_concepts_with_all_supported_types() {
+    let manifest = indoc::indoc! {r#"
+        [project]
+        id = "my_project"
+        name = "My Project"
+
+        [components]
+        empty = { type = "Empty", name = "Empty", description = "" }
+        bool = { type = "Bool", name = "Bool", description = "" }
+        entity_id = { type = "EntityId", name = "EntityId", description = "" }
+        f32 = { type = "F32", name = "F32", description = "" }
+        f64 = { type = "F64", name = "F64", description = "" }
+        mat4 = { type = "Mat4", name = "Mat4", description = "" }
+        i32 = { type = "I32", name = "I32", description = "" }
+        quat = { type = "Quat", name = "Quat", description = "" }
+        string = { type = "String", name = "String", description = "" }
+        u32 = { type = "U32", name = "U32", description = "" }
+        u64 = { type = "U64", name = "U64", description = "" }
+        vec2 = { type = "Vec2", name = "Vec2", description = "" }
+        vec3 = { type = "Vec3", name = "Vec3", description = "" }
+        vec4 = { type = "Vec4", name = "Vec4", description = "" }
+        object_ref = { type = "ObjectRef", name = "ObjectRef", description = "" }
+        vec_vec2 = { type = { type = "Vec", element_type = "Vec2" }, name = "VecVec2", description = "" }
+        option_string1 = { type = { type = "Option", element_type = "String" }, name = "OptionString1", description = "" }
+        option_string2 = { type = { type = "Option", element_type = "String" }, name = "OptionString2", description = "" }
+
+        [concepts.everything]
+        name = "Everything"
+        description = "Everywhere all at once"
+        [concepts.everything.components]
+        empty = {}
+        bool = true
+        entity_id = "qmYJaglgRDwigkGXFFS9UQ"
+        f32 = 3.14
+        f64 = 3.14159
+        mat4 = [1, 2, 3, 4, 5.0, 6.0, 7.0, 8.0, 9, 10, 11, 12, 13.0, 14.0, 15.0, 16.0]
+        i32 = -4
+        quat = [1.0, -0.5, 0.3, -0.6]
+        string = "Everything"
+        u32 = 100000
+        u64 = "18446744073709551610"
+        vec2 = [1.0, 2.0]
+        vec3 = [1.0, 2.0, 3.0]
+        vec4 = [1.0, 2.0, 3.0, 4.0]
+        object_ref = "http://192.168.0.4:8999/assets/assets/Shape.glb/models/main.json"
+        vec_vec2 = [[1.0, 2.0], [3.0, 4.0]]
+        option_string1 = ["The Answer Is"]
+        option_string2 = []
+        "#};
+
+    let expected_output = quote::quote! {
+        const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
+        #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
+        pub mod components {
+            use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+
+            static BOOL: Lazy< Component<bool> > = Lazy::new(|| __internal_get_component("my_project::bool"));
+            #[doc = "**Bool**"]
+            pub fn bool() -> Component<bool> { *BOOL }
+
+            static EMPTY: Lazy< Component<()> > = Lazy::new(|| __internal_get_component("my_project::empty"));
+            #[doc = "**Empty**"]
+            pub fn empty() -> Component<()> { *EMPTY }
+
+            static ENTITY_ID: Lazy< Component<kiwi_api2::global::EntityId> > = Lazy::new(|| __internal_get_component("my_project::entity_id"));
+            #[doc = "**EntityId**"]
+            pub fn entity_id() -> Component<kiwi_api2::global::EntityId> { *ENTITY_ID }
+
+            static F32: Lazy< Component<f32> > = Lazy::new(|| __internal_get_component("my_project::f32"));
+            #[doc = "**F32**"]
+            pub fn f32() -> Component<f32> { *F32 }
+
+            static F64: Lazy< Component<f64> > = Lazy::new(|| __internal_get_component("my_project::f64"));
+            #[doc = "**F64**"]
+            pub fn f64() -> Component<f64> { *F64 }
+
+            static I32: Lazy< Component<i32> > = Lazy::new(|| __internal_get_component("my_project::i32"));
+            #[doc = "**I32**"]
+            pub fn i32() -> Component<i32> { *I32 }
+
+            static MAT4: Lazy< Component<kiwi_api2::global::Mat4> > = Lazy::new(|| __internal_get_component("my_project::mat4"));
+            #[doc = "**Mat4**"]
+            pub fn mat4() -> Component<kiwi_api2::global::Mat4> { *MAT4 }
+
+            static OBJECT_REF: Lazy< Component<kiwi_api2::global::ObjectRef> > = Lazy::new(|| __internal_get_component("my_project::object_ref"));
+            #[doc = "**ObjectRef**"]
+            pub fn object_ref() -> Component<kiwi_api2::global::ObjectRef> { *OBJECT_REF }
+
+            static OPTION_STRING1: Lazy< Component< Option<String> > > = Lazy::new(|| __internal_get_component("my_project::option_string1"));
+            #[doc = "**OptionString1**"]
+            pub fn option_string1() -> Component< Option<String> > { *OPTION_STRING1 }
+
+            static OPTION_STRING2: Lazy< Component< Option<String> > > = Lazy::new(|| __internal_get_component("my_project::option_string2"));
+            #[doc = "**OptionString2**"]
+            pub fn option_string2() -> Component< Option<String> > { *OPTION_STRING2 }
+
+            static QUAT: Lazy< Component<kiwi_api2::global::Quat> > = Lazy::new(|| __internal_get_component("my_project::quat"));
+            #[doc = "**Quat**"]
+            pub fn quat() -> Component<kiwi_api2::global::Quat> { *QUAT }
+
+            static STRING: Lazy< Component<String> > = Lazy::new(|| __internal_get_component("my_project::string"));
+            #[doc = "**String**"]
+            pub fn string() -> Component<String> { *STRING }
+
+            static U32: Lazy< Component<u32> > = Lazy::new(|| __internal_get_component("my_project::u32"));
+            #[doc = "**U32**"]
+            pub fn u32() -> Component<u32> { *U32 }
+
+            static U64: Lazy< Component<u64> > = Lazy::new(|| __internal_get_component("my_project::u64"));
+            #[doc = "**U64**"]
+            pub fn u64() -> Component<u64> { *U64 }
+
+            static VEC2: Lazy< Component<kiwi_api2::global::Vec2> > = Lazy::new(|| __internal_get_component("my_project::vec2"));
+            #[doc = "**Vec2**"]
+            pub fn vec2() -> Component<kiwi_api2::global::Vec2> { *VEC2 }
+
+            static VEC3: Lazy< Component<kiwi_api2::global::Vec3> > = Lazy::new(|| __internal_get_component("my_project::vec3"));
+            #[doc = "**Vec3**"]
+            pub fn vec3() -> Component<kiwi_api2::global::Vec3> { *VEC3 }
+
+            static VEC4: Lazy< Component<kiwi_api2::global::Vec4> > = Lazy::new(|| __internal_get_component("my_project::vec4"));
+            #[doc = "**Vec4**"]
+            pub fn vec4() -> Component<kiwi_api2::global::Vec4> { *VEC4 }
+
+            static VEC_VEC2: Lazy< Component< Vec<kiwi_api2::global::Vec2 > > > = Lazy::new(|| __internal_get_component("my_project::vec_vec2"));
+            #[doc = "**VecVec2**"]
+            pub fn vec_vec2() -> Component< Vec< kiwi_api2::global::Vec2 > > { *VEC_VEC2 }
+        }
+        #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
+        pub mod concepts {
+            use super::components;
+            use kiwi_api2::prelude::*;
+            #[doc = "Makes a Everything (Everywhere all at once)"]
+            pub fn make_everything() -> Components {
+                Components::new()
+                    .with(components::bool(), true)
+                    .with(components::empty(), ())
+                    .with(components::entity_id(), EntityId::from_base64("qmYJaglgRDwigkGXFFS9UQ"))
+                    .with(components::f32(), 3.14f32)
+                    .with(components::f64(), 3.14159f64)
+                    .with(components::i32(), -4i32)
+                    .with(components::mat4(), Mat4::from_cols_array([
+                        1f32, 2f32, 3f32, 4f32, 5f32, 6f32, 7f32, 8f32, 9f32, 10f32, 11f32, 12f32,
+                        13f32, 14f32, 15f32, 16f32
+                    ]))
+                    .with(components::object_ref(), ObjectRef::new("http://192.168.0.4:8999/assets/assets/Shape.glb/models/main.json"))
+                    .with(components::option_string1(), Some("The Answer Is".to_string()))
+                    .with(components::option_string2(), None)
+                    .with(components::quat(), Quat::from_xyzw(1f32, -0.5f32, 0.3f32, -0.6f32))
+                    .with(components::string(), "Everything".to_string())
+                    .with(components::u32(), 100000u32)
+                    .with(components::u64(), 18446744073709551610u64)
+                    .with(components::vec2(), Vec2::new(1f32, 2f32))
+                    .with(components::vec3(), Vec3::new(1f32, 2f32, 3f32))
+                    .with(components::vec4(), Vec4::new(1f32, 2f32, 3f32, 4f32))
+                    .with(components::vec_vec2(), vec![Vec2::new(1f32, 2f32), Vec2::new(3f32, 4f32)])
+            }
+            #[doc = "Checks if the entity is a Everything (Everywhere all at once)"]
+            pub fn is_everything(id: EntityId) -> bool {
+                entity::has_components(
+                    id,
+                    &[
+                        &components::bool(),
+                        &components::empty(),
+                        &components::entity_id(),
+                        &components::f32(),
+                        &components::f64(),
+                        &components::i32(),
+                        &components::mat4(),
+                        &components::object_ref(),
+                        &components::option_string1(),
+                        &components::option_string2(),
+                        &components::quat(),
+                        &components::string(),
+                        &components::u32(),
+                        &components::u64(),
+                        &components::vec2(),
+                        &components::vec3(),
+                        &components::vec4(),
+                        &components::vec_vec2()
+                    ]
+                )
+            }
+        }
+    };
+
+    let result = implementation(
+        ("kiwi.toml".to_string(), manifest.to_string()),
+        api_name(),
+        false,
+        false,
+    )
+    .unwrap();
 
     assert_eq!(result.to_string(), expected_output.to_string());
 }
 
-// TODO: write test for non-global case, extending multiple concepts
-// TODO: write test for different types, including vec/opt
+#[test]
+fn can_extend_with_multiple_concepts() {
+    let manifest = indoc::indoc! {r#"
+        [project]
+        id = "my_project"
+        name = "My Project"
+
+        [components]
+        f32 = { type = "F32", name = "F32", description = "" }
+        f64 = { type = "F64", name = "F64", description = "" }
+        i32 = { type = "I32", name = "I32", description = "" }
+
+        [concepts.concept1]
+        name = "C1"
+        description = ""
+        components = { f32 = 4.0 }
+
+        [concepts.concept2]
+        name = "C2"
+        description = ""
+        components = { f64 = 8.0 }
+
+        [concepts.concept3]
+        name = "C3"
+        description = ""
+        extends = ["concept1", "concept2"]
+        components = { i32 = 16 }
+        "#};
+
+    let expected_output = quote::quote! {
+        const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
+        #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
+        pub mod components {
+            use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+
+            static F32: Lazy< Component<f32> > = Lazy::new(|| __internal_get_component("my_project::f32"));
+            #[doc = "**F32**"]
+            pub fn f32() -> Component<f32> { *F32 }
+
+            static F64: Lazy< Component<f64> > = Lazy::new(|| __internal_get_component("my_project::f64"));
+            #[doc = "**F64**"]
+            pub fn f64() -> Component<f64> { *F64 }
+
+            static I32: Lazy< Component<i32> > = Lazy::new(|| __internal_get_component("my_project::i32"));
+            #[doc = "**I32**"]
+            pub fn i32() -> Component<i32> { *I32 }
+        }
+        #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
+        pub mod concepts {
+            use super::components;
+            use kiwi_api2::prelude::*;
+
+            #[doc = "Makes a C1 ()"]
+            pub fn make_concept1() -> Components {
+                Components::new().with(components::f32(), 4f32)
+            }
+            #[doc = "Checks if the entity is a C1 ()"]
+            pub fn is_concept1(id: EntityId) -> bool {
+                entity::has_components(id, &[&components::f32()])
+            }
+
+            #[doc = "Makes a C2 ()"]
+            pub fn make_concept2() -> Components {
+                Components::new().with(components::f64(), 8f64)
+            }
+            #[doc = "Checks if the entity is a C2 ()"]
+            pub fn is_concept2(id: EntityId) -> bool {
+                entity::has_components(id, &[&components::f64()])
+            }
+
+            #[doc = "Makes a C3 ()"]
+            pub fn make_concept3() -> Components {
+                Components::new()
+                    .merge(make_concept1())
+                    .merge(make_concept2())
+                    .with(components::i32(), 16i32)
+            }
+            #[doc = "Checks if the entity is a C3 ()"]
+            pub fn is_concept3(id: EntityId) -> bool {
+                is_concept1(id) && is_concept2(id) && entity::has_components(id, &[&components::i32()])
+            }
+        }
+    };
+
+    let result = implementation(
+        ("kiwi.toml".to_string(), manifest.to_string()),
+        api_name(),
+        false,
+        false,
+    )
+    .unwrap();
+
+    assert_eq!(result.to_string(), expected_output.to_string());
+}
