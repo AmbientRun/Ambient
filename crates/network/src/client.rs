@@ -163,7 +163,7 @@ impl Clone for GameClientView {
 }
 
 impl ElementComponent for GameClientView {
-    fn render(self: Box<Self>, world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self {
             server_addr,
             user_id,
@@ -181,14 +181,14 @@ impl ElementComponent for GameClientView {
         let (_, client_stats_ctx) = hooks.consume_context::<GameClientNetworkStats>().unwrap();
         let (_, server_stats_ctx) = hooks.consume_context::<GameClientServerStats>().unwrap();
 
-        let gpu = world.resource(gpu()).clone();
+        let gpu = hooks.world.resource(gpu()).clone();
 
-        let render_target = hooks.use_memo_with(resolution, |&resolution| Arc::new(RenderTarget::new(gpu.clone(), resolution, None)));
+        let render_target = hooks.use_memo_with(resolution, |_, &resolution| Arc::new(RenderTarget::new(gpu.clone(), resolution, None)));
 
         let (connection_status, set_connection_status) = hooks.use_state("Connecting".to_string());
 
-        let assets = world.resource(asset_cache()).clone();
-        let game_state = hooks.use_ref_with(|| {
+        let assets = hooks.world.resource(asset_cache()).clone();
+        let game_state = hooks.use_ref_with(|world| {
             let (systems, resources) = systems_and_resources();
             let mut state = ClientGameState::new(world, assets.clone(), user_id.clone(), render_target.clone(), systems, resources);
 
@@ -214,9 +214,9 @@ impl ElementComponent for GameClientView {
         let reg = game_state.lock().world.resource(event_registry()).clone();
 
         let task = {
-            let runtime = world.resource(runtime()).clone();
+            let runtime = hooks.world.resource(runtime()).clone();
 
-            hooks.use_memo_with((), move |()| {
+            hooks.use_memo_with((), move |_, ()| {
                 let task = runtime.spawn(async move {
                     // These are the callbacks for everything that can happen
                     let mut on_event = {
@@ -307,7 +307,7 @@ impl ElementComponent for GameClientView {
             // Provide the context
             hooks.provide_context(|| game_client.clone());
             hooks.provide_context(|| GameClientRenderTarget(render_target.clone()));
-            world.add_resource(self::game_client(), Some(game_client.clone()));
+            hooks.world.add_resource(self::game_client(), Some(game_client.clone()));
 
             Image { texture: Some(Arc::new(render_target.color_buffer.create_view(&Default::default()))) }.el().children(vec![ui])
         } else {

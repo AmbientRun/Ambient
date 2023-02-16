@@ -53,7 +53,7 @@ impl Corners {
 /// A simple UI rect. Use components such as `width`, `height`, `background_color`, `border_color`, `border_radius` and `border_thickness`
 /// to control its appearance
 #[element_component]
-pub fn Rectangle(_world: &mut World, _hooks: &mut Hooks) -> Element {
+pub fn Rectangle(_hooks: &mut Hooks) -> Element {
     with_rect(UIBase.el())
 }
 

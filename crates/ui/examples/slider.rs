@@ -8,7 +8,7 @@ use kiwi_ui::*;
 #[derive(Debug, Clone)]
 struct Example;
 impl ElementComponent for Example {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (f32_value, set_f32_value) = hooks.use_state(0.);
         let (f32_exp_value, set_f32_exp_value) = hooks.use_state(0.1);
         let (i32_value, set_i32_value) = hooks.use_state(0);

@@ -18,7 +18,6 @@ use crate::{layout::*, text, use_interval_deps, Rectangle, UIBase};
 
 #[element_component]
 pub fn TextInput(
-    _world: &mut World,
     hooks: &mut Hooks,
     value: String,
     on_change: Cb<dyn Fn(String) + Sync + Send>,
@@ -139,9 +138,9 @@ impl Editor for String {
 }
 
 #[element_component]
-pub fn Cursor(world: &mut World, hooks: &mut Hooks) -> Element {
+pub fn Cursor(hooks: &mut Hooks) -> Element {
     let (show, set_show) = hooks.use_state(true);
-    use_interval_deps(world, hooks, Duration::from_millis(500), false, show, move |show| set_show(!show));
+    use_interval_deps(hooks, Duration::from_millis(500), false, show, move |show| set_show(!show));
     if show {
         UIBase.el().children(vec![Rectangle.el().set(width(), 2.).set(height(), 13.).set(translation(), vec3(1., 0., 0.))])
     } else {

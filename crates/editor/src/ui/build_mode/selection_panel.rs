@@ -18,7 +18,7 @@ pub struct SelectionPanel {
 
 impl ElementComponent for SelectionPanel {
     #[profiling::function]
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { selection, set_selection: _ } = *self;
         let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
         let (settings, _) = hooks.consume_context::<EditorSettings>().unwrap();

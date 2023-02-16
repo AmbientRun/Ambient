@@ -8,7 +8,7 @@ use kiwi_ui::*;
 #[derive(Debug, Clone)]
 struct TodoList;
 impl ElementComponent for TodoList {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (dishes, set_dishes) = hooks.use_state(false);
         let (laundry, set_laundry) = hooks.use_state(false);
         FlowColumn(vec![

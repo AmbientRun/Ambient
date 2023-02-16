@@ -196,7 +196,6 @@ impl ButtonStyle {
 
 #[element_component]
 pub fn Button(
-    world: &mut World,
     hooks: &mut Hooks,
     content: Element,
     disabled: bool,
@@ -211,9 +210,9 @@ pub fn Button(
     let (is_pressed, set_is_pressed) = hooks.use_state(false);
     let (hover, set_hover) = hooks.use_state(false);
     let (is_working, set_is_working) = hooks.use_state(false);
-    let (is_pressed_immediate, _) = hooks.use_state_with(|| Arc::new(AtomicBool::new(false)));
+    let (is_pressed_immediate, _) = hooks.use_state_with(|_| Arc::new(AtomicBool::new(false)));
 
-    hooks.use_effect(world, is_pressed, move |world, _| {
+    hooks.use_effect(is_pressed, move |world, _| {
         if let Some(on_is_pressed_changed) = on_is_pressed_changed {
             on_is_pressed_changed(world, is_pressed);
         }
@@ -386,9 +385,9 @@ impl Hotkey {
     }
 }
 impl ElementComponent for Hotkey {
-    fn render(self: Box<Self>, _: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { on_is_pressed_changed, content, hotkey, hotkey_modifier, on_invoke } = *self;
-        let (is_pressed, _) = hooks.use_state_with(|| Arc::new(AtomicBool::new(false)));
+        let (is_pressed, _) = hooks.use_state_with(|_| Arc::new(AtomicBool::new(false)));
         content
             .listener(
                 on_app_focus_change(),

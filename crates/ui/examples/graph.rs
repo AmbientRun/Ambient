@@ -10,14 +10,16 @@ use kiwi_ecs::World;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_std::{time::Clock, IntoDuration};
 use kiwi_ui::{
-    self, graph::{Graph, GraphScaleKind, GraphStyle}, *
+    self,
+    graph::{Graph, GraphScaleKind, GraphStyle},
+    *,
 };
 use rand::{prelude::StdRng, Rng, SeedableRng};
 
 #[derive(Debug, Clone)]
 struct Example;
 impl ElementComponent for Example {
-    fn render(self: Box<Self>, world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (k, set_k) = hooks.use_state(1.0);
         let max = 256;
 
@@ -40,10 +42,10 @@ impl ElementComponent for Example {
             })
             .multiunzip();
 
-        let runtime = world.resource(runtime());
+        let runtime = hooks.world.resource(runtime()).clone();
         {
             let mut history = history.clone();
-            hooks.use_memo_with((), move |_| {
+            hooks.use_memo_with((), move |_, _| {
                 runtime.spawn(async move {
                     log::info!("Spawning task");
                     let mut interval = tokio::time::interval(50.ms());

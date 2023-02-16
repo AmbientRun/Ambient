@@ -141,8 +141,8 @@ impl Default for Graph {
 }
 
 impl ElementComponent for Graph {
-    fn render(self: Box<Self>, world: &mut kiwi_ecs::World, _hooks: &mut kiwi_element::Hooks) -> kiwi_element::Element {
-        let assets = world.resource(asset_cache()).clone();
+    fn render(self: Box<Self>, hooks: &mut kiwi_element::Hooks) -> kiwi_element::Element {
+        let assets = hooks.world.resource(asset_cache()).clone();
         let Self { points, guide_style, style, width, height, max_value, x_scale, y_scale, x_bounds, y_bounds } = *self;
 
         let points = points.into_iter().filter(|v| v.x.is_normal() && v.y.is_normal() && v.x.abs() < max_value && v.y.abs() < max_value);
@@ -244,7 +244,7 @@ struct Guide {
 }
 
 impl ElementComponent for Guide {
-    fn render(self: Box<Self>, _: &mut kiwi_ecs::World, _: &mut kiwi_element::Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut kiwi_element::Hooks) -> Element {
         let Self { style, scale, len, dir, align, show_0, .. } = *self;
 
         let rot = Quat::from_rotation_arc(Vec3::X, dir.extend(0.0));
@@ -291,7 +291,7 @@ struct Tick {
 }
 
 impl ElementComponent for Tick {
-    fn render(self: Box<Self>, _: &mut kiwi_ecs::World, _: &mut kiwi_element::Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut kiwi_element::Hooks) -> Element {
         let Self { style, height, pos, text_rot, val } = *self;
         Rectangle
             .el()

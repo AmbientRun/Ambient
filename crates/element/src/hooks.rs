@@ -23,6 +23,7 @@ pub type SpawnFn = Box<dyn FnOnce(&mut World) -> DespawnFn + Sync + Send>;
 pub type DespawnFn = Box<dyn FnOnce(&mut World) + Sync + Send>;
 
 pub struct Hooks<'a> {
+    pub world: &'a mut World,
     pub(crate) tree: &'a mut ElementTree,
     pub(crate) element: InstanceId,
     pub(crate) state_index: usize,
@@ -32,10 +33,10 @@ pub struct Hooks<'a> {
 
 impl<'a> Hooks<'a> {
     pub fn use_state<T: Clone + Debug + ComponentValue>(&mut self, init: T) -> (T, Setter<T>) {
-        self.use_state_with(|| init)
+        self.use_state_with(|_| init)
     }
 
-    pub fn use_state_with<T: Clone + Debug + Send + 'static, F: FnOnce() -> T>(&mut self, init: F) -> (T, Setter<T>) {
+    pub fn use_state_with<T: Clone + Debug + Send + 'static, F: FnOnce(&mut World) -> T>(&mut self, init: F) -> (T, Setter<T>) {
         let index = self.state_index;
         self.state_index += 1;
         let value = {
@@ -43,7 +44,7 @@ impl<'a> Hooks<'a> {
             if let Some(value) = instance.hooks_state.get(index) {
                 value
             } else {
-                instance.hooks_state.push(Box::new(init()));
+                instance.hooks_state.push(Box::new(init(self.world)));
                 instance.hooks_state.last().unwrap()
             }
             .downcast_ref::<T>()
@@ -174,7 +175,7 @@ impl<'a> Hooks<'a> {
     }
 
     /// Use memoized state dependent on a future
-    pub fn use_memo_async<T, F, D, U>(&mut self, world: &mut World, deps: D, init: F) -> Option<T>
+    pub fn use_memo_async<T, F, D, U>(&mut self, deps: D, init: F) -> Option<T>
     where
         F: FnOnce(&mut World, D) -> U,
         U: 'static + Future<Output = T> + Send,
@@ -197,13 +198,13 @@ impl<'a> Hooks<'a> {
             }
         }
 
-        let (state, set_state) = self.use_state_with(|| {
+        let (state, set_state) = self.use_state_with(|_| {
             Arc::new(State { task: AtomicRefCell::new(None), value: Mutex::new(None), prev_deps: AtomicRefCell::new(None) })
         });
 
         let mut prev_deps = state.prev_deps.borrow_mut();
         if prev_deps.as_ref() != Some(&deps) {
-            let runtime = world.resource(runtime()).clone();
+            let runtime = self.world.resource(runtime()).clone();
             // Update state
             // Cancel the previous calculation
             let mut task = state.task.borrow_mut();
@@ -211,7 +212,7 @@ impl<'a> Hooks<'a> {
                 task.abort();
             }
 
-            let fut = init(world, deps.clone());
+            let fut = init(self.world, deps.clone());
             *prev_deps = Some(deps);
             let state = state.clone();
             // The future may complete immediately
@@ -238,24 +239,24 @@ impl<'a> Hooks<'a> {
     }
 
     // Helpers
-    pub fn use_ref_with<T: Send + Debug + 'static>(&mut self, init: impl FnOnce() -> T) -> Arc<Mutex<T>> {
-        self.use_state_with(|| Arc::new(Mutex::new(init()))).0
+    pub fn use_ref_with<T: Send + Debug + 'static>(&mut self, init: impl FnOnce(&mut World) -> T) -> Arc<Mutex<T>> {
+        self.use_state_with(|world| Arc::new(Mutex::new(init(world)))).0
     }
 
     #[profiling::function]
     pub fn use_memo_with<T: Clone + ComponentValue + Debug, D: PartialEq + Clone + Sync + Send + Debug + 'static>(
         &mut self,
         dependencies: D,
-        create: impl FnOnce(&D) -> T,
+        create: impl FnOnce(&mut World, &D) -> T,
     ) -> T {
-        let value = self.use_ref_with(|| None);
-        let prev_deps = self.use_ref_with(|| None);
+        let value = self.use_ref_with(|_| None);
+        let prev_deps = self.use_ref_with(|_| None);
 
         let mut prev_deps = prev_deps.lock();
         let mut value = value.lock();
 
         if prev_deps.as_ref() != Some(&dependencies) {
-            let value = value.insert(create(&dependencies)).clone();
+            let value = value.insert(create(self.world, &dependencies)).clone();
             *prev_deps = Some(dependencies);
             value
         } else {
@@ -271,7 +272,6 @@ impl<'a> Hooks<'a> {
     ///
     pub fn use_effect<D: PartialEq + ComponentValue + Debug>(
         &mut self,
-        world: &mut World,
         dependencies: D,
         run: impl FnOnce(&mut World, &D) -> Box<dyn FnOnce(&mut World) + Sync + Send> + Sync + Send,
     ) {
@@ -281,8 +281,8 @@ impl<'a> Hooks<'a> {
                 f.debug_tuple("Cleanup").finish()
             }
         }
-        let cleanup_prev: Arc<Mutex<Option<Cleanup>>> = self.use_ref_with(|| None);
-        let prev_deps = self.use_ref_with::<Option<D>>(|| None);
+        let cleanup_prev: Arc<Mutex<Option<Cleanup>>> = self.use_ref_with(|_| None);
+        let prev_deps = self.use_ref_with::<Option<D>>(|_| None);
         {
             let cleanup_prev = cleanup_prev.clone();
             self.use_spawn(move |_| {
@@ -300,10 +300,10 @@ impl<'a> Hooks<'a> {
         if prev_deps.as_ref() != Some(&dependencies) {
             let mut cleanup_prev = cleanup_prev.lock();
             if let Some(cleanup_prev) = std::mem::replace(&mut *cleanup_prev, None) {
-                cleanup_prev.0(world);
+                cleanup_prev.0(self.world);
             }
             profiling::scope!("use_effect_run");
-            *cleanup_prev = Some(Cleanup(run(world, &dependencies)));
+            *cleanup_prev = Some(Cleanup(run(self.world, &dependencies)));
             *prev_deps = Some(dependencies);
         }
     }
@@ -317,7 +317,7 @@ impl<'a> Hooks<'a> {
         query: TypedReadQuery<R>,
         run: F,
     ) {
-        let query_state = self.use_ref_with(QueryState::new);
+        let query_state = self.use_ref_with(|_| QueryState::new());
         self.use_frame(move |world| {
             let mut qs = query_state.lock();
             run(&query, world, Some(&mut qs), &FrameEvent);

@@ -40,7 +40,7 @@ type InstanceId = String;
 
 #[clonable]
 pub trait ElementComponent: std::fmt::Debug + PartName + Clone + Sync + Send {
-    fn render(self: Box<Self>, world: &mut World, hooks: &mut Hooks) -> Element;
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element;
 }
 pub trait PartName {
     fn part_name(&self) -> &'static str;
@@ -207,7 +207,8 @@ macro_rules! define_el_function_for_vec_element_newtype {
 
 pub fn render_parented_with_component(world: &mut World, id: EntityId, handle: Component<ShareableElementTree>, mut element: Element) {
     use kiwi_core::{
-        hierarchy::{children, parent}, transform::{local_to_parent, local_to_world}
+        hierarchy::{children, parent},
+        transform::{local_to_parent, local_to_world},
     };
     element = element.set(parent(), id);
     if !element.has_component(local_to_parent()) {

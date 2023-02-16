@@ -1,5 +1,8 @@
 use std::{
-    any::TypeId, collections::{HashMap, HashSet}, fmt::Write, sync::Arc
+    any::TypeId,
+    collections::{HashMap, HashSet},
+    fmt::Write,
+    sync::Arc,
 };
 
 use itertools::Itertools;
@@ -10,7 +13,8 @@ use parking_lot::Mutex;
 use tracing::debug_span;
 
 use crate::{
-    element_tree, element_unmanaged_children, AnyCloneable, ContextUpdate, DespawnFn, Element, ElementConfig, Hooks, HooksEnvironment, InstanceId, StateUpdate
+    element_tree, element_unmanaged_children, AnyCloneable, ContextUpdate, DespawnFn, Element, ElementConfig, Hooks, HooksEnvironment,
+    InstanceId, StateUpdate,
 };
 
 #[derive(Debug)]
@@ -187,6 +191,7 @@ impl ElementTree {
             let _span = debug_span!("render_instance with part", key).entered();
             let (on_spawn, new_super, super_, parent_entity) = {
                 let mut hooks = Hooks {
+                    world,
                     environment: self.hooks_env.clone(),
                     tree: self,
                     element: instance_id.to_string(),
@@ -194,7 +199,7 @@ impl ElementTree {
                     on_spawn: if creating { Some(Vec::new()) } else { None },
                 };
 
-                let new_super = part.render(world, &mut hooks);
+                let new_super = part.render(&mut hooks);
                 let on_spawn = std::mem::take(&mut hooks.on_spawn);
 
                 drop(hooks);

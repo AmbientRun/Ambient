@@ -9,7 +9,7 @@ use crate::Text;
 pub struct Throbber;
 
 impl ElementComponent for Throbber {
-    fn render(self: Box<Self>, _: &mut kiwi_ecs::World, hooks: &mut kiwi_element::Hooks) -> kiwi_element::Element {
+    fn render(self: Box<Self>, hooks: &mut kiwi_element::Hooks) -> kiwi_element::Element {
         let (status, set_status) = hooks.use_state(String::new());
         let width = 5;
 

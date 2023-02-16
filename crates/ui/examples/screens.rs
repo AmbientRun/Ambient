@@ -9,7 +9,7 @@ use kiwi_ui::*;
 #[derive(Debug, Clone)]
 struct RootScreen;
 impl ElementComponent for RootScreen {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (screen, set_screen) = hooks.use_state(None);
         FocusRoot(vec![PageScreen(vec![
             ScreenContainer(screen).el(),
@@ -39,10 +39,10 @@ struct SubScreen {
     on_back: Cb<dyn Fn() + Sync + Send>,
 }
 impl ElementComponent for SubScreen {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { on_back } = *self;
         let (screen, set_screen) = hooks.use_state(None);
-        let (id, _) = hooks.use_state_with(friendly_id);
+        let (id, _) = hooks.use_state_with(|_| friendly_id());
         PageScreen(vec![
             ScreenContainer(screen).el(),
             Text::el(format!("SubScreen {id}")),

@@ -649,21 +649,18 @@ pub struct Terrain {
     pub heightmap_position: Vec2,
 }
 impl ElementComponent for Terrain {
-    fn render(self: Box<Self>, world: &mut World, hooks: &mut Hooks) -> Element {
-        let assets = world.resource(asset_cache()).clone();
-
-        let _gpu = world.resource(gpu()).clone();
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
+        let assets = hooks.world.resource(asset_cache()).clone();
 
         let (material_def, set_material_def) =
-            hooks.use_state_with(|| world.persisted_resource(terrain_material_def()).cloned().unwrap_or_default());
+            hooks.use_state_with(|world| world.persisted_resource(terrain_material_def()).cloned().unwrap_or_default());
 
-        let ground_textures = use_async_asset(hooks, world, TerrainTexturesKey { texs: material_def.build().textures })
+        let ground_textures = use_async_asset(hooks, TerrainTexturesKey { texs: material_def.build().textures })
             .and_then(|x| x.ok())
             .unwrap_or_else(|| PixelTextureKey::white().get(&assets));
 
         let noise_texture = use_async_asset(
             hooks,
-            world,
             TextureFromUrl {
                 url: AbsAssetUrl::parse(format!(
                     "{OLD_CONTENT_SERVER_URL}assets/models/{}",
@@ -677,7 +674,7 @@ impl ElementComponent for Terrain {
         .unwrap_or_else(|| PixelTextureKey::white().get(&assets));
 
         // let (ground_textures, set_ground_textures) =
-        //     hooks.use_state_with(|| Arc::new(Texture::new_single_color_texture_array(gpu.clone(), vec![UVec4::ONE, UVec4::ONE])));
+        //     hooks.use_state_with(|_| Arc::new(Texture::new_single_color_texture_array(gpu.clone(), vec![UVec4::ONE, UVec4::ONE])));
         // hooks.use_effect(
         //     world,
         //     material_def.clone(),
@@ -707,8 +704,9 @@ impl ElementComponent for Terrain {
         let lod_factor = 1. / 12.;
         let cell_diagonal = (size_in_meters * size_in_meters * 2.).sqrt();
         let heightmap_position = self.heightmap_position.extend(0.);
-        let terrain_material =
-            hooks.use_memo_with((self.state.id.clone(), ground_textures.id, material_def, noise_texture.id), |(_, _, material_def, _)| {
+        let terrain_material = hooks.use_memo_with(
+            (self.state.id.clone(), ground_textures.id, material_def, noise_texture.id),
+            |_, (_, _, material_def, _)| {
                 SharedMaterial::new(TerrainMaterial::new(
                     assets.clone(),
                     TerrainMaterialParams { heightmap_position, lod_factor, cell_diagonal, _padding: Default::default() },
@@ -725,7 +723,8 @@ impl ElementComponent for Terrain {
                     Arc::new(noise_texture.create_view(&wgpu::TextureViewDescriptor::default())),
                     material_def.clone(),
                 ))
-            });
+            },
+        );
 
         let lod_meshes = (0..self.state.size.lods)
             .map(|lod| {

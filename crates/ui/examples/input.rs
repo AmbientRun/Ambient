@@ -10,7 +10,7 @@ use kiwi_ui::*;
 #[derive(Debug, Clone)]
 struct Example;
 impl ElementComponent for Example {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (text, set_text) = hooks.use_state("Enter some text".to_string());
         let (vector3, set_vector3) = hooks.use_state(Vec3::ZERO);
         let (index_map, set_index_map) =

@@ -5,6 +5,7 @@ version = "0.0.1"
 
 [dependencies]
 kiwi_api = "0.0.3"
+kiwi_element = { path = "../../../../crates/element" }
 
 [lib]
 crate-type = ["cdylib"]

@@ -109,10 +109,10 @@ pub fn client_systems() -> SystemGroup {
 }
 
 #[element_component]
-pub fn PlayerRawInputHandler(_: &mut World, hooks: &mut Hooks) -> Element {
+pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
     const PIXELS_PER_LINE: f32 = 5.0;
 
-    let input = hooks.use_ref_with(PlayerRawInput::default);
+    let input = hooks.use_ref_with(|_| PlayerRawInput::default());
     let (has_focus, set_has_focus) = hooks.use_state(false);
 
     Element::new()

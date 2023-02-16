@@ -16,7 +16,7 @@ pub struct EntityBrowser {
     on_select: Cb<dyn Fn(EntityId) + Sync + Send>,
 }
 impl ElementComponent for EntityBrowser {
-    fn render(self: Box<Self>, _: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { on_select } = *self;
         let (entities, set_entities) = hooks.use_state(Vec::new());
         let (all_tags, set_all_tags) = hooks.use_state(Vec::new());
@@ -89,7 +89,7 @@ pub struct EntityBrowserScreen {
     pub on_back: Cb<dyn Fn() + Sync + Send>,
 }
 impl ElementComponent for EntityBrowserScreen {
-    fn render(self: Box<Self>, world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { on_select, on_back } = *self;
         let (advanced, set_advanced) = hooks.use_state(false);
         DialogScreen(
@@ -109,7 +109,7 @@ impl ElementComponent for EntityBrowserScreen {
                     if advanced {
                         ECSEditor {
                             get_world: cb({
-                                let game_client = world.resource(game_client()).clone();
+                                let game_client = hooks.world.resource(game_client()).clone();
                                 move |run| {
                                     let state = game_client.as_ref().unwrap().game_state.lock();
                                     run(&state.world);

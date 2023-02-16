@@ -134,7 +134,7 @@ fn client_systems() -> SystemGroup {
 }
 
 #[element_component]
-fn GameView(_world: &mut World, hooks: &mut Hooks) -> Element {
+fn GameView(hooks: &mut Hooks) -> Element {
     let (state, _) = hooks.consume_context::<GameClient>().unwrap();
     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
 
@@ -154,8 +154,8 @@ fn GameView(_world: &mut World, hooks: &mut Hooks) -> Element {
 }
 
 #[element_component]
-fn MainApp(world: &mut World, hooks: &mut Hooks, server_addr: SocketAddr, user_id: String) -> Element {
-    let resolution = use_window_physical_resolution(world, hooks);
+fn MainApp(hooks: &mut Hooks, server_addr: SocketAddr, user_id: String) -> Element {
+    let resolution = use_window_physical_resolution(hooks);
 
     hooks.provide_context(GameClientNetworkStats::default);
     hooks.provide_context(GameClientServerStats::default);

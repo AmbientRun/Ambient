@@ -233,7 +233,7 @@ pub struct OffscreenEditor<T> {
 }
 
 impl<T: Debug + ComponentValue + Editor> ElementComponent for OffscreenEditor<T> {
-    fn render(self: Box<Self>, _: &mut kiwi_ecs::World, hooks: &mut kiwi_element::Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut kiwi_element::Hooks) -> Element {
         let Self { title, value, on_confirm, editor, opts } = *self;
 
         let (screen, set_screen) = hooks.use_state(None);
@@ -270,7 +270,6 @@ impl<T: Debug + ComponentValue + Editor> ElementComponent for OffscreenEditor<T>
 
 #[element_component]
 fn EditorScreen<T: Debug + ComponentValue + Editor>(
-    _world: &mut World,
     hooks: &mut Hooks,
     value: T,
     title: String,

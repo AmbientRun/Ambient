@@ -29,14 +29,13 @@ use crate::intents::intent_component_change;
 
 #[tracing::instrument(level = "info", skip_all)]
 #[element_component]
-pub fn EntityEditor(world: &mut World, hooks: &mut Hooks, entity_id: EntityId) -> Element {
+pub fn EntityEditor(hooks: &mut Hooks, entity_id: EntityId) -> Element {
     // tracing::info!("Drawing EntityEditor");
     let (entity, set_entity) = hooks.use_state(None);
     hooks.provide_context(|| EditingEntityContext(entity_id));
     let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
 
     use_interval_deps(
-        world,
         hooks,
         Duration::from_millis(100),
         false,
@@ -53,7 +52,7 @@ pub fn EntityEditor(world: &mut World, hooks: &mut Hooks, entity_id: EntityId) -
     );
 
     let name = use_remote_component(hooks, entity_id, name()).unwrap_or(format!("Entity {entity_id}"));
-    let runtime = world.resource(runtime()).clone();
+    let runtime = hooks.world.resource(runtime()).clone();
 
     if let Some(entity) = entity {
         let _translation = entity.get_cloned(translation());
@@ -126,12 +125,7 @@ impl ObjectComponentChange {
 #[tracing::instrument(level = "info", skip_all)]
 #[profiling::function]
 #[element_component]
-fn ObjectComponentsEditor(
-    _world: &mut World,
-    _hooks: &mut Hooks,
-    value: EntityData,
-    on_change: Cb<dyn Fn(ObjectComponentChange) + Sync + Send>,
-) -> Element {
+fn ObjectComponentsEditor(_hooks: &mut Hooks, value: EntityData, on_change: Cb<dyn Fn(ObjectComponentChange) + Sync + Send>) -> Element {
     let mut missing_components = Vec::new();
     fn reg_component<T: ComponentValue + Editor + std::fmt::Debug + Clone + Sync + Send + 'static>(
         entity: &EntityData,
@@ -278,7 +272,6 @@ fn ObjectComponentsEditor(
 #[profiling::function]
 #[element_component]
 fn ComponentEditor<T: ComponentValue + Editor + std::fmt::Debug + Clone + Sync + Send + 'static>(
-    _world: &mut World,
     hooks: &mut Hooks,
     component: Component<T>,
     value: T,

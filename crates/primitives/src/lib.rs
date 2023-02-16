@@ -169,16 +169,16 @@ pub fn systems() -> SystemGroup {
 #[derive(Debug, Clone)]
 pub struct Cube;
 impl ElementComponent for Cube {
-    fn render(self: Box<Self>, world: &mut World, _: &mut Hooks) -> Element {
-        Element::new().init_extend(cube_data(world.resource(asset_cache())))
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
+        Element::new().init_extend(cube_data(hooks.world.resource(asset_cache())))
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct Quad;
 impl ElementComponent for Quad {
-    fn render(self: Box<Self>, world: &mut World, _: &mut Hooks) -> Element {
-        Element::new().init_extend(quad_data(world.resource(asset_cache())))
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
+        Element::new().init_extend(quad_data(hooks.world.resource(asset_cache())))
     }
 }
 
@@ -187,9 +187,9 @@ pub struct UVSphere {
     pub sphere: UVSphereMesh,
 }
 impl ElementComponent for UVSphere {
-    fn render(self: Box<Self>, world: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let UVSphere { sphere } = *self;
-        Element::new().init_extend(sphere_data(world.resource(asset_cache()), &sphere))
+        Element::new().init_extend(sphere_data(hooks.world.resource(asset_cache()), &sphere))
     }
 }
 
@@ -200,7 +200,7 @@ pub struct BoxLine {
     pub thickness: f32,
 }
 impl ElementComponent for BoxLine {
-    fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         let d = self.to - self.from;
         Cube.el()
             .set(translation(), self.from)

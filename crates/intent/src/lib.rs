@@ -5,11 +5,15 @@ use std::{fmt::Debug, sync::Arc, time::SystemTime};
 
 use itertools::Itertools;
 use kiwi_ecs::{
-    components, index_system, query, ArchetypeFilter, Component, ComponentValue, Debuggable, EntityData, EntityId, Index, IndexColumns, Networked, QueryState, Resource, Store, SystemGroup, World
+    components, index_system, query, ArchetypeFilter, Component, ComponentValue, Debuggable, EntityData, EntityId, Index, IndexColumns,
+    Networked, QueryState, Resource, Store, SystemGroup, World,
 };
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_network::{
-    client::{GameClient, GameRpcArgs}, hooks::{use_remote_component, use_remote_world_system}, server::SharedServerState, unwrap_log_network_err
+    client::{GameClient, GameRpcArgs},
+    hooks::{use_remote_component, use_remote_world_system},
+    server::SharedServerState,
+    unwrap_log_network_err,
 };
 use kiwi_rpc::RpcRegistry;
 use kiwi_ui::{FlowColumn, StylesExt, Text};
@@ -152,7 +156,7 @@ pub fn common_intent_systems() -> SystemGroup {
 #[derive(Debug, Clone)]
 pub struct IntentHistoryVisualizer;
 impl ElementComponent for IntentHistoryVisualizer {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (intents, set_intents) = hooks.use_state(Vec::new());
         use_remote_world_system(hooks, query(()).incl(intent_user_id()), move |q, world, qs, _| {
             set_intents(q.iter(world, qs).sorted_by_key(|(id, _)| world.get(*id, intent_timestamp()).ok()).map(|(id, _)| id).collect());
@@ -166,7 +170,7 @@ pub struct IntentVisualizer {
     id: EntityId,
 }
 impl ElementComponent for IntentVisualizer {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { id } = *self;
 
         let intent = use_remote_component(hooks, id, intent());

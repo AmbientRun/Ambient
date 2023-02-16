@@ -14,7 +14,7 @@ pub struct TabBar<T: ToString + PartialEq + Clone + Debug + Sync + Send + 'stati
     pub on_change: Cb<dyn Fn(T) + Sync + Send>,
 }
 impl<T: ToString + PartialEq + Clone + Debug + Sync + Send + 'static> ElementComponent for TabBar<T> {
-    fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         let Self { tabs, value, on_change } = *self;
         FlowRow(
             tabs.into_iter()
@@ -45,7 +45,7 @@ impl<T: ToString + PartialEq + Default + Clone + Debug + Sync + Send + 'static> 
     }
 }
 impl<T: ToString + PartialEq + Default + Clone + Debug + Sync + Send + 'static> ElementComponent for Tabs<T> {
-    fn render(self: Box<Self>, _: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (value, set_value) = hooks.use_state(T::default());
         let selected_tab = self.tabs.iter().find(|it| it.0 == value).map(|it| it.1.clone()).unwrap_or(cb(|| Element::new()));
         let key = value.to_string();

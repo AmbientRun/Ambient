@@ -92,7 +92,7 @@ fn do_derive_element_editor(input: TokenStream) -> TokenStream {
 
         #[automatically_derived]
         impl #ui_crate::element::ElementComponent for #editor_name {
-            fn render(self: Box<Self>, world: &mut #ui_crate::World, hooks: &mut #ui_crate::element::Hooks) -> #ui_crate::element::Element {
+            fn render(self: Box<Self>, hooks: &mut #ui_crate::element::Hooks) -> #ui_crate::element::Element {
                 use #ui_crate::element::{Element, ElementComponentExt};
                 use #ui_crate::{Editor, EditorRow, EditorColumn, Slider, IntegerSlider, ListSelect, DropdownSelect, FlowRow, FlowColumn, Text, layout::{margin, Borders, fit_horizontal, Fit}};
                 let Self { value, on_change, opts } = *self;

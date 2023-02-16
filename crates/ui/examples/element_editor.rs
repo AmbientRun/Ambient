@@ -56,7 +56,7 @@ pub struct SubStruct {
 #[derive(Debug, Clone)]
 struct Example;
 impl ElementComponent for Example {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (state, set_state) = hooks.use_state(MyStruct::new());
         FocusRoot(vec![ScrollArea(
             FlowColumn(vec![MyStruct::editor(state.clone(), set_state, Default::default()), Text::el(format!("{state:#?}"))])

@@ -10,8 +10,8 @@ use kiwi_ui::{FocusRoot, ScrollArea, WindowSized};
 #[derive(Debug, Clone)]
 struct ECSEditorUIWorld;
 impl ElementComponent for ECSEditorUIWorld {
-    fn render(self: Box<Self>, world: &mut World, _hooks: &mut Hooks) -> Element {
-        let async_run = world.resource(async_run()).clone();
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
+        let async_run = hooks.world.resource(async_run()).clone();
         ECSEditor {
             get_world: cb(move |run| {
                 let run = run.clone();

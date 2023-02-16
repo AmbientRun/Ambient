@@ -45,8 +45,8 @@ components!("ui", {
 
 /// A text element. Use the `text`, `font_size`, `font` and `color` components to set its state
 #[element_component(without_el)]
-pub fn Text(world: &mut World, _hooks: &mut Hooks) -> Element {
-    let scale_factor = *world.resource(window_scale_factor()) as f32;
+pub fn Text(hooks: &mut Hooks) -> Element {
+    let scale_factor = *hooks.world.resource(window_scale_factor()) as f32;
 
     UIBase
         .el()

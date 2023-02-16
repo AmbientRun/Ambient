@@ -16,7 +16,7 @@ struct A {
 }
 
 impl ElementComponent for A {
-    fn render(self: Box<Self>, _: &mut kiwi_ecs::World, _: &mut kiwi_element::Hooks) -> kiwi_element::Element {
+    fn render(self: Box<Self>, _: &mut kiwi_element::Hooks) -> kiwi_element::Element {
         let Self { value, set_value } = *self;
         FlowRow::el([
             Text::el(value.to_string()).set(padding(), Borders::even(STREET)),
@@ -60,7 +60,7 @@ struct B {
 }
 
 impl ElementComponent for B {
-    fn render(self: Box<Self>, _: &mut kiwi_ecs::World, hooks: &mut kiwi_element::Hooks) -> kiwi_element::Element {
+    fn render(self: Box<Self>, hooks: &mut kiwi_element::Hooks) -> kiwi_element::Element {
         let (shared, _) = hooks.use_state(self.shared.clone());
         let keepalive = DroppedClosure;
 
@@ -84,7 +84,7 @@ impl Drop for B {
 struct Main;
 
 impl ElementComponent for Main {
-    fn render(self: Box<Self>, _: &mut kiwi_ecs::World, hooks: &mut kiwi_element::Hooks) -> kiwi_element::Element {
+    fn render(self: Box<Self>, hooks: &mut kiwi_element::Hooks) -> kiwi_element::Element {
         let shared = Shared(Arc::new("Hello, World!".to_string()));
 
         let (value, set_value) = hooks.use_state(0.0);

@@ -47,7 +47,7 @@ pub fn ui_camera_system() -> SystemGroup<Event<'static, ()>> {
 }
 
 #[element_component]
-pub fn UICamera(_: &mut World, _: &mut Hooks) -> Element {
+pub fn UICamera(_: &mut Hooks) -> Element {
     Element::new()
         .init_default(local_to_world())
         .init_default(inv_local_to_world())
@@ -63,7 +63,7 @@ pub fn UICamera(_: &mut World, _: &mut Hooks) -> Element {
 }
 
 #[element_component]
-pub fn LookatCamera(_: &mut World, _: &mut Hooks, eye: Vec3, lookat: Vec3, up: Vec3) -> Element {
+pub fn LookatCamera(_: &mut Hooks, eye: Vec3, lookat: Vec3, up: Vec3) -> Element {
     Element::new()
         .init_default(local_to_world())
         .init_default(inv_local_to_world())
@@ -80,7 +80,7 @@ pub fn LookatCamera(_: &mut World, _: &mut Hooks, eye: Vec3, lookat: Vec3, up: V
 }
 
 #[element_component]
-pub fn FreeCamera(_: &mut World, _: &mut Hooks, position: Vec3, rotation: Quat) -> Element {
+pub fn FreeCamera(_: &mut Hooks, position: Vec3, rotation: Quat) -> Element {
     Element::new()
         .init_default(local_to_world())
         .init_default(inv_local_to_world())
@@ -96,6 +96,6 @@ pub fn FreeCamera(_: &mut World, _: &mut Hooks, position: Vec3, rotation: Quat) 
 }
 
 #[element_component]
-pub fn FittedOrthographicCamera(_: &mut World, _: &mut Hooks, eye: Vec3, lookat: Vec3, up: Vec3, fit: BoundingBox, aspect: f32) -> Element {
+pub fn FittedOrthographicCamera(_: &mut Hooks, eye: Vec3, lookat: Vec3, up: Vec3, fit: BoundingBox, aspect: f32) -> Element {
     Element::new().extend(Camera::fitted_ortographic(eye, lookat, up, fit, aspect).to_entity_data())
 }

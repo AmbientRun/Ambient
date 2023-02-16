@@ -2,7 +2,8 @@ use kiwi_core::asset_cache;
 use kiwi_ecs::World;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_std::{
-    asset_url::{select_asset, AssetUrl, AssetUrlCollection, GetAssetType, TypedAssetUrl}, Cb
+    asset_url::{select_asset, AssetUrl, AssetUrlCollection, GetAssetType, TypedAssetUrl},
+    Cb,
 };
 
 use crate::{align_vertical, space_between_items, Align, Button, ButtonStyle, Editor, EditorOpts, FlowRow, Text, STREET};
@@ -25,7 +26,7 @@ pub struct AssetUrlEditor<T: GetAssetType> {
     pub on_change: Option<Cb<dyn Fn(TypedAssetUrl<T>) + Sync + Send>>,
 }
 impl<T: GetAssetType + 'static> ElementComponent for AssetUrlEditor<T> {
-    fn render(self: Box<Self>, _world: &mut World, _hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
         let Self { value, on_change } = *self;
         if let Some(on_change) = on_change {
             FlowRow::el([
@@ -68,7 +69,7 @@ pub struct AssetUrlCollectionEditor<T: GetAssetType> {
     pub on_change: Option<Cb<dyn Fn(AssetUrlCollection<T>) + Sync + Send>>,
 }
 impl<T: GetAssetType + 'static> ElementComponent for AssetUrlCollectionEditor<T> {
-    fn render(self: Box<Self>, _world: &mut World, _hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
         let Self { value, on_change } = *self;
         if let Some(on_change) = on_change {
             FlowRow::el([

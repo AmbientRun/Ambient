@@ -16,7 +16,7 @@ use kiwi_ui::{
 #[derive(Debug, Clone)]
 struct WobbleRect;
 impl ElementComponent for WobbleRect {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (state, set_state) = hooks.use_state(0.);
         UIBase
             .el()
@@ -33,7 +33,7 @@ struct MyContext(String);
 #[derive(Debug, Clone)]
 struct ContextUser;
 impl ElementComponent for ContextUser {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (context, _) = hooks.consume_context::<MyContext>().unwrap();
         Text::el(context.0)
     }
@@ -45,7 +45,7 @@ pub struct Two {
     second: Element,
 }
 impl ElementComponent for Two {
-    fn render(self: Box<Self>, _world: &mut World, _hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
         Element::from(UIBase)
             .init_default(children())
             .children(vec![self.first.set(translation(), vec3(100., 0., 0.)), self.second.set(translation(), vec3(0., 100., 0.))])
@@ -55,7 +55,7 @@ impl ElementComponent for Two {
 #[derive(Debug, Clone)]
 struct InputTest;
 impl ElementComponent for InputTest {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (value, set_value) = hooks.use_state("".to_string());
         FlowColumn::el([Throbber.el(), TextInput::new(value, set_value).el()])
     }
@@ -64,7 +64,7 @@ impl ElementComponent for InputTest {
 #[derive(Debug, Clone)]
 struct Example;
 impl ElementComponent for Example {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (count, _set_count) = hooks.use_state(0);
         hooks.provide_context(|| MyContext(format!("context {count}")));
         eprintln!("Render example {count}");

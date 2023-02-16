@@ -53,13 +53,12 @@ pub struct GridGuide {
 }
 
 impl ElementComponent for GridGuide {
-    #[tracing::instrument(skip_all)]
-    fn render(self: Box<Self>, world: &mut World, hooks: &mut kiwi_element::Hooks) -> kiwi_element::Element {
+    fn render(self: Box<Self>, hooks: &mut kiwi_element::Hooks) -> kiwi_element::Element {
         let Self { rotation, point } = *self;
 
         let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
 
-        let (entity, _) = hooks.use_state_with(|| {
+        let (entity, _) = hooks.use_state_with(|world| {
             let assets = world.resource(asset_cache());
 
             let mut state = game_client.game_state.lock();
@@ -83,7 +82,7 @@ impl ElementComponent for GridGuide {
             });
         }
 
-        hooks.use_effect(world, (rotation, point), |_, &(rotation, point)| {
+        hooks.use_effect((rotation, point), |_, &(rotation, point)| {
             let mut state = game_client.game_state.lock();
             let _euler = rotation.to_euler(EulerRot::YXZ);
 
@@ -105,12 +104,12 @@ pub struct AxisGuide {
 
 impl ElementComponent for AxisGuide {
     #[tracing::instrument(skip_all)]
-    fn render(self: Box<Self>, world: &mut World, hooks: &mut kiwi_element::Hooks) -> kiwi_element::Element {
+    fn render(self: Box<Self>, hooks: &mut kiwi_element::Hooks) -> kiwi_element::Element {
         let Self { axis, point } = *self;
 
         let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
 
-        let (entity, _) = hooks.use_state_with(|| {
+        let (entity, _) = hooks.use_state_with(|world| {
             let mut state = game_client.game_state.lock();
             let assets = world.resource(asset_cache());
 

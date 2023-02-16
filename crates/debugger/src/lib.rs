@@ -37,7 +37,7 @@ pub fn register_rpcs(reg: &mut RpcRegistry<GameRpcArgs>) {
 }
 
 #[element_component]
-pub fn Debugger(_world: &mut World, hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
+pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
     let (show_shadows, set_show_shadows) = hooks.use_state(false);
     let (show_ecs, set_show_ecs) = hooks.use_state(false);
     let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
@@ -162,8 +162,8 @@ pub fn Debugger(_world: &mut World, hooks: &mut Hooks, get_state: GetDebuggerSta
 }
 
 #[element_component]
-fn ShadowMapsViz(_: &mut World, hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
-    let (shadow_cascades, _) = hooks.use_state_with(|| {
+fn ShadowMapsViz(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
+    let (shadow_cascades, _) = hooks.use_state_with(|_| {
         let mut n_cascades = 0;
         get_state(&mut |renderer, _, _| {
             n_cascades = renderer.config.shadow_cascades;
@@ -176,8 +176,8 @@ fn ShadowMapsViz(_: &mut World, hooks: &mut Hooks, get_state: GetDebuggerState) 
 }
 
 #[element_component]
-fn ShadowMapViz(_: &mut World, hooks: &mut Hooks, get_state: GetDebuggerState, cascade: u32) -> Element {
-    let (texture, _) = hooks.use_state_with(|| {
+fn ShadowMapViz(hooks: &mut Hooks, get_state: GetDebuggerState, cascade: u32) -> Element {
+    let (texture, _) = hooks.use_state_with(|_| {
         let mut tex = None;
         get_state(&mut |renderer, _, _| {
             tex = Some(renderer.shadows.as_ref().map(|x| {
@@ -195,7 +195,7 @@ fn ShadowMapViz(_: &mut World, hooks: &mut Hooks, get_state: GetDebuggerState, c
 }
 
 #[element_component]
-fn ShaderDebug(_: &mut World, hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
+fn ShaderDebug(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
     let (show, set_show) = hooks.use_state(false);
 
     let (_, upd) = hooks.use_state(());

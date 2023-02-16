@@ -1,6 +1,7 @@
 use glam::vec3;
 use kiwi_core::{
-    hierarchy::children, transform::{local_to_world, translation}
+    hierarchy::children,
+    transform::{local_to_world, translation},
 };
 use kiwi_ecs::{components, query, SystemGroup, World};
 use kiwi_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
@@ -31,7 +32,7 @@ pub fn systems() -> SystemGroup {
 #[derive(Clone, Debug)]
 pub struct ScreenContainer(pub Option<Element>);
 impl ElementComponent for ScreenContainer {
-    fn render(self: Box<Self>, _world: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         if let Some(content) = self.0 {
             UIBase.el().set(screen(), ()).children(vec![WindowSized(vec![Dock(vec![content]).el().set(translation(), vec3(0., 0., 0.1))])
                 .el()
@@ -47,7 +48,7 @@ impl ElementComponent for ScreenContainer {
 pub struct PageScreen(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(PageScreen);
 impl ElementComponent for PageScreen {
-    fn render(self: Box<Self>, _world: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         WindowSized(vec![Dock(self.0).el().init(padding(), Borders::even(30.))])
             .el()
             .with_background(*app_background_color().set_a(0.99))
@@ -58,7 +59,7 @@ impl ElementComponent for PageScreen {
 #[derive(Clone, Debug)]
 pub struct DialogScreen(pub Element);
 impl ElementComponent for DialogScreen {
-    fn render(self: Box<Self>, _world: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         WindowSized(vec![Dock(vec![self.0]).el().init(padding(), Borders::even(30.))])
             .el()
             .with_background(*app_background_color().set_a(0.99))

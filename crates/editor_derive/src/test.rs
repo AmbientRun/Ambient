@@ -15,7 +15,7 @@ fn test_base(body: TokenStream) -> TokenStream {
         }
         #[automatically_derived]
         impl kiwi_ui::element::ElementComponent for TestEditor {
-            fn render(self: Box<Self>, world: &mut kiwi_ui::World, hooks: &mut kiwi_ui::element::Hooks) -> kiwi_ui::element::Element {
+            fn render(self: Box<Self>, hooks: &mut kiwi_ui::element::Hooks) -> kiwi_ui::element::Element {
                 use kiwi_ui::element::{Element, ElementComponentExt};
                 use kiwi_ui::{Editor, EditorRow, EditorColumn, Slider, IntegerSlider, ListSelect, DropdownSelect, FlowRow, FlowColumn, Text, layout::{margin, Borders, fit_horizontal, Fit}};
                 let Self { value, on_change, opts } = *self;

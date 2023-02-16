@@ -50,7 +50,7 @@ pub struct TerrainRaycastPicker {
     pub erosion_config: HydraulicErosionConfig,
 }
 impl ElementComponent for TerrainRaycastPicker {
-    fn render(self: Box<Self>, _ui_world: &mut kiwi_ecs::World, hooks: &mut kiwi_element::Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut kiwi_element::Hooks) -> Element {
         let action_button = kiwi_input::MouseButton::Left;
 
         let Self { filter, layer, brush, brush_size, brush_strength, brush_smoothness, brush_shape, erosion_config } = *self;
@@ -281,7 +281,7 @@ impl Material for BrushCursorMaterial {
 #[derive(Debug, Clone)]
 pub struct EditorTerrainMode;
 impl ElementComponent for EditorTerrainMode {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (brush, set_brush) = hooks.consume_context::<Brush>().unwrap();
         let (layer, set_layer) = hooks.consume_context::<u32>().unwrap();
         let (brush_size, set_brush_size) = hooks.consume_context::<BrushSize>().unwrap();
@@ -427,7 +427,7 @@ impl ElementComponent for EditorTerrainMode {
 #[derive(Debug, Clone)]
 pub struct GenerateTerrainButton;
 impl ElementComponent for GenerateTerrainButton {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
         let (has_terrain, set_has_terrain) = hooks.use_state(true);
         use_interval(hooks, 1., {
