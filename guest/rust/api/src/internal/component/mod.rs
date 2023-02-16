@@ -99,6 +99,11 @@ impl Components {
         T::from_result(self.0.remove(&component.index())?)
     }
 
+    /// Merges in the `other` Components; any fields that were present in both will be replaced by `other`'s.
+    pub fn merge(&mut self, other: Components) {
+        self.0.extend(other.0.into_iter());
+    }
+
     /// Spawns an entity with these components.
     ///
     /// This is an asynchronous operation; use [entity::wait_for_spawn](crate::entity::wait_for_spawn) to get notified when

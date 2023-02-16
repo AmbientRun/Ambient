@@ -11,6 +11,27 @@ impl EntityId {
     pub const fn new(id0: u64, id1: u64) -> Self {
         Self { id0, id1 }
     }
+
+    #[doc(hidden)]
+    pub fn from_base64(encoded: &str) -> Self {
+        let len = data_encoding::BASE64URL_NOPAD
+            .decode_len(encoded.len())
+            .unwrap();
+
+        if len >= 16 {
+            panic!("base64 entityid is more than 16 bytes");
+        }
+
+        let mut bytes = [0u8; 16];
+        data_encoding::BASE64URL_NOPAD
+            .decode_mut(encoded.as_bytes(), &mut bytes)
+            .unwrap();
+
+        Self {
+            id0: u64::from_le_bytes(bytes[0..8].try_into().unwrap()),
+            id1: u64::from_le_bytes(bytes[8..].try_into().unwrap()),
+        }
+    }
 }
 impl std::fmt::Display for EntityId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

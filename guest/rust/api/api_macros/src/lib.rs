@@ -57,5 +57,6 @@ fn kiwi_project_pm2(global: bool, api_name: syn::Path) -> anyhow::Result<proc_ma
             .unwrap(),
         api_name,
         global,
+        true,
     )
 }
