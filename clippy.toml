@@ -2,6 +2,8 @@ disallowed-macros = [
     # { path = "std::eprintln", reason = "prefer tracing over raw stdout" },
     # { path = "std::println", reason = "prefer tracing over raw stdout" },
     { path = "std::dbg", reason = "prefer tracing over raw stdout" },
-    { path = "std::todo", reason = "Using `todo` is not informative" },
+
+    # We would like to prevent todos without reason, but there doesn't appear to be a way to do this right now.
+    # { path = "std::todo", reason = "Using `todo` is not informative" },
 ]
 allow-dbg-in-tests = true
