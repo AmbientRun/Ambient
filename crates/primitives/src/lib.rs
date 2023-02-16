@@ -5,10 +5,7 @@ use kiwi_core::{
     main_scene, mesh,
     transform::{local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation},
 };
-use kiwi_ecs::{
-    components, ensure_has_component_with_make_default, query, DefaultValue, Description, EntityData, EntityId, Name, Networked, Store,
-    SystemGroup, World,
-};
+use kiwi_ecs::{components, query, DefaultValue, Description, EntityData, EntityId, Name, Networked, Store, SystemGroup, World};
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_gpu::mesh_buffer::GpuMesh;
 pub use kiwi_meshes::UVSphereMesh;
@@ -145,9 +142,6 @@ pub fn systems() -> SystemGroup {
                     extend(world, id, data);
                 }
             }),
-            ensure_has_component_with_make_default(sphere(), sphere_radius()),
-            ensure_has_component_with_make_default(sphere(), sphere_sectors()),
-            ensure_has_component_with_make_default(sphere(), sphere_stacks()),
             query((sphere_radius().changed(), sphere_sectors().changed(), sphere_stacks().changed())).incl(sphere()).spawned().to_system(
                 |q, world, qs, _| {
                     for (id, (radius, sectors, stacks)) in q.collect_cloned(world, qs) {

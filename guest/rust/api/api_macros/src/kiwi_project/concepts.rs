@@ -148,7 +148,7 @@ fn toml_value_to_tokens(
                     "Vec" => {
                         let values = values
                             .iter()
-                            .map(|v| toml_value_to_tokens_primitive(path, &element_type, v))
+                            .map(|v| toml_value_to_tokens_primitive(path, element_type, v))
                             .collect::<anyhow::Result<Vec<_>>>()?;
 
                         Ok(quote! { vec![ #(#values),* ] })
@@ -158,7 +158,7 @@ fn toml_value_to_tokens(
                             Ok(quote! { None })
                         } else {
                             let value =
-                                toml_value_to_tokens_primitive(path, &element_type, &values[0])?;
+                                toml_value_to_tokens_primitive(path, element_type, &values[0])?;
                             Ok(quote! { Some(#value) })
                         }
                     }
@@ -185,7 +185,6 @@ fn toml_value_to_tokens_primitive(
             quote! {#f}
         }
         ("F64", toml::Value::Float(f)) => {
-            let f = *f as f64;
             quote! {#f}
         }
         ("Mat4", toml::Value::Array(a)) => {

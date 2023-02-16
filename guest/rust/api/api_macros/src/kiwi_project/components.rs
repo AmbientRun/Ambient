@@ -188,7 +188,7 @@ impl TreeNode {
                     )
                 }
                 if let Some(default) = component.default.as_ref() {
-                    doc_comment += &format!("\n\n*Suggested Default*: {}", default.to_string())
+                    doc_comment += &format!("\n\n*Suggested Default*: {default}")
                 }
 
                 let id = IdentifierPathBuf::from_iter(

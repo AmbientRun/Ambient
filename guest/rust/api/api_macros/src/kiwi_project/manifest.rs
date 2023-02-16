@@ -82,7 +82,7 @@ impl ComponentType {
                     let container_ty = convert_container_type_to_rust_type(type_)
                         .context("invalid container type")?;
 
-                    let element_ty = convert_primitive_type_to_rust_type(api_name, &element_type)
+                    let element_ty = convert_primitive_type_to_rust_type(api_name, element_type)
                         .context("invalid element type")?;
 
                     Ok(quote! { #container_ty < #element_ty > })

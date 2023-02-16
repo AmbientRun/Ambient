@@ -2,11 +2,11 @@ use kiwi_api::{
     components::core::{
         camera::{aspect_ratio_from_window, perspective_infinite_reverse},
         game_objects::player_camera,
-        primitives::{cube, quad, sphere, sphere_radius, sphere_sectors, sphere_stacks},
+        primitives::{cube, quad, sphere_radius, sphere_sectors, sphere_stacks},
         rendering::color,
         transform::{lookat_center, scale, translation},
     },
-    concepts::make_transformable,
+    concepts::{make_sphere, make_transformable},
     prelude::*,
 };
 
@@ -33,8 +33,7 @@ pub async fn main() -> EventResult {
         .with(color(), vec4(0., 1., 0., 1.))
         .spawn();
 
-    make_transformable()
-        .with_default(sphere())
+    make_sphere()
         .with(sphere_radius(), 1.)
         .with(sphere_sectors(), 12)
         .with(sphere_stacks(), 6)
@@ -42,8 +41,7 @@ pub async fn main() -> EventResult {
         .with(color(), vec4(0., 0., 1., 1.))
         .spawn();
 
-    make_transformable()
-        .with_default(sphere())
+    make_sphere()
         .with(translation(), vec3(0., 0., 4.5))
         .with(color(), vec4(1., 1., 0., 1.))
         .spawn();

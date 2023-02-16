@@ -12,6 +12,7 @@ use once_cell::sync::Lazy;
 
 // wit-bindgen is not released on crates.io, and we are using an old version at the time of writing.
 // To get around this, we engage in Hacks.
+#[allow(warnings, unused, clippy)]
 mod wit_bindgen_guest_rust {
     // https://github.com/bytecodealliance/wit-bindgen/blob/181093b58f49b194ee34be2d986d737f4f553d3d/crates/guest-rust/src/lib.rs
     pub(super) mod rt {

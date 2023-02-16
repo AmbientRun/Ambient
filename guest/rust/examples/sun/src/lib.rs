@@ -3,11 +3,11 @@ use kiwi_api::{
         app::main_scene,
         camera::{aspect_ratio_from_window, perspective_infinite_reverse},
         game_objects::player_camera,
-        primitives::{quad, sphere, sphere_radius},
+        primitives::{quad, sphere_radius},
         rendering::{cast_shadows, color, fog_density, light_diffuse, sky, sun, water},
         transform::{lookat_center, rotation, scale, translation},
     },
-    concepts::make_transformable,
+    concepts::{make_sphere, make_transformable},
     prelude::*,
 };
 
@@ -35,9 +35,8 @@ pub async fn main() -> EventResult {
 
     make_transformable().with_default(sky()).spawn();
 
-    make_transformable()
+    make_sphere()
         .with_default(cast_shadows())
-        .with_default(sphere())
         .with(sphere_radius(), 1.)
         .with(translation(), vec3(0., 0., 1.))
         .with(color(), vec4(1., 1., 1., 1.))

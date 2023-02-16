@@ -718,3 +718,13 @@ description = "Can be translated, rotated and scaled."
 "core::transform::translation" = [0.0, 0.0, 0.0]
 "core::transform::rotation" = [0.0, 0.0, 0.0, 1.0]
 "core::transform::scale" = [1.0, 1.0, 1.0]
+
+[concepts.sphere]
+name = "Sphere"
+description = "A primitive sphere."
+
+[concepts.sphere.components]
+"core::primitives::sphere" = {}
+"core::primitives::sphere_radius" = 0.5
+"core::primitives::sphere_sectors" = 36
+"core::primitives::sphere_stacks" = 18
