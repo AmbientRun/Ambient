@@ -27,7 +27,9 @@ use wgpu::{util::DeviceExt, BindGroup};
 use super::wgsl_terrain_preprocess;
 
 #[derive(Debug, Clone)]
-pub struct TerrainShaderKey;
+pub struct TerrainShaderKey {
+    pub shadow_cascades: u32,
+}
 impl SyncAssetKey<Arc<RendererShader>> for TerrainShaderKey {
     fn load(&self, assets: AssetCache) -> Arc<RendererShader> {
         let layout = BindGroupDesc {
@@ -131,7 +133,7 @@ impl SyncAssetKey<Arc<RendererShader>> for TerrainShaderKey {
             &assets,
             "terrrain shader",
             [
-                &get_forward_module(&assets),
+                &get_forward_module(&assets, self.shadow_cascades),
                 &ShaderModule::new("Terrain", wgsl_terrain_preprocess(include_file!("terrain.wgsl")), vec![layout.into()]),
             ],
         );
@@ -180,7 +182,7 @@ impl TerrainMaterial {
         material_def: TerrainMaterialDef,
     ) -> Self {
         let gpu = GpuKey.get(&assets);
-        let layout = TerrainShaderKey.get(&assets).material_layout().clone();
+        let layout = TerrainShaderKey { shadow_cascades: 1 }.get(&assets).material_layout().clone();
         let params_buffer = gpu.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("TerrainMaterial.params_buffer"),
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,

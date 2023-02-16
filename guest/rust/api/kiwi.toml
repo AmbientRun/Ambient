@@ -20,6 +20,10 @@ description = "Camera matrices, types, parameters, and more."
 name = "Entity Component System"
 description = "Core components for the ECS and entities."
 
+[components."core::game_objects"]
+name = "Game Objects"
+description = "Pre-defined game objects that implement specific behaviours."
+
 [components."core::model"]
 name = "Model"
 description = "Information about models attached to entities."
@@ -51,6 +55,18 @@ description = "Rendering-related state, including global rendering parameters an
 [components."core::transform"]
 name = "Transform"
 description = "Entity transform state (including translation, rotation and scale), as well as other transformations for this entity."
+
+[components."core::ui"]
+name = "Ui"
+description = "Anything related to ui and text."
+
+[components."core::app::dtime"]
+type = "F32"
+name = "Delta Time"
+description = """
+How long the previous tick took in seconds.
+Also known as frametime."""
+attributes = ["Debuggable", "Resource"]
 
 [components."core::app::main_scene"]
 type = "Empty"
@@ -119,7 +135,7 @@ attributes = ["Networked", "Store"]
 [components."core::camera::far"]
 type = "F32"
 name = "Far plane"
-description = "The far plane of this camera, measured in metres."
+description = "The far plane of this camera, measured in meters."
 attributes = ["Networked", "Store"]
 
 [components."core::camera::fog"]
@@ -137,7 +153,7 @@ attributes = ["Networked", "Store"]
 [components."core::camera::near"]
 type = "F32"
 name = "Near plane"
-description = "The near plane of this camera, measured in metres."
+description = "The near plane of this camera, measured in meters."
 attributes = ["Networked", "Store"]
 
 [components."core::camera::perspective"]
@@ -173,7 +189,7 @@ attributes = ["Networked", "Store"]
 [components."core::camera::shadows_far"]
 type = "F32"
 name = "Shadows far plane"
-description = "The far plane for the shadow camera, measured in metres."
+description = "The far plane for the shadow camera, measured in meters."
 attributes = ["Networked", "Store"]
 
 [components."core::camera::ui_camera"]
@@ -189,6 +205,12 @@ type = { type = "Vec", element_type = "EntityId" }
 name = "Children"
 description = "The children of this entity."
 attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ecs::dont_despawn_on_unload"]
+type = "Empty"
+name = "Don't automatically despawn on module unload"
+description = "Indicates that this entity shouldn't be despawned when the module that spawned it unloads."
+attributes = ["Debuggable", "Store"]
 
 [components."core::ecs::dont_store"]
 type = "Empty"
@@ -214,10 +236,25 @@ name = "Parent"
 description = "The parent of this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::game_objects::player_camera"]
+type = "Empty"
+name = "Player Camera"
+description = """
+If attached to a camera entity, this camera will be used as a player's primary camera.
+If a `user_id` is specified, this camera will only be used for that player; otherwise, it will be used for every player.
+This component is temporary and will likely be removed with the addition of clientside scripting."""
+attributes = ["Debuggable", "Networked"]
+
 [components."core::model::model_animatable"]
 type = "Bool"
 name = "Model animatable"
 description = "Controls whether this model can be animated."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::model::model_from_url"]
+type = "String"
+name = "Model from URL"
+description = "Load a model from the given URL or relative path."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::model::model_loaded"]
@@ -250,6 +287,14 @@ name = "Object from URL"
 description = """
 Load and attach an object from a URL or relative path.
 When loaded, the components from this object will add to or replace the existing components for the object."""
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::physics::angular_velocity"]
+type = "Vec3"
+name = "Angular velocity"
+description = """
+Angular velocity (radians/second) of this entity in the physics scene.
+Updating this component will update the entity's angular velocity in the physics scene."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::physics::box_collider"]
@@ -302,6 +347,14 @@ attributes = ["Networked", "Store"]
 type = "Bool"
 name = "Dynamic"
 description = "If this is true, the entity will be dynamic (i.e. be able to move). Otherwise, it will be static."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::physics::linear_velocity"]
+type = "Vec3"
+name = "Linear velocity"
+description = """
+Linear velocity (meters/second) of this entity in the physics scene.
+Updating this component will update the entity's linear velocity in the physics scene."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::physics::make_physics_static"]
@@ -381,13 +434,46 @@ attributes = ["Networked", "Store"]
 [components."core::primitives::cube"]
 type = "Empty"
 name = "Cube"
-description = "If attached to an entity, the entity will be converted to a cube primitive."
+description = """
+If attached to an entity, the entity will be converted to a cube primitive.
+The cube is unit-sized (i.e. 0.5 metres out to each side)."""
 attributes = ["Networked", "Store"]
 
 [components."core::primitives::quad"]
 type = "Empty"
 name = "Quad"
-description = "If attached to an entity, the entity will be converted to a quad primitive."
+description = """
+If attached to an entity, the entity will be converted to a quad primitive.
+The quad is unit-sized on the XY axes, and flat on the Z axis (i.e. 0.5 metres out to the XY axes)."""
+attributes = ["Networked", "Store"]
+
+[components."core::primitives::sphere"]
+type = "Empty"
+name = "Sphere"
+description = """
+If attached to an entity, the entity will be converted to a unit-diameter sphere primitive.
+The sphere can be customized using the `sphere_radius`, `sphere_sectors` and `sphere_stacks` components."""
+attributes = ["Networked", "Store"]
+
+[components."core::primitives::sphere_radius"]
+type = "F32"
+name = "Sphere radius"
+description = "Set the radius of a `sphere` entity."
+default = 0.5
+attributes = ["Networked", "Store"]
+
+[components."core::primitives::sphere_sectors"]
+type = "U32"
+name = "Sphere sectors"
+description = "Set the longitudinal sectors of a `sphere` entity."
+default = 36
+attributes = ["Networked", "Store"]
+
+[components."core::primitives::sphere_stacks"]
+type = "U32"
+name = "Sphere stacks"
+description = "Set the latitudinal stacks of a `sphere` entity."
+default = 18
 attributes = ["Networked", "Store"]
 
 [components."core::rendering::cast_shadows"]
@@ -472,6 +558,12 @@ name = "Overlay"
 description = "If attached, this entity will be rendered with an overlay."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::rendering::sky"]
+type = "Empty"
+name = "Sky"
+description = "Add a realistic sky box to the scene."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::rendering::sun"]
 type = "F32"
 name = "Sun"
@@ -484,6 +576,12 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "I32"
 name = "Transparency group"
 description = "Controls when this transparent object will be rendered. Transparent objects are sorted by (transparency_group, z-depth)."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rendering::water"]
+type = "Empty"
+name = "Water"
+description = "Add a realistic water plane to this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::transform::cylindrical_billboard_z"]
@@ -574,4 +672,40 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "Vec3"
 name = "Translation"
 description = "The translation/position of this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::font_size"]
+type = "F32"
+name = "Font size"
+description = "Size of the font."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::height"]
+type = "F32"
+name = "Height"
+description = "Height of a ui element"
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::min_height"]
+type = "F32"
+name = "Min height"
+description = "Min height of a ui element"
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::min_width"]
+type = "F32"
+name = "Min width"
+description = "Min width of a ui element"
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::text"]
+type = "String"
+name = "Text"
+description = "Create a text mesh on this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::width"]
+type = "F32"
+name = "Width"
+description = "Width of a ui element"
 attributes = ["Debuggable", "Networked", "Store"]

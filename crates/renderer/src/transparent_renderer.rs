@@ -5,18 +5,25 @@ use itertools::Itertools;
 use kiwi_core::transform::local_to_world;
 use kiwi_ecs::{query, ArchetypeFilter, EntityId, QueryState, World};
 use kiwi_gpu::{
-    gpu::Gpu, mesh_buffer::{MeshBuffer, MeshMetadata}, shader_module::{GraphicsPipeline, GraphicsPipelineInfo}, typed_buffer::TypedBuffer
+    gpu::Gpu,
+    mesh_buffer::{MeshBuffer, MeshMetadata},
+    shader_module::{GraphicsPipeline, GraphicsPipelineInfo},
+    typed_buffer::TypedBuffer,
 };
 use ordered_float::OrderedFloat;
 use wgpu::BindGroup;
 
 use super::{
-    double_sided, get_gpu_primitive_id, primitives, FSMain, RendererResources, RendererShader, SharedMaterial, MATERIAL_BIND_GROUP, PRIMITIVES_BIND_GROUP
+    double_sided, get_gpu_primitive_id, primitives, FSMain, RendererResources, RendererShader, SharedMaterial, MATERIAL_BIND_GROUP,
+    PRIMITIVES_BIND_GROUP,
 };
-use crate::transparency_group;
+use crate::{transparency_group, RendererConfig};
+use kiwi_std::asset_cache::AssetCache;
 
 pub struct TransparentRendererConfig {
     pub gpu: Arc<Gpu>,
+    pub assets: AssetCache,
+    pub renderer_config: RendererConfig,
     pub filter: ArchetypeFilter,
     pub targets: Vec<Option<wgpu::ColorTargetState>>,
     pub renderer_resources: RendererResources,
@@ -73,16 +80,17 @@ impl TransparentRenderer {
                 }
             }
             for (primitive_index, primitive) in primitives.iter().enumerate() {
-                let transparent = primitive.material.transparent().unwrap_or(primitive.shader.transparent);
+                let primitive_shader = (primitive.shader)(&self.config.assets, &self.config.renderer_config);
+                let transparent = primitive.material.transparent().unwrap_or(primitive_shader.transparent);
                 if transparent || self.config.render_opaque {
                     let config = self.config.clone();
                     let double_sided =
-                        world.get(id, double_sided()).unwrap_or(primitive.material.double_sided().unwrap_or(primitive.shader.double_sided));
-                    let depth_write_enabled = primitive.material.depth_write_enabled().unwrap_or(primitive.shader.depth_write_enabled);
+                        world.get(id, double_sided()).unwrap_or(primitive.material.double_sided().unwrap_or(primitive_shader.double_sided));
+                    let depth_write_enabled = primitive.material.depth_write_enabled().unwrap_or(primitive_shader.depth_write_enabled);
                     let shader = self
                         .shaders
-                        .entry(primitive.shader.id.clone())
-                        .or_insert_with(|| Arc::new(ShaderNode::new(config, primitive.shader.clone(), double_sided, depth_write_enabled)));
+                        .entry(primitive_shader.id.clone())
+                        .or_insert_with(|| Arc::new(ShaderNode::new(config, primitive_shader.clone(), double_sided, depth_write_enabled)));
                     self.primitives.push(TransparentPrimitive {
                         id,
                         primitive_index,
@@ -91,7 +99,7 @@ impl TransparentRenderer {
                         mesh_metadata: MeshMetadata::default(),
                         transparency_group: world
                             .get(id, transparency_group())
-                            .unwrap_or(primitive.material.transparency_group().unwrap_or(primitive.shader.transparency_group)),
+                            .unwrap_or(primitive.material.transparency_group().unwrap_or(primitive_shader.transparency_group)),
                     });
                 }
             }

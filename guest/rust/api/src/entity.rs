@@ -1,6 +1,6 @@
 use crate::{
     components, event,
-    global::{until_this, EntityId, Mat4, ObjectRef, Quat, Vec3},
+    global::{until_this, EntityId, Quat, Vec3},
     internal::{
         component::{
             traits::AsParam, Component, Components, SupportedComponentTypeGet,
@@ -13,16 +13,15 @@ use crate::{
 
 pub use crate::internal::host::{AnimationAction, AnimationController};
 
-/// Spawns an entity containing the `components`. If `persistent` is set, this entity will not be
-/// removed when this module is unloaded.
+/// Spawns an entity containing the `components`.
 ///
 /// This is an asynchronous operation; use [wait_for_spawn] to get notified when
 /// the entity is spawned.
 ///
 /// Returns `spawned_entity_uid`.
-pub fn spawn(components: &Components, persistent: bool) -> EntityId {
+pub fn spawn(components: &Components) -> EntityId {
     components
-        .call_with(|data| host::entity_spawn(data, persistent))
+        .call_with(|data| host::entity_spawn(data))
         .from_bindgen()
 }
 
@@ -46,11 +45,6 @@ pub fn despawn(entity: EntityId) -> bool {
 /// Set the animation (controller) for `entity`.
 pub fn set_animation_controller(entity: EntityId, controller: AnimationController) {
     host::entity_set_animation_controller(entity.into_bindgen(), controller)
-}
-
-/// Gets the linear velocity of `entity` if it exists, or `None` if it does not.
-pub fn get_linear_velocity(entity: EntityId) -> Option<Vec3> {
-    host::entity_get_linear_velocity(entity.into_bindgen()).from_bindgen()
 }
 
 /// Checks if the `entity` exists.
@@ -79,6 +73,21 @@ pub fn get_component<T: SupportedComponentTypeGet>(
     )?)
 }
 
+/// Adds the component `component` for `entity` with `value`. Will replace an existing component if present.
+pub fn add_component<T: SupportedComponentTypeSet>(
+    entity: EntityId,
+    component: Component<T>,
+    value: T,
+) {
+    let owned = value.into_owned_param();
+    host::entity_add_component(entity.into_bindgen(), component.index(), owned.as_param())
+}
+
+/// Adds the components `components` for `entity` with `value`. Will replace any existing components specified in `components`.
+pub fn add_components(entity: EntityId, components: Components) {
+    components.call_with(|data| host::entity_add_components(entity.into_bindgen(), data))
+}
+
 /// Sets the component `component` for `entity` with `value`.
 pub fn set_component<T: SupportedComponentTypeSet>(
     entity: EntityId,
@@ -89,7 +98,7 @@ pub fn set_component<T: SupportedComponentTypeSet>(
     host::entity_set_component(entity.into_bindgen(), component.index(), owned.as_param())
 }
 
-/// Sets the component `components` for `entity` with `value`.
+/// Sets the components `components` for `entity` with `value`.
 pub fn set_components(entity: EntityId, components: Components) {
     components.call_with(|data| host::entity_set_components(entity.into_bindgen(), data))
 }
@@ -102,6 +111,12 @@ pub fn has_component<T: SupportedComponentTypeGet>(
     host::entity_has_component(entity.into_bindgen(), component.index())
 }
 
+/// Checks if the `entity` has `components`.
+pub fn has_components(entity: EntityId, components: &[&dyn UntypedComponent]) -> bool {
+    let components: Vec<_> = components.iter().map(|c| c.index()).collect();
+    host::entity_has_components(entity.into_bindgen(), &components)
+}
+
 /// Adds the `component` with `value` to `entity` if `entity` does not already have that component.
 pub fn add_component_if_required<T: SupportedComponentTypeGet + SupportedComponentTypeSet>(
     entity: EntityId,
@@ -109,7 +124,7 @@ pub fn add_component_if_required<T: SupportedComponentTypeGet + SupportedCompone
     value: T,
 ) {
     if !has_component(entity, component) {
-        set_component(entity, component, value)
+        add_component(entity, component, value)
     }
 }
 
@@ -176,4 +191,11 @@ pub fn game_object_base() -> Components {
         .with(components::core::transform::translation(), Vec3::ZERO)
         .with(components::core::transform::rotation(), Quat::IDENTITY)
         .with(components::core::transform::scale(), Vec3::ONE)
+}
+
+/// Gets the resource entity which contains global state in its components.
+///
+/// Components with the `Resource` attribute can be found here.
+pub fn resources() -> EntityId {
+    host::entity_resources().from_bindgen()
 }

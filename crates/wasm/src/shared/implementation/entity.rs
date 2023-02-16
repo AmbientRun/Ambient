@@ -1,13 +1,29 @@
+use crate::shared::host_guest_state::QueryStateMap;
 use anyhow::Context;
 use glam::Vec3;
+use kiwi_animation::{animation_controller, AnimationController};
 use kiwi_core::transform::translation;
 use kiwi_ecs::{
-    query as ecs_query, with_component_registry, Component, ComponentValue, EntityId, QueryEvent,
-    QueryState, World,
+    query as ecs_query, with_component_registry, Component, ComponentValue, EntityData, EntityId,
+    QueryEvent, QueryState, World,
 };
 use slotmap::Key;
 
-use crate::shared::host_guest_state::QueryStateMap;
+pub fn spawn(world: &mut World, data: EntityData) -> EntityId {
+    data.spawn(world)
+}
+
+pub fn despawn(world: &mut World, entity: EntityId) -> Option<EntityId> {
+    world.despawn(entity).map(|_ed| entity)
+}
+
+pub fn set_animation_controller(
+    world: &mut World,
+    entity: EntityId,
+    controller: AnimationController,
+) -> anyhow::Result<()> {
+    Ok(world.add_component(entity, animation_controller(), controller)?)
+}
 
 pub fn get_component_type<T: ComponentValue>(component_index: u32) -> Option<Component<T>> {
     let desc = with_component_registry(|r| r.get_by_index(component_index))?;
@@ -90,6 +106,10 @@ pub fn query2(
         .insert((query, QueryState::new(), components))
         .data()
         .as_ffi())
+}
+
+pub fn resources(world: &World) -> EntityId {
+    world.resource_entity()
 }
 
 pub fn in_area(world: &mut World, centre: Vec3, radius: f32) -> anyhow::Result<Vec<EntityId>> {

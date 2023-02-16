@@ -1,5 +1,8 @@
 use std::{
-    any::{type_name, Any, TypeId}, collections::HashMap, fmt::Debug, sync::Arc
+    any::{type_name, Any, TypeId},
+    collections::HashMap,
+    fmt::Debug,
+    sync::Arc,
 };
 
 use downcast_rs::{impl_downcast, Downcast};
@@ -246,5 +249,16 @@ impl ComponentAttribute for Resource {}
 impl<T: ComponentValue> AttributeConstructor<T, ()> for Resource {
     fn construct(store: &mut AttributeStore, _: ()) {
         store.set(Self)
+    }
+}
+
+/// Provides a default for this component that will work with `MakeDefault`.
+#[derive(Clone)]
+pub struct DefaultValue<T: ComponentValue>(pub T);
+impl<T: ComponentValue> ComponentAttribute for DefaultValue<T> {}
+impl<T: ComponentValue> AttributeConstructor<T, T> for DefaultValue<T> {
+    fn construct(store: &mut AttributeStore, value: T) {
+        store.set(Self(value.clone()));
+        MakeDefault::construct(store, move || value.clone());
     }
 }

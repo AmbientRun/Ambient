@@ -11,7 +11,8 @@ use std::sync::Arc;
 use host_guest_state::GetBaseHostGuestState;
 use itertools::Itertools;
 use kiwi_ecs::{
-    components, query, Component, EntityData, EntityId, Networked, Resource, Store, World,
+    components, dont_despawn_on_unload, query, Component, EntityData, EntityId, Networked,
+    Resource, Store, World,
 };
 use kiwi_project::Identifier;
 pub use module::*;
@@ -49,18 +50,15 @@ pub struct RunContext {
     pub event_name: String,
     pub event_data: EntityData,
     pub time: f32,
-    pub frametime: f32,
 }
 impl RunContext {
     pub fn new(world: &World, event_name: &str, event_data: EntityData) -> Self {
         let time = kiwi_app::get_time_since_app_start(world).as_secs_f32();
-        let frametime = *world.resource(kiwi_core::dtime());
 
         Self {
             event_name: event_name.to_string(),
             event_data,
             time,
-            frametime,
         }
     }
 }
@@ -236,7 +234,9 @@ pub fn unload<
     world.remove_component(module_id, state_component).unwrap();
 
     for id in spawned_entities {
-        world.despawn(id);
+        if !world.has_component(id, dont_despawn_on_unload()) {
+            world.despawn(id);
+        }
     }
 
     let messenger = world.resource(messenger()).clone();

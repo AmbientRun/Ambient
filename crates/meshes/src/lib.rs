@@ -12,7 +12,8 @@ use glam::*;
 pub use grid::*;
 use kiwi_gpu::mesh_buffer::GpuMesh;
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKey}, mesh::Mesh
+    asset_cache::{AssetCache, SyncAssetKey},
+    mesh::Mesh,
 };
 pub use uvsphere::*;
 
@@ -23,12 +24,28 @@ impl SyncAssetKey<Arc<GpuMesh>> for QuadMeshKey {
         GpuMesh::from_mesh(assets, &Mesh::from(QuadMesh::default()))
     }
 }
+/// Same as [QuadMeshKey], but unit-sized (e.g. length alongside axes is 1.0 at most)
+#[derive(Debug, Clone)]
+pub struct UnitQuadMeshKey;
+impl SyncAssetKey<Arc<GpuMesh>> for UnitQuadMeshKey {
+    fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
+        GpuMesh::from_mesh(assets, &Mesh::from(QuadMesh::from_position_size(-Vec2::ONE * 0.5, Vec2::ONE)))
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct CubeMeshKey;
 impl SyncAssetKey<Arc<GpuMesh>> for CubeMeshKey {
     fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
         GpuMesh::from_mesh(assets, &Mesh::from(CubeMesh::default()))
+    }
+}
+/// Same as [CubeMeshKey], but unit-sized (e.g. length alongside axes is 1.0 at most)
+#[derive(Debug, Clone)]
+pub struct UnitCubeMeshKey;
+impl SyncAssetKey<Arc<GpuMesh>> for UnitCubeMeshKey {
+    fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
+        GpuMesh::from_mesh(assets, &Mesh::from(CubeMesh { position: -Vec3::ONE * 0.5, size: Vec3::ONE, color: vec4(1.0, 1.0, 1.0, 1.0) }))
     }
 }
 

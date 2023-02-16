@@ -1,7 +1,7 @@
 
 [package]
 name = "kiwi_intent"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -14,15 +14,15 @@ kiwi_rpc = { path = "../rpc" }
 kiwi_ui = { path = "../ui" }
 kiwi_editor_derive = { path = "../editor_derive" }
 kiwi_element = { path = "../element" }
-tracing.workspace = true
-itertools.workspace = true
-tokio.workspace = true
-anyhow.workspace = true
+tracing = { workspace = true }
+itertools = { workspace = true }
+tokio = { workspace = true }
+anyhow = { workspace = true }
 pretty_assertions = "1.3"
-atomic_refcell.workspace = true
-futures.workspace = true
-parking_lot.workspace = true
-profiling.workspace = true
+atomic_refcell = { workspace = true }
+futures = { workspace = true }
+parking_lot = { workspace = true }
+profiling = { workspace = true }
 
 [features]
 intent_block_detection = []

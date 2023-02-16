@@ -1,7 +1,9 @@
 use crate::helpers::{get_shapes, scale_shape};
 use glam::{Quat, Vec3};
 use kiwi_core::transform::{rotation, scale, translation};
-use kiwi_ecs::{components, query, Debuggable, Description, FnSystem, Name, Networked, QueryState, Resource, Store, SystemGroup};
+use kiwi_ecs::{
+    components, ensure_has_component, query, Debuggable, Description, FnSystem, Name, Networked, QueryState, Resource, Store, SystemGroup,
+};
 use kiwi_std::asset_cache::SyncAssetKey;
 use parking_lot::Mutex;
 use physxx::{articulation_reduced_coordinate::*, *};
@@ -23,6 +25,10 @@ components!("physics", {
     character_controller: PxControllerRef,
     @[Debuggable, Networked, Store, Name["Physics controlled"], Description["If attached, this entity will be controlled by physics.\nNote that this requires the entity to have a collider."]]
     physics_controlled: (),
+    @[Debuggable, Networked, Store, Name["Linear velocity"], Description["Linear velocity (meters/second) of this entity in the physics scene.\nUpdating this component will update the entity's linear velocity in the physics scene."]]
+    linear_velocity: Vec3,
+    @[Debuggable, Networked, Store, Name["Angular velocity"], Description["Angular velocity (radians/second) of this entity in the physics scene.\nUpdating this component will update the entity's angular velocity in the physics scene."]]
+    angular_velocity: Vec3,
 });
 
 #[derive(Debug)]
@@ -52,7 +58,7 @@ impl Physics {
         let physics = PxPhysicsRef::new_with_pvd(&foundation, &pvd);
         px_init_extensions(&physics, &pvd);
         let mut cooking = PxCookingParams::new(physics);
-        cooking.0.meshWeldTolerance = 0.2;
+        cooking.0.meshWeldTolerance = 0.001; // 1mm precision
         cooking.0.meshPreprocessParams.mBits = physxx::sys::PxMeshPreprocessingFlag::eWELD_VERTICES;
         Self {
             serialization_registry: PxSerializationRegistryRef::new(&physics),
@@ -75,10 +81,10 @@ impl Physics {
     }
 }
 
-fn pos_changed(old: Vec3, new: Vec3) -> bool {
+fn vec3_changed(old: Vec3, new: Vec3) -> bool {
     (new - old).length() > 0.001
 }
-fn rot_changed(old: Quat, new: Quat) -> bool {
+fn quat_changed(old: Quat, new: Quat) -> bool {
     !old.abs_diff_eq(new, 0.001)
 }
 
@@ -95,19 +101,34 @@ pub fn sync_ecs_physics() -> SystemGroup {
     let scale_q = query(scale().changed()).incl(physics_controlled());
     let scale_q2 = scale_q.query.clone();
 
+    let linear_velocity_qs = Arc::new(Mutex::new(QueryState::new()));
+    let linear_velocity_q = query(linear_velocity().changed()).incl(physics_controlled());
+    let linear_velocity_q2 = scale_q.query.clone();
+
+    let angular_velocity_qs = Arc::new(Mutex::new(QueryState::new()));
+    let angular_velocity_q = query(angular_velocity().changed()).incl(physics_controlled());
+    let angular_velocity_q2 = scale_q.query.clone();
+
     SystemGroup::new(
         "sync_ecs_physics",
         vec![
-            query(()).incl(physics_controlled()).excl(translation()).to_system(|q, world, qs, _| {
-                for (id, _) in q.collect_cloned(world, qs) {
-                    world.add_component(id, translation(), Vec3::ZERO).unwrap();
+            // Ensure that physics-related components are added if required.
+            ensure_has_component(physics_controlled(), translation(), Vec3::ZERO),
+            ensure_has_component(physics_controlled(), rotation(), Quat::IDENTITY),
+            query(physics_shape()).excl(rigid_dynamic()).excl(rigid_static()).to_system(|q, world, qs, _| {
+                for (id, shape) in q.collect_cloned(world, qs) {
+                    let Some(actor) = shape.get_actor() else { continue; };
+
+                    if let Some(body) = actor.to_rigid_dynamic() {
+                        world.add_component(id, rigid_dynamic(), body).unwrap();
+                    } else if let Some(body) = actor.to_rigid_static() {
+                        world.add_component(id, rigid_static(), body).unwrap();
+                    }
                 }
             }),
-            query(()).incl(physics_controlled()).excl(rotation()).to_system(|q, world, qs, _| {
-                for (id, _) in q.collect_cloned(world, qs) {
-                    world.add_component(id, rotation(), Quat::IDENTITY).unwrap();
-                }
-            }),
+            ensure_has_component(rigid_dynamic(), linear_velocity(), Vec3::default()),
+            ensure_has_component(rigid_dynamic(), angular_velocity(), Vec3::default()),
+            // Sync ECS changes to PhysX.
             translation_rotation_q.to_system({
                 let translation_rotation_qs = translation_rotation_qs.clone();
                 move |q, world, _, _| {
@@ -148,16 +169,38 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     }
                 }
             }),
-            // Updates ecs position from physx
+            linear_velocity_q.to_system({
+                let linear_velocity_qs = linear_velocity_qs.clone();
+                move |q, world, _, _| {
+                    let mut qs = linear_velocity_qs.lock();
+                    for (id, &vel) in q.iter(world, Some(&mut *qs)) {
+                        if let Ok(body) = world.get(id, rigid_dynamic()) {
+                            body.set_linear_velocity(vel, true);
+                        }
+                    }
+                }
+            }),
+            angular_velocity_q.to_system({
+                let angular_velocity_qs = angular_velocity_qs.clone();
+                move |q, world, _, _| {
+                    let mut qs = angular_velocity_qs.lock();
+                    for (id, &vel) in q.iter(world, Some(&mut *qs)) {
+                        if let Ok(body) = world.get(id, rigid_dynamic()) {
+                            body.set_angular_velocity(vel, true);
+                        }
+                    }
+                }
+            }),
+            // Sync PhysX changes to ECS.
             query((rigid_dynamic(), translation(), rotation())).incl(physics_controlled()).to_system(|q, world, qs, _| {
                 for (id, (rigid_dynamic, pos, rot)) in q.collect_cloned(world, qs) {
                     let pose = rigid_dynamic.get_global_pose();
                     let new_pos = pose.translation();
                     let new_rot = pose.rotation();
-                    if pos_changed(pos, new_pos) {
+                    if vec3_changed(pos, new_pos) {
                         world.set(id, translation(), new_pos).unwrap();
                     }
-                    if rot_changed(rot, new_rot) {
+                    if quat_changed(rot, new_rot) {
                         world.set(id, rotation(), new_rot).unwrap();
                     }
                 }
@@ -167,10 +210,10 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     let pose = rigid_actor.get_global_pose();
                     let new_pos = pose.translation();
                     let new_rot = pose.rotation();
-                    if pos_changed(pos, new_pos) {
+                    if vec3_changed(pos, new_pos) {
                         world.set(id, translation(), new_pos).unwrap();
                     }
-                    if rot_changed(rot, new_rot) {
+                    if quat_changed(rot, new_rot) {
                         world.set(id, rotation(), new_rot).unwrap();
                     }
                 }
@@ -181,10 +224,10 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     let global_pose = actor.get_global_pose().to_mat4();
 
                     let (_, new_rot, new_pos) = (global_pose).to_scale_rotation_translation();
-                    if pos_changed(*pos, new_pos) {
+                    if vec3_changed(*pos, new_pos) {
                         new_positions.push((id, new_pos));
                     }
-                    if rot_changed(*rot, new_rot) {
+                    if quat_changed(*rot, new_rot) {
                         new_rotations.push((id, new_rot));
                     }
                 }
@@ -201,10 +244,10 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     let pose = articulation_link.get_global_pose();
                     let new_pos = pose.translation();
                     let new_rot = pose.rotation();
-                    if pos_changed(pos, new_pos) {
+                    if vec3_changed(pos, new_pos) {
                         world.set(id, translation(), new_pos).unwrap();
                     }
-                    if rot_changed(rot, new_rot) {
+                    if quat_changed(rot, new_rot) {
                         world.set(id, rotation(), new_rot).unwrap();
                     }
                 }
@@ -212,8 +255,28 @@ pub fn sync_ecs_physics() -> SystemGroup {
             query((character_controller(), translation())).incl(physics_controlled()).to_system(|q, world, qs, _| {
                 for (id, (character_controller, pos)) in q.collect_cloned(world, qs) {
                     let new_pos = character_controller.get_foot_position().as_vec3();
-                    if pos_changed(pos, new_pos) {
+                    if vec3_changed(pos, new_pos) {
                         world.set(id, translation(), new_pos).unwrap();
+                    }
+                }
+            }),
+            query(linear_velocity()).incl(physics_controlled()).to_system(|q, world, qs, _| {
+                for (id, vel) in q.collect_cloned(world, qs) {
+                    if let Ok(body) = world.get(id, rigid_dynamic()) {
+                        let new_vel = body.get_linear_velocity();
+                        if vec3_changed(vel, new_vel) {
+                            world.set(id, linear_velocity(), new_vel).unwrap();
+                        }
+                    }
+                }
+            }),
+            query(angular_velocity()).incl(physics_controlled()).to_system(|q, world, qs, _| {
+                for (id, vel) in q.collect_cloned(world, qs) {
+                    if let Ok(body) = world.get(id, rigid_dynamic()) {
+                        let new_vel = body.get_angular_velocity();
+                        if vec3_changed(vel, new_vel) {
+                            world.set(id, angular_velocity(), new_vel).unwrap();
+                        }
                     }
                 }
             }),
@@ -223,6 +286,10 @@ pub fn sync_ecs_physics() -> SystemGroup {
                 for _ in translation_rotation_q2.iter(world, Some(&mut *translation_rotation_qs)) {}
                 let mut scale_qs = scale_qs.lock();
                 for _ in scale_q2.iter(world, Some(&mut *scale_qs)) {}
+                let mut linear_velocity_qs = linear_velocity_qs.lock();
+                for _ in linear_velocity_q2.iter(world, Some(&mut *linear_velocity_qs)) {}
+                let mut angular_velocity_qs = angular_velocity_qs.lock();
+                for _ in angular_velocity_q2.iter(world, Some(&mut *angular_velocity_qs)) {}
             })),
         ],
     )

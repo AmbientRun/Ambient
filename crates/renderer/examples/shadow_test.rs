@@ -2,13 +2,17 @@ use env_logger::Env;
 use glam::*;
 use kiwi_app::AppBuilder;
 use kiwi_core::{
-    asset_cache, bounding::world_bounding_sphere, camera::{active_camera, far, near, Camera, Projection}, main_scene, transform::*
+    asset_cache,
+    bounding::world_bounding_sphere,
+    camera::{active_camera, far, near, Camera, Projection},
+    main_scene,
+    transform::*,
 };
 use kiwi_ecs::{query, FnSystem, Resource, World};
 use kiwi_element::ElementComponentExt;
 use kiwi_gizmos::{gizmos, GizmoPrimitive};
 use kiwi_primitives::Cube;
-use kiwi_renderer::{cast_shadows, color, RendererSettings};
+use kiwi_renderer::{cast_shadows, color, RendererConfig};
 use kiwi_std::{line_hash, math::SphericalCoords};
 use winit::event::{ElementState, Event, VirtualKeyCode, WindowEvent};
 
@@ -59,7 +63,7 @@ fn init(world: &mut World) {
         .spawn_static(world);
 
     for i in 0..5 {
-        let conf = RendererSettings::default();
+        let conf = RendererConfig::default();
         let shadow_cam = demo_cam.create_snapping_shadow_camera(sun_direction, i, 5, conf.shadow_map_resolution);
         Cube.el()
             .remove(translation())

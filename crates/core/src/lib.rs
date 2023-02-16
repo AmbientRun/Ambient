@@ -98,7 +98,7 @@ components!("app", {
 
     @[Resource]
     time: Duration,
-    @[Resource]
+    @[Resource, Debuggable, Name["Delta Time"], Description["How long the previous tick took in seconds.\nAlso known as frametime."]]
     dtime: f32,
     @[Resource]
     app_start_time: Duration,

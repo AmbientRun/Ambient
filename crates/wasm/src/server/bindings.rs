@@ -1,18 +1,18 @@
 use std::sync::Arc;
 
 use itertools::Itertools;
-use kiwi_ecs::{with_component_registry, QueryEvent, World};
+use kiwi_ecs::{with_component_registry, ComponentSet, QueryEvent, World};
 use kiwi_physics::helpers::PhysicsObjectCollection;
 use parking_lot::RwLock;
 use wit_bindgen_host_wasmtime_rust::Le;
 
 use crate::{
-    server::implementation as esei,
+    server::implementation as server_impl,
     shared::{
         bindings::*,
         conversion::{FromBindgen, IntoBindgen},
         host_guest_state::GetBaseHostGuestState,
-        implementation as eshi,
+        implementation as shared_impl,
         interface::host,
         BaseWasmContext, WasmContext,
     },
@@ -62,24 +62,22 @@ impl Bindings {
 }
 
 impl host::Host for Bindings {
-    fn entity_spawn(&mut self, data: ComponentsParam<'_>, persistent: bool) -> host::EntityId {
-        let id = esei::entity::spawn(
+    fn entity_spawn(&mut self, data: ComponentsParam<'_>) -> host::EntityId {
+        let id = shared_impl::entity::spawn(
             &mut self.world_mut(),
             convert_components_to_entity_data(data),
         );
-        if !persistent {
-            self.shared_state
-                .write()
-                .base_mut()
-                .spawned_entities
-                .insert(id);
-        }
+        self.shared_state
+            .write()
+            .base_mut()
+            .spawned_entities
+            .insert(id);
         id.into_bindgen()
     }
 
     fn entity_despawn(&mut self, entity: host::EntityId) -> bool {
         let entity = entity.from_bindgen();
-        let despawn = esei::entity::despawn(&mut self.world_mut(), entity);
+        let despawn = shared_impl::entity::despawn(&mut self.world_mut(), entity);
         if let Some(uid) = despawn {
             self.shared_state
                 .write()
@@ -97,7 +95,7 @@ impl host::Host for Bindings {
         entity: host::EntityId,
         animation_controller: host::AnimationController,
     ) {
-        esei::entity::set_animation_controller(
+        shared_impl::entity::set_animation_controller(
             &mut self.world_mut(),
             entity.from_bindgen(),
             animation_controller.from_bindgen(),
@@ -105,14 +103,8 @@ impl host::Host for Bindings {
         .unwrap()
     }
 
-    fn entity_get_linear_velocity(&mut self, entity: host::EntityId) -> Option<host::Vec3> {
-        esei::entity::get_linear_velocity(&mut self.world_mut(), entity.from_bindgen())
-            .ok()
-            .into_bindgen()
-    }
-
     fn component_get_index(&mut self, id: &str) -> Option<u32> {
-        eshi::entity::get_component_index(id)
+        shared_impl::entity::get_component_index(id)
     }
 
     fn entity_get_component(
@@ -123,16 +115,16 @@ impl host::Host for Bindings {
         read_component_from_world(&self.world(), entity.from_bindgen(), index)
     }
 
-    fn entity_set_component(
+    fn entity_add_component(
         &mut self,
         entity: host::EntityId,
         index: u32,
         value: host::ComponentTypeParam,
     ) {
-        write_component(&mut self.world_mut(), entity.from_bindgen(), index, value)
+        add_component(&mut self.world_mut(), entity.from_bindgen(), index, value).unwrap()
     }
 
-    fn entity_set_components(&mut self, entity: host::EntityId, data: ComponentsParam<'_>) {
+    fn entity_add_components(&mut self, entity: host::EntityId, data: ComponentsParam<'_>) {
         self.world_mut()
             .add_components(
                 entity.from_bindgen(),
@@ -141,12 +133,39 @@ impl host::Host for Bindings {
             .unwrap()
     }
 
+    fn entity_set_component(
+        &mut self,
+        entity: host::EntityId,
+        index: u32,
+        value: host::ComponentTypeParam,
+    ) {
+        set_component(&mut self.world_mut(), entity.from_bindgen(), index, value).unwrap()
+    }
+
+    fn entity_set_components(&mut self, entity: host::EntityId, data: ComponentsParam<'_>) {
+        self.world_mut()
+            .set_components(
+                entity.from_bindgen(),
+                convert_components_to_entity_data(data),
+            )
+            .unwrap()
+    }
+
     fn entity_has_component(&mut self, entity: host::EntityId, index: u32) -> bool {
-        eshi::entity::has_component(&self.world(), entity.from_bindgen(), index)
+        shared_impl::entity::has_component(&self.world(), entity.from_bindgen(), index)
+    }
+
+    fn entity_has_components(&mut self, entity: host::EntityId, components: &[Le<u32>]) -> bool {
+        let mut set = ComponentSet::new();
+        for idx in components {
+            set.insert_by_index(idx.get() as usize);
+        }
+        self.world().has_components(entity.from_bindgen(), &set)
     }
 
     fn entity_remove_component(&mut self, entity: host::EntityId, index: u32) {
-        eshi::entity::remove_component(&mut self.world_mut(), entity.from_bindgen(), index).unwrap()
+        shared_impl::entity::remove_component(&mut self.world_mut(), entity.from_bindgen(), index)
+            .unwrap()
     }
 
     fn entity_remove_components(&mut self, entity: host::EntityId, components: &[Le<u32>]) {
@@ -166,11 +185,11 @@ impl host::Host for Bindings {
     }
 
     fn entity_query(&mut self, index: u32) -> Vec<host::EntityId> {
-        eshi::entity::query(&mut self.world_mut(), index).into_bindgen()
+        shared_impl::entity::query(&mut self.world_mut(), index).into_bindgen()
     }
 
     fn entity_query2(&mut self, query: host::Query, query_event: host::QueryEvent) -> u64 {
-        eshi::entity::query2(
+        shared_impl::entity::query2(
             &mut self.shared_state.write().base_mut().query_states,
             query.components.iter().map(|v| v.get()),
             query.include.iter().map(|v| v.get()),
@@ -234,21 +253,25 @@ impl host::Host for Bindings {
         result
     }
 
+    fn entity_resources(&mut self) -> host::EntityId {
+        shared_impl::entity::resources(&self.world()).into_bindgen()
+    }
+
     fn entity_in_area(&mut self, position: host::Vec3, radius: f32) -> Vec<host::EntityId> {
-        eshi::entity::in_area(&mut self.world_mut(), position.from_bindgen(), radius)
+        shared_impl::entity::in_area(&mut self.world_mut(), position.from_bindgen(), radius)
             .unwrap()
             .into_bindgen()
     }
 
     fn player_get_raw_input(&mut self, player: host::EntityId) -> Option<host::PlayerRawInput> {
-        esei::player::get_raw_input(&self.world(), player.from_bindgen()).into_bindgen()
+        server_impl::player::get_raw_input(&self.world(), player.from_bindgen()).into_bindgen()
     }
 
     fn player_get_prev_raw_input(
         &mut self,
         player: host::EntityId,
     ) -> Option<host::PlayerRawInput> {
-        esei::player::get_prev_raw_input(&self.world(), player.from_bindgen()).into_bindgen()
+        server_impl::player::get_prev_raw_input(&self.world(), player.from_bindgen()).into_bindgen()
     }
 
     fn physics_apply_force(&mut self, entities: &[Le<host::EntityId>], force: host::Vec3) {
@@ -256,7 +279,8 @@ impl host::Host for Bindings {
             &self.world(),
             &entities.iter().map(|id| id.from_bindgen()).collect_vec(),
         );
-        esei::physics::apply_force(&mut self.world_mut(), collection, force.from_bindgen()).unwrap()
+        server_impl::physics::apply_force(&mut self.world_mut(), collection, force.from_bindgen())
+            .unwrap()
     }
 
     fn physics_explode_bomb(
@@ -266,7 +290,7 @@ impl host::Host for Bindings {
         radius: f32,
         falloff_radius: Option<f32>,
     ) {
-        esei::physics::explode_bomb(
+        server_impl::physics::explode_bomb(
             &mut self.world_mut(),
             position.from_bindgen(),
             radius,
@@ -277,23 +301,24 @@ impl host::Host for Bindings {
     }
 
     fn physics_set_gravity(&mut self, gravity: host::Vec3) {
-        esei::physics::set_gravity(&mut self.world_mut(), gravity.from_bindgen()).unwrap();
+        server_impl::physics::set_gravity(&mut self.world_mut(), gravity.from_bindgen()).unwrap();
     }
 
     fn physics_unfreeze(&mut self, entity: host::EntityId) {
-        esei::physics::unfreeze(&mut self.world_mut(), entity.from_bindgen()).unwrap();
+        server_impl::physics::unfreeze(&mut self.world_mut(), entity.from_bindgen()).unwrap();
     }
 
     fn physics_freeze(&mut self, entity: host::EntityId) {
-        esei::physics::freeze(&mut self.world_mut(), entity.from_bindgen()).unwrap();
+        server_impl::physics::freeze(&mut self.world_mut(), entity.from_bindgen()).unwrap();
     }
 
     fn physics_start_motor(&mut self, entity: host::EntityId, velocity: f32) {
-        esei::physics::start_motor(&mut self.world_mut(), entity.from_bindgen(), velocity).unwrap();
+        server_impl::physics::start_motor(&mut self.world_mut(), entity.from_bindgen(), velocity)
+            .unwrap();
     }
 
     fn physics_stop_motor(&mut self, entity: host::EntityId) {
-        esei::physics::stop_motor(&mut self.world_mut(), entity.from_bindgen()).unwrap();
+        server_impl::physics::stop_motor(&mut self.world_mut(), entity.from_bindgen()).unwrap();
     }
 
     fn physics_raycast_first(
@@ -301,7 +326,7 @@ impl host::Host for Bindings {
         origin: host::Vec3,
         direction: host::Vec3,
     ) -> Option<(host::EntityId, f32)> {
-        esei::physics::raycast_first(
+        server_impl::physics::raycast_first(
             &self.world(),
             origin.from_bindgen(),
             direction.from_bindgen(),
@@ -315,7 +340,7 @@ impl host::Host for Bindings {
         origin: host::Vec3,
         direction: host::Vec3,
     ) -> Vec<(host::EntityId, f32)> {
-        esei::physics::raycast(
+        server_impl::physics::raycast(
             &self.world(),
             origin.from_bindgen(),
             direction.from_bindgen(),
@@ -327,11 +352,11 @@ impl host::Host for Bindings {
     }
 
     fn event_subscribe(&mut self, name: &str) {
-        eshi::event::subscribe(&mut self.shared_state.write().base_mut().event, name)
+        shared_impl::event::subscribe(&mut self.shared_state.write().base_mut().event, name)
     }
 
     fn event_send(&mut self, name: &str, data: ComponentsParam<'_>) {
-        eshi::event::send(
+        shared_impl::event::send(
             &mut self.shared_state.write().base_mut().event,
             name,
             convert_components_to_entity_data(data),

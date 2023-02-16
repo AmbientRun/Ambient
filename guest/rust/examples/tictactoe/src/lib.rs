@@ -1,6 +1,8 @@
+use components::cell;
 use kiwi_api::components::core::{
-    app::main_scene,
-    camera::{active_camera, aspect_ratio_from_window, perspective_infinite_reverse},
+    self,
+    camera::{aspect_ratio_from_window, perspective_infinite_reverse},
+    game_objects::player_camera,
     primitives::cube,
     rendering::{color, outline},
     transform::{lookat_center, scale, translation},
@@ -11,13 +13,12 @@ use palette::{FromColor, Hsl, Srgb};
 #[main]
 pub async fn main() -> EventResult {
     entity::game_object_base()
-        .with_default(main_scene())
-        .with(active_camera(), 0.)
-        .with(translation(), vec3(5.0, 5.0, 4.0))
+        .with_default(player_camera())
+        .with(translation(), vec3(5., 5., 4.))
         .with(lookat_center(), vec3(0., 0., 0.))
         .with(perspective_infinite_reverse(), ())
         .with(aspect_ratio_from_window(), ())
-        .spawn(false);
+        .spawn();
 
     let mut cells = Vec::new();
     for y in 0..3 {
@@ -25,12 +26,18 @@ pub async fn main() -> EventResult {
             let id = entity::game_object_base()
                 .with_default(cube())
                 .with(translation(), vec3(x as f32, y as f32, 0.))
-                .with(scale(), vec3(0.3, 0.3, 0.3))
+                .with(scale(), vec3(0.6, 0.6, 0.6))
                 .with(color(), vec4(0.1, 0.1, 0.1, 1.))
-                .spawn(false);
+                .spawn();
             cells.push(id);
         }
     }
+
+    spawn_query(core::player::player()).bind(|ids| {
+        for (id, _) in ids {
+            entity::add_component(id, cell(), 0);
+        }
+    });
 
     on(event::FRAME, move |_| {
         for cell in &cells {
@@ -44,7 +51,7 @@ pub async fn main() -> EventResult {
                 0.5,
             )));
             let player_color = vec4(player_color.red, player_color.green, player_color.blue, 1.);
-            let cell = entity::get_component(player, components::cell()).unwrap_or_default();
+            let cell = entity::get_component(player, components::cell()).unwrap();
             let Some((delta, _)) = player::get_raw_input_delta(player) else { continue; };
 
             let mut x = cell % 3;

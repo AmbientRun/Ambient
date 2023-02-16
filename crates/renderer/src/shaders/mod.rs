@@ -2,7 +2,8 @@ use std::sync::Arc;
 
 use kiwi_gpu::shader_module::{Shader, ShaderModule};
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKey}, include_file
+    asset_cache::{AssetCache, SyncAssetKey},
+    include_file,
 };
 
 use super::{get_forward_module, MaterialShader, RendererShader};
@@ -10,6 +11,7 @@ use super::{get_forward_module, MaterialShader, RendererShader};
 pub struct StandardShaderKey {
     pub material_shader: Arc<MaterialShader>,
     pub lit: bool,
+    pub shadow_cascades: u32,
 }
 impl std::fmt::Debug for StandardShaderKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -23,7 +25,7 @@ impl SyncAssetKey<Arc<RendererShader>> for StandardShaderKey {
             &assets,
             id.clone(),
             [
-                &get_forward_module(&assets),
+                &get_forward_module(&assets, self.shadow_cascades),
                 &self.material_shader.shader,
                 &ShaderModule::new("StandardMaterial", include_file!("standard.wgsl"), vec![]),
             ]

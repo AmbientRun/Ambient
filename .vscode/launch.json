@@ -19,7 +19,7 @@
                 "DIMS_DISABLE_TIMEOUT": "true"
             },
             "args": [
-                "--project-path=guest/rust/examples/physics",
+                "--project-path=guest/rust/examples/sun",
                 "run"
             ],
             "cwd": "${workspaceFolder}",

@@ -36,7 +36,7 @@ use kiwi_renderer::{cast_shadows, color, gpu_primitives, lod::cpu_lod, material,
 use kiwi_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
-    friendly_id, log_result,
+    cb, friendly_id, log_result,
     shapes::{Sphere, AABB},
 };
 use ndarray::{s, Array3, ArrayView3, Axis};
@@ -739,15 +739,13 @@ impl ElementComponent for Terrain {
             })
             .collect_vec();
 
-        let terrain_shader = TerrainShaderKey.get(&assets);
-
         let (height_min, height_max) = (0., 500.);
         let aabb = AABB { min: vec3(0., 0., height_min), max: vec3(size_in_meters, size_in_meters, height_max) };
         let bound_sphere = aabb.to_sphere();
         Element::new()
             .set(terrain(), ())
             .init_default(terrain_cell())
-            .set(renderer_shader(), terrain_shader)
+            .set(renderer_shader(), cb(|assets, config| TerrainShaderKey { shadow_cascades: config.shadow_cascades }.get(assets)))
             .set(material(), terrain_material)
             .set(primitives(), vec![])
             .set_default(gpu_primitives())

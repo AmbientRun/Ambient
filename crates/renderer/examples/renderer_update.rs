@@ -4,15 +4,16 @@ use kiwi_core::{asset_cache, camera::active_camera, main_scene, transform::*};
 use kiwi_ecs::{EntityData, EntityId, FnSystem, World};
 use kiwi_meshes::{CubeMeshKey, QuadMeshKey};
 use kiwi_renderer::{
-    gpu_primitives, materials::flat_material::{get_flat_shader, FlatMaterial}, primitives, RenderPrimitive, SharedMaterial
+    gpu_primitives,
+    materials::flat_material::{get_flat_shader, FlatMaterial},
+    primitives, RenderPrimitive, SharedMaterial,
 };
-use kiwi_std::{asset_cache::SyncAssetKeyExt, math::SphericalCoords};
+use kiwi_std::{asset_cache::SyncAssetKeyExt, cb, math::SphericalCoords};
 use winit::event::{Event, VirtualKeyCode, WindowEvent};
 
 fn init(world: &mut World) -> (EntityId, EntityId, SharedMaterial, SharedMaterial) {
     let _gpu = world.resource(gpu()).clone();
     let assets = world.resource(asset_cache()).clone();
-    let flat_static_shader = get_flat_shader(&assets);
 
     let red = SharedMaterial::new(FlatMaterial::new(assets.clone(), vec4(1., 0., 0., 1.), Some(false)));
     let green = SharedMaterial::new(FlatMaterial::new(assets.clone(), vec4(0., 1., 0., 1.), Some(false)));
@@ -20,7 +21,7 @@ fn init(world: &mut World) -> (EntityId, EntityId, SharedMaterial, SharedMateria
     let entity1 = EntityData::new()
         .set(
             primitives(),
-            vec![RenderPrimitive { shader: flat_static_shader.clone(), material: red.clone(), mesh: CubeMeshKey.get(&assets), lod: 0 }],
+            vec![RenderPrimitive { shader: cb(get_flat_shader), material: red.clone(), mesh: CubeMeshKey.get(&assets), lod: 0 }],
         )
         .set_default(gpu_primitives())
         .set_default(local_to_world())
@@ -32,7 +33,7 @@ fn init(world: &mut World) -> (EntityId, EntityId, SharedMaterial, SharedMateria
     let entity2 = EntityData::new()
         .set(
             primitives(),
-            vec![RenderPrimitive { shader: flat_static_shader, material: green.clone(), mesh: CubeMeshKey.get(&assets), lod: 0 }],
+            vec![RenderPrimitive { shader: cb(get_flat_shader), material: green.clone(), mesh: CubeMeshKey.get(&assets), lod: 0 }],
         )
         .set_default(gpu_primitives())
         .set_default(local_to_world())

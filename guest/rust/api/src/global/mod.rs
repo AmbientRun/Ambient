@@ -26,4 +26,4 @@ pub fn default<T: Default>() -> T {
 /// The version of this WASM interface. If this version is different to that of the running
 /// host version, the module will panic and refuse to run.
 #[doc(hidden)]
-pub const INTERFACE_VERSION: u32 = include!("../../wit/INTERFACE_VERSION");
+pub use crate::internal::INTERFACE_VERSION;

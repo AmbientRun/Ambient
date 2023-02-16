@@ -6,7 +6,7 @@ mod uncategorized;
 pub use uncategorized::*;
 
 #[cfg(feature = "cb")]
-pub mod cb;
+mod cb;
 #[cfg(feature = "cb")]
 pub use cb::*;
 

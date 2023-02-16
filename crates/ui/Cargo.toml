@@ -1,6 +1,6 @@
 [package]
 name = "kiwi_ui"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -15,35 +15,35 @@ kiwi_element = { path = "../element" }
 kiwi_input = { path = "../input" }
 kiwi_renderer = { path = "../renderer" }
 kiwi_editor_derive = { path = "../editor_derive" }
-glyph_brush.workspace = true
-glam.workspace = true
-winit.workspace = true
-itertools.workspace = true
-futures.workspace = true
-closure.workspace = true
-log.workspace = true
-wgpu.workspace = true
-indexmap.workspace = true
-serde.workspace = true
-async-trait.workspace = true
-parking_lot.workspace = true
-thiserror.workspace = true
-ordered-float.workspace = true
-tokio.workspace = true
-bytemuck.workspace = true
-convert_case.workspace = true
-anyhow.workspace = true
-tracing.workspace = true
-arboard.workspace = true
+glyph_brush = { workspace = true }
+glam = { workspace = true }
+winit = { workspace = true }
+itertools = { workspace = true }
+futures = { workspace = true }
+closure = { workspace = true }
+log = { workspace = true }
+wgpu = { workspace = true }
+indexmap = { workspace = true }
+serde = { workspace = true }
+async-trait = { workspace = true }
+parking_lot = { workspace = true }
+thiserror = { workspace = true }
+ordered-float = { workspace = true }
+tokio = { workspace = true }
+bytemuck = { workspace = true }
+convert_case = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+arboard = { workspace = true }
 
 [dev-dependencies]
 kiwi_app = { path = "../app" }
 kiwi_cameras = { path = "../cameras" }
-fixed-vec-deque.workspace = true
-tokio.workspace = true
-itertools.workspace = true
-rand.workspace = true
-env_logger.workspace = true
+fixed-vec-deque = { workspace = true }
+tokio = { workspace = true }
+itertools = { workspace = true }
+rand = { workspace = true }
+env_logger = { workspace = true }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [features]

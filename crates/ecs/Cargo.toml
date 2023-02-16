@@ -1,7 +1,7 @@
 
 [package]
 name = "kiwi_ecs"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -9,30 +9,30 @@ edition = "2021"
 [dependencies]
 
 kiwi_std = { path = "../std" }
-itertools.workspace = true
-serde.workspace = true
+itertools = { workspace = true }
+serde = { workspace = true }
 erased-serde = { git = "https://github.com/FredrikNoren/erased-serde.git", features = [
     "unstable-debug",
 ] }
-thiserror.workspace = true
-profiling.workspace = true
-yaml-rust.workspace = true
-log.workspace = true
-derive_more.workspace = true
-lazy_static.workspace = true
-paste.workspace = true
-atomic_refcell.workspace = true
-serde_json.workspace = true
-parking_lot.workspace = true
-downcast-rs.workspace = true
-once_cell.workspace = true
-smallvec.workspace = true
-anyhow.workspace = true
-serde_yaml.workspace = true
-bit-set.workspace = true
-bit-vec.workspace = true
-tokio.workspace = true
-reqwest.workspace = true
-glam.workspace = true
-rand.workspace = true
-data-encoding.workspace = true
+thiserror = { workspace = true }
+profiling = { workspace = true }
+yaml-rust = { workspace = true }
+log = { workspace = true }
+derive_more = { workspace = true }
+lazy_static = { workspace = true }
+paste = { workspace = true }
+atomic_refcell = { workspace = true }
+serde_json = { workspace = true }
+parking_lot = { workspace = true }
+downcast-rs = { workspace = true }
+once_cell = { workspace = true }
+smallvec = { workspace = true }
+anyhow = { workspace = true }
+serde_yaml = { workspace = true }
+bit-set = { workspace = true }
+bit-vec = { workspace = true }
+tokio = { workspace = true }
+reqwest = { workspace = true }
+glam = { workspace = true }
+rand = { workspace = true }
+data-encoding = { workspace = true }
