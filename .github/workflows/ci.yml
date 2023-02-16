@@ -42,3 +42,5 @@ jobs:
         with:
           name: upload-build-timings
           path: target/cargo-timings
+      - name: Build guest/rust
+        run: cd guest/rust && cargo build --workspace
