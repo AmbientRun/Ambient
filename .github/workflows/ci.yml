@@ -34,6 +34,9 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Leafwing-Studios/cargo-cache@v1
       - name: Run tests
-        run: cargo test --workspace --release
+        run: cargo test --workspace
+        env:
+          CARGO_INCREMENTAL: 0
+          RUSTFLAGS: "-C debuginfo=0"
       - name: Build guest/rust
         run: cd guest/rust && cargo build --workspace
