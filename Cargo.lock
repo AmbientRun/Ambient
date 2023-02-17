@@ -3361,7 +3361,7 @@ dependencies = [
 
 [[package]]
 name = "kiwi_water"
-version = "0.1.0"
+version = "0.0.3"
 dependencies = [
  "glam 0.22.0",
  "kiwi_core",
