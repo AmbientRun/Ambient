@@ -2,6 +2,7 @@ use kiwi_api::{
     components::core::{
         game_objects::player_camera,
         object::object_from_url,
+        player::player,
         primitives::quad,
         rendering::color,
         transform::{lookat_center, scale, translation},
@@ -42,8 +43,8 @@ pub async fn main() -> EventResult {
         },
     );
 
-    on(event::FRAME, move |_| {
-        for player in player::get_all() {
+    query(player()).build().bind(move |players| {
+        for (player, _) in players {
             let Some((delta, _)) = player::get_raw_input_delta(player) else { continue; };
 
             if delta.keys.contains(&KeyCode::Key1) {
@@ -96,7 +97,6 @@ pub async fn main() -> EventResult {
                 );
             }
         }
-        EventOk
     });
 
     EventOk

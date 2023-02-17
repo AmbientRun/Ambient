@@ -23,77 +23,77 @@ pub fn build_components_toml() -> toml_edit::Document {
 }
 
 fn make_components() -> toml_edit::Table {
-        let mut components = toml_edit::Table::new();
-        components.set_implicit(true);
+    let mut components = toml_edit::Table::new();
+    components.set_implicit(true);
 
-        let namespaces = [
-            ("core", "Core", "Contains all core components for the Kiwi Runtime."),
-            ("core::app", "App", "High-level state relevant to the application (including the in-development Editor)."),
-            ("core::camera", "Camera", "Camera matrices, types, parameters, and more."),
-            ("core::ecs", "Entity Component System", "Core components for the ECS and entities."),
-            ("core::game_objects", "Game Objects", "Pre-defined game objects that implement specific behaviours."),
-            ("core::model", "Model", "Information about models attached to entities."),
-            ("core::network", "Network", "Network-related state."),
-            ("core::object", "Object", "External object related state (e.g. drawing objects from remote URLs)"),
-            ("core::physics", "Physics", "Physics functionality and state."),
-            ("core::player", "Player", "Components that are attached to player entities."),
-            (
-                "core::primitives",
-                "Primitives",
-                "Components that create primitive (in the geometric sense) objects from their attached entities.",
-            ),
-            ("core::rendering", "Rendering", "Rendering-related state, including global rendering parameters and per-entity state."),
-            (
-                "core::transform",
-                "Transform",
-                "Entity transform state (including translation, rotation and scale), as well as other transformations for this entity.",
-            ),
-            ("core::ui", "Ui", "Anything related to ui and text."),
-        ];
+    let namespaces = [
+        ("core", "Core", "Contains all core components for the Kiwi Runtime."),
+        ("core::app", "App", "High-level state relevant to the application (including the in-development Editor)."),
+        ("core::camera", "Camera", "Camera matrices, types, parameters, and more."),
+        ("core::ecs", "Entity Component System", "Core components for the ECS and entities."),
+        ("core::game_objects", "Game Objects", "Pre-defined game objects that implement specific behaviours."),
+        ("core::model", "Model", "Information about models attached to entities."),
+        ("core::network", "Network", "Network-related state."),
+        ("core::object", "Object", "External object related state (e.g. drawing objects from remote URLs)"),
+        ("core::physics", "Physics", "Physics functionality and state."),
+        ("core::player", "Player", "Components that are attached to player entities."),
+        (
+            "core::primitives",
+            "Primitives",
+            "Components that create primitive (in the geometric sense) objects from their attached entities.",
+        ),
+        ("core::rendering", "Rendering", "Rendering-related state, including global rendering parameters and per-entity state."),
+        (
+            "core::transform",
+            "Transform",
+            "Entity transform state (including translation, rotation and scale), as well as other transformations for this entity.",
+        ),
+        ("core::ui", "Ui", "Anything related to ui and text."),
+    ];
 
-        for (path, name, description) in namespaces {
-            use toml_edit::value;
+    for (path, name, description) in namespaces {
+        use toml_edit::value;
 
-            let mut table = toml_edit::Table::new();
-            table.insert("name", value(name));
-            table.insert("description", value(description));
-            components.insert(path, toml_edit::Item::Table(table));
-        }
-
-        let component_registry = kiwi_ecs::ComponentRegistry::get();
-        let mut all_primitive = component_registry.all_primitive().collect::<Vec<_>>();
-        all_primitive.sort_by_key(|pc| pc.desc.path());
-        for component in all_primitive {
-            if let Some(table) = make_component_table(component) {
-                components.insert(&component.desc.path(), toml_edit::Item::Table(table));
-            }
-        }
-    components
+        let mut table = toml_edit::Table::new();
+        table.insert("name", value(name));
+        table.insert("description", value(description));
+        components.insert(path, toml_edit::Item::Table(table));
     }
 
+    let component_registry = kiwi_ecs::ComponentRegistry::get();
+    let mut all_primitive = component_registry.all_primitive().collect::<Vec<_>>();
+    all_primitive.sort_by_key(|pc| pc.desc.path());
+    for component in all_primitive {
+        if let Some(table) = make_component_table(component) {
+            components.insert(&component.desc.path(), toml_edit::Item::Table(table));
+        }
+    }
+    components
+}
+
 fn make_concepts() -> toml_edit::Table {
-        let defs = [
-            (
+    let defs = [
+        (
             ("transformable", "Transformable"),
-                    "Can be translated, rotated and scaled.",
-                    vec![],
+            "Can be translated, rotated and scaled.",
+            vec![],
             vec![
-                        (kiwi_core::transform::translation().desc(), Vec3::ZERO.to_toml()),
-                        (kiwi_core::transform::rotation().desc(), Quat::IDENTITY.to_toml()),
-                        (kiwi_core::transform::scale().desc(), Vec3::ONE.to_toml()),
-                    ],
-                ),
-            (
+                (kiwi_core::transform::translation().desc(), Vec3::ZERO.to_toml()),
+                (kiwi_core::transform::rotation().desc(), Quat::IDENTITY.to_toml()),
+                (kiwi_core::transform::scale().desc(), Vec3::ONE.to_toml()),
+            ],
+        ),
+        (
             ("sphere", "Sphere"),
-                    "A primitive sphere.",
-                    vec![],
+            "A primitive sphere.",
+            vec![],
             vec![
-                        (kiwi_primitives::sphere().desc(), ().to_toml()),
-                        (kiwi_primitives::sphere_radius().desc(), 0.5f32.to_toml()),
-                        (kiwi_primitives::sphere_sectors().desc(), 36u32.to_toml()),
-                        (kiwi_primitives::sphere_stacks().desc(), 18u32.to_toml()),
-                    ],
-                ),
+                (kiwi_primitives::sphere().desc(), ().to_toml()),
+                (kiwi_primitives::sphere_radius().desc(), 0.5f32.to_toml()),
+                (kiwi_primitives::sphere_sectors().desc(), 36u32.to_toml()),
+                (kiwi_primitives::sphere_stacks().desc(), 18u32.to_toml()),
+            ],
+        ),
         (
             ("camera", "Camera"),
             "Base components for a camera. You will need other components to make a fully-functioning camera.",
@@ -121,14 +121,27 @@ fn make_concepts() -> toml_edit::Table {
             "A perspective-infinite-reverse camera. This is recommended for most use-cases.",
             vec!["perspective_common_camera"],
             vec![(kiwi_core::camera::perspective_infinite_reverse().desc(), ().to_toml())],
-            ),
-        ];
+        ),
+        (
+            ("orthographic_camera", "Orthographic Camera"),
+            "An orthographic camera.",
+            vec!["camera"],
+            vec![
+                (kiwi_core::camera::orthographic().desc(), ().to_toml()),
+                (kiwi_core::camera::orthographic_left().desc(), (-1.0f32).to_toml()),
+                (kiwi_core::camera::orthographic_right().desc(), 1.0f32.to_toml()),
+                (kiwi_core::camera::orthographic_top().desc(), 1.0f32.to_toml()),
+                (kiwi_core::camera::orthographic_bottom().desc(), (-1.0f32).to_toml()),
+                (kiwi_core::camera::far().desc(), 1_000f32.to_toml()),
+            ],
+        ),
+    ];
 
     let mut concepts = toml_edit::Table::new();
     concepts.set_implicit(true);
     for ((id, name), description, extends, components) in defs {
         concepts.insert(id, make_concept(name, description, &extends, &components));
-        }
+    }
     concepts
 }
 

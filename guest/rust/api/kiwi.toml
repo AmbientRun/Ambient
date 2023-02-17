@@ -156,6 +156,38 @@ name = "Near plane"
 description = "The near plane of this camera, measured in meters."
 attributes = ["Networked", "Store"]
 
+[components."core::camera::orthographic"]
+type = "Empty"
+name = "Orthographic projection"
+description = """
+If attached, this camera will use a standard orthographic projection matrix.
+Ensure that the `orthographic_` components are set, including `left`, right`, `top` and `bottom`, as well as `near` and `far`."""
+attributes = ["Networked", "Store"]
+
+[components."core::camera::orthographic_bottom"]
+type = "F32"
+name = "Orthographic bottom"
+description = "The bottom bound for this `orthographic` camera."
+attributes = ["Networked", "Store"]
+
+[components."core::camera::orthographic_left"]
+type = "F32"
+name = "Orthographic left"
+description = "The left bound for this `orthographic` camera."
+attributes = ["Networked", "Store"]
+
+[components."core::camera::orthographic_right"]
+type = "F32"
+name = "Orthographic right"
+description = "The right bound for this `orthographic` camera."
+attributes = ["Networked", "Store"]
+
+[components."core::camera::orthographic_top"]
+type = "F32"
+name = "Orthographic top"
+description = "The top bound for this `orthographic` camera."
+attributes = ["Networked", "Store"]
+
 [components."core::camera::perspective"]
 type = "Empty"
 name = "Perspective projection"
@@ -770,3 +802,16 @@ extends = ["perspective_common_camera"]
 
 [concepts.perspective_infinite_reverse_camera.components]
 "core::camera::perspective_infinite_reverse" = {}
+
+[concepts.orthographic_camera]
+name = "Orthographic Camera"
+description = "An orthographic camera."
+extends = ["camera"]
+
+[concepts.orthographic_camera.components]
+"core::camera::orthographic" = {}
+"core::camera::orthographic_left" = -1.0
+"core::camera::orthographic_right" = 1.0
+"core::camera::orthographic_top" = 1.0
+"core::camera::orthographic_bottom" = -1.0
+"core::camera::far" = 1000.0

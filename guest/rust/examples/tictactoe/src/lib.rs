@@ -43,8 +43,10 @@ pub async fn main() -> EventResult {
         for cell in &cells {
             entity::remove_component(*cell, outline());
         }
-        let n_players = player::get_all().len();
-        for (i, player) in player::get_all().into_iter().enumerate() {
+
+        let players = player::get_all();
+        let n_players = players.len();
+        for (i, player) in players.into_iter().enumerate() {
             let player_color = Srgb::from_color(Hsl::from_components((
                 360. * i as f32 / n_players as f32,
                 1.,

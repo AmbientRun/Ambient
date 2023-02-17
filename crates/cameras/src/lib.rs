@@ -33,7 +33,7 @@ pub fn assets_camera_systems() -> SystemGroup<Event<'static, ()>> {
 pub fn ui_camera_system() -> SystemGroup<Event<'static, ()>> {
     SystemGroup::new(
         "ui_camera_system",
-        vec![query_mut((orthographic(), local_to_world()), (ui_camera(),)).to_system(|q, world, qs, _| {
+        vec![query_mut((orthographic_rect(), local_to_world()), (ui_camera(),)).to_system(|q, world, qs, _| {
             let window_size = world.resource(window_logical_size()).as_vec2();
             for (_, (orth, ltw), (_,)) in q.iter(world, qs) {
                 *ltw = Mat4::from_translation((window_size / 2.).extend(0.));
@@ -53,7 +53,7 @@ pub fn UICamera(_: &mut Hooks) -> Element {
         .init_default(inv_local_to_world())
         .init(near(), -1.)
         .init(far(), 1.0)
-        .init(orthographic(), OrthographicRect { left: 0.0, right: 100., top: 0., bottom: 100. })
+        .init(orthographic_rect(), OrthographicRect { left: 0.0, right: 100., top: 0., bottom: 100. })
         .init_default(projection())
         .init_default(projection_view())
         .init_default(translation())

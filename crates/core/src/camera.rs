@@ -24,7 +24,40 @@ pub struct OrthographicRect {
 }
 
 components!("camera", {
-    orthographic: OrthographicRect,
+    // Orthographic
+    orthographic_rect: OrthographicRect,
+    @[
+        Networked, Store,
+        Name["Orthographic projection"],
+        Description["If attached, this camera will use a standard orthographic projection matrix.\nEnsure that the `orthographic_` components are set, including `left`, right`, `top` and `bottom`, as well as `near` and `far`."]
+    ]
+    orthographic: (),
+    @[
+        Networked, Store,
+        Name["Orthographic left"],
+        Description["The left bound for this `orthographic` camera."]
+    ]
+    orthographic_left: f32,
+    @[
+        Networked, Store,
+        Name["Orthographic right"],
+        Description["The right bound for this `orthographic` camera."]
+    ]
+    orthographic_right: f32,
+    @[
+        Networked, Store,
+        Name["Orthographic top"],
+        Description["The top bound for this `orthographic` camera."]
+    ]
+    orthographic_top: f32,
+    @[
+        Networked, Store,
+        Name["Orthographic bottom"],
+        Description["The bottom bound for this `orthographic` camera."]
+    ]
+    orthographic_bottom: f32,
+
+    // Perspective
     @[
         Networked, Store,
         Name["Perspective-infinite-reverse projection"],
@@ -103,6 +136,20 @@ components!("camera", {
     shadows_far: f32,
 });
 
+/*
+query((
+    orthographic_left().changed(),
+    orthographic_right().changed(),
+    orthographic_top().changed(),
+    orthographic_bottom().changed(),
+))
+.incl(orthographic())
+.to_system(|q, world, qs, _| {
+    for (id, (left, right, top, bottom)) in q.collect_cloned(world, qs) {
+        world.add_component(id, orthographic_rect(), OrthographicRect { left, right, top, bottom }).unwrap();
+    }
+}), */
+
 pub fn camera_systems() -> SystemGroup {
     SystemGroup::new(
         "camera_systems",
@@ -128,7 +175,7 @@ pub fn camera_systems() -> SystemGroup {
                     *projection = perspective_reverse(fovy, aspect_ratio, near, far);
                 }
             }),
-            query_mut((projection(),), (near(), far(), orthographic())).to_system(|q, world, qs, _| {
+            query_mut((projection(),), (near(), far(), orthographic_rect())).to_system(|q, world, qs, _| {
                 for (_, (projection,), (&near, &far, orth)) in q.iter(world, qs) {
                     *projection = orthographic_reverse(orth.left, orth.right, orth.bottom, orth.top, near, far);
                 }
@@ -176,7 +223,7 @@ pub enum Projection {
 }
 impl Projection {
     pub fn from_world(world: &World, entity: EntityId) -> Self {
-        if let Ok(rect) = world.get(entity, orthographic()) {
+        if let Ok(rect) = world.get(entity, orthographic_rect()) {
             Self::Orthographic { rect, near: world.get(entity, near()).unwrap_or(-1.), far: world.get(entity, far()).unwrap_or(1.) }
         } else {
             let window_size = world.resource(window_physical_size());
@@ -256,7 +303,7 @@ impl Projection {
     pub fn to_entity_data(&self) -> EntityData {
         match self.clone() {
             Projection::Orthographic { rect, near, far } => {
-                EntityData::new().set(orthographic(), rect).set(self::near(), near).set(self::far(), far)
+                EntityData::new().set(orthographic_rect(), rect).set(self::near(), near).set(self::far(), far)
             }
             Projection::PerspectiveInfiniteReverse { fovy, aspect_ratio, near } => EntityData::new()
                 .set(perspective_infinite_reverse(), ())
