@@ -1,6 +1,5 @@
 use kiwi_api::{
     components::core::{
-        camera::{aspect_ratio_from_window, perspective_infinite_reverse},
         ecs::ids,
         game_objects::player_camera,
         object::object_from_url,
@@ -12,19 +11,17 @@ use kiwi_api::{
         rendering::{cast_shadows, color},
         transform::{lookat_center, rotation, scale, translation},
     },
-    concepts::make_transformable,
+    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     physics::raycast,
     prelude::*,
 };
 
 #[main]
 pub async fn main() -> EventResult {
-    make_transformable()
+    make_perspective_infinite_reverse_camera()
         .with_default(player_camera())
         .with(translation(), vec3(5., 5., 4.))
         .with(lookat_center(), vec3(0., 0., 0.))
-        .with(perspective_infinite_reverse(), ())
-        .with(aspect_ratio_from_window(), ())
         .spawn();
 
     let cube = make_transformable()

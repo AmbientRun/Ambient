@@ -4,7 +4,10 @@ use byteorder::{BigEndian, WriteBytesExt};
 pub use components::game_objects::player_camera;
 use glam::{Mat4, Vec3};
 use kiwi_audio::AudioListener;
-use kiwi_core::{camera::active_camera, main_scene, on_frame, runtime};
+use kiwi_core::{
+    camera::{active_camera, aspect_ratio_from_window},
+    main_scene, on_frame, runtime,
+};
 use kiwi_ecs::{query, query_mut, EntityData, SystemGroup};
 use kiwi_element::{element_component, Element, Hooks};
 use kiwi_input::{
@@ -100,9 +103,16 @@ pub fn client_systems() -> SystemGroup {
                     continue;
                 }
 
-                world.add_component(id, active_camera(), 0.).unwrap();
-                world.add_component(id, main_scene(), ()).unwrap();
-                world.add_component(id, audio_listener(), Arc::new(Mutex::new(AudioListener::new(Mat4::IDENTITY, Vec3::X * 0.2)))).unwrap();
+                world
+                    .add_components(
+                        id,
+                        EntityData::new()
+                            .set(active_camera(), 0.)
+                            .set(main_scene(), ())
+                            .set(audio_listener(), Arc::new(Mutex::new(AudioListener::new(Mat4::IDENTITY, Vec3::X * 0.2))))
+                            .set(aspect_ratio_from_window(), ()),
+                    )
+                    .unwrap();
             }
         })],
     )

@@ -413,7 +413,7 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "Empty"
 name = "Visualizing"
 description = "If attached, the physics state of this object will be rendered for debugging purposes."
-attributes = ["Networked", "Store"]
+attributes = ["Networked"]
 
 [components."core::player::local_user_id"]
 type = "String"
@@ -734,3 +734,39 @@ description = "A primitive sphere."
 "core::primitives::sphere_radius" = 0.5
 "core::primitives::sphere_sectors" = 36
 "core::primitives::sphere_stacks" = 18
+
+[concepts.camera]
+name = "Camera"
+description = "Base components for a camera. You will need other components to make a fully-functioning camera."
+extends = ["transformable"]
+
+[concepts.camera.components]
+"core::camera::projection" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+"core::camera::projection_view" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+"core::camera::near" = 0.10000000149011612
+
+[concepts.perspective_common_camera]
+name = "Perspective Common Camera"
+description = "Base components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`."
+extends = ["camera"]
+
+[concepts.perspective_common_camera.components]
+"core::camera::aspect_ratio" = 1.0
+"core::camera::fovy" = 1.0
+
+[concepts.perspective_camera]
+name = "Perspective Camera"
+description = "A perspective camera."
+extends = ["perspective_common_camera"]
+
+[concepts.perspective_camera.components]
+"core::camera::perspective" = {}
+"core::camera::far" = 1000.0
+
+[concepts.perspective_infinite_reverse_camera]
+name = "Perspective-Infinite-Reverse Camera"
+description = "A perspective-infinite-reverse camera. This is recommended for most use-cases."
+extends = ["perspective_common_camera"]
+
+[concepts.perspective_infinite_reverse_camera.components]
+"core::camera::perspective_infinite_reverse" = {}

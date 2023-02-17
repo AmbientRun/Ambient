@@ -2,25 +2,22 @@ use components::cell;
 use kiwi_api::{
     components::core::{
         self,
-        camera::{aspect_ratio_from_window, perspective_infinite_reverse},
         game_objects::player_camera,
         primitives::cube,
         rendering::{color, outline},
         transform::{lookat_center, scale, translation},
     },
-    concepts::make_transformable,
+    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
 };
 use kiwi_api::{player::KeyCode, prelude::*};
 use palette::{FromColor, Hsl, Srgb};
 
 #[main]
 pub async fn main() -> EventResult {
-    make_transformable()
+    make_perspective_infinite_reverse_camera()
         .with_default(player_camera())
         .with(translation(), vec3(5., 5., 4.))
         .with(lookat_center(), vec3(0., 0., 0.))
-        .with(perspective_infinite_reverse(), ())
-        .with(aspect_ratio_from_window(), ())
         .spawn();
 
     let mut cells = Vec::new();

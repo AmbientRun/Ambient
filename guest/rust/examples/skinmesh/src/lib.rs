@@ -1,13 +1,12 @@
 use kiwi_api::{
     components::core::{
-        camera::{aspect_ratio_from_window, perspective_infinite_reverse},
         game_objects::player_camera,
         object::object_from_url,
         primitives::quad,
         rendering::color,
         transform::{lookat_center, scale, translation},
     },
-    concepts::make_transformable,
+    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     entity::{AnimationAction, AnimationController},
     player::KeyCode,
     prelude::*,
@@ -15,12 +14,10 @@ use kiwi_api::{
 
 #[main]
 pub async fn main() -> EventResult {
-    make_transformable()
+    make_perspective_infinite_reverse_camera()
         .with_default(player_camera())
         .with(translation(), vec3(2., 2., 3.0))
         .with(lookat_center(), vec3(0., 0., 1.))
-        .with(perspective_infinite_reverse(), ())
-        .with(aspect_ratio_from_window(), ())
         .spawn();
 
     make_transformable()
