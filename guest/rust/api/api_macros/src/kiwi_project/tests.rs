@@ -403,7 +403,7 @@ fn can_generate_concepts() {
             #[doc = "Makes a Colored Sphere (A sphere with some color!)"]
             pub fn make_colored_sphere() -> Components {
                 Components::new()
-                    .merge(make_sphere())
+                    .with_merge(make_sphere())
                     .with(components::core::rendering::color(), Vec4::new(1f32, 1f32, 1f32, 1f32))
             }
 
@@ -417,7 +417,7 @@ fn can_generate_concepts() {
             #[doc = "Makes a Sphere (A primitive sphere.)"]
             pub fn make_sphere() -> Components {
                 Components::new()
-                    .merge(make_transformable())
+                    .with_merge(make_transformable())
                     .with(components::core::primitives::sphere(), ())
                     .with(components::core::primitives::sphere_radius(), 0.5f32)
                     .with(components::core::primitives::sphere_sectors(), 36u32)
@@ -606,7 +606,7 @@ fn can_generate_concepts_with_all_supported_types() {
                     .with(components::f32(), 3.14f32)
                     .with(components::f64(), 3.14159f64)
                     .with(components::i32(), -4i32)
-                    .with(components::mat4(), Mat4::from_cols_array([
+                    .with(components::mat4(), Mat4::from_cols_array(&[
                         1f32, 2f32, 3f32, 4f32, 5f32, 6f32, 7f32, 8f32, 9f32, 10f32, 11f32, 12f32,
                         13f32, 14f32, 15f32, 16f32
                     ]))
@@ -735,8 +735,8 @@ fn can_extend_with_multiple_concepts() {
             #[doc = "Makes a C3 ()"]
             pub fn make_concept3() -> Components {
                 Components::new()
-                    .merge(make_concept1())
-                    .merge(make_concept2())
+                    .with_merge(make_concept1())
+                    .with_merge(make_concept2())
                     .with(components::i32(), 16i32)
             }
             #[doc = "Checks if the entity is a C3 ()"]

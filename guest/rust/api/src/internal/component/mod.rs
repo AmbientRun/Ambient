@@ -94,6 +94,12 @@ impl Components {
         self
     }
 
+    /// Merges in the `other` Components and returns this; any fields that were present in both will be replaced by `other`'s.
+    pub fn with_merge(mut self, other: Components) -> Self {
+        self.merge(other);
+        self
+    }
+
     /// Removes the specified component from this, and returns the value if it was present.
     pub fn remove<T: SupportedComponentTypeGet>(&mut self, component: Component<T>) -> Option<T> {
         T::from_result(self.0.remove(&component.index())?)

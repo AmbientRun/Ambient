@@ -56,7 +56,7 @@ fn generate_make(
         .map(|i| {
             let extend_ident = quote::format_ident!("make_{}", i.as_ref());
             quote! {
-                merge(#extend_ident())
+                with_merge(#extend_ident())
             }
         })
         .collect();
@@ -189,7 +189,7 @@ fn toml_value_to_tokens_primitive(
         }
         ("Mat4", toml::Value::Array(a)) => {
             let arr = toml_array_f32_to_array_tokens(path, a)?;
-            quote! { Mat4::from_cols_array([#arr]) }
+            quote! { Mat4::from_cols_array(&[#arr]) }
         }
         ("I32", toml::Value::Integer(i)) => {
             let i = *i as i32;
