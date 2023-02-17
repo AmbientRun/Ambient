@@ -1,8 +1,7 @@
 use glam::{vec3, Mat4, Vec2, Vec3, Vec3Swizzles};
 use itertools::Itertools;
 use kiwi_ecs::{
-    components, ensure_has_component, query, query_mut, Component, Description, ECSError, EntityData, EntityId, Name, Networked, Store,
-    SystemGroup, World,
+    components, query, query_mut, Component, Description, ECSError, EntityData, EntityId, Name, Networked, Store, SystemGroup, World,
 };
 use kiwi_std::{
     math::Line,
