@@ -11,6 +11,10 @@ resolver = "2"
 [workspace.package]
 version = "0.0.4"
 
+[workspace.metadata.release]
+pre-release-commit-message = "chore: Release version {{version}}"
+tag = false
+
 [workspace.dependencies]
 # TEMP: https://github.com/aclysma/profiling/pull/45
 profiling = { git = "https://github.com/philpax/profiling.git", features = [

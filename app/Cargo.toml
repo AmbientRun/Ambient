@@ -63,6 +63,9 @@ glam = { workspace = true }
 pre-release-replacements = [
   {file="src/new_project.rs", search="kiwi_api = \"[0-9\\.]+\"", replace="kiwi_api = \"{{version}}\""},
 ]
+tag = true
+tag-message = ""
+tag-name = "v{{version}}"
 
 [features]
 default = ["dep:toml_edit", "dep:paste"]
