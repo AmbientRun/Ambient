@@ -80,6 +80,7 @@ pub fn init_all_components() {
     init_components();
     physx::init_components();
     collider::init_components();
+    visualization::init_components();
 }
 
 pub const GRAVITY: f32 = 9.82;
@@ -196,7 +197,7 @@ unsafe extern "C" fn main_physx_scene_filter_shader(mut info: *mut physxx::sys::
     (physxx::sys::PxFilterFlag::eDEFAULT) as u16
 }
 
-pub fn physics_server_systems() -> SystemGroup {
+pub fn server_systems() -> SystemGroup {
     SystemGroup::new(
         "physics",
         vec![
@@ -223,8 +224,13 @@ pub fn physics_server_systems() -> SystemGroup {
                 }
             }),
             Box::new(collider::server_systems()),
+            Box::new(visualization::server_systems()),
         ],
     )
+}
+
+pub fn client_systems() -> SystemGroup {
+    SystemGroup::new("physics", vec![Box::new(visualization::client_systems())])
 }
 
 /// Starts the physx simulation step concurrently.

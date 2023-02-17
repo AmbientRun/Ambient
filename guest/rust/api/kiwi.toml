@@ -409,6 +409,12 @@ name = "Unit yaw"
 description = "The yaw of a character/unit."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::physics::visualizing"]
+type = "Empty"
+name = "Visualizing"
+description = "If attached, the physics state of this object will be rendered for debugging purposes."
+attributes = ["Networked", "Store"]
+
 [components."core::player::local_user_id"]
 type = "String"
 name = "Local user ID"

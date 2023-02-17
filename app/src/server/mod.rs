@@ -42,7 +42,7 @@ fn server_systems() -> SystemGroup {
             Box::new(kiwi_core::async_ecs::async_ecs_systems()),
             Box::new(kiwi_core::transform::TransformSystem::new()),
             kiwi_core::remove_at_time_system(),
-            Box::new(kiwi_physics::physics_server_systems()),
+            Box::new(kiwi_physics::server_systems()),
             Box::new(player::server_systems()),
             Box::new(kiwi_object::systems()),
             Box::new(wasm::systems()),

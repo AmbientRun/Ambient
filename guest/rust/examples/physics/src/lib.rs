@@ -4,7 +4,10 @@ use kiwi_api::{
         ecs::ids,
         game_objects::player_camera,
         object::object_from_url,
-        physics::{angular_velocity, box_collider, dynamic, linear_velocity, physics_controlled},
+        physics::{
+            angular_velocity, box_collider, dynamic, linear_velocity, physics_controlled,
+            visualizing,
+        },
         primitives::cube,
         rendering::{cast_shadows, color},
         transform::{lookat_center, rotation, scale, translation},
@@ -26,6 +29,7 @@ pub async fn main() -> EventResult {
 
     let cube = make_transformable()
         .with_default(cube())
+        .with_default(visualizing())
         .with(box_collider(), Vec3::ONE)
         .with(dynamic(), true)
         .with_default(physics_controlled())

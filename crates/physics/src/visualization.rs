@@ -7,7 +7,7 @@ use crate::{
 use glam::Vec3;
 use itertools::Itertools;
 use kiwi_core::transform::get_world_transform;
-use kiwi_ecs::{components, dont_store, query, EntityData, EntityId, FnSystem, SystemGroup, World};
+use kiwi_ecs::{components, dont_store, query, Description, EntityData, EntityId, FnSystem, Name, Networked, Store, SystemGroup, World};
 use kiwi_element::{ElementComponentExt, ElementTree};
 use kiwi_gizmos::{gizmos, GizmoPrimitive};
 use kiwi_primitives::BoxLine;
@@ -15,8 +15,15 @@ use kiwi_std::line_hash;
 use physxx::{PxActor, PxDebugLine, PxRenderBuffer, PxRigidActor, PxSceneRef, PxShape, PxShapeFlag, PxVisualizationParameter};
 
 components!("physics", {
+    @[Networked]
     physx_viz_line: PxDebugLine,
+    @[Networked]
     shape_primitives: Vec<GizmoPrimitive>,
+    @[
+        Networked,
+        Name["Visualizing"],
+        Description["If attached, the physics state of this object will be rendered for debugging purposes."]
+    ]
     visualizing: (),
 });
 
@@ -49,7 +56,7 @@ fn visualize_shape(scene: PxSceneRef, shape: &PxShape, enabled: bool) {
     scene.set_visualization_parameter(PxVisualizationParameter::COLLISION_SHAPES, 1.0);
 }
 
-pub fn server_system() -> SystemGroup {
+pub fn server_systems() -> SystemGroup {
     SystemGroup::new(
         "visualization/server",
         vec![
@@ -136,7 +143,7 @@ pub fn server_system() -> SystemGroup {
     )
 }
 
-pub fn client_system() -> SystemGroup {
+pub fn client_systems() -> SystemGroup {
     SystemGroup::new(
         "visualization/client",
         vec![
