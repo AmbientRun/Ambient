@@ -8,10 +8,6 @@ members = [
 ]
 resolver = "2"
 
-# Also update:
-# - app/src/new_project.rs
-# - guest/rust/Cargo.toml
-# - guest/rust/examples/*/Cargo.toml
 [workspace.package]
 version = "0.0.3"
 

@@ -59,6 +59,11 @@ paste = { optional = true, workspace = true }
 [dev-dependencies]
 glam = { workspace = true }
 
+[package.metadata.release]
+pre-release-replacements = [
+  {file="src/new_project.rs", search="kiwi_api = \"[0-9\\.]+\"", replace="kiwi_api = \"{{version}}\""},
+]
+
 [features]
 default = ["dep:toml_edit", "dep:paste"]
 production = []
