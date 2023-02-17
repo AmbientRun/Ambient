@@ -6,7 +6,8 @@ use futures::{future::BoxFuture, StreamExt};
 use image::ImageFormat;
 use kiwi_asset_cache::SyncAssetKey;
 use kiwi_std::{
-    asset_cache::AssetCache, asset_url::{AbsAssetUrl, AssetType}
+    asset_cache::AssetCache,
+    asset_url::{AbsAssetUrl, AssetType},
 };
 use out_asset::{OutAsset, OutAssetContent, OutAssetPreview};
 use serde::{Deserialize, Serialize};
@@ -87,14 +88,30 @@ impl Pipeline {
 
 pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
     log::info!("Processing pipeline with out_root={}", ctx.out_root);
+
+    #[derive(Debug, Clone, Deserialize)]
+    #[serde(untagged)]
+    enum PipelineOneOrMany {
+        Many(Vec<Pipeline>),
+        One(Pipeline),
+    }
+    impl PipelineOneOrMany {
+        fn to_vec(self) -> Vec<Pipeline> {
+            match self {
+                PipelineOneOrMany::Many(v) => v,
+                PipelineOneOrMany::One(p) => vec![p],
+            }
+        }
+    }
+
     futures::stream::iter(ctx.files.iter())
         .filter_map(|file| async move {
-            let pipelines: Vec<Pipeline> = if file.0.path().ends_with("pipeline.json") {
+            let pipelines: PipelineOneOrMany = if file.0.path().ends_with("pipeline.json") {
                 file.download_json(&ctx.assets).await.unwrap()
             } else {
                 return None;
             };
-            Some((file, pipelines))
+            Some((file, pipelines.to_vec()))
         })
         .flat_map(|(file, pipelines)| {
             futures::stream::iter(pipelines.into_iter().enumerate().map(|(i, pipeline)| {

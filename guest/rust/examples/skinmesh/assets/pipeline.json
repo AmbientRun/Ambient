@@ -1,7 +1,7 @@
 [
-    {
-        "pipeline": {
-            "type": "Models"
-        }
+  {
+    "pipeline": {
+      "type": "Models"
     }
+  }
 ]
