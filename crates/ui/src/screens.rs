@@ -3,7 +3,7 @@ use kiwi_core::{
     hierarchy::children,
     transform::{local_to_world, translation},
 };
-use kiwi_ecs::{components, query, SystemGroup, World};
+use kiwi_ecs::{components, query, SystemGroup};
 use kiwi_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
 
 use crate::{app_background_color, padding, Borders, Dock, UIBase, UIExt, WindowSized};

@@ -7,7 +7,7 @@ use crate::{
 use glam::Vec3;
 use itertools::Itertools;
 use kiwi_core::transform::get_world_transform;
-use kiwi_ecs::{components, dont_store, query, Description, EntityData, EntityId, FnSystem, Name, Networked, Store, SystemGroup, World};
+use kiwi_ecs::{components, dont_store, query, Description, EntityData, EntityId, FnSystem, Name, Networked, SystemGroup, World};
 use kiwi_element::{ElementComponentExt, ElementTree};
 use kiwi_gizmos::{gizmos, GizmoPrimitive};
 use kiwi_primitives::BoxLine;

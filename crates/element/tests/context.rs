@@ -1,4 +1,3 @@
-use kiwi_ecs::World;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 mod common;
 use std::sync::Arc;

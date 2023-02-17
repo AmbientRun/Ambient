@@ -11,7 +11,7 @@ use std::{
 use glam::*;
 use itertools::Itertools;
 use kiwi_core::{mouse_position, on_event, transform::translation, window, window_scale_factor};
-use kiwi_ecs::{ComponentValue, EntityId, World};
+use kiwi_ecs::{ComponentValue, EntityId};
 use kiwi_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_input::MouseButton;
 use kiwi_std::{

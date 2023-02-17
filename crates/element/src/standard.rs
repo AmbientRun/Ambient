@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use itertools::Itertools;
-use kiwi_ecs::World;
 
 use super::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
 

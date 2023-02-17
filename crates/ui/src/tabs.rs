@@ -1,7 +1,6 @@
 use std::fmt::Debug;
 
 use closure::closure;
-use kiwi_ecs::World;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_std::{cb, Cb};
 

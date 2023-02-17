@@ -4,7 +4,6 @@ use std::{f32::consts::PI, num::NonZeroU32, sync::Arc, time::Instant};
 
 use glam::{vec2, vec3, vec4, IVec2, Mat4, Quat, UVec2, Vec2, Vec3, Vec3Swizzles, Vec4};
 use itertools::Itertools;
-use kiwi_app::gpu;
 use kiwi_core::{
     asset_cache,
     async_ecs::async_run,

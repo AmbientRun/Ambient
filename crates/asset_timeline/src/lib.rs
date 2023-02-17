@@ -3,7 +3,6 @@ use std::{collections::HashMap, sync::Arc};
 use glam::{vec3, vec4, Vec4};
 use itertools::Itertools;
 use kiwi_core::{asset_cache, transform::translation};
-use kiwi_ecs::World;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_renderer::color;
 use kiwi_std::{

@@ -1,4 +1,3 @@
-use kiwi_ecs::World;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_network::{client::GameClient, log_network_result};
 use kiwi_std::Cb;

@@ -9,7 +9,7 @@ use glam::{vec3, Vec3};
 use image::{DynamicImage, ImageOutputFormat, RgbImage};
 use itertools::Itertools;
 use kiwi_core::{game_mode, runtime, transform::translation, GameMode};
-use kiwi_ecs::{EntityData, EntityId, World};
+use kiwi_ecs::{EntityData, EntityId};
 use kiwi_element::{element_component, Element, ElementComponent, ElementComponentExt, Group, Hooks, Setter};
 use kiwi_intent::{rpc_redo, rpc_undo_head, IntentHistoryVisualizer};
 use kiwi_naturals::{get_default_natural_layers, natural_layers, NaturalLayer, NaturalsPreset};

@@ -5,7 +5,7 @@ use kiwi_core::{
     name,
     transform::{euler_rotation, scale, translation},
 };
-use kiwi_ecs::{AttributeConstructor, Component, ComponentAttribute, ComponentEntry, ComponentValue, World};
+use kiwi_ecs::{AttributeConstructor, Component, ComponentAttribute, ComponentEntry, ComponentValue};
 use kiwi_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_renderer::{cast_shadows, color, overlay};
 use kiwi_std::{cb, time::Timeout, Cb};

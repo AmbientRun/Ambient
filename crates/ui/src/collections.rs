@@ -4,7 +4,7 @@ use closure::closure;
 use indexmap::IndexMap;
 use itertools::Itertools;
 use kiwi_core::on_window_event;
-use kiwi_ecs::{EntityId, World};
+use kiwi_ecs::EntityId;
 use kiwi_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_input::{on_app_keyboard_input, KeyboardEvent};
 use kiwi_std::{cb, color::Color, Cb};

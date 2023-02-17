@@ -3,7 +3,6 @@ use std::sync::{
     Arc,
 };
 
-use kiwi_ecs::World;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, ElementTree, Hooks};
 mod common;
 use common::*;

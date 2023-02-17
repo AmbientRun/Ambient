@@ -5,7 +5,7 @@ use kiwi_app::AppBuilder;
 use kiwi_cameras::UICamera;
 use kiwi_core::camera::active_camera;
 use kiwi_debugger::Debugger;
-use kiwi_ecs::{EntityData, SystemGroup, World};
+use kiwi_ecs::{EntityData, SystemGroup};
 use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
 use kiwi_network::{
     client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce},

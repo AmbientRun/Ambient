@@ -6,7 +6,7 @@ use kiwi_core::{
     transform::{scale, translation},
 };
 use kiwi_decals::DecalShaderKey;
-use kiwi_ecs::{query, ArchetypeFilter, World};
+use kiwi_ecs::{query, ArchetypeFilter};
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
 use kiwi_gpu::{
     gpu::{Gpu, GpuKey},

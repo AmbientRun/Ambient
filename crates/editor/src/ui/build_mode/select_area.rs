@@ -6,7 +6,6 @@ use kiwi_core::{
     transform::{get_world_position, translation},
     window_logical_size, window_scale_factor,
 };
-use kiwi_ecs::World;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_input::MouseButton;
 use kiwi_network::{client::GameClient, log_network_result};

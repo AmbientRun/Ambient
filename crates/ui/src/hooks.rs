@@ -1,7 +1,6 @@
 use std::{fmt::Debug, time::Duration};
 
 use kiwi_core::{asset_cache, runtime};
-use kiwi_ecs::World;
 use kiwi_element::Hooks;
 use kiwi_std::asset_cache::{Asset, AsyncAssetKeyExt};
 

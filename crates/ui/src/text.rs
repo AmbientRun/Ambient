@@ -8,7 +8,7 @@ use glyph_brush::{
     BrushAction, BrushError, GlyphBrush, GlyphBrushBuilder, Section,
 };
 use kiwi_core::{asset_cache, async_ecs::async_run, gpu, mesh, name, runtime, transform::*, ui_scene, window_scale_factor};
-use kiwi_ecs::{components, query, query_mut, Debuggable, Description, EntityData, Name, Networked, Store, SystemGroup, World};
+use kiwi_ecs::{components, query, query_mut, Debuggable, Description, EntityData, Name, Networked, Store, SystemGroup};
 use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
 use kiwi_gpu::{mesh_buffer::GpuMesh, texture::Texture};
 use kiwi_renderer::{color, gpu_primitives, material, primitives, renderer_shader, SharedMaterial};

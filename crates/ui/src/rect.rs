@@ -6,7 +6,7 @@ use kiwi_core::{
     transform::{mesh_to_local, scale},
     ui_scene,
 };
-use kiwi_ecs::{components, query, EntityData, SystemGroup, World};
+use kiwi_ecs::{components, query, EntityData, SystemGroup};
 use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
 use kiwi_gpu::{
     gpu::GpuKey,

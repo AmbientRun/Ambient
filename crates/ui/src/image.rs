@@ -2,7 +2,6 @@ use std::{borrow::Cow, sync::Arc};
 
 use glam::*;
 use kiwi_core::{asset_cache, mesh, transform::*, ui_scene};
-use kiwi_ecs::World;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_gpu::{
     std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey},

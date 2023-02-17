@@ -1,6 +1,6 @@
 use itertools::Itertools;
 use kiwi_core::{name, runtime, selectable, tags};
-use kiwi_ecs::{query, EntityId, World};
+use kiwi_ecs::{query, EntityId};
 use kiwi_ecs_editor::ECSEditor;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_network::{

@@ -3,7 +3,7 @@ use std::{self, sync::Arc, time::Duration};
 use closure::closure;
 use glam::*;
 use kiwi_core::{transform::translation, window};
-use kiwi_ecs::{EntityId, World};
+use kiwi_ecs::EntityId;
 use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
 use kiwi_input::{on_app_keyboard_input, on_app_received_character, KeyboardEvent};
 use kiwi_renderer::color;

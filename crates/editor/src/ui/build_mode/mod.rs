@@ -4,7 +4,7 @@ use derive_more::Display;
 use futures_signals::signal::SignalExt;
 use itertools::Itertools;
 use kiwi_core::{asset_cache, async_ecs::async_run, get_mouse_clip_space_position, runtime};
-use kiwi_ecs::{Component, ComponentValue, EntityId, World};
+use kiwi_ecs::{Component, ComponentValue, EntityId};
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
 use kiwi_input::{on_app_keyboard_input, MouseButton};
 use kiwi_intent::{client_push_intent, rpc_undo_head_exact};

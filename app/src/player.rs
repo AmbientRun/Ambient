@@ -5,7 +5,7 @@ pub use components::game_objects::player_camera;
 use glam::{Mat4, Vec3};
 use kiwi_audio::AudioListener;
 use kiwi_core::{camera::active_camera, main_scene, on_frame, runtime};
-use kiwi_ecs::{query, query_mut, EntityData, SystemGroup, World};
+use kiwi_ecs::{query, query_mut, EntityData, SystemGroup};
 use kiwi_element::{element_component, Element, Hooks};
 use kiwi_input::{
     on_app_focus_change, on_app_keyboard_input, on_app_mouse_input, on_app_mouse_motion, on_app_mouse_wheel, player_prev_raw_input,

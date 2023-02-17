@@ -6,7 +6,7 @@ use std::{fmt::Debug, sync::Arc, time::SystemTime};
 use itertools::Itertools;
 use kiwi_ecs::{
     components, index_system, query, ArchetypeFilter, Component, ComponentValue, Debuggable, EntityData, EntityId, Index, IndexColumns,
-    Networked, QueryState, Resource, Store, SystemGroup, World,
+    Networked, QueryState, Resource, Store, SystemGroup,
 };
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_network::{

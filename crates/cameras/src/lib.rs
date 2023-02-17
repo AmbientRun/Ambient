@@ -1,6 +1,6 @@
 use glam::{Mat4, Quat, Vec3};
 use kiwi_core::{camera::*, transform::*, ui_scene, window_logical_size};
-use kiwi_ecs::{components, query_mut, Description, Name, Networked, Store, SystemGroup, World};
+use kiwi_ecs::{components, query_mut, Description, Name, Networked, Store, SystemGroup};
 use kiwi_element::{element_component, Element, Hooks};
 use kiwi_std::shapes::BoundingBox;
 use winit::event::Event;

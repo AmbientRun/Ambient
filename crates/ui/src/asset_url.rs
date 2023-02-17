@@ -1,5 +1,4 @@
 use kiwi_core::asset_cache;
-use kiwi_ecs::World;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_std::{
     asset_url::{select_asset, AssetUrl, AssetUrlCollection, GetAssetType, TypedAssetUrl},

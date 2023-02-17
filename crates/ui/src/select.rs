@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use closure::closure;
 use kiwi_core::on_window_event;
-use kiwi_ecs::World;
 use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use kiwi_std::Cb;
 use winit::event::{ElementState, WindowEvent};
