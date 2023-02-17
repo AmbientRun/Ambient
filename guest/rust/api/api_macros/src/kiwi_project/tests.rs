@@ -78,7 +78,7 @@ fn can_generate_components_from_manifest_in_global_namespace() {
     };
 
     let result = implementation(
-        ("kiwi.toml".to_string(), manifest.to_string()),
+        (Some("kiwi.toml".to_string()), manifest.to_string()),
         api_name(),
         true,
         true,
@@ -106,7 +106,7 @@ fn can_accept_no_components() {
     };
 
     let result = implementation(
-        ("kiwi.toml".to_string(), manifest.to_string()),
+        (Some("kiwi.toml".to_string()), manifest.to_string()),
         api_name(),
         false,
         true,
@@ -156,7 +156,7 @@ fn can_generate_components_from_manifest() {
     };
 
     let result = implementation(
-        ("kiwi.toml".to_string(), manifest.to_string()),
+        (Some("kiwi.toml".to_string()), manifest.to_string()),
         api_name(),
         false,
         true,
@@ -193,7 +193,7 @@ fn can_generate_component_with_contained_type() {
     };
 
     let result = implementation(
-        ("kiwi.toml".to_string(), manifest.to_string()),
+        (Some("kiwi.toml".to_string()), manifest.to_string()),
         api_name(),
         false,
         true,
@@ -231,7 +231,7 @@ fn can_generate_components_from_manifest_with_org() {
     };
 
     let result = implementation(
-        ("kiwi.toml".to_string(), manifest.to_string()),
+        (Some("kiwi.toml".to_string()), manifest.to_string()),
         api_name(),
         false,
         true,
@@ -273,7 +273,7 @@ fn can_generate_components_with_documented_namespace_from_manifest() {
     };
 
     let result = implementation(
-        ("kiwi.toml".to_string(), manifest.to_string()),
+        (Some("kiwi.toml".to_string()), manifest.to_string()),
         api_name(),
         false,
         true,
@@ -295,7 +295,7 @@ fn will_error_on_undocumented_namespace() {
         "#};
 
     let result = implementation(
-        ("kiwi.toml".to_string(), manifest.to_string()),
+        (Some("kiwi.toml".to_string()), manifest.to_string()),
         api_name(),
         false,
         true,
@@ -454,7 +454,7 @@ fn can_generate_concepts() {
     };
 
     let result = implementation(
-        ("kiwi.toml".to_string(), manifest.to_string()),
+        (Some("kiwi.toml".to_string()), manifest.to_string()),
         api_name(),
         false,
         false,
@@ -652,7 +652,7 @@ fn can_generate_concepts_with_all_supported_types() {
     };
 
     let result = implementation(
-        ("kiwi.toml".to_string(), manifest.to_string()),
+        (Some("kiwi.toml".to_string()), manifest.to_string()),
         api_name(),
         false,
         false,
@@ -747,7 +747,7 @@ fn can_extend_with_multiple_concepts() {
     };
 
     let result = implementation(
-        ("kiwi.toml".to_string(), manifest.to_string()),
+        (Some("kiwi.toml".to_string()), manifest.to_string()),
         api_name(),
         false,
         false,

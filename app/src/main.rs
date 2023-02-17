@@ -250,7 +250,11 @@ fn main() -> anyhow::Result<()> {
 
         // Assume we are being run within the codebase.
         for guest_path in std::fs::read_dir("guest/").unwrap().filter_map(Result::ok).map(|de| de.path()).filter(|de| de.is_dir()) {
-            let toml_path = guest_path.join("api").join("kiwi.toml");
+            let toml_path = if guest_path.file_name().unwrap_or_default() == "rust" {
+                guest_path.join("api").join("api_macros").join("kiwi.toml")
+            } else {
+                guest_path.join("api").join("kiwi.toml")
+            };
             std::fs::write(&toml_path, &toml)?;
             log::info!("Interface updated at {toml_path:?}");
         }

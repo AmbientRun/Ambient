@@ -7,6 +7,8 @@ use quote::quote;
 
 mod kiwi_project;
 
+const MANIFEST: &str = include_str!("../kiwi.toml");
+
 /// Makes your `main()` function accessible to the WASM host, and generates a `components` module with your project's components.
 ///
 /// If you do not add this attribute to your `main()` function, your module will not run.
@@ -21,7 +23,15 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let spans = Span::call_site();
     let mut path = syn::Path::from(syn::Ident::new("kiwi_api", spans));
     path.leading_colon = Some(syn::Token![::](spans));
-    let project_boilerplate = kiwi_project_pm2(false, path.clone()).unwrap();
+    let project_boilerplate = kiwi_project::implementation(
+        kiwi_project::read_file("kiwi.toml".to_string())
+            .context("Failed to load kiwi.toml")
+            .unwrap(),
+        path.clone(),
+        false,
+        true,
+    )
+    .unwrap();
 
     quote! {
         #project_boilerplate
@@ -42,21 +52,12 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro]
 pub fn api_project(_input: TokenStream) -> TokenStream {
     TokenStream::from(
-        kiwi_project_pm2(
-            true,
+        kiwi_project::implementation(
+            (None, MANIFEST.to_string()),
             syn::Path::from(syn::Ident::new("crate", Span::call_site())),
+            true,
+            true,
         )
         .unwrap(),
-    )
-}
-
-fn kiwi_project_pm2(global: bool, api_name: syn::Path) -> anyhow::Result<proc_macro2::TokenStream> {
-    kiwi_project::implementation(
-        kiwi_project::read_file("kiwi.toml".to_string())
-            .context("Failed to load kiwi.toml")
-            .unwrap(),
-        api_name,
-        global,
-        true,
     )
 }

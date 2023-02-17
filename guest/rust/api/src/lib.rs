@@ -32,8 +32,7 @@ pub use glam;
 pub use once_cell;
 
 // Hi there! This macro generates the components that are exposed to you as a Kiwi API user.
-// These components are generated from the `kiwi.toml` at the root of this crate.
-// We suggest that you look at the docs for this crate, or look at the `kiwi.toml`.
+// We suggest that you look at the docs for this crate.
 // Your IDE should also tell you about the components present here and show their corresponding
 // doc comments.
 kiwi_api_macros::api_project!();
