@@ -4,6 +4,6 @@ set -e
 
 BASEDIR=$(dirname $(dirname $(realpath "$0")))
 cd $BASEDIR
-cargo release --no-publish --no-push "$1"
+cargo release --no-publish --execute --no-push "$1"
 cd $BASEDIR/guest/rust
-cargo release --no-publish --no-push "$1"
+cargo release --no-publish --execute "$1"
