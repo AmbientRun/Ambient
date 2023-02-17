@@ -16,7 +16,13 @@ pub fn build_components_toml() -> toml_edit::Document {
         doc.insert("project", toml_edit::Item::Table(project));
     }
 
-    {
+    doc.insert("components", toml_edit::Item::Table(make_components()));
+    doc.insert("concepts", toml_edit::Item::Table(make_concepts()));
+
+    doc
+}
+
+fn make_components() -> toml_edit::Table {
         let mut components = toml_edit::Table::new();
         components.set_implicit(true);
 
