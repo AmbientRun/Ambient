@@ -40,6 +40,10 @@ struct Cli {
     #[arg(long)]
     public_host: Option<String>,
 
+    /// Show debug menus
+    #[arg(long)]
+    debug: bool,
+
     #[command(subcommand)]
     command: Commands,
 }
@@ -133,11 +137,10 @@ fn client_systems() -> SystemGroup {
 }
 
 #[element_component]
-fn GameView(hooks: &mut Hooks) -> Element {
+fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     let (state, _) = hooks.consume_context::<GameClient>().unwrap();
     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
 
-    let show_debug = true;
     if show_debug {
         Debugger {
             get_state: cb(move |cb| {
@@ -153,7 +156,7 @@ fn GameView(hooks: &mut Hooks) -> Element {
 }
 
 #[element_component]
-fn MainApp(hooks: &mut Hooks, server_addr: SocketAddr, user_id: String) -> Element {
+fn MainApp(hooks: &mut Hooks, server_addr: SocketAddr, user_id: String, show_debug: bool) -> Element {
     let resolution = use_window_physical_resolution(hooks);
 
     hooks.provide_context(GameClientNetworkStats::default);
@@ -175,7 +178,7 @@ fn MainApp(hooks: &mut Hooks, server_addr: SocketAddr, user_id: String) -> Eleme
             systems_and_resources: cb(|| (client_systems(), EntityData::new())),
             create_rpc_registry: cb(server::create_rpc_registry),
             on_in_entities: None,
-            ui: GameView.el(),
+            ui: GameView { show_debug }.el(),
         }
         .el()]),
     ])
@@ -294,7 +297,7 @@ fn main() -> anyhow::Result<()> {
     let handle = runtime.handle().clone();
     if cli.command.should_run() {
         AppBuilder::simple().ui_renderer(true).with_runtime(runtime).with_asset_cache(assets).run(|app, _runtime| {
-            MainApp { server_addr, user_id }.el().spawn_interactive(&mut app.world);
+            MainApp { server_addr, user_id, show_debug: cli.debug }.el().spawn_interactive(&mut app.world);
         });
     } else {
         handle.block_on(async move {
