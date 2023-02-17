@@ -3,8 +3,7 @@
 You need [Rust](https://www.rust-lang.org/) to install the Kiwi Runtime. Then run:
 
 ```sh
-git clone https://github.com/KiwiOrg/Kiwi.git && cd Kiwi
-cargo install --path app
+cargo install --git https://github.com/KiwiOrg/Kiwi.git
 ```
 
 ## Dependencies: Linux/Ubuntu
@@ -14,7 +13,7 @@ apt-get install -y build-essential cmake pkg-config \
   libfontconfig1-dev clang libasound2-dev ninja-build
 ```
 
-## Running on headless Linux/Ubunutu
+## Running on headless Linux/Ubuntu
 
 ```sh
 add-apt-repository ppa:oibaf/graphics-drivers -y
