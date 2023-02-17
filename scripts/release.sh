@@ -16,4 +16,4 @@ cd $BASEDIR
 cargo release version --no-confirm --quiet --execute "$1"
 cargo release commit --no-confirm --quiet --execute
 cargo release tag --no-confirm --quiet --execute --tag-name "v{{version}}"
-cargo release push --quiet --execute
+cargo release push --no-confirm --quiet --execute
