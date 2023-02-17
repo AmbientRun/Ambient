@@ -6,11 +6,3 @@ members = [
 
 [workspace.package]
 version = "0.0.3"
-
-[workspace.metadata.release]
-pre-release-replacements = [
-  {file="Cargo.toml", search="kiwi_api = \"[0-9\\.]+\"", replace="kiwi_api = \"{{version}}\"", min = 0},
-]
-
-[patch.crates-io]
-kiwi_api = { path = "api" }

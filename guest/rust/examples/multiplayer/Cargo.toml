@@ -5,7 +5,7 @@ version = { workspace = true }
 
 [dependencies]
 rand = "0.8.5"
-kiwi_api = "0.0.3"
+kiwi_api = { path = "../../api" }
 
 [lib]
 crate-type = ["cdylib"]
