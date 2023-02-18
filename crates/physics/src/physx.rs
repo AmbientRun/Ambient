@@ -113,11 +113,6 @@ pub fn sync_ecs_physics() -> SystemGroup {
     let angular_velocity_q = query(angular_velocity().changed()).incl(physics_controlled());
     let angular_velocity_q2 = scale_q.query.clone();
 
-    let contact_offset_qs = Arc::new(Mutex::new(QueryState::new()));
-    let contact_offset_q = query(contact_offset().changed()).incl(physics_controlled());
-    let rest_offset_qs = Arc::new(Mutex::new(QueryState::new()));
-    let rest_offset_q = query(rest_offset().changed()).incl(physics_controlled());
-
     SystemGroup::new(
         "sync_ecs_physics",
         vec![
@@ -200,28 +195,20 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     }
                 }
             }),
-            contact_offset_q.to_system({
-                let contact_offset_qs = contact_offset_qs.clone();
-                move |q, world, _, _| {
-                    let mut qs = contact_offset_qs.lock();
-                    for (id, &off) in q.iter(world, Some(&mut *qs)) {
-                        if let Ok(body) = world.get(id, rigid_dynamic()) {
-                            for shape in get_shapes(world, id) {
-                                shape.set_contact_offset(off);
-                            }
+            query(contact_offset().changed()).incl(physics_controlled());.to_system({
+                move |q, world, qs, _| {
+                    for (id, &off) in q.iter(world, qs) {
+                        for shape in get_shapes(world, id) {
+                            shape.set_contact_offset(off);
                         }
                     }
                 }
             }),
-            rest_offset_q.to_system({
-                let rest_offset_qs = rest_offset_qs.clone();
-                move |q, world, _, _| {
-                    let mut qs = rest_offset_qs.lock();
-                    for (id, &off) in q.iter(world, Some(&mut *qs)) {
-                        if let Ok(body) = world.get(id, rigid_dynamic()) {
-                            for shape in get_shapes(world, id) {
-                                shape.set_rest_offset(off);
-                            }
+            query(rest_offset().changed()).incl(physics_controlled());.to_system({
+                move |q, world, qs, _| {
+                    for (id, &off) in q.iter(world, qs) {
+                        for shape in get_shapes(world, id) {
+                            shape.set_rest_offset(off);
                         }
                     }
                 }
