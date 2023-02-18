@@ -195,7 +195,7 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     }
                 }
             }),
-            query(contact_offset().changed()).incl(physics_controlled());.to_system({
+            query(contact_offset().changed()).incl(physics_controlled()).to_system({
                 move |q, world, qs, _| {
                     for (id, &off) in q.iter(world, qs) {
                         for shape in get_shapes(world, id) {
@@ -204,7 +204,7 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     }
                 }
             }),
-            query(rest_offset().changed()).incl(physics_controlled());.to_system({
+            query(rest_offset().changed()).incl(physics_controlled()).to_system({
                 move |q, world, qs, _| {
                     for (id, &off) in q.iter(world, qs) {
                         for shape in get_shapes(world, id) {
