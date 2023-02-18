@@ -87,6 +87,18 @@ impl PxShape {
     pub fn set_flags(&self, flags: PxShapeFlag) {
         unsafe { physx_sys::PxShape_setFlags_mut(self.0, physx_sys::PxShapeFlags { mBits: flags.bits }) }
     }
+    pub fn get_contact_offset(&self) -> f32 {
+        unsafe { physx_sys::PxShape_getContactOffset(self.0) }
+    }
+    pub fn set_contact_offset(&self, offset: f32) {
+        unsafe { physx_sys::PxShape_setContactOffset_mut(self.0, offset) }
+    }
+    pub fn get_rest_offset(&self) -> f32 {
+        unsafe { physx_sys::PxShape_getRestOffset(self.0) }
+    }
+    pub fn set_rest_offset(&self, offset: f32) {
+        unsafe { physx_sys::PxShape_setRestOffset_mut(self.0, offset) }
+    }
 }
 impl AsPxBase for PxShape {
     fn as_base(&self) -> PxBaseRef {

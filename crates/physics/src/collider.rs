@@ -34,7 +34,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     main_controller_manager, make_physics_static,
     mesh::{PhysxGeometry, PhysxGeometryFromUrl},
-    physx::{angular_velocity, character_controller, linear_velocity, physics, physics_controlled, physics_shape, rigid_actor, Physics},
+    physx::{angular_velocity, character_controller, contact_offset, linear_velocity, physics, physics_controlled, physics_shape, rest_offset, rigid_actor, Physics},
     wood_physics_material, ColliderScene, PxActorUserData, PxShapeUserData, PxWoodMaterialKey,
 };
 
@@ -295,12 +295,21 @@ pub fn server_systems() -> SystemGroup {
                     for shape in actor.get_shapes() {
                         actor.detach_shape(&shape, false);
                     }
+                    let coff = world.get(id, contact_offset()).ok();
+                    let roff = world.get(id, rest_offset()).ok();
                     for shape in shapes.iter_mut() {
                         if !actor.attach_shape(shape) {
                             log::error!("Failed to attach shape to entity {}", id);
                             actor.as_actor().remove_user_data::<PxActorUserData>();
                             actor.release();
                             return;
+                        }
+                        // TODO(josh): shapes should probably have their own ECS objects
+                        if let Some(coff) = coff {
+                            shape.set_contact_offset(coff);
+                        }
+                        if let Some(roff) = roff {
+                            shape.set_rest_offset(roff);
                         }
                         shape.update_user_data::<PxShapeUserData>(&|ud| ud.entity = id);
                     }

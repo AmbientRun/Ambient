@@ -29,6 +29,10 @@ components!("physics", {
     linear_velocity: Vec3,
     @[Debuggable, Networked, Store, Name["Angular velocity"], Description["Angular velocity (radians/second) of this entity in the physics scene.\nUpdating this component will update the entity's angular velocity in the physics scene."]]
     angular_velocity: Vec3,
+    @[Debuggable, Networked, Store, Name["Contact offset"], Description["Contact offset (in meters) of this entity in the physics scene.\nUpdating this component will update the entity's contact offset for each attached shape in the physics scene."]]
+    contact_offset: f32,
+    @[Debuggable, Networked, Store, Name["Rest offset"], Description["Rest offset (in meters) of this entity in the physics scene.\nUpdating this component will update the entity's rest offset for each attached shape in the physics scene."]]
+    rest_offset: f32,
 });
 
 #[derive(Debug)]
@@ -187,6 +191,24 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     for (id, &vel) in q.iter(world, Some(&mut *qs)) {
                         if let Ok(body) = world.get(id, rigid_dynamic()) {
                             body.set_angular_velocity(vel, true);
+                        }
+                    }
+                }
+            }),
+            query(contact_offset().changed()).incl(physics_controlled()).to_system({
+                move |q, world, qs, _| {
+                    for (id, &off) in q.iter(world, qs) {
+                        for shape in get_shapes(world, id) {
+                            shape.set_contact_offset(off);
+                        }
+                    }
+                }
+            }),
+            query(rest_offset().changed()).incl(physics_controlled()).to_system({
+                move |q, world, qs, _| {
+                    for (id, &off) in q.iter(world, qs) {
+                        for shape in get_shapes(world, id) {
+                            shape.set_rest_offset(off);
                         }
                     }
                 }

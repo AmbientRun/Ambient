@@ -2,7 +2,7 @@
 [project]
 id = "runtime_components"
 name = "Runtime Components"
-version = "0.0.3"
+version = "0.0.5"
 
 [components.core]
 name = "Core"
@@ -367,6 +367,14 @@ name = "Collider loads"
 description = "Contains all colliders that were loaded in this physics tick."
 attributes = ["Debuggable", "Networked", "Resource", "Store"]
 
+[components."core::physics::contact_offset"]
+type = "F32"
+name = "Contact offset"
+description = """
+Contact offset (in meters) of this entity in the physics scene.
+Updating this component will update the entity's contact offset for each attached shape in the physics scene."""
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::physics::density"]
 type = "F32"
 name = "Density"
@@ -413,6 +421,14 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "Empty"
 name = "Plane collider"
 description = "If attached, this entity will have a plane physics collider."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::physics::rest_offset"]
+type = "F32"
+name = "Rest offset"
+description = """
+Rest offset (in meters) of this entity in the physics scene.
+Updating this component will update the entity's rest offset for each attached shape in the physics scene."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::physics::sphere_collider"]
