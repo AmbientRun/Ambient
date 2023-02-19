@@ -8,12 +8,10 @@ use kiwi_debugger::Debugger;
 use kiwi_ecs::{EntityData, SystemGroup};
 use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
 use kiwi_network::{
-    client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce},
-    events::ServerEventRegistry,
+    client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce}, events::ServerEventRegistry
 };
 use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt},
-    cb, friendly_id,
+    asset_cache::{AssetCache, SyncAssetKeyExt}, cb, download_asset::AssetsCacheOnDisk, friendly_id
 };
 use kiwi_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
 
@@ -226,6 +224,7 @@ fn main() -> anyhow::Result<()> {
     let runtime = tokio::runtime::Builder::new_multi_thread().enable_all().build()?;
     let assets = AssetCache::new(runtime.handle().clone());
     PhysicsKey.get(&assets); // Load physics
+    AssetsCacheOnDisk.insert(&assets, false); // Disable disk caching for now; see https://github.com/KiwiOrg/Kiwi/issues/81
 
     let cli = Cli::parse();
 
