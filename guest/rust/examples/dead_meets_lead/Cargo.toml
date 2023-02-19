@@ -1,0 +1,11 @@
+[package]
+name = "dead_meets_lead"
+edition = "2021"
+version = { workspace = true }
+
+[dependencies]
+kiwi_api = { path = "../../api" }
+
+[lib]
+crate-type = ["cdylib"]
+required-features = []

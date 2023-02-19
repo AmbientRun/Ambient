@@ -19,7 +19,7 @@
                 "DIMS_DISABLE_TIMEOUT": "true"
             },
             "args": [
-                "--project-path=guest/rust/examples/sun",
+                "--project-path=guest/rust/examples/dead_meets_lead",
                 "run"
             ],
             "cwd": "${workspaceFolder}",
