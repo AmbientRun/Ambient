@@ -37,7 +37,7 @@ pub async fn main() -> EventResult {
         .spawn();
 
     make_transformable()
-        .with(object_from_url(), "assets/Shape.glb".to_string())
+        .with(object_from_url(), asset_url("assets/Shape.glb").unwrap())
         .spawn();
 
     on(event::COLLISION, |c| {

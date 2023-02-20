@@ -28,14 +28,17 @@ pub async fn main() -> EventResult {
         .spawn();
 
     let unit_id = make_transformable()
-        .with(object_from_url(), "assets/Peasant Man.fbx".to_string())
+        .with(
+            object_from_url(),
+            asset_url("assets/Peasant Man.fbx").unwrap(),
+        )
         .spawn();
 
     entity::set_animation_controller(
         unit_id,
         AnimationController {
             actions: &[AnimationAction {
-                clip_url: "assets/Capoeira.fbx/animations/mixamo.com.anim",
+                clip_url: &asset_url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
                 looping: true,
                 weight: 1.,
             }],
@@ -52,7 +55,10 @@ pub async fn main() -> EventResult {
                     unit_id,
                     AnimationController {
                         actions: &[AnimationAction {
-                            clip_url: "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
+                            clip_url: &asset_url(
+                                "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
+                            )
+                            .unwrap(),
                             looping: true,
                             weight: 1.,
                         }],
@@ -66,7 +72,8 @@ pub async fn main() -> EventResult {
                     unit_id,
                     AnimationController {
                         actions: &[AnimationAction {
-                            clip_url: "assets/Capoeira.fbx/animations/mixamo.com.anim",
+                            clip_url: &asset_url("assets/Capoeira.fbx/animations/mixamo.com.anim")
+                                .unwrap(),
                             looping: true,
                             weight: 1.,
                         }],
@@ -81,13 +88,18 @@ pub async fn main() -> EventResult {
                     AnimationController {
                         actions: &[
                             AnimationAction {
-                                clip_url:
+                                clip_url: &asset_url(
                                     "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
+                                )
+                                .unwrap(),
                                 looping: true,
                                 weight: 0.5,
                             },
                             AnimationAction {
-                                clip_url: "assets/Capoeira.fbx/animations/mixamo.com.anim",
+                                clip_url: &asset_url(
+                                    "assets/Capoeira.fbx/animations/mixamo.com.anim",
+                                )
+                                .unwrap(),
                                 looping: true,
                                 weight: 0.5,
                             },
