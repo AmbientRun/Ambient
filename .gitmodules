@@ -1,3 +1,0 @@
-[submodule "guest/rust/examples/dead_meets_lead/assets/DeadMeetsLeadContent"]
-	path = guest/rust/examples/dead_meets_lead/assets/DeadMeetsLeadContent
-	url = https://github.com/FredrikNoren/DeadMeetsLeadContent.git
