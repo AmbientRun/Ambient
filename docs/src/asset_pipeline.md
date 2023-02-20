@@ -1,29 +1,35 @@
 # Asset pipeline
 
-Ambient supports processing and loading a number of assets. You can place a file that ends with `pipeline.json` anywhere in your
-project folder which will specify how the assets will be processed. You can also prepend anything you'd like to the filename,
-so for instance `hello_pipeline.json` will also work.
+Ambient features an automated asset pipeline that is capable of loading and processing a number of assets and formats.
 
-Supported model formats are:
+To use it, create a file named `pipeline.json` anywhere in your project. You can also prepend anything you'd like to the filename, which means `hello_pipeline.json` and such will also work. The full reference structure of the `json` is described in [Reference](#reference).
 
-- FBX and GLTF are natively supported
-- ~30 other formats are supported through assimp, though less well supported.
-- Unity and Quixel can be loaded
+This pipeline will look at, but not necessarily process, all of the files adjacent to it in the folder. By convention, our examples place their assets in the `assets` folder, but this is not necessary.
 
-Here are some examples:
+# Supported formats
+
+## Models
+
+Supported model formats include:
+
+- FBX: Native support
+- GLTF: Native support
+- Unity models: Native support
+- Quixel models: Native support
+- ~30 other formats: This support is provided through the [assimp](https://github.com/assimp/assimp) library. It is not guaranteed to be fully integrated.
+
+# Examples
 
 ## Basic models
 
 The following will load `.glb` and `.fbx` files in the folder or any of the sub-folders.
 
 ```json
-[
-  {
-    "pipeline": {
-      "type": "Models"
-    }
+{
+  "pipeline": {
+    "type": "Models"
   }
-]
+}
 ```
 
 ## A more complex model example
@@ -31,42 +37,40 @@ The following will load `.glb` and `.fbx` files in the folder or any of the sub-
 The following will filter to just files that contain `table`, scale it down, and override materials for the `wood` material.
 
 ```json
-[
-  {
-    "pipeline": {
-      "type": "Models",
-      "collider": {
-        "type": "FromModel"
-      },
-      "material_overrides": [
-        {
-          "filter": {
-            "type": "ByName",
-            "name": "wood"
-          },
-          "material": {
-            "base_color": "wood_albedo.png",
-            "metalic": 0.5,
-            "roughness": 0.2
-          }
-        }
-      ],
-      "transforms": [
-        {
-          "type": "Scale",
-          "scale": 0.1
-        }
-      ]
+{
+  "pipeline": {
+    "type": "Models",
+    "collider": {
+      "type": "FromModel"
     },
-    "sources": ["**/*table*"],
-    "tags": ["Man made"]
-  }
-]
+    "material_overrides": [
+      {
+        "filter": {
+          "type": "ByName",
+          "name": "wood"
+        },
+        "material": {
+          "base_color": "wood_albedo.png",
+          "metalic": 0.5,
+          "roughness": 0.2
+        }
+      }
+    ],
+    "transforms": [
+      {
+        "type": "Scale",
+        "scale": 0.1
+      }
+    ]
+  },
+  "sources": ["**/*table*"],
+  "tags": ["Man made"]
+}
 ```
 
 ## Notes
 
-- If you're using components and hot reloading; note that the components will overwrite the current state of the entity, so should only be used for "static" data (i.e. max_hitpoint but not current_hitpoint)
+- If you are using components in your object and are hot-reloading it, the incoming object will overwrite any corresponding components on the current state of the entity. These components should only be used for static data - that is, `max_hitpoints` but not `current_hitpoints`.
 
 ## Reference
 
@@ -75,3 +79,5 @@ The full structure for `pipeline.json` is described below in TypeScript `.d.ts` 
 ```typescript
 {{#include pipeline.d.ts}}
 ```
+
+In addition, a single `pipeline.json` can contain more than one pipeline. To do this, wrap your existing object in `[]` (i.e. a JSON array) and add more pipelines as required.
