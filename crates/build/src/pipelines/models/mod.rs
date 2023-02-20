@@ -153,7 +153,7 @@ fn create_texture_resolver(ctx: &PipelineCtx) -> TextureResolver {
         async move {
             let path: PathBuf = path.into();
             let filename = path.file_name().unwrap().to_str().unwrap().to_string();
-            if let Some(file) = ctx.process_ctx.files.iter().find(|file| file.path().as_str().contains(&filename)) {
+            if let Some(file) = ctx.files.0.iter().find(|file| file.path().as_str().contains(&filename)) {
                 match download_image(&ctx.process_ctx.assets, file).await {
                     Ok(img) => Some(img.into_rgba8()),
                     Err(err) => {

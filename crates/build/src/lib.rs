@@ -1,5 +1,6 @@
 use std::{
-    path::{Path, PathBuf}, sync::Arc
+    path::{Path, PathBuf},
+    sync::Arc,
 };
 
 use futures::FutureExt;
@@ -8,7 +9,7 @@ use kiwi_asset_cache::{AssetCache, SyncAssetKeyExt};
 use kiwi_physics::physx::{Physics, PhysicsKey};
 use kiwi_project::Manifest as ProjectManifest;
 use kiwi_std::asset_url::AbsAssetUrl;
-use pipelines::{ProcessCtx, ProcessCtxKey};
+use pipelines::{FileCollection, ProcessCtx, ProcessCtxKey};
 use walkdir::WalkDir;
 
 pub mod pipelines;
@@ -48,7 +49,7 @@ async fn build_assets(physics: Physics, assets_path: &Path, target_path: &Path) 
     PhysicsKey.insert(&assets, physics);
     let ctx = ProcessCtx {
         assets: assets.clone(),
-        files: Arc::new(files),
+        files: FileCollection(Arc::new(files)),
         in_root: AbsAssetUrl::from_directory_path(assets_path),
         out_root: AbsAssetUrl::from_directory_path(target_path.join("assets")),
         input_file_filter: None,

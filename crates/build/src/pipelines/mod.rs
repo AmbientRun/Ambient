@@ -104,7 +104,7 @@ pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
         }
     }
 
-    futures::stream::iter(ctx.files.iter())
+    futures::stream::iter(ctx.files.0.iter())
         .filter_map(|file| async move {
             let pipelines: PipelineOneOrMany = if file.0.path().ends_with("pipeline.json") {
                 file.download_json(&ctx.assets).await.unwrap()
@@ -123,6 +123,7 @@ pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
         .map(|(pipeline_file, pipeline)| {
             let root = pipeline_file.join(".").unwrap();
             let ctx = PipelineCtx {
+                files: ctx.files.sub_directory(root.path().as_str()),
                 process_ctx: ctx.clone(),
                 pipeline: Arc::new(pipeline.clone()),
                 pipeline_file,
@@ -144,7 +145,7 @@ impl SyncAssetKey<ProcessCtx> for ProcessCtxKey {}
 #[derive(Clone)]
 pub struct ProcessCtx {
     pub assets: AssetCache,
-    pub files: Arc<Vec<AbsAssetUrl>>,
+    pub files: FileCollection,
     pub input_file_filter: Option<String>,
     pub package_name: String,
     pub in_root: AbsAssetUrl,
@@ -153,16 +154,21 @@ pub struct ProcessCtx {
     pub on_status: Arc<dyn Fn(String) -> BoxFuture<'static, ()> + Sync + Send>,
     pub on_error: Arc<dyn Fn(anyhow::Error) -> BoxFuture<'static, ()> + Sync + Send>,
 }
-impl ProcessCtx {
+#[derive(Clone)]
+pub struct FileCollection(pub Arc<Vec<AbsAssetUrl>>);
+impl FileCollection {
     pub fn has_input_file(&self, url: &AbsAssetUrl) -> bool {
-        self.files.iter().any(|x| x == url)
+        self.0.iter().any(|x| x == url)
     }
     pub fn find_file_res(&self, glob_pattern: impl AsRef<str>) -> anyhow::Result<&AbsAssetUrl> {
         self.find_file(&glob_pattern).with_context(|| format!("Failed to find file with pattern {}", glob_pattern.as_ref()))
     }
     pub fn find_file(&self, glob_pattern: impl AsRef<str>) -> Option<&AbsAssetUrl> {
         let pattern = glob::Pattern::new(glob_pattern.as_ref()).unwrap();
-        self.files.iter().find(|f| pattern.matches(f.path().as_str()))
+        self.0.iter().find(|f| pattern.matches(f.path().as_str()))
+    }
+    pub fn sub_directory(&self, path: &str) -> Self {
+        Self(Arc::new(self.0.iter().filter(|url| url.path().starts_with(path)).cloned().collect()))
     }
 }
 
