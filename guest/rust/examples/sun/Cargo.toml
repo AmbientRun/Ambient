@@ -2,6 +2,7 @@
 name = "sun"
 edition = "2021"
 version = { workspace = true }
+publish = false
 
 [dependencies]
 ambient_api = { path = "../../api" }
