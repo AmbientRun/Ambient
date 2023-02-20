@@ -23,7 +23,7 @@ jobs:
           draft: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
-  build:
+  build-app:
     needs: create-release
     strategy:
       matrix:
@@ -57,8 +57,16 @@ jobs:
       - name: Upload
         run: gh release upload ${{ needs.create-release.outputs.tag }} target/${{ matrix.target }}/${{ matrix.exe_name }}
 
+  publish-api:
+    needs: [create-release, build-app]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cd guest/rust && cargo release --workspace --dependent-version=fix release --execute --no-confirm
+
   publish-release:
-    needs: [create-release, build]
+    needs: [create-release, build-app, publish-api]
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
