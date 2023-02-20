@@ -1,15 +1,19 @@
-use glam::*;
-use kiwi_app::AppBuilder;
-use kiwi_core::{
-    asset_cache, camera::{active_camera, far}, hierarchy::dump_world_hierarchy_to_tmp_file, main_scene, transform::*
+use ambient_app::AppBuilder;
+use ambient_core::{
+    asset_cache,
+    camera::{active_camera, far},
+    hierarchy::dump_world_hierarchy_to_tmp_file,
+    main_scene,
+    transform::*,
 };
-use kiwi_ecs::World;
-use kiwi_element::ElementComponentExt;
-use kiwi_gizmos::{gizmos, GizmoPrimitive};
-use kiwi_model::bones_to_lines;
-use kiwi_model_import::model_crate::ModelCrate;
-use kiwi_primitives::Quad;
-use kiwi_std::{asset_url::AbsAssetUrl, line_hash, math::SphericalCoords};
+use ambient_ecs::World;
+use ambient_element::ElementComponentExt;
+use ambient_gizmos::{gizmos, GizmoPrimitive};
+use ambient_model::bones_to_lines;
+use ambient_model_import::model_crate::ModelCrate;
+use ambient_primitives::Quad;
+use ambient_std::{asset_url::AbsAssetUrl, line_hash, math::SphericalCoords};
+use glam::*;
 
 async fn init(world: &mut World) {
     let assets = world.resource(asset_cache()).clone();
@@ -35,7 +39,7 @@ async fn init(world: &mut World) {
         }
     }
 
-    kiwi_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
+    ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
         .set(active_camera(), 0.)
         .set(main_scene(), ())
         .set(far(), 2000.)

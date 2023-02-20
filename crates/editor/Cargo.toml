@@ -1,35 +1,35 @@
 [package]
-name = "kiwi_editor"
+name = "ambient_editor"
 version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-kiwi_app = { path = "../app" }
-kiwi_meshes = { path = "../meshes" }
-kiwi_core = { path = "../core" }
-kiwi_element = { path = "../element" }
-kiwi_ui = { path = "../ui" }
-kiwi_ecs = { path = "../ecs" }
-kiwi_network = { path = "../network" }
-kiwi_std = { path = "../std" }
-kiwi_gpu = { path = "../gpu" }
-kiwi_renderer = { path = "../renderer" }
-kiwi_input = { path = "../input" }
-kiwi_rpc = { path = "../rpc" }
-kiwi_intent = { path = "../intent" }
-kiwi_ecs_editor = { path = "../ecs_editor" }
-kiwi_physics = { path = "../physics" }
-kiwi_primitives = { path = "../primitives" }
-kiwi_model = { path = "../model" }
-kiwi_animation = { path = "../animation" }
-kiwi_cameras = { path = "../cameras" }
-kiwi_object = { path = "../object" }
-kiwi_decals = { path = "../decals" }
-kiwi_world_audio = { path = "../world_audio" }
-kiwi_terrain = { path = "../terrain" }
-kiwi_naturals = { path = "../naturals" }
+ambient_app = { path = "../app" }
+ambient_meshes = { path = "../meshes" }
+ambient_core = { path = "../core" }
+ambient_element = { path = "../element" }
+ambient_ui = { path = "../ui" }
+ambient_ecs = { path = "../ecs" }
+ambient_network = { path = "../network" }
+ambient_std = { path = "../std" }
+ambient_gpu = { path = "../gpu" }
+ambient_renderer = { path = "../renderer" }
+ambient_input = { path = "../input" }
+ambient_rpc = { path = "../rpc" }
+ambient_intent = { path = "../intent" }
+ambient_ecs_editor = { path = "../ecs_editor" }
+ambient_physics = { path = "../physics" }
+ambient_primitives = { path = "../primitives" }
+ambient_model = { path = "../model" }
+ambient_animation = { path = "../animation" }
+ambient_cameras = { path = "../cameras" }
+ambient_object = { path = "../object" }
+ambient_decals = { path = "../decals" }
+ambient_world_audio = { path = "../world_audio" }
+ambient_terrain = { path = "../terrain" }
+ambient_naturals = { path = "../naturals" }
 physxx = { path = "../../libs/physxx" }
 glam = { workspace = true }
 itertools = { workspace = true }
@@ -61,6 +61,6 @@ derive_more = { workspace = true }
 
 [features]
 hotload-includes = [
-    'kiwi_std/hotload-includes',
-    'kiwi_decals/hotload-includes',
+    'ambient_std/hotload-includes',
+    'ambient_decals/hotload-includes',
 ]

@@ -1,17 +1,22 @@
 use std::{
-    collections::HashMap, io::ErrorKind, net::{IpAddr, Ipv4Addr, SocketAddr}, sync::Arc, time::Duration
+    collections::HashMap,
+    io::ErrorKind,
+    net::{IpAddr, Ipv4Addr, SocketAddr},
+    sync::Arc,
+    time::Duration,
 };
 
+use ambient_ecs::{
+    components, query, Component, ComponentValue, Debuggable, Description, EntityId, Name, Networked, Resource, Serializable, Store, World,
+};
+use ambient_rpc::{RpcError, RpcRegistry};
+use ambient_std::{asset_cache::AssetCache, log_error, log_result};
 use bytes::Bytes;
 use client::GameRpcArgs;
 use futures::{Future, SinkExt, StreamExt};
-use kiwi_ecs::{
-    components, query, Component, ComponentValue, Debuggable, Description, EntityId, Name, Networked, Resource, Serializable, Store, World
-};
-use kiwi_rpc::{RpcError, RpcRegistry};
-use kiwi_std::{asset_cache::AssetCache, log_error, log_result};
 use quinn::{
-    ClientConfig, Connection, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, Incoming, NewConnection, RecvStream, SendStream, ServerConfig, TransportConfig
+    ClientConfig, Connection, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, Incoming, NewConnection, RecvStream,
+    SendStream, ServerConfig, TransportConfig,
 };
 use rand::Rng;
 use rustls::{Certificate, PrivateKey, RootCertStore};
@@ -31,7 +36,7 @@ pub mod rpc;
 pub mod server;
 
 pub mod player {
-    use kiwi_ecs::{components, Description, Name, Networked, Store};
+    use ambient_ecs::{components, Description, Name, Networked, Store};
 
     components!("player", {
         @[
@@ -127,7 +132,7 @@ impl ServerWorldExt for World {
     }
 }
 
-pub fn assert_networked(desc: kiwi_ecs::ComponentDesc) {
+pub fn assert_networked(desc: ambient_ecs::ComponentDesc) {
     if !desc.has_attribute::<Networked>() {
         panic!("Attempt to access sync {desc:#?} which is not marked as `Networked`. Attributes: {:?}", desc.attributes());
     }
@@ -137,7 +142,7 @@ pub fn assert_networked(desc: kiwi_ecs::ComponentDesc) {
     }
 }
 
-fn assert_persisted(desc: kiwi_ecs::ComponentDesc) {
+fn assert_persisted(desc: ambient_ecs::ComponentDesc) {
     assert_networked(desc);
 
     if !desc.has_attribute::<Store>() {

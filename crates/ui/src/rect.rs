@@ -1,29 +1,29 @@
 use std::sync::Arc;
 
-use glam::{Mat4, UVec3, Vec3, Vec4};
-use kiwi_core::{
+use ambient_core::{
     asset_cache, mesh,
     transform::{mesh_to_local, scale},
     ui_scene,
 };
-use kiwi_ecs::{components, query, EntityData, SystemGroup};
-use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
-use kiwi_gpu::{
+use ambient_ecs::{components, query, EntityData, SystemGroup};
+use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_gpu::{
     gpu::GpuKey,
     shader_module::{BindGroupDesc, ShaderModule},
     typed_buffer::TypedBuffer,
 };
-use kiwi_meshes::UIRectMeshKey;
-use kiwi_renderer::{
+use ambient_meshes::UIRectMeshKey;
+use ambient_renderer::{
     gpu_primitives, material, primitives, renderer_shader, Material, MaterialShader, RendererConfig, RendererShader, SharedMaterial,
     StandardShaderKey, MATERIAL_BIND_GROUP,
 };
-use kiwi_std::{
+use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     cb,
     color::Color,
     friendly_id, include_file,
 };
+use glam::{Mat4, UVec3, Vec3, Vec4};
 use wgpu::BindGroup;
 
 use crate::{gpu_ui_size, mesh_to_local_from_size, UIBase};

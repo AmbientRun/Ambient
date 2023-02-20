@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fmt::Display};
 
-use kiwi_ecs::{
+use ambient_ecs::{
     components, ExternalComponentAttributes, ExternalComponentDesc, ExternalComponentFlagAttributes, Networked, PrimitiveComponentType,
     Store,
 };

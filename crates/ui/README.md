@@ -1,6 +1,6 @@
-# Kiwi UI
+# Ambient UI
 
-The Kiwi UI is based on React for components, and Windows Forms for layout.
+The Ambient UI is based on React for components, and Windows Forms for layout.
 To read more about the react side of things, see the [elements documentation](../element/README.md).
 
 ## Layout

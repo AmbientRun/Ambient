@@ -1,8 +1,8 @@
 use std::borrow::Cow;
 
+use ambient_gpu::{gpu::Gpu, texture::TextureView, wgsl_utils::wgsl_interpolate};
+use ambient_std::include_file;
 use glam::{UVec2, Vec2};
-use kiwi_gpu::{gpu::Gpu, texture::TextureView, wgsl_utils::wgsl_interpolate};
-use kiwi_std::include_file;
 use wgpu::{
     util::DeviceExt, BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType, BufferBindingType, ShaderStages, TextureFormat,
     TextureViewDimension,

@@ -6,11 +6,11 @@ use std::{
     sync::Arc,
 };
 
+use ambient_core::runtime;
+use ambient_ecs::{ComponentQuery, ComponentValue, FrameEvent, QueryState, TypedReadQuery, World};
+use ambient_std::{cb, Cb};
 use as_any::Downcast;
 use atomic_refcell::AtomicRefCell;
-use kiwi_core::runtime;
-use kiwi_ecs::{ComponentQuery, ComponentValue, FrameEvent, QueryState, TypedReadQuery, World};
-use kiwi_std::{cb, Cb};
 use parking_lot::Mutex;
 use tokio::task::JoinHandle;
 use tracing::info_span;

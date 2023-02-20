@@ -4,16 +4,12 @@ mod build_mode;
 pub mod entity_editor;
 mod terrain_mode;
 
-use build_mode::*;
-use glam::{vec3, Vec3};
-use image::{DynamicImage, ImageOutputFormat, RgbImage};
-use itertools::Itertools;
-use kiwi_core::{game_mode, runtime, transform::translation, GameMode};
-use kiwi_ecs::{EntityData, EntityId};
-use kiwi_element::{element_component, Element, ElementComponent, ElementComponentExt, Group, Hooks, Setter};
-use kiwi_intent::{rpc_redo, rpc_undo_head, IntentHistoryVisualizer};
-use kiwi_naturals::{get_default_natural_layers, natural_layers, NaturalLayer, NaturalsPreset};
-use kiwi_network::{
+use ambient_core::{game_mode, runtime, transform::translation, GameMode};
+use ambient_ecs::{EntityData, EntityId};
+use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Group, Hooks, Setter};
+use ambient_intent::{rpc_redo, rpc_undo_head, IntentHistoryVisualizer};
+use ambient_naturals::{get_default_natural_layers, natural_layers, NaturalLayer, NaturalsPreset};
+use ambient_network::{
     client::GameClient,
     hooks::{use_remote_persisted_resource, use_remote_player_component},
     log_network_result,
@@ -21,18 +17,22 @@ use kiwi_network::{
     server::MAIN_INSTANCE_ID,
     unwrap_log_network_err,
 };
-use kiwi_physics::make_physics_static;
-use kiwi_std::{cb, color::Color, Cb};
-use kiwi_terrain::{
+use ambient_physics::make_physics_static;
+use ambient_std::{cb, color::Color, Cb};
+use ambient_terrain::{
     brushes::{Brush, BrushShape, BrushSize, BrushSmoothness, BrushStrength, HydraulicErosionConfig},
     terrain_material_def, TerrainMaterialDef,
 };
-use kiwi_ui::{
+use ambient_ui::{
     command_modifier, height,
     layout::{docking, space_between_items, width, Borders, Docking},
     margin, use_interval, use_window_logical_resolution, Button, Editor, FlowColumn, FlowRow, FontAwesomeIcon, Hotkey, Rectangle,
     ScreenContainer, ScrollArea, Separator, StylesExt, Text, UIExt, WindowSized, STREET,
 };
+use build_mode::*;
+use glam::{vec3, Vec3};
+use image::{DynamicImage, ImageOutputFormat, RgbImage};
+use itertools::Itertools;
 use terrain_mode::*;
 use winit::event::{ModifiersState, VirtualKeyCode};
 

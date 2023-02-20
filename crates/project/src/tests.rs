@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use kiwi_ecs::primitive_component_definitions;
+use ambient_ecs::primitive_component_definitions;
 
 use crate::{Component, ComponentType, Identifier, IdentifierPath, Manifest, Project, Version, VersionError};
 
@@ -75,7 +75,7 @@ fn can_parse_versions() {
 
 #[test]
 fn can_convert_component_types() {
-    use kiwi_ecs::PrimitiveComponentType as PCT;
+    use ambient_ecs::PrimitiveComponentType as PCT;
     use ComponentType as CT;
 
     fn test_type(ty: &str, pct_raw: PCT, pct_vec: PCT, pct_option: PCT) {

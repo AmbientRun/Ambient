@@ -1,15 +1,15 @@
-use itertools::Itertools;
-use kiwi_core::{name, runtime, selectable, tags};
-use kiwi_ecs::{query, EntityId};
-use kiwi_ecs_editor::ECSEditor;
-use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use kiwi_network::{
+use ambient_core::{name, runtime, selectable, tags};
+use ambient_ecs::{query, EntityId};
+use ambient_ecs_editor::ECSEditor;
+use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_network::{
     client::{game_client, GameClient},
     is_remote_entity, log_network_result,
     rpc::rpc_world_diff,
 };
-use kiwi_std::{cb, Cb};
-use kiwi_ui::{fit_horizontal, space_between_items, Button, ButtonStyle, DialogScreen, Fit, FlowColumn, FlowRow, ScrollArea, STREET};
+use ambient_std::{cb, Cb};
+use ambient_ui::{fit_horizontal, space_between_items, Button, ButtonStyle, DialogScreen, Fit, FlowColumn, FlowRow, ScrollArea, STREET};
+use itertools::Itertools;
 
 #[derive(Debug, Clone)]
 pub struct EntityBrowser {

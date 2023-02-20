@@ -1,4 +1,4 @@
-use kiwi_api::{
+use ambient_api::{
     components::core::{
         game_objects::player_camera,
         primitives::{cube, quad, sphere_radius, sphere_sectors, sphere_stacks},

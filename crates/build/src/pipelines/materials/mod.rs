@@ -1,26 +1,30 @@
 use std::{io::Cursor, sync::Arc};
 
+use ambient_asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt};
+use ambient_decals::decal;
+use ambient_ecs::EntityData;
+use ambient_model_import::{
+    model_crate::{cap_texture_size, ModelCrate},
+    ModelTextureSize,
+};
+use ambient_physics::collider::{collider, collider_type};
+use ambient_renderer::materials::pbr_material::PbrMaterialFromUrl;
+use ambient_std::{
+    asset_url::{AbsAssetUrl, AssetType, AssetUrl},
+    download_asset::AssetResult,
+};
 use anyhow::Context;
 use async_trait::async_trait;
 use dyn_clonable::*;
 use futures::{future::BoxFuture, FutureExt};
 use glam::{Vec3, Vec4};
 use image::{ImageOutputFormat, RgbaImage};
-use kiwi_asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt};
-use kiwi_decals::decal;
-use kiwi_ecs::EntityData;
-use kiwi_model_import::{
-    model_crate::{cap_texture_size, ModelCrate}, ModelTextureSize
-};
-use kiwi_physics::collider::{collider, collider_type};
-use kiwi_renderer::materials::pbr_material::PbrMaterialFromUrl;
-use kiwi_std::{
-    asset_url::{AbsAssetUrl, AssetType, AssetUrl}, download_asset::AssetResult
-};
 use serde::{Deserialize, Serialize};
 
 use super::{
-    context::PipelineCtx, out_asset::{asset_id_from_url, OutAsset, OutAssetContent, OutAssetPreview}, ProcessCtxKey
+    context::PipelineCtx,
+    out_asset::{asset_id_from_url, OutAsset, OutAssetContent, OutAssetPreview},
+    ProcessCtxKey,
 };
 use crate::pipelines::download_image;
 
@@ -79,8 +83,8 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
                 model_crate.create_object(
                     EntityData::new()
                         .set(decal(), decal_path.into())
-                        .set(collider(), kiwi_physics::collider::ColliderDef::Box { size: Vec3::ONE, center: Vec3::ZERO })
-                        .set(collider_type(), kiwi_physics::collider::ColliderType::Picking),
+                        .set(collider(), ambient_physics::collider::ColliderDef::Box { size: Vec3::ONE, center: Vec3::ZERO })
+                        .set(collider_type(), ambient_physics::collider::ColliderType::Picking),
                 );
                 let model_url = ctx.write_model_crate(&model_crate, &model_path).await;
                 res.push(OutAsset {

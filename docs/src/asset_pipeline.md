@@ -1,10 +1,10 @@
 # Asset pipeline
 
-Kiwi supports processing and loading a number of assets. You can place a file that ends with `pipeline.json` anywhere in your
+Ambient supports processing and loading a number of assets. You can place a file that ends with `pipeline.json` anywhere in your
 project folder which will specify how the assets will be processed. You can also prepend anything you'd like to the filename,
 so for instance `hello_pipeline.json` will also work.
 
-For a full reference, see [pipelines/mod.rs](https://github.com/KiwiOrg/Kiwi/blob/main/crates/build/src/pipelines/mod.rs#L31). Supported
+For a full reference, see [pipelines/mod.rs](https://github.com/AmbientOrg/Ambient/blob/main/crates/build/src/pipelines/mod.rs#L31). Supported
 model formats are:
 
 - FBX and GLTF are natively supported

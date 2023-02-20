@@ -1,17 +1,21 @@
+use ambient_animation::{animation_controller, AnimationController};
+use ambient_app::AppBuilder;
+use ambient_core::{
+    asset_cache,
+    camera::{active_camera, far},
+    main_scene,
+    transform::*,
+};
+use ambient_ecs::{EntityId, FnSystem, World};
+use ambient_element::ElementComponentExt;
+use ambient_model_import::model_crate::ModelCrate;
+use ambient_primitives::{Cube, Quad};
+use ambient_renderer::color;
+use ambient_std::{
+    asset_url::{AbsAssetUrl, TypedAssetUrl},
+    math::SphericalCoords,
+};
 use glam::*;
-use kiwi_animation::{animation_controller, AnimationController};
-use kiwi_app::AppBuilder;
-use kiwi_core::{
-    asset_cache, camera::{active_camera, far}, main_scene, transform::*
-};
-use kiwi_ecs::{EntityId, FnSystem, World};
-use kiwi_element::ElementComponentExt;
-use kiwi_model_import::model_crate::ModelCrate;
-use kiwi_primitives::{Cube, Quad};
-use kiwi_renderer::color;
-use kiwi_std::{
-    asset_url::{AbsAssetUrl, TypedAssetUrl}, math::SphericalCoords
-};
 use winit::event::{Event, VirtualKeyCode, WindowEvent};
 
 async fn init(world: &mut World) -> EntityId {
@@ -41,7 +45,7 @@ async fn init(world: &mut World) -> EntityId {
         )
         .unwrap();
 
-    kiwi_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
+    ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
         .set(active_camera(), 0.)
         .set(main_scene(), ())
         .set(far(), 2000.)

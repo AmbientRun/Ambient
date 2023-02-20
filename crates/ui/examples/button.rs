@@ -1,10 +1,10 @@
-use kiwi_app::AppBuilder;
-use kiwi_cameras::UICamera;
-use kiwi_core::camera::active_camera;
-use kiwi_ecs::World;
-use kiwi_element::{ElementComponentExt, Group};
-use kiwi_std::color::Color;
-use kiwi_ui::*;
+use ambient_app::AppBuilder;
+use ambient_cameras::UICamera;
+use ambient_core::camera::active_camera;
+use ambient_ecs::World;
+use ambient_element::{ElementComponentExt, Group};
+use ambient_std::color::Color;
+use ambient_ui::*;
 
 fn init(world: &mut World) {
     let card_inner =

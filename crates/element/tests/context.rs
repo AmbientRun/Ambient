@@ -1,4 +1,4 @@
-use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 mod common;
 use std::sync::Arc;
 

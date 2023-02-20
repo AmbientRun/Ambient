@@ -1,25 +1,25 @@
 
 [package]
-name = "kiwi_terrain"
+name = "ambient_terrain"
 version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-kiwi_app = { path = "../app" }
-kiwi_std = { path = "../std" }
-kiwi_ecs = { path = "../ecs" }
-kiwi_gpu = { path = "../gpu" }
-kiwi_core = { path = "../core" }
-kiwi_meshes = { path = "../meshes" }
-kiwi_element = { path = "../element" }
-kiwi_renderer = { path = "../renderer" }
-kiwi_ui = { path = "../ui" }
-kiwi_network = { path = "../network" }
-kiwi_intent = { path = "../intent" }
-kiwi_physics = { path = "../physics" }
-kiwi_editor_derive = { path = "../editor_derive" }
+ambient_app = { path = "../app" }
+ambient_std = { path = "../std" }
+ambient_ecs = { path = "../ecs" }
+ambient_gpu = { path = "../gpu" }
+ambient_core = { path = "../core" }
+ambient_meshes = { path = "../meshes" }
+ambient_element = { path = "../element" }
+ambient_renderer = { path = "../renderer" }
+ambient_ui = { path = "../ui" }
+ambient_network = { path = "../network" }
+ambient_intent = { path = "../intent" }
+ambient_physics = { path = "../physics" }
+ambient_editor_derive = { path = "../editor_derive" }
 physxx = { path = "../../libs/physxx" }
 wgpu = { workspace = true }
 serde = { workspace = true }
@@ -43,4 +43,4 @@ flume = { workspace = true }
 tracing = { workspace = true }
 
 [features]
-hotload-includes = ['kiwi_std/hotload-includes']
+hotload-includes = ['ambient_std/hotload-includes']

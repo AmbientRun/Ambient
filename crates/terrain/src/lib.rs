@@ -2,9 +2,7 @@
 extern crate closure;
 use std::{f32::consts::PI, num::NonZeroU32, sync::Arc, time::Instant};
 
-use glam::{vec2, vec3, vec4, IVec2, Mat4, Quat, UVec2, Vec2, Vec3, Vec3Swizzles, Vec4};
-use itertools::Itertools;
-use kiwi_core::{
+use ambient_core::{
     asset_cache,
     async_ecs::async_run,
     bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere},
@@ -13,10 +11,10 @@ use kiwi_core::{
     transform::{local_to_parent, local_to_world, mesh_to_world, rotation, scale, translation},
     FixedTimestepSystem,
 };
-use kiwi_ecs::{components, query, Commands, EntityData, EntityId, FnSystem, SystemGroup, World};
-use kiwi_editor_derive::ElementEditor;
-use kiwi_element::{element_tree, render_parented_with_component, Element, ElementComponent, ElementComponentExt, Group, Hooks};
-use kiwi_gpu::{
+use ambient_ecs::{components, query, Commands, EntityData, EntityId, FnSystem, SystemGroup, World};
+use ambient_editor_derive::ElementEditor;
+use ambient_element::{element_tree, render_parented_with_component, Element, ElementComponent, ElementComponentExt, Group, Hooks};
+use ambient_gpu::{
     fill::FillerKey,
     gpu::GpuKey,
     mesh_buffer::GpuMesh,
@@ -24,20 +22,22 @@ use kiwi_gpu::{
     texture::{Texture, TextureReader},
     texture_loaders::TextureFromUrl,
 };
-use kiwi_meshes::{GridMesh, GridMeshKey};
-use kiwi_physics::{
+use ambient_meshes::{GridMesh, GridMeshKey};
+use ambient_physics::{
     collider::{collider_type, ColliderType},
     main_physics_scene,
     physx::{character_controller, physics, physics_shape, rigid_static, Physics},
     PxActorUserData, PxShapeUserData,
 };
-use kiwi_renderer::{cast_shadows, color, gpu_primitives, lod::cpu_lod, material, primitives, renderer_shader, SharedMaterial};
-use kiwi_std::{
+use ambient_renderer::{cast_shadows, color, gpu_primitives, lod::cpu_lod, material, primitives, renderer_shader, SharedMaterial};
+use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
     cb, friendly_id, log_result,
     shapes::{Sphere, AABB},
 };
+use glam::{vec2, vec3, vec4, IVec2, Mat4, Quat, UVec2, Vec2, Vec3, Vec3Swizzles, Vec4};
+use itertools::Itertools;
 use ndarray::{s, Array3, ArrayView3, Axis};
 use physxx::{
     AsPxActor, AsPxRigidActor, PxActor, PxActorFlag, PxHeightFieldDesc, PxHeightFieldGeometry, PxMaterial, PxPhysicsRef,
@@ -53,10 +53,10 @@ pub mod brushes;
 mod gather_spread;
 pub mod intents;
 mod terrain_shader;
+use ambient_network::ServerWorldExt;
+use ambient_ui::use_async_asset;
 pub use gather_spread::*;
 pub use intents::*;
-use kiwi_network::ServerWorldExt;
-use kiwi_ui::use_async_asset;
 
 components!("terrain", {
     terrain: (),

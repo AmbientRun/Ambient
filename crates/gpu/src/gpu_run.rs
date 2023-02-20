@@ -1,12 +1,15 @@
 use std::{collections::HashMap, sync::Arc};
 
-use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt}, CowStr
+use ambient_std::{
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    CowStr,
 };
 use wgpu::{BindGroup, BindGroupLayoutEntry, BufferUsages, ShaderStages};
 
 use crate::{
-    gpu::{GpuKey, WgslType}, shader_module::{Shader, ShaderModule, ShaderModuleIdentifier}, typed_buffer::TypedBuffer
+    gpu::{GpuKey, WgslType},
+    shader_module::{Shader, ShaderModule, ShaderModuleIdentifier},
+    typed_buffer::TypedBuffer,
 };
 
 pub struct GpuRun {
@@ -126,8 +129,8 @@ impl GpuRun {
 mod test {
     use std::sync::Arc;
 
+    use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
     use glam::{Vec2, Vec4, Vec4Swizzles};
-    use kiwi_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 
     use crate::{gpu::GpuKey, gpu_run::GpuRun};
 

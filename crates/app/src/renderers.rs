@@ -1,17 +1,17 @@
 use std::sync::Arc;
 
-use glam::uvec2;
-use kiwi_core::{asset_cache, gpu, main_scene, ui_scene, window};
-use kiwi_ecs::{components, query, FrameEvent, System, SystemGroup, World};
-use kiwi_gizmos::render::GizmoRenderer;
-use kiwi_gpu::{
+use ambient_core::{asset_cache, gpu, main_scene, ui_scene, window};
+use ambient_ecs::{components, query, FrameEvent, System, SystemGroup, World};
+use ambient_gizmos::render::GizmoRenderer;
+use ambient_gpu::{
     blit::{Blitter, BlitterKey},
     gpu::Gpu,
     texture::{Texture, TextureView},
 };
-use kiwi_renderer::{renderer_stats, RenderTarget, Renderer, RendererConfig, RendererTarget};
-use kiwi_std::{asset_cache::SyncAssetKeyExt, color::Color};
-use kiwi_ui::app_background_color;
+use ambient_renderer::{renderer_stats, RenderTarget, Renderer, RendererConfig, RendererTarget};
+use ambient_std::{asset_cache::SyncAssetKeyExt, color::Color};
+use ambient_ui::app_background_color;
+use glam::uvec2;
 use parking_lot::Mutex;
 use winit::{
     dpi::PhysicalSize,
@@ -73,7 +73,7 @@ impl ExamplesRender {
         let assets = world.resource(asset_cache()).clone();
         world.add_component(world.resource_entity(), renderer_stats(), "".to_string()).unwrap();
         let wind_size = {
-            let size = world.resource(kiwi_core::window()).inner_size();
+            let size = world.resource(ambient_core::window()).inner_size();
             uvec2(size.width, size.height)
         };
         let render_target = RenderTarget::new(gpu.clone(), wind_size, None);

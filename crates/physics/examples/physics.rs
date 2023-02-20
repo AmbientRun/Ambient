@@ -1,12 +1,12 @@
+use ambient_app::{gpu, AppBuilder};
+use ambient_core::{asset_cache, camera::active_camera, main_scene, transform::scale, FixedTimestepSystem};
+use ambient_ecs::{FnSystem, World};
+use ambient_element::ElementComponentExt;
+use ambient_physics::physx::{physics_controlled, rigid_dynamic, rigid_static, sync_ecs_physics, PhysicsKey};
+use ambient_primitives::{Cube, Quad};
+use ambient_renderer::color;
+use ambient_std::{asset_cache::SyncAssetKeyExt, math::SphericalCoords};
 use glam::*;
-use kiwi_app::{gpu, AppBuilder};
-use kiwi_core::{asset_cache, camera::active_camera, main_scene, transform::scale, FixedTimestepSystem};
-use kiwi_ecs::{FnSystem, World};
-use kiwi_element::ElementComponentExt;
-use kiwi_physics::physx::{physics_controlled, rigid_dynamic, rigid_static, sync_ecs_physics, PhysicsKey};
-use kiwi_primitives::{Cube, Quad};
-use kiwi_renderer::color;
-use kiwi_std::{asset_cache::SyncAssetKeyExt, math::SphericalCoords};
 use physxx::*;
 use rand::random;
 
@@ -14,7 +14,7 @@ async fn init(world: &mut World) -> PxSceneRef {
     let _gpu = world.resource(gpu()).clone();
     let assets = world.resource(asset_cache()).clone();
     let physics = PhysicsKey.get(&assets);
-    world.add_resource(kiwi_physics::physx::physics(), physics.clone());
+    world.add_resource(ambient_physics::physx::physics(), physics.clone());
 
     let scene = {
         let mut scene_desc = PxSceneDesc::new(physics.physics);
@@ -43,7 +43,7 @@ async fn init(world: &mut World) -> PxSceneRef {
         Cube.el().set(rigid_dynamic(), actor).set_default(physics_controlled()).spawn_static(world);
     }
 
-    kiwi_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
+    ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
         .set(active_camera(), 0.)
         .set(main_scene(), ())
         .spawn(world);
@@ -54,7 +54,7 @@ async fn init(world: &mut World) -> PxSceneRef {
 fn main() {
     // wgpu_subscriber::initialize_default_subscriber(None);
     AppBuilder::simple().run(|app, runtime| {
-        kiwi_physics::init_all_components();
+        ambient_physics::init_all_components();
         let scene = runtime.block_on(async { init(&mut app.world).await });
 
         app.systems.add(Box::new(FixedTimestepSystem::new(1. / 60., Box::new(sync_ecs_physics()))));

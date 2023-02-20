@@ -1,10 +1,10 @@
 use crate::helpers::{get_shapes, scale_shape};
-use glam::{Quat, Vec3};
-use kiwi_core::transform::{rotation, scale, translation};
-use kiwi_ecs::{
+use ambient_core::transform::{rotation, scale, translation};
+use ambient_ecs::{
     components, ensure_has_component, query, Debuggable, Description, FnSystem, Name, Networked, QueryState, Resource, Store, SystemGroup,
 };
-use kiwi_std::asset_cache::SyncAssetKey;
+use ambient_std::asset_cache::SyncAssetKey;
+use glam::{Quat, Vec3};
 use parking_lot::Mutex;
 use physxx::{articulation_reduced_coordinate::*, *};
 use std::sync::Arc;
@@ -38,7 +38,7 @@ components!("physics", {
 #[derive(Debug)]
 pub struct PhysicsKey;
 impl SyncAssetKey<Physics> for PhysicsKey {
-    fn load(&self, _assets: kiwi_std::asset_cache::AssetCache) -> Physics {
+    fn load(&self, _assets: ambient_std::asset_cache::AssetCache) -> Physics {
         Physics::new()
     }
 }

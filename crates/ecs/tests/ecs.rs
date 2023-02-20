@@ -1,5 +1,5 @@
+use ambient_ecs::{components, query, query_mut, ECSError, EntityData, EntityId, Query, QueryState, Resource, World};
 use itertools::Itertools;
-use kiwi_ecs::{components, query, query_mut, ECSError, EntityData, EntityId, Query, QueryState, Resource, World};
 
 components!("test", {
     test: &'static str,
@@ -193,7 +193,7 @@ fn fresh_moveout_event_reader_should_work() {
     // Simulate `HISTORY_SIZE` number of frames to ensure that start_frame is incremented
     // for each archetype's moveout events, such that when the query runs, start_frame
     // is not zero
-    for _ in 0..kiwi_ecs::FramedEvents::<()>::HISTORY_SIZE {
+    for _ in 0..ambient_ecs::FramedEvents::<()>::HISTORY_SIZE {
         world.next_frame();
     }
 

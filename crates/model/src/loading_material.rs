@@ -1,11 +1,13 @@
 use std::sync::Arc;
 
-use kiwi_gpu::{
-    gpu::{Gpu, GpuKey}, shader_module::ShaderModule
+use ambient_gpu::{
+    gpu::{Gpu, GpuKey},
+    shader_module::ShaderModule,
 };
-use kiwi_renderer::{Material, MaterialShader, RendererShader, SharedMaterial, MATERIAL_BIND_GROUP};
-use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, friendly_id, include_file
+use ambient_renderer::{Material, MaterialShader, RendererShader, SharedMaterial, MATERIAL_BIND_GROUP};
+use ambient_std::{
+    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
+    friendly_id, include_file,
 };
 use wgpu::{util::DeviceExt, BindGroup};
 
@@ -19,7 +21,7 @@ impl SyncAssetKey<Arc<MaterialShader>> for LoadingShaderKey {
             shader: ShaderModule::new(
                 "LoadingMaterial",
                 include_file!("loading_material.wgsl"),
-                vec![kiwi_gpu::shader_module::BindGroupDesc {
+                vec![ambient_gpu::shader_module::BindGroupDesc {
                     entries: vec![wgpu::BindGroupLayoutEntry {
                         binding: 0,
                         visibility: wgpu::ShaderStages::FRAGMENT,

@@ -1,7 +1,7 @@
-use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use kiwi_network::{client::GameClient, log_network_result};
-use kiwi_std::Cb;
-use kiwi_ui::{
+use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_network::{client::GameClient, log_network_result};
+use ambient_std::Cb;
+use ambient_ui::{
     layout::{fit_horizontal, fit_vertical, space_between_items, Fit},
     Button, FlowColumn, Text, UIExt, STREET,
 };

@@ -1,27 +1,31 @@
 use std::{net::SocketAddr, sync::Arc};
 
+use ambient_app::AppBuilder;
+use ambient_cameras::UICamera;
+use ambient_core::camera::active_camera;
+use ambient_debugger::Debugger;
+use ambient_ecs::{EntityData, SystemGroup};
+use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_network::{
+    client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce},
+    events::ServerEventRegistry,
+};
+use ambient_std::{
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    cb,
+    download_asset::AssetsCacheOnDisk,
+    friendly_id,
+};
+use ambient_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
 use clap::{Parser, Subcommand};
-use kiwi_app::AppBuilder;
-use kiwi_cameras::UICamera;
-use kiwi_core::camera::active_camera;
-use kiwi_debugger::Debugger;
-use kiwi_ecs::{EntityData, SystemGroup};
-use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
-use kiwi_network::{
-    client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce}, events::ServerEventRegistry
-};
-use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt}, cb, download_asset::AssetsCacheOnDisk, friendly_id
-};
-use kiwi_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
 
 pub mod components;
 mod new_project;
 mod player;
 mod server;
 
+use ambient_physics::physx::PhysicsKey;
 use anyhow::Context;
-use kiwi_physics::physx::PhysicsKey;
 use log::LevelFilter;
 use player::PlayerRawInputHandler;
 use server::QUIC_INTERFACE_PORT;
@@ -50,7 +54,7 @@ struct Cli {
 
 #[derive(Subcommand, Clone)]
 enum Commands {
-    /// Create a new Kiwi project
+    /// Create a new Ambient project
     New { name: Option<String> },
     /// Builds and runs the project locally
     Run {
@@ -126,11 +130,11 @@ fn client_systems() -> SystemGroup {
     SystemGroup::new(
         "client",
         vec![
-            Box::new(kiwi_decals::client_systems()),
-            Box::new(kiwi_primitives::systems()),
-            Box::new(kiwi_sky::systems()),
-            Box::new(kiwi_water::systems()),
-            Box::new(kiwi_physics::client_systems()),
+            Box::new(ambient_decals::client_systems()),
+            Box::new(ambient_primitives::systems()),
+            Box::new(ambient_sky::systems()),
+            Box::new(ambient_water::systems()),
+            Box::new(ambient_physics::client_systems()),
             Box::new(player::client_systems()),
         ],
     )
@@ -171,7 +175,7 @@ fn MainApp(hooks: &mut Hooks, server_addr: SocketAddr, user_id: String, show_deb
             resolution,
             on_disconnect: cb(move || {}),
             init_world: cb(UseOnce::new(Box::new(move |world, _render_target| {
-                world.add_resource(kiwi_network::events::event_registry(), Arc::new(ServerEventRegistry::new()));
+                world.add_resource(ambient_network::events::event_registry(), Arc::new(ServerEventRegistry::new()));
             }))),
             on_loaded: cb(move |_game_state, _game_client| Ok(Box::new(|| {}))),
             error_view: cb(move |error| Dock(vec![Text::el("Error").header_style(), Text::el(error)]).el()),
@@ -198,12 +202,12 @@ fn main() -> anyhow::Result<()> {
             (
                 LevelFilter::Warn,
                 &[
-                    "kiwi_build",
-                    "kiwi_gpu",
-                    "kiwi_model",
-                    "kiwi_network",
-                    "kiwi_physics",
-                    "kiwi_std",
+                    "ambient_build",
+                    "ambient_gpu",
+                    "ambient_model",
+                    "ambient_network",
+                    "ambient_physics",
+                    "ambient_std",
                     "naga",
                     "tracing",
                     "wgpu_core",
@@ -227,13 +231,14 @@ fn main() -> anyhow::Result<()> {
     let runtime = tokio::runtime::Builder::new_multi_thread().enable_all().build()?;
     let assets = AssetCache::new(runtime.handle().clone());
     PhysicsKey.get(&assets); // Load physics
-    AssetsCacheOnDisk.insert(&assets, false); // Disable disk caching for now; see https://github.com/KiwiOrg/Kiwi/issues/81
+    AssetsCacheOnDisk.insert(&assets, false); // Disable disk caching for now; see https://github.com/AmbientOrg/Ambient/issues/81
 
     let cli = Cli::parse();
 
     let current_dir = std::env::current_dir()?;
     let project_path = cli.project_path.clone().map(|x| x.into()).unwrap_or_else(|| current_dir.clone());
-    let project_path = if project_path.is_absolute() { project_path } else { kiwi_std::path::normalize(&current_dir.join(project_path)) };
+    let project_path =
+        if project_path.is_absolute() { project_path } else { ambient_std::path::normalize(&current_dir.join(project_path)) };
 
     if project_path.exists() && !project_path.is_dir() {
         anyhow::bail!("Project path {project_path:?} exists and is not a directory.");
@@ -253,9 +258,9 @@ fn main() -> anyhow::Result<()> {
         // Assume we are being run within the codebase.
         for guest_path in std::fs::read_dir("guest/").unwrap().filter_map(Result::ok).map(|de| de.path()).filter(|de| de.is_dir()) {
             let toml_path = if guest_path.file_name().unwrap_or_default() == "rust" {
-                guest_path.join("api").join("api_macros").join("kiwi.toml")
+                guest_path.join("api").join("api_macros").join("ambient.toml")
             } else {
-                guest_path.join("api").join("kiwi.toml")
+                guest_path.join("api").join("ambient.toml")
             };
             std::fs::write(&toml_path, &toml)?;
             log::info!("Interface updated at {toml_path:?}");
@@ -265,14 +270,14 @@ fn main() -> anyhow::Result<()> {
 
     let manifest = if !cli.command.should_join() {
         let contents =
-            std::fs::read_to_string(project_path.join("kiwi.toml")).context("No project manifest was found. Please create one.")?;
-        Some(kiwi_project::Manifest::parse(&contents)?)
+            std::fs::read_to_string(project_path.join("ambient.toml")).context("No project manifest was found. Please create one.")?;
+        Some(ambient_project::Manifest::parse(&contents)?)
     } else {
         None
     };
 
     if cli.command.should_build() {
-        runtime.block_on(kiwi_build::build(
+        runtime.block_on(ambient_build::build(
             PhysicsKey.get(&assets),
             &assets,
             project_path.clone(),

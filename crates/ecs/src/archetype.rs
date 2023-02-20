@@ -1,11 +1,12 @@
 use std::cell::UnsafeCell;
 
+use ambient_std::sparse_vec::SparseVec;
 use atomic_refcell::AtomicRefCell;
-use kiwi_std::sparse_vec::SparseVec;
 
 use super::*;
 use crate::{
-    component_traits::{ComponentBuffer, IComponentBuffer}, ComponentEntry
+    component_traits::{ComponentBuffer, IComponentBuffer},
+    ComponentEntry,
 };
 
 pub(super) struct ArchComponentData(UnsafeCell<Box<dyn IComponentBuffer>>);

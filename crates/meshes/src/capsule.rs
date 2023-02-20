@@ -1,5 +1,5 @@
+use ambient_std::mesh::Mesh;
 use glam::*;
-use kiwi_std::mesh::Mesh;
 
 // From: https://github.com/bevyengine/bevy/blob/master/crates/bevy_render/src/mesh/shape/capsule.rs
 /// A cylinder with hemispheres at the top and bottom

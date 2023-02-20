@@ -1,14 +1,14 @@
 use std::sync::Arc;
 
-use glam::{vec3, Vec3, Vec4};
-use kiwi_editor_derive::ElementEditor;
-use kiwi_model::Model;
-use kiwi_std::{
+use ambient_editor_derive::ElementEditor;
+use ambient_model::Model;
+use ambient_std::{
     asset_cache::AsyncAssetKeyExt,
     asset_url::{AssetUrlCollection, ObjectAssetType},
     download_asset::AssetError,
     include_file,
 };
+use glam::{vec3, Vec3, Vec4};
 use serde::{Deserialize, Serialize};
 
 fn true_value() -> bool {

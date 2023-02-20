@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
+use ambient_ecs::{with_component_registry, ComponentSet, QueryEvent, World};
+use ambient_physics::helpers::PhysicsObjectCollection;
 use itertools::Itertools;
-use kiwi_ecs::{with_component_registry, ComponentSet, QueryEvent, World};
-use kiwi_physics::helpers::PhysicsObjectCollection;
 use parking_lot::RwLock;
 use wit_bindgen_host_wasmtime_rust::Le;
 
@@ -17,15 +17,15 @@ use crate::{
         BaseWasmContext, WasmContext,
     },
 };
-use kiwi_core::asset_cache;
-use kiwi_std::{
+use ambient_core::asset_cache;
+use ambient_std::{
     asset_cache::SyncAssetKeyExt,
     asset_url::{AssetUrl, ServerBaseUrlKey},
 };
 
 pub struct WasmServerContext {
     pub base_context: BaseWasmContext,
-    pub kiwi_bindings: Bindings,
+    pub ambient_bindings: Bindings,
 }
 impl WasmServerContext {
     pub fn new(
@@ -34,7 +34,7 @@ impl WasmServerContext {
     ) -> Self {
         Self {
             base_context: BaseWasmContext::new(wasi),
-            kiwi_bindings: Bindings::new(shared_state.clone()),
+            ambient_bindings: Bindings::new(shared_state.clone()),
         }
     }
 
@@ -42,7 +42,7 @@ impl WasmServerContext {
         linker: &mut wasmtime::Linker<T>,
         projection: impl Fn(&mut T) -> &mut Self + Send + Sync + Copy + 'static,
     ) -> anyhow::Result<()> {
-        host::add_to_linker(linker, move |cx| &mut projection(cx).kiwi_bindings)
+        host::add_to_linker(linker, move |cx| &mut projection(cx).ambient_bindings)
     }
 }
 impl WasmContext<Bindings> for WasmServerContext {

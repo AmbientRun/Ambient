@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
-use itertools::Itertools;
-use kiwi_ecs::{
+use ambient_ecs::{
     query, Component, ComponentEntry, EntityData, EntityId, FnSystem, SystemGroup, World,
 };
-use kiwi_network::server::{ForkingEvent, ShutdownEvent};
-use kiwi_physics::{collider_loads, collisions, PxShapeUserData};
+use ambient_network::server::{ForkingEvent, ShutdownEvent};
+use ambient_physics::{collider_loads, collisions, PxShapeUserData};
+use itertools::Itertools;
 use parking_lot::RwLock;
 use physxx::{PxRigidActor, PxRigidActorRef, PxUserData};
 use wasi_common::WasiCtx;
@@ -99,7 +99,7 @@ pub fn systems<
                         &RunContext::new(
                             world,
                             "core/collision",
-                            vec![ComponentEntry::new(kiwi_ecs::ids(), ids)].into(),
+                            vec![ComponentEntry::new(ambient_ecs::ids(), ids)].into(),
                         ),
                     );
                 }
@@ -118,7 +118,7 @@ pub fn systems<
                         &RunContext::new(
                             world,
                             "core/collider_load",
-                            vec![ComponentEntry::new(kiwi_ecs::id(), id)].into(),
+                            vec![ComponentEntry::new(ambient_ecs::id(), id)].into(),
                         ),
                     );
                 }
@@ -132,7 +132,7 @@ pub fn systems<
                         &RunContext::new(
                             world,
                             "core/entity_spawn",
-                            vec![ComponentEntry::new(kiwi_ecs::id(), id)].into(),
+                            vec![ComponentEntry::new(ambient_ecs::id(), id)].into(),
                         ),
                     );
                 }

@@ -1,13 +1,14 @@
 use std::{borrow::Cow, sync::Arc};
 
+use ambient_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 use glam::Vec4;
-use kiwi_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 use wgpu::{
-    util::DeviceExt, BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType, BufferBindingType, ShaderStages, TextureViewDimension
+    util::DeviceExt, BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType, BufferBindingType, ShaderStages, TextureViewDimension,
 };
 
 use super::{
-    gpu::{Gpu, GpuKey}, texture_format_to_wgsl_storage_format
+    gpu::{Gpu, GpuKey},
+    texture_format_to_wgsl_storage_format,
 };
 
 #[derive(Debug, Clone)]

@@ -1,20 +1,20 @@
 use std::sync::Arc;
 
-use async_trait::async_trait;
-use glam::Vec4;
-use kiwi_gpu::{
+use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::{BindGroupDesc, ShaderModule},
     std_assets::{DefaultNormalMapViewKey, DefaultSamplerKey, PixelTextureViewKey},
     texture::{Texture, TextureView},
     texture_loaders::{SplitTextureFromUrl, TextureFromUrl},
 };
-use kiwi_std::{
+use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, AssetUrl},
     download_asset::AssetError,
     friendly_id, include_file,
 };
+use async_trait::async_trait;
+use glam::Vec4;
 use serde::{Deserialize, Serialize};
 use wgpu::{util::DeviceExt, BindGroup};
 

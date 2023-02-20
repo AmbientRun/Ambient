@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use kiwi_ecs::{components, EntityData, FnSystem, Resource, SystemGroup, World};
+use ambient_ecs::{components, EntityData, FnSystem, Resource, SystemGroup, World};
 
 components!("ecs", {
     @[Resource]

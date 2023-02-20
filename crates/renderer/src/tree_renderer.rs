@@ -3,14 +3,14 @@ use std::{
     sync::Arc,
 };
 
-use glam::{uvec2, UVec2};
-use itertools::Itertools;
-use kiwi_ecs::{query, ArchetypeFilter, EntityId, FramedEventsReader, QueryState, World};
-use kiwi_gpu::{
+use ambient_ecs::{query, ArchetypeFilter, EntityId, FramedEventsReader, QueryState, World};
+use ambient_gpu::{
     gpu::Gpu,
     multi_buffer::{MultiBufferSizeStrategy, SubBufferId, TypedMultiBuffer},
     shader_module::{GraphicsPipeline, GraphicsPipelineInfo},
 };
+use glam::{uvec2, UVec2};
+use itertools::Itertools;
 use wgpu::DepthBiasState;
 
 use super::{
@@ -18,7 +18,7 @@ use super::{
     RendererResources, RendererShader, SharedMaterial, MATERIAL_BIND_GROUP, PRIMITIVES_BIND_GROUP,
 };
 use crate::RendererConfig;
-use kiwi_std::asset_cache::AssetCache;
+use ambient_std::asset_cache::AssetCache;
 
 pub struct TreeRendererConfig {
     pub gpu: Arc<Gpu>,

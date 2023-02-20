@@ -1,24 +1,24 @@
 use std::sync::Arc;
 
-use glam::{vec2, Mat4, Vec2, Vec3, Vec3Swizzles};
-use kiwi_app::{gpu_world_sync_systems, world_instance_resources, world_instance_systems, AppResources};
-use kiwi_core::{
+use ambient_app::{gpu_world_sync_systems, world_instance_resources, world_instance_systems, AppResources};
+use ambient_core::{
     camera::{get_active_camera, projection_view},
     gpu_ecs::GpuWorldSyncEvent,
     main_scene,
     transform::local_to_world,
     window_physical_size,
 };
-use kiwi_ecs::{components, query, EntityData, FrameEvent, System, SystemGroup, World};
-use kiwi_gizmos::render::GizmoRenderer;
-use kiwi_gpu::gpu::GpuKey;
-use kiwi_renderer::{RenderTarget, Renderer, RendererConfig, RendererTarget};
-use kiwi_std::{
+use ambient_ecs::{components, query, EntityData, FrameEvent, System, SystemGroup, World};
+use ambient_gizmos::render::GizmoRenderer;
+use ambient_gpu::gpu::GpuKey;
+use ambient_renderer::{RenderTarget, Renderer, RendererConfig, RendererTarget};
+use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     color::Color,
     math::interpolate,
     shapes::Ray,
 };
+use glam::{vec2, Mat4, Vec2, Vec3, Vec3Swizzles};
 
 use crate::{player, user_id};
 

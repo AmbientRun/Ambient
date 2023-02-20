@@ -1,5 +1,5 @@
 [package]
-name = "kiwi_input"
+name = "ambient_input"
 version = { workspace = true }
 edition = "2021"
 
@@ -7,9 +7,9 @@ edition = "2021"
 
 [dependencies]
 tracing = { workspace = true }
-kiwi_std = { path = "../std" }
-kiwi_ecs = { path = "../ecs" }
-kiwi_core = { path = "../core" }
+ambient_std = { path = "../std" }
+ambient_ecs = { path = "../ecs" }
+ambient_core = { path = "../core" }
 winit = { workspace = true }
 glam = { workspace = true }
 serde = { workspace = true }

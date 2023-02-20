@@ -1,16 +1,16 @@
-use glam::{vec2, vec3, vec4, EulerRot, Mat4, Quat, Vec2, Vec3};
-use kiwi_core::{
+use ambient_core::{
     asset_cache,
     bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere},
     main_scene, mesh,
     transform::{local_to_world, mesh_to_world},
 };
-use kiwi_ecs::{EntityData, EntityId, World};
-use kiwi_element::{Element, ElementComponent};
-use kiwi_meshes::QuadMeshKey;
-use kiwi_network::client::GameClient;
-use kiwi_renderer::{color, double_sided, gpu_primitives, material, primitives, renderer_shader, SharedMaterial, StandardShaderKey};
-use kiwi_std::{asset_cache::SyncAssetKeyExt, cb, shapes::AABB};
+use ambient_ecs::{EntityData, EntityId, World};
+use ambient_element::{Element, ElementComponent};
+use ambient_meshes::QuadMeshKey;
+use ambient_network::client::GameClient;
+use ambient_renderer::{color, double_sided, gpu_primitives, material, primitives, renderer_shader, SharedMaterial, StandardShaderKey};
+use ambient_std::{asset_cache::SyncAssetKeyExt, cb, shapes::AABB};
+use glam::{vec2, vec3, vec4, EulerRot, Mat4, Quat, Vec2, Vec3};
 
 use super::grid_material::{GridMaterialKey, GridShaderKey};
 use crate::GRID_SIZE;
@@ -53,7 +53,7 @@ pub struct GridGuide {
 }
 
 impl ElementComponent for GridGuide {
-    fn render(self: Box<Self>, hooks: &mut kiwi_element::Hooks) -> kiwi_element::Element {
+    fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> ambient_element::Element {
         let Self { rotation, point } = *self;
 
         let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
@@ -104,7 +104,7 @@ pub struct AxisGuide {
 
 impl ElementComponent for AxisGuide {
     #[tracing::instrument(skip_all)]
-    fn render(self: Box<Self>, hooks: &mut kiwi_element::Hooks) -> kiwi_element::Element {
+    fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> ambient_element::Element {
         let Self { axis, point } = *self;
 
         let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();

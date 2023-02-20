@@ -4,7 +4,7 @@ edition = "2021"
 version = { workspace = true }
 
 [dependencies]
-kiwi_api = { path = "../../api" }
+ambient_api = { path = "../../api" }
 
 [lib]
 crate-type = ["cdylib"]

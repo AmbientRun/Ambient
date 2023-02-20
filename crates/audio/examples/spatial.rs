@@ -1,18 +1,30 @@
 use std::{io::Cursor, sync::Arc};
 
+use ambient_audio::{
+    blt::Lpf,
+    hrtf::HrtfLib,
+    track::Track,
+    util::{div_ceil, AvgIter},
+    AudioEmitter, AudioListener, AudioStream, DynamicMix, Frame, SineWave, Source,
+};
 use circular_queue::CircularQueue;
 use glam::{vec2, vec3, Mat3, Mat4, Vec3, Vec3Swizzles};
 use itertools::izip;
-use kiwi_audio::{
-    blt::Lpf, hrtf::HrtfLib, track::Track, util::{div_ceil, AvgIter}, AudioEmitter, AudioListener, AudioStream, DynamicMix, Frame, SineWave, Source
-};
 use lyon::{
-    lyon_tessellation::{BuffersBuilder, StrokeOptions, StrokeTessellator, VertexBuffers}, math::point
+    lyon_tessellation::{BuffersBuilder, StrokeOptions, StrokeTessellator, VertexBuffers},
+    math::point,
 };
 use macroquad::{
-    color::colors, hash, models::Vertex, prelude::{
-        draw_mesh, is_key_pressed, is_mouse_button_down, mouse_position, KeyCode, Mesh, BLACK, BLUE, GREEN, RED
-    }, shapes::{draw_circle, draw_circle_lines, draw_line}, ui::{root_ui, widgets::Window}, window::{clear_background, next_frame, screen_height, screen_width}
+    color::colors,
+    hash,
+    models::Vertex,
+    prelude::{
+        draw_mesh, is_key_pressed, is_mouse_button_down, mouse_position, KeyCode, Mesh, BLACK,
+        BLUE, GREEN, RED,
+    },
+    shapes::{draw_circle, draw_circle_lines, draw_line},
+    ui::{root_ui, widgets::Window},
+    window::{clear_background, next_frame, screen_height, screen_width},
 };
 use ordered_float::OrderedFloat;
 use parking_lot::Mutex;
@@ -137,7 +149,7 @@ async fn main() {
 
     let spatial = Arc::new(Mutex::new(AudioEmitter {
         pos: Vec3::Z,
-        attenuation: kiwi_audio::Attenuation::InversePoly {
+        attenuation: ambient_audio::Attenuation::InversePoly {
             quad: 0.0,
             lin: 0.0,
             constant: 1.0,

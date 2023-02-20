@@ -1,5 +1,5 @@
 [package]
-name = "kiwi_api_macros"
+name = "ambient_api_macros"
 version = { workspace = true }
 edition = "2021"
 

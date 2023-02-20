@@ -1,6 +1,6 @@
+use ambient_std::mesh::Mesh;
 use glam::{vec2, vec3};
 use itertools::Itertools;
-use kiwi_std::mesh::Mesh;
 use yaml_rust::Yaml;
 
 use crate::parse_unity_yaml;

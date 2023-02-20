@@ -1,5 +1,5 @@
 [package]
-name = "kiwi_rustc"
+name = "ambient_rustc"
 version = { workspace = true }
 edition = "2021"
 

@@ -5,9 +5,9 @@ use proc_macro::TokenStream;
 use proc_macro2::Span;
 use quote::quote;
 
-mod kiwi_project;
+mod ambient_project;
 
-const MANIFEST: &str = include_str!("../kiwi.toml");
+const MANIFEST: &str = include_str!("../ambient.toml");
 
 /// Makes your `main()` function accessible to the WASM host, and generates a `components` module with your project's components.
 ///
@@ -21,11 +21,11 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
     }
 
     let spans = Span::call_site();
-    let mut path = syn::Path::from(syn::Ident::new("kiwi_api", spans));
+    let mut path = syn::Path::from(syn::Ident::new("ambient_api", spans));
     path.leading_colon = Some(syn::Token![::](spans));
-    let project_boilerplate = kiwi_project::implementation(
-        kiwi_project::read_file("kiwi.toml".to_string())
-            .context("Failed to load kiwi.toml")
+    let project_boilerplate = ambient_project::implementation(
+        ambient_project::read_file("ambient.toml".to_string())
+            .context("Failed to load ambient.toml")
             .unwrap(),
         path.clone(),
         false,
@@ -53,7 +53,7 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro]
 pub fn api_project(_input: TokenStream) -> TokenStream {
     TokenStream::from(
-        kiwi_project::implementation(
+        ambient_project::implementation(
             (None, MANIFEST.to_string()),
             syn::Path::from(syn::Ident::new("crate", Span::call_site())),
             true,

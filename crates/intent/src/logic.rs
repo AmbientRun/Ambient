@@ -1,11 +1,12 @@
 use std::time::SystemTime;
 
-use kiwi_ecs::{query, Component, ComponentValue, EntityData, EntityId, IndexField, IndexKey, World};
-use kiwi_network::server::SharedServerState;
-use kiwi_std::friendly_id;
+use ambient_ecs::{query, Component, ComponentValue, EntityData, EntityId, IndexField, IndexKey, World};
+use ambient_network::server::SharedServerState;
+use ambient_std::friendly_id;
 
 use crate::{
-    intent, intent_applied, intent_id, intent_index, intent_index_applied, intent_index_reverted, intent_registry, intent_reverted, intent_timestamp, intent_user_id
+    intent, intent_applied, intent_id, intent_index, intent_index_applied, intent_index_reverted, intent_registry, intent_reverted,
+    intent_timestamp, intent_user_id,
 };
 
 fn despawn_reverted_intents(world: &mut World, user_id: &str) {
@@ -17,7 +18,7 @@ fn despawn_reverted_intents(world: &mut World, user_id: &str) {
 }
 
 /// Pushes and applied the intent
-pub fn push_intent(state: SharedServerState, user_id: String, mut data: EntityData) -> kiwi_ecs::EntityId {
+pub fn push_intent(state: SharedServerState, user_id: String, mut data: EntityData) -> ambient_ecs::EntityId {
     let (reg, id, intent) = {
         let mut guard = state.lock();
         let world = guard.get_player_world_mut(&user_id).unwrap();

@@ -1,25 +1,25 @@
-use kiwi_core::async_ecs::async_run;
+use ambient_core::async_ecs::async_run;
 use std::sync::Arc;
 
-use glam::Vec4;
-use kiwi_core::{asset_cache, main_scene, mesh, runtime};
-use kiwi_ecs::{components, query, Debuggable, Description, EntityData, Name, Networked, Store, SystemGroup};
-use kiwi_gpu::{
+use ambient_core::{asset_cache, main_scene, mesh, runtime};
+use ambient_ecs::{components, query, Debuggable, Description, EntityData, Name, Networked, Store, SystemGroup};
+use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::{BindGroupDesc, ShaderModule},
     texture::Texture,
     texture_loaders::TextureFromUrl,
 };
-use kiwi_meshes::QuadMeshKey;
-use kiwi_renderer::{
+use ambient_meshes::QuadMeshKey;
+use ambient_renderer::{
     color, material, renderer_shader, Material, MaterialShader, RendererConfig, RendererShader, SharedMaterial, StandardShaderKey,
     MATERIAL_BIND_GROUP,
 };
-use kiwi_std::{
+use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
     cb, friendly_id,
 };
+use glam::Vec4;
 use wgpu::BindGroup;
 
 pub(crate) static OLD_CONTENT_SERVER_URL: &str = "https://fra1.digitaloceanspaces.com/dims-content/";
@@ -60,7 +60,7 @@ pub fn systems() -> SystemGroup {
                 let assets = world.resource(asset_cache()).clone();
                 for (id, (_, normals)) in q.collect_cloned(world, qs) {
                     let data = EntityData::new()
-                        .append(kiwi_primitives::quad_data(&assets))
+                        .append(ambient_primitives::quad_data(&assets))
                         .set(renderer_shader(), cb(get_water_shader))
                         .set(material(), WaterMaterialKey::new(normals).get(&assets))
                         .set(main_scene(), ())

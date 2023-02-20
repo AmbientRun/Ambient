@@ -1,5 +1,5 @@
 [package]
-name = "kiwi_rpc"
+name = "ambient_rpc"
 version = { workspace = true }
 edition = "2021"
 

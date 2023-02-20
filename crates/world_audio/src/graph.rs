@@ -1,8 +1,10 @@
 use std::fmt::Debug;
 
-use kiwi_audio::{Source, VorbisFromUrl};
-use kiwi_std::{
-    self, asset_cache::{AssetCache, AsyncAssetKeyExt}, asset_url::AbsAssetUrl
+use ambient_audio::{Source, VorbisFromUrl};
+use ambient_std::{
+    self,
+    asset_cache::{AssetCache, AsyncAssetKeyExt},
+    asset_url::AbsAssetUrl,
 };
 use rand::{thread_rng, Rng, SeedableRng};
 use rand_chacha::ChaCha12Rng;

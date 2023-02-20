@@ -3,29 +3,29 @@ use std::{
     sync::Arc,
 };
 
-use glam::{vec4, EulerRot, Mat4, Quat, UVec3, Vec3, Vec4};
-use itertools::Itertools;
-use kiwi_core::{
+use ambient_core::{
     asset_cache,
     async_ecs::{async_run, AsyncRun},
     runtime,
     transform::{local_to_world, translation},
 };
-use kiwi_ecs::{components, query, EntityData, EntityId, FnSystem, SystemGroup};
-use kiwi_model::{Model, ModelFromUrl, ModelSpawnOpts, ModelSpawnRoot};
-use kiwi_renderer::color;
-use kiwi_std::{
+use ambient_ecs::{components, query, EntityData, EntityId, FnSystem, SystemGroup};
+use ambient_model::{Model, ModelFromUrl, ModelSpawnOpts, ModelSpawnRoot};
+use ambient_renderer::color;
+use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     log_result,
 };
-use kiwi_terrain::{terrain_cell_version, terrain_state, TerrainState};
+use ambient_terrain::{terrain_cell_version, terrain_state, TerrainState};
+use glam::{vec4, EulerRot, Mat4, Quat, UVec3, Vec3, Vec4};
+use itertools::Itertools;
 use rand::prelude::SliceRandom;
 
 mod compute;
 mod config;
+use ambient_network::ServerWorldExt;
 pub use compute::*;
 pub use config::*;
-use kiwi_network::ServerWorldExt;
 use tokio::sync::Semaphore;
 
 components!("game_objects", {

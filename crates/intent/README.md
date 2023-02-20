@@ -1,4 +1,4 @@
-# Kiwi intents
+# Ambient intents
 
 Intents are a general undo/redo system. Each action ("intent") is stored as an entity.
 

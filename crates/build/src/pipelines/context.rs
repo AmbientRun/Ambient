@@ -1,13 +1,13 @@
 use std::sync::Arc;
 
-use anyhow::Context;
-use futures::{future::join_all, Future};
-use itertools::Itertools;
-use kiwi_model_import::model_crate::ModelCrate;
-use kiwi_std::{
+use ambient_model_import::model_crate::ModelCrate;
+use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ModelCrateAssetType, TypedAssetUrl},
 };
+use anyhow::Context;
+use futures::{future::join_all, Future};
+use itertools::Itertools;
 use relative_path::{RelativePath, RelativePathBuf};
 use tokio::sync::Semaphore;
 

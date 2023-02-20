@@ -4,13 +4,13 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "kiwi [debug]",
+            "name": "ambient [debug]",
             "cargo": {
                 "args": [
                     "build"
                 ],
                 "filter": {
-                    "name": "kiwi",
+                    "name": "ambient",
                     "kind": "bin"
                 }
             },
@@ -30,14 +30,14 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "kiwi [release]",
+            "name": "ambient [release]",
             "cargo": {
                 "args": [
                     "build",
                     "--release"
                 ],
                 "filter": {
-                    "name": "kiwi",
+                    "name": "ambient",
                     "kind": "bin"
                 }
             },
@@ -52,12 +52,12 @@
             ]
         },
         {
-            "name": "kiwi (Windows, Internal server) [debug]",
+            "name": "ambient (Windows, Internal server) [debug]",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/target/debug/kiwi.exe",
+            "program": "${workspaceRoot}/target/debug/ambient.exe",
             "env": {
-                "RUST_LOG": "dims=info,dims_shared=info,kiwi=info"
+                "RUST_LOG": "dims=info,dims_shared=info,ambient=info"
             },
             "args": [
                 "--internal-server"
@@ -75,7 +75,7 @@
                 "args": [
                     "build",
                     "--example=hello_world",
-                    "--package=kiwi_app"
+                    "--package=ambient_app"
                 ],
                 "filter": {
                     "name": "hello_world",
@@ -99,7 +99,7 @@
                 "args": [
                     "build",
                     "--example=asset_timeline",
-                    "--package=kiwi_asset_timeline"
+                    "--package=ambient_asset_timeline"
                 ],
                 "filter": {
                     "name": "asset_timeline",
@@ -120,7 +120,7 @@
                 "args": [
                     "build",
                     "--example=decals",
-                    "--package=kiwi_decals",
+                    "--package=ambient_decals",
                     "--features=hotload-includes"
                 ],
                 "filter": {
@@ -142,7 +142,7 @@
                 "args": [
                     "build",
                     "--example=ecs_editor",
-                    "--package=kiwi_ecs_editor",
+                    "--package=ambient_ecs_editor",
                     "--release"
                 ],
                 "filter": {
@@ -164,7 +164,7 @@
                 "args": [
                     "build",
                     "--example=gizmos",
-                    "--package=kiwi_gizmos"
+                    "--package=ambient_gizmos"
                 ],
                 "filter": {
                     "name": "gizmos",
@@ -188,7 +188,7 @@
                 "args": [
                     "build",
                     "--example=assimp",
-                    "--package=kiwi_model_import"
+                    "--package=ambient_model_import"
                 ],
                 "filter": {
                     "name": "assimp",
@@ -213,7 +213,7 @@
                 "args": [
                     "build",
                     "--example=fbx",
-                    "--package=kiwi_model_import"
+                    "--package=ambient_model_import"
                 ],
                 "filter": {
                     "name": "fbx",
@@ -238,7 +238,7 @@
                 "args": [
                     "build",
                     "--example=gltf",
-                    "--package=kiwi_model_import"
+                    "--package=ambient_model_import"
                 ],
                 "filter": {
                     "name": "gltf",
@@ -246,7 +246,7 @@
                 }
             },
             "env": {
-                "RUST_LOG": "dims=info,kiwi_model_import=info,elements=info"
+                "RUST_LOG": "dims=info,ambient_model_import=info,elements=info"
             },
             "args": [],
             "cwd": "${workspaceFolder}",
@@ -262,7 +262,7 @@
                 "args": [
                     "build",
                     "--example=model_loading",
-                    "--package=kiwi_model_import",
+                    "--package=ambient_model_import",
                     "--release"
                 ],
                 "filter": {
@@ -287,7 +287,7 @@
                 "args": [
                     "build",
                     "--example=skinmesh",
-                    "--package=kiwi_model_import"
+                    "--package=ambient_model_import"
                 ],
                 "filter": {
                     "name": "skinmesh",
@@ -311,7 +311,7 @@
                 "args": [
                     "build",
                     "--example=physics",
-                    "--package=kiwi_physics"
+                    "--package=ambient_physics"
                 ],
                 "filter": {
                     "name": "physics",
@@ -332,7 +332,7 @@
                 "args": [
                     "build",
                     "--example=billboard",
-                    "--package=kiwi_renderer"
+                    "--package=ambient_renderer"
                 ],
                 "filter": {
                     "name": "billboard",
@@ -353,7 +353,7 @@
                 "args": [
                     "build",
                     "--example=custom_material",
-                    "--package=kiwi_renderer"
+                    "--package=ambient_renderer"
                 ],
                 "filter": {
                     "name": "custom_material",
@@ -377,7 +377,7 @@
                 "args": [
                     "build",
                     "--example=instancing",
-                    "--package=kiwi_renderer"
+                    "--package=ambient_renderer"
                 ],
                 "filter": {
                     "name": "instancing",
@@ -401,7 +401,7 @@
                 "args": [
                     "build",
                     "--example=lod",
-                    "--package=kiwi_renderer"
+                    "--package=ambient_renderer"
                 ],
                 "filter": {
                     "name": "lod",
@@ -422,7 +422,7 @@
                 "args": [
                     "build",
                     "--example=pbr",
-                    "--package=kiwi_renderer"
+                    "--package=ambient_renderer"
                 ],
                 "filter": {
                     "name": "pbr",
@@ -446,7 +446,7 @@
                 "args": [
                     "build",
                     "--example=renderer_update",
-                    "--package=kiwi_renderer"
+                    "--package=ambient_renderer"
                 ],
                 "filter": {
                     "name": "renderer_update",
@@ -467,7 +467,7 @@
                 "args": [
                     "build",
                     "--example=shadow_test",
-                    "--package=kiwi_renderer"
+                    "--package=ambient_renderer"
                 ],
                 "filter": {
                     "name": "shadow_test",
@@ -488,7 +488,7 @@
                 "args": [
                     "build",
                     "--example=texture",
-                    "--package=kiwi_renderer"
+                    "--package=ambient_renderer"
                 ],
                 "filter": {
                     "name": "texture",
@@ -509,7 +509,7 @@
                 "args": [
                     "build",
                     "--example=translucency",
-                    "--package=kiwi_renderer"
+                    "--package=ambient_renderer"
                 ],
                 "filter": {
                     "name": "translucency",
@@ -530,7 +530,7 @@
                 "args": [
                     "build",
                     "--example=button",
-                    "--package=kiwi_ui"
+                    "--package=ambient_ui"
                 ],
                 "filter": {
                     "name": "button",
@@ -554,7 +554,7 @@
                 "args": [
                     "build",
                     "--example=dock_layout",
-                    "--package=kiwi_ui"
+                    "--package=ambient_ui"
                 ],
                 "filter": {
                     "name": "dock_layout",
@@ -578,7 +578,7 @@
                 "args": [
                     "build",
                     "--example=element_editor",
-                    "--package=kiwi_ui"
+                    "--package=ambient_ui"
                 ],
                 "filter": {
                     "name": "element_editor",
@@ -599,7 +599,7 @@
                 "args": [
                     "build",
                     "--example=flow_layout",
-                    "--package=kiwi_ui"
+                    "--package=ambient_ui"
                 ],
                 "filter": {
                     "name": "flow_layout",
@@ -623,7 +623,7 @@
                 "args": [
                     "build",
                     "--example=image",
-                    "--package=kiwi_ui"
+                    "--package=ambient_ui"
                 ],
                 "filter": {
                     "name": "image",
@@ -644,7 +644,7 @@
                 "args": [
                     "build",
                     "--example=input",
-                    "--package=kiwi_ui"
+                    "--package=ambient_ui"
                 ],
                 "filter": {
                     "name": "input",
@@ -665,7 +665,7 @@
                 "args": [
                     "build",
                     "--example=rect",
-                    "--package=kiwi_ui"
+                    "--package=ambient_ui"
                 ],
                 "filter": {
                     "name": "rect",
@@ -689,7 +689,7 @@
                 "args": [
                     "build",
                     "--example=screens",
-                    "--package=kiwi_ui"
+                    "--package=ambient_ui"
                 ],
                 "filter": {
                     "name": "screens",
@@ -710,7 +710,7 @@
                 "args": [
                     "build",
                     "--example=slider",
-                    "--package=kiwi_ui"
+                    "--package=ambient_ui"
                 ],
                 "filter": {
                     "name": "slider",
@@ -734,7 +734,7 @@
                 "args": [
                     "build",
                     "--example=text",
-                    "--package=kiwi_ui"
+                    "--package=ambient_ui"
                 ],
                 "filter": {
                     "name": "text",
@@ -755,7 +755,7 @@
                 "args": [
                     "build",
                     "--example=todo",
-                    "--package=kiwi_ui"
+                    "--package=ambient_ui"
                 ],
                 "filter": {
                     "name": "todo",
@@ -779,7 +779,7 @@
                 "args": [
                     "build",
                     "--example=ui",
-                    "--package=kiwi_ui"
+                    "--package=ambient_ui"
                 ],
                 "filter": {
                     "name": "ui",

@@ -112,7 +112,7 @@ fn copy_files(guest_path: &Path, files: &[File], working_dir: &Path) {
             .unwrap();
 
         let target_path =
-            kiwi_std::path::normalize(&working_dir.join(target_wit_dir.join(filename)));
+            ambient_std::path::normalize(&working_dir.join(target_wit_dir.join(filename)));
 
         let absolute_path_relative_to_common = {
             let mut target_path_it = target_path.iter();

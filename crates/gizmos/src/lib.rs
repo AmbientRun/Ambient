@@ -1,11 +1,11 @@
+use ambient_ecs::{components, Resource};
 use glam::{Mat4, Vec2};
-use kiwi_ecs::{components, Resource};
 
 pub mod render;
 mod traits;
+use ambient_std::math::Line;
 use dashmap::{mapref::one::RefMut, DashMap};
 use glam::Vec3;
-use kiwi_std::math::Line;
 pub use traits::*;
 
 components!("gizmos", {

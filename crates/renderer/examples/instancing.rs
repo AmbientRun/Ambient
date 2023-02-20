@@ -1,11 +1,11 @@
+use ambient_app::AppBuilder;
+use ambient_core::{camera::active_camera, main_scene, transform::*};
+use ambient_ecs::World;
+use ambient_element::ElementComponentExt;
+use ambient_primitives::Cube;
+use ambient_renderer::{cast_shadows, color};
+use ambient_std::math::SphericalCoords;
 use glam::*;
-use kiwi_app::AppBuilder;
-use kiwi_core::{camera::active_camera, main_scene, transform::*};
-use kiwi_ecs::World;
-use kiwi_element::ElementComponentExt;
-use kiwi_primitives::Cube;
-use kiwi_renderer::{cast_shadows, color};
-use kiwi_std::math::SphericalCoords;
 
 fn init(world: &mut World) {
     let size = 5;
@@ -23,7 +23,7 @@ fn init(world: &mut World) {
         }
     }
 
-    kiwi_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
+    ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
         .set(active_camera(), 0.)
         .set(main_scene(), ())
         .spawn(world);

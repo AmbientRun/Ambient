@@ -1,12 +1,12 @@
 use std::{collections::HashMap, sync::Arc};
 
-use kiwi_core::runtime;
-use kiwi_ecs::{
+use ambient_core::runtime;
+use ambient_ecs::{
     query, ArchetypeFilter, Component, ComponentQuery, ComponentValue, ECSError, EntityId, FrameEvent, QueryState, TypedReadQuery, World,
     WorldDiff,
 };
-use kiwi_element::{Hooks, Setter};
-use kiwi_std::{cb, Cb};
+use ambient_element::{Hooks, Setter};
+use ambient_std::{cb, Cb};
 
 use crate::{client::GameClient, log_network_result, persistent_resources, player, rpc::rpc_world_diff, synced_resources, user_id};
 
