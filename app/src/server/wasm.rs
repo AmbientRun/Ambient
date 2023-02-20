@@ -58,7 +58,7 @@ pub async fn initialize(world: &mut World, project_path: PathBuf, manifest: &amb
     )
     .await?;
 
-    let main_wasm_path = project_path.join("target").join(format!("{}.wasm", manifest.project.id));
+    let main_wasm_path = project_path.join("build").join(format!("{}.wasm", manifest.project.id));
     if main_wasm_path.exists() {
         let bytecode = std::fs::read(main_wasm_path)?;
 

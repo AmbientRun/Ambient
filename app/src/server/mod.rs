@@ -98,7 +98,7 @@ pub const QUIC_INTERFACE_PORT: u16 = 9000;
 fn start_http_interface(runtime: &tokio::runtime::Runtime, project_path: &Path) {
     let router = Router::new()
         .route("/ping", get(|| async move { "ok" }))
-        .nest_service("/content", get_service(ServeDir::new(project_path.join("target"))).handle_error(handle_error))
+        .nest_service("/content", get_service(ServeDir::new(project_path.join("build"))).handle_error(handle_error))
         .layer(CorsLayer::new().allow_origin(tower_http::cors::Any).allow_methods(vec![Method::GET]).allow_headers(tower_http::cors::Any));
 
     runtime.spawn(async move {
@@ -147,7 +147,7 @@ pub(crate) fn start_server(
         wasm::initialize(&mut server_world, project_path.clone(), &manifest).await.unwrap();
 
         if let Commands::View { asset_path, .. } = cli.command.clone() {
-            let asset_path = AbsAssetUrl::from_file_path(project_path.join("target").join(asset_path).join("objects/main.json"));
+            let asset_path = AbsAssetUrl::from_file_path(project_path.join("build").join(asset_path).join("objects/main.json"));
             log::info!("Spawning asset from {:?}", asset_path);
             let obj = ObjectFromUrl(asset_path.into()).get(&assets).await.unwrap();
             obj.spawn_into_world(&mut server_world, None);

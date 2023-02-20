@@ -19,7 +19,7 @@ pub mod pipelines;
 ///
 /// assets/**  Here assets such as .glb files are stored. Any files found in this directory will be processed
 /// src/**  This is where you store Rust source files
-/// target  This is the output directory, and is created when building
+/// build  This is the output directory, and is created when building
 /// ambient.toml  This is a metadata file to describe the project
 pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, manifest: &ProjectManifest) {
     log::info!(
@@ -30,15 +30,15 @@ pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, manife
 
     ambient_ecs::ComponentRegistry::get_mut().add_external(manifest.all_defined_components(false).unwrap());
 
-    let target_path = path.join("target");
+    let build_path = path.join("build");
     let assets_path = path.join("assets");
 
-    std::fs::create_dir_all(&target_path).unwrap();
-    build_assets(physics, &assets_path, &target_path).await;
-    build_scripts(&path, manifest, &target_path).await.unwrap();
+    std::fs::create_dir_all(&build_path).unwrap();
+    build_assets(physics, &assets_path, &build_path).await;
+    build_scripts(&path, manifest, &build_path).await.unwrap();
 }
 
-async fn build_assets(physics: Physics, assets_path: &Path, target_path: &Path) {
+async fn build_assets(physics: Physics, assets_path: &Path, build_path: &Path) {
     let files = WalkDir::new(assets_path)
         .into_iter()
         .filter_map(|e| e.ok())
@@ -51,13 +51,13 @@ async fn build_assets(physics: Physics, assets_path: &Path, target_path: &Path) 
         assets: assets.clone(),
         files: FileCollection(Arc::new(files)),
         in_root: AbsAssetUrl::from_directory_path(assets_path),
-        out_root: AbsAssetUrl::from_directory_path(target_path.join("assets")),
+        out_root: AbsAssetUrl::from_directory_path(build_path.join("assets")),
         input_file_filter: None,
         package_name: "".to_string(),
         write_file: Arc::new({
-            let target_path = target_path.to_owned();
+            let build_path = build_path.to_owned();
             move |path, contents| {
-                let path = target_path.join("assets").join(path);
+                let path = build_path.join("assets").join(path);
                 async move {
                     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
                     tokio::fs::write(&path, contents).await.unwrap();
@@ -79,7 +79,7 @@ async fn build_assets(physics: Physics, assets_path: &Path, target_path: &Path) 
     pipelines::process_pipelines(&ctx).await;
 }
 
-async fn build_scripts(path: &Path, manifest: &ProjectManifest, target_path: &Path) -> anyhow::Result<()> {
+async fn build_scripts(path: &Path, manifest: &ProjectManifest, build_path: &Path) -> anyhow::Result<()> {
     let cargo_toml_path = path.join("Cargo.toml");
     if !cargo_toml_path.exists() {
         return Ok(());
@@ -102,7 +102,7 @@ async fn build_scripts(path: &Path, manifest: &ProjectManifest, target_path: &Pa
     let rustc = ambient_rustc::Rust::install_or_get(&rust_path).await?;
     let bytecode = rustc.build(path, manifest.project.id.as_ref())?;
 
-    tokio::fs::write(target_path.join(format!("{}.wasm", manifest.project.id)), bytecode).await?;
+    tokio::fs::write(build_path.join(format!("{}.wasm", manifest.project.id)), bytecode).await?;
 
     Ok(())
 }
