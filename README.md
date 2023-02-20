@@ -1,7 +1,7 @@
 # Ambient Runtime
 
-![Crates.io](https://img.shields.io/crates/v/ambient_api)
-![docs.rs](https://img.shields.io/docsrs/ambient_api)
+[![Crates.io](https://img.shields.io/crates/v/ambient_api)](https://crates.io/crates/ambient_api)
+[![docs.rs](https://img.shields.io/docsrs/ambient_api)](https://docs.rs/ambient_api)
 [![MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AmbientOrg/Ambient#license)
 [![Discord](https://img.shields.io/discord/894505972289134632)](https://discord.gg/gYSM4tHZ)
 
