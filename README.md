@@ -25,7 +25,7 @@ See the [documentation](https://ambientorg.github.io/Ambient/) for a getting sta
 If you have a recent Rust toolchain (`stable` is sufficient), you can install Ambient using the following command:
 
 ```sh
-cargo install --git https://github.com/AmbientOrg/Ambient.git --tag v0.0.14 ambient
+cargo install --git https://github.com/AmbientOrg/Ambient.git --tag v0.0.16 ambient
 ```
 
 At present, a Git-based `cargo install` is required for the runtime. We are working on removing this requirement.
