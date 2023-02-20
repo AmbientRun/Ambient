@@ -3,7 +3,7 @@
 A [Rust](https://www.rust-lang.org/) toolchain is required to install Ambient. Once you have a toolchain available, run the following command to install the Ambient executable into your `PATH` (assuming `cargo` is in your `PATH`):
 
 ```sh
-cargo install --git https://github.com/AmbientOrg/Ambient.git
+cargo install --git https://github.com/AmbientOrg/Ambient.git --tag v0.0.14 ambient
 ```
 
 ## Dependencies: Linux/Ubuntu
