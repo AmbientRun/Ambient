@@ -7,7 +7,7 @@ documentation = "https://docs.rs/ambient_api"
 version = { workspace = true }
 
 [dependencies]
-ambient_api_macros = { path = "api_macros", version = "0.0.6" }
+ambient_api_macros = { path = "api_macros", version = "0.0.7" }
 anyhow = "1.0"
 glam = { version = "0.22.0", features = ["rand"] }
 bincode = "1.3"
