@@ -4371,8 +4371,9 @@ dependencies = [
 
 [[package]]
 name = "physx-sys"
-version = "0.4.15"
-source = "git+https://github.com/FredrikNoren/physx-rs.git?rev=92a09a98f3825d52c84d487d0fc575fb8cf04feb#92a09a98f3825d52c84d487d0fc575fb8cf04feb"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "35bb4bf1bfa71baa5c2574ee6323734dac9f1a046310535532f30b30f6585419"
 dependencies = [
  "cc",
 ]
