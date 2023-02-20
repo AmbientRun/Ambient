@@ -23,12 +23,7 @@ The easiest way to get started is by looking at some of the [examples](https://g
 
 ## API reference docs
 
-To see the latest version of the API docs, run the following command in the `Ambient` repository:
-
-```sh
-cd guest/rust
-cargo doc -p ambient_api --open --no-deps
-```
+Go to [https://docs.rs/ambient_api](https://docs.rs/ambient_api) for full API reference
 
 ## Setting up your IDE
 

@@ -2,6 +2,7 @@
 edition = "2021"
 name = "ambient"
 version = { workspace = true }
+repository = "https://github.com/AmbientOrg/Ambient"
 
 [dependencies]
 ambient_animation = {path = "../crates/animation"}

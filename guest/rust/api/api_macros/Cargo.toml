@@ -5,6 +5,7 @@ edition = "2021"
 description = "Macros for the Ambient API"
 license = "MIT"
 documentation = "https://docs.rs/ambient_api_macros"
+repository = "https://github.com/AmbientOrg/Ambient"
 
 [lib]
 proc-macro = true
