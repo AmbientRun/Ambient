@@ -4,6 +4,7 @@ exclude = ["guest"]
 members = [
     "crates/*",
     "libs/*",
+    "tools/*",
     "app",
 ]
 resolver = "2"

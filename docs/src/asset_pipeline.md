@@ -4,8 +4,7 @@ Ambient supports processing and loading a number of assets. You can place a file
 project folder which will specify how the assets will be processed. You can also prepend anything you'd like to the filename,
 so for instance `hello_pipeline.json` will also work.
 
-For a full reference, see [pipelines/mod.rs](https://github.com/AmbientOrg/Ambient/blob/main/crates/build/src/pipelines/mod.rs#L31). Supported
-model formats are:
+Supported model formats are:
 
 - FBX and GLTF are natively supported
 - ~30 other formats are supported through assimp, though less well supported.
@@ -68,3 +67,11 @@ The following will filter to just files that contain `table`, scale it down, and
 ## Notes
 
 - If you're using components and hot reloading; note that the components will overwrite the current state of the entity, so should only be used for "static" data (i.e. max_hitpoint but not current_hitpoint)
+
+## Reference
+
+The full structure for `pipeline.json` is described below in TypeScript `.d.ts` format:
+
+```typescript
+{{#include pipeline.d.ts}}
+```
