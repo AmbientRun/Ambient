@@ -44,12 +44,13 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
             version = "0.0.1"
 
             [dependencies]
-            ambient_api = "0.0.4"
+            ambient_api = "{{version}}"
 
             [lib]
             crate-type = ["cdylib"]
         "#}
-        .replace("{{id}}", id.as_ref()),
+        .replace("{{id}}", id.as_ref())
+        .replace("{{version}}", env!("CARGO_PKG_VERSION")),
     )
     .context("Failed to create Cargo.toml")?;
 
