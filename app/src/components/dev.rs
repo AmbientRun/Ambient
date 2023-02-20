@@ -27,7 +27,7 @@ fn make_components() -> toml_edit::Table {
     components.set_implicit(true);
 
     let namespaces = [
-        ("core", "Core", "Contains all core components for the Kiwi Runtime."),
+        ("core", "Core", "Contains all core components for the Ambient Runtime."),
         ("core::app", "App", "High-level state relevant to the application (including the in-development Editor)."),
         ("core::camera", "Camera", "Camera matrices, types, parameters, and more."),
         ("core::ecs", "Entity Component System", "Core components for the ECS and entities."),

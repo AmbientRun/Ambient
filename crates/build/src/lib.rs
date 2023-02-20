@@ -14,7 +14,7 @@ use walkdir::WalkDir;
 
 pub mod pipelines;
 
-/// This takes the path to an Kiwi project and builds it. An Kiwi project is expected to
+/// This takes the path to an Ambient project and builds it. An Ambient project is expected to
 /// have the following structure:
 ///
 /// assets/**  Here assets such as .glb files are stored. Any files found in this directory will be processed

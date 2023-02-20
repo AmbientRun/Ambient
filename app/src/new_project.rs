@@ -78,7 +78,7 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
 
             #[main]
             pub async fn main() -> EventResult {
-                println!("Hello, Kiwi!");
+                println!("Hello, Ambient!");
                 EventOk
             }
     "#},

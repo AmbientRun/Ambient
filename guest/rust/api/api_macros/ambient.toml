@@ -6,7 +6,7 @@ version = "0.0.5"
 
 [components.core]
 name = "Core"
-description = "Contains all core components for the Kiwi Runtime."
+description = "Contains all core components for the Ambient Runtime."
 
 [components."core::app"]
 name = "App"

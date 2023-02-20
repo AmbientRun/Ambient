@@ -1,9 +1,9 @@
 # Installing
 
-You need [Rust](https://www.rust-lang.org/) to install the Kiwi Runtime. Then run:
+You need [Rust](https://www.rust-lang.org/) to install the Ambient Runtime. Then run:
 
 ```sh
-cargo install --git https://github.com/KiwiOrg/Kiwi.git
+cargo install --git https://github.com/AmbientOrg/Ambient.git
 ```
 
 ## Dependencies: Linux/Ubuntu

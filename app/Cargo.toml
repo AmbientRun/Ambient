@@ -1,6 +1,6 @@
 [package]
 edition = "2021"
-name = "kiwi"
+name = "ambient"
 version = { workspace = true }
 
 [dependencies]

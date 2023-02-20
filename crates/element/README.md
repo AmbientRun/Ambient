@@ -1,4 +1,4 @@
-# Kiwi Element
+# Ambient Element
 
 The Element module is closely modelled on React with Hooks. React Components are called Parts here (since "Component"
 is already used in the ECS). There are a couple of concepts to keep track of here:

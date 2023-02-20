@@ -4,13 +4,13 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "kiwi [debug]",
+            "name": "ambient [debug]",
             "cargo": {
                 "args": [
                     "build"
                 ],
                 "filter": {
-                    "name": "kiwi",
+                    "name": "ambient",
                     "kind": "bin"
                 }
             },
@@ -30,14 +30,14 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "kiwi [release]",
+            "name": "ambient [release]",
             "cargo": {
                 "args": [
                     "build",
                     "--release"
                 ],
                 "filter": {
-                    "name": "kiwi",
+                    "name": "ambient",
                     "kind": "bin"
                 }
             },
@@ -52,12 +52,12 @@
             ]
         },
         {
-            "name": "kiwi (Windows, Internal server) [debug]",
+            "name": "ambient (Windows, Internal server) [debug]",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/target/debug/kiwi.exe",
+            "program": "${workspaceRoot}/target/debug/ambient.exe",
             "env": {
-                "RUST_LOG": "dims=info,dims_shared=info,kiwi=info"
+                "RUST_LOG": "dims=info,dims_shared=info,ambient=info"
             },
             "args": [
                 "--internal-server"
