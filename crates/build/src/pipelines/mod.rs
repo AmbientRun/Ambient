@@ -24,7 +24,6 @@ pub mod out_asset;
 #[serde(tag = "type")]
 pub enum PipelineConfig {
     Models(ModelsPipeline),
-    ScriptBundles,
     Materials(MaterialsPipeline),
     Audio,
 }
@@ -48,29 +47,6 @@ impl Pipeline {
     pub async fn process(&self, ctx: PipelineCtx) -> Vec<OutAsset> {
         let mut assets = match &self.pipeline {
             PipelineConfig::Models(config) => models::pipeline(&ctx, config.clone()).await,
-            PipelineConfig::ScriptBundles => {
-                ctx.process_files(
-                    |f| f.extension() == Some("script_bundle".to_string()),
-                    |ctx, file| async move {
-                        let bundle = file.download_bytes(&ctx.process_ctx.assets).await.unwrap();
-                        let content =
-                            ctx.write_file(ctx.in_root().relative_path(file.path()).with_extension("script_bundle"), bundle).await;
-
-                        Ok(vec![OutAsset {
-                            id: asset_id_from_url(&file),
-                            type_: AssetType::ScriptBundle,
-                            hidden: false,
-                            name: file.path().file_name().unwrap().to_string(),
-                            tags: Vec::new(),
-                            categories: Default::default(),
-                            preview: OutAssetPreview::None,
-                            content: OutAssetContent::Content(content),
-                            source: Some(file.clone()),
-                        }])
-                    },
-                )
-                .await
-            }
             PipelineConfig::Materials(config) => materials::pipeline(&ctx, config.clone()).await,
             PipelineConfig::Audio => audio::pipeline(&ctx).await,
         };
