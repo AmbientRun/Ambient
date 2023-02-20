@@ -40,6 +40,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      EXE_DIR: target/${{ matrix.target }}/release
     steps:
       - uses: actions/checkout@v3
       - name: Install build dependencies
@@ -55,8 +56,15 @@ jobs:
       # We don't do caching here because we only have 10gb and they'll be occupied by normal builds all the time anyway
       - name: Build
         run: cargo build --release -p ambient --target ${{ matrix.target }}
+      - name: Bundle
+        uses: thedoctor0/zip-release@0.7.1
+        with:
+          type: "zip"
+          filename: ambient-${{ matrix.target }}.zip
+          directory: ${{ env.EXE_DIR }}
+          path: ${{ matrix.exe_name }}
       - name: Upload
-        run: gh release upload ${{ needs.create-release.outputs.tag }} target/${{ matrix.target }}/release/${{ matrix.exe_name }}
+        run: gh release upload ${{ needs.create-release.outputs.tag }} ${{ env.EXE_DIR }}/ambient-${{ matrix.target }}.zip
 
   publish-api:
     needs: [create-release, build-app]
@@ -74,5 +82,6 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
+      - uses: actions/checkout@v3
       - name: mark release as non-draft
         run: gh release edit ${{ needs.create-release.outputs.tag }} --draft=false
