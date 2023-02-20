@@ -60,14 +60,6 @@ paste = { optional = true, workspace = true }
 [dev-dependencies]
 glam = { workspace = true }
 
-[package.metadata.release]
-pre-release-replacements = [
-  {file="src/new_project.rs", search="ambient_api = \"[0-9\\.]+\"", replace="ambient_api = \"{{version}}\""},
-]
-tag = true
-tag-message = ""
-tag-name = "v{{version}}"
-
 [features]
 default = ["dep:toml_edit", "dep:paste"]
 production = []
