@@ -52,6 +52,14 @@ impl SyncAssetKey<PathBuf> for AssetsCacheDir {
 }
 
 #[derive(Clone, Debug)]
+pub struct AssetsCacheOnDisk;
+impl SyncAssetKey<bool> for AssetsCacheOnDisk {
+    fn load(&self, _assets: AssetCache) -> bool {
+        true
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct ReqwestClientKey;
 impl SyncAssetKey<reqwest::Client> for ReqwestClientKey {
     fn load(&self, _assets: AssetCache) -> reqwest::Client {
@@ -111,7 +119,7 @@ impl BytesFromUrl {
 #[async_trait]
 impl AsyncAssetKey<AssetResult<Arc<Vec<u8>>>> for BytesFromUrl {
     async fn load(self, assets: AssetCache) -> AssetResult<Arc<Vec<u8>>> {
-        if self.cache_on_disk {
+        if self.cache_on_disk && AssetsCacheOnDisk.get(&assets) {
             let path = BytesFromUrlCachedPath { url: self.url.clone() }.get(&assets).await?;
             let semaphore = FileReadSemaphore.get(&assets);
             let _permit = semaphore.acquire().await;

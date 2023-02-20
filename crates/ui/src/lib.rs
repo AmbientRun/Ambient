@@ -7,20 +7,22 @@ use std::{
     },
 };
 
-use closure::closure;
-use glam::*;
-use itertools::Itertools;
-use kiwi_core::{hierarchy::children, on_frame, on_window_event, transform::*, window, window_logical_size, window_physical_size};
-pub use kiwi_ecs::{EntityId, SystemGroup, World};
-pub use kiwi_editor_derive::ElementEditor;
-pub use kiwi_element as element;
-use kiwi_element::{define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent, ElementComponentExt, Hooks};
-use kiwi_input::{
+use ambient_core::{hierarchy::children, on_frame, on_window_event, transform::*, window, window_logical_size, window_physical_size};
+pub use ambient_ecs::{EntityId, SystemGroup, World};
+pub use ambient_editor_derive::ElementEditor;
+pub use ambient_element as element;
+use ambient_element::{
+    define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent, ElementComponentExt, Hooks,
+};
+use ambient_input::{
     on_app_mouse_input, on_app_mouse_motion, on_app_mouse_wheel,
     picking::{mouse_pickable, on_mouse_enter, on_mouse_hover, on_mouse_input, on_mouse_leave, on_mouse_wheel},
 };
-pub use kiwi_std::{cb, Cb};
-use kiwi_std::{color::Color, shapes::AABB};
+pub use ambient_std::{cb, Cb};
+use ambient_std::{color::Color, shapes::AABB};
+use closure::closure;
+use glam::*;
+use itertools::Itertools;
 use parking_lot::Mutex;
 use winit::event::{ElementState, ModifiersState, MouseButton, MouseScrollDelta, WindowEvent};
 
@@ -93,7 +95,7 @@ impl From<Element> for UIElement {
 }
 
 #[element_component]
-pub fn UIBase(_: &mut World, _: &mut Hooks) -> Element {
+pub fn UIBase(_: &mut Hooks) -> Element {
     Element::new()
         .init(translation(), vec3(0., 0., -0.001))
         .init_default(local_to_world())
@@ -103,8 +105,8 @@ pub fn UIBase(_: &mut World, _: &mut Hooks) -> Element {
         .init(height(), 0.)
 }
 
-pub fn use_window_physical_resolution(world: &World, hooks: &mut Hooks) -> UVec2 {
-    let (res, set_res) = hooks.use_state(*world.resource(window_physical_size()));
+pub fn use_window_physical_resolution(hooks: &mut Hooks) -> UVec2 {
+    let (res, set_res) = hooks.use_state(*hooks.world.resource(window_physical_size()));
     hooks.use_frame(move |world| {
         let new_res = *world.resource(window_physical_size());
         if new_res != res {
@@ -113,8 +115,8 @@ pub fn use_window_physical_resolution(world: &World, hooks: &mut Hooks) -> UVec2
     });
     res
 }
-pub fn use_window_logical_resolution(world: &World, hooks: &mut Hooks) -> UVec2 {
-    let (res, set_res) = hooks.use_state(*world.resource(window_logical_size()));
+pub fn use_window_logical_resolution(hooks: &mut Hooks) -> UVec2 {
+    let (res, set_res) = hooks.use_state(*hooks.world.resource(window_logical_size()));
     hooks.use_frame(move |world| {
         let new_res = *world.resource(window_logical_size());
         if new_res != res {
@@ -128,8 +130,8 @@ pub fn use_window_logical_resolution(world: &World, hooks: &mut Hooks) -> UVec2 
 pub struct WindowSized(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(WindowSized);
 impl ElementComponent for WindowSized {
-    fn render(self: Box<Self>, world: &mut World, hooks: &mut Hooks) -> Element {
-        let res = use_window_logical_resolution(world, hooks);
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
+        let res = use_window_logical_resolution(hooks);
         Dock(self.0).el().set(width(), res.x as _).set(height(), res.y as _).remove(local_to_parent())
     }
 }
@@ -139,7 +141,7 @@ impl ElementComponent for WindowSized {
 pub struct Dock(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(Dock);
 impl ElementComponent for Dock {
-    fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         Element::from(UIBase).init(layout(), Layout::Dock).init_default(children()).children(self.0)
     }
 }
@@ -149,7 +151,7 @@ impl ElementComponent for Dock {
 pub struct Flow(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(Flow);
 impl ElementComponent for Flow {
-    fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         Element::from(UIBase).init(layout(), Layout::Flow).init_default(children()).children(self.0)
     }
 }
@@ -160,7 +162,7 @@ impl ElementComponent for Flow {
 #[derive(Debug, Clone)]
 pub struct Bookcase(pub Vec<BookFile>);
 impl ElementComponent for Bookcase {
-    fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         Element::from(UIBase)
             .init(layout(), Layout::Bookcase)
             .init_default(children())
@@ -173,7 +175,7 @@ pub struct BookFile {
     book: Element,
 }
 impl ElementComponent for BookFile {
-    fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         Element::from(UIBase).init_default(is_book_file()).children(vec![self.container, self.book])
     }
 }
@@ -183,7 +185,7 @@ impl ElementComponent for BookFile {
 pub struct FlowColumn(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(FlowColumn);
 impl ElementComponent for FlowColumn {
-    fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         Flow(self.0)
             .el()
             .set(orientation(), Orientation::Vertical)
@@ -199,7 +201,7 @@ impl ElementComponent for FlowColumn {
 pub struct FlowRow(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(FlowRow);
 impl ElementComponent for FlowRow {
-    fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         Flow(self.0)
             .el()
             .set(orientation(), Orientation::Horizontal)
@@ -214,7 +216,7 @@ impl ElementComponent for FlowRow {
 pub struct Centered(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(Centered);
 impl ElementComponent for Centered {
-    fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         Flow(self.0)
             .el()
             .set(orientation(), Orientation::Vertical)
@@ -228,7 +230,7 @@ impl ElementComponent for Centered {
 #[derive(Debug, Clone)]
 pub struct ScrollArea(pub Element);
 impl ElementComponent for ScrollArea {
-    fn render(self: Box<Self>, _: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (scroll, set_scroll) = hooks.use_state(0.);
         UIBase
             .el()
@@ -260,7 +262,7 @@ impl ScrollArea {
 }
 
 #[element_component]
-pub fn FixedGrid(_: &mut World, _: &mut Hooks, items: Vec<Element>, item_stride: Vec2, items_horizontal: usize) -> Element {
+pub fn FixedGrid(_: &mut Hooks, items: Vec<Element>, item_stride: Vec2, items_horizontal: usize) -> Element {
     UIBase.el().children(
         items
             .into_iter()
@@ -286,7 +288,7 @@ pub fn use_has_focus(_: &World, hooks: &mut Hooks) -> bool {
 pub struct FocusRoot(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(FocusRoot);
 impl ElementComponent for FocusRoot {
-    fn render(self: Box<Self>, _: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let set_focus = hooks.provide_context(|| Focus(None));
         Element::new().listener(on_app_mouse_input(), Arc::new(move |_, _, _| set_focus(Focus(None)))).children(self.0)
     }
@@ -300,7 +302,6 @@ impl Default for HighjackMouse {
 
 #[element_component]
 pub fn HighjackMouse(
-    _: &mut World,
     hooks: &mut Hooks,
     on_mouse_move: Cb<dyn Fn(&World, Vec2, Vec2) + Sync + Send>,
     on_click: Cb<dyn Fn(MouseButton) + Sync + Send>,
@@ -309,7 +310,7 @@ pub fn HighjackMouse(
     // let (window_focused, _) = hooks.use_state(Arc::new(AtomicBool::new(true)));
     // Assume window has focus
     let focused = Arc::new(AtomicBool::new(true));
-    let position = hooks.use_ref_with(|| Vec2::ZERO);
+    let position = hooks.use_ref_with(|_| Vec2::ZERO);
     hooks.use_spawn(move |world| {
         if hide_mouse {
             world.resource(window()).set_cursor_grab(winit::window::CursorGrabMode::Locked).ok();
@@ -423,7 +424,7 @@ impl UIExt for Element {
 pub struct TransformGroup(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(TransformGroup);
 impl ElementComponent for TransformGroup {
-    fn render(self: Box<Self>, _world: &mut World, _hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
         Element::new()
             .set_default(local_to_world())
             .children(self.0.into_iter().map(|x| Element::from(TransformGroupChild(x)).init_default(local_to_parent())).collect_vec())
@@ -433,7 +434,7 @@ impl ElementComponent for TransformGroup {
 #[derive(Debug, Clone)]
 struct TransformGroupChild(Element);
 impl ElementComponent for TransformGroupChild {
-    fn render(self: Box<Self>, _world: &mut World, _hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
         self.0
     }
 }
@@ -441,7 +442,7 @@ impl ElementComponent for TransformGroupChild {
 #[derive(Debug, Clone)]
 pub struct TransformMapGroup(pub HashMap<String, Element>);
 impl ElementComponent for TransformMapGroup {
-    fn render(self: Box<Self>, _world: &mut World, _hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
         TransformGroup(self.0.into_iter().sorted_by_key(|x| x.0.clone()).map(|(k, v)| v.key(k)).collect()).into()
     }
 }
@@ -455,12 +456,12 @@ pub fn command_modifier() -> ModifiersState {
 }
 
 #[element_component]
-pub fn FontAwesomeIcon(_world: &mut World, _hooks: &mut Hooks, icon: u32, solid: bool) -> Element {
+pub fn FontAwesomeIcon(_hooks: &mut Hooks, icon: u32, solid: bool) -> Element {
     Text::el(char::from_u32(icon).unwrap().to_string()).set(font_family(), FontFamily::FontAwesome { solid })
 }
 
 #[element_component]
-pub fn Separator(_world: &mut World, _hooks: &mut Hooks, vertical: bool) -> Element {
+pub fn Separator(_hooks: &mut Hooks, vertical: bool) -> Element {
     let el = Flow(vec![]).el().with_background(Color::rgba(0., 0., 0., 0.8));
     if vertical {
         el.set(width(), 1.).set(fit_horizontal(), Fit::None).set(fit_vertical(), Fit::Parent)

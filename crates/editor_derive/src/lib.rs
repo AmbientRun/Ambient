@@ -38,10 +38,10 @@ fn do_derive_element_editor(input: TokenStream) -> TokenStream {
     //     _ => quote!(crate),
     // };
 
-    let ui_crate = match crate_name("kiwi_ui") {
+    let ui_crate = match crate_name("ambient_ui") {
         Ok(FoundCrate::Itself) => Ident::new("crate", Span::call_site()),
         Ok(FoundCrate::Name(name)) => Ident::new(&name, Span::call_site()),
-        Err(err) => panic!("Missing crate `kiwi_ui`. {err:?}"),
+        Err(err) => panic!("Missing crate `ambient_ui`. {err:?}"),
     };
 
     let attributes = EditorAttrs::parse(&input.attrs);
@@ -92,7 +92,7 @@ fn do_derive_element_editor(input: TokenStream) -> TokenStream {
 
         #[automatically_derived]
         impl #ui_crate::element::ElementComponent for #editor_name {
-            fn render(self: Box<Self>, world: &mut #ui_crate::World, hooks: &mut #ui_crate::element::Hooks) -> #ui_crate::element::Element {
+            fn render(self: Box<Self>, hooks: &mut #ui_crate::element::Hooks) -> #ui_crate::element::Element {
                 use #ui_crate::element::{Element, ElementComponentExt};
                 use #ui_crate::{Editor, EditorRow, EditorColumn, Slider, IntegerSlider, ListSelect, DropdownSelect, FlowRow, FlowColumn, Text, layout::{margin, Borders, fit_horizontal, Fit}};
                 let Self { value, on_change, opts } = *self;
@@ -388,13 +388,13 @@ fn fields_editor(
 
             quote! {
                 {
-                    let editor = #ui_crate::cb( <#field_ty_colon as kiwi_ui::Editor>::edit_or_view );
+                    let editor = #ui_crate::cb( <#field_ty_colon as ambient_ui::Editor>::edit_or_view );
                     #ui_crate::OffscreenEditor { title: #title.into(), value: #field_name.clone(), on_confirm: #on_change_cb, opts: Default::default(), editor }.into()
                 }
             }
         } else {
             quote! {
-                <#field_ty_colon as kiwi_ui::Editor>::edit_or_view(#field_name.clone(), #on_change_cb, Default::default())
+                <#field_ty_colon as ambient_ui::Editor>::edit_or_view(#field_name.clone(), #on_change_cb, Default::default())
             }
         };
 

@@ -1,34 +1,37 @@
 use std::sync::Arc;
 
-use kiwi_core::{
-    mouse_position, on_window_event, runtime, transform::{get_world_position, translation}, window_logical_size, window_scale_factor
+use ambient_core::{
+    mouse_position, on_window_event, runtime,
+    transform::{get_world_position, translation},
+    window_logical_size, window_scale_factor,
 };
-use kiwi_ecs::World;
-use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use kiwi_input::MouseButton;
-use kiwi_network::{client::GameClient, log_network_result};
-use kiwi_std::{color::Color, math::interpolate};
-use kiwi_ui::{
-    layout::{height, width}, UIBase, UIExt
+use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_input::MouseButton;
+use ambient_network::{client::GameClient, log_network_result};
+use ambient_std::{color::Color, math::interpolate};
+use ambient_ui::{
+    layout::{height, width},
+    UIBase, UIExt,
 };
 use glam::{vec2, vec3, Vec2, Vec3Swizzles};
 use winit::event::{ElementState, WindowEvent};
 
 use crate::{
-    intents::SelectMode, rpc::{rpc_select, SelectMethod}
+    intents::SelectMode,
+    rpc::{rpc_select, SelectMethod},
 };
 
 #[derive(Debug, Clone)]
 /// Handles the server communication for selecting objects
 pub struct SelectArea;
 impl ElementComponent for SelectArea {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (dragging, set_dragging) = hooks.use_state(None);
         let (area_offset, set_area_offset) = hooks.use_state(Vec2::ZERO);
         let (mouse_pos, set_mouse_pos) = hooks.use_state(Vec2::ZERO);
         let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
         let (select_mode, _) = hooks.consume_context::<SelectMode>().unwrap();
-        let is_clicking = hooks.use_ref_with(|| false);
+        let is_clicking = hooks.use_ref_with(|_| false);
 
         let client = game_client.clone();
         hooks.use_spawn(move |_| {

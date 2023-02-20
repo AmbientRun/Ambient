@@ -1,15 +1,15 @@
 use std::sync::Arc;
 
-use anyhow::Context;
-use async_trait::async_trait;
-use kiwi_core::transform::{rotation, translation};
-use kiwi_editor_derive::ElementEditor;
-use kiwi_model::{Model, ModelFromUrl};
-use kiwi_std::{
-    asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt},
-    asset_url::{AnimationAssetType, ModelAssetType, ServerBaseUrlKey, TypedAssetUrl},
+use ambient_core::transform::{rotation, translation};
+use ambient_editor_derive::ElementEditor;
+use ambient_model::{Model, ModelFromUrl};
+use ambient_std::{
+    asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt},
+    asset_url::{AnimationAssetType, ModelAssetType, TypedAssetUrl},
     download_asset::AssetError,
 };
+use anyhow::Context;
+use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
 use super::{AnimationClip, AnimationClipFromUrl, AnimationOutputs, AnimationTrack};
@@ -49,8 +49,8 @@ impl AsyncAssetKey<Result<Arc<AnimationClip>, AssetError>> for AnimationClipReta
         AssetKeepalive::Forever
     }
     async fn load(self, assets: AssetCache) -> Result<Arc<AnimationClip>, AssetError> {
-        let base_url = ServerBaseUrlKey.get(&assets);
-        let clip_url: TypedAssetUrl<AnimationAssetType> = self.clip.resolve(&base_url).context("Failed to resolve clip url")?.into();
+        let clip_url: TypedAssetUrl<AnimationAssetType> =
+            self.clip.abs().context(format!("Expected absolute url, got: {}", self.clip))?.into();
         let anim_model =
             ModelFromUrl(clip_url.model_crate().context("Invalid clip url")?.model()).get(&assets).await.context("Failed to load model")?;
         let clip = AnimationClipFromUrl::new(clip_url.unwrap_abs(), true).get(&assets).await.context("No such clip")?;
@@ -62,11 +62,8 @@ impl AsyncAssetKey<Result<Arc<AnimationClip>, AssetError>> for AnimationClipReta
                 Ok(Arc::new(clip))
             }
             AnimationRetargeting::AnimationScaled { normalize_hip } => {
-                let retarget_model_url = self
-                    .retarget_model
-                    .context("No retarget_model specified")?
-                    .resolve(&base_url)
-                    .context("Failed to resolve retarget url")?;
+                let retarget_model_url =
+                    self.retarget_model.context("No retarget_model specified")?.abs().context("Failed to resolve retarget url")?;
                 let retarget_model = ModelFromUrl(retarget_model_url.into()).get(&assets).await.context("Failed to load retarget model")?;
                 let mut clip = (*clip).clone();
                 let anim_root = anim_model.roots()[0];

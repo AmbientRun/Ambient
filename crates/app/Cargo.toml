@@ -1,23 +1,23 @@
 [package]
-name = "kiwi_app"
+name = "ambient_app"
 version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-kiwi_std = { path = "../std" }
-kiwi_core = { path = "../core" }
-kiwi_gizmos = { path = "../gizmos" }
-kiwi_gpu = { path = "../gpu" }
-kiwi_renderer = { path = "../renderer" }
-kiwi_cameras = { path = "../cameras" }
-kiwi_ecs = { path = "../ecs" }
-kiwi_element = { path = "../element" }
-kiwi_ui = { path = "../ui" }
-kiwi_input = { path = "../input" }
-kiwi_model = { path = "../model" }
-kiwi_animation = { path = "../animation" }
+ambient_std = { path = "../std" }
+ambient_core = { path = "../core" }
+ambient_gizmos = { path = "../gizmos" }
+ambient_gpu = { path = "../gpu" }
+ambient_renderer = { path = "../renderer" }
+ambient_cameras = { path = "../cameras" }
+ambient_ecs = { path = "../ecs" }
+ambient_element = { path = "../element" }
+ambient_ui = { path = "../ui" }
+ambient_input = { path = "../input" }
+ambient_model = { path = "../model" }
+ambient_animation = { path = "../animation" }
 winit = { workspace = true }
 glam = { workspace = true }
 tokio = { workspace = true }
@@ -31,15 +31,15 @@ tracing = { workspace = true }
 parking_lot = { workspace = true }
 
 [dev-dependencies]
-kiwi_primitives = { path = "../primitives" }
+ambient_primitives = { path = "../primitives" }
 
 [features]
 profile = ["puffin", "puffin_http", "profiling/profile-with-puffin"]
 hotload-includes = [
-    "kiwi_std/hotload-includes",
-    'kiwi_gpu/hotload-includes',
-    'kiwi_renderer/hotload-includes',
-    'kiwi_gizmos/hotload-includes',
-    'kiwi_ui/hotload-includes',
-    'kiwi_model/hotload-includes',
+    "ambient_std/hotload-includes",
+    'ambient_gpu/hotload-includes',
+    'ambient_renderer/hotload-includes',
+    'ambient_gizmos/hotload-includes',
+    'ambient_ui/hotload-includes',
+    'ambient_model/hotload-includes',
 ]

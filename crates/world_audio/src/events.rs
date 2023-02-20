@@ -1,5 +1,5 @@
-use kiwi_core::asset_cache;
-use kiwi_ecs::{EntityId, World};
+use ambient_core::asset_cache;
+use ambient_ecs::{EntityId, World};
 
 use crate::{play_sound_on_entity, AudioNode, AudioSeed};
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]

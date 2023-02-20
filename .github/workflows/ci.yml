@@ -10,11 +10,14 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: chetan/git-restore-mtime-action@v1
       - name: Free up disk space
         run: |
           sudo rm -rf /usr/share/dotnet
@@ -33,7 +36,41 @@ jobs:
           sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers
       - uses: dtolnay/rust-toolchain@stable
       - uses: Leafwing-Studios/cargo-cache@v1
+        with:
+          cache-group: "main"
       - name: Run Clippy
         run: cargo clippy --workspace -- -Adeprecated
       - name: Run tests
-        run: cargo test --workspace --release
+        run: cargo test --workspace
+        env:
+          CARGO_INCREMENTAL: 0
+          RUSTFLAGS: "-C debuginfo=0"
+      - name: Build guest/rust
+        run: cd guest/rust && cargo build --workspace
+      - name: Check that guest/rust's documentation is well-formed
+        run: cd guest/rust && RUSTDOCFLAGS="-D warnings" cargo doc --workspace --all-features --no-deps
+
+  build-other:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+          - os: windows-latest
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: chetan/git-restore-mtime-action@v1
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Leafwing-Studios/cargo-cache@v1
+        with:
+          cache-group: "main"
+      - name: Build
+        run: cargo build --workspace
+        env:
+          CARGO_INCREMENTAL: 0
+          RUSTFLAGS: "-C debuginfo=0"
+      - name: Build guest/rust
+        run: cd guest/rust && cargo build --workspace

@@ -1,18 +1,18 @@
 [package]
-name = "kiwi_sky"
+name = "ambient_sky"
 version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-kiwi_ecs = { path = "../ecs" }
-kiwi_std = { path = "../std" }
-kiwi_core = { path = "../core" }
-kiwi_gpu = { path = "../gpu" }
-kiwi_gizmos = { path = "../gizmos" }
-kiwi_meshes = { path = "../meshes" }
-kiwi_renderer = { path = "../renderer" }
+ambient_ecs = { path = "../ecs" }
+ambient_std = { path = "../std" }
+ambient_core = { path = "../core" }
+ambient_gpu = { path = "../gpu" }
+ambient_gizmos = { path = "../gizmos" }
+ambient_meshes = { path = "../meshes" }
+ambient_renderer = { path = "../renderer" }
 wgpu = { workspace = true }
 noise = { workspace = true }
 glam = { workspace = true }
@@ -22,8 +22,8 @@ ordered-float = { workspace = true }
 tracing = { workspace = true }
 
 [dev-dependencies]
-kiwi_cameras = { path = "../cameras" }
+ambient_cameras = { path = "../cameras" }
 tokio = { workspace = true }
 
 [features]
-hotload-includes = ['kiwi_std/hotload-includes']
+hotload-includes = ['ambient_std/hotload-includes']

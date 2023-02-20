@@ -1,25 +1,25 @@
 use std::{num::NonZeroU32, sync::Arc};
 
-use glam::Vec3;
-use kiwi_core::{
+use ambient_core::{
     asset_cache,
     bounding::world_bounding_sphere,
     camera::shadow_cameras_from_world,
     hierarchy::{dump_world_hierarchy, dump_world_hierarchy_to_tmp_file},
     main_scene, runtime,
 };
-use kiwi_ecs::{query, World};
-use kiwi_ecs_editor::ECSEditor;
-use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
-use kiwi_gizmos::{gizmos, GizmoPrimitive};
-use kiwi_network::client::{GameClient, GameRpcArgs};
-use kiwi_renderer::{RenderTarget, Renderer};
-use kiwi_rpc::RpcRegistry;
-use kiwi_std::{asset_cache::SyncAssetKeyExt, cb, color::Color, download_asset::AssetsCacheDir, line_hash, Cb};
-use kiwi_ui::{
+use ambient_ecs::{query, World};
+use ambient_ecs_editor::ECSEditor;
+use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_gizmos::{gizmos, GizmoPrimitive};
+use ambient_network::client::{GameClient, GameRpcArgs};
+use ambient_renderer::{RenderTarget, Renderer};
+use ambient_rpc::RpcRegistry;
+use ambient_std::{asset_cache::SyncAssetKeyExt, cb, color::Color, download_asset::AssetsCacheDir, line_hash, Cb};
+use ambient_ui::{
     fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit, FlowColumn, FlowRow, Image, UIExt,
     VirtualKeyCode,
 };
+use glam::Vec3;
 use winit::event::ModifiersState;
 
 type GetDebuggerState = Cb<dyn Fn(&mut dyn FnMut(&mut Renderer, &RenderTarget, &mut World)) + Sync + Send>;
@@ -37,7 +37,7 @@ pub fn register_rpcs(reg: &mut RpcRegistry<GameRpcArgs>) {
 }
 
 #[element_component]
-pub fn Debugger(_world: &mut World, hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
+pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
     let (show_shadows, set_show_shadows) = hooks.use_state(false);
     let (show_ecs, set_show_ecs) = hooks.use_state(false);
     let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
@@ -162,8 +162,8 @@ pub fn Debugger(_world: &mut World, hooks: &mut Hooks, get_state: GetDebuggerSta
 }
 
 #[element_component]
-fn ShadowMapsViz(_: &mut World, hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
-    let (shadow_cascades, _) = hooks.use_state_with(|| {
+fn ShadowMapsViz(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
+    let (shadow_cascades, _) = hooks.use_state_with(|_| {
         let mut n_cascades = 0;
         get_state(&mut |renderer, _, _| {
             n_cascades = renderer.config.shadow_cascades;
@@ -176,8 +176,8 @@ fn ShadowMapsViz(_: &mut World, hooks: &mut Hooks, get_state: GetDebuggerState) 
 }
 
 #[element_component]
-fn ShadowMapViz(_: &mut World, hooks: &mut Hooks, get_state: GetDebuggerState, cascade: u32) -> Element {
-    let (texture, _) = hooks.use_state_with(|| {
+fn ShadowMapViz(hooks: &mut Hooks, get_state: GetDebuggerState, cascade: u32) -> Element {
+    let (texture, _) = hooks.use_state_with(|_| {
         let mut tex = None;
         get_state(&mut |renderer, _, _| {
             tex = Some(renderer.shadows.as_ref().map(|x| {
@@ -195,7 +195,7 @@ fn ShadowMapViz(_: &mut World, hooks: &mut Hooks, get_state: GetDebuggerState, c
 }
 
 #[element_component]
-fn ShaderDebug(_: &mut World, hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
+fn ShaderDebug(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
     let (show, set_show) = hooks.use_state(false);
 
     let (_, upd) = hooks.use_state(());

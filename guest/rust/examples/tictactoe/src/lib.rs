@@ -1,29 +1,29 @@
 use components::cell;
-use kiwi_api::components::core::{
-    self,
-    camera::{aspect_ratio_from_window, perspective_infinite_reverse},
-    game_objects::player_camera,
-    primitives::cube,
-    rendering::{color, outline},
-    transform::{lookat_center, scale, translation},
+use ambient_api::{
+    components::core::{
+        self,
+        game_objects::player_camera,
+        primitives::cube,
+        rendering::{color, outline},
+        transform::{lookat_center, scale, translation},
+    },
+    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
 };
-use kiwi_api::{player::KeyCode, prelude::*};
+use ambient_api::{player::KeyCode, prelude::*};
 use palette::{FromColor, Hsl, Srgb};
 
 #[main]
 pub async fn main() -> EventResult {
-    entity::game_object_base()
+    make_perspective_infinite_reverse_camera()
         .with_default(player_camera())
-        .with(translation(), vec3(5., 5., 4.))
-        .with(lookat_center(), vec3(0., 0., 0.))
-        .with(perspective_infinite_reverse(), ())
-        .with(aspect_ratio_from_window(), ())
+        .with(translation(), vec3(3., 3., 2.5))
+        .with(lookat_center(), vec3(1.5, 1.5, 0.))
         .spawn();
 
     let mut cells = Vec::new();
     for y in 0..3 {
         for x in 0..3 {
-            let id = entity::game_object_base()
+            let id = make_transformable()
                 .with_default(cube())
                 .with(translation(), vec3(x as f32, y as f32, 0.))
                 .with(scale(), vec3(0.6, 0.6, 0.6))
@@ -43,8 +43,10 @@ pub async fn main() -> EventResult {
         for cell in &cells {
             entity::remove_component(*cell, outline());
         }
-        let n_players = player::get_all().len();
-        for (i, player) in player::get_all().into_iter().enumerate() {
+
+        let players = player::get_all();
+        let n_players = players.len();
+        for (i, player) in players.into_iter().enumerate() {
             let player_color = Srgb::from_color(Hsl::from_components((
                 360. * i as f32 / n_players as f32,
                 1.,

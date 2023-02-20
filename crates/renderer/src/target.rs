@@ -1,9 +1,10 @@
 use std::sync::Arc;
 
-use glam::UVec2;
-use kiwi_gpu::{
-    gpu::{Gpu, DEFAULT_SAMPLE_COUNT}, texture::{Texture, TextureView}
+use ambient_gpu::{
+    gpu::{Gpu, DEFAULT_SAMPLE_COUNT},
+    texture::{Texture, TextureView},
 };
+use glam::UVec2;
 
 #[derive(Debug)]
 pub struct RenderTarget {

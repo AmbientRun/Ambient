@@ -1,29 +1,32 @@
-use kiwi_api::{
+use ambient_api::{
     components::core::{
-        camera::{aspect_ratio_from_window, perspective_infinite_reverse},
         ecs::ids,
         game_objects::player_camera,
         object::object_from_url,
-        physics::{angular_velocity, box_collider, dynamic, linear_velocity, physics_controlled},
+        physics::{
+            angular_velocity, box_collider, dynamic, linear_velocity, physics_controlled,
+            visualizing,
+        },
         primitives::cube,
         rendering::{cast_shadows, color},
         transform::{lookat_center, rotation, scale, translation},
     },
+    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
+    physics::raycast,
     prelude::*,
 };
 
 #[main]
 pub async fn main() -> EventResult {
-    entity::game_object_base()
+    make_perspective_infinite_reverse_camera()
         .with_default(player_camera())
         .with(translation(), vec3(5., 5., 4.))
         .with(lookat_center(), vec3(0., 0., 0.))
-        .with(perspective_infinite_reverse(), ())
-        .with(aspect_ratio_from_window(), ())
         .spawn();
 
-    let cube = entity::game_object_base()
+    let cube = make_transformable()
         .with_default(cube())
+        .with_default(visualizing())
         .with(box_collider(), Vec3::ONE)
         .with(dynamic(), true)
         .with_default(physics_controlled())
@@ -33,13 +36,22 @@ pub async fn main() -> EventResult {
         .with(color(), Vec4::ONE)
         .spawn();
 
-    entity::game_object_base()
-        .with(object_from_url(), "assets/Shape.glb".to_string())
+    make_transformable()
+        .with(object_from_url(), asset_url("assets/Shape.glb").unwrap())
         .spawn();
 
     on(event::COLLISION, |c| {
         // TODO: play a sound instead
         println!("Bonk! {:?} collided", c.get(ids()).unwrap());
+        EventOk
+    });
+
+    on(event::FRAME, move |_| {
+        for hit in raycast(Vec3::Z * 20., -Vec3::Z) {
+            if hit.entity == cube {
+                println!("The raycast hit the cube: {hit:?}");
+            }
+        }
         EventOk
     });
 

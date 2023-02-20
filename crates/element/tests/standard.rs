@@ -1,5 +1,5 @@
-use kiwi_ecs::{query, World};
-use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks, Memo};
+use ambient_ecs::query;
+use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks, Memo};
 mod common;
 use common::*;
 
@@ -10,8 +10,8 @@ fn memo() {
         state: u32,
     }
     impl ElementComponent for Inner {
-        fn render(self: Box<Self>, world: &mut World, _: &mut Hooks) -> Element {
-            *world.resource_mut(n_renders()) += 1;
+        fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
+            *hooks.world.resource_mut(n_renders()) += 1;
             Element::new()
         }
     }
@@ -38,8 +38,8 @@ fn memo_hook_state_update() {
     #[derive(Debug, Clone, PartialEq, Eq)]
     pub struct Inner;
     impl ElementComponent for Inner {
-        fn render(self: Box<Self>, world: &mut World, hooks: &mut Hooks) -> Element {
-            *world.resource_mut(n_renders()) += 1;
+        fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
+            *hooks.world.resource_mut(n_renders()) += 1;
             let (state, set_state) = hooks.use_state(0);
             Element::new().on_spawned(move |_, _| set_state(state + 1))
         }
@@ -57,7 +57,7 @@ fn set_on_the_outside() {
     #[derive(Debug, Clone, PartialEq, Eq)]
     pub struct Test;
     impl ElementComponent for Test {
-        fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
+        fn render(self: Box<Self>, _: &mut Hooks) -> Element {
             Element::new().init(prop_b(), 5)
         }
     }

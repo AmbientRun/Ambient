@@ -1,19 +1,19 @@
 use std::{borrow::Cow, sync::Arc};
 
-use glam::{vec2, UVec2, Vec2};
-use itertools::Itertools;
-use kiwi_gpu::{
+use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     std_assets::DefaultSamplerKey,
     texture::{Texture, TextureView},
     texture_loaders::TextureFromUrl,
     wgsl_utils::wgsl_interpolate,
 };
-use kiwi_std::{
+use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
     include_file,
 };
+use glam::{vec2, UVec2, Vec2};
+use itertools::Itertools;
 use rand::prelude::*;
 use rand_pcg::Pcg64;
 use wgpu::{

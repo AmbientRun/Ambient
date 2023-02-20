@@ -1,18 +1,18 @@
 [package]
-name = "kiwi_animation"
+name = "ambient_animation"
 version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-kiwi_model = { path = "../model" }
-kiwi_std = { path = "../std" }
-kiwi_ecs = { path = "../ecs" }
-kiwi_element = { path = "../element" }
-kiwi_editor_derive = { path = "../editor_derive" }
-kiwi_ui = { path = "../ui" }
-kiwi_core = { path = "../core" }
+ambient_model = { path = "../model" }
+ambient_std = { path = "../std" }
+ambient_ecs = { path = "../ecs" }
+ambient_element = { path = "../element" }
+ambient_editor_derive = { path = "../editor_derive" }
+ambient_ui = { path = "../ui" }
+ambient_core = { path = "../core" }
 glam = { workspace = true }
 ordered-float = { workspace = true }
 serde = { workspace = true }

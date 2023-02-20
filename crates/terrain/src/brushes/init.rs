@@ -1,9 +1,9 @@
 use std::{borrow::Cow, sync::Arc};
 
+use ambient_gpu::{gpu::Gpu, texture::Texture, wgsl_utils::wgsl_interpolate};
+use ambient_std::include_file;
 use glam::{vec2, Vec2};
 use itertools::Itertools;
-use kiwi_gpu::{gpu::Gpu, texture::Texture, wgsl_utils::wgsl_interpolate};
-use kiwi_std::include_file;
 use rand::prelude::*;
 use rand_pcg::Pcg64;
 use wgpu::{

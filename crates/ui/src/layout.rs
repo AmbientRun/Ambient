@@ -1,24 +1,24 @@
-use glam::{vec2, vec3, vec4, Mat4, Vec2, Vec4};
-use itertools::Itertools;
-use kiwi_core::{
+use ambient_core::{
     gpu_components,
     gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent},
     hierarchy::{children, parent},
     transform::{local_to_parent, mesh_to_local, translation},
 };
-use kiwi_ecs::{components, query, query_mut, Debuggable, Description, DynSystem, EntityId, Name, Networked, Store, SystemGroup, World};
-use kiwi_input::picking::mouse_pickable;
+use ambient_ecs::{components, query, query_mut, Debuggable, Description, DynSystem, EntityId, Name, Networked, Store, SystemGroup, World};
+use ambient_input::picking::mouse_pickable;
+use glam::{vec2, vec3, vec4, Mat4, Vec2, Vec4};
+use itertools::Itertools;
 
 components!("ui", {
     layout: Layout,
     mesh_to_local_from_size: (),
-    @[Debuggable, Networked, Store, Name["Width"], Description["Width of a ui element"]]
+    @[Debuggable, Networked, Store, Name["Width"], Description["The width of a UI element."]]
     width: f32,
-    @[Debuggable, Networked, Store, Name["Height"], Description["Height of a ui element"]]
+    @[Debuggable, Networked, Store, Name["Height"], Description["The height of a UI element."]]
     height: f32,
-    @[Debuggable, Networked, Store, Name["Min width"], Description["Min width of a ui element"]]
+    @[Debuggable, Networked, Store, Name["Minimum width"], Description["The minimum width of a UI element."]]
     min_width: f32,
-    @[Debuggable, Networked, Store, Name["Min height"], Description["Min height of a ui element"]]
+    @[Debuggable, Networked, Store, Name["Minimum height"], Description["The minimum height of a UI element."]]
     min_height: f32,
     margin: Borders,
     padding: Borders,

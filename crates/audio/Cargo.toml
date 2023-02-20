@@ -1,5 +1,5 @@
 [package]
-name = "kiwi_audio"
+name = "ambient_audio"
 version = { workspace = true }
 edition = "2021"
 
@@ -22,11 +22,11 @@ ordered-float = { workspace = true }
 dashmap = { workspace = true }
 derivative = { workspace = true }
 
-kiwi_ui = { path = "../ui/" }
+ambient_ui = { path = "../ui/" }
 cpal = "0.14.1"
 lewton = "0.10.2"
 hound = "3.4.0"
-kiwi_std = { path = "../std" }
+ambient_std = { path = "../std" }
 serde = { workspace = true, features = ["derive"] }
 rand_chacha = "0.3.1"
 static_assertions = "1.1"

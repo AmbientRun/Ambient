@@ -1,23 +1,23 @@
-use anyhow::Context;
-use glam::{Mat4, Vec3, Vec3Swizzles};
-use itertools::{izip, process_results, Itertools};
-use kiwi_core::{
+use ambient_core::{
     self, selectable, snap_to_ground,
     transform::{get_world_transform, rotation, scale, translation},
 };
-use kiwi_ecs::{components, EntityData, EntityId, World};
-use kiwi_intent::{use_old_state, IntentContext, IntentRegistry};
-use kiwi_network::get_player_by_user_id;
-use kiwi_physics::{collider::collider_shapes_convex, main_physics_scene, physx::rigid_actor, PxShapeUserData};
+use ambient_ecs::{components, EntityData, EntityId, World};
+use ambient_intent::{use_old_state, IntentContext, IntentRegistry};
+use ambient_network::get_player_by_user_id;
+use ambient_physics::{collider::collider_shapes_convex, main_physics_scene, physx::rigid_actor, PxShapeUserData};
+use anyhow::Context;
+use glam::{Mat4, Vec3, Vec3Swizzles};
+use itertools::{izip, process_results, Itertools};
 
-use kiwi_std::shapes::{Ray, Shape, AABB};
-use kiwi_terrain::get_terrain_height;
+use ambient_std::shapes::{Ray, Shape, AABB};
+use ambient_terrain::get_terrain_height;
 use ordered_float::OrderedFloat;
 use physxx::{PxActor, PxQueryFilterData, PxRaycastCallback, PxTransform, PxUserData};
 use serde::{Deserialize, Serialize};
 
 use crate::{selection, ui::entity_editor::ObjectComponentChange, Selection};
-use kiwi_object::object_from_url;
+use ambient_object::object_from_url;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct IntentTransformRevert {
@@ -275,7 +275,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
             let intersect = find_world_intersection_without_entities(world, ray, &ids, 500.);
 
             let target = if let Some(mut intersect) = intersect {
-                use kiwi_terrain::terrain_world_cell;
+                use ambient_terrain::terrain_world_cell;
 
                 // The terrain should always offset upwards
                 if world.get(intersect.id, terrain_world_cell()).is_ok() {
@@ -618,7 +618,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
         use_old_state,
     );
 
-    kiwi_terrain::intents::register_intents(reg);
+    ambient_terrain::intents::register_intents(reg);
     // Box::new(common_intent_systems()),
     // ],
 }

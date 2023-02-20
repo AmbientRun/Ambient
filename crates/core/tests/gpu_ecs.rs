@@ -1,14 +1,16 @@
 use std::sync::Arc;
 
+use ambient_core::{
+    gpu_components,
+    gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorld, GpuWorldShaderModuleKey, GpuWorldSyncEvent, GpuWorldUpdater},
+};
+use ambient_ecs::{components, ArchetypeFilter, Component, EntityData, EntityId, System, SystemGroup, World};
+use ambient_gpu::{
+    gpu::{Gpu, GpuKey},
+    gpu_run::GpuRun,
+};
+use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use glam::{vec4, Vec4};
-use kiwi_core::{
-    gpu_components, gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorld, GpuWorldShaderModuleKey, GpuWorldSyncEvent, GpuWorldUpdater}
-};
-use kiwi_ecs::{components, ArchetypeFilter, Component, EntityData, EntityId, System, SystemGroup, World};
-use kiwi_gpu::{
-    gpu::{Gpu, GpuKey}, gpu_run::GpuRun
-};
-use kiwi_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use maplit::hashmap;
 use parking_lot::Mutex;
 use tokio::runtime::Runtime;
@@ -31,7 +33,7 @@ struct TestCommon {
 }
 impl TestCommon {
     async fn new() -> Self {
-        kiwi_core::init_all_components();
+        ambient_core::init_all_components();
         init_components();
         init_gpu_components();
         let gpu = Arc::new(Gpu::new(None).await);
@@ -47,8 +49,8 @@ impl TestCommon {
                 Box::new(ComponentToGpuSystem::new(GpuComponentFormat::Vec4, tomato(), gpu_components::tomato())),
             ],
         );
-        world.add_component(world.resource_entity(), kiwi_core::gpu_ecs::gpu_world(), gpu_world.clone()).unwrap();
-        world.add_component(world.resource_entity(), kiwi_core::gpu(), gpu).unwrap();
+        world.add_component(world.resource_entity(), ambient_core::gpu_ecs::gpu_world(), gpu_world.clone()).unwrap();
+        world.add_component(world.resource_entity(), ambient_core::gpu(), gpu).unwrap();
 
         Self { world, gpu_world, sync, assets }
     }

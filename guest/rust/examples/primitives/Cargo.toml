@@ -1,10 +1,11 @@
 [package]
 name = "primitives"
 edition = "2021"
-version = "0.0.1"
+version = { workspace = true }
+publish = false
 
 [dependencies]
-kiwi_api = "0.0.3"
+ambient_api = { path = "../../api" }
 
 [lib]
 crate-type = ["cdylib"]

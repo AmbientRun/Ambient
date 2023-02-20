@@ -1,17 +1,15 @@
 use std::{collections::HashSet, sync::Arc};
 
+use ambient_asset_cache::SyncAssetKey;
+use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use anyhow::Context;
 use context::PipelineCtx;
 use futures::{future::BoxFuture, StreamExt};
 use image::ImageFormat;
-use kiwi_asset_cache::SyncAssetKey;
-use kiwi_std::{
-    asset_cache::AssetCache, asset_url::{AbsAssetUrl, AssetType}
-};
 use out_asset::{OutAsset, OutAssetContent, OutAssetPreview};
 use serde::{Deserialize, Serialize};
 
-use self::{materials::MaterialsPipeline, models::ModelsPipeline, out_asset::asset_id_from_url};
+use self::{materials::MaterialsPipeline, models::ModelsPipeline};
 
 pub mod audio;
 pub mod context;
@@ -22,24 +20,31 @@ pub mod out_asset;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum PipelineConfig {
+    /// The models asset pipeline.
+    /// Will import models (including constituent materials and animations) and generate object definitions for them by default.
     Models(ModelsPipeline),
-    ScriptBundles,
+    /// The materials asset pipeline.
+    /// Will import specific materials without needing to be part of a model.
     Materials(MaterialsPipeline),
+    /// The audio asset pipeline.
+    /// Will import supported audio file formats and produce Ogg Vorbis files to be used by the runtime.
     Audio,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub struct Pipeline {
+    /// The type of pipeline to use.
     pub pipeline: PipelineConfig,
-    /// Filter sources; this is a list of glob patterns for accepted files
-    /// All files are accepted if this is empty
+    /// Filter the sources used to feed this pipeline.
+    /// This is a list of glob patterns for accepted files.
+    /// All files are accepted if this is empty.
     #[serde(default)]
     pub sources: Vec<String>,
-    /// Tags to apply to the output resources
+    /// Tags to apply to the output resources.
     #[serde(default)]
     pub tags: Vec<String>,
-    /// Categories ot apply to the output resources
+    /// Categories to apply to the output resources.
     #[serde(default)]
     pub categories: Vec<Vec<String>>,
 }
@@ -47,29 +52,6 @@ impl Pipeline {
     pub async fn process(&self, ctx: PipelineCtx) -> Vec<OutAsset> {
         let mut assets = match &self.pipeline {
             PipelineConfig::Models(config) => models::pipeline(&ctx, config.clone()).await,
-            PipelineConfig::ScriptBundles => {
-                ctx.process_files(
-                    |f| f.extension() == Some("script_bundle".to_string()),
-                    |ctx, file| async move {
-                        let bundle = file.download_bytes(&ctx.process_ctx.assets).await.unwrap();
-                        let content =
-                            ctx.write_file(ctx.in_root().relative_path(file.path()).with_extension("script_bundle"), bundle).await;
-
-                        Ok(vec![OutAsset {
-                            id: asset_id_from_url(&file),
-                            type_: AssetType::ScriptBundle,
-                            hidden: false,
-                            name: file.path().file_name().unwrap().to_string(),
-                            tags: Vec::new(),
-                            categories: Default::default(),
-                            preview: OutAssetPreview::None,
-                            content: OutAssetContent::Content(content),
-                            source: Some(file.clone()),
-                        }])
-                    },
-                )
-                .await
-            }
             PipelineConfig::Materials(config) => materials::pipeline(&ctx, config.clone()).await,
             PipelineConfig::Audio => audio::pipeline(&ctx).await,
         };
@@ -87,14 +69,30 @@ impl Pipeline {
 
 pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
     log::info!("Processing pipeline with out_root={}", ctx.out_root);
-    futures::stream::iter(ctx.files.iter())
+
+    #[derive(Debug, Clone, Deserialize)]
+    #[serde(untagged)]
+    enum PipelineOneOrMany {
+        Many(Vec<Pipeline>),
+        One(Pipeline),
+    }
+    impl PipelineOneOrMany {
+        fn into_vec(self) -> Vec<Pipeline> {
+            match self {
+                PipelineOneOrMany::Many(v) => v,
+                PipelineOneOrMany::One(p) => vec![p],
+            }
+        }
+    }
+
+    futures::stream::iter(ctx.files.0.iter())
         .filter_map(|file| async move {
-            let pipelines: Vec<Pipeline> = if file.0.path().ends_with("pipeline.json") {
+            let pipelines: PipelineOneOrMany = if file.0.path().ends_with("pipeline.json") {
                 file.download_json(&ctx.assets).await.unwrap()
             } else {
                 return None;
             };
-            Some((file, pipelines))
+            Some((file, pipelines.into_vec()))
         })
         .flat_map(|(file, pipelines)| {
             futures::stream::iter(pipelines.into_iter().enumerate().map(|(i, pipeline)| {
@@ -106,6 +104,7 @@ pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
         .map(|(pipeline_file, pipeline)| {
             let root = pipeline_file.join(".").unwrap();
             let ctx = PipelineCtx {
+                files: ctx.files.sub_directory(root.path().as_str()),
                 process_ctx: ctx.clone(),
                 pipeline: Arc::new(pipeline.clone()),
                 pipeline_file,
@@ -127,7 +126,7 @@ impl SyncAssetKey<ProcessCtx> for ProcessCtxKey {}
 #[derive(Clone)]
 pub struct ProcessCtx {
     pub assets: AssetCache,
-    pub files: Arc<Vec<AbsAssetUrl>>,
+    pub files: FileCollection,
     pub input_file_filter: Option<String>,
     pub package_name: String,
     pub in_root: AbsAssetUrl,
@@ -136,16 +135,21 @@ pub struct ProcessCtx {
     pub on_status: Arc<dyn Fn(String) -> BoxFuture<'static, ()> + Sync + Send>,
     pub on_error: Arc<dyn Fn(anyhow::Error) -> BoxFuture<'static, ()> + Sync + Send>,
 }
-impl ProcessCtx {
+#[derive(Clone)]
+pub struct FileCollection(pub Arc<Vec<AbsAssetUrl>>);
+impl FileCollection {
     pub fn has_input_file(&self, url: &AbsAssetUrl) -> bool {
-        self.files.iter().any(|x| x == url)
+        self.0.iter().any(|x| x == url)
     }
     pub fn find_file_res(&self, glob_pattern: impl AsRef<str>) -> anyhow::Result<&AbsAssetUrl> {
         self.find_file(&glob_pattern).with_context(|| format!("Failed to find file with pattern {}", glob_pattern.as_ref()))
     }
     pub fn find_file(&self, glob_pattern: impl AsRef<str>) -> Option<&AbsAssetUrl> {
         let pattern = glob::Pattern::new(glob_pattern.as_ref()).unwrap();
-        self.files.iter().find(|f| pattern.matches(f.path().as_str()))
+        self.0.iter().find(|f| pattern.matches(f.path().as_str()))
+    }
+    pub fn sub_directory(&self, path: &str) -> Self {
+        Self(Arc::new(self.0.iter().filter(|url| url.path().starts_with(path)).cloned().collect()))
     }
 }
 

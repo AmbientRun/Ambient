@@ -1,12 +1,12 @@
 [package]
-name = "kiwi_curve"
+name = "ambient_curve"
 version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-kiwi_std = { path = "../std" }
+ambient_std = { path = "../std" }
 
 [dev-dependencies]
 glam = { workspace = true }

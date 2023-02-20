@@ -1,8 +1,8 @@
+use ambient_core::{camera::*, transform::*, ui_scene, window_logical_size};
+use ambient_ecs::{components, query_mut, Description, Name, Networked, Store, SystemGroup};
+use ambient_element::{element_component, Element, Hooks};
+use ambient_std::shapes::BoundingBox;
 use glam::{Mat4, Quat, Vec3};
-use kiwi_core::{camera::*, transform::*, ui_scene, window_logical_size};
-use kiwi_ecs::{components, query_mut, Description, Name, Networked, Store, SystemGroup, World};
-use kiwi_element::{element_component, Element, Hooks};
-use kiwi_std::shapes::BoundingBox;
 use winit::event::Event;
 
 use crate::{free::free_camera_system, spherical::spherical_camera_system};
@@ -33,7 +33,7 @@ pub fn assets_camera_systems() -> SystemGroup<Event<'static, ()>> {
 pub fn ui_camera_system() -> SystemGroup<Event<'static, ()>> {
     SystemGroup::new(
         "ui_camera_system",
-        vec![query_mut((orthographic(), local_to_world()), (ui_camera(),)).to_system(|q, world, qs, _| {
+        vec![query_mut((orthographic_rect(), local_to_world()), (ui_camera(),)).to_system(|q, world, qs, _| {
             let window_size = world.resource(window_logical_size()).as_vec2();
             for (_, (orth, ltw), (_,)) in q.iter(world, qs) {
                 *ltw = Mat4::from_translation((window_size / 2.).extend(0.));
@@ -47,13 +47,13 @@ pub fn ui_camera_system() -> SystemGroup<Event<'static, ()>> {
 }
 
 #[element_component]
-pub fn UICamera(_: &mut World, _: &mut Hooks) -> Element {
+pub fn UICamera(_: &mut Hooks) -> Element {
     Element::new()
         .init_default(local_to_world())
         .init_default(inv_local_to_world())
         .init(near(), -1.)
         .init(far(), 1.0)
-        .init(orthographic(), OrthographicRect { left: 0.0, right: 100., top: 0., bottom: 100. })
+        .init(orthographic_rect(), OrthographicRect { left: 0.0, right: 100., top: 0., bottom: 100. })
         .init_default(projection())
         .init_default(projection_view())
         .init_default(translation())
@@ -63,7 +63,7 @@ pub fn UICamera(_: &mut World, _: &mut Hooks) -> Element {
 }
 
 #[element_component]
-pub fn LookatCamera(_: &mut World, _: &mut Hooks, eye: Vec3, lookat: Vec3, up: Vec3) -> Element {
+pub fn LookatCamera(_: &mut Hooks, eye: Vec3, lookat: Vec3, up: Vec3) -> Element {
     Element::new()
         .init_default(local_to_world())
         .init_default(inv_local_to_world())
@@ -80,7 +80,7 @@ pub fn LookatCamera(_: &mut World, _: &mut Hooks, eye: Vec3, lookat: Vec3, up: V
 }
 
 #[element_component]
-pub fn FreeCamera(_: &mut World, _: &mut Hooks, position: Vec3, rotation: Quat) -> Element {
+pub fn FreeCamera(_: &mut Hooks, position: Vec3, rotation: Quat) -> Element {
     Element::new()
         .init_default(local_to_world())
         .init_default(inv_local_to_world())
@@ -91,11 +91,11 @@ pub fn FreeCamera(_: &mut World, _: &mut Hooks, position: Vec3, rotation: Quat) 
         .init(aspect_ratio_from_window(), ())
         .init_default(projection())
         .init_default(projection_view())
-        .set(kiwi_core::transform::translation(), position)
-        .set(kiwi_core::transform::rotation(), rotation)
+        .set(ambient_core::transform::translation(), position)
+        .set(ambient_core::transform::rotation(), rotation)
 }
 
 #[element_component]
-pub fn FittedOrthographicCamera(_: &mut World, _: &mut Hooks, eye: Vec3, lookat: Vec3, up: Vec3, fit: BoundingBox, aspect: f32) -> Element {
+pub fn FittedOrthographicCamera(_: &mut Hooks, eye: Vec3, lookat: Vec3, up: Vec3, fit: BoundingBox, aspect: f32) -> Element {
     Element::new().extend(Camera::fitted_ortographic(eye, lookat, up, fit, aspect).to_entity_data())
 }

@@ -1,25 +1,31 @@
 use std::{collections::HashMap, io::Cursor, sync::Arc};
 
+use ambient_core::{
+    hierarchy::{children, parent},
+    name,
+    transform::{get_world_transform, mesh_to_local, rotation, scale, translation},
+};
+use ambient_ecs::{EntityData, EntityId, World};
+use ambient_model::{pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl};
+use ambient_model_import::{
+    dotdot_path,
+    model_crate::{cap_texture_size, ModelCrate},
+    ModelImportPipeline, ModelImportTransform, ModelTransform, RelativePathBufExt,
+};
+use ambient_renderer::{
+    lod::{gpu_lod, lod_cutoffs},
+    materials::pbr_material::PbrMaterialFromUrl,
+};
+use ambient_std::{
+    asset_cache::AssetCache,
+    asset_url::{AbsAssetUrl, AssetType, ModelCrateAssetType, TypedAssetUrl},
+};
 use anyhow::Context;
 use async_recursion::async_recursion;
 use futures::{future::join_all, FutureExt};
 use glam::{Mat4, Vec3, Vec4};
 use image::ImageOutputFormat;
 use itertools::Itertools;
-use kiwi_core::{
-    hierarchy::{children, parent}, name, transform::{get_world_transform, mesh_to_local, rotation, scale, translation}
-};
-use kiwi_ecs::{EntityData, EntityId, World};
-use kiwi_model::{pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl};
-use kiwi_model_import::{
-    dotdot_path, model_crate::{cap_texture_size, ModelCrate}, ModelImportPipeline, ModelImportTransform, ModelTransform, RelativePathBufExt
-};
-use kiwi_renderer::{
-    lod::{gpu_lod, lod_cutoffs}, materials::pbr_material::PbrMaterialFromUrl
-};
-use kiwi_std::{
-    asset_cache::AssetCache, asset_url::{AbsAssetUrl, AssetType, ModelCrateAssetType, TypedAssetUrl}
-};
 use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
 use unity_parser::{parse_unity_yaml, prefab::PrefabObject, UnityRef};
@@ -36,11 +42,10 @@ pub struct UnityConfig {
 
 pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeline) -> Vec<OutAsset> {
     let guid_lookup = join_all(
-        ctx.process_ctx
-            .files
+        ctx.files
+            .0
             .iter()
             .cloned()
-            .filter(|file| file.path().starts_with(ctx.in_root().path()))
             .filter_map(|file| {
                 if let Some(base_path) = file.path().as_str().strip_suffix(".meta") {
                     let base_path = base_path.to_string();
@@ -145,7 +150,7 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                     let mut asset_crate = pipeline.produce_crate(ctx.assets()).await.unwrap();
                     for mat in asset_crate.materials.content.values_mut() {
                         let name = mat.name.clone().unwrap();
-                        let material_url = ctx.process_ctx.find_file(format!("**/Materials/{name}.mat")).unwrap();
+                        let material_url = ctx.files.find_file(format!("**/Materials/{name}.mat")).unwrap();
                         *mat = materials.lock().await.get_unity_material(&config, &guid_lookup, material_url, &name).await.unwrap();
                         *mat = mat.relative_path_from(&out_root.push("materials").unwrap());
                     }

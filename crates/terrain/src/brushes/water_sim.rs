@@ -1,9 +1,9 @@
 use std::borrow::Cow;
 
+use ambient_editor_derive::ElementEditor;
+use ambient_gpu::{gpu::Gpu, texture::TextureView};
+use ambient_std::include_file;
 use glam::UVec2;
-use kiwi_editor_derive::ElementEditor;
-use kiwi_gpu::{gpu::Gpu, texture::TextureView};
-use kiwi_std::include_file;
 use serde::{Deserialize, Serialize};
 use wgpu::util::DeviceExt;
 

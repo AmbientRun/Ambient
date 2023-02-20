@@ -1,12 +1,12 @@
 use std::{collections::HashMap, sync::Arc};
 
-use kiwi_core::runtime;
-use kiwi_ecs::{
+use ambient_core::runtime;
+use ambient_ecs::{
     query, ArchetypeFilter, Component, ComponentQuery, ComponentValue, ECSError, EntityId, FrameEvent, QueryState, TypedReadQuery, World,
     WorldDiff,
 };
-use kiwi_element::{Hooks, Setter};
-use kiwi_std::{cb, Cb};
+use ambient_element::{Hooks, Setter};
+use ambient_std::{cb, Cb};
 
 use crate::{client::GameClient, log_network_result, persistent_resources, player, rpc::rpc_world_diff, synced_resources, user_id};
 
@@ -20,7 +20,7 @@ pub fn use_remote_world_system<
     run: F,
 ) {
     let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
-    let query_state = hooks.use_ref_with(QueryState::new);
+    let query_state = hooks.use_ref_with(|_| QueryState::new());
     hooks.use_frame(move |_| {
         let mut game_state = game_client.game_state.lock();
         let mut qs = query_state.lock();
@@ -34,11 +34,11 @@ pub fn use_remote_component<T: ComponentValue + std::fmt::Debug>(
     component: Component<T>,
 ) -> Result<T, ECSError> {
     let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
-    let component_version = hooks.use_ref_with(|| {
+    let component_version = hooks.use_ref_with(|_| {
         let game_state = game_client.game_state.lock();
         game_state.world.get_component_content_version(entity, component.index()).ok()
     });
-    let (value, set_value) = hooks.use_state_with(|| {
+    let (value, set_value) = hooks.use_state_with(|_| {
         let game_state = game_client.game_state.lock();
         game_state.world.get_ref(entity, component).cloned()
     });
@@ -56,18 +56,17 @@ pub fn use_remote_component<T: ComponentValue + std::fmt::Debug>(
 
 #[allow(clippy::type_complexity)]
 pub fn use_remote_components<T: ComponentValue + std::fmt::Debug>(
-    world: &mut World,
     hooks: &mut Hooks,
     arch_filter: ArchetypeFilter,
     component: Component<T>,
 ) -> Vec<(EntityId, T, Cb<dyn Fn(Option<T>) + Sync + Send>)> {
     let (values, set_values) = hooks.use_state(HashMap::new());
-    let runtime = world.resource(runtime()).clone();
+    let runtime = hooks.world.resource(runtime()).clone();
 
     let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
-    let qs_changed = hooks.use_ref_with(QueryState::new);
-    let qs_despawned = hooks.use_ref_with(QueryState::new);
-    let values_intermediate = hooks.use_ref_with(HashMap::new);
+    let qs_changed = hooks.use_ref_with(|_| QueryState::new());
+    let qs_despawned = hooks.use_ref_with(|_| QueryState::new());
+    let values_intermediate = hooks.use_ref_with(|_| HashMap::new());
     hooks.use_frame(move |_| {
         let set_values = set_values.clone();
         let game_state = game_client.game_state.lock();
@@ -114,7 +113,6 @@ pub fn use_remote_components<T: ComponentValue + std::fmt::Debug>(
 #[allow(clippy::type_complexity)]
 pub fn use_remote_first_component<T: ComponentValue + std::fmt::Debug>(
     hooks: &mut Hooks,
-    world: &mut World,
     arch_filter: ArchetypeFilter,
     component: Component<T>,
 ) -> (Option<T>, Arc<dyn Fn(Option<T>) + Sync + Send>) {
@@ -137,7 +135,7 @@ pub fn use_remote_first_component<T: ComponentValue + std::fmt::Debug>(
         }
     });
     let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
-    let runtime = world.resource(runtime()).clone();
+    let runtime = hooks.world.resource(runtime()).clone();
     (
         value,
         Arc::new(move |value| {
@@ -163,20 +161,18 @@ pub fn use_remote_first_component<T: ComponentValue + std::fmt::Debug>(
 /// A **persistent** component shared with all clients
 pub fn use_remote_persisted_resource<T: ComponentValue + std::fmt::Debug>(
     hooks: &mut Hooks,
-    world: &mut World,
     component: Component<T>,
 ) -> (Option<T>, Arc<dyn Fn(Option<T>) + Sync + Send>) {
-    use_remote_first_component(hooks, world, ArchetypeFilter::new().incl(persistent_resources()), component)
+    use_remote_first_component(hooks, ArchetypeFilter::new().incl(persistent_resources()), component)
 }
 
 #[allow(clippy::type_complexity)]
 /// A **non** persistent component shared with all clients
 pub fn use_remote_synced_resource<T: ComponentValue + std::fmt::Debug>(
     hooks: &mut Hooks,
-    world: &mut World,
     component: Component<T>,
 ) -> (Option<T>, Arc<dyn Fn(Option<T>) + Sync + Send>) {
-    use_remote_first_component(hooks, world, ArchetypeFilter::new().incl(synced_resources()), component)
+    use_remote_first_component(hooks, ArchetypeFilter::new().incl(synced_resources()), component)
 }
 
 pub fn use_player_id(hooks: &mut Hooks) -> Option<EntityId> {
@@ -192,7 +188,6 @@ pub fn use_player_id(hooks: &mut Hooks) -> Option<EntityId> {
     ent
 }
 pub fn use_remote_player_component<T: ComponentValue + Default + std::fmt::Debug + Clone>(
-    world: &mut World,
     hooks: &mut Hooks,
     component: Component<T>,
 ) -> (T, Setter<T>) {
@@ -207,7 +202,7 @@ pub fn use_remote_player_component<T: ComponentValue + Default + std::fmt::Debug
     });
 
     let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
-    let runtime = world.resource(runtime()).clone();
+    let runtime = hooks.world.resource(runtime()).clone();
     let set_value = cb(move |new_value| {
         let game_client = game_client.clone();
         runtime.spawn(async move {

@@ -1,14 +1,14 @@
-use kiwi_app::AppBuilder;
-use kiwi_cameras::UICamera;
-use kiwi_core::camera::active_camera;
-use kiwi_ecs::World;
-use kiwi_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
-use kiwi_ui::*;
+use ambient_app::AppBuilder;
+use ambient_cameras::UICamera;
+use ambient_core::camera::active_camera;
+use ambient_ecs::World;
+use ambient_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
+use ambient_ui::*;
 
 #[derive(Debug, Clone)]
 struct Example;
 impl ElementComponent for Example {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (f32_value, set_f32_value) = hooks.use_state(0.);
         let (f32_exp_value, set_f32_exp_value) = hooks.use_state(0.1);
         let (i32_value, set_i32_value) = hooks.use_state(0);

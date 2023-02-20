@@ -1,13 +1,15 @@
 use std::sync::Arc;
 
-use async_trait::async_trait;
-use kiwi_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetUrl}, download_asset::{AssetError, BytesFromUrlCachedPath}
+use ambient_std::{
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt},
+    asset_url::{AbsAssetUrl, AssetUrl},
+    download_asset::{AssetError, AssetsCacheOnDisk, BytesFromUrl, BytesFromUrlCachedPath},
 };
-use physxx::{PxConvexMesh, PxDefaultFileInputData, PxTriangleMesh};
+use async_trait::async_trait;
+use physxx::{PxConvexMesh, PxDefaultFileInputData, PxDefaultMemoryInputData, PxPhysicsRef, PxTriangleMesh};
 use serde::{Deserialize, Serialize};
 
-use crate::{physx::PhysicsKey, rc_asset::PxRcAsset};
+use crate::rc_asset::PxRcAsset;
 
 pub const PHYSX_TRIANGLE_MESH_EXTENSION: &str = "pxtm";
 pub const PHYSX_CONVEX_MESH_EXTENSION: &str = "pxcm";
@@ -49,13 +51,21 @@ impl PhysxTriangleMeshFromUrl {
 #[async_trait]
 impl AsyncAssetKey<Result<PxRcAsset<PxTriangleMesh>, AssetError>> for PhysxTriangleMeshFromUrl {
     async fn load(self, assets: AssetCache) -> Result<PxRcAsset<PxTriangleMesh>, AssetError> {
-        let file = BytesFromUrlCachedPath { url: self.0.unwrap_abs() }.get(&assets).await?;
-        tokio::task::block_in_place(|| {
-            let mem = PxDefaultFileInputData::new(&*file);
-            let physics = PhysicsKey.get(&assets);
-            let mesh = PxTriangleMesh::new(physics.physics, &mem);
-            Ok(PxRcAsset(mesh))
-        })
+        if AssetsCacheOnDisk.get(&assets) {
+            let file = BytesFromUrlCachedPath { url: self.0.unwrap_abs() }.get(&assets).await?;
+            tokio::task::block_in_place(|| {
+                let mem = PxDefaultFileInputData::new(&*file);
+                let mesh = PxTriangleMesh::new(PxPhysicsRef::get(), &mem);
+                Ok(PxRcAsset(mesh))
+            })
+        } else {
+            let data = BytesFromUrl { url: self.0.unwrap_abs(), cache_on_disk: false }.get(&assets).await?;
+            tokio::task::block_in_place(|| {
+                let mem = PxDefaultMemoryInputData::new((*data).clone());
+                let mesh = PxTriangleMesh::new(PxPhysicsRef::get(), &mem);
+                Ok(PxRcAsset(mesh))
+            })
+        }
     }
     fn cpu_size(&self, value: &Result<PxRcAsset<PxTriangleMesh>, AssetError>) -> Option<usize> {
         value.as_ref().ok().map(|mesh| {
@@ -76,12 +86,20 @@ impl PhysxConvexMeshFromUrl {
 #[async_trait]
 impl AsyncAssetKey<Result<PxRcAsset<PxConvexMesh>, AssetError>> for PhysxConvexMeshFromUrl {
     async fn load(self, assets: AssetCache) -> Result<PxRcAsset<PxConvexMesh>, AssetError> {
-        let file = BytesFromUrlCachedPath { url: self.0.unwrap_abs() }.get(&assets).await?;
-        tokio::task::block_in_place(|| {
-            let mem = PxDefaultFileInputData::new(&*file);
-            let physics = PhysicsKey.get(&assets);
-            let mesh = PxConvexMesh::new(physics.physics, &mem);
-            Ok(PxRcAsset(mesh))
-        })
+        if AssetsCacheOnDisk.get(&assets) {
+            let file = BytesFromUrlCachedPath { url: self.0.unwrap_abs() }.get(&assets).await?;
+            tokio::task::block_in_place(|| {
+                let mem = PxDefaultFileInputData::new(&*file);
+                let mesh = PxConvexMesh::new(PxPhysicsRef::get(), &mem);
+                Ok(PxRcAsset(mesh))
+            })
+        } else {
+            let data = BytesFromUrl { url: self.0.unwrap_abs(), cache_on_disk: false }.get(&assets).await?;
+            tokio::task::block_in_place(|| {
+                let mem = PxDefaultMemoryInputData::new((*data).clone());
+                let mesh = PxConvexMesh::new(PxPhysicsRef::get(), &mem);
+                Ok(PxRcAsset(mesh))
+            })
+        }
     }
 }

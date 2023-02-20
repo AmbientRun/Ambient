@@ -1,26 +1,26 @@
-use kiwi_app::AppBuilder;
-use kiwi_cameras::UICamera;
-use kiwi_core::{asset_cache, camera::active_camera, runtime};
-use kiwi_ecs::World;
-use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use kiwi_gpu::std_assets::PixelTextureViewKey;
-use kiwi_std::{asset_cache::SyncAssetKeyExt, color::Color};
-use kiwi_ui::{FlowColumn, Image, Text, UIExt};
+use ambient_app::AppBuilder;
+use ambient_cameras::UICamera;
+use ambient_core::{asset_cache, camera::active_camera, runtime};
+use ambient_ecs::World;
+use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_gpu::std_assets::PixelTextureViewKey;
+use ambient_std::{asset_cache::SyncAssetKeyExt, color::Color};
+use ambient_ui::{FlowColumn, Image, Text, UIExt};
 
 #[derive(Debug, Clone)]
 struct Example;
 impl ElementComponent for Example {
-    fn render(self: Box<Self>, world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (_, set_k) = hooks.use_state(1.0);
 
-        let assets = world.resource(asset_cache());
+        let assets = hooks.world.resource(asset_cache());
 
         let texture = PixelTextureViewKey::white().get(assets);
-        let runtime = world.resource(runtime());
-        hooks.use_memo_with((), move |_| {
+        let runtime = hooks.world.resource(runtime()).clone();
+        hooks.use_memo_with((), move |_, _| {
             runtime.spawn(async move {
                 log::info!("Spawning task");
-                use kiwi_std::IntoDuration;
+                use ambient_std::IntoDuration;
                 tokio::time::sleep(5.secs()).await;
                 set_k(5.0)
             });

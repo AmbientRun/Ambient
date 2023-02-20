@@ -3,6 +3,35 @@
 version = 3
 
 [[package]]
+name = "ambient_api"
+version = "0.0.16"
+dependencies = [
+ "ambient_api_macros",
+ "anyhow",
+ "bincode",
+ "data-encoding",
+ "glam",
+ "once_cell",
+ "paste",
+ "rand",
+ "serde",
+ "wasi",
+]
+
+[[package]]
+name = "ambient_api_macros"
+version = "0.0.16"
+dependencies = [
+ "anyhow",
+ "indoc",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "syn",
+ "toml 0.7.2",
+]
+
+[[package]]
 name = "anyhow"
 version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -19,16 +48,16 @@ dependencies = [
 
 [[package]]
 name = "asset_loading"
-version = "0.0.1"
+version = "0.0.16"
 dependencies = [
- "kiwi_api",
+ "ambient_api",
 ]
 
 [[package]]
 name = "async"
-version = "0.0.1"
+version = "0.0.16"
 dependencies = [
- "kiwi_api",
+ "ambient_api",
 ]
 
 [[package]]
@@ -51,6 +80,12 @@ name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
+
+[[package]]
+name = "data-encoding"
+version = "2.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "23d8666cb01533c39dde32bcbab8e227b4ed6679b2c925eba05feabea39508fb"
 
 [[package]]
 name = "find-crate"
@@ -104,34 +139,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6fe2b9d82064e8a0226fddb3547f37f28eaa46d0fc210e275d835f08cf3b76a7"
 
 [[package]]
-name = "kiwi_api"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "bincode",
- "glam",
- "kiwi_api_macros",
- "once_cell",
- "paste",
- "rand",
- "serde",
- "wasi",
-]
-
-[[package]]
-name = "kiwi_api_macros"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "indoc",
- "proc-macro2",
- "quote",
- "serde",
- "syn",
- "toml 0.7.2",
-]
-
-[[package]]
 name = "libc"
 version = "0.2.139"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -145,9 +152,9 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
 name = "multiplayer"
-version = "0.0.1"
+version = "0.0.16"
 dependencies = [
- "kiwi_api",
+ "ambient_api",
  "rand",
 ]
 
@@ -249,9 +256,9 @@ dependencies = [
 
 [[package]]
 name = "physics"
-version = "0.0.1"
+version = "0.0.16"
 dependencies = [
- "kiwi_api",
+ "ambient_api",
 ]
 
 [[package]]
@@ -262,9 +269,9 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 
 [[package]]
 name = "primitives"
-version = "0.0.1"
+version = "0.0.16"
 dependencies = [
- "kiwi_api",
+ "ambient_api",
 ]
 
 [[package]]
@@ -352,16 +359,16 @@ checksum = "7bd3e3206899af3f8b12af284fafc038cc1dc2b41d1b89dd17297221c5d225de"
 
 [[package]]
 name = "skinmesh"
-version = "0.0.1"
+version = "0.0.16"
 dependencies = [
- "kiwi_api",
+ "ambient_api",
 ]
 
 [[package]]
 name = "sun"
-version = "0.0.1"
+version = "0.0.16"
 dependencies = [
- "kiwi_api",
+ "ambient_api",
 ]
 
 [[package]]
@@ -377,16 +384,16 @@ dependencies = [
 
 [[package]]
 name = "text"
-version = "0.0.1"
+version = "0.0.16"
 dependencies = [
- "kiwi_api",
+ "ambient_api",
 ]
 
 [[package]]
 name = "tictactoe"
-version = "0.0.1"
+version = "0.0.16"
 dependencies = [
- "kiwi_api",
+ "ambient_api",
  "palette",
 ]
 

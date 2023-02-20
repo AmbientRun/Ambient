@@ -1,6 +1,6 @@
-use kiwi_ecs::{ComponentValue, World};
-use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
-use kiwi_std::{cb, Cb};
+use ambient_ecs::{ComponentValue, World};
+use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_std::{cb, Cb};
 
 use crate::{
     align_vertical, space_between_items, Button, ButtonStyle, DialogScreen, Editor, FlowColumn, FlowRow, ScrollArea, StylesExt, Text,
@@ -9,7 +9,6 @@ use crate::{
 
 #[element_component]
 pub fn Alert(
-    _world: &mut World,
     _hooks: &mut Hooks,
     title: String,
     set_screen: Cb<dyn Fn(Option<Element>) + Sync + Send>,
@@ -66,7 +65,6 @@ impl Alert {
 
 #[element_component]
 pub fn Prompt(
-    _world: &mut World,
     hooks: &mut Hooks,
     title: String,
     placeholder: Option<String>,
@@ -145,7 +143,6 @@ impl Prompt {
 
 #[element_component]
 pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + ComponentValue>(
-    _world: &mut World,
     hooks: &mut Hooks,
     title: String,
     value: T,

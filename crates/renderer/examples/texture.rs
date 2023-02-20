@@ -1,20 +1,20 @@
 use std::sync::Arc;
 
-use glam::*;
-use kiwi_app::{gpu, AppBuilder};
-use kiwi_core::{asset_cache, camera::active_camera, main_scene, transform::*};
-use kiwi_ecs::{EntityData, World};
-use kiwi_gpu::{
+use ambient_app::{gpu, AppBuilder};
+use ambient_core::{asset_cache, camera::active_camera, main_scene, transform::*};
+use ambient_ecs::{EntityData, World};
+use ambient_gpu::{
     std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey},
     texture::Texture,
 };
-use kiwi_meshes::CubeMeshKey;
-use kiwi_renderer::{
+use ambient_meshes::CubeMeshKey;
+use ambient_renderer::{
     gpu_primitives,
     materials::pbr_material::{get_pbr_shader, PbrMaterial, PbrMaterialConfig, PbrMaterialParams},
     primitives, RenderPrimitive, SharedMaterial,
 };
-use kiwi_std::{asset_cache::SyncAssetKeyExt, cb, math::SphericalCoords};
+use ambient_std::{asset_cache::SyncAssetKeyExt, cb, math::SphericalCoords};
+use glam::*;
 
 fn init(world: &mut World) {
     let gpu = world.resource(gpu()).clone();
@@ -47,7 +47,7 @@ fn init(world: &mut World) {
         .set_default(mesh_to_world())
         .spawn(world);
 
-    kiwi_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
+    ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
         .set(active_camera(), 0.)
         .set(main_scene(), ())
         .spawn(world);

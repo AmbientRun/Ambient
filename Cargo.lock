@@ -100,10 +100,1090 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient"
+version = "0.0.16"
+dependencies = [
+ "ambient_animation",
+ "ambient_app",
+ "ambient_audio",
+ "ambient_build",
+ "ambient_cameras",
+ "ambient_core",
+ "ambient_debugger",
+ "ambient_decals",
+ "ambient_ecs",
+ "ambient_editor_derive",
+ "ambient_element",
+ "ambient_gizmos",
+ "ambient_gpu",
+ "ambient_input",
+ "ambient_meshes",
+ "ambient_model",
+ "ambient_model_import",
+ "ambient_network",
+ "ambient_object",
+ "ambient_physics",
+ "ambient_primitives",
+ "ambient_project",
+ "ambient_renderer",
+ "ambient_rpc",
+ "ambient_sky",
+ "ambient_std",
+ "ambient_ui",
+ "ambient_wasm",
+ "ambient_water",
+ "ambient_world_audio",
+ "anyhow",
+ "axum",
+ "bincode",
+ "byteorder",
+ "clap 4.1.4",
+ "convert_case 0.6.0",
+ "env_logger 0.10.0",
+ "futures",
+ "glam 0.22.0",
+ "indoc",
+ "local-ip-address",
+ "log",
+ "parking_lot",
+ "paste",
+ "rusty-hook",
+ "serde",
+ "tokio",
+ "toml_edit 0.19.3",
+ "tower-http",
+ "walkdir",
+]
+
+[[package]]
 name = "ambient-authority"
 version = "0.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec8ad6edb4840b78c5c3d88de606b22252d552b55f3a4699fbb10fc070ec3049"
+
+[[package]]
+name = "ambient_animation"
+version = "0.0.16"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_editor_derive",
+ "ambient_element",
+ "ambient_model",
+ "ambient_std",
+ "ambient_ui",
+ "anyhow",
+ "async-trait",
+ "convert_case 0.6.0",
+ "derive_more",
+ "glam 0.22.0",
+ "itertools",
+ "ordered-float",
+ "serde",
+]
+
+[[package]]
+name = "ambient_app"
+version = "0.0.16"
+dependencies = [
+ "ambient_animation",
+ "ambient_cameras",
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_element",
+ "ambient_gizmos",
+ "ambient_gpu",
+ "ambient_input",
+ "ambient_model",
+ "ambient_primitives",
+ "ambient_renderer",
+ "ambient_std",
+ "ambient_ui",
+ "anyhow",
+ "glam 0.22.0",
+ "parking_lot",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "puffin",
+ "puffin_http",
+ "thread-priority",
+ "tokio",
+ "tracing",
+ "wgpu",
+ "winit",
+]
+
+[[package]]
+name = "ambient_asset_cache"
+version = "0.0.16"
+dependencies = [
+ "abort-on-drop",
+ "anyhow",
+ "as-any",
+ "async-trait",
+ "chrono",
+ "futures",
+ "itertools",
+ "parking_lot",
+ "pin-project",
+ "pretty_assertions",
+ "serde",
+ "thiserror",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "ambient_asset_timeline"
+version = "0.0.16"
+dependencies = [
+ "ambient_app",
+ "ambient_cameras",
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_element",
+ "ambient_model",
+ "ambient_renderer",
+ "ambient_std",
+ "ambient_ui",
+ "async-trait",
+ "chrono",
+ "env_logger 0.10.0",
+ "glam 0.22.0",
+ "itertools",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "ambient_audio"
+version = "0.0.16"
+dependencies = [
+ "ambient_std",
+ "ambient_ui",
+ "approx",
+ "async-trait",
+ "byteorder",
+ "circular-queue",
+ "color-eyre",
+ "cpal",
+ "dashmap",
+ "derivative",
+ "derive_more",
+ "flume",
+ "glam 0.22.0",
+ "hound",
+ "itertools",
+ "lewton",
+ "log",
+ "lyon",
+ "macroquad",
+ "num",
+ "ordered-float",
+ "parking_lot",
+ "pretty_assertions",
+ "rand 0.8.5",
+ "rand_chacha 0.3.1",
+ "rayon",
+ "rustfft",
+ "serde",
+ "slotmap",
+ "static_assertions",
+ "thiserror",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "ambient_build"
+version = "0.0.16"
+dependencies = [
+ "ambient_asset_cache",
+ "ambient_core",
+ "ambient_decals",
+ "ambient_ecs",
+ "ambient_model",
+ "ambient_model_import",
+ "ambient_physics",
+ "ambient_project",
+ "ambient_renderer",
+ "ambient_rustc",
+ "ambient_std",
+ "ambient_world_audio",
+ "anyhow",
+ "async-recursion",
+ "async-trait",
+ "cargo_toml",
+ "convert_case 0.6.0",
+ "dyn-clonable",
+ "futures",
+ "glam 0.22.0",
+ "glob",
+ "image",
+ "itertools",
+ "log",
+ "parking_lot",
+ "relative-path",
+ "serde",
+ "serde_json",
+ "slugify",
+ "tokio",
+ "tracing",
+ "unity_parser",
+ "walkdir",
+ "yaml-rust-davvid",
+]
+
+[[package]]
+name = "ambient_cameras"
+version = "0.0.16"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_element",
+ "ambient_std",
+ "derive_more",
+ "glam 0.22.0",
+ "winit",
+]
+
+[[package]]
+name = "ambient_core"
+version = "0.0.16"
+dependencies = [
+ "ambient_ecs",
+ "ambient_gpu",
+ "ambient_std",
+ "bytemuck",
+ "derive_more",
+ "flume",
+ "glam 0.22.0",
+ "itertools",
+ "lazy_static",
+ "log",
+ "maplit",
+ "ordered-float",
+ "parking_lot",
+ "paste",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "serde",
+ "tokio",
+ "wgpu",
+ "winit",
+ "yaml-rust-davvid",
+]
+
+[[package]]
+name = "ambient_curve"
+version = "0.0.16"
+dependencies = [
+ "ambient_std",
+ "glam 0.22.0",
+]
+
+[[package]]
+name = "ambient_debugger"
+version = "0.0.16"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_ecs_editor",
+ "ambient_element",
+ "ambient_element_component",
+ "ambient_gizmos",
+ "ambient_gpu",
+ "ambient_network",
+ "ambient_renderer",
+ "ambient_rpc",
+ "ambient_std",
+ "ambient_ui",
+ "glam 0.22.0",
+ "log",
+ "wgpu",
+ "winit",
+]
+
+[[package]]
+name = "ambient_decals"
+version = "0.0.16"
+dependencies = [
+ "ambient_app",
+ "ambient_asset_cache",
+ "ambient_cameras",
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_element",
+ "ambient_gpu",
+ "ambient_meshes",
+ "ambient_primitives",
+ "ambient_renderer",
+ "ambient_std",
+ "ambient_ui",
+ "env_logger 0.10.0",
+ "glam 0.22.0",
+ "log",
+]
+
+[[package]]
+name = "ambient_ecs"
+version = "0.0.16"
+dependencies = [
+ "ambient_std",
+ "anyhow",
+ "atomic_refcell",
+ "bit-set",
+ "bit-vec",
+ "data-encoding",
+ "derive_more",
+ "downcast-rs",
+ "erased-serde",
+ "glam 0.22.0",
+ "itertools",
+ "lazy_static",
+ "log",
+ "once_cell",
+ "parking_lot",
+ "paste",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "rand 0.8.5",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "smallvec",
+ "thiserror",
+ "tokio",
+ "yaml-rust-davvid",
+]
+
+[[package]]
+name = "ambient_ecs_editor"
+version = "0.0.16"
+dependencies = [
+ "ambient_app",
+ "ambient_cameras",
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_element",
+ "ambient_renderer",
+ "ambient_std",
+ "ambient_ui",
+ "env_logger 0.10.0",
+ "glam 0.22.0",
+ "itertools",
+]
+
+[[package]]
+name = "ambient_editor"
+version = "0.0.16"
+dependencies = [
+ "ambient_animation",
+ "ambient_app",
+ "ambient_cameras",
+ "ambient_core",
+ "ambient_decals",
+ "ambient_ecs",
+ "ambient_ecs_editor",
+ "ambient_element",
+ "ambient_gpu",
+ "ambient_input",
+ "ambient_intent",
+ "ambient_meshes",
+ "ambient_model",
+ "ambient_naturals",
+ "ambient_network",
+ "ambient_object",
+ "ambient_physics",
+ "ambient_primitives",
+ "ambient_renderer",
+ "ambient_rpc",
+ "ambient_std",
+ "ambient_terrain",
+ "ambient_ui",
+ "ambient_world_audio",
+ "anyhow",
+ "arboard",
+ "bitflags",
+ "bytemuck",
+ "chrono",
+ "closure",
+ "derive_more",
+ "env_logger 0.10.0",
+ "futures",
+ "futures-signals",
+ "glam 0.22.0",
+ "image",
+ "indexmap",
+ "itertools",
+ "log",
+ "open",
+ "ordered-float",
+ "parking_lot",
+ "physxx",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "quinn",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "wgpu",
+ "which",
+ "winit",
+]
+
+[[package]]
+name = "ambient_editor_derive"
+version = "0.0.16"
+dependencies = [
+ "ambient_ui",
+ "convert_case 0.6.0",
+ "itertools",
+ "pretty_assertions",
+ "proc-macro-crate",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "ambient_element"
+version = "0.0.16"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_element_component",
+ "ambient_std",
+ "as-any",
+ "atomic_refcell",
+ "closure",
+ "derivative",
+ "dyn-clonable",
+ "futures",
+ "itertools",
+ "parking_lot",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "ambient_element_component"
+version = "0.0.16"
+dependencies = [
+ "itertools",
+ "proc-macro-crate",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "ambient_gizmos"
+version = "0.0.16"
+dependencies = [
+ "ambient_app",
+ "ambient_cameras",
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_gpu",
+ "ambient_meshes",
+ "ambient_renderer",
+ "ambient_std",
+ "bytemuck",
+ "dashmap",
+ "glam 0.22.0",
+ "log",
+ "once_cell",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "serde",
+ "wgpu",
+]
+
+[[package]]
+name = "ambient_gpu"
+version = "0.0.16"
+dependencies = [
+ "ambient_std",
+ "anyhow",
+ "async-trait",
+ "bytemuck",
+ "byteorder",
+ "futures",
+ "glam 0.22.0",
+ "image",
+ "itertools",
+ "log",
+ "ndarray",
+ "ordered-float",
+ "parking_lot",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "wgpu",
+ "winit",
+]
+
+[[package]]
+name = "ambient_input"
+version = "0.0.16"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_std",
+ "glam 0.22.0",
+ "serde",
+ "tracing",
+ "winit",
+]
+
+[[package]]
+name = "ambient_intent"
+version = "0.0.16"
+dependencies = [
+ "ambient_ecs",
+ "ambient_editor_derive",
+ "ambient_element",
+ "ambient_network",
+ "ambient_rpc",
+ "ambient_std",
+ "ambient_ui",
+ "anyhow",
+ "atomic_refcell",
+ "futures",
+ "itertools",
+ "parking_lot",
+ "pretty_assertions",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "ambient_meshes"
+version = "0.0.16"
+dependencies = [
+ "ambient_gpu",
+ "ambient_std",
+ "glam 0.22.0",
+ "serde",
+]
+
+[[package]]
+name = "ambient_model"
+version = "0.0.16"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_editor_derive",
+ "ambient_gpu",
+ "ambient_meshes",
+ "ambient_renderer",
+ "ambient_std",
+ "ambient_ui",
+ "anyhow",
+ "async-trait",
+ "bytemuck",
+ "futures",
+ "glam 0.22.0",
+ "itertools",
+ "serde",
+ "tokio",
+ "tracing",
+ "url",
+ "wgpu",
+]
+
+[[package]]
+name = "ambient_model_import"
+version = "0.0.16"
+dependencies = [
+ "ambient_animation",
+ "ambient_app",
+ "ambient_cameras",
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_editor_derive",
+ "ambient_element",
+ "ambient_gizmos",
+ "ambient_model",
+ "ambient_physics",
+ "ambient_primitives",
+ "ambient_renderer",
+ "ambient_std",
+ "ambient_ui",
+ "anyhow",
+ "async-recursion",
+ "async-trait",
+ "base64 0.13.1",
+ "bincode",
+ "bytemuck",
+ "env_logger 0.10.0",
+ "fbxcel",
+ "futures",
+ "glam 0.22.0",
+ "gltf",
+ "image",
+ "indexmap",
+ "itertools",
+ "log",
+ "ordered-float",
+ "physxx",
+ "relative-path",
+ "reqwest",
+ "russimp",
+ "serde",
+ "serde_json",
+ "tokio",
+ "winit",
+]
+
+[[package]]
+name = "ambient_naturals"
+version = "0.0.16"
+dependencies = [
+ "ambient_app",
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_editor_derive",
+ "ambient_element",
+ "ambient_gpu",
+ "ambient_model",
+ "ambient_network",
+ "ambient_renderer",
+ "ambient_std",
+ "ambient_terrain",
+ "ambient_ui",
+ "async-trait",
+ "bytemuck",
+ "glam 0.22.0",
+ "itertools",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "wgpu",
+]
+
+[[package]]
+name = "ambient_network"
+version = "0.0.16"
+dependencies = [
+ "ambient_app",
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_element",
+ "ambient_gizmos",
+ "ambient_gpu",
+ "ambient_renderer",
+ "ambient_rpc",
+ "ambient_std",
+ "ambient_ui",
+ "anyhow",
+ "bincode",
+ "bytes",
+ "dashmap",
+ "flume",
+ "futures",
+ "glam 0.22.0",
+ "itertools",
+ "log",
+ "manual_future",
+ "once_cell",
+ "parking_lot",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "quinn",
+ "rand 0.8.5",
+ "rustls",
+ "serde",
+ "thiserror",
+ "tokio",
+ "tokio-util",
+ "tracing",
+ "wgpu",
+ "winit",
+]
+
+[[package]]
+name = "ambient_object"
+version = "0.0.16"
+dependencies = [
+ "ambient_core",
+ "ambient_decals",
+ "ambient_ecs",
+ "ambient_model",
+ "ambient_network",
+ "ambient_physics",
+ "ambient_rpc",
+ "ambient_std",
+ "anyhow",
+ "async-trait",
+ "glam 0.22.0",
+ "log",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
+name = "ambient_physics"
+version = "0.0.16"
+dependencies = [
+ "ambient_app",
+ "ambient_cameras",
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_editor_derive",
+ "ambient_element",
+ "ambient_gizmos",
+ "ambient_meshes",
+ "ambient_model",
+ "ambient_network",
+ "ambient_primitives",
+ "ambient_renderer",
+ "ambient_std",
+ "ambient_ui",
+ "anyhow",
+ "async-trait",
+ "futures",
+ "glam 0.22.0",
+ "itertools",
+ "log",
+ "once_cell",
+ "ordered-float",
+ "parking_lot",
+ "physxx",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "ambient_primitives"
+version = "0.0.16"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_element",
+ "ambient_gpu",
+ "ambient_meshes",
+ "ambient_renderer",
+ "ambient_std",
+ "glam 0.22.0",
+]
+
+[[package]]
+name = "ambient_project"
+version = "0.0.16"
+dependencies = [
+ "ambient_ecs",
+ "paste",
+ "serde",
+ "thiserror",
+ "toml 0.7.2",
+]
+
+[[package]]
+name = "ambient_renderer"
+version = "0.0.16"
+dependencies = [
+ "ambient_app",
+ "ambient_cameras",
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_element",
+ "ambient_gizmos",
+ "ambient_gpu",
+ "ambient_meshes",
+ "ambient_model_import",
+ "ambient_primitives",
+ "ambient_std",
+ "anyhow",
+ "async-trait",
+ "bytemuck",
+ "derive_more",
+ "downcast-rs",
+ "env_logger 0.10.0",
+ "glam 0.22.0",
+ "itertools",
+ "log",
+ "ordered-float",
+ "parking_lot",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "serde",
+ "smallvec",
+ "wgpu",
+ "winit",
+]
+
+[[package]]
+name = "ambient_rpc"
+version = "0.0.16"
+dependencies = [
+ "bincode",
+ "futures",
+ "lazy_static",
+ "serde",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
+name = "ambient_rustc"
+version = "0.0.16"
+dependencies = [
+ "anyhow",
+ "itertools",
+ "log",
+ "reqwest",
+ "serde_json",
+]
+
+[[package]]
+name = "ambient_sky"
+version = "0.0.16"
+dependencies = [
+ "ambient_cameras",
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_gizmos",
+ "ambient_gpu",
+ "ambient_meshes",
+ "ambient_renderer",
+ "ambient_std",
+ "bytemuck",
+ "derive_more",
+ "glam 0.22.0",
+ "noise",
+ "ordered-float",
+ "tokio",
+ "tracing",
+ "wgpu",
+]
+
+[[package]]
+name = "ambient_std"
+version = "0.0.16"
+dependencies = [
+ "ambient_asset_cache",
+ "anyhow",
+ "as-any",
+ "async-trait",
+ "bincode",
+ "bytemuck",
+ "chrono",
+ "convert_case 0.6.0",
+ "data-encoding",
+ "futures",
+ "glam 0.22.0",
+ "hex",
+ "itertools",
+ "log",
+ "once_cell",
+ "ordered-float",
+ "parking_lot",
+ "percent-encoding",
+ "pin-project",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "rand 0.8.5",
+ "relative-path",
+ "reqwest",
+ "ring",
+ "sentry-anyhow",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "toml 0.7.2",
+ "tracing",
+ "url",
+ "wgpu",
+ "yaml-rust-davvid",
+]
+
+[[package]]
+name = "ambient_terrain"
+version = "0.0.16"
+dependencies = [
+ "ambient_app",
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_editor_derive",
+ "ambient_element",
+ "ambient_gpu",
+ "ambient_intent",
+ "ambient_meshes",
+ "ambient_network",
+ "ambient_physics",
+ "ambient_renderer",
+ "ambient_std",
+ "ambient_ui",
+ "anyhow",
+ "async-trait",
+ "bitflags",
+ "bytemuck",
+ "closure",
+ "flume",
+ "futures",
+ "glam 0.22.0",
+ "itertools",
+ "ndarray",
+ "parking_lot",
+ "physxx",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "quinn",
+ "rand 0.8.5",
+ "rand_pcg",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "wgpu",
+]
+
+[[package]]
+name = "ambient_ui"
+version = "0.0.16"
+dependencies = [
+ "ambient_app",
+ "ambient_cameras",
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_editor_derive",
+ "ambient_element",
+ "ambient_gpu",
+ "ambient_input",
+ "ambient_meshes",
+ "ambient_renderer",
+ "ambient_std",
+ "anyhow",
+ "arboard",
+ "async-trait",
+ "bytemuck",
+ "closure",
+ "convert_case 0.6.0",
+ "env_logger 0.10.0",
+ "fixed-vec-deque",
+ "futures",
+ "glam 0.22.0",
+ "glyph_brush",
+ "indexmap",
+ "itertools",
+ "log",
+ "ordered-float",
+ "parking_lot",
+ "rand 0.8.5",
+ "serde",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "wgpu",
+ "winit",
+]
+
+[[package]]
+name = "ambient_wasm"
+version = "0.0.16"
+dependencies = [
+ "ambient_animation",
+ "ambient_app",
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_input",
+ "ambient_network",
+ "ambient_object",
+ "ambient_physics",
+ "ambient_project",
+ "ambient_std",
+ "anyhow",
+ "async-trait",
+ "chrono",
+ "data-encoding",
+ "dunce",
+ "flume",
+ "fs_extra",
+ "glam 0.22.0",
+ "indexmap",
+ "indoc",
+ "itertools",
+ "log",
+ "parking_lot",
+ "physxx",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "reqwest",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "slotmap",
+ "wasi-common",
+ "wasmtime",
+ "wasmtime-wasi",
+ "wit-bindgen-core",
+ "wit-bindgen-gen-guest-rust",
+ "wit-bindgen-host-wasmtime-rust",
+]
+
+[[package]]
+name = "ambient_water"
+version = "0.0.16"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_gizmos",
+ "ambient_gpu",
+ "ambient_meshes",
+ "ambient_primitives",
+ "ambient_renderer",
+ "ambient_std",
+ "glam 0.22.0",
+ "wgpu",
+]
+
+[[package]]
+name = "ambient_world_audio"
+version = "0.0.16"
+dependencies = [
+ "ambient_app",
+ "ambient_audio",
+ "ambient_cameras",
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_element",
+ "ambient_network",
+ "ambient_primitives",
+ "ambient_renderer",
+ "ambient_std",
+ "ambient_ui",
+ "anyhow",
+ "atomic_refcell",
+ "closure",
+ "dashmap",
+ "derive_more",
+ "flume",
+ "futures",
+ "glam 0.22.0",
+ "indexmap",
+ "itertools",
+ "log",
+ "once_cell",
+ "ordered-float",
+ "parking_lot",
+ "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "rand 0.8.5",
+ "rand_chacha 0.3.1",
+ "serde",
+ "serde_json",
+ "slotmap",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
 
 [[package]]
 name = "android-activity"
@@ -505,6 +1585,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "camino"
+version = "1.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c77df041dc383319cc661b428b6961a005db4d6808d5e12536931b1ca9556055"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "cap-fs-ext"
 version = "0.25.5"
 source = "git+https://github.com/bytecodealliance/cap-std.git?rev=535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b#535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b"
@@ -564,6 +1653,39 @@ dependencies = [
  "once_cell",
  "rustix 0.35.13",
  "winx",
+]
+
+[[package]]
+name = "cargo-manifest"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3ce38d2d1efbe0e7180766a872570bc07cd5430a42e713b01006d4afa89912fe"
+dependencies = [
+ "serde",
+ "toml 0.5.11",
+]
+
+[[package]]
+name = "cargo-platform"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cbdb825da8a5df079a43676dbe042702f1707b1109f713a01420fbb4cc71fa27"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "cargo_metadata"
+version = "0.15.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "08a1ec454bc3eead8719cb56e15dbbfecdbc14e4b3a3ae4936cc6e31f5fc0d07"
+dependencies = [
+ "camino",
+ "cargo-platform",
+ "semver 1.0.16",
+ "serde",
+ "serde_json",
+ "thiserror",
 ]
 
 [[package]]
@@ -1362,8 +2484,9 @@ dependencies = [
 
 [[package]]
 name = "erased-serde"
-version = "0.3.16"
-source = "git+https://github.com/FredrikNoren/erased-serde.git#997de67dc9a82e7614b2f8acf5baf85aaba5fb42"
+version = "0.3.24"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e4ca605381c017ec7a5fef5e548f1cfaa419ed0f6df6367339300db74c92aa7d"
 dependencies = [
  "serde",
 ]
@@ -1692,6 +2815,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c31b6d751ae2c7f11320402d34e41349dd1016f8d5d45e48c4312bc8625af50c"
 dependencies = [
  "byteorder",
+]
+
+[[package]]
+name = "generate-docs"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "once_cell",
+ "rustdoc-json",
+ "rustdoc-types",
+ "serde_json",
 ]
 
 [[package]]
@@ -2368,1086 +3502,6 @@ dependencies = [
  "libc",
  "libloading",
  "pkg-config",
-]
-
-[[package]]
-name = "kiwi"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "axum",
- "bincode",
- "byteorder",
- "clap 4.1.4",
- "convert_case 0.6.0",
- "env_logger 0.10.0",
- "futures",
- "glam 0.22.0",
- "indoc",
- "kiwi_animation",
- "kiwi_app",
- "kiwi_audio",
- "kiwi_build",
- "kiwi_cameras",
- "kiwi_core",
- "kiwi_debugger",
- "kiwi_decals",
- "kiwi_ecs",
- "kiwi_editor_derive",
- "kiwi_element",
- "kiwi_gizmos",
- "kiwi_gpu",
- "kiwi_input",
- "kiwi_meshes",
- "kiwi_model",
- "kiwi_model_import",
- "kiwi_network",
- "kiwi_object",
- "kiwi_physics",
- "kiwi_primitives",
- "kiwi_project",
- "kiwi_renderer",
- "kiwi_rpc",
- "kiwi_sky",
- "kiwi_std",
- "kiwi_ui",
- "kiwi_wasm",
- "kiwi_water",
- "kiwi_world_audio",
- "local-ip-address",
- "log",
- "parking_lot",
- "paste",
- "rusty-hook",
- "serde",
- "tokio",
- "toml_edit 0.19.3",
- "tower-http",
- "walkdir",
-]
-
-[[package]]
-name = "kiwi_animation"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "async-trait",
- "convert_case 0.6.0",
- "derive_more",
- "glam 0.22.0",
- "itertools",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_editor_derive",
- "kiwi_element",
- "kiwi_model",
- "kiwi_std",
- "kiwi_ui",
- "ordered-float",
- "serde",
-]
-
-[[package]]
-name = "kiwi_app"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "glam 0.22.0",
- "kiwi_animation",
- "kiwi_cameras",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_element",
- "kiwi_gizmos",
- "kiwi_gpu",
- "kiwi_input",
- "kiwi_model",
- "kiwi_primitives",
- "kiwi_renderer",
- "kiwi_std",
- "kiwi_ui",
- "parking_lot",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
- "puffin",
- "puffin_http",
- "thread-priority",
- "tokio",
- "tracing",
- "wgpu",
- "winit",
-]
-
-[[package]]
-name = "kiwi_asset_cache"
-version = "0.0.3"
-dependencies = [
- "abort-on-drop",
- "anyhow",
- "as-any",
- "async-trait",
- "chrono",
- "futures",
- "itertools",
- "parking_lot",
- "pin-project",
- "pretty_assertions",
- "serde",
- "thiserror",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "kiwi_asset_timeline"
-version = "0.0.3"
-dependencies = [
- "async-trait",
- "chrono",
- "env_logger 0.10.0",
- "glam 0.22.0",
- "itertools",
- "kiwi_app",
- "kiwi_cameras",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_element",
- "kiwi_model",
- "kiwi_renderer",
- "kiwi_std",
- "kiwi_ui",
- "tokio",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "kiwi_audio"
-version = "0.0.3"
-dependencies = [
- "approx",
- "async-trait",
- "byteorder",
- "circular-queue",
- "color-eyre",
- "cpal",
- "dashmap",
- "derivative",
- "derive_more",
- "flume",
- "glam 0.22.0",
- "hound",
- "itertools",
- "kiwi_std",
- "kiwi_ui",
- "lewton",
- "log",
- "lyon",
- "macroquad",
- "num",
- "ordered-float",
- "parking_lot",
- "pretty_assertions",
- "rand 0.8.5",
- "rand_chacha 0.3.1",
- "rayon",
- "rustfft",
- "serde",
- "slotmap",
- "static_assertions",
- "thiserror",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "kiwi_build"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "async-recursion",
- "async-trait",
- "cargo_toml",
- "convert_case 0.6.0",
- "dyn-clonable",
- "futures",
- "glam 0.22.0",
- "glob",
- "image",
- "itertools",
- "kiwi_asset_cache",
- "kiwi_core",
- "kiwi_decals",
- "kiwi_ecs",
- "kiwi_model",
- "kiwi_model_import",
- "kiwi_physics",
- "kiwi_project",
- "kiwi_renderer",
- "kiwi_rustc",
- "kiwi_std",
- "kiwi_world_audio",
- "log",
- "parking_lot",
- "relative-path",
- "serde",
- "serde_json",
- "slugify",
- "tokio",
- "tracing",
- "unity_parser",
- "walkdir",
- "yaml-rust-davvid",
-]
-
-[[package]]
-name = "kiwi_cameras"
-version = "0.0.3"
-dependencies = [
- "derive_more",
- "glam 0.22.0",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_element",
- "kiwi_std",
- "winit",
-]
-
-[[package]]
-name = "kiwi_core"
-version = "0.0.3"
-dependencies = [
- "bytemuck",
- "derive_more",
- "flume",
- "glam 0.22.0",
- "itertools",
- "kiwi_ecs",
- "kiwi_gpu",
- "kiwi_std",
- "lazy_static",
- "log",
- "maplit",
- "ordered-float",
- "parking_lot",
- "paste",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
- "serde",
- "tokio",
- "wgpu",
- "winit",
- "yaml-rust-davvid",
-]
-
-[[package]]
-name = "kiwi_curve"
-version = "0.0.3"
-dependencies = [
- "glam 0.22.0",
- "kiwi_std",
-]
-
-[[package]]
-name = "kiwi_debugger"
-version = "0.0.3"
-dependencies = [
- "glam 0.22.0",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_ecs_editor",
- "kiwi_element",
- "kiwi_element_component",
- "kiwi_gizmos",
- "kiwi_gpu",
- "kiwi_network",
- "kiwi_renderer",
- "kiwi_rpc",
- "kiwi_std",
- "kiwi_ui",
- "log",
- "wgpu",
- "winit",
-]
-
-[[package]]
-name = "kiwi_decals"
-version = "0.0.3"
-dependencies = [
- "env_logger 0.10.0",
- "glam 0.22.0",
- "kiwi_app",
- "kiwi_asset_cache",
- "kiwi_cameras",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_element",
- "kiwi_gpu",
- "kiwi_meshes",
- "kiwi_primitives",
- "kiwi_renderer",
- "kiwi_std",
- "kiwi_ui",
- "log",
-]
-
-[[package]]
-name = "kiwi_ecs"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "atomic_refcell",
- "bit-set",
- "bit-vec",
- "data-encoding",
- "derive_more",
- "downcast-rs",
- "erased-serde",
- "glam 0.22.0",
- "itertools",
- "kiwi_std",
- "lazy_static",
- "log",
- "once_cell",
- "parking_lot",
- "paste",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
- "rand 0.8.5",
- "reqwest",
- "serde",
- "serde_json",
- "serde_yaml",
- "smallvec",
- "thiserror",
- "tokio",
- "yaml-rust-davvid",
-]
-
-[[package]]
-name = "kiwi_ecs_editor"
-version = "0.0.3"
-dependencies = [
- "env_logger 0.10.0",
- "glam 0.22.0",
- "itertools",
- "kiwi_app",
- "kiwi_cameras",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_element",
- "kiwi_renderer",
- "kiwi_std",
- "kiwi_ui",
-]
-
-[[package]]
-name = "kiwi_editor"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "arboard",
- "bitflags",
- "bytemuck",
- "chrono",
- "closure",
- "derive_more",
- "env_logger 0.10.0",
- "futures",
- "futures-signals",
- "glam 0.22.0",
- "image",
- "indexmap",
- "itertools",
- "kiwi_animation",
- "kiwi_app",
- "kiwi_cameras",
- "kiwi_core",
- "kiwi_decals",
- "kiwi_ecs",
- "kiwi_ecs_editor",
- "kiwi_element",
- "kiwi_gpu",
- "kiwi_input",
- "kiwi_intent",
- "kiwi_meshes",
- "kiwi_model",
- "kiwi_naturals",
- "kiwi_network",
- "kiwi_object",
- "kiwi_physics",
- "kiwi_primitives",
- "kiwi_renderer",
- "kiwi_rpc",
- "kiwi_std",
- "kiwi_terrain",
- "kiwi_ui",
- "kiwi_world_audio",
- "log",
- "open",
- "ordered-float",
- "parking_lot",
- "physxx",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
- "quinn",
- "serde",
- "serde_json",
- "tokio",
- "tracing",
- "wgpu",
- "which",
- "winit",
-]
-
-[[package]]
-name = "kiwi_editor_derive"
-version = "0.0.3"
-dependencies = [
- "convert_case 0.6.0",
- "itertools",
- "kiwi_ui",
- "pretty_assertions",
- "proc-macro-crate",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "kiwi_element"
-version = "0.0.3"
-dependencies = [
- "as-any",
- "atomic_refcell",
- "closure",
- "derivative",
- "dyn-clonable",
- "futures",
- "itertools",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_element_component",
- "kiwi_std",
- "parking_lot",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "kiwi_element_component"
-version = "0.0.3"
-dependencies = [
- "itertools",
- "proc-macro-crate",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "kiwi_gizmos"
-version = "0.0.3"
-dependencies = [
- "bytemuck",
- "dashmap",
- "glam 0.22.0",
- "kiwi_app",
- "kiwi_cameras",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_gpu",
- "kiwi_meshes",
- "kiwi_renderer",
- "kiwi_std",
- "log",
- "once_cell",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
- "serde",
- "wgpu",
-]
-
-[[package]]
-name = "kiwi_gpu"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "async-trait",
- "bytemuck",
- "byteorder",
- "futures",
- "glam 0.22.0",
- "image",
- "itertools",
- "kiwi_std",
- "log",
- "ndarray",
- "ordered-float",
- "parking_lot",
- "thiserror",
- "tokio",
- "tracing",
- "wgpu",
- "winit",
-]
-
-[[package]]
-name = "kiwi_input"
-version = "0.0.3"
-dependencies = [
- "glam 0.22.0",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_std",
- "serde",
- "tracing",
- "winit",
-]
-
-[[package]]
-name = "kiwi_intent"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "atomic_refcell",
- "futures",
- "itertools",
- "kiwi_ecs",
- "kiwi_editor_derive",
- "kiwi_element",
- "kiwi_network",
- "kiwi_rpc",
- "kiwi_std",
- "kiwi_ui",
- "parking_lot",
- "pretty_assertions",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "kiwi_meshes"
-version = "0.0.3"
-dependencies = [
- "glam 0.22.0",
- "kiwi_gpu",
- "kiwi_std",
- "serde",
-]
-
-[[package]]
-name = "kiwi_model"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "async-trait",
- "bytemuck",
- "futures",
- "glam 0.22.0",
- "itertools",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_editor_derive",
- "kiwi_gpu",
- "kiwi_meshes",
- "kiwi_renderer",
- "kiwi_std",
- "kiwi_ui",
- "serde",
- "tokio",
- "tracing",
- "url",
- "wgpu",
-]
-
-[[package]]
-name = "kiwi_model_import"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "async-recursion",
- "async-trait",
- "base64 0.13.1",
- "bincode",
- "bytemuck",
- "env_logger 0.10.0",
- "fbxcel",
- "futures",
- "glam 0.22.0",
- "gltf",
- "image",
- "indexmap",
- "itertools",
- "kiwi_animation",
- "kiwi_app",
- "kiwi_cameras",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_editor_derive",
- "kiwi_element",
- "kiwi_gizmos",
- "kiwi_model",
- "kiwi_physics",
- "kiwi_primitives",
- "kiwi_renderer",
- "kiwi_std",
- "kiwi_ui",
- "log",
- "ordered-float",
- "physxx",
- "relative-path",
- "reqwest",
- "russimp",
- "serde",
- "serde_json",
- "tokio",
- "winit",
-]
-
-[[package]]
-name = "kiwi_naturals"
-version = "0.0.3"
-dependencies = [
- "async-trait",
- "bytemuck",
- "glam 0.22.0",
- "itertools",
- "kiwi_app",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_editor_derive",
- "kiwi_element",
- "kiwi_gpu",
- "kiwi_model",
- "kiwi_network",
- "kiwi_renderer",
- "kiwi_std",
- "kiwi_terrain",
- "kiwi_ui",
- "rand 0.8.5",
- "serde",
- "serde_json",
- "tokio",
- "tracing",
- "wgpu",
-]
-
-[[package]]
-name = "kiwi_network"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "bincode",
- "bytes",
- "dashmap",
- "flume",
- "futures",
- "glam 0.22.0",
- "itertools",
- "kiwi_app",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_element",
- "kiwi_gizmos",
- "kiwi_gpu",
- "kiwi_renderer",
- "kiwi_rpc",
- "kiwi_std",
- "kiwi_ui",
- "log",
- "manual_future",
- "once_cell",
- "parking_lot",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
- "quinn",
- "rand 0.8.5",
- "rustls",
- "serde",
- "thiserror",
- "tokio",
- "tokio-util",
- "tracing",
- "wgpu",
- "winit",
-]
-
-[[package]]
-name = "kiwi_object"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "async-trait",
- "glam 0.22.0",
- "kiwi_core",
- "kiwi_decals",
- "kiwi_ecs",
- "kiwi_model",
- "kiwi_network",
- "kiwi_physics",
- "kiwi_rpc",
- "kiwi_std",
- "log",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
-]
-
-[[package]]
-name = "kiwi_physics"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "async-trait",
- "futures",
- "glam 0.22.0",
- "itertools",
- "kiwi_app",
- "kiwi_cameras",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_editor_derive",
- "kiwi_element",
- "kiwi_gizmos",
- "kiwi_meshes",
- "kiwi_model",
- "kiwi_network",
- "kiwi_primitives",
- "kiwi_renderer",
- "kiwi_std",
- "kiwi_ui",
- "log",
- "once_cell",
- "ordered-float",
- "parking_lot",
- "physxx",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
- "rand 0.8.5",
- "serde",
- "serde_json",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "kiwi_primitives"
-version = "0.0.3"
-dependencies = [
- "glam 0.22.0",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_element",
- "kiwi_gpu",
- "kiwi_meshes",
- "kiwi_renderer",
- "kiwi_std",
-]
-
-[[package]]
-name = "kiwi_project"
-version = "0.0.3"
-dependencies = [
- "kiwi_ecs",
- "paste",
- "serde",
- "thiserror",
- "toml 0.7.2",
-]
-
-[[package]]
-name = "kiwi_renderer"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "async-trait",
- "bytemuck",
- "derive_more",
- "downcast-rs",
- "env_logger 0.10.0",
- "glam 0.22.0",
- "itertools",
- "kiwi_app",
- "kiwi_cameras",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_element",
- "kiwi_gizmos",
- "kiwi_gpu",
- "kiwi_meshes",
- "kiwi_model_import",
- "kiwi_primitives",
- "kiwi_std",
- "log",
- "ordered-float",
- "parking_lot",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
- "serde",
- "smallvec",
- "wgpu",
- "winit",
-]
-
-[[package]]
-name = "kiwi_rpc"
-version = "0.0.3"
-dependencies = [
- "bincode",
- "futures",
- "lazy_static",
- "serde",
- "thiserror",
- "tokio",
-]
-
-[[package]]
-name = "kiwi_rustc"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "itertools",
- "log",
- "reqwest",
- "serde_json",
-]
-
-[[package]]
-name = "kiwi_sky"
-version = "0.0.3"
-dependencies = [
- "bytemuck",
- "derive_more",
- "glam 0.22.0",
- "kiwi_cameras",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_gizmos",
- "kiwi_gpu",
- "kiwi_meshes",
- "kiwi_renderer",
- "kiwi_std",
- "noise",
- "ordered-float",
- "tokio",
- "tracing",
- "wgpu",
-]
-
-[[package]]
-name = "kiwi_std"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "as-any",
- "async-trait",
- "bincode",
- "bytemuck",
- "chrono",
- "convert_case 0.6.0",
- "data-encoding",
- "futures",
- "glam 0.22.0",
- "hex",
- "itertools",
- "kiwi_asset_cache",
- "log",
- "once_cell",
- "ordered-float",
- "parking_lot",
- "percent-encoding",
- "pin-project",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
- "rand 0.8.5",
- "relative-path",
- "reqwest",
- "ring",
- "sentry-anyhow",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "toml 0.7.2",
- "tracing",
- "url",
- "wgpu",
- "yaml-rust-davvid",
-]
-
-[[package]]
-name = "kiwi_terrain"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "async-trait",
- "bitflags",
- "bytemuck",
- "closure",
- "flume",
- "futures",
- "glam 0.22.0",
- "itertools",
- "kiwi_app",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_editor_derive",
- "kiwi_element",
- "kiwi_gpu",
- "kiwi_intent",
- "kiwi_meshes",
- "kiwi_network",
- "kiwi_physics",
- "kiwi_renderer",
- "kiwi_std",
- "kiwi_ui",
- "ndarray",
- "parking_lot",
- "physxx",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
- "quinn",
- "rand 0.8.5",
- "rand_pcg",
- "serde",
- "serde_json",
- "tokio",
- "tracing",
- "wgpu",
-]
-
-[[package]]
-name = "kiwi_ui"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "arboard",
- "async-trait",
- "bytemuck",
- "closure",
- "convert_case 0.6.0",
- "env_logger 0.10.0",
- "fixed-vec-deque",
- "futures",
- "glam 0.22.0",
- "glyph_brush",
- "indexmap",
- "itertools",
- "kiwi_app",
- "kiwi_cameras",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_editor_derive",
- "kiwi_element",
- "kiwi_gpu",
- "kiwi_input",
- "kiwi_meshes",
- "kiwi_renderer",
- "kiwi_std",
- "log",
- "ordered-float",
- "parking_lot",
- "rand 0.8.5",
- "serde",
- "thiserror",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "wgpu",
- "winit",
-]
-
-[[package]]
-name = "kiwi_wasm"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "async-trait",
- "chrono",
- "data-encoding",
- "dunce",
- "flume",
- "fs_extra",
- "glam 0.22.0",
- "indexmap",
- "indoc",
- "itertools",
- "kiwi_animation",
- "kiwi_app",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_input",
- "kiwi_network",
- "kiwi_object",
- "kiwi_physics",
- "kiwi_project",
- "kiwi_std",
- "log",
- "parking_lot",
- "physxx",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
- "reqwest",
- "serde",
- "serde_bytes",
- "serde_json",
- "slotmap",
- "wasi-common",
- "wasmtime",
- "wasmtime-wasi",
- "wit-bindgen-core",
- "wit-bindgen-gen-guest-rust",
- "wit-bindgen-host-wasmtime-rust",
-]
-
-[[package]]
-name = "kiwi_water"
-version = "0.1.0"
-dependencies = [
- "glam 0.22.0",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_gizmos",
- "kiwi_gpu",
- "kiwi_meshes",
- "kiwi_primitives",
- "kiwi_renderer",
- "kiwi_std",
- "wgpu",
-]
-
-[[package]]
-name = "kiwi_world_audio"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "atomic_refcell",
- "closure",
- "dashmap",
- "derive_more",
- "flume",
- "futures",
- "glam 0.22.0",
- "indexmap",
- "itertools",
- "kiwi_app",
- "kiwi_audio",
- "kiwi_cameras",
- "kiwi_core",
- "kiwi_ecs",
- "kiwi_element",
- "kiwi_network",
- "kiwi_primitives",
- "kiwi_renderer",
- "kiwi_std",
- "kiwi_ui",
- "log",
- "once_cell",
- "ordered-float",
- "parking_lot",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
- "rand 0.8.5",
- "rand_chacha 0.3.1",
- "serde",
- "serde_json",
- "slotmap",
- "thiserror",
- "tokio",
- "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]
@@ -4411,15 +4465,16 @@ dependencies = [
 
 [[package]]
 name = "physx-sys"
-version = "0.4.15"
-source = "git+https://github.com/FredrikNoren/physx-rs.git?rev=92a09a98f3825d52c84d487d0fc575fb8cf04feb#92a09a98f3825d52c84d487d0fc575fb8cf04feb"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "35bb4bf1bfa71baa5c2574ee6323734dac9f1a046310535532f30b30f6585419"
 dependencies = [
  "cc",
 ]
 
 [[package]]
 name = "physxx"
-version = "0.0.3"
+version = "0.0.16"
 dependencies = [
  "as-any",
  "bitflags",
@@ -4968,15 +5023,15 @@ checksum = "3582f63211428f83597b51b2ddb88e2a91a9d52d12831f9d08f5e624e8977422"
 
 [[package]]
 name = "russimp"
-version = "1.0.4"
-source = "git+https://github.com/FredrikNoren/russimp.git?rev=0a691d1fa625a1b549d476b97c74f93adab7e5bb#0a691d1fa625a1b549d476b97c74f93adab7e5bb"
+version = "1.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "afa6ae780b6c586ef53c0eed1d9a3f30d596fbee424a96e09ff4e07bf2017aae"
 dependencies = [
  "derivative",
  "num-derive",
  "num-traits",
  "num_enum",
  "russimp-sys",
- "vcpkg",
 ]
 
 [[package]]
@@ -5023,6 +5078,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bfa0f585226d2e68097d4f95d113b15b83a82e819ab25717ec0590d9584ef366"
 dependencies = [
  "semver 1.0.16",
+]
+
+[[package]]
+name = "rustdoc-json"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a6a067d208f0fef45aaa776f592f2d78a0ae36e2ffe08d0868040e3ca51716a8"
+dependencies = [
+ "cargo-manifest",
+ "cargo_metadata",
+ "serde",
+ "thiserror",
+ "toml 0.5.11",
+]
+
+[[package]]
+name = "rustdoc-types"
+version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f5f59b848e09e1631f0f8711fcdcb65d4481597b869372cca5d6755737b21501"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
@@ -5249,6 +5326,9 @@ name = "semver"
 version = "1.0.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "58bc9567378fc7690d6b2addae4e60ac2eeea07becb2c64b9f218b53865cba2a"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "semver-parser"
@@ -5922,6 +6002,7 @@ version = "0.5.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f4f7f0dd8d50a853a531c426359045b1998f04219d88799810762cd4ad314234"
 dependencies = [
+ "indexmap",
  "serde",
 ]
 
@@ -6203,12 +6284,12 @@ checksum = "402bb19d8e03f1d1a7450e2bd613980869438e0666331be3e073089124aa1adc"
 
 [[package]]
 name = "unity_parser"
-version = "0.0.3"
+version = "0.0.16"
 dependencies = [
+ "ambient_std",
  "anyhow",
  "glam 0.22.0",
  "itertools",
- "kiwi_std",
  "yaml-rust-davvid",
 ]
 

@@ -1,8 +1,8 @@
+use ambient_app::gpu;
+use ambient_core::asset_cache;
+use ambient_ecs::{EntityId, World};
+use ambient_gpu::texture::Texture;
 use glam::{ivec2, IVec2, UVec2};
-use kiwi_app::gpu;
-use kiwi_core::asset_cache;
-use kiwi_ecs::{EntityId, World};
-use kiwi_gpu::texture::Texture;
 
 use crate::{get_terrain_cell, terrain_state};
 

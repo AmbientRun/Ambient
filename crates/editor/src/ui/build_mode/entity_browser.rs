@@ -1,22 +1,22 @@
-use itertools::Itertools;
-use kiwi_core::{name, runtime, selectable, tags};
-use kiwi_ecs::{query, EntityId, World};
-use kiwi_ecs_editor::ECSEditor;
-use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use kiwi_network::{
+use ambient_core::{name, runtime, selectable, tags};
+use ambient_ecs::{query, EntityId};
+use ambient_ecs_editor::ECSEditor;
+use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_network::{
     client::{game_client, GameClient},
     is_remote_entity, log_network_result,
     rpc::rpc_world_diff,
 };
-use kiwi_std::{cb, Cb};
-use kiwi_ui::{fit_horizontal, space_between_items, Button, ButtonStyle, DialogScreen, Fit, FlowColumn, FlowRow, ScrollArea, STREET};
+use ambient_std::{cb, Cb};
+use ambient_ui::{fit_horizontal, space_between_items, Button, ButtonStyle, DialogScreen, Fit, FlowColumn, FlowRow, ScrollArea, STREET};
+use itertools::Itertools;
 
 #[derive(Debug, Clone)]
 pub struct EntityBrowser {
     on_select: Cb<dyn Fn(EntityId) + Sync + Send>,
 }
 impl ElementComponent for EntityBrowser {
-    fn render(self: Box<Self>, _: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { on_select } = *self;
         let (entities, set_entities) = hooks.use_state(Vec::new());
         let (all_tags, set_all_tags) = hooks.use_state(Vec::new());
@@ -89,7 +89,7 @@ pub struct EntityBrowserScreen {
     pub on_back: Cb<dyn Fn() + Sync + Send>,
 }
 impl ElementComponent for EntityBrowserScreen {
-    fn render(self: Box<Self>, world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { on_select, on_back } = *self;
         let (advanced, set_advanced) = hooks.use_state(false);
         DialogScreen(
@@ -109,7 +109,7 @@ impl ElementComponent for EntityBrowserScreen {
                     if advanced {
                         ECSEditor {
                             get_world: cb({
-                                let game_client = world.resource(game_client()).clone();
+                                let game_client = hooks.world.resource(game_client()).clone();
                                 move |run| {
                                     let state = game_client.as_ref().unwrap().game_state.lock();
                                     run(&state.world);

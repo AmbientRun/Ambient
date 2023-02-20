@@ -1,7 +1,7 @@
 use std::f32::consts::PI;
 
+use ambient_std::mesh::Mesh;
 use glam::{vec2, vec3, Vec2, Vec3};
-use kiwi_std::mesh::Mesh;
 use serde::{Deserialize, Serialize};
 
 /// A sphere made of sectors and stacks

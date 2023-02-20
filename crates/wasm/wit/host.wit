@@ -391,3 +391,6 @@ physics-raycast: func(origin: vec3, direction: vec3) -> list<tuple<entity-id, fl
 // event
 event-subscribe: func(name: string)
 event-send: func(name: string, data: components)
+
+// asset
+asset-url: func(path: string) -> option<string>

@@ -1,25 +1,24 @@
 use std::{borrow::Cow, sync::Arc};
 
-use glam::*;
-use kiwi_core::{asset_cache, mesh, transform::*, ui_scene};
-use kiwi_ecs::World;
-use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use kiwi_gpu::{
+use ambient_core::{asset_cache, mesh, transform::*, ui_scene};
+use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_gpu::{
     std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey},
     texture::TextureView,
     texture_loaders::{TextureFromBytes, TextureFromUrl},
 };
-use kiwi_meshes::UIRectMeshKey;
-use kiwi_renderer::{
+use ambient_meshes::UIRectMeshKey;
+use ambient_renderer::{
     color, gpu_primitives, material,
     materials::pbr_material::{get_pbr_shader_unlit, PbrMaterial, PbrMaterialConfig, PbrMaterialParams},
     primitives, renderer_shader, SharedMaterial,
 };
-use kiwi_std::{
+use ambient_std::{
     asset_cache::{AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
     cb, CowStr,
 };
+use glam::*;
 
 use super::UIBase;
 use crate::layout::*;
@@ -29,11 +28,11 @@ pub struct Image {
     pub texture: Option<Arc<TextureView>>,
 }
 impl ElementComponent for Image {
-    fn render(self: Box<Self>, world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Image { texture } = *self;
-        let assets = world.resource(asset_cache());
+        let assets = hooks.world.resource(asset_cache()).clone();
         let texture_id = texture.as_ref().map(|x| x.texture.id);
-        let mat = hooks.use_memo_with(texture_id, move |_| {
+        let mat = hooks.use_memo_with(texture_id, move |_, _| {
             texture.map(|texture| {
                 SharedMaterial::new(PbrMaterial::new(
                     assets.clone(),
@@ -42,8 +41,8 @@ impl ElementComponent for Image {
                         name: "Image".to_string(),
                         params: PbrMaterialParams::default(),
                         base_color: texture,
-                        normalmap: DefaultNormalMapViewKey.get(assets),
-                        metallic_roughness: PixelTextureViewKey::white().get(assets),
+                        normalmap: DefaultNormalMapViewKey.get(&assets),
+                        metallic_roughness: PixelTextureViewKey::white().get(&assets),
                         transparent: None,
                         double_sided: None,
                         depth_write_enabled: None,
@@ -51,7 +50,7 @@ impl ElementComponent for Image {
                 ))
             })
         });
-        let assets = world.resource(asset_cache()).clone();
+        let assets = hooks.world.resource(asset_cache()).clone();
         let el = UIBase
             .el()
             .init(width(), 100.)
@@ -80,7 +79,7 @@ pub struct ImageFromBytes {
 }
 
 impl ElementComponent for ImageFromBytes {
-    fn render(self: Box<Self>, _: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { bytes, label } = *self;
 
         let texture =
@@ -103,7 +102,7 @@ pub struct ImageFromUrl {
 }
 
 impl ElementComponent for ImageFromUrl {
-    fn render(self: Box<Self>, _: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let ImageFromUrl { url } = *self;
 
         let texture = hooks

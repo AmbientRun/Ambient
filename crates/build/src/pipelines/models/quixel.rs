@@ -1,19 +1,22 @@
+use ambient_asset_cache::AsyncAssetKeyExt;
+use ambient_model_import::{fbx::FbxDoc, MaterialFilter, ModelImportPipeline, ModelImportTransform, ModelTransform};
+use ambient_renderer::materials::pbr_material::PbrMaterialFromUrl;
+use ambient_std::asset_url::{AbsAssetUrl, AssetType, AssetUrl};
 use convert_case::{Case, Casing};
 use futures::{future::BoxFuture, FutureExt};
 use image::RgbaImage;
 use itertools::Itertools;
-use kiwi_asset_cache::AsyncAssetKeyExt;
-use kiwi_model_import::{fbx::FbxDoc, MaterialFilter, ModelImportPipeline, ModelImportTransform, ModelTransform};
-use kiwi_renderer::materials::pbr_material::PbrMaterialFromUrl;
-use kiwi_std::asset_url::{AbsAssetUrl, AssetType, AssetUrl};
 
 use super::{
     super::{
-        context::PipelineCtx, out_asset::{OutAssetContent, OutAssetPreview}
-    }, ModelsPipeline
+        context::PipelineCtx,
+        out_asset::{OutAssetContent, OutAssetPreview},
+    },
+    ModelsPipeline,
 };
 use crate::pipelines::{
-    materials::PipeImage, out_asset::{asset_id_from_url, OutAsset}
+    materials::PipeImage,
+    out_asset::{asset_id_from_url, OutAsset},
 };
 
 pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset> {
@@ -122,7 +125,7 @@ pub async fn object_pipelines_from_quixel_json(
         let ending = ending.to_string();
         async move {
             let pattern = format!("{}**/*{}", in_root_url.as_directory().path(), ending);
-            let file = ctx.process_ctx.find_file_res(&pattern)?.clone();
+            let file = ctx.files.find_file_res(&pattern)?.clone();
             Ok(AssetUrl::from(PipeImage::new(file).cap_texture_size(config.cap_texture_sizes).get(ctx.assets()).await?))
         }
         .boxed()
@@ -146,11 +149,9 @@ pub async fn object_pipelines_from_quixel_json(
                 filter: MaterialFilter::All,
                 material: Box::new(material.relative_path_from(out_materials_url)),
             };
-            let mesh0 = FbxDoc::from_url(
-                ctx.assets(),
-                ctx.process_ctx.find_file_res(format!("{}**/*_LOD5.fbx", in_root_url.as_directory().path()))?,
-            )
-            .await?;
+            let mesh0 =
+                FbxDoc::from_url(ctx.assets(), ctx.files.find_file_res(format!("{}**/*_LOD5.fbx", in_root_url.as_directory().path()))?)
+                    .await?;
             for root_node in mesh0.models.values().filter(|m| m.parent.is_none()) {
                 let mut lods = Vec::new();
                 for i in 0..6 {
@@ -158,10 +159,7 @@ pub async fn object_pipelines_from_quixel_json(
                     lods.push(
                         ModelImportPipeline::new()
                             .add_step(ModelImportTransform::ImportModelFromUrl {
-                                url: ctx
-                                    .process_ctx
-                                    .find_file_res(format!("{}**/*_LOD{i}.fbx", in_root_url.as_directory().path()))?
-                                    .clone(),
+                                url: ctx.files.find_file_res(format!("{}**/*_LOD{i}.fbx", in_root_url.as_directory().path()))?.clone(),
                                 normalize: true,
                                 force_assimp: config.force_assimp,
                             })
@@ -323,7 +321,7 @@ pub async fn object_pipelines_from_quixel_json(
                 let mut variation = 0;
                 loop {
                     if !ctx
-                        .process_ctx
+                        .files
                         .has_input_file(&in_root_url.push(format!("Var{var}/Var{var}_LOD{lod}.fbx", var = variation, lod = 0)).unwrap())
                     {
                         break;

@@ -5,7 +5,4 @@ members = [
 ]
 
 [workspace.package]
-version = "0.0.3"
-
-[patch.crates-io]
-kiwi_api = { path = "api" }
+version = "0.0.16"

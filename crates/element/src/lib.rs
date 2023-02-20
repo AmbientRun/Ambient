@@ -5,19 +5,19 @@ extern crate derivative;
 
 use std::{any::Any, sync::Arc};
 
+use ambient_ecs::{components, Component, ComponentDesc, ComponentValue, EntityData, EntityId, SystemGroup, World};
+use ambient_std::events::EventDispatcher;
 use as_any::AsAny;
 use dyn_clonable::clonable;
-use kiwi_ecs::{components, Component, ComponentDesc, ComponentValue, EntityData, EntityId, SystemGroup, World};
-use kiwi_std::events::EventDispatcher;
 use parking_lot::Mutex;
 
 mod element_config;
 mod hooks;
 mod standard;
 mod tree;
+pub use ambient_element_component::element_component;
 use element_config::*;
 pub use hooks::*;
-pub use kiwi_element_component::element_component;
 pub use standard::*;
 pub use tree::*;
 
@@ -40,7 +40,7 @@ type InstanceId = String;
 
 #[clonable]
 pub trait ElementComponent: std::fmt::Debug + PartName + Clone + Sync + Send {
-    fn render(self: Box<Self>, world: &mut World, hooks: &mut Hooks) -> Element;
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element;
 }
 pub trait PartName {
     fn part_name(&self) -> &'static str;
@@ -191,7 +191,7 @@ impl Default for Element {
     }
 }
 
-pub fn kiwi_system() -> SystemGroup {
+pub fn ambient_system() -> SystemGroup {
     ElementTree::systems_for_component(element_tree())
 }
 
@@ -207,8 +207,9 @@ macro_rules! define_el_function_for_vec_element_newtype {
 }
 
 pub fn render_parented_with_component(world: &mut World, id: EntityId, handle: Component<ShareableElementTree>, mut element: Element) {
-    use kiwi_core::{
-        hierarchy::{children, parent}, transform::{local_to_parent, local_to_world}
+    use ambient_core::{
+        hierarchy::{children, parent},
+        transform::{local_to_parent, local_to_world},
     };
     element = element.set(parent(), id);
     if !element.has_component(local_to_parent()) {

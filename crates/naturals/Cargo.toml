@@ -1,24 +1,24 @@
 
 [package]
-name = "kiwi_naturals"
+name = "ambient_naturals"
 version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-kiwi_app = { path = "../app" }
-kiwi_core = { path = "../core" }
-kiwi_ecs = { path = "../ecs" }
-kiwi_gpu = { path = "../gpu" }
-kiwi_renderer = { path = "../renderer" }
-kiwi_std = { path = "../std" }
-kiwi_ui = { path = "../ui" }
-kiwi_element = { path = "../element" }
-kiwi_network = { path = "../network" }
-kiwi_model = { path = "../model" }
-kiwi_editor_derive = { path = "../editor_derive" }
-kiwi_terrain = { path = "../terrain" }
+ambient_app = { path = "../app" }
+ambient_core = { path = "../core" }
+ambient_ecs = { path = "../ecs" }
+ambient_gpu = { path = "../gpu" }
+ambient_renderer = { path = "../renderer" }
+ambient_std = { path = "../std" }
+ambient_ui = { path = "../ui" }
+ambient_element = { path = "../element" }
+ambient_network = { path = "../network" }
+ambient_model = { path = "../model" }
+ambient_editor_derive = { path = "../editor_derive" }
+ambient_terrain = { path = "../terrain" }
 itertools = { workspace = true }
 rand = { workspace = true }
 glam = { workspace = true }
@@ -31,4 +31,4 @@ tokio = { workspace = true }
 tracing = { workspace = true }
 
 [features]
-hotload-includes = ['kiwi_std/hotload-includes']
+hotload-includes = ['ambient_std/hotload-includes']

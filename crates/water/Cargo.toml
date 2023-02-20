@@ -1,18 +1,18 @@
 [package]
-name = "kiwi_water"
-version = "0.1.0"
+name = "ambient_water"
+version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-kiwi_ecs = { path = "../ecs" }
-kiwi_std = { path = "../std" }
-kiwi_core = { path = "../core" }
-kiwi_gpu = { path = "../gpu" }
-kiwi_gizmos = { path = "../gizmos" }
-kiwi_meshes = { path = "../meshes" }
-kiwi_renderer = { path = "../renderer" }
-kiwi_primitives = { path = "../primitives" }
+ambient_ecs = { path = "../ecs" }
+ambient_std = { path = "../std" }
+ambient_core = { path = "../core" }
+ambient_gpu = { path = "../gpu" }
+ambient_gizmos = { path = "../gizmos" }
+ambient_meshes = { path = "../meshes" }
+ambient_renderer = { path = "../renderer" }
+ambient_primitives = { path = "../primitives" }
 wgpu = { workspace = true }
 glam = { workspace = true }

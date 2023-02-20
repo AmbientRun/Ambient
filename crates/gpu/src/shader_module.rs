@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
+use ambient_std::{asset_cache::*, CowStr};
 use itertools::Itertools;
-use kiwi_std::{asset_cache::*, CowStr};
 use wgpu::{ComputePipelineDescriptor, DepthBiasState};
 
 use super::gpu::{Gpu, GpuKey, DEFAULT_SAMPLE_COUNT};

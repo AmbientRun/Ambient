@@ -1,20 +1,22 @@
 use std::sync::Arc;
 
+use ambient_model_import::model_crate::ModelCrate;
+use ambient_std::{
+    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
+    asset_url::{AbsAssetUrl, ModelCrateAssetType, TypedAssetUrl},
+};
 use anyhow::Context;
 use futures::{future::join_all, Future};
 use itertools::Itertools;
-use kiwi_model_import::model_crate::ModelCrate;
-use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, ModelCrateAssetType, TypedAssetUrl}
-};
 use relative_path::{RelativePath, RelativePathBuf};
 use tokio::sync::Semaphore;
 
-use super::{out_asset::OutAsset, Pipeline, ProcessCtx};
+use super::{out_asset::OutAsset, FileCollection, Pipeline, ProcessCtx};
 
 #[derive(Clone)]
 pub struct PipelineCtx {
     pub process_ctx: ProcessCtx,
+    pub files: FileCollection,
     pub pipeline_file: AbsAssetUrl,
     pub root_path: RelativePathBuf,
 
@@ -73,8 +75,8 @@ impl PipelineCtx {
             self.pipeline.sources.iter().map(|p| glob::Pattern::new(p)).collect::<Result<Vec<_>, glob::PatternError>>().unwrap();
         let opt_filter = self.process_ctx.input_file_filter.as_ref().and_then(|x| glob::Pattern::new(x).ok());
         let files = self
-            .process_ctx
             .files
+            .0
             .iter()
             .filter(move |file| {
                 if sources_filter.is_empty() {
@@ -140,7 +142,7 @@ impl PipelineCtx {
         .collect()
     }
     pub fn get_downloadable_url(&self, url: &AbsAssetUrl) -> anyhow::Result<&AbsAssetUrl> {
-        self.process_ctx.files.iter().find(|x| x.path() == url.path()).with_context(|| format!("No such file: {url}"))
+        self.process_ctx.files.0.iter().find(|x| x.path() == url.path()).with_context(|| format!("No such file: {url}"))
     }
 }
 

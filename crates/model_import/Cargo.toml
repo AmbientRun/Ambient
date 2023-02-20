@@ -1,21 +1,21 @@
 [package]
-name = "kiwi_model_import"
+name = "ambient_model_import"
 version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-kiwi_std = { path = "../std" }
-kiwi_core = { path = "../core" }
-kiwi_ecs = { path = "../ecs" }
-kiwi_renderer = { path = "../renderer" }
-kiwi_element = { path = "../element" }
-kiwi_ui = { path = "../ui" }
-kiwi_physics = { path = "../physics" }
-kiwi_model = { path = "../model" }
-kiwi_animation = { path = "../animation" }
-kiwi_editor_derive = { path = "../editor_derive" }
+ambient_std = { path = "../std" }
+ambient_core = { path = "../core" }
+ambient_ecs = { path = "../ecs" }
+ambient_renderer = { path = "../renderer" }
+ambient_element = { path = "../element" }
+ambient_ui = { path = "../ui" }
+ambient_physics = { path = "../physics" }
+ambient_model = { path = "../model" }
+ambient_animation = { path = "../animation" }
+ambient_editor_derive = { path = "../editor_derive" }
 physxx = { path = "../../libs/physxx" }
 glam = { workspace = true }
 env_logger = { workspace = true }
@@ -40,18 +40,18 @@ log = { workspace = true }
 relative-path = { workspace = true }
 
 [target.'cfg(target_os = "linux")'.dependencies]
-russimp = { git = "https://github.com/FredrikNoren/russimp.git", rev = "0a691d1fa625a1b549d476b97c74f93adab7e5bb", features = [
+russimp = { version = "1.0.6", features = [
     'static-link',
 ] }
 [target.'cfg(not(target_os = "linux"))'.dependencies]
-russimp = { git = "https://github.com/FredrikNoren/russimp.git", rev = "0a691d1fa625a1b549d476b97c74f93adab7e5bb", features = [
+russimp = { version = "1.0.6", features = [
     'prebuilt',
 ] }
 
 [dev-dependencies]
-kiwi_app = { path = "../app" }
-kiwi_element = { path = "../element" }
-kiwi_gizmos = { path = "../gizmos" }
-kiwi_primitives = { path = "../primitives" }
-kiwi_cameras = { path = "../cameras" }
+ambient_app = { path = "../app" }
+ambient_element = { path = "../element" }
+ambient_gizmos = { path = "../gizmos" }
+ambient_primitives = { path = "../primitives" }
+ambient_cameras = { path = "../cameras" }
 winit = { workspace = true }

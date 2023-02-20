@@ -1,14 +1,14 @@
-use glam::*;
-use kiwi_app::{gpu, AppBuilder};
-use kiwi_core::{asset_cache, camera::active_camera, main_scene, transform::*};
-use kiwi_ecs::{EntityData, EntityId, FnSystem, World};
-use kiwi_meshes::{CubeMeshKey, QuadMeshKey};
-use kiwi_renderer::{
+use ambient_app::{gpu, AppBuilder};
+use ambient_core::{asset_cache, camera::active_camera, main_scene, transform::*};
+use ambient_ecs::{EntityData, EntityId, FnSystem, World};
+use ambient_meshes::{CubeMeshKey, QuadMeshKey};
+use ambient_renderer::{
     gpu_primitives,
     materials::flat_material::{get_flat_shader, FlatMaterial},
     primitives, RenderPrimitive, SharedMaterial,
 };
-use kiwi_std::{asset_cache::SyncAssetKeyExt, cb, math::SphericalCoords};
+use ambient_std::{asset_cache::SyncAssetKeyExt, cb, math::SphericalCoords};
+use glam::*;
 use winit::event::{Event, VirtualKeyCode, WindowEvent};
 
 fn init(world: &mut World) -> (EntityId, EntityId, SharedMaterial, SharedMaterial) {
@@ -42,7 +42,7 @@ fn init(world: &mut World) -> (EntityId, EntityId, SharedMaterial, SharedMateria
         .set(main_scene(), ())
         .spawn(world);
 
-    kiwi_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
+    ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
         .set(active_camera(), 0.)
         .set(main_scene(), ())
         .spawn(world);

@@ -1,22 +1,22 @@
 use std::sync::Arc;
 
-use glam::*;
-use kiwi_app::AppBuilder;
-use kiwi_cameras::UICamera;
-use kiwi_core::{camera::active_camera, hierarchy::children, on_frame, transform::translation};
-use kiwi_ecs::World;
-use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use kiwi_renderer::color;
-use kiwi_std::color::Color;
-use kiwi_ui::{
+use ambient_app::AppBuilder;
+use ambient_cameras::UICamera;
+use ambient_core::{camera::active_camera, hierarchy::children, on_frame, transform::translation};
+use ambient_ecs::World;
+use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_renderer::color;
+use ambient_std::color::Color;
+use ambient_ui::{
     layout::{height, width},
     Throbber, *,
 };
+use glam::*;
 
 #[derive(Debug, Clone)]
 struct WobbleRect;
 impl ElementComponent for WobbleRect {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (state, set_state) = hooks.use_state(0.);
         UIBase
             .el()
@@ -33,7 +33,7 @@ struct MyContext(String);
 #[derive(Debug, Clone)]
 struct ContextUser;
 impl ElementComponent for ContextUser {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (context, _) = hooks.consume_context::<MyContext>().unwrap();
         Text::el(context.0)
     }
@@ -45,7 +45,7 @@ pub struct Two {
     second: Element,
 }
 impl ElementComponent for Two {
-    fn render(self: Box<Self>, _world: &mut World, _hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
         Element::from(UIBase)
             .init_default(children())
             .children(vec![self.first.set(translation(), vec3(100., 0., 0.)), self.second.set(translation(), vec3(0., 100., 0.))])
@@ -55,7 +55,7 @@ impl ElementComponent for Two {
 #[derive(Debug, Clone)]
 struct InputTest;
 impl ElementComponent for InputTest {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (value, set_value) = hooks.use_state("".to_string());
         FlowColumn::el([Throbber.el(), TextInput::new(value, set_value).el()])
     }
@@ -64,7 +64,7 @@ impl ElementComponent for InputTest {
 #[derive(Debug, Clone)]
 struct Example;
 impl ElementComponent for Example {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (count, _set_count) = hooks.use_state(0);
         hooks.provide_context(|| MyContext(format!("context {count}")));
         eprintln!("Render example {count}");

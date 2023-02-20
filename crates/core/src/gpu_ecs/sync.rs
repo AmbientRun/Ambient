@@ -1,8 +1,8 @@
 use std::fmt::Debug;
 
+use ambient_ecs::{Archetype, ArchetypeFilter, Component, ComponentDesc, ComponentValue, EntityId, System, World};
+use ambient_std::sparse_vec::SparseVec;
 use itertools::Itertools;
-use kiwi_ecs::{Archetype, ArchetypeFilter, Component, ComponentDesc, ComponentValue, EntityId, System, World};
-use kiwi_std::sparse_vec::SparseVec;
 
 use super::{gpu_world, GpuComponentFormat, GpuComponentId};
 use crate::gpu;

@@ -8,18 +8,18 @@ use std::{
     time::{Duration, SystemTime},
 };
 
-use glam::*;
-use itertools::Itertools;
-use kiwi_core::{mouse_position, on_event, transform::translation, window, window_scale_factor};
-use kiwi_ecs::{ComponentValue, EntityId, World};
-use kiwi_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
-use kiwi_input::MouseButton;
-use kiwi_std::{
+use ambient_core::{mouse_position, on_event, transform::translation, window, window_scale_factor};
+use ambient_ecs::{ComponentValue, EntityId};
+use ambient_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_input::MouseButton;
+use ambient_std::{
     cb,
     events::EventDispatcher,
     math::{interpolate, interpolate_clamped, Saturate},
     Cb,
 };
+use glam::*;
+use itertools::Itertools;
 use winit::{
     event::{ElementState, Event, WindowEvent},
     window::CursorIcon,
@@ -42,7 +42,7 @@ impl<T: FromStr + Debug + std::fmt::Display + Clone + Sync + Send + 'static> Par
     }
 }
 impl<T: FromStr + Debug + std::fmt::Display + Clone + Sync + Send + 'static> ElementComponent for ParseableInput<T> {
-    fn render(self: Box<Self>, _: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { value, on_change } = *self;
         let (self_id, set_self_id) = hooks.use_state(EntityId::null());
         let (focus, _) = hooks.consume_context::<Focus>().expect("No FocusRoot found");
@@ -76,7 +76,7 @@ pub struct CustomParseInput<T> {
 }
 
 impl<T: Debug + ComponentValue> ElementComponent for CustomParseInput<T> {
-    fn render(self: Box<Self>, _: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { value, on_change, parse, to_string } = *self;
 
         let (self_id, set_self_id) = hooks.use_state(EntityId::null());
@@ -184,7 +184,7 @@ impl Checkbox {
     }
 }
 impl ElementComponent for Checkbox {
-    fn render(self: Box<Self>, _world: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         let Checkbox { value, on_change } = *self;
         Button::new(FontAwesomeIcon::el(if value { 0xf14a } else { 0xf0c8 }, false), move |_| on_change.0(!value))
             .style(ButtonStyle::Flat)
@@ -219,7 +219,7 @@ pub struct Slider {
 }
 
 impl ElementComponent for Slider {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Slider { value, min, max, width: slider_width, logarithmic, round, suffix, .. } = *self;
         const THUMB_WIDTH: f32 = 12.;
         const SLIDER_HEIGHT: f32 = 12.;
@@ -321,7 +321,7 @@ impl ElementComponent for Slider {
                         let scale_factor = *world.resource(window_scale_factor());
                         let mouse_pos = *world.resource(mouse_position()) / scale_factor as f32;
 
-                        let screen_to_local = world.get(id, kiwi_core::transform::mesh_to_world()).unwrap_or_default().inverse();
+                        let screen_to_local = world.get(id, ambient_core::transform::mesh_to_world()).unwrap_or_default().inverse();
                         let mouse_pos_relative = screen_to_local * Vec4::from((mouse_pos, 0.0, 1.0));
 
                         on_change_factor((mouse_pos_relative.x / slider_width).saturate());
@@ -345,7 +345,7 @@ pub struct IntegerSlider {
     pub suffix: Option<&'static str>,
 }
 impl ElementComponent for IntegerSlider {
-    fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         let Self { value, on_change, min, max, width, logarithmic, suffix } = *self;
         Slider {
             value: value as f32,
@@ -395,9 +395,9 @@ impl From<&EditableDuration> for Duration {
         v.dur
     }
 }
+use ambient_renderer::color;
+use ambient_std::time::parse_duration;
 use convert_case::{Case, Casing};
-use kiwi_renderer::color;
-use kiwi_std::time::parse_duration;
 
 impl From<String> for EditableDuration {
     fn from(s: String) -> Self {
@@ -420,7 +420,7 @@ impl DurationEditor {
 }
 
 impl ElementComponent for DurationEditor {
-    fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         let Self { value: EditableDuration { input, dur, valid }, on_change } = *self;
         let input = TextInput::new(input, cb(move |upd: String| on_change(EditableDuration::from(upd)))).el();
         let value = Text::el(format!("{dur:#?}"));
@@ -440,7 +440,7 @@ pub struct SystemTimeEditor {
 }
 
 impl ElementComponent for SystemTimeEditor {
-    fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         Text::el(format!("{:?}", self.value))
     }
 }
@@ -462,7 +462,7 @@ impl EditorRow {
     }
 }
 impl ElementComponent for EditorRow {
-    fn render(self: Box<Self>, _world: &mut World, _hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
         let Self { title, editor } = *self;
         FlowRow(vec![Text::el(title).set(margin(), Borders::right(STREET)), editor]).el()
     }
@@ -472,7 +472,7 @@ impl ElementComponent for EditorRow {
 pub struct EditorColumn(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(EditorColumn);
 impl ElementComponent for EditorColumn {
-    fn render(self: Box<Self>, _world: &mut World, _hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
         FlowColumn(self.0).el()
     }
 }
@@ -504,7 +504,7 @@ pub struct ArrayEditor<const C: usize, T> {
 }
 
 impl<const C: usize, T: 'static + Clone + Debug + Editor + Send + Sync> ElementComponent for ArrayEditor<C, T> {
-    fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         let Self { value, on_change, field_names } = *self;
 
         if let Some(field_names) = field_names {

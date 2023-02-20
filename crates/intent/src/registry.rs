@@ -1,15 +1,17 @@
 use std::{collections::HashMap, fmt::Debug, marker::Send};
 
-use futures::Future;
-use kiwi_ecs::{ArchetypeFilter, Component, ComponentValue, EntityData, EntityId, IndexExt, SystemGroup, World};
-use kiwi_network::{
-    assert_networked, server::{ServerState, SharedServerState}
+use ambient_ecs::{ArchetypeFilter, Component, ComponentValue, EntityData, EntityId, IndexExt, SystemGroup, World};
+use ambient_network::{
+    assert_networked,
+    server::{ServerState, SharedServerState},
 };
+use futures::Future;
 use parking_lot::MutexGuard;
 use tracing::info_span;
 
 use crate::{
-    common_intent_systems, intent, intent_applied, intent_failed, intent_id, intent_id_index, intent_index, intent_index_applied, intent_index_reverted, intent_reverted, intent_success, logic::get_head_applied_intent
+    common_intent_systems, intent, intent_applied, intent_failed, intent_id, intent_id_index, intent_index, intent_index_applied,
+    intent_index_reverted, intent_reverted, intent_success, logic::get_head_applied_intent,
 };
 
 pub struct IntentContext<'a> {
@@ -248,7 +250,7 @@ impl IntentRegistry {
     /// **Note**: The lock on the world will be held for the whole duration of the async intent.
     ///
     /// This is to prevent deadlocks and swept under the rug when intents are partially applied.
-    /// If this is not desired, consider [`tokio::spawn`] or [`kiwi_core::AsyncRun`].
+    /// If this is not desired, consider [`tokio::spawn`] or [`ambient_core::AsyncRun`].
     pub fn register<Arg, RevertState, Apply, Revert, Merge>(
         &mut self,
         intent: Component<Arg>,
@@ -321,7 +323,7 @@ pub fn registry_systems() -> SystemGroup {
 #[cfg(test)]
 mod test {
 
-    use kiwi_ecs::{components, Networked, Store};
+    use ambient_ecs::{components, Networked, Store};
 
     use super::*;
 

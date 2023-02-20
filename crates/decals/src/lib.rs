@@ -1,23 +1,22 @@
 use std::sync::Arc;
 
-use glam::{Vec3, Vec4};
-use kiwi_asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt};
-use kiwi_core::{
+use ambient_asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt};
+use ambient_core::{
     asset_cache,
     async_ecs::async_run,
     bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere},
     main_scene, mesh, runtime,
     transform::{local_to_world, mesh_to_world},
 };
-use kiwi_ecs::{components, query, EntityData, MakeDefault, Networked, Store, SystemGroup};
-use kiwi_gpu::shader_module::{Shader, ShaderModule};
-use kiwi_meshes::CubeMeshKey;
-use kiwi_renderer::{
+use ambient_ecs::{components, query, EntityData, MakeDefault, Networked, Store, SystemGroup};
+use ambient_gpu::shader_module::{Shader, ShaderModule};
+use ambient_meshes::CubeMeshKey;
+use ambient_renderer::{
     color, get_forward_module, gpu_primitives, material,
     pbr_material::{PbrMaterialFromUrl, PbrMaterialShaderKey},
     primitives, renderer_shader, MaterialShader, RendererShader,
 };
-use kiwi_std::{
+use ambient_std::{
     asset_url::{MaterialAssetType, TypedAssetUrl},
     cb,
     download_asset::JsonFromUrl,
@@ -25,7 +24,8 @@ use kiwi_std::{
     shapes::AABB,
     unwrap_log_err, unwrap_log_warn,
 };
-use kiwi_ui::Editable;
+use ambient_ui::Editable;
+use glam::{Vec3, Vec4};
 
 components!("decals", {
     @[MakeDefault, Editable, Networked, Store]

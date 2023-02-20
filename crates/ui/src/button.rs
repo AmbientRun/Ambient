@@ -6,15 +6,15 @@ use std::{
     },
 };
 
+use ambient_core::{runtime, window};
+use ambient_ecs::World;
+use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_input::{on_app_focus_change, on_app_keyboard_input, on_app_mouse_input, KeyboardEvent};
+use ambient_renderer::color;
+use ambient_std::{cb, color::Color, Callback, Cb};
 use closure::closure;
 use futures::{future::BoxFuture, Future, FutureExt};
 use glam::*;
-use kiwi_core::{runtime, window};
-use kiwi_ecs::World;
-use kiwi_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
-use kiwi_input::{on_app_focus_change, on_app_keyboard_input, on_app_mouse_input, KeyboardEvent};
-use kiwi_renderer::color;
-use kiwi_std::{cb, color::Color, Callback, Cb};
 use parking_lot::Mutex;
 pub use winit::event::VirtualKeyCode;
 use winit::{
@@ -196,7 +196,6 @@ impl ButtonStyle {
 
 #[element_component]
 pub fn Button(
-    world: &mut World,
     hooks: &mut Hooks,
     content: Element,
     disabled: bool,
@@ -211,9 +210,9 @@ pub fn Button(
     let (is_pressed, set_is_pressed) = hooks.use_state(false);
     let (hover, set_hover) = hooks.use_state(false);
     let (is_working, set_is_working) = hooks.use_state(false);
-    let (is_pressed_immediate, _) = hooks.use_state_with(|| Arc::new(AtomicBool::new(false)));
+    let (is_pressed_immediate, _) = hooks.use_state_with(|_| Arc::new(AtomicBool::new(false)));
 
-    hooks.use_effect(world, is_pressed, move |world, _| {
+    hooks.use_effect(is_pressed, move |world, _| {
         if let Some(on_is_pressed_changed) = on_is_pressed_changed {
             on_is_pressed_changed(world, is_pressed);
         }
@@ -386,9 +385,9 @@ impl Hotkey {
     }
 }
 impl ElementComponent for Hotkey {
-    fn render(self: Box<Self>, _: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { on_is_pressed_changed, content, hotkey, hotkey_modifier, on_invoke } = *self;
-        let (is_pressed, _) = hooks.use_state_with(|| Arc::new(AtomicBool::new(false)));
+        let (is_pressed, _) = hooks.use_state_with(|_| Arc::new(AtomicBool::new(false)));
         content
             .listener(
                 on_app_focus_change(),

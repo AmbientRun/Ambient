@@ -1,10 +1,10 @@
 use crate::helpers::{get_shapes, scale_shape};
-use glam::{Quat, Vec3};
-use kiwi_core::transform::{rotation, scale, translation};
-use kiwi_ecs::{
+use ambient_core::transform::{rotation, scale, translation};
+use ambient_ecs::{
     components, ensure_has_component, query, Debuggable, Description, FnSystem, Name, Networked, QueryState, Resource, Store, SystemGroup,
 };
-use kiwi_std::asset_cache::SyncAssetKey;
+use ambient_std::asset_cache::SyncAssetKey;
+use glam::{Quat, Vec3};
 use parking_lot::Mutex;
 use physxx::{articulation_reduced_coordinate::*, *};
 use std::sync::Arc;
@@ -29,12 +29,16 @@ components!("physics", {
     linear_velocity: Vec3,
     @[Debuggable, Networked, Store, Name["Angular velocity"], Description["Angular velocity (radians/second) of this entity in the physics scene.\nUpdating this component will update the entity's angular velocity in the physics scene."]]
     angular_velocity: Vec3,
+    @[Debuggable, Networked, Store, Name["Contact offset"], Description["Contact offset (in meters) of this entity in the physics scene.\nUpdating this component will update the entity's contact offset for each attached shape in the physics scene."]]
+    contact_offset: f32,
+    @[Debuggable, Networked, Store, Name["Rest offset"], Description["Rest offset (in meters) of this entity in the physics scene.\nUpdating this component will update the entity's rest offset for each attached shape in the physics scene."]]
+    rest_offset: f32,
 });
 
 #[derive(Debug)]
 pub struct PhysicsKey;
 impl SyncAssetKey<Physics> for PhysicsKey {
-    fn load(&self, _assets: kiwi_std::asset_cache::AssetCache) -> Physics {
+    fn load(&self, _assets: ambient_std::asset_cache::AssetCache) -> Physics {
         Physics::new()
     }
 }
@@ -187,6 +191,24 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     for (id, &vel) in q.iter(world, Some(&mut *qs)) {
                         if let Ok(body) = world.get(id, rigid_dynamic()) {
                             body.set_angular_velocity(vel, true);
+                        }
+                    }
+                }
+            }),
+            query(contact_offset().changed()).incl(physics_controlled()).to_system({
+                move |q, world, qs, _| {
+                    for (id, &off) in q.iter(world, qs) {
+                        for shape in get_shapes(world, id) {
+                            shape.set_contact_offset(off);
+                        }
+                    }
+                }
+            }),
+            query(rest_offset().changed()).incl(physics_controlled()).to_system({
+                move |q, world, qs, _| {
+                    for (id, &off) in q.iter(world, qs) {
+                        for shape in get_shapes(world, id) {
+                            shape.set_rest_offset(off);
                         }
                     }
                 }

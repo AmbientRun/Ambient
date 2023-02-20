@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use kiwi_gpu::shader_module::{Shader, ShaderModule};
-use kiwi_std::{
+use ambient_gpu::shader_module::{Shader, ShaderModule};
+use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey},
     include_file,
 };

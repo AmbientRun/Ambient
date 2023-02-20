@@ -5,7 +5,9 @@ use proc_macro::TokenStream;
 use proc_macro2::Span;
 use quote::quote;
 
-mod kiwi_project;
+mod ambient_project;
+
+const MANIFEST: &str = include_str!("../ambient.toml");
 
 /// Makes your `main()` function accessible to the WASM host, and generates a `components` module with your project's components.
 ///
@@ -19,9 +21,17 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
     }
 
     let spans = Span::call_site();
-    let mut path = syn::Path::from(syn::Ident::new("kiwi_api", spans));
+    let mut path = syn::Path::from(syn::Ident::new("ambient_api", spans));
     path.leading_colon = Some(syn::Token![::](spans));
-    let project_boilerplate = kiwi_project_pm2(false, path.clone()).unwrap();
+    let project_boilerplate = ambient_project::implementation(
+        ambient_project::read_file("ambient.toml".to_string())
+            .context("Failed to load ambient.toml")
+            .unwrap(),
+        path.clone(),
+        false,
+        true,
+    )
+    .unwrap();
 
     quote! {
         #project_boilerplate
@@ -29,6 +39,7 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
         #item
 
         #[no_mangle]
+        #[doc(hidden)]
         pub extern "C" fn call_main(runtime_interface_version: u32) {
             if INTERFACE_VERSION != runtime_interface_version {
                 panic!("This module was compiled with interface version {{INTERFACE_VERSION}}, but the host is running with version {{runtime_interface_version}}.");
@@ -42,20 +53,12 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro]
 pub fn api_project(_input: TokenStream) -> TokenStream {
     TokenStream::from(
-        kiwi_project_pm2(
-            true,
+        ambient_project::implementation(
+            (None, MANIFEST.to_string()),
             syn::Path::from(syn::Ident::new("crate", Span::call_site())),
+            true,
+            true,
         )
         .unwrap(),
-    )
-}
-
-fn kiwi_project_pm2(global: bool, api_name: syn::Path) -> anyhow::Result<proc_macro2::TokenStream> {
-    kiwi_project::implementation(
-        kiwi_project::read_file("kiwi.toml".to_string())
-            .context("Failed to load kiwi.toml")
-            .unwrap(),
-        api_name,
-        global,
     )
 }

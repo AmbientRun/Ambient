@@ -1,15 +1,15 @@
 use std::sync::Arc;
 
-use collider::collider_shapes;
-use glam::{vec3, Mat4, Vec3};
-use helpers::release_px_scene;
-use kiwi_core::asset_cache;
-use kiwi_ecs::{
+use ambient_core::asset_cache;
+use ambient_ecs::{
     components, query, Debuggable, Description, DynSystem, EntityData, EntityId, FnSystem, Name, Networked, Resource, Store, SystemGroup,
     World,
 };
-use kiwi_network::server::{ForkingEvent, ShutdownEvent};
-use kiwi_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
+use ambient_network::server::{ForkingEvent, ShutdownEvent};
+use ambient_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
+use collider::collider_shapes;
+use glam::{vec3, Mat4, Vec3};
+use helpers::release_px_scene;
 use parking_lot::Mutex;
 use physx::{
     actor_aggregate, articulation_cache, articulation_link, articulation_reduce_coordinate, character_controller, fixed_joint,
@@ -80,6 +80,7 @@ pub fn init_all_components() {
     init_components();
     physx::init_components();
     collider::init_components();
+    visualization::init_components();
 }
 
 pub const GRAVITY: f32 = 9.82;
@@ -196,7 +197,7 @@ unsafe extern "C" fn main_physx_scene_filter_shader(mut info: *mut physxx::sys::
     (physxx::sys::PxFilterFlag::eDEFAULT) as u16
 }
 
-pub fn physics_server_systems() -> SystemGroup {
+pub fn server_systems() -> SystemGroup {
     SystemGroup::new(
         "physics",
         vec![
@@ -223,8 +224,13 @@ pub fn physics_server_systems() -> SystemGroup {
                 }
             }),
             Box::new(collider::server_systems()),
+            Box::new(visualization::server_systems()),
         ],
     )
+}
+
+pub fn client_systems() -> SystemGroup {
+    SystemGroup::new("physics", vec![Box::new(visualization::client_systems())])
 }
 
 /// Starts the physx simulation step concurrently.

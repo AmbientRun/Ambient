@@ -1,24 +1,24 @@
 use std::{num::NonZeroU32, ops::Deref, sync::Arc};
 
-use anyhow::Context;
-use async_trait::async_trait;
-use glam::*;
-use glyph_brush::{
-    ab_glyph::{Font, FontArc, PxScale, Rect},
-    BrushAction, BrushError, GlyphBrush, GlyphBrushBuilder, Section,
-};
-use kiwi_core::{asset_cache, async_ecs::async_run, gpu, mesh, name, runtime, transform::*, ui_scene, window_scale_factor};
-use kiwi_ecs::{components, query, query_mut, Debuggable, Description, EntityData, Name, Networked, Store, SystemGroup, World};
-use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
-use kiwi_gpu::{mesh_buffer::GpuMesh, texture::Texture};
-use kiwi_renderer::{color, gpu_primitives, material, primitives, renderer_shader, SharedMaterial};
-use kiwi_std::{
+use ambient_core::{asset_cache, async_ecs::async_run, gpu, mesh, name, runtime, transform::*, ui_scene, window_scale_factor};
+use ambient_ecs::{components, query, query_mut, Debuggable, Description, EntityData, Name, Networked, Store, SystemGroup};
+use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_gpu::{mesh_buffer::GpuMesh, texture::Texture};
+use ambient_renderer::{color, gpu_primitives, material, primitives, renderer_shader, SharedMaterial};
+use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt},
     asset_url::AbsAssetUrl,
     cb,
     download_asset::{AssetResult, BytesFromUrl},
     mesh::*,
     shapes::AABB,
+};
+use anyhow::Context;
+use async_trait::async_trait;
+use glam::*;
+use glyph_brush::{
+    ab_glyph::{Font, FontArc, PxScale, Rect},
+    BrushAction, BrushError, GlyphBrush, GlyphBrushBuilder, Section,
 };
 use log::info;
 use parking_lot::Mutex;
@@ -45,8 +45,8 @@ components!("ui", {
 
 /// A text element. Use the `text`, `font_size`, `font` and `color` components to set its state
 #[element_component(without_el)]
-pub fn Text(world: &mut World, _hooks: &mut Hooks) -> Element {
-    let scale_factor = *world.resource(window_scale_factor()) as f32;
+pub fn Text(hooks: &mut Hooks) -> Element {
+    let scale_factor = *hooks.world.resource(window_scale_factor()) as f32;
 
     UIBase
         .el()
@@ -429,7 +429,7 @@ pub struct FontFromUrl(AbsAssetUrl);
 
 #[async_trait]
 impl AsyncAssetKey<AssetResult<Arc<FontArc>>> for FontFromUrl {
-    async fn load(self, assets: kiwi_std::asset_cache::AssetCache) -> AssetResult<Arc<FontArc>> {
+    async fn load(self, assets: ambient_std::asset_cache::AssetCache) -> AssetResult<Arc<FontArc>> {
         info!("Downloading font: {}", self.0);
         let data = BytesFromUrl::new(self.0, true).get(&assets).await?;
         let brush = FontArc::try_from_vec(data.deref().clone()).context("Failed to parse font")?;

@@ -1,22 +1,22 @@
-use glam::*;
-use kiwi_app::AppBuilder;
-use kiwi_core::{
+use ambient_app::AppBuilder;
+use ambient_core::{
     asset_cache,
     camera::{active_camera, far},
     main_scene,
     transform::*,
 };
-use kiwi_ecs::{EntityData, World};
-use kiwi_element::ElementComponentExt;
-use kiwi_model::{model_from_url, ModelFromUrl};
-use kiwi_model_import::{MaterialFilter, ModelImportPipeline, ModelImportTransform, ModelTransform};
-use kiwi_primitives::{Cube, Quad};
-use kiwi_renderer::{color, materials::pbr_material::PbrMaterialFromUrl};
-use kiwi_std::{
+use ambient_ecs::{EntityData, World};
+use ambient_element::ElementComponentExt;
+use ambient_model::{model_from_url, ModelFromUrl};
+use ambient_model_import::{MaterialFilter, ModelImportPipeline, ModelImportTransform, ModelTransform};
+use ambient_primitives::{Cube, Quad};
+use ambient_renderer::{color, materials::pbr_material::PbrMaterialFromUrl};
+use ambient_std::{
     asset_cache::AsyncAssetKeyExt,
     asset_url::{AbsAssetUrl, AssetUrl, TypedAssetUrl},
     math::SphericalCoords,
 };
+use glam::*;
 use reqwest::Url;
 
 async fn init(world: &mut World) {
@@ -112,7 +112,7 @@ async fn init(world: &mut World) {
         EntityData::new().set(model_from_url(), mod_def.0.to_string()).set(translation(), xy.extend(0.1)).spawn(world);
     }
 
-    kiwi_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
+    ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
         .set(active_camera(), 0.)
         .set(main_scene(), ())
         .set(far(), 2000.)

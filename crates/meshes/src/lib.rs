@@ -6,15 +6,15 @@ pub mod pyramid;
 pub mod uvsphere;
 use std::sync::Arc;
 
+use ambient_gpu::mesh_buffer::GpuMesh;
+use ambient_std::{
+    asset_cache::{AssetCache, SyncAssetKey},
+    mesh::Mesh,
+};
 pub use capsule::*;
 pub use cube::*;
 use glam::*;
 pub use grid::*;
-use kiwi_gpu::mesh_buffer::GpuMesh;
-use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKey},
-    mesh::Mesh,
-};
 pub use uvsphere::*;
 
 #[derive(Debug, Clone)]

@@ -1,7 +1,7 @@
+use ambient_core::{camera::*, transform::*};
+use ambient_ecs::{components, query_mut, EntityData, SystemGroup};
 use derive_more::Display;
 use glam::vec2;
-use kiwi_core::{camera::*, transform::*};
-use kiwi_ecs::{components, query_mut, EntityData, SystemGroup};
 use winit::event::{DeviceEvent, ElementState, Event, VirtualKeyCode, WindowEvent};
 
 use super::camera_movement_speed;

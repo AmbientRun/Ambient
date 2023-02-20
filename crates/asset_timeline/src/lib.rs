@@ -1,27 +1,26 @@
 use std::{collections::HashMap, sync::Arc};
 
-use glam::{vec3, vec4, Vec4};
-use itertools::Itertools;
-use kiwi_core::{asset_cache, transform::translation};
-use kiwi_ecs::World;
-use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use kiwi_renderer::color;
-use kiwi_std::{
+use ambient_core::{asset_cache, transform::translation};
+use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_renderer::color;
+use ambient_std::{
     asset_cache::{AssetKey, AssetLifetime, AssetTimeline, AssetsTimeline},
     color::Color,
     pretty_duration, to_byte_unit,
 };
-use kiwi_ui::{
+use ambient_ui::{
     docking, fit_horizontal, height, margin, use_interval, width, Borders, Button, ButtonStyle, Dock, Docking, Editor, Fit, FlowColumn,
     FlowRow, Rectangle, StylesExt, Text, Tooltip, UIBase, UIExt, STREET,
 };
+use glam::{vec3, vec4, Vec4};
+use itertools::Itertools;
 
 #[derive(Debug, Clone)]
 pub struct AssetTimelineVisualizer {
     pub timeline: AssetsTimeline,
 }
 impl ElementComponent for AssetTimelineVisualizer {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let total_count = self.timeline.assets.len();
         let (limit, set_limit) = hooks.use_state(Some(100));
         #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -160,7 +159,7 @@ struct AssetTimelineRow {
     total_gpu_size: Option<usize>,
 }
 impl ElementComponent for AssetTimelineRow {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { key, value, timeline, padding, total_gpu_size } = *self;
         let (expanded, set_expanded) = hooks.use_state(false);
         let key_text = Text::el(if key.len() > 30 { &key[0..30] } else { &key })
@@ -229,7 +228,7 @@ struct AssetLifetimeViz {
     lifetimes: Vec<AssetLifetime>,
 }
 impl ElementComponent for AssetLifetimeViz {
-    fn render(self: Box<Self>, _world: &mut World, _hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
         let Self { lifetimes } = *self;
         let current_time = chrono::Utc::now();
         let time_scale = 0.001;
@@ -357,9 +356,9 @@ impl ElementComponent for AssetLifetimeViz {
 #[derive(Debug, Clone)]
 pub struct LocalAssetTimelineVisualizer;
 impl ElementComponent for LocalAssetTimelineVisualizer {
-    fn render(self: Box<Self>, world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (timeline, set_timeline) = hooks.use_state(AssetsTimeline::new());
-        let assets = world.resource(asset_cache()).clone();
+        let assets = hooks.world.resource(asset_cache()).clone();
         use_interval(hooks, 1., move || {
             let timeline = assets.timeline.lock().clone();
             set_timeline(timeline);

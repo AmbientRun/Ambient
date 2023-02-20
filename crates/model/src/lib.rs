@@ -1,10 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
-use async_trait::async_trait;
-use futures::StreamExt;
-use glam::{vec4, Vec3};
-use itertools::Itertools;
-use kiwi_core::{
+use ambient_core::{
     asset_cache,
     async_ecs::{async_run, AsyncRun},
     bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere},
@@ -12,11 +8,11 @@ use kiwi_core::{
     main_scene, runtime,
     transform::{get_world_position, inv_local_to_world, local_to_world, mesh_to_world},
 };
-use kiwi_ecs::{
+use ambient_ecs::{
     components, query, ComponentDesc, Debuggable, Description, EntityData, EntityId, Name, Networked, Store, SystemGroup, World,
 };
-use kiwi_gpu::mesh_buffer::GpuMeshFromUrl;
-use kiwi_renderer::{
+use ambient_gpu::mesh_buffer::GpuMeshFromUrl;
+use ambient_renderer::{
     color, gpu_primitives,
     materials::{
         flat_material::{get_flat_shader, FlatMaterialKey},
@@ -24,18 +20,22 @@ use kiwi_renderer::{
     },
     primitives, RenderPrimitive, StandardShaderKey,
 };
-use kiwi_std::{
+use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
-    asset_url::{AbsAssetUrl, AssetUrl, ModelAssetType, ServerBaseUrlKey, TypedAssetUrl},
+    asset_url::{AbsAssetUrl, AssetUrl, ModelAssetType, TypedAssetUrl},
     cb,
     download_asset::{AssetError, BytesFromUrl, JsonFromUrl},
     log_result,
     math::Line,
 };
+use async_trait::async_trait;
+use futures::StreamExt;
+use glam::{vec4, Vec3};
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 mod model;
 
-use kiwi_meshes::CubeMeshKey;
+use ambient_meshes::CubeMeshKey;
 pub use model::*;
 use tokio::sync::Semaphore;
 
@@ -237,8 +237,7 @@ impl ModelFromUrl {
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<Model>, AssetError>> for ModelFromUrl {
     async fn load(self, assets: AssetCache) -> Result<Arc<Model>, AssetError> {
-        let base_url = ServerBaseUrlKey.get(&assets);
-        let url = self.0.clone().resolve(&base_url).unwrap();
+        let url = self.0.clone().abs().context(format!("ModelFromUrl got relative url: {}", self.0))?;
         let data = BytesFromUrl::new(url.clone(), true).get(&assets).await?;
         let semaphore = ModelLoadSemaphore.get(&assets);
         let _permit = semaphore.acquire().await;

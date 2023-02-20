@@ -1,6 +1,6 @@
 
 [package]
-name = "kiwi_editor_derive"
+name = "ambient_editor_derive"
 version = { workspace = true }
 edition = "2021"
 
@@ -17,5 +17,5 @@ proc-macro-crate = { workspace = true }
 convert_case = { workspace = true }
 
 [dev-dependencies]
-kiwi_ui = { path = "../ui" }
+ambient_ui = { path = "../ui" }
 pretty_assertions = "1.3"

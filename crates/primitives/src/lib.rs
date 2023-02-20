@@ -1,29 +1,26 @@
-use glam::{vec3, Mat4, Quat, Vec3, Vec4};
-use kiwi_core::{
+use ambient_core::{
     asset_cache,
     bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere},
     main_scene, mesh,
     transform::{local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation},
 };
-use kiwi_ecs::{
-    components, ensure_has_component_with_make_default, query, DefaultValue, Description, EntityData, EntityId, Name, Networked, Store,
-    SystemGroup, World,
-};
-use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use kiwi_gpu::mesh_buffer::GpuMesh;
-pub use kiwi_meshes::UVSphereMesh;
-use kiwi_meshes::{UnitCubeMeshKey, UnitQuadMeshKey};
-use kiwi_renderer::{
+use ambient_ecs::{components, query, DefaultValue, Description, EntityData, EntityId, Name, Networked, Store, SystemGroup, World};
+use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_gpu::mesh_buffer::GpuMesh;
+pub use ambient_meshes::UVSphereMesh;
+use ambient_meshes::{UnitCubeMeshKey, UnitQuadMeshKey};
+use ambient_renderer::{
     color, gpu_primitives, material,
     materials::flat_material::{get_flat_shader, FlatMaterialKey},
     primitives, renderer_shader,
 };
-use kiwi_std::{
+use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     cb,
     mesh::Mesh,
     shapes::{Sphere, AABB},
 };
+use glam::{vec3, Mat4, Quat, Vec3, Vec4};
 
 components!("primitives", {
     @[
@@ -145,9 +142,6 @@ pub fn systems() -> SystemGroup {
                     extend(world, id, data);
                 }
             }),
-            ensure_has_component_with_make_default(sphere(), sphere_radius()),
-            ensure_has_component_with_make_default(sphere(), sphere_sectors()),
-            ensure_has_component_with_make_default(sphere(), sphere_stacks()),
             query((sphere_radius().changed(), sphere_sectors().changed(), sphere_stacks().changed())).incl(sphere()).spawned().to_system(
                 |q, world, qs, _| {
                     for (id, (radius, sectors, stacks)) in q.collect_cloned(world, qs) {
@@ -169,16 +163,16 @@ pub fn systems() -> SystemGroup {
 #[derive(Debug, Clone)]
 pub struct Cube;
 impl ElementComponent for Cube {
-    fn render(self: Box<Self>, world: &mut World, _: &mut Hooks) -> Element {
-        Element::new().init_extend(cube_data(world.resource(asset_cache())))
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
+        Element::new().init_extend(cube_data(hooks.world.resource(asset_cache())))
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct Quad;
 impl ElementComponent for Quad {
-    fn render(self: Box<Self>, world: &mut World, _: &mut Hooks) -> Element {
-        Element::new().init_extend(quad_data(world.resource(asset_cache())))
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
+        Element::new().init_extend(quad_data(hooks.world.resource(asset_cache())))
     }
 }
 
@@ -187,9 +181,9 @@ pub struct UVSphere {
     pub sphere: UVSphereMesh,
 }
 impl ElementComponent for UVSphere {
-    fn render(self: Box<Self>, world: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let UVSphere { sphere } = *self;
-        Element::new().init_extend(sphere_data(world.resource(asset_cache()), &sphere))
+        Element::new().init_extend(sphere_data(hooks.world.resource(asset_cache()), &sphere))
     }
 }
 
@@ -200,7 +194,7 @@ pub struct BoxLine {
     pub thickness: f32,
 }
 impl ElementComponent for BoxLine {
-    fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         let d = self.to - self.from;
         Cube.el()
             .set(translation(), self.from)

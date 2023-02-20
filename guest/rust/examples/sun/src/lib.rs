@@ -1,48 +1,45 @@
-use kiwi_api::{
+use ambient_api::{
     components::core::{
         app::main_scene,
-        camera::{aspect_ratio_from_window, perspective_infinite_reverse},
         game_objects::player_camera,
-        primitives::{quad, sphere, sphere_radius},
+        primitives::{quad, sphere_radius},
         rendering::{cast_shadows, color, fog_density, light_diffuse, sky, sun, water},
         transform::{lookat_center, rotation, scale, translation},
     },
+    concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
     prelude::*,
 };
 
 #[main]
 pub async fn main() -> EventResult {
-    entity::game_object_base()
+    make_perspective_infinite_reverse_camera()
         .with_default(player_camera())
         .with(translation(), vec3(5., 5., 2.))
         .with(lookat_center(), vec3(0., 0., 1.))
-        .with(perspective_infinite_reverse(), ())
-        .with(aspect_ratio_from_window(), ())
         .spawn();
 
-    entity::game_object_base()
+    make_transformable()
         .with_default(quad())
         .with(scale(), Vec3::ONE * 20.)
         .with(color(), vec4(1., 0., 0., 1.))
         .with(translation(), vec3(0., 0., 0.01))
         .spawn();
 
-    entity::game_object_base()
+    make_transformable()
         .with_default(water())
         .with(scale(), Vec3::ONE * 2000.)
         .spawn();
 
-    entity::game_object_base().with_default(sky()).spawn();
+    make_transformable().with_default(sky()).spawn();
 
-    entity::game_object_base()
+    make_sphere()
         .with_default(cast_shadows())
-        .with_default(sphere())
         .with(sphere_radius(), 1.)
         .with(translation(), vec3(0., 0., 1.))
         .with(color(), vec4(1., 1., 1., 1.))
         .spawn();
 
-    let sun = entity::game_object_base()
+    let sun = make_transformable()
         .with_default(sun())
         .with_default(rotation())
         .with_default(main_scene())

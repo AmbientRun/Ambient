@@ -147,3 +147,8 @@ pub async fn until_this(
     })
     .await
 }
+
+/// This method resolves a relative path to an asset in a Ambient module, to an absolute url
+pub fn asset_url(path: impl AsRef<str>) -> Option<String> {
+    host::asset_url(path.as_ref())
+}

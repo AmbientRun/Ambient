@@ -1,14 +1,14 @@
 use std::{fmt::Debug, ops::Deref, sync::Arc};
 
-use closure::closure;
-use kiwi_core::{
+use ambient_core::{
     name,
     transform::{euler_rotation, scale, translation},
 };
-use kiwi_ecs::{AttributeConstructor, Component, ComponentAttribute, ComponentEntry, ComponentValue, World};
-use kiwi_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
-use kiwi_renderer::{cast_shadows, color, overlay};
-use kiwi_std::{cb, time::Timeout, Cb};
+use ambient_ecs::{AttributeConstructor, Component, ComponentAttribute, ComponentEntry, ComponentValue};
+use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_renderer::{cast_shadows, color, overlay};
+use ambient_std::{cb, time::Timeout, Cb};
+use closure::closure;
 use parking_lot::Mutex;
 
 use crate::{
@@ -182,7 +182,7 @@ impl<T> AttributeConstructor<T, ()> for Editable
 where
     T: ComponentValue + Editor,
 {
-    fn construct(store: &mut kiwi_ecs::AttributeStore, _: ()) {
+    fn construct(store: &mut ambient_ecs::AttributeStore, _: ()) {
         let editable = Editable {
             edit: |editor, on_change, opts| {
                 let entry = editor.entry;
@@ -204,7 +204,7 @@ where
     }
 }
 
-/// Adds the `Editable` attribute to multiple components where depending on `kiwi_ui` is not
+/// Adds the `Editable` attribute to multiple components where depending on `ambient_ui` is not
 /// possible.
 pub fn hydrate_editable() {
     fn set<T: ComponentValue + Editor>(component: Component<T>) {
@@ -233,7 +233,7 @@ pub struct OffscreenEditor<T> {
 }
 
 impl<T: Debug + ComponentValue + Editor> ElementComponent for OffscreenEditor<T> {
-    fn render(self: Box<Self>, _: &mut kiwi_ecs::World, hooks: &mut kiwi_element::Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> Element {
         let Self { title, value, on_confirm, editor, opts } = *self;
 
         let (screen, set_screen) = hooks.use_state(None);
@@ -270,7 +270,6 @@ impl<T: Debug + ComponentValue + Editor> ElementComponent for OffscreenEditor<T>
 
 #[element_component]
 fn EditorScreen<T: Debug + ComponentValue + Editor>(
-    _world: &mut World,
     hooks: &mut Hooks,
     value: T,
     title: String,

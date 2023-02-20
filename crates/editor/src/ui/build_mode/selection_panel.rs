@@ -1,8 +1,7 @@
-use kiwi_ecs::World;
-use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use kiwi_network::{client::GameClient, log_network_result};
-use kiwi_std::Cb;
-use kiwi_ui::{
+use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_network::{client::GameClient, log_network_result};
+use ambient_std::Cb;
+use ambient_ui::{
     layout::{fit_horizontal, fit_vertical, space_between_items, Fit},
     Button, FlowColumn, Text, UIExt, STREET,
 };
@@ -18,7 +17,7 @@ pub struct SelectionPanel {
 
 impl ElementComponent for SelectionPanel {
     #[profiling::function]
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { selection, set_selection: _ } = *self;
         let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
         let (settings, _) = hooks.consume_context::<EditorSettings>().unwrap();

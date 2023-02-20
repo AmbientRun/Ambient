@@ -2,10 +2,7 @@
 extern crate closure;
 use std::{f32::consts::PI, num::NonZeroU32, sync::Arc, time::Instant};
 
-use glam::{vec2, vec3, vec4, IVec2, Mat4, Quat, UVec2, Vec2, Vec3, Vec3Swizzles, Vec4};
-use itertools::Itertools;
-use kiwi_app::gpu;
-use kiwi_core::{
+use ambient_core::{
     asset_cache,
     async_ecs::async_run,
     bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere},
@@ -14,10 +11,10 @@ use kiwi_core::{
     transform::{local_to_parent, local_to_world, mesh_to_world, rotation, scale, translation},
     FixedTimestepSystem,
 };
-use kiwi_ecs::{components, query, Commands, EntityData, EntityId, FnSystem, SystemGroup, World};
-use kiwi_editor_derive::ElementEditor;
-use kiwi_element::{element_tree, render_parented_with_component, Element, ElementComponent, ElementComponentExt, Group, Hooks};
-use kiwi_gpu::{
+use ambient_ecs::{components, query, Commands, EntityData, EntityId, FnSystem, SystemGroup, World};
+use ambient_editor_derive::ElementEditor;
+use ambient_element::{element_tree, render_parented_with_component, Element, ElementComponent, ElementComponentExt, Group, Hooks};
+use ambient_gpu::{
     fill::FillerKey,
     gpu::GpuKey,
     mesh_buffer::GpuMesh,
@@ -25,20 +22,22 @@ use kiwi_gpu::{
     texture::{Texture, TextureReader},
     texture_loaders::TextureFromUrl,
 };
-use kiwi_meshes::{GridMesh, GridMeshKey};
-use kiwi_physics::{
+use ambient_meshes::{GridMesh, GridMeshKey};
+use ambient_physics::{
     collider::{collider_type, ColliderType},
     main_physics_scene,
     physx::{character_controller, physics, physics_shape, rigid_static, Physics},
     PxActorUserData, PxShapeUserData,
 };
-use kiwi_renderer::{cast_shadows, color, gpu_primitives, lod::cpu_lod, material, primitives, renderer_shader, SharedMaterial};
-use kiwi_std::{
+use ambient_renderer::{cast_shadows, color, gpu_primitives, lod::cpu_lod, material, primitives, renderer_shader, SharedMaterial};
+use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
     cb, friendly_id, log_result,
     shapes::{Sphere, AABB},
 };
+use glam::{vec2, vec3, vec4, IVec2, Mat4, Quat, UVec2, Vec2, Vec3, Vec3Swizzles, Vec4};
+use itertools::Itertools;
 use ndarray::{s, Array3, ArrayView3, Axis};
 use physxx::{
     AsPxActor, AsPxRigidActor, PxActor, PxActorFlag, PxHeightFieldDesc, PxHeightFieldGeometry, PxMaterial, PxPhysicsRef,
@@ -54,10 +53,10 @@ pub mod brushes;
 mod gather_spread;
 pub mod intents;
 mod terrain_shader;
+use ambient_network::ServerWorldExt;
+use ambient_ui::use_async_asset;
 pub use gather_spread::*;
 pub use intents::*;
-use kiwi_network::ServerWorldExt;
-use kiwi_ui::use_async_asset;
 
 components!("terrain", {
     terrain: (),
@@ -649,21 +648,18 @@ pub struct Terrain {
     pub heightmap_position: Vec2,
 }
 impl ElementComponent for Terrain {
-    fn render(self: Box<Self>, world: &mut World, hooks: &mut Hooks) -> Element {
-        let assets = world.resource(asset_cache()).clone();
-
-        let _gpu = world.resource(gpu()).clone();
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
+        let assets = hooks.world.resource(asset_cache()).clone();
 
         let (material_def, set_material_def) =
-            hooks.use_state_with(|| world.persisted_resource(terrain_material_def()).cloned().unwrap_or_default());
+            hooks.use_state_with(|world| world.persisted_resource(terrain_material_def()).cloned().unwrap_or_default());
 
-        let ground_textures = use_async_asset(hooks, world, TerrainTexturesKey { texs: material_def.build().textures })
+        let ground_textures = use_async_asset(hooks, TerrainTexturesKey { texs: material_def.build().textures })
             .and_then(|x| x.ok())
             .unwrap_or_else(|| PixelTextureKey::white().get(&assets));
 
         let noise_texture = use_async_asset(
             hooks,
-            world,
             TextureFromUrl {
                 url: AbsAssetUrl::parse(format!(
                     "{OLD_CONTENT_SERVER_URL}assets/models/{}",
@@ -677,7 +673,7 @@ impl ElementComponent for Terrain {
         .unwrap_or_else(|| PixelTextureKey::white().get(&assets));
 
         // let (ground_textures, set_ground_textures) =
-        //     hooks.use_state_with(|| Arc::new(Texture::new_single_color_texture_array(gpu.clone(), vec![UVec4::ONE, UVec4::ONE])));
+        //     hooks.use_state_with(|_| Arc::new(Texture::new_single_color_texture_array(gpu.clone(), vec![UVec4::ONE, UVec4::ONE])));
         // hooks.use_effect(
         //     world,
         //     material_def.clone(),
@@ -707,8 +703,9 @@ impl ElementComponent for Terrain {
         let lod_factor = 1. / 12.;
         let cell_diagonal = (size_in_meters * size_in_meters * 2.).sqrt();
         let heightmap_position = self.heightmap_position.extend(0.);
-        let terrain_material =
-            hooks.use_memo_with((self.state.id.clone(), ground_textures.id, material_def, noise_texture.id), |(_, _, material_def, _)| {
+        let terrain_material = hooks.use_memo_with(
+            (self.state.id.clone(), ground_textures.id, material_def, noise_texture.id),
+            |_, (_, _, material_def, _)| {
                 SharedMaterial::new(TerrainMaterial::new(
                     assets.clone(),
                     TerrainMaterialParams { heightmap_position, lod_factor, cell_diagonal, _padding: Default::default() },
@@ -725,7 +722,8 @@ impl ElementComponent for Terrain {
                     Arc::new(noise_texture.create_view(&wgpu::TextureViewDescriptor::default())),
                     material_def.clone(),
                 ))
-            });
+            },
+        );
 
         let lod_meshes = (0..self.state.size.lods)
             .map(|lod| {

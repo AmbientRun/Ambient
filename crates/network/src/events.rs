@@ -1,9 +1,9 @@
 use std::{any::type_name, io, sync::Arc};
 
+use ambient_ecs::{components, query, EntityId, Resource, World};
+use ambient_std::{cb, Cb};
 use anyhow::Context;
 use dashmap::DashMap;
-use kiwi_ecs::{components, query, EntityId, Resource, World};
-use kiwi_std::{cb, Cb};
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
 

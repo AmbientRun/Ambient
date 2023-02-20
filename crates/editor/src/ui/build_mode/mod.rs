@@ -1,20 +1,20 @@
 use std::{sync::Arc, time::Duration};
 
+use ambient_core::{asset_cache, async_ecs::async_run, get_mouse_clip_space_position, runtime};
+use ambient_ecs::{Component, ComponentValue, EntityId};
+use ambient_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
+use ambient_input::{on_app_keyboard_input, MouseButton};
+use ambient_intent::{client_push_intent, rpc_undo_head_exact};
+use ambient_network::client::GameClient;
 use derive_more::Display;
 use futures_signals::signal::SignalExt;
 use itertools::Itertools;
-use kiwi_core::{asset_cache, async_ecs::async_run, get_mouse_clip_space_position, runtime};
-use kiwi_ecs::{Component, ComponentValue, EntityId, World};
-use kiwi_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
-use kiwi_input::{on_app_keyboard_input, MouseButton};
-use kiwi_intent::{client_push_intent, rpc_undo_head_exact};
-use kiwi_network::client::GameClient;
 
-use kiwi_std::{
+use ambient_std::{
     asset_url::{select_asset, AssetType},
     cb, friendly_id, Cb,
 };
-use kiwi_ui::{
+use ambient_ui::{
     command_modifier,
     layout::{docking, width, Docking},
     margin, padding, space_between_items, use_interval_deps, Borders, Button, ButtonStyle, Dock, FlowRow, Hotkey, ScreenContainer,
@@ -120,16 +120,16 @@ impl<T: ComponentValue> Drop for EditorAction<T> {
 #[derive(Debug, Clone)]
 pub struct EditorBuildMode;
 impl ElementComponent for EditorBuildMode {
-    fn render(self: Box<Self>, world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
-        let (selection, set_selection) = use_player_selection(world, hooks);
+        let (selection, set_selection) = use_player_selection(hooks);
         // tracing::info!("Drawing EditorBuildMode: {selection:?}");
 
         let set_select_mode = hooks.provide_context(|| SelectMode::Set);
         let set_srt_mode = hooks.provide_context(|| None as Option<TransformMode>);
         let (screen, set_screen) = hooks.use_state(None);
 
-        let targets = hooks.use_ref_with::<Arc<[EntityId]>>(|| Arc::from([]));
+        let targets = hooks.use_ref_with::<Arc<[EntityId]>>(|_| Arc::from([]));
         let rerender = hooks.use_rerender_signal();
 
         {
@@ -151,7 +151,7 @@ impl ElementComponent for EditorBuildMode {
                 }
             };
 
-            use_interval_deps(world, hooks, Duration::from_millis(2000), true, selection.clone(), update_targets);
+            use_interval_deps(hooks, Duration::from_millis(2000), true, selection.clone(), update_targets);
         }
 
         // Make sure to get the value *after* the `use_interval_deps`
@@ -335,7 +335,7 @@ pub struct TransformControls {
     targets: Arc<[EntityId]>,
 }
 impl ElementComponent for TransformControls {
-    fn render(self: Box<Self>, _: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { targets } = *self;
 
         let (srt_mode, set_srt_mode) = hooks.consume_context::<Option<TransformMode>>().unwrap();

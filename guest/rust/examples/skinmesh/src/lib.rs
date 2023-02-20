@@ -1,12 +1,13 @@
-use kiwi_api::{
+use ambient_api::{
     components::core::{
-        camera::{aspect_ratio_from_window, perspective_infinite_reverse},
         game_objects::player_camera,
         object::object_from_url,
+        player::player,
         primitives::quad,
         rendering::color,
         transform::{lookat_center, scale, translation},
     },
+    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     entity::{AnimationAction, AnimationController},
     player::KeyCode,
     prelude::*,
@@ -14,29 +15,30 @@ use kiwi_api::{
 
 #[main]
 pub async fn main() -> EventResult {
-    entity::game_object_base()
+    make_perspective_infinite_reverse_camera()
         .with_default(player_camera())
         .with(translation(), vec3(2., 2., 3.0))
         .with(lookat_center(), vec3(0., 0., 1.))
-        .with(perspective_infinite_reverse(), ())
-        .with(aspect_ratio_from_window(), ())
         .spawn();
 
-    entity::game_object_base()
+    make_transformable()
         .with_default(quad())
         .with(scale(), Vec3::ONE * 10.)
         .with(color(), vec4(0.5, 0.5, 0.5, 1.))
         .spawn();
 
-    let unit_id = entity::game_object_base()
-        .with(object_from_url(), "assets/Peasant Man.fbx".to_string())
+    let unit_id = make_transformable()
+        .with(
+            object_from_url(),
+            asset_url("assets/Peasant Man.fbx").unwrap(),
+        )
         .spawn();
 
     entity::set_animation_controller(
         unit_id,
         AnimationController {
             actions: &[AnimationAction {
-                clip_url: "assets/Capoeira.fbx/animations/mixamo.com.anim",
+                clip_url: &asset_url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
                 looping: true,
                 weight: 1.,
             }],
@@ -44,8 +46,8 @@ pub async fn main() -> EventResult {
         },
     );
 
-    on(event::FRAME, move |_| {
-        for player in player::get_all() {
+    query(player()).build().bind(move |players| {
+        for (player, _) in players {
             let Some((delta, _)) = player::get_raw_input_delta(player) else { continue; };
 
             if delta.keys.contains(&KeyCode::Key1) {
@@ -53,7 +55,10 @@ pub async fn main() -> EventResult {
                     unit_id,
                     AnimationController {
                         actions: &[AnimationAction {
-                            clip_url: "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
+                            clip_url: &asset_url(
+                                "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
+                            )
+                            .unwrap(),
                             looping: true,
                             weight: 1.,
                         }],
@@ -67,7 +72,8 @@ pub async fn main() -> EventResult {
                     unit_id,
                     AnimationController {
                         actions: &[AnimationAction {
-                            clip_url: "assets/Capoeira.fbx/animations/mixamo.com.anim",
+                            clip_url: &asset_url("assets/Capoeira.fbx/animations/mixamo.com.anim")
+                                .unwrap(),
                             looping: true,
                             weight: 1.,
                         }],
@@ -82,13 +88,18 @@ pub async fn main() -> EventResult {
                     AnimationController {
                         actions: &[
                             AnimationAction {
-                                clip_url:
+                                clip_url: &asset_url(
                                     "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
+                                )
+                                .unwrap(),
                                 looping: true,
                                 weight: 0.5,
                             },
                             AnimationAction {
-                                clip_url: "assets/Capoeira.fbx/animations/mixamo.com.anim",
+                                clip_url: &asset_url(
+                                    "assets/Capoeira.fbx/animations/mixamo.com.anim",
+                                )
+                                .unwrap(),
                                 looping: true,
                                 weight: 0.5,
                             },
@@ -98,7 +109,6 @@ pub async fn main() -> EventResult {
                 );
             }
         }
-        EventOk
     });
 
     EventOk

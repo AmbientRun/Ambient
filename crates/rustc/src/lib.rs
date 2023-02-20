@@ -16,28 +16,55 @@ pub struct Rust(Installation);
 impl Rust {
     /// Gets the system installation of Rust, or downloads one if not available
     pub async fn install_or_get(rust_path: &Path) -> anyhow::Result<Self> {
-        let installation = match Installation::System.get_installed_version() {
-            Ok(version) if version >= MINIMUM_RUST_VERSION => {
+        let system_versions = {
+            let system = Installation::System;
+            (
+                system.get_installed_rustup_version(),
+                system.get_installed_rustc_version(),
+            )
+        };
+
+        let use_downloaded = match system_versions {
+            (Ok(_), Ok(version)) if version >= MINIMUM_RUST_VERSION => {
                 log::debug!("Using system rustc ({version})");
-                Installation::System
+                false
             }
-            _ if !rust_path.exists() => {
+            (Ok(_), Ok(version)) => {
+                log::warn!("A rustup and rustc were found, but it is {version} and our MSRV is {MINIMUM_RUST_VERSION}; a downloaded Rust installation will be used");
+                true
+            }
+            (Ok(_), Err(_)) => {
+                log::warn!(
+                    "A rustup was found, but no rustc; a downloaded Rust installation will be used"
+                );
+                true
+            }
+            (Err(_), Ok(_)) => {
+                log::warn!("A rustc was found, but not a rustup (did you install Rust through your system package manager?); a downloaded Rust installation will be used");
+                true
+            }
+            (Err(_), Err(_)) => true,
+        };
+
+        let installation = if use_downloaded {
+            if !rust_path.exists() {
                 log::debug!("No rustc detected, downloading and installing");
                 Installation::download_and_install(rust_path).await?
-            }
-            _ => {
+            } else {
                 let installation = Installation::from_existing_installation(rust_path)?;
-                let mut version = installation.get_installed_version()?;
+                let mut version = installation.get_installed_rustc_version()?;
 
                 if version < MINIMUM_RUST_VERSION {
                     log::debug!("Downloaded rustc is out of date ({version}), updating");
                     installation.update()?;
-                    version = installation.get_installed_version()?;
+                    version = installation.get_installed_rustc_version()?;
                 }
 
                 log::debug!("Using downloaded rustc ({version})");
                 installation
             }
+        } else {
+            Installation::System
         };
         installation.install_wasm32_wasi()?;
 
@@ -229,9 +256,17 @@ impl Installation {
         Ok(())
     }
 
-    fn get_installed_version(&self) -> anyhow::Result<Version> {
+    fn get_installed_rustup_version(&self) -> anyhow::Result<Version> {
+        self.get_version_for("get rustup version", "rustup")
+    }
+
+    fn get_installed_rustc_version(&self) -> anyhow::Result<Version> {
+        self.get_version_for("get rustc version", "rustc")
+    }
+
+    fn get_version_for(&self, task: &str, cmd: &str) -> Result<Version, anyhow::Error> {
         Ok(Version(
-            handle_command_failure("get version", self.run("rustc", ["--version"], None))?
+            handle_command_failure(task, self.run(cmd, ["--version"], None))?
                 .split_whitespace()
                 .nth(1)
                 .context("failed to extract version component (1)")?

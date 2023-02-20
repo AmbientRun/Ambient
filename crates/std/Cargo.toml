@@ -1,12 +1,12 @@
 [package]
-name = "kiwi_std"
+name = "ambient_std"
 version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-kiwi_asset_cache = { path = "../asset_cache/", optional = true }
+ambient_asset_cache = { path = "../asset_cache/", optional = true }
 wgpu = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
@@ -55,7 +55,7 @@ cb = [
     "dep:tracing"
 ]
 uncategorized = [
-    "dep:kiwi_asset_cache",
+    "dep:ambient_asset_cache",
     "dep:wgpu",
     "dep:serde",
     "dep:serde_json",

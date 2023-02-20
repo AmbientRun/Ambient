@@ -1,21 +1,21 @@
 [package]
-name = "kiwi_wasm"
+name = "ambient_wasm"
 version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-kiwi_animation = { path = "../animation" }
-kiwi_app = { path = "../app" }
-kiwi_core = { path = "../core" }
-kiwi_ecs = { path = "../ecs" }
-kiwi_input = { path = "../input" }
-kiwi_network = { path = "../network" }
-kiwi_object = { path = "../object" }
-kiwi_physics = { path = "../physics" }
-kiwi_project = { path = "../project" }
-kiwi_std = { path = "../std" }
+ambient_animation = { path = "../animation" }
+ambient_app = { path = "../app" }
+ambient_core = { path = "../core" }
+ambient_ecs = { path = "../ecs" }
+ambient_input = { path = "../input" }
+ambient_network = { path = "../network" }
+ambient_object = { path = "../object" }
+ambient_physics = { path = "../physics" }
+ambient_project = { path = "../project" }
+ambient_std = { path = "../std" }
 physxx = { path = "../../libs/physxx" }
 
 anyhow = { workspace = true }
@@ -46,7 +46,7 @@ wit-bindgen-host-wasmtime-rust = { git = "https://github.com/bytecodealliance/wi
 dunce = "1.0"
 
 [build-dependencies]
-kiwi_std = { path = "../std", default-features = false }
+ambient_std = { path = "../std", default-features = false }
 # make sure this is synchronised with the version used for the host
 wit-bindgen-core = { git = "https://github.com/bytecodealliance/wit-bindgen.git", rev = "181093b58f49b194ee34be2d986d737f4f553d3d" }
 wit-bindgen-gen-guest-rust = { git = "https://github.com/bytecodealliance/wit-bindgen.git", rev = "181093b58f49b194ee34be2d986d737f4f553d3d" }

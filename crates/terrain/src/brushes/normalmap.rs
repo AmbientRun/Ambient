@@ -1,8 +1,8 @@
 use std::borrow::Cow;
 
+use ambient_gpu::{gpu::Gpu, texture::TextureView};
+use ambient_std::include_file;
 use glam::UVec2;
-use kiwi_gpu::{gpu::Gpu, texture::TextureView};
-use kiwi_std::include_file;
 
 use crate::wgsl_terrain_preprocess;
 

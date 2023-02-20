@@ -1,12 +1,14 @@
 use std::{collections::HashMap, time::Duration};
 
+use ambient_ecs::{with_component_registry, ComponentDesc, EntityData, EntityId, Query, World, WorldDiff};
+use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_renderer::color;
+use ambient_std::{cb, Cb};
+use ambient_ui::{
+    fit_horizontal, space_between_items, use_interval_deps, Button, ButtonStyle, Fit, FlowColumn, FlowRow, Text, UIExt, STREET,
+};
 use glam::{vec4, Vec4};
 use itertools::Itertools;
-use kiwi_ecs::{with_component_registry, ComponentDesc, EntityData, EntityId, Query, World, WorldDiff};
-use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use kiwi_renderer::color;
-use kiwi_std::{cb, Cb};
-use kiwi_ui::{fit_horizontal, space_between_items, use_interval_deps, Button, ButtonStyle, Fit, FlowColumn, FlowRow, Text, UIExt, STREET};
 
 #[derive(Debug, Clone)]
 pub struct ECSEditor {
@@ -14,13 +16,13 @@ pub struct ECSEditor {
     pub on_change: Cb<dyn Fn(&mut World, WorldDiff) + Sync + Send>,
 }
 impl ElementComponent for ECSEditor {
-    fn render(self: Box<Self>, world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { get_world, on_change } = *self;
         let (components, set_components) = hooks.use_state(HashMap::<ComponentDesc, bool>::new());
         let (entity_datas, set_entity_datas) = hooks.use_state(Vec::new());
         let (entities, set_entities) = hooks.use_state(Vec::new());
         let (edit_filter, set_edit_filter) = hooks.use_state(false);
-        use_interval_deps(world, hooks, Duration::from_millis(500), false, components.clone(), {
+        use_interval_deps(hooks, Duration::from_millis(500), false, components.clone(), {
             let get_world = get_world.clone();
             move |components| {
                 let mut query = Query::all();
@@ -121,7 +123,7 @@ struct EntityEditor {
 }
 
 impl ElementComponent for EntityEditor {
-    fn render(self: Box<Self>, _world: &mut World, _hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
         let Self { id, data, on_change } = *self;
 
         FlowRow::el([

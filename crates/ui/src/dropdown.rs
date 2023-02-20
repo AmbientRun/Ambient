@@ -1,19 +1,20 @@
 use std::sync::Arc;
 
+use ambient_core::transform::translation;
+use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_input::picking::{on_mouse_enter, on_mouse_leave};
 use closure::closure;
 use glam::vec3;
-use kiwi_core::transform::translation;
-use kiwi_ecs::World;
-use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
-use kiwi_input::picking::{on_mouse_enter, on_mouse_leave};
 
 use super::{FlowColumn, UIBase, UIExt};
 use crate::{
-    border_radius, layout::{margin, Borders}, padding, tooltip_background_color, Corners, SMALL_ROUNDING, STREET
+    border_radius,
+    layout::{margin, Borders},
+    padding, tooltip_background_color, Corners, SMALL_ROUNDING, STREET,
 };
 
 #[element_component]
-pub fn Dropdown(_: &mut World, _: &mut Hooks, content: Element, dropdown: Element, show: bool) -> Element {
+pub fn Dropdown(_: &mut Hooks, content: Element, dropdown: Element, show: bool) -> Element {
     FlowColumn::el([
         content,
         if show {
@@ -25,7 +26,7 @@ pub fn Dropdown(_: &mut World, _: &mut Hooks, content: Element, dropdown: Elemen
 }
 
 #[element_component]
-pub fn Tooltip(_: &mut World, hooks: &mut Hooks, inner: Element, tooltip: Element) -> Element {
+pub fn Tooltip(hooks: &mut Hooks, inner: Element, tooltip: Element) -> Element {
     let (hover, set_hover) = hooks.use_state(false);
     Dropdown {
         content: inner,

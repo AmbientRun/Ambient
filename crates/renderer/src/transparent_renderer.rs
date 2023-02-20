@@ -1,15 +1,15 @@
 use std::{collections::HashMap, sync::Arc};
 
-use glam::{Mat4, UVec4, Vec3};
-use itertools::Itertools;
-use kiwi_core::transform::local_to_world;
-use kiwi_ecs::{query, ArchetypeFilter, EntityId, QueryState, World};
-use kiwi_gpu::{
+use ambient_core::transform::local_to_world;
+use ambient_ecs::{query, ArchetypeFilter, EntityId, QueryState, World};
+use ambient_gpu::{
     gpu::Gpu,
     mesh_buffer::{MeshBuffer, MeshMetadata},
     shader_module::{GraphicsPipeline, GraphicsPipelineInfo},
     typed_buffer::TypedBuffer,
 };
+use glam::{Mat4, UVec4, Vec3};
+use itertools::Itertools;
 use ordered_float::OrderedFloat;
 use wgpu::BindGroup;
 
@@ -18,7 +18,7 @@ use super::{
     PRIMITIVES_BIND_GROUP,
 };
 use crate::{transparency_group, RendererConfig};
-use kiwi_std::asset_cache::AssetCache;
+use ambient_std::asset_cache::AssetCache;
 
 pub struct TransparentRendererConfig {
     pub gpu: Arc<Gpu>,

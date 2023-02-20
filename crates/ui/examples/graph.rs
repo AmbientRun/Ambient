@@ -1,23 +1,25 @@
 use std::f32::consts::TAU;
 
+use ambient_app::AppBuilder;
+use ambient_cameras::UICamera;
+use ambient_core::{camera::active_camera, runtime};
+use ambient_ecs::World;
+use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_std::{time::Clock, IntoDuration};
+use ambient_ui::{
+    self,
+    graph::{Graph, GraphScaleKind, GraphStyle},
+    *,
+};
 use fixed_vec_deque::FixedVecDeque;
 use glam::{vec2, vec4, Vec2};
 use itertools::Itertools;
-use kiwi_app::AppBuilder;
-use kiwi_cameras::UICamera;
-use kiwi_core::{camera::active_camera, runtime};
-use kiwi_ecs::World;
-use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use kiwi_std::{time::Clock, IntoDuration};
-use kiwi_ui::{
-    self, graph::{Graph, GraphScaleKind, GraphStyle}, *
-};
 use rand::{prelude::StdRng, Rng, SeedableRng};
 
 #[derive(Debug, Clone)]
 struct Example;
 impl ElementComponent for Example {
-    fn render(self: Box<Self>, world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (k, set_k) = hooks.use_state(1.0);
         let max = 256;
 
@@ -40,10 +42,10 @@ impl ElementComponent for Example {
             })
             .multiunzip();
 
-        let runtime = world.resource(runtime());
+        let runtime = hooks.world.resource(runtime()).clone();
         {
             let mut history = history.clone();
-            hooks.use_memo_with((), move |_| {
+            hooks.use_memo_with((), move |_, _| {
                 runtime.spawn(async move {
                     log::info!("Spawning task");
                     let mut interval = tokio::time::interval(50.ms());

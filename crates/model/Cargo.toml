@@ -1,19 +1,19 @@
 [package]
-name = "kiwi_model"
+name = "ambient_model"
 version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-kiwi_std = { path = "../std" }
-kiwi_core = { path = "../core" }
-kiwi_ecs = { path = "../ecs" }
-kiwi_renderer = { path = "../renderer" }
-kiwi_meshes = { path = "../meshes" }
-kiwi_gpu = { path = "../gpu" }
-kiwi_editor_derive = { path = "../editor_derive" }
-kiwi_ui = { path = "../ui" }
+ambient_std = { path = "../std" }
+ambient_core = { path = "../core" }
+ambient_ecs = { path = "../ecs" }
+ambient_renderer = { path = "../renderer" }
+ambient_meshes = { path = "../meshes" }
+ambient_gpu = { path = "../gpu" }
+ambient_editor_derive = { path = "../editor_derive" }
+ambient_ui = { path = "../ui" }
 futures = { workspace = true }
 glam = { workspace = true }
 itertools = { workspace = true }
@@ -27,4 +27,4 @@ async-trait = { workspace = true }
 url = { workspace = true }
 
 [features]
-hotload-includes = ['kiwi_std/hotload-includes']
+hotload-includes = ['ambient_std/hotload-includes']

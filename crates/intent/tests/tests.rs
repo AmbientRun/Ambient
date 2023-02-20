@@ -1,13 +1,15 @@
 use std::{collections::BTreeMap, sync::Arc};
 
+use ambient_ecs::{components, query, query_mut, EntityData, EntityId, FrameEvent, Networked, Store, System, World};
+use ambient_intent::{
+    common_intent_systems, intent_registry,
+    logic::{create_intent, push_intent, redo_intent, undo_head},
+    use_old_state, IntentRegistry,
+};
+use ambient_network::server::{Player, ServerState, SharedServerState, MAIN_INSTANCE_ID};
+use ambient_std::friendly_id;
 use anyhow::bail;
 use itertools::Itertools;
-use kiwi_ecs::{components, query, query_mut, EntityData, EntityId, FrameEvent, Networked, Store, System, World};
-use kiwi_intent::{
-    common_intent_systems, intent_registry, logic::{create_intent, push_intent, redo_intent, undo_head}, use_old_state, IntentRegistry
-};
-use kiwi_network::server::{Player, ServerState, SharedServerState, MAIN_INSTANCE_ID};
-use kiwi_std::friendly_id;
 use parking_lot::Mutex;
 use pretty_assertions::assert_eq;
 
@@ -121,7 +123,7 @@ fn setup_state() -> SharedServerState {
 #[tokio::test]
 async fn simple() {
     init_components();
-    kiwi_intent::init_components();
+    ambient_intent::init_components();
 
     let state = setup_state();
     let user_id = "user1".to_string();
@@ -165,7 +167,7 @@ async fn simple() {
 #[tokio::test]
 async fn enqueued() {
     init_components();
-    kiwi_intent::init_components();
+    ambient_intent::init_components();
 
     let state = setup_state();
 
@@ -206,7 +208,7 @@ async fn enqueued() {
 #[tokio::test]
 async fn enqueued_collapse() {
     init_components();
-    kiwi_intent::init_components();
+    ambient_intent::init_components();
 
     let state = setup_state();
 
@@ -282,7 +284,7 @@ async fn enqueued_collapse() {
 #[tokio::test]
 async fn enqueue2() {
     init_components();
-    kiwi_intent::init_components();
+    ambient_intent::init_components();
 
     let state = setup_state();
 
@@ -326,7 +328,7 @@ async fn enqueue2() {
 #[tokio::test]
 async fn enqueue2_redo() {
     init_components();
-    kiwi_intent::init_components();
+    ambient_intent::init_components();
 
     let state = setup_state();
 
@@ -383,7 +385,7 @@ async fn enqueue2_redo() {
 #[test]
 fn undo_failed() {
     init_components();
-    kiwi_intent::init_components();
+    ambient_intent::init_components();
 
     let user_id = "user1".to_string();
     let state = setup_state();
@@ -429,7 +431,7 @@ fn undo_failed() {
 #[tokio::test]
 async fn undo_push() {
     init_components();
-    kiwi_intent::init_components();
+    ambient_intent::init_components();
 
     let state = setup_state();
 
@@ -494,7 +496,7 @@ async fn undo_push() {
 #[tokio::test]
 async fn redo_collapsed() {
     init_components();
-    kiwi_intent::init_components();
+    ambient_intent::init_components();
 
     let state = setup_state();
 
@@ -559,7 +561,7 @@ async fn redo_collapsed() {
 #[tokio::test]
 async fn collapse() {
     init_components();
-    kiwi_intent::init_components();
+    ambient_intent::init_components();
 
     let state = setup_state();
 

@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
+use ambient_std::asset_cache::SyncAssetKey;
 use bytemuck::{Pod, Zeroable};
 use glam::{uvec2, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
-use kiwi_std::asset_cache::SyncAssetKey;
 use wgpu::{PresentMode, TextureFormat};
 use winit::window::Window;
 

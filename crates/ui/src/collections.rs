@@ -1,13 +1,13 @@
 use std::{collections::HashMap, fmt::Debug, hash::Hash, ops::Deref, sync::Arc};
 
+use ambient_core::on_window_event;
+use ambient_ecs::EntityId;
+use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_input::{on_app_keyboard_input, KeyboardEvent};
+use ambient_std::{cb, color::Color, Cb};
 use closure::closure;
 use indexmap::IndexMap;
 use itertools::Itertools;
-use kiwi_core::on_window_event;
-use kiwi_ecs::{EntityId, World};
-use kiwi_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
-use kiwi_input::{on_app_keyboard_input, KeyboardEvent};
-use kiwi_std::{cb, color::Color, Cb};
 use winit::event::{ElementState, VirtualKeyCode, WindowEvent};
 
 use super::{Button, ButtonStyle, Dropdown, Editor, EditorOpts, FlowColumn, FlowRow, Focus, UIBase, UIExt};
@@ -15,7 +15,6 @@ use crate::{layout::*, StylesExt, COLLECTION_ADD_ICON, COLLECTION_DELETE_ICON, M
 
 #[element_component]
 pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static>(
-    _world: &mut World,
     _: &mut Hooks,
     value: Vec<T>,
     on_change: Option<Cb<dyn Fn(Vec<T>) + Sync + Send>>,
@@ -119,7 +118,7 @@ pub struct MinimalListEditor<T: Editor + std::fmt::Debug + Clone + Default + Syn
     pub add_title: String,
 }
 impl<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementComponent for MinimalListEditor<T> {
-    fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         MinimalListEditorWithItemEditor {
             value: self.value,
             on_change: self.on_change,
@@ -143,7 +142,7 @@ pub struct MinimalListEditorWithItemEditor<T: std::fmt::Debug + Clone + Default 
     pub item_editor: Cb<dyn Fn(T, Option<Cb<dyn Fn(T) + Sync + Send>>, EditorOpts) -> Element + Sync + Send>,
 }
 impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementComponent for MinimalListEditorWithItemEditor<T> {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { value, on_change, item_opts, add_presets, add_title, item_editor } = *self;
         let (add_action, set_add_action) = hooks.use_state(false);
         FlowColumn::el([
@@ -247,7 +246,7 @@ pub struct MinimalListEditorItem<T: std::fmt::Debug + Clone + Default + Sync + S
     pub item_editor: Cb<dyn Fn(T, Option<Cb<dyn Fn(T) + Sync + Send>>, EditorOpts) -> Element + Sync + Send>,
 }
 impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementComponent for MinimalListEditorItem<T> {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { value, on_change, on_delete, item_opts, item_editor } = *self;
         let (self_id, set_self_id) = hooks.use_state(EntityId::null());
         let (focus, set_focus) = hooks.consume_context::<Focus>().expect("No FocusRoot found");
@@ -305,7 +304,7 @@ impl<
         V: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static,
     > ElementComponent for KeyValueEditor<K, V>
 {
-    fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         let Self { value, on_change } = *self;
         FlowColumn::el([
             FlowColumn(
@@ -388,7 +387,7 @@ where
     K: Hash + Eq + Send + Sync + Debug + 'static + Clone + Editor + Default,
     V: Send + Sync + Debug + 'static + Clone + Editor + Default,
 {
-    fn render(self: Box<Self>, _: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         let fields = self.value.iter().map(|(key, value)| {
             IndexMapEntryPart { key: key.clone(), value: value.clone(), parent: self.value.clone(), on_change: self.on_change.clone() }.el()
         });
@@ -441,7 +440,7 @@ where
     K: Hash + Eq + Clone + Debug + Send + Sync + 'static + Editor,
     V: Clone + Debug + Editor + Send + Sync + 'static,
 {
-    fn render(self: Box<Self>, _world: &mut World, _: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         let Self { key, value, on_change, parent } = *self;
 
         let key_editor = {

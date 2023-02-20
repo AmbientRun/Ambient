@@ -1,15 +1,15 @@
-use kiwi_app::AppBuilder;
-use kiwi_cameras::UICamera;
-use kiwi_core::camera::active_camera;
-use kiwi_ecs::World;
-use kiwi_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
-use kiwi_std::friendly_id;
-use kiwi_ui::*;
+use ambient_app::AppBuilder;
+use ambient_cameras::UICamera;
+use ambient_core::camera::active_camera;
+use ambient_ecs::World;
+use ambient_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
+use ambient_std::friendly_id;
+use ambient_ui::*;
 
 #[derive(Debug, Clone)]
 struct RootScreen;
 impl ElementComponent for RootScreen {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (screen, set_screen) = hooks.use_state(None);
         FocusRoot(vec![PageScreen(vec![
             ScreenContainer(screen).el(),
@@ -39,10 +39,10 @@ struct SubScreen {
     on_back: Cb<dyn Fn() + Sync + Send>,
 }
 impl ElementComponent for SubScreen {
-    fn render(self: Box<Self>, _world: &mut World, hooks: &mut Hooks) -> Element {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { on_back } = *self;
         let (screen, set_screen) = hooks.use_state(None);
-        let (id, _) = hooks.use_state_with(friendly_id);
+        let (id, _) = hooks.use_state_with(|_| friendly_id());
         PageScreen(vec![
             ScreenContainer(screen).el(),
             Text::el(format!("SubScreen {id}")),
