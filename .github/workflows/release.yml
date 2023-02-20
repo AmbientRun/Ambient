@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    tags: [v*]
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.create-gh-release.outputs.computed-prefix }}${{ steps.create-gh-release.outputs.version }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: create-gh-release
+        uses: taiki-e/create-gh-release-action@v1
+        with:
+          draft: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    needs: create-release
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            exe_name: ambient
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            exe_name: ambient
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            exe_name: ambient.exe
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      # We don't do caching here because we only have 10gb and they'll be occupied by normal builds all the time anyway
+      - name: Build
+        run: cargo build --release -p ambient --target ${{ matrix.target }}
+      - name: Upload
+        run: gh release upload ${{ needs.create-release.outputs.tag }} target/${{ matrix.target }}/${{ matrix.exe_name }}
+
+  publish-release:
+    needs: [create-release, build]
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: mark release as non-draft
+        run: gh release edit ${{ needs.create-release.outputs.tag }} --draft=false
