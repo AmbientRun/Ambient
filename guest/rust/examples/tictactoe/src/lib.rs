@@ -16,8 +16,8 @@ use palette::{FromColor, Hsl, Srgb};
 pub async fn main() -> EventResult {
     make_perspective_infinite_reverse_camera()
         .with_default(player_camera())
-        .with(translation(), vec3(5., 5., 4.))
-        .with(lookat_center(), vec3(0., 0., 0.))
+        .with(translation(), vec3(3., 3., 2.5))
+        .with(lookat_center(), vec3(1.5, 1.5, 0.))
         .spawn();
 
     let mut cells = Vec::new();
