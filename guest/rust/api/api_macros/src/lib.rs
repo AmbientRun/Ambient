@@ -39,6 +39,7 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
         #item
 
         #[no_mangle]
+        #[doc(hidden)]
         pub extern "C" fn call_main(runtime_interface_version: u32) {
             if INTERFACE_VERSION != runtime_interface_version {
                 panic!("This module was compiled with interface version {{INTERFACE_VERSION}}, but the host is running with version {{runtime_interface_version}}.");
