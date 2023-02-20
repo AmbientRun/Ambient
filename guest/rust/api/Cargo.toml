@@ -5,6 +5,7 @@ description = "The API to the Ambient Runtime"
 license = "MIT"
 documentation = "https://docs.rs/ambient_api"
 version = { workspace = true }
+readme = "../../../README.md"
 
 [dependencies]
 ambient_api_macros = { path = "api_macros", version = "0.0.7" }
