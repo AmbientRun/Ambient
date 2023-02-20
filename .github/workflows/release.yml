@@ -56,7 +56,7 @@ jobs:
       - name: Build
         run: cargo build --release -p ambient --target ${{ matrix.target }}
       - name: Upload
-        run: gh release upload ${{ needs.create-release.outputs.tag }} target/${{ matrix.target }}/${{ matrix.exe_name }}
+        run: gh release upload ${{ needs.create-release.outputs.tag }} target/${{ matrix.target }}/release/${{ matrix.exe_name }}
 
   publish-api:
     needs: [create-release, build-app]
