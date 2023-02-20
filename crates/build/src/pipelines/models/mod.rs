@@ -52,29 +52,45 @@ fn true_value() -> bool {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ModelsPipeline {
+    /// The importer to use to process models.
     #[serde(default)]
     importer: ModelImporter,
-    /// Use assimp as the importer; this will support more file formats, but is less well integrated
+    /// Use assimp as the importer.
+    /// This will support more file formats, but is less well-integrated. Off by default.
     #[serde(default)]
     force_assimp: bool,
     #[serde(default)]
+    /// The physics collider to use for this object.
     collider: Collider,
+    /// If a collider is present, this controls how it will interact with other colliders.
     #[serde(default)]
     collider_type: ColliderType,
+    /// Whether or not this object should have its texture sizes capped.
     cap_texture_sizes: Option<ModelTextureSize>,
-    /// Treats all assets in the pipeline as variations, and outputs a single asset which is a collection of all assets
+    /// Treats all assets in the pipeline as variations, and outputs a single asset which is a collection of all assets.
+    /// Most useful for grass and other objects whose individual identity is not important.
     #[serde(default)]
     collection_of_variants: bool,
-    /// Output objects which can be spawned from server-side scripts
+    /// Output objects that can be spawned. On by default.
     #[serde(default = "true_value")]
     output_objects: bool,
+    /// Output the animations that belonged to this model.
     #[serde(default = "true_value")]
     output_animations: bool,
-    /// Add components to server side objects
+    /// If specified, these components will be added to the objects produced by `output_objects`.
+    ///
+    /// This is a great way to specify additional information about your object that can be used by gameplay logic.
+    /// Note that these components should have static data (i.e. statistics), not dynamic state, as any such state could be
+    /// replaced by this object being reloaded.
     #[serde(default)]
     object_components: EntityData,
+    /// If specified, a list of overrides to use for the materials for the object.
     #[serde(default)]
     material_overrides: Vec<MaterialOverride>,
+    /// If specified, a list of transformations to apply to this model. This can be used
+    /// to correct coordinate space differences between your asset source and the runtime.
+    ///
+    /// These will be applied in sequence.
     #[serde(default)]
     transforms: Vec<ModelTransform>,
 }
@@ -114,7 +130,9 @@ impl ModelsPipeline {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MaterialOverride {
+    /// The filter for this override (i.e. what it should apply to).
     pub filter: MaterialFilter,
+    /// The material to use as the replacement.
     pub material: PipelinePbrMaterial,
 }
 
@@ -122,10 +140,14 @@ pub struct MaterialOverride {
 #[serde(tag = "type")]
 pub enum ModelImporter {
     #[default]
+    /// The default importer is sufficient for the majority of needs.
     Regular,
+    /// Import Unity models.
     UnityModels {
+        /// Whether or not the prefabs should be converted to objects.
         use_prefabs: bool,
     },
+    /// Import Quixel models.
     Quixel,
 }
 
@@ -133,15 +155,22 @@ pub enum ModelImporter {
 #[serde(tag = "type")]
 pub enum Collider {
     #[default]
+    /// No physics collider. The default.
     None,
+    /// Extract the physics collider from the model.
     FromModel {
+        /// Whether or not the normals should be flipped.
         #[serde(default)]
         flip_normals: bool,
+        /// Whether or not the indices should be reversed for each triangle. On by default.
         #[serde(default = "true_value")]
         reverse_indices: bool,
     },
+    /// Use a spherical character collider.
     Character {
+        /// The radius of the collider.
         radius: Option<f32>,
+        /// The height of the collider.
         height: Option<f32>,
     },
 }

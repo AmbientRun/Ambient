@@ -78,8 +78,13 @@ impl ModelImportPipeline {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ElementEditor)]
 #[serde(tag = "type")]
 pub enum MaterialFilter {
+    /// Replace all materials.
     All,
-    ByName { name: String },
+    /// Replace all materials that match this name exactly.
+    ByName {
+        /// The material name to replace. Must match exactly (i.e. is case-sensitive and does not ignore whitespace).
+        name: String,
+    },
 }
 impl MaterialFilter {
     pub fn by_name(name: impl Into<String>) -> Self {
@@ -173,15 +178,49 @@ impl ModelImportTransform {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum ModelTransform {
+    /// Rotate Y up to Z up.
     RotateYUpToZUp,
-    RotateX { deg: f32 },
-    RotateY { deg: f32 },
-    RotateZ { deg: f32 },
-    Scale { scale: f32 },
-    Translate { translation: Vec3 },
-    ScaleAABB { scale: f32 },
-    ScaleAnimations { scale: f32 },
-    SetRoot { name: String },
+    /// Rotate X by `deg` degrees.
+    RotateX {
+        /// The degrees to rotate this model around the X axis.
+        deg: f32,
+    },
+    /// Rotate Y by `deg` degrees.
+    RotateY {
+        /// The degrees to rotate this model around the Y axis.
+        deg: f32,
+    },
+    /// Rotate Z by `deg` degrees.
+    RotateZ {
+        /// The degrees to rotate this model around the Z axis.
+        deg: f32,
+    },
+    /// Scale this model.
+    Scale {
+        /// The factor to scale this model by.
+        scale: f32,
+    },
+    /// Translate this model.
+    Translate {
+        /// The translation to apply to this model (i.e. this model will be moved by `translation` in the current coordinate space).
+        translation: Vec3,
+    },
+    /// Scale this model's AABB.
+    ScaleAABB {
+        /// The factor to scale this model's AABB by.
+        scale: f32,
+    },
+    /// Scale this model's animations (spatially, not in time).
+    ScaleAnimations {
+        /// The factor to scale this model's animations by.
+        scale: f32,
+    },
+    /// Re-root this object.
+    SetRoot {
+        /// The name of the node to set as the new root for this object.
+        name: String,
+    },
+    /// Re-center this object such that the root is located at the origin.
     Center,
 }
 impl ModelTransform {
@@ -247,12 +286,20 @@ impl ModelTransform {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ElementEditor)]
 pub enum ModelTextureSize {
+    /// Cap this model's textures to 128x128.
     X128,
+    /// Cap this model's textures to 256x256.
     X256,
+    /// Cap this model's textures to 512x512.
     X512,
+    /// Cap this model's textures to 1024x1024.
     X1024,
+    /// Cap this model's textures to 2048x2048.
     X2048,
+    /// Cap this model's textures to 4096x4096.
     X4096,
+    /// Cap this model's textures to SIZE x SIZE.
+    /// It is strongly recommended that this is a power of two.
     Custom(u32),
 }
 impl ModelTextureSize {

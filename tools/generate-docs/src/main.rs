@@ -1,3 +1,5 @@
+//! This code is extremely ugly. Its sole purpose is to convert our serde types
+//! into something that can be used in documentation.
 use std::{collections::HashMap, fs::File};
 
 use anyhow::Context;
@@ -150,13 +152,13 @@ impl GenerateDTS for parser::Enum {
     fn generate_dts_unwrapped(&self, file: &mut File, indent: usize) -> anyhow::Result<()> {
         if let Some(tag) = self.tag.as_ref() {
             let mut first = true;
-            for (variant_name, ty) in &self.variants {
+            for (variant_name, docs, ty) in &self.variants {
                 if !first {
                     write!(file, " | ")?;
                 }
                 writeln!(file, "{{")?;
                 parser::Field {
-                    docs: String::new(),
+                    docs: docs.to_owned(),
                     name: tag.to_owned(),
                     ty: parser::Type::StringLiteral(variant_name.to_owned()),
                     default: false,
@@ -171,16 +173,20 @@ impl GenerateDTS for parser::Enum {
             }
         } else {
             let mut first = true;
-            for (variant_name, ty) in &self.variants {
+            let indent_str = make_indent(indent);
+            for (variant_name, docs, ty) in &self.variants {
                 if !first {
                     write!(file, " | ")?;
                 }
+                writeln!(file)?;
                 if let Some(ty) = ty {
-                    write!(file, "{{{variant_name:?}: ")?;
+                    print_doc_comment(file, &indent_str, docs)?;
+                    write!(file, "{indent_str}{{{variant_name:?}: ")?;
                     ty.generate_dts(file, indent)?;
                     write!(file, "}}")?;
                 } else {
-                    write!(file, "{variant_name:?}")?;
+                    print_doc_comment(file, &indent_str, docs)?;
+                    write!(file, "{indent_str}{variant_name:?}")?;
                 }
 
                 first = false;
@@ -196,11 +202,7 @@ impl GenerateDTS for parser::Field {
 
     fn generate_dts_unwrapped(&self, file: &mut File, indent: usize) -> anyhow::Result<()> {
         let indent_str = make_indent(indent);
-        if !self.docs.is_empty() {
-            for line in self.docs.lines() {
-                writeln!(file, "{indent_str}/// {line}")?;
-            }
-        }
+        print_doc_comment(file, &indent_str, &self.docs)?;
 
         let mut default = self.default;
         let mut ty = &self.ty;
@@ -215,6 +217,14 @@ impl GenerateDTS for parser::Field {
 
         Ok(())
     }
+}
+
+fn print_doc_comment(file: &mut File, indent_str: &str, docs: &str) -> anyhow::Result<()> {
+    Ok(if !docs.is_empty() {
+        for line in docs.lines() {
+            writeln!(file, "{indent_str}/// {line}")?;
+        }
+    })
 }
 
 fn make_indent(indent: usize) -> String {

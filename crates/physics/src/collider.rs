@@ -115,9 +115,13 @@ components!("physics", {
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, ElementEditor)]
 #[repr(usize)]
 pub enum ColliderType {
+    /// This object cannot move (e.g. a wall).
     Static,
+    /// This object can move dynamically in the scene (e.g. a physics object).
     Dynamic,
+    /// This object should only be present in the trigger-area scene.
     TriggerArea,
+    /// This object should only be present in the picking scene.
     Picking,
 }
 

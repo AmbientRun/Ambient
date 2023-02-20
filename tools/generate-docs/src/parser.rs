@@ -103,7 +103,7 @@ pub struct Struct {
 pub struct Enum {
     pub name: String,
     pub tag: Option<String>,
-    pub variants: Vec<(String, Option<Type>)>,
+    pub variants: Vec<(String, String, Option<Type>)>,
 }
 impl Enum {
     fn convert(krate: &Crate, name: String, attrs: &[String], value: &RdEnum) -> Self {
@@ -125,7 +125,7 @@ impl Enum {
                 }
             };
 
-            (item.name.clone().unwrap(), ty)
+            (item.name.clone().unwrap(), item.docs.clone().unwrap_or_default(), ty)
         };
 
         // Extremely not robust, even more so than the rest of this code. Get the bare minimum working first.

@@ -1,10 +1,7 @@
 use std::{collections::HashSet, sync::Arc};
 
 use ambient_asset_cache::SyncAssetKey;
-use ambient_std::{
-    asset_cache::AssetCache,
-    asset_url::{AbsAssetUrl, AssetType},
-};
+use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use anyhow::Context;
 use context::PipelineCtx;
 use futures::{future::BoxFuture, StreamExt};
@@ -12,7 +9,7 @@ use image::ImageFormat;
 use out_asset::{OutAsset, OutAssetContent, OutAssetPreview};
 use serde::{Deserialize, Serialize};
 
-use self::{materials::MaterialsPipeline, models::ModelsPipeline, out_asset::asset_id_from_url};
+use self::{materials::MaterialsPipeline, models::ModelsPipeline};
 
 pub mod audio;
 pub mod context;
@@ -23,23 +20,31 @@ pub mod out_asset;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum PipelineConfig {
+    /// The models asset pipeline.
+    /// Will import models (including constituent materials and animations) and generate object definitions for them by default.
     Models(ModelsPipeline),
+    /// The materials asset pipeline.
+    /// Will import specific materials without needing to be part of a model.
     Materials(MaterialsPipeline),
+    /// The audio asset pipeline.
+    /// Will import supported audio file formats and produce Ogg Vorbis files to be used by the runtime.
     Audio,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub struct Pipeline {
+    /// The type of pipeline to use.
     pub pipeline: PipelineConfig,
-    /// Filter sources; this is a list of glob patterns for accepted files
-    /// All files are accepted if this is empty
+    /// Filter the sources used to feed this pipeline.
+    /// This is a list of glob patterns for accepted files.
+    /// All files are accepted if this is empty.
     #[serde(default)]
     pub sources: Vec<String>,
-    /// Tags to apply to the output resources
+    /// Tags to apply to the output resources.
     #[serde(default)]
     pub tags: Vec<String>,
-    /// Categories ot apply to the output resources
+    /// Categories to apply to the output resources.
     #[serde(default)]
     pub categories: Vec<Vec<String>>,
 }
