@@ -45,6 +45,8 @@ jobs:
           RUSTFLAGS: "-C debuginfo=0"
       - name: Build guest/rust
         run: cd guest/rust && cargo build --workspace
+      - name: Check that guest/rust's documentation is well-formed
+        run: cd guest/rust && RUSTDOCFLAGS="-D warnings" cargo doc --workspace --all-features --no-deps
 
   build-other:
     strategy:
@@ -70,5 +72,3 @@ jobs:
           RUSTFLAGS: "-C debuginfo=0"
       - name: Build guest/rust
         run: cd guest/rust && cargo build --workspace
-      - name: Check that guest/rust's documentation is well-formed
-        run: cd guest/rust && RUSTDOCFLAGS="-D warnings" cargo doc --workspace --all-features --no-deps
