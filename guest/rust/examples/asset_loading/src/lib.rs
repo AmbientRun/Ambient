@@ -17,7 +17,7 @@ pub async fn main() -> EventResult {
         .spawn();
 
     let cube_id = make_transformable()
-        .with(object_from_url(), "assets/Cube.glb".to_string())
+        .with(object_from_url(), asset_url("assets/Cube.glb").unwrap())
         .with(components::is_the_best(), true)
         .spawn();
 

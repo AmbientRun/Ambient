@@ -17,6 +17,11 @@ use crate::{
         BaseWasmContext, WasmContext,
     },
 };
+use kiwi_core::asset_cache;
+use kiwi_std::{
+    asset_cache::SyncAssetKeyExt,
+    asset_url::{AssetUrl, ServerBaseUrlKey},
+};
 
 pub struct WasmServerContext {
     pub base_context: BaseWasmContext,
@@ -361,5 +366,14 @@ impl host::Host for Bindings {
             name,
             convert_components_to_entity_data(data),
         )
+    }
+
+    fn asset_url(&mut self, path: &str) -> Option<String> {
+        let base_url = ServerBaseUrlKey.get(self.world().resource(asset_cache()));
+        AssetUrl::parse(path)
+            .ok()?
+            .resolve(&base_url)
+            .ok()
+            .map(|x| x.to_string())
     }
 }

@@ -26,7 +26,7 @@ use kiwi_renderer::{
 };
 use kiwi_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
-    asset_url::{AbsAssetUrl, AssetUrl, ModelAssetType, ServerBaseUrlKey, TypedAssetUrl},
+    asset_url::{AbsAssetUrl, AssetUrl, ModelAssetType, TypedAssetUrl},
     cb,
     download_asset::{AssetError, BytesFromUrl, JsonFromUrl},
     log_result,
@@ -237,8 +237,7 @@ impl ModelFromUrl {
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<Model>, AssetError>> for ModelFromUrl {
     async fn load(self, assets: AssetCache) -> Result<Arc<Model>, AssetError> {
-        let base_url = ServerBaseUrlKey.get(&assets);
-        let url = self.0.clone().resolve(&base_url).unwrap();
+        let url = self.0.clone().abs().context(format!("ModelFromUrl got relative url: {}", self.0))?;
         let data = BytesFromUrl::new(url.clone(), true).get(&assets).await?;
         let semaphore = ModelLoadSemaphore.get(&assets);
         let _permit = semaphore.acquire().await;

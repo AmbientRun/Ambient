@@ -10,8 +10,8 @@ use kiwi_ecs::{
 use kiwi_model::model_from_url;
 use kiwi_physics::collider::collider;
 use kiwi_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt},
-    asset_url::{AssetUrl, ServerBaseUrlKey},
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt},
+    asset_url::AssetUrl,
     download_asset::{AssetError, BytesFromUrl},
     unwrap_log_err,
 };
@@ -61,7 +61,7 @@ pub struct ObjectFromUrl(pub AssetUrl);
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<World>, AssetError>> for ObjectFromUrl {
     async fn load(self, assets: AssetCache) -> Result<Arc<World>, AssetError> {
-        let obj_url = self.0.resolve(&ServerBaseUrlKey.get(&assets)).context("Failed to resolve url")?;
+        let obj_url = self.0.abs().context(format!("ObjectFromUrl got relative url: {}", self.0))?;
         let data = BytesFromUrl::new(obj_url.clone(), true).get(&assets).await?;
         let DeserWorldWithWarnings { mut world, warnings } = tokio::task::block_in_place(|| serde_json::from_slice(&data))
             .with_context(|| format!("Failed to deserialize object2 from url {obj_url}"))?;
