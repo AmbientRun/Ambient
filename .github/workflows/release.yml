@@ -74,8 +74,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo install cargo-release
-      - run: cd guest/rust && cargo release --workspace --dependent-version=fix release --execute --no-confirm --no-tag --no-push --no-confirm
+      - run: cd guest/rust/api/api_macros && cargo publish
+      - run: cd guest/rust/api && cargo publish
 
   publish-release:
     needs: [create-release, build-app, publish-api]
