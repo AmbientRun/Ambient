@@ -38,6 +38,8 @@ jobs:
             target: x86_64-pc-windows-msvc
             exe_name: ambient.exe
     runs-on: ${{ matrix.os }}
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - uses: actions/checkout@v3
