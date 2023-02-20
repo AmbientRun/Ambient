@@ -74,6 +74,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
+      - run: cargo install cargo-release
       - run: cd guest/rust && cargo release --workspace --dependent-version=fix release --execute --no-confirm --no-tag --no-push
 
   publish-release:
