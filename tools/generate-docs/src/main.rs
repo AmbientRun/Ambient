@@ -15,13 +15,18 @@ static CRATES: Lazy<HashMap<String, Crate>> = Lazy::new(|| {
     ["crates/physics/Cargo.toml", "crates/model_import/Cargo.toml", "crates/build/Cargo.toml"]
         .iter()
         .map(|n| {
-            let build =
-                rustdoc_json::Builder::default().toolchain("nightly").document_private_items(true).manifest_path(n).silent(true).build()?;
-            let krate = serde_json::from_str(&std::fs::read_to_string(build)?)?;
-            anyhow::Ok((n.to_string(), krate))
+            let build = rustdoc_json::Builder::default()
+                .toolchain("nightly")
+                .document_private_items(true)
+                .manifest_path(n)
+                .silent(true)
+                .build()
+                .unwrap();
+
+            let krate = serde_json::from_str(&std::fs::read_to_string(build).unwrap()).unwrap();
+            (n.to_string(), krate)
         })
-        .collect::<anyhow::Result<_>>()
-        .unwrap()
+        .collect()
 });
 static PATH_TO_CRATE_AND_ID: Lazy<HashMap<String, (String, Id)>> = Lazy::new(|| {
     CRATES
@@ -41,7 +46,7 @@ fn main() -> anyhow::Result<()> {
 fn generate_pipeline() -> anyhow::Result<()> {
     let (crate_path, id) = PATH_TO_CRATE_AND_ID.get("ambient_build::pipelines::Pipeline").context("no pipeline struct found")?;
     let build_crate = CRATES.get(crate_path).unwrap();
-    let pipeline = id.get(&build_crate);
+    let pipeline = id.get(build_crate);
     let ty = parser::Type::convert_item(build_crate, pipeline);
 
     let mut file = std::fs::File::create("docs/src/pipeline.d.ts")?;
@@ -73,7 +78,7 @@ trait GenerateDTS {
 }
 impl GenerateDTS for parser::Type {
     fn generate_dts(&self, file: &mut File, indent: usize) -> anyhow::Result<()> {
-        Ok(match self {
+        match self {
             parser::Type::Struct(s) => s.generate_dts(file, indent)?,
             parser::Type::Enum(s) => s.generate_dts(file, indent)?,
             parser::Type::List(s) => {
@@ -92,10 +97,11 @@ impl GenerateDTS for parser::Type {
                 write!(file, " | null")?
             }
             _ => self.generate_dts_unwrapped(file, indent)?,
-        })
+        }
+        Ok(())
     }
     fn generate_dts_unwrapped(&self, file: &mut File, indent: usize) -> anyhow::Result<()> {
-        Ok(match self {
+        match self {
             parser::Type::Struct(s) => s.generate_dts_unwrapped(file, indent)?,
             parser::Type::Enum(s) => s.generate_dts_unwrapped(file, indent)?,
             parser::Type::List(s) => {
@@ -128,7 +134,8 @@ impl GenerateDTS for parser::Type {
             parser::Type::Vec3 => write!(file, "Vec3")?,
             parser::Type::Vec4 => write!(file, "Vec4")?,
             parser::Type::EntityData => write!(file, "EntityData")?,
-        })
+        }
+        Ok(())
     }
 }
 impl GenerateDTS for parser::Struct {
@@ -220,11 +227,12 @@ impl GenerateDTS for parser::Field {
 }
 
 fn print_doc_comment(file: &mut File, indent_str: &str, docs: &str) -> anyhow::Result<()> {
-    Ok(if !docs.is_empty() {
+    if !docs.is_empty() {
         for line in docs.lines() {
             writeln!(file, "{indent_str}/// {line}")?;
         }
-    })
+    }
+    Ok(())
 }
 
 fn make_indent(indent: usize) -> String {

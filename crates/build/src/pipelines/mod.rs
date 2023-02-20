@@ -77,7 +77,7 @@ pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
         One(Pipeline),
     }
     impl PipelineOneOrMany {
-        fn to_vec(self) -> Vec<Pipeline> {
+        fn into_vec(self) -> Vec<Pipeline> {
             match self {
                 PipelineOneOrMany::Many(v) => v,
                 PipelineOneOrMany::One(p) => vec![p],
@@ -92,7 +92,7 @@ pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
             } else {
                 return None;
             };
-            Some((file, pipelines.to_vec()))
+            Some((file, pipelines.into_vec()))
         })
         .flat_map(|(file, pipelines)| {
             futures::stream::iter(pipelines.into_iter().enumerate().map(|(i, pipeline)| {

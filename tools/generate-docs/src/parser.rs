@@ -121,7 +121,7 @@ impl Enum {
                     Some(Type::convert_type(krate, ty))
                 }
                 VariantKind::Struct { fields, .. } => {
-                    Some(Type::Struct(Struct { name: name.clone(), fields: convert_plain_fields(krate, &fields) }))
+                    Some(Type::Struct(Struct { name: name.clone(), fields: convert_plain_fields(krate, fields) }))
                 }
             };
 

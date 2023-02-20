@@ -63,7 +63,7 @@ impl AsyncAssetKey<Result<Arc<AnimationClip>, AssetError>> for AnimationClipReta
             }
             AnimationRetargeting::AnimationScaled { normalize_hip } => {
                 let retarget_model_url =
-                    self.retarget_model.context("No retarget_model specified")?.abs().context(format!("Failed to resolve retarget url"))?;
+                    self.retarget_model.context("No retarget_model specified")?.abs().context("Failed to resolve retarget url")?;
                 let retarget_model = ModelFromUrl(retarget_model_url.into()).get(&assets).await.context("Failed to load retarget model")?;
                 let mut clip = (*clip).clone();
                 let anim_root = anim_model.roots()[0];

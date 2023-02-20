@@ -6,10 +6,10 @@ use ambient_std::{
     download_asset::{AssetError, AssetsCacheOnDisk, BytesFromUrl, BytesFromUrlCachedPath},
 };
 use async_trait::async_trait;
-use physxx::{AsPxPtr, PxConvexMesh, PxDefaultFileInputData, PxDefaultMemoryInputData, PxPhysicsRef, PxTriangleMesh};
+use physxx::{PxConvexMesh, PxDefaultFileInputData, PxDefaultMemoryInputData, PxPhysicsRef, PxTriangleMesh};
 use serde::{Deserialize, Serialize};
 
-use crate::{physx::PhysicsKey, rc_asset::PxRcAsset};
+use crate::rc_asset::PxRcAsset;
 
 pub const PHYSX_TRIANGLE_MESH_EXTENSION: &str = "pxtm";
 pub const PHYSX_CONVEX_MESH_EXTENSION: &str = "pxcm";
