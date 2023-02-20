@@ -19,7 +19,9 @@ components!("project", {
 pub struct Manifest {
     pub project: Project,
     #[serde(default)]
-    pub components: HashMap<IdentifierPath, Component>,
+    pub components: HashMap<IdentifierPathBuf, NamespaceOrComponent>,
+    #[serde(default)]
+    pub concepts: HashMap<Identifier, Concept>,
 }
 impl Manifest {
     pub fn parse(manifest: &str) -> Result<Self, toml::de::Error> {
@@ -35,8 +37,12 @@ impl Manifest {
 
         self.components
             .iter()
+            .filter_map(|(id, component)| match component {
+                NamespaceOrComponent::Component(c) => Some((id, c)),
+                NamespaceOrComponent::Namespace(_) => None,
+            })
             .map(|(id, component)| {
-                let full_path = IdentifierPath(project_path.iter().chain(id.0.iter()).cloned().collect());
+                let full_path = IdentifierPathBuf(project_path.iter().chain(id.0.iter()).cloned().collect());
                 Ok(ExternalComponentDesc {
                     path: full_path.to_string(),
                     ty: (&component.type_).try_into()?,
@@ -60,6 +66,29 @@ pub struct Project {
     #[serde(default)]
     pub authors: Vec<String>,
     pub organization: Option<Identifier>,
+}
+
+#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[serde(untagged)]
+pub enum NamespaceOrComponent {
+    Component(Component),
+    Namespace(Namespace),
+}
+impl From<Component> for NamespaceOrComponent {
+    fn from(value: Component) -> Self {
+        NamespaceOrComponent::Component(value)
+    }
+}
+
+#[derive(Deserialize, Debug, Clone, PartialEq)]
+pub struct Namespace {
+    pub name: String,
+    pub description: String,
+}
+impl From<Namespace> for NamespaceOrComponent {
+    fn from(value: Namespace) -> Self {
+        NamespaceOrComponent::Namespace(value)
+    }
 }
 
 #[derive(Deserialize, Clone, Debug, PartialEq)]
@@ -104,9 +133,18 @@ impl TryFrom<&ComponentType> for PrimitiveComponentType {
     }
 }
 
+#[derive(Deserialize, Debug, Clone, PartialEq)]
+pub struct Concept {
+    pub name: String,
+    pub description: String,
+    #[serde(default)]
+    pub extends: Vec<Identifier>,
+    pub components: HashMap<IdentifierPathBuf, toml::Value>,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct IdentifierPath(Vec<Identifier>);
-impl IdentifierPath {
+pub struct IdentifierPathBuf(Vec<Identifier>);
+impl IdentifierPathBuf {
     pub fn new(path: impl Into<String>) -> Result<Self, &'static str> {
         Self::new_impl(path.into())
     }
@@ -115,7 +153,7 @@ impl IdentifierPath {
         Ok(Self(path.split("::").map(|s| Identifier::new(s)).collect::<Result<_, _>>()?))
     }
 }
-impl Display for IdentifierPath {
+impl Display for IdentifierPathBuf {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut first = true;
         for id in &self.0 {
@@ -130,7 +168,7 @@ impl Display for IdentifierPath {
         Ok(())
     }
 }
-impl Serialize for IdentifierPath {
+impl Serialize for IdentifierPathBuf {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -138,12 +176,12 @@ impl Serialize for IdentifierPath {
         String::serialize(&self.to_string(), serializer)
     }
 }
-impl<'de> Deserialize<'de> for IdentifierPath {
+impl<'de> Deserialize<'de> for IdentifierPathBuf {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
-        IdentifierPath::new_impl(String::deserialize(deserializer)?).map_err(serde::de::Error::custom)
+        IdentifierPathBuf::new_impl(String::deserialize(deserializer)?).map_err(serde::de::Error::custom)
     }
 }
 

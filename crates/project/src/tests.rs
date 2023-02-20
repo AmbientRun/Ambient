@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use ambient_ecs::primitive_component_definitions;
 
-use crate::{Component, ComponentType, Identifier, IdentifierPath, Manifest, Project, Version, VersionError};
+use crate::{Component, ComponentType, Concept, Identifier, IdentifierPathBuf, Manifest, Namespace, Project, Version, VersionError};
 
 #[test]
 fn can_parse_tictactoe_toml() {
@@ -14,6 +14,12 @@ fn can_parse_tictactoe_toml() {
 
     [components]
     cell = { type = "I32", name = "Cell", description = "The ID of the cell this player is in", attributes = ["Store"] }
+
+    [concepts.cell]
+    name = "Cell"
+    description = "A cell object"
+    [concepts.cell.components]
+    cell = 0
     "#;
 
     assert_eq!(
@@ -28,14 +34,69 @@ fn can_parse_tictactoe_toml() {
                 organization: None
             },
             components: HashMap::from_iter([(
-                IdentifierPath::new("cell").unwrap(),
+                IdentifierPathBuf::new("cell").unwrap(),
                 Component {
                     name: "Cell".to_string(),
                     description: "The ID of the cell this player is in".to_string(),
                     type_: ComponentType::String("I32".to_string()),
                     attributes: vec!["Store".to_string()]
                 }
-            )])
+                .into()
+            )]),
+            concepts: HashMap::from_iter([(
+                Identifier::new("cell").unwrap(),
+                Concept {
+                    name: "Cell".to_string(),
+                    description: "A cell object".to_string(),
+                    extends: vec![],
+                    components: HashMap::from_iter([(IdentifierPathBuf::new("cell").unwrap(), toml::Value::Integer(0))])
+                }
+            )]),
+        })
+    )
+}
+
+#[test]
+fn can_parse_manifest_with_namespaces() {
+    const TOML: &str = r#"
+    [project]
+    id = "tictactoe"
+    name = "Tic Tac Toe"
+    version = "0.0.1"
+
+    [components]
+    "core" = { name = "Core", description = "" }
+    "core::app" = { name = "App", description = "" }
+
+    "core::app::main_scene" = { name = "Main Scene", description = "", type = "Empty" }
+    "#;
+
+    assert_eq!(
+        Manifest::parse(TOML),
+        Ok(Manifest {
+            project: Project {
+                id: Identifier::new("tictactoe").unwrap(),
+                name: Some("Tic Tac Toe".to_string()),
+                version: Version::new(0, 0, 1),
+                description: None,
+                authors: vec![],
+                organization: None
+            },
+            components: HashMap::from_iter([
+                (IdentifierPathBuf::new("core").unwrap(), Namespace { name: "Core".to_string(), description: String::new() }.into()),
+                (IdentifierPathBuf::new("core::app").unwrap(), Namespace { name: "App".to_string(), description: String::new() }.into()),
+                (
+                    IdentifierPathBuf::new("core::app::main_scene").unwrap(),
+                    Component {
+                        name: "Main Scene".to_string(),
+                        description: "".to_string(),
+                        type_: ComponentType::String("Empty".to_string()),
+                        attributes: vec![]
+                    }
+                    .into()
+                )
+            ]),
+            concepts: HashMap::new(),
         })
     )
 }
@@ -43,7 +104,7 @@ fn can_parse_tictactoe_toml() {
 #[test]
 fn can_validate_identifiers() {
     use Identifier as I;
-    use IdentifierPath as IP;
+    use IdentifierPathBuf as IP;
 
     assert_eq!(I::new(""), Err("identifier must not be empty"));
     assert_eq!(I::new("5asd"), Err("identifier must start with a lowercase ASCII character"));
