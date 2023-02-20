@@ -1,4 +1,4 @@
-use kiwi_api::{
+use ambient_api::{
     components::core::{
         ecs::ids,
         game_objects::player_camera,

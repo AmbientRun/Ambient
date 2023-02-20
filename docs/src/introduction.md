@@ -27,7 +27,7 @@ To see the latest version of the API docs, run the following command in the `Kiw
 
 ```sh
 cd guest/rust
-cargo doc -p kiwi_api --open --no-deps
+cargo doc -p ambient_api --open --no-deps
 ```
 
 ## Setting up your IDE

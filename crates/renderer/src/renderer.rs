@@ -1,23 +1,23 @@
 use std::sync::Arc;
 
-use glam::uvec2;
-use kiwi_core::{
+use ambient_core::{
     asset_cache,
     camera::*,
     gpu,
     gpu_ecs::{gpu_world, ENTITIES_BIND_GROUP},
     ui_scene,
 };
-use kiwi_ecs::{ArchetypeFilter, Component, World};
-use kiwi_gpu::{
+use ambient_ecs::{ArchetypeFilter, Component, World};
+use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     mesh_buffer::MeshBuffer,
     shader_module::BindGroupDesc,
 };
-use kiwi_std::{
+use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     color::Color,
 };
+use glam::uvec2;
 use wgpu::{BindGroupLayout, TextureView};
 
 use super::{
@@ -32,7 +32,7 @@ pub const GLOBALS_BIND_GROUP: &str = "GLOBALS_BIND_GROUP";
 pub const MATERIAL_BIND_GROUP: &str = "MATERIAL_BIND_GROUP";
 pub const RESOURCES_BIND_GROUP: &str = "RESOURCES_BIND_GROUP";
 pub const PRIMITIVES_BIND_GROUP: &str = "PRIMITIVES_BIND_GROUP";
-use kiwi_gpu::mesh_buffer::MeshBufferKey;
+use ambient_gpu::mesh_buffer::MeshBufferKey;
 
 pub const MESH_METADATA_BINDING: u32 = 0;
 pub const MESH_POSITION_BINDING: u32 = 1;

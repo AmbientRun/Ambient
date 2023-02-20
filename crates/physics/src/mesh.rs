@@ -1,9 +1,11 @@
 use std::sync::Arc;
 
-use async_trait::async_trait;
-use kiwi_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, AssetUrl}, download_asset::{AssetError, AssetsCacheOnDisk, BytesFromUrl, BytesFromUrlCachedPath}
+use ambient_std::{
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt},
+    asset_url::{AbsAssetUrl, AssetUrl},
+    download_asset::{AssetError, AssetsCacheOnDisk, BytesFromUrl, BytesFromUrlCachedPath},
 };
+use async_trait::async_trait;
 use physxx::{AsPxPtr, PxConvexMesh, PxDefaultFileInputData, PxDefaultMemoryInputData, PxPhysicsRef, PxTriangleMesh};
 use serde::{Deserialize, Serialize};
 

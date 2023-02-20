@@ -1,4 +1,4 @@
-use kiwi_api::{
+use ambient_api::{
     components::core::{
         app::main_scene,
         game_objects::player_camera,

@@ -3,24 +3,24 @@ use std::sync::Arc;
 use anyhow::Context;
 use async_trait::async_trait;
 
-use futures::future::join_all;
-use glam::{UVec2, Vec3};
-use kiwi_ecs::World;
-use kiwi_editor_derive::ElementEditor;
-use kiwi_gpu::{
+use ambient_ecs::World;
+use ambient_editor_derive::ElementEditor;
+use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::{BindGroupDesc, Shader, ShaderModule},
     std_assets::DefaultSamplerKey,
     texture::{Texture, TextureView},
     texture_loaders::TextureArrayFromUrls,
 };
-use kiwi_renderer::{get_forward_module, materials::pbr_material::PbrMaterialFromUrl, Material, RendererShader, MATERIAL_BIND_GROUP};
-use kiwi_std::{
+use ambient_renderer::{get_forward_module, materials::pbr_material::PbrMaterialFromUrl, Material, RendererShader, MATERIAL_BIND_GROUP};
+use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, MaterialAssetType, TypedAssetUrl},
     download_asset::{AssetError, JsonFromUrl},
     friendly_id, include_file,
 };
+use futures::future::join_all;
+use glam::{UVec2, Vec3};
 use serde::{Deserialize, Serialize};
 use wgpu::{util::DeviceExt, BindGroup};
 

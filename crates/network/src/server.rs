@@ -1,28 +1,38 @@
 use std::{
-    collections::HashMap, net::{IpAddr, Ipv4Addr, SocketAddr}, ops::Range, sync::Arc, time::{Duration, Instant, SystemTime}
+    collections::HashMap,
+    net::{IpAddr, Ipv4Addr, SocketAddr},
+    ops::Range,
+    sync::Arc,
+    time::{Duration, Instant, SystemTime},
 };
 
+use ambient_core::{asset_cache, no_sync};
+use ambient_ecs::{
+    components, dont_store, query, ArchetypeFilter, ComponentDesc, EntityData, EntityId, FrameEvent, System, SystemGroup, World,
+    WorldStream, WorldStreamCompEvent, WorldStreamFilter,
+};
+use ambient_std::{
+    asset_cache::AssetCache,
+    fps_counter::{FpsCounter, FpsSample},
+    friendly_id, log_result,
+};
 use anyhow::bail;
 use bytes::Bytes;
 use flume::Sender;
 use futures::StreamExt;
-use kiwi_core::{asset_cache, no_sync};
-use kiwi_ecs::{
-    components, dont_store, query, ArchetypeFilter, ComponentDesc, EntityData, EntityId, FrameEvent, System, SystemGroup, World, WorldStream, WorldStreamCompEvent, WorldStreamFilter
-};
-use kiwi_std::{
-    asset_cache::AssetCache, fps_counter::{FpsCounter, FpsSample}, friendly_id, log_result
-};
 use once_cell::sync::OnceCell;
 use parking_lot::Mutex;
 use quinn::{Endpoint, Incoming, NewConnection, RecvStream, SendStream};
 use tokio::{
-    io::AsyncReadExt, time::{interval, MissedTickBehavior}
+    io::AsyncReadExt,
+    time::{interval, MissedTickBehavior},
 };
 use tracing::{debug_span, Instrument};
 
 use crate::{
-    bi_stream_handlers, create_server, datagram_handlers, get_player_by_user_id, player, protocol::{ClientInfo, ServerProtocol}, NetworkError
+    bi_stream_handlers, create_server, datagram_handlers, get_player_by_user_id, player,
+    protocol::{ClientInfo, ServerProtocol},
+    NetworkError,
 };
 
 components!("network", {
@@ -88,7 +98,7 @@ impl WorldInstance {
         query((player(),)).iter(&self.world, None).count()
     }
     pub fn step(&mut self, time: Duration) {
-        self.world.set(self.world.resource_entity(), kiwi_core::time(), time).unwrap();
+        self.world.set(self.world.resource_entity(), ambient_core::time(), time).unwrap();
         self.systems.run(&mut self.world, &FrameEvent);
         self.world.next_frame();
     }

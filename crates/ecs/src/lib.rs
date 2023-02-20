@@ -8,11 +8,11 @@ use std::{
     sync::atomic::{AtomicU64, Ordering},
 };
 
+use ambient_std::sparse_vec::SparseVec;
 use anyhow::Context;
 use bit_set::BitSet;
 use bit_vec::BitVec;
 use itertools::Itertools;
-use kiwi_std::sparse_vec::SparseVec;
 /// Expose to macros
 #[doc(hidden)]
 pub use once_cell::sync::OnceCell;

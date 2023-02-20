@@ -1,11 +1,11 @@
+use ambient_app::AppBuilder;
+use ambient_core::{asset_cache, camera::active_camera, main_scene, transform::*};
+use ambient_ecs::World;
+use ambient_element::ElementComponentExt;
+use ambient_primitives::Quad;
+use ambient_renderer::color;
+use ambient_std::math::SphericalCoords;
 use glam::*;
-use kiwi_app::AppBuilder;
-use kiwi_core::{asset_cache, camera::active_camera, main_scene, transform::*};
-use kiwi_ecs::World;
-use kiwi_element::ElementComponentExt;
-use kiwi_primitives::Quad;
-use kiwi_renderer::color;
-use kiwi_std::math::SphericalCoords;
 
 fn init(world: &mut World) {
     let _assets = world.resource(asset_cache()).clone();
@@ -23,7 +23,7 @@ fn init(world: &mut World) {
         .set(scale(), vec3(0.5, 0.5, 0.5))
         .spawn_static(world);
 
-    kiwi_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
+    ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
         .set(active_camera(), 0.)
         .set(main_scene(), ())
         .spawn(world);

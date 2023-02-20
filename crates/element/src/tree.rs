@@ -5,10 +5,10 @@ use std::{
     sync::Arc,
 };
 
+use ambient_core::hierarchy::{children, parent};
+use ambient_ecs::{query, Component, EntityData, EntityId, SystemGroup, World};
+use ambient_std::friendly_id;
 use itertools::Itertools;
-use kiwi_core::hierarchy::{children, parent};
-use kiwi_ecs::{query, Component, EntityData, EntityId, SystemGroup, World};
-use kiwi_std::friendly_id;
 use parking_lot::Mutex;
 use tracing::debug_span;
 

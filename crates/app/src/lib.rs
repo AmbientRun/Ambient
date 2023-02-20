@@ -3,10 +3,9 @@ use std::{
     time::{Duration, SystemTime},
 };
 
-use glam::{uvec2, vec2, Vec2};
-use kiwi_cameras::assets_camera_systems;
-pub use kiwi_core::gpu;
-use kiwi_core::{
+use ambient_cameras::assets_camera_systems;
+pub use ambient_core::gpu;
+use ambient_core::{
     app_start_time, asset_cache,
     async_ecs::async_ecs_systems,
     bounding::bounding_systems,
@@ -18,18 +17,19 @@ use kiwi_core::{
     transform::TransformSystem,
     window_scale_factor, RuntimeKey, TimeResourcesSystem, WindowKey, WindowSyncSystem, WinitEventsSystem,
 };
-use kiwi_ecs::{components, Debuggable, DynSystem, EntityData, FrameEvent, MakeDefault, System, SystemGroup, World};
-use kiwi_element::kiwi_system;
-use kiwi_gizmos::{gizmos, Gizmos};
-use kiwi_gpu::{
+use ambient_ecs::{components, Debuggable, DynSystem, EntityData, FrameEvent, MakeDefault, System, SystemGroup, World};
+use ambient_element::ambient_system;
+use ambient_gizmos::{gizmos, Gizmos};
+use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     mesh_buffer::MeshBufferKey,
 };
-use kiwi_renderer::lod::lod_system;
-use kiwi_std::{
+use ambient_renderer::lod::lod_system;
+use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     fps_counter::{FpsCounter, FpsSample},
 };
+use glam::{uvec2, vec2, Vec2};
 use parking_lot::Mutex;
 use renderers::{examples_renderer, ui_renderer, UIRender};
 use tokio::runtime::Runtime;
@@ -54,18 +54,18 @@ components!("app", {
 });
 
 pub fn init_all_components() {
-    kiwi_ecs::init_components();
-    kiwi_core::init_all_components();
-    kiwi_element::init_components();
-    kiwi_animation::init_components();
-    kiwi_gizmos::init_components();
-    kiwi_cameras::init_all_components();
+    ambient_ecs::init_components();
+    ambient_core::init_all_components();
+    ambient_element::init_components();
+    ambient_animation::init_components();
+    ambient_gizmos::init_components();
+    ambient_cameras::init_all_components();
     init_components();
-    kiwi_renderer::init_all_componets();
-    kiwi_ui::init_all_componets();
-    kiwi_input::init_all_components();
-    kiwi_model::init_components();
-    kiwi_cameras::init_all_components();
+    ambient_renderer::init_all_componets();
+    ambient_ui::init_all_componets();
+    ambient_input::init_all_components();
+    ambient_model::init_components();
+    ambient_cameras::init_all_components();
     renderers::init_components();
 }
 
@@ -76,10 +76,10 @@ pub fn gpu_world_sync_systems() -> SystemGroup<GpuWorldSyncEvent> {
             // Note: All Gpu sync systems must run immediately after GpuWorldUpdate, as that's the only time we know
             // the layout of the GpuWorld is correct
             Box::new(GpuWorldUpdate),
-            Box::new(kiwi_core::transform::transform_gpu_systems()),
-            Box::new(kiwi_renderer::gpu_world_systems()),
-            Box::new(kiwi_core::bounding::gpu_world_systems()),
-            Box::new(kiwi_ui::layout::gpu_world_systems()),
+            Box::new(ambient_core::transform::transform_gpu_systems()),
+            Box::new(ambient_renderer::gpu_world_systems()),
+            Box::new(ambient_core::bounding::gpu_world_systems()),
+            Box::new(ambient_ui::layout::gpu_world_systems()),
         ],
     )
 }
@@ -93,15 +93,15 @@ pub fn world_instance_systems(full: bool) -> SystemGroup {
             on_frame_system(),
             remove_at_time_system(),
             Box::new(WindowSyncSystem),
-            if full { Box::new(kiwi_input::picking::frame_systems()) } else { Box::new(DummySystem) },
+            if full { Box::new(ambient_input::picking::frame_systems()) } else { Box::new(DummySystem) },
             Box::new(lod_system()),
-            Box::new(kiwi_renderer::systems()),
-            Box::new(kiwi_system()),
-            if full { Box::new(kiwi_ui::systems()) } else { Box::new(DummySystem) },
-            Box::new(kiwi_model::model_systems()),
-            Box::new(kiwi_animation::animation_systems()),
+            Box::new(ambient_renderer::systems()),
+            Box::new(ambient_system()),
+            if full { Box::new(ambient_ui::systems()) } else { Box::new(DummySystem) },
+            Box::new(ambient_model::model_systems()),
+            Box::new(ambient_animation::animation_systems()),
             Box::new(TransformSystem::new()),
-            Box::new(kiwi_renderer::skinning::skinning_systems()),
+            Box::new(ambient_renderer::skinning::skinning_systems()),
             Box::new(bounding_systems()),
             Box::new(camera_systems()),
         ],
@@ -119,7 +119,7 @@ impl AppResources {
             assets: world.resource(self::asset_cache()).clone(),
             gpu: world.resource(self::gpu()).clone(),
             runtime: world.resource(self::runtime()).clone(),
-            window: Some(world.resource(kiwi_core::window()).clone()),
+            window: Some(world.resource(ambient_core::window()).clone()),
         }
     }
     pub fn from_assets(assets: &AssetCache) -> Self {
@@ -135,17 +135,17 @@ pub fn world_instance_resources(resources: AppResources) -> EntityData {
         .set(self::fps_stats(), FpsSample::default())
         .set(self::asset_cache(), resources.assets.clone())
         .set(frame_index(), 0_usize)
-        .set(kiwi_core::mouse_position(), Vec2::ZERO)
-        .set(kiwi_core::app_start_time(), SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap())
-        .set(kiwi_core::time(), SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap())
-        .set(kiwi_core::dtime(), 0.)
-        .set(kiwi_core::window_logical_size(), uvec2(100, 100))
-        .set(kiwi_core::window_physical_size(), uvec2(100, 100))
+        .set(ambient_core::mouse_position(), Vec2::ZERO)
+        .set(ambient_core::app_start_time(), SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap())
+        .set(ambient_core::time(), SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap())
+        .set(ambient_core::dtime(), 0.)
+        .set(ambient_core::window_logical_size(), uvec2(100, 100))
+        .set(ambient_core::window_physical_size(), uvec2(100, 100))
         .set(gpu_world(), GpuWorld::new_arced(resources.assets.clone()))
-        .append(kiwi_input::picking::resources())
-        .append(kiwi_core::async_ecs::async_ecs_resources());
+        .append(ambient_input::picking::resources())
+        .append(ambient_core::async_ecs::async_ecs_resources());
     if let Some(window) = resources.window {
-        ed = ed.set(kiwi_core::window(), window.clone()).set(kiwi_core::window_scale_factor(), window.scale_factor());
+        ed = ed.set(ambient_core::window(), window.clone()).set(ambient_core::window_scale_factor(), window.scale_factor());
     }
     ed
 }
@@ -258,7 +258,7 @@ impl AppBuilder {
             vec![
                 Box::new(assets_camera_systems()),
                 Box::new(WinitEventsSystem::new()),
-                Box::new(kiwi_input::event_systems()),
+                Box::new(ambient_input::event_systems()),
                 Box::new(renderers::systems()),
             ],
         );

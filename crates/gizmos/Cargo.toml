@@ -1,17 +1,17 @@
 [package]
-name = "kiwi_gizmos"
+name = "ambient_gizmos"
 version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-kiwi_std = { path = "../std" }
-kiwi_ecs = { path = "../ecs" }
-kiwi_gpu = { path = "../gpu" }
-kiwi_core = { path = "../core" }
-kiwi_meshes = { path = "../meshes" }
-kiwi_renderer = { path = "../renderer" }
+ambient_std = { path = "../std" }
+ambient_ecs = { path = "../ecs" }
+ambient_gpu = { path = "../gpu" }
+ambient_core = { path = "../core" }
+ambient_meshes = { path = "../meshes" }
+ambient_renderer = { path = "../renderer" }
 dashmap = { workspace = true }
 glam = { workspace = true }
 bytemuck = { workspace = true }
@@ -22,8 +22,8 @@ once_cell = "1.13.0"
 profiling = { workspace = true }
 
 [dev-dependencies]
-kiwi_app = { path = "../app" }
-kiwi_cameras = { path = "../cameras" }
+ambient_app = { path = "../app" }
+ambient_cameras = { path = "../cameras" }
 
 [features]
-hotload-includes = ['kiwi_std/hotload-includes']
+hotload-includes = ['ambient_std/hotload-includes']

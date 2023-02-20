@@ -1,15 +1,15 @@
 use std::sync::Arc;
 
-use glam::Vec2;
-use kiwi_gpu::{
+use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::ShaderModule,
 };
-use kiwi_renderer::{Material, MaterialShader, SharedMaterial, MATERIAL_BIND_GROUP};
-use kiwi_std::{
+use ambient_renderer::{Material, MaterialShader, SharedMaterial, MATERIAL_BIND_GROUP};
+use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     friendly_id, include_file,
 };
+use glam::Vec2;
 use wgpu::{util::DeviceExt, BindGroup};
 
 #[derive(Debug, Clone)]
@@ -22,7 +22,7 @@ impl SyncAssetKey<Arc<MaterialShader>> for GridShaderKey {
             shader: ShaderModule::new(
                 "GridMaterial",
                 include_file!("grid_material.wgsl"),
-                vec![kiwi_gpu::shader_module::BindGroupDesc {
+                vec![ambient_gpu::shader_module::BindGroupDesc {
                     entries: vec![wgpu::BindGroupLayoutEntry {
                         binding: 0,
                         visibility: wgpu::ShaderStages::FRAGMENT,

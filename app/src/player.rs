@@ -1,34 +1,34 @@
 use std::{io::Write, sync::Arc};
 
-use byteorder::{BigEndian, WriteBytesExt};
-pub use components::game_objects::player_camera;
-use glam::{Mat4, Vec3};
-use kiwi_audio::AudioListener;
-use kiwi_core::{
+use ambient_audio::AudioListener;
+use ambient_core::{
     camera::{active_camera, aspect_ratio_from_window},
     main_scene, on_frame, runtime,
 };
-use kiwi_ecs::{query, query_mut, EntityData, SystemGroup};
-use kiwi_element::{element_component, Element, Hooks};
-use kiwi_input::{
+use ambient_ecs::{query, query_mut, EntityData, SystemGroup};
+use ambient_element::{element_component, Element, Hooks};
+use ambient_input::{
     on_app_focus_change, on_app_keyboard_input, on_app_mouse_input, on_app_mouse_motion, on_app_mouse_wheel, player_prev_raw_input,
     player_raw_input, ElementState, MouseScrollDelta, PlayerRawInput,
 };
-use kiwi_network::{
+use ambient_network::{
     client::game_client,
     get_player_by_user_id,
     player::{local_user_id, player, user_id},
     DatagramHandlers,
 };
-use kiwi_std::unwrap_log_err;
-use kiwi_world_audio::audio_listener;
+use ambient_std::unwrap_log_err;
+use ambient_world_audio::audio_listener;
+use byteorder::{BigEndian, WriteBytesExt};
+pub use components::game_objects::player_camera;
+use glam::{Mat4, Vec3};
 use parking_lot::Mutex;
 
 const PLAYER_INPUT_DATAGRAM_ID: u32 = 5;
 
 mod components {
     pub mod game_objects {
-        use kiwi_ecs::{components, Debuggable, Description, Name, Networked};
+        use ambient_ecs::{components, Debuggable, Description, Name, Networked};
 
         components!("game_objects", {
             // attached to a camera entity to mark it as belonging to a player

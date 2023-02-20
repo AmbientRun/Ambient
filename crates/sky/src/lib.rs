@@ -4,17 +4,17 @@
 
 use std::sync::Arc;
 
-use glam::*;
-use kiwi_core::{asset_cache, mesh, transform::translation};
-use kiwi_ecs::{components, query, Debuggable, Description, EntityData, Name, Networked, Store, SystemGroup};
-use kiwi_gpu::{
+use ambient_core::{asset_cache, mesh, transform::translation};
+use ambient_ecs::{components, query, Debuggable, Description, EntityData, Name, Networked, Store, SystemGroup};
+use ambient_gpu::{
     gpu::GpuKey,
     shader_module::{BindGroupDesc, Shader, ShaderModule},
     typed_buffer::TypedBuffer,
 };
-use kiwi_meshes::QuadMeshKey;
-use kiwi_renderer::{self, *};
-use kiwi_std::{asset_cache::*, cb, friendly_id, include_file};
+use ambient_meshes::QuadMeshKey;
+use ambient_renderer::{self, *};
+use ambient_std::{asset_cache::*, cb, friendly_id, include_file};
+use glam::*;
 use noise::OpenSimplex;
 use wgpu::{BindGroup, BufferUsages};
 
@@ -61,7 +61,7 @@ pub fn systems() -> SystemGroup {
 
                     let data = EntityData::new()
                         .set(renderer_shader(), cb(|assets, config| CloudShaderKey { shadow_cascades: config.shadow_cascades }.get(assets)))
-                        .set(kiwi_renderer::material(), SharedMaterial::new(material))
+                        .set(ambient_renderer::material(), SharedMaterial::new(material))
                         .set(cloud_state(), clouds)
                         .set(overlay(), ())
                         .set(mesh(), QuadMeshKey.get(&assets))

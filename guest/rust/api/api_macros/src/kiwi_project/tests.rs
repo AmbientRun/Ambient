@@ -2,7 +2,7 @@ use super::implementation;
 use proc_macro2::Span;
 
 fn api_name() -> syn::Path {
-    let ident = syn::Ident::new("kiwi_api2", Span::call_site());
+    let ident = syn::Ident::new("ambient_api2", Span::call_site());
     ident.into()
 }
 
@@ -30,13 +30,13 @@ fn can_generate_components_from_manifest_in_global_namespace() {
         const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
         #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
         pub mod components {
-            use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
             #[doc = "**Core**"]
             pub mod core {
-                use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+                use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
                 #[doc = "**App**"]
                 pub mod app {
-                    use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+                    use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
                     static MAIN_SCENE: Lazy< Component<()> > = Lazy::new(|| __internal_get_component("core::app::main_scene"));
                     #[doc = "**Main Scene**"]
                     pub fn main_scene() -> Component<()> {
@@ -50,7 +50,7 @@ fn can_generate_components_from_manifest_in_global_namespace() {
                 }
                 #[doc = "**Camera**"]
                 pub mod camera {
-                    use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+                    use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
                     static ACTIVE_CAMERA: Lazy< Component<f32> > = Lazy::new(|| __internal_get_component("core::camera::active_camera"));
                     #[doc = "**Active Camera**: No description provided"]
                     pub fn active_camera() -> Component<f32> {
@@ -64,10 +64,10 @@ fn can_generate_components_from_manifest_in_global_namespace() {
                 }
                 #[doc = "**Rendering**"]
                 pub mod rendering {
-                    use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
-                    static JOINTS: Lazy< Component < Vec< kiwi_api2::global::EntityId > > > = Lazy::new(|| __internal_get_component("core::rendering::joints"));
+                    use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+                    static JOINTS: Lazy< Component < Vec< ambient_api2::global::EntityId > > > = Lazy::new(|| __internal_get_component("core::rendering::joints"));
                     #[doc = "**Joints**: No description provided"]
-                    pub fn joints() -> Component< Vec< kiwi_api2::global::EntityId > > {
+                    pub fn joints() -> Component< Vec< ambient_api2::global::EntityId > > {
                         *JOINTS
                     }
                 }
@@ -99,7 +99,7 @@ fn can_accept_no_components() {
         const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
         #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
         pub mod components {
-            use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
         }
         #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
         pub mod concepts {}
@@ -138,7 +138,7 @@ fn can_generate_components_from_manifest() {
         const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
         #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
         pub mod components {
-            use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
             static A_COOL_COMPONENT: Lazy< Component<()> > = Lazy::new(|| __internal_get_component("my_project::a_cool_component"));
             #[doc = "**Cool Component**"]
             pub fn a_cool_component() -> Component<()> {
@@ -181,7 +181,7 @@ fn can_generate_component_with_contained_type() {
         const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
         #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
         pub mod components {
-            use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
             static A_COOL_COMPONENT: Lazy< Component<()> > = Lazy::new(|| __internal_get_component("my_project::a_cool_component"));
             #[doc = "**Cool Component**"]
             pub fn a_cool_component() -> Component<()> {
@@ -219,7 +219,7 @@ fn can_generate_components_from_manifest_with_org() {
         const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
         #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
         pub mod components {
-            use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
             static A_COOL_COMPONENT: Lazy< Component<()> > = Lazy::new(|| __internal_get_component("evil_corp::my_project::a_cool_component"));
             #[doc = "**Cool Component**"]
             pub fn a_cool_component() -> Component<()> {
@@ -257,10 +257,10 @@ fn can_generate_components_with_documented_namespace_from_manifest() {
         const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
         #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
         pub mod components {
-            use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
             #[doc = "**Namespace**: A Test Namespace"]
             pub mod ns {
-                use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+                use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
                 static A_COOL_COMPONENT: Lazy< Component<()> > = Lazy::new(|| __internal_get_component("my_project::ns::a_cool_component"));
                 #[doc = "**Cool Component**: Cool!"]
                 pub fn a_cool_component() -> Component<()> {
@@ -354,11 +354,11 @@ fn can_generate_concepts() {
         const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
         #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
         pub mod components {
-            use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
             pub mod core {
-                use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+                use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
                 pub mod primitives {
-                    use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+                    use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
                     static SPHERE: Lazy< Component<()> > = Lazy::new(|| __internal_get_component("my_project::core::primitives::sphere"));
                     #[doc = "**Sphere**"]
                     pub fn sphere() -> Component<()> { *SPHERE }
@@ -373,32 +373,32 @@ fn can_generate_concepts() {
                     pub fn sphere_stacks() -> Component<u32> { *SPHERE_STACKS }
                 }
                 pub mod rendering {
-                    use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
-                    static COLOR: Lazy< Component<kiwi_api2::global::Vec4> > = Lazy::new(|| __internal_get_component("my_project::core::rendering::color"));
+                    use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+                    static COLOR: Lazy< Component<ambient_api2::global::Vec4> > = Lazy::new(|| __internal_get_component("my_project::core::rendering::color"));
                     #[doc = "**Color**"]
-                    pub fn color() -> Component<kiwi_api2::global::Vec4> { *COLOR }
+                    pub fn color() -> Component<ambient_api2::global::Vec4> { *COLOR }
                 }
                 pub mod transform {
-                    use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
-                    static ROTATION: Lazy< Component<kiwi_api2::global::Quat> > = Lazy::new(|| __internal_get_component("my_project::core::transform::rotation"));
+                    use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+                    static ROTATION: Lazy< Component<ambient_api2::global::Quat> > = Lazy::new(|| __internal_get_component("my_project::core::transform::rotation"));
                     #[doc = "**Rotation**"]
-                    pub fn rotation() -> Component<kiwi_api2::global::Quat> { *ROTATION }
-                    static SCALE: Lazy< Component<kiwi_api2::global::Vec3> > = Lazy::new(|| __internal_get_component("my_project::core::transform::scale"));
+                    pub fn rotation() -> Component<ambient_api2::global::Quat> { *ROTATION }
+                    static SCALE: Lazy< Component<ambient_api2::global::Vec3> > = Lazy::new(|| __internal_get_component("my_project::core::transform::scale"));
                     #[doc = "**Scale**"]
-                    pub fn scale() -> Component<kiwi_api2::global::Vec3> { *SCALE }
+                    pub fn scale() -> Component<ambient_api2::global::Vec3> { *SCALE }
                     static SPHERICAL_BILLBOARD: Lazy< Component<()> > = Lazy::new(|| __internal_get_component("my_project::core::transform::spherical_billboard") );
                     #[doc = "**Spherical billboard**"]
                     pub fn spherical_billboard() -> Component<()> { *SPHERICAL_BILLBOARD }
-                    static TRANSLATION: Lazy< Component<kiwi_api2::global::Vec3> > = Lazy::new(|| __internal_get_component("my_project::core::transform::translation"));
+                    static TRANSLATION: Lazy< Component<ambient_api2::global::Vec3> > = Lazy::new(|| __internal_get_component("my_project::core::transform::translation"));
                     #[doc = "**Translation**"]
-                    pub fn translation() -> Component<kiwi_api2::global::Vec3> { *TRANSLATION }
+                    pub fn translation() -> Component<ambient_api2::global::Vec3> { *TRANSLATION }
                 }
             }
         }
         #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
         pub mod concepts {
             use super::components;
-            use kiwi_api2::prelude::*;
+            use ambient_api2::prelude::*;
 
             #[doc = "Makes a Colored Sphere (A sphere with some color!)"]
             pub fn make_colored_sphere() -> Components {
@@ -519,7 +519,7 @@ fn can_generate_concepts_with_all_supported_types() {
         const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
         #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
         pub mod components {
-            use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
 
             static BOOL: Lazy< Component<bool> > = Lazy::new(|| __internal_get_component("my_project::bool"));
             #[doc = "**Bool**"]
@@ -529,9 +529,9 @@ fn can_generate_concepts_with_all_supported_types() {
             #[doc = "**Empty**"]
             pub fn empty() -> Component<()> { *EMPTY }
 
-            static ENTITY_ID: Lazy< Component<kiwi_api2::global::EntityId> > = Lazy::new(|| __internal_get_component("my_project::entity_id"));
+            static ENTITY_ID: Lazy< Component<ambient_api2::global::EntityId> > = Lazy::new(|| __internal_get_component("my_project::entity_id"));
             #[doc = "**EntityId**"]
-            pub fn entity_id() -> Component<kiwi_api2::global::EntityId> { *ENTITY_ID }
+            pub fn entity_id() -> Component<ambient_api2::global::EntityId> { *ENTITY_ID }
 
             static F32: Lazy< Component<f32> > = Lazy::new(|| __internal_get_component("my_project::f32"));
             #[doc = "**F32**"]
@@ -545,13 +545,13 @@ fn can_generate_concepts_with_all_supported_types() {
             #[doc = "**I32**"]
             pub fn i32() -> Component<i32> { *I32 }
 
-            static MAT4: Lazy< Component<kiwi_api2::global::Mat4> > = Lazy::new(|| __internal_get_component("my_project::mat4"));
+            static MAT4: Lazy< Component<ambient_api2::global::Mat4> > = Lazy::new(|| __internal_get_component("my_project::mat4"));
             #[doc = "**Mat4**"]
-            pub fn mat4() -> Component<kiwi_api2::global::Mat4> { *MAT4 }
+            pub fn mat4() -> Component<ambient_api2::global::Mat4> { *MAT4 }
 
-            static OBJECT_REF: Lazy< Component<kiwi_api2::global::ObjectRef> > = Lazy::new(|| __internal_get_component("my_project::object_ref"));
+            static OBJECT_REF: Lazy< Component<ambient_api2::global::ObjectRef> > = Lazy::new(|| __internal_get_component("my_project::object_ref"));
             #[doc = "**ObjectRef**"]
-            pub fn object_ref() -> Component<kiwi_api2::global::ObjectRef> { *OBJECT_REF }
+            pub fn object_ref() -> Component<ambient_api2::global::ObjectRef> { *OBJECT_REF }
 
             static OPTION_STRING1: Lazy< Component< Option<String> > > = Lazy::new(|| __internal_get_component("my_project::option_string1"));
             #[doc = "**OptionString1**"]
@@ -561,9 +561,9 @@ fn can_generate_concepts_with_all_supported_types() {
             #[doc = "**OptionString2**"]
             pub fn option_string2() -> Component< Option<String> > { *OPTION_STRING2 }
 
-            static QUAT: Lazy< Component<kiwi_api2::global::Quat> > = Lazy::new(|| __internal_get_component("my_project::quat"));
+            static QUAT: Lazy< Component<ambient_api2::global::Quat> > = Lazy::new(|| __internal_get_component("my_project::quat"));
             #[doc = "**Quat**"]
-            pub fn quat() -> Component<kiwi_api2::global::Quat> { *QUAT }
+            pub fn quat() -> Component<ambient_api2::global::Quat> { *QUAT }
 
             static STRING: Lazy< Component<String> > = Lazy::new(|| __internal_get_component("my_project::string"));
             #[doc = "**String**"]
@@ -577,26 +577,26 @@ fn can_generate_concepts_with_all_supported_types() {
             #[doc = "**U64**"]
             pub fn u64() -> Component<u64> { *U64 }
 
-            static VEC2: Lazy< Component<kiwi_api2::global::Vec2> > = Lazy::new(|| __internal_get_component("my_project::vec2"));
+            static VEC2: Lazy< Component<ambient_api2::global::Vec2> > = Lazy::new(|| __internal_get_component("my_project::vec2"));
             #[doc = "**Vec2**"]
-            pub fn vec2() -> Component<kiwi_api2::global::Vec2> { *VEC2 }
+            pub fn vec2() -> Component<ambient_api2::global::Vec2> { *VEC2 }
 
-            static VEC3: Lazy< Component<kiwi_api2::global::Vec3> > = Lazy::new(|| __internal_get_component("my_project::vec3"));
+            static VEC3: Lazy< Component<ambient_api2::global::Vec3> > = Lazy::new(|| __internal_get_component("my_project::vec3"));
             #[doc = "**Vec3**"]
-            pub fn vec3() -> Component<kiwi_api2::global::Vec3> { *VEC3 }
+            pub fn vec3() -> Component<ambient_api2::global::Vec3> { *VEC3 }
 
-            static VEC4: Lazy< Component<kiwi_api2::global::Vec4> > = Lazy::new(|| __internal_get_component("my_project::vec4"));
+            static VEC4: Lazy< Component<ambient_api2::global::Vec4> > = Lazy::new(|| __internal_get_component("my_project::vec4"));
             #[doc = "**Vec4**"]
-            pub fn vec4() -> Component<kiwi_api2::global::Vec4> { *VEC4 }
+            pub fn vec4() -> Component<ambient_api2::global::Vec4> { *VEC4 }
 
-            static VEC_VEC2: Lazy< Component< Vec<kiwi_api2::global::Vec2 > > > = Lazy::new(|| __internal_get_component("my_project::vec_vec2"));
+            static VEC_VEC2: Lazy< Component< Vec<ambient_api2::global::Vec2 > > > = Lazy::new(|| __internal_get_component("my_project::vec_vec2"));
             #[doc = "**VecVec2**"]
-            pub fn vec_vec2() -> Component< Vec< kiwi_api2::global::Vec2 > > { *VEC_VEC2 }
+            pub fn vec_vec2() -> Component< Vec< ambient_api2::global::Vec2 > > { *VEC_VEC2 }
         }
         #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
         pub mod concepts {
             use super::components;
-            use kiwi_api2::prelude::*;
+            use ambient_api2::prelude::*;
             #[doc = "Makes a Everything (Everywhere all at once)"]
             pub fn make_everything() -> Components {
                 Components::new()
@@ -695,7 +695,7 @@ fn can_extend_with_multiple_concepts() {
         const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
         #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
         pub mod components {
-            use kiwi_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
 
             static F32: Lazy< Component<f32> > = Lazy::new(|| __internal_get_component("my_project::f32"));
             #[doc = "**F32**"]
@@ -712,7 +712,7 @@ fn can_extend_with_multiple_concepts() {
         #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
         pub mod concepts {
             use super::components;
-            use kiwi_api2::prelude::*;
+            use ambient_api2::prelude::*;
 
             #[doc = "Makes a C1 ()"]
             pub fn make_concept1() -> Components {

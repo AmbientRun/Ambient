@@ -1,20 +1,20 @@
 use std::{collections::HashMap, sync::Arc};
 
-use anyhow::Context;
-use async_trait::async_trait;
-use kiwi_core::{asset_cache, async_ecs::async_run, hierarchy::children, runtime};
-use kiwi_decals::decal;
-use kiwi_ecs::{
+use ambient_core::{asset_cache, async_ecs::async_run, hierarchy::children, runtime};
+use ambient_decals::decal;
+use ambient_ecs::{
     components, query, query_mut, Debuggable, Description, DeserWorldWithWarnings, EntityId, Name, Networked, Store, SystemGroup, World,
 };
-use kiwi_model::model_from_url;
-use kiwi_physics::collider::collider;
-use kiwi_std::{
+use ambient_model::model_from_url;
+use ambient_physics::collider::collider;
+use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt},
     asset_url::AssetUrl,
     download_asset::{AssetError, BytesFromUrl},
     unwrap_log_err,
 };
+use anyhow::Context;
+use async_trait::async_trait;
 
 components!("object", {
     @[

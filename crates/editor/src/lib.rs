@@ -1,4 +1,4 @@
-use kiwi_ecs::{components, EntityId};
+use ambient_ecs::{components, EntityId};
 use std::iter::Cloned;
 
 #[macro_use]

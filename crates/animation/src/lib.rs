@@ -4,16 +4,16 @@ use std::{
     time::{Duration, SystemTime},
 };
 
-use convert_case::{Case, Casing};
-use derive_more::Display;
-use kiwi_core::{asset_cache, hierarchy::children, time};
-use kiwi_ecs::{components, query, Debuggable, EntityId, MakeDefault, Networked, Store, SystemGroup};
-use kiwi_model::{animation_binder, model, model_from_url, ModelFromUrl};
-use kiwi_std::{
+use ambient_core::{asset_cache, hierarchy::children, time};
+use ambient_ecs::{components, query, Debuggable, EntityId, MakeDefault, Networked, Store, SystemGroup};
+use ambient_model::{animation_binder, model, model_from_url, ModelFromUrl};
+use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt},
     asset_url::{AnimationAssetType, ModelAssetType, TypedAssetUrl},
 };
-use kiwi_ui::Editable;
+use ambient_ui::Editable;
+use convert_case::{Case, Casing};
+use derive_more::Display;
 use serde::{Deserialize, Serialize};
 
 mod resources;
@@ -322,8 +322,8 @@ pub fn animation_bind_id_from_name(name: &str) -> String {
 
 #[test]
 fn test_animation() {
+    use ambient_core::transform::{self, translation};
     use glam::vec3;
-    use kiwi_core::transform::{self, translation};
 
     transform::init_components();
 

@@ -1,26 +1,26 @@
-use glam::{vec3, Mat4, Quat, Vec3, Vec4};
-use kiwi_core::{
+use ambient_core::{
     asset_cache,
     bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere},
     main_scene, mesh,
     transform::{local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation},
 };
-use kiwi_ecs::{components, query, DefaultValue, Description, EntityData, EntityId, Name, Networked, Store, SystemGroup, World};
-use kiwi_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use kiwi_gpu::mesh_buffer::GpuMesh;
-pub use kiwi_meshes::UVSphereMesh;
-use kiwi_meshes::{UnitCubeMeshKey, UnitQuadMeshKey};
-use kiwi_renderer::{
+use ambient_ecs::{components, query, DefaultValue, Description, EntityData, EntityId, Name, Networked, Store, SystemGroup, World};
+use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_gpu::mesh_buffer::GpuMesh;
+pub use ambient_meshes::UVSphereMesh;
+use ambient_meshes::{UnitCubeMeshKey, UnitQuadMeshKey};
+use ambient_renderer::{
     color, gpu_primitives, material,
     materials::flat_material::{get_flat_shader, FlatMaterialKey},
     primitives, renderer_shader,
 };
-use kiwi_std::{
+use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     cb,
     mesh::Mesh,
     shapes::{Sphere, AABB},
 };
+use glam::{vec3, Mat4, Quat, Vec3, Vec4};
 
 components!("primitives", {
     @[

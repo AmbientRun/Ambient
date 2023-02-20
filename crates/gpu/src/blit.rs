@@ -1,6 +1,6 @@
 use std::{borrow::Cow, sync::Arc};
 
-use kiwi_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
+use ambient_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 
 use super::gpu::{Gpu, GpuKey};
 

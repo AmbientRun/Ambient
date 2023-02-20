@@ -24,7 +24,7 @@ pub mod prelude;
 /// Internal implementation details.
 mod internal;
 
-pub use kiwi_api_macros::main;
+pub use ambient_api_macros::main;
 
 /// Re-exports from other crates.
 pub use anyhow;
@@ -35,4 +35,4 @@ pub use once_cell;
 // We suggest that you look at the docs for this crate.
 // Your IDE should also tell you about the components present here and show their corresponding
 // doc comments.
-kiwi_api_macros::api_project!();
+ambient_api_macros::api_project!();

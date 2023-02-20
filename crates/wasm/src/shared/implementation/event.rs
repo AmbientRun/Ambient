@@ -1,4 +1,4 @@
-use kiwi_ecs::EntityData;
+use ambient_ecs::EntityData;
 
 use crate::shared::host_guest_state::EventSharedState;
 

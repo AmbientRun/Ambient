@@ -1,38 +1,38 @@
 use std::sync::Arc;
 
-use glam::{vec3, Vec3, Vec3Swizzles, Vec4};
-use kiwi_core::{
+use ambient_core::{
     asset_cache, get_mouse_clip_space_position, on_frame, runtime,
     transform::{scale, translation},
 };
-use kiwi_decals::DecalShaderKey;
-use kiwi_ecs::{query, ArchetypeFilter};
-use kiwi_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
-use kiwi_gpu::{
+use ambient_decals::DecalShaderKey;
+use ambient_ecs::{query, ArchetypeFilter};
+use ambient_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
+use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::{BindGroupDesc, ShaderModule},
 };
-use kiwi_input::{on_app_mouse_input, ElementState};
-use kiwi_intent::client_push_intent;
-use kiwi_network::client::GameClient;
-use kiwi_physics::{
+use ambient_input::{on_app_mouse_input, ElementState};
+use ambient_intent::client_push_intent;
+use ambient_network::client::GameClient;
+use ambient_physics::{
     intersection::{rpc_pick, RaycastFilter},
     ColliderScene,
 };
-use kiwi_primitives::Cube;
-use kiwi_renderer::{color, material, renderer_shader, Material, MaterialShader, SharedMaterial, MATERIAL_BIND_GROUP};
-use kiwi_std::{
+use ambient_primitives::Cube;
+use ambient_renderer::{color, material, renderer_shader, Material, MaterialShader, SharedMaterial, MATERIAL_BIND_GROUP};
+use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     cb, friendly_id,
 };
-use kiwi_terrain::{
+use ambient_terrain::{
     brushes::{Brush, BrushShape, BrushSize, BrushSmoothness, BrushStrength, HydraulicErosionConfig, TerrainBrushStroke},
     intent_terrain_stroke, terrain_world_cell,
 };
-use kiwi_ui::{
+use ambient_ui::{
     margin, space_between_items, use_interval, Borders, Button, FlowColumn, FlowRow, FontAwesomeIcon, Separator, Slider, StylesExt, Text,
     UIBase, UIExt, WindowSized, STREET,
 };
+use glam::{vec3, Vec3, Vec3Swizzles, Vec4};
 use wgpu::{util::DeviceExt, BindGroup};
 use winit::event::VirtualKeyCode;
 
@@ -50,8 +50,8 @@ pub struct TerrainRaycastPicker {
     pub erosion_config: HydraulicErosionConfig,
 }
 impl ElementComponent for TerrainRaycastPicker {
-    fn render(self: Box<Self>, hooks: &mut kiwi_element::Hooks) -> Element {
-        let action_button = kiwi_input::MouseButton::Left;
+    fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> Element {
+        let action_button = ambient_input::MouseButton::Left;
 
         let Self { filter, layer, brush, brush_size, brush_strength, brush_smoothness, brush_shape, erosion_config } = *self;
         let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();

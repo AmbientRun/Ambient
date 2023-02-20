@@ -1,11 +1,14 @@
 use std::{borrow::Cow, fmt, io::Cursor, sync::Arc};
 
+use ambient_std::{
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt},
+    asset_url::AbsAssetUrl,
+    download_asset::{AssetError, AssetResult, BytesFromUrl},
+    CowStr,
+};
 use async_trait::async_trait;
 use futures::future::join_all;
 use image::{DynamicImage, ImageFormat, Rgba, RgbaImage};
-use kiwi_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, asset_url::AbsAssetUrl, download_asset::{AssetError, AssetResult, BytesFromUrl}, CowStr
-};
 
 use crate::texture::Texture;
 

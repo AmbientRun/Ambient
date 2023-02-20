@@ -4,8 +4,8 @@ use std::{
     iter::Flatten,
 };
 
+use ambient_std::sparse_vec::SparseVec;
 use itertools::Itertools;
-use kiwi_std::sparse_vec::SparseVec;
 use serde::{
     de::{self, DeserializeSeed, MapAccess, Visitor},
     ser::SerializeMap,

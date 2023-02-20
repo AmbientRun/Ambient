@@ -1,11 +1,11 @@
+use ambient_asset_cache::AsyncAssetKeyExt;
+use ambient_model_import::{fbx::FbxDoc, MaterialFilter, ModelImportPipeline, ModelImportTransform, ModelTransform};
+use ambient_renderer::materials::pbr_material::PbrMaterialFromUrl;
+use ambient_std::asset_url::{AbsAssetUrl, AssetType, AssetUrl};
 use convert_case::{Case, Casing};
 use futures::{future::BoxFuture, FutureExt};
 use image::RgbaImage;
 use itertools::Itertools;
-use kiwi_asset_cache::AsyncAssetKeyExt;
-use kiwi_model_import::{fbx::FbxDoc, MaterialFilter, ModelImportPipeline, ModelImportTransform, ModelTransform};
-use kiwi_renderer::materials::pbr_material::PbrMaterialFromUrl;
-use kiwi_std::asset_url::{AbsAssetUrl, AssetType, AssetUrl};
 
 use super::{
     super::{

@@ -8,18 +8,18 @@ use std::{
     time::{Duration, SystemTime},
 };
 
-use glam::*;
-use itertools::Itertools;
-use kiwi_core::{mouse_position, on_event, transform::translation, window, window_scale_factor};
-use kiwi_ecs::{ComponentValue, EntityId};
-use kiwi_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
-use kiwi_input::MouseButton;
-use kiwi_std::{
+use ambient_core::{mouse_position, on_event, transform::translation, window, window_scale_factor};
+use ambient_ecs::{ComponentValue, EntityId};
+use ambient_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_input::MouseButton;
+use ambient_std::{
     cb,
     events::EventDispatcher,
     math::{interpolate, interpolate_clamped, Saturate},
     Cb,
 };
+use glam::*;
+use itertools::Itertools;
 use winit::{
     event::{ElementState, Event, WindowEvent},
     window::CursorIcon,
@@ -321,7 +321,7 @@ impl ElementComponent for Slider {
                         let scale_factor = *world.resource(window_scale_factor());
                         let mouse_pos = *world.resource(mouse_position()) / scale_factor as f32;
 
-                        let screen_to_local = world.get(id, kiwi_core::transform::mesh_to_world()).unwrap_or_default().inverse();
+                        let screen_to_local = world.get(id, ambient_core::transform::mesh_to_world()).unwrap_or_default().inverse();
                         let mouse_pos_relative = screen_to_local * Vec4::from((mouse_pos, 0.0, 1.0));
 
                         on_change_factor((mouse_pos_relative.x / slider_width).saturate());
@@ -395,9 +395,9 @@ impl From<&EditableDuration> for Duration {
         v.dur
     }
 }
+use ambient_renderer::color;
+use ambient_std::time::parse_duration;
 use convert_case::{Case, Casing};
-use kiwi_renderer::color;
-use kiwi_std::time::parse_duration;
 
 impl From<String> for EditableDuration {
     fn from(s: String) -> Self {

@@ -1,8 +1,8 @@
 use std::borrow::Cow;
 
+use ambient_gpu::{gpu::Gpu, texture::TextureView};
+use ambient_std::include_file;
 use glam::{IVec2, UVec2, Vec2};
-use kiwi_gpu::{gpu::Gpu, texture::TextureView};
-use kiwi_std::include_file;
 use serde::{Deserialize, Serialize};
 use wgpu::util::DeviceExt;
 

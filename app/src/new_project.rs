@@ -1,9 +1,9 @@
 use std::path::Path;
 
+use ambient_project::Identifier;
 use anyhow::Context;
 use convert_case::Casing;
 use indoc::indoc;
-use kiwi_project::Identifier;
 
 pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Result<()> {
     let project_path = if let Some(name) = name { project_path.join(name) } else { project_path.to_owned() };
@@ -44,7 +44,7 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
             version = "0.0.1"
 
             [dependencies]
-            kiwi_api = "0.0.4"
+            ambient_api = "0.0.4"
 
             [lib]
             crate-type = ["cdylib"]
@@ -74,7 +74,7 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
     std::fs::write(
         src.join("lib.rs"),
         indoc! {r#"
-            use kiwi_api::prelude::*;
+            use ambient_api::prelude::*;
 
             #[main]
             pub async fn main() -> EventResult {

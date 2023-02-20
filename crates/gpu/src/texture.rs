@@ -1,21 +1,28 @@
 use std::{
-    io::Cursor, num::NonZeroU32, ops::Deref, path::Path, sync::{
-        atomic::{AtomicU32, AtomicUsize, Ordering}, Arc
-    }
+    io::Cursor,
+    num::NonZeroU32,
+    ops::Deref,
+    path::Path,
+    sync::{
+        atomic::{AtomicU32, AtomicUsize, Ordering},
+        Arc,
+    },
 };
 
+use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use bytemuck::Pod;
 use byteorder::{ByteOrder, LittleEndian};
 use glam::{uvec2, UVec4, Vec4};
 use image::{io::Reader as ImageReader, DynamicImage, Rgba, RgbaImage};
 use itertools::Itertools;
-use kiwi_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use ndarray::{s, Array, Array2, Array4, Dimension};
 use ordered_float::OrderedFloat;
 use wgpu::util::DeviceExt;
 
 use super::{
-    fill::FillerKey, gpu::{Gpu, GpuKey}, mipmap::generate_mipmaps
+    fill::FillerKey,
+    gpu::{Gpu, GpuKey},
+    mipmap::generate_mipmaps,
 };
 
 static TEXTURE_ALIVE_COUNT: AtomicU32 = AtomicU32::new(0);

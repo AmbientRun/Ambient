@@ -1,14 +1,17 @@
 use std::collections::HashMap;
 
-use kiwi_ecs::{query, EntityData, System, WorldDiff};
-use kiwi_rpc::RpcRegistry;
-use kiwi_std::friendly_id;
+use ambient_ecs::{query, EntityData, System, WorldDiff};
+use ambient_rpc::RpcRegistry;
+use ambient_std::friendly_id;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    client::GameRpcArgs, server::{
-        create_player_entity_data, player_entity_stream, player_event_stream, player_stats_stream, ForkingEvent, WorldInstance, MAIN_INSTANCE_ID
-    }, user_id, ServerWorldExt
+    client::GameRpcArgs,
+    server::{
+        create_player_entity_data, player_entity_stream, player_event_stream, player_stats_stream, ForkingEvent, WorldInstance,
+        MAIN_INSTANCE_ID,
+    },
+    user_id, ServerWorldExt,
 };
 
 pub fn register_rpcs(reg: &mut RpcRegistry<GameRpcArgs>) {
@@ -41,7 +44,7 @@ pub async fn rpc_fork_instance(args: GameRpcArgs, RpcForkInstance { resources, s
             for (id, _) in query(user_id()).collect_cloned(&world, None) {
                 world.despawn(id);
             }
-            world.add_components(world.resource_entity(), resources.append(kiwi_core::async_ecs::async_ecs_resources())).unwrap();
+            world.add_components(world.resource_entity(), resources.append(ambient_core::async_ecs::async_ecs_resources())).unwrap();
             world.add_components(world.synced_resource_entity().unwrap(), synced_res).unwrap();
 
             let mut on_forking = (state.create_on_forking_systems)();

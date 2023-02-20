@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
+use ambient_ecs::ArchetypeFilter;
+use ambient_std::asset_cache::{AssetCache, SyncAssetKey};
 use derive_more::Display;
 use glam::{Mat4, UVec4, Vec4};
 use itertools::Itertools;
-use kiwi_ecs::ArchetypeFilter;
-use kiwi_std::asset_cache::{AssetCache, SyncAssetKey};
 use parking_lot::Mutex;
 
 use super::ENTITIES_BIND_GROUP;
@@ -243,7 +243,7 @@ macro_rules! gpu_components {
                     registry.components.push($crate::gpu_ecs::GpuComponent {
                         name: stringify!($name).to_string(),
                         format: $format,
-                        exists_for: kiwi_ecs::ArchetypeFilter::new()
+                        exists_for: ambient_ecs::ArchetypeFilter::new()
                             $( .incl($cpu_component) )*
                     });
                 )*

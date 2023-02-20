@@ -1,11 +1,14 @@
+use ambient_model_import::{model_crate::ModelCrate, MODEL_EXTENSIONS};
+use ambient_std::asset_url::AssetType;
 use anyhow::Context;
-use kiwi_model_import::{model_crate::ModelCrate, MODEL_EXTENSIONS};
-use kiwi_std::asset_url::AssetType;
 
 use super::{
     super::{
-        context::PipelineCtx, out_asset::{OutAssetContent, OutAssetPreview}, ModelsPipeline
-    }, create_texture_resolver
+        context::PipelineCtx,
+        out_asset::{OutAssetContent, OutAssetPreview},
+        ModelsPipeline,
+    },
+    create_texture_resolver,
 };
 use crate::pipelines::{out_asset::asset_id_from_url, OutAsset};
 

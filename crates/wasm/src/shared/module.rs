@@ -1,9 +1,9 @@
 use std::{marker::PhantomData, sync::Arc};
 
+use ambient_ecs::World;
 use anyhow::Context;
 use async_trait::async_trait;
 use data_encoding::BASE64;
-use kiwi_ecs::World;
 use parking_lot::{Mutex, RwLock};
 use serde::{Deserialize, Serialize};
 use wasi_common::{

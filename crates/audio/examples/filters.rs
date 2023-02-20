@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use kiwi_audio::{blt::Bpf, track::Track, value::Constant, AudioStream, Source};
+use ambient_audio::{blt::Bpf, track::Track, value::Constant, AudioStream, Source};
 
 fn main() {
     let stream = AudioStream::new().unwrap();

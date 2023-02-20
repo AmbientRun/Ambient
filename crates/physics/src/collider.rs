@@ -1,29 +1,29 @@
 use std::{collections::HashMap, f32::consts::PI, fmt::Debug, ops::Deref, sync::Arc};
 
-use anyhow::Context;
-use async_trait::async_trait;
-use futures::future::try_join_all;
-use glam::{vec3, Mat4, Quat, Vec3};
-use itertools::Itertools;
-use kiwi_core::{
+use ambient_core::{
     asset_cache,
     async_ecs::async_run,
     runtime,
     transform::{rotation, scale, translation},
 };
-use kiwi_ecs::{
+use ambient_ecs::{
     components, query, Component, ComponentQuery, ComponentValueBase, Debuggable, Description, EntityData, EntityId, MakeDefault, Name,
     Networked, QueryEvent, QueryState, Store, SystemGroup, TypedReadQuery, World,
 };
-use kiwi_editor_derive::ElementEditor;
-use kiwi_model::model_from_url;
-use kiwi_std::{
+use ambient_editor_derive::ElementEditor;
+use ambient_model::model_from_url;
+use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ColliderAssetType, TypedAssetUrl},
     download_asset::{AssetError, JsonFromUrl},
     events::EventDispatcher,
 };
-use kiwi_ui::Editable;
+use ambient_ui::Editable;
+use anyhow::Context;
+use async_trait::async_trait;
+use futures::future::try_join_all;
+use glam::{vec3, Mat4, Quat, Vec3};
+use itertools::Itertools;
 use physxx::{
     AsPxActor, AsPxRigidActor, PxActor, PxActorFlag, PxBase, PxBoxGeometry, PxControllerDesc, PxControllerShapeDesc, PxConvexMeshGeometry,
     PxGeometry, PxMaterial, PxMeshScale, PxPlaneGeometry, PxRigidActor, PxRigidBody, PxRigidBodyFlag, PxRigidDynamicRef, PxRigidStaticRef,
@@ -34,7 +34,10 @@ use serde::{Deserialize, Serialize};
 use crate::{
     main_controller_manager, make_physics_static,
     mesh::{PhysxGeometry, PhysxGeometryFromUrl},
-    physx::{angular_velocity, character_controller, contact_offset, linear_velocity, physics, physics_controlled, physics_shape, rest_offset, rigid_actor, Physics},
+    physx::{
+        angular_velocity, character_controller, contact_offset, linear_velocity, physics, physics_controlled, physics_shape, rest_offset,
+        rigid_actor, Physics,
+    },
     wood_physics_material, ColliderScene, PxActorUserData, PxShapeUserData, PxWoodMaterialKey,
 };
 

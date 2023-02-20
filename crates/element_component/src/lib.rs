@@ -13,11 +13,11 @@ use quote::{quote, ToTokens};
 ///
 /// ```ignore
 /// pub fn FancyText(
-///     hooks: &mut kiwi_element::Hooks,
+///     hooks: &mut ambient_element::Hooks,
 ///     /// The message to display
 ///     msg: String,
 ///     alpha: f32,
-/// ) -> kiwi_element::Element {
+/// ) -> ambient_element::Element {
 ///     Text::el(msg)
 /// }
 /// ```
@@ -32,8 +32,8 @@ use quote::{quote, ToTokens};
 ///     msg: String,
 ///     pub alpha: f32,
 /// }
-/// impl kiwi_element::ElementComponent for FancyText {
-///     fn render(self: Box<Self>, hooks: &mut kiwi_element::Hooks) -> kiwi_element::Element {
+/// impl ambient_element::ElementComponent for FancyText {
+///     fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> ambient_element::Element {
 ///         let Self { msg, alpha } = *self;
 ///         {
 ///             Text::el(msg)
@@ -168,8 +168,8 @@ fn do_derive_element_component(input: TokenStream, item: TokenStream) -> TokenSt
         quote! {
             impl #generic_params #name #generic_idents #where_clause {
                 #[allow(clippy::too_many_arguments)]
-                pub fn el(#(#props),*) -> kiwi_element::Element {
-                    use kiwi_element::ElementComponentExt;
+                pub fn el(#(#props),*) -> ambient_element::Element {
+                    use ambient_element::ElementComponentExt;
                     Self #props_names_braced .el()
                 }
             }
@@ -180,7 +180,7 @@ fn do_derive_element_component(input: TokenStream, item: TokenStream) -> TokenSt
         #[derive(std::clone::Clone, std::fmt::Debug)]
         #(#attrs)*
         #visibility struct #name #generic_params #where_clause #struct_body
-        impl #generic_params kiwi_element::ElementComponent for #name #generic_idents #where_clause {
+        impl #generic_params ambient_element::ElementComponent for #name #generic_idents #where_clause {
             fn render(self: Box<Self>, #(#hooks),*) #ret {
                 #struct_unpack
                 #body
@@ -201,7 +201,7 @@ mod test {
     )]
     fn test_invalid_base_args_1() {
         let input = quote! {
-            pub fn ZeroArg(_: &mut NotAValidHooks) -> kiwi_element::Element {
+            pub fn ZeroArg(_: &mut NotAValidHooks) -> ambient_element::Element {
                 Element::new()
             }
         };
@@ -211,11 +211,11 @@ mod test {
 
     #[test]
     #[should_panic(
-        expected = "a `self` was specified in `fn ZeroArg (& self , _ : & mut kiwi_element :: Hooks) -> kiwi_element :: Element`; your function must be a free function for this macro to work"
+        expected = "a `self` was specified in `fn ZeroArg (& self , _ : & mut ambient_element :: Hooks) -> ambient_element :: Element`; your function must be a free function for this macro to work"
     )]
     fn test_zero_arg_with_self_component() {
         let input = quote! {
-            pub fn ZeroArg(&self, _: &mut kiwi_element::Hooks) -> kiwi_element::Element {
+            pub fn ZeroArg(&self, _: &mut ambient_element::Hooks) -> ambient_element::Element {
                 Element::new()
             }
         };
@@ -228,8 +228,8 @@ mod test {
         let input = quote! {
             #[doc = "My cool comment"]
             pub fn ZeroArg(
-                _: &mut kiwi_element::Hooks
-            ) -> kiwi_element::Element {
+                _: &mut ambient_element::Hooks
+            ) -> ambient_element::Element {
                 Element::new()
             }
         };
@@ -238,8 +238,8 @@ mod test {
             #[derive(std::clone::Clone, std::fmt::Debug)]
             #[doc = "My cool comment"]
             pub struct ZeroArg;
-            impl kiwi_element::ElementComponent for ZeroArg {
-                fn render(self: Box<Self>, _: &mut kiwi_element::Hooks) -> kiwi_element::Element {
+            impl ambient_element::ElementComponent for ZeroArg {
+                fn render(self: Box<Self>, _: &mut ambient_element::Hooks) -> ambient_element::Element {
                     {
                         Element::new()
                     }
@@ -255,8 +255,8 @@ mod test {
         let input = quote! {
             #[doc = "My cool comment"]
             pub fn ZeroArg(
-                _: &mut kiwi_element::Hooks
-            ) -> kiwi_element::Element {
+                _: &mut ambient_element::Hooks
+            ) -> ambient_element::Element {
                 Element::new()
             }
         };
@@ -265,8 +265,8 @@ mod test {
             #[derive(std::clone::Clone, std::fmt::Debug)]
             #[doc = "My cool comment"]
             pub struct ZeroArg;
-            impl kiwi_element::ElementComponent for ZeroArg {
-                fn render(self: Box<Self>, _: &mut kiwi_element::Hooks) -> kiwi_element::Element {
+            impl ambient_element::ElementComponent for ZeroArg {
+                fn render(self: Box<Self>, _: &mut ambient_element::Hooks) -> ambient_element::Element {
                     {
                         Element::new()
                     }
@@ -274,8 +274,8 @@ mod test {
             }
             impl ZeroArg {
                 #[allow(clippy::too_many_arguments)]
-                pub fn el() -> kiwi_element::Element {
-                    use kiwi_element::ElementComponentExt;
+                pub fn el() -> ambient_element::Element {
+                    use ambient_element::ElementComponentExt;
                     Self.el()
                 }
             }
@@ -288,10 +288,10 @@ mod test {
     fn test_single_arg_component() {
         let input = quote! {
             pub fn FancyText(
-                _: &mut kiwi_element::Hooks,
+                _: &mut ambient_element::Hooks,
                 /// The message to display
                 msg: String,
-            ) -> kiwi_element::Element {
+            ) -> ambient_element::Element {
                 Text::el(msg)
             }
         };
@@ -303,8 +303,8 @@ mod test {
                 /// The message to display
                 msg: String,
             }
-            impl kiwi_element::ElementComponent for FancyText {
-                fn render(self: Box<Self>,  _: &mut kiwi_element::Hooks) -> kiwi_element::Element {
+            impl ambient_element::ElementComponent for FancyText {
+                fn render(self: Box<Self>,  _: &mut ambient_element::Hooks) -> ambient_element::Element {
                     let Self { msg } = *self;
                     {
                         Text::el(msg)
@@ -321,10 +321,10 @@ mod test {
     fn test_single_arg_component_with_destructuring() {
         let input = quote! {
             pub fn FancyText(
-                _: &mut kiwi_element::Hooks,
+                _: &mut ambient_element::Hooks,
                 /// The message to display
                 Wrap(msg): Wrap,
-            ) -> kiwi_element::Element {
+            ) -> ambient_element::Element {
                 Text::el(msg)
             }
         };
@@ -336,11 +336,11 @@ mod test {
     fn test_choice_component_with_el() {
         let input = quote! {
             pub(crate) fn Choice(
-                _: &mut kiwi_element::Hooks,
+                _: &mut ambient_element::Hooks,
                 msg: CowStr,
                 choices: Vec<(CowStr, WorldCallback)>,
                 post: WorldCallback,
-            ) -> kiwi_element::Element {
+            ) -> ambient_element::Element {
                 let buttons = choices
                     .into_iter()
                     .map(|(label, cb)| Button::new(label.to_string(), closure::closure!(std::clone::clone post, |w| {(cb)(w); (post)(w)})).el())
@@ -357,8 +357,8 @@ mod test {
                 pub choices: Vec<(CowStr, WorldCallback)>,
                 pub post: WorldCallback,
             }
-            impl kiwi_element::ElementComponent for Choice {
-                fn render(self: Box<Self>, _: &mut kiwi_element::Hooks) -> kiwi_element::Element {
+            impl ambient_element::ElementComponent for Choice {
+                fn render(self: Box<Self>, _: &mut ambient_element::Hooks) -> ambient_element::Element {
                     let Self { msg, choices, post } = *self;
                     {
                         let buttons = choices
@@ -372,8 +372,8 @@ mod test {
             }
             impl Choice {
                 #[allow(clippy::too_many_arguments)]
-                pub fn el(msg: CowStr, choices: Vec<(CowStr, WorldCallback)>, post: WorldCallback) -> kiwi_element::Element {
-                    use kiwi_element::ElementComponentExt;
+                pub fn el(msg: CowStr, choices: Vec<(CowStr, WorldCallback)>, post: WorldCallback) -> ambient_element::Element {
+                    use ambient_element::ElementComponentExt;
                     Self { msg, choices, post }.el()
                 }
             }
@@ -386,10 +386,10 @@ mod test {
     fn test_component_with_generics() {
         let input = quote! {
             pub(crate) fn GenericComponent<T1: Debug + 'static, T2>(
-                _: &mut kiwi_element::Hooks,
+                _: &mut ambient_element::Hooks,
                 _a: T1,
                 _b: T2,
-            ) -> kiwi_element::Element
+            ) -> ambient_element::Element
             where T2: Debug + 'static {
                 Element::new()
             }
@@ -401,8 +401,8 @@ mod test {
                 pub _a: T1,
                 pub _b: T2,
             }
-            impl<T1: Debug + 'static, T2> kiwi_element::ElementComponent for GenericComponent<T1, T2> where T2: Debug + 'static {
-                fn render(self: Box<Self>, _: &mut kiwi_element::Hooks) -> kiwi_element::Element {
+            impl<T1: Debug + 'static, T2> ambient_element::ElementComponent for GenericComponent<T1, T2> where T2: Debug + 'static {
+                fn render(self: Box<Self>, _: &mut ambient_element::Hooks) -> ambient_element::Element {
                     let Self { _a, _b } = *self;
                     {
                         Element::new()
@@ -418,10 +418,10 @@ mod test {
     fn test_component_with_generics_and_el() {
         let input = quote! {
             pub(crate) fn GenericComponent<T1: Debug + 'static, T2>(
-                _: &mut kiwi_element::Hooks,
+                _: &mut ambient_element::Hooks,
                 a: T1,
                 b: T2,
-            ) -> kiwi_element::Element
+            ) -> ambient_element::Element
             where T2: Debug + 'static {
                 Element::new()
             }
@@ -433,8 +433,8 @@ mod test {
                 pub a: T1,
                 pub b: T2,
             }
-            impl<T1: Debug + 'static, T2> kiwi_element::ElementComponent for GenericComponent<T1, T2> where T2: Debug + 'static {
-                fn render(self: Box<Self>, _: &mut kiwi_element::Hooks) -> kiwi_element::Element {
+            impl<T1: Debug + 'static, T2> ambient_element::ElementComponent for GenericComponent<T1, T2> where T2: Debug + 'static {
+                fn render(self: Box<Self>, _: &mut ambient_element::Hooks) -> ambient_element::Element {
                     let Self { a, b } = *self;
                     {
                         Element::new()
@@ -443,8 +443,8 @@ mod test {
             }
             impl<T1: Debug + 'static, T2> GenericComponent<T1, T2> where T2: Debug + 'static {
                 #[allow(clippy::too_many_arguments)]
-                pub fn el(a: T1, b: T2) -> kiwi_element::Element {
-                    use kiwi_element::ElementComponentExt;
+                pub fn el(a: T1, b: T2) -> ambient_element::Element {
+                    use ambient_element::ElementComponentExt;
                     Self { a, b }.el()
                 }
             }

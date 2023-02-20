@@ -1,16 +1,18 @@
 use std::sync::Arc;
 
+use ambient_model_import::{dotdot_path, model_crate::ModelCrate};
+use ambient_renderer::materials::pbr_material::PbrMaterialFromUrl;
+use ambient_std::{
+    asset_cache::AssetCache,
+    asset_url::{AbsAssetUrl, AssetType},
+};
 use convert_case::{Case, Casing};
 use futures::future::join_all;
 use itertools::Itertools;
-use kiwi_model_import::{dotdot_path, model_crate::ModelCrate};
-use kiwi_renderer::materials::pbr_material::PbrMaterialFromUrl;
-use kiwi_std::{
-    asset_cache::AssetCache, asset_url::{AbsAssetUrl, AssetType}
-};
 
 use super::{
-    super::{models::quixel::QuixelId, OutAsset, OutAssetContent, OutAssetPreview, PipelineCtx}, MaterialsPipeline
+    super::{models::quixel::QuixelId, OutAsset, OutAssetContent, OutAssetPreview, PipelineCtx},
+    MaterialsPipeline,
 };
 use crate::pipelines::out_asset::asset_id_from_url;
 

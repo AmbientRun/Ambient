@@ -1,5 +1,5 @@
-use kiwi_core::runtime;
-use kiwi_element::ElementComponent;
+use ambient_core::runtime;
+use ambient_element::ElementComponent;
 
 use crate::Text;
 
@@ -9,7 +9,7 @@ use crate::Text;
 pub struct Throbber;
 
 impl ElementComponent for Throbber {
-    fn render(self: Box<Self>, hooks: &mut kiwi_element::Hooks) -> kiwi_element::Element {
+    fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> ambient_element::Element {
         let (status, set_status) = hooks.use_state(String::new());
         let width = 5;
 
@@ -23,7 +23,7 @@ impl ElementComponent for Throbber {
         hooks.use_spawn(move |w| {
             let rt = w.resource(runtime());
             let task = rt.spawn(async move {
-                use kiwi_std::IntoDuration;
+                use ambient_std::IntoDuration;
                 let mut tick = tokio::time::interval(200.ms());
                 loop {
                     tick.tick().await;

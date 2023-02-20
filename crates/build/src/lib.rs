@@ -3,12 +3,12 @@ use std::{
     sync::Arc,
 };
 
+use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
+use ambient_physics::physx::{Physics, PhysicsKey};
+use ambient_project::Manifest as ProjectManifest;
+use ambient_std::asset_url::AbsAssetUrl;
 use futures::FutureExt;
 use itertools::Itertools;
-use kiwi_asset_cache::{AssetCache, SyncAssetKeyExt};
-use kiwi_physics::physx::{Physics, PhysicsKey};
-use kiwi_project::Manifest as ProjectManifest;
-use kiwi_std::asset_url::AbsAssetUrl;
 use pipelines::{FileCollection, ProcessCtx, ProcessCtxKey};
 use walkdir::WalkDir;
 
@@ -28,7 +28,7 @@ pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, manife
         manifest.project.name.as_deref().unwrap_or_else(|| manifest.project.id.as_ref())
     );
 
-    kiwi_ecs::ComponentRegistry::get_mut().add_external(manifest.all_defined_components(false).unwrap());
+    ambient_ecs::ComponentRegistry::get_mut().add_external(manifest.all_defined_components(false).unwrap());
 
     let target_path = path.join("target");
     let assets_path = path.join("assets");
@@ -98,8 +98,8 @@ async fn build_scripts(path: &Path, manifest: &ProjectManifest, target_path: &Pa
         None => anyhow::bail!("No [package] present in Cargo.toml for project {}", manifest.project.id.as_ref()),
     }
 
-    let rust_path = kiwi_std::path::normalize(&std::env::current_dir()?.join("rust"));
-    let rustc = kiwi_rustc::Rust::install_or_get(&rust_path).await?;
+    let rust_path = ambient_std::path::normalize(&std::env::current_dir()?.join("rust"));
+    let rustc = ambient_rustc::Rust::install_or_get(&rust_path).await?;
     let bytecode = rustc.build(path, manifest.project.id.as_ref())?;
 
     tokio::fs::write(target_path.join(format!("{}.wasm", manifest.project.id)), bytecode).await?;

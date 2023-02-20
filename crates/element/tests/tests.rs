@@ -1,7 +1,7 @@
 use std::{sync::Arc, time::Duration};
 
-use kiwi_core::hierarchy::children;
-use kiwi_element::{Element, ElementComponent, ElementComponentExt, ElementTree, Hooks};
+use ambient_core::hierarchy::children;
+use ambient_element::{Element, ElementComponent, ElementComponentExt, ElementTree, Hooks};
 mod common;
 use common::*;
 

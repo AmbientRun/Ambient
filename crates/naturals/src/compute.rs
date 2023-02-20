@@ -1,20 +1,20 @@
 use std::{borrow::Cow, sync::Arc};
 
-use async_trait::async_trait;
-use itertools::Itertools;
-use kiwi_gpu::{
+use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     texture::Texture,
     texture_loaders::TextureFromUrl,
     typed_buffer::TypedBuffer,
     wgsl_utils::wgsl_interpolate,
 };
-use kiwi_std::{
+use ambient_std::{
     asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
     include_file,
 };
-use kiwi_terrain::{wgsl_terrain_preprocess, TerrainSize, TerrainState};
+use ambient_terrain::{wgsl_terrain_preprocess, TerrainSize, TerrainState};
+use async_trait::async_trait;
+use itertools::Itertools;
 
 use crate::{
     BoxModelKey, NaturalElement, NaturalElementWGSL, NaturalEntity, NATURALS_MAX_ENTITIES, OLD_CONTENT_SERVER_URL, WORKGROUP_SIZE,

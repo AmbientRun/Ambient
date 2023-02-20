@@ -1,19 +1,19 @@
 use std::{f32::consts::PI, path::PathBuf, sync::Arc};
 
+use ambient_animation::AnimationOutputs;
+use ambient_core::{bounding::local_bounding_aabb, transform::translation};
+use ambient_editor_derive::ElementEditor;
+use ambient_renderer::materials::pbr_material::PbrMaterialFromUrl;
+use ambient_std::{
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    asset_url::AbsAssetUrl,
+    download_asset::{download, AssetsCacheDir},
+};
 use anyhow::{anyhow, Context};
 use async_recursion::async_recursion;
 use futures::FutureExt;
 use glam::{Mat4, Vec3, Vec4};
 use image::RgbaImage;
-use kiwi_animation::AnimationOutputs;
-use kiwi_core::{bounding::local_bounding_aabb, transform::translation};
-use kiwi_editor_derive::ElementEditor;
-use kiwi_renderer::materials::pbr_material::PbrMaterialFromUrl;
-use kiwi_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt},
-    asset_url::AbsAssetUrl,
-    download_asset::{download, AssetsCacheDir},
-};
 use model_crate::{ModelCrate, ModelNodeRef};
 use relative_path::RelativePathBuf;
 use serde::{Deserialize, Serialize};
@@ -137,7 +137,7 @@ impl ModelImportTransform {
                 model_crate.merge_unity_style_mesh_lods(&source, lod_cutoffs.clone());
             }
             ModelImportTransform::SetName { name } => {
-                model_crate.model_world_mut().add_resource(kiwi_core::name(), name.clone());
+                model_crate.model_world_mut().add_resource(ambient_core::name(), name.clone());
             }
             ModelImportTransform::Transform(transform) => transform.apply(model_crate),
             ModelImportTransform::OverrideMaterial { filter, material } => {

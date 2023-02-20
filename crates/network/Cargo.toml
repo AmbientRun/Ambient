@@ -1,21 +1,21 @@
 [package]
-name = "kiwi_network"
+name = "ambient_network"
 version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-kiwi_ecs = { path = "../ecs" }
-kiwi_rpc = { path = "../rpc" }
-kiwi_std = { path = "../std" }
-kiwi_core = { path = "../core" }
-kiwi_gizmos = { path = "../gizmos" }
-kiwi_gpu = { path = "../gpu" }
-kiwi_ui = { path = "../ui" }
-kiwi_renderer = { path = "../renderer" }
-kiwi_element = { path = "../element" }
-kiwi_app = { path = "../app" }
+ambient_ecs = { path = "../ecs" }
+ambient_rpc = { path = "../rpc" }
+ambient_std = { path = "../std" }
+ambient_core = { path = "../core" }
+ambient_gizmos = { path = "../gizmos" }
+ambient_gpu = { path = "../gpu" }
+ambient_ui = { path = "../ui" }
+ambient_renderer = { path = "../renderer" }
+ambient_element = { path = "../element" }
+ambient_app = { path = "../app" }
 quinn = { workspace = true }
 itertools = { workspace = true }
 dashmap = { workspace = true }

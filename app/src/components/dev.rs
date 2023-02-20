@@ -1,9 +1,9 @@
-use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
-use kiwi_ecs::{
+use ambient_ecs::{
     primitive_component_definitions, ComponentDesc, ComponentValue, DefaultValue, EntityId, ExternalComponentAttributes,
     PrimitiveComponentType,
 };
-use kiwi_std::asset_url::ObjectRef;
+use ambient_std::asset_url::ObjectRef;
+use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
 
 pub fn build_components_toml() -> toml_edit::Document {
     let mut doc = toml_edit::Document::new();
@@ -60,7 +60,7 @@ fn make_components() -> toml_edit::Table {
         components.insert(path, toml_edit::Item::Table(table));
     }
 
-    let component_registry = kiwi_ecs::ComponentRegistry::get();
+    let component_registry = ambient_ecs::ComponentRegistry::get();
     let mut all_primitive = component_registry.all_primitive().collect::<Vec<_>>();
     all_primitive.sort_by_key(|pc| pc.desc.path());
     for component in all_primitive {
@@ -78,9 +78,9 @@ fn make_concepts() -> toml_edit::Table {
             "Can be translated, rotated and scaled.",
             vec![],
             vec![
-                (kiwi_core::transform::translation().desc(), Vec3::ZERO.to_toml()),
-                (kiwi_core::transform::rotation().desc(), Quat::IDENTITY.to_toml()),
-                (kiwi_core::transform::scale().desc(), Vec3::ONE.to_toml()),
+                (ambient_core::transform::translation().desc(), Vec3::ZERO.to_toml()),
+                (ambient_core::transform::rotation().desc(), Quat::IDENTITY.to_toml()),
+                (ambient_core::transform::scale().desc(), Vec3::ONE.to_toml()),
             ],
         ),
         (
@@ -88,10 +88,10 @@ fn make_concepts() -> toml_edit::Table {
             "A primitive sphere.",
             vec![],
             vec![
-                (kiwi_primitives::sphere().desc(), ().to_toml()),
-                (kiwi_primitives::sphere_radius().desc(), 0.5f32.to_toml()),
-                (kiwi_primitives::sphere_sectors().desc(), 36u32.to_toml()),
-                (kiwi_primitives::sphere_stacks().desc(), 18u32.to_toml()),
+                (ambient_primitives::sphere().desc(), ().to_toml()),
+                (ambient_primitives::sphere_radius().desc(), 0.5f32.to_toml()),
+                (ambient_primitives::sphere_sectors().desc(), 36u32.to_toml()),
+                (ambient_primitives::sphere_stacks().desc(), 18u32.to_toml()),
             ],
         ),
         (
@@ -99,40 +99,40 @@ fn make_concepts() -> toml_edit::Table {
             "Base components for a camera. You will need other components to make a fully-functioning camera.",
             vec!["transformable"],
             vec![
-                (kiwi_core::camera::projection().desc(), glam::Mat4::IDENTITY.to_toml()),
-                (kiwi_core::camera::projection_view().desc(), glam::Mat4::IDENTITY.to_toml()),
-                (kiwi_core::camera::near().desc(), 0.1f32.to_toml()),
+                (ambient_core::camera::projection().desc(), glam::Mat4::IDENTITY.to_toml()),
+                (ambient_core::camera::projection_view().desc(), glam::Mat4::IDENTITY.to_toml()),
+                (ambient_core::camera::near().desc(), 0.1f32.to_toml()),
             ],
         ),
         (
             ("perspective_common_camera", "Perspective Common Camera"),
             "Base components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.",
             vec!["camera"],
-            vec![(kiwi_core::camera::aspect_ratio().desc(), 1.0f32.to_toml()), (kiwi_core::camera::fovy().desc(), 1.0f32.to_toml())],
+            vec![(ambient_core::camera::aspect_ratio().desc(), 1.0f32.to_toml()), (ambient_core::camera::fovy().desc(), 1.0f32.to_toml())],
         ),
         (
             ("perspective_camera", "Perspective Camera"),
             "A perspective camera.",
             vec!["perspective_common_camera"],
-            vec![(kiwi_core::camera::perspective().desc(), ().to_toml()), (kiwi_core::camera::far().desc(), 1_000f32.to_toml())],
+            vec![(ambient_core::camera::perspective().desc(), ().to_toml()), (ambient_core::camera::far().desc(), 1_000f32.to_toml())],
         ),
         (
             ("perspective_infinite_reverse_camera", "Perspective-Infinite-Reverse Camera"),
             "A perspective-infinite-reverse camera. This is recommended for most use-cases.",
             vec!["perspective_common_camera"],
-            vec![(kiwi_core::camera::perspective_infinite_reverse().desc(), ().to_toml())],
+            vec![(ambient_core::camera::perspective_infinite_reverse().desc(), ().to_toml())],
         ),
         (
             ("orthographic_camera", "Orthographic Camera"),
             "An orthographic camera.",
             vec!["camera"],
             vec![
-                (kiwi_core::camera::orthographic().desc(), ().to_toml()),
-                (kiwi_core::camera::orthographic_left().desc(), (-1.0f32).to_toml()),
-                (kiwi_core::camera::orthographic_right().desc(), 1.0f32.to_toml()),
-                (kiwi_core::camera::orthographic_top().desc(), 1.0f32.to_toml()),
-                (kiwi_core::camera::orthographic_bottom().desc(), (-1.0f32).to_toml()),
-                (kiwi_core::camera::far().desc(), 1_000f32.to_toml()),
+                (ambient_core::camera::orthographic().desc(), ().to_toml()),
+                (ambient_core::camera::orthographic_left().desc(), (-1.0f32).to_toml()),
+                (ambient_core::camera::orthographic_right().desc(), 1.0f32.to_toml()),
+                (ambient_core::camera::orthographic_top().desc(), 1.0f32.to_toml()),
+                (ambient_core::camera::orthographic_bottom().desc(), (-1.0f32).to_toml()),
+                (ambient_core::camera::far().desc(), 1_000f32.to_toml()),
             ],
         ),
     ];
@@ -145,7 +145,7 @@ fn make_concepts() -> toml_edit::Table {
     concepts
 }
 
-fn make_component_table(component: &kiwi_ecs::PrimitiveComponent) -> Option<toml_edit::Table> {
+fn make_component_table(component: &ambient_ecs::PrimitiveComponent) -> Option<toml_edit::Table> {
     use toml_edit::value;
 
     let desc = component.desc;
@@ -207,7 +207,7 @@ fn make_concept(
 
 macro_rules! make_make_component_default {
     ($(($value:ident, $type:ty)),*) => { paste::paste! {
-        fn make_component_default(component: &kiwi_ecs::PrimitiveComponent) -> Option<toml_edit::Item> {
+        fn make_component_default(component: &ambient_ecs::PrimitiveComponent) -> Option<toml_edit::Item> {
             let desc = component.desc;
             match component.ty {
                 $(PrimitiveComponentType::$value => dispatch_default::<$type>(desc),)*

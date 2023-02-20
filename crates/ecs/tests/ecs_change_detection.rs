@@ -1,9 +1,12 @@
 use std::sync::{
-    atomic::{AtomicU32, Ordering}, Arc
+    atomic::{AtomicU32, Ordering},
+    Arc,
 };
 
+use ambient_ecs::{
+    components, query, query_mut, ArchetypeFilter, ComponentEntry, EntityData, EntityId, FrameEvent, Query, QueryState, World,
+};
 use itertools::Itertools;
-use kiwi_ecs::{components, query, query_mut, ArchetypeFilter, ComponentEntry, EntityData, EntityId, FrameEvent, Query, QueryState, World};
 
 components!("test", {
     test: &'static str,

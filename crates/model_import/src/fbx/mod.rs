@@ -1,26 +1,33 @@
 use std::{
-    collections::HashMap, io::{Cursor, Read, Seek}, sync::Arc
+    collections::HashMap,
+    io::{Cursor, Read, Seek},
+    sync::Arc,
 };
 
+use ambient_core::{
+    hierarchy::{children, parent},
+    transform::local_to_parent,
+};
+use ambient_ecs::World;
+use ambient_model::{model_skins, Model, ModelSkin};
+use ambient_renderer::skinning;
+use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use anyhow::Context;
 use fbxcel::tree::{
-    any::AnyTree, v7400::{NodeHandle, Tree}
+    any::AnyTree,
+    v7400::{NodeHandle, Tree},
 };
 use futures::future::join_all;
 use glam::{Mat4, Vec3};
 use indexmap::IndexMap;
 use itertools::Itertools;
-use kiwi_core::{
-    hierarchy::{children, parent}, transform::local_to_parent
-};
-use kiwi_ecs::World;
-use kiwi_model::{model_skins, Model, ModelSkin};
-use kiwi_renderer::skinning;
-use kiwi_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use relative_path::RelativePathBuf;
 
 use self::{
-    animation::{FbxAnimationCurve, FbxAnimationCurveNode, FbxAnimationLayer, FbxAnimationStack}, material::{FbxMaterial, FbxTexture, FbxVideo}, mesh::{FbxCluster, FbxGeometry, FbxSkin}, model::FbxModel
+    animation::{FbxAnimationCurve, FbxAnimationCurveNode, FbxAnimationLayer, FbxAnimationStack},
+    material::{FbxMaterial, FbxTexture, FbxVideo},
+    mesh::{FbxCluster, FbxGeometry, FbxSkin},
+    model::FbxModel,
 };
 use crate::{download_bytes, model_crate::ModelCrate, TextureResolver};
 
@@ -105,7 +112,7 @@ pub async fn import_from_fbx_reader(
                 });
             }
             world.add_resource(model_skins(), skins);
-            world.add_resource(kiwi_core::name(), name);
+            world.add_resource(ambient_core::name(), name);
 
             let roots = doc.models.values_mut().filter_map(|model| if model.is_root { Some(model.id) } else { None }).collect_vec();
 

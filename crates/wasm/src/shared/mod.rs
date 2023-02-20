@@ -8,13 +8,13 @@ pub mod interface;
 mod module;
 use std::sync::Arc;
 
-use host_guest_state::GetBaseHostGuestState;
-use itertools::Itertools;
-use kiwi_ecs::{
+use ambient_ecs::{
     components, dont_despawn_on_unload, query, Component, EntityData, EntityId, Networked,
     Resource, Store, World,
 };
-use kiwi_project::Identifier;
+use ambient_project::Identifier;
+use host_guest_state::GetBaseHostGuestState;
+use itertools::Itertools;
 pub use module::*;
 use parking_lot::RwLock;
 use wasi_common::WasiCtx;
@@ -53,7 +53,7 @@ pub struct RunContext {
 }
 impl RunContext {
     pub fn new(world: &World, event_name: &str, event_data: EntityData) -> Self {
-        let time = kiwi_app::get_time_since_app_start(world).as_secs_f32();
+        let time = ambient_app::get_time_since_app_start(world).as_secs_f32();
 
         Self {
             event_name: event_name.to_string(),
@@ -357,17 +357,17 @@ pub fn spawn_module(
     }
 
     let ed = EntityData::new()
-        .set(kiwi_core::name(), name.to_string())
+        .set(ambient_core::name(), name.to_string())
         .set_default(module())
         .set(module_enabled(), enabled)
         .set_default(module_errors())
-        .set(kiwi_project::description(), description);
+        .set(ambient_project::description(), description);
 
     Ok(ed.spawn(world))
 }
 
 pub fn get_module_name(world: &World, id: EntityId) -> Identifier {
-    Identifier::new(world.get_cloned(id, kiwi_core::name()).unwrap()).unwrap()
+    Identifier::new(world.get_cloned(id, ambient_core::name()).unwrap()).unwrap()
 }
 
 fn run_and_catch_panics<R>(f: impl FnOnce() -> anyhow::Result<R>) -> Result<R, String> {

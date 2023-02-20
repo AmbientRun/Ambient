@@ -336,7 +336,7 @@ impl<'de> Deserialize<'de> for AssetUrl {
 /// we can render a correct editor ui when used in a ui context.
 ///
 /// An TypedAssetUrl will be rendered with a Browse button next to it in the UI,
-/// which takes you to the AssetBrowser. See `kiwi_ui/src/asset_url` for
+/// which takes you to the AssetBrowser. See `ambient_ui/src/asset_url` for
 /// the UI implementation and `dims_asset_browser` for the asset browser implementation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(transparent)]

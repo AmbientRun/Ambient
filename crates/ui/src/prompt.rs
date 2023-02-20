@@ -1,6 +1,6 @@
-use kiwi_ecs::{ComponentValue, World};
-use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
-use kiwi_std::{cb, Cb};
+use ambient_ecs::{ComponentValue, World};
+use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_std::{cb, Cb};
 
 use crate::{
     align_vertical, space_between_items, Button, ButtonStyle, DialogScreen, Editor, FlowColumn, FlowRow, ScrollArea, StylesExt, Text,

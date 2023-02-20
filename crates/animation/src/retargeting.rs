@@ -1,15 +1,15 @@
 use std::sync::Arc;
 
-use anyhow::Context;
-use async_trait::async_trait;
-use kiwi_core::transform::{rotation, translation};
-use kiwi_editor_derive::ElementEditor;
-use kiwi_model::{Model, ModelFromUrl};
-use kiwi_std::{
+use ambient_core::transform::{rotation, translation};
+use ambient_editor_derive::ElementEditor;
+use ambient_model::{Model, ModelFromUrl};
+use ambient_std::{
     asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt},
     asset_url::{AnimationAssetType, ModelAssetType, TypedAssetUrl},
     download_asset::AssetError,
 };
+use anyhow::Context;
+use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
 use super::{AnimationClip, AnimationClipFromUrl, AnimationOutputs, AnimationTrack};

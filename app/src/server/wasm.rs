@@ -1,11 +1,13 @@
 use std::{path::PathBuf, sync::Arc};
 
-use kiwi_ecs::{components, EntityId, SystemGroup, World};
-use kiwi_network::server::{ForkingEvent, ShutdownEvent};
-use kiwi_wasm::{
-    server::bindings::{Bindings as ElementsBindings, WasmServerContext}, shared::{
-        get_module_name, host_guest_state::BaseHostGuestState, module_bytecode, spawn_module, MessageType, ModuleBytecode, ModuleState
-    }, Linker, WasiCtx
+use ambient_ecs::{components, EntityId, SystemGroup, World};
+use ambient_network::server::{ForkingEvent, ShutdownEvent};
+use ambient_wasm::{
+    server::bindings::{Bindings as ElementsBindings, WasmServerContext},
+    shared::{
+        get_module_name, host_guest_state::BaseHostGuestState, module_bytecode, spawn_module, MessageType, ModuleBytecode, ModuleState,
+    },
+    Linker, WasiCtx,
 };
 use parking_lot::RwLock;
 
@@ -24,18 +26,18 @@ pub fn init_all_components() {
 }
 
 pub fn systems() -> SystemGroup {
-    kiwi_wasm::server::systems(module_state(), make_wasm_context(), add_to_linker())
+    ambient_wasm::server::systems(module_state(), make_wasm_context(), add_to_linker())
 }
 
 pub fn on_forking_systems() -> SystemGroup<ForkingEvent> {
-    kiwi_wasm::server::on_forking_systems(module_state(), make_wasm_context(), add_to_linker())
+    ambient_wasm::server::on_forking_systems(module_state(), make_wasm_context(), add_to_linker())
 }
 
 pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
-    kiwi_wasm::server::on_shutdown_systems(module_state())
+    ambient_wasm::server::on_shutdown_systems(module_state())
 }
 
-pub async fn initialize(world: &mut World, project_path: PathBuf, manifest: &kiwi_project::Manifest) -> anyhow::Result<()> {
+pub async fn initialize(world: &mut World, project_path: PathBuf, manifest: &ambient_project::Manifest) -> anyhow::Result<()> {
     let messenger = Arc::new(|world: &World, id: EntityId, type_: MessageType, message: &str| {
         let name = get_module_name(world, id);
         let (prefix, level) = match type_ {
@@ -48,7 +50,7 @@ pub async fn initialize(world: &mut World, project_path: PathBuf, manifest: &kiw
         log::log!(level, "[{name}] {prefix}: {}", message.strip_suffix('\n').unwrap_or(message));
     });
 
-    kiwi_wasm::server::initialize(
+    ambient_wasm::server::initialize(
         world,
         messenger,
         (make_wasm_context(), Arc::new(|ctx, state| WasmServerContext::new(ctx, state))),

@@ -1,20 +1,20 @@
 
 [package]
-name = "kiwi_world_audio"
+name = "ambient_world_audio"
 version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-kiwi_ecs = { path = "../ecs" }
-kiwi_app = { path = "../app" }
-kiwi_ui = { path = "../ui" }
-kiwi_core = { path = "../core" }
-kiwi_element = { path = "../element" }
-kiwi_std = { path = "../std" }
-kiwi_audio = { path = "../audio" }
-kiwi_network = { path = "../network" }
+ambient_ecs = { path = "../ecs" }
+ambient_app = { path = "../app" }
+ambient_ui = { path = "../ui" }
+ambient_core = { path = "../core" }
+ambient_element = { path = "../element" }
+ambient_std = { path = "../std" }
+ambient_audio = { path = "../audio" }
+ambient_network = { path = "../network" }
 parking_lot = { workspace = true }
 anyhow = { workspace = true }
 log = { workspace = true }
@@ -41,9 +41,9 @@ derive_more = { workspace = true }
 
 [dev-dependencies]
 tracing-subscriber = "0.3"
-kiwi_renderer = { path = "../renderer" }
-kiwi_primitives = { path = "../primitives" }
-kiwi_cameras = { path = "../cameras" }
+ambient_renderer = { path = "../renderer" }
+ambient_primitives = { path = "../primitives" }
+ambient_cameras = { path = "../cameras" }
 
 [features]
-hotload-includes = ['kiwi_std/hotload-includes']
+hotload-includes = ['ambient_std/hotload-includes']

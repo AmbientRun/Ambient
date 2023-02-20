@@ -6,21 +6,21 @@ use std::{
     time::{Duration, Instant, SystemTime},
 };
 
-use kiwi_ecs::{
+use ambient_ecs::{
     components, query, Debuggable, Description, DynSystem, EntityId, FrameEvent, Name, Networked, QueryState, Resource, Store, System,
     World,
 };
-use kiwi_gpu::{gpu::Gpu, mesh_buffer::GpuMesh};
+use ambient_gpu::{gpu::Gpu, mesh_buffer::GpuMesh};
 
 pub mod async_ecs;
 pub mod gpu_ecs;
 pub mod hierarchy;
-use glam::{uvec2, vec2, UVec2, Vec2};
-use kiwi_std::{
+use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey},
     events::EventDispatcher,
     math::interpolate,
 };
+use glam::{uvec2, vec2, UVec2, Vec2};
 pub use paste;
 use serde::{Deserialize, Serialize};
 use winit::{event::Event, window::Window};

@@ -1,13 +1,13 @@
 
 [package]
-name = "kiwi_ecs"
+name = "ambient_ecs"
 version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-kiwi_std = { path = "../std" }
+ambient_std = { path = "../std" }
 itertools = { workspace = true }
 serde = { workspace = true }
 thiserror = { workspace = true }

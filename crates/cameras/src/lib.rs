@@ -1,8 +1,8 @@
+use ambient_core::{camera::*, transform::*, ui_scene, window_logical_size};
+use ambient_ecs::{components, query_mut, Description, Name, Networked, Store, SystemGroup};
+use ambient_element::{element_component, Element, Hooks};
+use ambient_std::shapes::BoundingBox;
 use glam::{Mat4, Quat, Vec3};
-use kiwi_core::{camera::*, transform::*, ui_scene, window_logical_size};
-use kiwi_ecs::{components, query_mut, Description, Name, Networked, Store, SystemGroup};
-use kiwi_element::{element_component, Element, Hooks};
-use kiwi_std::shapes::BoundingBox;
 use winit::event::Event;
 
 use crate::{free::free_camera_system, spherical::spherical_camera_system};
@@ -91,8 +91,8 @@ pub fn FreeCamera(_: &mut Hooks, position: Vec3, rotation: Quat) -> Element {
         .init(aspect_ratio_from_window(), ())
         .init_default(projection())
         .init_default(projection_view())
-        .set(kiwi_core::transform::translation(), position)
-        .set(kiwi_core::transform::rotation(), rotation)
+        .set(ambient_core::transform::translation(), position)
+        .set(ambient_core::transform::rotation(), rotation)
 }
 
 #[element_component]

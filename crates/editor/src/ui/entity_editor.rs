@@ -1,27 +1,27 @@
 use std::{sync::Arc, time::Duration};
 
-use glam::{Vec2, Vec3, Vec4};
-use itertools::Itertools;
-use kiwi_animation::{animation_errors, animation_retargeting, loop_animation};
-use kiwi_core::{
+use ambient_animation::{animation_errors, animation_retargeting, loop_animation};
+use ambient_core::{
     name, runtime, snap_to_ground, tags,
     transform::{scale, translation},
 };
-use kiwi_decals::decal;
-use kiwi_ecs::{
+use ambient_decals::decal;
+use ambient_ecs::{
     with_component_registry, Component, ComponentDesc, ComponentEntry, ComponentValue, EntityData, EntityId, PrimitiveComponentType, World,
 };
-use kiwi_element::{element_component, Element, ElementComponentExt, Hooks};
-use kiwi_intent::client_push_intent;
-use kiwi_network::{client::GameClient, hooks::use_remote_component};
-use kiwi_physics::collider::{character_controller_height, character_controller_radius, collider, collider_type, mass};
-use kiwi_std::{asset_url::ObjectRef, cb, Cb};
-use kiwi_ui::{
+use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_intent::client_push_intent;
+use ambient_network::{client::GameClient, hooks::use_remote_component};
+use ambient_physics::collider::{character_controller_height, character_controller_radius, collider, collider_type, mass};
+use ambient_std::{asset_url::ObjectRef, cb, Cb};
+use ambient_ui::{
     align_horizontal, align_vertical,
     layout::{fit_horizontal, margin, Borders, Fit},
     space_between_items, use_interval_deps, Align, Button, ButtonStyle, DropdownSelect, Editor, EditorPrompt, FlowColumn, FlowRow,
     ScreenContainer, StylesExt, Text, STREET,
 };
+use glam::{Vec2, Vec3, Vec4};
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
 use super::EditingEntityContext;
@@ -177,7 +177,7 @@ fn ObjectComponentsEditor(_hooks: &mut Hooks, value: EntityData, on_change: Cb<d
         reg_default_component!("Collider", false, collider()),
         reg_default_component!("Collider type", true, collider_type()),
         reg_default_component!("Mass", true, mass()),
-        reg_default_component!("Audio Emitter", false, kiwi_world_audio::audio_emitter()),
+        reg_default_component!("Audio Emitter", false, ambient_world_audio::audio_emitter()),
         reg_default_component!("Loop animation", true, loop_animation()),
         reg_default_component!("Animation retargeting", true, animation_retargeting()),
         reg_default_component!("Snap to ground", true, snap_to_ground()),

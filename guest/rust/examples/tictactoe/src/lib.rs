@@ -1,5 +1,5 @@
 use components::cell;
-use kiwi_api::{
+use ambient_api::{
     components::core::{
         self,
         game_objects::player_camera,
@@ -9,7 +9,7 @@ use kiwi_api::{
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
 };
-use kiwi_api::{player::KeyCode, prelude::*};
+use ambient_api::{player::KeyCode, prelude::*};
 use palette::{FromColor, Hsl, Srgb};
 
 #[main]

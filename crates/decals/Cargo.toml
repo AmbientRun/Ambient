@@ -1,32 +1,32 @@
 [package]
-name = "kiwi_decals"
+name = "ambient_decals"
 version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-kiwi_asset_cache = { path = "../asset_cache" }
-kiwi_ui = { path = "../ui" }
-kiwi_ecs = { path = "../ecs" }
-kiwi_renderer = { path = "../renderer" }
-kiwi_gpu = { path = "../gpu" }
-kiwi_std = { path = "../std" }
-kiwi_core = { path = "../core" }
-kiwi_meshes = { path = "../meshes" }
+ambient_asset_cache = { path = "../asset_cache" }
+ambient_ui = { path = "../ui" }
+ambient_ecs = { path = "../ecs" }
+ambient_renderer = { path = "../renderer" }
+ambient_gpu = { path = "../gpu" }
+ambient_std = { path = "../std" }
+ambient_core = { path = "../core" }
+ambient_meshes = { path = "../meshes" }
 log = { workspace = true }
 glam = { workspace = true }
 
 [dev-dependencies]
-kiwi_app = { path = "../app" }
-kiwi_element = { path = "../element" }
-kiwi_primitives = { path = "../primitives" }
-kiwi_cameras = { path = "../cameras" }
+ambient_app = { path = "../app" }
+ambient_element = { path = "../element" }
+ambient_primitives = { path = "../primitives" }
+ambient_cameras = { path = "../cameras" }
 env_logger = { workspace = true }
 
 [features]
 hotload-includes = [
-    'kiwi_std/hotload-includes',
-    'kiwi_renderer/hotload-includes',
-    'kiwi_gpu/hotload-includes',
+    'ambient_std/hotload-includes',
+    'ambient_renderer/hotload-includes',
+    'ambient_gpu/hotload-includes',
 ]

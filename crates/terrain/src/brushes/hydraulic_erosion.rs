@@ -1,11 +1,11 @@
 // Ported from https://github.com/SebLague/Hydraulic-Erosion/blob/master/Assets/Scripts/Erosion.cs
 use std::{borrow::Cow, f32::consts::PI};
 
+use ambient_editor_derive::ElementEditor;
+use ambient_gpu::{gpu::Gpu, texture::TextureView};
+use ambient_std::include_file;
 use glam::{ivec2, vec2, IVec2, IVec3, UVec2, Vec2};
 use itertools::Itertools;
-use kiwi_editor_derive::ElementEditor;
-use kiwi_gpu::{gpu::Gpu, texture::TextureView};
-use kiwi_std::include_file;
 use rand::prelude::*;
 use rand_pcg::Pcg64;
 use serde::{Deserialize, Serialize};
