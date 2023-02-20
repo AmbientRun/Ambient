@@ -11,6 +11,7 @@ cargo doc -p ambient_api --open --no-deps
 
 ## Releasing
 
-1. Update workspace versions in `Cargo.toml` and `guest/rust/Cargo.toml`
-2. Create a tag `v0.0.7` and commit with the same name
+1. Update workspace versions in `Cargo.toml`, `guest/rust/Cargo.toml` and `guest/rust/api/Cargo.toml` (ambient_api_macro version)
+2. Run `cargo build` in the root directory and in `guest/rust`, so that `Cargo.lock` is created
+2. Create a tag `v0.X.Y` and commit with the same name
 3. Push to origin
