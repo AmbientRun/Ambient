@@ -2,16 +2,11 @@
 #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
 pub struct EntityId {
     #[doc(hidden)]
-    pub id0: u64,
+    pub(crate) id0: u64,
     #[doc(hidden)]
-    pub id1: u64,
+    pub(crate) id1: u64,
 }
 impl EntityId {
-    #[doc(hidden)]
-    pub const fn new(id0: u64, id1: u64) -> Self {
-        Self { id0, id1 }
-    }
-
     #[doc(hidden)]
     pub fn from_base64(encoded: &str) -> Self {
         let len = data_encoding::BASE64URL_NOPAD
