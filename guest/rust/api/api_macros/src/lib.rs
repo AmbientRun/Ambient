@@ -7,7 +7,7 @@ use quote::quote;
 
 mod ambient_project;
 
-const MANIFEST: &str = include_str!("../kiwi.toml");
+const MANIFEST: &str = include_str!("../ambient.toml");
 
 /// Makes your `main()` function accessible to the WASM host, and generates a `components` module with your project's components.
 ///
@@ -24,8 +24,8 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut path = syn::Path::from(syn::Ident::new("ambient_api", spans));
     path.leading_colon = Some(syn::Token![::](spans));
     let project_boilerplate = ambient_project::implementation(
-        ambient_project::read_file("kiwi.toml".to_string())
-            .context("Failed to load kiwi.toml")
+        ambient_project::read_file("ambient.toml".to_string())
+            .context("Failed to load ambient.toml")
             .unwrap(),
         path.clone(),
         false,

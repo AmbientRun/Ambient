@@ -45,7 +45,7 @@ pub fn implementation(
     );
     Ok(quote!(
         #manifest
-        /// Auto-generated component definitions. These come from `kiwi.toml` in the root of the project.
+        /// Auto-generated component definitions. These come from `ambient.toml` in the root of the project.
         pub mod components {
             #components_tokens
         }

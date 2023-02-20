@@ -27,8 +27,8 @@ fn can_generate_components_from_manifest_in_global_namespace() {
         "#};
 
     let expected_output = quote::quote! {
-        const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
-        #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
+        const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
+        #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
         pub mod components {
             use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
             #[doc = "**Core**"]
@@ -78,7 +78,7 @@ fn can_generate_components_from_manifest_in_global_namespace() {
     };
 
     let result = implementation(
-        (Some("kiwi.toml".to_string()), manifest.to_string()),
+        (Some("ambient.toml".to_string()), manifest.to_string()),
         api_name(),
         true,
         true,
@@ -96,8 +96,8 @@ fn can_accept_no_components() {
         "#};
 
     let expected_output = quote::quote! {
-        const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
-        #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
+        const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
+        #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
         pub mod components {
             use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
         }
@@ -106,7 +106,7 @@ fn can_accept_no_components() {
     };
 
     let result = implementation(
-        (Some("kiwi.toml".to_string()), manifest.to_string()),
+        (Some("ambient.toml".to_string()), manifest.to_string()),
         api_name(),
         false,
         true,
@@ -135,8 +135,8 @@ fn can_generate_components_from_manifest() {
         "#};
 
     let expected_output = quote::quote! {
-        const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
-        #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
+        const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
+        #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
         pub mod components {
             use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
             static A_COOL_COMPONENT: Lazy< Component<()> > = Lazy::new(|| __internal_get_component("my_project::a_cool_component"));
@@ -156,7 +156,7 @@ fn can_generate_components_from_manifest() {
     };
 
     let result = implementation(
-        (Some("kiwi.toml".to_string()), manifest.to_string()),
+        (Some("ambient.toml".to_string()), manifest.to_string()),
         api_name(),
         false,
         true,
@@ -178,8 +178,8 @@ fn can_generate_component_with_contained_type() {
         "#};
 
     let expected_output = quote::quote! {
-        const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
-        #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
+        const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
+        #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
         pub mod components {
             use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
             static A_COOL_COMPONENT: Lazy< Component<()> > = Lazy::new(|| __internal_get_component("my_project::a_cool_component"));
@@ -193,7 +193,7 @@ fn can_generate_component_with_contained_type() {
     };
 
     let result = implementation(
-        (Some("kiwi.toml".to_string()), manifest.to_string()),
+        (Some("ambient.toml".to_string()), manifest.to_string()),
         api_name(),
         false,
         true,
@@ -216,8 +216,8 @@ fn can_generate_components_from_manifest_with_org() {
         "#};
 
     let expected_output = quote::quote! {
-        const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
-        #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
+        const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
+        #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
         pub mod components {
             use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
             static A_COOL_COMPONENT: Lazy< Component<()> > = Lazy::new(|| __internal_get_component("evil_corp::my_project::a_cool_component"));
@@ -231,7 +231,7 @@ fn can_generate_components_from_manifest_with_org() {
     };
 
     let result = implementation(
-        (Some("kiwi.toml".to_string()), manifest.to_string()),
+        (Some("ambient.toml".to_string()), manifest.to_string()),
         api_name(),
         false,
         true,
@@ -254,8 +254,8 @@ fn can_generate_components_with_documented_namespace_from_manifest() {
         "#};
 
     let expected_output = quote::quote! {
-        const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
-        #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
+        const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
+        #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
         pub mod components {
             use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
             #[doc = "**Namespace**: A Test Namespace"]
@@ -273,7 +273,7 @@ fn can_generate_components_with_documented_namespace_from_manifest() {
     };
 
     let result = implementation(
-        (Some("kiwi.toml".to_string()), manifest.to_string()),
+        (Some("ambient.toml".to_string()), manifest.to_string()),
         api_name(),
         false,
         true,
@@ -295,7 +295,7 @@ fn will_error_on_undocumented_namespace() {
         "#};
 
     let result = implementation(
-        (Some("kiwi.toml".to_string()), manifest.to_string()),
+        (Some("ambient.toml".to_string()), manifest.to_string()),
         api_name(),
         false,
         true,
@@ -351,8 +351,8 @@ fn can_generate_concepts() {
         "#};
 
     let expected_output = quote::quote! {
-        const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
-        #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
+        const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
+        #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
         pub mod components {
             use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
             pub mod core {
@@ -454,7 +454,7 @@ fn can_generate_concepts() {
     };
 
     let result = implementation(
-        (Some("kiwi.toml".to_string()), manifest.to_string()),
+        (Some("ambient.toml".to_string()), manifest.to_string()),
         api_name(),
         false,
         false,
@@ -516,8 +516,8 @@ fn can_generate_concepts_with_all_supported_types() {
         "#};
 
     let expected_output = quote::quote! {
-        const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
-        #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
+        const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
+        #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
         pub mod components {
             use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
 
@@ -652,7 +652,7 @@ fn can_generate_concepts_with_all_supported_types() {
     };
 
     let result = implementation(
-        (Some("kiwi.toml".to_string()), manifest.to_string()),
+        (Some("ambient.toml".to_string()), manifest.to_string()),
         api_name(),
         false,
         false,
@@ -692,8 +692,8 @@ fn can_extend_with_multiple_concepts() {
         "#};
 
     let expected_output = quote::quote! {
-        const _PROJECT_MANIFEST: &'static str = include_str!("kiwi.toml");
-        #[doc = r" Auto-generated component definitions. These come from `kiwi.toml` in the root of the project."]
+        const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
+        #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
         pub mod components {
             use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
 
@@ -747,7 +747,7 @@ fn can_extend_with_multiple_concepts() {
     };
 
     let result = implementation(
-        (Some("kiwi.toml".to_string()), manifest.to_string()),
+        (Some("ambient.toml".to_string()), manifest.to_string()),
         api_name(),
         false,
         false,
