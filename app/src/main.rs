@@ -277,12 +277,15 @@ fn main() -> anyhow::Result<()> {
     };
 
     if cli.command.should_build() {
+        let project_name = manifest.as_ref().and_then(|m| m.project.name.as_ref()).map(|x| x as &str).unwrap_or("project");
+        log::info!("Building {}", project_name);
         runtime.block_on(ambient_build::build(
             PhysicsKey.get(&assets),
             &assets,
             project_path.clone(),
             manifest.as_ref().expect("no manifest"),
         ));
+        log::info!("Done building {}", project_name);
     }
 
     let server_addr = if let Commands::Join { host, .. } = &cli.command {
