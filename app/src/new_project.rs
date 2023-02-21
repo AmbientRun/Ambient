@@ -27,13 +27,33 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
     )
     .context("Failed to create ambient.toml")?;
 
-    std::fs::write(
-        project_path.join("Cargo.toml"),
-        include_str!("../new_project_template/Cargo.toml")
-            .replace("{{id}}", id.as_ref())
-            .replace("ambient_api = { path = \"../../guest/rust/api\" }", &format!("ambient_api = \"{}\"", env!("CARGO_PKG_VERSION"))),
-    )
-    .context("Failed to create Cargo.toml")?;
+    // Special-case creating an example in guest/rust/examples so that it "Just Works"
+    enum ReplaceWith {
+        PkgVersion,
+        GuestRustRelative,
+    }
+    let replace_with = project_path
+        .parent()
+        .and_then(|parent_path| {
+            let segments = parent_path.iter().collect::<Vec<_>>();
+            let last_three = segments.iter().rev().take(3).rev().flat_map(|s| s.to_str()).collect::<Vec<_>>();
+            if last_three == ["guest", "rust", "examples"] {
+                Some(ReplaceWith::GuestRustRelative)
+            } else {
+                None
+            }
+        })
+        .unwrap_or(ReplaceWith::PkgVersion);
+
+    let replacement = match replace_with {
+        ReplaceWith::PkgVersion => format!("ambient_api = \"{}\"", env!("CARGO_PKG_VERSION")),
+        ReplaceWith::GuestRustRelative => r#"ambient_api = { path = "../../api" }"#.to_string(),
+    };
+    let template_cargo_toml = include_str!("../new_project_template/Cargo.toml")
+        .replace("{{id}}", id.as_ref())
+        .replace("ambient_api = { path = \"../../guest/rust/api\" }", &replacement);
+
+    std::fs::write(project_path.join("Cargo.toml"), template_cargo_toml).context("Failed to create Cargo.toml")?;
 
     std::fs::write(project_path.join(".gitignore"), include_str!("../new_project_template/.gitignore"))
         .context("Failed to create .gitignore")?;
