@@ -15,19 +15,22 @@ use ambient_api::{
 
 #[main]
 pub async fn main() -> EventResult {
-    make_perspective_infinite_reverse_camera()
+    Entity::new()
+        .with_merge(make_perspective_infinite_reverse_camera())
         .with_default(player_camera())
         .with(translation(), vec3(2., 2., 3.0))
         .with(lookat_center(), vec3(0., 0., 1.))
         .spawn();
 
-    make_transformable()
+    Entity::new()
+        .with_merge(make_transformable())
         .with_default(quad())
         .with(scale(), Vec3::ONE * 10.)
         .with(color(), vec4(0.5, 0.5, 0.5, 1.))
         .spawn();
 
-    let unit_id = make_transformable()
+    let unit_id = Entity::new()
+        .with_merge(make_transformable())
         .with(
             object_from_url(),
             asset_url("assets/Peasant Man.fbx").unwrap(),

@@ -12,34 +12,42 @@ use ambient_api::{
 
 #[main]
 pub async fn main() -> EventResult {
-    make_perspective_infinite_reverse_camera()
+    Entity::new()
+        .with_merge(make_perspective_infinite_reverse_camera())
         .with_default(player_camera())
         .with(translation(), vec3(5., 5., 2.))
         .with(lookat_center(), vec3(0., 0., 1.))
         .spawn();
 
-    make_transformable()
+    Entity::new()
+        .with_merge(make_transformable())
         .with_default(quad())
         .with(scale(), Vec3::ONE * 20.)
         .with(color(), vec4(1., 0., 0., 1.))
         .with(translation(), vec3(0., 0., 0.01))
         .spawn();
 
-    make_transformable()
+    Entity::new()
+        .with_merge(make_transformable())
         .with_default(water())
         .with(scale(), Vec3::ONE * 2000.)
         .spawn();
 
-    make_transformable().with_default(sky()).spawn();
+    Entity::new()
+        .with_merge(make_transformable())
+        .with_default(sky())
+        .spawn();
 
-    make_sphere()
+    Entity::new()
+        .with_merge(make_sphere())
         .with_default(cast_shadows())
         .with(sphere_radius(), 1.)
         .with(translation(), vec3(0., 0., 1.))
         .with(color(), vec4(1., 1., 1., 1.))
         .spawn();
 
-    let sun = make_transformable()
+    let sun = Entity::new()
+        .with_merge(make_transformable())
         .with_default(sun())
         .with_default(rotation())
         .with_default(main_scene())
