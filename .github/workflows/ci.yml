@@ -47,6 +47,10 @@ jobs:
         run: cd guest/rust && cargo build --workspace
       - name: Check that guest/rust's documentation is well-formed
         run: cd guest/rust && RUSTDOCFLAGS="-D warnings" cargo doc --workspace --all-features --no-deps
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ambient-target
+          path: target
 
   build-other:
     strategy:
