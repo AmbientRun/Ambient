@@ -92,20 +92,20 @@ components!("physics", {
     ]
     mass: f32,
     @[
-        MakeDefault[one], Editable, Networked, Store,
+        MakeDefault[one], Editable, Networked, Store, Debuggable,
         Name["Density"],
         Description["The density of this entity.\nThis is used to update the `mass` when the entity is rescaled."]
     ]
     density: f32,
 
     @[
-        MakeDefault, Networked, Store,
+        Debuggable, MakeDefault, Networked, Store,
         Name["Character controller height"],
         Description["The height of the physics character controller attached to this entity.\nIf an entity has both this and a `character_controller_radius`, it will be given a physical character collider."]
     ]
     character_controller_height: f32,
     @[
-        MakeDefault, Networked, Store,
+        Debuggable, MakeDefault, Networked, Store,
         Name["Character controller radius"],
         Description["The radius of the physics character controller attached to this entity.\nIf an entity has both this and a `character_controller_height`, it will be given a physical character collider."]
     ]
