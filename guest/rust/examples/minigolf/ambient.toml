@@ -4,21 +4,38 @@ name = "Minigolf"
 version = "0.0.1"
 
 [components]
-player_ball = { type = "Empty", name = "Player Ball", description = "Used to tag a player's ball" }
-origin = { type = "Vec3", name = "Origin", description = "An object's origin in world space." }
+ball = { type = "Empty", name = "Ball", description = "Used to tag a ball" }
+origin = { type = "Vec3", name = "Origin", description = "An object's origin in world space" }
 rotate = { type = "Vec3", name = "Rotate", description = "Rotate an object at a given speed (radians/s)" }
-player_camera_state = { type = "EntityId", name = "Player Camera State", description = "EntityId of a player's camera state" }
-player_camera_radius = { type = "F32", name = "Player Camera Radius", description = "The radius at which a player's camera pivots around" }
+player_ball = { type = "EntityId", name = "Player Ball", description = "Used to tag a player's ball" }
+player_restore_point = { type = "Vec3", name = "Player Restore Point", description = "A player's restore point" }
+player_stroke_count = { type = "U32", name = "Player Stroke Count", description = "A player's stroke count" }
+player_color = { type = "Vec4", name = "Player Color", description = "A player's color" } 
+player_indicator = { type = "EntityId", name = "Player Indicator", description = "EntityId of a player's indicator" }
+player_indicator_arrow = { type = "EntityId", name = "Player Indicator Arrow", description = "EntityId of a player's indicator arrow" }
+player_text = { type = "EntityId", name = "Player Text", description = "EntityId of a player's text" }
+player_text_container = { type = "EntityId", name = "Player Text Container", description = "EntityId of a player's text container" }
 player_camera_pivot = { type = "Vec3", name = "Player Camera Pivot", description = "The pivot offset a player's camera pivots around" }
 player_camera_position = { type = "Vec3", name = "Player Camera Position", description = "The position at which a player's camera pivots around" }
+player_camera_radius = { type = "F32", name = "Player Camera Radius", description = "The radius at which a player's camera pivots around" }
 player_camera_rotation = { type = "Vec2", name = "Player Camera Rotation", description = "The rotation (radians) of a player's camera" }
+player_camera_state = { type = "EntityId", name = "Player Camera State", description = "EntityId of a player's camera state" }
+
+[concepts.player_state]
+name = "Player State"
+description = "A player's state"
+
+[concepts.player_state.components]
+player_restore_point = [-5.0, 0.0, 20.0]
+player_stroke_count = 0
+player_color = [1.0, 1.0, 1.0, 1.0]
 
 [concepts.player_camera_state]
 name = "Player Camera State"
 description = "A player's camera state"
 
 [concepts.player_camera_state.components]
-player_camera_radius = 15.0
 player_camera_pivot = [0.0, 0.0, 8.0]
 player_camera_position = [0.0, 0.0, 0.0]
+player_camera_radius = 15.0
 player_camera_rotation = [3.141592, 0.610865]

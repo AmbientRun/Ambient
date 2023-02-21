@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use ambient_api::{
     components::core::{
         app::main_scene,
@@ -23,11 +21,14 @@ use ambient_api::{
     player::MouseButton,
     prelude::*,
 };
-use components::{origin, player_ball, player_camera_state, rotate};
-use concepts::make_player_camera_state;
-use objects::{camera::CameraState, player::PlayerState};
+use components::{
+    ball, origin, player_ball, player_camera_state, player_color, player_indicator,
+    player_indicator_arrow, player_restore_point, player_stroke_count, player_text,
+    player_text_container, rotate,
+};
+use concepts::{make_player_camera_state, make_player_state};
+use utils::CameraState;
 
-mod objects;
 mod utils;
 
 const BALL_RADIUS: f32 = 0.34;
@@ -64,7 +65,7 @@ fn create_environment() {
 
 fn make_golf_ball() -> Entity {
     make_transformable()
-        .with_default(player_ball())
+        .with_default(ball())
         .with_default(physics_controlled())
         .with(dynamic(), true)
         .with(sphere_collider(), BALL_RADIUS)
@@ -89,17 +90,15 @@ fn make_text() -> Entity {
 pub async fn main() -> EventResult {
     create_environment();
 
-    let player_states: HashMap<String, PlayerState> = HashMap::new();
-    let player_states = State::new(player_states);
-    let player_hue = State::new(0.);
-
     // When a player spawns, create their player state.
     spawn_query(user_id()).requires(player()).bind({
-        let player_states = player_states.clone();
+        let player_hue = State::new(0.);
         move |players| {
             for (player, player_user_id) in players {
-                let player_color = utils::hsv_to_rgb(&[*player_hue.read(), 0.7, 1.0]).extend(1.);
+                let next_color = utils::hsv_to_rgb(&[*player_hue.read(), 0.7, 1.0]).extend(1.);
                 *player_hue.write() += 102.5; // 80 + 22.5; pseudo random color, with 16 being unique
+
+                entity::add_components(player, make_player_state());
 
                 let camera_state = make_player_camera_state().spawn();
                 entity::add_component(player, player_camera_state(), camera_state);
@@ -114,47 +113,59 @@ pub async fn main() -> EventResult {
                     .with_default(rotation())
                     .spawn();
 
+                // TODO: This is a bit... odd
+                entity::add_component(player, player_color(), next_color * 2.2);
+
                 let text = make_text()
-                    .with(color(), player_color)
+                    .with(color(), next_color)
                     .with(user_id(), player_user_id.clone())
                     .with(text(), player_user_id.clone())
                     .spawn();
+                entity::add_component(player, player_text(), text);
 
-                let text_container = make_transformable()
-                    .with_default(main_scene())
-                    .with_default(local_to_world())
-                    .with_default(spherical_billboard())
-                    .with(translation(), vec3(-5., 0., 5.))
-                    .with(children(), vec![text])
-                    .spawn();
+                entity::add_component(
+                    player,
+                    player_text_container(),
+                    make_transformable()
+                        .with_default(main_scene())
+                        .with_default(local_to_world())
+                        .with_default(spherical_billboard())
+                        .with(translation(), vec3(-5., 0., 5.))
+                        .with(children(), vec![text])
+                        .spawn(),
+                );
 
-                player_states.write().insert(
-                    player_user_id.clone(),
-                    PlayerState {
-                        color: player_color * 2.2,
-                        ball: make_golf_ball()
-                            .with(color(), player_color)
-                            .with(user_id(), player_user_id.clone())
-                            .with(translation(), vec3(-5., 0., 20.))
-                            .spawn(),
-                        ball_strokes: 0,
-                        ball_restore: vec3(0., 0., 0.01),
-                        text,
-                        text_container,
-                        indicator: make_transformable()
-                            .with(color(), player_color)
-                            .with(user_id(), player_user_id.clone())
-                            .with(model_from_url(), asset_url("assets/indicator.glb").unwrap())
-                            .spawn(),
-                        indicator_arrow: make_transformable()
-                            .with(color(), player_color)
-                            .with(user_id(), player_user_id.clone())
-                            .with(
-                                model_from_url(),
-                                asset_url("assets/indicator_arrow.glb").unwrap(),
-                            )
-                            .spawn(),
-                    },
+                entity::add_component(
+                    player,
+                    player_ball(),
+                    make_golf_ball()
+                        .with(color(), next_color)
+                        .with(user_id(), player_user_id.clone())
+                        .with(translation(), vec3(-5., 0., 20.))
+                        .spawn(),
+                );
+
+                entity::add_component(
+                    player,
+                    player_indicator(),
+                    make_transformable()
+                        .with(color(), next_color)
+                        .with(user_id(), player_user_id.clone())
+                        .with(model_from_url(), asset_url("assets/indicator.glb").unwrap())
+                        .spawn(),
+                );
+
+                entity::add_component(
+                    player,
+                    player_indicator_arrow(),
+                    make_transformable()
+                        .with(color(), next_color)
+                        .with(user_id(), player_user_id.clone())
+                        .with(
+                            model_from_url(),
+                            asset_url("assets/indicator_arrow.glb").unwrap(),
+                        )
+                        .spawn(),
                 );
             }
         }
@@ -181,7 +192,7 @@ pub async fn main() -> EventResult {
 
     // Update the flag every frame.
     query(translation())
-        .requires(player_ball())
+        .requires(ball())
         .build()
         .each_frame(move |balls| {
             let flag_origin = entity::get_component(flag, origin()).unwrap_or_default();
@@ -204,25 +215,27 @@ pub async fn main() -> EventResult {
         });
 
     // Update player cameras every frame.
-    query(player_camera_state()).requires(player_camera()).build().each_frame({
-        move |cameras| {
-            for (id, camera_state) in &cameras {
-                let camera_state = CameraState(*camera_state);
-                let (camera_translation, camera_rotation) = camera_state.get_transform();
-                entity::set_component(*id, translation(), camera_translation);
-                entity::set_component(
-                    *id,
-                    rotation(),
-                    camera_rotation * Quat::from_rotation_x(90.),
-                );
+    query(player_camera_state())
+        .requires(player_camera())
+        .build()
+        .each_frame({
+            move |cameras| {
+                for (id, camera_state) in &cameras {
+                    let camera_state = CameraState(*camera_state);
+                    let (camera_translation, camera_rotation) = camera_state.get_transform();
+                    entity::set_component(*id, translation(), camera_translation);
+                    entity::set_component(
+                        *id,
+                        rotation(),
+                        camera_rotation * Quat::from_rotation_x(90.),
+                    );
+                }
             }
-        }
-    });
+        });
 
-    // When a player despawns, clean up their objects and player state.
+    // When a player despawns, clean up their objects.
     let player_objects_query = query(user_id()).build();
     despawn_query(user_id()).requires(player()).bind({
-        let player_states = player_states.clone();
         move |players| {
             let player_objects = player_objects_query.evaluate();
             for (_, player_user_id) in &players {
@@ -232,98 +245,99 @@ pub async fn main() -> EventResult {
                 {
                     entity::despawn(*id);
                 }
-                player_states.write().remove(player_user_id);
             }
         }
     });
 
-    query((user_id(), player_camera_state()))
-        .requires(player())
-        .build()
-        .each_frame(move |players| {
-            let player_states = player_states.clone();
-            for (player, (player_user_id, player_camera_state)) in &players {
-                let Some((delta, new)) = player::get_raw_input_delta(*player) else { continue; };
-                let player_camera_state = CameraState(*player_camera_state);
+    query((
+        player_ball(),
+        player_text(),
+        player_text_container(),
+        player_indicator(),
+        player_indicator_arrow(),
+        player_camera_state(),
+    ))
+    .requires(player())
+    .build()
+    .each_frame(move |players| {
+        for (
+            player,
+            (
+                player_ball,
+                player_text,
+                player_text_container,
+                player_indicator,
+                player_indicator_arrow,
+                player_camera_state,
+            ),
+        ) in &players
+        {
+            let Some((delta, new)) = player::get_raw_input_delta(*player) else { continue; };
+            let player_camera_state = CameraState(*player_camera_state);
 
-                if let Some(player_state) = player_states.write().get_mut(player_user_id) {
-                    let ball_position =
-                        entity::get_component(player_state.ball, translation()).unwrap_or_default();
+            let ball_position =
+                entity::get_component(*player_ball, translation()).unwrap_or_default();
 
-                    player_camera_state
-                        .set_position(ball_position)
-                        .rotate(delta.mouse_position / 250.)
-                        .zoom(delta.mouse_wheel / 25.);
+            player_camera_state
+                .set_position(ball_position)
+                .rotate(delta.mouse_position / 250.)
+                .zoom(delta.mouse_wheel / 25.);
 
-                    let mut force_multiplier = time() % 2.0;
+            let mut force_multiplier = time() % 2.0;
 
-                    if force_multiplier > 1.0 {
-                        force_multiplier = 1.0 - (force_multiplier - 1.0);
-                    }
-
-                    entity::set_component(
-                        player_state.text_container,
-                        translation(),
-                        ball_position + Vec3::Z * 2.,
-                    );
-
-                    // TODO: This can be removed after #114 is resolved.
-                    entity::set_component(player_state.ball, color(), player_state.color);
-                    entity::set_component(player_state.indicator, color(), player_state.color);
-                    entity::set_component(
-                        player_state.indicator_arrow,
-                        color(),
-                        player_state.color,
-                    );
-
-                    let camera_rotation = Quat::from_rotation_z(player_camera_state.get_yaw());
-                    let camera_direction = camera_rotation * -Vec3::Y;
-
-                    entity::set_component(player_state.indicator, translation(), ball_position);
-                    entity::set_component(player_state.indicator, rotation(), camera_rotation);
-                    entity::set_component(
-                        player_state.indicator,
-                        scale(),
-                        vec3(1.0, force_multiplier, 1.0),
-                    );
-                    entity::set_component(
-                        player_state.indicator_arrow,
-                        rotation(),
-                        camera_rotation,
-                    );
-                    entity::set_component(
-                        player_state.indicator_arrow,
-                        translation(),
-                        ball_position + camera_direction * force_multiplier * 10.,
-                    );
-
-                    if ball_position.z < 0.25 {
-                        entity::set_component(player_state.ball, linear_velocity(), Vec3::ZERO);
-                        entity::set_component(player_state.ball, angular_velocity(), Vec3::ZERO);
-                        entity::set_component(
-                            player_state.ball,
-                            translation(),
-                            player_state.ball_restore,
-                        );
-                    }
-
-                    if new.mouse_buttons.contains(&MouseButton::Left) {
-                        player_state.ball_restore = ball_position;
-                        entity::set_component(
-                            player_state.ball,
-                            linear_velocity(),
-                            camera_direction * 50. * force_multiplier,
-                        );
-                        player_state.ball_strokes += 1;
-                        entity::set_component(
-                            player_state.text,
-                            text(),
-                            player_state.ball_strokes.to_string(),
-                        );
-                    }
-                }
+            if force_multiplier > 1.0 {
+                force_multiplier = 1.0 - (force_multiplier - 1.0);
             }
-        });
+
+            entity::set_component(
+                *player_text_container,
+                translation(),
+                ball_position + Vec3::Z * 2.,
+            );
+
+            // TODO: This can be removed after #114 is resolved.
+            let player_color = entity::get_component(*player, player_color()).unwrap_or_default();
+            entity::set_component(*player_ball, color(), player_color);
+            entity::set_component(*player_indicator, color(), player_color);
+            entity::set_component(*player_indicator_arrow, color(), player_color);
+
+            let camera_rotation = Quat::from_rotation_z(player_camera_state.get_yaw());
+            let camera_direction = camera_rotation * -Vec3::Y;
+
+            entity::set_component(*player_indicator, translation(), ball_position);
+            entity::set_component(*player_indicator, rotation(), camera_rotation);
+            entity::set_component(*player_indicator, scale(), vec3(1.0, force_multiplier, 1.0));
+            entity::set_component(*player_indicator_arrow, rotation(), camera_rotation);
+            entity::set_component(
+                *player_indicator_arrow,
+                translation(),
+                ball_position + camera_direction * force_multiplier * 10.,
+            );
+
+            if ball_position.z < 0.25 {
+                entity::set_component(*player_ball, linear_velocity(), Vec3::ZERO);
+                entity::set_component(*player_ball, angular_velocity(), Vec3::ZERO);
+                entity::set_component(
+                    *player_ball,
+                    translation(),
+                    entity::get_component(*player, player_restore_point()).unwrap_or_default(),
+                );
+            }
+
+            if new.mouse_buttons.contains(&MouseButton::Left) {
+                entity::set_component(*player, player_restore_point(), ball_position);
+                entity::set_component(
+                    *player_ball,
+                    linear_velocity(),
+                    camera_direction * 50. * force_multiplier,
+                );
+                let stroke_count =
+                    entity::get_component(*player, player_stroke_count()).unwrap_or_default() + 1;
+                entity::set_component(*player_text, text(), stroke_count.to_string());
+                entity::set_component(*player, player_stroke_count(), stroke_count);
+            }
+        }
+    });
 
     EventOk
 }
