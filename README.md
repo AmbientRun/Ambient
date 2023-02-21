@@ -5,7 +5,7 @@
 [![MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AmbientOrg/Ambient#license)
 [![Discord](https://img.shields.io/discord/894505972289134632)](https://discord.gg/gYSM4tHZ)
 
-Ambient is a WebAssembly runtime for building high-performance online games and 3D applications.
+Ambient is a runtime for building high-performance multiplayer games and 3D applications, powered by WebAssembly, Rust and WebGPU. 
 
 ## Features
 
