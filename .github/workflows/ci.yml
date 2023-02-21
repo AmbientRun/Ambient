@@ -15,9 +15,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - uses: chetan/git-restore-mtime-action@v1
       - name: Free up disk space
         run: |
           sudo rm -rf /usr/share/dotnet
@@ -58,9 +55,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - uses: chetan/git-restore-mtime-action@v1
       - uses: dtolnay/rust-toolchain@stable
       - uses: Leafwing-Studios/cargo-cache@v1
         with:
