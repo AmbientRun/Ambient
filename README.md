@@ -5,7 +5,7 @@
 [![MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AmbientOrg/Ambient#license)
 [![Discord](https://img.shields.io/discord/894505972289134632)](https://discord.gg/gYSM4tHZ)
 
-Ambient is a runtime for building high-performance multiplayer games and 3D applications, powered by WebAssembly, Rust and WebGPU. 
+Ambient is a runtime for building high-performance multiplayer games and 3D applications, powered by WebAssembly, Rust and WebGPU.
 
 ## Features
 
@@ -22,15 +22,9 @@ See the [documentation](https://ambientorg.github.io/Ambient/) for a getting sta
 
 ## Installing
 
-If you have a recent Rust toolchain (`stable` is sufficient), you can install Ambient using the following command:
+The easiest way to get Ambient is by downloading the latest release [here](https://github.com/AmbientOrg/Ambient/releases).
 
-```sh
-cargo install --git https://github.com/AmbientOrg/Ambient.git --tag v0.0.16 ambient
-```
-
-At present, a Git-based `cargo install` is required for the runtime. We are working on removing this requirement.
-
-See [installing](https://ambientorg.github.io/Ambient/installing.html) for more details.
+For alternative installation options, go the [documentation on installing](https://ambientorg.github.io/Ambient/installing.html).
 
 ## Roadmap
 

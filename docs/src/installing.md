@@ -1,14 +1,26 @@
 # Installing
 
-A [Rust](https://www.rust-lang.org/) toolchain is required to install Ambient. Once you have a toolchain available, run the following command to install the Ambient executable into your `PATH` (assuming `cargo` is in your `PATH`):
+The easiest way to install Ambient is to simple download the latest binary release from the [GitHub releases](https://github.com/AmbientOrg/Ambient/releases).
+
+You will also need [Rust](https://www.rust-lang.org/) installed so that you can compile Ambient modules.
+
+## Installing from the git repository
+
+To install the latest version from the `main` branch, run the following:
+
+```sh
+cargo install --git https://github.com/AmbientOrg/Ambient.git ambient
+```
+
+You can also specify a specific version, like this;
 
 ```sh
 cargo install --git https://github.com/AmbientOrg/Ambient.git --tag v0.0.16 ambient
 ```
 
-## Dependencies: Linux/Ubuntu
+### Build dependencies: Linux/Ubuntu
 
-These dependencies are required to build the C++ components of Ambient (i.e. PhysX). Please let us know if additional dependencies are required on your system.
+For the above to work on linux, you also need to install the following build dependencies;
 
 ```sh
 apt-get install -y build-essential cmake pkg-config libfontconfig1-dev clang libasound2-dev ninja-build
@@ -16,7 +28,7 @@ apt-get install -y build-essential cmake pkg-config libfontconfig1-dev clang lib
 
 ## Running on headless Linux/Ubuntu
 
-Install the above dependencies, then install the following:
+To run on a headless linux machine, install the following dependencies;
 
 ```sh
 add-apt-repository ppa:oibaf/graphics-drivers -y
