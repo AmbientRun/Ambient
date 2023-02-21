@@ -16,6 +16,7 @@ cargo doc -p ambient_api --open --no-deps
    - `README.md`
    - `Cargo.toml`
    - `docs/src/installing.md`
+   - `app/new_project_template/Cargo.toml`
    - `guest/rust/Cargo.toml`
    - `guest/rust/api/Cargo.toml` (`ambient_api_macro` version).
 3. Run `cargo build` in the root directory, and in `guest/rust`, so that `Cargo.lock` is created. The build process will update several files in the `guest` folder.
