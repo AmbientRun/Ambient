@@ -4,9 +4,9 @@ use ambient_api::{
         player::{player, user_id},
         primitives::{cube, quad},
         rendering::color,
-        transform::{lookat_center, scale, translation, rotation},
+        transform::{lookat_center, scale, translation, rotation}, physics::{character_controller_height, character_controller_radius, plane_collider, sphere_collider, visualizing},
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
+    concepts::{make_perspective_infinite_reverse_camera, make_transformable, make_sphere},
     prelude::*, player::KeyCode, rand,
 };
 use components::player_camera_ref;
@@ -18,6 +18,15 @@ pub async fn main() -> EventResult {
         .with_default(quad())
         .with(scale(), Vec3::ONE * 10.)
         .with(color(), vec4(1., 0., 0., 1.))
+        .with_default(plane_collider())
+        .spawn();
+
+    Entity::new()
+        .with_merge(make_transformable())
+        .with_merge(make_sphere())
+        .with(sphere_collider(), 1.)
+        .with(translation(), vec3(5., 5., 1.))
+        .with_default(visualizing())
         .spawn();
 
     spawn_query((player(), user_id())).bind(move |players| {
@@ -35,7 +44,10 @@ pub async fn main() -> EventResult {
                     .with_merge(make_transformable())
                     .with_default(cube())
                     .with(player_camera_ref(), camera)
-                    .with(color(), rand::random()),
+                    .with(color(), rand::random())
+                    .with(character_controller_height(), 2.)
+                    .with(character_controller_radius(), 0.5)
+                    .with_default(visualizing()),
             );
         }
     });

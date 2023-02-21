@@ -410,6 +410,9 @@ impl ColliderDef {
                 (vec![shape.clone()], vec![shape])
             })),
             ColliderDef::Sphere { radius, center } => Ok(Box::new(move |physics, scale| {
+                if radius <= 0. {
+                    return (vec![], vec![]);
+                }
                 let geometry = PxSphereGeometry::new(radius * scale.x);
                 let shape = PxShape::new(physics.physics, &geometry, &[&material], Some(true), None);
                 shape.set_local_pose(&PxTransform::from_translation(center * scale));
