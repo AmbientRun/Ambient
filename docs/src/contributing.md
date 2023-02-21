@@ -11,12 +11,10 @@ cargo doc -p ambient_api --open --no-deps
 
 ## Releasing
 
-1. Run `cargo run -p generate-docs` and `cargo run -- update-interface-components` to update the documentation from the codebase.
+1. Run `cargo run -F tools -p generate-docs` and `cargo run -- update-interface-components` to update the documentation from the codebase.
 2. Update workspace versions in:
-   - `README.md`
    - `Cargo.toml`
    - `docs/src/installing.md`
-   - `app/new_project_template/Cargo.toml`
    - `guest/rust/Cargo.toml`
    - `guest/rust/api/Cargo.toml` (`ambient_api_macro` version).
 3. Run `cargo build` in the root directory, and in `guest/rust`, so that `Cargo.lock` is created. The build process will update several files in the `guest` folder.

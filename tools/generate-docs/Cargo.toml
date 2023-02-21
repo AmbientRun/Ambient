@@ -11,3 +11,11 @@ rustdoc-types = "0.20.0"
 serde_json = { workspace = true }
 anyhow = { workspace = true }
 once_cell = { workspace = true }
+
+# Hack to make sure this doesn't show up for `cargo install`
+[features]
+tools = []
+
+[[bin]]
+name = "generate-docs"
+required-features = ["tools"]
