@@ -1,6 +1,6 @@
 [workspace]
 default-members = ["app"]
-exclude = ["guest", "app/new_project_template"]
+exclude = ["guest"]
 members = [
     "crates/*",
     "libs/*",
