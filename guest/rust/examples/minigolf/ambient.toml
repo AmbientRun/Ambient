@@ -1,0 +1,9 @@
+[project]
+id = "minigolf"
+name = "Minigolf"
+version = "0.0.1"
+
+[components]
+player_ball = { type = "Empty", name = "Player Ball", description = "Used to tag a player's ball" }
+origin = { type = "Vec3", name = "Origin", description = "An object's origin in world space." }
+rotate = { type = "Vec3", name = "Rotate", description = "Rotate an object at a given speed (radians/s)" }
