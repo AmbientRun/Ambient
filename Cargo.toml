@@ -135,6 +135,9 @@ cargo_toml = "0.15.0"
 toml_edit = "0.19.3"
 arboard = "3.2.0"
 noise = { version = "0.7.0", default-features = false }
+russimp = { version = "1.0.6", features = [
+    'prebuilt',
+] }
 
 # Patch cap-std until wasmtime/wit-bindgen can be updated
 [patch.crates-io]

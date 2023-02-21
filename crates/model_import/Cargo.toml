@@ -38,15 +38,7 @@ ordered-float = { workspace = true }
 indexmap = { workspace = true }
 log = { workspace = true }
 relative-path = { workspace = true }
-
-[target.'cfg(target_os = "linux")'.dependencies]
-russimp = { version = "1.0.6", features = [
-    'static-link',
-] }
-[target.'cfg(not(target_os = "linux"))'.dependencies]
-russimp = { version = "1.0.6", features = [
-    'prebuilt',
-] }
+russimp = { workspace = true }
 
 [dev-dependencies]
 ambient_app = { path = "../app" }
