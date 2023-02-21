@@ -2,3 +2,4 @@ examples/*/.cargo
 examples/*/.gitignore
 examples/*/build
 examples/*/target
+api/wit
