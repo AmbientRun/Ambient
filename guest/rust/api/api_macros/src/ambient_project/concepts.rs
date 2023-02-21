@@ -83,6 +83,7 @@ fn generate_make(
         .collect::<anyhow::Result<Vec<_>>>()?;
 
     Ok(quote! {
+        #[allow(clippy::approx_constant)]
         #[doc = #make_comment]
         pub fn #make_ident() -> Entity {
             Entity::new()

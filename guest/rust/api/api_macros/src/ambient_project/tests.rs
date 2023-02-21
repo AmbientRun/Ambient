@@ -400,6 +400,7 @@ fn can_generate_concepts() {
             use super::components;
             use ambient_api2::prelude::*;
 
+            #[allow(clippy::approx_constant)]
             #[doc = "Makes a Colored Sphere (A sphere with some color!)"]
             pub fn make_colored_sphere() -> Entity {
                 Entity::new()
@@ -414,6 +415,7 @@ fn can_generate_concepts() {
                 ])
             }
 
+            #[allow(clippy::approx_constant)]
             #[doc = "Makes a Sphere (A primitive sphere.)"]
             pub fn make_sphere() -> Entity {
                 Entity::new()
@@ -434,6 +436,7 @@ fn can_generate_concepts() {
                 ])
             }
 
+            #[allow(clippy::approx_constant)]
             #[doc = "Makes a Transformable (Can be translated, rotated and scaled.)"]
             pub fn make_transformable() -> Entity {
                 Entity::new()
@@ -591,6 +594,7 @@ fn can_generate_concepts_with_all_supported_types() {
         pub mod concepts {
             use super::components;
             use ambient_api2::prelude::*;
+            #[allow(clippy::approx_constant)]
             #[doc = "Makes a Everything (Everywhere all at once)"]
             pub fn make_everything() -> Entity {
                 Entity::new()
@@ -706,6 +710,7 @@ fn can_extend_with_multiple_concepts() {
             use super::components;
             use ambient_api2::prelude::*;
 
+            #[allow(clippy::approx_constant)]
             #[doc = "Makes a C1 ()"]
             pub fn make_concept1() -> Entity {
                 Entity::new().with(components::f32(), 4f32)
@@ -715,6 +720,7 @@ fn can_extend_with_multiple_concepts() {
                 entity::has_components(id, &[&components::f32()])
             }
 
+            #[allow(clippy::approx_constant)]
             #[doc = "Makes a C2 ()"]
             pub fn make_concept2() -> Entity {
                 Entity::new().with(components::f64(), 8f64)
@@ -724,6 +730,7 @@ fn can_extend_with_multiple_concepts() {
                 entity::has_components(id, &[&components::f64()])
             }
 
+            #[allow(clippy::approx_constant)]
             #[doc = "Makes a C3 ()"]
             pub fn make_concept3() -> Entity {
                 Entity::new()
