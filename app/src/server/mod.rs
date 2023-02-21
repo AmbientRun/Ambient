@@ -128,8 +128,12 @@ pub(crate) fn start_server(
     let port = server.port;
 
     wasm::init_all_components();
-    let public_host =
-        cli.public_host.or_else(|| local_ip_address::local_ip().ok().map(|x| x.to_string())).unwrap_or("localhost".to_string());
+    let public_host = cli
+        .command
+        .host()
+        .and_then(|h| h.public_host.clone())
+        .or_else(|| local_ip_address::local_ip().ok().map(|x| x.to_string()))
+        .unwrap_or("localhost".to_string());
     log::info!("Created server, running at {public_host}:{port}");
     ServerBaseUrlKey.insert(&assets, AbsAssetUrl::parse(format!("http://{public_host}:{HTTP_INTERFACE_PORT}/content/")).unwrap());
 
