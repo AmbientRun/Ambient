@@ -11,7 +11,7 @@ cargo doc -p ambient_api --open --no-deps
 
 ## Releasing
 
-1. Run `cargo run -F tools -p generate-docs` and `cargo run -- update-interface-components` to update the documentation from the codebase.
+1. Run `cargo run --example -p generate-docs` and `cargo run -- update-interface-components` to update the documentation from the codebase.
 2. Update workspace versions in:
    - `Cargo.toml`
    - `docs/src/installing.md`

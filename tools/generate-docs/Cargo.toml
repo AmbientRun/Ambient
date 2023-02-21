@@ -12,10 +12,4 @@ serde_json = { workspace = true }
 anyhow = { workspace = true }
 once_cell = { workspace = true }
 
-# Hack to make sure this doesn't show up for `cargo install`
-[features]
-tools = []
-
-[[bin]]
-name = "generate-docs"
-required-features = ["tools"]
+# This tool is an example as a hack to make sure this doesn't show up for `cargo install`
