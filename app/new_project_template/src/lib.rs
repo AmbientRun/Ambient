@@ -17,7 +17,10 @@ pub async fn main() -> EventResult {
         .with(lookat_center(), vec3(0., 0., 0.))
         .spawn();
 
-    Entity::new().with_merge(make_transformable()).with_default(quad()).spawn();
+    Entity::new()
+        .with_merge(make_transformable())
+        .with_default(quad())
+        .spawn();
 
     println!("Hello, Ambient!");
 
