@@ -157,7 +157,7 @@ pub(crate) fn start_server(
             .run(
                 server_world,
                 Arc::new(|_world| server_systems()),
-                Arc::new(on_forking_systems),
+                Arc::new(|| on_forking_systems()),
                 Arc::new(on_shutdown_systems),
                 Arc::new(is_sync_component),
             )
