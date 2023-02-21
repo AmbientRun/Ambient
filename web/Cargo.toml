@@ -1,6 +1,6 @@
 [package]
 name = "ambient_web"
-version.workspace = true
+version = { workspace = true }
 edition = "2021"
 
 [lib]
@@ -16,12 +16,10 @@ tracing-subscriber = { version = "0.3", features = ["time"] }
 tracing-web = "0.1"
 time = { version = "0.3", features = ["wasm-bindgen"] }
 web-sys = { version = "0.3", features = ["Performance", "Document"] }
-
 getrandom = { version = "0.2.8", features = ["js"] }
 
-
-futures.workspace = true
-tracing.workspace = true
+futures = { workspace = true }
+tracing = { workspace = true }
 
 [target.'cfg(target_arch = "wasm32")'.profile.release]
 # Tell `rustc` to optimize for small code size.
