@@ -114,7 +114,6 @@ fn convert_primitive_type_to_rust_type(
         "Vec2" => Some(quote! {#api_name::global::Vec2}),
         "Vec3" => Some(quote! {#api_name::global::Vec3}),
         "Vec4" => Some(quote! {#api_name::global::Vec4}),
-        "ObjectRef" => Some(quote! {#api_name::global::ObjectRef}),
         _ => None,
     }
 }

@@ -13,7 +13,7 @@ use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_intent::client_push_intent;
 use ambient_network::{client::GameClient, hooks::use_remote_component};
 use ambient_physics::collider::{character_controller_height, character_controller_radius, collider, collider_type, mass};
-use ambient_std::{asset_url::ObjectRef, cb, Cb};
+use ambient_std::{cb, Cb};
 use ambient_ui::{
     align_horizontal, align_vertical,
     layout::{fit_horizontal, margin, Borders, Fit},
@@ -220,7 +220,6 @@ fn EntityComponentsEditor(_hooks: &mut Hooks, value: EntityData, on_change: Cb<d
                 PrimitiveComponentType::Vec2 => register_dynamic_component::<Vec2>(t, &display_name, desc),
                 PrimitiveComponentType::Vec3 => register_dynamic_component::<Vec3>(t, &display_name, desc),
                 PrimitiveComponentType::Vec4 => register_dynamic_component::<Vec4>(t, &display_name, desc),
-                PrimitiveComponentType::ObjectRef => register_dynamic_component::<ObjectRef>(t, &display_name, desc),
                 _ => None,
             };
 

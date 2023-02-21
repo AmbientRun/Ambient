@@ -486,7 +486,6 @@ fn can_generate_concepts_with_all_supported_types() {
         vec2 = { type = "Vec2", name = "Vec2", description = "" }
         vec3 = { type = "Vec3", name = "Vec3", description = "" }
         vec4 = { type = "Vec4", name = "Vec4", description = "" }
-        object_ref = { type = "ObjectRef", name = "ObjectRef", description = "" }
         vec_vec2 = { type = { type = "Vec", element_type = "Vec2" }, name = "VecVec2", description = "" }
         option_string1 = { type = { type = "Option", element_type = "String" }, name = "OptionString1", description = "" }
         option_string2 = { type = { type = "Option", element_type = "String" }, name = "OptionString2", description = "" }
@@ -509,7 +508,6 @@ fn can_generate_concepts_with_all_supported_types() {
         vec2 = [1.0, 2.0]
         vec3 = [1.0, 2.0, 3.0]
         vec4 = [1.0, 2.0, 3.0, 4.0]
-        object_ref = "http://192.168.0.4:8999/assets/assets/Shape.glb/models/main.json"
         vec_vec2 = [[1.0, 2.0], [3.0, 4.0]]
         option_string1 = ["The Answer Is"]
         option_string2 = []
@@ -548,10 +546,6 @@ fn can_generate_concepts_with_all_supported_types() {
             static MAT4: Lazy< Component<ambient_api2::global::Mat4> > = Lazy::new(|| __internal_get_component("my_project::mat4"));
             #[doc = "**Mat4**"]
             pub fn mat4() -> Component<ambient_api2::global::Mat4> { *MAT4 }
-
-            static OBJECT_REF: Lazy< Component<ambient_api2::global::ObjectRef> > = Lazy::new(|| __internal_get_component("my_project::object_ref"));
-            #[doc = "**ObjectRef**"]
-            pub fn object_ref() -> Component<ambient_api2::global::ObjectRef> { *OBJECT_REF }
 
             static OPTION_STRING1: Lazy< Component< Option<String> > > = Lazy::new(|| __internal_get_component("my_project::option_string1"));
             #[doc = "**OptionString1**"]
@@ -610,7 +604,6 @@ fn can_generate_concepts_with_all_supported_types() {
                         1f32, 2f32, 3f32, 4f32, 5f32, 6f32, 7f32, 8f32, 9f32, 10f32, 11f32, 12f32,
                         13f32, 14f32, 15f32, 16f32
                     ]))
-                    .with(components::object_ref(), ObjectRef::new("http://192.168.0.4:8999/assets/assets/Shape.glb/models/main.json"))
                     .with(components::option_string1(), Some("The Answer Is".to_string()))
                     .with(components::option_string2(), None)
                     .with(components::quat(), Quat::from_xyzw(1f32, -0.5f32, 0.3f32, -0.6f32))
@@ -634,7 +627,6 @@ fn can_generate_concepts_with_all_supported_types() {
                         &components::f64(),
                         &components::i32(),
                         &components::mat4(),
-                        &components::object_ref(),
                         &components::option_string1(),
                         &components::option_string2(),
                         &components::quat(),

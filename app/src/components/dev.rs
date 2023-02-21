@@ -2,7 +2,6 @@ use ambient_ecs::{
     primitive_component_definitions, ComponentDesc, ComponentValue, DefaultValue, EntityId, ExternalComponentAttributes,
     PrimitiveComponentType,
 };
-use ambient_std::asset_url::ObjectRef;
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
 
 pub fn build_components_toml() -> toml_edit::Document {
@@ -294,11 +293,6 @@ impl ToToml for Vec3 {
 impl ToToml for Vec4 {
     fn to_toml(&self) -> Option<toml_edit::Value> {
         convert_array(self.to_array())
-    }
-}
-impl ToToml for ObjectRef {
-    fn to_toml(&self) -> Option<toml_edit::Value> {
-        Some(self.to_string().into())
     }
 }
 

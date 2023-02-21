@@ -2,7 +2,7 @@ use std::time::SystemTime;
 
 use ambient_animation as ea;
 use ambient_ecs::EntityId;
-use ambient_std::asset_url::{ObjectRef, TypedAssetUrl};
+use ambient_std::asset_url::TypedAssetUrl;
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
 use wit_bindgen_host_wasmtime_rust::{Endian, Le};
 
@@ -125,27 +125,6 @@ impl FromBindgen for host::Mat4 {
             self.z.from_bindgen(),
             self.w.from_bindgen(),
         )
-    }
-}
-
-impl IntoBindgen for ObjectRef {
-    type Item = host::ObjectRefResult;
-    fn into_bindgen(self) -> Self::Item {
-        Self::Item {
-            id: self.to_string(),
-        }
-    }
-}
-impl<'a> FromBindgen for host::ObjectRefParam<'a> {
-    type Item = ObjectRef;
-    fn from_bindgen(self) -> Self::Item {
-        Self::Item::parse(self.id).unwrap()
-    }
-}
-impl FromBindgen for host::ObjectRefResult {
-    type Item = ObjectRef;
-    fn from_bindgen(self) -> Self::Item {
-        Self::Item::parse(self.id).unwrap()
     }
 }
 

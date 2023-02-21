@@ -220,7 +220,6 @@ fn toml_value_to_tokens_primitive(
             let arr = toml_array_f32_to_array_tokens(path, a)?;
             quote! { Vec4::new(#arr) }
         }
-        ("ObjectRef", toml::Value::String(s)) => quote! {ObjectRef::new(#s)},
         _ => anyhow::bail!("unsupported type `{ty}` and value `{value}` for component `{path}`"),
     })
 }

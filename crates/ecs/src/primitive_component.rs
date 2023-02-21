@@ -1,6 +1,5 @@
 use std::{any::TypeId, collections::HashMap};
 
-use ambient_std::asset_url::ObjectRef;
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
 use once_cell::sync::Lazy;
 use paste::paste;
@@ -28,8 +27,7 @@ macro_rules! primitive_component_definitions {
             (U64, u64),
             (Vec2, Vec2),
             (Vec3, Vec3),
-            (Vec4, Vec4),
-            (ObjectRef, ObjectRef)
+            (Vec4, Vec4)
         );
     };
 }

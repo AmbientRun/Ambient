@@ -35,10 +35,6 @@ record mat4 {
     w: vec4,
 }
 
-record object-ref {
-    id: string,
-}
-
 /// An action in an animation.
 record animation-action {
     // we assume only URLs for now
@@ -76,7 +72,6 @@ variant component-list-type {
     type-vec2(list<vec2>),
     type-vec3(list<vec3>),
     type-vec4(list<vec4>),
-    type-object-ref(list<object-ref>),
 }
 
 variant component-option-type {
@@ -94,7 +89,6 @@ variant component-option-type {
     type-vec2(option<vec2>),
     type-vec3(option<vec3>),
     type-vec4(option<vec4>),
-    type-object-ref(option<object-ref>),
 }
 
 variant component-type {
@@ -112,7 +106,6 @@ variant component-type {
     type-vec2(vec2),
     type-vec3(vec3),
     type-vec4(vec4),
-    type-object-ref(object-ref),
     type-list(component-list-type),
     type-option(component-option-type),
 }

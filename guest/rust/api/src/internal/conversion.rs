@@ -1,5 +1,5 @@
 use crate::{
-    global::{EntityId, Mat4, ObjectRef, Quat, Vec2, Vec3, Vec4},
+    global::{EntityId, Mat4, Quat, Vec2, Vec3, Vec4},
     internal::host,
 };
 
@@ -125,33 +125,6 @@ impl FromBindgen for host::Mat4 {
             self.z.from_bindgen(),
             self.w.from_bindgen(),
         )
-    }
-}
-
-impl<'a> IntoBindgen for &'a ObjectRef {
-    type Item = host::ObjectRefParam<'a>;
-    fn into_bindgen(self) -> Self::Item {
-        Self::Item { id: self.as_ref() }
-    }
-}
-impl IntoBindgen for ObjectRef {
-    type Item = host::ObjectRefResult;
-    fn into_bindgen(self) -> Self::Item {
-        Self::Item {
-            id: self.as_ref().to_owned(),
-        }
-    }
-}
-impl<'a> FromBindgen for host::ObjectRefParam<'a> {
-    type Item = ObjectRef;
-    fn from_bindgen(self) -> Self::Item {
-        Self::Item::Owned(self.id.to_string())
-    }
-}
-impl FromBindgen for host::ObjectRefResult {
-    type Item = ObjectRef;
-    fn from_bindgen(self) -> Self::Item {
-        Self::Item::Owned(self.id)
     }
 }
 

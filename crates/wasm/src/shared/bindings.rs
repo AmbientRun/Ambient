@@ -2,7 +2,7 @@ use ambient_ecs::{
     paste::paste, primitive_component_definitions, with_component_registry, Component,
     ComponentDesc, ComponentEntry, ECSError, EntityData, EntityId, World,
 };
-use ambient_std::asset_url::ObjectRef;
+
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
 
 use super::{

@@ -21,7 +21,6 @@ pub(super) enum ComponentListType<'a> {
     TypeVec2(Vec<host::Vec2>),
     TypeVec3(Vec<host::Vec3>),
     TypeVec4(Vec<host::Vec4>),
-    TypeObjectRef(Vec<host::ObjectRefParam<'a>>),
 }
 impl<'a> ComponentListType<'a> {
     fn as_main(&'a self) -> host::ComponentListTypeParam<'a> {
@@ -40,7 +39,6 @@ impl<'a> ComponentListType<'a> {
             Self::TypeVec2(v) => host::ComponentListTypeParam::TypeVec2(v.as_slice()),
             Self::TypeVec3(v) => host::ComponentListTypeParam::TypeVec3(v.as_slice()),
             Self::TypeVec4(v) => host::ComponentListTypeParam::TypeVec4(v.as_slice()),
-            Self::TypeObjectRef(v) => host::ComponentListTypeParam::TypeObjectRef(v.as_slice()),
         }
     }
 }
@@ -60,7 +58,6 @@ pub(super) enum ComponentOptionType<'a> {
     TypeVec2(Option<host::Vec2>),
     TypeVec3(Option<host::Vec3>),
     TypeVec4(Option<host::Vec4>),
-    TypeObjectRef(Option<host::ObjectRefParam<'a>>),
 }
 impl<'a> ComponentOptionType<'a> {
     fn as_main(&self) -> host::ComponentOptionTypeParam<'a> {
@@ -79,7 +76,6 @@ impl<'a> ComponentOptionType<'a> {
             Self::TypeVec2(v) => host::ComponentOptionTypeParam::TypeVec2(*v),
             Self::TypeVec3(v) => host::ComponentOptionTypeParam::TypeVec3(*v),
             Self::TypeVec4(v) => host::ComponentOptionTypeParam::TypeVec4(*v),
-            Self::TypeObjectRef(v) => host::ComponentOptionTypeParam::TypeObjectRef(v.clone()),
         }
     }
 }
@@ -99,7 +95,6 @@ pub(super) enum ComponentType<'a> {
     TypeVec2(host::Vec2),
     TypeVec3(host::Vec3),
     TypeVec4(host::Vec4),
-    TypeObjectRef(host::ObjectRefParam<'a>),
     TypeList(ComponentListType<'a>),
     TypeOption(ComponentOptionType<'a>),
 }
@@ -128,9 +123,6 @@ pub(super) fn create_owned_types(
                     host::ComponentTypeResult::TypeVec2(v) => ComponentType::TypeVec2(*v),
                     host::ComponentTypeResult::TypeVec3(v) => ComponentType::TypeVec3(*v),
                     host::ComponentTypeResult::TypeVec4(v) => ComponentType::TypeVec4(*v),
-                    host::ComponentTypeResult::TypeObjectRef(v) => {
-                        ComponentType::TypeObjectRef(host::ObjectRefParam { id: &v.id })
-                    }
                     host::ComponentTypeResult::TypeList(v) => ComponentType::TypeList(match v {
                         host::ComponentListTypeResult::TypeEmpty(v) => {
                             ComponentListType::TypeEmpty(v.clone())
@@ -173,13 +165,6 @@ pub(super) fn create_owned_types(
                         }
                         host::ComponentListTypeResult::TypeVec4(v) => {
                             ComponentListType::TypeVec4(v.clone())
-                        }
-                        host::ComponentListTypeResult::TypeObjectRef(v) => {
-                            ComponentListType::TypeObjectRef(
-                                v.iter()
-                                    .map(|v| host::ObjectRefParam { id: &v.id })
-                                    .collect(),
-                            )
                         }
                     }),
                     host::ComponentTypeResult::TypeOption(v) => {
@@ -226,11 +211,6 @@ pub(super) fn create_owned_types(
                             host::ComponentOptionTypeResult::TypeVec4(v) => {
                                 ComponentOptionType::TypeVec4(*v)
                             }
-                            host::ComponentOptionTypeResult::TypeObjectRef(v) => {
-                                ComponentOptionType::TypeObjectRef(
-                                    v.as_ref().map(|v| host::ObjectRefParam { id: &v.id }),
-                                )
-                            }
                         })
                     }
                 },
@@ -263,9 +243,6 @@ pub(super) fn create_borrowed_types<'a>(
                     ComponentType::TypeVec2(v) => host::ComponentTypeParam::TypeVec2(*v),
                     ComponentType::TypeVec3(v) => host::ComponentTypeParam::TypeVec3(*v),
                     ComponentType::TypeVec4(v) => host::ComponentTypeParam::TypeVec4(*v),
-                    ComponentType::TypeObjectRef(v) => {
-                        host::ComponentTypeParam::TypeObjectRef(host::ObjectRefParam { id: v.id })
-                    }
                     ComponentType::TypeList(v) => host::ComponentTypeParam::TypeList(v.as_main()),
                     ComponentType::TypeOption(v) => {
                         host::ComponentTypeParam::TypeOption(v.as_main())
