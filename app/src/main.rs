@@ -231,7 +231,7 @@ fn main() -> anyhow::Result<()> {
     let runtime = tokio::runtime::Builder::new_multi_thread().enable_all().build()?;
     let assets = AssetCache::new(runtime.handle().clone());
     PhysicsKey.get(&assets); // Load physics
-    AssetsCacheOnDisk.insert(&assets, false); // Disable disk caching for now; see https://github.com/AmbientOrg/Ambient/issues/81
+    AssetsCacheOnDisk.insert(&assets, false); // Disable disk caching for now; see https://github.com/AmbientRun/Ambient/issues/81
 
     let cli = Cli::parse();
 

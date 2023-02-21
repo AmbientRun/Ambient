@@ -2,7 +2,7 @@
 //!
 //! Welcome to the Ambient Rust API! This API allows you to write logic for the Ambient Runtime in Rust.
 //!
-//! You can find the Ambient Book at: <https://ambientorg.github.io/Ambient/>
+//! You can find the Ambient Book at: <https://ambientrun.github.io/Ambient/>
 //!
 //! Ambient has first-class support for Rust. Please report any issues you encounter to the repository.
 #![deny(missing_docs)]

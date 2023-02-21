@@ -1,6 +1,6 @@
 # Installing
 
-The easiest way to install Ambient is to simple download the latest binary release from the [GitHub releases](https://github.com/AmbientOrg/Ambient/releases).
+The easiest way to install Ambient is to simple download the latest binary release from the [GitHub releases](https://github.com/AmbientRun/Ambient/releases).
 
 You will also need [Rust](https://www.rust-lang.org/) installed so that you can compile Ambient modules.
 
@@ -9,13 +9,13 @@ You will also need [Rust](https://www.rust-lang.org/) installed so that you can 
 To install the latest version from the `main` branch, run the following:
 
 ```sh
-cargo install --git https://github.com/AmbientOrg/Ambient.git ambient
+cargo install --git https://github.com/AmbientRun/Ambient.git ambient
 ```
 
 You can also specify a specific version, like this;
 
 ```sh
-cargo install --git https://github.com/AmbientOrg/Ambient.git --tag v0.0.16 ambient
+cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.0.16 ambient
 ```
 
 ### Build dependencies: Linux/Ubuntu

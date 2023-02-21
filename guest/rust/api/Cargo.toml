@@ -6,7 +6,7 @@ license = "MIT"
 documentation = "https://docs.rs/ambient_api"
 version = { workspace = true }
 readme = "../../../README.md"
-repository = "https://github.com/AmbientOrg/Ambient"
+repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]
 ambient_api_macros = { path = "api_macros", version = "0.0.17" }
