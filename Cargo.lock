@@ -121,8 +121,8 @@ dependencies = [
  "ambient_model",
  "ambient_model_import",
  "ambient_network",
- "ambient_object",
  "ambient_physics",
+ "ambient_prefab",
  "ambient_primitives",
  "ambient_project",
  "ambient_renderer",
@@ -490,8 +490,8 @@ dependencies = [
  "ambient_model",
  "ambient_naturals",
  "ambient_network",
- "ambient_object",
  "ambient_physics",
+ "ambient_prefab",
  "ambient_primitives",
  "ambient_renderer",
  "ambient_rpc",
@@ -803,28 +803,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_object"
-version = "0.0.18"
-dependencies = [
- "ambient_core",
- "ambient_decals",
- "ambient_ecs",
- "ambient_model",
- "ambient_network",
- "ambient_physics",
- "ambient_rpc",
- "ambient_std",
- "anyhow",
- "async-trait",
- "glam 0.22.0",
- "log",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
-]
-
-[[package]]
 name = "ambient_physics"
 version = "0.0.18"
 dependencies = [
@@ -858,6 +836,28 @@ dependencies = [
  "serde_json",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "ambient_prefab"
+version = "0.0.18"
+dependencies = [
+ "ambient_core",
+ "ambient_decals",
+ "ambient_ecs",
+ "ambient_model",
+ "ambient_network",
+ "ambient_physics",
+ "ambient_rpc",
+ "ambient_std",
+ "anyhow",
+ "async-trait",
+ "glam 0.22.0",
+ "log",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
 ]
 
 [[package]]
@@ -1119,8 +1119,8 @@ dependencies = [
  "ambient_ecs",
  "ambient_input",
  "ambient_network",
- "ambient_object",
  "ambient_physics",
+ "ambient_prefab",
  "ambient_project",
  "ambient_std",
  "anyhow",

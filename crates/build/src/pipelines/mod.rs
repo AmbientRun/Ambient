@@ -21,7 +21,7 @@ pub mod out_asset;
 #[serde(tag = "type")]
 pub enum PipelineConfig {
     /// The models asset pipeline.
-    /// Will import models (including constituent materials and animations) and generate object definitions for them by default.
+    /// Will import models (including constituent materials and animations) and generate prefabs for them by default.
     Models(ModelsPipeline),
     /// The materials asset pipeline.
     /// Will import specific materials without needing to be part of a model.

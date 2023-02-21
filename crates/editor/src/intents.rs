@@ -16,8 +16,8 @@ use ordered_float::OrderedFloat;
 use physxx::{PxActor, PxQueryFilterData, PxRaycastCallback, PxTransform, PxUserData};
 use serde::{Deserialize, Serialize};
 
-use crate::{selection, ui::entity_editor::ObjectComponentChange, Selection};
-use ambient_object::object_from_url;
+use crate::{selection, ui::entity_editor::EntityComponentChange, Selection};
+use ambient_prefab::prefab_from_url;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct IntentTransformRevert {
@@ -65,8 +65,8 @@ components!("editor", {
     intent_duplicate_undo: Vec<EntityId>,
     intent_delete: Vec<EntityId>,
     intent_delete_undo: (World, Selection),
-    intent_component_change: (EntityId, ObjectComponentChange),
-    intent_component_change_undo: (EntityId, ObjectComponentChange),
+    intent_component_change: (EntityId, EntityComponentChange),
+    intent_component_change_undo: (EntityId, EntityComponentChange),
 });
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -518,7 +518,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
             let world = ctx.world;
 
             tokio::task::block_in_place(|| {
-                let data = EntityData::new().set(translation(), position).set_default(selectable()).set(object_from_url(), object_url);
+                let data = EntityData::new().set(translation(), position).set_default(selectable()).set(prefab_from_url(), object_url);
                 world.spawn_with_id(entity_id, data);
             });
 

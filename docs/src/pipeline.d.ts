@@ -11,7 +11,7 @@ export type Pipeline = {
   /// The type of pipeline to use.
   pipeline: {
     /// The models asset pipeline.
-    /// Will import models (including constituent materials and animations) and generate object definitions for them by default.
+    /// Will import models (including constituent materials and animations) and generate prefabs for them by default.
     type: "Models",
     /// The importer to use to process models.
     importer?: {
@@ -20,7 +20,7 @@ export type Pipeline = {
     } | {
       /// Import Unity models.
       type: "UnityModels",
-      /// Whether or not the prefabs should be converted to objects.
+      /// Whether or not the Unity prefabs should be converted to Ambient prefabs.
       use_prefabs: boolean,
     } | {
       /// Import Quixel models.
@@ -29,7 +29,7 @@ export type Pipeline = {
     /// Use assimp as the importer.
     /// This will support more file formats, but is less well-integrated. Off by default.
     force_assimp?: boolean,
-    /// The physics collider to use for this object.
+    /// The physics collider to use for this mesh.
     collider?: {
       /// No physics collider. The default.
       type: "None",
@@ -58,7 +58,7 @@ export type Pipeline = {
       "TriggerArea" | 
       /// This object should only be present in the picking scene.
       "Picking",
-    /// Whether or not this object should have its texture sizes capped.
+    /// Whether or not this mesh should have its texture sizes capped.
     cap_texture_sizes?: 
       /// Cap this model's textures to 128x128.
       "X128" | 
@@ -76,19 +76,19 @@ export type Pipeline = {
       /// It is strongly recommended that this is a power of two.
       {"Custom": u32},
     /// Treats all assets in the pipeline as variations, and outputs a single asset which is a collection of all assets.
-    /// Most useful for grass and other objects whose individual identity is not important.
+    /// Most useful for grass and other entities whose individual identity is not important.
     collection_of_variants?: boolean,
-    /// Output objects that can be spawned. On by default.
-    output_objects?: boolean,
+    /// Output prefabs that can be spawned. On by default.
+    output_prefabs?: boolean,
     /// Output the animations that belonged to this model.
     output_animations?: boolean,
-    /// If specified, these components will be added to the objects produced by `output_objects`.
+    /// If specified, these components will be added to the prefabs produced by `output_prefabs`.
     /// 
-    /// This is a great way to specify additional information about your object that can be used by gameplay logic.
+    /// This is a great way to specify additional information about your prefab that can be used by gameplay logic.
     /// Note that these components should have static data (i.e. statistics), not dynamic state, as any such state could be
-    /// replaced by this object being reloaded.
-    object_components?: EntityData,
-    /// If specified, a list of overrides to use for the materials for the object.
+    /// replaced by this prefab being reloaded.
+    prefab_components?: EntityData,
+    /// If specified, a list of overrides to use for the materials for the mesh.
     material_overrides?: {
       /// The filter for this override (i.e. what it should apply to).
       filter: {
@@ -179,12 +179,12 @@ export type Pipeline = {
       /// The factor to scale this model's animations by.
       scale: f32,
     } | {
-      /// Re-root this object.
+      /// Re-root this mesh.
       type: "SetRoot",
-      /// The name of the node to set as the new root for this object.
+      /// The name of the node to set as the new root for this mesh.
       name: string,
     } | {
-      /// Re-center this object such that the root is located at the origin.
+      /// Re-center this mesh such that the root is located at the origin.
       type: "Center",
     })[],
   } | {
@@ -232,7 +232,7 @@ export type Pipeline = {
       /// Import Quixel materials.
       type: "Quixel",
     },
-    /// Whether or not decal objects should be created for each of these materials.
+    /// Whether or not decal prefabs should be created for each of these materials.
     output_decals?: boolean,
   } | {
     /// The audio asset pipeline.

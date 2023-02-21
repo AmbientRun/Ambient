@@ -34,7 +34,7 @@ fn make_components() -> toml_edit::Table {
         ("core::game_objects", "Game Objects", "Pre-defined game objects that implement specific behaviours."),
         ("core::model", "Model", "Information about models attached to entities."),
         ("core::network", "Network", "Network-related state."),
-        ("core::object", "Object", "External object related state (e.g. drawing objects from remote URLs)"),
+        ("core::prefab", "Prefab", "Prefab-related state, including loading of prefabs."),
         ("core::physics", "Physics", "Physics functionality and state."),
         ("core::player", "Player", "Components that are attached to player entities."),
         (
@@ -48,7 +48,7 @@ fn make_components() -> toml_edit::Table {
             "Transform",
             "Entity transform state (including translation, rotation and scale), as well as other transformations for this entity.",
         ),
-        ("core::ui", "Ui", "Anything related to ui and text."),
+        ("core::ui", "UI", "Anything related to UI and text."),
     ];
 
     for (path, name, description) in namespaces {

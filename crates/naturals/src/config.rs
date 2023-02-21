@@ -4,7 +4,7 @@ use ambient_editor_derive::ElementEditor;
 use ambient_model::Model;
 use ambient_std::{
     asset_cache::AsyncAssetKeyExt,
-    asset_url::{AssetUrlCollection, ObjectAssetType},
+    asset_url::{AssetUrlCollection, PrefabAssetType},
     download_asset::AssetError,
     include_file,
 };
@@ -48,7 +48,7 @@ pub struct NaturalLayer {
 pub struct NaturalElement {
     #[serde(default = "true_value")]
     pub enabled: bool,
-    pub models: Vec<AssetUrlCollection<ObjectAssetType>>,
+    pub models: Vec<AssetUrlCollection<PrefabAssetType>>,
 
     #[serde(default = "white_value")]
     pub color: RGB,

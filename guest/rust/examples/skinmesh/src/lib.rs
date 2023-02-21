@@ -1,7 +1,7 @@
 use ambient_api::{
     components::core::{
         game_objects::player_camera,
-        object::object_from_url,
+        prefab::prefab_from_url,
         player::player,
         primitives::quad,
         rendering::color,
@@ -32,7 +32,7 @@ pub async fn main() -> EventResult {
     let unit_id = Entity::new()
         .with_merge(make_transformable())
         .with(
-            object_from_url(),
+            prefab_from_url(),
             asset_url("assets/Peasant Man.fbx").unwrap(),
         )
         .spawn();

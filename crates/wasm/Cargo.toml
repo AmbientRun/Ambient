@@ -12,7 +12,7 @@ ambient_core = { path = "../core" }
 ambient_ecs = { path = "../ecs" }
 ambient_input = { path = "../input" }
 ambient_network = { path = "../network" }
-ambient_object = { path = "../object" }
+ambient_prefab = { path = "../prefab" }
 ambient_physics = { path = "../physics" }
 ambient_project = { path = "../project" }
 ambient_std = { path = "../std" }

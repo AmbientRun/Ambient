@@ -32,7 +32,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
         }
         assets.push(OutAsset {
             id: asset_id_from_url(&ctx.out_root().push("col").unwrap()),
-            type_: AssetType::Object,
+            type_: AssetType::Prefab,
             hidden: false,
             name: ctx.process_ctx.package_name.to_string(),
 
@@ -60,31 +60,31 @@ pub struct ModelsPipeline {
     #[serde(default)]
     force_assimp: bool,
     #[serde(default)]
-    /// The physics collider to use for this object.
+    /// The physics collider to use for this mesh.
     collider: Collider,
     /// If a collider is present, this controls how it will interact with other colliders.
     #[serde(default)]
     collider_type: ColliderType,
-    /// Whether or not this object should have its texture sizes capped.
+    /// Whether or not this mesh should have its texture sizes capped.
     cap_texture_sizes: Option<ModelTextureSize>,
     /// Treats all assets in the pipeline as variations, and outputs a single asset which is a collection of all assets.
-    /// Most useful for grass and other objects whose individual identity is not important.
+    /// Most useful for grass and other entities whose individual identity is not important.
     #[serde(default)]
     collection_of_variants: bool,
-    /// Output objects that can be spawned. On by default.
+    /// Output prefabs that can be spawned. On by default.
     #[serde(default = "true_value")]
-    output_objects: bool,
+    output_prefabs: bool,
     /// Output the animations that belonged to this model.
     #[serde(default = "true_value")]
     output_animations: bool,
-    /// If specified, these components will be added to the objects produced by `output_objects`.
+    /// If specified, these components will be added to the prefabs produced by `output_prefabs`.
     ///
-    /// This is a great way to specify additional information about your object that can be used by gameplay logic.
+    /// This is a great way to specify additional information about your prefab that can be used by gameplay logic.
     /// Note that these components should have static data (i.e. statistics), not dynamic state, as any such state could be
-    /// replaced by this object being reloaded.
+    /// replaced by this prefab being reloaded.
     #[serde(default)]
-    object_components: EntityData,
-    /// If specified, a list of overrides to use for the materials for the object.
+    prefab_components: EntityData,
+    /// If specified, a list of overrides to use for the materials for the mesh.
     #[serde(default)]
     material_overrides: Vec<MaterialOverride>,
     /// If specified, a list of transformations to apply to this model. This can be used
@@ -120,10 +120,10 @@ impl ModelsPipeline {
             }
             Collider::Character { radius, height } => model_crate.create_character_collider(radius, height),
         }
-        model_crate.add_component_to_object(collider_type(), self.collider_type);
-        let world = model_crate.object_world_mut();
+        model_crate.add_component_to_prefab(collider_type(), self.collider_type);
+        let world = model_crate.prefab_world_mut();
         let obj = world.resource(children())[0];
-        world.add_components(obj, self.object_components.clone()).unwrap();
+        world.add_components(obj, self.prefab_components.clone()).unwrap();
         Ok(())
     }
 }
@@ -144,7 +144,7 @@ pub enum ModelImporter {
     Regular,
     /// Import Unity models.
     UnityModels {
-        /// Whether or not the prefabs should be converted to objects.
+        /// Whether or not the Unity prefabs should be converted to Ambient prefabs.
         use_prefabs: bool,
     },
     /// Import Quixel models.

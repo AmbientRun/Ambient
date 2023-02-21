@@ -434,7 +434,7 @@ impl<T: GetAssetType> Eq for AssetUrlCollection<T> {}
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 pub enum AssetType {
     AssetCrate,
-    Object,
+    Prefab,
     ScriptBundle,
     Model,
     Image,
@@ -442,7 +442,7 @@ pub enum AssetType {
     Material,
     Collider,
 
-    // These will be replaced by Objects with components instead
+    // These will be replaced by prefabs with components instead
     TerrainMaterial,
     Atmosphere,
     Biomes,
@@ -473,8 +473,8 @@ impl TypedAssetUrl<ModelCrateAssetType> {
     pub fn model(&self) -> TypedAssetUrl<ModelAssetType> {
         self.join("models/main.json").unwrap()
     }
-    pub fn object(&self) -> TypedAssetUrl<ObjectAssetType> {
-        self.join("objects/main.json").unwrap()
+    pub fn prefab(&self) -> TypedAssetUrl<PrefabAssetType> {
+        self.join("prefabs/main.json").unwrap()
     }
     pub fn collider(&self) -> TypedAssetUrl<ColliderAssetType> {
         self.join("colliders/main.json").unwrap()
@@ -491,18 +491,18 @@ impl TypedAssetUrl<ModelCrateAssetType> {
 }
 
 #[derive(Debug, Clone)]
-pub struct ObjectAssetType;
-impl GetAssetType for ObjectAssetType {
+pub struct PrefabAssetType;
+impl GetAssetType for PrefabAssetType {
     fn asset_type() -> AssetType {
-        AssetType::Object
+        AssetType::Prefab
     }
 }
-impl TypedAssetUrl<ObjectAssetType> {
+impl TypedAssetUrl<PrefabAssetType> {
     pub fn model_crate(&self) -> Option<TypedAssetUrl<ModelCrateAssetType>> {
         self.join("..").ok()
     }
 }
-pub type ObjectRef = TypedAssetUrl<ObjectAssetType>;
+pub type ObjectRef = TypedAssetUrl<PrefabAssetType>;
 
 #[derive(Debug, Clone)]
 pub struct ModelAssetType;
@@ -569,7 +569,7 @@ impl GetAssetType for ColliderAssetType {
 
 #[test]
 fn test_join() {
-    let obj = TypedAssetUrl::<ObjectAssetType>::parse("https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/1.7.0/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json0/objects/main.json").unwrap();
+    let obj = TypedAssetUrl::<PrefabAssetType>::parse("https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/1.7.0/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json0/objects/main.json").unwrap();
     let crat = obj.model_crate().unwrap();
     assert_eq!(
         crat.to_string(),

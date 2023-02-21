@@ -117,7 +117,7 @@ pub enum ModelImportTransform {
     CapTextureSizes { max_size: ModelTextureSize },
     // RemoveAllMaterials,
     // SetAnimatable { animatable: bool },
-    CreateObject,
+    CreatePrefab,
     CreateColliderFromModel,
     CreateCharacterCollider,
     Finalize,
@@ -158,8 +158,8 @@ impl ModelImportTransform {
             // AssetTransform::SetAnimatable { animatable } => {
             //     model.animatable = Some(*animatable);
             // }
-            ModelImportTransform::CreateObject => {
-                model_crate.create_object_from_model();
+            ModelImportTransform::CreatePrefab => {
+                model_crate.create_prefab_from_model();
             }
             ModelImportTransform::CreateColliderFromModel => {
                 model_crate.create_collider_from_model(assets, false, true)?;
@@ -215,12 +215,12 @@ pub enum ModelTransform {
         /// The factor to scale this model's animations by.
         scale: f32,
     },
-    /// Re-root this object.
+    /// Re-root this mesh.
     SetRoot {
-        /// The name of the node to set as the new root for this object.
+        /// The name of the node to set as the new root for this mesh.
         name: String,
     },
-    /// Re-center this object such that the root is located at the origin.
+    /// Re-center this mesh such that the root is located at the origin.
     Center,
 }
 impl ModelTransform {

@@ -63,14 +63,14 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
 
                     res.push(OutAsset {
                         id: id.clone(),
-                        type_: AssetType::Object,
+                        type_: AssetType::Prefab,
                         hidden: is_collection,
                         name: pack_name.clone(),
                         tags: tags.clone(),
                         categories: Default::default(),
 
                         preview: OutAssetPreview::FromModel { url: model_crate_url.model().abs().unwrap() },
-                        content: OutAssetContent::Content(model_crate_url.object().abs().unwrap()),
+                        content: OutAssetContent::Content(model_crate_url.prefab().abs().unwrap()),
                         source: Some({
                             let mut f = file.clone();
                             f.0.set_fragment(Some(&i.to_string()));
@@ -82,7 +82,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                 if is_collection {
                     res.push(OutAsset {
                         id: asset_id_from_url(&file),
-                        type_: AssetType::Object,
+                        type_: AssetType::Prefab,
                         hidden: false,
                         name: pack_name.to_string(),
                         tags,
@@ -169,7 +169,7 @@ pub async fn object_pipelines_from_quixel_json(
                 let object = ModelImportPipeline::new()
                     .add_step(ModelImportTransform::MergeMeshLods { lods, lod_cutoffs: None })
                     .add_step(material_override.clone())
-                    .add_step(ModelImportTransform::CreateObject)
+                    .add_step(ModelImportTransform::CreatePrefab)
                     .add_step(ModelImportTransform::CreateColliderFromModel)
                     .add_step(ModelImportTransform::SetName { name: pack_name.clone() });
                 object_defs.push(object);
@@ -309,7 +309,7 @@ pub async fn object_pipelines_from_quixel_json(
                         }
                         let object = ModelImportPipeline::new()
                             .add_step(ModelImportTransform::MergeMeshLods { lods, lod_cutoffs: Some(lod_cutoffs) })
-                            .add_step(ModelImportTransform::CreateObject)
+                            .add_step(ModelImportTransform::CreatePrefab)
                             .add_step(ModelImportTransform::CreateColliderFromModel)
                             .add_step(ModelImportTransform::SetName { name: pack_name.clone() });
                         object_defs.push(object);
@@ -341,7 +341,7 @@ pub async fn object_pipelines_from_quixel_json(
                     let object = ModelImportPipeline::new()
                         .add_step(ModelImportTransform::MergeMeshLods { lods, lod_cutoffs: None })
                         .add_step(ModelImportTransform::OverrideMaterial { filter: MaterialFilter::All, material: Box::new(atlas.clone()) })
-                        .add_step(ModelImportTransform::CreateObject)
+                        .add_step(ModelImportTransform::CreatePrefab)
                         .add_step(ModelImportTransform::CreateColliderFromModel)
                         .add_step(ModelImportTransform::SetName { name: pack_name.clone() });
 

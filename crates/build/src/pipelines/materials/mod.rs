@@ -44,7 +44,7 @@ pub enum MaterialsImporter {
 pub struct MaterialsPipeline {
     /// The importer to use for materials.
     pub importer: Box<MaterialsImporter>,
-    /// Whether or not decal objects should be created for each of these materials.
+    /// Whether or not decal prefabs should be created for each of these materials.
     #[serde(default)]
     pub output_decals: bool,
 }
@@ -84,8 +84,8 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
                     ctx.in_root().relative_path(mat.source.clone().map(|x| x.path()).unwrap_or_else(|| ctx.pipeline_path())).join("decal");
                 let out_model_url = ctx.out_root().join(&model_path).unwrap();
                 let mut model_crate = ModelCrate::new();
-                let decal_path = out_model_url.path().join("objects").relative(mat_url.path());
-                model_crate.create_object(
+                let decal_path = out_model_url.path().join("prefabs").relative(mat_url.path());
+                model_crate.create_prefab(
                     EntityData::new()
                         .set(decal(), decal_path.into())
                         .set(collider(), ambient_physics::collider::ColliderDef::Box { size: Vec3::ONE, center: Vec3::ZERO })
@@ -94,13 +94,13 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
                 let model_url = ctx.write_model_crate(&model_crate, &model_path).await;
                 res.push(OutAsset {
                     id: asset_id_from_url(&out_model_url),
-                    type_: AssetType::Object,
+                    type_: AssetType::Prefab,
                     hidden: false,
                     name: mat.name,
                     tags: mat.tags,
                     categories: mat.categories,
                     preview: mat.preview,
-                    content: OutAssetContent::Content(model_url.object().unwrap_abs()),
+                    content: OutAssetContent::Content(model_url.prefab().unwrap_abs()),
                     source: mat.source,
                 });
             }

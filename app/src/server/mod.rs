@@ -14,7 +14,7 @@ use ambient_network::{
     datagram_handlers,
     server::{ForkingEvent, GameServer, ShutdownEvent},
 };
-use ambient_object::ObjectFromUrl;
+use ambient_prefab::PrefabFromUrl;
 use ambient_rpc::RpcRegistry;
 use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
@@ -44,7 +44,7 @@ fn server_systems() -> SystemGroup {
             ambient_core::remove_at_time_system(),
             Box::new(ambient_physics::server_systems()),
             Box::new(player::server_systems()),
-            Box::new(ambient_object::systems()),
+            Box::new(ambient_prefab::systems()),
             Box::new(wasm::systems()),
             Box::new(player::server_systems_final()),
             ambient_physics::run_simulation_system(),
@@ -147,9 +147,9 @@ pub(crate) fn start_server(
         wasm::initialize(&mut server_world, project_path.clone(), &manifest).await.unwrap();
 
         if let Commands::View { asset_path, .. } = cli.command.clone() {
-            let asset_path = AbsAssetUrl::from_file_path(project_path.join("build").join(asset_path).join("objects/main.json"));
+            let asset_path = AbsAssetUrl::from_file_path(project_path.join("build").join(asset_path).join("prefabs/main.json"));
             log::info!("Spawning asset from {:?}", asset_path);
-            let obj = ObjectFromUrl(asset_path.into()).get(&assets).await.unwrap();
+            let obj = PrefabFromUrl(asset_path.into()).get(&assets).await.unwrap();
             obj.spawn_into_world(&mut server_world, None);
         }
         log::info!("Starting server");

@@ -59,7 +59,7 @@ pub fn EntityEditor(hooks: &mut Hooks, entity_id: EntityId) -> Element {
         FlowColumn(vec![
             Text::el(name).section_style(),
             if let Some(mass) = entity.get(mass()) { Text::el(format!("{mass} kg")).small_style() } else { Element::new() },
-            ObjectComponentsEditor {
+            EntityComponentsEditor {
                 value: entity,
                 on_change: cb(move |change| {
                     runtime.spawn(client_push_intent(game_client.clone(), intent_component_change(), (entity_id, change), None, None));
@@ -90,32 +90,32 @@ pub fn EntityEditor(hooks: &mut Hooks, entity_id: EntityId) -> Element {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum ObjectComponentChange {
+pub enum EntityComponentChange {
     Change(ComponentEntry),
     Add(ComponentEntry),
     Remove(ComponentDesc),
 }
-impl ObjectComponentChange {
-    /// Returns a ObjectComponentChange which can be used to revert this change
-    pub fn apply_to_entity(&self, world: &mut World, id: EntityId) -> ObjectComponentChange {
+impl EntityComponentChange {
+    /// Returns a EntityComponentChange which can be used to revert this change
+    pub fn apply_to_entity(&self, world: &mut World, id: EntityId) -> EntityComponentChange {
         match self {
-            ObjectComponentChange::Change(entry) => ObjectComponentChange::Change(world.set_entry(id, entry.clone()).unwrap()),
-            ObjectComponentChange::Add(entry) => {
+            EntityComponentChange::Change(entry) => EntityComponentChange::Change(world.set_entry(id, entry.clone()).unwrap()),
+            EntityComponentChange::Add(entry) => {
                 world.add_entry(id, entry.clone()).unwrap();
-                ObjectComponentChange::Remove(entry.desc())
+                EntityComponentChange::Remove(entry.desc())
             }
-            ObjectComponentChange::Remove(desc) => {
+            EntityComponentChange::Remove(desc) => {
                 let old = world.get_entry(id, *desc).unwrap();
                 world.remove_component(id, *desc).unwrap();
-                ObjectComponentChange::Add(old)
+                EntityComponentChange::Add(old)
             }
         }
     }
     pub fn apply_to_entity_data(self, entity: &mut EntityData) {
         match self {
-            ObjectComponentChange::Change(entry) => entity.set_entry(entry),
-            ObjectComponentChange::Add(entry) => entity.set_entry(entry),
-            ObjectComponentChange::Remove(desc) => {
+            EntityComponentChange::Change(entry) => entity.set_entry(entry),
+            EntityComponentChange::Add(entry) => entity.set_entry(entry),
+            EntityComponentChange::Remove(desc) => {
                 entity.remove_raw(desc);
             }
         }
@@ -125,11 +125,11 @@ impl ObjectComponentChange {
 #[tracing::instrument(level = "info", skip_all)]
 #[profiling::function]
 #[element_component]
-fn ObjectComponentsEditor(_hooks: &mut Hooks, value: EntityData, on_change: Cb<dyn Fn(ObjectComponentChange) + Sync + Send>) -> Element {
+fn EntityComponentsEditor(_hooks: &mut Hooks, value: EntityData, on_change: Cb<dyn Fn(EntityComponentChange) + Sync + Send>) -> Element {
     let mut missing_components = Vec::new();
     fn reg_component<T: ComponentValue + Editor + std::fmt::Debug + Clone + Sync + Send + 'static>(
         entity: &EntityData,
-        on_change: Cb<dyn Fn(ObjectComponentChange) + Sync + Send>,
+        on_change: Cb<dyn Fn(EntityComponentChange) + Sync + Send>,
         missing_components: &mut Vec<(String, Arc<dyn Fn() + Sync + Send>)>,
         display_name: &str,
         short: bool,
@@ -145,15 +145,15 @@ fn ObjectComponentsEditor(_hooks: &mut Hooks, value: EntityData, on_change: Cb<d
                     component,
                     display_name: display_name.to_string(),
                     inline: short,
-                    on_change: cb(closure!(clone on_change, |value| on_change(ObjectComponentChange::Change(value)))),
-                    on_remove: cb(move || on_change(ObjectComponentChange::Remove(component.into()))),
+                    on_change: cb(closure!(clone on_change, |value| on_change(EntityComponentChange::Change(value)))),
+                    on_remove: cb(move || on_change(EntityComponentChange::Remove(component.into()))),
                 }
                 .el(),
             ))
         } else {
             missing_components.push((
                 display_name.to_string(),
-                Arc::new(move || on_change(ObjectComponentChange::Add(ComponentEntry::new(component, on_create())))),
+                Arc::new(move || on_change(EntityComponentChange::Add(ComponentEntry::new(component, on_create())))),
             ));
             None
         }
@@ -191,7 +191,7 @@ fn ObjectComponentsEditor(_hooks: &mut Hooks, value: EntityData, on_change: Cb<d
         fn register_dynamic_component<T: ComponentValue + Editor + std::fmt::Debug + Clone + Sync + Send + Default + 'static>(
             (entity, on_change, missing_components): (
                 &EntityData,
-                Cb<dyn Fn(ObjectComponentChange) + Sync + Send>,
+                Cb<dyn Fn(EntityComponentChange) + Sync + Send>,
                 &mut Vec<(String, Arc<dyn Fn() + Sync + Send>)>,
             ),
             display_name: &str,

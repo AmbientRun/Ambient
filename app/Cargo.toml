@@ -23,7 +23,7 @@ ambient_meshes = {path = "../crates/meshes"}
 ambient_model = {path = "../crates/model"}
 ambient_model_import = {path = "../crates/model_import"}
 ambient_network = {path = "../crates/network"}
-ambient_object = {path = "../crates/object"}
+ambient_prefab = {path = "../crates/prefab"}
 ambient_physics = {path = "../crates/physics"}
 ambient_primitives = {path = "../crates/primitives"}
 ambient_project = {path = "../crates/project"}

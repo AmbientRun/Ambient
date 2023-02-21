@@ -2,7 +2,7 @@ use ambient_api::{
     components::core::{
         ecs::ids,
         game_objects::player_camera,
-        object::object_from_url,
+        prefab::prefab_from_url,
         physics::{
             angular_velocity, box_collider, dynamic, linear_velocity, physics_controlled,
             visualizing,
@@ -40,7 +40,7 @@ pub async fn main() -> EventResult {
 
     Entity::new()
         .with_merge(make_transformable())
-        .with(object_from_url(), asset_url("assets/Shape.glb").unwrap())
+        .with(prefab_from_url(), asset_url("assets/Shape.glb").unwrap())
         .spawn();
 
     on(event::COLLISION, |c| {

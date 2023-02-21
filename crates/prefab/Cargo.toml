@@ -1,5 +1,5 @@
 [package]
-name = "ambient_object"
+name = "ambient_prefab"
 version = { workspace = true }
 edition = "2021"
 

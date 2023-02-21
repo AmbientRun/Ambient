@@ -204,7 +204,7 @@ impl ElementComponent for EditorBuildMode {
                             let set_srt_mode = set_srt_mode.clone();
                             let game_client = game_client.clone();
                             let async_run = world.resource(async_run()).clone();
-                            select_asset(world.resource(asset_cache()), AssetType::Object, move |object_url| {
+                            select_asset(world.resource(asset_cache()), AssetType::Prefab, move |object_url| {
                                 tracing::info!("got object_url: {object_url:?}");
                                 if let Some(object_url) = object_url.random().cloned() {
                                     async_run.run(move |world| {
@@ -228,7 +228,7 @@ impl ElementComponent for EditorBuildMode {
                             });
                         }
                     })
-                    .tooltip("Browse objects")
+                    .tooltip("Browse prefabs")
                     .style(ButtonStyle::Primary)
                     .hotkey(VirtualKeyCode::Tab)
                     .el(),
