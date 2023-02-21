@@ -84,8 +84,8 @@ fn generate_make(
 
     Ok(quote! {
         #[doc = #make_comment]
-        pub fn #make_ident() -> Components {
-            Components::new()
+        pub fn #make_ident() -> Entity {
+            Entity::new()
                 #(.#extends)*
                 #(.#components)*
         }

@@ -53,13 +53,13 @@ macro_rules! lazy_component {
     };
 }
 
-/// Contains a group of components and associated values.
+/// An Entity is a collection of components and associated values.
 ///
-/// These can be used to spawn entities.
+/// Use the `.spawn` method to insert the Entity into the World.
 #[derive(Clone)]
-pub struct Components(pub(crate) HashMap<u32, host::ComponentTypeResult>);
-impl Components {
-    /// Creates a new `Components`.
+pub struct Entity(pub(crate) HashMap<u32, host::ComponentTypeResult>);
+impl Entity {
+    /// Creates a new `Entity`.
     pub fn new() -> Self {
         Self(Default::default())
     }
@@ -94,8 +94,8 @@ impl Components {
         self
     }
 
-    /// Merges in the `other` Components and returns this; any fields that were present in both will be replaced by `other`'s.
-    pub fn with_merge(mut self, other: Components) -> Self {
+    /// Merges in the `other` Entity and returns this; any fields that were present in both will be replaced by `other`'s.
+    pub fn with_merge(mut self, other: Entity) -> Self {
         self.merge(other);
         self
     }
@@ -105,8 +105,8 @@ impl Components {
         T::from_result(self.0.remove(&component.index())?)
     }
 
-    /// Merges in the `other` Components; any fields that were present in both will be replaced by `other`'s.
-    pub fn merge(&mut self, other: Components) {
+    /// Merges in the `other` Entity; any fields that were present in both will be replaced by `other`'s.
+    pub fn merge(&mut self, other: Entity) {
         self.0.extend(other.0.into_iter());
     }
 

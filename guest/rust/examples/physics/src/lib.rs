@@ -66,7 +66,7 @@ pub async fn main() -> EventResult {
         println!("And again! Linear velocity: {new_linear_velocity:?} | Angular velocity: {new_angular_velocity:?}");
         entity::set_components(
             cube,
-            Components::new()
+            Entity::new()
                 .with(translation(), vec3(0., 0., 5.))
                 .with(rotation(), Quat::IDENTITY)
                 .with(linear_velocity(), new_linear_velocity)

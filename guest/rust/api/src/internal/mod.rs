@@ -5,7 +5,7 @@ pub(crate) mod executor;
 mod guest_conversion;
 
 use crate::internal::{
-    component::Components,
+    component::Entity,
     executor::{FrameState, EXECUTOR},
 };
 use once_cell::sync::Lazy;
@@ -102,7 +102,7 @@ impl guest::Guest for Guest {
     ) {
         use guest_conversion::GuestConvert;
 
-        let components = Components(
+        let components = Entity(
             components
                 .into_iter()
                 .map(|(id, ct)| (id, ct.guest_convert()))

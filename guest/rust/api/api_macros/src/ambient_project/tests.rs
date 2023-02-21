@@ -401,8 +401,8 @@ fn can_generate_concepts() {
             use ambient_api2::prelude::*;
 
             #[doc = "Makes a Colored Sphere (A sphere with some color!)"]
-            pub fn make_colored_sphere() -> Components {
-                Components::new()
+            pub fn make_colored_sphere() -> Entity {
+                Entity::new()
                     .with_merge(make_sphere())
                     .with(components::core::rendering::color(), Vec4::new(1f32, 1f32, 1f32, 1f32))
             }
@@ -415,8 +415,8 @@ fn can_generate_concepts() {
             }
 
             #[doc = "Makes a Sphere (A primitive sphere.)"]
-            pub fn make_sphere() -> Components {
-                Components::new()
+            pub fn make_sphere() -> Entity {
+                Entity::new()
                     .with_merge(make_transformable())
                     .with(components::core::primitives::sphere(), ())
                     .with(components::core::primitives::sphere_radius(), 0.5f32)
@@ -435,8 +435,8 @@ fn can_generate_concepts() {
             }
 
             #[doc = "Makes a Transformable (Can be translated, rotated and scaled.)"]
-            pub fn make_transformable() -> Components {
-                Components::new()
+            pub fn make_transformable() -> Entity {
+                Entity::new()
                     .with(components::core::transform::rotation(), Quat::from_xyzw(0f32, 0f32, 0f32, 1f32))
                     .with(components::core::transform::scale(), Vec3::new(1f32, 1f32, 1f32))
                     .with(components::core::transform::translation(), Vec3::new(0f32, 0f32, 0f32))
@@ -598,8 +598,8 @@ fn can_generate_concepts_with_all_supported_types() {
             use super::components;
             use ambient_api2::prelude::*;
             #[doc = "Makes a Everything (Everywhere all at once)"]
-            pub fn make_everything() -> Components {
-                Components::new()
+            pub fn make_everything() -> Entity {
+                Entity::new()
                     .with(components::bool(), true)
                     .with(components::empty(), ())
                     .with(components::entity_id(), EntityId::from_base64("qmYJaglgRDwigkGXFFS9UQ"))
@@ -715,8 +715,8 @@ fn can_extend_with_multiple_concepts() {
             use ambient_api2::prelude::*;
 
             #[doc = "Makes a C1 ()"]
-            pub fn make_concept1() -> Components {
-                Components::new().with(components::f32(), 4f32)
+            pub fn make_concept1() -> Entity {
+                Entity::new().with(components::f32(), 4f32)
             }
             #[doc = "Checks if the entity is a C1 ()"]
             pub fn is_concept1(id: EntityId) -> bool {
@@ -724,8 +724,8 @@ fn can_extend_with_multiple_concepts() {
             }
 
             #[doc = "Makes a C2 ()"]
-            pub fn make_concept2() -> Components {
-                Components::new().with(components::f64(), 8f64)
+            pub fn make_concept2() -> Entity {
+                Entity::new().with(components::f64(), 8f64)
             }
             #[doc = "Checks if the entity is a C2 ()"]
             pub fn is_concept2(id: EntityId) -> bool {
@@ -733,8 +733,8 @@ fn can_extend_with_multiple_concepts() {
             }
 
             #[doc = "Makes a C3 ()"]
-            pub fn make_concept3() -> Components {
-                Components::new()
+            pub fn make_concept3() -> Entity {
+                Entity::new()
                     .with_merge(make_concept1())
                     .with_merge(make_concept2())
                     .with(components::i32(), 16i32)

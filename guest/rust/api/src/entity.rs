@@ -3,7 +3,7 @@ use crate::{
     global::{until_this, EntityId, Vec3},
     internal::{
         component::{
-            traits::AsParam, Component, Components, SupportedComponentTypeGet,
+            traits::AsParam, Component, Entity, SupportedComponentTypeGet,
             SupportedComponentTypeSet, UntypedComponent,
         },
         conversion::{FromBindgen, IntoBindgen},
@@ -19,7 +19,7 @@ pub use crate::internal::host::{AnimationAction, AnimationController};
 /// the entity is spawned.
 ///
 /// Returns `spawned_entity_uid`.
-pub fn spawn(components: &Components) -> EntityId {
+pub fn spawn(components: &Entity) -> EntityId {
     components
         .call_with(|data| host::entity_spawn(data))
         .from_bindgen()
@@ -84,7 +84,7 @@ pub fn add_component<T: SupportedComponentTypeSet>(
 }
 
 /// Adds the components `components` for `entity` with `value`. Will replace any existing components specified in `components`.
-pub fn add_components(entity: EntityId, components: Components) {
+pub fn add_components(entity: EntityId, components: Entity) {
     components.call_with(|data| host::entity_add_components(entity.into_bindgen(), data))
 }
 
@@ -99,7 +99,7 @@ pub fn set_component<T: SupportedComponentTypeSet>(
 }
 
 /// Sets the components `components` for `entity` with `value`.
-pub fn set_components(entity: EntityId, components: Components) {
+pub fn set_components(entity: EntityId, components: Entity) {
     components.call_with(|data| host::entity_set_components(entity.into_bindgen(), data))
 }
 
