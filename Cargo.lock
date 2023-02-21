@@ -142,7 +142,6 @@ dependencies = [
  "env_logger 0.10.0",
  "futures",
  "glam 0.22.0",
- "indoc",
  "local-ip-address",
  "log",
  "parking_lot",

@@ -3,7 +3,6 @@ use std::path::Path;
 use ambient_project::Identifier;
 use anyhow::Context;
 use convert_case::Casing;
-use indoc::indoc;
 
 pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Result<()> {
     let project_path = if let Some(name) = name { project_path.join(name) } else { project_path.to_owned() };
