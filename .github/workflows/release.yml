@@ -56,6 +56,15 @@ jobs:
       # We don't do caching here because we only have 10gb and they'll be occupied by normal builds all the time anyway
       - name: Build
         run: cargo build --release -p ambient --target ${{ matrix.target }}
+      - name: Install certificate (OSX)
+        if: matrix.os == 'macos-latest'
+        uses: apple-actions/import-codesign-certs@v1
+        with:
+          p12-file-base64: ${{ secrets.MACOS_CERTIFICATE }}
+          p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+      - name: Codesign executable (OSX)
+        if: matrix.os == 'macos-latest'
+        run: /usr/bin/codesign --force -s ${{ secrets.MAC_CODESIGN }} --options=runtime --deep ${{ env.EXE_DIR }}/${{ matrix.exe_name }} -v
       - name: Bundle
         uses: thedoctor0/zip-release@0.7.1
         with:
@@ -63,6 +72,12 @@ jobs:
           filename: ambient-${{ matrix.target }}.zip
           directory: ${{ env.EXE_DIR }}
           path: ${{ matrix.exe_name }}
+      - name: Notarize app bundle (OSX)
+        if: matrix.os == 'macos-latest'
+        run: |
+          cd ${{ env.EXE_DIR }}
+          xcrun notarytool store-credentials "notarytool-profile" --apple-id "${{ secrets.APPLE_DEVELOPER_EMAIL }}" --team-id="${{ secrets.APPLE_TEAM_ID }}" --password "${{ secrets.APPLE_DEVELOPER_PASSWORD }}"
+          xcrun notarytool submit "ambient-${{ matrix.target }}.zip" --keychain-profile "notarytool-profile" --wait
       - name: Upload
         run: gh release upload ${{ needs.create-release.outputs.tag }} ${{ env.EXE_DIR }}/ambient-${{ matrix.target }}.zip
 
