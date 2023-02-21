@@ -24,67 +24,23 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
 
     std::fs::write(
         project_path.join("ambient.toml"),
-        indoc! {r#"
-            [project]
-            id = "{{id}}"
-            name = "{{name}}"
-            version = "0.0.1"
-        "#}
-        .replace("{{id}}", id.as_ref())
-        .replace("{{name}}", name),
+        include_str!("../new_project_template/ambient.toml").replace("{{id}}", id.as_ref()).replace("{{name}}", name),
     )
     .context("Failed to create ambient.toml")?;
 
     std::fs::write(
         project_path.join("Cargo.toml"),
-        indoc! {r#"
-            [package]
-            name = "{{id}}"
-            edition = "2021"
-            version = "0.0.1"
-
-            [dependencies]
-            ambient_api = "{{version}}"
-
-            [lib]
-            crate-type = ["cdylib"]
-        "#}
-        .replace("{{id}}", id.as_ref())
-        .replace("{{version}}", env!("CARGO_PKG_VERSION")),
+        include_str!("../new_project_template/Cargo.toml").replace("{{id}}", id.as_ref()).replace("{{version}}", env!("CARGO_PKG_VERSION")),
     )
     .context("Failed to create Cargo.toml")?;
 
-    std::fs::write(
-        project_path.join(".gitignore"),
-        indoc! {r#"
-            */interfaces
-            */.vscode
-        "#},
-    )
-    .context("Failed to create .gitignore")?;
+    std::fs::write(project_path.join(".gitignore"), include_str!("../new_project_template/.gitignore"))
+        .context("Failed to create .gitignore")?;
 
-    std::fs::write(
-        dot_cargo.join("config.toml"),
-        indoc! {r#"
-            [build]
-            target = "wasm32-wasi"
-        "#},
-    )
-    .context("Failed to create .cargo/config.toml")?;
+    std::fs::write(dot_cargo.join("config.toml"), include_str!("../new_project_template/.cargo/config.toml"))
+        .context("Failed to create .cargo/config.toml")?;
 
-    std::fs::write(
-        src.join("lib.rs"),
-        indoc! {r#"
-            use ambient_api::prelude::*;
-
-            #[main]
-            pub async fn main() -> EventResult {
-                println!("Hello, Ambient!");
-                EventOk
-            }
-    "#},
-    )
-    .context("Failed to create src/lib.rs")?;
+    std::fs::write(src.join("lib.rs"), include_str!("../new_project_template/src/lib.rs")).context("Failed to create src/lib.rs")?;
 
     log::info!("Project {name} with id {id} created at {project_path:?}");
 

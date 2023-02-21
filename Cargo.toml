@@ -1,7 +1,13 @@
 [workspace]
 default-members = ["app"]
-exclude = ["guest"]
-members = ["crates/*", "libs/*", "tools/*", "app", "web"]
+exclude = ["guest", "app/new_project_template"]
+members = [
+    "crates/*",
+    "libs/*",
+    "tools/*",
+    "app",
+    "web"
+]
 resolver = "2"
 
 [workspace.package]
