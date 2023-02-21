@@ -7,6 +7,8 @@
 
 Ambient is a runtime for building high-performance multiplayer games and 3D applications, powered by WebAssembly, Rust and WebGPU.
 
+[Announcement blog post](https://www.ambient.run/post/introducing-ambient-runtime-0-1-0)
+
 ## Features
 
 - **Seamless networking**: Ambient is both your server and client. All you need to do is to build your server and/or client-side logic: the runtime handles synchronization of data for you.
