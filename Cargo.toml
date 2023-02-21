@@ -1,12 +1,7 @@
 [workspace]
 default-members = ["app"]
 exclude = ["guest"]
-members = [
-    "crates/*",
-    "libs/*",
-    "tools/*",
-    "app",
-]
+members = ["crates/*", "libs/*", "tools/*", "app", "web"]
 resolver = "2"
 
 [workspace.package]
@@ -67,7 +62,10 @@ downcast-rs = "1.2.0"
 yaml-rust = { version = "0.5", package = "yaml-rust-davvid" }
 tokio-util = { version = "0.7.0", features = ["codec"] }
 maplit = "1.0.2"
-chrono = { version = "0.4", default-features = false, features = ["serde", "clock"] }
+chrono = { version = "0.4", default-features = false, features = [
+    "serde",
+    "clock",
+] }
 manual_future = "0.1.1"
 base64 = "0.13.0"
 env_logger = "0.10.0"
@@ -135,9 +133,7 @@ cargo_toml = "0.15.0"
 toml_edit = "0.19.3"
 arboard = "3.2.0"
 noise = { version = "0.7.0", default-features = false }
-russimp = { version = "1.0.6", features = [
-    'prebuilt',
-] }
+russimp = { version = "1.0.6", features = ['prebuilt'] }
 
 # Patch cap-std until wasmtime/wit-bindgen can be updated
 [patch.crates-io]

@@ -1,0 +1,13 @@
+{
+    "web-build": {
+        "cmd": "wasm-pack build web"
+    },
+    "web-run": {
+        "cmd": "npm run start --open",
+        "cwd": "www",
+        "env": {
+            "NODE_OPTIONS": "--openssl-legacy-provider",
+            "RUST_LOG": "info"
+        }
+    }
+}
