@@ -17,7 +17,7 @@ use ambient_std::{
     friendly_id,
 };
 use ambient_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
-use clap::{Args, Parser, Subcommand};
+use clap::{Args, Parser};
 
 pub mod components;
 mod new_project;
@@ -33,13 +33,7 @@ use server::QUIC_INTERFACE_PORT;
 #[derive(Parser, Clone)]
 #[command(author, version, about, long_about = None)]
 #[command(propagate_version = true)]
-struct Cli {
-    #[command(subcommand)]
-    command: Commands,
-}
-
-#[derive(Subcommand, Clone)]
-enum Commands {
+enum Cli {
     /// Create a new Ambient project
     New {
         #[command(flatten)]
@@ -111,44 +105,44 @@ struct HostCli {
     public_host: Option<String>,
 }
 
-impl Commands {
+impl Cli {
     /// Extract run-relevant state only
     fn run(&self) -> Option<&RunCli> {
         match self {
-            Commands::New { .. } => None,
-            Commands::Run { run_args, .. } => Some(run_args),
-            Commands::Build { .. } => None,
-            Commands::Serve { .. } => None,
-            Commands::View { .. } => None,
-            Commands::Join { run_args, .. } => Some(run_args),
+            Cli::New { .. } => None,
+            Cli::Run { run_args, .. } => Some(run_args),
+            Cli::Build { .. } => None,
+            Cli::Serve { .. } => None,
+            Cli::View { .. } => None,
+            Cli::Join { run_args, .. } => Some(run_args),
             #[cfg(not(feature = "production"))]
-            Commands::UpdateInterfaceComponents => None,
+            Cli::UpdateInterfaceComponents => None,
         }
     }
     /// Extract project-relevant state only
     fn project(&self) -> Option<&ProjectCli> {
         match self {
-            Commands::New { project_args, .. } => Some(project_args),
-            Commands::Run { project_args, .. } => Some(project_args),
-            Commands::Build { project_args, .. } => Some(project_args),
-            Commands::Serve { project_args, .. } => Some(project_args),
-            Commands::View { project_args, .. } => Some(project_args),
-            Commands::Join { .. } => None,
+            Cli::New { project_args, .. } => Some(project_args),
+            Cli::Run { project_args, .. } => Some(project_args),
+            Cli::Build { project_args, .. } => Some(project_args),
+            Cli::Serve { project_args, .. } => Some(project_args),
+            Cli::View { project_args, .. } => Some(project_args),
+            Cli::Join { .. } => None,
             #[cfg(not(feature = "production"))]
-            Commands::UpdateInterfaceComponents => None,
+            Cli::UpdateInterfaceComponents => None,
         }
     }
     /// Extract host-relevant state only
     fn host(&self) -> Option<&HostCli> {
         match self {
-            Commands::New { .. } => None,
-            Commands::Run { host_args, .. } => Some(host_args),
-            Commands::Build { .. } => None,
-            Commands::Serve { host_args, .. } => Some(host_args),
-            Commands::View { .. } => None,
-            Commands::Join { .. } => None,
+            Cli::New { .. } => None,
+            Cli::Run { host_args, .. } => Some(host_args),
+            Cli::Build { .. } => None,
+            Cli::Serve { host_args, .. } => Some(host_args),
+            Cli::View { .. } => None,
+            Cli::Join { .. } => None,
             #[cfg(not(feature = "production"))]
-            Commands::UpdateInterfaceComponents => None,
+            Cli::UpdateInterfaceComponents => None,
         }
     }
 }
@@ -263,7 +257,7 @@ fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     let current_dir = std::env::current_dir()?;
-    let project_path = cli.command.project().and_then(|p| p.path.clone()).unwrap_or_else(|| current_dir.clone());
+    let project_path = cli.project().and_then(|p| p.path.clone()).unwrap_or_else(|| current_dir.clone());
     let project_path =
         if project_path.is_absolute() { project_path } else { ambient_std::path::normalize(&current_dir.join(project_path)) };
 
@@ -272,7 +266,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     // If new: create project, immediately exit
-    if let Commands::New { name, .. } = cli.command {
+    if let Cli::New { name, .. } = &cli {
         if let Err(err) = new_project::new_project(&project_path, name.as_deref()) {
             eprintln!("Failed to create project: {err:?}");
         }
@@ -281,7 +275,7 @@ fn main() -> anyhow::Result<()> {
 
     // If UIC: write components to disk, immediately exit
     #[cfg(not(feature = "production"))]
-    if let Commands::UpdateInterfaceComponents = cli.command {
+    if let Cli::UpdateInterfaceComponents = cli {
         let toml = components::dev::build_components_toml().to_string();
 
         // Assume we are being run within the codebase.
@@ -299,7 +293,6 @@ fn main() -> anyhow::Result<()> {
 
     // If a project was specified, assume that assets need to be built
     let manifest = cli
-        .command
         .project()
         .map(|_| {
             anyhow::Ok(ambient_project::Manifest::parse(
@@ -316,12 +309,12 @@ fn main() -> anyhow::Result<()> {
     }
 
     // If this is just a build, exit now
-    if matches!(&cli.command, Commands::Build { .. }) {
+    if matches!(&cli, Cli::Build { .. }) {
         return Ok(());
     }
 
     // Otherwise, either connect to a server or host one
-    let server_addr = if let Commands::Join { host, .. } = &cli.command {
+    let server_addr = if let Cli::Join { host, .. } = &cli {
         if let Some(mut host) = host.clone() {
             if !host.contains(':') {
                 host = format!("{host}:{QUIC_INTERFACE_PORT}");
@@ -337,7 +330,7 @@ fn main() -> anyhow::Result<()> {
 
     // Time to join!
     let handle = runtime.handle().clone();
-    if let Some(run) = cli.command.run() {
+    if let Some(run) = cli.run() {
         // If we have run parameters, start a client and join a server
         let user_id = run.user_id.clone().unwrap_or_else(|| format!("user_{}", friendly_id()));
         AppBuilder::simple().ui_renderer(true).with_runtime(runtime).with_asset_cache(assets).run(|app, _runtime| {

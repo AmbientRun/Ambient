@@ -29,7 +29,7 @@ use axum::{
 };
 use tower_http::{cors::CorsLayer, services::ServeDir};
 
-use crate::{player, Cli, Commands};
+use crate::{player, Cli};
 
 mod wasm;
 
@@ -129,7 +129,6 @@ pub(crate) fn start_server(
 
     wasm::init_all_components();
     let public_host = cli
-        .command
         .host()
         .and_then(|h| h.public_host.clone())
         .or_else(|| local_ip_address::local_ip().ok().map(|x| x.to_string()))
@@ -150,7 +149,7 @@ pub(crate) fn start_server(
 
         wasm::initialize(&mut server_world, project_path.clone(), &manifest).await.unwrap();
 
-        if let Commands::View { asset_path, .. } = cli.command.clone() {
+        if let Cli::View { asset_path, .. } = cli.clone() {
             let asset_path = AbsAssetUrl::from_file_path(project_path.join("build").join(asset_path).join("prefabs/main.json"));
             log::info!("Spawning asset from {:?}", asset_path);
             let obj = PrefabFromUrl(asset_path.into()).get(&assets).await.unwrap();
