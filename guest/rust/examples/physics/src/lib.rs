@@ -18,13 +18,15 @@ use ambient_api::{
 
 #[main]
 pub async fn main() -> EventResult {
-    make_perspective_infinite_reverse_camera()
+    Entity::new()
+        .with_merge(make_perspective_infinite_reverse_camera())
         .with_default(player_camera())
         .with(translation(), vec3(5., 5., 4.))
         .with(lookat_center(), vec3(0., 0., 0.))
         .spawn();
 
-    let cube = make_transformable()
+    let cube = Entity::new()
+        .with_merge(make_transformable())
         .with_default(cube())
         .with_default(visualizing())
         .with(box_collider(), Vec3::ONE)
@@ -36,7 +38,8 @@ pub async fn main() -> EventResult {
         .with(color(), Vec4::ONE)
         .spawn();
 
-    make_transformable()
+    Entity::new()
+        .with_merge(make_transformable())
         .with(object_from_url(), asset_url("assets/Shape.glb").unwrap())
         .spawn();
 
@@ -66,7 +69,7 @@ pub async fn main() -> EventResult {
         println!("And again! Linear velocity: {new_linear_velocity:?} | Angular velocity: {new_angular_velocity:?}");
         entity::set_components(
             cube,
-            Components::new()
+            Entity::new()
                 .with(translation(), vec3(0., 0., 5.))
                 .with(rotation(), Quat::IDENTITY)
                 .with(linear_velocity(), new_linear_velocity)

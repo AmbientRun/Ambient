@@ -8,11 +8,11 @@ use std::{
 
 use once_cell::sync::Lazy;
 
-use crate::{global::EventResult, internal::component::Components};
+use crate::{global::EventResult, internal::component::Entity};
 
 type EventFuture = Pin<Box<dyn Future<Output = EventResult>>>;
-type EventCallbackFn = Box<dyn Fn(&Components) -> EventFuture>;
-type EventCallbackFnOnce = Box<dyn FnOnce(&Components) -> EventFuture>;
+type EventCallbackFn = Box<dyn Fn(&Entity) -> EventFuture>;
+type EventCallbackFnOnce = Box<dyn FnOnce(&Entity) -> EventFuture>;
 
 pub(crate) static EXECUTOR: Lazy<Executor> = Lazy::new(|| Executor::new());
 static RAW_WAKER: RawWakerVTable = RawWakerVTable::new(
@@ -47,7 +47,7 @@ impl Executor {
         }
     }
 
-    pub fn execute(&self, frame_state: FrameState, event_name: &str, components: &Components) {
+    pub fn execute(&self, frame_state: FrameState, event_name: &str, components: &Entity) {
         *self.frame_state.borrow_mut() = frame_state;
 
         // Load all pending callbacks.

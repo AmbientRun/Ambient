@@ -3,7 +3,7 @@ use std::{cell::RefCell, future::Future, rc::Rc, task::Poll};
 use crate::{
     components, entity,
     global::EventResult,
-    internal::{component::Components, executor::EXECUTOR, host},
+    internal::{component::Entity, executor::EXECUTOR, host},
 };
 
 /// The time, relative to when the application started, in seconds.
@@ -22,7 +22,7 @@ pub fn frametime() -> f32 {
 /// If you only want to be notified once, use [once].
 ///
 /// The `callback` is a `fn`. This can be a closure (e.g. `|args| { ... }`).
-pub fn on(event: &str, callback: impl Fn(&Components) -> EventResult + 'static) {
+pub fn on(event: &str, callback: impl Fn(&Entity) -> EventResult + 'static) {
     on_async(event, move |args| std::future::ready(callback(args)))
 }
 
@@ -33,7 +33,7 @@ pub fn on(event: &str, callback: impl Fn(&Components) -> EventResult + 'static) 
 /// The `callback` is a `async fn`. This can be a closure (e.g. `|args| async move { ... }`).
 pub fn on_async<R: Future<Output = EventResult> + 'static>(
     event: &str,
-    callback: impl Fn(&Components) -> R + 'static,
+    callback: impl Fn(&Entity) -> R + 'static,
 ) {
     host::event_subscribe(event);
     EXECUTOR.register_callback(
@@ -47,7 +47,7 @@ pub fn on_async<R: Future<Output = EventResult> + 'static>(
 /// If you want to be notified every time the `event` occurs, use [on].
 ///
 /// The `callback` is a `fn`. This can be a closure (e.g. `|args| { ... }`).
-pub fn once(event: &str, callback: impl FnOnce(&Components) -> EventResult + 'static) {
+pub fn once(event: &str, callback: impl FnOnce(&Entity) -> EventResult + 'static) {
     once_async(event, |args| std::future::ready(callback(args)))
 }
 
@@ -58,7 +58,7 @@ pub fn once(event: &str, callback: impl FnOnce(&Components) -> EventResult + 'st
 /// The `callback` is a `async fn`. This can be a closure (e.g. `|args| async move { ... }`).
 pub fn once_async<R: Future<Output = EventResult> + 'static>(
     event: &str,
-    callback: impl FnOnce(&Components) -> R + 'static,
+    callback: impl FnOnce(&Entity) -> R + 'static,
 ) {
     host::event_subscribe(event);
     EXECUTOR.register_callback_once(
@@ -113,20 +113,17 @@ pub async fn sleep(seconds: f32) {
 /// Useful for waiting until a particular event has happened in the game world.
 ///
 /// This must be used with `.await` in either an `async fn` or an `async` block.
-pub async fn until_this(
-    event: &str,
-    condition: impl Fn(&Components) -> bool + 'static,
-) -> Components {
+pub async fn until_this(event: &str, condition: impl Fn(&Entity) -> bool + 'static) -> Entity {
     let ret = Rc::new(RefCell::new(None));
 
     fn register_callback(
         event: String,
-        condition: impl Fn(&Components) -> bool + 'static,
-        ret: Rc<RefCell<Option<Components>>>,
+        condition: impl Fn(&Entity) -> bool + 'static,
+        ret: Rc<RefCell<Option<Entity>>>,
     ) {
         once(&event, {
             let event = event.clone();
-            move |args: &Components| {
+            move |args: &Entity| {
                 if condition(args) {
                     let args = args.clone();
                     *ret.borrow_mut() = Some(args);
