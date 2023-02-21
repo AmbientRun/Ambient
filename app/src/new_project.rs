@@ -37,6 +37,9 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
     std::fs::write(project_path.join(".gitignore"), include_str!("../new_project_template/.gitignore"))
         .context("Failed to create .gitignore")?;
 
+    std::fs::write(project_path.join("rust-toolchain.toml"), include_str!("../new_project_template/rust-toolchain.toml"))
+        .context("Failed to create rust-toolchain.toml")?;
+
     std::fs::write(dot_cargo.join("config.toml"), include_str!("../new_project_template/.cargo/config.toml"))
         .context("Failed to create .cargo/config.toml")?;
 
