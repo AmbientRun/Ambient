@@ -259,6 +259,13 @@ impl AssetUrl {
     pub fn unwrap_abs(self) -> AbsAssetUrl {
         self.abs().expect("This AssetUrl hasn't been resolved yet")
     }
+    /// Ensures that this url ends with `/` if it's absolute, which is interpreted as a "directory" by the Url package
+    pub fn as_directory(&self) -> Self {
+        match self {
+            AssetUrl::Absolute(abs) => AssetUrl::Absolute(abs.as_directory()),
+            AssetUrl::Relative(rel) => AssetUrl::Relative(rel.clone()),
+        }
+    }
 }
 impl From<RelativePathBuf> for AssetUrl {
     fn from(value: RelativePathBuf) -> Self {

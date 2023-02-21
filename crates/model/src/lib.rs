@@ -114,11 +114,17 @@ async fn internal_spawn_models_from_defs(
         }
     });
 
-    let iter = entities_with_models.into_iter().map(|(k, ids)| async move {
-        tracing::debug!("Loading model: {k:#?}");
-        let url = match TypedAssetUrl::parse(k).context("Failed to parse url") {
+    let iter = entities_with_models.into_iter().map(|(url, ids)| async move {
+        tracing::debug!("Loading model: {url:#?}");
+        let mut url = match TypedAssetUrl::parse(url).context("Failed to parse url") {
             Ok(url) => url,
             Err(e) => return (ids, Err(e)),
+        };
+        if !url.0.path().contains("/models/") {
+            url = match url.0.as_directory().join("models/main.json").context("Failed to join url") {
+                Ok(url) => url.into(),
+                Err(e) => return (ids, Err(e)),
+            };
         };
         match ModelFromUrl(url).get(assets).await.context("Failed to load model") {
             Ok(v) => (ids, Ok(v)),
