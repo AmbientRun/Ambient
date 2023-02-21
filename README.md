@@ -20,7 +20,7 @@ Ambient is a runtime for building high-performance multiplayer games and 3D appl
 - **Asset pipeline and streaming**: Ambient has an [asset pipeline](https://ambientrun.github.io/Ambient/asset_pipeline.html) that is capable of compiling multiple asset formats, including `.glb` and `.fbx`. The assets are always streamed over the network, so your clients will receive everything they need when they join.
 - **Powerful renderer**: The Ambient renderer is GPU-driven, with both culling and level-of-detail switching being handled entirely by the GPU. By default, it uses [PBR](https://en.wikipedia.org/wiki/Physically_based_rendering). It also supports cascading shadow maps and instances everything that can be instanced.
 
-See the [documentation](https://ambientrun.github.io/Ambient/) for a getting started guide, or browse the [examples](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples).
+See the [documentation](https://ambientrun.github.io/Ambient/) for a guide on how to get started, or browse the [examples](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples).
 
 ## Installing
 
