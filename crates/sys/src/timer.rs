@@ -40,9 +40,7 @@ struct Waiter {
 
 impl Waiter {
     fn take_woken(&self) -> bool {
-        self.woken
-            .compare_exchange(true, false, Ordering::Acquire, Ordering::Relaxed)
-            .is_ok()
+        self.woken.compare_exchange(true, false, Ordering::Acquire, Ordering::Relaxed).is_ok()
     }
 
     fn wake(&self) {
@@ -70,10 +68,7 @@ impl TimerStore {
     fn new_timer(&self, deadline: Instant) -> (TimerKey, Arc<Waiter>) {
         let waiter = Arc::new(Waiter::default());
 
-        let timer = Timer {
-            deadline,
-            waiter: waiter.clone(),
-        };
+        let timer = Timer { deadline, waiter: waiter.clone() };
 
         let mut inner = self.inner.lock();
         let key = inner.timers.insert(timer);
@@ -85,7 +80,9 @@ impl TimerStore {
 }
 
 static TIMERS: Mutex<Option<Weak<TimerStore>>> = Mutex::new(None);
-fn get_timers() -> Option<Arc<TimerStore>> {
+/// Retrieve the global timer store
+
+pub fn get_global_timers() -> Option<Arc<TimerStore>> {
     Weak::upgrade(TIMERS.lock().as_ref()?)
 }
 
@@ -158,9 +155,7 @@ impl TimerWheel {
             });
         }
 
-        TimerWheelUpdate {
-            waiter: &self.waiter,
-        }
+        TimerWheelUpdate { waiter: &self.waiter }
     }
 }
 
@@ -171,10 +166,7 @@ pub struct TimerWheelUpdate<'a> {
 impl<'a> Future for TimerWheelUpdate<'a> {
     type Output = ();
 
-    fn poll(
-        self: Pin<&mut Self>,
-        cx: &mut std::task::Context<'_>,
-    ) -> std::task::Poll<Self::Output> {
+    fn poll(self: Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> std::task::Poll<Self::Output> {
         if self.waiter.take_woken() {
             Poll::Ready(())
         } else {
@@ -196,21 +188,13 @@ pub struct Sleep {
 impl Sleep {
     pub fn new_at(timers: &Arc<TimerStore>, deadline: Instant) -> Self {
         let (key, waiter) = timers.new_timer(deadline);
-        Self {
-            key,
-            timers: Arc::downgrade(timers),
-            waiter,
-        }
+        Self { key, timers: Arc::downgrade(timers), waiter }
     }
 
     pub fn new(timers: &Arc<TimerStore>, dur: Duration) -> Self {
         let deadline = Instant::now() + dur;
         let (key, waiter) = timers.new_timer(deadline);
-        Self {
-            key,
-            timers: Arc::downgrade(timers),
-            waiter,
-        }
+        Self { key, timers: Arc::downgrade(timers), waiter }
     }
 }
 
@@ -241,14 +225,6 @@ impl Drop for Sleep {
             timers.timers.remove(self.key);
         }
     }
-}
-
-pub fn sleep_until(instant: Instant) -> Sleep {
-    Sleep::new_at(&get_timers().expect("No timers"), instant)
-}
-
-pub fn sleep(dur: Duration) -> Sleep {
-    Sleep::new(&get_timers().expect("No timers"), dur)
 }
 
 #[cfg(test)]

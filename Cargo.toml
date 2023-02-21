@@ -16,7 +16,7 @@ tracing = "0.1.35"
 wgpu = "0.14.2"
 winit = { version = "0.28.1", features = ["serde"] }
 futures = { version = "0.3", default-features = false, features = ["std"] }
-tokio = { version = "1.20", features = ["full"] }
+tokio = { version = "1.20", features = ["parking_lot"] }
 bytemuck = { version = "1.10", features = ["derive"] }
 glam = { version = "0.22", features = ["bytemuck", "serde", "rand"] }
 gltf = "1.1.0"
@@ -60,7 +60,6 @@ once_cell = "1.13.0"
 smallvec = "1.8.0"
 downcast-rs = "1.2.0"
 yaml-rust = { version = "0.5", package = "yaml-rust-davvid" }
-tokio-util = { version = "0.7.0", features = ["codec"] }
 maplit = "1.0.2"
 chrono = { version = "0.4", default-features = false, features = [
     "serde",
@@ -74,7 +73,7 @@ anyhow = { version = "1.0", features = ["backtrace"] }
 bitflags = "1.3"
 quinn = "0.8.5"
 rustls = { version = "0.20.6", features = ["dangerous_configuration", "quic"] }
-parking_lot = { version = "0.12.0", features = ["deadlock_detection", "serde"] }
+parking_lot = { version = "0.12.0", features = ["serde"] }
 clap = { version = "4.0", features = ["derive"] }
 sentry = { version = "0.27.0", default-features = false, features = [
     'backtrace',

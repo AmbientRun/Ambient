@@ -51,3 +51,12 @@ pub fn schedule_wakeup<F: 'static + Send + FnOnce()>(dur: Duration, callback: F)
     let timer = gloo::timers::callback::Timeout::new(dur.as_millis().try_into().unwrap(), callback);
     mem::forget(timer);
 }
+
+use crate::timer::{get_global_timers, Sleep};
+pub fn sleep_until(instant: Instant) -> Sleep {
+    Sleep::new_at(&get_global_timers().expect("No timers"), instant)
+}
+
+pub fn sleep(dur: Duration) -> Sleep {
+    Sleep::new(&get_global_timers().expect("No timers"), dur)
+}

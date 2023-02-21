@@ -17,7 +17,7 @@ use parking_lot::Mutex;
 use pin_project::{pin_project, pinned_drop};
 
 use crate::{
-    control::{control, ControlHandle},
+    control::{control_future, ControlHandle},
     task::JoinError,
 };
 
@@ -27,7 +27,7 @@ where
     F: 'static + Future<Output = T>,
     T: 'static,
 {
-    let (ctl, fut) = control(fut);
+    let (ctl, fut) = control_future(fut);
 
     wasm_bindgen_futures::spawn_local(fut);
 
@@ -51,7 +51,7 @@ where
     Fut: 'static + Future<Output = T>,
     T: 'static + Send,
 {
-    let (ctl, fut) = control(func());
+    let (ctl, fut) = control_future(func());
 
     wasm_bindgen_futures::spawn_local(fut);
 

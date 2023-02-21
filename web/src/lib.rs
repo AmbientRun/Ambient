@@ -13,5 +13,5 @@ async fn start() {
 
     tracing::info!("Hello, Wasm!");
 
-    // utils::set_panic_hook();
+    // ambient_sys::set_panic_hook();
 }

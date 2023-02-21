@@ -35,6 +35,7 @@ gloo = { version = "0.8", features = ["futures"] }
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 # Note: not a workspace dependency. The goal is to not use tokio outside of this `sys` abstraction at all
 tokio = { version = "1.25", features = ["full", "tracing", "parking_lot"] }
+tokio-util = { version = "0.7.0", features = ["codec"] }
 
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]

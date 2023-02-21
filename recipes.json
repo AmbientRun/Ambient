@@ -1,6 +1,11 @@
 {
     "web-build": {
-        "cmd": "wasm-pack build web"
+        "cmd": "wasm-pack build web",
+        "components": {
+            "qf": {
+                "compiler": "cargo"
+            }
+        }
     },
     "web-run": {
         "cmd": "npm run start --open",

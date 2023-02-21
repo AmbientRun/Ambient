@@ -9,11 +9,16 @@ crate-type = ["cdylib", "rlib"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+ambient_sys = { path = "../crates/sys" }
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 tracing-subscriber = { version = "0.3", features = ["time"] }
 tracing-web = "0.1"
 time = { version = "0.3", features = ["wasm-bindgen"] }
+web-sys = { version = "0.3", features = ["Performance", "Document"] }
+
+getrandom = { version = "0.2.8", features = ["js"] }
+
 
 futures.workspace = true
 tracing.workspace = true

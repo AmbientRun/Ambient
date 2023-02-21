@@ -24,7 +24,8 @@ futures = { workspace = true }
 rand = { workspace = true }
 rustls = { workspace = true }
 thiserror = { workspace = true }
-tokio-util = { workspace = true }
+# Note: can't be in workspace as it stops wasm from compiling
+tokio-util = "0.7"
 bincode = { workspace = true }
 glam = { workspace = true }
 winit = { workspace = true }
