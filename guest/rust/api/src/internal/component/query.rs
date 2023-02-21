@@ -73,12 +73,12 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> GeneralQuery<Componen
     }
 
     /// Consume this query and call `callback` (`fn`) each frame with the result of the query.
-    pub fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static) {
+    pub fn each_frame(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static) {
         self.0.bind(callback)
     }
 
     /// Consume this query and call `callback` (`async fn`) each frame with the result of the query.
-    pub fn bind_async<R: Future<Output = ()>>(
+    pub fn each_frame_async<R: Future<Output = ()>>(
         self,
         callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + 'static,
     ) {

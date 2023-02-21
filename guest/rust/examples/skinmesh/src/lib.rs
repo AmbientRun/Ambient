@@ -49,7 +49,7 @@ pub async fn main() -> EventResult {
         },
     );
 
-    query(player()).build().bind(move |players| {
+    query(player()).build().each_frame(move |players| {
         for (player, _) in players {
             let Some((delta, _)) = player::get_raw_input_delta(player) else { continue; };
 

@@ -490,7 +490,7 @@ pub fn get_raw_input_delta(player_id: EntityId) -> Option<(RawInputDelta, RawInp
 
 /// Gets all of the players currently on the server within this world.
 ///
-/// Consider using `query(player()).build().bind()` instead.
+/// Consider using `query(player()).build().each_frame()` instead.
 ///
 /// This may not include all players on the server.
 pub fn get_all() -> Vec<EntityId> {

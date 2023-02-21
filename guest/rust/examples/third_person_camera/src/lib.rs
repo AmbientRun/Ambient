@@ -61,7 +61,7 @@ pub async fn main() -> EventResult {
 
     query((player(), player_camera_ref()))
         .build()
-        .bind(move |players| {
+        .each_frame(move |players| {
             for (player_id, (_, camera_id)) in players {
                 let Some((delta, pressed)) = player::get_raw_input_delta(player_id) else { continue; };
 
