@@ -31,7 +31,7 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
         project_path.join("Cargo.toml"),
         include_str!("../new_project_template/Cargo.toml")
             .replace("{{id}}", id.as_ref())
-            .replace("ambient_api = { path = \"../../guest/rust/api\" }", &format!("ambient_api = {}", env!("CARGO_PKG_VERSION"))),
+            .replace("ambient_api = { path = \"../../guest/rust/api\" }", &format!("ambient_api = \"{}\"", env!("CARGO_PKG_VERSION"))),
     )
     .context("Failed to create Cargo.toml")?;
 
