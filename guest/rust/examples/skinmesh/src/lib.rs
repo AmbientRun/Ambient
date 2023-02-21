@@ -1,8 +1,8 @@
 use ambient_api::{
     components::core::{
         game_objects::player_camera,
-        prefab::prefab_from_url,
         player::player,
+        prefab::prefab_from_url,
         primitives::quad,
         rendering::color,
         transform::{lookat_center, scale, translation},

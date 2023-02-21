@@ -2,11 +2,11 @@ use ambient_api::{
     components::core::{
         ecs::ids,
         game_objects::player_camera,
-        prefab::prefab_from_url,
         physics::{
             angular_velocity, box_collider, dynamic, linear_velocity, physics_controlled,
             visualizing,
         },
+        prefab::prefab_from_url,
         primitives::cube,
         rendering::{cast_shadows, color},
         transform::{lookat_center, rotation, scale, translation},
