@@ -16,7 +16,7 @@ tracing = "0.1.35"
 wgpu = "0.14.2"
 winit = { version = "0.28.1", features = ["serde"] }
 futures = { version = "0.3", default-features = false, features = ["std"] }
-tokio = { version = "1.20", features = ["parking_lot"] }
+tokio = { version = "1.20", features = ["full", "parking_lot"] }
 bytemuck = { version = "1.10", features = ["derive"] }
 glam = { version = "0.22", features = ["bytemuck", "serde", "rand"] }
 gltf = "1.1.0"
