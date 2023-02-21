@@ -118,7 +118,7 @@ variant component-type {
 }
 
 component-get-index: func(id: string) -> option<u32>
-type components = list<tuple<u32, component-type>>
+type entity = list<tuple<u32, component-type>>
 
 enum virtual-key-code {
     /// The '1' key over the letters.
@@ -334,7 +334,7 @@ record player-raw-input {
 }
 
 // entity
-entity-spawn: func(data: components) -> entity-id
+entity-spawn: func(data: entity) -> entity-id
 entity-despawn: func(entity: entity-id) -> bool
 entity-set-animation-controller: func(entity: entity-id, animation-controller: animation-controller)
 entity-in-area: func(position: vec3, radius: float32) -> list<entity-id>
@@ -342,10 +342,10 @@ entity-in-area: func(position: vec3, radius: float32) -> list<entity-id>
 entity-get-component: func(entity: entity-id, index: u32) -> option<component-type>
 
 entity-add-component: func(entity: entity-id, index: u32, value: component-type)
-entity-add-components: func(entity: entity-id, data: components)
+entity-add-components: func(entity: entity-id, data: entity)
 
 entity-set-component: func(entity: entity-id, index: u32, value: component-type)
-entity-set-components: func(entity: entity-id, data: components)
+entity-set-components: func(entity: entity-id, data: entity)
 
 entity-has-component: func(entity: entity-id, index: u32) -> bool
 entity-has-components: func(entity: entity-id, indices: list<u32>) -> bool
@@ -390,7 +390,7 @@ physics-raycast: func(origin: vec3, direction: vec3) -> list<tuple<entity-id, fl
 
 // event
 event-subscribe: func(name: string)
-event-send: func(name: string, data: components)
+event-send: func(name: string, data: entity)
 
 // asset
 asset-url: func(path: string) -> option<string>

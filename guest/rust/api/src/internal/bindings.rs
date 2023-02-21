@@ -540,7 +540,7 @@
       }
     }
   }
-  pub type Components<'a,> = &'a [(u32,ComponentTypeParam<'a,>,)];
+  pub type Entity<'a,> = &'a [(u32,ComponentTypeParam<'a,>,)];
   #[repr(u8)]
   #[derive(Clone, Copy, PartialEq, Eq)]
   pub enum VirtualKeyCode {
@@ -1311,7 +1311,7 @@
       }
     }
   }
-  pub fn entity_spawn(data: Components<'_,>,) -> EntityId{
+  pub fn entity_spawn(data: Entity<'_,>,) -> EntityId{
     unsafe {
       let mut cleanup_list = Vec::new();
       let vec47 = data;
@@ -3005,7 +3005,7 @@
                       ()
                     }
                   }
-                  pub fn entity_add_components(entity: EntityId,data: Components<'_,>,) -> (){
+                  pub fn entity_add_components(entity: EntityId,data: Entity<'_,>,) -> (){
                     unsafe {
                       let mut cleanup_list = Vec::new();
                       let EntityId{ id0:id00, id1:id10, } = entity;
@@ -4369,7 +4369,7 @@
                                     ()
                                   }
                                 }
-                                pub fn entity_set_components(entity: EntityId,data: Components<'_,>,) -> (){
+                                pub fn entity_set_components(entity: EntityId,data: Entity<'_,>,) -> (){
                                   unsafe {
                                     let mut cleanup_list = Vec::new();
                                     let EntityId{ id0:id00, id1:id10, } = entity;
@@ -6050,7 +6050,7 @@
                                             ()
                                           }
                                         }
-                                        pub fn event_send(name: & str,data: Components<'_,>,) -> (){
+                                        pub fn event_send(name: & str,data: Entity<'_,>,) -> (){
                                           unsafe {
                                             let mut cleanup_list = Vec::new();
                                             let vec0 = name;
