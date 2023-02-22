@@ -2,7 +2,7 @@
 [project]
 id = "runtime_components"
 name = "Runtime Components"
-version = "0.0.5"
+version = "0.0.18"
 
 [components.core]
 name = "Core"
@@ -32,9 +32,9 @@ description = "Information about models attached to entities."
 name = "Network"
 description = "Network-related state."
 
-[components."core::object"]
-name = "Object"
-description = "External object related state (e.g. drawing objects from remote URLs)"
+[components."core::prefab"]
+name = "Prefab"
+description = "Prefab-related state, including loading of prefabs."
 
 [components."core::physics"]
 name = "Physics"
@@ -57,8 +57,8 @@ name = "Transform"
 description = "Entity transform state (including translation, rotation and scale), as well as other transformations for this entity."
 
 [components."core::ui"]
-name = "Ui"
-description = "Anything related to ui and text."
+name = "UI"
+description = "Anything related to UI and text."
 
 [components."core::app::dtime"]
 type = "F32"
@@ -313,14 +313,6 @@ name = "Synced resources"
 description = "If attached, this entity contains global resources that are synchronized to clients, but not persisted."
 attributes = ["Debuggable", "Networked"]
 
-[components."core::object::object_from_url"]
-type = "String"
-name = "Object from URL"
-description = """
-Load and attach an object from a URL or relative path.
-When loaded, the components from this object will add to or replace the existing components for the object."""
-attributes = ["Debuggable", "Networked", "Store"]
-
 [components."core::physics::angular_velocity"]
 type = "Vec3"
 name = "Angular velocity"
@@ -343,7 +335,7 @@ name = "Character controller height"
 description = """
 The height of the physics character controller attached to this entity.
 If an entity has both this and a `character_controller_radius`, it will be given a physical character collider."""
-attributes = ["Networked", "Store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::physics::character_controller_radius"]
 type = "F32"
@@ -351,7 +343,7 @@ name = "Character controller radius"
 description = """
 The radius of the physics character controller attached to this entity.
 If an entity has both this and a `character_controller_height`, it will be given a physical character collider."""
-attributes = ["Networked", "Store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::physics::collider_from_url"]
 type = "String"
@@ -381,7 +373,7 @@ name = "Density"
 description = """
 The density of this entity.
 This is used to update the `mass` when the entity is rescaled."""
-attributes = ["Networked", "Store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::physics::dynamic"]
 type = "Bool"
@@ -484,6 +476,20 @@ description = """
 An identifier attached to all things owned by a user, and supplied by the user.
 This can be attached to more than just the player; by convention, it is also attached to related entities, including their camera and body."""
 attributes = ["Networked", "Store"]
+
+[components."core::prefab::prefab_from_url"]
+type = "String"
+name = "Prefab from URL"
+description = """
+Load and attach a prefab from a URL or relative path.
+When loaded, the components from this prefab will add to or replace the existing components for the entity."""
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::prefab::spawned"]
+type = "Empty"
+name = "Spawned"
+description = "If attached, this entity was built from a prefab that has finished spawning."
+attributes = ["Debuggable"]
 
 [components."core::primitives::cube"]
 type = "Empty"

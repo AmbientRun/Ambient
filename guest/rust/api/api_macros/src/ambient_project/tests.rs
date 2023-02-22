@@ -400,9 +400,10 @@ fn can_generate_concepts() {
             use super::components;
             use ambient_api2::prelude::*;
 
+            #[allow(clippy::approx_constant)]
             #[doc = "Makes a Colored Sphere (A sphere with some color!)"]
-            pub fn make_colored_sphere() -> Components {
-                Components::new()
+            pub fn make_colored_sphere() -> Entity {
+                Entity::new()
                     .with_merge(make_sphere())
                     .with(components::core::rendering::color(), Vec4::new(1f32, 1f32, 1f32, 1f32))
             }
@@ -414,9 +415,10 @@ fn can_generate_concepts() {
                 ])
             }
 
+            #[allow(clippy::approx_constant)]
             #[doc = "Makes a Sphere (A primitive sphere.)"]
-            pub fn make_sphere() -> Components {
-                Components::new()
+            pub fn make_sphere() -> Entity {
+                Entity::new()
                     .with_merge(make_transformable())
                     .with(components::core::primitives::sphere(), ())
                     .with(components::core::primitives::sphere_radius(), 0.5f32)
@@ -434,9 +436,10 @@ fn can_generate_concepts() {
                 ])
             }
 
+            #[allow(clippy::approx_constant)]
             #[doc = "Makes a Transformable (Can be translated, rotated and scaled.)"]
-            pub fn make_transformable() -> Components {
-                Components::new()
+            pub fn make_transformable() -> Entity {
+                Entity::new()
                     .with(components::core::transform::rotation(), Quat::from_xyzw(0f32, 0f32, 0f32, 1f32))
                     .with(components::core::transform::scale(), Vec3::new(1f32, 1f32, 1f32))
                     .with(components::core::transform::translation(), Vec3::new(0f32, 0f32, 0f32))
@@ -486,7 +489,6 @@ fn can_generate_concepts_with_all_supported_types() {
         vec2 = { type = "Vec2", name = "Vec2", description = "" }
         vec3 = { type = "Vec3", name = "Vec3", description = "" }
         vec4 = { type = "Vec4", name = "Vec4", description = "" }
-        object_ref = { type = "ObjectRef", name = "ObjectRef", description = "" }
         vec_vec2 = { type = { type = "Vec", element_type = "Vec2" }, name = "VecVec2", description = "" }
         option_string1 = { type = { type = "Option", element_type = "String" }, name = "OptionString1", description = "" }
         option_string2 = { type = { type = "Option", element_type = "String" }, name = "OptionString2", description = "" }
@@ -509,7 +511,6 @@ fn can_generate_concepts_with_all_supported_types() {
         vec2 = [1.0, 2.0]
         vec3 = [1.0, 2.0, 3.0]
         vec4 = [1.0, 2.0, 3.0, 4.0]
-        object_ref = "http://192.168.0.4:8999/assets/assets/Shape.glb/models/main.json"
         vec_vec2 = [[1.0, 2.0], [3.0, 4.0]]
         option_string1 = ["The Answer Is"]
         option_string2 = []
@@ -548,10 +549,6 @@ fn can_generate_concepts_with_all_supported_types() {
             static MAT4: Lazy< Component<ambient_api2::global::Mat4> > = Lazy::new(|| __internal_get_component("my_project::mat4"));
             #[doc = "**Mat4**"]
             pub fn mat4() -> Component<ambient_api2::global::Mat4> { *MAT4 }
-
-            static OBJECT_REF: Lazy< Component<ambient_api2::global::ObjectRef> > = Lazy::new(|| __internal_get_component("my_project::object_ref"));
-            #[doc = "**ObjectRef**"]
-            pub fn object_ref() -> Component<ambient_api2::global::ObjectRef> { *OBJECT_REF }
 
             static OPTION_STRING1: Lazy< Component< Option<String> > > = Lazy::new(|| __internal_get_component("my_project::option_string1"));
             #[doc = "**OptionString1**"]
@@ -597,9 +594,10 @@ fn can_generate_concepts_with_all_supported_types() {
         pub mod concepts {
             use super::components;
             use ambient_api2::prelude::*;
+            #[allow(clippy::approx_constant)]
             #[doc = "Makes a Everything (Everywhere all at once)"]
-            pub fn make_everything() -> Components {
-                Components::new()
+            pub fn make_everything() -> Entity {
+                Entity::new()
                     .with(components::bool(), true)
                     .with(components::empty(), ())
                     .with(components::entity_id(), EntityId::from_base64("qmYJaglgRDwigkGXFFS9UQ"))
@@ -610,7 +608,6 @@ fn can_generate_concepts_with_all_supported_types() {
                         1f32, 2f32, 3f32, 4f32, 5f32, 6f32, 7f32, 8f32, 9f32, 10f32, 11f32, 12f32,
                         13f32, 14f32, 15f32, 16f32
                     ]))
-                    .with(components::object_ref(), ObjectRef::new("http://192.168.0.4:8999/assets/assets/Shape.glb/models/main.json"))
                     .with(components::option_string1(), Some("The Answer Is".to_string()))
                     .with(components::option_string2(), None)
                     .with(components::quat(), Quat::from_xyzw(1f32, -0.5f32, 0.3f32, -0.6f32))
@@ -634,7 +631,6 @@ fn can_generate_concepts_with_all_supported_types() {
                         &components::f64(),
                         &components::i32(),
                         &components::mat4(),
-                        &components::object_ref(),
                         &components::option_string1(),
                         &components::option_string2(),
                         &components::quat(),
@@ -714,27 +710,30 @@ fn can_extend_with_multiple_concepts() {
             use super::components;
             use ambient_api2::prelude::*;
 
+            #[allow(clippy::approx_constant)]
             #[doc = "Makes a C1 ()"]
-            pub fn make_concept1() -> Components {
-                Components::new().with(components::f32(), 4f32)
+            pub fn make_concept1() -> Entity {
+                Entity::new().with(components::f32(), 4f32)
             }
             #[doc = "Checks if the entity is a C1 ()"]
             pub fn is_concept1(id: EntityId) -> bool {
                 entity::has_components(id, &[&components::f32()])
             }
 
+            #[allow(clippy::approx_constant)]
             #[doc = "Makes a C2 ()"]
-            pub fn make_concept2() -> Components {
-                Components::new().with(components::f64(), 8f64)
+            pub fn make_concept2() -> Entity {
+                Entity::new().with(components::f64(), 8f64)
             }
             #[doc = "Checks if the entity is a C2 ()"]
             pub fn is_concept2(id: EntityId) -> bool {
                 entity::has_components(id, &[&components::f64()])
             }
 
+            #[allow(clippy::approx_constant)]
             #[doc = "Makes a C3 ()"]
-            pub fn make_concept3() -> Components {
-                Components::new()
+            pub fn make_concept3() -> Entity {
+                Entity::new()
                     .with_merge(make_concept1())
                     .with_merge(make_concept2())
                     .with(components::i32(), 16i32)

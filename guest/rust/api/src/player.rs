@@ -1,7 +1,6 @@
 use std::collections::HashSet;
 
 use crate::{
-    components, entity,
     global::{EntityId, Vec2},
     internal::{
         conversion::{FromBindgen, IntoBindgen},
@@ -486,18 +485,4 @@ pub fn get_prev_and_current_raw_input(player_id: EntityId) -> Option<(RawInput, 
 pub fn get_raw_input_delta(player_id: EntityId) -> Option<(RawInputDelta, RawInput)> {
     let (p, c) = get_prev_and_current_raw_input(player_id)?;
     Some((c.delta(&p), c))
-}
-
-/// Gets all of the players currently on the server within this world.
-///
-/// Consider using `query(player()).build().bind()` instead.
-///
-/// This may not include all players on the server.
-pub fn get_all() -> Vec<EntityId> {
-    entity::query(components::core::player::player())
-}
-
-/// Gets `player_id`'s name.
-pub fn get_name(player_id: EntityId) -> Option<String> {
-    entity::get_component(player_id, components::core::player::user_id())
 }

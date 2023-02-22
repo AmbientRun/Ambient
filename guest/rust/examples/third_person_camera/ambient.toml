@@ -1,0 +1,9 @@
+[project]
+id = "third_person_camera"
+name = "Third person camera"
+version = "0.0.1"
+
+[components]
+player_camera_ref = { type = "EntityId", name = "Player camera ref", description = "", attributes = [
+    "Debuggable",
+] }

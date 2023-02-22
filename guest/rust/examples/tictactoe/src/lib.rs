@@ -1,8 +1,8 @@
-use components::cell;
 use ambient_api::{
     components::core::{
         self,
         game_objects::player_camera,
+        player::player,
         primitives::cube,
         rendering::{color, outline},
         transform::{lookat_center, scale, translation},
@@ -10,11 +10,13 @@ use ambient_api::{
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
 };
 use ambient_api::{player::KeyCode, prelude::*};
+use components::cell;
 use palette::{FromColor, Hsl, Srgb};
 
 #[main]
 pub async fn main() -> EventResult {
-    make_perspective_infinite_reverse_camera()
+    Entity::new()
+        .with_merge(make_perspective_infinite_reverse_camera())
         .with_default(player_camera())
         .with(translation(), vec3(3., 3., 2.5))
         .with(lookat_center(), vec3(1.5, 1.5, 0.))
@@ -23,7 +25,8 @@ pub async fn main() -> EventResult {
     let mut cells = Vec::new();
     for y in 0..3 {
         for x in 0..3 {
-            let id = make_transformable()
+            let id = Entity::new()
+                .with_merge(make_transformable())
                 .with_default(cube())
                 .with(translation(), vec3(x as f32, y as f32, 0.))
                 .with(scale(), vec3(0.6, 0.6, 0.6))
@@ -44,7 +47,7 @@ pub async fn main() -> EventResult {
             entity::remove_component(*cell, outline());
         }
 
-        let players = player::get_all();
+        let players = entity::get_all(player());
         let n_players = players.len();
         for (i, player) in players.into_iter().enumerate() {
             let player_color = Srgb::from_color(Hsl::from_components((

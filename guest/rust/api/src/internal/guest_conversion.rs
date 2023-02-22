@@ -76,13 +76,6 @@ impl GuestConvert for guest::Mat4 {
     }
 }
 
-impl GuestConvert for guest::ObjectRef {
-    type Item = host::ObjectRefResult;
-    fn guest_convert(self) -> Self::Item {
-        Self::Item { id: self.id }
-    }
-}
-
 macro_rules! convert_passthrough {
     ($type:ty) => {
         impl GuestConvert for $type {
@@ -141,7 +134,6 @@ impl GuestConvert for guest::ComponentListType {
             Self::TypeVec2(c) => Self::Item::TypeVec2(c.guest_convert()),
             Self::TypeVec3(c) => Self::Item::TypeVec3(c.guest_convert()),
             Self::TypeVec4(c) => Self::Item::TypeVec4(c.guest_convert()),
-            Self::TypeObjectRef(c) => Self::Item::TypeObjectRef(c.guest_convert()),
         }
     }
 }
@@ -164,7 +156,6 @@ impl GuestConvert for guest::ComponentOptionType {
             Self::TypeVec2(c) => Self::Item::TypeVec2(c.guest_convert()),
             Self::TypeVec3(c) => Self::Item::TypeVec3(c.guest_convert()),
             Self::TypeVec4(c) => Self::Item::TypeVec4(c.guest_convert()),
-            Self::TypeObjectRef(c) => Self::Item::TypeObjectRef(c.guest_convert()),
         }
     }
 }
@@ -187,7 +178,6 @@ impl GuestConvert for guest::ComponentType {
             Self::TypeVec2(c) => Self::Item::TypeVec2(c.guest_convert()),
             Self::TypeVec3(c) => Self::Item::TypeVec3(c.guest_convert()),
             Self::TypeVec4(c) => Self::Item::TypeVec4(c.guest_convert()),
-            Self::TypeObjectRef(c) => Self::Item::TypeObjectRef(c.guest_convert()),
             Self::TypeList(c) => Self::Item::TypeList(c.guest_convert()),
             Self::TypeOption(c) => Self::Item::TypeOption(c.guest_convert()),
         }

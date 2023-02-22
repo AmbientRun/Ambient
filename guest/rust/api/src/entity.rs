@@ -3,37 +3,34 @@ use crate::{
     global::{until_this, EntityId, Vec3},
     internal::{
         component::{
-            traits::AsParam, Component, Components, SupportedComponentTypeGet,
+            traits::AsParam, Component, Entity, SupportedComponentTypeGet,
             SupportedComponentTypeSet, UntypedComponent,
         },
         conversion::{FromBindgen, IntoBindgen},
         host,
     },
+    prelude::block_until,
 };
 
 pub use crate::internal::host::{AnimationAction, AnimationController};
 
 /// Spawns an entity containing the `components`.
 ///
-/// This is an asynchronous operation; use [wait_for_spawn] to get notified when
-/// the entity is spawned.
-///
 /// Returns `spawned_entity_uid`.
-pub fn spawn(components: &Components) -> EntityId {
+pub fn spawn(components: &Entity) -> EntityId {
     components
         .call_with(|data| host::entity_spawn(data))
         .from_bindgen()
 }
 
-/// Waits until `id` has spawned. Note that this may never resolve if the entity
+/// Waits until `id` has the `component`. Note that this may never resolve if the entity
 /// does not complete spawning, or the id in question refers to an entity that does
 /// not exist.
-// TODO(philpax): revisit once we think about the spawning situation some more
-pub async fn wait_for_spawn(id: EntityId) {
-    until_this(event::ENTITY_SPAWN, move |ed| {
-        ed.get(components::core::ecs::id()).unwrap() == id
-    })
-    .await;
+pub async fn wait_for_component<T: SupportedComponentTypeGet>(
+    entity: EntityId,
+    component: Component<T>,
+) {
+    block_until(move || host::entity_has_component(entity.into_bindgen(), component.index())).await;
 }
 
 /// Despawns `entity` from the world. `entity` will not work with any other functions afterwards.
@@ -53,8 +50,8 @@ pub fn exists(entity: EntityId) -> bool {
 }
 
 /// Gets all of the entities that have the given `component`.
-pub fn query<T>(component: Component<T>) -> Vec<EntityId> {
-    host::entity_query(component.index()).from_bindgen()
+pub fn get_all<T>(component: Component<T>) -> Vec<EntityId> {
+    host::entity_get_all(component.index()).from_bindgen()
 }
 
 /// Gets all of the entities within `radius` of `position`.
@@ -84,7 +81,7 @@ pub fn add_component<T: SupportedComponentTypeSet>(
 }
 
 /// Adds the components `components` for `entity` with `value`. Will replace any existing components specified in `components`.
-pub fn add_components(entity: EntityId, components: Components) {
+pub fn add_components(entity: EntityId, components: Entity) {
     components.call_with(|data| host::entity_add_components(entity.into_bindgen(), data))
 }
 
@@ -99,7 +96,7 @@ pub fn set_component<T: SupportedComponentTypeSet>(
 }
 
 /// Sets the components `components` for `entity` with `value`.
-pub fn set_components(entity: EntityId, components: Components) {
+pub fn set_components(entity: EntityId, components: Entity) {
     components.call_with(|data| host::entity_set_components(entity.into_bindgen(), data))
 }
 

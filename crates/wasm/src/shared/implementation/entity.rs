@@ -46,7 +46,7 @@ pub fn remove_component(world: &mut World, entity_id: EntityId, index: u32) -> a
     Ok(world.remove_component(entity_id, desc)?)
 }
 
-pub fn query(world: &mut World, index: u32) -> Vec<EntityId> {
+pub fn get_all(world: &mut World, index: u32) -> Vec<EntityId> {
     let desc = match with_component_registry(|r| r.get_by_index(index)) {
         Some(c) => c,
         None => return vec![],
@@ -57,7 +57,7 @@ pub fn query(world: &mut World, index: u32) -> Vec<EntityId> {
         .map(|ea| ea.id())
         .collect()
 }
-pub fn query2(
+pub fn query(
     query_states: &mut QueryStateMap,
     components: impl Iterator<Item = u32> + Sync + Send,
     include: impl Iterator<Item = u32> + Sync + Send,

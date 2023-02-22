@@ -26,24 +26,24 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                     .await
                     .with_context(|| format!("Failed to import model {file}"))?;
                 model_crate.model_mut().set_name(file.path().file_name().unwrap());
-                model_crate.create_object_from_model();
+                model_crate.create_prefab_from_model();
 
                 let out_model_path = ctx.in_root().relative_path(file.path());
                 config.apply(&ctx, &mut model_crate, &out_model_path).await?;
 
                 let model_crate_url = ctx.write_model_crate(&model_crate, &out_model_path).await;
 
-                if config.output_objects {
+                if config.output_prefabs {
                     res.push(OutAsset {
                         id: asset_id_from_url(&file),
-                        type_: AssetType::Object,
+                        type_: AssetType::Prefab,
                         hidden: false,
                         name: file.path().file_name().unwrap().to_string(),
 
                         tags: Default::default(),
                         categories: Default::default(),
                         preview: OutAssetPreview::FromModel { url: model_crate_url.model().abs().unwrap() },
-                        content: OutAssetContent::Content(model_crate_url.object().abs().unwrap()),
+                        content: OutAssetContent::Content(model_crate_url.prefab().abs().unwrap()),
                         source: Some(file.clone()),
                     });
                 }

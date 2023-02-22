@@ -109,13 +109,13 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                     let model_crate_url = ctx.write_model_crate(&asset_crate, &out_model_path).await;
                     res.push(OutAsset {
                         id: asset_id_from_url(&file),
-                        type_: AssetType::Object,
+                        type_: AssetType::Prefab,
                         hidden: false,
                         name: file.path().file_name().unwrap().to_string(),
                         tags: Default::default(),
                         categories: Default::default(),
                         preview: OutAssetPreview::FromModel { url: model_crate_url.model().abs().unwrap() },
-                        content: OutAssetContent::Content(model_crate_url.object().abs().unwrap()),
+                        content: OutAssetContent::Content(model_crate_url.prefab().abs().unwrap()),
                         source: Some(file.clone()),
                     });
                     Ok(res)
@@ -145,7 +145,7 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                         })
                         .add_step(ModelImportTransform::SetName { name: file.path().file_name().unwrap().to_string() })
                         .add_step(ModelImportTransform::Transform(ModelTransform::Center))
-                        .add_step(ModelImportTransform::CreateObject)
+                        .add_step(ModelImportTransform::CreatePrefab)
                         .add_step(ModelImportTransform::CreateColliderFromModel);
                     let mut asset_crate = pipeline.produce_crate(ctx.assets()).await.unwrap();
                     for mat in asset_crate.materials.content.values_mut() {
@@ -160,13 +160,13 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                     let model_crate_url = ctx.write_model_crate(&asset_crate, &out_path).await;
                     res.push(OutAsset {
                         id: asset_id_from_url(&file),
-                        type_: AssetType::Object,
+                        type_: AssetType::Prefab,
                         hidden: false,
                         name: file.path().file_name().unwrap().to_string(),
                         tags: Default::default(),
                         categories: Default::default(),
                         preview: OutAssetPreview::FromModel { url: model_crate_url.model().abs().unwrap() },
-                        content: OutAssetContent::Content(model_crate_url.object().abs().unwrap()),
+                        content: OutAssetContent::Content(model_crate_url.prefab().abs().unwrap()),
                         source: Some(file.clone()),
                     });
                     Ok(res)
@@ -356,7 +356,7 @@ async fn model_from_prefab(
     model_crate.model_world_mut().add_resource(children(), roots);
     model_crate.model_mut().transform(Mat4::from_cols(Vec4::Y, Vec4::Z, Vec4::X, Vec4::W));
 
-    model_crate.create_object_from_model();
+    model_crate.create_prefab_from_model();
     Ok(model_crate)
 }
 

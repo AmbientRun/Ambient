@@ -14,59 +14,27 @@ const MINIMUM_RUST_VERSION: Version = Version((1, 65, 0));
 #[derive(Clone)]
 pub struct Rust(Installation);
 impl Rust {
-    /// Gets the system installation of Rust, or downloads one if not available
-    pub async fn install_or_get(rust_path: &Path) -> anyhow::Result<Self> {
-        let system_versions = {
-            let system = Installation::System;
-            (
-                system.get_installed_rustup_version(),
-                system.get_installed_rustc_version(),
-            )
-        };
+    pub async fn get_system_installation() -> anyhow::Result<Self> {
+        let installation = Installation;
+        if let Err(_) = installation.get_installed_rustup_version() {
+            anyhow::bail!("`rustup` is not installed. Please install it with https://rustup.rs/ for the best experience.");
+        }
 
-        let use_downloaded = match system_versions {
-            (Ok(_), Ok(version)) if version >= MINIMUM_RUST_VERSION => {
-                log::debug!("Using system rustc ({version})");
-                false
-            }
-            (Ok(_), Ok(version)) => {
-                log::warn!("A rustup and rustc were found, but it is {version} and our MSRV is {MINIMUM_RUST_VERSION}; a downloaded Rust installation will be used");
-                true
-            }
-            (Ok(_), Err(_)) => {
-                log::warn!(
-                    "A rustup was found, but no rustc; a downloaded Rust installation will be used"
-                );
-                true
-            }
-            (Err(_), Ok(_)) => {
-                log::warn!("A rustc was found, but not a rustup (did you install Rust through your system package manager?); a downloaded Rust installation will be used");
-                true
-            }
-            (Err(_), Err(_)) => true,
-        };
+        if !installation
+            .get_installed_rustc_version()
+            .map(|v| v >= MINIMUM_RUST_VERSION)
+            .unwrap_or(false)
+        {
+            anyhow::bail!("`rustc` is not installed. Please install it with `rustup` for the best experience.");
+        }
 
-        let installation = if use_downloaded {
-            if !rust_path.exists() {
-                log::debug!("No rustc detected, downloading and installing");
-                Installation::download_and_install(rust_path).await?
-            } else {
-                let installation = Installation::from_existing_installation(rust_path)?;
-                let mut version = installation.get_installed_rustc_version()?;
-
-                if version < MINIMUM_RUST_VERSION {
-                    log::debug!("Downloaded rustc is out of date ({version}), updating");
-                    installation.update()?;
-                    version = installation.get_installed_rustc_version()?;
-                }
-
-                log::debug!("Using downloaded rustc ({version})");
-                installation
-            }
-        } else {
-            Installation::System
-        };
-        installation.install_wasm32_wasi()?;
+        if !installation
+            .get_installed_targets()?
+            .iter()
+            .any(|s| s == "wasm32-wasi")
+        {
+            anyhow::bail!("Your `rustup` installation does not have `wasm32-wasi` installed. Please install it with `rustup target add wasm32-wasi`.")
+        }
 
         Ok(Self(installation))
     }
@@ -92,176 +60,26 @@ impl Rust {
             .context("no wasm artifact")?,
         )?)
     }
-
-    pub fn document(&self, module_path: &Path) -> anyhow::Result<PathBuf> {
-        Ok(parse_command_result_for_filenames(self.0.run(
-            "cargo",
-            [
-                "doc",
-                "--release",
-                "--message-format",
-                "json",
-                "--no-deps",
-                "--target",
-                "wasm32-wasi",
-            ],
-            Some(module_path),
-        ))?
-        .into_iter()
-        .find(|p| p.extension().unwrap_or_default() == "html")
-        .context("no html artifact")?
-        .parent()
-        .and_then(Path::parent)
-        .context("no parent")?
-        .to_owned())
-    }
 }
 
 #[derive(Clone)]
-enum Installation {
-    Downloaded {
-        rustup_path: PathBuf,
-        cargo_path: PathBuf,
-    },
-    System,
-}
+struct Installation;
 impl Installation {
-    async fn download_and_install(rust_path: &Path) -> anyhow::Result<Self> {
-        log::info!("Downloading rustup");
-
-        std::fs::create_dir_all(rust_path).context("failed to create rust_path")?;
-        let (rustup_path, cargo_path) = Self::paths(rust_path);
-        std::fs::create_dir_all(&rustup_path).context("failed to create rustup_path")?;
-        std::fs::create_dir_all(&cargo_path).context("failed to create cargo_path")?;
-
-        let target = env!("TARGET").to_string();
-
-        // HACK(philpax): the -msvc toolchain requires msvc build tools, which rustup is not guaranteed
-        // to install. instead, we force the -gnu toolchain, which shouldn't require those tools:
-        // x86_64-pc-windows-msvc -> x86_64-pc-windows-gnu
-        #[cfg(target_os = "windows")]
-        let target = target.replace("-msvc", "-gnu");
-
-        let url = format!(
-            "https://static.rust-lang.org/rustup/dist/{}/{}",
-            target,
-            exe("rustup-init")
-        );
-
-        let contents = reqwest::get(url)
-            .await?
-            .bytes()
-            .await
-            .context("failed to download rustup-init")?;
-
-        let rustup_init_path = rust_path.join("rustup-init");
-        std::fs::write(&rustup_init_path, contents)?;
-        let _rustup_init_deleter = DeleteOnExit::new(rustup_init_path.clone());
-
-        #[cfg(target_family = "unix")]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            std::fs::set_permissions(&rustup_init_path, std::fs::Permissions::from_mode(0o777))
-                .context("failed to set rustup-init permissions")?;
-        }
-
-        log::info!("Executing rustup");
-        let mut rust_deleter = DeleteOnExit::new(rust_path.to_owned());
-        let mut command = Command::new(&rustup_init_path);
-        silence_output_window(&mut command);
-        let result = command
-            .envs([
-                ("RUSTUP_HOME", rustup_path.to_string_lossy().as_ref()),
-                ("CARGO_HOME", cargo_path.to_string_lossy().as_ref()),
-            ])
-            .args([
-                "-y",
-                "--no-update-default-toolchain",
-                "--no-modify-path",
-                "-t",
-                "wasm32-wasi",
-            ])
-            .output()
-            .context("failed to run rustup-init")?;
-        if !result.status.success() {
-            anyhow::bail!(
-                "failed to execute rustup-init: {}",
-                std::str::from_utf8(&result.stderr)?
-            );
-        }
-
-        let installation = Installation::Downloaded {
-            rustup_path,
-            cargo_path,
-        };
-
-        log::info!("Installing wasm32-wasi");
-        installation.install_wasm32_wasi()?;
-
-        log::info!("Setting rustup default");
-        handle_command_failure(
-            "set rustup default",
-            installation.run("rustup", ["default", "stable"], None),
-        )?;
-
-        installation.update().context("failed to update rust")?;
-        rust_deleter.disable_deletion();
-
-        Ok(installation)
-    }
-
-    fn from_existing_installation(rust_path: &Path) -> anyhow::Result<Self> {
-        let (rustup_path, cargo_path) = Self::paths(rust_path);
-
-        if !rustup_path.is_dir() {
-            anyhow::bail!("rustup path {rustup_path:?} is not a directory or does not exist");
-        }
-
-        if !cargo_path.is_dir() {
-            anyhow::bail!("cargo path {cargo_path:?} is not a directory or does not exist");
-        }
-
-        Ok(Self::Downloaded {
-            rustup_path,
-            cargo_path,
-        })
-    }
-
-    fn paths(rust_path: &Path) -> (PathBuf, PathBuf) {
-        let rustup_path = rust_path.join("rustup");
-        let cargo_path = rust_path.join("cargo");
-
-        (rustup_path, cargo_path)
-    }
-
-    /// Should only be called on downloaded installations. Will assert if called on a system
-    /// installation.
-    fn update(&self) -> anyhow::Result<()> {
-        if !matches!(&self, Installation::Downloaded { .. }) {
-            anyhow::bail!("rustup update should only be called on downloaded installations");
-        }
-
-        log::info!("Running rustup update");
-        handle_command_failure("run rustup update", self.run("rustup", ["update"], None))?;
-
-        Ok(())
-    }
-
-    fn install_wasm32_wasi(&self) -> anyhow::Result<()> {
-        handle_command_failure(
-            "add rustup target wasm32-wasi",
-            self.run("rustup", ["target", "add", "wasm32-wasi"], None),
-        )?;
-
-        Ok(())
-    }
-
     fn get_installed_rustup_version(&self) -> anyhow::Result<Version> {
         self.get_version_for("get rustup version", "rustup")
     }
 
     fn get_installed_rustc_version(&self) -> anyhow::Result<Version> {
         self.get_version_for("get rustc version", "rustc")
+    }
+
+    fn get_installed_targets(&self) -> anyhow::Result<Vec<String>> {
+        Ok(
+            handle_command_failure("get targets", self.run("rustup", ["target", "list"], None))?
+                .lines()
+                .filter_map(|l| Some(l.strip_suffix("(installed)")?.trim().to_string()))
+                .collect(),
+        )
     }
 
     fn get_version_for(&self, task: &str, cmd: &str) -> Result<Version, anyhow::Error> {
@@ -286,30 +104,17 @@ impl Installation {
         args: impl IntoIterator<Item = impl AsRef<OsStr>>,
         working_directory: Option<&Path>,
     ) -> anyhow::Result<(bool, String, String)> {
-        let exe_path = match self {
-            Installation::Downloaded { cargo_path, .. } => cargo_path.join("bin").join(exe(cmd)),
-            Installation::System => PathBuf::from(exe(cmd)),
-        };
+        let exe_path = PathBuf::from(exe(cmd));
 
         let mut command = Command::new(exe_path);
         silence_output_window(&mut command);
 
-        let mut envs = vec![
-            ("RUSTUP_TOOLCHAIN", "stable".to_string()),
-            ("CARGO_INCREMENTAL", "1".to_string()),
-        ];
-        if let Installation::Downloaded {
-            rustup_path,
-            cargo_path,
-        } = self
-        {
-            envs.extend_from_slice(&[
-                ("RUSTUP_HOME", rustup_path.to_string_lossy().to_string()),
-                ("CARGO_HOME", cargo_path.to_string_lossy().to_string()),
-            ]);
-        }
-
-        command.envs(envs).args(args);
+        command
+            .envs([
+                ("RUSTUP_TOOLCHAIN", "stable".to_string()),
+                ("CARGO_INCREMENTAL", "1".to_string()),
+            ])
+            .args(args);
         if let Some(wd) = working_directory {
             command.current_dir(wd);
         }
@@ -419,39 +224,5 @@ impl Display for Version {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let (major, minor, patch) = self.0;
         write!(f, "{major}.{minor}.{patch}")
-    }
-}
-
-struct DeleteOnExit {
-    path: PathBuf,
-    should_delete: bool,
-}
-impl DeleteOnExit {
-    fn new(path: PathBuf) -> Self {
-        Self {
-            path,
-            should_delete: true,
-        }
-    }
-
-    fn disable_deletion(&mut self) {
-        self.should_delete = false;
-    }
-}
-impl Drop for DeleteOnExit {
-    fn drop(&mut self) {
-        if !self.should_delete {
-            return;
-        }
-
-        if !self.path.exists() {
-            return;
-        }
-
-        if self.path.is_file() {
-            std::fs::remove_file(&self.path).ok();
-        } else if self.path.is_dir() {
-            std::fs::remove_dir_all(&self.path).ok();
-        }
     }
 }

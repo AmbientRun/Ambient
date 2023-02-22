@@ -7,7 +7,7 @@ pub(crate) fn init() -> anyhow::Result<()> {
     ambient_world_audio::init_components();
     ambient_primitives::init_components();
     ambient_project::init_components();
-    ambient_object::init_components();
+    ambient_prefab::init_components();
     ambient_sky::init_components();
     ambient_water::init_components();
 

@@ -2,6 +2,8 @@
 //!
 //! Welcome to the Ambient Rust API! This API allows you to write logic for the Ambient Runtime in Rust.
 //!
+//! You can find the Ambient Book at: <https://ambientrun.github.io/Ambient/>
+//!
 //! Ambient has first-class support for Rust. Please report any issues you encounter to the repository.
 #![deny(missing_docs)]
 
@@ -30,6 +32,7 @@ pub use ambient_api_macros::main;
 pub use anyhow;
 pub use glam;
 pub use once_cell;
+pub use rand;
 
 // Hi there! This macro generates the components that are exposed to you as a Ambient API user.
 // We suggest that you look at the docs for this crate.

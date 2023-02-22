@@ -11,3 +11,5 @@ rustdoc-types = "0.20.0"
 serde_json = { workspace = true }
 anyhow = { workspace = true }
 once_cell = { workspace = true }
+
+# This tool is an example as a hack to make sure this doesn't show up for `cargo install`

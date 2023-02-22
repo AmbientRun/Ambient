@@ -7,6 +7,5 @@ rustflags = [
   "-Aclippy::new_without_default",
   # We have a lot of complex types
   "-Aclippy::type_complexity",
-  "-Dclippy::disallowed-macros",
   "-Dclippy::dbg_macro",
 ]

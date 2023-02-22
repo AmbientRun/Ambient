@@ -101,7 +101,7 @@ dependencies = [
 
 [[package]]
 name = "ambient"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_animation",
  "ambient_app",
@@ -121,8 +121,8 @@ dependencies = [
  "ambient_model",
  "ambient_model_import",
  "ambient_network",
- "ambient_object",
  "ambient_physics",
+ "ambient_prefab",
  "ambient_primitives",
  "ambient_project",
  "ambient_renderer",
@@ -142,7 +142,6 @@ dependencies = [
  "env_logger 0.10.0",
  "futures",
  "glam 0.22.0",
- "indoc",
  "local-ip-address",
  "log",
  "parking_lot",
@@ -163,7 +162,7 @@ checksum = "ec8ad6edb4840b78c5c3d88de606b22252d552b55f3a4699fbb10fc070ec3049"
 
 [[package]]
 name = "ambient_animation"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -184,7 +183,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_app"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_animation",
  "ambient_cameras",
@@ -214,7 +213,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_asset_cache"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "abort-on-drop",
  "anyhow",
@@ -234,7 +233,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_asset_timeline"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -257,7 +256,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_audio"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_std",
  "ambient_ui",
@@ -296,7 +295,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_build"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_asset_cache",
  "ambient_core",
@@ -336,7 +335,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_cameras"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -349,7 +348,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_core"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_ecs",
  "ambient_gpu",
@@ -375,7 +374,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_curve"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_std",
  "glam 0.22.0",
@@ -383,7 +382,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_debugger"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -405,7 +404,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_decals"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_app",
  "ambient_asset_cache",
@@ -426,7 +425,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_ecs"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_std",
  "anyhow",
@@ -458,7 +457,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_ecs_editor"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -475,7 +474,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_editor"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_animation",
  "ambient_app",
@@ -492,8 +491,8 @@ dependencies = [
  "ambient_model",
  "ambient_naturals",
  "ambient_network",
- "ambient_object",
  "ambient_physics",
+ "ambient_prefab",
  "ambient_primitives",
  "ambient_renderer",
  "ambient_rpc",
@@ -533,7 +532,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_editor_derive"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_ui",
  "convert_case 0.6.0",
@@ -547,7 +546,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_element"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -568,7 +567,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_element_component"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "itertools",
  "proc-macro-crate",
@@ -579,7 +578,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_gizmos"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -601,7 +600,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_gpu"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_std",
  "anyhow",
@@ -625,7 +624,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_input"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -638,7 +637,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_intent"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_ecs",
  "ambient_editor_derive",
@@ -660,7 +659,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_meshes"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_gpu",
  "ambient_std",
@@ -670,7 +669,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_model"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -695,7 +694,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_model_import"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_animation",
  "ambient_app",
@@ -739,7 +738,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_naturals"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_app",
  "ambient_core",
@@ -767,7 +766,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_network"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_app",
  "ambient_core",
@@ -805,30 +804,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_object"
-version = "0.0.16"
-dependencies = [
- "ambient_core",
- "ambient_decals",
- "ambient_ecs",
- "ambient_model",
- "ambient_network",
- "ambient_physics",
- "ambient_rpc",
- "ambient_std",
- "anyhow",
- "async-trait",
- "glam 0.22.0",
- "log",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
-]
-
-[[package]]
 name = "ambient_physics"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -863,8 +840,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_prefab"
+version = "0.0.18"
+dependencies = [
+ "ambient_core",
+ "ambient_decals",
+ "ambient_ecs",
+ "ambient_model",
+ "ambient_network",
+ "ambient_physics",
+ "ambient_rpc",
+ "ambient_std",
+ "anyhow",
+ "async-trait",
+ "glam 0.22.0",
+ "log",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
 name = "ambient_primitives"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -878,7 +877,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_project"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_ecs",
  "paste",
@@ -889,7 +888,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_renderer"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -922,7 +921,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_rpc"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "bincode",
  "futures",
@@ -934,7 +933,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_rustc"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "anyhow",
  "itertools",
@@ -945,7 +944,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_sky"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_cameras",
  "ambient_core",
@@ -967,7 +966,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_std"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_asset_cache",
  "anyhow",
@@ -1006,8 +1005,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_sys"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "derive_more",
+ "flume",
+ "futures",
+ "gloo",
+ "once_cell",
+ "ordered-float",
+ "parking_lot",
+ "pin-project",
+ "slotmap",
+ "thiserror",
+ "time",
+ "tokio",
+ "tokio-util",
+ "tracing",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
 name = "ambient_terrain"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_app",
  "ambient_core",
@@ -1047,7 +1071,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_ui"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -1088,7 +1112,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_wasm"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_animation",
  "ambient_app",
@@ -1096,8 +1120,8 @@ dependencies = [
  "ambient_ecs",
  "ambient_input",
  "ambient_network",
- "ambient_object",
  "ambient_physics",
+ "ambient_prefab",
  "ambient_project",
  "ambient_std",
  "anyhow",
@@ -1130,7 +1154,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_water"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -1145,8 +1169,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_web"
+version = "0.0.18"
+dependencies = [
+ "ambient_sys",
+ "futures",
+ "getrandom 0.2.8",
+ "time",
+ "tracing",
+ "tracing-subscriber",
+ "tracing-web",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
+
+[[package]]
 name = "ambient_world_audio"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_app",
  "ambient_audio",
@@ -1235,6 +1275,12 @@ checksum = "224afbd727c3d6e4b90103ece64b8d1b67fbb1973b1046c2281eed3f3803f800"
 dependencies = [
  "backtrace",
 ]
+
+[[package]]
+name = "anymap2"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d301b3b94cb4b2f23d7917810addbbaff90738e0ca2be692bd027e70d7e0330c"
 
 [[package]]
 name = "approx"
@@ -1896,6 +1942,16 @@ checksum = "35ed6e9d84f0b51a7f52daf1c7d71dd136fd7a3f41a8462b8cdb8c78d920fad4"
 dependencies = [
  "bytes",
  "memchr",
+]
+
+[[package]]
+name = "console_error_panic_hook"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a06aeb73f470f66dcdbf7223caeebb85984942f22f1adb2a088cf9668146bbbc"
+dependencies = [
+ "cfg-if",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -2604,12 +2660,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a9fa9285c4a9c7deb62eb0fb23b7bff501629f0179b0d1944f4fd2cb6a753900"
 
 [[package]]
-name = "fixedbitset"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
-
-[[package]]
 name = "flate2"
 version = "1.0.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2930,6 +2980,174 @@ name = "glob"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d2fabcfbdc87f4758337ca535fb41a6d701b65693ce38287d856d1674551ec9b"
+
+[[package]]
+name = "gloo"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3a4bef6b277b3ab073253d4bca60761240cf8d6998f4bd142211957b69a61b20"
+dependencies = [
+ "gloo-console",
+ "gloo-dialogs",
+ "gloo-events",
+ "gloo-file",
+ "gloo-history",
+ "gloo-net",
+ "gloo-render",
+ "gloo-storage",
+ "gloo-timers",
+ "gloo-utils",
+ "gloo-worker",
+]
+
+[[package]]
+name = "gloo-console"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "82b7ce3c05debe147233596904981848862b068862e9ec3e34be446077190d3f"
+dependencies = [
+ "gloo-utils",
+ "js-sys",
+ "serde",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
+name = "gloo-dialogs"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "67062364ac72d27f08445a46cab428188e2e224ec9e37efdba48ae8c289002e6"
+dependencies = [
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
+name = "gloo-events"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "68b107f8abed8105e4182de63845afcc7b69c098b7852a813ea7462a320992fc"
+dependencies = [
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
+name = "gloo-file"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a8d5564e570a38b43d78bdc063374a0c3098c4f0d64005b12f9bbe87e869b6d7"
+dependencies = [
+ "futures-channel",
+ "gloo-events",
+ "js-sys",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
+name = "gloo-history"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd451019e0b7a2b8a7a7b23e74916601abf1135c54664e57ff71dcc26dfcdeb7"
+dependencies = [
+ "gloo-events",
+ "gloo-utils",
+ "serde",
+ "serde-wasm-bindgen",
+ "serde_urlencoded",
+ "thiserror",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
+name = "gloo-net"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9902a044653b26b99f7e3693a42f171312d9be8b26b5697bd1e43ad1f8a35e10"
+dependencies = [
+ "futures-channel",
+ "futures-core",
+ "futures-sink",
+ "gloo-utils",
+ "js-sys",
+ "pin-project",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
+
+[[package]]
+name = "gloo-render"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2fd9306aef67cfd4449823aadcd14e3958e0800aa2183955a309112a84ec7764"
+dependencies = [
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
+name = "gloo-storage"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5d6ab60bf5dbfd6f0ed1f7843da31b41010515c745735c970e821945ca91e480"
+dependencies = [
+ "gloo-utils",
+ "js-sys",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
+name = "gloo-timers"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9b995a66bb87bebce9a0f4a95aed01daca4872c050bfcb21653361c03bc35e5c"
+dependencies = [
+ "futures-channel",
+ "futures-core",
+ "js-sys",
+ "wasm-bindgen",
+]
+
+[[package]]
+name = "gloo-utils"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a8e8fc851e9c7b9852508bc6e3f690f452f474417e8545ec9857b7f7377036b5"
+dependencies = [
+ "js-sys",
+ "serde",
+ "serde_json",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
+name = "gloo-worker"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "13471584da78061a28306d1359dd0178d8d6fc1c7c80e5e35d27260346e0516a"
+dependencies = [
+ "anymap2",
+ "bincode",
+ "gloo-console",
+ "gloo-utils",
+ "js-sys",
+ "serde",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
 
 [[package]]
 name = "glow"
@@ -4419,13 +4637,10 @@ version = "0.9.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9069cbb9f99e3a5083476ccb29ceb1de18b9118cafa53e90c9551235de2b9521"
 dependencies = [
- "backtrace",
  "cfg-if",
  "libc",
- "petgraph",
  "redox_syscall 0.2.16",
  "smallvec",
- "thread-id",
  "windows-sys 0.45.0",
 ]
 
@@ -4454,16 +4669,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "478c572c3d73181ff3c2539045f6eb99e5491218eae919370993b890cdbdd98e"
 
 [[package]]
-name = "petgraph"
-version = "0.6.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4dd7d28ee937e54fe3080c91faa1c3a46c06de6252988a7f4592ba2310ef22a4"
-dependencies = [
- "fixedbitset",
- "indexmap",
-]
-
-[[package]]
 name = "physx-sys"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4474,7 +4679,7 @@ dependencies = [
 
 [[package]]
 name = "physxx"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "as-any",
  "bitflags",
@@ -5398,6 +5603,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde-wasm-bindgen"
+version = "0.4.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e3b4c031cd0d9014307d82b8abf653c0290fbdaeb4c02d00c63cf52f728628bf"
+dependencies = [
+ "js-sys",
+ "serde",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "serde_bytes"
 version = "0.11.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5821,17 +6037,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "thread-id"
-version = "4.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5fdfe0627923f7411a43ec9ec9c39c3a9b4151be313e0922042581fb6c9b717f"
-dependencies = [
- "libc",
- "redox_syscall 0.2.16",
- "winapi",
-]
-
-[[package]]
 name = "thread-priority"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5880,6 +6085,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a561bf4617eebd33bca6434b988f39ed798e527f51a1e797d0ee4f61c0a38376"
 dependencies = [
  "itoa",
+ "js-sys",
  "serde",
  "time-core",
  "time-macros",
@@ -5957,6 +6163,7 @@ dependencies = [
  "signal-hook-registry",
  "socket2",
  "tokio-macros",
+ "tracing",
  "windows-sys 0.42.0",
 ]
 
@@ -6178,9 +6385,23 @@ dependencies = [
  "sharded-slab",
  "smallvec",
  "thread_local",
+ "time",
  "tracing",
  "tracing-core",
  "tracing-log",
+]
+
+[[package]]
+name = "tracing-web"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ff5efc53ed5a7c4b99b3dd24fd10f41e7aa1b284a4e64ae9167d97e31afe124"
+dependencies = [
+ "js-sys",
+ "tracing-core",
+ "tracing-subscriber",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]
@@ -6284,7 +6505,7 @@ checksum = "402bb19d8e03f1d1a7450e2bd613980869438e0666331be3e073089124aa1adc"
 
 [[package]]
 name = "unity_parser"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "ambient_std",
  "anyhow",
@@ -6513,6 +6734,30 @@ name = "wasm-bindgen-shared"
 version = "0.2.84"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0046fef7e28c3804e5e38bfa31ea2a0f73905319b677e57ebe37e49358989b5d"
+
+[[package]]
+name = "wasm-bindgen-test"
+version = "0.3.34"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6db36fc0f9fb209e88fb3642590ae0205bb5a56216dabd963ba15879fe53a30b"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "scoped-tls",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test-macro",
+]
+
+[[package]]
+name = "wasm-bindgen-test-macro"
+version = "0.3.34"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0734759ae6b3b1717d661fe4f016efcfb9828f5edb4520c18eaee05af3b43be9"
+dependencies = [
+ "proc-macro2",
+ "quote",
+]
 
 [[package]]
 name = "wasm-encoder"

@@ -1,0 +1,18 @@
+{
+    "web-build": {
+        "cmd": "wasm-pack build web",
+        "components": {
+            "qf": {
+                "compiler": "cargo"
+            }
+        }
+    },
+    "web-run": {
+        "cmd": "npm run start --open",
+        "cwd": "www",
+        "env": {
+            "NODE_OPTIONS": "--openssl-legacy-provider",
+            "RUST_LOG": "info"
+        }
+    }
+}

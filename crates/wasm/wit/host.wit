@@ -35,10 +35,6 @@ record mat4 {
     w: vec4,
 }
 
-record object-ref {
-    id: string,
-}
-
 /// An action in an animation.
 record animation-action {
     // we assume only URLs for now
@@ -76,7 +72,6 @@ variant component-list-type {
     type-vec2(list<vec2>),
     type-vec3(list<vec3>),
     type-vec4(list<vec4>),
-    type-object-ref(list<object-ref>),
 }
 
 variant component-option-type {
@@ -94,7 +89,6 @@ variant component-option-type {
     type-vec2(option<vec2>),
     type-vec3(option<vec3>),
     type-vec4(option<vec4>),
-    type-object-ref(option<object-ref>),
 }
 
 variant component-type {
@@ -112,13 +106,12 @@ variant component-type {
     type-vec2(vec2),
     type-vec3(vec3),
     type-vec4(vec4),
-    type-object-ref(object-ref),
     type-list(component-list-type),
     type-option(component-option-type),
 }
 
 component-get-index: func(id: string) -> option<u32>
-type components = list<tuple<u32, component-type>>
+type entity = list<tuple<u32, component-type>>
 
 enum virtual-key-code {
     /// The '1' key over the letters.
@@ -334,7 +327,7 @@ record player-raw-input {
 }
 
 // entity
-entity-spawn: func(data: components) -> entity-id
+entity-spawn: func(data: entity) -> entity-id
 entity-despawn: func(entity: entity-id) -> bool
 entity-set-animation-controller: func(entity: entity-id, animation-controller: animation-controller)
 entity-in-area: func(position: vec3, radius: float32) -> list<entity-id>
@@ -342,10 +335,10 @@ entity-in-area: func(position: vec3, radius: float32) -> list<entity-id>
 entity-get-component: func(entity: entity-id, index: u32) -> option<component-type>
 
 entity-add-component: func(entity: entity-id, index: u32, value: component-type)
-entity-add-components: func(entity: entity-id, data: components)
+entity-add-components: func(entity: entity-id, data: entity)
 
 entity-set-component: func(entity: entity-id, index: u32, value: component-type)
-entity-set-components: func(entity: entity-id, data: components)
+entity-set-components: func(entity: entity-id, data: entity)
 
 entity-has-component: func(entity: entity-id, index: u32) -> bool
 entity-has-components: func(entity: entity-id, indices: list<u32>) -> bool
@@ -354,7 +347,7 @@ entity-remove-component: func(entity: entity-id, index: u32)
 entity-remove-components: func(entity: entity-id, indices: list<u32>)
 
 entity-exists: func(entity: entity-id) -> bool
-entity-query: func(index: u32) -> list<entity-id>
+entity-get-all: func(index: u32) -> list<entity-id>
 entity-resources: func() -> entity-id
 
 record query {
@@ -370,7 +363,7 @@ enum query-event {
     despawn
 }
 
-entity-query2: func(q: query, t: query-event) -> u64
+entity-query: func(q: query, t: query-event) -> u64
 query-eval: func(q: u64) -> list<tuple<entity-id, list<component-type>>>
 
 // player
@@ -390,7 +383,7 @@ physics-raycast: func(origin: vec3, direction: vec3) -> list<tuple<entity-id, fl
 
 // event
 event-subscribe: func(name: string)
-event-send: func(name: string, data: components)
+event-send: func(name: string, data: entity)
 
 // asset
 asset-url: func(path: string) -> option<string>

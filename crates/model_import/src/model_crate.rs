@@ -92,7 +92,7 @@ impl<T: Send + 'static> AssetMap<T> {
 
 pub struct ModelCrate {
     pub models: AssetMap<Model>,
-    pub objects: AssetMap<World>,
+    pub prefabs: AssetMap<World>,
     pub meshes: AssetMap<Mesh>,
     pub animations: AssetMap<AnimationClip>,
     pub images: AssetMap<image::RgbaImage>,
@@ -105,7 +105,7 @@ impl ModelCrate {
     pub fn new() -> Self {
         Self {
             models: AssetMap::new("models", "json", |v| serde_json::to_vec(v).unwrap()),
-            objects: AssetMap::new("objects", "json", |v| serde_json::to_vec(v).unwrap()),
+            prefabs: AssetMap::new("prefabs", "json", |v| serde_json::to_vec(v).unwrap()),
             meshes: AssetMap::new("meshes", "mesh", |v| bincode::serialize(v).unwrap()),
             animations: AssetMap::new("animations", "anim", |v| bincode::serialize(v).unwrap()),
             images: AssetMap::new("images", "png", |v| {
@@ -155,7 +155,7 @@ impl ModelCrate {
     pub fn to_items(&self) -> Vec<AssetItem> {
         [
             self.models.to_items().into_iter(),
-            self.objects.to_items().into_iter(),
+            self.prefabs.to_items().into_iter(),
             self.meshes.to_items().into_iter(),
             self.animations.to_items().into_iter(),
             self.images.to_items().into_iter(),
@@ -181,11 +181,11 @@ impl ModelCrate {
     pub fn model_world_mut(&mut self) -> &mut World {
         self.models.content.get_mut(Self::MAIN).map(|x| &mut x.0).unwrap()
     }
-    pub fn object_world(&self) -> &World {
-        self.objects.content.get(Self::MAIN).unwrap()
+    pub fn prefab_world(&self) -> &World {
+        self.prefabs.content.get(Self::MAIN).unwrap()
     }
-    pub fn object_world_mut(&mut self) -> &mut World {
-        self.objects.content.get_mut(Self::MAIN).unwrap()
+    pub fn prefab_world_mut(&mut self) -> &mut World {
+        self.prefabs.content.get_mut(Self::MAIN).unwrap()
     }
 
     pub async fn produce_local_model_url(&self, path: PathBuf) -> anyhow::Result<PathBuf> {
@@ -442,23 +442,23 @@ impl ModelCrate {
         self.model_mut().remove_non_storage_matrices();
     }
 
-    pub fn create_object_from_model(&mut self) {
-        self.create_object(EntityData::new().set(model_from_url(), dotdot_path(self.models.loc.path(ModelCrate::MAIN)).into()))
+    pub fn create_prefab_from_model(&mut self) {
+        self.create_prefab(EntityData::new().set(model_from_url(), dotdot_path(self.models.loc.path(ModelCrate::MAIN)).into()))
     }
 
-    pub fn create_object(&mut self, data: EntityData) {
-        let mut object = World::new("object_asset");
-        let o = data.spawn(&mut object);
-        object.add_resource(children(), vec![o]);
-        self.objects.insert(ModelCrate::MAIN, object);
+    pub fn create_prefab(&mut self, data: EntityData) {
+        let mut prefab = World::new("prefab_asset");
+        let o = data.spawn(&mut prefab);
+        prefab.add_resource(children(), vec![o]);
+        self.prefabs.insert(ModelCrate::MAIN, prefab);
     }
-    pub fn add_component_to_object<T: ComponentValue>(&mut self, component: Component<T>, value: T) {
-        let world = self.object_world_mut();
+    pub fn add_component_to_prefab<T: ComponentValue>(&mut self, component: Component<T>, value: T) {
+        let world = self.prefab_world_mut();
         let object = world.resource(children())[0];
         world.add_component(object, component, value).unwrap();
     }
     pub fn create_character_collider(&mut self, radius: Option<f32>, height: Option<f32>) {
-        let world = self.object_world_mut();
+        let world = self.prefab_world_mut();
         let object = world.resource(children())[0];
         world.add_component(object, character_controller_radius(), radius.unwrap_or(0.5)).unwrap();
         world.add_component(object, character_controller_height(), height.unwrap_or(2.0)).unwrap();
@@ -540,10 +540,10 @@ impl ModelCrate {
             }
         }
         let obj_collider = self.colliders.insert(ModelCrate::MAIN.to_string(), ColliderFromUrls { convex, concave: triangle });
-        let object = self.object_world_mut();
-        object
+        let prefab = self.prefab_world_mut();
+        prefab
             .add_component(
-                object.resource(children())[0],
+                prefab.resource(children())[0],
                 collider(),
                 ColliderDef::Asset { collider: dotdot_path(obj_collider.path).into() },
             )

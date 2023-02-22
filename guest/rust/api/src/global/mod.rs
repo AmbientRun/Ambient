@@ -10,9 +10,6 @@ pub use runtime::*;
 mod entity_id;
 pub use entity_id::*;
 
-mod entity_uid;
-pub use entity_uid::*;
-
 // Re-exports from other crates.
 pub use glam::{f32::*, Vec2Swizzles, Vec3Swizzles, Vec4Swizzles};
 

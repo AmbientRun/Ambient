@@ -1,0 +1,10 @@
+[package]
+name = "{{id}}"
+edition = "2021"
+version = "0.0.1"
+
+[dependencies]
+ambient_api = { path = "../../guest/rust/api" }
+
+[lib]
+crate-type = ["cdylib"]

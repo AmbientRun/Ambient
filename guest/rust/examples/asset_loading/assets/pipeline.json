@@ -1,7 +1,7 @@
 {
   "pipeline": {
     "type": "Models",
-    "object_components": {
+    "prefab_components": {
       "asset_loading::is_the_best": false
     }
   }

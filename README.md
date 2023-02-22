@@ -2,10 +2,12 @@
 
 [![Crates.io](https://img.shields.io/crates/v/ambient_api)](https://crates.io/crates/ambient_api)
 [![docs.rs](https://img.shields.io/docsrs/ambient_api)](https://docs.rs/ambient_api)
-[![MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AmbientOrg/Ambient#license)
+[![MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AmbientRun/Ambient#license)
 [![Discord](https://img.shields.io/discord/894505972289134632)](https://discord.gg/gYSM4tHZ)
 
-Ambient is a WebAssembly runtime for building high-performance online games and 3D applications.
+Ambient is a runtime for building high-performance multiplayer games and 3D applications, powered by WebAssembly, Rust and WebGPU.
+
+[Announcement blog post](https://www.ambient.run/post/introducing-ambient)
 
 ## Features
 
@@ -15,22 +17,16 @@ Ambient is a WebAssembly runtime for building high-performance online games and 
 - **Multilingual**: You will be able to build Ambient modules in any language that can compile to WebAssembly. At present, Rust is the only supported language, but we are working on expanding to other languages.
 - **Single executable**: Ambient is a single executable which can run on Windows, Mac and Linux. It can act as a server or as a client.
 - **Interoperability**: Ambient allows you to define custom components and "concepts" (collections of components). As long as your Ambient projects use the same components and concepts, they will be able to share data and interoperate, even if they have no awareness of each other.
-- **Asset pipeline and streaming**: Ambient has an [asset pipeline](https://ambientorg.github.io/Ambient/asset_pipeline.html) that is capable of compiling multiple asset formats, including `.glb` and `.fbx`. The assets are always streamed over the network, so your clients will receive everything they need when they join.
+- **Asset pipeline and streaming**: Ambient has an [asset pipeline](https://ambientrun.github.io/Ambient/asset_pipeline.html) that is capable of compiling multiple asset formats, including `.glb` and `.fbx`. The assets are always streamed over the network, so your clients will receive everything they need when they join.
 - **Powerful renderer**: The Ambient renderer is GPU-driven, with both culling and level-of-detail switching being handled entirely by the GPU. By default, it uses [PBR](https://en.wikipedia.org/wiki/Physically_based_rendering). It also supports cascading shadow maps and instances everything that can be instanced.
 
-See the [documentation](https://ambientorg.github.io/Ambient/) for a getting started guide, or browse the [examples](https://github.com/AmbientOrg/Ambient/tree/main/guest/rust/examples).
+See the [documentation](https://ambientrun.github.io/Ambient/) for a guide on how to get started, or browse the [examples](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples).
 
 ## Installing
 
-If you have a recent Rust toolchain (`stable` is sufficient), you can install Ambient using the following command:
+The easiest way to get Ambient is by downloading the latest release [here](https://github.com/AmbientRun/Ambient/releases).
 
-```sh
-cargo install --git https://github.com/AmbientOrg/Ambient.git --tag v0.0.16 ambient
-```
-
-At present, a Git-based `cargo install` is required for the runtime. We are working on removing this requirement.
-
-See [installing](https://ambientorg.github.io/Ambient/installing.html) for more details.
+For alternative installation options, go the [documentation on installing](https://ambientrun.github.io/Ambient/installing.html).
 
 ## Roadmap
 

@@ -6,21 +6,25 @@ To use it, create a file named `pipeline.json` anywhere in your project. You can
 
 This pipeline will look at, but not necessarily process, all of the files adjacent to it in the folder. By convention, our examples place their assets in the `assets` folder, but this is not necessary.
 
-# Supported formats
+A `pipeline.json` can contain one or more pipelines. To use more than one pipeline, wrap your pipeline object in a JSON array (`[]`).
+
+The supported pipelines are `Models`, `Materials`, and `Audio`. Detailed documentation for these are pending, but please consult the [Reference](#reference).
 
 ## Models
 
-Supported model formats include:
+The `Models` pipeline can be used to compile a model, or models, to meshes that can be used by Ambient. Additionally, by default, prefabs are created for each mesh. These prefabs can have components added to them automatically through the `object_components` field of the pipeline.
+
+### Supported formats
 
 - FBX: Native support
-- GLTF: Native support
+- glTF: Native support
 - Unity models: Native support
 - Quixel models: Native support
 - ~30 other formats: This support is provided through the [assimp](https://github.com/assimp/assimp) library. It is not guaranteed to be fully integrated.
 
-# Examples
+### Examples
 
-## Basic models
+#### Basic models
 
 The following will load `.glb` and `.fbx` files in the folder or any of the sub-folders.
 
@@ -32,7 +36,7 @@ The following will load `.glb` and `.fbx` files in the folder or any of the sub-
 }
 ```
 
-## A more complex model example
+#### A more complex model example
 
 The following will filter to just files that contain `table`, scale it down, and override materials for the `wood` material.
 
@@ -68,9 +72,31 @@ The following will filter to just files that contain `table`, scale it down, and
 }
 ```
 
-## Notes
+### Notes
 
-- If you are using components in your object and are hot-reloading it, the incoming object will overwrite any corresponding components on the current state of the entity. These components should only be used for static data - that is, `max_hitpoints` but not `current_hitpoints`.
+- If you are using components in your prefab and are hot-reloading it, the incoming prefab will overwrite any corresponding components on the current state of the entity. These components should only be used for static data - that is, `max_hitpoints` but not `current_hitpoints`.
+
+## Materials
+
+Detailed documentation is pending, but please consult the [Reference](#reference).
+
+### Supported formats
+
+- `jpg`
+- `png`
+- `gif`
+- `webp`
+- as well as other common image formats
+
+## Audio
+
+Detailed documentation is pending, but please consult the [Reference](#reference).
+
+### Supported formats
+
+- `ogg`
+- `wav`
+- `mp3`
 
 ## Reference
 

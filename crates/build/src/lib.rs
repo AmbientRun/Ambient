@@ -98,8 +98,7 @@ async fn build_scripts(path: &Path, manifest: &ProjectManifest, build_path: &Pat
         None => anyhow::bail!("No [package] present in Cargo.toml for project {}", manifest.project.id.as_ref()),
     }
 
-    let rust_path = ambient_std::path::normalize(&std::env::current_dir()?.join("rust"));
-    let rustc = ambient_rustc::Rust::install_or_get(&rust_path).await?;
+    let rustc = ambient_rustc::Rust::get_system_installation().await?;
     let bytecode = rustc.build(path, manifest.project.id.as_ref())?;
 
     tokio::fs::write(build_path.join(format!("{}.wasm", manifest.project.id)), bytecode).await?;

@@ -1,0 +1,49 @@
+[package]
+name = "ambient_sys"
+version = "0.0.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+derive_more.workspace = true
+flume.workspace = true
+futures.workspace = true
+once_cell.workspace = true
+ordered-float.workspace = true
+parking_lot.workspace = true
+pin-project.workspace = true
+slotmap.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+
+time = { version = "0.3", features = ["wasm-bindgen"] }
+# The `console_error_panic_hook` crate provides better debugging of panics by
+# logging them with `console.error`. This is great for development, but requires
+# all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
+# code size when deploying.
+console_error_panic_hook = { version = "0.1.6", optional = true }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+web-sys = { version = "0.3", features = ["Performance", "Document"] }
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+gloo = { version = "0.8", features = ["futures"] }
+
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+# Note: not a workspace dependency. The goal is to not use tokio outside of this `sys` abstraction at all
+tokio = { version = "1.25", features = ["full", "tracing", "parking_lot"] }
+tokio-util = { version = "0.7.0", features = ["codec"] }
+
+
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+wasm-bindgen-test = "0.3"
+
+
+[dev-dependencies]
+futures = { version = "0.3", features = ["executor"] }
+
+[features]
+default = ["console_error_panic_hook"]

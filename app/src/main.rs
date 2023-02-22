@@ -1,4 +1,4 @@
-use std::{net::SocketAddr, sync::Arc};
+use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 
 use ambient_app::AppBuilder;
 use ambient_cameras::UICamera;
@@ -17,7 +17,7 @@ use ambient_std::{
     friendly_id,
 };
 use ambient_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
-use clap::{Parser, Subcommand};
+use clap::{Args, Parser};
 
 pub mod components;
 mod new_project;
@@ -33,95 +33,116 @@ use server::QUIC_INTERFACE_PORT;
 #[derive(Parser, Clone)]
 #[command(author, version, about, long_about = None)]
 #[command(propagate_version = true)]
-struct Cli {
-    /// Set the path to the project. Defaults to the current directory
+enum Cli {
+    /// Create a new Ambient project
+    New {
+        #[command(flatten)]
+        project_args: ProjectCli,
+        #[arg(short, long)]
+        name: Option<String>,
+    },
+    /// Builds and runs the project locally
+    Run {
+        #[command(flatten)]
+        project_args: ProjectCli,
+        #[command(flatten)]
+        host_args: HostCli,
+        #[command(flatten)]
+        run_args: RunCli,
+    },
+    /// Builds the project
+    Build {
+        #[command(flatten)]
+        project_args: ProjectCli,
+    },
+    /// Builds and runs the project in server-only mode
+    Serve {
+        #[command(flatten)]
+        project_args: ProjectCli,
+        #[command(flatten)]
+        host_args: HostCli,
+    },
+    /// View an asset
+    View {
+        #[command(flatten)]
+        project_args: ProjectCli,
+        /// Relative to the project path
+        asset_path: PathBuf,
+    },
+    /// Join a multiplayer session
+    Join {
+        #[command(flatten)]
+        run_args: RunCli,
+        /// The server to connect to; defaults to localhost
+        host: Option<String>,
+    },
+    /// Updates all WASM APIs with the core primitive components (not for users)
+    #[cfg(not(feature = "production"))]
+    #[command(hide = true)]
+    UpdateInterfaceComponents,
+}
+#[derive(Args, Clone)]
+struct RunCli {
+    /// Whether or not debug menus should be shown
     #[arg(long)]
-    project_path: Option<String>,
+    debug: bool,
 
-    /// Provide a public address or ip to the instance, which will allow users to connect to this instance over the internet
+    /// The user ID to join this server with
+    #[clap(short, long)]
+    user_id: Option<String>,
+}
+#[derive(Args, Clone)]
+struct ProjectCli {
+    /// The path of the project to run; if not specified, this will default to the current directory
+    path: Option<PathBuf>,
+}
+#[derive(Args, Clone)]
+struct HostCli {
+    /// Provide a public address or IP to the instance, which will allow users to connect to this instance over the internet
     ///
     /// Defaults to localhost
     #[arg(long)]
     public_host: Option<String>,
-
-    /// Show debug menus
-    #[arg(long)]
-    debug: bool,
-
-    #[command(subcommand)]
-    command: Commands,
 }
 
-#[derive(Subcommand, Clone)]
-enum Commands {
-    /// Create a new Ambient project
-    New { name: Option<String> },
-    /// Builds and runs the project locally
-    Run {
-        #[clap(short, long)]
-        user_id: Option<String>,
-    },
-    /// Builds the project
-    Build,
-    /// Builds and runs the project in server only mode
-    Serve,
-    /// View an asset
-    View {
-        asset_path: String,
-        #[clap(short, long)]
-        user_id: Option<String>,
-    },
-    /// Join a multiplayer session
-    Join {
-        host: Option<String>,
-        #[clap(short, long)]
-        user_id: Option<String>,
-    },
-    /// Updates all WASM APIs with the core primitive components (not for users)
-    #[cfg(not(feature = "production"))]
-    UpdateInterfaceComponents,
-}
-impl Commands {
-    /// Will this command build assets?
-    fn should_build(&self) -> bool {
+impl Cli {
+    /// Extract run-relevant state only
+    fn run(&self) -> Option<&RunCli> {
         match self {
-            Commands::New { .. } => false,
-            Commands::Run { .. } => true,
-            Commands::Build => true,
-            Commands::Serve => true,
-            Commands::View { .. } => true,
-            Commands::Join { .. } => false,
+            Cli::New { .. } => None,
+            Cli::Run { run_args, .. } => Some(run_args),
+            Cli::Build { .. } => None,
+            Cli::Serve { .. } => None,
+            Cli::View { .. } => None,
+            Cli::Join { run_args, .. } => Some(run_args),
             #[cfg(not(feature = "production"))]
-            Commands::UpdateInterfaceComponents => false,
+            Cli::UpdateInterfaceComponents => None,
         }
     }
-    /// Will this client run the application?
-    fn should_run(&self) -> bool {
+    /// Extract project-relevant state only
+    fn project(&self) -> Option<&ProjectCli> {
         match self {
-            Commands::New { .. } => false,
-            Commands::Run { .. } => true,
-            Commands::Build => false,
-            Commands::Serve => false,
-            Commands::View { .. } => true,
-            Commands::Join { .. } => true,
+            Cli::New { project_args, .. } => Some(project_args),
+            Cli::Run { project_args, .. } => Some(project_args),
+            Cli::Build { project_args, .. } => Some(project_args),
+            Cli::Serve { project_args, .. } => Some(project_args),
+            Cli::View { project_args, .. } => Some(project_args),
+            Cli::Join { .. } => None,
             #[cfg(not(feature = "production"))]
-            Commands::UpdateInterfaceComponents => false,
+            Cli::UpdateInterfaceComponents => None,
         }
     }
-    /// Will this join an external server?
-    fn should_join(&self) -> bool {
-        matches!(self, Commands::Join { .. })
-    }
-    fn user_id(&self) -> Option<&str> {
+    /// Extract host-relevant state only
+    fn host(&self) -> Option<&HostCli> {
         match self {
-            Commands::New { .. } => None,
-            Commands::Run { user_id, .. } => user_id.as_deref(),
-            Commands::Build => None,
-            Commands::Serve => None,
-            Commands::View { user_id, .. } => user_id.as_deref(),
-            Commands::Join { user_id, .. } => user_id.as_deref(),
+            Cli::New { .. } => None,
+            Cli::Run { host_args, .. } => Some(host_args),
+            Cli::Build { .. } => None,
+            Cli::Serve { host_args, .. } => Some(host_args),
+            Cli::View { .. } => None,
+            Cli::Join { .. } => None,
             #[cfg(not(feature = "production"))]
-            Commands::UpdateInterfaceComponents => None,
+            Cli::UpdateInterfaceComponents => None,
         }
     }
 }
@@ -231,12 +252,12 @@ fn main() -> anyhow::Result<()> {
     let runtime = tokio::runtime::Builder::new_multi_thread().enable_all().build()?;
     let assets = AssetCache::new(runtime.handle().clone());
     PhysicsKey.get(&assets); // Load physics
-    AssetsCacheOnDisk.insert(&assets, false); // Disable disk caching for now; see https://github.com/AmbientOrg/Ambient/issues/81
+    AssetsCacheOnDisk.insert(&assets, false); // Disable disk caching for now; see https://github.com/AmbientRun/Ambient/issues/81
 
     let cli = Cli::parse();
 
     let current_dir = std::env::current_dir()?;
-    let project_path = cli.project_path.clone().map(|x| x.into()).unwrap_or_else(|| current_dir.clone());
+    let project_path = cli.project().and_then(|p| p.path.clone()).unwrap_or_else(|| current_dir.clone());
     let project_path =
         if project_path.is_absolute() { project_path } else { ambient_std::path::normalize(&current_dir.join(project_path)) };
 
@@ -244,15 +265,17 @@ fn main() -> anyhow::Result<()> {
         anyhow::bail!("Project path {project_path:?} exists and is not a directory.");
     }
 
-    if let Commands::New { name } = cli.command {
+    // If new: create project, immediately exit
+    if let Cli::New { name, .. } = &cli {
         if let Err(err) = new_project::new_project(&project_path, name.as_deref()) {
             eprintln!("Failed to create project: {err:?}");
         }
         return Ok(());
     }
 
+    // If UIC: write components to disk, immediately exit
     #[cfg(not(feature = "production"))]
-    if let Commands::UpdateInterfaceComponents = cli.command {
+    if let Cli::UpdateInterfaceComponents = cli {
         let toml = components::dev::build_components_toml().to_string();
 
         // Assume we are being run within the codebase.
@@ -268,24 +291,30 @@ fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    let manifest = if !cli.command.should_join() {
-        let contents =
-            std::fs::read_to_string(project_path.join("ambient.toml")).context("No project manifest was found. Please create one.")?;
-        Some(ambient_project::Manifest::parse(&contents)?)
-    } else {
-        None
-    };
+    // If a project was specified, assume that assets need to be built
+    let manifest = cli
+        .project()
+        .map(|_| {
+            anyhow::Ok(ambient_project::Manifest::parse(
+                &std::fs::read_to_string(project_path.join("ambient.toml")).context("No project manifest was found. Please create one.")?,
+            )?)
+        })
+        .transpose()?;
 
-    if cli.command.should_build() {
-        runtime.block_on(ambient_build::build(
-            PhysicsKey.get(&assets),
-            &assets,
-            project_path.clone(),
-            manifest.as_ref().expect("no manifest"),
-        ));
+    if let Some(manifest) = manifest.as_ref() {
+        let project_name = manifest.project.name.as_deref().unwrap_or("project");
+        log::info!("Building {}", project_name);
+        runtime.block_on(ambient_build::build(PhysicsKey.get(&assets), &assets, project_path.clone(), manifest));
+        log::info!("Done building {}", project_name);
     }
 
-    let server_addr = if let Commands::Join { host, .. } = &cli.command {
+    // If this is just a build, exit now
+    if matches!(&cli, Cli::Build { .. }) {
+        return Ok(());
+    }
+
+    // Otherwise, either connect to a server or host one
+    let server_addr = if let Cli::Join { host, .. } = &cli {
         if let Some(mut host) = host.clone() {
             if !host.contains(':') {
                 host = format!("{host}:{QUIC_INTERFACE_PORT}");
@@ -298,13 +327,17 @@ fn main() -> anyhow::Result<()> {
         let port = server::start_server(&runtime, assets.clone(), cli.clone(), project_path, manifest.as_ref().expect("no manifest"));
         format!("127.0.0.1:{port}").parse()?
     };
-    let user_id = cli.command.user_id().map(|x| x.to_string()).unwrap_or_else(|| format!("user_{}", friendly_id()));
+
+    // Time to join!
     let handle = runtime.handle().clone();
-    if cli.command.should_run() {
+    if let Some(run) = cli.run() {
+        // If we have run parameters, start a client and join a server
+        let user_id = run.user_id.clone().unwrap_or_else(|| format!("user_{}", friendly_id()));
         AppBuilder::simple().ui_renderer(true).with_runtime(runtime).with_asset_cache(assets).run(|app, _runtime| {
-            MainApp { server_addr, user_id, show_debug: cli.debug }.el().spawn_interactive(&mut app.world);
+            MainApp { server_addr, user_id, show_debug: run.debug }.el().spawn_interactive(&mut app.world);
         });
     } else {
+        // Otherwise, wait for the Ctrl+C signal
         handle.block_on(async move {
             match tokio::signal::ctrl_c().await {
                 Ok(()) => {}
