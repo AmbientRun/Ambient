@@ -1,3 +1,5 @@
+use crate::shared;
+
 pub(crate) fn init() -> anyhow::Result<()> {
     ambient_app::init_all_components();
     ambient_network::init_all_components();
@@ -11,7 +13,7 @@ pub(crate) fn init() -> anyhow::Result<()> {
     ambient_sky::init_components();
     ambient_water::init_components();
 
-    crate::player::init_all_components();
+    shared::player::init_all_components();
 
     Ok(())
 }

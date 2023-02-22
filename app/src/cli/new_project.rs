@@ -23,7 +23,7 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
 
     std::fs::write(
         project_path.join("ambient.toml"),
-        include_str!("../new_project_template/ambient.toml").replace("{{id}}", id.as_ref()).replace("{{name}}", name),
+        include_str!("new_project_template/ambient.toml").replace("{{id}}", id.as_ref()).replace("{{name}}", name),
     )
     .context("Failed to create ambient.toml")?;
 
@@ -49,22 +49,22 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
         ReplaceWith::PkgVersion => format!("ambient_api = \"{}\"", env!("CARGO_PKG_VERSION")),
         ReplaceWith::GuestRustRelative => r#"ambient_api = { path = "../../api" }"#.to_string(),
     };
-    let template_cargo_toml = include_str!("../new_project_template/Cargo.toml")
+    let template_cargo_toml = include_str!("new_project_template/Cargo.toml")
         .replace("{{id}}", id.as_ref())
-        .replace("ambient_api = { path = \"../../guest/rust/api\" }", &replacement);
+        .replace("ambient_api = { path = \"../../../../guest/rust/api\" }", &replacement);
 
     std::fs::write(project_path.join("Cargo.toml"), template_cargo_toml).context("Failed to create Cargo.toml")?;
 
-    std::fs::write(project_path.join(".gitignore"), include_str!("../new_project_template/.gitignore"))
+    std::fs::write(project_path.join(".gitignore"), include_str!("new_project_template/.gitignore"))
         .context("Failed to create .gitignore")?;
 
-    std::fs::write(project_path.join("rust-toolchain.toml"), include_str!("../new_project_template/rust-toolchain.toml"))
+    std::fs::write(project_path.join("rust-toolchain.toml"), include_str!("new_project_template/rust-toolchain.toml"))
         .context("Failed to create rust-toolchain.toml")?;
 
-    std::fs::write(dot_cargo.join("config.toml"), include_str!("../new_project_template/.cargo/config.toml"))
+    std::fs::write(dot_cargo.join("config.toml"), include_str!("new_project_template/.cargo/config.toml"))
         .context("Failed to create .cargo/config.toml")?;
 
-    std::fs::write(src.join("lib.rs"), include_str!("../new_project_template/src/lib.rs")).context("Failed to create src/lib.rs")?;
+    std::fs::write(src.join("lib.rs"), include_str!("new_project_template/src/lib.rs")).context("Failed to create src/lib.rs")?;
 
     log::info!("Project {name} with id {id} created at {project_path:?}");
 
