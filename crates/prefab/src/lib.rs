@@ -23,6 +23,12 @@ components!("prefab", {
         Description["Load and attach a prefab from a URL or relative path.\nWhen loaded, the components from this prefab will add to or replace the existing components for the entity."]
     ]
     prefab_from_url: String,
+    @[
+        Debuggable,
+        Name["Spawned"],
+        Description["If attached, this entity was built from a prefab that has finished spawning."]
+    ]
+    spawned: (),
 });
 
 pub fn systems() -> SystemGroup {
@@ -48,6 +54,7 @@ pub fn systems() -> SystemGroup {
                     async_run.run(move |world| {
                         for id in ids {
                             world.add_components(id, entity.clone()).unwrap();
+                            world.add_component(id, spawned(), ()).unwrap();
                         }
                     });
                 });

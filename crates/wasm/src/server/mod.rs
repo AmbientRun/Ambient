@@ -123,20 +123,6 @@ pub fn systems<
                     );
                 }
             })),
-            query(()).spawned().to_system(move |q, world, qs, _| {
-                profiling::scope!("WASM module entity spawn");
-                for (id, _) in q.collect_cloned(world, qs) {
-                    run_all(
-                        world,
-                        state_component,
-                        &RunContext::new(
-                            world,
-                            "core/entity_spawn",
-                            vec![ComponentEntry::new(ambient_ecs::id(), id)].into(),
-                        ),
-                    );
-                }
-            }),
         ],
     )
 }

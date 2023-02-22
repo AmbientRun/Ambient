@@ -1,7 +1,7 @@
 use ambient_api::{
     components::core::{
         game_objects::player_camera,
-        prefab::prefab_from_url,
+        prefab::{prefab_from_url, spawned},
         transform::{lookat_center, rotation, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
@@ -22,6 +22,7 @@ pub async fn main() -> EventResult {
         .with(prefab_from_url(), asset_url("assets/Cube.glb").unwrap())
         .with(components::is_the_best(), true)
         .spawn();
+    entity::wait_for_component(cube_id, spawned()).await;
 
     on(event::FRAME, move |_| {
         entity::set_component(

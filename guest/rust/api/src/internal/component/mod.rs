@@ -112,9 +112,6 @@ impl Entity {
 
     /// Spawns an entity with these components.
     ///
-    /// This is an asynchronous operation; use [entity::wait_for_spawn](crate::entity::wait_for_spawn) to get notified when
-    /// the entity is spawned.
-    ///
     /// Returns `spawned_entity_uid`.
     pub fn spawn(&self) -> crate::prelude::EntityId {
         crate::entity::spawn(self)

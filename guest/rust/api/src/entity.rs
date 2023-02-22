@@ -9,14 +9,12 @@ use crate::{
         conversion::{FromBindgen, IntoBindgen},
         host,
     },
+    prelude::block_until,
 };
 
 pub use crate::internal::host::{AnimationAction, AnimationController};
 
 /// Spawns an entity containing the `components`.
-///
-/// This is an asynchronous operation; use [wait_for_spawn] to get notified when
-/// the entity is spawned.
 ///
 /// Returns `spawned_entity_uid`.
 pub fn spawn(components: &Entity) -> EntityId {
@@ -25,15 +23,14 @@ pub fn spawn(components: &Entity) -> EntityId {
         .from_bindgen()
 }
 
-/// Waits until `id` has spawned. Note that this may never resolve if the entity
+/// Waits until `id` has the `component`. Note that this may never resolve if the entity
 /// does not complete spawning, or the id in question refers to an entity that does
 /// not exist.
-// TODO(philpax): revisit once we think about the spawning situation some more
-pub async fn wait_for_spawn(id: EntityId) {
-    until_this(event::ENTITY_SPAWN, move |ed| {
-        ed.get(components::core::ecs::id()).unwrap() == id
-    })
-    .await;
+pub async fn wait_for_component<T: SupportedComponentTypeGet>(
+    entity: EntityId,
+    component: Component<T>,
+) {
+    block_until(move || host::entity_has_component(entity.into_bindgen(), component.index())).await;
 }
 
 /// Despawns `entity` from the world. `entity` will not work with any other functions afterwards.
