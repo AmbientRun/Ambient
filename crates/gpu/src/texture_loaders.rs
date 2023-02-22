@@ -53,7 +53,7 @@ pub struct TextureFromUrl {
 }
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for TextureFromUrl {
-    fn gpu_size(&self, asset: &Result<Arc<Texture>, AssetError>) -> Option<usize> {
+    fn gpu_size(&self, asset: &Result<Arc<Texture>, AssetError>) -> Option<u64> {
         asset.as_ref().ok().map(|asset| asset.size_in_bytes)
     }
     #[tracing::instrument(level = "info", name = "texture_from_url")]
@@ -70,7 +70,7 @@ pub struct TextureFromRgba8Image {
 }
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for TextureFromRgba8Image {
-    fn gpu_size(&self, asset: &Result<Arc<Texture>, AssetError>) -> Option<usize> {
+    fn gpu_size(&self, asset: &Result<Arc<Texture>, AssetError>) -> Option<u64> {
         asset.as_ref().ok().map(|x| x.size_in_bytes)
     }
     async fn load(self, assets: AssetCache) -> Result<Arc<Texture>, AssetError> {
@@ -97,7 +97,7 @@ use anyhow::Context;
 
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for TextureFromBytes {
-    fn gpu_size(&self, asset: &Result<Arc<Texture>, AssetError>) -> Option<usize> {
+    fn gpu_size(&self, asset: &Result<Arc<Texture>, AssetError>) -> Option<u64> {
         asset.as_ref().ok().map(|asset| asset.size_in_bytes)
     }
     async fn load(self, assets: AssetCache) -> Result<Arc<Texture>, AssetError> {
@@ -158,7 +158,7 @@ pub struct SplitTextureFromUrl {
 }
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for SplitTextureFromUrl {
-    fn gpu_size(&self, asset: &Result<Arc<Texture>, AssetError>) -> Option<usize> {
+    fn gpu_size(&self, asset: &Result<Arc<Texture>, AssetError>) -> Option<u64> {
         asset.as_ref().ok().map(|asset| asset.size_in_bytes)
     }
     async fn load(self, assets: AssetCache) -> Result<Arc<Texture>, AssetError> {
@@ -230,7 +230,7 @@ impl<F> AsyncAssetKey<Result<Arc<Texture>, AssetError>> for MappedTexture<F>
 where
     F: Fn(Rgba<u8>) -> Rgba<u8> + Send + Sync + 'static,
 {
-    fn gpu_size(&self, asset: &Result<Arc<Texture>, AssetError>) -> Option<usize> {
+    fn gpu_size(&self, asset: &Result<Arc<Texture>, AssetError>) -> Option<u64> {
         asset.as_ref().ok().map(|asset| asset.size_in_bytes)
     }
     async fn load(self, assets: AssetCache) -> Result<Arc<Texture>, AssetError> {
@@ -256,7 +256,7 @@ pub struct TextureArrayFromUrls {
 }
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for TextureArrayFromUrls {
-    fn gpu_size(&self, asset: &Result<Arc<Texture>, AssetError>) -> Option<usize> {
+    fn gpu_size(&self, asset: &Result<Arc<Texture>, AssetError>) -> Option<u64> {
         asset.as_ref().ok().map(|asset| asset.size_in_bytes)
     }
     async fn load(self, assets: AssetCache) -> Result<Arc<Texture>, AssetError> {

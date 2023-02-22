@@ -13,6 +13,9 @@
     "third_person_camera": {
         "cmd": "cargo run -- run guest/rust/examples/third_person_camera"
     },
+    "check-tests": {
+        "cmd": "cargo check --workspace --tests --examples"
+    },
     "web-run": {
         "cmd": "npm run start --open",
         "cwd": "www",

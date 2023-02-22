@@ -11,7 +11,7 @@ use std::{
 };
 
 use ambient_sys::{
-    task::{self, ChildTask, JoinHandle, RuntimeHandle},
+    task::{ChildTask, RuntimeHandle},
     time,
 };
 use async_trait::async_trait;
@@ -495,10 +495,10 @@ pub trait AsyncAssetKey<T: Asset + Clone + Sync + Send + 'static>: Sync + Send +
         AssetLoadDropPolicy::StopLoading
     }
 
-    fn cpu_size(&self, _asset: &T) -> Option<usize> {
+    fn cpu_size(&self, _asset: &T) -> Option<u64> {
         None
     }
-    fn gpu_size(&self, _asset: &T) -> Option<usize> {
+    fn gpu_size(&self, _asset: &T) -> Option<u64> {
         None
     }
 }
@@ -638,8 +638,8 @@ impl AssetLifetime {
 pub struct AssetTimeline {
     pub long_name: String,
     pub stack: Vec<AssetKey>,
-    pub cpu_size: Option<usize>,
-    pub gpu_size: Option<usize>,
+    pub cpu_size: Option<u64>,
+    pub gpu_size: Option<u64>,
     pub lifetimes: Vec<AssetLifetime>,
     pub is_alive: bool,
 }
@@ -657,6 +657,7 @@ pub struct AssetsTimeline {
     pub assets: HashMap<AssetKey, AssetTimeline>,
     pub start_time: chrono::DateTime<chrono::Utc>,
 }
+
 impl AssetsTimeline {
     pub fn new() -> Self {
         Self { assets: Default::default(), start_time: chrono::Utc::now() }
@@ -683,7 +684,7 @@ impl AssetsTimeline {
     fn last_lifetime(&mut self, key: &AssetKey) -> &mut AssetLifetime {
         self.assets.get_mut(key).unwrap().lifetimes.last_mut().unwrap()
     }
-    fn end_load(&mut self, key: &AssetKey, cpu_size: Option<usize>, gpu_size: Option<usize>) {
+    fn end_load(&mut self, key: &AssetKey, cpu_size: Option<u64>, gpu_size: Option<u64>) {
         let asset = self.assets.get_mut(key).unwrap();
         asset.lifetimes.last_mut().unwrap().end_load = Some(chrono::Utc::now());
         asset.cpu_size = cpu_size;

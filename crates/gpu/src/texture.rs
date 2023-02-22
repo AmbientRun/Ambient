@@ -4,7 +4,7 @@ use std::{
     ops::Deref,
     path::Path,
     sync::{
-        atomic::{AtomicU32, AtomicUsize, Ordering},
+        atomic::{AtomicU32, AtomicU64, Ordering},
         Arc,
     },
 };
@@ -27,7 +27,7 @@ use super::{
 
 static TEXTURE_ALIVE_COUNT: AtomicU32 = AtomicU32::new(0);
 static TEXTURE_ID_COUNT: AtomicU32 = AtomicU32::new(0);
-static TEXTURES_TOTAL_SIZE: AtomicUsize = AtomicUsize::new(0);
+static TEXTURES_TOTAL_SIZE: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Debug)]
 pub struct Texture {
@@ -36,7 +36,7 @@ pub struct Texture {
     pub label: Option<String>,
     pub handle: wgpu::Texture,
     pub size: wgpu::Extent3d,
-    pub size_in_bytes: usize,
+    pub size_in_bytes: u64,
     pub format: wgpu::TextureFormat,
     pub sample_count: u32,
     pub mip_level_count: u32,
@@ -45,12 +45,14 @@ impl Texture {
     pub fn n_alive() -> u32 {
         TEXTURE_ALIVE_COUNT.load(Ordering::SeqCst)
     }
-    pub fn total_bytes_used() -> usize {
+
+    pub fn total_bytes_used() -> u64 {
         TEXTURES_TOTAL_SIZE.load(Ordering::SeqCst)
     }
-    fn size_in_bytes_from_desc(descriptor: &wgpu::TextureDescriptor) -> usize {
-        let mut mip_size = (descriptor.size.width * descriptor.size.height * descriptor.size.depth_or_array_layers) as usize
-            * descriptor.format.describe().block_size as usize;
+
+    fn size_in_bytes_from_desc(descriptor: &wgpu::TextureDescriptor) -> u64 {
+        let mut mip_size = (descriptor.size.width as u64 * descriptor.size.height as u64 * descriptor.size.depth_or_array_layers as u64)
+            * descriptor.format.describe().block_size as u64;
         let mut size_in_bytes = mip_size;
         for _ in 1..descriptor.mip_level_count {
             mip_size /= 2;
@@ -58,6 +60,7 @@ impl Texture {
         }
         size_in_bytes
     }
+
     pub fn new(gpu: Arc<Gpu>, descriptor: &wgpu::TextureDescriptor) -> Self {
         TEXTURE_ALIVE_COUNT.fetch_add(1, Ordering::SeqCst);
         let id = TEXTURE_ID_COUNT.fetch_add(1, Ordering::SeqCst);

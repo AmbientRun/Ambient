@@ -67,10 +67,10 @@ impl AsyncAssetKey<Result<PxRcAsset<PxTriangleMesh>, AssetError>> for PhysxTrian
             })
         }
     }
-    fn cpu_size(&self, value: &Result<PxRcAsset<PxTriangleMesh>, AssetError>) -> Option<usize> {
+    fn cpu_size(&self, value: &Result<PxRcAsset<PxTriangleMesh>, AssetError>) -> Option<u64> {
         value.as_ref().ok().map(|mesh| {
-            (mesh.get_nb_triangles() * 3 * 4 + // TODO; need to get triangle mesh flags to see if it's 16 or 32 bit indices
-            mesh.get_nb_vertices() * 3 * 4) as usize
+            mesh.get_nb_triangles() as u64 * 3 * 4 + // TODO; need to get triangle mesh flags to see if it's 16 or 32 bit indices
+            mesh.get_nb_vertices() as u64 * 3 * 4
         })
     }
 }

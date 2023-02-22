@@ -4,7 +4,6 @@ use ambient_sys::task::wasm_nonsend;
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use futures::Future;
-use reqwest::Url;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use thiserror::Error;
 use tokio::sync::Semaphore;
@@ -146,8 +145,10 @@ impl AsyncAssetKey<AssetResult<Arc<Vec<u8>>>> for BytesFromUrl {
         assert!(!body.is_empty());
         Ok(Arc::new(body))
     }
-    fn cpu_size(&self, value: &AssetResult<Arc<Vec<u8>>>) -> Option<usize> {
-        value.as_ref().ok().map(|v| v.len())
+
+    fn cpu_size(&self, value: &AssetResult<Arc<Vec<u8>>>) -> Option<u64> {
+        // NOTE: on wasm bytes is limited to 4gb
+        value.as_ref().ok().map(|v| v.len() as u64)
     }
 }
 

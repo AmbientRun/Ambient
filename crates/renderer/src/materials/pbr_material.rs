@@ -190,7 +190,7 @@ impl PbrMaterial {
     pub fn upload_params(&self) {
         self.gpu.queue.write_buffer(&self.buffer, 0, bytemuck::cast_slice(&[self.config.params]));
     }
-    pub fn gpu_size(&self) -> usize {
+    pub fn gpu_size(&self) -> u64 {
         self.config.base_color.texture.size_in_bytes
             + self.config.normalmap.texture.size_in_bytes
             + self.config.metallic_roughness.texture.size_in_bytes

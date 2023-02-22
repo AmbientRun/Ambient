@@ -38,7 +38,7 @@ impl ElementComponent for AssetTimelineVisualizer {
             All,
         }
         let (filter, set_filter) = hooks.use_state(Filter::Loading);
-        let mut roots: HashMap<AssetKey, (AssetTimeline, usize)> = self
+        let mut roots: HashMap<AssetKey, (AssetTimeline, _)> = self
             .timeline
             .assets
             .iter()
@@ -52,7 +52,7 @@ impl ElementComponent for AssetTimelineVisualizer {
                 }
             }
         }
-        let total_roots_gpu_size = roots.values().map(|x| x.1).sum::<usize>();
+        let total_roots_gpu_size = roots.values().map(|x| x.1).sum::<u64>();
         let timeline = Arc::new(self.timeline);
         let mut children = roots
             .into_iter()
@@ -156,7 +156,7 @@ struct AssetTimelineRow {
     value: AssetTimeline,
     timeline: Arc<AssetsTimeline>,
     padding: f32,
-    total_gpu_size: Option<usize>,
+    total_gpu_size: Option<u64>,
 }
 impl ElementComponent for AssetTimelineRow {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {

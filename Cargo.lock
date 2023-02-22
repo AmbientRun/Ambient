@@ -218,6 +218,7 @@ dependencies = [
  "pretty_assertions",
  "serde",
  "thiserror",
+ "tokio",
  "tracing",
 ]
 

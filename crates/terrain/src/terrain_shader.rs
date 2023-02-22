@@ -249,7 +249,7 @@ pub struct TerrainTexturesKey {
 }
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for TerrainTexturesKey {
-    fn gpu_size(&self, asset: &Result<Arc<Texture>, AssetError>) -> Option<usize> {
+    fn gpu_size(&self, asset: &Result<Arc<Texture>, AssetError>) -> Option<u64> {
         asset.as_ref().ok().map(|asset| asset.size_in_bytes)
     }
     async fn load(self, assets: AssetCache) -> Result<Arc<Texture>, AssetError> {

@@ -1,4 +1,3 @@
-use ambient_ecs::World;
 use tracing_subscriber::{filter::LevelFilter, fmt::time::UtcTime, prelude::*, registry};
 use tracing_web::MakeConsoleWriter;
 use wasm_bindgen::prelude::wasm_bindgen;
