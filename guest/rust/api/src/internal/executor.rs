@@ -14,6 +14,8 @@ type EventFuture = Pin<Box<dyn Future<Output = EventResult>>>;
 type EventCallbackFn = Box<dyn Fn(&Entity) -> EventFuture>;
 type EventCallbackFnOnce = Box<dyn FnOnce(&Entity) -> EventFuture>;
 
+// the function is too general to be passed in directly
+#[allow(clippy::redundant_closure)]
 pub(crate) static EXECUTOR: Lazy<Executor> = Lazy::new(|| Executor::new());
 static RAW_WAKER: RawWakerVTable = RawWakerVTable::new(
     |_| RawWaker::new(std::ptr::null(), &RAW_WAKER),

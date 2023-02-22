@@ -66,7 +66,7 @@ fn rerender_child() {
         child_id: u32,
     }
     impl ElementComponent for Root {
-        fn render(self: Box<Self>, __: &mut Hooks) -> Element {
+        fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
             Element::new().children(vec![Child { _id: self.child_id }.into()])
         }
     }

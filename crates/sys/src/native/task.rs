@@ -1,6 +1,6 @@
 use futures::{future::LocalBoxFuture, stream::FuturesUnordered, FutureExt, StreamExt};
 use once_cell::sync::Lazy;
-use std::{future::Future, task::Poll, time::Duration};
+use std::{future::Future, task::Poll};
 
 use crate::{
     control::{control_deferred, ControlHandle},

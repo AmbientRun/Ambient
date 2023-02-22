@@ -4,18 +4,14 @@ use std::{
     future::Future,
     pin::Pin,
     sync::{
-        atomic::{
-            AtomicBool,
-            Ordering::{self, Acquire},
-        },
+        atomic::{AtomicBool, Ordering},
         Arc, Weak,
     },
     task::{Poll, Waker},
     time::Duration,
 };
 
-use once_cell::sync::OnceCell;
-use parking_lot::{Mutex, RwLock};
+use parking_lot::Mutex;
 use slotmap::SlotMap;
 
 use crate::time::Instant;

@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use ambient_sys::{control::control_future, task::JoinError};
 
 #[test]

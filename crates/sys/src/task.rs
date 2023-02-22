@@ -1,4 +1,4 @@
-use std::{future::Future, task::Poll, time::Duration};
+use std::{future::Future, task::Poll};
 
 use derive_more::{Deref, From};
 use futures::FutureExt;

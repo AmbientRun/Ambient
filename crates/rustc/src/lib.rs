@@ -16,7 +16,7 @@ pub struct Rust(Installation);
 impl Rust {
     pub async fn get_system_installation() -> anyhow::Result<Self> {
         let installation = Installation;
-        if let Err(_) = installation.get_installed_rustup_version() {
+        if installation.get_installed_rustup_version().is_err() {
             anyhow::bail!("`rustup` is not installed. Please install it with https://rustup.rs/ for the best experience.");
         }
 

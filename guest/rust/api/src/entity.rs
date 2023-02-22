@@ -1,6 +1,5 @@
 use crate::{
-    components, event,
-    global::{until_this, EntityId, Vec3},
+    global::{EntityId, Vec3},
     internal::{
         component::{
             traits::AsParam, Component, Entity, SupportedComponentTypeGet,
@@ -18,6 +17,8 @@ pub use crate::internal::host::{AnimationAction, AnimationController};
 ///
 /// Returns `spawned_entity_uid`.
 pub fn spawn(components: &Entity) -> EntityId {
+    // the function is too general to be passed in directly
+    #[allow(clippy::redundant_closure)]
     components
         .call_with(|data| host::entity_spawn(data))
         .from_bindgen()
