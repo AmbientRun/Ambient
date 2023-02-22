@@ -92,7 +92,7 @@ dependencies = [
 
 [[package]]
 name = "ambient"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_animation",
  "ambient_app",
@@ -153,7 +153,7 @@ checksum = "ec8ad6edb4840b78c5c3d88de606b22252d552b55f3a4699fbb10fc070ec3049"
 
 [[package]]
 name = "ambient_animation"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -174,7 +174,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_app"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_animation",
  "ambient_cameras",
@@ -204,7 +204,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_asset_cache"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_sys",
  "anyhow",
@@ -224,7 +224,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_asset_timeline"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -247,7 +247,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_audio"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_std",
  "ambient_ui",
@@ -286,7 +286,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_build"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_asset_cache",
  "ambient_core",
@@ -326,7 +326,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_cameras"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -339,7 +339,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_core"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_ecs",
  "ambient_gpu",
@@ -365,7 +365,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_curve"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_std",
  "glam 0.22.0",
@@ -373,7 +373,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_debugger"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -395,7 +395,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_decals"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_app",
  "ambient_asset_cache",
@@ -416,7 +416,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_ecs"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_std",
  "anyhow",
@@ -448,7 +448,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_ecs_editor"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -465,7 +465,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_editor"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_animation",
  "ambient_app",
@@ -523,7 +523,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_editor_derive"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_ui",
  "convert_case 0.6.0",
@@ -537,7 +537,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_element"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -558,7 +558,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_element_component"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "itertools",
  "proc-macro-crate",
@@ -569,7 +569,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_gizmos"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -591,7 +591,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_gpu"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_std",
  "anyhow",
@@ -616,7 +616,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_input"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -629,7 +629,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_intent"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_ecs",
  "ambient_editor_derive",
@@ -651,7 +651,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_meshes"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_gpu",
  "ambient_std",
@@ -661,7 +661,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_model"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -686,7 +686,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_model_import"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_animation",
  "ambient_app",
@@ -730,7 +730,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_naturals"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_app",
  "ambient_core",
@@ -758,7 +758,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_network"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_app",
  "ambient_core",
@@ -797,7 +797,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_physics"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -833,7 +833,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_prefab"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_core",
  "ambient_decals",
@@ -855,7 +855,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_primitives"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -869,7 +869,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_project"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_ecs",
  "paste",
@@ -880,7 +880,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_renderer"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -913,7 +913,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_rpc"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "bincode",
  "futures",
@@ -925,7 +925,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_rustc"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "anyhow",
  "itertools",
@@ -936,7 +936,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_sky"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_cameras",
  "ambient_core",
@@ -958,7 +958,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_std"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_asset_cache",
  "ambient_sys",
@@ -1024,7 +1024,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_terrain"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_app",
  "ambient_core",
@@ -1064,7 +1064,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_ui"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
@@ -1105,7 +1105,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_wasm"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_animation",
  "ambient_app",
@@ -1147,7 +1147,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_water"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -1163,7 +1163,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_web"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_ecs",
  "ambient_sys",
@@ -1181,7 +1181,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_world_audio"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_app",
  "ambient_audio",
@@ -4751,7 +4751,7 @@ dependencies = [
 
 [[package]]
 name = "physxx"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "as-any",
  "bitflags",
@@ -6577,7 +6577,7 @@ checksum = "402bb19d8e03f1d1a7450e2bd613980869438e0666331be3e073089124aa1adc"
 
 [[package]]
 name = "unity_parser"
-version = "0.1.1-rc3"
+version = "0.1.1-rc4"
 dependencies = [
  "ambient_std",
  "anyhow",
