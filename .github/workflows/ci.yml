@@ -35,8 +35,9 @@ jobs:
       - uses: Leafwing-Studios/cargo-cache@v1
         with:
           cache-group: "main"
-      - name: Run Clippy
-        run: cargo clippy --workspace -- -Adeprecated
+      # Clippy is currently disabled while we agree on what settings we want to use
+      # - name: Run Clippy
+      #   run: cargo clippy --workspace -- -Adeprecated
       - name: Run tests
         run: cargo test --workspace
         env:
