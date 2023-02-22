@@ -5,7 +5,8 @@ use ambient_api::{
         game_objects::player_camera,
         model::model_from_url,
         physics::{
-            angular_velocity, dynamic, linear_velocity, physics_controlled, sphere_collider,
+            angular_velocity, collider_from_url, dynamic, kinematic, linear_velocity,
+            physics_controlled, sphere_collider,
         },
         player::{player, user_id},
         prefab::prefab_from_url,
@@ -55,7 +56,9 @@ fn create_environment() {
         .spawn();
 
     make_transformable()
-        .with(prefab_from_url(), asset_url("assets/fan.glb").unwrap())
+        .with(model_from_url(), asset_url("assets/fan.glb").unwrap())
+        .with(collider_from_url(), asset_url("assets/fan.glb").unwrap())
+        .with(kinematic(), ())
         .with(dynamic(), true)
         .with(translation(), vec3(-35., 161., 8.4331))
         .with(rotation(), Quat::from_rotation_z(180_f32.to_radians()))
@@ -172,7 +175,10 @@ pub async fn main() -> EventResult {
     });
 
     let flag = make_transformable()
-        .with(prefab_from_url(), asset_url("assets/flag.glb").unwrap())
+        .with(model_from_url(), asset_url("assets/flag.glb").unwrap())
+        .with(collider_from_url(), asset_url("assets/flag.glb").unwrap())
+        .with(dynamic(), true)
+        .with(kinematic(), ())
         .with(origin(), vec3(-35., 205., 0.3166))
         .spawn();
 

@@ -1,22 +1,15 @@
 use std::{collections::HashMap, f32::consts::PI, fmt::Debug, ops::Deref, sync::Arc};
 
 use ambient_core::{
-    asset_cache,
-    async_ecs::async_run,
-    runtime,
-    transform::{rotation, scale, translation},
+    asset_cache, async_ecs::async_run, runtime, transform::{rotation, scale, translation}
 };
 use ambient_ecs::{
-    components, query, Component, ComponentQuery, ComponentValueBase, Debuggable, Description, EntityData, EntityId, MakeDefault, Name,
-    Networked, QueryEvent, QueryState, Store, SystemGroup, TypedReadQuery, World,
+    components, query, Component, ComponentQuery, ComponentValueBase, Debuggable, Description, EntityData, EntityId, MakeDefault, Name, Networked, QueryEvent, QueryState, Store, SystemGroup, TypedReadQuery, World
 };
 use ambient_editor_derive::ElementEditor;
 use ambient_model::model_from_url;
 use ambient_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt},
-    asset_url::{AbsAssetUrl, ColliderAssetType, TypedAssetUrl},
-    download_asset::{AssetError, JsonFromUrl},
-    events::EventDispatcher,
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, ColliderAssetType, TypedAssetUrl}, download_asset::{AssetError, JsonFromUrl}, events::EventDispatcher
 };
 use ambient_ui::Editable;
 use anyhow::Context;
@@ -25,20 +18,14 @@ use futures::future::try_join_all;
 use glam::{vec3, Mat4, Quat, Vec3};
 use itertools::Itertools;
 use physxx::{
-    AsPxActor, AsPxRigidActor, PxActor, PxActorFlag, PxBase, PxBoxGeometry, PxControllerDesc, PxControllerShapeDesc, PxConvexMeshGeometry,
-    PxGeometry, PxMaterial, PxMeshScale, PxPlaneGeometry, PxRigidActor, PxRigidBody, PxRigidBodyFlag, PxRigidDynamicRef, PxRigidStaticRef,
-    PxShape, PxShapeFlag, PxSphereGeometry, PxTransform, PxTriangleMeshGeometry, PxUserData,
+    AsPxActor, AsPxRigidActor, PxActor, PxActorFlag, PxBase, PxBoxGeometry, PxControllerDesc, PxControllerShapeDesc, PxConvexMeshGeometry, PxGeometry, PxMaterial, PxMeshScale, PxPlaneGeometry, PxRigidActor, PxRigidBody, PxRigidBodyFlag, PxRigidDynamicRef, PxRigidStaticRef, PxShape, PxShapeFlag, PxSphereGeometry, PxTransform, PxTriangleMeshGeometry, PxUserData
 };
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    main_controller_manager, make_physics_static,
-    mesh::{PhysxGeometry, PhysxGeometryFromUrl},
-    physx::{
-        angular_velocity, character_controller, contact_offset, linear_velocity, physics, physics_controlled, physics_shape, rest_offset,
-        rigid_actor, Physics,
-    },
-    wood_physics_material, ColliderScene, PxActorUserData, PxShapeUserData, PxWoodMaterialKey,
+    main_controller_manager, make_physics_static, mesh::{PhysxGeometry, PhysxGeometryFromUrl}, physx::{
+        angular_velocity, character_controller, contact_offset, linear_velocity, physics, physics_controlled, physics_shape, rest_offset, rigid_actor, Physics
+    }, wood_physics_material, ColliderScene, PxActorUserData, PxShapeUserData, PxWoodMaterialKey
 };
 
 fn one() -> f32 {
@@ -85,6 +72,12 @@ components!("physics", {
         Description["If this is true, the entity will be dynamic (i.e. be able to move). Otherwise, it will be static."]
     ]
     dynamic: bool,
+    @[
+        Debuggable, Networked, Store,
+        Name["Kinematic"],
+        Description["If attached, and this entity is dynamic, this entity will also be kinematic (i.e. unable to be affected by other entities motion). Otherwise, it will receive forces normally."]
+    ]
+    kinematic: (),
     @[
         Debuggable, MakeDefault[one], Editable, Networked, Store,
         Name["Mass"],
@@ -177,8 +170,11 @@ pub fn server_systems() -> SystemGroup {
             }),
             query(collider_from_url().changed()).to_system(|q, world, qs, _| {
                 for (id, url) in changed_or_missing(q, world, qs, collider()) {
-                    match TypedAssetUrl::parse(&url) {
-                        Ok(url) => world.add_component(id, collider(), ColliderDef::Asset { collider: url }).unwrap(),
+                    tracing::debug!("Loading collider: {url:#?}");
+                    match TypedAssetUrl::parse(&url).context("Failed to parse url").and_then(|url: TypedAssetUrl<ColliderAssetType>| {
+                        url.0.as_directory().join("colliders/main.json").context("Failed to join url")
+                    }) {
+                        Ok(url) => world.add_component(id, collider(), ColliderDef::Asset { collider: url.into() }).unwrap(),
                         Err(err) => log::warn!("Failed to load collider from {}: {:?}", url, err),
                     }
                 }
@@ -271,82 +267,89 @@ pub fn server_systems() -> SystemGroup {
                     });
                 }
             }),
-            query(collider_shapes().changed()).optional_changed(collider_type()).to_system(|q, world, qs, _| {
-                let physics = world.resource(physics()).clone();
-                let force_static = world.get(world.resource_entity(), make_physics_static()).unwrap_or(false);
-                let build_actor = |world: &mut World, id: EntityId, mut shapes: Vec<PxShape>| {
-                    let pos = world.get(id, translation()).unwrap_or_default();
-                    let rot = world.get(id, rotation()).unwrap_or_default();
-                    let collider_type = world.get(id, collider_type()).unwrap_or(ColliderType::Static);
-                    if let Ok(actor) = world.get(id, rigid_actor()) {
-                        if let Some(scene) = actor.get_scene() {
-                            scene.remove_actor(&actor, false);
+            query(collider_shapes().changed()).optional_changed(collider_type()).optional_changed(kinematic()).to_system(
+                |q, world, qs, _| {
+                    let physics = world.resource(physics()).clone();
+                    let force_static = world.get(world.resource_entity(), make_physics_static()).unwrap_or(false);
+                    let build_actor = |world: &mut World, id: EntityId, mut shapes: Vec<PxShape>| {
+                        let pos = world.get(id, translation()).unwrap_or_default();
+                        let rot = world.get(id, rotation()).unwrap_or_default();
+                        let collider_type = world.get(id, collider_type()).unwrap_or(ColliderType::Static);
+                        if let Ok(actor) = world.get(id, rigid_actor()) {
+                            if let Some(scene) = actor.get_scene() {
+                                scene.remove_actor(&actor, false);
+                            }
                         }
-                    }
-                    let actor = if collider_type == ColliderType::Dynamic && !force_static {
-                        world.add_component(id, physics_controlled(), ()).unwrap();
-                        let lvel = world.get(id, linear_velocity()).unwrap_or_default();
-                        let avel = world.get(id, angular_velocity()).unwrap_or_default();
-                        let body = PxRigidDynamicRef::new(physics.physics, &PxTransform::new(pos, rot));
-                        body.set_linear_velocity(lvel, true);
-                        body.set_angular_velocity(avel, true);
-                        body.as_rigid_actor()
-                    } else {
-                        world.remove_component(id, physics_controlled()).unwrap();
-                        PxRigidStaticRef::new(physics.physics, &PxTransform::new(pos, rot)).as_rigid_actor()
+                        let actor = if collider_type == ColliderType::Dynamic && !force_static {
+                            world.add_component(id, physics_controlled(), ()).unwrap();
+                            let lvel = world.get(id, linear_velocity()).unwrap_or_default();
+                            let avel = world.get(id, angular_velocity()).unwrap_or_default();
+                            let body = PxRigidDynamicRef::new(physics.physics, &PxTransform::new(pos, rot));
+                            body.set_linear_velocity(lvel, true);
+                            body.set_angular_velocity(avel, true);
+                            body.as_rigid_actor()
+                        } else {
+                            world.remove_component(id, physics_controlled()).unwrap();
+                            PxRigidStaticRef::new(physics.physics, &PxTransform::new(pos, rot)).as_rigid_actor()
+                        };
+                        if let Some(actor) = actor.to_rigid_body() {
+                            let kinematic = world.has_component(id, kinematic());
+                            actor.set_rigid_body_flag(PxRigidBodyFlag::ENABLE_CCD, !kinematic);
+                            actor.set_rigid_body_flag(PxRigidBodyFlag::KINEMATIC, kinematic);
+                        }
+                        actor.as_actor().set_user_data(PxActorUserData { serialize: true });
+                        for shape in actor.get_shapes() {
+                            actor.detach_shape(&shape, false);
+                        }
+                        let coff = world.get(id, contact_offset()).ok();
+                        let roff = world.get(id, rest_offset()).ok();
+                        for shape in shapes.iter_mut() {
+                            if !actor.attach_shape(shape) {
+                                log::error!("Failed to attach shape to entity {}", id);
+                                actor.as_actor().remove_user_data::<PxActorUserData>();
+                                actor.release();
+                                return;
+                            }
+                            // TODO(josh): shapes should probably have their own ECS objects
+                            if let Some(coff) = coff {
+                                shape.set_contact_offset(coff);
+                            }
+                            if let Some(roff) = roff {
+                                shape.set_rest_offset(roff);
+                            }
+                            shape.update_user_data::<PxShapeUserData>(&|ud| ud.entity = id);
+                        }
+                        if let Some(actor) = actor.to_rigid_dynamic() {
+                            let densities = actor
+                                .get_shapes()
+                                .iter()
+                                .map(|shape| shape.get_user_data::<PxShapeUserData>().unwrap().density)
+                                .collect_vec();
+                            actor.update_mass_and_inertia(densities, None, None);
+                            world.add_component(id, mass(), actor.get_mass()).unwrap();
+                        } else {
+                            world.remove_component(id, mass()).ok();
+                        }
+                        let first_shape = shapes[0].clone();
+                        world.add_components(id, EntityData::new().set(physics_shape(), first_shape).set(rigid_actor(), actor)).unwrap();
+                        actor.set_actor_flag(PxActorFlag::VISUALIZATION, false);
+                        if collider_type != ColliderType::Dynamic && collider_type != ColliderType::Static {
+                            actor.set_actor_flag(PxActorFlag::DISABLE_SIMULATION, true);
+                        }
+                        let scene = collider_type.scene().get_scene(world);
+                        scene.add_actor(&actor);
+                        world.resource_mut(crate::collider_loads()).push(id);
+                        if let Ok(event) = world.get_ref(id, on_collider_loaded()).cloned() {
+                            for handler in event.iter() {
+                                (*handler)(world, id);
+                            }
+                        }
                     };
-                    if let Some(actor) = actor.to_rigid_body() {
-                        actor.set_rigid_body_flag(PxRigidBodyFlag::ENABLE_CCD, true);
+                    for (id, shapes) in q.collect_cloned(world, qs) {
+                        build_actor(world, id, shapes);
                     }
-                    actor.as_actor().set_user_data(PxActorUserData { serialize: true });
-                    for shape in actor.get_shapes() {
-                        actor.detach_shape(&shape, false);
-                    }
-                    let coff = world.get(id, contact_offset()).ok();
-                    let roff = world.get(id, rest_offset()).ok();
-                    for shape in shapes.iter_mut() {
-                        if !actor.attach_shape(shape) {
-                            log::error!("Failed to attach shape to entity {}", id);
-                            actor.as_actor().remove_user_data::<PxActorUserData>();
-                            actor.release();
-                            return;
-                        }
-                        // TODO(josh): shapes should probably have their own ECS objects
-                        if let Some(coff) = coff {
-                            shape.set_contact_offset(coff);
-                        }
-                        if let Some(roff) = roff {
-                            shape.set_rest_offset(roff);
-                        }
-                        shape.update_user_data::<PxShapeUserData>(&|ud| ud.entity = id);
-                    }
-                    if let Some(actor) = actor.to_rigid_dynamic() {
-                        let densities =
-                            actor.get_shapes().iter().map(|shape| shape.get_user_data::<PxShapeUserData>().unwrap().density).collect_vec();
-                        actor.update_mass_and_inertia(densities, None, None);
-                        world.add_component(id, mass(), actor.get_mass()).unwrap();
-                    } else {
-                        world.remove_component(id, mass()).ok();
-                    }
-                    let first_shape = shapes[0].clone();
-                    world.add_components(id, EntityData::new().set(physics_shape(), first_shape).set(rigid_actor(), actor)).unwrap();
-                    actor.set_actor_flag(PxActorFlag::VISUALIZATION, false);
-                    if collider_type != ColliderType::Dynamic && collider_type != ColliderType::Static {
-                        actor.set_actor_flag(PxActorFlag::DISABLE_SIMULATION, true);
-                    }
-                    let scene = collider_type.scene().get_scene(world);
-                    scene.add_actor(&actor);
-                    world.resource_mut(crate::collider_loads()).push(id);
-                    if let Ok(event) = world.get_ref(id, on_collider_loaded()).cloned() {
-                        for handler in event.iter() {
-                            (*handler)(world, id);
-                        }
-                    }
-                };
-                for (id, shapes) in q.collect_cloned(world, qs) {
-                    build_actor(world, id, shapes);
-                }
-            }),
+                },
+            ),
         ],
     )
 }

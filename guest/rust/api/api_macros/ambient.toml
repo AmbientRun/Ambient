@@ -381,6 +381,12 @@ name = "Dynamic"
 description = "If this is true, the entity will be dynamic (i.e. be able to move). Otherwise, it will be static."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::physics::kinematic"]
+type = "Empty"
+name = "Kinematic"
+description = "If attached, and this entity is dynamic, this entity will also be kinematic (i.e. unable to be affected by other entities motion). Otherwise, it will receive forces normally."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::physics::linear_velocity"]
 type = "Vec3"
 name = "Linear velocity"
