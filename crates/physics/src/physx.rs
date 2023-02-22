@@ -1,4 +1,4 @@
-use crate::helpers::{get_shapes, scale_shape};
+use crate::{helpers::{get_shapes, scale_shape}, collider::kinematic};
 use ambient_core::transform::{rotation, scale, translation};
 use ambient_ecs::{
     components, ensure_has_component, query, Debuggable, Description, FnSystem, Name, Networked, QueryState, Resource, Store, SystemGroup,
@@ -140,9 +140,14 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     let mut qs = translation_rotation_qs.lock();
                     for (id, (&pos, &rot)) in q.iter(world, Some(&mut *qs)) {
                         if let Ok(body) = world.get(id, rigid_dynamic()) {
-                            body.set_global_pose(&PxTransform::new(pos, rot), true);
-                            body.set_linear_velocity(Vec3::ZERO, true);
-                            body.set_angular_velocity(Vec3::ZERO, true);
+                            let pose = PxTransform::new(pos, rot);
+                            if world.has_component(id, kinematic()) {
+                                body.set_kinematic_target(&pose);
+                            } else {
+                                body.set_global_pose(&pose, true);
+                                body.set_linear_velocity(Vec3::ZERO, true);
+                                body.set_angular_velocity(Vec3::ZERO, true);
+                            }
                         } else if let Ok(body) = world.get(id, rigid_static()) {
                             body.set_global_pose(&PxTransform::new(pos, rot), true);
                         } else if let Ok(shape) = world.get_ref(id, physics_shape()) {

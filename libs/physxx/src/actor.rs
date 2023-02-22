@@ -369,6 +369,9 @@ impl PxRigidDynamicRef {
     pub fn wake_up(&self) {
         unsafe { physx_sys::PxRigidDynamic_wakeUp_mut(self.0) }
     }
+    pub fn set_kinematic_target(&self, destination: &PxTransform) {
+        unsafe { physx_sys::PxRigidDynamic_setKinematicTarget_mut(self.0, &destination.0); }
+    }
 }
 impl AsPxBase for PxRigidDynamicRef {
     fn as_base(&self) -> PxBaseRef {
