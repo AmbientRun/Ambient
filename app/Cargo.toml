@@ -5,39 +5,38 @@ version = { workspace = true }
 repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]
-ambient_animation = {path = "../crates/animation"}
-ambient_app = {path = "../crates/app"}
-ambient_audio = {path = "../crates/audio"}
-ambient_build = {path = "../crates/build"}
-ambient_cameras = {path = "../crates/cameras"}
-ambient_core = {path = "../crates/core"}
-ambient_debugger = {path = "../crates/debugger"}
-ambient_decals = {path = "../crates/decals"}
-ambient_ecs = {path = "../crates/ecs"}
-ambient_editor_derive = {path = "../crates/editor_derive"}
-ambient_element = {path = "../crates/element"}
-ambient_gizmos = {path = "../crates/gizmos"}
-ambient_gpu = {path = "../crates/gpu"}
-ambient_input = {path = "../crates/input"}
-ambient_meshes = {path = "../crates/meshes"}
-ambient_model = {path = "../crates/model"}
-ambient_model_import = {path = "../crates/model_import"}
-ambient_network = {path = "../crates/network"}
-ambient_prefab = {path = "../crates/prefab"}
-ambient_physics = {path = "../crates/physics"}
-ambient_primitives = {path = "../crates/primitives"}
-ambient_project = {path = "../crates/project"}
-ambient_renderer = {path = "../crates/renderer"}
-ambient_rpc = {path = "../crates/rpc"}
-ambient_wasm = {path = "../crates/wasm"}
-ambient_std = {path = "../crates/std"}
-ambient_ui = {path = "../crates/ui"}
-ambient_world_audio = {path = "../crates/world_audio"}
-ambient_sky = {path = "../crates/sky"}
-ambient_water = {path = "../crates/water"}
+ambient_animation = { path = "../crates/animation" }
+ambient_app = { path = "../crates/app" }
+ambient_audio = { path = "../crates/audio" }
+ambient_build = { path = "../crates/build" }
+ambient_cameras = { path = "../crates/cameras" }
+ambient_core = { path = "../crates/core" }
+ambient_debugger = { path = "../crates/debugger" }
+ambient_decals = { path = "../crates/decals" }
+ambient_ecs = { path = "../crates/ecs" }
+ambient_editor_derive = { path = "../crates/editor_derive" }
+ambient_element = { path = "../crates/element" }
+ambient_gizmos = { path = "../crates/gizmos" }
+ambient_gpu = { path = "../crates/gpu" }
+ambient_input = { path = "../crates/input" }
+ambient_meshes = { path = "../crates/meshes" }
+ambient_model = { path = "../crates/model" }
+ambient_model_import = { path = "../crates/model_import" }
+ambient_network = { path = "../crates/network" }
+ambient_prefab = { path = "../crates/prefab" }
+ambient_physics = { path = "../crates/physics" }
+ambient_primitives = { path = "../crates/primitives" }
+ambient_project = { path = "../crates/project" }
+ambient_renderer = { path = "../crates/renderer" }
+ambient_rpc = { path = "../crates/rpc" }
+ambient_wasm = { path = "../crates/wasm" }
+ambient_std = { path = "../crates/std" }
+ambient_ui = { path = "../crates/ui" }
+ambient_world_audio = { path = "../crates/world_audio" }
+ambient_sky = { path = "../crates/sky" }
+ambient_water = { path = "../crates/water" }
 
 anyhow = { workspace = true }
-axum = { workspace = true }
 bincode = { workspace = true }
 byteorder = { workspace = true }
 clap = { workspace = true }
@@ -64,3 +63,6 @@ rusty-hook = "^0.11.2"
 default = ["dep:toml_edit", "dep:paste"]
 production = []
 profile = ["ambient_app/profile"]
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+axum = { workspace = true }

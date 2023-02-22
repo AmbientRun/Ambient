@@ -57,6 +57,13 @@ impl AbsAssetUrl {
             Err(err) => Err(err.into()),
         }
     }
+
+    #[cfg(target_arch = "wasm32")]
+    pub fn from_file_path(path: impl AsRef<Path>) -> Self {
+        unimplemented!("Url::from_file_path")
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn from_file_path(path: impl AsRef<Path>) -> Self {
         if path.as_ref().is_absolute() {
             Self(Url::from_file_path(path).unwrap())
@@ -65,6 +72,13 @@ impl AbsAssetUrl {
             Self(Url::from_file_path(path).unwrap())
         }
     }
+
+    #[cfg(target_arch = "wasm32")]
+    pub fn from_directory_path(path: impl AsRef<Path>) -> Self {
+        unimplemented!("Url::from_file_path")
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn from_directory_path(path: impl AsRef<Path>) -> Self {
         if path.as_ref().is_absolute() {
             Self(Url::from_directory_path(path).unwrap())
@@ -93,6 +107,13 @@ impl AbsAssetUrl {
         url.set_path(&format!("{}.{}", url.path(), extension));
         Self(url)
     }
+
+    #[cfg(target_arch = "wasm32")]
+    pub fn to_file_path(&self) -> anyhow::Result<Option<PathBuf>> {
+        Ok(None)
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn to_file_path(&self) -> anyhow::Result<Option<PathBuf>> {
         if self.0.scheme() == "file" {
             match self.0.to_file_path() {
@@ -151,21 +172,21 @@ impl AbsAssetUrl {
     }
     pub async fn download_bytes(&self, assets: &AssetCache) -> anyhow::Result<Vec<u8>> {
         if let Some(path) = self.to_file_path()? {
-            Ok(tokio::fs::read(path).await.context(format!("Failed to read file at: {:}", self.0))?)
+            Ok(ambient_sys::fs::read(path).await.context(format!("Failed to read file at: {:}", self.0))?)
         } else {
             Ok(download(assets, self.0.clone(), |resp| async { Ok(resp.bytes().await?) }).await?.to_vec())
         }
     }
     pub async fn download_string(&self, assets: &AssetCache) -> anyhow::Result<String> {
         if let Some(path) = self.to_file_path()? {
-            Ok(tokio::fs::read_to_string(path).await.context(format!("Failed to read file at: {:}", self.0))?)
+            Ok(ambient_sys::fs::read_to_string(path).await.context(format!("Failed to read file at: {:}", self.0))?)
         } else {
             Ok(download(assets, self.0.clone(), |resp| async { Ok(resp.text().await?) }).await?)
         }
     }
-    pub async fn download_json<T: DeserializeOwned>(&self, assets: &AssetCache) -> anyhow::Result<T> {
+    pub async fn download_json<T: 'static + Send + DeserializeOwned>(&self, assets: &AssetCache) -> anyhow::Result<T> {
         if let Some(path) = self.to_file_path()? {
-            let content: Vec<u8> = tokio::fs::read(path).await.context(format!("Failed to read file at: {:}", self.0))?;
+            let content: Vec<u8> = ambient_sys::fs::read(path).await.context(format!("Failed to read file at: {:}", self.0))?;
             Ok(serde_json::from_slice(&content)?)
         } else {
             Ok(download(assets, self.0.clone(), |resp| async { Ok(resp.json::<T>().await?) }).await?)
@@ -176,6 +197,8 @@ impl AbsAssetUrl {
         Ok(toml::from_str(std::str::from_utf8(&content)?)?)
     }
 }
+
+#[cfg(not(target_os = "unknown"))]
 impl From<PathBuf> for AbsAssetUrl {
     fn from(value: PathBuf) -> Self {
         let value = if value.is_absolute() { value } else { std::env::current_dir().unwrap().join(value) };

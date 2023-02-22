@@ -7,13 +7,15 @@ edition = "2021"
 
 [dependencies]
 ambient_asset_cache = { path = "../asset_cache/", optional = true }
+ambient_sys = { path = "../sys" }
+
 wgpu = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
 glam = { workspace = true, optional = true }
 ordered-float = { workspace = true, optional = true }
 rand = { workspace = true, optional = true }
-tokio = { workspace = true, optional = true }
+tokio = { workspace = true, optional = true, features = ["sync"] }
 as-any = { workspace = true, optional = true }
 async-trait = { workspace = true, optional = true }
 futures = { workspace = true, optional = true }
@@ -46,14 +48,8 @@ percent-encoding = { workspace = true, optional = true }
 # without dragging in all of its dependencies. If you have some free time, try
 # splitting these up into finer-grained features!
 default = ["all"]
-all = [
-    "cb",
-    "uncategorized"
-]
-cb = [
-    "dep:anyhow",
-    "dep:tracing"
-]
+all = ["cb", "uncategorized"]
+cb = ["dep:anyhow", "dep:tracing"]
 uncategorized = [
     "dep:ambient_asset_cache",
     "dep:wgpu",
@@ -88,7 +84,7 @@ uncategorized = [
     "dep:url",
     "dep:relative-path",
     "dep:toml",
-    "dep:percent-encoding"
+    "dep:percent-encoding",
 ]
 
 # Changes in behaviour

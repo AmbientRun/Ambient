@@ -1,5 +1,6 @@
 use std::{borrow::BorrowMut, marker::PhantomData, path::PathBuf, sync::Arc, time::Duration};
 
+use ambient_sys::task::wasm_nonsend;
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use futures::Future;
@@ -10,7 +11,9 @@ use tokio::sync::Semaphore;
 use yaml_rust::YamlLoader;
 
 use crate::{
-    asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt}, asset_url::AbsAssetUrl, mesh::Mesh
+    asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
+    asset_url::AbsAssetUrl,
+    mesh::Mesh,
 };
 
 pub type AssetResult<T> = Result<T, AssetError>;
@@ -68,39 +71,46 @@ impl SyncAssetKey<reqwest::Client> for ReqwestClientKey {
 }
 
 /// Download with retries and a global rate limiting sempahore
-pub async fn download<T, F: Future<Output = anyhow::Result<T>>>(
+pub(crate) async fn download<T: 'static + Send, F: Future<Output = anyhow::Result<T>>>(
     assets: &AssetCache,
     url: impl reqwest::IntoUrl,
-    map: impl Fn(reqwest::Response) -> F,
+    map: impl 'static + Send + Fn(reqwest::Response) -> F,
 ) -> anyhow::Result<T> {
-    let client = ReqwestClientKey.get(assets);
     let url_str = url.as_str().to_string();
-    let url_short = if url_str.len() > 200 { format!("{}...", &url_str[..200]) } else { url_str.to_string() };
-    let url: Url = url.into_url()?;
+    let url = url.into_url()?;
+    let assets = assets.clone();
 
-    let max_retries = 12;
-    for i in 0..max_retries {
-        let semaphore = DownloadSemaphore.get(assets);
-        log::info!("download [pending ] {}", url_short);
-        let _permit = semaphore.acquire().await.unwrap();
-        log::info!("download [download] {}", url_short);
-        let resp = client.get(url.clone()).send().await.with_context(|| format!("Failed to download {url_str}"))?;
-        if !resp.status().is_success() {
-            log::warn!("Request for {} failed: {:?}", url_str, resp.status());
-            return Err(anyhow!("Downloading {url_str} failed, bad status code: {:?}", resp.status()));
-        }
-        match map(resp).await {
-            Ok(res) => {
-                log::info!("download [complete] {}", url_short);
-                return Ok(res);
+    // reqwest::Client is not Send on wasm
+    wasm_nonsend(move || async move {
+        let client = ReqwestClientKey.get(&assets);
+        let url_short = if url_str.len() > 200 { format!("{}...", &url_str[..200]) } else { url_str.to_string() };
+
+        let max_retries = 12;
+        for i in 0..max_retries {
+            let semaphore = DownloadSemaphore.get(&assets);
+            log::info!("download [pending ] {}", url_short);
+            let _permit = semaphore.acquire().await.unwrap();
+            log::info!("download [download] {}", url_short);
+            let resp = client.get(url.clone()).send().await.with_context(|| format!("Failed to download {url_str}"))?;
+            if !resp.status().is_success() {
+                log::warn!("Request for {} failed: {:?}", url_str, resp.status());
+                return Err(anyhow!("Downloading {url_str} failed, bad status code: {:?}", resp.status()));
             }
-            Err(err) => {
-                log::warn!("Failed to read body of {url_str}, retrying ({i}/{max_retries}): {:?}", err);
-                tokio::time::sleep(Duration::from_millis(2u64.pow(i))).await;
+            match map(resp).await {
+                Ok(res) => {
+                    log::info!("download [complete] {}", url_short);
+                    return Ok(res);
+                }
+                Err(err) => {
+                    log::warn!("Failed to read body of {url_str}, retrying ({i}/{max_retries}): {:?}", err);
+                    ambient_sys::time::sleep(Duration::from_millis(2u64.pow(i))).await;
+                }
             }
         }
-    }
-    Err(anyhow::anyhow!("Failed to download body of {}", url_str))
+
+        Err(anyhow::anyhow!("Failed to download body of {}", url_str))
+    })
+    .await
 }
 
 #[derive(Clone, Debug)]
@@ -108,6 +118,7 @@ pub struct BytesFromUrl {
     pub url: AbsAssetUrl,
     pub cache_on_disk: bool,
 }
+
 impl BytesFromUrl {
     pub fn new(url: AbsAssetUrl, cache_on_disk: bool) -> Self {
         Self { url, cache_on_disk }
@@ -116,6 +127,7 @@ impl BytesFromUrl {
         Ok(Self { url: AbsAssetUrl::parse(url)?, cache_on_disk })
     }
 }
+
 #[async_trait]
 impl AsyncAssetKey<AssetResult<Arc<Vec<u8>>>> for BytesFromUrl {
     async fn load(self, assets: AssetCache) -> AssetResult<Arc<Vec<u8>>> {
@@ -123,11 +135,11 @@ impl AsyncAssetKey<AssetResult<Arc<Vec<u8>>>> for BytesFromUrl {
             let path = BytesFromUrlCachedPath { url: self.url.clone() }.get(&assets).await?;
             let semaphore = FileReadSemaphore.get(&assets);
             let _permit = semaphore.acquire().await;
-            return Ok(Arc::new(tokio::fs::read(&*path).await.context(format!("Failed to read file: {path:?}"))?));
+            return Ok(Arc::new(ambient_sys::fs::read(&*path).await.context(format!("Failed to read file: {path:?}"))?));
         }
 
         if let Some(path) = self.url.to_file_path()? {
-            return Ok(Arc::new(tokio::fs::read(path).await.context(format!("Failed to read file at: {:}", self.url.0))?));
+            return Ok(Arc::new(ambient_sys::fs::read(path).await.context(format!("Failed to read file at: {:}", self.url.0))?));
         }
 
         let body = download(&assets, self.url.0.clone(), |resp| async { Ok(resp.bytes().await?) }).await?.to_vec();
@@ -149,18 +161,32 @@ impl BytesFromUrlCachedPath {
         Ok(Self { url: AbsAssetUrl::parse(url)? })
     }
 }
+
 #[async_trait]
+#[cfg(target_os = "unknown")]
+impl AsyncAssetKey<AssetResult<Arc<PathBuf>>> for BytesFromUrlCachedPath {
+    fn keepalive(&self) -> AssetKeepalive {
+        AssetKeepalive::Forever
+    }
+
+    async fn load(self, assets: AssetCache) -> AssetResult<Arc<PathBuf>> {
+        return Err(anyhow::anyhow!("Asset caching is not supported on wasm").into());
+    }
+}
+
+#[async_trait]
+#[cfg(not(target_os = "unknown"))]
 impl AsyncAssetKey<AssetResult<Arc<PathBuf>>> for BytesFromUrlCachedPath {
     fn keepalive(&self) -> AssetKeepalive {
         AssetKeepalive::Forever
     }
     async fn load(self, assets: AssetCache) -> AssetResult<Arc<PathBuf>> {
-        use tokio::io::AsyncWriteExt;
         if let Some(path) = self.url.to_file_path()? {
             return Ok(Arc::new(path));
         }
         let path = self.url.absolute_cache_path(&assets);
         if !path.exists() {
+            use tokio::io::AsyncWriteExt;
             let mut dir = path.clone();
             dir.pop();
             std::fs::create_dir_all(&dir).context(format!("Failed to create asset dir: {dir:?}"))?;
@@ -183,6 +209,7 @@ impl AsyncAssetKey<AssetResult<Arc<PathBuf>>> for BytesFromUrlCachedPath {
             std::fs::rename(&tmp_path, &path).context(format!("Failed to rename tmp file, from: {tmp_path:?}, to: {path:?}"))?;
             log::info!("Cached asset at {:?}", path);
         }
+
         return Ok(Arc::new(path));
     }
 }

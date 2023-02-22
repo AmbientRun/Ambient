@@ -108,7 +108,7 @@ macro_rules! unwrap_log_warn {
 
 pub type CowStr = Cow<'static, str>;
 
-pub fn to_byte_unit(bytes: usize) -> String {
+pub fn to_byte_unit(bytes: u64) -> String {
     if bytes < 1024 * 10 {
         format!("{bytes} b")
     } else if bytes < 1024 * 1024 * 10 {

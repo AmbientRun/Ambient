@@ -1,41 +1,10 @@
-use std::{
-    future::Future,
-    pin::Pin,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc,
-    },
-    task::{Poll, Waker},
-    time::Duration,
-};
+use std::{future::Future, time::Duration};
 
-use futures::{
-    future::abortable,
-    stream::{AbortHandle, Abortable},
-};
-use parking_lot::Mutex;
-use pin_project::{pin_project, pinned_drop};
-
-use crate::{
-    control::{control_future, ControlHandle},
-    task::JoinError,
-};
-
-/// Spawns a new background task
-pub fn spawn<F, T>(fut: F) -> ControlHandle<T>
-where
-    F: 'static + Future<Output = T>,
-    T: 'static,
-{
-    let (ctl, fut) = control_future(fut);
-
-    wasm_bindgen_futures::spawn_local(fut);
-
-    ctl
-}
+use crate::control::{control_future, ControlHandle};
 
 pub type JoinHandle<T> = ControlHandle<T>;
 
+#[inline(always)]
 pub async fn wasm_nonsend<F, Fut, T>(func: F) -> T
 where
     F: 'static + FnOnce() -> Fut + Send,
@@ -63,15 +32,23 @@ pub async fn sleep(dur: Duration) {
     gloo::timers::future::sleep(dur).await
 }
 
-#[derive(Clone)]
-pub struct RuntimeHandle {}
+#[derive(Debug, Clone)]
+pub struct RuntimeHandle;
 
 impl RuntimeHandle {
+    pub fn current() -> Self {
+        RuntimeHandle
+    }
+
     pub fn spawn<F, T>(&self, fut: F) -> JoinHandle<T>
     where
         F: 'static + Future<Output = T>,
         T: 'static,
     {
-        spawn(fut)
+        let (ctl, fut) = control_future(fut);
+
+        wasm_bindgen_futures::spawn_local(fut);
+
+        ctl
     }
 }

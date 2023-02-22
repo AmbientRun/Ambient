@@ -6,13 +6,13 @@ use futures::FutureExt;
 use crate::{control::ControlHandle, platform};
 pub use platform::task::wasm_nonsend;
 
-/// Spawns a new background task
+/// Spawns a new background task in the current runtime
 pub fn spawn<F, T>(fut: F) -> JoinHandle<T>
 where
     F: 'static + Send + Future<Output = T>,
     T: 'static + Send,
 {
-    JoinHandle(platform::task::spawn(fut))
+    RuntimeHandle::current().spawn(fut)
 }
 
 /// Spawn a non-send future by sending a constructor to a worker thread.
@@ -38,6 +38,9 @@ pub enum JoinError {
     Panicked,
 }
 
+/// A handle for (optionally) joining a spawned task.
+///
+/// Dropping a JoinHandle does *not* cancel the task.
 pub struct JoinHandle<T>(pub(crate) platform::task::JoinHandle<T>);
 
 impl<T> JoinHandle<T> {
@@ -54,30 +57,46 @@ impl<T> JoinHandle<T> {
 impl<T> Future for JoinHandle<T> {
     type Output = Result<T, JoinError>;
 
-    fn poll(
-        mut self: std::pin::Pin<&mut Self>,
-        cx: &mut std::task::Context<'_>,
-    ) -> std::task::Poll<Self::Output> {
+    fn poll(mut self: std::pin::Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> std::task::Poll<Self::Output> {
         self.0.poll_unpin(cx)
     }
 }
 
 #[derive(From, Deref)]
-pub struct AbortOnDrop<T>(JoinHandle<T>);
+/// Represents a children task that will cancel when dropped.
+pub struct ChildTask<T>(JoinHandle<T>);
 
-impl<T> Future for AbortOnDrop<T> {
+impl<T> Future for ChildTask<T> {
     type Output = Result<T, JoinError>;
 
-    fn poll(
-        mut self: std::pin::Pin<&mut Self>,
-        cx: &mut std::task::Context<'_>,
-    ) -> Poll<Self::Output> {
+    fn poll(mut self: std::pin::Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> Poll<Self::Output> {
         self.0.poll_unpin(cx)
     }
 }
 
-impl<T> Drop for AbortOnDrop<T> {
+impl<T> Drop for ChildTask<T> {
     fn drop(&mut self) {
         self.0.abort();
+    }
+}
+
+#[derive(Debug, Clone, From)]
+/// Represents a handle to the platform specific runtime
+pub struct RuntimeHandle(pub(crate) platform::task::RuntimeHandle);
+
+impl RuntimeHandle {
+    #[inline]
+    pub fn current() -> Self {
+        Self(platform::task::RuntimeHandle::current())
+    }
+
+    /// Spawns a task
+    #[inline]
+    pub fn spawn<F, T>(&self, future: F) -> JoinHandle<T>
+    where
+        F: 'static + Send + Future<Output = T>,
+        T: 'static + Send,
+    {
+        JoinHandle(self.0.spawn(future))
     }
 }

@@ -21,3 +21,8 @@ pub fn set_panic_hook() {
 #[cfg_attr(not(target_arch = "wasm32"), path = "./native/mod.rs")]
 #[cfg_attr(target_arch = "wasm32", path = "./wasm/mod.rs")]
 pub(crate) mod platform;
+
+/// Platform agnostic file io.
+///
+/// **Note**: wasm file io always return Err, but do *not* panic.
+pub use platform::fs;

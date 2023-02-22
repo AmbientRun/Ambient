@@ -1,4 +1,7 @@
 {
+    "client": {
+        "cmd": "cargo run -p ambient"
+    },
     "web-build": {
         "cmd": "wasm-pack build web",
         "components": {

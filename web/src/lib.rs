@@ -1,3 +1,4 @@
+use ambient_ecs::World;
 use tracing_subscriber::{filter::LevelFilter, fmt::time::UtcTime, prelude::*, registry};
 use tracing_web::MakeConsoleWriter;
 use wasm_bindgen::prelude::wasm_bindgen;
@@ -11,7 +12,9 @@ async fn start() {
 
     registry().with(LevelFilter::DEBUG).with(fmt_layer).init();
 
+    ambient_sys::set_panic_hook();
+
     tracing::info!("Hello, Wasm!");
 
-    // ambient_sys::set_panic_hook();
+    // let mut world = World::new("main");
 }

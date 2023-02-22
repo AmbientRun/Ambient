@@ -9,15 +9,6 @@ use crate::{
 
 pub struct JoinHandle<T>(pub(crate) tokio::task::JoinHandle<T>);
 
-/// Spawns a new background task
-pub fn spawn<F, T>(fut: F) -> JoinHandle<T>
-where
-    F: 'static + Send + Future<Output = T>,
-    T: 'static + Send,
-{
-    JoinHandle(tokio::spawn(fut))
-}
-
 impl<T> From<tokio::task::JoinHandle<T>> for crate::task::JoinHandle<T> {
     fn from(value: tokio::task::JoinHandle<T>) -> Self {
         Self(JoinHandle(value))
@@ -90,6 +81,7 @@ where
     ctl
 }
 
+#[inline(always)]
 pub async fn wasm_nonsend<F, Fut, T>(func: F) -> T
 where
     F: 'static + FnOnce() -> Fut + Send,
@@ -97,4 +89,32 @@ where
     T: 'static + Send,
 {
     func().await
+}
+
+#[derive(Debug, Clone)]
+pub struct RuntimeHandle {
+    inner: tokio::runtime::Handle,
+}
+
+impl RuntimeHandle {
+    #[inline]
+    pub fn current() -> Self {
+        Self { inner: tokio::runtime::Handle::current() }
+    }
+
+    /// Spawns a new background task
+    #[inline]
+    pub fn spawn<F, T>(&self, fut: F) -> JoinHandle<T>
+    where
+        F: 'static + Send + Future<Output = T>,
+        T: 'static + Send,
+    {
+        JoinHandle(self.inner.spawn(fut))
+    }
+}
+
+impl From<tokio::runtime::Handle> for crate::task::RuntimeHandle {
+    fn from(value: tokio::runtime::Handle) -> Self {
+        Self(RuntimeHandle { inner: value })
+    }
 }

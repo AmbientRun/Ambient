@@ -44,11 +44,9 @@ wgpu = { workspace = true }
 winit = { workspace = true }
 bytemuck = { workspace = true }
 image = { workspace = true }
-quinn = { workspace = true }
 bitflags = { workspace = true }
 tracing = { workspace = true }
 futures = { workspace = true }
-tokio = { workspace = true }
 open = { workspace = true }
 arboard = { workspace = true }
 which = { workspace = true }
@@ -64,3 +62,7 @@ hotload-includes = [
     'ambient_std/hotload-includes',
     'ambient_decals/hotload-includes',
 ]
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { workspace = true }
+quinn = { workspace = true }

@@ -19,7 +19,7 @@ use russimp::{
     texture::TextureType,
 };
 
-use crate::{dotdot_path, download_bytes, model_crate::ModelCrate, TextureResolver};
+use crate::{dotdot_path, model_crate::ModelCrate, TextureResolver};
 
 pub async fn import_url(
     assets: &AssetCache,
@@ -27,7 +27,7 @@ pub async fn import_url(
     model_crate: &mut ModelCrate,
     resolve_texture: TextureResolver,
 ) -> anyhow::Result<RelativePathBuf> {
-    let content = download_bytes(assets, url).await?;
+    let content = url.download_bytes(assets).await?;
     let extension = url.extension().unwrap_or_default();
     import(&content, model_crate, &extension, resolve_texture).await
 }

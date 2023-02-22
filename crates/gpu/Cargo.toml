@@ -28,3 +28,8 @@ tracing = { workspace = true }
 
 [features]
 hotload-includes = ['ambient_std/hotload-includes']
+
+
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+# TODO: use provided webgpu api when released
+wgpu = { version = "0.15", features = ["webgl"] }

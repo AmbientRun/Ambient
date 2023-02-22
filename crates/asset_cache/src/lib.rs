@@ -1,14 +1,24 @@
 mod background;
 
 use std::{
-    any::Any, collections::{hash_map::Entry, HashMap}, ops::Deref, pin::Pin, sync::{Arc, Weak}, task::{Context, Poll}, time::Duration
+    any::Any,
+    collections::{hash_map::Entry, HashMap},
+    ops::Deref,
+    pin::Pin,
+    sync::{Arc, Weak},
+    task::{Context, Poll},
+    time::Duration,
 };
 
-use abort_on_drop::ChildTask;
+use ambient_sys::{
+    task::{self, ChildTask, JoinHandle, RuntimeHandle},
+    time,
+};
 use async_trait::async_trait;
 use background::BackgroundKey;
 use futures::{
-    future::{pending, BoxFuture, Shared, WeakShared}, Future, FutureExt
+    future::{pending, BoxFuture, Shared, WeakShared},
+    Future, FutureExt,
 };
 use parking_lot::Mutex;
 use pin_project::{pin_project, pinned_drop};
@@ -152,16 +162,18 @@ pub struct AssetCache {
     async_cache: Arc<Mutex<HashMap<AssetKey, AsyncAssetLoc>>>,
     sync: Arc<Mutex<HashMap<AssetKey, SyncAssetLoc>>>,
     pub timeline: Arc<Mutex<AssetsTimeline>>,
-    runtime: tokio::runtime::Handle,
+    runtime: RuntimeHandle,
     max_keepalive: Option<Duration>,
     /// stack is used for nested asset loading, to visualize for the timeline who loaded what
     stack: Vec<AssetKey>,
 }
 impl AssetCache {
-    pub fn new(runtime: tokio::runtime::Handle) -> Self {
-        Self::new_with_config(runtime, None)
+    pub fn new(runtime: impl Into<RuntimeHandle>) -> Self {
+        Self::new_with_config(runtime.into(), None)
     }
-    pub fn new_with_config(runtime: tokio::runtime::Handle, max_keepalive: Option<Duration>) -> Self {
+    pub fn new_with_config(runtime: impl Into<RuntimeHandle>, max_keepalive: Option<Duration>) -> Self {
+        let runtime = runtime.into();
+
         let assets = Self {
             async_cache: Arc::new(Mutex::new(HashMap::new())),
             sync: Arc::new(Mutex::new(HashMap::new())),
@@ -174,7 +186,7 @@ impl AssetCache {
             let assets = assets.clone();
             runtime.spawn(async move {
                 loop {
-                    tokio::time::sleep(Duration::from_secs_f32(1.)).await;
+                    time::sleep(Duration::from_millis(1000)).await;
                     assets.clean_up_dropped();
                 }
             });
@@ -394,7 +406,7 @@ impl AssetCache {
                 }
 
                 let task = self.runtime.spawn(async move {
-                    tokio::time::sleep(dur).await;
+                    time::sleep(dur).await;
                     tracing::debug!("Keepalive timed out for {asset_key:?}");
                     drop((keepalive_ref, guard));
                 });
@@ -415,7 +427,7 @@ impl AssetCache {
         value
     }
 
-    pub fn runtime(&self) -> &tokio::runtime::Handle {
+    pub fn runtime(&self) -> &RuntimeHandle {
         &self.runtime
     }
 }

@@ -5,7 +5,9 @@ use async_trait::async_trait;
 use serde::{de::DeserializeOwned, Serialize};
 
 use crate::{
-    asset_cache::{Asset, AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, download_asset::{AssetError, AssetsCacheDir}, sha256_digest
+    asset_cache::{Asset, AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt},
+    download_asset::{AssetError, AssetsCacheDir},
+    sha256_digest,
 };
 
 /// This can wrap any resource which is Serializable, and will cache that resource to disk
@@ -26,7 +28,7 @@ impl<
         let cache_key = sha256_digest(&format!("{:?}", self.0));
         let file = cache_dir.join(cache_key);
         if file.exists() {
-            let data = tokio::fs::read(&file).await.context("Failed to read cache file")?;
+            let data = ambient_sys::fs::read(&file).await.context("Failed to read cache file")?;
             match serde_json::from_slice(&data) {
                 Ok(value) => return Ok(value),
                 Err(err) => {
@@ -35,7 +37,7 @@ impl<
             }
         }
         let value = self.0.get(&assets).await?;
-        tokio::fs::write(file, serde_json::to_string(&value).unwrap()).await.context("Failed to write cache file")?;
+        ambient_sys::fs::write(file, serde_json::to_string(&value).unwrap()).await.context("Failed to write cache file")?;
         Ok(value)
     }
 }

@@ -17,12 +17,12 @@ use itertools::Itertools;
 use relative_path::RelativePathBuf;
 
 use self::gltf_import::GltfImport;
-use crate::{dotdot_path, download_bytes, model_crate::ModelCrate};
+use crate::{dotdot_path, model_crate::ModelCrate};
 
 mod gltf_import;
 
 pub async fn import_url(assets: &AssetCache, url: &AbsAssetUrl, asset_crate: &mut ModelCrate) -> anyhow::Result<RelativePathBuf> {
-    let content = download_bytes(assets, url).await?;
+    let content = url.download_bytes(assets).await?;
     let gltf = GltfImport::from_slice(url.to_string(), true, &content)?;
     import(&gltf, asset_crate).await
 }

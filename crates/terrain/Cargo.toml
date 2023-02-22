@@ -37,10 +37,12 @@ rand = { workspace = true }
 rand_pcg = { workspace = true }
 tokio = { workspace = true }
 anyhow = { workspace = true }
-quinn = { workspace = true }
 parking_lot = { workspace = true }
 flume = { workspace = true }
 tracing = { workspace = true }
 
 [features]
 hotload-includes = ['ambient_std/hotload-includes']
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+quinn = { workspace = true }

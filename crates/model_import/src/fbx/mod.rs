@@ -29,7 +29,7 @@ use self::{
     mesh::{FbxCluster, FbxGeometry, FbxSkin},
     model::FbxModel,
 };
-use crate::{download_bytes, model_crate::ModelCrate, TextureResolver};
+use crate::{model_crate::ModelCrate, TextureResolver};
 
 mod animation;
 mod material;
@@ -42,7 +42,7 @@ pub async fn import_url(
     asset_crate: &mut ModelCrate,
     texture_resolver: TextureResolver,
 ) -> anyhow::Result<RelativePathBuf> {
-    let content = download_bytes(assets, url).await?;
+    let content = url.download_bytes(assets).await?;
     let cursor = Cursor::new(&*content);
     import_from_fbx_reader(asset_crate, url.to_string(), true, cursor, texture_resolver).await
 }
@@ -148,7 +148,7 @@ pub struct FbxDoc {
 }
 impl FbxDoc {
     pub async fn from_url(assets: &AssetCache, url: &AbsAssetUrl) -> anyhow::Result<Self> {
-        let content = download_bytes(assets, url).await?;
+        let content = url.download_bytes(assets).await?;
         let cursor = Cursor::new(&*content);
         match AnyTree::from_seekable_reader(cursor).context("Failed to load tree")? {
             AnyTree::V7400(_, tree, _) => Ok(Self::from_tree(tree)),

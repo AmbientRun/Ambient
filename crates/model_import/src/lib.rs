@@ -7,7 +7,7 @@ use ambient_renderer::materials::pbr_material::PbrMaterialFromUrl;
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
-    download_asset::{download, AssetsCacheDir},
+    download_asset::AssetsCacheDir,
 };
 use anyhow::{anyhow, Context};
 use async_recursion::async_recursion;
@@ -338,14 +338,6 @@ impl Default for ModelTextureSize {
 //         Ok(Arc::new(self.0.produce_local_model(&assets).await?))
 //     }
 // }
-
-pub async fn download_bytes(assets: &AssetCache, url: &AbsAssetUrl) -> anyhow::Result<Vec<u8>> {
-    if let Some(path) = url.to_file_path()? {
-        Ok(tokio::fs::read(path).await?)
-    } else {
-        Ok(download(assets, url.0.clone(), |resp| async move { Ok(resp.bytes().await?) }).await?.into())
-    }
-}
 
 pub const MODEL_EXTENSIONS: &[&str] = &["glb", "fbx", "obj"];
 
