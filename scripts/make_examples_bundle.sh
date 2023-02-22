@@ -2,6 +2,7 @@
 set -e
 
 rm -rf tmp/examples
+mkdir -p tmp
 cp -r guest/rust/examples tmp/examples
 
 NEW_VERSION=`grep '^version = ' Cargo.toml | tr -d '\n'`
