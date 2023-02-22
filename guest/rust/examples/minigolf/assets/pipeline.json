@@ -1,0 +1,8 @@
+{
+    "pipeline": {
+        "type": "Models",
+        "collider": {
+            "type": "FromModel"
+        }
+    }
+}
