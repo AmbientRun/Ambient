@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "ambient_api"
-version = "0.0.18"
+version = "0.1.0-rc1"
 dependencies = [
  "ambient_api_macros",
  "anyhow",
@@ -20,7 +20,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_api_macros"
-version = "0.0.18"
+version = "0.1.0-rc1"
 dependencies = [
  "anyhow",
  "indoc",
@@ -48,14 +48,14 @@ dependencies = [
 
 [[package]]
 name = "asset_loading"
-version = "0.0.18"
+version = "0.1.0-rc1"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "async"
-version = "0.0.18"
+version = "0.1.0-rc1"
 dependencies = [
  "ambient_api",
 ]
@@ -159,7 +159,7 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
 name = "multiplayer"
-version = "0.0.18"
+version = "0.1.0-rc1"
 dependencies = [
  "ambient_api",
  "rand",
@@ -263,7 +263,7 @@ dependencies = [
 
 [[package]]
 name = "physics"
-version = "0.0.18"
+version = "0.1.0-rc1"
 dependencies = [
  "ambient_api",
 ]
@@ -276,7 +276,7 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 
 [[package]]
 name = "primitives"
-version = "0.0.18"
+version = "0.1.0-rc1"
 dependencies = [
  "ambient_api",
 ]
@@ -366,14 +366,14 @@ checksum = "7bd3e3206899af3f8b12af284fafc038cc1dc2b41d1b89dd17297221c5d225de"
 
 [[package]]
 name = "skinmesh"
-version = "0.0.18"
+version = "0.1.0-rc1"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "sun"
-version = "0.0.18"
+version = "0.1.0-rc1"
 dependencies = [
  "ambient_api",
 ]
@@ -391,21 +391,21 @@ dependencies = [
 
 [[package]]
 name = "text"
-version = "0.0.18"
+version = "0.1.0-rc1"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "third_person_camera"
-version = "0.0.18"
+version = "0.1.0-rc1"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "tictactoe"
-version = "0.0.18"
+version = "0.1.0-rc1"
 dependencies = [
  "ambient_api",
  "palette",

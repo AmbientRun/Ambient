@@ -9,7 +9,7 @@ You will also need [Rust](https://www.rust-lang.org/) installed so that you can 
 To install the latest released version from Git, run the following:
 
 ```sh
-cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.0.18
+cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.1.0-rc1
 ```
 
 To install the latest version on the `main` branch, run the following:
