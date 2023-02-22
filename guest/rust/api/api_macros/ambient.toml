@@ -2,7 +2,7 @@
 [project]
 id = "runtime_components"
 name = "Runtime Components"
-version = "0.0.18"
+version = "0.1.1"
 
 [components.core]
 name = "Core"

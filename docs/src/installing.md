@@ -15,7 +15,7 @@ rustup target add --toolchain stable wasm32-wasi
 To install the latest released version from Git, run the following:
 
 ```sh
-cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.1.0
+cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.1.1
 ```
 
 To install the latest version on the `main` branch, run the following:
