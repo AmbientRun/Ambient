@@ -16,6 +16,7 @@ jobs:
     outputs:
       tag: ${{ steps.create-gh-release.outputs.computed-prefix }}${{ steps.create-gh-release.outputs.version }}
     steps:
+      - uses: actions/checkout@v3
       - id: create-gh-release
         uses: taiki-e/create-gh-release-action@v1
         with:
