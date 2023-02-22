@@ -33,7 +33,7 @@ impl Rust {
             .iter()
             .any(|s| s == "wasm32-wasi")
         {
-            anyhow::bail!("Your `rustup` installation does not have `wasm32-wasi` installed. Please install it with `rustup target add wasm32-wasi`.")
+            anyhow::bail!("Your `rustup` installation does not have `wasm32-wasi` installed for the stable toolchain. Please install it with `rustup target add --toolchain stable wasm32-wasi`.")
         }
 
         Ok(Self(installation))
