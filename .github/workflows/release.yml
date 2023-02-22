@@ -26,6 +26,8 @@ jobs:
   upload-examples:
     needs: create-release
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v3
       - name: Copy and upload examples
