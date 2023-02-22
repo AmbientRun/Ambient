@@ -1,6 +1,7 @@
 # Installing
 
 The easiest way to install Ambient is to download the latest binary release from the [GitHub releases](https://github.com/AmbientRun/Ambient/releases).
+Currently there are builds for Windows and Linux. For other OS:es, use the "installing from git" method.
 
 You will also need [Rust](https://www.rust-lang.org/) installed so that you can compile Ambient modules.
 
