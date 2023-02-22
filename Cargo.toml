@@ -1,11 +1,11 @@
 [workspace]
 default-members = ["app"]
-exclude = ["guest"]
+exclude = ["guest", "tmp"]
 members = ["crates/*", "libs/*", "tools/*", "app", "web"]
 resolver = "2"
 
 [workspace.package]
-version = "0.1.1-rc4"
+version = "0.1.1-rc5"
 
 [workspace.dependencies]
 # TEMP: https://github.com/aclysma/profiling/pull/45
