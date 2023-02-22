@@ -4747,13 +4747,13 @@
                                   }
                                 }
                               }
-                              pub fn entity_query(index: u32,) -> Vec<EntityId>{
+                              pub fn entity_get_all(index: u32,) -> Vec<EntityId>{
                                 unsafe {
                                   let ptr0 = __HOST_RET_AREA.0.as_mut_ptr() as i32;
                                   #[link(wasm_import_module = "host")]
                                   extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "entity-query: func(index: u32) -> list<record { id0: u64, id1: u64 }>")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "host_entity-query: func(index: u32) -> list<record { id0: u64, id1: u64 }>")]
+                                    #[cfg_attr(target_arch = "wasm32", link_name = "entity-get-all: func(index: u32) -> list<record { id0: u64, id1: u64 }>")]
+                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "host_entity-get-all: func(index: u32) -> list<record { id0: u64, id1: u64 }>")]
                                     fn wit_import(_: i32, _: i32, );
                                   }
                                   wit_import(wit_bindgen_guest_rust::rt::as_i32(index), ptr0);
@@ -4774,7 +4774,7 @@
                                   EntityId{id0:*((ptr0 + 0) as *const i64) as u64, id1:*((ptr0 + 8) as *const i64) as u64, }
                                 }
                               }
-                              pub fn entity_query2(q: Query<'_,>,t: QueryEvent,) -> u64{
+                              pub fn entity_query(q: Query<'_,>,t: QueryEvent,) -> u64{
                                 unsafe {
                                   let Query{ components:components0, include:include0, exclude:exclude0, changed:changed0, } = q;
                                   let vec1 = components0;
@@ -4791,8 +4791,8 @@
                                   let len4 = vec4.len() as i32;
                                   #[link(wasm_import_module = "host")]
                                   extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "entity-query2: func(q: record { components: list<u32>, include: list<u32>, exclude: list<u32>, changed: list<u32> }, t: enum { frame, spawn, despawn }) -> u64")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "host_entity-query2: func(q: record { components: list<u32>, include: list<u32>, exclude: list<u32>, changed: list<u32> }, t: enum { frame, spawn, despawn }) -> u64")]
+                                    #[cfg_attr(target_arch = "wasm32", link_name = "entity-query: func(q: record { components: list<u32>, include: list<u32>, exclude: list<u32>, changed: list<u32> }, t: enum { frame, spawn, despawn }) -> u64")]
+                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "host_entity-query: func(q: record { components: list<u32>, include: list<u32>, exclude: list<u32>, changed: list<u32> }, t: enum { frame, spawn, despawn }) -> u64")]
                                     fn wit_import(_: i32, _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, ) -> i64;
                                   }
                                   let ret = wit_import(ptr1, len1, ptr2, len2, ptr3, len3, ptr4, len4, match t {

@@ -53,8 +53,8 @@ pub fn exists(entity: EntityId) -> bool {
 }
 
 /// Gets all of the entities that have the given `component`.
-pub fn query<T>(component: Component<T>) -> Vec<EntityId> {
-    host::entity_query(component.index()).from_bindgen()
+pub fn get_all<T>(component: Component<T>) -> Vec<EntityId> {
+    host::entity_get_all(component.index()).from_bindgen()
 }
 
 /// Gets all of the entities within `radius` of `position`.

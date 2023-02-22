@@ -287,7 +287,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryBuilderImpl<Comp
         self.exclude.extend_from_slice(&exclude.as_indices());
     }
     fn build_impl(self, changed: &[u32], event: host::QueryEvent) -> u64 {
-        host::entity_query2(
+        host::entity_query(
             host::Query {
                 components: &self.components,
                 include: &self.include,

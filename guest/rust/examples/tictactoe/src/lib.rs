@@ -2,6 +2,7 @@ use ambient_api::{
     components::core::{
         self,
         game_objects::player_camera,
+        player::player,
         primitives::cube,
         rendering::{color, outline},
         transform::{lookat_center, scale, translation},
@@ -46,7 +47,7 @@ pub async fn main() -> EventResult {
             entity::remove_component(*cell, outline());
         }
 
-        let players = player::get_all();
+        let players = entity::get_all(player());
         let n_players = players.len();
         for (i, player) in players.into_iter().enumerate() {
             let player_color = Srgb::from_color(Hsl::from_components((

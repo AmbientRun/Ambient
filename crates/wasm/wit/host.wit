@@ -347,7 +347,7 @@ entity-remove-component: func(entity: entity-id, index: u32)
 entity-remove-components: func(entity: entity-id, indices: list<u32>)
 
 entity-exists: func(entity: entity-id) -> bool
-entity-query: func(index: u32) -> list<entity-id>
+entity-get-all: func(index: u32) -> list<entity-id>
 entity-resources: func() -> entity-id
 
 record query {
@@ -363,7 +363,7 @@ enum query-event {
     despawn
 }
 
-entity-query2: func(q: query, t: query-event) -> u64
+entity-query: func(q: query, t: query-event) -> u64
 query-eval: func(q: u64) -> list<tuple<entity-id, list<component-type>>>
 
 // player

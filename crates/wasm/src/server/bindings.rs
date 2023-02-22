@@ -189,12 +189,12 @@ impl host::Host for Bindings {
         self.world().exists(entity.from_bindgen())
     }
 
-    fn entity_query(&mut self, index: u32) -> Vec<host::EntityId> {
-        shared_impl::entity::query(&mut self.world_mut(), index).into_bindgen()
+    fn entity_get_all(&mut self, index: u32) -> Vec<host::EntityId> {
+        shared_impl::entity::get_all(&mut self.world_mut(), index).into_bindgen()
     }
 
-    fn entity_query2(&mut self, query: host::Query, query_event: host::QueryEvent) -> u64 {
-        shared_impl::entity::query2(
+    fn entity_query(&mut self, query: host::Query, query_event: host::QueryEvent) -> u64 {
+        shared_impl::entity::query(
             &mut self.shared_state.write().base_mut().query_states,
             query.components.iter().map(|v| v.get()),
             query.include.iter().map(|v| v.get()),
