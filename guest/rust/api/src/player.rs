@@ -438,14 +438,18 @@ impl FromBindgen for host::PlayerRawInput {
 /// last update ([get_prev_raw_input]). Get this with ([get_raw_input_delta]).
 #[derive(Clone, Debug, PartialEq)]
 pub struct RawInputDelta {
-    /// All of the keys  that were pressed this frame, but not last frame.
+    /// All of the keys that were pressed this frame, but not last frame.
     pub keys: HashSet<KeyCode>,
+    /// All of the keys that were released this frame.
+    pub keys_released: HashSet<KeyCode>,
     /// The change between last frame's mouse position and this frame.
     pub mouse_position: Vec2,
     /// The amount the mouse wheel has scrolled since the last frame.
     pub mouse_wheel: f32,
     /// All of the mouse buttons that were pressed this frame, but not last frame.
     pub mouse_buttons: HashSet<MouseButton>,
+    /// All of the mouse buttons that were released this frame.
+    pub mouse_buttons_released: HashSet<MouseButton>,
 }
 impl RawInput {
     /// Returns whether or not each input has changed from `previous` to this [RawInput].
@@ -454,9 +458,11 @@ impl RawInput {
 
         RawInputDelta {
             keys: &c.keys - &p.keys,
+            keys_released: &p.keys - &c.keys,
             mouse_position: c.mouse_position - p.mouse_position,
             mouse_wheel: c.mouse_wheel - p.mouse_wheel,
             mouse_buttons: &c.mouse_buttons - &p.mouse_buttons,
+            mouse_buttons_released: &p.mouse_buttons - &c.mouse_buttons,
         }
     }
 }
