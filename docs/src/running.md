@@ -19,6 +19,6 @@ cd my-project
 ambient run
 ```
 
-From here on, you can open up the project in your favorite IDE and start editing the code. If you require a recommendation for an IDE, see [Setting up your IDE](#setting-up-your-ide).
+From here on, you can open up the project in your favorite IDE and start editing the code. If you require a recommendation for an IDE, see [Setting up your IDE](./api.md#setting-up-your-ide).
 
 For more details about the API, see [API](./api.md).
