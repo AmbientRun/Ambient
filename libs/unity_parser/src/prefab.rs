@@ -132,7 +132,7 @@ impl LODGroup {
                 .as_vec()
                 .context("m_LODs not a vec")?
                 .iter()
-                .map(|lod| UnityLod::from_yaml(lod))
+                .map(UnityLod::from_yaml)
                 .collect::<anyhow::Result<Vec<UnityLod>>>()?,
         })
     }
@@ -276,7 +276,7 @@ impl MeshRenderer {
                 .as_vec()
                 .context("m_Materials not a vec")?
                 .iter()
-                .map(|mat| UnityRef::from_yaml(mat))
+                .map(UnityRef::from_yaml)
                 .collect::<anyhow::Result<Vec<UnityRef>>>()?,
         })
     }
@@ -342,7 +342,7 @@ impl Transform {
                 .as_vec()
                 .context("Not a vec")?
                 .iter()
-                .map(|child| UnityRef::from_yaml(child))
+                .map(UnityRef::from_yaml)
                 .collect::<anyhow::Result<Vec<_>>>()?,
             father: UnityRef::from_yaml(&yaml["m_Father"])?,
             game_object: UnityRef::from_yaml(&yaml["m_GameObject"])?,

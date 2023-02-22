@@ -150,7 +150,7 @@ impl IdentifierPathBuf {
     }
 
     fn new_impl(path: String) -> Result<Self, &'static str> {
-        Ok(Self(path.split("::").map(|s| Identifier::new(s)).collect::<Result<_, _>>()?))
+        Ok(Self(path.split("::").map(Identifier::new).collect::<Result<_, _>>()?))
     }
 }
 impl Display for IdentifierPathBuf {

@@ -155,7 +155,7 @@ impl FileCollection {
 
 pub async fn download_image(assets: &AssetCache, url: &AbsAssetUrl) -> anyhow::Result<image::DynamicImage> {
     let data = url.download_bytes(assets).await?;
-    if let Some(format) = url.extension().as_ref().and_then(|ext| ImageFormat::from_extension(ext)) {
+    if let Some(format) = url.extension().as_ref().and_then(ImageFormat::from_extension) {
         Ok(image::load_from_memory_with_format(&data, format).with_context(|| format!("Failed to load image {url}"))?)
     } else {
         Ok(image::load_from_memory(&data).with_context(|| format!("Failed to load image {url}"))?)

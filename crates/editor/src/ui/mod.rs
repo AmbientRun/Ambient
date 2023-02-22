@@ -90,7 +90,7 @@ pub fn EditorUI(hooks: &mut Hooks) -> Element {
     let (user_settings, _) = hooks.consume_context::<EditorSettings>().unwrap();
     let (screen, _set_screen) = hooks.use_state(None);
 
-    hooks.provide_context(|| EditorPrefs::default());
+    hooks.provide_context(EditorPrefs::default);
 
     hooks.provide_context(|| Brush::Raise);
     hooks.provide_context(|| 0u32);

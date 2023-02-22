@@ -122,9 +122,10 @@ impl Element {
         }
         self
     }
-    #[deprecated(
-        note = "Warning; this only removes components on the current element. TODO: Make this remove components on the super element too."
-    )]
+
+    /// Warning: this only removes components on the current element.
+    ///
+    /// TODO: Make this remove components on the super element too.
     pub fn remove<T: ComponentValue + Clone>(mut self, component: Component<T>) -> Self {
         self.config.components.remove(component);
         self.config.init_components.remove(component);

@@ -328,7 +328,7 @@ impl ElementComponent for Slider {
                     }
                 },
             ),
-            FlowRow::el([f32::edit_or_view(value, on_change_raw, EditorOpts::default()), suffix.map(|s| Text::el(s)).unwrap_or_default()]),
+            FlowRow::el([f32::edit_or_view(value, on_change_raw, EditorOpts::default()), suffix.map(Text::el).unwrap_or_default()]),
         ])
         .set(space_between_items(), STREET)
     }
