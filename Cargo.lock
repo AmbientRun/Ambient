@@ -344,6 +344,7 @@ dependencies = [
  "ambient_ecs",
  "ambient_gpu",
  "ambient_std",
+ "ambient_sys",
  "bytemuck",
  "derive_more",
  "flume",

@@ -7,7 +7,7 @@ use std::{
 use ordered_float::NotNan;
 
 /// Represents an abstract point in time
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Instant(
     /// Time in milliseconds
     NotNan<f64>,
@@ -39,6 +39,10 @@ impl Instant {
     #[cfg(test)]
     pub fn now() -> Self {
         Self(Default::default())
+    }
+
+    pub fn elapsed(&self) -> Duration {
+        Self::now().duration_since(self)
     }
 
     #[inline]

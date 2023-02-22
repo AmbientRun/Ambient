@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 ambient_ecs = { path = "../ecs" }
+ambient_sys = { path = "../sys" }
 ambient_std = { path = "../std" }
 ambient_gpu = { path = "../gpu" }
 itertools = { workspace = true }

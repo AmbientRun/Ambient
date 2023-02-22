@@ -3,8 +3,9 @@ extern crate lazy_static;
 
 use std::{
     sync::Arc,
-    time::{Duration, Instant, SystemTime},
+    time::{Duration, SystemTime},
 };
+use ambient_sys::time::Instant;
 
 use ambient_ecs::{
     components, query, Debuggable, Description, DynSystem, EntityId, FrameEvent, Name, Networked, QueryState, Resource, Store, System,

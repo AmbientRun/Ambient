@@ -3,7 +3,7 @@
         "cmd": "cargo run -p ambient"
     },
     "web-build": {
-        "cmd": "wasm-pack build web",
+        "cmd": "wasm-pack build web --dev",
         "components": {
             "qf": {
                 "compiler": "cargo"
