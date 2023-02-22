@@ -139,6 +139,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6fe2b9d82064e8a0226fddb3547f37f28eaa46d0fc210e275d835f08cf3b76a7"
 
 [[package]]
+name = "input"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.139"
 source = "registry+https://github.com/rust-lang/crates.io-index"
