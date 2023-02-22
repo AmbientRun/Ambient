@@ -19,8 +19,8 @@
                 "DIMS_DISABLE_TIMEOUT": "true"
             },
             "args": [
-                "--project-path=guest/rust/examples/third_person_camera",
-                "run"
+                "run",
+                "guest/rust/examples/third_person_camera"
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [
