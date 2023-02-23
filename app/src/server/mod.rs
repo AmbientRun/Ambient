@@ -86,17 +86,19 @@ fn systems(_world: &mut World) -> SystemGroup {
     SystemGroup::new(
         "server",
         vec![
+            ambient_physics::run_simulation_system(),
+            // Can happen *during* the physics step
+            Box::new(ambient_core::async_ecs::async_ecs_systems()),
+            Box::new(ambient_prefab::systems()),
+            // Happens after the physics step
             ambient_physics::fetch_simulation_system(),
             Box::new(ambient_physics::physx::sync_ecs_physics()),
-            Box::new(ambient_core::async_ecs::async_ecs_systems()),
             Box::new(ambient_core::transform::TransformSystem::new()),
             ambient_core::remove_at_time_system(),
             Box::new(ambient_physics::server_systems()),
             Box::new(shared::player::server_systems()),
-            Box::new(ambient_prefab::systems()),
             Box::new(wasm::systems()),
             Box::new(shared::player::server_systems_final()),
-            ambient_physics::run_simulation_system(),
         ],
     )
 }
