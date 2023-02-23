@@ -1,3 +1,7 @@
+// This code was adapted from Bevy (MIT/Apache2):
+//
+// https://github.com/bevyengine/bevy/blob/cf221f9659127427c99d621b76c8085c4860e2ef/crates/bevy_render/src/mesh/shape/uvsphere.rs
+
 use std::f32::consts::PI;
 
 use ambient_std::mesh::Mesh;
@@ -22,8 +26,6 @@ impl Default for UVSphereMesh {
 }
 impl From<UVSphereMesh> for Mesh {
     fn from(sphere: UVSphereMesh) -> Self {
-        // From: https://github.com/bevyengine/bevy/blob/cf221f9659127427c99d621b76c8085c4860e2ef/crates/bevy_render/src/mesh/shape/uvsphere.rs
-
         let sectors = sphere.sectors as f32;
         let stacks = sphere.stacks as f32;
         let length_inv = 1. / sphere.radius;

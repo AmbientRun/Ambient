@@ -1,10 +1,12 @@
 use std::{
-    hash::{Hash, Hasher}, ops::Deref, sync::Arc
+    hash::{Hash, Hasher},
+    ops::Deref,
+    sync::Arc,
 };
 
 use serde::{Deserialize, Serialize};
 
-// Losely based on https://github.com/mbrubeck/by_address/blob/master/src/lib.rs
+// Loosely based on https://github.com/mbrubeck/by_address/blob/master/src/lib.rs
 // Works the same, except I just wanted a shorter name (i.e. Barc<T> instead of ByAddress<Arc<T>>)
 
 /// A ByAddres Arc; this works identically to an Arc, except it also supports

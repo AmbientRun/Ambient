@@ -1,3 +1,7 @@
+// This code was adapted from Bevy (MIT/Apache2):
+//
+// https://github.com/bevyengine/bevy/blob/93a131661de507eb711264b11965fe1d4bb13f12/crates/bevy_render/src/color/mod.rs
+
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 use glam::{vec3, vec4, Vec3, Vec4};
@@ -5,8 +9,6 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use crate::colorspace::{HslRepresentation, SrgbColorSpace};
-
-// From: https://github.com/bevyengine/bevy/blob/main/crates/bevy_render/src/color/mod.rs
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum Color {

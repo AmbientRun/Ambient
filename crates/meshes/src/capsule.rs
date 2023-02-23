@@ -1,7 +1,10 @@
+// This code was adapted from Bevy (MIT/Apache2):
+//
+// https://github.com/bevyengine/bevy/blob/695d30bd54af2978dc99f214dda34b568348cf86/crates/bevy_render/src/mesh/shape/capsule.rs
+
 use ambient_std::mesh::Mesh;
 use glam::*;
 
-// From: https://github.com/bevyengine/bevy/blob/master/crates/bevy_render/src/mesh/shape/capsule.rs
 /// A cylinder with hemispheres at the top and bottom
 pub struct CapsuleMesh {
     /// Radius on the xz plane.

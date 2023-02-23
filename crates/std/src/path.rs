@@ -1,6 +1,9 @@
+// This code was adapted from cargo-util (MIT/Apache2):
+//
+// https://github.com/rust-lang/cargo/blob/74c7aab19a9b3a045e7af13319409a9de2cf4ef7/crates/cargo-util/src/paths.rs#L74
+
 use std::path::{Path, PathBuf};
 
-/// https://github.com/rust-lang/cargo/blob/74c7aab19a9b3a045e7af13319409a9de2cf4ef7/crates/cargo-util/src/paths.rs#L74
 /// Normalize a path, removing things like `.` and `..`.
 ///
 /// CAUTION: This does not resolve symlinks (unlike

@@ -14,7 +14,7 @@ use once_cell::sync::Lazy;
 // To get around this, we engage in Hacks.
 #[allow(warnings, unused, clippy)]
 mod wit_bindgen_guest_rust {
-    // https://github.com/bytecodealliance/wit-bindgen/blob/181093b58f49b194ee34be2d986d737f4f553d3d/crates/guest-rust/src/lib.rs
+    // https://github.com/bytecodealliance/wit-bindgen/blob/181093b58f49b194ee34be2d986d737f4f553d3d/crates/guest-rust/src/lib.rs (Apache2)
     pub(super) mod rt {
         use std::alloc::{self, Layout};
 

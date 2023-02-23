@@ -1,4 +1,5 @@
-// Ported from https://github.com/SebLague/Hydraulic-Erosion/blob/master/Assets/Scripts/Erosion.cs
+// Ported from https://github.com/SebLague/Hydraulic-Erosion/blob/master/Assets/Scripts/Erosion.cs (MIT)
+
 use std::{borrow::Cow, f32::consts::PI};
 
 use ambient_editor_derive::ElementEditor;
