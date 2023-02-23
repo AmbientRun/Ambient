@@ -431,9 +431,15 @@ impl World {
     pub fn resource_entity(&self) -> EntityId {
         EntityId::resources()
     }
+
     pub fn resource_opt<T: ComponentValue>(&self, component: Component<T>) -> Option<&T> {
+        if !component.has_attribute::<Resource>() {
+            log::warn!("Attempt to access non resource component as resources: {component:?}");
+        }
+
         self.get_ref(self.resource_entity(), component).ok()
     }
+
     pub fn resource<T: ComponentValue>(&self, component: Component<T>) -> &T {
         match self.resource_opt(component) {
             Some(val) => val,

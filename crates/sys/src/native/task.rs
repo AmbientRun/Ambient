@@ -9,6 +9,12 @@ use crate::{
 
 pub struct JoinHandle<T>(pub(crate) tokio::task::JoinHandle<T>);
 
+impl<T: std::fmt::Debug> std::fmt::Debug for JoinHandle<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
 impl<T> From<tokio::task::JoinHandle<T>> for crate::task::JoinHandle<T> {
     fn from(value: tokio::task::JoinHandle<T>) -> Self {
         Self(JoinHandle(value))
@@ -92,14 +98,12 @@ where
 }
 
 #[derive(Debug, Clone)]
-pub struct RuntimeHandle {
-    inner: tokio::runtime::Handle,
-}
+pub struct RuntimeHandle(tokio::runtime::Handle);
 
 impl RuntimeHandle {
     #[inline]
     pub fn current() -> Self {
-        Self { inner: tokio::runtime::Handle::current() }
+        Self(tokio::runtime::Handle::current())
     }
 
     /// Spawns a new background task
@@ -109,12 +113,27 @@ impl RuntimeHandle {
         F: 'static + Send + Future<Output = T>,
         T: 'static + Send,
     {
-        JoinHandle(self.inner.spawn(fut))
+        JoinHandle(self.0.spawn(fut))
+    }
+    pub fn block_in_place<R, F>(&self, f: F) -> R
+    where
+        F: FnOnce() -> R,
+    {
+        let _guard = self.0.enter();
+        tokio::task::block_in_place(f)
+    }
+
+    pub fn spawn_blocking<R, F>(&self, f: F) -> JoinHandle<R>
+    where
+        F: 'static + Send + FnOnce() -> R,
+        R: 'static + Send,
+    {
+        JoinHandle(self.0.spawn_blocking(f))
     }
 }
 
 impl From<tokio::runtime::Handle> for crate::task::RuntimeHandle {
     fn from(value: tokio::runtime::Handle) -> Self {
-        Self(RuntimeHandle { inner: value })
+        Self(RuntimeHandle(value))
     }
 }

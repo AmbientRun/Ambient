@@ -6,7 +6,7 @@ use std::{
     },
 };
 
-use ambient_core::{runtime, window};
+use ambient_core::{runtime, window::WindowCtl, window_ctl};
 use ambient_ecs::World;
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_input::{on_app_focus_change, on_app_keyboard_input, on_app_mouse_input, KeyboardEvent};
@@ -223,11 +223,11 @@ pub fn Button(
         .create_container(is_pressed, is_working, disabled, toggled, hover, hotkey, hotkey_modifier, tooltip, content)
         .with_clickarea()
         .on_mouse_enter(
-            closure!(clone set_hover, |world, _| { set_hover(true); world.resource(window()).set_cursor_icon(CursorIcon::Hand); }),
+            closure!(clone set_hover, |world, _| { set_hover(true); world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Hand)).ok(); }),
         )
         .on_mouse_leave(move |world, _| {
             set_hover(false);
-            world.resource(window()).set_cursor_icon(CursorIcon::Default);
+            world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Default)).ok();
         })
         .listener(
             on_app_mouse_input(),

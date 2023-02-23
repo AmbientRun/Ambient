@@ -120,6 +120,7 @@ dependencies = [
  "ambient_rpc",
  "ambient_sky",
  "ambient_std",
+ "ambient_sys",
  "ambient_ui",
  "ambient_wasm",
  "ambient_water",
@@ -188,8 +189,10 @@ dependencies = [
  "ambient_primitives",
  "ambient_renderer",
  "ambient_std",
+ "ambient_sys",
  "ambient_ui",
  "anyhow",
+ "flume",
  "glam 0.22.0",
  "parking_lot",
  "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
@@ -544,6 +547,7 @@ dependencies = [
  "ambient_ecs",
  "ambient_element_component",
  "ambient_std",
+ "ambient_sys",
  "as-any",
  "atomic_refcell",
  "closure",
@@ -595,6 +599,7 @@ name = "ambient_gpu"
 version = "0.1.1"
 dependencies = [
  "ambient_std",
+ "ambient_sys",
  "anyhow",
  "async-trait",
  "bytemuck",
@@ -1167,6 +1172,7 @@ dependencies = [
 name = "ambient_web"
 version = "0.1.1"
 dependencies = [
+ "ambient_core",
  "ambient_ecs",
  "ambient_sys",
  "futures",

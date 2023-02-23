@@ -2,14 +2,14 @@ use ambient_core::{
     camera::{get_active_camera, screen_ray},
     mouse_position,
     transform::local_to_world,
-    ui_scene, window,
+    ui_scene, window_physical_size,
 };
 use ambient_ecs::{components, query, EntityData, EntityId, FnSystem, Resource, SystemGroup, World};
 use ambient_std::{
     events::EventDispatcher,
     shapes::{RayIntersectable, AABB},
 };
-use glam::{uvec2, Vec2};
+use glam::Vec2;
 use winit::event::{ElementState, Event, MouseButton, MouseScrollDelta, WindowEvent};
 
 components!("input", {
@@ -38,10 +38,7 @@ pub fn frame_systems() -> SystemGroup {
     SystemGroup::new(
         "picking",
         vec![Box::new(FnSystem::new(|world, _| {
-            let window_size = {
-                let size = world.resource(window()).inner_size();
-                uvec2(size.width, size.height)
-            };
+            let window_size = world.resource(window_physical_size());
             let mouse_position = *world.resource(mouse_position());
             let mut mouse_origin = -Vec2::ONE + (mouse_position / window_size.as_vec2()) * 2.;
             mouse_origin.y = -mouse_origin.y;

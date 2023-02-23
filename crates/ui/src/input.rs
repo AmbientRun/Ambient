@@ -8,7 +8,7 @@ use std::{
     time::{Duration, SystemTime},
 };
 
-use ambient_core::{mouse_position, on_event, transform::translation, window, window_scale_factor};
+use ambient_core::{mouse_position, on_event, transform::translation, window::WindowCtl, window_ctl, window_scale_factor};
 use ambient_ecs::{ComponentValue, EntityId};
 use ambient_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_input::MouseButton;
@@ -280,8 +280,13 @@ impl ElementComponent for Slider {
                 .with_background(primary_color())
                 .set(border_radius(), Corners::even(THUMB_WIDTH / 2.))
                 .set(translation(), vec3(block_left_offset, 0., -0.01))
-                .on_mouse_enter(|world, _| world.resource(window()).set_cursor_icon(CursorIcon::Hand))
-                .on_mouse_leave(|world, _| world.resource(window()).set_cursor_icon(CursorIcon::Default));
+                .on_mouse_enter(|world, _| {
+                    world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Hand)).ok();
+                })
+                .on_mouse_leave(|world, _| {
+                    world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Default)).ok();
+                });
+
             if let Some(on_change_factor) = on_change_factor.clone() {
                 thumb.on_mouse_down(move |world, id, _| {
                     let on_change_factor = on_change_factor.clone();

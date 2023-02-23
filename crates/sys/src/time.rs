@@ -11,5 +11,5 @@ pub async fn sleep(duration: Duration) {
 }
 
 pub async fn sleep_until(instant: Instant) {
-    platform::time::sleep_until(instant.0.into()).await
+    platform::time::sleep_until(instant.into()).await
 }

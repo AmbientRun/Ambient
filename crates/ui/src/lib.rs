@@ -7,7 +7,9 @@ use std::{
     },
 };
 
-use ambient_core::{hierarchy::children, on_frame, on_window_event, transform::*, window, window_logical_size, window_physical_size};
+use ambient_core::{
+    hierarchy::children, on_frame, on_window_event, transform::*, window::WindowCtl, window_ctl, window_logical_size, window_physical_size,
+};
 pub use ambient_ecs::{EntityId, SystemGroup, World};
 pub use ambient_editor_derive::ElementEditor;
 pub use ambient_element as element;
@@ -24,7 +26,10 @@ use closure::closure;
 use glam::*;
 use itertools::Itertools;
 use parking_lot::Mutex;
-use winit::event::{ElementState, ModifiersState, MouseButton, MouseScrollDelta, WindowEvent};
+use winit::{
+    event::{ElementState, ModifiersState, MouseButton, MouseScrollDelta, WindowEvent},
+    window::CursorGrabMode,
+};
 
 mod asset_url;
 mod button;
@@ -313,14 +318,15 @@ pub fn HighjackMouse(
     let position = hooks.use_ref_with(|_| Vec2::ZERO);
     hooks.use_spawn(move |world| {
         if hide_mouse {
-            world.resource(window()).set_cursor_grab(winit::window::CursorGrabMode::Locked).ok();
-            world.resource(window()).set_cursor_visible(false);
+            let ctl = world.resource(window_ctl());
+            ctl.send(WindowCtl::GrabCursor(CursorGrabMode::Locked)).ok();
+            ctl.send(WindowCtl::ShowCursor(false)).ok();
         }
         Box::new(move |world| {
-            let window = world.resource(window());
             if hide_mouse {
-                window.set_cursor_grab(winit::window::CursorGrabMode::None).ok();
-                window.set_cursor_visible(true);
+                let ctl = world.resource(window_ctl());
+                ctl.send(WindowCtl::GrabCursor(CursorGrabMode::None)).ok();
+                ctl.send(WindowCtl::ShowCursor(true)).ok();
             }
         })
     });
@@ -346,12 +352,17 @@ pub fn HighjackMouse(
             on_window_event(),
             Arc::new(move |w, _, event| {
                 if let WindowEvent::Focused(f) = event {
-                    let window = w.resource(window());
-                    window.set_cursor_visible(!f);
+                    let ctl = w.resource(window_ctl());
+                    ctl.send(WindowCtl::ShowCursor(!f)).ok();
+                    // window.set_cursor_visible(!f);
                     // Fails on android/IOS
-                    window
-                        .set_cursor_grab(if *f { winit::window::CursorGrabMode::Locked } else { winit::window::CursorGrabMode::None })
-                        .ok();
+                    ctl.send(WindowCtl::GrabCursor(if *f {
+                        winit::window::CursorGrabMode::Locked
+                    } else {
+                        winit::window::CursorGrabMode::None
+                    }))
+                    .ok();
+
                     focused.store(*f, Ordering::Relaxed);
                 }
             }),

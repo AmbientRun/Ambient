@@ -15,10 +15,15 @@ use ambient_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Tex
 
 use crate::shared;
 
-pub fn run(runtime: tokio::runtime::Runtime, assets: AssetCache, server_addr: SocketAddr, user_id: String, show_debug: bool) {
-    AppBuilder::simple().ui_renderer(true).with_runtime(runtime).with_asset_cache(assets).run(|app, _runtime| {
-        MainApp { server_addr, user_id, show_debug }.el().spawn_interactive(&mut app.world);
-    });
+/// Construct an app and enter the main client view
+pub async fn run(assets: AssetCache, server_addr: SocketAddr, user_id: String, show_debug: bool) {
+    AppBuilder::simple()
+        .ui_renderer(true)
+        .with_asset_cache(assets)
+        .run(|app, _runtime| {
+            MainApp { server_addr, user_id, show_debug }.el().spawn_interactive(&mut app.world);
+        })
+        .await;
 }
 
 #[element_component]

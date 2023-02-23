@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use ambient_core::{asset_cache, gpu, main_scene, ui_scene, window};
+use ambient_core::{asset_cache, gpu, main_scene, ui_scene, window_physical_size};
 use ambient_ecs::{components, query, FrameEvent, System, SystemGroup, World};
 use ambient_gizmos::render::GizmoRenderer;
 use ambient_gpu::{
@@ -72,10 +72,8 @@ impl ExamplesRender {
         let gpu = world.resource(gpu()).clone();
         let assets = world.resource(asset_cache()).clone();
         world.add_component(world.resource_entity(), renderer_stats(), "".to_string()).unwrap();
-        let wind_size = {
-            let size = world.resource(ambient_core::window()).inner_size();
-            uvec2(size.width, size.height)
-        };
+        let wind_size = *world.resource(ambient_core::window_physical_size());
+
         let render_target = RenderTarget::new(gpu.clone(), wind_size, None);
 
         Self {
@@ -200,15 +198,15 @@ pub struct UIRender {
 impl UIRender {
     pub fn new(world: &mut World) -> Self {
         let gpu = world.resource(gpu()).clone();
-        let window = world.resource(window());
-        let size = window.inner_size();
-        let depth_buffer = Arc::new(Self::create_depth_buffer(gpu.clone(), &size));
+        let size = *world.resource(window_physical_size());
+
+        let depth_buffer = Arc::new(Self::create_depth_buffer(gpu.clone(), &PhysicalSize::new(size.x, size.y)));
 
         let normals = Arc::new(Texture::new(
             gpu.clone(),
             &wgpu::TextureDescriptor {
                 label: Some("RenderTarget.depth_buffer"),
-                size: wgpu::Extent3d { width: size.width, height: size.height, depth_or_array_layers: 1 },
+                size: wgpu::Extent3d { width: size.x, height: size.y, depth_or_array_layers: 1 },
                 mip_level_count: 1,
                 sample_count: 1,
                 dimension: wgpu::TextureDimension::D2,
@@ -260,7 +258,7 @@ impl UIRender {
             gpu.surface.as_ref().unwrap().get_current_texture().expect("Failed to acquire next swap chain texture")
         };
 
-        let window_size = world.resource(window()).inner_size();
+        let window_size = world.resource(window_physical_size());
         let frame_view = frame.texture.create_view(&wgpu::TextureViewDescriptor::default());
         let mut post_submit = Vec::new();
         self.ui_renderer.render(
@@ -270,7 +268,7 @@ impl UIRender {
             RendererTarget::Direct {
                 color: &frame_view,
                 depth: &self.depth_buffer_view,
-                size: wgpu::Extent3d { width: window_size.width, height: window_size.height, depth_or_array_layers: 1 },
+                size: wgpu::Extent3d { width: window_size.x, height: window_size.y, depth_or_array_layers: 1 },
                 normals: &self.normals_view,
             },
             Some(app_background_color()),

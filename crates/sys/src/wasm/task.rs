@@ -51,4 +51,20 @@ impl RuntimeHandle {
 
         ctl
     }
+
+    pub fn block_in_place<R, F>(&self, f: F) -> R
+    where
+        F: FnOnce() -> R,
+    {
+        f()
+    }
+
+    /// Spawns a task such that blocking is accepted
+    pub fn spawn_blocking<R, F>(&self, f: F) -> JoinHandle<R>
+    where
+        F: 'static + Send + FnOnce() -> R,
+        R: 'static + Send,
+    {
+        self.spawn(async move { f() })
+    }
 }

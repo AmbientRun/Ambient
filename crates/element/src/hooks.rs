@@ -9,10 +9,10 @@ use std::{
 use ambient_core::runtime;
 use ambient_ecs::{ComponentQuery, ComponentValue, FrameEvent, QueryState, TypedReadQuery, World};
 use ambient_std::{cb, Cb};
+use ambient_sys::task;
 use as_any::Downcast;
 use atomic_refcell::AtomicRefCell;
 use parking_lot::Mutex;
-use tokio::task::JoinHandle;
 use tracing::info_span;
 
 use crate::{AnyCloneable, ElementTree, HookContext, InstanceId};
@@ -183,7 +183,7 @@ impl<'a> Hooks<'a> {
         D: PartialEq + ComponentValue,
     {
         struct State<T, D> {
-            task: AtomicRefCell<Option<JoinHandle<()>>>,
+            task: AtomicRefCell<Option<task::JoinHandle<()>>>,
             value: Mutex<Option<T>>,
             prev_deps: AtomicRefCell<Option<D>>,
         }

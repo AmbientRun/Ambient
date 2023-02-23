@@ -41,9 +41,12 @@ impl Gpu {
         let backend = wgpu::Backends::PRIMARY;
         let instance = wgpu::Instance::new(backend);
         let surface = window.map(|window| unsafe { instance.create_surface(window) });
-        log::info!("Available adapters:");
-        for adapter in instance.enumerate_adapters(wgpu::Backends::PRIMARY) {
-            log::info!("Adapter: {:?}", adapter.get_info());
+        #[cfg(not(target_os = "unknown"))]
+        {
+            log::info!("Available adapters:");
+            for adapter in instance.enumerate_adapters(wgpu::Backends::PRIMARY) {
+                log::info!("Adapter: {:?}", adapter.get_info());
+            }
         }
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {

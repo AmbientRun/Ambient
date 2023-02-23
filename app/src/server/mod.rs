@@ -17,6 +17,7 @@ use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ServerBaseUrlKey},
 };
+use ambient_sys::task::RuntimeHandle;
 use anyhow::Context;
 use axum::{
     http::{Method, StatusCode},
@@ -119,7 +120,7 @@ fn create_resources(assets: AssetCache) -> EntityData {
     ambient_physics::create_server_resources(&assets, &mut server_resources);
 
     server_resources.append_self(ambient_core::async_ecs::async_ecs_resources());
-    server_resources.set_self(ambient_core::runtime(), tokio::runtime::Handle::current());
+    server_resources.set_self(ambient_core::runtime(), RuntimeHandle::current());
     let now = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
     server_resources.set_self(time(), now);
     server_resources.set_self(app_start_time(), now);

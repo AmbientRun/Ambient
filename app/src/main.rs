@@ -140,7 +140,7 @@ fn main() -> anyhow::Result<()> {
     if let Some(run) = cli.run() {
         // If we have run parameters, start a client and join a server
         let user_id = run.user_id.clone().unwrap_or_else(|| format!("user_{}", friendly_id()));
-        client::run(runtime, assets, server_addr, user_id, run.debug);
+        runtime.block_on(client::run(assets, server_addr, user_id, run.debug));
     } else {
         // Otherwise, wait for the Ctrl+C signal
         handle.block_on(async move {

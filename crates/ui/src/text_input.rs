@@ -1,6 +1,6 @@
 use std::{self, sync::Arc, time::Duration};
 
-use ambient_core::{transform::translation, window};
+use ambient_core::{transform::translation, window::WindowCtl, window_ctl};
 use ambient_ecs::EntityId;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_input::{on_app_keyboard_input, on_app_received_character, KeyboardEvent};
@@ -52,8 +52,12 @@ pub fn TextInput(
     .on_mouse_up(move |_, id, _| {
         set_focus(Focus(Some(id)));
     })
-    .on_mouse_enter(|world, _| world.resource(window()).set_cursor_icon(CursorIcon::Text))
-    .on_mouse_leave(|world, _| world.resource(window()).set_cursor_icon(CursorIcon::Default));
+    .on_mouse_enter(|world, _| {
+        world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Text)).ok();
+    })
+    .on_mouse_leave(|world, _| {
+        world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Default)).ok();
+    });
 
     if focused {
         el.set(align_horizontal(), Align::End)

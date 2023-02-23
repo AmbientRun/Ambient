@@ -6,6 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+ambient_sys = { path = "../sys" }
 ambient_std = { path = "../std" }
 ambient_core = { path = "../core" }
 ambient_gizmos = { path = "../gizmos" }
@@ -19,6 +20,7 @@ ambient_input = { path = "../input" }
 ambient_model = { path = "../model" }
 ambient_animation = { path = "../animation" }
 winit = { workspace = true }
+flume.workspace = true
 glam = { workspace = true }
 tokio = { workspace = true }
 profiling = { workspace = true }
