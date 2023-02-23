@@ -49,6 +49,7 @@ impl ShadowsRenderer {
                     | wgpu::TextureUsages::TEXTURE_BINDING
                     | wgpu::TextureUsages::COPY_SRC
                     | wgpu::TextureUsages::COPY_DST,
+                view_formats: &[wgpu::TextureFormat::Depth32Float]
             },
         ));
         let shadow_view = shadow_texture.create_view(&wgpu::TextureViewDescriptor::default());

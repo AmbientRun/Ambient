@@ -30,6 +30,7 @@ impl RenderTarget {
                 dimension: wgpu::TextureDimension::D2,
                 format: wgpu::TextureFormat::Depth32Float,
                 usage,
+                view_formats: &[wgpu::TextureFormat::Depth32Float],
             },
         ));
         let color_buffer = Arc::new(Texture::new(
@@ -42,6 +43,7 @@ impl RenderTarget {
                 dimension: wgpu::TextureDimension::D2,
                 format: sc_desc.format,
                 usage,
+                view_formats: &[sc_desc.format],
             },
         ));
         let normals_buffer = Arc::new(Texture::new(
@@ -54,6 +56,7 @@ impl RenderTarget {
                 dimension: wgpu::TextureDimension::D2,
                 format: wgpu::TextureFormat::Rgba8Snorm,
                 usage,
+                view_formats: &[wgpu::TextureFormat::Rgba8Snorm],
             },
         ));
         Self {

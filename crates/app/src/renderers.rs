@@ -214,6 +214,7 @@ impl UIRender {
                 dimension: wgpu::TextureDimension::D2,
                 format: wgpu::TextureFormat::Rgba8Snorm,
                 usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
+                view_formats: &[wgpu::TextureFormat::Rgba8Snorm],
             },
         ));
 
@@ -243,6 +244,7 @@ impl UIRender {
                 dimension: wgpu::TextureDimension::D2,
                 format: wgpu::TextureFormat::Depth32Float,
                 usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_SRC,
+                view_formats: &[wgpu::TextureFormat::Depth32Float],
             },
         )
     }

@@ -128,6 +128,7 @@ impl Outlines {
                 dimension: wgpu::TextureDimension::D2,
                 format: Self::FORMAT,
                 usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
+                view_formats: &[Self::FORMAT],
             },
         ))
     }

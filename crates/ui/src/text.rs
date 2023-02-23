@@ -227,6 +227,7 @@ pub fn systems() -> SystemGroup {
                             format: wgpu::TextureFormat::R8Unorm,
                             usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
                             label: Some("Text.texture"),
+                            view_formats: &[wgpu::TextureFormat::R8Unorm],
                         },
                     ));
                     let texture_view = Arc::new(texture.create_view(&wgpu::TextureViewDescriptor::default()));
@@ -349,6 +350,7 @@ pub fn systems() -> SystemGroup {
                                             format: wgpu::TextureFormat::R8Unorm,
                                             usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
                                             label: Some("Text.texture"),
+                                            view_formats: &[wgpu::TextureFormat::R8Unorm],
                                         },
                                     ));
                                     glyph_brush.lock().resize_texture(suggested.0, suggested.1);
