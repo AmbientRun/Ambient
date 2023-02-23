@@ -2,7 +2,26 @@
     "client": {
         "cmd": "cargo run -p ambient"
     },
-    "web-build": {
+    "third-person-camera-release": {
+        "cmd": "cargo run --release -- run guest/rust/examples/third_person_camera"
+    },
+    "third-person-camera": {
+        "cmd": "cargo run -- run guest/rust/examples/third_person_camera"
+    },
+    "debug-third-person-camera": {
+        "cmd": "cargo build -p ambient",
+        "components": {
+            "dap": {
+                "program": "./target/debug/ambient",
+                "adapter": "rust",
+                "args": [
+                    "run",
+                    "./guest/rust/examples/third_person_camera"
+                ]
+            }
+        }
+    },
+    "build-web": {
         "cmd": "wasm-pack build web --dev",
         "components": {
             "qf": {
@@ -10,13 +29,10 @@
             }
         }
     },
-    "third_person_camera": {
-        "cmd": "cargo run -- run guest/rust/examples/third_person_camera"
-    },
     "check-tests": {
         "cmd": "cargo check --workspace --tests --examples"
     },
-    "web-run": {
+    "run-web": {
         "cmd": "npm run start --open",
         "cwd": "www",
         "env": {
