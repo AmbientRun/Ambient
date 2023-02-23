@@ -3,4 +3,4 @@ authors = ["Fredrik Norén"]
 language = "en"
 multilingual = false
 src = "src"
-title = "Ambient Runtime Documentation"
+title = "Ambient Documentation"

@@ -1,5 +1,7 @@
 # Asset pipeline
 
+<!-- markdownlint-disable-file MD024 -->
+
 Ambient features an automated asset pipeline that is capable of loading and processing a number of assets and formats.
 
 To use it, create a file named `pipeline.json` anywhere in your project. You can also prepend anything you'd like to the filename, which means `hello_pipeline.json` and such will also work. The full reference structure of the `json` is described in [Reference](#reference).
@@ -7,8 +9,6 @@ To use it, create a file named `pipeline.json` anywhere in your project. You can
 This pipeline will look at, but not necessarily process, all of the files adjacent to it in the folder. By convention, our examples place their assets in the `assets` folder, but this is not necessary.
 
 A `pipeline.json` can contain one or more pipelines. To use more than one pipeline, wrap your pipeline object in a JSON array (`[]`).
-
-The supported pipelines are `Models`, `Materials`, and `Audio`. Detailed documentation for these are pending, but please consult the [Reference](#reference).
 
 ## Models
 

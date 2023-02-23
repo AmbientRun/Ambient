@@ -1,21 +1,24 @@
 # Summary
 
-[Introduction](./introduction.md)
+<!-- markdownlint-disable-file MD025 -->
 
-# Getting Started
+[Introduction](introduction.md)
 
-- [Installing](./installing.md)
-- [Running](./running.md)
-- [API](./api.md)
-- [Debugging](./debugging.md)
+# User Guide
 
-# Reference
+- [Installing](user/installing.md)
+- [Running](user/running.md)
+- [API](user/api.md)
+- [Debugging](user/debugging.md)
 
-- [Runtime](./runtime.md)
-- [Project](./project.md)
-- [Asset pipeline](./asset_pipeline.md)
-- [Terminology](./terminology.md)
+# Reference Guide
+
+- [Runtime](reference/runtime.md)
+- [Project](reference/project.md)
+- [Asset pipeline](reference/asset_pipeline.md)
+- [Terminology](reference/terminology.md)
 
 # Community
 
-- [Contributing](./contributing.md)
+- [Contributing](community/contributing.md)
+- [Changelog](community/changelog.md)

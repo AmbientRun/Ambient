@@ -1,7 +1,7 @@
 # Installing
 
 The easiest way to install Ambient is to download the latest binary release from the [GitHub releases](https://github.com/AmbientRun/Ambient/releases).
-Currently there are builds for Windows, Mac arm64 and Linux x64. For other operating systems, use the "installing from Git" method.
+Currently, there are builds for Windows x64, Linux x64, and Mac ARM64. For other platforms, use the [installing from Git](#installing-from-git) method.
 
 You will also need [Rust](https://www.rust-lang.org/) installed with the `wasm32-wasi` toolchain so that you can compile Ambient modules.
 Note that Ambient compiles Rust code with stable Rust, so you must make sure that `wasm32-wasi` is installed for `stable`:
