@@ -1,5 +1,32 @@
+//! This HRTF implementation is adapted from [hrtf](https://github.com/mrDIMAS/hrtf)
+//!
+//! The original license is as follows:
+//!
+//! MIT License
+//!
+//! Copyright (c) 2020 Dmitry Stepanov
+//!
+//! Permission is hereby granted, free of charge, to any person obtaining a copy
+//! of this software and associated documentation files (the "Software"), to deal
+//! in the Software without restriction, including without limitation the rights
+//! to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//! copies of the Software, and to permit persons to whom the Software is
+//! furnished to do so, subject to the following conditions:
+//!
+//! The above copyright notice and this permission notice shall be included in all
+//! copies or substantial portions of the Software.
+//!
+//! THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//! IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//! FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//! AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//! LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//! OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+//! SOFTWARE.
 use std::{
-    io::{self, Read}, sync::Arc, usize
+    io::{self, Read},
+    sync::Arc,
+    usize,
 };
 
 use byteorder::{LittleEndian, ReadBytesExt};
@@ -13,7 +40,10 @@ use rustfft::{Fft, FftPlanner};
 use thiserror::Error;
 
 use crate::{
-    barycentric::{Barycentric3, Triangle}, dynamic_delay::DynamicDelay, streaming_source::StreamingSource, Attenuation, Frame, SampleRate, Source, Uniform, SPEED_OF_SOUND
+    barycentric::{Barycentric3, Triangle},
+    dynamic_delay::DynamicDelay,
+    streaming_source::StreamingSource,
+    Attenuation, Frame, SampleRate, Source, Uniform, SPEED_OF_SOUND,
 };
 
 #[derive(Copy, PartialEq, Eq, Debug, Clone, Index)]
@@ -194,6 +224,8 @@ struct HSphere {
 
 impl HSphere {
     /// Sampling with bilinear interpolation. See more info here http://www02.smt.ufrj.br/~diniz/conf/confi117.pdf
+    /// This function is from mrDIMAS but slightly modified to fit our API
+    /// https://github.com/mrDIMAS/hrtf/blob/main/src/lib.rs
     fn sample_bilinear(
         &self,
         left_hrtf: &mut [Complex32],
