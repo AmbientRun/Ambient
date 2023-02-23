@@ -324,13 +324,17 @@ pub fn server_systems() -> SystemGroup {
                             shape.update_user_data::<PxShapeUserData>(&|ud| ud.entity = id);
                         }
                         if let Some(actor) = actor.to_rigid_dynamic() {
-                            let densities = actor
-                                .get_shapes()
-                                .iter()
-                                .map(|shape| shape.get_user_data::<PxShapeUserData>().unwrap().density)
-                                .collect_vec();
-                            actor.update_mass_and_inertia(densities, None, None);
-                            world.add_component(id, mass(), actor.get_mass()).unwrap();
+                            if !actor.get_rigid_body_flags().contains(PxRigidBodyFlag::KINEMATIC) {
+                                let densities = actor
+                                    .get_shapes()
+                                    .iter()
+                                    .map(|shape| shape.get_user_data::<PxShapeUserData>().unwrap().density)
+                                    .collect_vec();
+                                actor.update_mass_and_inertia(densities, None, None);
+                                world.add_component(id, mass(), actor.get_mass()).unwrap();
+                            } else {
+                                world.remove_component(id, mass()).ok();
+                            }
                         } else {
                             world.remove_component(id, mass()).ok();
                         }

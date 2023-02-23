@@ -36,9 +36,9 @@ pub fn convert_rigid_static_dynamic(world: &mut World, id: EntityId, to_dynamic:
     let scene = old_actor.get_scene().unwrap();
     scene.remove_actor(&old_actor, true);
     let physics = world.resource(physics());
+    let is_kinematic = world.has_component(id, kinematic());
     let new_actor = if to_dynamic {
         let actor = PxRigidDynamicRef::new(physics.physics, &old_actor.get_global_pose());
-        let is_kinematic = world.has_component(id, kinematic());
         actor.set_rigid_body_flag(PxRigidBodyFlag::KINEMATIC, is_kinematic);
         actor.set_rigid_body_flag(PxRigidBodyFlag::ENABLE_CCD, !is_kinematic);
         actor.as_rigid_actor()
@@ -62,8 +62,10 @@ pub fn convert_rigid_static_dynamic(world: &mut World, id: EntityId, to_dynamic:
     old_actor.as_actor().remove_user_data::<PxActorUserData>();
     old_actor.release();
     if let Some(actor) = new_actor.to_rigid_dynamic() {
-        let densities = actor.get_shapes().iter().map(|shape| shape.get_user_data::<PxShapeUserData>().unwrap().density).collect_vec();
-        actor.update_mass_and_inertia(densities, None, None);
+        if !is_kinematic {
+            let densities = actor.get_shapes().iter().map(|shape| shape.get_user_data::<PxShapeUserData>().unwrap().density).collect_vec();
+            actor.update_mass_and_inertia(densities, None, None);
+        }
     }
     update_physics_controlled(world, new_actor.as_rigid_actor());
     scene.add_actor(&new_actor);
