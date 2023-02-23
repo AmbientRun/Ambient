@@ -1,4 +1,7 @@
-use crate::{helpers::{get_shapes, scale_shape}, collider::kinematic};
+use crate::{
+    collider::kinematic,
+    helpers::{get_shapes, scale_shape},
+};
 use ambient_core::transform::{rotation, scale, translation};
 use ambient_ecs::{
     components, ensure_has_component, query, Debuggable, Description, FnSystem, Name, Networked, QueryState, Resource, Store, SystemGroup,
@@ -101,6 +104,10 @@ pub fn sync_ecs_physics() -> SystemGroup {
     let translation_rotation_q = query((translation().changed(), rotation().changed())).incl(physics_controlled());
     let translation_rotation_q2 = translation_rotation_q.query.clone();
 
+    let translation_character_qs = Arc::new(Mutex::new(QueryState::new()));
+    let translation_character_q = query((translation().changed(), character_controller().changed())).incl(physics_controlled());
+    let translation_character_q2 = translation_character_q.query.clone();
+
     let scale_qs = Arc::new(Mutex::new(QueryState::new()));
     let scale_q = query(scale().changed()).incl(physics_controlled());
     let scale_q2 = scale_q.query.clone();
@@ -161,9 +168,16 @@ pub fn sync_ecs_physics() -> SystemGroup {
                             } else {
                                 // update_actor_entity_transforms(world, actor);
                             }
-                        } else if let Ok(controller) = world.get(id, character_controller()) {
-                            controller.set_position(pos.as_dvec3());
                         }
+                    }
+                }
+            }),
+            translation_character_q.to_system({
+                let translation_character_qs = translation_character_qs.clone();
+                move |q, world, _, _| {
+                    let mut qs = translation_character_qs.lock();
+                    for (_, (&pos, controller)) in q.iter(world, Some(&mut *qs)) {
+                        controller.set_position(pos.as_dvec3());
                     }
                 }
             }),
@@ -311,6 +325,8 @@ pub fn sync_ecs_physics() -> SystemGroup {
                 // Fast forward queries
                 let mut translation_rotation_qs = translation_rotation_qs.lock();
                 for _ in translation_rotation_q2.iter(world, Some(&mut *translation_rotation_qs)) {}
+                let mut translation_character_qs = translation_character_qs.lock();
+                for _ in translation_character_q2.iter(world, Some(&mut *translation_character_qs)) {}
                 let mut scale_qs = scale_qs.lock();
                 for _ in scale_q2.iter(world, Some(&mut *scale_qs)) {}
                 let mut linear_velocity_qs = linear_velocity_qs.lock();

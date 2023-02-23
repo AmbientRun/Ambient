@@ -1251,6 +1251,17 @@
       }
     }
   }
+  #[repr(C)]
+  #[derive(Copy, Clone)]
+  pub struct PhysicsCharacterCollision {
+    pub side: bool,
+    pub up: bool,
+    pub down: bool,
+  }
+  impl core::fmt::Debug for PhysicsCharacterCollision {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+      f.debug_struct("PhysicsCharacterCollision").field("side", &self.side).field("up", &self.up).field("down", &self.down).finish()}
+  }
   pub fn component_get_index(id: & str,) -> Option<u32>{
     unsafe {
       let vec0 = id;
@@ -5604,6 +5615,33 @@
                                   wit_import(wit_bindgen_guest_rust::rt::as_f32(x0), wit_bindgen_guest_rust::rt::as_f32(y0), wit_bindgen_guest_rust::rt::as_f32(z0), wit_bindgen_guest_rust::rt::as_f32(x1), wit_bindgen_guest_rust::rt::as_f32(y1), wit_bindgen_guest_rust::rt::as_f32(z1), ptr2);
                                   let len3 = *((ptr2 + 4) as *const i32) as usize;
                                   Vec::from_raw_parts(*((ptr2 + 0) as *const i32) as *mut _, len3, len3)
+                                }
+                              }
+                              pub fn physics_move_character(entity: EntityId,displacement: Vec3,min_dist: f32,elapsed_time: f32,) -> PhysicsCharacterCollision{
+                                unsafe {
+                                  let EntityId{ id0:id00, id1:id10, } = entity;
+                                  let Vec3{ x:x1, y:y1, z:z1, } = displacement;
+                                  let ptr2 = __HOST_RET_AREA.0.as_mut_ptr() as i32;
+                                  #[link(wasm_import_module = "host")]
+                                  extern "C" {
+                                    #[cfg_attr(target_arch = "wasm32", link_name = "physics-move-character: func(entity: record { id0: u64, id1: u64 }, displacement: record { x: float32, y: float32, z: float32 }, min-dist: float32, elapsed-time: float32) -> record { side: bool, up: bool, down: bool }")]
+                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "host_physics-move-character: func(entity: record { id0: u64, id1: u64 }, displacement: record { x: float32, y: float32, z: float32 }, min-dist: float32, elapsed-time: float32) -> record { side: bool, up: bool, down: bool }")]
+                                    fn wit_import(_: i64, _: i64, _: f32, _: f32, _: f32, _: f32, _: f32, _: i32, );
+                                  }
+                                  wit_import(wit_bindgen_guest_rust::rt::as_i64(id00), wit_bindgen_guest_rust::rt::as_i64(id10), wit_bindgen_guest_rust::rt::as_f32(x1), wit_bindgen_guest_rust::rt::as_f32(y1), wit_bindgen_guest_rust::rt::as_f32(z1), wit_bindgen_guest_rust::rt::as_f32(min_dist), wit_bindgen_guest_rust::rt::as_f32(elapsed_time), ptr2);
+                                  PhysicsCharacterCollision{side:match i32::from(*((ptr2 + 0) as *const u8)) {
+                                    0 => false,
+                                    1 => true,
+                                    _ => panic!("invalid bool discriminant"),
+                                  }, up:match i32::from(*((ptr2 + 1) as *const u8)) {
+                                    0 => false,
+                                    1 => true,
+                                    _ => panic!("invalid bool discriminant"),
+                                  }, down:match i32::from(*((ptr2 + 2) as *const u8)) {
+                                    0 => false,
+                                    1 => true,
+                                    _ => panic!("invalid bool discriminant"),
+                                  }, }
                                 }
                               }
                               pub fn event_subscribe(name: & str,) -> (){

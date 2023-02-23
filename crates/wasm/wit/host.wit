@@ -380,6 +380,12 @@ physics-start-motor: func(entity: entity-id, velocity: float32)
 physics-stop-motor: func(entity: entity-id)
 physics-raycast-first: func(origin: vec3, direction: vec3) -> option<tuple<entity-id, float32>>
 physics-raycast: func(origin: vec3, direction: vec3) -> list<tuple<entity-id, float32>>
+record physics-character-collision {
+    side: bool,
+    up: bool,
+    down: bool,
+}
+physics-move-character: func(entity: entity-id, displacement: vec3, min-dist: float32, elapsed-time: float32) -> physics-character-collision
 
 // event
 event-subscribe: func(name: string)

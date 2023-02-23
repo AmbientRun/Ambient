@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use ambient_ecs::{with_component_registry, ComponentSet, QueryEvent, World};
-use ambient_physics::helpers::PhysicsObjectCollection;
+use ambient_physics::{helpers::PhysicsObjectCollection, physx::character_controller};
 use itertools::Itertools;
 use parking_lot::RwLock;
 use wit_bindgen_host_wasmtime_rust::Le;
@@ -22,6 +22,7 @@ use ambient_std::{
     asset_cache::SyncAssetKeyExt,
     asset_url::{AssetUrl, ServerBaseUrlKey},
 };
+use physxx::{PxControllerCollisionFlag, PxControllerFilters};
 
 pub struct WasmServerContext {
     pub base_context: BaseWasmContext,
@@ -354,6 +355,38 @@ impl host::Host for Bindings {
         .into_iter()
         .map(|t| (t.0.into_bindgen(), t.1.into_bindgen()))
         .collect()
+    }
+
+    fn physics_move_character(
+        &mut self,
+        entity: host::EntityId,
+        displacement: host::Vec3,
+        min_dist: f32,
+        elapsed_time: f32,
+    ) -> host::PhysicsCharacterCollision {
+        if let Ok(controller) = self
+            .world()
+            .get(entity.from_bindgen(), character_controller())
+        {
+            let res = controller.move_controller(
+                displacement.from_bindgen(),
+                min_dist,
+                elapsed_time,
+                &PxControllerFilters::new(),
+                None,
+            );
+            host::PhysicsCharacterCollision {
+                side: res.contains(PxControllerCollisionFlag::CollisionSides),
+                up: res.contains(PxControllerCollisionFlag::CollisionUp),
+                down: res.contains(PxControllerCollisionFlag::CollisionDown),
+            }
+        } else {
+            host::PhysicsCharacterCollision {
+                side: false,
+                up: false,
+                down: false,
+            }
+        }
     }
 
     fn event_subscribe(&mut self, name: &str) {

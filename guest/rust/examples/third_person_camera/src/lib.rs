@@ -3,7 +3,7 @@ use ambient_api::{
         game_objects::player_camera,
         physics::{
             character_controller_height, character_controller_radius, plane_collider,
-            sphere_collider, visualizing,
+            sphere_collider, visualizing, physics_controlled,
         },
         player::{player, user_id},
         primitives::{cube, quad},
@@ -54,6 +54,7 @@ pub async fn main() -> EventResult {
                     .with(color(), rand::random())
                     .with(character_controller_height(), 2.)
                     .with(character_controller_radius(), 0.5)
+                    .with_default(physics_controlled())
                     .with_default(visualizing()),
             );
         }
@@ -68,19 +69,22 @@ pub async fn main() -> EventResult {
                 let forward = entity::get_component(player_id, rotation()).unwrap() * Vec3::X;
                 let right = entity::get_component(player_id, rotation()).unwrap() * Vec3::Y;
                 let speed = 0.1;
+                let mut displace = Vec3::ZERO;
 
                 if pressed.keys.contains(&KeyCode::W) {
-                    entity::mutate_component(player_id, translation(), |x| *x += forward * speed);
+                    displace += forward * speed;
                 }
                 if pressed.keys.contains(&KeyCode::S) {
-                    entity::mutate_component(player_id, translation(), |x| *x += -forward * speed);
+                    displace -= forward * speed;
                 }
                 if pressed.keys.contains(&KeyCode::A) {
-                    entity::mutate_component(player_id, translation(), |x| *x += -right * speed);
+                    displace -= right * speed;
                 }
                 if pressed.keys.contains(&KeyCode::D) {
-                    entity::mutate_component(player_id, translation(), |x| *x += right * speed);
-                }
+                    displace += right * speed;
+                } 
+                displace.z = -0.1;
+                physics::move_character(player_id, displace, 0.01, frametime());
 
                 entity::mutate_component(player_id, rotation(), |x| {
                     *x *= Quat::from_rotation_z(delta.mouse_position.x * 0.01)

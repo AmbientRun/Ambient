@@ -96,3 +96,34 @@ fn raycast_result_to_hit(
         entity: entity.from_bindgen(),
     }
 }
+
+/// Collision results when using `move_character`
+pub struct CharacterCollision {
+    /// Side
+    pub side: bool,
+    /// Up
+    pub up: bool,
+    /// Down
+    pub down: bool,
+}
+
+/// Move an entity with a character collider on it, by sweeping the collider. This will ensure that it collides with any
+/// objects in its path. You can also update the entities `translation` component, but this will teleport it to that location.
+pub fn move_character(
+    entity: EntityId,
+    displacement: Vec3,
+    min_dist: f32,
+    elapsed_time: f32,
+) -> CharacterCollision {
+    let res = host::physics_move_character(
+        entity.into_bindgen(),
+        displacement.into_bindgen(),
+        min_dist,
+        elapsed_time,
+    );
+    CharacterCollision {
+        side: res.side,
+        up: res.up,
+        down: res.down,
+    }
+}
