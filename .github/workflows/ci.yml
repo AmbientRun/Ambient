@@ -48,7 +48,7 @@ jobs:
       - name: Check that guest/rust's documentation is well-formed
         run: cd guest/rust && RUSTDOCFLAGS="-D warnings" cargo doc --workspace --all-features --no-deps
       - name: Output target folder
-        run: tree target
+        run: tree --du -h target
 
   build-other:
     strategy:
