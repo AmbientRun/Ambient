@@ -104,7 +104,7 @@ pub fn sync_ecs_physics() -> SystemGroup {
     let mut new_rotations = Vec::new();
 
     let translation_rotation_qs = Arc::new(Mutex::new(QueryState::new()));
-    let translation_rotation_q = query((translation().changed(), rotation().changed())).incl(physics_controlled());
+    let translation_rotation_q = query((translation().changed(), rotation().changed())).incl(physics_shape());
     let translation_rotation_q2 = translation_rotation_q.query.clone();
 
     let translation_character_qs = Arc::new(Mutex::new(QueryState::new()));
@@ -116,11 +116,11 @@ pub fn sync_ecs_physics() -> SystemGroup {
     let scale_q2 = scale_q.query.clone();
 
     let linear_velocity_qs = Arc::new(Mutex::new(QueryState::new()));
-    let linear_velocity_q = query(linear_velocity().changed()).incl(physics_controlled()).excl(kinematic());
+    let linear_velocity_q = query(linear_velocity().changed()).incl(physics_controlled());
     let linear_velocity_q2 = scale_q.query.clone();
 
     let angular_velocity_qs = Arc::new(Mutex::new(QueryState::new()));
-    let angular_velocity_q = query(angular_velocity().changed()).incl(physics_controlled()).excl(kinematic());
+    let angular_velocity_q = query(angular_velocity().changed()).incl(physics_controlled());
     let angular_velocity_q2 = scale_q.query.clone();
 
     SystemGroup::new(
@@ -149,9 +149,10 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     // Read back any changes that have happened during the frame to physx
                     let mut qs = translation_rotation_qs.lock();
                     for (id, (&pos, &rot)) in q.iter(world, Some(&mut *qs)) {
+                        let is_kinematic = world.has_component(id, kinematic());
                         if let Ok(body) = world.get(id, rigid_dynamic()) {
                             let pose = PxTransform::new(pos, rot);
-                            if world.has_component(id, kinematic()) {
+                            if is_kinematic {
                                 body.set_kinematic_target(&pose);
                             } else {
                                 body.set_global_pose(&pose, true);
@@ -162,12 +163,18 @@ pub fn sync_ecs_physics() -> SystemGroup {
                             body.set_global_pose(&PxTransform::new(pos, rot), true);
                         } else if let Ok(shape) = world.get_ref(id, physics_shape()) {
                             let actor = shape.get_actor().unwrap();
-
-                            actor.set_global_pose(&PxTransform::new(pos, rot), true);
+                            let pose = PxTransform::new(pos, rot);
+                            if !is_kinematic {
+                                actor.set_global_pose(&pose, true);
+                            }
                             if let Some(body) = actor.to_rigid_dynamic() {
-                                // Stop any rb movement when translating
-                                body.set_linear_velocity(Vec3::ZERO, true);
-                                body.set_angular_velocity(Vec3::ZERO, true);
+                                if is_kinematic {
+                                    body.set_kinematic_target(&pose);
+                                } else {
+                                    // Stop any rb movement when translating
+                                    body.set_linear_velocity(Vec3::ZERO, true);
+                                    body.set_angular_velocity(Vec3::ZERO, true);
+                                }
                             } else {
                                 // update_actor_entity_transforms(world, actor);
                             }
@@ -253,7 +260,7 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     }
                 }),
             // Sync PhysX changes to ECS.
-            query((rigid_dynamic(), translation(), rotation())).incl(physics_controlled()).excl(kinematic()).to_system(|q, world, qs, _| {
+            query((rigid_dynamic(), translation(), rotation())).incl(physics_controlled()).to_system(|q, world, qs, _| {
                 for (id, (rigid_dynamic, pos, rot)) in q.collect_cloned(world, qs) {
                     let pose = rigid_dynamic.get_global_pose();
                     let new_pos = pose.translation();
@@ -321,7 +328,7 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     }
                 }
             }),
-            query(linear_velocity()).incl(physics_controlled()).excl(kinematic()).to_system(|q, world, qs, _| {
+            query(linear_velocity()).incl(physics_controlled()).to_system(|q, world, qs, _| {
                 for (id, vel) in q.collect_cloned(world, qs) {
                     if let Ok(body) = world.get(id, rigid_dynamic()) {
                         let new_vel = body.get_linear_velocity();
@@ -331,7 +338,7 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     }
                 }
             }),
-            query(angular_velocity()).incl(physics_controlled()).excl(kinematic()).to_system(|q, world, qs, _| {
+            query(angular_velocity()).incl(physics_controlled()).to_system(|q, world, qs, _| {
                 for (id, vel) in q.collect_cloned(world, qs) {
                     if let Ok(body) = world.get(id, rigid_dynamic()) {
                         let new_vel = body.get_angular_velocity();

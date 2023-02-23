@@ -6,16 +6,11 @@ use anyhow::{bail, Context};
 use glam::{vec3, Vec3};
 use itertools::Itertools;
 use physxx::{
-    AsPxActor, AsPxRigidActor, PxActor, PxActorTypeFlag, PxBase, PxBoxGeometry, PxConvexMeshGeometry, PxJoint, PxMeshScale,
-    PxOverlapCallback, PxQueryFilterData, PxQueryFlag, PxRevoluteJointRef, PxRigidActor, PxRigidActorRef, PxRigidBody, PxRigidBodyFlag,
-    PxRigidDynamicRef, PxRigidStaticRef, PxSceneRef, PxShape, PxSphereGeometry, PxTransform, PxTriangleMeshGeometry, PxUserData,
+    AsPxActor, AsPxRigidActor, PxActor, PxActorTypeFlag, PxBase, PxBoxGeometry, PxConvexMeshGeometry, PxJoint, PxMeshScale, PxOverlapCallback, PxQueryFilterData, PxQueryFlag, PxRevoluteJointRef, PxRigidActor, PxRigidActorRef, PxRigidBody, PxRigidBodyFlag, PxRigidDynamicRef, PxRigidStaticRef, PxSceneRef, PxShape, PxSphereGeometry, PxTransform, PxTriangleMeshGeometry, PxUserData
 };
 
 use crate::{
-    collider::{collider_shapes_convex, collider_type},
-    main_physics_scene,
-    physx::{physics, physics_controlled, physics_shape, revolute_joint, rigid_dynamic},
-    unit_mass, unit_velocity, ColliderScene, PxActorUserData, PxShapeUserData,
+    collider::{collider_shapes_convex, collider_type, kinematic}, main_physics_scene, physx::{physics, physics_controlled, physics_shape, revolute_joint, rigid_dynamic}, unit_mass, unit_velocity, ColliderScene, PxActorUserData, PxShapeUserData
 };
 
 pub fn convert_rigid_static_to_dynamic(world: &mut World, id: EntityId) {
@@ -43,7 +38,9 @@ pub fn convert_rigid_static_dynamic(world: &mut World, id: EntityId, to_dynamic:
     let physics = world.resource(physics());
     let new_actor = if to_dynamic {
         let actor = PxRigidDynamicRef::new(physics.physics, &old_actor.get_global_pose());
-        actor.set_rigid_body_flag(PxRigidBodyFlag::ENABLE_CCD, true);
+        let is_kinematic = world.has_component(id, kinematic());
+        actor.set_rigid_body_flag(PxRigidBodyFlag::KINEMATIC, is_kinematic);
+        actor.set_rigid_body_flag(PxRigidBodyFlag::ENABLE_CCD, !is_kinematic);
         actor.as_rigid_actor()
     } else {
         PxRigidStaticRef::new(physics.physics, &old_actor.get_global_pose()).as_rigid_actor()
@@ -73,7 +70,10 @@ pub fn convert_rigid_static_dynamic(world: &mut World, id: EntityId, to_dynamic:
 }
 
 pub fn update_physics_controlled(world: &mut World, actor: PxRigidActorRef) {
-    let is_physics_controlled = actor.to_rigid_dynamic().is_some();
+    let is_physics_controlled = match actor.to_rigid_dynamic() {
+        Some(body) => !body.get_rigid_body_flags().contains(PxRigidBodyFlag::KINEMATIC),
+        _ => false,
+    };
     for shape in actor.get_shapes() {
         let entity = shape.get_user_data::<PxShapeUserData>().unwrap().entity;
         if let Ok(entity_shape) = world.get_ref(entity, physics_shape()) {

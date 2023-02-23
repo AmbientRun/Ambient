@@ -288,11 +288,12 @@ pub fn server_systems() -> SystemGroup {
                                 let avel = world.get(id, angular_velocity()).unwrap_or_default();
                                 body.set_linear_velocity(lvel, true);
                                 body.set_angular_velocity(avel, true);
+                                world.add_component(id, physics_controlled(), ()).unwrap();
+                            } else {
+                                world.remove_component(id, physics_controlled()).unwrap();
                             }
-                            world.add_component(id, physics_controlled(), ()).unwrap();
                             body.as_rigid_actor()
                         } else {
-                            world.remove_component(id, kinematic()).unwrap();
                             world.remove_component(id, physics_controlled()).unwrap();
                             PxRigidStaticRef::new(physics.physics, &PxTransform::new(pos, rot)).as_rigid_actor()
                         };
