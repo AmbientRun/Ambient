@@ -24,7 +24,7 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install --no-install-recommends -y libasound2-dev libglib2.0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
+          sudo apt-get install --no-install-recommends -y tree libasound2-dev libglib2.0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
             libcairo-dev libgtk2.0-dev libsoup2.4-dev libgtk-3-dev libwebkit2gtk-4.0-dev xorg-dev ninja-build libxcb-render0-dev
       - name: Install run (headless) dependencies
         run: |
@@ -47,6 +47,8 @@ jobs:
         run: cd guest/rust && cargo build --workspace
       - name: Check that guest/rust's documentation is well-formed
         run: cd guest/rust && RUSTDOCFLAGS="-D warnings" cargo doc --workspace --all-features --no-deps
+      - name: Output target folder
+        run: tree target
 
   build-other:
     strategy:
