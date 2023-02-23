@@ -770,6 +770,7 @@ dependencies = [
  "ambient_renderer",
  "ambient_rpc",
  "ambient_std",
+ "ambient_sys",
  "ambient_ui",
  "anyhow",
  "bincode",

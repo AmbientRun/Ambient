@@ -16,13 +16,6 @@ impl Sub<Instant> for Instant {
         self.0 - rhs.0
     }
 }
-impl Sub<Duration> for Instant {
-    type Output = Instant;
-
-    fn sub(self, rhs: Duration) -> Self::Output {
-        Self(self.0.checked_sub(rhs).unwrap())
-    }
-}
 
 impl Add<Instant> for Instant {
     type Output = Duration;

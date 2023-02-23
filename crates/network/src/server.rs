@@ -3,7 +3,7 @@ use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
     ops::Range,
     sync::Arc,
-    time::{Duration, Instant, SystemTime},
+    time::{Duration, SystemTime},
 };
 
 use ambient_core::{asset_cache, no_sync};
@@ -16,6 +16,7 @@ use ambient_std::{
     fps_counter::{FpsCounter, FpsSample},
     friendly_id, log_result,
 };
+use ambient_sys::time::Instant;
 use anyhow::bail;
 use bytes::Bytes;
 use flume::Sender;
@@ -255,7 +256,7 @@ impl GameServer {
         sim_interval.set_missed_tick_behavior(MissedTickBehavior::Delay);
 
         let mut inactivity_interval = interval(Duration::from_secs_f32(5.));
-        let mut last_active = Instant::now();
+        let mut last_active = ambient_sys::time::Instant::now();
 
         loop {
             tracing::debug_span!("Listening for incoming connections");
