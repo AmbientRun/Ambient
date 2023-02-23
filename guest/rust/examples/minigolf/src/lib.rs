@@ -18,14 +18,13 @@ use ambient_api::{
         ui::{font_size, text},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
-    glam::EulerRot,
     player::MouseButton,
     prelude::*,
 };
 use components::{
     ball, origin, player_ball, player_camera_state, player_color, player_indicator,
     player_indicator_arrow, player_restore_point, player_stroke_count, player_text,
-    player_text_container, rotate,
+    player_text_container,
 };
 use concepts::{make_player_camera_state, make_player_state};
 use utils::CameraState;
@@ -60,9 +59,9 @@ fn create_environment() {
         .with(collider_from_url(), asset_url("assets/fan.glb").unwrap())
         .with(kinematic(), ())
         .with(dynamic(), true)
+        .with(angular_velocity(), vec3(0., 90_f32.to_radians(), 0.))
         .with(translation(), vec3(-35., 161., 8.4331))
         .with(rotation(), Quat::from_rotation_z(180_f32.to_radians()))
-        .with(rotate(), vec3(0., 90_f32.to_radians(), 0.))
         .spawn();
 }
 
@@ -181,20 +180,6 @@ pub async fn main() -> EventResult {
         .with(kinematic(), ())
         .with(origin(), vec3(-35., 205., 0.3166))
         .spawn();
-
-    // Rotate objects every frame.
-    query((rotation(), rotate()))
-        .build()
-        .each_frame(move |objects| {
-            for (object_id, (rot, rotate)) in &objects {
-                let rotate = *rotate * frametime();
-                entity::set_component(
-                    *object_id,
-                    rotation(),
-                    *rot * Quat::from_euler(EulerRot::XYZ, rotate.x, rotate.y, rotate.z),
-                )
-            }
-        });
 
     // Update the flag every frame.
     query(translation())

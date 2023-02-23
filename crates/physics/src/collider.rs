@@ -280,22 +280,25 @@ pub fn server_systems() -> SystemGroup {
                                 scene.remove_actor(&actor, false);
                             }
                         }
+                        let is_kinematic = world.has_component(id, kinematic());
                         let actor = if collider_type == ColliderType::Dynamic && !force_static {
-                            world.add_component(id, physics_controlled(), ()).unwrap();
-                            let lvel = world.get(id, linear_velocity()).unwrap_or_default();
-                            let avel = world.get(id, angular_velocity()).unwrap_or_default();
                             let body = PxRigidDynamicRef::new(physics.physics, &PxTransform::new(pos, rot));
-                            body.set_linear_velocity(lvel, true);
-                            body.set_angular_velocity(avel, true);
+                            if !is_kinematic {
+                                let lvel = world.get(id, linear_velocity()).unwrap_or_default();
+                                let avel = world.get(id, angular_velocity()).unwrap_or_default();
+                                body.set_linear_velocity(lvel, true);
+                                body.set_angular_velocity(avel, true);
+                            }
+                            world.add_component(id, physics_controlled(), ()).unwrap();
                             body.as_rigid_actor()
                         } else {
+                            world.remove_component(id, kinematic()).unwrap();
                             world.remove_component(id, physics_controlled()).unwrap();
                             PxRigidStaticRef::new(physics.physics, &PxTransform::new(pos, rot)).as_rigid_actor()
                         };
                         if let Some(actor) = actor.to_rigid_body() {
-                            let kinematic = world.has_component(id, kinematic());
-                            actor.set_rigid_body_flag(PxRigidBodyFlag::ENABLE_CCD, !kinematic);
-                            actor.set_rigid_body_flag(PxRigidBodyFlag::KINEMATIC, kinematic);
+                            actor.set_rigid_body_flag(PxRigidBodyFlag::KINEMATIC, is_kinematic);
+                            actor.set_rigid_body_flag(PxRigidBodyFlag::ENABLE_CCD, !is_kinematic);
                         }
                         actor.as_actor().set_user_data(PxActorUserData { serialize: true });
                         for shape in actor.get_shapes() {

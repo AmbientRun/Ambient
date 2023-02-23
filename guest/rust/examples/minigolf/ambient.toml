@@ -6,7 +6,6 @@ version = "0.0.1"
 [components]
 ball = { type = "Empty", name = "Ball", description = "Used to tag a ball" }
 origin = { type = "Vec3", name = "Origin", description = "An object's origin in world space" }
-rotate = { type = "Vec3", name = "Rotate", description = "Rotate an object at a given speed (radians/s)" }
 player_ball = { type = "EntityId", name = "Player Ball", description = "Used to tag a player's ball" }
 player_restore_point = { type = "Vec3", name = "Player Restore Point", description = "A player's restore point" }
 player_stroke_count = { type = "U32", name = "Player Stroke Count", description = "A player's stroke count" }

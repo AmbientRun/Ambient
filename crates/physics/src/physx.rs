@@ -1,16 +1,19 @@
-use crate::{
-    collider::kinematic,
-    helpers::{get_shapes, scale_shape},
+use std::sync::Arc;
+
+use ambient_core::{
+    dtime, transform::{rotation, scale, translation}
 };
-use ambient_core::transform::{rotation, scale, translation};
 use ambient_ecs::{
-    components, ensure_has_component, query, Debuggable, Description, FnSystem, Name, Networked, QueryState, Resource, Store, SystemGroup,
+    components, ensure_has_component, query, Debuggable, Description, FnSystem, Name, Networked, QueryState, Resource, Store, SystemGroup
 };
 use ambient_std::asset_cache::SyncAssetKey;
-use glam::{Quat, Vec3};
+use glam::{EulerRot, Quat, Vec3};
 use parking_lot::Mutex;
 use physxx::{articulation_reduced_coordinate::*, *};
-use std::sync::Arc;
+
+use crate::{
+    collider::kinematic, helpers::{get_shapes, scale_shape}
+};
 
 components!("physics", {
     @[Resource]
@@ -113,11 +116,11 @@ pub fn sync_ecs_physics() -> SystemGroup {
     let scale_q2 = scale_q.query.clone();
 
     let linear_velocity_qs = Arc::new(Mutex::new(QueryState::new()));
-    let linear_velocity_q = query(linear_velocity().changed()).incl(physics_controlled());
+    let linear_velocity_q = query(linear_velocity().changed()).incl(physics_controlled()).excl(kinematic());
     let linear_velocity_q2 = scale_q.query.clone();
 
     let angular_velocity_qs = Arc::new(Mutex::new(QueryState::new()));
-    let angular_velocity_q = query(angular_velocity().changed()).incl(physics_controlled());
+    let angular_velocity_q = query(angular_velocity().changed()).incl(physics_controlled()).excl(kinematic());
     let angular_velocity_q2 = scale_q.query.clone();
 
     SystemGroup::new(
@@ -214,26 +217,43 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     }
                 }
             }),
-            query(contact_offset().changed()).incl(physics_controlled()).to_system({
-                move |q, world, qs, _| {
+            query((rigid_dynamic(), translation(), rotation(), linear_velocity(), angular_velocity())).incl(kinematic()).to_system(
+                |q, world, qs, _| {
+                    let dtime = *world.resource(dtime());
+                    for (id, (body, pos, rot, lvel, avel)) in q.collect_cloned(world, qs) {
+                        let avel = avel * dtime;
+                        let new_pos = pos + lvel * dtime;
+                        let new_rot = rot * Quat::from_euler(EulerRot::XYZ, avel.x, avel.y, avel.z);
+                        let pos_changed = vec3_changed(pos, new_pos);
+                        let rot_changed = quat_changed(rot, new_rot);
+                        if pos_changed {
+                            world.set(id, translation(), new_pos).unwrap();
+                        }
+                        if rot_changed {
+                            world.set(id, rotation(), new_rot).unwrap();
+                        }
+                        if pos_changed || rot_changed {
+                            body.set_kinematic_target(&PxTransform::new(new_pos, new_rot));
+                        }
+                    }
+                },
+            ),
+            query(contact_offset().changed()).incl(physics_controlled()).to_system(|q, world, qs, _| {
                     for (id, &off) in q.iter(world, qs) {
                         for shape in get_shapes(world, id) {
                             shape.set_contact_offset(off);
                         }
                     }
-                }
-            }),
-            query(rest_offset().changed()).incl(physics_controlled()).to_system({
-                move |q, world, qs, _| {
+                }),
+            query(rest_offset().changed()).incl(physics_controlled()).to_system(|q, world, qs, _| {
                     for (id, &off) in q.iter(world, qs) {
                         for shape in get_shapes(world, id) {
                             shape.set_rest_offset(off);
                         }
                     }
-                }
-            }),
+                }),
             // Sync PhysX changes to ECS.
-            query((rigid_dynamic(), translation(), rotation())).incl(physics_controlled()).to_system(|q, world, qs, _| {
+            query((rigid_dynamic(), translation(), rotation())).incl(physics_controlled()).excl(kinematic()).to_system(|q, world, qs, _| {
                 for (id, (rigid_dynamic, pos, rot)) in q.collect_cloned(world, qs) {
                     let pose = rigid_dynamic.get_global_pose();
                     let new_pos = pose.translation();
@@ -301,7 +321,7 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     }
                 }
             }),
-            query(linear_velocity()).incl(physics_controlled()).to_system(|q, world, qs, _| {
+            query(linear_velocity()).incl(physics_controlled()).excl(kinematic()).to_system(|q, world, qs, _| {
                 for (id, vel) in q.collect_cloned(world, qs) {
                     if let Ok(body) = world.get(id, rigid_dynamic()) {
                         let new_vel = body.get_linear_velocity();
@@ -311,7 +331,7 @@ pub fn sync_ecs_physics() -> SystemGroup {
                     }
                 }
             }),
-            query(angular_velocity()).incl(physics_controlled()).to_system(|q, world, qs, _| {
+            query(angular_velocity()).incl(physics_controlled()).excl(kinematic()).to_system(|q, world, qs, _| {
                 for (id, vel) in q.collect_cloned(world, qs) {
                     if let Ok(body) = world.get(id, rigid_dynamic()) {
                         let new_vel = body.get_angular_velocity();
