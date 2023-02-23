@@ -16,9 +16,11 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
     let id = Identifier::new(id).map_err(anyhow::Error::msg)?;
 
     let dot_cargo = project_path.join(".cargo");
+    let dot_vscode = project_path.join(".vscode");
     let src = project_path.join("src");
     std::fs::create_dir_all(&project_path).context("Failed to create project directory")?;
     std::fs::create_dir_all(&dot_cargo).context("Failed to create .cargo directory")?;
+    std::fs::create_dir_all(&dot_vscode).context("Failed to create .vscode directory")?;
     std::fs::create_dir_all(&src).context("Failed to create src directory")?;
 
     std::fs::write(
@@ -63,6 +65,9 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
 
     std::fs::write(dot_cargo.join("config.toml"), include_str!("new_project_template/.cargo/config.toml"))
         .context("Failed to create .cargo/config.toml")?;
+
+    std::fs::write(dot_vscode.join("settings.json"), include_str!("new_project_template/.vscode/settings.json"))
+        .context("Failed to create .vscode/settings.json")?;
 
     std::fs::write(src.join("lib.rs"), include_str!("new_project_template/src/lib.rs")).context("Failed to create src/lib.rs")?;
 
