@@ -1,6 +1,6 @@
 use std::{net::SocketAddr, sync::Arc};
 
-use ambient_app::AppBuilder;
+use ambient_app::{window_title, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_core::camera::active_camera;
 use ambient_debugger::Debugger;
@@ -32,6 +32,8 @@ fn MainApp(hooks: &mut Hooks, server_addr: SocketAddr, user_id: String, show_deb
 
     hooks.provide_context(GameClientNetworkStats::default);
     hooks.provide_context(GameClientServerStats::default);
+
+    *hooks.world.resource_mut(window_title()) = "Ambient".to_string();
 
     FocusRoot::el([
         UICamera.el().set(active_camera(), 0.),
