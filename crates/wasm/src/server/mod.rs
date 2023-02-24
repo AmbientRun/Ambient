@@ -16,6 +16,7 @@ use crate::shared::{
     module_enabled, reload, reload_all, run_all, unload, update_errors, MessageType, ModuleState,
     RunContext, WasmContext,
 };
+use ambient_ecs::{world_events, WorldEventReader};
 
 pub mod bindings;
 pub(crate) mod implementation;
@@ -37,6 +38,7 @@ pub fn systems<
 ) -> SystemGroup {
     let make_wasm_context = move |w: &World| w.resource(make_wasm_context_component).clone();
     let add_to_linker = move |w: &World| w.resource(add_to_linker_component).clone();
+    let mut app_events_reader = WorldEventReader::new();
 
     SystemGroup::new(
         "core/wasm/server",
@@ -65,6 +67,21 @@ pub fn systems<
                     }
                 },
             ),
+            Box::new(FnSystem::new(move |world, _| {
+                profiling::scope!("WASM module app events");
+                let events = app_events_reader
+                    .iter(world.resource(world_events()))
+                    .map(|(_, event)| event.clone())
+                    .collect_vec();
+
+                for event in events {
+                    run_all(
+                        world,
+                        state_component,
+                        &RunContext::new(world, &event.name, event.data),
+                    );
+                }
+            })),
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("WASM module frame event");
                 // trigger frame event

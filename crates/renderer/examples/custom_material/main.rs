@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use ambient_app::AppBuilder;
+use ambient_app::{App, AppBuilder};
 use ambient_core::{asset_cache, camera::active_camera, hierarchy::set_component_recursive, main_scene, mesh, transform::*};
-use ambient_ecs::{EntityData, World};
+use ambient_ecs::EntityData;
 use ambient_gpu::{
     gpu::GpuKey,
     shader_module::{BindGroupDesc, ShaderModule},
@@ -70,7 +70,8 @@ impl Material for CustomMaterial {
     }
 }
 
-async fn init(world: &mut World) {
+async fn init(app: &mut App) {
+    let world = &mut app.world;
     let assets = world.resource(asset_cache()).clone();
 
     let model = ModelCrate::local_import(&assets, &AbsAssetUrl::parse("assets/Soldier.glb").unwrap(), true, false).await.unwrap();
@@ -110,7 +111,5 @@ async fn init(world: &mut World) {
 
 fn main() {
     env_logger::init();
-    AppBuilder::simple().run(|app, runtime| {
-        runtime.block_on(init(&mut app.world));
-    });
+    AppBuilder::simple().block_on(init);
 }

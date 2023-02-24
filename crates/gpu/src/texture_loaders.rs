@@ -6,6 +6,7 @@ use ambient_std::{
     download_asset::{AssetError, AssetResult, BytesFromUrl},
     CowStr,
 };
+use ambient_sys::task;
 use async_trait::async_trait;
 use futures::future::join_all;
 use image::{DynamicImage, ImageFormat, Rgba, RgbaImage};
@@ -38,7 +39,7 @@ async fn image_from_url(assets: AssetCache, url: AbsAssetUrl) -> Result<DynamicI
     let data = BytesFromUrl::new(url.clone(), true).get(&assets).await?;
 
     let extension = url.extension().context("No extension")?;
-    Ok(tokio::task::block_in_place(move || -> anyhow::Result<DynamicImage> {
+    Ok(task::block_in_place(move || -> anyhow::Result<DynamicImage> {
         let format = ImageFormat::from_extension(extension).context("Invalid extension")?;
         Ok(image::io::Reader::with_format(Cursor::new(&*data), format).decode()?)
     })
@@ -59,7 +60,7 @@ impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for TextureFromUrl {
     #[tracing::instrument(level = "info", name = "texture_from_url")]
     async fn load(self, assets: AssetCache) -> Result<Arc<Texture>, AssetError> {
         let image = image_from_url(assets.clone(), self.url.clone()).await?;
-        tokio::task::block_in_place(|| Ok(Arc::new(Texture::from_image_mipmapped(assets, image, self.format, Some(&self.url.to_string())))))
+        task::block_in_place(|| Ok(Arc::new(Texture::from_image_mipmapped(assets, image, self.format, Some(&self.url.to_string())))))
     }
 }
 
@@ -75,7 +76,7 @@ impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for TextureFromRgba8Image {
     }
     async fn load(self, assets: AssetCache) -> Result<Arc<Texture>, AssetError> {
         let img = self.image.get(&assets).await?;
-        tokio::task::block_in_place(|| {
+        task::block_in_place(|| {
             Ok(Arc::new(Texture::from_rgba8_image_mipmapped(assets, &img, self.format, Some(&format!("{:?}", self.image)))))
         })
     }
@@ -101,7 +102,7 @@ impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for TextureFromBytes {
         asset.as_ref().ok().map(|asset| asset.size_in_bytes)
     }
     async fn load(self, assets: AssetCache) -> Result<Arc<Texture>, AssetError> {
-        let texture = tokio::task::spawn_blocking(move || -> anyhow::Result<Arc<Texture>> {
+        let texture = task::spawn_blocking(move || -> anyhow::Result<Arc<Texture>> {
             let image = image::load_from_memory(&self.bytes[..]).context("Failed to load image from bytes")?;
             Ok(Arc::new(Texture::from_image_mipmapped(assets, image, wgpu::TextureFormat::Rgba8UnormSrgb, self.label.as_deref())))
         })
@@ -139,7 +140,7 @@ impl AsyncAssetKey<Result<Arc<image::RgbaImage>, AssetError>> for SplitImageFrom
     async fn load(self, assets: AssetCache) -> Result<Arc<image::RgbaImage>, AssetError> {
         let color = image_from_url(assets.clone(), self.color.clone()).await?;
         let alpha = image_from_url(assets.clone(), self.alpha.clone()).await?;
-        tokio::task::block_in_place(|| {
+        task::block_in_place(|| {
             let mut color = color.into_rgba8();
             let alpha = alpha.into_luma8();
             for (color, alpha) in color.pixels_mut().zip(alpha.pixels()) {
@@ -164,7 +165,7 @@ impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for SplitTextureFromUrl {
     async fn load(self, assets: AssetCache) -> Result<Arc<Texture>, AssetError> {
         let color = image_from_url(assets.clone(), self.color.clone()).await?;
         let alpha = image_from_url(assets.clone(), self.alpha.clone()).await?;
-        tokio::task::block_in_place(|| {
+        task::block_in_place(|| {
             let mut color = color.into_rgba8();
             let alpha = alpha.into_luma8();
             for (color, alpha) in color.pixels_mut().zip(alpha.pixels()) {
@@ -237,7 +238,7 @@ where
         let mut image = image_from_url(assets.clone(), self.inner.url.clone()).await?.into_rgba8();
         image.pixels_mut().for_each(|v| (*v = (self.func)(*v)));
 
-        tokio::task::block_in_place(|| {
+        task::block_in_place(|| {
             Ok(Arc::new(Texture::from_image_mipmapped(
                 assets,
                 DynamicImage::ImageRgba8(image),
@@ -267,7 +268,7 @@ impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for TextureArrayFromUrls {
                     let assets = assets.clone();
                     async move {
                         let data = BytesFromUrl::new(url.clone(), true).get(&assets).await?;
-                        tokio::task::block_in_place(|| -> anyhow::Result<RgbaImage> {
+                        task::block_in_place(|| -> anyhow::Result<RgbaImage> {
                             Ok(image::io::Reader::new(Cursor::new(&*data))
                                 .with_guessed_format()
                                 .with_context(|| format!("Failed to guess format of {url}"))?
@@ -280,7 +281,7 @@ impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for TextureArrayFromUrls {
                 .collect::<Vec<_>>(),
         )
         .await;
-        tokio::task::block_in_place(|| -> AssetResult<Arc<Texture>> {
+        task::block_in_place(|| -> AssetResult<Arc<Texture>> {
             let imgs = texs.into_iter().collect::<anyhow::Result<Vec<RgbaImage>>>()?;
             Ok(Arc::new(Texture::array_rgba8_mipmapped(assets, self.label.as_ref().map(|x| x as &str), imgs, self.format)))
         })

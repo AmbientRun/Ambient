@@ -1,9 +1,8 @@
 use std::sync::Arc;
 
-use ambient_app::{gpu, AppBuilder};
+use ambient_app::{gpu, App, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_core::camera::active_camera;
-use ambient_ecs::World;
 use ambient_element::{ElementComponentExt, ElementTree};
 use ambient_gpu::texture::Texture;
 use ambient_ui::{
@@ -12,7 +11,8 @@ use ambient_ui::{
 };
 use glam::*;
 
-fn init(world: &mut World) {
+async fn init(app: &mut App) {
+    let world = &mut app.world;
     ElementTree::new(
         world,
         Image {
@@ -31,5 +31,5 @@ fn init(world: &mut World) {
 
 fn main() {
     env_logger::init();
-    AppBuilder::simple_ui().run_world(init);
+    AppBuilder::simple_ui().block_on(init);
 }

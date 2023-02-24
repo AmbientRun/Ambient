@@ -1,11 +1,12 @@
 #[macro_use]
 extern crate lazy_static;
 
+use ambient_sys::{task::RuntimeHandle, time::Instant};
 use std::{
     sync::Arc,
     time::{Duration, SystemTime},
 };
-use ambient_sys::time::Instant;
+use window::WindowCtl;
 
 use ambient_ecs::{
     components, query, Debuggable, Description, DynSystem, EntityId, FrameEvent, Name, Networked, QueryState, Resource, Store, System,
@@ -16,6 +17,7 @@ use ambient_gpu::{gpu::Gpu, mesh_buffer::GpuMesh};
 pub mod async_ecs;
 pub mod gpu_ecs;
 pub mod hierarchy;
+pub mod window;
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey},
     events::EventDispatcher,
@@ -33,12 +35,14 @@ components!("app", {
     @[Debuggable, Networked, Store, Name["Name"], Description["A human-friendly name for this entity."]]
     name: String,
     @[Resource]
-    runtime: tokio::runtime::Handle,
+    runtime: RuntimeHandle,
     @[Resource]
     gpu: Arc<Gpu>,
     mesh: Arc<GpuMesh>,
-    @[Resource]
-    window: Arc<Window>,
+
+    @[Resource, Name["Window Control"], Description["Allows controlling the window from afar"]]
+    window_ctl: flume::Sender<WindowCtl>,
+
     @[Resource]
     window_scale_factor: f64,
     /// The logical size is the physical size divided by the scale factor
@@ -142,10 +146,11 @@ pub fn get_mouse_clip_space_position(world: &World) -> Vec2 {
 
 #[derive(Debug, Clone)]
 pub struct RuntimeKey;
-impl SyncAssetKey<tokio::runtime::Handle> for RuntimeKey {}
+impl SyncAssetKey<RuntimeHandle> for RuntimeKey {}
 
 #[derive(Debug, Clone)]
 pub struct WindowKey;
+#[cfg(not(target_os = "unknown"))]
 impl SyncAssetKey<Arc<Window>> for WindowKey {}
 
 #[derive(Debug)]
@@ -251,21 +256,37 @@ impl System for TimeResourcesSystem {
     }
 }
 
-/// Updates `window_physical_size`, `window_logical_size` and `window_scale_factor` from the `window` component
-#[derive(Debug)]
-pub struct WindowSyncSystem;
-impl System for WindowSyncSystem {
-    fn run(&mut self, world: &mut World, _event: &FrameEvent) {
-        if let Some(window) = world.resource_opt(window()).cloned() {
-            let size = uvec2(window.inner_size().width, window.inner_size().height);
-            world.set_if_changed(world.resource_entity(), self::window_physical_size(), size).unwrap();
-            world
-                .set_if_changed(world.resource_entity(), self::window_logical_size(), (size.as_dvec2() / window.scale_factor()).as_uvec2())
-                .unwrap();
-            world.set_if_changed(world.resource_entity(), self::window_scale_factor(), window.scale_factor()).unwrap();
-        }
-    }
+pub fn get_window_sizes(window: &Window) -> (UVec2, UVec2, f64) {
+    let size = uvec2(window.inner_size().width, window.inner_size().height);
+    let sf = window.scale_factor();
+    (size, (size.as_dvec2() / sf).as_uvec2(), sf)
 }
+
+pub fn mirror_window_components(src: &mut World, dst: &mut World) {
+    let dr = dst.resource_entity();
+
+    dst.set_if_changed(dr, window_physical_size(), *src.resource(window_physical_size())).unwrap();
+    dst.set_if_changed(dr, window_logical_size(), *src.resource(window_logical_size())).unwrap();
+    dst.set_if_changed(dr, window_scale_factor(), *src.resource(window_scale_factor())).unwrap();
+
+    dst.set_if_changed(dr, mouse_position(), *src.resource(mouse_position())).unwrap();
+}
+
+/// Updates `window_physical_size`, `window_logical_size` and `window_scale_factor` from the `window` component
+// #[derive(Debug)]
+// pub struct WindowSyncSystem;
+// impl System for WindowSyncSystem {
+//     fn run(&mut self, world: &mut World, _event: &FrameEvent) {
+//         if let Some(window) = world.resource_opt(window()).cloned() {
+//             let size = uvec2(window.inner_size().width, window.inner_size().height);
+//             world.set_if_changed(world.resource_entity(), self::window_physical_size(), size).unwrap();
+//             world
+//                 .set_if_changed(world.resource_entity(), self::window_logical_size(), (size.as_dvec2() / window.scale_factor()).as_uvec2())
+//                 .unwrap();
+//             world.set_if_changed(world.resource_entity(), self::window_scale_factor(), window.scale_factor()).unwrap();
+//         }
+//     }
+// }
 
 #[derive(Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Debug, Hash, Default)]
 pub enum GameMode {

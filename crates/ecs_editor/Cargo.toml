@@ -19,3 +19,4 @@ glam = { workspace = true }
 [dev-dependencies]
 ambient_app = { path = "../app", features = ["profile"] }
 ambient_cameras = { path = "../cameras" }
+tokio = { workspace = true }

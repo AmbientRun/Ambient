@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use ambient_app::{gpu, AppBuilder};
+use ambient_app::{gpu, App, AppBuilder};
 use ambient_core::{asset_cache, camera::active_camera, main_scene, transform::*};
-use ambient_ecs::{EntityData, World};
+use ambient_ecs::EntityData;
 use ambient_gpu::{
     std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey},
     texture::Texture,
@@ -16,7 +16,8 @@ use ambient_renderer::{
 use ambient_std::{asset_cache::SyncAssetKeyExt, cb, math::SphericalCoords};
 use glam::*;
 
-fn init(world: &mut World) {
+async fn init(app: &mut App) {
+    let world = &mut app.world;
     let gpu = world.resource(gpu()).clone();
     let assets = world.resource(asset_cache()).clone();
 
@@ -55,5 +56,5 @@ fn init(world: &mut World) {
 
 fn main() {
     env_logger::init();
-    AppBuilder::simple().run_world(init);
+    AppBuilder::simple().block_on(init);
 }

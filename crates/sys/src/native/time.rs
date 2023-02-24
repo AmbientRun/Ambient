@@ -1,3 +1,4 @@
+#![allow(clippy::disallowed_types)]
 use std::{
     ops::{Add, Sub},
     time::Duration,
@@ -17,19 +18,11 @@ impl Sub<Instant> for Instant {
     }
 }
 
-impl Add<Instant> for Instant {
-    type Output = Duration;
-
-    fn add(self, rhs: Instant) -> Self::Output {
-        self.0 - rhs.0
-    }
-}
-
 impl Add<Duration> for Instant {
     type Output = Instant;
 
     fn add(self, rhs: Duration) -> Self::Output {
-        Self(self.0 - rhs)
+        Self(self.0 + rhs)
     }
 }
 
@@ -55,4 +48,13 @@ pub fn schedule_wakeup<F: 'static + Send + FnOnce()>(dur: Duration, callback: F)
 }
 
 use derive_more::{From, Into};
-pub use tokio::time::{sleep, sleep_until};
+
+#[inline]
+pub fn sleep_until(deadline: Instant) -> tokio::time::Sleep {
+    tokio::time::sleep_until(deadline.0.into())
+}
+
+#[inline]
+pub fn sleep(duration: Duration) -> tokio::time::Sleep {
+    tokio::time::sleep(duration)
+}

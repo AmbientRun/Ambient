@@ -3,7 +3,10 @@ use std::{future::Future, task::Poll};
 use derive_more::{Deref, From};
 use futures::FutureExt;
 
-use crate::{control::ControlHandle, platform};
+use crate::{
+    control::ControlHandle,
+    platform::{self},
+};
 pub use platform::task::wasm_nonsend;
 
 /// Spawns a new background task in the current runtime
@@ -13,6 +16,26 @@ where
     T: 'static + Send,
 {
     RuntimeHandle::current().spawn(fut)
+}
+
+/// Runs a blocking function without blocking the executor.
+///
+/// Kind of... it is a little bit of a lie as blocking in general is not possible so this will
+/// simply run in place on wasm.
+pub fn block_in_place<R, F>(f: F) -> R
+where
+    F: FnOnce() -> R,
+{
+    RuntimeHandle::current().block_in_place(f)
+}
+
+/// Spawns a task such that blocking is accepted
+pub fn spawn_blocking<R, F>(f: F) -> JoinHandle<R>
+where
+    F: 'static + Send + FnOnce() -> R,
+    R: 'static + Send,
+{
+    RuntimeHandle::current().spawn_blocking(f)
 }
 
 /// Spawn a non-send future by sending a constructor to a worker thread.
@@ -42,6 +65,12 @@ pub enum JoinError {
 ///
 /// Dropping a JoinHandle does *not* cancel the task.
 pub struct JoinHandle<T>(pub(crate) platform::task::JoinHandle<T>);
+
+impl<T: std::fmt::Debug> std::fmt::Debug for JoinHandle<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 impl<T> JoinHandle<T> {
     pub fn abort(&self) {
@@ -98,5 +127,21 @@ impl RuntimeHandle {
         T: 'static + Send,
     {
         JoinHandle(self.0.spawn(future))
+    }
+
+    pub fn block_in_place<R, F>(&self, f: F) -> R
+    where
+        F: FnOnce() -> R,
+    {
+        self.0.block_in_place(f)
+    }
+
+    /// Spawns a task such that blocking is accepted
+    pub fn spawn_blocking<R, F>(&self, f: F) -> JoinHandle<R>
+    where
+        F: 'static + Send + FnOnce() -> R,
+        R: 'static + Send,
+    {
+        JoinHandle(self.0.spawn_blocking(f))
     }
 }

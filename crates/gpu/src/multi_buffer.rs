@@ -1,7 +1,9 @@
 use std::{
-    marker::PhantomData, sync::{
-        atomic::{AtomicUsize, Ordering}, Arc
-    }
+    marker::PhantomData,
+    sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc,
+    },
 };
 
 use thiserror::Error;
@@ -311,64 +313,73 @@ impl<T: bytemuck::Pod> TypedMultiBuffer<T> {
     }
 }
 
-#[tokio::test]
-async fn test_multi_buffer() {
-    let gpu = Arc::new(Gpu::new(None).await);
-    let mut buf = MultiBuffer::new(gpu, "test", wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::COPY_DST, MultiBufferSizeStrategy::Pow2);
+#[cfg(test)]
+mod test {
+    use super::*;
 
-    let a = buf.create_buffer(None);
-    buf.resize_buffer(a, 4).unwrap();
-    buf.write(a, 0, &[1, 1, 1, 1]).unwrap();
-    assert_eq!(buf.read_all().await, &[1, 1, 1, 1]);
-    buf.resize_buffer(a, 5).unwrap();
-    assert_eq!(buf.read_all().await, &[1, 1, 1, 1, 0, 0, 0, 0]);
-    buf.resize_buffer(a, 8).unwrap();
-    buf.write(a, 4, &[2, 2, 2, 2]).unwrap();
-    assert_eq!(buf.read_all().await, &[1, 1, 1, 1, 2, 2, 2, 2]);
+    #[tokio::test]
+    async fn test_multi_buffer() {
+        let gpu = Arc::new(Gpu::new(None).await);
+        let mut buf =
+            MultiBuffer::new(gpu, "test", wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::COPY_DST, MultiBufferSizeStrategy::Pow2);
 
-    let b = buf.create_buffer(None);
-    buf.resize_buffer(b, 4).unwrap();
-    assert_eq!(buf.read_all().await, &[1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, 0]);
-    buf.write(b, 0, &[3, 3, 3, 3]).unwrap();
-    assert_eq!(buf.read_all().await, &[1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3]);
-    buf.resize_buffer(a, 9).unwrap();
-    assert_eq!(buf.read_all().await, &[1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3]);
-    buf.remove_buffer(a).unwrap();
-    assert_eq!(buf.read_all().await, &[3, 3, 3, 3]);
+        let a = buf.create_buffer(None);
+        buf.resize_buffer(a, 4).unwrap();
+        buf.write(a, 0, &[1, 1, 1, 1]).unwrap();
+        assert_eq!(buf.read_all().await, &[1, 1, 1, 1]);
+        buf.resize_buffer(a, 5).unwrap();
+        assert_eq!(buf.read_all().await, &[1, 1, 1, 1, 0, 0, 0, 0]);
+        buf.resize_buffer(a, 8).unwrap();
+        buf.write(a, 4, &[2, 2, 2, 2]).unwrap();
+        assert_eq!(buf.read_all().await, &[1, 1, 1, 1, 2, 2, 2, 2]);
 
-    buf.remove_buffer(b).unwrap();
-    assert_eq!(buf.read_all().await, &[] as &[u8]);
-}
+        let b = buf.create_buffer(None);
+        buf.resize_buffer(b, 4).unwrap();
+        assert_eq!(buf.read_all().await, &[1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, 0]);
+        buf.write(b, 0, &[3, 3, 3, 3]).unwrap();
+        assert_eq!(buf.read_all().await, &[1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3]);
+        buf.resize_buffer(a, 9).unwrap();
+        assert_eq!(buf.read_all().await, &[1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3]);
+        buf.remove_buffer(a).unwrap();
+        assert_eq!(buf.read_all().await, &[3, 3, 3, 3]);
 
-#[tokio::test]
-async fn test_multi_buffer2() {
-    let gpu = Arc::new(Gpu::new(None).await);
-    let mut buf = MultiBuffer::new(gpu, "test", wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::COPY_DST, MultiBufferSizeStrategy::Pow2);
+        buf.remove_buffer(b).unwrap();
+        assert_eq!(buf.read_all().await, &[] as &[u8]);
+    }
 
-    let a = buf.create_buffer(None);
-    let b = buf.create_buffer(None);
-    buf.resize_buffer(b, 4).unwrap();
-    buf.resize_buffer(a, 4).unwrap();
-    assert_eq!(buf.buffer_layout(b).unwrap().offset_bytes, 4);
-}
+    #[tokio::test]
+    async fn test_multi_buffer2() {
+        let gpu = Arc::new(Gpu::new(None).await);
+        let mut buf =
+            MultiBuffer::new(gpu, "test", wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::COPY_DST, MultiBufferSizeStrategy::Pow2);
 
-#[tokio::test]
-async fn test_multi_buffer_reuse_id() {
-    let gpu = Arc::new(Gpu::new(None).await);
-    let mut buf = MultiBuffer::new(gpu, "test", wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::COPY_DST, MultiBufferSizeStrategy::Pow2);
+        let a = buf.create_buffer(None);
+        let b = buf.create_buffer(None);
+        buf.resize_buffer(b, 4).unwrap();
+        buf.resize_buffer(a, 4).unwrap();
+        assert_eq!(buf.buffer_layout(b).unwrap().offset_bytes, 4);
+    }
 
-    let a = buf.create_buffer(None);
-    buf.remove_buffer(a).unwrap();
-    buf.create_buffer(None);
-}
+    #[tokio::test]
+    async fn test_multi_buffer_reuse_id() {
+        let gpu = Arc::new(Gpu::new(None).await);
+        let mut buf =
+            MultiBuffer::new(gpu, "test", wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::COPY_DST, MultiBufferSizeStrategy::Pow2);
 
-#[tokio::test]
-async fn test_multi_buffer_shrink() {
-    let gpu = Arc::new(Gpu::new(None).await);
-    let mut buf = MultiBuffer::new(gpu, "test", wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::COPY_DST, MultiBufferSizeStrategy::Pow2);
+        let a = buf.create_buffer(None);
+        buf.remove_buffer(a).unwrap();
+        buf.create_buffer(None);
+    }
 
-    let a = buf.create_buffer(None);
-    buf.resize_buffer(a, 20).unwrap();
-    buf.resize_buffer(a, 4).unwrap();
-    assert_eq!(buf.total_capacity_in_bytes(), 4);
+    #[tokio::test]
+    async fn test_multi_buffer_shrink() {
+        let gpu = Arc::new(Gpu::new(None).await);
+        let mut buf =
+            MultiBuffer::new(gpu, "test", wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::COPY_DST, MultiBufferSizeStrategy::Pow2);
+
+        let a = buf.create_buffer(None);
+        buf.resize_buffer(a, 20).unwrap();
+        buf.resize_buffer(a, 4).unwrap();
+        assert_eq!(buf.total_capacity_in_bytes(), 4);
+    }
 }

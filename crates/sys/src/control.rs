@@ -116,6 +116,15 @@ pub struct ControlHandle<T> {
     state: Arc<InnerState<T>>,
 }
 
+impl<T: std::fmt::Debug> std::fmt::Debug for ControlHandle<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ControlHandle")
+            .field("result", &self.state.res)
+            .field("aborted", &self.state.aborted.load(Ordering::Relaxed))
+            .finish()
+    }
+}
+
 impl<T> ControlHandle<T> {
     /// Remotely cancel the future
     pub fn abort(&self) {

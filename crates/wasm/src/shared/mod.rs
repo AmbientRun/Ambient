@@ -312,7 +312,6 @@ pub fn run<
             .shared_state
             .write()
             .base_mut()
-            .event
             .subscribed_events
             .contains(&context.event_name)
     {
@@ -320,24 +319,9 @@ pub fn run<
     }
 
     let result = run_and_catch_panics(|| state.run(world, context));
-    let events_to_run = std::mem::take(&mut state.shared_state.write().base_mut().event.events);
     world.set(id, state_component, state).ok();
 
     let err = result.err().map(|err| (id, err));
-    // TODO(philpax): come up with a more intelligent dispatch scheme than this
-    // This can very easily result in an infinite loop.
-    // Things to fix include:
-    // - don't let a module trigger an event on itself
-    // - don't let two modules chat with each other indefinitely (shunt them to the next tick)
-    // - don't do the event dispatch in this function and instead do it *after* initial
-    //   execution of all modules
-    for (event_name, event_data) in events_to_run {
-        run_all(
-            world,
-            state_component,
-            &RunContext::new(world, &event_name, event_data),
-        );
-    }
 
     err
 }

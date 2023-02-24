@@ -42,7 +42,7 @@ impl Instant {
     }
 
     pub fn elapsed(&self) -> Duration {
-        Self::now().duration_since(self)
+        Self::now().duration_since(*self)
     }
 
     #[inline]

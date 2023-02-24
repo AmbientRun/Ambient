@@ -1,6 +1,5 @@
-use ambient_app::AppBuilder;
+use ambient_app::{App, AppBuilder};
 use ambient_core::{asset_cache, camera::active_camera, main_scene};
-use ambient_ecs::World;
 use ambient_element::ElementComponentExt;
 use ambient_meshes::{CubeMeshKey, SphereMeshKey};
 use ambient_primitives::Cube;
@@ -8,7 +7,8 @@ use ambient_renderer::lod::{cpu_lod, lod_cutoffs, mesh_lods};
 use ambient_std::{asset_cache::SyncAssetKeyExt, math::SphericalCoords};
 use glam::*;
 
-fn init(world: &mut World) {
+async fn init(app: &mut App) {
+    let world = &mut app.world;
     let assets = world.resource(asset_cache()).clone();
 
     Cube.el()
@@ -37,5 +37,5 @@ fn init(world: &mut World) {
 
 fn main() {
     env_logger::init();
-    AppBuilder::simple().run_world(init);
+    AppBuilder::simple().block_on(init);
 }

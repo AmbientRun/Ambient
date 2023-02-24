@@ -5,6 +5,7 @@ version = { workspace = true }
 repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]
+ambient_sys = { path = "../crates/sys" }
 ambient_animation = { path = "../crates/animation" }
 ambient_app = { path = "../crates/app" }
 ambient_audio = { path = "../crates/audio" }

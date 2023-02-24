@@ -1,13 +1,13 @@
-use ambient_app::AppBuilder;
+use ambient_app::{App, AppBuilder};
 use ambient_core::{asset_cache, camera::active_camera, main_scene, transform::*};
-use ambient_ecs::World;
 use ambient_element::ElementComponentExt;
 use ambient_primitives::Quad;
 use ambient_renderer::color;
 use ambient_std::math::SphericalCoords;
 use glam::*;
 
-fn init(world: &mut World) {
+async fn init(app: &mut App) {
+    let world = &mut app.world;
     let _assets = world.resource(asset_cache()).clone();
     Quad.el().set(color(), vec4(0.5, 0.5, 0.5, 1.)).set(scale(), vec3(2., 2., 1.)).spawn_static(world);
     Quad.el()
@@ -30,5 +30,5 @@ fn init(world: &mut World) {
 }
 
 fn main() {
-    AppBuilder::simple().run_world(init);
+    AppBuilder::simple().block_on(init);
 }

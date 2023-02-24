@@ -1,12 +1,12 @@
 use ambient_animation::{animation_controller, AnimationController};
-use ambient_app::AppBuilder;
+use ambient_app::{App, AppBuilder};
 use ambient_core::{
     asset_cache,
     camera::{active_camera, far},
     main_scene,
     transform::*,
 };
-use ambient_ecs::{EntityId, FnSystem, World};
+use ambient_ecs::FnSystem;
 use ambient_element::ElementComponentExt;
 use ambient_model_import::model_crate::ModelCrate;
 use ambient_primitives::{Cube, Quad};
@@ -18,7 +18,9 @@ use ambient_std::{
 use glam::*;
 use winit::event::{Event, VirtualKeyCode, WindowEvent};
 
-async fn init(world: &mut World) -> EntityId {
+async fn init(app: &mut App) {
+    let world = &mut app.world;
+
     let assets = world.resource(asset_cache()).clone();
 
     Cube.el().set(translation(), vec3(8., 0., 0.)).set(color(), vec4(1., 0., 0., 1.)).spawn_static(world);
@@ -50,14 +52,10 @@ async fn init(world: &mut World) -> EntityId {
         .set(main_scene(), ())
         .set(far(), 2000.)
         .spawn(world);
-    entities[0]
-}
 
-fn main() {
-    // wgpu_subscriber::initialize_default_subscriber(None);
-    AppBuilder::simple().run(|app, runtime| {
-        let entity = runtime.block_on(async { init(&mut app.world).await });
-        app.window_event_systems.add(Box::new(FnSystem::new(move |world, event| {
+    let entity = entities[0];
+
+    app.window_event_systems.add(Box::new(FnSystem::new(move |world, event| {
             if let Event::WindowEvent { event: WindowEvent::KeyboardInput { input, .. }, .. } = event {
                 if let Some(keycode) = input.virtual_keycode {
                     match keycode {
@@ -94,5 +92,9 @@ fn main() {
                 }
             }
         })));
-    });
+}
+
+fn main() {
+    // wgpu_subscriber::initialize_default_subscriber(None);
+    AppBuilder::simple().block_on(init);
 }

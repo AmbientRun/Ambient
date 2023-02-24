@@ -59,6 +59,7 @@ impl ClientGameState {
             .set(game_screen_render_target(), render_target)
             .append(client_resources);
         game_world.add_components(game_world.resource_entity(), local_resources).unwrap();
+
         let systems = SystemGroup::new("game", vec![Box::new(client_systems), Box::new(world_instance_systems(true))]);
         let mut renderer =
             Renderer::new(world, assets.clone(), RendererConfig { scene: main_scene(), shadows: true, ..Default::default() });

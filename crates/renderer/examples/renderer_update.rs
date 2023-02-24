@@ -1,4 +1,4 @@
-use ambient_app::{gpu, AppBuilder};
+use ambient_app::{gpu, App, AppBuilder};
 use ambient_core::{asset_cache, camera::active_camera, main_scene, transform::*};
 use ambient_ecs::{EntityData, EntityId, FnSystem, World};
 use ambient_meshes::{CubeMeshKey, QuadMeshKey};
@@ -51,7 +51,7 @@ fn init(world: &mut World) -> (EntityId, EntityId, SharedMaterial, SharedMateria
 
 fn main() {
     env_logger::init();
-    AppBuilder::simple().run(|app, _| {
+    AppBuilder::simple().block_on(|app: &mut App| {
         let assets = app.world.resource(asset_cache()).clone();
         let (entity1, entity2, material1, material2) = init(&mut app.world);
         app.window_event_systems.add(Box::new(FnSystem::new(move |world, event| {
@@ -93,5 +93,7 @@ fn main() {
                 }
             }
         })));
+
+        async {}
     });
 }

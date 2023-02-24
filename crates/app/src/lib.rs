@@ -1,4 +1,5 @@
 use std::{
+    future::Future,
     sync::Arc,
     time::{Duration, SystemTime},
 };
@@ -10,12 +11,13 @@ use ambient_core::{
     async_ecs::async_ecs_systems,
     bounding::bounding_systems,
     camera::camera_systems,
-    frame_index,
+    frame_index, get_window_sizes,
     gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate},
     hierarchy::dump_world_hierarchy_to_tmp_file,
     mouse_position, on_frame_system, remove_at_time_system, runtime, time,
     transform::TransformSystem,
-    window_scale_factor, RuntimeKey, TimeResourcesSystem, WindowKey, WindowSyncSystem, WinitEventsSystem,
+    window::WindowCtl,
+    window_logical_size, window_physical_size, window_scale_factor, RuntimeKey, TimeResourcesSystem, WinitEventsSystem,
 };
 use ambient_ecs::{components, Debuggable, DynSystem, EntityData, FrameEvent, MakeDefault, System, SystemGroup, World};
 use ambient_element::ambient_system;
@@ -29,10 +31,10 @@ use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     fps_counter::{FpsCounter, FpsSample},
 };
-use glam::{uvec2, vec2, Vec2};
+use ambient_sys::task::RuntimeHandle;
+use glam::{uvec2, vec2, UVec2, Vec2};
 use parking_lot::Mutex;
 use renderers::{examples_renderer, ui_renderer, UIRender};
-use tokio::runtime::Runtime;
 use winit::{
     event::{ElementState, Event, KeyboardInput, ModifiersState, VirtualKeyCode, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
@@ -92,7 +94,6 @@ pub fn world_instance_systems(full: bool) -> SystemGroup {
             Box::new(async_ecs_systems()),
             on_frame_system(),
             remove_at_time_system(),
-            Box::new(WindowSyncSystem),
             if full { Box::new(ambient_input::picking::frame_systems()) } else { Box::new(DummySystem) },
             Box::new(lod_system()),
             Box::new(ambient_renderer::systems()),
@@ -107,27 +108,33 @@ pub fn world_instance_systems(full: bool) -> SystemGroup {
         ],
     )
 }
+
 pub struct AppResources {
     pub assets: AssetCache,
     pub gpu: Arc<Gpu>,
-    pub runtime: tokio::runtime::Handle,
-    pub window: Option<Arc<Window>>,
+    pub runtime: RuntimeHandle,
+    pub ctl_tx: flume::Sender<WindowCtl>,
+    window_physical_size: UVec2,
+    window_logical_size: UVec2,
+    window_scale_factor: f64,
 }
+
 impl AppResources {
     pub fn from_world(world: &World) -> Self {
         Self {
             assets: world.resource(self::asset_cache()).clone(),
             gpu: world.resource(self::gpu()).clone(),
             runtime: world.resource(self::runtime()).clone(),
-            window: Some(world.resource(ambient_core::window()).clone()),
+            ctl_tx: world.resource(ambient_core::window_ctl()).clone(),
+            window_physical_size: *world.resource(ambient_core::window_physical_size()),
+            window_logical_size: *world.resource(ambient_core::window_logical_size()),
+            window_scale_factor: *world.resource(ambient_core::window_scale_factor()),
         }
     }
-    pub fn from_assets(assets: &AssetCache) -> Self {
-        Self { assets: assets.clone(), gpu: GpuKey.get(assets), runtime: RuntimeKey.get(assets), window: WindowKey.try_get(assets) }
-    }
 }
+
 pub fn world_instance_resources(resources: AppResources) -> EntityData {
-    let mut ed = EntityData::new()
+    EntityData::new()
         .set(self::gpu(), resources.gpu.clone())
         .set(gizmos(), Gizmos::new())
         .set(self::runtime(), resources.runtime)
@@ -139,40 +146,48 @@ pub fn world_instance_resources(resources: AppResources) -> EntityData {
         .set(ambient_core::app_start_time(), SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap())
         .set(ambient_core::time(), SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap())
         .set(ambient_core::dtime(), 0.)
-        .set(ambient_core::window_logical_size(), uvec2(100, 100))
-        .set(ambient_core::window_physical_size(), uvec2(100, 100))
-        .set(gpu_world(), GpuWorld::new_arced(resources.assets.clone()))
+        .set(gpu_world(), GpuWorld::new_arced(resources.assets))
         .append(ambient_input::picking::resources())
-        .append(ambient_core::async_ecs::async_ecs_resources());
-    if let Some(window) = resources.window {
-        ed = ed.set(ambient_core::window(), window.clone()).set(ambient_core::window_scale_factor(), window.scale_factor());
-    }
-    ed
+        .append(ambient_core::async_ecs::async_ecs_resources())
+        .set(ambient_core::window_physical_size(), resources.window_physical_size)
+        .set(ambient_core::window_logical_size(), resources.window_logical_size)
+        .set(ambient_core::window_scale_factor(), resources.window_scale_factor)
+        .set(ambient_core::window_ctl(), resources.ctl_tx)
 }
+
 pub fn get_time_since_app_start(world: &World) -> Duration {
     *world.resource(time()) - *world.resource(app_start_time())
 }
 
 pub struct AppBuilder {
     pub event_loop: Option<EventLoop<()>>,
-    pub runtime: Option<Runtime>,
     pub window_builder: Option<WindowBuilder>,
     pub asset_cache: Option<AssetCache>,
     pub ui_renderer: bool,
     pub main_renderer: bool,
     pub examples_systems: bool,
 }
+
+pub trait AsyncInit<'a> {
+    type Future: 'a + Future<Output = ()>;
+    fn call(self, app: &'a mut App) -> Self::Future;
+}
+
+impl<'a, F, Fut> AsyncInit<'a> for F
+where
+    Fut: 'a + Future<Output = ()>,
+    F: FnOnce(&'a mut App) -> Fut,
+{
+    type Future = Fut;
+
+    fn call(self, app: &'a mut App) -> Self::Future {
+        (self)(app)
+    }
+}
+
 impl AppBuilder {
     pub fn new() -> Self {
-        Self {
-            event_loop: None,
-            runtime: None,
-            window_builder: None,
-            asset_cache: None,
-            ui_renderer: false,
-            main_renderer: true,
-            examples_systems: false,
-        }
+        Self { event_loop: None, window_builder: None, asset_cache: None, ui_renderer: false, main_renderer: true, examples_systems: false }
     }
     pub fn simple() -> Self {
         Self::new().examples_systems(true)
@@ -187,31 +202,33 @@ impl AppBuilder {
         self.event_loop = Some(event_loop);
         self
     }
-    pub fn with_runtime(mut self, runtime: Runtime) -> Self {
-        self.runtime = Some(runtime);
-        self
-    }
+
     pub fn with_window_builder(mut self, window_builder: WindowBuilder) -> Self {
         self.window_builder = Some(window_builder);
         self
     }
+
     pub fn with_asset_cache(mut self, asset_cache: AssetCache) -> Self {
         self.asset_cache = Some(asset_cache);
         self
     }
+
     pub fn ui_renderer(mut self, value: bool) -> Self {
         self.ui_renderer = value;
         self
     }
+
     pub fn main_renderer(mut self, value: bool) -> Self {
         self.main_renderer = value;
         self
     }
+
     pub fn examples_systems(mut self, value: bool) -> Self {
         self.examples_systems = value;
         self
     }
-    pub fn build(self) -> anyhow::Result<App> {
+
+    pub async fn build(self) -> anyhow::Result<App> {
         crate::init_all_components();
         let event_loop = self.event_loop.unwrap_or_else(EventLoop::new);
         let window = self.window_builder.unwrap_or_default();
@@ -229,19 +246,29 @@ impl AppBuilder {
             server
         };
 
+        #[cfg(not(target_os = "unknown"))]
         let _ = thread_priority::set_current_thread_priority(thread_priority::ThreadPriority::Max);
-        let runtime = self.runtime.unwrap_or_else(|| tokio::runtime::Builder::new_multi_thread().enable_all().build().unwrap());
+
+        let runtime = RuntimeHandle::current();
+
+        let assets = self.asset_cache.unwrap_or_else(|| AssetCache::new(runtime.clone()));
 
         let mut world = World::new("main_app");
-        let gpu = Arc::new(runtime.block_on(async { Gpu::with_config(Some(&window), true).await }));
-        let assets = self.asset_cache.unwrap_or_else(|| AssetCache::new(runtime.handle().clone()));
-        RuntimeKey.insert(&assets, runtime.handle().clone());
-        GpuKey.insert(&assets, gpu.clone());
-        WindowKey.insert(&assets, window.clone());
+        let gpu = Arc::new(Gpu::with_config(Some(&window), true).await);
 
-        let app_resources = AppResources { gpu, runtime: runtime.handle().clone(), assets, window: Some(window.clone()) };
+        RuntimeKey.insert(&assets, runtime.clone());
+        GpuKey.insert(&assets, gpu.clone());
+        // WindowKey.insert(&assets, window.clone());
+
+        let (ctl_tx, ctl_rx) = flume::unbounded();
+
+        let (window_physical_size, window_logical_size, window_scale_factor) = get_window_sizes(&window);
+
+        let app_resources =
+            AppResources { gpu, runtime: runtime.clone(), assets, ctl_tx, window_physical_size, window_logical_size, window_scale_factor };
 
         let resources = world_instance_resources(app_resources);
+
         world.add_components(world.resource_entity(), resources).unwrap();
         if self.ui_renderer || self.main_renderer {
             if !self.main_renderer {
@@ -280,25 +307,45 @@ impl AppBuilder {
             #[cfg(feature = "profile")]
             _puffin: puffin_server,
             modifiers: Default::default(),
+            ctl_rx,
         })
     }
-    pub fn run(self, init: impl FnOnce(&mut App, tokio::runtime::Handle)) {
-        let mut app = self.build().unwrap();
-        let runtime = app.runtime.handle().clone();
-        init(&mut app, runtime);
-        app.run()
+
+    /// Runs the app by blocking the main thread
+    #[cfg(not(target_os = "unknown"))]
+    pub fn block_on(self, init: impl for<'x> AsyncInit<'x>) {
+        let rt = tokio::runtime::Builder::new_multi_thread().enable_all().build().unwrap();
+
+        rt.block_on(async move {
+            let mut app = self.build().await.unwrap();
+
+            init.call(&mut app).await;
+
+            app.run_blocking();
+        });
     }
-    pub fn run_world(self, init: impl FnOnce(&mut World)) {
-        self.run(|app, _| init(&mut app.world))
+
+    /// Finalizes the app and enters the main loop
+    pub async fn run(self, init: impl FnOnce(&mut App, RuntimeHandle)) {
+        let mut app = self.build().await.unwrap();
+        let runtime = app.runtime.clone();
+        init(&mut app, runtime);
+        app.run_blocking()
+    }
+
+    #[inline]
+    pub async fn run_world(self, init: impl FnOnce(&mut World)) {
+        self.run(|app, _| init(&mut app.world)).await
     }
 }
 
 pub struct App {
     pub world: World,
+    pub ctl_rx: flume::Receiver<WindowCtl>,
     pub systems: SystemGroup,
     pub gpu_world_sync_systems: SystemGroup<GpuWorldSyncEvent>,
     pub window_event_systems: SystemGroup<Event<'static, ()>>,
-    pub runtime: Runtime,
+    pub runtime: RuntimeHandle,
     pub window: Arc<Window>,
     event_loop: Option<EventLoop<()>>,
     fps: FpsCounter,
@@ -333,23 +380,25 @@ impl App {
     pub fn builder() -> AppBuilder {
         AppBuilder::new()
     }
-    pub fn run(mut self) {
+
+    pub fn run_blocking(mut self) {
         let event_loop = self.event_loop.take().unwrap();
         event_loop.run(move |event, _, control_flow| {
-            // HACK(philpax): treat dpi changes as resize events. ideally we'd handle this in handle_event proper,
+            // HACK(philpax): treat dpi changes as resize events. Ideally we'd handle this in handle_event proper,
             // but https://github.com/rust-windowing/winit/issues/1968 restricts us
             if let Event::WindowEvent { window_id, event: WindowEvent::ScaleFactorChanged { new_inner_size, scale_factor } } = &event {
                 *self.world.resource_mut(window_scale_factor()) = *scale_factor;
-                self.handle_event(
+                self.handle_static_event(
                     &Event::WindowEvent { window_id: *window_id, event: WindowEvent::Resized(**new_inner_size) },
                     control_flow,
                 );
             } else if let Some(event) = event.to_static() {
-                self.handle_event(&event, control_flow);
+                self.handle_static_event(&event, control_flow);
             }
         });
     }
-    pub fn handle_event(&mut self, event: &Event<'static, ()>, control_flow: &mut ControlFlow) {
+
+    pub fn handle_static_event(&mut self, event: &Event<'static, ()>, control_flow: &mut ControlFlow) {
         *control_flow = ControlFlow::Poll;
 
         // From: https://github.com/gfx-rs/wgpu/issues/1783
@@ -363,11 +412,25 @@ impl App {
         let systems = &mut self.systems;
         let gpu_world_sync_systems = &mut self.gpu_world_sync_systems;
         world.resource(gpu()).device.poll(wgpu::Maintain::Poll);
+
         self.window_event_systems.run(world, event);
         match event {
             Event::MainEventsCleared => {
+                // Handle window control events
+                for v in self.ctl_rx.try_iter() {
+                    tracing::info!("Window control: {v:?}");
+                    match v {
+                        WindowCtl::GrabCursor(mode) => {
+                            self.window.set_cursor_grab(mode).ok();
+                        }
+                        WindowCtl::ShowCursor(show) => self.window.set_cursor_visible(show),
+                        WindowCtl::SetCursorIcon(icon) => self.window.set_cursor_icon(icon),
+                    }
+                }
+
                 profiling::scope!("frame");
                 world.next_frame();
+
                 {
                     profiling::scope!("systems");
                     systems.run(world, &FrameEvent);
@@ -378,6 +441,7 @@ impl App {
                     world.set(world.resource_entity(), self::fps_stats(), fps.clone()).unwrap();
                     self.window.set_title(&format!("{} [{}, {} entities]", world.resource(window_title()), fps.dump_both(), world.len()));
                 }
+
                 self.window.request_redraw();
                 profiling::finish_frame!();
             }
@@ -392,8 +456,15 @@ impl App {
                 WindowEvent::Resized(size) => {
                     let gpu = world.resource(gpu()).clone();
                     gpu.resize(*size);
+
+                    let size = uvec2(size.width, size.height);
+                    let logical_size = (size.as_dvec2() * self.window.scale_factor()).as_uvec2();
+
+                    world.set_if_changed(world.resource_entity(), window_physical_size(), size).unwrap();
+                    world.set_if_changed(world.resource_entity(), window_logical_size(), logical_size).unwrap();
                 }
                 WindowEvent::CloseRequested => {
+                    tracing::info!("Closing...");
                     *control_flow = ControlFlow::Exit;
                 }
                 WindowEvent::KeyboardInput { input, .. } => {

@@ -17,7 +17,7 @@ See our [announcement blog post](https://www.ambient.run/post/introducing-ambien
 - **Language-agnostic**: You will be able to build Ambient modules in any language that can compile to WebAssembly. At present, Rust is the only supported language, but we are working on expanding to other languages.
 - **Single executable**: Ambient is a single executable which can run on Windows, Mac and Linux. It can act as a server or as a client.
 - **Interoperability**: Ambient allows you to define custom components and "concepts" (collections of components). As long as your Ambient projects use the same components and concepts, they will be able to share data and interoperate, even if they have no awareness of each other.
-- **Asset pipeline and streaming**: Ambient has an [asset pipeline](https://ambientrun.github.io/Ambient/asset_pipeline.html) that is capable of compiling multiple asset formats, including `.glb` and `.fbx`. The assets are always streamed over the network, so your clients will receive everything they need when they join.
+- **Asset pipeline and streaming**: Ambient has an [asset pipeline](https://ambientrun.github.io/Ambient/reference/asset_pipeline.html) that is capable of compiling multiple asset formats, including `.glb` and `.fbx`. The assets are always streamed over the network, so your clients will receive everything they need when they join.
 - **Powerful renderer**: The Ambient renderer is GPU-driven, with both culling and level-of-detail switching being handled entirely by the GPU. By default, it uses [PBR](https://en.wikipedia.org/wiki/Physically_based_rendering). It also supports cascading shadow maps and instances everything that can be instanced.
 
 See the [documentation](https://ambientrun.github.io/Ambient/) for a guide on how to get started, or browse the [examples](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples).
@@ -26,7 +26,7 @@ See the [documentation](https://ambientrun.github.io/Ambient/) for a guide on ho
 
 The easiest way to get Ambient is by downloading the latest release [here](https://github.com/AmbientRun/Ambient/releases).
 
-For alternative installation options, go to the [documentation on installing](https://ambientrun.github.io/Ambient/installing.html).
+For alternative installation options, go to the [documentation on installing](https://ambientrun.github.io/Ambient/user/installing.html).
 
 ## Roadmap
 

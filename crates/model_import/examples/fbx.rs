@@ -1,4 +1,4 @@
-use ambient_app::AppBuilder;
+use ambient_app::{App, AppBuilder};
 use ambient_core::{
     asset_cache,
     camera::{active_camera, far},
@@ -6,7 +6,6 @@ use ambient_core::{
     main_scene,
     transform::*,
 };
-use ambient_ecs::World;
 use ambient_element::ElementComponentExt;
 use ambient_gizmos::{gizmos, GizmoPrimitive};
 use ambient_model::bones_to_lines;
@@ -15,7 +14,8 @@ use ambient_primitives::Quad;
 use ambient_std::{asset_url::AbsAssetUrl, line_hash, math::SphericalCoords};
 use glam::*;
 
-async fn init(world: &mut World) {
+async fn init(app: &mut App) {
+    let world = &mut app.world;
     let assets = world.resource(asset_cache()).clone();
 
     Quad.el().set(scale(), Vec3::ONE * 30.).spawn_static(world);
@@ -48,7 +48,5 @@ async fn init(world: &mut World) {
 
 fn main() {
     env_logger::init();
-    AppBuilder::simple().run(|app, runtime| {
-        runtime.block_on(async { init(&mut app.world).await });
-    });
+    AppBuilder::simple().block_on(init);
 }

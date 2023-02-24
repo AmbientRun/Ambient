@@ -1,7 +1,6 @@
-use ambient_app::AppBuilder;
+use ambient_app::{App, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_core::camera::active_camera;
-use ambient_ecs::World;
 use ambient_editor_derive::ElementEditor;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
 use ambient_ui::*;
@@ -68,11 +67,12 @@ impl ElementComponent for Example {
     }
 }
 
-fn init(world: &mut World) {
+async fn init(app: &mut App) {
+    let world = &mut app.world;
     Group(vec![UICamera.el().set(active_camera(), 0.), Example.el()]).el().spawn_interactive(world);
 }
 
 fn main() {
     env_logger::init();
-    AppBuilder::simple_ui().run_world(init);
+    AppBuilder::simple_ui().block_on(init);
 }

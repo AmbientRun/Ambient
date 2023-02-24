@@ -97,6 +97,8 @@ components!("ecs", {
         Description["Indicates that this entity shouldn't be despawned when the module that spawned it unloads."]
     ]
     dont_despawn_on_unload: (),
+    /// A global general event queue for this ecs World. Can be used to dispatch or listen to any kinds of events
+    world_events: WorldEvents,
 });
 
 #[derive(Clone)]
@@ -431,9 +433,15 @@ impl World {
     pub fn resource_entity(&self) -> EntityId {
         EntityId::resources()
     }
+
     pub fn resource_opt<T: ComponentValue>(&self, component: Component<T>) -> Option<&T> {
+        if !component.has_attribute::<Resource>() {
+            log::warn!("Attempt to access non resource component as resources: {component:?}");
+        }
+
         self.get_ref(self.resource_entity(), component).ok()
     }
+
     pub fn resource<T: ComponentValue>(&self, component: Component<T>) -> &T {
         match self.resource_opt(component) {
             Some(val) => val,
@@ -775,3 +783,12 @@ impl<'de> Deserialize<'de> for ComponentSet {
         Ok(ComponentSet(BitSet::from_bit_vec(bv)))
     }
 }
+
+#[derive(Clone)]
+pub struct WorldEvent {
+    pub name: String,
+    pub data: EntityData,
+}
+
+pub type WorldEvents = FramedEvents<WorldEvent>;
+pub type WorldEventReader = FramedEventsReader<WorldEvent>;

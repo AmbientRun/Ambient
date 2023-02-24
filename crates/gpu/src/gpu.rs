@@ -45,12 +45,18 @@ impl Gpu {
             backends: wgpu::Backends::PRIMARY,
             dx12_shader_compiler: wgpu::Dx12Compiler::Fxc, // Does not matter as we are in cfg(not(target_os = "windows"))
         };
+
         let instance = wgpu::Instance::new(instance_descriptor);
         let surface = window.map(|window| unsafe { instance.create_surface(window).expect("Unable to create Surface") });
-        log::info!("Available adapters:");
-        for adapter in instance.enumerate_adapters(wgpu::Backends::PRIMARY) {
-            log::info!("Adapter: {:?}", adapter.get_info());
+
+        #[cfg(not(target_os = "unknown"))]
+        {
+            log::info!("Available adapters:");
+            for adapter in instance.enumerate_adapters(wgpu::Backends::PRIMARY) {
+                log::info!("Adapter: {:?}", adapter.get_info());
+            }
         }
+
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
                 power_preference: wgpu::PowerPreference::HighPerformance,

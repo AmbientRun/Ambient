@@ -1,4 +1,4 @@
-use ambient_app::AppBuilder;
+use ambient_app::{App, AppBuilder};
 use ambient_core::{
     asset_cache,
     bounding::world_bounding_sphere,
@@ -16,7 +16,9 @@ use env_logger::Env;
 use glam::*;
 use winit::event::{ElementState, Event, VirtualKeyCode, WindowEvent};
 
-fn init(world: &mut World) {
+async fn init(app: &mut App) {
+    let world = &mut app.world;
+
     let _assets = world.resource(asset_cache()).clone();
 
     let size = 2000.;
@@ -87,6 +89,18 @@ fn init(world: &mut World) {
         .set(far(), 8000.)
         .spawn(world);
 
+    app.world.add_component(app.world.resource_entity(), gizmo_state(), GizmoState::default()).unwrap();
+    app.systems.add(Box::new(FnSystem::new(|world, _| world.resource(gizmo_state()).update(world))));
+
+    app.window_event_systems.add(Box::new(FnSystem::new(|world, event| {
+        if let Event::WindowEvent { event: WindowEvent::KeyboardInput { input, .. }, .. } = event {
+            if let Some(keycode) = input.virtual_keycode {
+                if input.state == ElementState::Pressed {
+                    world.resource_mut(gizmo_state()).on_key(keycode);
+                }
+            }
+        }
+    })));
     // cameras::free::new(
     //     vec3(-1., 0., 0.),
     //     vec2(0., 0.),
@@ -142,19 +156,5 @@ fn main() {
     // wgpu_subscriber::initialize_default_subscriber(None);
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     init_components();
-    AppBuilder::simple().run(|app, _| {
-        init(&mut app.world);
-        app.world.add_component(app.world.resource_entity(), gizmo_state(), GizmoState::default()).unwrap();
-        app.systems.add(Box::new(FnSystem::new(|world, _| world.resource(gizmo_state()).update(world))));
-
-        app.window_event_systems.add(Box::new(FnSystem::new(|world, event| {
-            if let Event::WindowEvent { event: WindowEvent::KeyboardInput { input, .. }, .. } = event {
-                if let Some(keycode) = input.virtual_keycode {
-                    if input.state == ElementState::Pressed {
-                        world.resource_mut(gizmo_state()).on_key(keycode);
-                    }
-                }
-            }
-        })));
-    });
+    AppBuilder::simple().block_on(init);
 }

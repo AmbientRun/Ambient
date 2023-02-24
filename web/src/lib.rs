@@ -1,4 +1,5 @@
-use ambient_ecs::World;
+use ambient_core::name;
+use ambient_ecs::{EntityData, World};
 use tracing_subscriber::{filter::LevelFilter, fmt::time::UtcTime, prelude::*, registry};
 use tracing_web::MakeConsoleWriter;
 use wasm_bindgen::prelude::wasm_bindgen;
@@ -17,4 +18,7 @@ async fn start() {
     tracing::info!("Hello, Wasm!");
 
     let mut world = World::new("main");
+
+    let id = EntityData::new().set(name(), "wasm-entity".into()).spawn(&mut world);
+    tracing::info!("Spawned {id}");
 }
