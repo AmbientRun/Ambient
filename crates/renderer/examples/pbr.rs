@@ -1,6 +1,6 @@
-use ambient_app::AppBuilder;
+use ambient_app::{App, AppBuilder};
 use ambient_core::{asset_cache, camera::active_camera, main_scene, transform::*};
-use ambient_ecs::{EntityData, World};
+use ambient_ecs::EntityData;
 use ambient_gpu::std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey};
 use ambient_meshes::{CubeMeshKey, SphereMeshKey};
 use ambient_renderer::{
@@ -11,7 +11,8 @@ use ambient_renderer::{
 use ambient_std::{asset_cache::SyncAssetKeyExt, cb, math::SphericalCoords};
 use glam::*;
 
-fn init(world: &mut World) {
+async fn init(app: &mut App) {
+    let world = &mut app.world;
     let assets = world.resource(asset_cache()).clone();
     let size = 5;
 
@@ -77,5 +78,5 @@ fn init(world: &mut World) {
 fn main() {
     // wgpu_subscriber::initialize_default_subscriber(None);
     env_logger::init();
-    AppBuilder::simple().run_world(init);
+    AppBuilder::simple().block_on(init);
 }

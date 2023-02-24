@@ -34,7 +34,8 @@ fn init(world: &mut World) {
     .spawn_interactive(world);
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     env_logger::init();
-    AppBuilder::simple_ui().run_world(init);
+    AppBuilder::simple_ui().run_world(init).await;
 }

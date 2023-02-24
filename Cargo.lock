@@ -237,6 +237,7 @@ dependencies = [
  "ambient_model",
  "ambient_renderer",
  "ambient_std",
+ "ambient_sys",
  "ambient_ui",
  "async-trait",
  "chrono",
@@ -465,6 +466,7 @@ dependencies = [
  "env_logger 0.10.0",
  "glam 0.22.0",
  "itertools",
+ "tokio",
 ]
 
 [[package]]
@@ -492,6 +494,7 @@ dependencies = [
  "ambient_renderer",
  "ambient_rpc",
  "ambient_std",
+ "ambient_sys",
  "ambient_terrain",
  "ambient_ui",
  "ambient_world_audio",

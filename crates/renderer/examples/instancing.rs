@@ -1,13 +1,13 @@
-use ambient_app::AppBuilder;
+use ambient_app::{App, AppBuilder};
 use ambient_core::{camera::active_camera, main_scene, transform::*};
-use ambient_ecs::World;
 use ambient_element::ElementComponentExt;
 use ambient_primitives::Cube;
 use ambient_renderer::{cast_shadows, color};
 use ambient_std::math::SphericalCoords;
 use glam::*;
 
-fn init(world: &mut World) {
+async fn init(app: &mut App) {
+    let world = &mut app.world;
     let size = 5;
 
     for z in 0..size {
@@ -32,5 +32,5 @@ fn init(world: &mut World) {
 fn main() {
     // wgpu_subscriber::initialize_default_subscriber(None);
     env_logger::init();
-    AppBuilder::simple().run_world(init);
+    AppBuilder::simple().block_on(init);
 }

@@ -16,7 +16,6 @@ use ambient_ui::World;
 use ambient_world_audio::{audio_emitter, audio_listener, play_sound_on_entity, systems::setup_audio};
 use glam::{vec3, vec4, Mat4, Vec3};
 use parking_lot::Mutex;
-use tokio::runtime::Handle;
 
 fn spawn_emitters(world: &mut World) {
     let track = Track::from_wav(std::fs::read("../../../elements/example_assets/ambience.wav").unwrap().to_vec()).unwrap();
@@ -45,7 +44,7 @@ fn spawn_emitters(world: &mut World) {
     }
 }
 
-fn init(app: &mut App, _: Handle) {
+fn init(app: &mut App) {
     app.systems.add(Box::new(ambient_world_audio::systems::spatial_audio_systems()));
 
     let world = &mut app.world;
@@ -66,14 +65,17 @@ fn init(app: &mut App, _: Handle) {
     spawn_emitters(world);
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     tracing_subscriber::fmt().init();
     ambient_world_audio::init_components();
 
     let stream = AudioStream::new().unwrap();
 
-    AppBuilder::simple().run(|app, handle| {
-        setup_audio(&mut app.world, stream.mixer().clone()).unwrap();
-        init(app, handle)
-    })
+    AppBuilder::simple()
+        .run(|app, _| {
+            setup_audio(&mut app.world, stream.mixer().clone()).unwrap();
+            init(app)
+        })
+        .await;
 }

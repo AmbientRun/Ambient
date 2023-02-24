@@ -1,7 +1,6 @@
-use ambient_app::AppBuilder;
+use ambient_app::{App, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_core::camera::active_camera;
-use ambient_ecs::World;
 use ambient_element::{ElementComponentExt, Group};
 use ambient_std::color::Color;
 use ambient_ui::{
@@ -9,7 +8,8 @@ use ambient_ui::{
     *,
 };
 
-fn init(world: &mut World) {
+async fn init(app: &mut App) {
+    let world = &mut app.world;
     Group(vec![
         UICamera.el().set(active_camera(), 0.),
         FlowColumn(vec![
@@ -32,5 +32,5 @@ fn init(world: &mut World) {
 
 fn main() {
     env_logger::init();
-    AppBuilder::simple_ui().run_world(init);
+    AppBuilder::simple_ui().block_on(init);
 }

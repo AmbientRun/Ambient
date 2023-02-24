@@ -1,11 +1,11 @@
-use ambient_app::AppBuilder;
+use ambient_app::{App, AppBuilder};
 use ambient_core::{
     asset_cache,
     camera::{active_camera, far},
     main_scene,
     transform::*,
 };
-use ambient_ecs::{EntityData, World};
+use ambient_ecs::EntityData;
 use ambient_element::ElementComponentExt;
 use ambient_model::{model_from_url, ModelFromUrl};
 use ambient_model_import::{MaterialFilter, ModelImportPipeline, ModelImportTransform, ModelTransform};
@@ -19,7 +19,8 @@ use ambient_std::{
 use glam::*;
 use reqwest::Url;
 
-async fn init(world: &mut World) {
+async fn init(app: &mut App) {
+    let world = &mut app.world;
     let assets = world.resource(asset_cache()).clone();
 
     Quad.el().set(scale(), Vec3::ONE * 20.).spawn_static(world);
@@ -121,7 +122,5 @@ async fn init(world: &mut World) {
 
 fn main() {
     env_logger::init();
-    AppBuilder::simple().run(|app, runtime| {
-        runtime.block_on(async { init(&mut app.world).await });
-    });
+    AppBuilder::simple().block_on(init);
 }

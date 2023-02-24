@@ -5,7 +5,7 @@ use std::{
     time::Duration,
 };
 
-use ambient_core::{asset_cache, gpu, runtime};
+use ambient_core::{asset_cache, gpu, mirror_window_components, runtime};
 use ambient_ecs::{components, query, EntityData, EntityId, SystemGroup, World, WorldDiff};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
@@ -203,8 +203,11 @@ impl ElementComponent for GameClientView {
         {
             let game_state = game_state.clone();
             let render_target = render_target.clone();
-            hooks.use_frame(move |_| {
+            hooks.use_frame(move |app_world| {
                 let mut game_state = game_state.lock();
+
+                mirror_window_components(app_world, &mut game_state.world);
+
                 game_state.on_frame(&render_target);
             });
         }

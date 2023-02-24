@@ -1,4 +1,5 @@
 use std::{
+    future::Future,
     sync::Arc,
     time::{Duration, SystemTime},
 };
@@ -10,14 +11,13 @@ use ambient_core::{
     async_ecs::async_ecs_systems,
     bounding::bounding_systems,
     camera::camera_systems,
-    frame_index,
+    frame_index, get_window_sizes,
     gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate},
     hierarchy::dump_world_hierarchy_to_tmp_file,
     mouse_position, on_frame_system, remove_at_time_system, runtime, time,
     transform::TransformSystem,
-    update_window_sizes,
     window::WindowCtl,
-    window_scale_factor, RuntimeKey, TimeResourcesSystem, WinitEventsSystem,
+    window_logical_size, window_physical_size, window_scale_factor, RuntimeKey, TimeResourcesSystem, WinitEventsSystem,
 };
 use ambient_ecs::{components, Debuggable, DynSystem, EntityData, FrameEvent, MakeDefault, System, SystemGroup, World};
 use ambient_element::ambient_system;
@@ -32,7 +32,7 @@ use ambient_std::{
     fps_counter::{FpsCounter, FpsSample},
 };
 use ambient_sys::task::RuntimeHandle;
-use glam::{uvec2, vec2, Vec2};
+use glam::{uvec2, vec2, UVec2, Vec2};
 use parking_lot::Mutex;
 use renderers::{examples_renderer, ui_renderer, UIRender};
 use winit::{
@@ -114,6 +114,9 @@ pub struct AppResources {
     pub gpu: Arc<Gpu>,
     pub runtime: RuntimeHandle,
     pub ctl_tx: flume::Sender<WindowCtl>,
+    window_physical_size: UVec2,
+    window_logical_size: UVec2,
+    window_scale_factor: f64,
 }
 
 impl AppResources {
@@ -123,17 +126,15 @@ impl AppResources {
             gpu: world.resource(self::gpu()).clone(),
             runtime: world.resource(self::runtime()).clone(),
             ctl_tx: world.resource(ambient_core::window_ctl()).clone(),
+            window_physical_size: *world.resource(ambient_core::window_physical_size()),
+            window_logical_size: *world.resource(ambient_core::window_logical_size()),
+            window_scale_factor: *world.resource(ambient_core::window_scale_factor()),
         }
-    }
-
-    pub fn from_assets(_: &AssetCache) -> Self {
-        todo!()
-        // Self { assets: assets.clone(), gpu: GpuKey.get(assets), runtime: RuntimeKey.get(assets), ctl_tx: todo!() }
     }
 }
 
-pub fn world_instance_resources(resources: AppResources, window: Option<&Window>) -> EntityData {
-    let mut data = EntityData::new()
+pub fn world_instance_resources(resources: AppResources) -> EntityData {
+    EntityData::new()
         .set(self::gpu(), resources.gpu.clone())
         .set(gizmos(), Gizmos::new())
         .set(self::runtime(), resources.runtime)
@@ -147,18 +148,11 @@ pub fn world_instance_resources(resources: AppResources, window: Option<&Window>
         .set(ambient_core::dtime(), 0.)
         .set(gpu_world(), GpuWorld::new_arced(resources.assets))
         .append(ambient_input::picking::resources())
-        .append(ambient_core::async_ecs::async_ecs_resources());
-
-    if let Some(window) = window {
-        let size = uvec2(window.inner_size().width, window.inner_size().height);
-
-        data.set_self(ambient_core::window_physical_size(), size);
-        data.set_self(ambient_core::window_logical_size(), (size.as_dvec2() / window.scale_factor()).as_uvec2());
-        data.set_self(ambient_core::window_scale_factor(), window.scale_factor());
-        data.set_self(ambient_core::window_ctl(), resources.ctl_tx);
-    }
-
-    data
+        .append(ambient_core::async_ecs::async_ecs_resources())
+        .set(ambient_core::window_physical_size(), resources.window_physical_size)
+        .set(ambient_core::window_logical_size(), resources.window_logical_size)
+        .set(ambient_core::window_scale_factor(), resources.window_scale_factor)
+        .set(ambient_core::window_ctl(), resources.ctl_tx)
 }
 
 pub fn get_time_since_app_start(world: &World) -> Duration {
@@ -167,24 +161,33 @@ pub fn get_time_since_app_start(world: &World) -> Duration {
 
 pub struct AppBuilder {
     pub event_loop: Option<EventLoop<()>>,
-    pub runtime: Option<RuntimeHandle>,
     pub window_builder: Option<WindowBuilder>,
     pub asset_cache: Option<AssetCache>,
     pub ui_renderer: bool,
     pub main_renderer: bool,
     pub examples_systems: bool,
 }
+
+pub trait AsyncInit<'a> {
+    type Future: 'a + Future<Output = ()>;
+    fn call(self, app: &'a mut App) -> Self::Future;
+}
+
+impl<'a, F, Fut> AsyncInit<'a> for F
+where
+    Fut: 'a + Future<Output = ()>,
+    F: FnOnce(&'a mut App) -> Fut,
+{
+    type Future = Fut;
+
+    fn call(self, app: &'a mut App) -> Self::Future {
+        (self)(app)
+    }
+}
+
 impl AppBuilder {
     pub fn new() -> Self {
-        Self {
-            event_loop: None,
-            runtime: None,
-            window_builder: None,
-            asset_cache: None,
-            ui_renderer: false,
-            main_renderer: true,
-            examples_systems: false,
-        }
+        Self { event_loop: None, window_builder: None, asset_cache: None, ui_renderer: false, main_renderer: true, examples_systems: false }
     }
     pub fn simple() -> Self {
         Self::new().examples_systems(true)
@@ -197,11 +200,6 @@ impl AppBuilder {
     }
     pub fn with_event_loop(mut self, event_loop: EventLoop<()>) -> Self {
         self.event_loop = Some(event_loop);
-        self
-    }
-
-    pub fn with_runtime(mut self, runtime: RuntimeHandle) -> Self {
-        self.runtime = Some(runtime);
         self
     }
 
@@ -251,7 +249,7 @@ impl AppBuilder {
         #[cfg(not(target_os = "unknown"))]
         let _ = thread_priority::set_current_thread_priority(thread_priority::ThreadPriority::Max);
 
-        let runtime = self.runtime.unwrap_or_else(RuntimeHandle::current);
+        let runtime = RuntimeHandle::current();
 
         let assets = self.asset_cache.unwrap_or_else(|| AssetCache::new(runtime.clone()));
 
@@ -264,9 +262,12 @@ impl AppBuilder {
 
         let (ctl_tx, ctl_rx) = flume::unbounded();
 
-        let app_resources = AppResources { gpu, runtime: runtime.clone(), assets, ctl_tx };
+        let (window_physical_size, window_logical_size, window_scale_factor) = get_window_sizes(&window);
 
-        let resources = world_instance_resources(app_resources, Some(&window));
+        let app_resources =
+            AppResources { gpu, runtime: runtime.clone(), assets, ctl_tx, window_physical_size, window_logical_size, window_scale_factor };
+
+        let resources = world_instance_resources(app_resources);
 
         world.add_components(world.resource_entity(), resources).unwrap();
         if self.ui_renderer || self.main_renderer {
@@ -310,12 +311,26 @@ impl AppBuilder {
         })
     }
 
+    /// Runs the app by blocking the main thread
+    #[cfg(not(target_os = "unknown"))]
+    pub fn block_on(self, init: impl for<'x> AsyncInit<'x>) {
+        let rt = tokio::runtime::Builder::new_multi_thread().enable_all().build().unwrap();
+
+        rt.block_on(async move {
+            let mut app = self.build().await.unwrap();
+
+            init.call(&mut app).await;
+
+            app.run_blocking();
+        });
+    }
+
     /// Finalizes the app and enters the main loop
     pub async fn run(self, init: impl FnOnce(&mut App, RuntimeHandle)) {
         let mut app = self.build().await.unwrap();
         let runtime = app.runtime.clone();
         init(&mut app, runtime);
-        app.run()
+        app.run_blocking()
     }
 
     #[inline]
@@ -366,7 +381,7 @@ impl App {
         AppBuilder::new()
     }
 
-    pub fn run(mut self) {
+    pub fn run_blocking(mut self) {
         let event_loop = self.event_loop.take().unwrap();
         event_loop.run(move |event, _, control_flow| {
             // HACK(philpax): treat dpi changes as resize events. Ideally we'd handle this in handle_event proper,
@@ -442,7 +457,11 @@ impl App {
                     let gpu = world.resource(gpu()).clone();
                     gpu.resize(*size);
 
-                    update_window_sizes(world, &self.window);
+                    let size = uvec2(size.width, size.height);
+                    let logical_size = (size.as_dvec2() * self.window.scale_factor()).as_uvec2();
+
+                    world.set_if_changed(world.resource_entity(), window_physical_size(), size).unwrap();
+                    world.set_if_changed(world.resource_entity(), window_logical_size(), logical_size).unwrap();
                 }
                 WindowEvent::CloseRequested => {
                     tracing::info!("Closing...");

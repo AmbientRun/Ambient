@@ -1,6 +1,6 @@
 use std::f32::consts::PI;
 
-use ambient_app::AppBuilder;
+use ambient_app::{App, AppBuilder};
 use ambient_core::{
     asset_cache,
     camera::active_camera,
@@ -8,7 +8,6 @@ use ambient_core::{
     transform::{rotation, scale, translation},
 };
 use ambient_decals::DecalShaderKey;
-use ambient_ecs::World;
 use ambient_element::ElementComponentExt;
 use ambient_primitives::{Cube, Quad};
 use ambient_renderer::{
@@ -22,7 +21,8 @@ use ambient_renderer::{
 use ambient_std::{asset_cache::SyncAssetKeyExt, cb, math::SphericalCoords};
 use glam::*;
 
-fn init(world: &mut World) {
+async fn init(app: &mut App) {
+    let world = &mut app.world;
     Cube.el().set(color(), vec4(0.5, 0.5, 0.5, 1.)).set(translation(), Vec3::Z).set_default(cast_shadows()).spawn_static(world);
     Quad.el().set(scale(), Vec3::ONE * 10.).spawn_static(world);
 
@@ -56,5 +56,5 @@ fn init(world: &mut World) {
 
 fn main() {
     env_logger::init();
-    AppBuilder::simple().run_world(init);
+    AppBuilder::simple().block_on(init);
 }

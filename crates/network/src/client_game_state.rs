@@ -54,11 +54,12 @@ impl ClientGameState {
         client_resources: EntityData,
     ) -> Self {
         let mut game_world = World::new("client_game_world");
-        let local_resources = world_instance_resources(AppResources::from_world(world), None)
+        let local_resources = world_instance_resources(AppResources::from_world(world))
             .set(crate::local_user_id(), player_id.clone())
             .set(game_screen_render_target(), render_target)
             .append(client_resources);
         game_world.add_components(game_world.resource_entity(), local_resources).unwrap();
+
         let systems = SystemGroup::new("game", vec![Box::new(client_systems), Box::new(world_instance_systems(true))]);
         let mut renderer =
             Renderer::new(world, assets.clone(), RendererConfig { scene: main_scene(), shadows: true, ..Default::default() });

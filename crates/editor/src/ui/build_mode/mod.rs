@@ -6,6 +6,7 @@ use ambient_element::{Element, ElementComponent, ElementComponentExt, Group, Hoo
 use ambient_input::{on_app_keyboard_input, MouseButton};
 use ambient_intent::{client_push_intent, rpc_undo_head_exact};
 use ambient_network::client::GameClient;
+use ambient_sys::task::RuntimeHandle;
 use derive_more::Display;
 use futures_signals::signal::SignalExt;
 use itertools::Itertools;
@@ -54,7 +55,7 @@ use self::entity_browser::EntityBrowserScreen;
 pub struct EditorAction<T: ComponentValue> {
     id: Option<String>,
     client: GameClient,
-    runtime: tokio::runtime::Handle,
+    runtime: RuntimeHandle,
     tx: futures_signals::signal::Sender<Option<(String, T)>>,
     intent: Component<T>,
 }
@@ -66,7 +67,7 @@ impl<T: ComponentValue> std::fmt::Debug for EditorAction<T> {
 }
 
 impl<T: ComponentValue> EditorAction<T> {
-    pub fn new(runtime: tokio::runtime::Handle, client: GameClient, intent: Component<T>, throttle: Duration) -> Self {
+    pub fn new(runtime: RuntimeHandle, client: GameClient, intent: Component<T>, throttle: Duration) -> Self {
         let (tx, rx) = futures_signals::signal::channel(None);
 
         {

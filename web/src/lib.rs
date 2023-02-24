@@ -20,4 +20,5 @@ async fn start() {
     let mut world = World::new("main");
 
     let id = EntityData::new().set(name(), "wasm-entity".into()).spawn(&mut world);
+    tracing::info!("Spawned {id}");
 }

@@ -1,17 +1,18 @@
-use ambient_app::AppBuilder;
+use ambient_app::{App, AppBuilder};
 use ambient_core::{
     camera::active_camera,
     main_scene,
     transform::{scale, translation},
 };
-use ambient_ecs::World;
 use ambient_element::ElementComponentExt;
 use ambient_primitives::{Cube, Quad};
 use ambient_renderer::{cast_shadows, color, outline};
 use ambient_std::math::SphericalCoords;
 use glam::{vec3, vec4, Vec3, Vec4};
 
-fn init(world: &mut World) {
+async fn init(app: &mut App) {
+    let world = &mut app.world;
+
     Cube.el()
         .set(color(), vec4(0.5, 0.5, 0.5, 1.))
         .set(translation(), Vec3::Z)
@@ -28,5 +29,5 @@ fn init(world: &mut World) {
 
 fn main() {
     // wgpu_subscriber::initialize_default_subscriber(None);
-    AppBuilder::simple().run_world(init);
+    AppBuilder::simple().block_on(init);
 }

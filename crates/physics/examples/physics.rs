@@ -10,7 +10,7 @@ use glam::*;
 use physxx::*;
 use rand::random;
 
-async fn init(world: &mut World) -> PxSceneRef {
+fn init(world: &mut World) -> PxSceneRef {
     let _gpu = world.resource(gpu()).clone();
     let assets = world.resource(asset_cache()).clone();
     let physics = PhysicsKey.get(&assets);
@@ -51,19 +51,22 @@ async fn init(world: &mut World) -> PxSceneRef {
     scene
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     // wgpu_subscriber::initialize_default_subscriber(None);
-    AppBuilder::simple().run(|app, runtime| {
-        ambient_physics::init_all_components();
-        let scene = runtime.block_on(async { init(&mut app.world).await });
+    AppBuilder::simple()
+        .run(|app, _| {
+            ambient_physics::init_all_components();
+            let scene = init(&mut app.world);
 
-        app.systems.add(Box::new(FixedTimestepSystem::new(1. / 60., Box::new(sync_ecs_physics()))));
-        app.systems.add(Box::new(FixedTimestepSystem::new(
-            1. / 60.,
-            Box::new(FnSystem::new(move |_world, _| {
-                scene.fetch_results(true);
-                scene.simulate(1. / 60.);
-            })),
-        )));
-    });
+            app.systems.add(Box::new(FixedTimestepSystem::new(1. / 60., Box::new(sync_ecs_physics()))));
+            app.systems.add(Box::new(FixedTimestepSystem::new(
+                1. / 60.,
+                Box::new(FnSystem::new(move |_world, _| {
+                    scene.fetch_results(true);
+                    scene.simulate(1. / 60.);
+                })),
+            )));
+        })
+        .await
 }

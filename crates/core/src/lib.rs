@@ -256,15 +256,20 @@ impl System for TimeResourcesSystem {
     }
 }
 
-/// Updates the window resources in the world from the given window
-pub fn update_window_sizes(world: &mut World, window: &Window) {
+pub fn get_window_sizes(window: &Window) -> (UVec2, UVec2, f64) {
     let size = uvec2(window.inner_size().width, window.inner_size().height);
+    let sf = window.scale_factor();
+    (size, (size.as_dvec2() / sf).as_uvec2(), sf)
+}
 
-    world.set_if_changed(world.resource_entity(), self::window_physical_size(), size).unwrap();
-    world
-        .set_if_changed(world.resource_entity(), self::window_logical_size(), (size.as_dvec2() / window.scale_factor()).as_uvec2())
-        .unwrap();
-    world.set_if_changed(world.resource_entity(), self::window_scale_factor(), window.scale_factor()).unwrap();
+pub fn mirror_window_components(src: &mut World, dst: &mut World) {
+    let dr = dst.resource_entity();
+
+    dst.set_if_changed(dr, window_physical_size(), *src.resource(window_physical_size())).unwrap();
+    dst.set_if_changed(dr, window_logical_size(), *src.resource(window_logical_size())).unwrap();
+    dst.set_if_changed(dr, window_scale_factor(), *src.resource(window_scale_factor())).unwrap();
+
+    dst.set_if_changed(dr, mouse_position(), *src.resource(mouse_position())).unwrap();
 }
 
 /// Updates `window_physical_size`, `window_logical_size` and `window_scale_factor` from the `window` component

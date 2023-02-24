@@ -1,15 +1,15 @@
 use std::{sync::Arc, time::Duration};
 
-use ambient_app::AppBuilder;
+use ambient_app::{App, AppBuilder};
 use ambient_asset_timeline::LocalAssetTimelineVisualizer;
 use ambient_cameras::UICamera;
 use ambient_core::{asset_cache, camera::active_camera, runtime};
 use ambient_ecs::World;
 use ambient_element::{ElementComponentExt, Group};
 use ambient_std::asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt};
+use ambient_sys::task::JoinHandle;
 use ambient_ui::{Button, FocusRoot, WindowSized};
 use async_trait::async_trait;
-use tokio::task::JoinHandle;
 
 #[derive(PartialEq, Eq, Debug)]
 struct NoKeepalive;
@@ -56,6 +56,7 @@ fn load_asset(world: &mut World) -> JoinHandle<()> {
         tracing::info!("Finished loading asset");
     })
 }
+
 fn load_and_abort_asset(world: &mut World) {
     let task = load_asset(world);
     world.resource(runtime()).spawn(async move {
@@ -82,7 +83,8 @@ fn load_and_abort_asset_no_keepalive(world: &mut World) {
     });
 }
 
-fn init(world: &mut World) {
+async fn init(app: &mut App) {
+    let world = &mut app.world;
     // load_model(world);
     Group(vec![
         UICamera.el().set(active_camera(), 0.),
@@ -108,5 +110,5 @@ fn init(world: &mut World) {
 
 fn main() {
     tracing_subscriber::fmt().init();
-    AppBuilder::simple_ui().run_world(init);
+    AppBuilder::simple_ui().block_on(init)
 }
