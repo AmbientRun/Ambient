@@ -252,7 +252,7 @@ pub fn get_defs_module(_: &AssetCache) -> ShaderModule {
         [("PI", PI)]
             .iter()
             .map(|(k, v)| format!("const {k}: f32 = {v};\n"))
-            .chain([wgsl_interpolate(), include_file!("polyfill.wgsl"), MESH_BUFFER_TYPES_WGSL.to_string()])
+            .chain([wgsl_interpolate(), include_file!("polyfill.wgsl")])
             .collect::<String>(),
     )
 }
