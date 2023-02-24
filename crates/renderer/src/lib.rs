@@ -10,7 +10,7 @@ use ambient_ecs::{
     components, query_mut, Debuggable, Description, EntityId, MakeDefault, Name, Networked, Resource, Store, SystemGroup, World,
 };
 use ambient_gpu::{
-    mesh_buffer::{get_mesh_buffer_types, GpuMesh, MESH_BUFFER_TYPES_WGSL},
+    mesh_buffer::{GpuMesh, MESH_BUFFER_TYPES_WGSL},
     shader_module::{BindGroupDesc, Shader, ShaderModule, ShaderModuleIdentifier},
     wgsl_utils::wgsl_interpolate,
 };
@@ -311,7 +311,6 @@ pub fn get_forward_module(assets: &AssetCache, shadow_cascades: u32) -> ShaderMo
         get_globals_module(assets, shadow_cascades),
         GpuWorldShaderModuleKey { read_only: true }.get(assets),
         get_common_module(assets),
-        get_mesh_buffer_types(),
     ]
     .iter()
     .collect()

@@ -88,9 +88,9 @@ fn fetch_shadow(light_angle: f32, world_position: vec4<f32>) -> f32 {
         // The texel size is in world coordinates, transform to depth buffer by
         // dividing by the depth of the camera
         let p = cam.viewproj * world_position;
-        let p = p.xyz / p.w;
-        if (inside(p)) {
-            return fetch_shadow_cascade(i, p);
+        let p_norm = p.xyz / p.w;
+        if (inside(p_norm)) {
+            return fetch_shadow_cascade(i, p_norm);
         }
     }
     return 1.;
@@ -190,10 +190,10 @@ fn distribution_ggx(normal: vec3<f32>, h: vec3<f32>, roughness: f32) -> f32 {
     let ndoth = max(dot(normal, h), 0.0);
     let ndoth2 = ndoth * ndoth;
 
-    let numerator =a2;
-    let denom = ndoth2 * (a2 - 1.0) + 1.0;
+    let numerator = a2;
+    var denom = ndoth2 * (a2 - 1.0) + 1.0;
 
-    let denom = PI * denom * denom;
+    denom = PI * denom * denom;
     return numerator / denom;
 }
 
