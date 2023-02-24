@@ -164,7 +164,6 @@ impl RendererCollect {
             "collect",
             &[
                 get_defs_module(assets),
-                get_mesh_buffer_types(),
                 get_resources_module(),
                 GpuWorldShaderModuleKey { read_only: true }.get(assets),
                 ShaderModule::new(
