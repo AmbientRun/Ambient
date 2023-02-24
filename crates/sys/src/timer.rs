@@ -11,6 +11,7 @@ use std::{
     time::Duration,
 };
 
+use futures::{ready, FutureExt, Stream, StreamExt};
 use parking_lot::Mutex;
 use slotmap::SlotMap;
 
@@ -56,20 +57,37 @@ struct Inner {
 
 #[derive(Default, Debug)]
 pub struct TimerStore {
+    /// A waker for the update future when a new timer is added.
+    waiter: Waiter,
     inner: Mutex<Inner>,
 }
 
 impl TimerStore {
+    fn update_timer(&self, key: TimerKey, deadline: Instant) {
+        let mut guard = self.inner.lock();
+        let timer = guard.timers.get_mut(key).expect("Invalid timer handle");
+        timer.deadline = deadline;
+
+        guard.heap.push((Reverse(deadline), key));
+
+        drop(guard);
+
+        self.waiter.wake();
+    }
+
     /// Creates and starts a new timer
     fn new_timer(&self, deadline: Instant) -> (TimerKey, Arc<Waiter>) {
         let waiter = Arc::new(Waiter::default());
 
         let timer = Timer { deadline, waiter: waiter.clone() };
 
-        let mut inner = self.inner.lock();
-        let key = inner.timers.insert(timer);
+        let mut guard = self.inner.lock();
+        let key = guard.timers.insert(timer);
 
-        inner.heap.push((Reverse(deadline), key));
+        guard.heap.push((Reverse(deadline), key));
+        drop(guard);
+
+        self.waiter.wake();
 
         (key, waiter)
     }
@@ -85,8 +103,6 @@ pub fn get_global_timers() -> Option<Arc<TimerStore>> {
 #[derive(Default, Debug)]
 pub struct TimerWheel {
     timers: Arc<TimerStore>,
-    /// A waker for the update future when a new timer is added.
-    waiter: Arc<Waiter>,
 }
 
 impl TimerWheel {
@@ -118,6 +134,7 @@ impl TimerWheel {
 
         let mut dur = None;
         while let Some(v) = store.heap.peek_mut() {
+            // The deadline stored in the key may be out of date and only serves as a hint
             let key = v.1;
             let Some(timer) = store.timers.get_mut(key) else {
                 tracing::info!("Timer was removed");
@@ -125,9 +142,8 @@ impl TimerWheel {
                 continue;
             };
 
-            assert_eq!(v.0 .0, timer.deadline);
-
             if timer.deadline <= now {
+                eprintln!("Waking {key:?}");
                 tracing::info!("Timer {key:?} expired");
                 timer.waiter.wake();
 
@@ -143,15 +159,19 @@ impl TimerWheel {
 
         if let Some(dur) = dur {
             // The waker will be filled in when the executor polls the returned future.
-            let waiter = self.waiter.clone();
+            let timers = self.timers.clone();
             tracing::info!("Scheduling a wakeup for {dur:?}");
 
             crate::time::schedule_wakeup(dur, move || {
-                waiter.wake();
+                timers.waiter.wake();
             });
         }
 
-        TimerWheelUpdate { waiter: &self.waiter }
+        TimerWheelUpdate { waiter: &self.timers.waiter }
+    }
+
+    pub fn timers(&self) -> &Arc<TimerStore> {
+        &self.timers
     }
 }
 
@@ -192,19 +212,27 @@ impl Sleep {
         let (key, waiter) = timers.new_timer(deadline);
         Self { key, timers: Arc::downgrade(timers), waiter }
     }
+
+    /// Resets the sleep future to a new deadline even if expired
+    pub fn reset(&mut self, deadline: Instant) {
+        if let Some(timers) = self.timers.upgrade() {
+            timers.update_timer(self.key, deadline)
+        } else {
+            panic!("No timers");
+        }
+    }
 }
 
 impl Future for Sleep {
     type Output = ();
 
     fn poll(self: Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> Poll<Self::Output> {
-        if let Some(timers) = self.timers.upgrade() {
+        if let Some(_timers) = self.timers.upgrade() {
             if self.waiter.take_woken() {
-                let mut timers = timers.inner.lock();
-                timers.timers.remove(self.key);
-
+                eprintln!("Task was woken");
                 Poll::Ready(())
             } else {
+                eprintln!("Waiting until awoken");
                 *self.waiter.waker.lock() = Some(cx.waker().clone());
                 Poll::Pending
             }
@@ -214,12 +242,100 @@ impl Future for Sleep {
     }
 }
 
+pub struct Interval {
+    fut: Sleep,
+    deadline: Instant,
+    period: Duration,
+}
+
+impl Interval {
+    pub fn new(timers: &Arc<TimerStore>, period: Duration) -> Self {
+        Self::new_at(timers, Instant::now(), period)
+    }
+
+    pub fn new_at(timers: &Arc<TimerStore>, deadline: Instant, period: Duration) -> Self {
+        Self { fut: Sleep::new_at(timers, deadline), deadline, period }
+    }
+
+    pub async fn tick(&mut self) {
+        self.next().await;
+    }
+}
+
+impl Stream for Interval {
+    type Item = ();
+
+    fn poll_next(mut self: Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> Poll<Option<Self::Item>> {
+        // Wait for the next deadline
+        ready!(self.fut.poll_unpin(cx));
+
+        let next_deadline = self.deadline + self.period;
+        self.deadline = next_deadline;
+        self.fut.reset(next_deadline);
+
+        Poll::Ready(Some(()))
+    }
+}
+
 impl Drop for Sleep {
     fn drop(&mut self) {
         if let Some(timers) = self.timers.upgrade() {
             let mut timers = timers.inner.lock();
             timers.timers.remove(self.key);
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::time::sleep;
+
+    use super::*;
+
+    async fn assert_dur(fut: impl Future<Output = ()>, dur: Duration) {
+        let now = Instant::now();
+        fut.await;
+
+        let elapsed = now.elapsed();
+        assert!(
+            (elapsed.as_secs_f32() - dur.as_secs_f32()).abs() < dur.as_secs_f32().max(1.0) * 0.1,
+            "Expected future to take {dur:?} but it took {elapsed:?}"
+        );
+    }
+
+    #[tokio::test]
+    async fn interval() {
+        let wheel = TimerWheel::new();
+        let timers = wheel.timers();
+
+        let mut interval = Interval::new(timers, Duration::from_millis(500));
+        tokio::spawn(wheel.start());
+
+        assert_dur(interval.tick(), Duration::ZERO).await;
+        assert_dur(interval.tick(), Duration::from_millis(500)).await;
+        // assert_dur(interval.tick(), Duration::from_millis(500)).await;
+
+        assert_dur(sleep(Duration::from_secs(1)), Duration::from_secs(1)).await;
+
+        assert_dur(interval.tick(), Duration::ZERO).await;
+        // assert_dur(interval.tick(), Duration::from_millis(500)).await;
+    }
+
+    #[tokio::test]
+    async fn timer_reset() {
+        let wheel = TimerWheel::new();
+        let timers = wheel.timers();
+
+        let mut fut = Sleep::new(timers, Duration::from_secs(5));
+        fut.reset(Instant::now() + Duration::from_secs(1));
+
+        tokio::spawn(wheel.start());
+
+        assert_dur(&mut fut, Duration::from_secs(1)).await;
+
+        fut.reset(Instant::now() + Duration::from_secs(2));
+
+        assert_dur(&mut fut, Duration::from_secs(2)).await;
     }
 }
 

@@ -24,7 +24,7 @@ impl ElementComponent for Throbber {
             let rt = w.resource(runtime());
             let task = rt.spawn(async move {
                 use ambient_std::IntoDuration;
-                let mut tick = tokio::time::interval(200.ms());
+                let mut tick = ambient_sys::time::interval(200.ms());
                 loop {
                     tick.tick().await;
                     set_status(stages.next().unwrap());

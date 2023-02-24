@@ -59,7 +59,7 @@ impl AbsAssetUrl {
     }
 
     #[cfg(target_arch = "wasm32")]
-    pub fn from_file_path(path: impl AsRef<Path>) -> Self {
+    pub fn from_file_path(_: impl AsRef<Path>) -> Self {
         unimplemented!("Url::from_file_path")
     }
 
@@ -74,7 +74,7 @@ impl AbsAssetUrl {
     }
 
     #[cfg(target_arch = "wasm32")]
-    pub fn from_directory_path(path: impl AsRef<Path>) -> Self {
+    pub fn from_directory_path(_: impl AsRef<Path>) -> Self {
         unimplemented!("Url::from_file_path")
     }
 

@@ -201,6 +201,7 @@ dependencies = [
  "thread-priority",
  "tokio",
  "tracing",
+ "web-sys",
  "wgpu 0.14.2",
  "winit",
 ]
@@ -1087,6 +1088,7 @@ dependencies = [
  "ambient_meshes",
  "ambient_renderer",
  "ambient_std",
+ "ambient_sys",
  "anyhow",
  "arboard",
  "async-trait",
@@ -1175,6 +1177,7 @@ dependencies = [
 name = "ambient_web"
 version = "0.1.1"
 dependencies = [
+ "ambient_app",
  "ambient_core",
  "ambient_ecs",
  "ambient_sys",
