@@ -50,6 +50,11 @@ impl<T> FramedEvents<T> {
         self.events[self.events.len() - 1].len()
     }
 }
+impl<T> Default for FramedEvents<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 #[derive(Debug, Clone)]
 pub struct FramedEventsReader<T> {
     frame: usize,
@@ -68,6 +73,11 @@ impl<T> FramedEventsReader<T> {
         let it = FramedEventsIterator { frame: self.frame, index: self.index, events };
         self.move_to_end(events);
         it
+    }
+}
+impl<T> Default for FramedEventsReader<T> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 #[derive(Clone)]

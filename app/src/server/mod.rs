@@ -7,7 +7,7 @@ use std::{
 };
 
 use ambient_core::{app_start_time, asset_cache, dtime, no_sync, time};
-use ambient_ecs::{ComponentDesc, ComponentRegistry, EntityData, Networked, SystemGroup, World, WorldStreamCompEvent};
+use ambient_ecs::{world_events, ComponentDesc, ComponentRegistry, EntityData, Networked, SystemGroup, World, WorldStreamCompEvent};
 use ambient_network::{
     bi_stream_handlers, datagram_handlers,
     server::{ForkingEvent, GameServer, ShutdownEvent},
@@ -115,7 +115,7 @@ fn is_sync_component(component: ComponentDesc, _: WorldStreamCompEvent) -> bool 
 }
 
 fn create_resources(assets: AssetCache) -> EntityData {
-    let mut server_resources = EntityData::new().set(asset_cache(), assets.clone()).set(no_sync(), ());
+    let mut server_resources = EntityData::new().set(asset_cache(), assets.clone()).set(no_sync(), ()).set_default(world_events());
 
     ambient_physics::create_server_resources(&assets, &mut server_resources);
 

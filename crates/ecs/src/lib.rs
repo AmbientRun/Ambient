@@ -97,6 +97,8 @@ components!("ecs", {
         Description["Indicates that this entity shouldn't be despawned when the module that spawned it unloads."]
     ]
     dont_despawn_on_unload: (),
+    /// A global general event queue for this ecs World. Can be used to dispatch or listen to any kinds of events
+    world_events: WorldEvents,
 });
 
 #[derive(Clone)]
@@ -781,3 +783,12 @@ impl<'de> Deserialize<'de> for ComponentSet {
         Ok(ComponentSet(BitSet::from_bit_vec(bv)))
     }
 }
+
+#[derive(Clone)]
+pub struct WorldEvent {
+    pub name: String,
+    pub data: EntityData,
+}
+
+pub type WorldEvents = FramedEvents<WorldEvent>;
+pub type WorldEventReader = FramedEventsReader<WorldEvent>;
