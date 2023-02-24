@@ -1,5 +1,5 @@
-let atmo_radius = 6471e3;
-let planet_radius = 6371e3;
+const atmo_radius = 6471e3;
+const planet_radius = 6371e3;
 
 struct Node {
     density: f32,
@@ -36,7 +36,7 @@ fn sphere_intersect(pos: vec3<f32>, dir: vec3<f32>, r: f32) -> vec2<f32> {
     );
 }
 
-let DISTANCE_THRESHOLD: f32 = 0.1;
+const DISTANCE_THRESHOLD: f32 = 0.1;
 
 fn cube_intersect(origin: f32, size: f32, ray_o: vec3<f32>, dir: vec3<f32>) ->
 f32 {

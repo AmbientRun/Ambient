@@ -16,7 +16,7 @@ fn get_height(coord: vec2<i32>) -> f32 {
         textureLoad(heightmap, coord, #WATER_LAYER).r;
 }
 
-let d_t = 0.02;
+const d_t = 0.02;
 
 fn calc_next_flux(cell: vec2<i32>, delta: vec2<i32>, layer: i32, cell_height: f32) -> f32 {
     let f = textureLoad(heightmap, cell, layer).r;
