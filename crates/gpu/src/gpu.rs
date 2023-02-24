@@ -55,7 +55,7 @@ impl Gpu {
                 force_fallback_adapter: false,
             })
             .await
-            .expect("Failed to find an appropiate adapter");
+            .expect("Failed to find an appropriate adapter");
 
         log::info!("Using gpu adapter: {:?}", adapter.get_info());
         log::info!("Adapter features:\n{:#?}", adapter.features());
