@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
 use ambient_ecs::{
-    components, ensure_has_component, query, query_mut, Debuggable, Description, ECSError, EntityId, FrameEvent, MakeDefault, Name,
-    Networked, QueryState, Store, System, SystemGroup, World,
+    components, ensure_has_component, query, query_mut, Debuggable, Description, ECSError, EntityId, FrameEvent, MakeDefault,
+    MaybeResource, Name, Networked, QueryState, Store, System, SystemGroup, World,
 };
 use glam::*;
 
@@ -70,7 +70,7 @@ components!("transform", {
     inv_local_to_world: Mat4,
 
     @[
-        Debuggable, Networked, Store,
+        Debuggable, Networked, Store, MaybeResource,
         Name["Local to Parent"],
         Description["Transformation from the entity's local space to the parent's space."]
     ]

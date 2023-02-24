@@ -6,7 +6,7 @@ use std::{
 };
 
 use ambient_core::{asset_cache, gpu, mirror_window_components, runtime};
-use ambient_ecs::{components, query, EntityData, EntityId, SystemGroup, World, WorldDiff};
+use ambient_ecs::{components, query, EntityData, EntityId, Resource, SystemGroup, World, WorldDiff};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
@@ -31,6 +31,7 @@ use crate::{
 };
 
 components!("network", {
+    @[Resource]
     game_client: Option<GameClient>,
 });
 

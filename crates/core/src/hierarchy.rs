@@ -1,7 +1,7 @@
 use std::{collections::HashSet, fs::File, path::PathBuf};
 
 use ambient_ecs::{
-    components, query, Component, ComponentValue, Debuggable, Description, ECSError, EntityId, Name, Networked, Store, World,
+    components, query, Component, ComponentValue, Debuggable, Description, ECSError, EntityId, MaybeResource, Name, Networked, Store, World,
 };
 use ambient_std::{asset_cache::SyncAssetKeyExt, download_asset::AssetsCacheDir};
 use itertools::Itertools;
@@ -12,7 +12,7 @@ use crate::{asset_cache, name};
 components!("ecs", {
     @[Debuggable, Networked, Store, Name["Parent"], Description["The parent of this entity."]]
     parent: EntityId,
-    @[Debuggable, Networked, Store, Name["Children"], Description["The children of this entity."]]
+    @[Debuggable, Networked, Store, MaybeResource, Name["Children"], Description["The children of this entity."]]
     children: Vec<EntityId>,
 });
 

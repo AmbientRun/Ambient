@@ -19,7 +19,7 @@ use ambient_core::{
     window::WindowCtl,
     window_logical_size, window_physical_size, window_scale_factor, RuntimeKey, TimeResourcesSystem, WinitEventsSystem,
 };
-use ambient_ecs::{components, Debuggable, DynSystem, EntityData, FrameEvent, MakeDefault, System, SystemGroup, World};
+use ambient_ecs::{components, Debuggable, DynSystem, EntityData, FrameEvent, MakeDefault, MaybeResource, System, SystemGroup, World};
 use ambient_element::ambient_system;
 use ambient_gizmos::{gizmos, Gizmos};
 use ambient_gpu::{
@@ -50,7 +50,7 @@ fn default_title() -> String {
 }
 
 components!("app", {
-    @[MakeDefault[default_title], Debuggable]
+    @[MakeDefault[default_title], Debuggable, MaybeResource]
     window_title: String,
     fps_stats: FpsSample,
 });

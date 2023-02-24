@@ -9,7 +9,8 @@ use ambient_core::{
     transform::{get_world_position, inv_local_to_world, local_to_world, mesh_to_world},
 };
 use ambient_ecs::{
-    components, query, ComponentDesc, Debuggable, Description, EntityData, EntityId, Name, Networked, Store, SystemGroup, World,
+    components, query, ComponentDesc, Debuggable, Description, EntityData, EntityId, MaybeResource, Name, Networked, Store, SystemGroup,
+    World,
 };
 use ambient_gpu::mesh_buffer::GpuMeshFromUrl;
 use ambient_renderer::{
@@ -56,9 +57,9 @@ components!("model", {
 
     @[Networked, Store]
     pbr_renderer_primitives_from_url: Vec<PbrRenderPrimitiveFromUrl>,
-    @[Debuggable, Networked, Store, Name["Model animatable"], Description["Controls whether this model can be animated."]]
+    @[Debuggable, Networked, Store, MaybeResource, Name["Model animatable"], Description["Controls whether this model can be animated."]]
     model_animatable: bool,
-    @[Networked, Store]
+    @[Networked, Store, MaybeResource]
     model_skins: Vec<ModelSkin>,
     @[Networked, Store]
     model_skin_ix: usize,

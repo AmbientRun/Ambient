@@ -36,7 +36,7 @@ pub mod rpc;
 pub mod server;
 
 pub mod player {
-    use ambient_ecs::{components, Description, Name, Networked, Store};
+    use ambient_ecs::{components, Description, Name, Networked, Resource, Store};
 
     components!("player", {
         @[
@@ -52,7 +52,7 @@ pub mod player {
         ]
         user_id: String,
         @[
-            Networked, Store,
+            Networked, Store, Resource,
             Name["Local user ID"],
             Description["The user ID of the local player."]
         ]

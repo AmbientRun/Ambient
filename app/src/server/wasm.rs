@@ -1,6 +1,6 @@
 use std::{path::PathBuf, sync::Arc};
 
-use ambient_ecs::{components, EntityId, SystemGroup, World};
+use ambient_ecs::{components, EntityId, Resource, SystemGroup, World};
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
 use ambient_wasm::{
     server::bindings::{Bindings as ElementsBindings, WasmServerContext},
@@ -14,10 +14,11 @@ use parking_lot::RwLock;
 pub type ModuleServerState = ModuleState<ElementsBindings, WasmServerContext, BaseHostGuestState>;
 
 components!("wasm::server", {
-    // component
     module_state: ModuleServerState,
-    // resource
+
+    @[Resource]
     make_wasm_context: Arc<dyn Fn(WasiCtx, Arc<RwLock<BaseHostGuestState>>) -> WasmServerContext + Send + Sync>,
+    @[Resource]
     add_to_linker: Arc<dyn Fn(&mut Linker<WasmServerContext>) -> anyhow::Result<()> + Send + Sync>,
 });
 

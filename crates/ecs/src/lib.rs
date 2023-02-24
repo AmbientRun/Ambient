@@ -97,7 +97,10 @@ components!("ecs", {
         Description["Indicates that this entity shouldn't be despawned when the module that spawned it unloads."]
     ]
     dont_despawn_on_unload: (),
-    /// A global general event queue for this ecs World. Can be used to dispatch or listen to any kinds of events
+    @[
+        Resource,
+        Description["A global general event queue for this ecs World. Can be used to dispatch or listen to any kinds of events."]
+    ]
     world_events: WorldEvents,
 });
 
@@ -435,13 +438,9 @@ impl World {
     }
 
     pub fn resource_opt<T: ComponentValue>(&self, component: Component<T>) -> Option<&T> {
-        if !component.has_attribute::<Resource>() {
-            log::warn!("Attempt to access non resource component as resources: {component:?}");
-        }
-
+        Self::warn_on_non_resource_component(component);
         self.get_ref(self.resource_entity(), component).ok()
     }
-
     pub fn resource<T: ComponentValue>(&self, component: Component<T>) -> &T {
         match self.resource_opt(component) {
             Some(val) => val,
@@ -449,11 +448,18 @@ impl World {
         }
     }
     pub fn resource_mut_opt<T: ComponentValue>(&mut self, component: Component<T>) -> Option<&mut T> {
+        Self::warn_on_non_resource_component(component);
         self.get_mut(self.resource_entity(), component).ok()
     }
     pub fn resource_mut<T: ComponentValue>(&mut self, component: Component<T>) -> &mut T {
         self.resource_mut_opt(component).unwrap()
     }
+    fn warn_on_non_resource_component<T: ComponentValue>(component: Component<T>) {
+        if !component.has_attribute::<Resource>() && !component.has_attribute::<MaybeResource>() {
+            log::warn!("Attempt to access non-resource component as a resource: {component:?}");
+        }
+    }
+
     pub fn archetypes(&self) -> &Vec<Archetype> {
         &self.archetypes
     }

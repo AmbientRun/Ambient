@@ -252,6 +252,18 @@ impl<T: ComponentValue> AttributeConstructor<T, ()> for Resource {
     }
 }
 
+/// Indicates that this component can be used as a resource or component.
+///
+/// Typically used on components that are at the root of a Prefab and attached as resources.
+#[derive(Clone)]
+pub struct MaybeResource;
+impl ComponentAttribute for MaybeResource {}
+impl<T: ComponentValue> AttributeConstructor<T, ()> for MaybeResource {
+    fn construct(store: &mut AttributeStore, _: ()) {
+        store.set(Self)
+    }
+}
+
 /// Provides a default for this component that will work with `MakeDefault`.
 #[derive(Clone)]
 pub struct DefaultValue<T: ComponentValue>(pub T);

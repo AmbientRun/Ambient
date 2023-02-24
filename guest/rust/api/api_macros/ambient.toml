@@ -465,7 +465,7 @@ attributes = ["Networked"]
 type = "String"
 name = "Local user ID"
 description = "The user ID of the local player."
-attributes = ["Networked", "Store"]
+attributes = ["Networked", "Resource", "Store"]
 
 [components."core::player::player"]
 type = "Empty"

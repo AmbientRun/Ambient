@@ -1,6 +1,8 @@
 use std::collections::HashSet;
 
-use ambient_ecs::{components, query_mut, Debuggable, EntityId, FramedEventsReader, Networked, Store, System, SystemGroup, World};
+use ambient_ecs::{
+    components, query_mut, Debuggable, EntityId, FramedEventsReader, MaybeResource, Networked, Store, System, SystemGroup, World,
+};
 use ambient_std::{
     shapes::{Sphere, AABB},
     sparse_vec::SparseVec,
@@ -18,7 +20,7 @@ use crate::{
 components!("rendering", {
     @[Debuggable, Networked, Store]
     visibility_from: EntityId,
-    @[Debuggable, Networked, Store]
+    @[Debuggable, Networked, Store, MaybeResource]
     local_bounding_aabb: AABB,
     @[Debuggable, Networked, Store]
     world_bounding_aabb: AABB,
