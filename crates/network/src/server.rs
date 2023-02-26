@@ -6,7 +6,7 @@ use std::{
     time::{Duration, SystemTime},
 };
 
-use ambient_core::{asset_cache, no_sync};
+use ambient_core::{asset_cache, no_sync, project_name};
 use ambient_ecs::{
     components, dont_store, query, ArchetypeFilter, ComponentDesc, EntityData, EntityId, FrameEvent, System, SystemGroup, World,
     WorldStream, WorldStreamCompEvent, WorldStreamFilter,
@@ -24,6 +24,7 @@ use futures::StreamExt;
 use once_cell::sync::OnceCell;
 use parking_lot::Mutex;
 use quinn::{Endpoint, Incoming, NewConnection, RecvStream, SendStream};
+use serde::{Deserialize, Serialize};
 use tokio::{
     io::AsyncReadExt,
     time::{interval, MissedTickBehavior},
@@ -463,7 +464,14 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
                     user_id: None,
                 };
 
-                match client.run(connection).await {
+                let server_info = {
+                    let state = state.lock();
+                    let instance = state.instances.get(MAIN_INSTANCE_ID).unwrap();
+                    let world = &instance.world;
+                    ServerInfo { project_name: world.resource(project_name()).clone() }
+                };
+
+                match client.run(connection, server_info).await {
                     Ok(()) => {}
                     Err(err) if err.is_closed() => {
                         log::info!("Connection closed by client");
@@ -507,9 +515,9 @@ impl<'a> Drop for ClientInstance<'a> {
 
 impl<'a> ClientInstance<'a> {
     #[tracing::instrument(skip_all)]
-    pub async fn run(mut self, conn: NewConnection) -> Result<(), NetworkError> {
+    pub async fn run(mut self, conn: NewConnection, server_info: ServerInfo) -> Result<(), NetworkError> {
         tracing::info!("Connecting to client");
-        let mut proto = ServerProtocol::new(conn).await?;
+        let mut proto = ServerProtocol::new(conn, server_info).await?;
 
         log::debug!("Client loop starting");
         let mut entities_rx = self.diffs_rx.stream();
@@ -553,5 +561,18 @@ impl<'a> ClientInstance<'a> {
                 }
             }
         }
+    }
+}
+
+/// Miscellaneous information about the server that needs to be sent to the client during the handshake.
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ServerInfo {
+    /// The name of the project. Used by the client to figure out what to title its window. Defaults to "Ambient".
+    pub project_name: String,
+}
+
+impl Default for ServerInfo {
+    fn default() -> Self {
+        Self { project_name: "Ambient".into() }
     }
 }
