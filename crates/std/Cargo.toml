@@ -67,7 +67,6 @@ uncategorized = [
     "dep:log",
     "dep:reqwest",
     "dep:thiserror",
-    "dep:yaml-rust",
     "dep:anyhow",
     "dep:sentry-anyhow",
     "dep:parking_lot",

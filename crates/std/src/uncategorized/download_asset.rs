@@ -7,7 +7,6 @@ use futures::Future;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use thiserror::Error;
 use tokio::sync::Semaphore;
-use yaml_rust::YamlLoader;
 
 use crate::{
     asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
@@ -263,29 +262,6 @@ impl<T: DeserializeOwned + Sync + Send + 'static> AsyncAssetKey<AssetResult<Arc<
     async fn load(self, assets: AssetCache) -> AssetResult<Arc<T>> {
         let data = BytesFromUrl { url: self.url.clone(), cache_on_disk: self.cache_on_disk }.get(&assets).await?;
         Ok(serde_json::from_slice(&data).context("Json failed to parse")?)
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct YamlFromUrl {
-    pub url: AbsAssetUrl,
-    pub cache_on_disk: bool,
-}
-impl YamlFromUrl {
-    pub fn parse_url(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
-        Ok(Self { url: AbsAssetUrl::parse(url)?, cache_on_disk })
-    }
-}
-#[async_trait]
-impl AsyncAssetKey<AssetResult<Arc<Vec<yaml_rust::Yaml>>>> for YamlFromUrl {
-    async fn load(self, assets: AssetCache) -> AssetResult<Arc<Vec<yaml_rust::Yaml>>> {
-        let data = BytesFromUrl { url: self.url.clone(), cache_on_disk: self.cache_on_disk }.get(&assets).await?;
-        let data = std::str::from_utf8(&data).context("Bad yaml")?;
-
-        let data =
-            data.replace("!u!", "unity_object: ").replacen("unity_object: ", "!u!", 1).replace("--- unity_object: ", "---\nunity_object: ");
-        let docs = YamlLoader::load_from_str(&data).context("Bad yaml")?;
-        Ok(Arc::new(docs))
     }
 }
 
