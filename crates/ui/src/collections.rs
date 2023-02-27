@@ -3,7 +3,7 @@ use std::{collections::HashMap, fmt::Debug, hash::Hash, ops::Deref, sync::Arc};
 use ambient_core::on_window_event;
 use ambient_ecs::EntityId;
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_input::{on_app_keyboard_input, KeyboardEvent};
+use ambient_input::{event_keyboard_input, KeyboardEvent};
 use ambient_std::{cb, color::Color, Cb};
 use closure::closure;
 use indexmap::IndexMap;
@@ -251,7 +251,21 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
         let (self_id, set_self_id) = hooks.use_state(EntityId::null());
         let (focus, set_focus) = hooks.consume_context::<Focus>().expect("No FocusRoot found");
         let focused = focus == Focus(Some(self_id));
-        let item = FlowRow(vec![
+        hooks.use_world_event(move |world, event| {
+            if let Some(event) = event.get_ref(event_keyboard_input()) {
+                if !focused {
+                    return;
+                }
+                if let Some(on_delete) = &on_delete {
+                    if let KeyboardEvent { keycode: Some(keycode), state: ElementState::Pressed, .. } = event {
+                        if *keycode == VirtualKeyCode::Back || *keycode == VirtualKeyCode::Delete {
+                            on_delete.0();
+                        }
+                    }
+                }
+            }
+        });
+        FlowRow(vec![
             UIBase
                 .el()
                 .set(width(), 5.)
@@ -266,27 +280,7 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
             set_focus(Focus(Some(id)));
         })
         .set(padding(), Borders::vertical(STREET))
-        .set(fit_horizontal(), Fit::Parent);
-        if focused {
-            if let Some(on_delete) = on_delete {
-                item.listener(
-                    on_app_keyboard_input(),
-                    Arc::new(move |_, _, event| {
-                        if let KeyboardEvent { keycode: Some(keycode), state: ElementState::Pressed, .. } = event {
-                            if *keycode == VirtualKeyCode::Back || *keycode == VirtualKeyCode::Delete {
-                                on_delete.0();
-                                return true;
-                            }
-                        }
-                        false
-                    }),
-                )
-            } else {
-                item
-            }
-        } else {
-            item
-        }
+        .set(fit_horizontal(), Fit::Parent)
     }
 }
 

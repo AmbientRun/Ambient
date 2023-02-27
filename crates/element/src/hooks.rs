@@ -18,6 +18,7 @@ use parking_lot::Mutex;
 use tracing::info_span;
 
 use crate::{AnyCloneable, ElementTree, HookContext, InstanceId};
+use itertools::Itertools;
 
 pub type Setter<T> = Cb<dyn Fn(T) + Sync + Send>;
 
@@ -138,12 +139,13 @@ impl<'a> Hooks<'a> {
         }
     }
 
-    pub fn use_world_event(&mut self, func: impl Fn(&World, &EntityData) + Sync + Send + 'static) {
+    pub fn use_world_event(&mut self, func: impl Fn(&mut World, &EntityData) + Sync + Send + 'static) {
         let reader = self.use_ref_with(|_| WorldEventReader::new());
         self.use_frame(move |world| {
             let mut reader = reader.lock();
-            for (_, event) in reader.iter(&world.resource(world_events())) {
-                func(world, event);
+            let events = reader.iter(&world.resource(world_events())).map(|(_, event)| event.clone()).collect_vec();
+            for event in events {
+                func(world, &event);
             }
         })
     }

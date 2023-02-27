@@ -33,7 +33,7 @@ pub struct PlayerRawInput {
 
 components!("input", {
     event_received_character: char,
-    on_app_keyboard_input: EventDispatcher<dyn Fn(&mut World, EntityId, &KeyboardEvent) -> bool + Sync + Send>,
+    event_keyboard_input: KeyboardEvent,
     on_app_mouse_input: EventDispatcher<dyn Fn(&mut World, EntityId, &MouseInput) + Sync + Send>,
     on_app_mouse_motion: EventCallback<Vec2, ()>,
     on_app_mouse_wheel: EventCallback<MouseScrollDelta>,
@@ -98,27 +98,14 @@ impl System<Event<'static, ()>> for InputSystem {
                 }
 
                 WindowEvent::KeyboardInput { input, .. } => {
-                    let mut fire_keyboard_event = |world: &mut World| {
-                        let mut handlers = query((on_app_keyboard_input(),)).collect_cloned(world, Some(&mut self.keyboard_event_qs));
-
-                        let event = KeyboardEvent {
-                            scancode: input.scancode,
-                            state: input.state,
-                            keycode: input.virtual_keycode,
-                            modifiers: self.modifiers,
-                            is_focused: self.is_focused,
-                        };
-
-                        handlers.sort_by_key(|(_, (handler,))| Reverse(handler.created_timestamp));
-                        for (id, (dispatcher,)) in handlers {
-                            for handler in dispatcher.iter() {
-                                if handler(world, id, &event) {
-                                    return;
-                                }
-                            }
-                        }
+                    let event = KeyboardEvent {
+                        scancode: input.scancode,
+                        state: input.state,
+                        keycode: input.virtual_keycode,
+                        modifiers: self.modifiers,
+                        is_focused: self.is_focused,
                     };
-                    fire_keyboard_event(world);
+                    world.resource_mut(world_events()).add_event(EntityData::new().set(event_keyboard_input(), event));
                 }
 
                 WindowEvent::MouseInput { state, button, .. } => {
