@@ -3,7 +3,11 @@ use std::{
     sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard},
 };
 
-/// A helper for state that can be easily shared around callbacks.
+/// A wrapper for `Arc<RwLock<T>>` to simplify passing complex state around callbacks.
+///
+/// Where possible, prefer using the ECS and storing data in (custom) components. This allows
+/// other modules to introspect your module's state, and is generally easier to work with (as
+/// [EntityId](crate::EntityId) is `Copy`, unlike this type.)
 pub struct State<T: ?Sized>(Arc<RwLock<T>>);
 impl<T> State<T> {
     /// Creates a new `State` with the given `value`.
