@@ -65,6 +65,10 @@ pub struct RunCli {
     #[arg(long)]
     pub headless: bool,
 
+    /// Take a screenshot after N seconds and then exit
+    #[arg(long)]
+    pub screenshot_and_exit: Option<f32>,
+
     /// The user ID to join this server with
     #[clap(short, long)]
     pub user_id: Option<String>,

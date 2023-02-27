@@ -1,8 +1,8 @@
-use std::{net::SocketAddr, sync::Arc};
+use std::{net::SocketAddr, process::exit, sync::Arc, time::Duration};
 
 use ambient_app::{window_title, AppBuilder};
 use ambient_cameras::UICamera;
-use ambient_core::camera::active_camera;
+use ambient_core::{camera::active_camera, runtime};
 use ambient_debugger::Debugger;
 use ambient_ecs::{EntityData, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
@@ -10,26 +10,30 @@ use ambient_network::{
     client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce},
     events::ServerEventRegistry,
 };
-use ambient_std::{asset_cache::AssetCache, cb};
+use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
 
-use crate::shared;
-use glam::UVec2;
+use crate::{cli::RunCli, shared};
+use glam::uvec2;
 
 /// Construct an app and enter the main client view
-pub async fn run(assets: AssetCache, server_addr: SocketAddr, user_id: String, show_debug: bool, headless: Option<UVec2>) {
+pub async fn run(assets: AssetCache, server_addr: SocketAddr, run: &RunCli) {
+    let user_id = run.user_id.clone().unwrap_or_else(|| format!("user_{}", friendly_id()));
+    let headless = if run.headless { Some(uvec2(400, 400)) } else { None };
     AppBuilder::simple()
         .ui_renderer(true)
         .with_asset_cache(assets)
         .headless(headless)
-        .run(|app, _runtime| {
-            MainApp { server_addr, user_id, show_debug }.el().spawn_interactive(&mut app.world);
+        .run(move |app, _runtime| {
+            MainApp { server_addr, user_id, show_debug: run.debug, screenshot_and_exit: run.screenshot_and_exit }
+                .el()
+                .spawn_interactive(&mut app.world);
         })
         .await;
 }
 
 #[element_component]
-fn MainApp(hooks: &mut Hooks, server_addr: SocketAddr, user_id: String, show_debug: bool) -> Element {
+fn MainApp(hooks: &mut Hooks, server_addr: SocketAddr, user_id: String, show_debug: bool, screenshot_and_exit: Option<f32>) -> Element {
     let resolution = use_window_physical_resolution(hooks);
 
     hooks.provide_context(GameClientNetworkStats::default);
@@ -45,8 +49,15 @@ fn MainApp(hooks: &mut Hooks, server_addr: SocketAddr, user_id: String, show_deb
             user_id,
             resolution,
             on_disconnect: cb(move || {}),
-            init_world: cb(UseOnce::new(Box::new(move |world, _render_target| {
+            init_world: cb(UseOnce::new(Box::new(move |world, render_target| {
                 world.add_resource(ambient_network::events::event_registry(), Arc::new(ServerEventRegistry::new()));
+                if let Some(seconds) = screenshot_and_exit {
+                    world.resource(runtime()).spawn(async move {
+                        tokio::time::sleep(Duration::from_secs_f32(seconds)).await;
+                        render_target.color_buffer.reader().write_to_file("screenshot.png").await;
+                        exit(0);
+                    });
+                }
             }))),
             on_loaded: cb(move |_game_state, _game_client| Ok(Box::new(|| {}))),
             error_view: cb(move |error| Dock(vec![Text::el("Error").header_style(), Text::el(error)]).el()),

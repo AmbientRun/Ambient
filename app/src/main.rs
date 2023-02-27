@@ -1,7 +1,6 @@
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     download_asset::AssetsCacheOnDisk,
-    friendly_id,
 };
 use clap::Parser;
 
@@ -13,7 +12,6 @@ mod shared;
 use ambient_physics::physx::PhysicsKey;
 use anyhow::Context;
 use cli::Cli;
-use glam::uvec2;
 use log::LevelFilter;
 use server::QUIC_INTERFACE_PORT;
 
@@ -139,9 +137,7 @@ fn main() -> anyhow::Result<()> {
     let handle = runtime.handle().clone();
     if let Some(run) = cli.run() {
         // If we have run parameters, start a client and join a server
-        let user_id = run.user_id.clone().unwrap_or_else(|| format!("user_{}", friendly_id()));
-        let headless = if run.headless { Some(uvec2(400, 400)) } else { None };
-        runtime.block_on(client::run(assets, server_addr, user_id, run.debug, headless));
+        runtime.block_on(client::run(assets, server_addr, run));
     } else {
         // Otherwise, wait for the Ctrl+C signal
         handle.block_on(async move {
