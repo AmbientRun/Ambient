@@ -61,6 +61,10 @@ pub struct RunCli {
     #[arg(long)]
     pub debug: bool,
 
+    /// Run in headless mode
+    #[arg(long)]
+    pub headless: bool,
+
     /// The user ID to join this server with
     #[clap(short, long)]
     pub user_id: Option<String>,

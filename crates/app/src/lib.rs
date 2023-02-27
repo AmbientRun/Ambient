@@ -166,6 +166,7 @@ pub struct AppBuilder {
     pub ui_renderer: bool,
     pub main_renderer: bool,
     pub examples_systems: bool,
+    pub headless: Option<UVec2>,
 }
 
 pub trait AsyncInit<'a> {
@@ -187,7 +188,15 @@ where
 
 impl AppBuilder {
     pub fn new() -> Self {
-        Self { event_loop: None, window_builder: None, asset_cache: None, ui_renderer: false, main_renderer: true, examples_systems: false }
+        Self {
+            event_loop: None,
+            window_builder: None,
+            asset_cache: None,
+            ui_renderer: false,
+            main_renderer: true,
+            examples_systems: false,
+            headless: None,
+        }
     }
     pub fn simple() -> Self {
         Self::new().examples_systems(true)
@@ -228,11 +237,16 @@ impl AppBuilder {
         self
     }
 
+    pub fn headless(mut self, value: Option<UVec2>) -> Self {
+        self.headless = value;
+        self
+    }
+
     pub async fn build(self) -> anyhow::Result<App> {
         crate::init_all_components();
         let event_loop = self.event_loop.unwrap_or_else(EventLoop::new);
         let window = self.window_builder.unwrap_or_default();
-        let window = Arc::new(window.build(&event_loop).unwrap());
+        let window = if self.headless.is_some() { None } else { Some(Arc::new(window.build(&event_loop).unwrap())) };
 
         #[cfg(feature = "profile")]
         let puffin_server = {
@@ -254,7 +268,7 @@ impl AppBuilder {
         let assets = self.asset_cache.unwrap_or_else(|| AssetCache::new(runtime.clone()));
 
         let mut world = World::new("main_app");
-        let gpu = Arc::new(Gpu::with_config(Some(&window), true).await);
+        let gpu = Arc::new(Gpu::with_config(window.as_ref().map(|x| &**x), true).await);
 
         RuntimeKey.insert(&assets, runtime.clone());
         GpuKey.insert(&assets, gpu.clone());
@@ -262,7 +276,12 @@ impl AppBuilder {
 
         let (ctl_tx, ctl_rx) = flume::unbounded();
 
-        let (window_physical_size, window_logical_size, window_scale_factor) = get_window_sizes(&window);
+        let (window_physical_size, window_logical_size, window_scale_factor) = if let Some(window) = window.as_ref() {
+            get_window_sizes(&window)
+        } else {
+            let headless_size = self.headless.unwrap();
+            (headless_size, headless_size, 1.)
+        };
 
         let app_resources =
             AppResources { gpu, runtime: runtime.clone(), assets, ctl_tx, window_physical_size, window_logical_size, window_scale_factor };
@@ -346,7 +365,7 @@ pub struct App {
     pub gpu_world_sync_systems: SystemGroup<GpuWorldSyncEvent>,
     pub window_event_systems: SystemGroup<Event<'static, ()>>,
     pub runtime: RuntimeHandle,
-    pub window: Arc<Window>,
+    pub window: Option<Arc<Window>>,
     event_loop: Option<EventLoop<()>>,
     fps: FpsCounter,
     #[cfg(feature = "profile")]
@@ -459,10 +478,20 @@ impl App {
                     tracing::info!("Window control: {v:?}");
                     match v {
                         WindowCtl::GrabCursor(mode) => {
-                            self.window.set_cursor_grab(mode).ok();
+                            if let Some(window) = &self.window {
+                                window.set_cursor_grab(mode).ok();
+                            }
                         }
-                        WindowCtl::ShowCursor(show) => self.window.set_cursor_visible(show),
-                        WindowCtl::SetCursorIcon(icon) => self.window.set_cursor_icon(icon),
+                        WindowCtl::ShowCursor(show) => {
+                            if let Some(window) = &self.window {
+                                window.set_cursor_visible(show);
+                            }
+                        }
+                        WindowCtl::SetCursorIcon(icon) => {
+                            if let Some(window) = &self.window {
+                                window.set_cursor_icon(icon);
+                            }
+                        }
                     }
                 }
 
@@ -477,10 +506,14 @@ impl App {
 
                 if let Some(fps) = self.fps.frame_next() {
                     world.set(world.resource_entity(), self::fps_stats(), fps.clone()).unwrap();
-                    self.window.set_title(&format!("{} [{}, {} entities]", world.resource(window_title()), fps.dump_both(), world.len()));
+                    if let Some(window) = &self.window {
+                        window.set_title(&format!("{} [{}, {} entities]", world.resource(window_title()), fps.dump_both(), world.len()));
+                    }
                 }
 
-                self.window.request_redraw();
+                if let Some(window) = &self.window {
+                    window.request_redraw();
+                }
                 profiling::finish_frame!();
             }
 
@@ -496,10 +529,12 @@ impl App {
                     gpu.resize(*size);
 
                     let size = uvec2(size.width, size.height);
-                    let logical_size = (size.as_dvec2() * self.window.scale_factor()).as_uvec2();
+                    if let Some(window) = &self.window {
+                        let logical_size = (size.as_dvec2() * window.scale_factor()).as_uvec2();
 
-                    world.set_if_changed(world.resource_entity(), window_physical_size(), size).unwrap();
-                    world.set_if_changed(world.resource_entity(), window_logical_size(), logical_size).unwrap();
+                        world.set_if_changed(world.resource_entity(), window_physical_size(), size).unwrap();
+                        world.set_if_changed(world.resource_entity(), window_logical_size(), logical_size).unwrap();
+                    }
                 }
                 WindowEvent::CloseRequested => {
                     tracing::info!("Closing...");

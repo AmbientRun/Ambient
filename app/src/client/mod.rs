@@ -14,12 +14,14 @@ use ambient_std::{asset_cache::AssetCache, cb};
 use ambient_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
 
 use crate::shared;
+use glam::UVec2;
 
 /// Construct an app and enter the main client view
-pub async fn run(assets: AssetCache, server_addr: SocketAddr, user_id: String, show_debug: bool) {
+pub async fn run(assets: AssetCache, server_addr: SocketAddr, user_id: String, show_debug: bool, headless: Option<UVec2>) {
     AppBuilder::simple()
         .ui_renderer(true)
         .with_asset_cache(assets)
+        .headless(headless)
         .run(|app, _runtime| {
             MainApp { server_addr, user_id, show_debug }.el().spawn_interactive(&mut app.world);
         })
