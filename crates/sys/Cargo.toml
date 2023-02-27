@@ -7,16 +7,16 @@ edition = "2021"
 
 [dependencies]
 
-derive_more.workspace = true
-flume.workspace = true
-futures.workspace = true
-once_cell.workspace = true
-ordered-float.workspace = true
-parking_lot.workspace = true
-pin-project.workspace = true
-slotmap.workspace = true
-thiserror.workspace = true
-tracing.workspace = true
+derive_more = { workspace = true }
+flume = { workspace = true }
+futures = { workspace = true }
+once_cell = { workspace = true }
+ordered-float = { workspace = true }
+parking_lot = { workspace = true }
+pin-project = { workspace = true }
+slotmap = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
 
 time = { version = "0.3", features = ["wasm-bindgen"] }
 # The `console_error_panic_hook` crate provides better debugging of panics by

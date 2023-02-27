@@ -35,4 +35,4 @@ data-encoding = { workspace = true }
 erased-serde = "0.3"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-tokio.workspace = true
+tokio = { workspace = true }
