@@ -203,17 +203,17 @@ pub struct GameServer {
     pub use_inactivity_shutdown: bool,
 }
 impl GameServer {
-    pub async fn new_with_port(port: u16) -> anyhow::Result<Self> {
+    pub async fn new_with_port(port: u16, use_inactivity_shutdown: bool) -> anyhow::Result<Self> {
         let server_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port);
 
         let (endpoint, incoming) = create_server(server_addr)?;
 
-        log::info!("GameServer listening on port {}", port);
-        Ok(Self { _endpoint: endpoint, incoming, port, use_inactivity_shutdown: true })
+        log::debug!("GameServer listening on port {}", port);
+        Ok(Self { _endpoint: endpoint, incoming, port, use_inactivity_shutdown })
     }
-    pub async fn new_with_port_in_range(port_range: Range<u16>) -> anyhow::Result<Self> {
+    pub async fn new_with_port_in_range(port_range: Range<u16>, use_inactivity_shutdown: bool) -> anyhow::Result<Self> {
         for port in port_range {
-            match Self::new_with_port(port).await {
+            match Self::new_with_port(port, use_inactivity_shutdown).await {
                 Ok(server) => {
                     return Ok(server);
                 }
