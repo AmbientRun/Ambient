@@ -1,6 +1,6 @@
 use std::{cmp::Reverse, collections::HashSet};
 
-use ambient_ecs::{components, query, EntityId, QueryState, System, SystemGroup, World};
+use ambient_ecs::{components, query, world_events, EntityData, EntityId, QueryState, System, SystemGroup, World};
 use ambient_std::events::EventDispatcher;
 use glam::{vec2, Vec2};
 use serde::{Deserialize, Serialize};
@@ -32,7 +32,7 @@ pub struct PlayerRawInput {
 }
 
 components!("input", {
-    on_app_received_character: EventCallback<char>,
+    event_received_character: char,
     on_app_keyboard_input: EventDispatcher<dyn Fn(&mut World, EntityId, &KeyboardEvent) -> bool + Sync + Send>,
     on_app_mouse_input: EventDispatcher<dyn Fn(&mut World, EntityId, &MouseInput) + Sync + Send>,
     on_app_mouse_motion: EventCallback<Vec2, ()>,
@@ -57,7 +57,6 @@ pub fn event_systems() -> SystemGroup<Event<'static, ()>> {
 pub struct InputSystem {
     modifiers: ModifiersState,
     is_focused: bool,
-    received_character_qs: QueryState,
     keyboard_event_qs: QueryState,
     mouse_input_qs: QueryState,
     mouse_wheel_qs: QueryState,
@@ -67,7 +66,6 @@ pub struct InputSystem {
 impl InputSystem {
     pub fn new() -> Self {
         Self {
-            received_character_qs: QueryState::new(),
             keyboard_event_qs: QueryState::new(),
             mouse_input_qs: QueryState::new(),
             mouse_wheel_qs: QueryState::new(),
@@ -96,19 +94,7 @@ impl System<Event<'static, ()>> for InputSystem {
                     fire_event(world);
                 }
                 WindowEvent::ReceivedCharacter(c) => {
-                    let mut fire_received_character = |world: &mut World| {
-                        let mut handlers =
-                            query((on_app_received_character(),)).collect_cloned(world, Some(&mut self.received_character_qs));
-                        handlers.sort_by_key(|(_, (handler,))| Reverse(handler.created_timestamp));
-                        for (id, (dispatcher,)) in handlers {
-                            for handler in dispatcher.iter() {
-                                if handler(world, id, *c) {
-                                    return;
-                                }
-                            }
-                        }
-                    };
-                    fire_received_character(world);
+                    world.resource_mut(world_events()).add_event(EntityData::new().set(event_received_character(), *c));
                 }
 
                 WindowEvent::KeyboardInput { input, .. } => {

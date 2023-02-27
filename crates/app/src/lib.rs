@@ -19,7 +19,9 @@ use ambient_core::{
     window::WindowCtl,
     window_logical_size, window_physical_size, window_scale_factor, RuntimeKey, TimeResourcesSystem, WinitEventsSystem,
 };
-use ambient_ecs::{components, Debuggable, DynSystem, EntityData, FrameEvent, MakeDefault, MaybeResource, System, SystemGroup, World};
+use ambient_ecs::{
+    components, world_events, Debuggable, DynSystem, EntityData, FrameEvent, MakeDefault, MaybeResource, System, SystemGroup, World,
+};
 use ambient_element::ambient_system;
 use ambient_gizmos::{gizmos, Gizmos};
 use ambient_gpu::{
@@ -141,6 +143,7 @@ pub fn world_instance_resources(resources: AppResources) -> EntityData {
         .set(self::window_title(), "".to_string())
         .set(self::fps_stats(), FpsSample::default())
         .set(self::asset_cache(), resources.assets.clone())
+        .set_default(world_events())
         .set(frame_index(), 0_usize)
         .set(ambient_core::mouse_position(), Vec2::ZERO)
         .set(ambient_core::app_start_time(), SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap())
