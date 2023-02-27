@@ -244,9 +244,14 @@ impl AppBuilder {
 
     pub async fn build(self) -> anyhow::Result<App> {
         crate::init_all_components();
-        let event_loop = self.event_loop.unwrap_or_else(EventLoop::new);
-        let window = self.window_builder.unwrap_or_default();
-        let window = if self.headless.is_some() { None } else { Some(Arc::new(window.build(&event_loop).unwrap())) };
+        let (window, event_loop) = if self.headless.is_some() {
+            (None, None)
+        } else {
+            let event_loop = self.event_loop.unwrap_or_else(EventLoop::new);
+            let window = self.window_builder.unwrap_or_default();
+            let window = Arc::new(window.build(&event_loop).unwrap());
+            (Some(window), Some(event_loop))
+        };
 
         #[cfg(feature = "profile")]
         let puffin_server = {
@@ -320,7 +325,7 @@ impl AppBuilder {
             world,
             gpu_world_sync_systems: gpu_world_sync_systems(),
             window_event_systems,
-            event_loop: Some(event_loop),
+            event_loop: event_loop,
 
             fps: FpsCounter::new(),
             #[cfg(feature = "profile")]
@@ -439,20 +444,30 @@ impl App {
     }
 
     pub fn run_blocking(mut self) {
-        let event_loop = self.event_loop.take().unwrap();
-        event_loop.run(move |event, _, control_flow| {
-            // HACK(philpax): treat dpi changes as resize events. Ideally we'd handle this in handle_event proper,
-            // but https://github.com/rust-windowing/winit/issues/1968 restricts us
-            if let Event::WindowEvent { window_id, event: WindowEvent::ScaleFactorChanged { new_inner_size, scale_factor } } = &event {
-                *self.world.resource_mut(window_scale_factor()) = *scale_factor;
-                self.handle_static_event(
-                    &Event::WindowEvent { window_id: *window_id, event: WindowEvent::Resized(**new_inner_size) },
-                    control_flow,
-                );
-            } else if let Some(event) = event.to_static() {
-                self.handle_static_event(&event, control_flow);
+        if let Some(event_loop) = self.event_loop.take() {
+            event_loop.run(move |event, _, control_flow| {
+                // HACK(philpax): treat dpi changes as resize events. Ideally we'd handle this in handle_event proper,
+                // but https://github.com/rust-windowing/winit/issues/1968 restricts us
+                if let Event::WindowEvent { window_id, event: WindowEvent::ScaleFactorChanged { new_inner_size, scale_factor } } = &event {
+                    *self.world.resource_mut(window_scale_factor()) = *scale_factor;
+                    self.handle_static_event(
+                        &Event::WindowEvent { window_id: *window_id, event: WindowEvent::Resized(**new_inner_size) },
+                        control_flow,
+                    );
+                } else if let Some(event) = event.to_static() {
+                    self.handle_static_event(&event, control_flow);
+                }
+            });
+        } else {
+            // Fake event loop in headless mode
+            loop {
+                let mut control_flow = ControlFlow::default();
+                self.handle_static_event(&Event::MainEventsCleared, &mut control_flow);
+                if control_flow == ControlFlow::Exit {
+                    return;
+                }
             }
-        });
+        }
     }
 
     pub fn handle_static_event(&mut self, event: &Event<'static, ()>, control_flow: &mut ControlFlow) {
