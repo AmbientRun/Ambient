@@ -321,9 +321,7 @@ pub fn run<
     let result = run_and_catch_panics(|| state.run(world, context));
     world.set(id, state_component, state).ok();
 
-    let err = result.err().map(|err| (id, err));
-
-    err
+    result.err().map(|err| (id, err))
 }
 
 pub fn spawn_module(

@@ -1,5 +1,3 @@
-#![allow(clippy::disallowed_types)]
-
 use std::time::Duration;
 
 use crate::platform;
@@ -11,5 +9,5 @@ pub async fn sleep(duration: Duration) {
 }
 
 pub async fn sleep_until(instant: Instant) {
-    platform::time::sleep_until(instant.into()).await
+    platform::time::sleep_until(instant).await
 }

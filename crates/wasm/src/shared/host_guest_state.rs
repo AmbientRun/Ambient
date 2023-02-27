@@ -1,8 +1,6 @@
 use std::collections::HashSet;
 
-use ambient_ecs::{
-    EntityData, EntityId, PrimitiveComponent, Query, QueryState, World, WorldEventReader,
-};
+use ambient_ecs::{EntityId, PrimitiveComponent, Query, QueryState, World};
 
 pub type QueryStateMap =
     slotmap::SlotMap<slotmap::DefaultKey, (Query, QueryState, Vec<PrimitiveComponent>)>;

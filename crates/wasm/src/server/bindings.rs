@@ -390,12 +390,12 @@ impl host::Host for Bindings {
     }
 
     fn event_subscribe(&mut self, name: &str) {
-        shared_impl::event::subscribe(&mut self.shared_state.write().base_mut(), name)
+        shared_impl::event::subscribe(self.shared_state.write().base_mut(), name)
     }
 
     fn event_send(&mut self, name: &str, data: ComponentsParam<'_>) {
         shared_impl::event::send(
-            &mut self.shared_state.write().base_mut(),
+            self.shared_state.write().base_mut(),
             name,
             convert_components_to_entity_data(data),
         )
