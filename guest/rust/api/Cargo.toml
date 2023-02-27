@@ -2,7 +2,7 @@
 edition = "2021"
 name = "ambient_api"
 description = "The API to the Ambient Runtime"
-license = "MIT"
+license = "MIT OR Apache-2.0"
 documentation = "https://docs.rs/ambient_api"
 version = { workspace = true }
 readme = "../../../README.md"
