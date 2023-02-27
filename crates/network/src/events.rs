@@ -114,7 +114,7 @@ pub fn send_event<T: Serialize>(world: &World, player_id: EntityId, event: T) {
     ServerEventRegistry::serialize(&mut buf, event).expect("Failed to serialize event");
     if let Ok(tx) = world.get_ref(player_id, player_event_stream()) {
         if tx.send(buf.clone()).is_err() {
-            log::warn!("Attempt to broadcast to disconnected player ")
+            log::warn!("Attempt to broadcast to disconnected player")
         }
     }
 }
@@ -126,7 +126,7 @@ pub fn broadcast_event<T: Serialize>(world: &World, event: T) {
     ServerEventRegistry::serialize(&mut buf, event).expect("Failed to serialize event");
     for (_, tx) in query(player_event_stream()).iter(world, None) {
         if tx.send(buf.clone()).is_err() {
-            log::warn!("Attempt to broadcast to disconnected player ")
+            log::warn!("Attempt to broadcast to disconnected player")
         }
     }
 }
