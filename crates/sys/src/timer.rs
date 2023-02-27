@@ -128,7 +128,6 @@ impl TimerWheel {
     ///
     /// Returns the duration to schedule the next update.
     pub fn update(&mut self, now: Instant) -> TimerWheelUpdate {
-        tracing::info!("Updating timers");
         let mut store = self.timers.inner.lock();
         let store = &mut *store;
 
@@ -137,14 +136,11 @@ impl TimerWheel {
             // The deadline stored in the key may be out of date and only serves as a hint
             let key = v.1;
             let Some(timer) = store.timers.get_mut(key) else {
-                tracing::info!("Timer was removed");
                 PeekMut::pop(v);
                 continue;
             };
 
             if timer.deadline <= now {
-                eprintln!("Waking {key:?}");
-                tracing::info!("Timer {key:?} expired");
                 timer.waiter.wake();
 
                 PeekMut::pop(v);
@@ -152,7 +148,6 @@ impl TimerWheel {
                 // Timer has not yet expired
 
                 dur = Some(timer.deadline - now);
-                tracing::info!(?now, deadline = ?timer.deadline, "Next timer: {dur:?}");
                 break;
             }
         }
@@ -160,7 +155,6 @@ impl TimerWheel {
         if let Some(dur) = dur {
             // The waker will be filled in when the executor polls the returned future.
             let timers = self.timers.clone();
-            tracing::info!("Scheduling a wakeup for {dur:?}");
 
             crate::time::schedule_wakeup(dur, move || {
                 timers.waiter.wake();
@@ -229,10 +223,8 @@ impl Future for Sleep {
     fn poll(self: Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> Poll<Self::Output> {
         if let Some(_timers) = self.timers.upgrade() {
             if self.waiter.take_woken() {
-                eprintln!("Task was woken");
                 Poll::Ready(())
             } else {
-                eprintln!("Waiting until awoken");
                 *self.waiter.waker.lock() = Some(cx.waker().clone());
                 Poll::Pending
             }
