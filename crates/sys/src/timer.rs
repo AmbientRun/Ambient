@@ -15,7 +15,7 @@ use futures::{ready, FutureExt, Stream, StreamExt};
 use parking_lot::Mutex;
 use slotmap::SlotMap;
 
-use crate::time::Instant;
+use crate::{time::Instant, MissedTickBehavior};
 
 /// Represents a timer which will be invoked at a point in time
 #[derive(Debug)]
@@ -246,6 +246,7 @@ pub struct Interval {
     fut: Sleep,
     deadline: Instant,
     period: Duration,
+    behavior: MissedTickBehavior,
 }
 
 impl Interval {
@@ -254,11 +255,15 @@ impl Interval {
     }
 
     pub fn new_at(timers: &Arc<TimerStore>, deadline: Instant, period: Duration) -> Self {
-        Self { fut: Sleep::new_at(timers, deadline), deadline, period }
+        Self { fut: Sleep::new_at(timers, deadline), deadline, period, behavior: Default::default() }
     }
 
     pub async fn tick(&mut self) {
         self.next().await;
+    }
+
+    pub fn set_missed_tick_behavior(&mut self, behavior: MissedTickBehavior) {
+        self.behavior = behavior;
     }
 }
 
@@ -269,7 +274,8 @@ impl Stream for Interval {
         // Wait for the next deadline
         ready!(self.fut.poll_unpin(cx));
 
-        let next_deadline = self.deadline + self.period;
+        let now = Instant::now();
+        let next_deadline = self.behavior.next_timeout(self.deadline, now, self.period);
         self.deadline = next_deadline;
         self.fut.reset(next_deadline);
 
@@ -292,15 +298,38 @@ mod test {
 
     use super::*;
 
-    async fn assert_dur(fut: impl Future<Output = ()>, dur: Duration) {
+    async fn assert_dur(fut: impl Future, dur: Duration) {
         let now = Instant::now();
         fut.await;
 
         let elapsed = now.elapsed();
         assert!(
-            (elapsed.as_secs_f32() - dur.as_secs_f32()).abs() < dur.as_secs_f32().max(1.0) * 0.1,
+            (elapsed.as_secs_f32() - dur.as_secs_f32()).abs() < dur.as_secs_f32().max(0.1) * 0.1,
             "Expected future to take {dur:?} but it took {elapsed:?}"
         );
+    }
+
+    #[tokio::test]
+    async fn interval_skip() {
+        let wheel = TimerWheel::new();
+        let timers = wheel.timers();
+
+        let mut interval = Interval::new(timers, Duration::from_millis(500));
+        interval.set_missed_tick_behavior(MissedTickBehavior::Skip);
+        tokio::spawn(wheel.start());
+
+        assert_dur(interval.tick(), Duration::ZERO).await;
+        assert_dur(interval.tick(), Duration::from_millis(500)).await;
+        // assert_dur(interval.tick(), Duration::from_millis(500)).await;
+
+        assert_dur(sleep(Duration::from_millis(1250)), Duration::from_millis(1250)).await;
+
+        assert_dur(interval.tick(), Duration::ZERO).await;
+
+        // Oh no, we missed a tick
+        // Fire at 1500
+        assert_dur(interval.tick(), Duration::from_millis(250)).await;
+        assert_dur(interval.tick(), Duration::from_millis(500)).await;
     }
 
     #[tokio::test]
@@ -315,9 +344,14 @@ mod test {
         assert_dur(interval.tick(), Duration::from_millis(500)).await;
         // assert_dur(interval.tick(), Duration::from_millis(500)).await;
 
-        assert_dur(sleep(Duration::from_secs(1)), Duration::from_secs(1)).await;
+        assert_dur(sleep(Duration::from_millis(1250)), Duration::from_millis(1250)).await;
 
+        // Resolves immediately, now 750 ms behind
         assert_dur(interval.tick(), Duration::ZERO).await;
+        // 250 ms
+        assert_dur(interval.tick(), Duration::ZERO).await;
+
+        assert_dur(interval.tick(), Duration::from_millis(250)).await;
         // assert_dur(interval.tick(), Duration::from_millis(500)).await;
     }
 

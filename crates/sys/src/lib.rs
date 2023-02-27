@@ -1,7 +1,10 @@
 pub mod control;
+mod missed_tick;
 pub mod task;
 pub mod time;
 pub mod timer;
+
+pub use missed_tick::MissedTickBehavior;
 
 /// Sets a panic hook which prints panics to the browser dev-console
 pub fn set_panic_hook() {

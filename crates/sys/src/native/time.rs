@@ -18,6 +18,14 @@ impl Sub<Instant> for Instant {
     }
 }
 
+impl Sub<Duration> for Instant {
+    type Output = Instant;
+
+    fn sub(self, rhs: Duration) -> Self::Output {
+        Self(self.0 - rhs)
+    }
+}
+
 impl Add<Duration> for Instant {
     type Output = Instant;
 
