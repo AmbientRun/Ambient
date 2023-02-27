@@ -6,7 +6,7 @@ use std::{
     time::SystemTime,
 };
 
-use ambient_core::{app_start_time, asset_cache, dtime, no_sync, time};
+use ambient_core::{app_start_time, asset_cache, dtime, no_sync, project_name, time};
 use ambient_ecs::{world_events, ComponentDesc, ComponentRegistry, EntityData, Networked, SystemGroup, World, WorldStreamCompEvent};
 use ambient_network::{
     bi_stream_handlers, datagram_handlers,
@@ -66,6 +66,10 @@ pub fn start(
         server_world.init_shape_change_tracking();
 
         server_world.add_components(server_world.resource_entity(), create_resources(assets.clone())).unwrap();
+
+        // Keep track of the project name
+        let name = manifest.project.name.clone().unwrap_or_else(|| "Ambient".into());
+        server_world.add_components(server_world.resource_entity(), EntityData::new().set(project_name(), name)).unwrap();
 
         wasm::initialize(&mut server_world, project_path.clone(), &manifest).await.unwrap();
 

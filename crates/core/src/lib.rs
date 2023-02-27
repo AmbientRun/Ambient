@@ -121,6 +121,9 @@ components!("app", {
     /// Generic component that indicates the entity shouldn't be sent over network
     @[Debuggable, Networked, Store]
     no_sync: (),
+
+    @[Resource, Name["Project Name"], Description["The name of the project, from the manifest.\n Defaults to \"Ambient\"."]]
+    project_name: String,
 });
 
 pub fn init_all_components() {
