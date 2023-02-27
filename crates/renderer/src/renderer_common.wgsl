@@ -21,20 +21,20 @@ fn model_to_world(loc: vec2<u32>, mesh_index: u32, vertex_index: u32) -> ModelTo
 
     if (has_entity_skin(loc)) {
         let joint = get_mesh_joint(mesh_index, vertex_index);
-        let weight = get_mesh_weight(mesh_index, vertex_index);
+        let mesh_weight = get_mesh_weight(mesh_index, vertex_index);
         let skin_offset = get_entity_skin(loc);
 
-        let ltw_x: mat4x4<f32> = skins.data[skin_offset + joint.x]; 
-        let ltw_y: mat4x4<f32> = skins.data[skin_offset + joint.y]; 
-        let ltw_z: mat4x4<f32> = skins.data[skin_offset + joint.z]; 
-        let ltw_w: mat4x4<f32> = skins.data[skin_offset + joint.w]; 
+        let ltw_x: mat4x4<f32> = skins.data[skin_offset + joint.x];
+        let ltw_y: mat4x4<f32> = skins.data[skin_offset + joint.y];
+        let ltw_z: mat4x4<f32> = skins.data[skin_offset + joint.z];
+        let ltw_w: mat4x4<f32> = skins.data[skin_offset + joint.w];
 
         var total_pos     = vec4<f32>(0.0);
         var total_norm    = vec4<f32>(0.0);
         var total_tangent = vec4<f32>(0.0);
 
         // Normalize the weights
-        let weight = weight / dot(weight, vec4<f32>(1.0));
+        let weight = mesh_weight / dot(mesh_weight, vec4<f32>(1.0));
 
         total_pos = total_pos + (ltw_x * pos) * weight.x;
         total_pos = total_pos + (ltw_y * pos) * weight.y;

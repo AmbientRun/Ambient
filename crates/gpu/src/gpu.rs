@@ -36,11 +36,19 @@ impl Gpu {
         std::env::set_var("DISABLE_LAYER_NV_OPTIMUS_1", "1");
 
         #[cfg(target_os = "windows")]
-        let backend = wgpu::Backends::VULKAN;
+        let instance_descriptor = wgpu::InstanceDescriptor {
+            backends: wgpu::Backends::VULKAN,
+            dx12_shader_compiler: wgpu::Dx12Compiler::Fxc, // TODO: Probably should switch to the Dxc compiler. See: (https://docs.rs/wgpu/0.15.1/wgpu/enum.Dx12Compiler.html#variants)
+        };
         #[cfg(not(target_os = "windows"))]
-        let backend = wgpu::Backends::PRIMARY;
-        let instance = wgpu::Instance::new(backend);
-        let surface = window.map(|window| unsafe { instance.create_surface(window) });
+        let instance_descriptor = wgpu::InstanceDescriptor {
+            backends: wgpu::Backends::PRIMARY,
+            dx12_shader_compiler: wgpu::Dx12Compiler::Fxc, // Does not matter as we are in cfg(not(target_os = "windows"))
+        };
+
+        let instance = wgpu::Instance::new(instance_descriptor);
+        let surface = window.map(|window| unsafe { instance.create_surface(window).expect("Unable to create Surface") });
+
         #[cfg(not(target_os = "unknown"))]
         {
             log::info!("Available adapters:");
@@ -48,6 +56,7 @@ impl Gpu {
                 log::info!("Adapter: {:?}", adapter.get_info());
             }
         }
+
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
                 power_preference: wgpu::PowerPreference::HighPerformance,
@@ -88,9 +97,11 @@ impl Gpu {
 
         log::info!("Device limits:\n{:#?}", device.limits());
 
-        let swapchain_format = surface.as_ref().map(|surface| surface.get_supported_formats(&adapter)[0]);
+        let capabilities = surface.as_ref().map(|surface| surface.get_capabilities(&adapter));
+
+        let swapchain_format = capabilities.as_ref().map(|capabilities| capabilities.formats[0]);
         log::info!("Swapchain format: {swapchain_format:?}");
-        let swapchain_mode = surface.as_ref().map(|surface| surface.get_supported_present_modes(&adapter)).as_ref().map(|modes| {
+        let swapchain_mode = capabilities.as_ref().map(|capabilities| &capabilities.present_modes).as_ref().map(|modes| {
             [PresentMode::Immediate, PresentMode::Fifo, PresentMode::Mailbox]
                 .into_iter()
                 .find(|pm| modes.contains(pm))
@@ -127,6 +138,7 @@ impl Gpu {
             height: size.y,
             present_mode,
             alpha_mode: wgpu::CompositeAlphaMode::Auto,
+            view_formats: vec![format],
         }
     }
 }

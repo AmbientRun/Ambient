@@ -194,6 +194,7 @@ impl TerrainBrush {
                         | wgpu::TextureUsages::COPY_DST
                         | wgpu::TextureUsages::COPY_SRC
                         | wgpu::TextureUsages::STORAGE_BINDING,
+                    view_formats: &[wgpu::TextureFormat::R32Float],
                 },
             )),
             intermediate_normalmap: Arc::new(Texture::new(
@@ -209,6 +210,7 @@ impl TerrainBrush {
                         | wgpu::TextureUsages::COPY_DST
                         | wgpu::TextureUsages::COPY_SRC
                         | wgpu::TextureUsages::STORAGE_BINDING,
+                    view_formats: &[wgpu::TextureFormat::Rgba32Float],
                 },
             )),
         }
