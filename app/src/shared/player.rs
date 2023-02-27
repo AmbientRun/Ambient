@@ -8,7 +8,7 @@ use ambient_core::{
 use ambient_ecs::{query, query_mut, EntityData, SystemGroup};
 use ambient_element::{element_component, Element, Hooks};
 use ambient_input::{
-    event_keyboard_input, event_mouse_input, event_mouse_motion, on_app_focus_change, on_app_mouse_wheel, player_prev_raw_input,
+    event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, on_app_focus_change, player_prev_raw_input,
     player_raw_input, ElementState, MouseScrollDelta, PlayerRawInput,
 };
 use ambient_network::{
@@ -152,6 +152,11 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
                 }
             } else if let Some(delta) = event.get(event_mouse_motion()) {
                 input.lock().mouse_position += delta;
+            } else if let Some(delta) = event.get(event_mouse_wheel()) {
+                input.lock().mouse_wheel += match delta {
+                    MouseScrollDelta::LineDelta(_, y) => y * PIXELS_PER_LINE,
+                    MouseScrollDelta::PixelDelta(pos) => pos.y as f32,
+                };
             }
         }
     });
@@ -161,19 +166,6 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
             on_app_focus_change(),
             Arc::new(move |_, _, focus| {
                 set_has_focus(focus);
-            }),
-        )
-        .listener(
-            on_app_mouse_wheel(),
-            Arc::new({
-                let input = input.clone();
-                move |_, _, delta| {
-                    input.lock().mouse_wheel += match delta {
-                        MouseScrollDelta::LineDelta(_, y) => y * PIXELS_PER_LINE,
-                        MouseScrollDelta::PixelDelta(pos) => pos.y as f32,
-                    };
-                    true
-                }
             }),
         )
         .listener(

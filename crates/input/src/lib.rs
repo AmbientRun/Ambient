@@ -36,7 +36,7 @@ components!("input", {
     event_keyboard_input: KeyboardEvent,
     event_mouse_input: MouseInput,
     event_mouse_motion: Vec2,
-    on_app_mouse_wheel: EventCallback<MouseScrollDelta>,
+    event_mouse_wheel: MouseScrollDelta,
     on_app_modifiers_change: EventCallback<ModifiersState, ()>,
     on_app_focus_change: EventCallback<bool, ()>,
 
@@ -115,18 +115,7 @@ impl System<Event<'static, ()>> for InputSystem {
                 }
 
                 WindowEvent::MouseWheel { delta, .. } => {
-                    let mut fire_wheel_event = |world: &mut World| {
-                        let mut handlers = query((on_app_mouse_wheel(),)).collect_cloned(world, Some(&mut self.mouse_wheel_qs));
-                        handlers.sort_by_key(|(_, (handler,))| Reverse(handler.created_timestamp));
-                        for (id, (dispatcher,)) in handlers {
-                            for handler in dispatcher.iter() {
-                                if handler(world, id, *delta) {
-                                    return;
-                                }
-                            }
-                        }
-                    };
-                    fire_wheel_event(world);
+                    world.resource_mut(world_events()).add_event(EntityData::new().set(event_mouse_wheel(), *delta));
                 }
                 WindowEvent::ModifiersChanged(mods) => {
                     self.modifiers = *mods;

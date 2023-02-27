@@ -17,12 +17,11 @@ use ambient_element::{
     define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent, ElementComponentExt, Hooks,
 };
 use ambient_input::{
-    event_mouse_input, event_mouse_motion, on_app_mouse_wheel,
+    event_mouse_input, event_mouse_motion, event_mouse_wheel,
     picking::{mouse_pickable, on_mouse_enter, on_mouse_hover, on_mouse_input, on_mouse_leave, on_mouse_wheel},
 };
 pub use ambient_std::{cb, Cb};
 use ambient_std::{color::Color, shapes::AABB};
-use closure::closure;
 use glam::*;
 use itertools::Itertools;
 use parking_lot::Mutex;
@@ -237,6 +236,17 @@ pub struct ScrollArea(pub Element);
 impl ElementComponent for ScrollArea {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (scroll, set_scroll) = hooks.use_state(0.);
+        hooks.use_world_event(move |_world, event| {
+            if let Some(delta) = event.get_ref(event_mouse_wheel()) {
+                set_scroll(
+                    scroll
+                        + match delta {
+                            MouseScrollDelta::LineDelta(_, y) => y * 20.,
+                            MouseScrollDelta::PixelDelta(p) => p.y as f32,
+                        },
+                );
+            }
+        });
         UIBase
             .el()
             .init_default(children())
@@ -245,19 +255,6 @@ impl ElementComponent for ScrollArea {
                 Flow(vec![self.0]).el().set(fit_horizontal(), Fit::Parent).set(translation(), vec3(0., scroll, 0.)),
             ])
             .set(layout(), Layout::WidthToChildren)
-            .listener(
-                on_app_mouse_wheel(),
-                Arc::new(move |_, _, delta| {
-                    set_scroll(
-                        scroll
-                            + match delta {
-                                MouseScrollDelta::LineDelta(_, y) => y * 20.,
-                                MouseScrollDelta::PixelDelta(p) => p.y as f32,
-                            },
-                    );
-                    true
-                }),
-            )
     }
 }
 impl ScrollArea {
