@@ -7,7 +7,9 @@ use std::{
 };
 
 use ambient_core::runtime;
-use ambient_ecs::{ComponentQuery, ComponentValue, FrameEvent, QueryState, TypedReadQuery, World};
+use ambient_ecs::{
+    world_events, ComponentQuery, ComponentValue, EntityData, FrameEvent, QueryState, TypedReadQuery, World, WorldEventReader,
+};
 use ambient_std::{cb, Cb};
 use ambient_sys::task;
 use as_any::Downcast;
@@ -134,6 +136,16 @@ impl<'a> Hooks<'a> {
         if let Some(ref mut on_spawn) = self.on_spawn {
             on_spawn.push(Box::new(func) as SpawnFn);
         }
+    }
+
+    pub fn use_world_event(&mut self, func: impl Fn(&World, &EntityData) + Sync + Send + 'static) {
+        let reader = self.use_ref_with(|_| WorldEventReader::new());
+        self.use_frame(move |world| {
+            let mut reader = reader.lock();
+            for (_, event) in reader.iter(&world.resource(world_events())) {
+                func(world, event);
+            }
+        })
     }
 
     /// Spawns the provided future as a task, and aborts the task when the

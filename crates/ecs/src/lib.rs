@@ -790,11 +790,5 @@ impl<'de> Deserialize<'de> for ComponentSet {
     }
 }
 
-#[derive(Clone)]
-pub struct WorldEvent {
-    pub name: String,
-    pub data: EntityData,
-}
-
-pub type WorldEvents = FramedEvents<WorldEvent>;
-pub type WorldEventReader = FramedEventsReader<WorldEvent>;
+pub type WorldEvents = FramedEvents<EntityData>;
+pub type WorldEventReader = FramedEventsReader<EntityData>;
