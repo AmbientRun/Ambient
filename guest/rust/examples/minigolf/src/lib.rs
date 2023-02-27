@@ -153,7 +153,7 @@ pub async fn main() -> EventResult {
                     make_golf_ball()
                         .with(color(), next_color)
                         .with(user_id(), player_user_id.clone())
-                        .with(translation(), vec3(-5., 0., 20.))
+                        .with(translation(), vec3(-5., 0., 10.))
                         .spawn(),
                 );
 
@@ -286,11 +286,18 @@ pub async fn main() -> EventResult {
                 player_camera_state.rotate(delta.mouse_position / 250.);
             }
 
-            let mut force_multiplier = time() % 2.0;
+            let can_shoot = entity::get_component(*player_ball, linear_velocity())
+                .unwrap_or_default()
+                .length_squared()
+                < 4.0;
 
-            if force_multiplier > 1.0 {
-                force_multiplier = 1.0 - (force_multiplier - 1.0);
-            }
+            let force_multiplier = {
+                let mut mul = time() % 2.0;
+                if mul > 1.0 {
+                    mul = 1.0 - (mul - 1.0);
+                }
+                mul
+            };
 
             entity::set_component(
                 *player_text_container,
@@ -309,13 +316,22 @@ pub async fn main() -> EventResult {
 
             entity::set_component(*player_indicator, translation(), ball_position);
             entity::set_component(*player_indicator, rotation(), camera_rotation);
-            entity::set_component(*player_indicator, scale(), vec3(1.0, force_multiplier, 1.0));
-            entity::set_component(*player_indicator_arrow, rotation(), camera_rotation);
-            entity::set_component(
-                *player_indicator_arrow,
-                translation(),
-                ball_position + camera_direction * force_multiplier * 10.,
-            );
+
+            if can_shoot {
+                entity::set_component(*player_indicator, scale(), vec3(1.0, force_multiplier, 1.0));
+
+                let arrow_position = ball_position + camera_direction * force_multiplier * 10.;
+                entity::set_components(
+                    *player_indicator_arrow,
+                    Entity::new()
+                        .with(translation(), arrow_position)
+                        .with(rotation(), camera_rotation)
+                        .with(scale(), Vec3::ONE),
+                );
+            } else {
+                entity::set_component(*player_indicator, scale(), Vec3::ZERO);
+                entity::set_component(*player_indicator_arrow, scale(), Vec3::ZERO);
+            }
 
             if ball_position.z < 0.25 {
                 entity::set_component(*player_ball, linear_velocity(), Vec3::ZERO);
@@ -327,7 +343,7 @@ pub async fn main() -> EventResult {
                 );
             }
 
-            if new.mouse_buttons.contains(&MouseButton::Left) {
+            if new.mouse_buttons.contains(&MouseButton::Left) && can_shoot {
                 entity::set_component(*player, player_restore_point(), ball_position);
                 entity::set_component(
                     *player_ball,
