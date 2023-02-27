@@ -25,5 +25,20 @@ async fn start() {
 
     tracing::info!("Spawned {id}");
 
-    App::builder().build().await.spawn()
+    if let Err(err) = run().await {
+        tracing::error!("{err:?}")
+    }
+}
+
+#[cfg(target_os = "unknown")]
+async fn run() -> anyhow::Result<()> {
+    use anyhow::Context;
+    App::builder().build().await.context("Failed to build app")?.spawn();
+
+    Ok(())
+}
+
+#[cfg(not(target_os = "unknown"))]
+async fn run() -> anyhow::Result<()> {
+    unimplemented!("This only builds on the web")
 }

@@ -382,7 +382,7 @@ impl App {
     }
 
     #[cfg(target_arch = "wasm32")]
-    pub fn spawn(&mut self) {
+    pub fn spawn(mut self) {
         use winit::platform::web::EventLoopExtWebSys;
 
         pub fn insert_canvas(window: &Window) {
@@ -399,7 +399,7 @@ impl App {
             body.append_child(&canvas).unwrap();
         }
 
-        insert_canvas(self.window);
+        insert_canvas(&self.window);
 
         let event_loop = self.event_loop.take().unwrap();
 

@@ -16,6 +16,8 @@ ambient_core = { path = "../crates/core" }
 ambient_ecs = { path = "../crates/ecs" }
 ambient_app = { path = "../crates/app" }
 
+anyhow.workspace = true
+
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 tracing-subscriber = { version = "0.3", features = ["time"] }
