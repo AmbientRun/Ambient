@@ -220,12 +220,12 @@ pub async fn main() -> EventResult {
         .build()
         .each_frame({
             move |cameras| {
-                for (id, camera_state) in &cameras {
-                    let camera_state = CameraState(*camera_state);
+                for (id, camera_state) in cameras {
+                    let camera_state = CameraState(camera_state);
                     let (camera_translation, camera_rotation) = camera_state.get_transform();
-                    entity::set_component(*id, translation(), camera_translation);
+                    entity::set_component(id, translation(), camera_translation);
                     entity::set_component(
-                        *id,
+                        id,
                         rotation(),
                         camera_rotation * Quat::from_rotation_x(90.),
                     );
@@ -270,13 +270,13 @@ pub async fn main() -> EventResult {
                 player_indicator_arrow,
                 player_camera_state,
             ),
-        ) in &players
+        ) in players
         {
-            let Some((delta, new)) = player::get_raw_input_delta(*player) else { continue; };
-            let player_camera_state = CameraState(*player_camera_state);
+            let Some((delta, new)) = player::get_raw_input_delta(player) else { continue; };
+            let player_camera_state = CameraState(player_camera_state);
 
             let ball_position =
-                entity::get_component(*player_ball, translation()).unwrap_or_default();
+                entity::get_component(player_ball, translation()).unwrap_or_default();
 
             player_camera_state
                 .set_position(ball_position)
@@ -286,7 +286,7 @@ pub async fn main() -> EventResult {
                 player_camera_state.rotate(delta.mouse_position / 250.);
             }
 
-            let can_shoot = entity::get_component(*player_ball, linear_velocity())
+            let can_shoot = entity::get_component(player_ball, linear_velocity())
                 .unwrap_or_default()
                 .length_squared()
                 < 4.0;
@@ -300,60 +300,60 @@ pub async fn main() -> EventResult {
             };
 
             entity::set_component(
-                *player_text_container,
+                player_text_container,
                 translation(),
                 ball_position + Vec3::Z * 2.,
             );
 
             // TODO: This can be removed after #114 is resolved.
-            let player_color = entity::get_component(*player, player_color()).unwrap_or_default();
-            entity::set_component(*player_ball, color(), player_color);
-            entity::set_component(*player_indicator, color(), player_color);
-            entity::set_component(*player_indicator_arrow, color(), player_color);
+            let player_color = entity::get_component(player, player_color()).unwrap_or_default();
+            entity::set_component(player_ball, color(), player_color);
+            entity::set_component(player_indicator, color(), player_color);
+            entity::set_component(player_indicator_arrow, color(), player_color);
 
             let camera_rotation = Quat::from_rotation_z(player_camera_state.get_yaw());
             let camera_direction = camera_rotation * -Vec3::Y;
 
-            entity::set_component(*player_indicator, translation(), ball_position);
-            entity::set_component(*player_indicator, rotation(), camera_rotation);
+            entity::set_component(player_indicator, translation(), ball_position);
+            entity::set_component(player_indicator, rotation(), camera_rotation);
 
             if can_shoot {
-                entity::set_component(*player_indicator, scale(), vec3(1.0, force_multiplier, 1.0));
+                entity::set_component(player_indicator, scale(), vec3(1.0, force_multiplier, 1.0));
 
                 let arrow_position = ball_position + camera_direction * force_multiplier * 10.;
                 entity::set_components(
-                    *player_indicator_arrow,
+                    player_indicator_arrow,
                     Entity::new()
                         .with(translation(), arrow_position)
                         .with(rotation(), camera_rotation)
                         .with(scale(), Vec3::ONE),
                 );
             } else {
-                entity::set_component(*player_indicator, scale(), Vec3::ZERO);
-                entity::set_component(*player_indicator_arrow, scale(), Vec3::ZERO);
+                entity::set_component(player_indicator, scale(), Vec3::ZERO);
+                entity::set_component(player_indicator_arrow, scale(), Vec3::ZERO);
             }
 
             if ball_position.z < 0.25 {
-                entity::set_component(*player_ball, linear_velocity(), Vec3::ZERO);
-                entity::set_component(*player_ball, angular_velocity(), Vec3::ZERO);
+                entity::set_component(player_ball, linear_velocity(), Vec3::ZERO);
+                entity::set_component(player_ball, angular_velocity(), Vec3::ZERO);
                 entity::set_component(
-                    *player_ball,
+                    player_ball,
                     translation(),
-                    entity::get_component(*player, player_restore_point()).unwrap_or_default(),
+                    entity::get_component(player, player_restore_point()).unwrap_or_default(),
                 );
             }
 
             if new.mouse_buttons.contains(&MouseButton::Left) && can_shoot {
-                entity::set_component(*player, player_restore_point(), ball_position);
+                entity::set_component(player, player_restore_point(), ball_position);
                 entity::set_component(
-                    *player_ball,
+                    player_ball,
                     linear_velocity(),
                     camera_direction * 50. * force_multiplier,
                 );
                 let stroke_count =
-                    entity::get_component(*player, player_stroke_count()).unwrap_or_default() + 1;
-                entity::set_component(*player_text, text(), stroke_count.to_string());
-                entity::set_component(*player, player_stroke_count(), stroke_count);
+                    entity::get_component(player, player_stroke_count()).unwrap_or_default() + 1;
+                entity::set_component(player_text, text(), stroke_count.to_string());
+                entity::set_component(player, player_stroke_count(), stroke_count);
             }
         }
     });
