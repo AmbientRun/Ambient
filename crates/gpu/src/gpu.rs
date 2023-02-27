@@ -32,8 +32,11 @@ impl Gpu {
     }
     pub async fn with_config(window: Option<&Window>, will_be_polled: bool) -> Self {
         // From: https://github.com/KhronosGroup/Vulkan-Loader/issues/552
-        std::env::set_var("DISABLE_LAYER_AMD_SWITCHABLE_GRAPHICS_1", "1");
-        std::env::set_var("DISABLE_LAYER_NV_OPTIMUS_1", "1");
+        #[cfg(not(target_os = "unknown"))]
+        {
+            std::env::set_var("DISABLE_LAYER_AMD_SWITCHABLE_GRAPHICS_1", "1");
+            std::env::set_var("DISABLE_LAYER_NV_OPTIMUS_1", "1");
+        }
 
         #[cfg(target_os = "windows")]
         let backend = wgpu::Backends::VULKAN;

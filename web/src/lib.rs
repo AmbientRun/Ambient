@@ -32,6 +32,9 @@ async fn start() {
 
 #[cfg(target_os = "unknown")]
 async fn run() -> anyhow::Result<()> {
+    use ambient_sys::timer::TimerWheel;
+    ambient_sys::task::spawn(TimerWheel::new().start());
+
     use anyhow::Context;
     App::builder().build().await.context("Failed to build app")?.spawn();
 

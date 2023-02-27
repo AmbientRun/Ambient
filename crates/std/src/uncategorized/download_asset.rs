@@ -1,4 +1,4 @@
-use std::{borrow::BorrowMut, marker::PhantomData, path::PathBuf, sync::Arc, time::Duration};
+use std::{marker::PhantomData, path::PathBuf, sync::Arc, time::Duration};
 
 use ambient_sys::task::wasm_nonsend;
 use anyhow::{anyhow, Context};
@@ -184,6 +184,7 @@ impl AsyncAssetKey<AssetResult<Arc<PathBuf>>> for BytesFromUrlCachedPath {
         if let Some(path) = self.url.to_file_path()? {
             return Ok(Arc::new(path));
         }
+
         let path = self.url.absolute_cache_path(&assets);
         if !path.exists() {
             use tokio::io::AsyncWriteExt;
@@ -197,6 +198,7 @@ impl AsyncAssetKey<AssetResult<Arc<PathBuf>>> for BytesFromUrlCachedPath {
                     let tmp_path = tmp_path.clone();
                     async move {
                         let mut file = tokio::fs::File::create(&tmp_path).await.context(format!("Failed to create file: {tmp_path:?}"))?;
+                        use std::borrow::BorrowMut;
                         while let Some(mut item) = resp.chunk().await.context("Failed to download chunk")? {
                             file.write_all_buf(item.borrow_mut()).await.context("Failed to write to tmp file")?;
                         }
