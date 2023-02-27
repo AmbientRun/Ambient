@@ -17,6 +17,7 @@ components!("input", {
     picker_intersecting: Option<PickerIntersection>,
 
     mouse_pickable: AABB,
+    mouse_over: bool,
     on_mouse_input: EventDispatcher<dyn Fn(&mut World, EntityId, ElementState, MouseButton) + Send + Sync>,
     on_mouse_enter: EventDispatcher<dyn Fn(&mut World, EntityId) + Send + Sync>,
     on_mouse_leave: EventDispatcher<dyn Fn(&mut World, EntityId) + Send + Sync>,
@@ -69,11 +70,13 @@ pub fn frame_systems() -> SystemGroup {
             let intersecting_entity = intersecting.map(|x| x.entity);
             if prev_intersecting_entity != intersecting_entity {
                 if let Some(prev) = prev_intersecting_entity {
+                    world.add_component(prev, mouse_over(), false).unwrap();
                     if let Ok(on_leave) = world.get_ref(prev, on_mouse_leave()) {
                         on_leaves.push((on_leave.clone(), prev));
                     }
                 }
                 if let Some(new) = intersecting_entity {
+                    world.add_component(new, mouse_over(), true).unwrap();
                     if let Ok(on_enter) = world.get_ref(new, on_mouse_enter()) {
                         on_enters.push((on_enter.clone(), new));
                     }
