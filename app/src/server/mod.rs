@@ -29,6 +29,7 @@ use tower_http::{cors::CorsLayer, services::ServeDir};
 
 use crate::{cli::Cli, shared};
 
+#[cfg(feature = "wasmtime")]
 mod wasm;
 
 pub fn start(
@@ -47,6 +48,7 @@ pub fn start(
     });
     let port = server.port;
 
+    #[cfg(feature = "wasmtime")]
     wasm::init_all_components();
     let public_host = cli
         .host()
@@ -102,15 +104,18 @@ fn systems(_world: &mut World) -> SystemGroup {
             ambient_core::remove_at_time_system(),
             Box::new(ambient_physics::server_systems()),
             Box::new(shared::player::server_systems()),
+            #[cfg(feature = "wasmtime")]
             Box::new(wasm::systems()),
             Box::new(shared::player::server_systems_final()),
         ],
     )
 }
 fn on_forking_systems() -> SystemGroup<ForkingEvent> {
+    #[cfg(feature = "wasmtime")]
     SystemGroup::new("on_forking_systems", vec![Box::new(ambient_physics::on_forking_systems()), Box::new(wasm::on_forking_systems())])
 }
 fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
+    #[cfg(feature = "wasmtime")]
     SystemGroup::new("on_shutdown_systems", vec![Box::new(ambient_physics::on_shutdown_systems()), Box::new(wasm::on_shutdown_systems())])
 }
 

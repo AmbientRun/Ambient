@@ -261,3 +261,14 @@ impl Default for MissedTickBehavior {
         Self::Burst
     }
 }
+
+#[cfg(not(target_os = "unknown"))]
+impl From<MissedTickBehavior> for tokio::time::MissedTickBehavior {
+    fn from(value: MissedTickBehavior) -> Self {
+        match value {
+            MissedTickBehavior::Burst => tokio::time::MissedTickBehavior::Burst,
+            MissedTickBehavior::Delay => tokio::time::MissedTickBehavior::Delay,
+            MissedTickBehavior::Skip => tokio::time::MissedTickBehavior::Skip,
+        }
+    }
+}

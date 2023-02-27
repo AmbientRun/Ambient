@@ -30,7 +30,7 @@ ambient_primitives = { path = "../crates/primitives" }
 ambient_project = { path = "../crates/project" }
 ambient_renderer = { path = "../crates/renderer" }
 ambient_rpc = { path = "../crates/rpc" }
-ambient_wasm = { path = "../crates/wasm" }
+ambient_wasm = { path = "../crates/wasm", optional = true }
 ambient_std = { path = "../crates/std" }
 ambient_ui = { path = "../crates/ui" }
 ambient_world_audio = { path = "../crates/world_audio" }
@@ -64,6 +64,7 @@ rusty-hook = "^0.11.2"
 default = ["dep:toml_edit", "dep:paste"]
 production = []
 profile = ["ambient_app/profile"]
+wasmtime = ["dep:ambient_wasm"]
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 axum = { workspace = true }
