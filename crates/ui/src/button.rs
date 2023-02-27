@@ -9,7 +9,7 @@ use std::{
 use ambient_core::{runtime, window::WindowCtl, window_ctl};
 use ambient_ecs::World;
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_input::{event_keyboard_input, event_mouse_input, on_app_focus_change, KeyboardEvent};
+use ambient_input::{event_focus_change, event_keyboard_input, event_mouse_input, KeyboardEvent};
 use ambient_renderer::color;
 use ambient_std::{cb, color::Color, Callback, Cb};
 use closure::closure;
@@ -420,17 +420,11 @@ impl ElementComponent for Hotkey {
                             }
                         }
                     }
+                } else if let Some(_event) = event.get(event_focus_change()) {
+                    is_pressed.store(false, Ordering::Relaxed);
                 }
             }
         });
-        content.listener(
-            on_app_focus_change(),
-            Arc::new({
-                let is_pressed = is_pressed.clone();
-                move |_, _, _| {
-                    is_pressed.store(false, Ordering::Relaxed);
-                }
-            }),
-        )
+        content
     }
 }

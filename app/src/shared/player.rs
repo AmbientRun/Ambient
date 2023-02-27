@@ -8,7 +8,7 @@ use ambient_core::{
 use ambient_ecs::{query, query_mut, EntityData, SystemGroup};
 use ambient_element::{element_component, Element, Hooks};
 use ambient_input::{
-    event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, on_app_focus_change, player_prev_raw_input,
+    event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, player_prev_raw_input,
     player_raw_input, ElementState, MouseScrollDelta, PlayerRawInput,
 };
 use ambient_network::{
@@ -157,37 +157,32 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
                     MouseScrollDelta::LineDelta(_, y) => y * PIXELS_PER_LINE,
                     MouseScrollDelta::PixelDelta(pos) => pos.y as f32,
                 };
+            } else if let Some(focus) = event.get(event_focus_change()) {
+                set_has_focus(focus);
             }
         }
     });
 
-    Element::new()
-        .listener(
-            on_app_focus_change(),
-            Arc::new(move |_, _, focus| {
-                set_has_focus(focus);
-            }),
-        )
-        .listener(
-            on_frame(),
-            Arc::new(move |world, _, _| {
-                if !has_focus {
-                    return;
-                }
+    Element::new().listener(
+        on_frame(),
+        Arc::new(move |world, _, _| {
+            if !has_focus {
+                return;
+            }
 
-                if let Some(Some(gc)) = world.resource_opt(game_client()).cloned() {
-                    let runtime = world.resource(runtime()).clone();
-                    let input = input.clone();
+            if let Some(Some(gc)) = world.resource_opt(game_client()).cloned() {
+                let runtime = world.resource(runtime()).clone();
+                let input = input.clone();
 
-                    runtime.spawn(async move {
-                        let mut data = Vec::new();
-                        data.write_u32::<BigEndian>(PLAYER_INPUT_DATAGRAM_ID).unwrap();
+                runtime.spawn(async move {
+                    let mut data = Vec::new();
+                    data.write_u32::<BigEndian>(PLAYER_INPUT_DATAGRAM_ID).unwrap();
 
-                        let msg = bincode::serialize(&*input.lock()).unwrap();
-                        data.write_all(&msg).unwrap();
-                        gc.connection.send_datagram(data.into()).ok();
-                    });
-                }
-            }),
-        )
+                    let msg = bincode::serialize(&*input.lock()).unwrap();
+                    data.write_all(&msg).unwrap();
+                    gc.connection.send_datagram(data.into()).ok();
+                });
+            }
+        }),
+    )
 }
