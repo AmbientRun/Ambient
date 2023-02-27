@@ -192,11 +192,13 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                                 .into_iter()
                                 .map(move |item| {
                                     item_editor.0(item.clone(), None, Default::default())
+                                        .with_clickarea()
                                         .on_mouse_down(closure!(clone value, clone on_change, |_, _, _| {
                                             let mut value = value.clone();
                                             value.push(item.clone());
                                             on_change.0(value);
                                         }))
+                                        .el()
                                         .set(margin(), Borders::even(STREET))
                                 })
                                 .collect(),
@@ -276,9 +278,11 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
         ])
         .el()
         .on_spawned(move |_, id| set_self_id(id))
+        .with_clickarea()
         .on_mouse_down(move |_, id, _| {
             set_focus(Focus(Some(id)));
         })
+        .el()
         .set(padding(), Borders::vertical(STREET))
         .set(fit_horizontal(), Fit::Parent)
     }

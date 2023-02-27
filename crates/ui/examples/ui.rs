@@ -78,7 +78,8 @@ impl ElementComponent for Example {
                         .set(width(), 30. - count as f32 * 2.)
                         .set(height(), 30. + count as f32 * 30.)
                         .with_background(Color::rgba(0.5, 0.5, 0.5, 1.))
-                        .with_clickarea(),
+                        .with_clickarea()
+                        .el(),
                     // .set(on_click(), Arc::new(move |world, _| {
                     //     set_count(count + 1);
                     // }))

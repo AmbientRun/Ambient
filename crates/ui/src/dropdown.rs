@@ -40,6 +40,7 @@ pub fn Tooltip(hooks: &mut Hooks, inner: Element, tooltip: Element) -> Element {
     }
     .el()
     .with_clickarea()
-    .listener(on_mouse_enter(), Arc::new(closure!(clone set_hover, |_, _| set_hover(true))))
-    .listener(on_mouse_leave(), Arc::new(move |_, _| set_hover(false)))
+    .on_mouse_enter(closure!(clone set_hover, |_, _| set_hover(true)))
+    .on_mouse_leave(move |_, _| set_hover(false))
+    .el()
 }

@@ -73,6 +73,7 @@ impl ElementComponent for ECSEditor {
                             None => Vec4::ONE,
                         },
                     )
+                    .with_clickarea()
                     .on_mouse_up(move |_, _, _| {
                         let mut comps = components.clone();
                         if let Some(v) = comps.get(&comp).cloned() {
@@ -85,7 +86,8 @@ impl ElementComponent for ECSEditor {
                             comps.insert(comp, true);
                         }
                         set_components(comps);
-                    }),
+                    })
+                    .el(),
             ])
             .set(space_between_items(), 5.)
         };

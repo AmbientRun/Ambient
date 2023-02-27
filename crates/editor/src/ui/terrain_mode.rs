@@ -101,6 +101,7 @@ impl ElementComponent for TerrainRaycastPicker {
 
         UIBase
             .el()
+            .with_clickarea()
             .on_mouse_enter(closure!(clone set_mouseover, |_, _| { set_mouseover(true) }))
             .on_mouse_leave(closure!(clone set_mouseover, |_, _| { set_mouseover(false); }))
             .on_mouse_down(closure!(clone set_mousedown, |_, _, button| {
@@ -108,6 +109,7 @@ impl ElementComponent for TerrainRaycastPicker {
                     set_mousedown(Some(target_position.unwrap_or_default()));
                 }
             }))
+            .el()
             .listener(
                 on_frame(),
                 Arc::new(move |world, _, _| {

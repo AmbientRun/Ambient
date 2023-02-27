@@ -249,7 +249,8 @@ pub fn Button(
         .on_mouse_leave(move |world, _| {
             set_hover(false);
             world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Default)).ok();
-        });
+        })
+        .el();
 
     if disabled {
         content

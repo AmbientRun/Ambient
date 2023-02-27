@@ -280,6 +280,7 @@ impl ElementComponent for Slider {
                 .with_background(primary_color())
                 .set(border_radius(), Corners::even(THUMB_WIDTH / 2.))
                 .set(translation(), vec3(block_left_offset, 0., -0.01))
+                .with_clickarea()
                 .on_mouse_enter(|world, _| {
                     world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Hand)).ok();
                 })
@@ -288,37 +289,44 @@ impl ElementComponent for Slider {
                 });
 
             if let Some(on_change_factor) = on_change_factor.clone() {
-                thumb.on_mouse_down(move |world, id, _| {
-                    let on_change_factor = on_change_factor.clone();
-                    let scale_factor = *world.resource(window_scale_factor());
-                    let start_pos = *world.resource(mouse_position()) / scale_factor as f32;
-                    let screen_min = start_pos.x - block_left_offset;
-                    let screen_max = screen_min + slider_width - THUMB_WIDTH;
-                    world
-                        .add_component(
-                            id,
-                            on_event(),
-                            EventDispatcher::new_with(Arc::new(move |world, id, event| match event {
-                                Event::WindowEvent { event: WindowEvent::CursorMoved { position, .. }, .. } => {
-                                    let x = position.x as f32 / scale_factor as f32;
-                                    on_change_factor(interpolate_clamped(x, screen_min, screen_max, 0., 1.));
-                                }
-                                Event::WindowEvent { event: WindowEvent::MouseInput { state: ElementState::Released, .. }, .. } => {
-                                    world.remove_component(id, on_event()).unwrap();
-                                }
-                                _ => {}
-                            })),
-                        )
-                        .unwrap();
-                })
-            } else {
                 thumb
+                    .on_mouse_down(move |world, id, _| {
+                        let on_change_factor = on_change_factor.clone();
+                        let scale_factor = *world.resource(window_scale_factor());
+                        let start_pos = *world.resource(mouse_position()) / scale_factor as f32;
+                        let screen_min = start_pos.x - block_left_offset;
+                        let screen_max = screen_min + slider_width - THUMB_WIDTH;
+                        world
+                            .add_component(
+                                id,
+                                on_event(),
+                                EventDispatcher::new_with(Arc::new(move |world, id, event| match event {
+                                    Event::WindowEvent { event: WindowEvent::CursorMoved { position, .. }, .. } => {
+                                        let x = position.x as f32 / scale_factor as f32;
+                                        on_change_factor(interpolate_clamped(x, screen_min, screen_max, 0., 1.));
+                                    }
+                                    Event::WindowEvent { event: WindowEvent::MouseInput { state: ElementState::Released, .. }, .. } => {
+                                        world.remove_component(id, on_event()).unwrap();
+                                    }
+                                    _ => {}
+                                })),
+                            )
+                            .unwrap();
+                    })
+                    .el()
+            } else {
+                thumb.el()
             }
         };
 
         FlowRow::el([
-            UIBase.el().set(width(), slider_width).set(height(), SLIDER_HEIGHT).children(vec![rectangle, thumb]).on_mouse_up(
-                move |world, id, button| {
+            UIBase
+                .el()
+                .set(width(), slider_width)
+                .set(height(), SLIDER_HEIGHT)
+                .children(vec![rectangle, thumb])
+                .with_clickarea()
+                .on_mouse_up(move |world, id, button| {
                     if let Some(on_change_factor) = on_change_factor.clone() {
                         if button != MouseButton::Left {
                             return;
@@ -331,8 +339,8 @@ impl ElementComponent for Slider {
 
                         on_change_factor((mouse_pos_relative.x / slider_width).saturate());
                     }
-                },
-            ),
+                })
+                .el(),
             FlowRow::el([f32::edit_or_view(value, on_change_raw, EditorOpts::default()), suffix.map(Text::el).unwrap_or_default()]),
         ])
         .set(space_between_items(), STREET)

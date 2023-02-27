@@ -95,6 +95,7 @@ pub fn TextInput(
     .set(min_width(), 3.)
     .set(min_height(), 13.)
     .on_spawned(move |_, id| set_self_id(id))
+    .with_clickarea()
     .on_mouse_up(move |_, id, _| {
         set_focus(Focus(Some(id)));
     })
@@ -103,7 +104,8 @@ pub fn TextInput(
     })
     .on_mouse_leave(|world, _| {
         world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Default)).ok();
-    });
+    })
+    .el();
 
     if focused {
         el.set(align_horizontal(), Align::End).children(vec![Cursor.el()])

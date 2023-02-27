@@ -44,6 +44,7 @@ impl ElementComponent for SelectArea {
 
         UIBase
             .el()
+            .with_clickarea()
             .on_mouse_down(closure!(clone set_dragging, clone is_clicking, |world, id, button| {
                 if button != MouseButton::Left {
                     return;
@@ -56,6 +57,7 @@ impl ElementComponent for SelectArea {
                 tracing::info!("Set is_clicking to true");
                 *is_clicking.lock() = true;
             }))
+            .el()
             .listener(
                 on_window_event(),
                 Arc::new(move |world, _, event| {
