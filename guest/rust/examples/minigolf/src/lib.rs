@@ -355,6 +355,12 @@ pub async fn main() -> EventResult {
                 entity::set_component(player_text, text(), stroke_count.to_string());
                 entity::set_component(player, player_stroke_count(), stroke_count);
             }
+
+            // HACK: Artificially slow down ball until https://github.com/AmbientRun/Ambient/issues/182 is available
+            physics::apply_force([player_ball], {
+                let lv = entity::get_component(player_ball, linear_velocity()).unwrap_or_default();
+                -2.0 * frametime() * lv.xy().extend(0.0)
+            });
         }
     });
 
