@@ -36,7 +36,7 @@ impl ClientProtocol {
         let mut stat_stream = IncomingStream::accept_incoming(&mut conn).await?;
         stat_stream.next().await?;
 
-        log::info!("Setup client side protocol");
+        log::debug!("Setup client side protocol");
 
         Ok(Self { conn, diff_stream, stat_stream, client_info, server_info })
     }
@@ -81,13 +81,13 @@ impl ServerProtocol {
 
         let user_id: String = rx.next().await?;
 
-        log::info!("Received handshake from {user_id:?}");
+        log::debug!("Received handshake from {user_id:?}");
 
         let external_components = ComponentRegistry::get().all_external().map(|x| x.0).collect();
 
         // Respond
         let client_info = ClientInfo { user_id, external_components };
-        log::info!("Responding with: {client_info:?}");
+        log::debug!("Responding with {client_info:?}");
         tx.send(&client_info).await?;
 
         // Send the project name to the client so it can title its window correctly
