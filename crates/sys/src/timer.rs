@@ -250,8 +250,8 @@ impl Interval {
         Self { fut: Sleep::new_at(timers, deadline), deadline, period, behavior: Default::default() }
     }
 
-    pub async fn tick(&mut self) {
-        self.next().await;
+    pub async fn tick(&mut self) -> Instant {
+        self.next().await.unwrap()
     }
 
     pub fn set_missed_tick_behavior(&mut self, behavior: MissedTickBehavior) {
@@ -260,7 +260,7 @@ impl Interval {
 }
 
 impl Stream for Interval {
-    type Item = ();
+    type Item = Instant;
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> Poll<Option<Self::Item>> {
         // Wait for the next deadline
@@ -271,7 +271,7 @@ impl Stream for Interval {
         self.deadline = next_deadline;
         self.fut.reset(next_deadline);
 
-        Poll::Ready(Some(()))
+        Poll::Ready(Some(now))
     }
 }
 
