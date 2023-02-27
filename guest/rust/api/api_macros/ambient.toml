@@ -86,6 +86,14 @@ name = "Name"
 description = "A human-friendly name for this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::app::project_name"]
+type = "String"
+name = "Project Name"
+description = """
+The name of the project, from the manifest.
+Defaults to \"Ambient\"."""
+attributes = ["Debuggable", "Resource"]
+
 [components."core::app::selectable"]
 type = "Empty"
 name = "Selectable"

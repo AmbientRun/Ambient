@@ -3,7 +3,7 @@ use anyhow::{Context, Result};
 use futures::{io::BufReader, StreamExt};
 use quinn::{NewConnection, RecvStream};
 
-use crate::{next_bincode_bi_stream, open_bincode_bi_stream, IncomingStream, NetworkError, OutgoingStream};
+use crate::{next_bincode_bi_stream, open_bincode_bi_stream, server::ServerInfo, IncomingStream, NetworkError, OutgoingStream};
 
 #[derive(Debug)]
 pub struct ClientProtocol {
@@ -11,6 +11,8 @@ pub struct ClientProtocol {
     pub(crate) stat_stream: IncomingStream,
     client_info: ClientInfo,
     pub(crate) diff_stream: IncomingStream,
+    /// Miscellaneous info from the server
+    pub(crate) server_info: ServerInfo,
 }
 
 impl ClientProtocol {
@@ -25,6 +27,7 @@ impl ClientProtocol {
         let client_info: ClientInfo = rx.next().await?;
         ComponentRegistry::get_mut().add_external(client_info.external_components.clone());
 
+        let server_info: ServerInfo = rx.next().await?;
         // Great, the server knows who we are.
         // Two streams are opened
         let mut diff_stream = IncomingStream::accept_incoming(&mut conn).await?;
@@ -35,7 +38,7 @@ impl ClientProtocol {
 
         log::info!("Setup client side protocol");
 
-        Ok(Self { conn, diff_stream, stat_stream, client_info })
+        Ok(Self { conn, diff_stream, stat_stream, client_info, server_info })
     }
 
     pub async fn next_diff(&mut self) -> anyhow::Result<WorldDiff> {
@@ -72,7 +75,7 @@ pub struct ServerProtocol {
 }
 
 impl ServerProtocol {
-    pub async fn new(mut conn: NewConnection) -> Result<Self, NetworkError> {
+    pub async fn new(mut conn: NewConnection, server_info: ServerInfo) -> Result<Self, NetworkError> {
         // The client now sends the player id
         let (mut tx, mut rx) = next_bincode_bi_stream(&mut conn).await?;
 
@@ -86,6 +89,9 @@ impl ServerProtocol {
         let client_info = ClientInfo { user_id, external_components };
         log::info!("Responding with: {client_info:?}");
         tx.send(&client_info).await?;
+
+        // Send the project name to the client so it can title its window correctly
+        tx.send(&server_info).await?;
 
         // Great, now open all required streams
         let mut diff_stream = OutgoingStream::open_uni(&conn.connection).await?;

@@ -5,6 +5,7 @@ use std::{
     time::Duration,
 };
 
+use ambient_app::window_title;
 use ambient_core::{asset_cache, gpu, mirror_window_components, runtime};
 use ambient_ecs::{components, query, EntityData, EntityId, Resource, SystemGroup, World, WorldDiff};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
@@ -26,7 +27,7 @@ use crate::{
     is_remote_entity, log_network_result, player,
     protocol::{ClientInfo, ClientProtocol},
     rpc_request,
-    server::SharedServerState,
+    server::{ServerInfo, SharedServerState},
     user_id, NetworkError,
 };
 
@@ -213,6 +214,10 @@ impl ElementComponent for GameClientView {
             });
         }
 
+        // Set the window title to the project name
+        let (window_title_state, set_window_title) = hooks.use_state("Ambient".to_string());
+        *hooks.world.resource_mut(window_title()) = window_title_state;
+
         let (error, set_error) = hooks.use_state(None);
 
         let reg = game_state.lock().world.resource(event_registry()).clone();
@@ -235,13 +240,16 @@ impl ElementComponent for GameClientView {
 
                     let mut on_init = {
                         let game_state = game_state.clone();
-                        move |conn, info: ClientInfo| {
-                            let game_client = GameClient::new(conn, Arc::new(create_rpc_registry()), game_state.clone(), info.user_id);
+                        move |conn, client_info: ClientInfo, server_info: ServerInfo| {
+                            let game_client =
+                                GameClient::new(conn, Arc::new(create_rpc_registry()), game_state.clone(), client_info.user_id);
 
                             game_state.lock().world.add_resource(self::game_client(), Some(game_client.clone()));
 
                             // Update parent client
                             set_game_client(Some(game_client.clone()));
+                            // Update the window title
+                            set_window_title(server_info.project_name);
                             on_loaded(game_state.clone(), game_client).context("Failed to initialize game client view")
                         }
                     };
@@ -330,7 +338,7 @@ struct ClientInstance<'a> {
     user_id: String,
 
     /// Called when the client connected and received the world.
-    on_init: &'a mut (dyn FnMut(Connection, ClientInfo) -> anyhow::Result<Box<dyn FnOnce() + Sync + Send>> + Send + Sync),
+    on_init: &'a mut (dyn FnMut(Connection, ClientInfo, ServerInfo) -> anyhow::Result<Box<dyn FnOnce() + Sync + Send>> + Send + Sync),
     on_diff: &'a mut (dyn FnMut(WorldDiff) + Send + Sync),
 
     on_server_stats: &'a mut (dyn FnMut(GameClientServerStats) + Send + Sync),
@@ -370,8 +378,10 @@ impl<'a> ClientInstance<'a> {
 
         let msg = protocol.diff_stream.next().await?;
         (self.on_diff)(msg);
-        self.init_destructor =
-            Some((self.on_init)(protocol.connection(), protocol.client_info().clone()).context("Client initialization failed")?);
+        self.init_destructor = Some(
+            (self.on_init)(protocol.connection(), protocol.client_info().clone(), protocol.server_info.clone())
+                .context("Client initialization failed")?,
+        );
 
         // The server
         loop {
