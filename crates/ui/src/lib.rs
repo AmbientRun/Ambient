@@ -8,7 +8,7 @@ use std::{
 };
 
 use ambient_core::{
-    hierarchy::children, on_frame, on_window_event, transform::*, window::WindowCtl, window_ctl, window_logical_size, window_physical_size,
+    hierarchy::children, on_window_event, transform::*, window::WindowCtl, window_ctl, window_logical_size, window_physical_size,
 };
 pub use ambient_ecs::{EntityId, SystemGroup, World};
 pub use ambient_editor_derive::ElementEditor;
@@ -379,7 +379,6 @@ pub trait UIExt {
     fn on_mouse_up<F: Fn(&mut World, EntityId, MouseButton) + Sync + Send + 'static>(self, handle: F) -> Self;
     fn with_clickarea(self) -> Self;
     fn with_background(self, color: Color) -> Self;
-    fn on_size_change(self, current: Vec2, on_change: Arc<dyn Fn(Vec2) + Sync + Send + 'static>) -> Self;
 }
 impl UIExt for Element {
     fn on_mouse_hover<F: Fn(&mut World, EntityId) + Sync + Send + 'static>(self, handle: F) -> Self {
@@ -417,18 +416,24 @@ impl UIExt for Element {
     fn with_background(self, background: Color) -> Self {
         with_rect(self).set(background_color(), background)
     }
-    fn on_size_change(self, current: Vec2, on_change: Arc<dyn Fn(Vec2) + Sync + Send + 'static>) -> Self {
-        self.listener(
-            on_frame(),
-            Arc::new(move |world, id, _| {
-                let width = world.get(id, width()).unwrap_or(0.);
-                let height = world.get(id, height()).unwrap_or(0.);
-                if current.x != width || current.y != height {
-                    on_change(vec2(width, height));
-                }
-            }),
-        )
-    }
+}
+
+#[element_component]
+pub fn MeasureSize(hooks: &mut Hooks, inner: Element, on_change: Cb<dyn Fn(Vec2) + Sync + Send + 'static>) -> Element {
+    let (id, set_id) = hooks.use_state(None);
+    let (current, set_current) = hooks.use_state(Vec2::ZERO);
+    hooks.use_frame(move |world| {
+        if let Some(id) = id {
+            let width = world.get(id, width()).unwrap_or(0.);
+            let height = world.get(id, height()).unwrap_or(0.);
+            let next = vec2(width, height);
+            if current != next {
+                on_change(next);
+                set_current(next);
+            }
+        }
+    });
+    inner.on_spawned(move |_, id| set_id(Some(id)))
 }
 
 #[derive(Debug, Clone)]
