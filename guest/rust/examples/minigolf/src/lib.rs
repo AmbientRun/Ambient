@@ -280,8 +280,11 @@ pub async fn main() -> EventResult {
 
             player_camera_state
                 .set_position(ball_position)
-                .rotate(delta.mouse_position / 250.)
                 .zoom(delta.mouse_wheel / 25.);
+
+            if new.mouse_buttons.contains(&MouseButton::Right) {
+                player_camera_state.rotate(delta.mouse_position / 250.);
+            }
 
             let mut force_multiplier = time() % 2.0;
 
