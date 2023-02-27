@@ -18,13 +18,14 @@ use ambient_api::{
         ui::{font_size, text},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
+    entity::resources,
     player::MouseButton,
     prelude::*,
 };
 use components::{
-    ball, origin, player_ball, player_camera_state, player_color, player_indicator,
-    player_indicator_arrow, player_restore_point, player_stroke_count, player_text,
-    player_text_container,
+    ball, next_player_hue, origin, player_ball, player_camera_state, player_color,
+    player_indicator, player_indicator_arrow, player_restore_point, player_stroke_count,
+    player_text, player_text_container,
 };
 use concepts::{make_player_camera_state, make_player_state};
 use utils::CameraState;
@@ -92,13 +93,22 @@ fn make_text() -> Entity {
 pub async fn main() -> EventResult {
     create_environment();
 
+    // Set the initial next player hue.
+    entity::add_component(resources(), next_player_hue(), 0.);
+
     // When a player spawns, create their player state.
-    spawn_query(user_id()).requires(player()).bind({
-        let player_hue = State::new(0.);
-        move |players| {
+    spawn_query(user_id())
+        .requires(player())
+        .bind(move |players| {
             for (player, player_user_id) in players {
-                let next_color = utils::hsv_to_rgb(&[*player_hue.read(), 0.7, 1.0]).extend(1.);
-                *player_hue.write() += 102.5; // 80 + 22.5; pseudo random color, with 16 being unique
+                let next_color = utils::hsv_to_rgb(&[
+                    entity::get_component(resources(), next_player_hue()).unwrap_or_default(),
+                    0.7,
+                    1.0,
+                ])
+                .extend(1.);
+                // 80 + 22.5; pseudo random color, with 16 being unique
+                entity::mutate_component(resources(), next_player_hue(), |h| *h += 102.5);
 
                 entity::add_components(player, make_player_state());
 
@@ -170,8 +180,7 @@ pub async fn main() -> EventResult {
                         .spawn(),
                 );
             }
-        }
-    });
+        });
 
     let flag = make_transformable()
         .with(model_from_url(), asset_url("assets/flag.glb").unwrap())

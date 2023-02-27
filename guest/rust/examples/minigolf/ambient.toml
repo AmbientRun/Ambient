@@ -4,16 +4,22 @@ name = "Minigolf"
 version = "0.0.1"
 
 [components]
+next_player_hue = { type = "F32", name = "Next Player Hue", description = "Controls the hue (in degrees) to use for the next player's color.", attributes = ["Debuggable", "Resource"] }
+
 ball = { type = "Empty", name = "Ball", description = "Used to tag a ball" }
 origin = { type = "Vec3", name = "Origin", description = "An object's origin in world space" }
+
 player_ball = { type = "EntityId", name = "Player Ball", description = "Used to tag a player's ball" }
 player_restore_point = { type = "Vec3", name = "Player Restore Point", description = "A player's restore point" }
 player_stroke_count = { type = "U32", name = "Player Stroke Count", description = "A player's stroke count" }
-player_color = { type = "Vec4", name = "Player Color", description = "A player's color" } 
+player_color = { type = "Vec4", name = "Player Color", description = "A player's color" }
+
 player_indicator = { type = "EntityId", name = "Player Indicator", description = "EntityId of a player's indicator" }
 player_indicator_arrow = { type = "EntityId", name = "Player Indicator Arrow", description = "EntityId of a player's indicator arrow" }
+
 player_text = { type = "EntityId", name = "Player Text", description = "EntityId of a player's text" }
 player_text_container = { type = "EntityId", name = "Player Text Container", description = "EntityId of a player's text container" }
+
 player_camera_pivot = { type = "Vec3", name = "Player Camera Pivot", description = "The pivot offset a player's camera pivots around" }
 player_camera_position = { type = "Vec3", name = "Player Camera Position", description = "The position at which a player's camera pivots around" }
 player_camera_radius = { type = "F32", name = "Player Camera Radius", description = "The radius at which a player's camera pivots around" }
