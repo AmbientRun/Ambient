@@ -1,10 +1,10 @@
-use std::{net::SocketAddr, process::exit, sync::Arc, time::Duration};
+use std::{net::SocketAddr, path::PathBuf, process::exit, sync::Arc, time::Duration};
 
 use ambient_app::{window_title, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_core::{camera::active_camera, runtime};
 use ambient_debugger::Debugger;
-use ambient_ecs::{EntityData, SystemGroup};
+use ambient_ecs::{EntityData, SystemGroup, World};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_network::{
     client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce},
@@ -14,10 +14,11 @@ use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
 
 use crate::{cli::RunCli, shared};
+use ambient_renderer::RenderTarget;
 use glam::uvec2;
 
 /// Construct an app and enter the main client view
-pub async fn run(assets: AssetCache, server_addr: SocketAddr, run: &RunCli) {
+pub async fn run(assets: AssetCache, server_addr: SocketAddr, run: &RunCli, project_path: Option<PathBuf>) {
     let user_id = run.user_id.clone().unwrap_or_else(|| format!("user_{}", friendly_id()));
     let headless = if run.headless { Some(uvec2(400, 400)) } else { None };
     AppBuilder::simple()
@@ -25,7 +26,7 @@ pub async fn run(assets: AssetCache, server_addr: SocketAddr, run: &RunCli) {
         .with_asset_cache(assets)
         .headless(headless)
         .run(move |app, _runtime| {
-            MainApp { server_addr, user_id, show_debug: run.debug, screenshot_and_exit: run.screenshot_and_exit }
+            MainApp { server_addr, user_id, show_debug: run.debug, screenshot_test: run.screenshot_test, project_path }
                 .el()
                 .spawn_interactive(&mut app.world);
         })
@@ -33,7 +34,14 @@ pub async fn run(assets: AssetCache, server_addr: SocketAddr, run: &RunCli) {
 }
 
 #[element_component]
-fn MainApp(hooks: &mut Hooks, server_addr: SocketAddr, user_id: String, show_debug: bool, screenshot_and_exit: Option<f32>) -> Element {
+fn MainApp(
+    hooks: &mut Hooks,
+    server_addr: SocketAddr,
+    project_path: Option<PathBuf>,
+    user_id: String,
+    show_debug: bool,
+    screenshot_test: Option<f32>,
+) -> Element {
     let resolution = use_window_physical_resolution(hooks);
 
     hooks.provide_context(GameClientNetworkStats::default);
@@ -51,12 +59,8 @@ fn MainApp(hooks: &mut Hooks, server_addr: SocketAddr, user_id: String, show_deb
             on_disconnect: cb(move || {}),
             init_world: cb(UseOnce::new(Box::new(move |world, render_target| {
                 world.add_resource(ambient_network::events::event_registry(), Arc::new(ServerEventRegistry::new()));
-                if let Some(seconds) = screenshot_and_exit {
-                    world.resource(runtime()).spawn(async move {
-                        tokio::time::sleep(Duration::from_secs_f32(seconds)).await;
-                        render_target.color_buffer.reader().write_to_file("screenshot.png").await;
-                        exit(0);
-                    });
+                if let Some(seconds) = screenshot_test {
+                    run_screenshot_test(world, render_target, project_path, seconds);
                 }
             }))),
             on_loaded: cb(move |_game_state, _game_client| Ok(Box::new(|| {}))),
@@ -68,6 +72,39 @@ fn MainApp(hooks: &mut Hooks, server_addr: SocketAddr, user_id: String, show_deb
         }
         .el()]),
     ])
+}
+
+fn run_screenshot_test(world: &World, render_target: Arc<RenderTarget>, project_path: Option<PathBuf>, seconds: f32) {
+    world.resource(runtime()).spawn(async move {
+        tokio::time::sleep(Duration::from_secs_f32(seconds)).await;
+        let screenshot = project_path.unwrap_or(PathBuf::new()).join("screenshot.png");
+        log::info!("Loading screenshot from {:?}", screenshot);
+        let old = image::open(&screenshot);
+        log::info!("Saving screenshot to {:?}", screenshot);
+        let new = render_target.color_buffer.reader().read_image().await.unwrap().into_rgba8();
+        log::info!("Screenshot saved");
+        new.save(screenshot).unwrap();
+        let epsilon = 3;
+        if let Ok(old) = old {
+            log::info!("Comparing screenshots");
+            let old = old.into_rgba8();
+            for (a, b) in old.pixels().zip(new.pixels()) {
+                if (a[0]).abs_diff(b[0]) > epsilon
+                    || (a[1]).abs_diff(b[1]) > epsilon
+                    || (a[2]).abs_diff(b[2]) > epsilon
+                    || (a[3]).abs_diff(b[3]) > epsilon
+                {
+                    log::info!("Screenshots differ");
+                    exit(1);
+                }
+            }
+            log::info!("Screenshots are identical");
+            exit(0);
+        } else {
+            log::info!("No old screenshot to compare to");
+            exit(1);
+        }
+    });
 }
 
 #[element_component]

@@ -137,7 +137,7 @@ fn main() -> anyhow::Result<()> {
     let handle = runtime.handle().clone();
     if let Some(run) = cli.run() {
         // If we have run parameters, start a client and join a server
-        runtime.block_on(client::run(assets, server_addr, run));
+        runtime.block_on(client::run(assets, server_addr, run, cli.project().and_then(|p| p.path.clone())));
     } else {
         // Otherwise, wait for the Ctrl+C signal
         handle.block_on(async move {
