@@ -17,7 +17,7 @@ use ambient_element::{
     define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent, ElementComponentExt, Hooks,
 };
 use ambient_input::{
-    event_mouse_input, on_app_mouse_motion, on_app_mouse_wheel,
+    event_mouse_input, event_mouse_motion, on_app_mouse_wheel,
     picking::{mouse_pickable, on_mouse_enter, on_mouse_hover, on_mouse_input, on_mouse_leave, on_mouse_wheel},
 };
 pub use ambient_std::{cb, Cb};
@@ -335,43 +335,41 @@ pub fn HighjackMouse(
             }
         })
     });
-    WindowSized(vec![])
-        .el()
-        .on_mouse_down(move |_, _, button| on_click(button))
-        .set(translation(), -Vec3::Z * 0.99)
-        .listener(
-            on_app_mouse_motion(),
-            Arc::new(closure!(clone focused, |world, _, delta| {
+    hooks.use_world_event({
+        let focused = focused.clone();
+        move |world, event| {
+            if let Some(delta) = event.get_ref(event_mouse_motion()) {
                 let pos = {
                     let mut pos = position.lock();
-                    *pos += delta;
+                    *pos += *delta;
                     *pos
                 };
 
                 if focused.load(Ordering::Relaxed) {
-                    on_mouse_move(world, pos, delta);
+                    on_mouse_move(world, pos, *delta);
                 }
-            })),
-        )
-        .listener(
-            on_window_event(),
-            Arc::new(move |w, _, event| {
-                if let WindowEvent::Focused(f) = event {
-                    let ctl = w.resource(window_ctl());
-                    ctl.send(WindowCtl::ShowCursor(!f)).ok();
-                    // window.set_cursor_visible(!f);
-                    // Fails on android/IOS
-                    ctl.send(WindowCtl::GrabCursor(if *f {
-                        winit::window::CursorGrabMode::Locked
-                    } else {
-                        winit::window::CursorGrabMode::None
-                    }))
-                    .ok();
+            }
+        }
+    });
+    WindowSized(vec![]).el().on_mouse_down(move |_, _, button| on_click(button)).set(translation(), -Vec3::Z * 0.99).listener(
+        on_window_event(),
+        Arc::new(move |w, _, event| {
+            if let WindowEvent::Focused(f) = event {
+                let ctl = w.resource(window_ctl());
+                ctl.send(WindowCtl::ShowCursor(!f)).ok();
+                // window.set_cursor_visible(!f);
+                // Fails on android/IOS
+                ctl.send(WindowCtl::GrabCursor(if *f {
+                    winit::window::CursorGrabMode::Locked
+                } else {
+                    winit::window::CursorGrabMode::None
+                }))
+                .ok();
 
-                    focused.store(*f, Ordering::Relaxed);
-                }
-            }),
-        )
+                focused.store(*f, Ordering::Relaxed);
+            }
+        }),
+    )
 }
 
 pub trait UIExt {

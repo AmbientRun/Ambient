@@ -35,7 +35,7 @@ components!("input", {
     event_received_character: char,
     event_keyboard_input: KeyboardEvent,
     event_mouse_input: MouseInput,
-    on_app_mouse_motion: EventCallback<Vec2, ()>,
+    event_mouse_motion: Vec2,
     on_app_mouse_wheel: EventCallback<MouseScrollDelta>,
     on_app_modifiers_change: EventCallback<ModifiersState, ()>,
     on_app_focus_change: EventCallback<bool, ()>,
@@ -146,11 +146,9 @@ impl System<Event<'static, ()>> for InputSystem {
             },
 
             Event::DeviceEvent { event: DeviceEvent::MouseMotion { delta }, .. } => {
-                for (id, (dispatcher,)) in query((on_app_mouse_motion(),)).collect_cloned(world, Some(&mut self.mouse_motion_qs)) {
-                    for handle in dispatcher.iter() {
-                        handle(world, id, vec2(delta.0 as f32, delta.1 as f32));
-                    }
-                }
+                world
+                    .resource_mut(world_events())
+                    .add_event(EntityData::new().set(event_mouse_motion(), vec2(delta.0 as f32, delta.1 as f32)));
             }
             _ => {}
         }

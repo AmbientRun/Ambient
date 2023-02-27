@@ -8,7 +8,7 @@ use ambient_core::{
 use ambient_ecs::{query, query_mut, EntityData, SystemGroup};
 use ambient_element::{element_component, Element, Hooks};
 use ambient_input::{
-    event_keyboard_input, event_mouse_input, on_app_focus_change, on_app_mouse_motion, on_app_mouse_wheel, player_prev_raw_input,
+    event_keyboard_input, event_mouse_input, event_mouse_motion, on_app_focus_change, on_app_mouse_wheel, player_prev_raw_input,
     player_raw_input, ElementState, MouseScrollDelta, PlayerRawInput,
 };
 use ambient_network::{
@@ -150,6 +150,8 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
                         lock.mouse_buttons.remove(&event.button);
                     }
                 }
+            } else if let Some(delta) = event.get(event_mouse_motion()) {
+                input.lock().mouse_position += delta;
             }
         }
     });
@@ -159,15 +161,6 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
             on_app_focus_change(),
             Arc::new(move |_, _, focus| {
                 set_has_focus(focus);
-            }),
-        )
-        .listener(
-            on_app_mouse_motion(),
-            Arc::new({
-                let input = input.clone();
-                move |_, _, delta| {
-                    input.lock().mouse_position += delta;
-                }
             }),
         )
         .listener(
