@@ -239,9 +239,9 @@ pub async fn main() -> EventResult {
         move |players| {
             let player_objects = player_objects_query.evaluate();
             for (_, player_user_id) in &players {
-                if let Some((id, _)) = player_objects
+                for (id, _) in player_objects
                     .iter()
-                    .find(|(_, object_user_id)| *player_user_id == *object_user_id)
+                    .filter(|(_, object_user_id)| *player_user_id == *object_user_id)
                 {
                     entity::despawn(*id);
                 }
