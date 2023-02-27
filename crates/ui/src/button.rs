@@ -9,7 +9,7 @@ use std::{
 use ambient_core::{runtime, window::WindowCtl, window_ctl};
 use ambient_ecs::World;
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_input::{event_keyboard_input, on_app_focus_change, on_app_mouse_input, KeyboardEvent};
+use ambient_input::{event_keyboard_input, event_mouse_input, on_app_focus_change, KeyboardEvent};
 use ambient_renderer::color;
 use ambient_std::{cb, color::Color, Callback, Cb};
 use closure::closure;
@@ -218,20 +218,12 @@ pub fn Button(
         }
         Box::new(|_| {})
     });
-
-    let content = style
-        .create_container(is_pressed, is_working, disabled, toggled, hover, hotkey, hotkey_modifier, tooltip, content)
-        .with_clickarea()
-        .on_mouse_enter(
-            closure!(clone set_hover, |world, _| { set_hover(true); world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Hand)).ok(); }),
-        )
-        .on_mouse_leave(move |world, _| {
-            set_hover(false);
-            world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Default)).ok();
-        })
-        .listener(
-            on_app_mouse_input(),
-            Arc::new(closure!(clone set_is_pressed, clone on_invoked, clone set_is_working, |world, _, event| {
+    hooks.use_world_event({
+        let set_is_pressed = set_is_pressed.clone();
+        let on_invoked = on_invoked.clone();
+        let set_is_working = set_is_working.clone();
+        move |world, event| {
+            if let Some(event) = event.get_ref(event_mouse_input()) {
                 if event.state == ElementState::Pressed && hover {
                     set_is_pressed(true);
                     is_pressed_immediate.store(true, Ordering::SeqCst);
@@ -244,8 +236,20 @@ pub fn Button(
                     set_is_pressed(false);
                     is_pressed_immediate.store(false, Ordering::SeqCst);
                 }
-            })),
-        );
+            }
+        }
+    });
+
+    let content = style
+        .create_container(is_pressed, is_working, disabled, toggled, hover, hotkey, hotkey_modifier, tooltip, content)
+        .with_clickarea()
+        .on_mouse_enter(
+            closure!(clone set_hover, |world, _| { set_hover(true); world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Hand)).ok(); }),
+        )
+        .on_mouse_leave(move |world, _| {
+            set_hover(false);
+            world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Default)).ok();
+        });
 
     if disabled {
         content

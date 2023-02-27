@@ -17,7 +17,7 @@ use ambient_element::{
     define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent, ElementComponentExt, Hooks,
 };
 use ambient_input::{
-    on_app_mouse_input, on_app_mouse_motion, on_app_mouse_wheel,
+    event_mouse_input, on_app_mouse_motion, on_app_mouse_wheel,
     picking::{mouse_pickable, on_mouse_enter, on_mouse_hover, on_mouse_input, on_mouse_leave, on_mouse_wheel},
 };
 pub use ambient_std::{cb, Cb};
@@ -295,7 +295,12 @@ define_el_function_for_vec_element_newtype!(FocusRoot);
 impl ElementComponent for FocusRoot {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let set_focus = hooks.provide_context(|| Focus(None));
-        Element::new().listener(on_app_mouse_input(), Arc::new(move |_, _, _| set_focus(Focus(None)))).children(self.0)
+        hooks.use_world_event(move |_world, event| {
+            if let Some(_event) = event.get_ref(event_mouse_input()) {
+                set_focus(Focus(None));
+            }
+        });
+        Element::new().children(self.0)
     }
 }
 

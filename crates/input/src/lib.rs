@@ -34,7 +34,7 @@ pub struct PlayerRawInput {
 components!("input", {
     event_received_character: char,
     event_keyboard_input: KeyboardEvent,
-    on_app_mouse_input: EventDispatcher<dyn Fn(&mut World, EntityId, &MouseInput) + Sync + Send>,
+    event_mouse_input: MouseInput,
     on_app_mouse_motion: EventCallback<Vec2, ()>,
     on_app_mouse_wheel: EventCallback<MouseScrollDelta>,
     on_app_modifiers_change: EventCallback<ModifiersState, ()>,
@@ -109,11 +109,9 @@ impl System<Event<'static, ()>> for InputSystem {
                 }
 
                 WindowEvent::MouseInput { state, button, .. } => {
-                    for (id, (dispatcher,)) in query((on_app_mouse_input(),)).collect_cloned(world, Some(&mut self.mouse_input_qs)) {
-                        for handle in dispatcher.iter() {
-                            handle(world, id, &MouseInput { state: *state, button: *button });
-                        }
-                    }
+                    world
+                        .resource_mut(world_events())
+                        .add_event(EntityData::new().set(event_mouse_input(), MouseInput { state: *state, button: *button }));
                 }
 
                 WindowEvent::MouseWheel { delta, .. } => {
@@ -159,6 +157,7 @@ impl System<Event<'static, ()>> for InputSystem {
     }
 }
 
+#[derive(Clone)]
 pub struct MouseInput {
     pub state: ElementState,
     pub button: MouseButton,

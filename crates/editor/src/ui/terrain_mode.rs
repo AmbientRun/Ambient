@@ -11,7 +11,7 @@ use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::{BindGroupDesc, ShaderModule},
 };
-use ambient_input::{on_app_mouse_input, ElementState};
+use ambient_input::{event_mouse_input, ElementState};
 use ambient_intent::client_push_intent;
 use ambient_network::client::GameClient;
 use ambient_physics::{
@@ -88,6 +88,16 @@ impl ElementComponent for TerrainRaycastPicker {
                 game_state.lock().world.despawn(new_vis_brush_id);
             })
         });
+        hooks.use_world_event({
+            let set_mousedown = set_mousedown.clone();
+            move |_world, event| {
+                if let Some(input) = event.get_ref(event_mouse_input()) {
+                    if input.state == ElementState::Released && input.button == action_button {
+                        set_mousedown(None);
+                    }
+                }
+            }
+        });
 
         UIBase
             .el()
@@ -98,14 +108,6 @@ impl ElementComponent for TerrainRaycastPicker {
                     set_mousedown(Some(target_position.unwrap_or_default()));
                 }
             }))
-            .listener(
-                on_app_mouse_input(),
-                Arc::new(move |_, _, input| {
-                    if input.state == ElementState::Released && input.button == action_button {
-                        set_mousedown(None);
-                    }
-                }),
-            )
             .listener(
                 on_frame(),
                 Arc::new(move |world, _, _| {

@@ -8,7 +8,7 @@ use ambient_core::{
 use ambient_ecs::{query, query_mut, EntityData, SystemGroup};
 use ambient_element::{element_component, Element, Hooks};
 use ambient_input::{
-    on_app_focus_change, on_app_keyboard_input, on_app_mouse_input, on_app_mouse_motion, on_app_mouse_wheel, player_prev_raw_input,
+    event_keyboard_input, event_mouse_input, on_app_focus_change, on_app_mouse_motion, on_app_mouse_wheel, player_prev_raw_input,
     player_raw_input, ElementState, MouseScrollDelta, PlayerRawInput,
 };
 use ambient_network::{
@@ -125,31 +125,40 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
     let input = hooks.use_ref_with(|_| PlayerRawInput::default());
     let (has_focus, set_has_focus) = hooks.use_state(false);
 
+    hooks.use_world_event({
+        let input = input.clone();
+        move |_world, event| {
+            if let Some(event) = event.get_ref(event_keyboard_input()) {
+                if let Some(keycode) = event.keycode {
+                    let mut lock = input.lock();
+                    match event.state {
+                        ElementState::Pressed => {
+                            lock.keys.insert(keycode);
+                        }
+                        ElementState::Released => {
+                            lock.keys.remove(&keycode);
+                        }
+                    }
+                }
+            } else if let Some(event) = event.get_ref(event_mouse_input()) {
+                let mut lock = input.lock();
+                match event.state {
+                    ElementState::Pressed => {
+                        lock.mouse_buttons.insert(event.button);
+                    }
+                    ElementState::Released => {
+                        lock.mouse_buttons.remove(&event.button);
+                    }
+                }
+            }
+        }
+    });
+
     Element::new()
         .listener(
             on_app_focus_change(),
             Arc::new(move |_, _, focus| {
                 set_has_focus(focus);
-            }),
-        )
-        .listener(
-            on_app_keyboard_input(),
-            Arc::new({
-                let input = input.clone();
-                move |_, _, event| {
-                    if let Some(keycode) = event.keycode {
-                        let mut lock = input.lock();
-                        match event.state {
-                            ElementState::Pressed => {
-                                lock.keys.insert(keycode);
-                            }
-                            ElementState::Released => {
-                                lock.keys.remove(&keycode);
-                            }
-                        }
-                    }
-                    true
-                }
             }),
         )
         .listener(
@@ -171,23 +180,6 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
                         MouseScrollDelta::PixelDelta(pos) => pos.y as f32,
                     };
                     true
-                }
-            }),
-        )
-        .listener(
-            on_app_mouse_input(),
-            Arc::new({
-                let input = input.clone();
-                move |_, _, event| {
-                    let mut lock = input.lock();
-                    match event.state {
-                        ElementState::Pressed => {
-                            lock.mouse_buttons.insert(event.button);
-                        }
-                        ElementState::Released => {
-                            lock.mouse_buttons.remove(&event.button);
-                        }
-                    }
                 }
             }),
         )
