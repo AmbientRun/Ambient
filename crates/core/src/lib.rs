@@ -122,7 +122,11 @@ components!("app", {
     @[Debuggable, Networked, Store]
     no_sync: (),
 
-    @[Resource, Name["Project Name"], Description["The name of the project, from the manifest.\n Defaults to \"Ambient\"."]]
+    @[
+        Resource, Debuggable,
+        Name["Project Name"],
+        Description["The name of the project, from the manifest.\nDefaults to \"Ambient\"."]
+    ]
     project_name: String,
 });
 
