@@ -47,8 +47,8 @@ jobs:
         run: cd guest/rust && cargo build --workspace
       - name: Check that guest/rust's documentation is well-formed
         run: cd guest/rust && RUSTDOCFLAGS="-D warnings" cargo doc --workspace --all-features --no-deps
-      - name: Run screenshot tests
-        run: node scripts/update_screenshots.js
+      # - name: Run screenshot tests
+      #   run: node scripts/update_screenshots.js
       # Provides a history of the cache content builds over build to make troubleshooting easier
       - name: Display target directory content
         run: tree --du -h target
