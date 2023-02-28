@@ -658,7 +658,9 @@ name = "ambient_guest_bridge"
 version = "0.1.0"
 dependencies = [
  "ambient_api",
+ "ambient_core",
  "ambient_ecs",
+ "ambient_layout",
 ]
 
 [[package]]
@@ -694,6 +696,18 @@ dependencies = [
  "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "ambient_layout"
+version = "0.1.0"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_input",
+ "glam 0.22.0",
+ "itertools",
+ "log",
 ]
 
 [[package]]
@@ -1127,10 +1141,12 @@ dependencies = [
  "ambient_element",
  "ambient_gpu",
  "ambient_input",
+ "ambient_layout",
  "ambient_meshes",
  "ambient_renderer",
  "ambient_std",
  "ambient_sys",
+ "ambient_ui_components",
  "anyhow",
  "arboard",
  "async-trait",
@@ -1155,6 +1171,15 @@ dependencies = [
  "tracing-subscriber",
  "wgpu 0.14.2",
  "winit",
+]
+
+[[package]]
+name = "ambient_ui_components"
+version = "0.1.0"
+dependencies = [
+ "ambient_element",
+ "ambient_guest_bridge",
+ "glam 0.22.0",
 ]
 
 [[package]]

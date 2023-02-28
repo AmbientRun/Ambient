@@ -37,7 +37,6 @@ pub mod graph;
 mod hooks;
 mod image;
 mod input;
-pub mod layout;
 mod loadable;
 mod prompt;
 mod rect;
@@ -50,6 +49,8 @@ mod text_input;
 mod text_material;
 mod throbber;
 
+pub use ambient_layout as layout;
+pub use ambient_ui_components::*;
 pub use asset_url::*;
 pub use button::*;
 pub use collections::*;
@@ -87,26 +88,6 @@ pub fn systems() -> SystemGroup {
     )
 }
 
-/// This only exists so that we can implement From<String> for Text, and then use it in
-/// for instance Button
-pub struct UIElement(pub Element);
-impl From<Element> for UIElement {
-    fn from(el: Element) -> Self {
-        Self(el)
-    }
-}
-
-#[element_component]
-pub fn UIBase(_: &mut Hooks) -> Element {
-    Element::new()
-        .init(translation(), vec3(0., 0., -0.001))
-        .init_default(local_to_world())
-        .init_default(local_to_parent())
-        .init_default(mesh_to_world())
-        .init(width(), 0.)
-        .init(height(), 0.)
-}
-
 pub fn use_window_physical_resolution(hooks: &mut Hooks) -> UVec2 {
     let (res, set_res) = hooks.use_state(*hooks.world.resource(window_physical_size()));
     hooks.use_frame(move |world| {
@@ -126,6 +107,15 @@ pub fn use_window_logical_resolution(hooks: &mut Hooks) -> UVec2 {
         }
     });
     res
+}
+
+/// This only exists so that we can implement From<String> for Text, and then use it in
+/// for instance Button
+pub struct UIElement(pub Element);
+impl From<Element> for UIElement {
+    fn from(el: Element) -> Self {
+        Self(el)
+    }
 }
 
 #[derive(Debug, Clone)]

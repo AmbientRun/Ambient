@@ -1,8 +1,24 @@
 #[cfg(feature = "native")]
 pub use ambient_ecs as ecs;
 
+#[cfg(feature = "native")]
+pub mod components {
+    pub mod ecs {
+        pub use ambient_core::hierarchy::{children, parent};
+    }
+    pub mod transform {
+        pub use ambient_core::transform::{local_to_parent, local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation};
+    }
+    pub mod ui {
+        pub use ambient_layout::*;
+    }
+}
+
 #[cfg(feature = "guest")]
 pub use ambient_api as api;
+
+#[cfg(feature = "guest")]
+pub use ambient_api::components::core as components;
 
 #[cfg(feature = "guest")]
 pub mod ecs {
