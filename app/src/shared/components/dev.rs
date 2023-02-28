@@ -1,6 +1,6 @@
 use ambient_ecs::{
-    primitive_component_definitions, ComponentDesc, ComponentValue, DefaultValue, EntityId, ExternalComponentAttributes,
-    PrimitiveComponentType,
+    primitive_component_definitions, ComponentDesc, ComponentEntry, ComponentRegistry, ComponentValue, DefaultValue, EntityId,
+    ExternalComponentAttributes, PrimitiveComponentType,
 };
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
 
@@ -70,80 +70,6 @@ fn make_components() -> toml_edit::Table {
     components
 }
 
-fn make_concepts() -> toml_edit::Table {
-    let defs = [
-        (
-            ("transformable", "Transformable"),
-            "Can be translated, rotated and scaled.",
-            vec![],
-            vec![
-                (ambient_core::transform::translation().desc(), Vec3::ZERO.to_toml()),
-                (ambient_core::transform::rotation().desc(), Quat::IDENTITY.to_toml()),
-                (ambient_core::transform::scale().desc(), Vec3::ONE.to_toml()),
-            ],
-        ),
-        (
-            ("sphere", "Sphere"),
-            "A primitive sphere.",
-            vec![],
-            vec![
-                (ambient_primitives::sphere().desc(), ().to_toml()),
-                (ambient_primitives::sphere_radius().desc(), 0.5f32.to_toml()),
-                (ambient_primitives::sphere_sectors().desc(), 36u32.to_toml()),
-                (ambient_primitives::sphere_stacks().desc(), 18u32.to_toml()),
-            ],
-        ),
-        (
-            ("camera", "Camera"),
-            "Base components for a camera. You will need other components to make a fully-functioning camera.",
-            vec!["transformable"],
-            vec![
-                (ambient_core::camera::projection().desc(), glam::Mat4::IDENTITY.to_toml()),
-                (ambient_core::camera::projection_view().desc(), glam::Mat4::IDENTITY.to_toml()),
-                (ambient_core::camera::near().desc(), 0.1f32.to_toml()),
-            ],
-        ),
-        (
-            ("perspective_common_camera", "Perspective Common Camera"),
-            "Base components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.",
-            vec!["camera"],
-            vec![(ambient_core::camera::aspect_ratio().desc(), 1.0f32.to_toml()), (ambient_core::camera::fovy().desc(), 1.0f32.to_toml())],
-        ),
-        (
-            ("perspective_camera", "Perspective Camera"),
-            "A perspective camera.",
-            vec!["perspective_common_camera"],
-            vec![(ambient_core::camera::perspective().desc(), ().to_toml()), (ambient_core::camera::far().desc(), 1_000f32.to_toml())],
-        ),
-        (
-            ("perspective_infinite_reverse_camera", "Perspective-Infinite-Reverse Camera"),
-            "A perspective-infinite-reverse camera. This is recommended for most use-cases.",
-            vec!["perspective_common_camera"],
-            vec![(ambient_core::camera::perspective_infinite_reverse().desc(), ().to_toml())],
-        ),
-        (
-            ("orthographic_camera", "Orthographic Camera"),
-            "An orthographic camera.",
-            vec!["camera"],
-            vec![
-                (ambient_core::camera::orthographic().desc(), ().to_toml()),
-                (ambient_core::camera::orthographic_left().desc(), (-1.0f32).to_toml()),
-                (ambient_core::camera::orthographic_right().desc(), 1.0f32.to_toml()),
-                (ambient_core::camera::orthographic_top().desc(), 1.0f32.to_toml()),
-                (ambient_core::camera::orthographic_bottom().desc(), (-1.0f32).to_toml()),
-                (ambient_core::camera::far().desc(), 1_000f32.to_toml()),
-            ],
-        ),
-    ];
-
-    let mut concepts = toml_edit::Table::new();
-    concepts.set_implicit(true);
-    for ((id, name), description, extends, components) in defs {
-        concepts.insert(id, make_concept(name, description, &extends, &components));
-    }
-    concepts
-}
-
 fn make_component_table(component: &ambient_ecs::PrimitiveComponent) -> Option<toml_edit::Table> {
     use toml_edit::value;
 
@@ -168,7 +94,7 @@ fn make_component_table(component: &ambient_ecs::PrimitiveComponent) -> Option<t
     );
     table.insert("name", value(name));
     table.insert("description", value(description));
-    if let Some(default) = make_component_default(component) {
+    if let Some(default) = get_toml_default_for_primitive_component(component) {
         table.insert("default", default);
     }
     table.insert("attributes", {
@@ -179,34 +105,13 @@ fn make_component_table(component: &ambient_ecs::PrimitiveComponent) -> Option<t
     Some(table)
 }
 
-fn make_concept(
-    name: &str,
-    description: &str,
-    extends: &[&str],
-    components: &[(ComponentDesc, Option<toml_edit::Value>)],
-) -> toml_edit::Item {
-    use toml_edit::value;
-
-    let mut table = toml_edit::Table::new();
-    table.insert("name", value(name));
-    table.insert("description", value(description));
-    if !extends.is_empty() {
-        table.insert("extends", value(toml_edit::Array::from_iter(extends.iter().cloned())));
-    }
-    let mut components_table = toml_edit::Table::new();
-    for (component, default) in components {
-        match default {
-            Some(default) => components_table.insert(&component.path(), value(default)),
-            _ => panic!("invalid toml default for {component:?}"),
-        };
-    }
-    table.insert("components", toml_edit::Item::Table(components_table));
-    toml_edit::Item::Table(table)
-}
-
-macro_rules! make_make_component_default {
+macro_rules! make_get_toml_default_for_primitive_component {
     ($(($value:ident, $type:ty)),*) => { paste::paste! {
-        fn make_component_default(component: &ambient_ecs::PrimitiveComponent) -> Option<toml_edit::Item> {
+        fn get_toml_default_for_primitive_component(component: &ambient_ecs::PrimitiveComponent) -> Option<toml_edit::Item> {
+            fn dispatch_default<T: ToToml>(desc: ComponentDesc) -> Option<toml_edit::Item> {
+                Some(toml_edit::value(desc.attribute::<DefaultValue<T>>().and_then(|attr| attr.0.to_toml())?))
+            }
+
             let desc = component.desc;
             match component.ty {
                 $(PrimitiveComponentType::$value => dispatch_default::<$type>(desc),)*
@@ -216,11 +121,53 @@ macro_rules! make_make_component_default {
         }
     } };
 }
-primitive_component_definitions!(make_make_component_default);
+primitive_component_definitions!(make_get_toml_default_for_primitive_component);
 
-fn dispatch_default<T: ToToml>(desc: ComponentDesc) -> Option<toml_edit::Item> {
-    Some(toml_edit::value(desc.attribute::<DefaultValue<T>>().and_then(|attr| attr.0.to_toml())?))
+fn make_concepts() -> toml_edit::Table {
+    let mut concepts = toml_edit::Table::new();
+    concepts.set_implicit(true);
+
+    for concept in super::concepts() {
+        use toml_edit::value;
+        let mut table = toml_edit::Table::new();
+
+        table.insert("name", value(concept.name));
+        table.insert("description", value(concept.description));
+        if !concept.extends.is_empty() {
+            table.insert("extends", value(toml_edit::Array::from_iter(concept.extends.iter().cloned())));
+        }
+
+        let mut components_table = toml_edit::Table::new();
+        for entry in concept.data {
+            let path = entry.path();
+            let default = convert_entry_to_toml(&entry);
+            match default {
+                Some(default) => components_table.insert(&path, value(default)),
+                _ => panic!("invalid toml default for {path:?}"),
+            };
+        }
+        table.insert("components", toml_edit::Item::Table(components_table));
+
+        concepts.insert(&concept.id, toml_edit::Item::Table(table));
+    }
+
+    concepts
 }
+
+macro_rules! make_convert_entry_to_toml {
+    ($(($value:ident, $type:ty)),*) => { paste::paste! {
+        fn convert_entry_to_toml(entry: &ComponentEntry) -> Option<toml_edit::Value> {
+            let desc = entry.desc();
+            let pct = ComponentRegistry::get().get_primitive_component(desc.index())?.ty;
+            match pct {
+                $(PrimitiveComponentType::$value => entry.downcast_ref::<$type>().to_toml(),)*
+                $(PrimitiveComponentType::[< Vec $value >] => entry.downcast_ref::<Vec<$type>>().to_toml(),)*
+                $(PrimitiveComponentType::[< Option$value >] => entry.downcast_ref::<Option<$type>>().to_toml(),)*
+            }
+        }
+    } };
+}
+primitive_component_definitions!(make_convert_entry_to_toml);
 
 trait ToToml: ComponentValue {
     fn to_toml(&self) -> Option<toml_edit::Value>;
