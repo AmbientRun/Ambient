@@ -397,7 +397,7 @@ impl App {
         AppBuilder::new()
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(target_os = "unknown")]
     pub fn spawn(mut self) {
         use winit::platform::web::EventLoopExtWebSys;
 

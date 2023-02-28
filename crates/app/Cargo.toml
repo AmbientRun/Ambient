@@ -45,7 +45,7 @@ hotload-includes = [
     'ambient_model/hotload-includes',
 ]
 
-[target.'cfg(target_arch = "wasm32")'.dependencies]
+[target.'cfg(target_os = "unknown")'.dependencies]
 web-sys = { version = "0.3.61", features = [
     "CanvasRenderingContext2d",
     "Document",
@@ -56,5 +56,5 @@ web-sys = { version = "0.3.61", features = [
     "Window",
 ] }
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+[target.'cfg(not(target_os = "unknown"))'.dependencies]
 thread-priority = { workspace = true }

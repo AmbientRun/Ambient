@@ -50,5 +50,5 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 hotload-includes = ['ambient_std/hotload-includes']
 
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+[target.'cfg(not(target_os = "unknown"))'.dependencies]
 arboard = { workspace = true }

@@ -366,7 +366,7 @@ mod test {
 }
 
 #[cfg(test)]
-#[cfg(target_arch = "wasm32")]
+#[cfg(target_os = "unknown")]
 mod test {
 
     use super::*;
