@@ -1018,6 +1018,7 @@ dependencies = [
  "flume",
  "futures",
  "gloo",
+ "js-sys",
  "once_cell",
  "ordered-float",
  "parking_lot",

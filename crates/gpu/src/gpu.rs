@@ -56,6 +56,8 @@ impl Gpu {
                 log::info!("Adapter: {:?}", adapter.get_info());
             }
         }
+
+        log::info!("Requesting adapter");
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
                 power_preference: wgpu::PowerPreference::default(),
@@ -110,6 +112,7 @@ impl Gpu {
             let size = window.as_ref().unwrap().inner_size();
             surface.configure(&device, &Self::create_sc_desc(format, mode, uvec2(size.width, size.height)));
         }
+        log::info!("Created gpu");
 
         Self { device, surface, queue, swapchain_format, swapchain_mode, adapter, will_be_polled }
     }

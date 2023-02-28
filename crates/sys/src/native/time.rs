@@ -1,7 +1,7 @@
 #![allow(clippy::disallowed_types)]
 use std::{
     ops::{Add, Sub},
-    time::Duration,
+    time::{Duration, SystemTime},
 };
 
 /// Represents an abstract point in time
@@ -22,7 +22,7 @@ impl Sub<Duration> for Instant {
     type Output = Instant;
 
     fn sub(self, rhs: Duration) -> Self::Output {
-        Self(self.0 - rhs)
+        Self(self.0.checked_sub(rhs).unwrap())
     }
 }
 
@@ -57,6 +57,10 @@ pub fn schedule_wakeup<F: 'static + Send + FnOnce()>(dur: Duration, callback: F)
         tokio::time::sleep(dur).await;
         callback()
     });
+}
+
+pub fn current_epoch_time() -> Duration {
+    SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap()
 }
 
 use derive_more::{From, Into};

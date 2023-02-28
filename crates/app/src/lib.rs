@@ -35,6 +35,7 @@ use ambient_sys::task::RuntimeHandle;
 use glam::{uvec2, vec2, UVec2, Vec2};
 use parking_lot::Mutex;
 use renderers::{examples_renderer, ui_renderer, UIRender};
+use tracing::info_span;
 use winit::{
     event::{ElementState, Event, KeyboardInput, ModifiersState, VirtualKeyCode, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
@@ -134,6 +135,7 @@ impl AppResources {
 }
 
 pub fn world_instance_resources(resources: AppResources) -> EntityData {
+    let current_time = ambient_sys::time::current_epoch_time();
     EntityData::new()
         .set(self::gpu(), resources.gpu.clone())
         .set(gizmos(), Gizmos::new())
@@ -143,8 +145,8 @@ pub fn world_instance_resources(resources: AppResources) -> EntityData {
         .set(self::asset_cache(), resources.assets.clone())
         .set(frame_index(), 0_usize)
         .set(ambient_core::mouse_position(), Vec2::ZERO)
-        .set(ambient_core::app_start_time(), SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap())
-        .set(ambient_core::time(), SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap())
+        .set(ambient_core::app_start_time(), current_time)
+        .set(ambient_core::time(), current_time)
         .set(ambient_core::dtime(), 0.)
         .set(gpu_world(), GpuWorld::new_arced(resources.assets))
         .append(ambient_input::picking::resources())
@@ -272,10 +274,12 @@ impl AppBuilder {
         let mut world = World::new("main_app");
         let gpu = Arc::new(Gpu::with_config(Some(&window), true).await);
 
+        tracing::info!("Inserting runtime");
         RuntimeKey.insert(&assets, runtime.clone());
         GpuKey.insert(&assets, gpu.clone());
         // WindowKey.insert(&assets, window.clone());
 
+        tracing::info!("Inserting app resources");
         let (ctl_tx, ctl_rx) = flume::unbounded();
 
         let (window_physical_size, window_logical_size, window_scale_factor) = get_window_sizes(&window);
@@ -286,7 +290,9 @@ impl AppBuilder {
         let resources = world_instance_resources(app_resources);
 
         world.add_components(world.resource_entity(), resources).unwrap();
+        tracing::info!("Setup renderers");
         if self.ui_renderer || self.main_renderer {
+            let _span = info_span!("setup_renderers").entered();
             if !self.main_renderer {
                 let renderer = Arc::new(Mutex::new(UIRender::new(&mut world)));
                 world.add_resource(ui_renderer(), renderer);
