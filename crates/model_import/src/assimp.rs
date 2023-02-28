@@ -12,6 +12,7 @@ use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl, mesh::Mesh};
 use glam::{vec2, vec3, vec4, Mat4};
 use itertools::Itertools;
 use relative_path::RelativePathBuf;
+#[cfg(feature = "russimp")]
 use russimp::{
     material::{Material, PropertyTypeInfo},
     node::Node,
@@ -21,17 +22,23 @@ use russimp::{
 
 use crate::{dotdot_path, model_crate::ModelCrate, TextureResolver};
 
-pub async fn import_url(
-    assets: &AssetCache,
-    url: &AbsAssetUrl,
-    model_crate: &mut ModelCrate,
+pub async fn import_url<'a>(
+    assets: &'a AssetCache,
+    url: &'a AbsAssetUrl,
+    model_crate: &'a mut ModelCrate,
     resolve_texture: TextureResolver,
 ) -> anyhow::Result<RelativePathBuf> {
-    let content = url.download_bytes(assets).await?;
-    let extension = url.extension().unwrap_or_default();
-    import(&content, model_crate, &extension, resolve_texture).await
+    #[cfg(feature = "russimp")]
+    {
+        let content = url.download_bytes(assets).await?;
+        let extension = url.extension().unwrap_or_default();
+        import(&content, model_crate, &extension, resolve_texture).await
+    }
+    #[cfg(not(feature = "russimp"))]
+    panic!("This binary was built without assimp support");
 }
 
+#[cfg(feature = "russimp")]
 pub async fn import<'a>(
     buffer: &'a [u8],
     model_crate: &'a mut ModelCrate,
@@ -113,6 +120,7 @@ pub async fn import<'a>(
     Ok(path)
 }
 
+#[cfg(feature = "russimp")]
 fn import_sync(buffer: &[u8], model_crate: &mut ModelCrate, extension: &str) -> anyhow::Result<(RelativePathBuf, Vec<Material>)> {
     let scene = Scene::from_buffer(
         buffer,

@@ -28,6 +28,10 @@ cargo install --git https://github.com/AmbientRun/Ambient.git
 
 Note that if you are running a project outside of the `guest/rust` workspace, it is likely that the published version of the API will be incompatible with `main`, and you will need to specify the dependency manually.
 
+### Building problems and solutions
+
+- If you run into troubles building russimp/assimp, you can turn it off by installing with `--no-default-features`. See [this issue](https://github.com/AmbientRun/Ambient/issues/173) for more details.
+
 ### Build dependencies: Linux/Ubuntu
 
 For the above to work on linux, you also need to install the following build dependencies;

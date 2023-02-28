@@ -38,7 +38,7 @@ ordered-float = { workspace = true }
 indexmap = { workspace = true }
 log = { workspace = true }
 relative-path = { workspace = true }
-russimp = { workspace = true }
+russimp = { workspace = true, optional = true}
 
 [dev-dependencies]
 ambient_app = { path = "../app" }
