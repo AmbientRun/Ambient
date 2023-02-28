@@ -4,13 +4,9 @@ use ambient_core::{
     transform::local_to_world,
     ui_scene, window_physical_size,
 };
-use ambient_ecs::{components, query, EntityData, EntityId, FnSystem, Resource, SystemGroup, World};
-use ambient_std::{
-    events::EventDispatcher,
-    shapes::{RayIntersectable, AABB},
-};
+use ambient_ecs::{components, query, EntityData, EntityId, FnSystem, Resource, SystemGroup};
+use ambient_std::shapes::{RayIntersectable, AABB};
 use glam::Vec2;
-use winit::event::{ElementState, Event, MouseButton, MouseScrollDelta, WindowEvent};
 
 components!("input", {
     @[Resource]

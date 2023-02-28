@@ -253,7 +253,7 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
         let (self_id, set_self_id) = hooks.use_state(EntityId::null());
         let (focus, set_focus) = hooks.consume_context::<Focus>().expect("No FocusRoot found");
         let focused = focus == Focus(Some(self_id));
-        hooks.use_world_event(move |world, event| {
+        hooks.use_world_event(move |_world, event| {
             if let Some(event) = event.get_ref(event_keyboard_input()) {
                 if !focused {
                     return;

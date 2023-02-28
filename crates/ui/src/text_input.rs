@@ -1,4 +1,4 @@
-use std::{self, sync::Arc, time::Duration};
+use std::{self, time::Duration};
 
 use ambient_core::{transform::translation, window::WindowCtl, window_ctl};
 use ambient_ecs::EntityId;
