@@ -18,11 +18,6 @@ components!("input", {
 
     mouse_pickable: AABB,
     mouse_over: bool,
-    on_mouse_input: EventDispatcher<dyn Fn(&mut World, EntityId, ElementState, MouseButton) + Send + Sync>,
-    on_mouse_enter: EventDispatcher<dyn Fn(&mut World, EntityId) + Send + Sync>,
-    on_mouse_leave: EventDispatcher<dyn Fn(&mut World, EntityId) + Send + Sync>,
-    on_mouse_hover: EventDispatcher<dyn Fn(&mut World, EntityId) + Send + Sync>,
-    on_mouse_wheel: EventDispatcher<dyn Fn(&mut World, EntityId, MouseScrollDelta) + Sync + Send>,
 });
 
 #[derive(Debug, Clone, Copy)]
@@ -49,9 +44,6 @@ pub fn frame_systems() -> SystemGroup {
             };
             let ray = screen_ray(world, camera, mouse_origin).unwrap_or_default();
 
-            let mut on_leaves = Vec::new();
-            let mut on_enters = Vec::new();
-            let mut on_hovers = Vec::new();
             let prev_intersecting = *world.resource(picker_intersecting());
 
             let mut intersecting: Option<PickerIntersection> = None;
@@ -71,68 +63,12 @@ pub fn frame_systems() -> SystemGroup {
             if prev_intersecting_entity != intersecting_entity {
                 if let Some(prev) = prev_intersecting_entity {
                     world.add_component(prev, mouse_over(), false).unwrap();
-                    if let Ok(on_leave) = world.get_ref(prev, on_mouse_leave()) {
-                        on_leaves.push((on_leave.clone(), prev));
-                    }
                 }
                 if let Some(new) = intersecting_entity {
                     world.add_component(new, mouse_over(), true).unwrap();
-                    if let Ok(on_enter) = world.get_ref(new, on_mouse_enter()) {
-                        on_enters.push((on_enter.clone(), new));
-                    }
-                }
-            }
-            if let Some(new) = intersecting_entity {
-                if let Ok(on_hover) = world.get_ref(new, on_mouse_hover()) {
-                    on_hovers.push((on_hover.clone(), new));
                 }
             }
             *world.resource_mut(picker_intersecting()) = intersecting;
-
-            for (on_leave, ent) in on_leaves.into_iter() {
-                for handler in on_leave.iter() {
-                    handler(world, ent);
-                }
-            }
-            for (on_enter, ent) in on_enters.into_iter() {
-                for handler in on_enter.iter() {
-                    handler(world, ent);
-                }
-            }
-            for (on_hover, ent) in on_hovers.into_iter() {
-                for handler in on_hover.iter() {
-                    handler(world, ent);
-                }
-            }
-        }))],
-    )
-}
-
-pub fn picking_winit_event_system() -> SystemGroup<Event<'static, ()>> {
-    SystemGroup::new(
-        "picking_winit_event_system",
-        vec![Box::new(FnSystem::new(|world, event| match event {
-            Event::WindowEvent { event: WindowEvent::MouseInput { button, state, .. }, .. } => {
-                let intersecting = *world.resource(picker_intersecting());
-                if let Some(intersecting) = intersecting {
-                    if let Ok(on_mouse_input) = world.get_ref(intersecting.entity, on_mouse_input()).cloned() {
-                        for handler in on_mouse_input.iter() {
-                            handler(world, intersecting.entity, *state, *button);
-                        }
-                    }
-                }
-            }
-            Event::WindowEvent { event: WindowEvent::MouseWheel { delta, .. }, .. } => {
-                let intersecting = *world.resource(picker_intersecting());
-                if let Some(intersecting) = intersecting {
-                    if let Ok(on_mouse_wheel) = world.get_ref(intersecting.entity, on_mouse_wheel()).cloned() {
-                        for handler in on_mouse_wheel.iter() {
-                            handler(world, intersecting.entity, *delta);
-                        }
-                    }
-                }
-            }
-            _ => {}
         }))],
     )
 }

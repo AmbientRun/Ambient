@@ -7,8 +7,6 @@ use serde::{Deserialize, Serialize};
 pub use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, MouseButton, MouseScrollDelta, VirtualKeyCode, WindowEvent};
 use winit::event::{ModifiersState, ScanCode};
 
-use crate::picking::picking_winit_event_system;
-
 pub mod picking;
 
 pub type EventCallback<Event, Ret = bool> = EventDispatcher<dyn Fn(&mut World, EntityId, Event) -> Ret + Sync + Send>;
@@ -50,7 +48,7 @@ pub fn init_all_components() {
 }
 
 pub fn event_systems() -> SystemGroup<Event<'static, ()>> {
-    SystemGroup::new("inputs", vec![Box::new(InputSystem::new()), Box::new(picking_winit_event_system())])
+    SystemGroup::new("inputs", vec![Box::new(InputSystem::new())])
 }
 
 #[derive(Debug)]

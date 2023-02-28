@@ -1,8 +1,5 @@
-use std::sync::Arc;
-
 use ambient_core::transform::translation;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_input::picking::{on_mouse_enter, on_mouse_leave};
 use closure::closure;
 use glam::vec3;
 
