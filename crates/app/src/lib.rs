@@ -16,7 +16,7 @@ use ambient_core::{
     window_logical_size, window_physical_size, window_scale_factor, RuntimeKey, TimeResourcesSystem,
 };
 use ambient_ecs::{
-    components, world_events, Debuggable, DynSystem, EntityData, FrameEvent, MakeDefault, MaybeResource, System, SystemGroup, World,
+    components, world_events, Debuggable, DynSystem, Entity, FrameEvent, MakeDefault, MaybeResource, System, SystemGroup, World,
     WorldEventsSystem,
 };
 use ambient_element::ambient_system;
@@ -133,28 +133,28 @@ impl AppResources {
     }
 }
 
-pub fn world_instance_resources(resources: AppResources) -> EntityData {
+pub fn world_instance_resources(resources: AppResources) -> Entity {
     let current_time = ambient_sys::time::current_epoch_time();
-    EntityData::new()
-        .set(self::gpu(), resources.gpu.clone())
-        .set(gizmos(), Gizmos::new())
-        .set(self::runtime(), resources.runtime)
-        .set(self::window_title(), "".to_string())
-        .set(self::fps_stats(), FpsSample::default())
-        .set(self::asset_cache(), resources.assets.clone())
-        .set_default(world_events())
-        .set(frame_index(), 0_usize)
-        .set(ambient_core::mouse_position(), Vec2::ZERO)
-        .set(ambient_core::app_start_time(), current_time)
-        .set(ambient_core::time(), current_time)
-        .set(ambient_core::dtime(), 0.)
-        .set(gpu_world(), GpuWorld::new_arced(resources.assets))
-        .append(ambient_input::picking::resources())
-        .append(ambient_core::async_ecs::async_ecs_resources())
-        .set(ambient_core::window_physical_size(), resources.window_physical_size)
-        .set(ambient_core::window_logical_size(), resources.window_logical_size)
-        .set(ambient_core::window_scale_factor(), resources.window_scale_factor)
-        .set(ambient_core::window_ctl(), resources.ctl_tx)
+    Entity::new()
+        .with(self::gpu(), resources.gpu.clone())
+        .with(gizmos(), Gizmos::new())
+        .with(self::runtime(), resources.runtime)
+        .with(self::window_title(), "".to_string())
+        .with(self::fps_stats(), FpsSample::default())
+        .with(self::asset_cache(), resources.assets.clone())
+        .with_default(world_events())
+        .with(frame_index(), 0_usize)
+        .with(ambient_core::mouse_position(), Vec2::ZERO)
+        .with(ambient_core::app_start_time(), current_time)
+        .with(ambient_core::time(), current_time)
+        .with(ambient_core::dtime(), 0.)
+        .with(gpu_world(), GpuWorld::new_arced(resources.assets))
+        .with_merge(ambient_input::picking::resources())
+        .with_merge(ambient_core::async_ecs::async_ecs_resources())
+        .with(ambient_core::window_physical_size(), resources.window_physical_size)
+        .with(ambient_core::window_logical_size(), resources.window_logical_size)
+        .with(ambient_core::window_scale_factor(), resources.window_scale_factor)
+        .with(ambient_core::window_ctl(), resources.ctl_tx)
 }
 
 pub fn get_time_since_app_start(world: &World) -> Duration {

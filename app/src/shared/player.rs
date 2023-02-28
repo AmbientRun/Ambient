@@ -5,7 +5,7 @@ use ambient_core::{
     camera::{active_camera, aspect_ratio_from_window},
     main_scene, runtime,
 };
-use ambient_ecs::{query, query_mut, EntityData, SystemGroup};
+use ambient_ecs::{query, query_mut, Entity, SystemGroup};
 use ambient_element::{element_component, Element, Hooks};
 use ambient_input::{
     event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, player_prev_raw_input,
@@ -68,9 +68,7 @@ pub fn server_systems() -> SystemGroup {
         vec![query(player()).spawned().to_system(|q, world, qs, _| {
             let player_ids = q.collect_ids(world, qs);
             for player_id in player_ids {
-                world
-                    .add_components(player_id, EntityData::new().set_default(player_raw_input()).set_default(player_prev_raw_input()))
-                    .ok();
+                world.add_components(player_id, Entity::new().with_default(player_raw_input()).with_default(player_prev_raw_input())).ok();
             }
         })],
     )
@@ -106,11 +104,11 @@ pub fn client_systems() -> SystemGroup {
                 world
                     .add_components(
                         id,
-                        EntityData::new()
-                            .set(active_camera(), 0.)
-                            .set(main_scene(), ())
-                            .set(audio_listener(), Arc::new(Mutex::new(AudioListener::new(Mat4::IDENTITY, Vec3::X * 0.2))))
-                            .set(aspect_ratio_from_window(), ()),
+                        Entity::new()
+                            .with(active_camera(), 0.)
+                            .with(main_scene(), ())
+                            .with(audio_listener(), Arc::new(Mutex::new(AudioListener::new(Mat4::IDENTITY, Vec3::X * 0.2))))
+                            .with(aspect_ratio_from_window(), ()),
                     )
                     .unwrap();
             }

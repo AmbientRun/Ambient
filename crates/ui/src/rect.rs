@@ -5,7 +5,7 @@ use ambient_core::{
     transform::{mesh_to_local, scale},
     ui_scene,
 };
-use ambient_ecs::{components, query, EntityData, SystemGroup};
+use ambient_ecs::{components, query, Entity, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_gpu::{
     gpu::GpuKey,
@@ -79,7 +79,7 @@ pub fn systems() -> SystemGroup {
                     world
                         .add_components(
                             id,
-                            EntityData::new().set(mesh(), UIRectMeshKey.get(&assets)).set(renderer_shader(), cb(get_rect_shader)),
+                            Entity::new().with(mesh(), UIRectMeshKey.get(&assets)).with(renderer_shader(), cb(get_rect_shader)),
                         )
                         .unwrap();
                 }

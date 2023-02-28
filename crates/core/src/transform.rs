@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use ambient_ecs::{
-    components, ensure_has_component, query, query_mut, Concept, Debuggable, Description, ECSError, EntityData, EntityId, FrameEvent,
+    components, ensure_has_component, query, query_mut, Concept, Debuggable, Description, ECSError, Entity, EntityId, FrameEvent,
     MakeDefault, MaybeResource, Name, Networked, QueryState, RefConcept, Store, System, SystemGroup, World,
 };
 use glam::*;
@@ -134,7 +134,7 @@ pub fn concepts() -> Vec<Concept> {
         name: "Transformable",
         description: "Can be translated, rotated and scaled.",
         extends: &[],
-        data: EntityData::new().set(translation(), Vec3::ZERO).set(rotation(), Quat::IDENTITY).set(scale(), Vec3::ONE),
+        data: Entity::new().with(translation(), Vec3::ZERO).with(rotation(), Quat::IDENTITY).with(scale(), Vec3::ONE),
     }
     .to_owned()]
 }

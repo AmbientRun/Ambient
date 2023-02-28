@@ -243,7 +243,7 @@ pub struct QueryState {
     inited: bool,
     change_readers: SparseVec<SparseVec<FramedEventsReader<EntityId>>>,
     movein_readers: SparseVec<FramedEventsReader<EntityId>>,
-    moveout_readers: SparseVec<FramedEventsReader<(EntityId, EntityData)>>,
+    moveout_readers: SparseVec<FramedEventsReader<(EntityId, Entity)>>,
     ticker: u64,
     entered: HashSet<EntityId>,
     world_version: u64,
@@ -269,7 +269,7 @@ impl QueryState {
     pub(super) fn get_movein_reader(&mut self, arch: usize) -> &mut FramedEventsReader<EntityId> {
         self.movein_readers.get_mut_or_insert_with(arch, FramedEventsReader::new)
     }
-    pub(super) fn get_moveout_reader(&mut self, arch: usize) -> &mut FramedEventsReader<(EntityId, EntityData)> {
+    pub(super) fn get_moveout_reader(&mut self, arch: usize) -> &mut FramedEventsReader<(EntityId, Entity)> {
         self.moveout_readers.get_mut_or_insert_with(arch, FramedEventsReader::new)
     }
     pub(super) fn prepare_for_query(&mut self, world: &World) {
@@ -904,10 +904,8 @@ pub fn ensure_has_component_with_make_default<X: ComponentValue + 'static, T: Co
     if_has_component: Component<X>,
     ensure_this_component_too: Component<T>,
 ) -> DynSystem {
-    let default = EntityData::from_iter([ensure_this_component_too
-        .attribute::<MakeDefault>()
-        .unwrap()
-        .make_default(ensure_this_component_too.desc())]);
+    let default =
+        Entity::from_iter([ensure_this_component_too.attribute::<MakeDefault>().unwrap().make_default(ensure_this_component_too.desc())]);
 
     query(if_has_component).excl(ensure_this_component_too).to_system(move |q, world, qs, _| {
         for (id, _) in q.collect_cloned(world, qs) {

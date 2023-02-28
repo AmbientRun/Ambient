@@ -20,8 +20,8 @@ async fn init(app: &mut App) {
     Cube.el().set(material(), transparent).set(translation(), vec3(4., 0., 0.)).spawn_static(world);
 
     ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
-        .set(active_camera(), 0.)
-        .set(main_scene(), ())
+        .with(active_camera(), 0.)
+        .with(main_scene(), ())
         .spawn(world);
 }
 

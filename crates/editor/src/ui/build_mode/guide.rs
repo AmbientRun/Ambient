@@ -4,7 +4,7 @@ use ambient_core::{
     main_scene, mesh,
     transform::{local_to_world, mesh_to_world},
 };
-use ambient_ecs::{EntityData, EntityId, World};
+use ambient_ecs::{Entity, EntityId, World};
 use ambient_element::{Element, ElementComponent};
 use ambient_meshes::QuadMeshKey;
 use ambient_network::client::GameClient;
@@ -23,20 +23,20 @@ fn spawn_entity(world: &mut World, mat: SharedMaterial) -> EntityId {
 
     let aabb = AABB { min: vec3(-1., -1., 0.), max: vec3(1., 1., 0.) };
 
-    EntityData::new()
-        .set(mesh(), QuadMeshKey.get(assets))
-        .set_default(local_to_world())
-        .set_default(mesh_to_world())
-        .set(primitives(), vec![])
-        .set_default(gpu_primitives())
-        .set(main_scene(), ())
-        .set(local_bounding_aabb(), aabb)
-        .set(world_bounding_sphere(), aabb.to_sphere())
-        .set(world_bounding_aabb(), aabb)
-        .set(color(), vec4(0.3, 0.3, 1., 1.0))
-        .set(double_sided(), true)
-        .set(material(), mat)
-        .set(
+    Entity::new()
+        .with(mesh(), QuadMeshKey.get(assets))
+        .with_default(local_to_world())
+        .with_default(mesh_to_world())
+        .with(primitives(), vec![])
+        .with_default(gpu_primitives())
+        .with(main_scene(), ())
+        .with(local_bounding_aabb(), aabb)
+        .with(world_bounding_sphere(), aabb.to_sphere())
+        .with(world_bounding_aabb(), aabb)
+        .with(color(), vec4(0.3, 0.3, 1., 1.0))
+        .with(double_sided(), true)
+        .with(material(), mat)
+        .with(
             renderer_shader(),
             cb(|assets, config| {
                 StandardShaderKey { material_shader: GridShaderKey.get(assets), lit: false, shadow_cascades: config.shadow_cascades }

@@ -6,7 +6,7 @@ use std::{
 };
 
 use ambient_core::hierarchy::{children, parent};
-use ambient_ecs::{query, Component, EntityData, EntityId, SystemGroup, World};
+use ambient_ecs::{query, Component, Entity, EntityId, SystemGroup, World};
 use ambient_std::friendly_id;
 use itertools::Itertools;
 use parking_lot::Mutex;
@@ -219,9 +219,9 @@ impl ElementTree {
         } else {
             let instance = self.instances.get(instance_id).unwrap();
             if instance.entity.is_null() {
-                let mut entity_data = EntityData::new().set_default(crate::element());
+                let mut entity_data = Entity::new().with_default(crate::element());
                 if let Some(parent_entity) = instance.parent_entity {
-                    entity_data = entity_data.set(parent(), parent_entity);
+                    entity_data = entity_data.with(parent(), parent_entity);
                 }
                 (instance.config.spawner)(world, entity_data)
             } else {
@@ -229,7 +229,7 @@ impl ElementTree {
             }
         };
 
-        let mut components = EntityData::new();
+        let mut components = Entity::new();
         let spawn = {
             let instance = self.instances.get_mut(instance_id).unwrap();
             let spawn = instance.entity != entity;
@@ -419,7 +419,7 @@ impl ElementTree {
                 .unwrap();
         }
     }
-    fn gather_parent_components(&self, world: &World, instance_id: &str, components: &mut EntityData) {
+    fn gather_parent_components(&self, world: &World, instance_id: &str, components: &mut Entity) {
         let parent = {
             let instance = self.instances.get(instance_id).unwrap();
             instance.config.components.write_to_entity_data(world, components);

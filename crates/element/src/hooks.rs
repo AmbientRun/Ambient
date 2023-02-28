@@ -7,9 +7,7 @@ use std::{
 };
 
 use ambient_core::runtime;
-use ambient_ecs::{
-    world_events, ComponentQuery, ComponentValue, EntityData, FrameEvent, QueryState, TypedReadQuery, World, WorldEventReader,
-};
+use ambient_ecs::{world_events, ComponentQuery, ComponentValue, Entity, FrameEvent, QueryState, TypedReadQuery, World, WorldEventReader};
 use ambient_std::{cb, Cb};
 use ambient_sys::task;
 use as_any::Downcast;
@@ -139,7 +137,7 @@ impl<'a> Hooks<'a> {
         }
     }
 
-    pub fn use_world_event(&mut self, func: impl Fn(&mut World, &EntityData) + Sync + Send + 'static) {
+    pub fn use_world_event(&mut self, func: impl Fn(&mut World, &Entity) + Sync + Send + 'static) {
         let reader = self.use_ref_with(|_| WorldEventReader::new());
         self.use_frame(move |world| {
             let mut reader = reader.lock();

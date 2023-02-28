@@ -1,6 +1,6 @@
 use ambient_app::{gpu, App, AppBuilder};
 use ambient_core::{asset_cache, camera::active_camera, main_scene, transform::*};
-use ambient_ecs::{EntityData, EntityId, FnSystem, World};
+use ambient_ecs::{Entity, EntityId, FnSystem, World};
 use ambient_meshes::{CubeMeshKey, QuadMeshKey};
 use ambient_renderer::{
     gpu_primitives,
@@ -18,33 +18,33 @@ fn init(world: &mut World) -> (EntityId, EntityId, SharedMaterial, SharedMateria
     let red = SharedMaterial::new(FlatMaterial::new(assets.clone(), vec4(1., 0., 0., 1.), Some(false)));
     let green = SharedMaterial::new(FlatMaterial::new(assets.clone(), vec4(0., 1., 0., 1.), Some(false)));
 
-    let entity1 = EntityData::new()
-        .set(
+    let entity1 = Entity::new()
+        .with(
             primitives(),
             vec![RenderPrimitive { shader: cb(get_flat_shader), material: red.clone(), mesh: CubeMeshKey.get(&assets), lod: 0 }],
         )
-        .set_default(gpu_primitives())
-        .set_default(local_to_world())
-        .set_default(mesh_to_world())
-        .set(translation(), vec3(-2.5, 0., 0.))
-        .set(main_scene(), ())
+        .with_default(gpu_primitives())
+        .with_default(local_to_world())
+        .with_default(mesh_to_world())
+        .with(translation(), vec3(-2.5, 0., 0.))
+        .with(main_scene(), ())
         .spawn(world);
 
-    let entity2 = EntityData::new()
-        .set(
+    let entity2 = Entity::new()
+        .with(
             primitives(),
             vec![RenderPrimitive { shader: cb(get_flat_shader), material: green.clone(), mesh: CubeMeshKey.get(&assets), lod: 0 }],
         )
-        .set_default(gpu_primitives())
-        .set_default(local_to_world())
-        .set_default(mesh_to_world())
-        .set(translation(), vec3(2.5, 0., 0.))
-        .set(main_scene(), ())
+        .with_default(gpu_primitives())
+        .with_default(local_to_world())
+        .with_default(mesh_to_world())
+        .with(translation(), vec3(2.5, 0., 0.))
+        .with(main_scene(), ())
         .spawn(world);
 
     ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
-        .set(active_camera(), 0.)
-        .set(main_scene(), ())
+        .with(active_camera(), 0.)
+        .with(main_scene(), ())
         .spawn(world);
     (entity1, entity2, red, green)
 }

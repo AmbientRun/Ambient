@@ -1,6 +1,6 @@
 use std::time::SystemTime;
 
-use ambient_ecs::{query, Component, ComponentValue, EntityData, EntityId, IndexField, IndexKey, World};
+use ambient_ecs::{query, Component, ComponentValue, Entity, EntityId, IndexField, IndexKey, World};
 use ambient_network::server::SharedServerState;
 use ambient_std::friendly_id;
 
@@ -18,7 +18,7 @@ fn despawn_reverted_intents(world: &mut World, user_id: &str) {
 }
 
 /// Pushes and applied the intent
-pub fn push_intent(state: SharedServerState, user_id: String, mut data: EntityData) -> ambient_ecs::EntityId {
+pub fn push_intent(state: SharedServerState, user_id: String, mut data: Entity) -> ambient_ecs::EntityId {
     let (reg, id, intent) = {
         let mut guard = state.lock();
         let world = guard.get_player_world_mut(&user_id).unwrap();
@@ -26,7 +26,7 @@ pub fn push_intent(state: SharedServerState, user_id: String, mut data: EntityDa
         // Make sure to remove the undone intents, to start with a fresh stack
         despawn_reverted_intents(world, &user_id);
 
-        data.set_self(intent_user_id(), user_id.clone());
+        data.set(intent_user_id(), user_id.clone());
         let intent = data.get(intent()).expect("Missing intent kind for intent");
 
         let id = data.spawn(world);
@@ -38,12 +38,12 @@ pub fn push_intent(state: SharedServerState, user_id: String, mut data: EntityDa
     id
 }
 
-pub fn create_intent<T: ComponentValue>(intent_arg: Component<T>, arg: T, collapse_id: Option<String>) -> EntityData {
-    EntityData::new()
-        .set(intent(), intent_arg.index())
-        .set(intent_timestamp(), SystemTime::now())
-        .set(intent_arg, arg)
-        .set(intent_id(), collapse_id.unwrap_or_else(friendly_id))
+pub fn create_intent<T: ComponentValue>(intent_arg: Component<T>, arg: T, collapse_id: Option<String>) -> Entity {
+    Entity::new()
+        .with(intent(), intent_arg.index())
+        .with(intent_timestamp(), SystemTime::now())
+        .with(intent_arg, arg)
+        .with(intent_id(), collapse_id.unwrap_or_else(friendly_id))
 }
 
 /// Reverts the head intent iff it is the specified intent

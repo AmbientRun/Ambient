@@ -9,8 +9,7 @@ use ambient_core::{
     transform::{get_world_position, inv_local_to_world, local_to_world, mesh_to_world},
 };
 use ambient_ecs::{
-    components, query, ComponentDesc, Debuggable, Description, EntityData, EntityId, MaybeResource, Name, Networked, Store, SystemGroup,
-    World,
+    components, query, ComponentDesc, Debuggable, Description, Entity, EntityId, MaybeResource, Name, Networked, Store, SystemGroup, World,
 };
 use ambient_gpu::mesh_buffer::GpuMeshFromUrl;
 use ambient_renderer::{
@@ -81,8 +80,8 @@ async fn internal_spawn_models_from_defs(
 
     let mat = LoadingMaterialKey { speed: 2.0, scale: 6.0 }.get(assets);
 
-    let cube = EntityData::new()
-        .set(
+    let cube = Entity::new()
+        .with(
             primitives(),
             vec![RenderPrimitive {
                 shader: cb(move |assets, config| {
@@ -94,17 +93,17 @@ async fn internal_spawn_models_from_defs(
                 lod: 0,
             }],
         )
-        .set_default(gpu_primitives())
-        .set(color(), vec4(0.0, 0.5, 1.0, 1.0))
-        .set(main_scene(), ())
-        .set_default(local_to_world())
-        .set_default(mesh_to_world())
-        .set_default(local_to_world())
-        .set_default(inv_local_to_world());
+        .with_default(gpu_primitives())
+        .with(color(), vec4(0.0, 0.5, 1.0, 1.0))
+        .with(main_scene(), ())
+        .with_default(local_to_world())
+        .with_default(mesh_to_world())
+        .with_default(local_to_world())
+        .with_default(inv_local_to_world());
 
     let mut ids = entities_with_models.values().flatten().copied().collect_vec();
 
-    let cube_fail = Arc::new(cube.clone().set(color(), vec4(1.0, 0.0, 0.0, 1.0)));
+    let cube_fail = Arc::new(cube.clone().with(color(), vec4(1.0, 0.0, 0.0, 1.0)));
 
     async_run.run(move |world| {
         ids.retain(|id| world.exists(*id));
@@ -153,7 +152,7 @@ async fn internal_spawn_models_from_defs(
                         &ModelSpawnOpts {
                             root: ModelSpawnRoot::AttachTo(ids),
                             // We need to keep the model alive on the entity here, or otherwise it'll unload from the asset store
-                            root_components: EntityData::new().set(self::model(), model.clone()),
+                            root_components: Entity::new().with(self::model(), model.clone()),
                             ..Default::default()
                         },
                         len,

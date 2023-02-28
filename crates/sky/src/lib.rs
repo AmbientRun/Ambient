@@ -5,7 +5,7 @@
 use std::sync::Arc;
 
 use ambient_core::{asset_cache, mesh, transform::translation};
-use ambient_ecs::{components, query, Debuggable, Description, EntityData, Name, Networked, Store, SystemGroup};
+use ambient_ecs::{components, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
 use ambient_gpu::{
     gpu::GpuKey,
     shader_module::{BindGroupDesc, Shader, ShaderModule},
@@ -59,15 +59,18 @@ pub fn systems() -> SystemGroup {
 
                     let material = CloudMaterial::new(assets.clone(), &clouds);
 
-                    let data = EntityData::new()
-                        .set(renderer_shader(), cb(|assets, config| CloudShaderKey { shadow_cascades: config.shadow_cascades }.get(assets)))
-                        .set(ambient_renderer::material(), SharedMaterial::new(material))
-                        .set(cloud_state(), clouds)
-                        .set(overlay(), ())
-                        .set(mesh(), QuadMeshKey.get(&assets))
-                        .set(primitives(), vec![])
-                        .set_default(gpu_primitives())
-                        .set(translation(), vec3(0.0, 0.0, -1.0));
+                    let data = Entity::new()
+                        .with(
+                            renderer_shader(),
+                            cb(|assets, config| CloudShaderKey { shadow_cascades: config.shadow_cascades }.get(assets)),
+                        )
+                        .with(ambient_renderer::material(), SharedMaterial::new(material))
+                        .with(cloud_state(), clouds)
+                        .with(overlay(), ())
+                        .with(mesh(), QuadMeshKey.get(&assets))
+                        .with(primitives(), vec![])
+                        .with_default(gpu_primitives())
+                        .with(translation(), vec3(0.0, 0.0, -1.0));
                     world.add_components(id, data).unwrap();
                 }
             }),

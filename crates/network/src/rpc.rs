@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use ambient_ecs::{query, EntityData, System, WorldDiff};
+use ambient_ecs::{query, Entity, System, WorldDiff};
 use ambient_rpc::RpcRegistry;
 use ambient_std::friendly_id;
 use serde::{Deserialize, Serialize};
@@ -22,13 +22,13 @@ pub fn register_rpcs(reg: &mut RpcRegistry<GameRpcArgs>) {
 }
 
 pub async fn rpc_world_diff(args: GameRpcArgs, diff: WorldDiff) {
-    diff.apply(&mut args.state.lock().get_player_world_instance_mut(&args.user_id).unwrap().world, EntityData::new(), false);
+    diff.apply(&mut args.state.lock().get_player_world_instance_mut(&args.user_id).unwrap().world, Entity::new(), false);
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RpcForkInstance {
-    pub resources: EntityData,
-    pub synced_res: EntityData,
+    pub resources: Entity,
+    pub synced_res: Entity,
     pub id: Option<String>,
 }
 
@@ -44,7 +44,7 @@ pub async fn rpc_fork_instance(args: GameRpcArgs, RpcForkInstance { resources, s
             for (id, _) in query(user_id()).collect_cloned(&world, None) {
                 world.despawn(id);
             }
-            world.add_components(world.resource_entity(), resources.append(ambient_core::async_ecs::async_ecs_resources())).unwrap();
+            world.add_components(world.resource_entity(), resources.with_merge(ambient_core::async_ecs::async_ecs_resources())).unwrap();
             world.add_components(world.synced_resource_entity().unwrap(), synced_res).unwrap();
 
             let mut on_forking = (state.create_on_forking_systems)();

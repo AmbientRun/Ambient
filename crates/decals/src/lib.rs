@@ -8,7 +8,7 @@ use ambient_core::{
     main_scene, mesh, runtime,
     transform::{local_to_world, mesh_to_world},
 };
-use ambient_ecs::{components, query, EntityData, MakeDefault, Networked, Store, SystemGroup};
+use ambient_ecs::{components, query, Entity, MakeDefault, Networked, Store, SystemGroup};
 use ambient_gpu::shader_module::{Shader, ShaderModule};
 use ambient_meshes::CubeMeshKey;
 use ambient_renderer::{
@@ -89,9 +89,9 @@ pub fn client_systems() -> SystemGroup {
                     let mat = unwrap_log_warn!(unwrap_log_err!(mat_def.resolve(&decal)).get(&assets).await);
                     async_run.run(move |world| {
                         let aabb = AABB { min: -Vec3::ONE, max: Vec3::ONE };
-                        let mut data = EntityData::new()
-                            .set(material(), mat.into())
-                            .set(
+                        let mut data = Entity::new()
+                            .with(material(), mat.into())
+                            .with(
                                 renderer_shader(),
                                 cb(move |assets, config| {
                                     DecalShaderKey {
@@ -102,21 +102,21 @@ pub fn client_systems() -> SystemGroup {
                                     .get(assets)
                                 }),
                             )
-                            .set(mesh(), CubeMeshKey.get(&assets))
-                            .set(primitives(), vec![])
-                            .set_default(gpu_primitives())
-                            .set(main_scene(), ())
-                            .set(local_bounding_aabb(), aabb)
-                            .set(world_bounding_sphere(), aabb.to_sphere())
-                            .set(world_bounding_aabb(), aabb);
+                            .with(mesh(), CubeMeshKey.get(&assets))
+                            .with(primitives(), vec![])
+                            .with_default(gpu_primitives())
+                            .with(main_scene(), ())
+                            .with(local_bounding_aabb(), aabb)
+                            .with(world_bounding_sphere(), aabb.to_sphere())
+                            .with(world_bounding_aabb(), aabb);
                         if !world.has_component(id, local_to_world()) {
-                            data.set_self(local_to_world(), Default::default());
+                            data.set(local_to_world(), Default::default());
                         }
                         if !world.has_component(id, mesh_to_world()) {
-                            data.set_self(mesh_to_world(), Default::default());
+                            data.set(mesh_to_world(), Default::default());
                         }
                         if !world.has_component(id, color()) {
-                            data.set_self(color(), Vec4::ONE);
+                            data.set(color(), Vec4::ONE);
                         }
                         world.add_components(id, data).ok();
                     })

@@ -8,7 +8,7 @@ use ambient_core::{
         fbx_scaling_pivot, local_to_parent, local_to_world, mesh_to_local, rotation, scale, translation,
     },
 };
-use ambient_ecs::{EntityData, EntityId, World};
+use ambient_ecs::{Entity, EntityId, World};
 use ambient_model::{model_skin_ix, pbr_renderer_primitives_from_url, PbrRenderPrimitiveFromUrl};
 use ambient_renderer::double_sided;
 use fbxcel::tree::v7400::NodeHandle;
@@ -124,40 +124,40 @@ impl FbxModel {
         asset_crate: &ModelCrate,
         n_meshes: &HashMap<i64, usize>,
     ) {
-        let mut out_node = EntityData::new().set(name(), self.node_name.to_string()).set_default(children());
+        let mut out_node = Entity::new().with(name(), self.node_name.to_string()).with_default(children());
         if self.double_sided {
-            out_node.set_self(double_sided(), true);
+            out_node.set(double_sided(), true);
         }
 
         if let Some(value) = self.rotation_offset {
-            out_node.set_self(fbx_rotation_offset(), value);
+            out_node.set(fbx_rotation_offset(), value);
         }
         if let Some(value) = self.rotation_pivot {
-            out_node.set_self(fbx_rotation_pivot(), value);
+            out_node.set(fbx_rotation_pivot(), value);
         }
         if let Some(value) = self.pre_rotation.map(|r| Quat::from_euler(EulerRot::ZYX, r.z, r.y, r.x)) {
-            out_node.set_self(fbx_pre_rotation(), value);
+            out_node.set(fbx_pre_rotation(), value);
         }
         if let Some(value) = self.post_rotation.map(|r| Quat::from_euler(EulerRot::ZYX, r.z, r.y, r.x)) {
-            out_node.set_self(fbx_post_rotation(), value);
+            out_node.set(fbx_post_rotation(), value);
         }
         if let Some(value) = self.scaling_offset {
-            out_node.set_self(fbx_scaling_offset(), value);
+            out_node.set(fbx_scaling_offset(), value);
         }
         if let Some(value) = self.scaling_pivot {
-            out_node.set_self(fbx_scaling_pivot(), value);
+            out_node.set(fbx_scaling_pivot(), value);
         }
         if self.is_complex_transform() {
-            out_node.set_self(fbx_complex_transform(), ());
+            out_node.set(fbx_complex_transform(), ());
         }
 
         // Need to give these values since they might be animated
-        out_node.set_self(translation(), self.translation.unwrap_or(Vec3::ZERO));
-        out_node.set_self(rotation(), self.rotation.or(Some(Vec3::ZERO)).map(|r| Quat::from_euler(EulerRot::ZYX, r.z, r.y, r.x)).unwrap());
-        out_node.set_self(scale(), self.scaling.unwrap_or(Vec3::ONE));
-        out_node.set_self(local_to_world(), Default::default());
+        out_node.set(translation(), self.translation.unwrap_or(Vec3::ZERO));
+        out_node.set(rotation(), self.rotation.or(Some(Vec3::ZERO)).map(|r| Quat::from_euler(EulerRot::ZYX, r.z, r.y, r.x)).unwrap());
+        out_node.set(scale(), self.scaling.unwrap_or(Vec3::ONE));
+        out_node.set(local_to_world(), Default::default());
         if self.parent.is_some() {
-            out_node.set_self(local_to_parent(), Default::default());
+            out_node.set(local_to_parent(), Default::default());
         }
 
         if !self.geometries.is_empty() {
@@ -171,13 +171,13 @@ impl FbxModel {
                         lod: 0,
                     })
                     .collect_vec();
-                out_node.set_self(pbr_renderer_primitives_from_url(), prims);
+                out_node.set(pbr_renderer_primitives_from_url(), prims);
             }
             if let Some(skin) = doc.geometries.get(&geo).and_then(|geo| geo.skin).and_then(|id| doc.skins.get_index_of(&id)) {
-                out_node.set_self(model_skin_ix(), skin);
+                out_node.set(model_skin_ix(), skin);
             }
             if self.geometric_translation.is_some() || self.geometric_rotation.is_some() || self.geometric_scale.is_some() {
-                out_node.set_self(
+                out_node.set(
                     mesh_to_local(),
                     Mat4::from_scale_rotation_translation(
                         self.geometric_scale.unwrap_or(Vec3::ONE),

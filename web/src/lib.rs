@@ -1,6 +1,6 @@
 use ambient_app::App;
 use ambient_core::name;
-use ambient_ecs::{EntityData, World};
+use ambient_ecs::{Entity, World};
 use tracing_subscriber::{filter::LevelFilter, fmt::time::UtcTime, prelude::*, registry};
 use tracing_web::MakeConsoleWriter;
 use wasm_bindgen::prelude::wasm_bindgen;
@@ -21,7 +21,7 @@ async fn start() {
     let mut world = World::new("main");
 
     ambient_core::init_all_components();
-    let id = EntityData::new().set(name(), "wasm-entity".into()).spawn(&mut world);
+    let id = Entity::new().with(name(), "wasm-entity".into()).spawn(&mut world);
 
     tracing::info!("Spawned {id}");
 

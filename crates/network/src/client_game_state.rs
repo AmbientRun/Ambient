@@ -8,7 +8,7 @@ use ambient_core::{
     transform::local_to_world,
     window_physical_size,
 };
-use ambient_ecs::{components, query, EntityData, FrameEvent, System, SystemGroup, World};
+use ambient_ecs::{components, query, Entity, FrameEvent, System, SystemGroup, World};
 use ambient_gizmos::render::GizmoRenderer;
 use ambient_gpu::gpu::GpuKey;
 use ambient_renderer::{RenderTarget, Renderer, RendererConfig, RendererTarget};
@@ -51,13 +51,13 @@ impl ClientGameState {
         player_id: String,
         render_target: Arc<RenderTarget>,
         client_systems: SystemGroup,
-        client_resources: EntityData,
+        client_resources: Entity,
     ) -> Self {
         let mut game_world = World::new("client_game_world");
         let local_resources = world_instance_resources(AppResources::from_world(world))
-            .set(crate::local_user_id(), player_id.clone())
-            .set(game_screen_render_target(), render_target)
-            .append(client_resources);
+            .with(crate::local_user_id(), player_id.clone())
+            .with(game_screen_render_target(), render_target)
+            .with_merge(client_resources);
         game_world.add_components(game_world.resource_entity(), local_resources).unwrap();
 
         let systems = SystemGroup::new("game", vec![Box::new(client_systems), Box::new(world_instance_systems(true))]);

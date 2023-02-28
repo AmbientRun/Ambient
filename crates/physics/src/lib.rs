@@ -2,8 +2,7 @@ use std::sync::Arc;
 
 use ambient_core::asset_cache;
 use ambient_ecs::{
-    components, query, Debuggable, Description, DynSystem, EntityData, EntityId, FnSystem, Name, Networked, Resource, Store, SystemGroup,
-    World,
+    components, query, Debuggable, Description, DynSystem, Entity, EntityId, FnSystem, Name, Networked, Resource, Store, SystemGroup, World,
 };
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
 use ambient_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
@@ -84,9 +83,9 @@ pub fn init_all_components() {
 }
 
 pub const GRAVITY: f32 = 9.82;
-pub fn create_server_resources(assets: &AssetCache, server_resources: &mut EntityData) {
+pub fn create_server_resources(assets: &AssetCache, server_resources: &mut Entity) {
     let physics = PhysicsKey.get(assets);
-    server_resources.set_self(crate::physx::physics(), physics.clone());
+    server_resources.set(crate::physx::physics(), physics.clone());
 
     let mut main_scene_desc = PxSceneDesc::new(physics.physics);
     main_scene_desc.set_cpu_dispatcher(&physics.dispatcher);
@@ -105,8 +104,8 @@ pub fn create_server_resources(assets: &AssetCache, server_resources: &mut Entit
         });
     }
     let main_scene = PxSceneRef::new(&physics.physics, &main_scene_desc);
-    server_resources.set_self(self::collisions(), collisions);
-    server_resources.set_self(self::collider_loads(), vec![]);
+    server_resources.set(self::collisions(), collisions);
+    server_resources.set(self::collider_loads(), vec![]);
 
     main_scene.get_scene_pvd_client().set_scene_pvd_flags(
         PxPvdSceneFlag::TRANSMIT_CONSTRAINTS | PxPvdSceneFlag::TRANSMIT_SCENEQUERIES | PxPvdSceneFlag::TRANSMIT_CONTACTS,
@@ -122,11 +121,11 @@ pub fn create_server_resources(assets: &AssetCache, server_resources: &mut Entit
     trigger_areas_desc.set_cpu_dispatcher(&physics.dispatcher);
     let trigger_areas = PxSceneRef::new(&physics.physics, &trigger_areas_desc);
 
-    server_resources.set_self(self::main_physics_scene(), main_scene);
-    server_resources.set_self(crate::picking_scene(), picking_scene);
-    server_resources.set_self(crate::trigger_areas_scene(), trigger_areas);
-    server_resources.set_self(self::main_controller_manager(), main_controller_manager);
-    server_resources.set_self(self::wood_physics_material(), PxMaterial::new(physics.physics, 0.5, 0.5, 0.6));
+    server_resources.set(self::main_physics_scene(), main_scene);
+    server_resources.set(crate::picking_scene(), picking_scene);
+    server_resources.set(crate::trigger_areas_scene(), trigger_areas);
+    server_resources.set(self::main_controller_manager(), main_controller_manager);
+    server_resources.set(self::wood_physics_material(), PxMaterial::new(physics.physics, 0.5, 0.5, 0.6));
 }
 
 #[derive(Debug, Clone)]
@@ -263,7 +262,7 @@ pub fn on_forking_systems() -> SystemGroup<ForkingEvent> {
     SystemGroup::new(
         "physics/on_forking_systems",
         vec![Box::new(FnSystem::new(|world, _| {
-            let mut ed = EntityData::new();
+            let mut ed = Entity::new();
             create_server_resources(world.resource(asset_cache()), &mut ed);
             world.add_components(world.resource_entity(), ed).unwrap();
 
