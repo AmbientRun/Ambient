@@ -2,6 +2,7 @@ use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 mod common;
 use std::sync::Arc;
 
+use ambient_std::cb;
 use common::*;
 
 #[test]
@@ -37,9 +38,9 @@ fn update_context_on_removed_element() {
             let (state, set_state) = hooks.use_state::<u32>(0);
             hooks.provide_context(|| state);
             if state < 3 {
-                Element::new().children(vec![Child.into()]).listener(
+                Element::new().children(vec![Child.into()]).set(
                     trigger(),
-                    Arc::new(move |_| {
+                    cb(move |_| {
                         set_state(state + 1);
                     }),
                 )

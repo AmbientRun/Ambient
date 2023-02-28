@@ -3,7 +3,7 @@ use std::{collections::HashMap, fmt::Debug, hash::Hash, ops::Deref, sync::Arc};
 use ambient_core::on_window_event;
 use ambient_ecs::EntityId;
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_input::{event_keyboard_input, KeyboardEvent};
+use ambient_input::{event_keyboard_input, event_mouse_input, KeyboardEvent};
 use ambient_std::{cb, color::Color, Cb};
 use closure::closure;
 use indexmap::IndexMap;
@@ -145,6 +145,17 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { value, on_change, item_opts, add_presets, add_title, item_editor } = *self;
         let (add_action, set_add_action) = hooks.use_state(false);
+        let has_on_change = on_change.is_some();
+        hooks.use_world_event({
+            let set_add_action = set_add_action.clone();
+            move |_world, event| {
+                if let Some(event) = event.get_ref(event_mouse_input()) {
+                    if event.state == ElementState::Pressed && has_on_change {
+                        set_add_action(false);
+                    }
+                }
+            }
+        });
         FlowColumn::el([
             FlowColumn(
                 value
@@ -211,14 +222,6 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                     }
                     .el()
                     .set(margin(), Borders::top(STREET))
-                    .listener(
-                        on_window_event(),
-                        Arc::new(move |_, _, event| {
-                            if let WindowEvent::MouseInput { state: ElementState::Pressed, .. } = event {
-                                set_add_action(false);
-                            }
-                        }),
-                    )
                 } else {
                     Button::new(
                         add_title,

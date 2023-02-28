@@ -17,12 +17,13 @@ struct WobbleRect;
 impl ElementComponent for WobbleRect {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (state, set_state) = hooks.use_state(0.);
-        UIBase
-            .el()
-            .set(width(), 150.)
-            .set(height(), 30. + (state as f32 * 0.01).sin() * 20.)
-            .with_background(Color::rgba(1., 0., (state as f32 * 0.01).sin(), 1.))
-            .listener(on_frame(), Arc::new(move |_world, _, _| set_state(state + 1.)))
+        hooks.use_frame(move |_| set_state(state + 1.));
+        UIBase.el().set(width(), 150.).set(height(), 30. + (state as f32 * 0.01).sin() * 20.).with_background(Color::rgba(
+            1.,
+            0.,
+            (state as f32 * 0.01).sin(),
+            1.,
+        ))
     }
 }
 
