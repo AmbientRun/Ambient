@@ -1,8 +1,4 @@
-use std::{
-    future::Future,
-    sync::Arc,
-    time::{Duration, SystemTime},
-};
+use std::{future::Future, sync::Arc, time::Duration};
 
 use ambient_cameras::assets_camera_systems;
 pub use ambient_core::gpu;
