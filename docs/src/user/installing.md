@@ -12,6 +12,8 @@ rustup target add --toolchain stable wasm32-wasi
 
 ## Installing from Git
 
+Ambient can be installed through `cargo install`, which will download and build the repository. Our current minimum supported Rust version is 1.67.0, as we use recently-stabilised standard library features.
+
 To install the latest released version from Git, run the following:
 
 ```sh
