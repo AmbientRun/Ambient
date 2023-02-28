@@ -605,3 +605,22 @@ impl NTextureChannels for wgpu::TextureFormat {
         }
     }
 }
+
+#[tokio::test]
+async fn test_read_texture() {
+    let gpu = Arc::new(Gpu::new(None).await);
+    let tex = Texture::new_with_data(
+        gpu,
+        &wgpu::TextureDescriptor {
+            size: wgpu::Extent3d { width: 1, height: 1, depth_or_array_layers: 1 },
+            mip_level_count: 1,
+            sample_count: 1,
+            dimension: wgpu::TextureDimension::D2,
+            format: wgpu::TextureFormat::Rgba8UnormSrgb,
+            usage: wgpu::TextureUsages::COPY_SRC,
+            label: None,
+        },
+        bytemuck::cast_slice(&[255, 255, 255, 255]),
+    );
+    tex.reader().read_image().await.unwrap();
+}
