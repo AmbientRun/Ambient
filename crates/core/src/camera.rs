@@ -135,20 +135,6 @@ components!("camera", {
     shadows_far: f32,
 });
 
-/*
-query((
-    orthographic_left().changed(),
-    orthographic_right().changed(),
-    orthographic_top().changed(),
-    orthographic_bottom().changed(),
-))
-.incl(orthographic())
-.to_system(|q, world, qs, _| {
-    for (id, (left, right, top, bottom)) in q.collect_cloned(world, qs) {
-        world.add_component(id, orthographic_rect(), OrthographicRect { left, right, top, bottom }).unwrap();
-    }
-}), */
-
 pub fn camera_systems() -> SystemGroup {
     SystemGroup::new(
         "camera_systems",
@@ -172,6 +158,18 @@ pub fn camera_systems() -> SystemGroup {
             query_mut((projection(),), (near(), far(), fovy(), aspect_ratio())).incl(perspective()).to_system(|q, world, qs, _| {
                 for (_, (projection,), (&near, &far, &fovy, &aspect_ratio)) in q.iter(world, qs) {
                     *projection = perspective_reverse(fovy, aspect_ratio, near, far);
+                }
+            }),
+            query((
+                orthographic_left().changed(),
+                orthographic_right().changed(),
+                orthographic_top().changed(),
+                orthographic_bottom().changed(),
+            ))
+            .incl(orthographic())
+            .to_system(|q, world, qs, _| {
+                for (id, (left, right, top, bottom)) in q.collect_cloned(world, qs) {
+                    world.add_component(id, orthographic_rect(), OrthographicRect { left, right, top, bottom }).unwrap();
                 }
             }),
             query_mut((projection(),), (near(), far(), orthographic_rect())).to_system(|q, world, qs, _| {
