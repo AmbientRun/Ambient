@@ -8,7 +8,7 @@ use std::{
 
 use ambient_core::{app_start_time, asset_cache, dtime, no_sync, project_name, time};
 use ambient_ecs::{
-    world_events, ComponentDesc, ComponentRegistry, EntityData, Networked, SystemGroup, World, WorldEventsSystem, WorldStreamCompEvent,
+    world_events, ComponentDesc, ComponentRegistry, Entity, Networked, SystemGroup, World, WorldEventsSystem, WorldStreamCompEvent,
 };
 use ambient_network::{
     bi_stream_handlers, datagram_handlers,
@@ -71,7 +71,7 @@ pub fn start(
 
         // Keep track of the project name
         let name = manifest.project.name.clone().unwrap_or_else(|| "Ambient".into());
-        server_world.add_components(server_world.resource_entity(), EntityData::new().set(project_name(), name)).unwrap();
+        server_world.add_components(server_world.resource_entity(), Entity::new().set(project_name(), name)).unwrap();
 
         wasm::initialize(&mut server_world, project_path.clone(), &manifest).await.unwrap();
 
@@ -121,8 +121,8 @@ fn is_sync_component(component: ComponentDesc, _: WorldStreamCompEvent) -> bool 
     component.has_attribute::<Networked>()
 }
 
-fn create_resources(assets: AssetCache) -> EntityData {
-    let mut server_resources = EntityData::new().set(asset_cache(), assets.clone()).set(no_sync(), ()).set_default(world_events());
+fn create_resources(assets: AssetCache) -> Entity {
+    let mut server_resources = Entity::new().set(asset_cache(), assets.clone()).set(no_sync(), ()).set_default(world_events());
 
     ambient_physics::create_server_resources(&assets, &mut server_resources);
 

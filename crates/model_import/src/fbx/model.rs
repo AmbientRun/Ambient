@@ -8,7 +8,7 @@ use ambient_core::{
         fbx_scaling_pivot, local_to_parent, local_to_world, mesh_to_local, rotation, scale, translation,
     },
 };
-use ambient_ecs::{EntityData, EntityId, World};
+use ambient_ecs::{Entity, EntityId, World};
 use ambient_model::{model_skin_ix, pbr_renderer_primitives_from_url, PbrRenderPrimitiveFromUrl};
 use ambient_renderer::double_sided;
 use fbxcel::tree::v7400::NodeHandle;
@@ -124,7 +124,7 @@ impl FbxModel {
         asset_crate: &ModelCrate,
         n_meshes: &HashMap<i64, usize>,
     ) {
-        let mut out_node = EntityData::new().set(name(), self.node_name.to_string()).set_default(children());
+        let mut out_node = Entity::new().set(name(), self.node_name.to_string()).set_default(children());
         if self.double_sided {
             out_node.set_self(double_sided(), true);
         }

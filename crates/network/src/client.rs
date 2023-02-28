@@ -7,7 +7,7 @@ use std::{
 
 use ambient_app::window_title;
 use ambient_core::{asset_cache, gpu, mirror_window_components, runtime};
-use ambient_ecs::{components, query, EntityData, EntityId, Resource, SystemGroup, World, WorldDiff};
+use ambient_ecs::{components, query, Entity, EntityId, Resource, SystemGroup, World, WorldDiff};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
@@ -136,7 +136,7 @@ pub struct GameClientView {
     pub server_addr: SocketAddr,
     pub user_id: String,
     pub resolution: UVec2,
-    pub systems_and_resources: Cb<dyn Fn() -> (SystemGroup, EntityData) + Sync + Send>,
+    pub systems_and_resources: Cb<dyn Fn() -> (SystemGroup, Entity) + Sync + Send>,
     pub init_world: Cb<UseOnce<InitCallback>>,
     pub error_view: Cb<dyn Fn(String) -> Element + Sync + Send>,
     pub on_loaded: Cb<dyn Fn(Arc<Mutex<ClientGameState>>, GameClient) -> anyhow::Result<Box<dyn FnOnce() + Sync + Send>> + Sync + Send>,
@@ -259,7 +259,7 @@ impl ElementComponent for GameClientView {
                             on_in_entities(&diff);
                         }
                         let mut gs = game_state.lock();
-                        diff.apply(&mut gs.world, EntityData::new().set(is_remote_entity(), ()), false);
+                        diff.apply(&mut gs.world, Entity::new().set(is_remote_entity(), ()), false);
                     };
 
                     let mut on_server_stats = |stats| {

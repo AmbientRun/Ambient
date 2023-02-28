@@ -5,7 +5,7 @@
 use std::sync::Arc;
 
 use ambient_core::{asset_cache, mesh, transform::translation};
-use ambient_ecs::{components, query, Debuggable, Description, EntityData, Name, Networked, Store, SystemGroup};
+use ambient_ecs::{components, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
 use ambient_gpu::{
     gpu::GpuKey,
     shader_module::{BindGroupDesc, Shader, ShaderModule},
@@ -59,7 +59,7 @@ pub fn systems() -> SystemGroup {
 
                     let material = CloudMaterial::new(assets.clone(), &clouds);
 
-                    let data = EntityData::new()
+                    let data = Entity::new()
                         .set(renderer_shader(), cb(|assets, config| CloudShaderKey { shadow_cascades: config.shadow_cascades }.get(assets)))
                         .set(ambient_renderer::material(), SharedMaterial::new(material))
                         .set(cloud_state(), clouds)

@@ -7,7 +7,7 @@ use serde::{
     Deserialize, Deserializer, Serialize, Serializer,
 };
 
-use crate::{dont_store, query, DeserEntityDataWithWarnings, EntityData, EntityId, Serializable, World};
+use crate::{dont_store, query, DeserEntityDataWithWarnings, Entity, EntityId, Serializable, World};
 
 impl Serialize for World {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
@@ -58,7 +58,7 @@ impl<'de> Deserialize<'de> for World {
                 V: MapAccess<'de>,
             {
                 let mut res = World::new_with_config_internal("deserialized-world", false);
-                while let Some((id, entity)) = map.next_entry::<EntityId, EntityData>()? {
+                while let Some((id, entity)) = map.next_entry::<EntityId, Entity>()? {
                     res.spawn_with_id(id, entity);
                 }
                 Ok(res)
@@ -159,7 +159,7 @@ mod test {
     pub fn test_serialize_world() {
         init();
         let mut world = World::new("test");
-        let id = EntityData::new().set(ser_test3(), "hi".to_string()).spawn(&mut world);
+        let id = Entity::new().set(ser_test3(), "hi".to_string()).spawn(&mut world);
 
         let ser = serde_json::to_string(&world).unwrap();
         assert_eq!(&ser, &format!("{{\"AQAAAAAAAAAAAAAAAAAAAA\":{{}},\"{id}\":{{\"core::test::ser_test3\":\"hi\"}}}}"));

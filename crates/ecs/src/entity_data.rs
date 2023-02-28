@@ -16,11 +16,11 @@ use super::{with_component_registry, Component, ComponentValue, ECSError, Entity
 use crate::{ComponentDesc, ComponentEntry, ComponentSet, ECSDeserializationWarnings, Serializable};
 
 #[derive(Clone)]
-pub struct EntityData {
+pub struct Entity {
     content: SparseVec<ComponentEntry>,
     pub(super) active_components: ComponentSet,
 }
-impl EntityData {
+impl Entity {
     pub fn new() -> Self {
         Self { content: SparseVec::new(), active_components: ComponentSet::new() }
     }
@@ -113,12 +113,12 @@ impl EntityData {
         self
     }
 
-    pub fn append(mut self, other: EntityData) -> EntityData {
+    pub fn append(mut self, other: Entity) -> Entity {
         self.append_self(other);
         self
     }
 
-    pub fn append_self(&mut self, other: EntityData) {
+    pub fn append_self(&mut self, other: Entity) {
         let other = other.content;
         for entry in other {
             self.set_entry(entry);
@@ -173,12 +173,12 @@ impl EntityData {
         self.len() == 0
     }
 }
-impl Default for EntityData {
+impl Default for Entity {
     fn default() -> Self {
         Self::new()
     }
 }
-impl Debug for EntityData {
+impl Debug for Entity {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut out = f.debug_struct("EntityData");
         for entry in self.content.iter() {
@@ -188,7 +188,7 @@ impl Debug for EntityData {
     }
 }
 
-impl Serialize for EntityData {
+impl Serialize for Entity {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         let len = self.content.iter().filter(|v| v.has_attribute::<Serializable>()).count();
 
@@ -203,7 +203,7 @@ impl Serialize for EntityData {
     }
 }
 
-impl<'de> Deserialize<'de> for EntityData {
+impl<'de> Deserialize<'de> for Entity {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
@@ -211,7 +211,7 @@ impl<'de> Deserialize<'de> for EntityData {
         struct EntityDataVisitor;
 
         impl<'de> Visitor<'de> for EntityDataVisitor {
-            type Value = EntityData;
+            type Value = Entity;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                 formatter.write_str("struct EntityData")
@@ -221,7 +221,7 @@ impl<'de> Deserialize<'de> for EntityData {
             where
                 V: MapAccess<'de>,
             {
-                let mut res = EntityData::new();
+                let mut res = Entity::new();
                 while let Some(key) = map.next_key::<String>()? {
                     let desc = with_component_registry(|r| r.get_by_path(&key))
                         .ok_or_else(|| de::Error::custom(format!("No such component: {key}")))?;
@@ -263,7 +263,7 @@ impl<'de> Deserialize<'de> for DeserEntityDataWithWarnings {
             where
                 V: MapAccess<'de>,
             {
-                let mut res = EntityData::new();
+                let mut res = Entity::new();
                 while let Some((key, value)) = map.next_entry::<String, serde_json::Value>()? {
                     let desc = with_component_registry(|r| r.get_by_path(&key));
                     let desc = match desc {
@@ -310,11 +310,11 @@ impl<'de> Deserialize<'de> for DeserEntityDataWithWarnings {
 /// Use this struct while de-serializing an EntityData to also get warnings
 /// about missing/bad components. Only works with serde_json
 pub struct DeserEntityDataWithWarnings {
-    pub entity: EntityData,
+    pub entity: Entity,
     pub warnings: ECSDeserializationWarnings,
 }
 
-impl IntoIterator for EntityData {
+impl IntoIterator for Entity {
     type Item = ComponentEntry;
 
     type IntoIter = Flatten<std::vec::IntoIter<Option<Self::Item>>>;
@@ -323,9 +323,9 @@ impl IntoIterator for EntityData {
         self.content.into_iter()
     }
 }
-impl FromIterator<ComponentEntry> for EntityData {
+impl FromIterator<ComponentEntry> for Entity {
     fn from_iter<I: IntoIterator<Item = ComponentEntry>>(iter: I) -> Self {
-        let mut c = EntityData::new();
+        let mut c = Entity::new();
 
         for v in iter {
             c.set_entry(v);
@@ -337,7 +337,7 @@ impl FromIterator<ComponentEntry> for EntityData {
 
 #[cfg(test)]
 mod test {
-    use crate::{components, EntityData, Networked};
+    use crate::{components, Entity, Networked};
 
     components!("test", {
         @[Networked]
@@ -347,10 +347,10 @@ mod test {
     #[test]
     pub fn test_serialize_entity_data() {
         init_components();
-        let source = EntityData::new().set(ser_test2(), "hello".to_string());
+        let source = Entity::new().set(ser_test2(), "hello".to_string());
         let ser = serde_json::to_string(&source).unwrap();
         assert_eq!(&ser, "{\"core::test::ser_test2\":\"hello\"}");
-        let deser: EntityData = serde_json::from_str(&ser).unwrap();
+        let deser: Entity = serde_json::from_str(&ser).unwrap();
         assert_eq!(source.get_ref(ser_test2()), deser.get_ref(ser_test2()));
     }
 }

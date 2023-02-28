@@ -4,7 +4,7 @@ use ambient_core::{
     transform::local_to_world,
     ui_scene, window_physical_size,
 };
-use ambient_ecs::{components, query, EntityData, EntityId, FnSystem, Resource, SystemGroup};
+use ambient_ecs::{components, query, Entity, EntityId, FnSystem, Resource, SystemGroup};
 use ambient_std::shapes::{RayIntersectable, AABB};
 use glam::Vec2;
 
@@ -22,8 +22,8 @@ pub struct PickerIntersection {
     pub distance: f32,
 }
 
-pub fn resources() -> EntityData {
-    EntityData::new().set_default(picker_intersecting())
+pub fn resources() -> Entity {
+    Entity::new().set_default(picker_intersecting())
 }
 
 pub fn frame_systems() -> SystemGroup {

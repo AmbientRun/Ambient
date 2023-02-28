@@ -1,4 +1,4 @@
-use ambient_ecs::{ArchetypeFilter, EntityData, EntityId};
+use ambient_ecs::{ArchetypeFilter, Entity, EntityId};
 use ambient_intent::server_push_intent;
 use ambient_network::client::GameRpcArgs;
 use ambient_physics::visualization::{visualize_collider, visualizing};
@@ -152,7 +152,7 @@ pub async fn rpc_toggle_visualize_colliders(args: GameRpcArgs, entities: Vec<Ent
 //     };
 //     log_warning!(save_world(stored_map, map_path).await);
 // }
-pub async fn rpc_spawn(args: GameRpcArgs, entity_data: EntityData) -> Option<EntityId> {
+pub async fn rpc_spawn(args: GameRpcArgs, entity_data: Entity) -> Option<EntityId> {
     let mut state = args.state.lock();
     let world = state.get_player_world_mut(&args.user_id)?;
     Some(entity_data.spawn(world))

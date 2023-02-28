@@ -1,6 +1,6 @@
 use ambient_app::{gpu, App, AppBuilder};
 use ambient_core::{asset_cache, camera::active_camera, main_scene, transform::*};
-use ambient_ecs::{EntityData, EntityId, FnSystem, World};
+use ambient_ecs::{Entity, EntityId, FnSystem, World};
 use ambient_meshes::{CubeMeshKey, QuadMeshKey};
 use ambient_renderer::{
     gpu_primitives,
@@ -18,7 +18,7 @@ fn init(world: &mut World) -> (EntityId, EntityId, SharedMaterial, SharedMateria
     let red = SharedMaterial::new(FlatMaterial::new(assets.clone(), vec4(1., 0., 0., 1.), Some(false)));
     let green = SharedMaterial::new(FlatMaterial::new(assets.clone(), vec4(0., 1., 0., 1.), Some(false)));
 
-    let entity1 = EntityData::new()
+    let entity1 = Entity::new()
         .set(
             primitives(),
             vec![RenderPrimitive { shader: cb(get_flat_shader), material: red.clone(), mesh: CubeMeshKey.get(&assets), lod: 0 }],
@@ -30,7 +30,7 @@ fn init(world: &mut World) -> (EntityId, EntityId, SharedMaterial, SharedMateria
         .set(main_scene(), ())
         .spawn(world);
 
-    let entity2 = EntityData::new()
+    let entity2 = Entity::new()
         .set(
             primitives(),
             vec![RenderPrimitive { shader: cb(get_flat_shader), material: green.clone(), mesh: CubeMeshKey.get(&assets), lod: 0 }],

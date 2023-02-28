@@ -8,8 +8,8 @@ use std::{
 
 use ambient_core::{asset_cache, no_sync, project_name};
 use ambient_ecs::{
-    components, dont_store, query, ArchetypeFilter, ComponentDesc, EntityData, EntityId, FrameEvent, System, SystemGroup, World,
-    WorldStream, WorldStreamCompEvent, WorldStreamFilter,
+    components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent, System, SystemGroup, World, WorldStream,
+    WorldStreamCompEvent, WorldStreamFilter,
 };
 use ambient_std::{
     asset_cache::AssetCache,
@@ -63,8 +63,8 @@ pub fn create_player_entity_data(
     entities_tx: Sender<Vec<u8>>,
     events_tx: Sender<Vec<u8>>,
     stats_tx: Sender<FpsSample>,
-) -> EntityData {
-    EntityData::new()
+) -> Entity {
+    Entity::new()
         .set(crate::player::player(), ())
         .set(crate::player::user_id(), user_id.to_string())
         .set(player_entity_stream(), entities_tx)
@@ -75,10 +75,10 @@ pub fn create_player_entity_data(
 
 impl WorldInstance {
     /// Create server side player entity
-    pub fn spawn_player(&mut self, ed: EntityData) -> EntityId {
+    pub fn spawn_player(&mut self, ed: Entity) -> EntityId {
         ed.spawn(&mut self.world)
     }
-    pub fn despawn_player(&mut self, user_id: &str) -> Option<EntityData> {
+    pub fn despawn_player(&mut self, user_id: &str) -> Option<Entity> {
         self.world.despawn(get_player_by_user_id(&self.world, user_id)?)
     }
     pub fn broadcast_diffs(&mut self) {

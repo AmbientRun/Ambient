@@ -137,7 +137,7 @@ impl World {
             query_ticker: CloneableAtomicU64::new(0),
         };
         if resources {
-            world.spawn_with_id(EntityId::resources(), EntityData::new());
+            world.spawn_with_id(EntityId::resources(), Entity::new());
         }
         world
     }
@@ -166,11 +166,11 @@ impl World {
         Ok(world)
     }
 
-    pub fn spawn(&mut self, entity_data: EntityData) -> EntityId {
+    pub fn spawn(&mut self, entity_data: Entity) -> EntityId {
         self.batch_spawn(entity_data, 1).pop().unwrap()
     }
 
-    pub fn batch_spawn(&mut self, entity_data: EntityData, count: usize) -> Vec<EntityId> {
+    pub fn batch_spawn(&mut self, entity_data: Entity, count: usize) -> Vec<EntityId> {
         let ids = (0..count).map(|_| EntityId::new()).collect_vec();
         for id in &ids {
             self.locs.insert(*id, EntityLocation::empty());
@@ -183,7 +183,7 @@ impl World {
     }
 
     /// Returns false if the id already exists
-    pub fn spawn_with_id(&mut self, entity_id: EntityId, entity_data: EntityData) -> bool {
+    pub fn spawn_with_id(&mut self, entity_id: EntityId, entity_data: Entity) -> bool {
         if let std::collections::hash_map::Entry::Vacant(e) = self.locs.entry(entity_id) {
             e.insert(EntityLocation::empty());
             self.batch_spawn_with_ids(EntityMoveData::from_entity_data(entity_data, self.version() + 1), vec![entity_id]);
@@ -210,7 +210,7 @@ impl World {
         }
         arch.movein(ids, entity_data);
     }
-    pub fn despawn(&mut self, entity_id: EntityId) -> Option<EntityData> {
+    pub fn despawn(&mut self, entity_id: EntityId) -> Option<Entity> {
         if let Some(loc) = self.locs.remove(&entity_id) {
             let version = self.inc_version();
             if let Some(events) = &mut self.shape_change_events {
@@ -264,7 +264,7 @@ impl World {
         }
     }
 
-    pub fn set_components(&mut self, entity_id: EntityId, data: EntityData) -> Result<(), ECSError> {
+    pub fn set_components(&mut self, entity_id: EntityId, data: Entity) -> Result<(), ECSError> {
         if let Some(loc) = self.locs.get(&entity_id) {
             let version = self.inc_version();
             let arch = self.archetypes.get_mut(loc.archetype).expect("Archetype doesn't exist");
@@ -358,9 +358,9 @@ impl World {
         }
     }
 
-    pub fn clone_entity(&self, entity_id: EntityId) -> Result<EntityData, ECSError> {
+    pub fn clone_entity(&self, entity_id: EntityId) -> Result<Entity, ECSError> {
         self.get_components(entity_id).map(|components| {
-            let mut ed = EntityData::new();
+            let mut ed = Entity::new();
             for comp in components {
                 ed.set_entry(self.get_entry(entity_id, comp).unwrap());
             }
@@ -368,7 +368,7 @@ impl World {
         })
     }
 
-    pub fn entities(&self) -> Vec<(EntityId, EntityData)> {
+    pub fn entities(&self) -> Vec<(EntityId, Entity)> {
         query(()).iter(self, None).map(|(id, _)| (id, self.clone_entity(id).unwrap())).collect()
     }
     pub fn exists(&self, entity_id: EntityId) -> bool {
@@ -406,7 +406,7 @@ impl World {
         }
     }
 
-    pub fn add_components(&mut self, entity_id: EntityId, data: EntityData) -> Result<(), ECSError> {
+    pub fn add_components(&mut self, entity_id: EntityId, data: Entity) -> Result<(), ECSError> {
         // Safety check against adding a resource to an entity
         if entity_id != self.resource_entity() {
             if let Some(component) = data.iter().find(|c| c.has_attribute::<Resource>()) {
@@ -421,7 +421,7 @@ impl World {
     }
     // will also replace the existing component of the same type if it exists
     pub fn add_component<T: ComponentValue>(&mut self, entity_id: EntityId, component: Component<T>, value: T) -> Result<(), ECSError> {
-        self.add_components(entity_id, EntityData::new().set(component, value))
+        self.add_components(entity_id, Entity::new().set(component, value))
     }
 
     pub fn add_resource<T: ComponentValue>(&mut self, component: Component<T>, value: T) {
@@ -501,7 +501,7 @@ impl World {
         self.ignore_query_inits = true;
     }
     /// Spawn all entities of this world into the destination world
-    pub fn spawn_into_world(&self, world: &mut World, components: Option<EntityData>) -> Vec<EntityId> {
+    pub fn spawn_into_world(&self, world: &mut World, components: Option<Entity>) -> Vec<EntityId> {
         let mut old_to_new_ids = HashMap::new();
         for (old_id, mut entity) in self.entities().into_iter() {
             if old_id != self.resource_entity() {
@@ -620,7 +620,7 @@ struct MapEntity {
     active_components: ComponentSet,
 }
 impl MapEntity {
-    fn append(mut self, other: EntityData) -> Self {
+    fn append(mut self, other: Entity) -> Self {
         for entry in other {
             self.active_components.insert(entry.desc());
             self.sets.insert(entry.desc().index() as _, entry);
@@ -796,8 +796,8 @@ impl<'de> Deserialize<'de> for ComponentSet {
     }
 }
 
-pub type WorldEvents = FramedEvents<EntityData>;
-pub type WorldEventReader = FramedEventsReader<EntityData>;
+pub type WorldEvents = FramedEvents<Entity>;
+pub type WorldEventReader = FramedEventsReader<Entity>;
 
 #[derive(Debug)]
 pub struct WorldEventsSystem;

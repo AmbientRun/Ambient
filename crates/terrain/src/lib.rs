@@ -11,7 +11,7 @@ use ambient_core::{
     transform::{local_to_parent, local_to_world, mesh_to_world, rotation, scale, translation},
     FixedTimestepSystem,
 };
-use ambient_ecs::{components, query, Commands, EntityData, EntityId, FnSystem, SystemGroup, World};
+use ambient_ecs::{components, query, Commands, Entity, EntityId, FnSystem, SystemGroup, World};
 use ambient_editor_derive::ElementEditor;
 use ambient_element::{element_tree, render_parented_with_component, Element, ElementComponent, ElementComponentExt, Group, Hooks};
 use ambient_gpu::{
@@ -92,7 +92,7 @@ pub fn get_terrain_cell(world: &World, cell: IVec2) -> Option<EntityId> {
 pub fn spawn_terrain(world: &mut World, terrain_compressed: Arc<TerrainStateCpu>, cell: IVec2) -> EntityId {
     let position = (cell.as_vec2() * TerrainSize::new().size_in_meters()).extend(TERRAIN_BASE);
 
-    EntityData::new()
+    Entity::new()
         .set(scale(), Vec3::ONE)
         .set(rotation(), Quat::IDENTITY)
         .set(translation(), position)
@@ -189,7 +189,7 @@ pub fn server_systems() -> SystemGroup {
                         world
                             .add_components(
                                 id,
-                                EntityData::new()
+                                Entity::new()
                                     .set(physics_shape(), body.get_shapes()[0].clone())
                                     .set(rigid_static(), body)
                                     .set(collider_type(), ColliderType::Static),

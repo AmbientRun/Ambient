@@ -5,7 +5,7 @@ use ambient_core::{
     main_scene,
     transform::*,
 };
-use ambient_ecs::EntityData;
+use ambient_ecs::Entity;
 use ambient_element::ElementComponentExt;
 use ambient_model::{model_from_url, ModelFromUrl};
 use ambient_model_import::{MaterialFilter, ModelImportPipeline, ModelImportTransform, ModelTransform};
@@ -110,7 +110,7 @@ async fn init(app: &mut App) {
     for (i, mod_def) in model_defs.iter().enumerate() {
         let xy = vec2(i as f32 * 3., 3.);
         Cube.el().set(translation(), xy.extend(-0.9)).set(color(), vec4(0.3, 0.3, 0.3, 1.)).spawn_static(world);
-        EntityData::new().set(model_from_url(), mod_def.0.to_string()).set(translation(), xy.extend(0.1)).spawn(world);
+        Entity::new().set(model_from_url(), mod_def.0.to_string()).set(translation(), xy.extend(0.1)).spawn(world);
     }
 
     ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))

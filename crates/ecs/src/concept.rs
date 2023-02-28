@@ -3,7 +3,7 @@
 //!
 //! See the project manifest documentation for more information.
 
-use crate::EntityData;
+use crate::Entity;
 
 #[derive(Clone)]
 pub struct Concept {
@@ -11,7 +11,7 @@ pub struct Concept {
     pub name: String,
     pub description: String,
     pub extends: Vec<String>,
-    pub data: EntityData,
+    pub data: Entity,
 }
 
 pub struct RefConcept<'a> {
@@ -19,7 +19,7 @@ pub struct RefConcept<'a> {
     pub name: &'a str,
     pub description: &'a str,
     pub extends: &'a [&'a str],
-    pub data: EntityData,
+    pub data: Entity,
 }
 impl<'a> RefConcept<'a> {
     pub fn to_owned(&self) -> Concept {

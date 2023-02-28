@@ -2,8 +2,7 @@ use std::sync::Arc;
 
 use ambient_core::asset_cache;
 use ambient_ecs::{
-    components, query, Debuggable, Description, DynSystem, EntityData, EntityId, FnSystem, Name, Networked, Resource, Store, SystemGroup,
-    World,
+    components, query, Debuggable, Description, DynSystem, Entity, EntityId, FnSystem, Name, Networked, Resource, Store, SystemGroup, World,
 };
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
 use ambient_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
@@ -84,7 +83,7 @@ pub fn init_all_components() {
 }
 
 pub const GRAVITY: f32 = 9.82;
-pub fn create_server_resources(assets: &AssetCache, server_resources: &mut EntityData) {
+pub fn create_server_resources(assets: &AssetCache, server_resources: &mut Entity) {
     let physics = PhysicsKey.get(assets);
     server_resources.set_self(crate::physx::physics(), physics.clone());
 
@@ -263,7 +262,7 @@ pub fn on_forking_systems() -> SystemGroup<ForkingEvent> {
     SystemGroup::new(
         "physics/on_forking_systems",
         vec![Box::new(FnSystem::new(|world, _| {
-            let mut ed = EntityData::new();
+            let mut ed = Entity::new();
             create_server_resources(world.resource(asset_cache()), &mut ed);
             world.add_components(world.resource_entity(), ed).unwrap();
 

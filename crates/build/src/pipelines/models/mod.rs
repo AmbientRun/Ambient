@@ -1,7 +1,7 @@
 use std::{path::PathBuf, sync::Arc};
 
 use ambient_core::hierarchy::children;
-use ambient_ecs::EntityData;
+use ambient_ecs::Entity;
 use ambient_model_import::{model_crate::ModelCrate, MaterialFilter, ModelTextureSize, ModelTransform, TextureResolver};
 use ambient_physics::collider::{collider_type, ColliderType};
 use ambient_std::asset_url::AssetType;
@@ -83,7 +83,7 @@ pub struct ModelsPipeline {
     /// Note that these components should have static data (i.e. statistics), not dynamic state, as any such state could be
     /// replaced by this prefab being reloaded.
     #[serde(default)]
-    prefab_components: EntityData,
+    prefab_components: Entity,
     /// If specified, a list of overrides to use for the materials for the mesh.
     #[serde(default)]
     material_overrides: Vec<MaterialOverride>,

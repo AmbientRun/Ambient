@@ -1,6 +1,6 @@
 use ambient_app::{App, AppBuilder};
 use ambient_core::{asset_cache, camera::active_camera, main_scene, transform::*};
-use ambient_ecs::EntityData;
+use ambient_ecs::Entity;
 use ambient_gpu::std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey};
 use ambient_meshes::{CubeMeshKey, SphereMeshKey};
 use ambient_renderer::{
@@ -36,7 +36,7 @@ async fn init(app: &mut App) {
                 },
             ));
 
-            EntityData::new()
+            Entity::new()
                 .set(
                     primitives(),
                     vec![RenderPrimitive { shader: cb(get_pbr_shader), material: mat.clone(), mesh: CubeMeshKey.get(&assets), lod: 0 }],
@@ -49,7 +49,7 @@ async fn init(app: &mut App) {
                 .set(scale(), Vec3::ONE * 0.4)
                 .spawn(world);
 
-            EntityData::new()
+            Entity::new()
                 .set(
                     primitives(),
                     vec![RenderPrimitive {

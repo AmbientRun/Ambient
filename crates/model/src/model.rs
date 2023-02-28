@@ -10,7 +10,7 @@ use ambient_core::{
         fbx_scaling_pivot, inv_local_to_world, local_to_parent, local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation,
     },
 };
-use ambient_ecs::{query, ComponentDesc, EntityData, EntityId, World};
+use ambient_ecs::{query, ComponentDesc, Entity, EntityId, World};
 use ambient_renderer::{
     cast_shadows, color, gpu_primitives,
     lod::cpu_lod_visible,
@@ -48,7 +48,7 @@ pub struct ModelSpawnOpts {
     pub animatable: Option<bool>,
     pub lod_group_states: bool,
     pub cast_shadows: bool,
-    pub root_components: EntityData,
+    pub root_components: Entity,
 }
 impl Default for ModelSpawnOpts {
     fn default() -> Self {
@@ -57,7 +57,7 @@ impl Default for ModelSpawnOpts {
             animatable: None,
             lod_group_states: false,
             cast_shadows: true,
-            root_components: EntityData::new(),
+            root_components: Entity::new(),
         }
     }
 }
@@ -168,7 +168,7 @@ impl Model {
 
             let transform_roots = if let Some(transform) = self.get_transform() {
                 let transform_roots = world.batch_spawn(
-                    EntityData::new()
+                    Entity::new()
                         .set(parent(), EntityId::null())
                         .set(children(), vec![])
                         .set(local_to_parent(), transform)
@@ -382,14 +382,14 @@ impl Model {
     }
 
     fn apply_transform_to_entity(&self, source_entity: EntityId, world: &mut World, id: EntityId, rotation_only: bool) {
-        let mut ed = EntityData::new();
+        let mut ed = Entity::new();
         let mut remove = Vec::new();
         self.build_transform(source_entity, &mut ed, Some(&mut remove), rotation_only);
         world.remove_components(id, remove).ok();
         world.add_components(id, ed).ok();
     }
 
-    fn build_transform(&self, node: EntityId, ed: &mut EntityData, mut remove: Option<&mut Vec<ComponentDesc>>, rotation_only: bool) {
+    fn build_transform(&self, node: EntityId, ed: &mut Entity, mut remove: Option<&mut Vec<ComponentDesc>>, rotation_only: bool) {
         if let Ok(rot) = self.0.get(node, rotation()) {
             ed.set_self(rotation(), rot);
         } else if let Some(remove) = &mut remove {
@@ -447,7 +447,7 @@ impl Model {
             }
         }
     }
-    fn create_entity_data(&self, node: EntityId, opts: &ModelSpawnOpts, single_mesh_transform: Option<Mat4>) -> EntityData {
+    fn create_entity_data(&self, node: EntityId, opts: &ModelSpawnOpts, single_mesh_transform: Option<Mat4>) -> Entity {
         let mut ed = self.0.clone_entity(node).unwrap().set_default(local_to_world());
         if let Some(mat) = single_mesh_transform {
             ed.set_self(

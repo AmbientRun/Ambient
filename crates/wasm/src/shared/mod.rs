@@ -9,8 +9,8 @@ mod module;
 use std::sync::Arc;
 
 use ambient_ecs::{
-    components, dont_despawn_on_unload, query, Component, EntityData, EntityId, Networked,
-    Resource, Store, World,
+    components, dont_despawn_on_unload, query, Component, Entity, EntityId, Networked, Resource,
+    Store, World,
 };
 use ambient_project::Identifier;
 use host_guest_state::GetBaseHostGuestState;
@@ -48,11 +48,11 @@ pub enum MessageType {
 #[derive(Debug, Clone)]
 pub struct RunContext {
     pub event_name: String,
-    pub event_data: EntityData,
+    pub event_data: Entity,
     pub time: f32,
 }
 impl RunContext {
-    pub fn new(world: &World, event_name: &str, event_data: EntityData) -> Self {
+    pub fn new(world: &World, event_name: &str, event_data: Entity) -> Self {
         let time = ambient_app::get_time_since_app_start(world).as_secs_f32();
 
         Self {
@@ -189,7 +189,7 @@ pub fn load<
                 state_component,
                 module_id,
                 sms.clone(),
-                &RunContext::new(world, "core/module_load", EntityData::new()),
+                &RunContext::new(world, "core/module_load", Entity::new()),
             ));
 
             world
@@ -217,7 +217,7 @@ pub fn unload<
         state_component,
         module_id,
         sms,
-        &RunContext::new(world, "core/module_unload", EntityData::new()),
+        &RunContext::new(world, "core/module_unload", Entity::new()),
     )
     .into_iter()
     .collect_vec();
@@ -338,7 +338,7 @@ pub fn spawn_module(
         anyhow::bail!("a WASM module by the name {name} already exists");
     }
 
-    let ed = EntityData::new()
+    let ed = Entity::new()
         .set(ambient_core::name(), name.to_string())
         .set_default(module())
         .set(module_enabled(), enabled)

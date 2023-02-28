@@ -1,15 +1,22 @@
 use std::{collections::HashMap, f32::consts::PI, fmt::Debug, ops::Deref, sync::Arc};
 
 use ambient_core::{
-    asset_cache, async_ecs::async_run, runtime, transform::{rotation, scale, translation}
+    asset_cache,
+    async_ecs::async_run,
+    runtime,
+    transform::{rotation, scale, translation},
 };
 use ambient_ecs::{
-    components, query, Component, ComponentQuery, ComponentValueBase, Debuggable, Description, EntityData, EntityId, MakeDefault, Name, Networked, QueryEvent, QueryState, Store, SystemGroup, TypedReadQuery, World
+    components, query, Component, ComponentQuery, ComponentValueBase, Debuggable, Description, Entity, EntityId, MakeDefault, Name,
+    Networked, QueryEvent, QueryState, Store, SystemGroup, TypedReadQuery, World,
 };
 use ambient_editor_derive::ElementEditor;
 use ambient_model::model_from_url;
 use ambient_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, ColliderAssetType, TypedAssetUrl}, download_asset::{AssetError, JsonFromUrl}, events::EventDispatcher
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt},
+    asset_url::{AbsAssetUrl, ColliderAssetType, TypedAssetUrl},
+    download_asset::{AssetError, JsonFromUrl},
+    events::EventDispatcher,
 };
 use ambient_ui::Editable;
 use anyhow::Context;
@@ -18,14 +25,20 @@ use futures::future::try_join_all;
 use glam::{vec3, Mat4, Quat, Vec3};
 use itertools::Itertools;
 use physxx::{
-    AsPxActor, AsPxRigidActor, PxActor, PxActorFlag, PxBase, PxBoxGeometry, PxControllerDesc, PxControllerShapeDesc, PxConvexMeshGeometry, PxGeometry, PxMaterial, PxMeshScale, PxPlaneGeometry, PxRigidActor, PxRigidBody, PxRigidBodyFlag, PxRigidDynamicRef, PxRigidStaticRef, PxShape, PxShapeFlag, PxSphereGeometry, PxTransform, PxTriangleMeshGeometry, PxUserData
+    AsPxActor, AsPxRigidActor, PxActor, PxActorFlag, PxBase, PxBoxGeometry, PxControllerDesc, PxControllerShapeDesc, PxConvexMeshGeometry,
+    PxGeometry, PxMaterial, PxMeshScale, PxPlaneGeometry, PxRigidActor, PxRigidBody, PxRigidBodyFlag, PxRigidDynamicRef, PxRigidStaticRef,
+    PxShape, PxShapeFlag, PxSphereGeometry, PxTransform, PxTriangleMeshGeometry, PxUserData,
 };
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    main_controller_manager, make_physics_static, mesh::{PhysxGeometry, PhysxGeometryFromUrl}, physx::{
-        angular_velocity, character_controller, contact_offset, linear_velocity, physics, physics_controlled, physics_shape, rest_offset, rigid_actor, Physics
-    }, wood_physics_material, ColliderScene, PxActorUserData, PxShapeUserData, PxWoodMaterialKey
+    main_controller_manager, make_physics_static,
+    mesh::{PhysxGeometry, PhysxGeometryFromUrl},
+    physx::{
+        angular_velocity, character_controller, contact_offset, linear_velocity, physics, physics_controlled, physics_shape, rest_offset,
+        rigid_actor, Physics,
+    },
+    wood_physics_material, ColliderScene, PxActorUserData, PxShapeUserData, PxWoodMaterialKey,
 };
 
 fn one() -> f32 {
@@ -339,7 +352,7 @@ pub fn server_systems() -> SystemGroup {
                             world.remove_component(id, mass()).ok();
                         }
                         let first_shape = shapes[0].clone();
-                        world.add_components(id, EntityData::new().set(physics_shape(), first_shape).set(rigid_actor(), actor)).unwrap();
+                        world.add_components(id, Entity::new().set(physics_shape(), first_shape).set(rigid_actor(), actor)).unwrap();
                         actor.set_actor_flag(PxActorFlag::VISUALIZATION, false);
                         if collider_type != ColliderType::Dynamic && collider_type != ColliderType::Static {
                             actor.set_actor_flag(PxActorFlag::DISABLE_SIMULATION, true);

@@ -1,5 +1,5 @@
 use ambient_ecs::{
-    components, query, query_mut, Component, Concept, Description, ECSError, EntityData, EntityId, Name, Networked, RefConcept, Store,
+    components, query, query_mut, Component, Concept, Description, ECSError, Entity, EntityId, Name, Networked, RefConcept, Store,
     SystemGroup, World,
 };
 use ambient_std::{
@@ -143,7 +143,7 @@ pub fn concepts() -> Vec<Concept> {
             name: "Camera",
             description: "Base components for a camera. You will need other components to make a fully-functioning camera.",
             extends: &["transformable"],
-            data: EntityData::new().set(projection(), glam::Mat4::IDENTITY).set(projection_view(), glam::Mat4::IDENTITY).set(near(), 0.1),
+            data: Entity::new().set(projection(), glam::Mat4::IDENTITY).set(projection_view(), glam::Mat4::IDENTITY).set(near(), 0.1),
         }
         .to_owned(),
         RefConcept {
@@ -152,7 +152,7 @@ pub fn concepts() -> Vec<Concept> {
             description:
                 "Base components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.",
             extends: &["camera"],
-            data: EntityData::new().set(aspect_ratio(), 1.0).set(fovy(), 1.0),
+            data: Entity::new().set(aspect_ratio(), 1.0).set(fovy(), 1.0),
         }
         .to_owned(),
         RefConcept {
@@ -160,7 +160,7 @@ pub fn concepts() -> Vec<Concept> {
             name: "Perspective Camera",
             description: "A perspective camera.",
             extends: &["perspective_common_camera"],
-            data: EntityData::new().set(perspective(), ()).set(far(), 1_000.0),
+            data: Entity::new().set(perspective(), ()).set(far(), 1_000.0),
         }
         .to_owned(),
         RefConcept {
@@ -168,7 +168,7 @@ pub fn concepts() -> Vec<Concept> {
             name: "Perspective-Infinite-Reverse Camera",
             description: "A perspective-infinite-reverse camera. This is recommended for most use-cases.",
             extends: &["perspective_common_camera"],
-            data: EntityData::new().set(perspective_infinite_reverse(), ()),
+            data: Entity::new().set(perspective_infinite_reverse(), ()),
         }
         .to_owned(),
         RefConcept {
@@ -176,7 +176,7 @@ pub fn concepts() -> Vec<Concept> {
             name: "Orthographic Camera",
             description: "An orthographic camera.",
             extends: &["camera"],
-            data: EntityData::new()
+            data: Entity::new()
                 .set(orthographic(), ())
                 .set(orthographic_left(), -1.0)
                 .set(orthographic_right(), 1.0)
@@ -350,17 +350,17 @@ impl Projection {
             Projection::Identity => Mat4::IDENTITY,
         }
     }
-    pub fn to_entity_data(&self) -> EntityData {
+    pub fn to_entity_data(&self) -> Entity {
         match self.clone() {
             Projection::Orthographic { rect, near, far } => {
-                EntityData::new().set(orthographic_rect(), rect).set(self::near(), near).set(self::far(), far)
+                Entity::new().set(orthographic_rect(), rect).set(self::near(), near).set(self::far(), far)
             }
-            Projection::PerspectiveInfiniteReverse { fovy, aspect_ratio, near } => EntityData::new()
+            Projection::PerspectiveInfiniteReverse { fovy, aspect_ratio, near } => Entity::new()
                 .set(perspective_infinite_reverse(), ())
                 .set(self::near(), near)
                 .set(self::fovy(), fovy)
                 .set(self::aspect_ratio(), aspect_ratio),
-            Projection::Perspective { fovy, aspect_ratio, near, far } => EntityData::new()
+            Projection::Perspective { fovy, aspect_ratio, near, far } => Entity::new()
                 .set(perspective(), ())
                 .set(self::near(), near)
                 .set(self::far(), far)
@@ -557,7 +557,7 @@ impl Camera {
         };
         Self { projection: Projection::Orthographic { rect: ortho, near: bounding.min.z, far: bounding.max.z }, view, shadows_far: 100. }
     }
-    pub fn to_entity_data(&self) -> EntityData {
+    pub fn to_entity_data(&self) -> Entity {
         self.projection
             .to_entity_data()
             .set(local_to_world(), self.view.inverse())

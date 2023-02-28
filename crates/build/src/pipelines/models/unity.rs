@@ -5,7 +5,7 @@ use ambient_core::{
     name,
     transform::{get_world_transform, mesh_to_local, rotation, scale, translation},
 };
-use ambient_ecs::{EntityData, EntityId, World};
+use ambient_ecs::{Entity, EntityId, World};
 use ambient_model::{pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl};
 use ambient_model_import::{
     dotdot_path,
@@ -389,13 +389,13 @@ async fn recursively_create_game_objects<'a: 'async_recursion>(
         cutoffs.resize(20, 0.);
         let cutoffs: [f32; 20] = cutoffs.try_into().unwrap();
 
-        EntityData::new().set(lod_cutoffs(), cutoffs).set_default(gpu_lod()).set(pbr_renderer_primitives_from_url(), model_lods)
+        Entity::new().set(lod_cutoffs(), cutoffs).set_default(gpu_lod()).set(pbr_renderer_primitives_from_url(), model_lods)
     } else if let Some(mesh_renderer) = object.get_component::<unity_parser::prefab::MeshRenderer>(prefab) {
         let primitives =
             primitives_from_unity_mesh_renderer(ctx, prefab, mesh_renderer, model_crate, go_transform, 0, out_model_url).await?;
-        EntityData::new().set(lod_cutoffs(), [0.; 20]).set_default(gpu_lod()).set(pbr_renderer_primitives_from_url(), primitives)
+        Entity::new().set(lod_cutoffs(), [0.; 20]).set_default(gpu_lod()).set(pbr_renderer_primitives_from_url(), primitives)
     } else {
-        EntityData::new()
+        Entity::new()
     };
 
     node.set_self(name(), object.name.clone());

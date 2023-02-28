@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use ambient_app::{App, AppBuilder};
 use ambient_core::{asset_cache, camera::active_camera, hierarchy::set_component_recursive, main_scene, mesh, transform::*};
-use ambient_ecs::EntityData;
+use ambient_ecs::Entity;
 use ambient_gpu::{
     gpu::GpuKey,
     shader_module::{BindGroupDesc, ShaderModule},
@@ -91,7 +91,7 @@ async fn init(app: &mut App) {
 
     let grey = FlatMaterial::new(assets.clone(), vec4(0.5, 0.5, 0.5, 1.), Some(false));
 
-    EntityData::new()
+    Entity::new()
         .set(mesh(), QuadMeshKey.get(&assets))
         .set(renderer_shader(), cb(get_flat_shader))
         .set(material(), SharedMaterial::new(grey))

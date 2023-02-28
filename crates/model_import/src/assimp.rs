@@ -5,7 +5,7 @@ use ambient_core::{
     name,
     transform::{local_to_parent, local_to_world, rotation, scale, translation},
 };
-use ambient_ecs::{EntityData, EntityId, World};
+use ambient_ecs::{Entity, EntityId, World};
 use ambient_model::{pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl};
 use ambient_renderer::materials::pbr_material::PbrMaterialFromUrl;
 use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl, mesh::Mesh};
@@ -168,7 +168,7 @@ fn import_sync(buffer: &[u8], model_crate: &mut ModelCrate, extension: &str) -> 
             Mat4::from_cols_array(&[t.a1, t.a2, t.a3, t.a4, t.b1, t.b2, t.b3, t.b4, t.c1, t.c2, t.c3, t.c4, t.d1, t.d2, t.d3, t.d4])
                 .transpose();
         let (scl, rot, pos) = transform.to_scale_rotation_translation();
-        let mut ed = EntityData::new()
+        let mut ed = Entity::new()
             .set(name(), node.name.clone())
             .set(translation(), pos)
             .set(rotation(), rot)

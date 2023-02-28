@@ -82,7 +82,7 @@ impl EntityMoveData {
     fn new(active_components: ComponentSet) -> Self {
         Self { content: SparseVec::new(), active_components }
     }
-    pub(super) fn from_entity_data(entity_data: EntityData, version: u64) -> Self {
+    pub(super) fn from_entity_data(entity_data: Entity, version: u64) -> Self {
         let mut s = Self::new(entity_data.active_components.clone());
         for data in entity_data {
             s.content.set(data.desc().index() as _, MoveComponent { data, version });
@@ -106,9 +106,9 @@ impl EntityMoveData {
         self.content.remove(component_index);
     }
 }
-impl From<EntityMoveData> for EntityData {
+impl From<EntityMoveData> for Entity {
     fn from(data: EntityMoveData) -> Self {
-        let mut ed = EntityData::new();
+        let mut ed = Entity::new();
         for comp in data.content.into_iter() {
             ed.set_entry(comp.data);
         }
@@ -133,7 +133,7 @@ pub struct Archetype {
     pub(super) components: SparseVec<ArchComponent>,
     pub(super) active_components: ComponentSet,
     pub(super) movein_events: FramedEvents<EntityId>,
-    pub(super) moveout_events: FramedEvents<(EntityId, EntityData)>,
+    pub(super) moveout_events: FramedEvents<(EntityId, Entity)>,
     pub(super) query_markers: AtomicRefCell<Vec<u64>>,
 }
 impl Archetype {
@@ -163,7 +163,7 @@ impl Archetype {
     pub fn next_index(&self) -> usize {
         self.entity_indices_to_ids.len()
     }
-    pub fn write(&self, id: EntityId, index: usize, entity: EntityData, version: u64) {
+    pub fn write(&self, id: EntityId, index: usize, entity: Entity, version: u64) {
         for comp in entity {
             let arch_comp = self.components.get(comp.index() as _).expect("Entity does not fit archetype");
 

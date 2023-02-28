@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use ambient_ecs::{components, world_events, EntityData, System, SystemGroup};
+use ambient_ecs::{components, world_events, Entity, System, SystemGroup};
 use glam::{vec2, Vec2};
 use serde::{Deserialize, Serialize};
 pub use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, MouseButton, MouseScrollDelta, VirtualKeyCode, WindowEvent};
@@ -66,10 +66,10 @@ impl System<Event<'static, ()>> for InputSystem {
             Event::WindowEvent { event, .. } => match event {
                 &WindowEvent::Focused(focused) => {
                     self.is_focused = focused;
-                    world.resource_mut(world_events()).add_event(EntityData::new().set(event_focus_change(), focused));
+                    world.resource_mut(world_events()).add_event(Entity::new().set(event_focus_change(), focused));
                 }
                 WindowEvent::ReceivedCharacter(c) => {
-                    world.resource_mut(world_events()).add_event(EntityData::new().set(event_received_character(), *c));
+                    world.resource_mut(world_events()).add_event(Entity::new().set(event_received_character(), *c));
                 }
 
                 WindowEvent::KeyboardInput { input, .. } => {
@@ -80,29 +80,27 @@ impl System<Event<'static, ()>> for InputSystem {
                         modifiers: self.modifiers,
                         is_focused: self.is_focused,
                     };
-                    world.resource_mut(world_events()).add_event(EntityData::new().set(event_keyboard_input(), event));
+                    world.resource_mut(world_events()).add_event(Entity::new().set(event_keyboard_input(), event));
                 }
 
                 WindowEvent::MouseInput { state, button, .. } => {
                     world
                         .resource_mut(world_events())
-                        .add_event(EntityData::new().set(event_mouse_input(), MouseInput { state: *state, button: *button }));
+                        .add_event(Entity::new().set(event_mouse_input(), MouseInput { state: *state, button: *button }));
                 }
 
                 WindowEvent::MouseWheel { delta, .. } => {
-                    world.resource_mut(world_events()).add_event(EntityData::new().set(event_mouse_wheel(), *delta));
+                    world.resource_mut(world_events()).add_event(Entity::new().set(event_mouse_wheel(), *delta));
                 }
                 WindowEvent::ModifiersChanged(mods) => {
-                    world.resource_mut(world_events()).add_event(EntityData::new().set(event_modifiers_change(), *mods));
+                    world.resource_mut(world_events()).add_event(Entity::new().set(event_modifiers_change(), *mods));
                 }
 
                 _ => {}
             },
 
             Event::DeviceEvent { event: DeviceEvent::MouseMotion { delta }, .. } => {
-                world
-                    .resource_mut(world_events())
-                    .add_event(EntityData::new().set(event_mouse_motion(), vec2(delta.0 as f32, delta.1 as f32)));
+                world.resource_mut(world_events()).add_event(Entity::new().set(event_mouse_motion(), vec2(delta.0 as f32, delta.1 as f32)));
             }
             _ => {}
         }

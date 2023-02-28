@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use ambient_ecs::{query, EntityData, System, WorldDiff};
+use ambient_ecs::{query, Entity, System, WorldDiff};
 use ambient_rpc::RpcRegistry;
 use ambient_std::friendly_id;
 use serde::{Deserialize, Serialize};
@@ -22,13 +22,13 @@ pub fn register_rpcs(reg: &mut RpcRegistry<GameRpcArgs>) {
 }
 
 pub async fn rpc_world_diff(args: GameRpcArgs, diff: WorldDiff) {
-    diff.apply(&mut args.state.lock().get_player_world_instance_mut(&args.user_id).unwrap().world, EntityData::new(), false);
+    diff.apply(&mut args.state.lock().get_player_world_instance_mut(&args.user_id).unwrap().world, Entity::new(), false);
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RpcForkInstance {
-    pub resources: EntityData,
-    pub synced_res: EntityData,
+    pub resources: Entity,
+    pub synced_res: Entity,
     pub id: Option<String>,
 }
 

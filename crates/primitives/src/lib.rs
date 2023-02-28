@@ -5,7 +5,7 @@ use ambient_core::{
     transform::{local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation},
 };
 use ambient_ecs::{
-    components, query, Concept, DefaultValue, Description, EntityData, EntityId, Name, Networked, RefConcept, Store, SystemGroup, World,
+    components, query, Concept, DefaultValue, Description, Entity, EntityId, Name, Networked, RefConcept, Store, SystemGroup, World,
 };
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_gpu::mesh_buffer::GpuMesh;
@@ -72,14 +72,14 @@ pub fn concepts() -> Vec<Concept> {
         name: "Sphere",
         description: "A primitive sphere.",
         extends: &[],
-        data: EntityData::new().set(sphere(), ()).set(sphere_radius(), 0.5).set(sphere_sectors(), 36).set(sphere_stacks(), 18),
+        data: Entity::new().set(sphere(), ()).set(sphere_radius(), 0.5).set(sphere_sectors(), 36).set(sphere_stacks(), 18),
     }
     .to_owned()]
 }
 
-pub fn cube_data(assets: &AssetCache) -> EntityData {
+pub fn cube_data(assets: &AssetCache) -> Entity {
     let aabb = AABB { min: -Vec3::ONE * 0.5, max: Vec3::ONE * 0.5 };
-    EntityData::new()
+    Entity::new()
         .set(mesh(), UnitCubeMeshKey.get(assets))
         .set_default(local_to_world())
         .set_default(mesh_to_world())
@@ -95,9 +95,9 @@ pub fn cube_data(assets: &AssetCache) -> EntityData {
         .set(world_bounding_aabb(), aabb)
 }
 
-pub fn quad_data(assets: &AssetCache) -> EntityData {
+pub fn quad_data(assets: &AssetCache) -> Entity {
     let aabb = AABB { min: vec3(-0.5, -0.5, 0.), max: vec3(0.5, 0.5, 0.) };
-    EntityData::new()
+    Entity::new()
         .set(mesh(), UnitQuadMeshKey.get(assets))
         .set_default(local_to_world())
         .set_default(mesh_to_world())
@@ -113,9 +113,9 @@ pub fn quad_data(assets: &AssetCache) -> EntityData {
         .set(world_bounding_aabb(), aabb)
 }
 
-pub fn sphere_data(assets: &AssetCache, sphere: &UVSphereMesh) -> EntityData {
+pub fn sphere_data(assets: &AssetCache, sphere: &UVSphereMesh) -> Entity {
     let bound_sphere = Sphere::new(Vec3::ZERO, sphere.radius);
-    EntityData::new()
+    Entity::new()
         .set(mesh(), GpuMesh::from_mesh(assets.clone(), &Mesh::from(*sphere)))
         .set_default(local_to_world())
         .set_default(mesh_to_world())
@@ -131,7 +131,7 @@ pub fn sphere_data(assets: &AssetCache, sphere: &UVSphereMesh) -> EntityData {
         .set(world_bounding_sphere(), bound_sphere)
 }
 
-fn extend(world: &mut World, id: EntityId, data: EntityData) {
+fn extend(world: &mut World, id: EntityId, data: Entity) {
     for entry in data {
         if !world.has_component(id, entry.desc()) {
             world.add_entry(id, entry).unwrap();

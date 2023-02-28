@@ -2,7 +2,7 @@ use ambient_core::async_ecs::async_run;
 use std::sync::Arc;
 
 use ambient_core::{asset_cache, main_scene, mesh, runtime};
-use ambient_ecs::{components, query, Debuggable, Description, EntityData, Name, Networked, Store, SystemGroup};
+use ambient_ecs::{components, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::{BindGroupDesc, ShaderModule},
@@ -59,7 +59,7 @@ pub fn systems() -> SystemGroup {
             query((water(), water_normals())).spawned().to_system(|q, world, qs, _| {
                 let assets = world.resource(asset_cache()).clone();
                 for (id, (_, normals)) in q.collect_cloned(world, qs) {
-                    let data = EntityData::new()
+                    let data = Entity::new()
                         .append(ambient_primitives::quad_data(&assets))
                         .set(renderer_shader(), cb(get_water_shader))
                         .set(material(), WaterMaterialKey::new(normals).get(&assets))

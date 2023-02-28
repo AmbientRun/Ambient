@@ -7,7 +7,7 @@ use std::{
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
-use super::{ArchetypeFilter, Component, ComponentValue, EntityData, EntityId, FramedEventsReader, Query, QueryState, World};
+use super::{ArchetypeFilter, Component, ComponentValue, Entity, EntityId, FramedEventsReader, Query, QueryState, World};
 use crate::{ComponentDesc, ComponentEntry, Serializable};
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
@@ -39,7 +39,7 @@ impl WorldDiff {
         self
     }
     pub fn add_entry(mut self, id: EntityId, entry: ComponentEntry) -> Self {
-        let mut data = EntityData::new();
+        let mut data = Entity::new();
         data.set_entry(entry);
         self.changes.push(WorldChange::AddComponents(id, data));
         self
@@ -48,7 +48,7 @@ impl WorldDiff {
         self.changes.extend(ids.into_iter().map(WorldChange::Despawn));
         self
     }
-    pub fn apply(self, world: &mut World, spanwed_extra_data: EntityData, create_revert: bool) -> Option<Self> {
+    pub fn apply(self, world: &mut World, spanwed_extra_data: Entity, create_revert: bool) -> Option<Self> {
         let revert_changes =
             self.changes.into_iter().map(|change| change.apply(world, &spanwed_extra_data, false, create_revert)).collect_vec();
         if create_revert {
@@ -83,7 +83,7 @@ impl WorldDiff {
                 .filter(|&c| from.get_component_content_version(id, *c.0).unwrap() != to.get_component_content_version(id, *c.0).unwrap())
                 .collect_vec();
 
-            let added: EntityData = added.iter().map(|&comp| to.get_entry(id, comp).unwrap()).collect();
+            let added: Entity = added.iter().map(|&comp| to.get_entry(id, comp).unwrap()).collect();
 
             let added = if !added.is_empty() { vec![WorldChange::AddComponents(id, added)] } else { vec![] };
             let removed = if !removed.is_empty() { vec![WorldChange::RemoveComponents(id, removed)] } else { vec![] };
@@ -165,9 +165,9 @@ impl Default for WorldStreamFilter {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum WorldChange {
-    Spawn(Option<EntityId>, EntityData),
+    Spawn(Option<EntityId>, Entity),
     Despawn(EntityId),
-    AddComponents(EntityId, EntityData),
+    AddComponents(EntityId, Entity),
     RemoveComponents(EntityId, Vec<ComponentDesc>),
     Set(EntityId, ComponentEntry),
 }
@@ -181,7 +181,7 @@ impl WorldChange {
         matches!(self, Self::RemoveComponents(_, _))
     }
 
-    fn apply(self, world: &mut World, spanwed_extra_data: &EntityData, panic_on_error: bool, create_revert: bool) -> Option<Self> {
+    fn apply(self, world: &mut World, spanwed_extra_data: &Entity, panic_on_error: bool, create_revert: bool) -> Option<Self> {
         match self {
             Self::Spawn(id, data) => {
                 if let Some(id) = id {
@@ -205,7 +205,7 @@ impl WorldChange {
             Self::Despawn(id) => {
                 let res = if create_revert {
                     world.get_components(id).ok().map(|components| {
-                        let mut ed = EntityData::new();
+                        let mut ed = Entity::new();
                         for comp in components {
                             // Only serializable components
                             if comp.has_attribute::<Serializable>() {

@@ -4,7 +4,7 @@ use ambient_core::{
     main_scene, mesh,
     transform::{local_to_world, mesh_to_world},
 };
-use ambient_ecs::{EntityData, EntityId, World};
+use ambient_ecs::{Entity, EntityId, World};
 use ambient_element::{Element, ElementComponent};
 use ambient_meshes::QuadMeshKey;
 use ambient_network::client::GameClient;
@@ -23,7 +23,7 @@ fn spawn_entity(world: &mut World, mat: SharedMaterial) -> EntityId {
 
     let aabb = AABB { min: vec3(-1., -1., 0.), max: vec3(1., 1., 0.) };
 
-    EntityData::new()
+    Entity::new()
         .set(mesh(), QuadMeshKey.get(assets))
         .set_default(local_to_world())
         .set_default(mesh_to_world())

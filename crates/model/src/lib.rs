@@ -9,8 +9,7 @@ use ambient_core::{
     transform::{get_world_position, inv_local_to_world, local_to_world, mesh_to_world},
 };
 use ambient_ecs::{
-    components, query, ComponentDesc, Debuggable, Description, EntityData, EntityId, MaybeResource, Name, Networked, Store, SystemGroup,
-    World,
+    components, query, ComponentDesc, Debuggable, Description, Entity, EntityId, MaybeResource, Name, Networked, Store, SystemGroup, World,
 };
 use ambient_gpu::mesh_buffer::GpuMeshFromUrl;
 use ambient_renderer::{
@@ -81,7 +80,7 @@ async fn internal_spawn_models_from_defs(
 
     let mat = LoadingMaterialKey { speed: 2.0, scale: 6.0 }.get(assets);
 
-    let cube = EntityData::new()
+    let cube = Entity::new()
         .set(
             primitives(),
             vec![RenderPrimitive {
@@ -153,7 +152,7 @@ async fn internal_spawn_models_from_defs(
                         &ModelSpawnOpts {
                             root: ModelSpawnRoot::AttachTo(ids),
                             // We need to keep the model alive on the entity here, or otherwise it'll unload from the asset store
-                            root_components: EntityData::new().set(self::model(), model.clone()),
+                            root_components: Entity::new().set(self::model(), model.clone()),
                             ..Default::default()
                         },
                         len,

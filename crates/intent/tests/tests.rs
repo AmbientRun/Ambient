@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap, sync::Arc};
 
-use ambient_ecs::{components, query, query_mut, EntityData, EntityId, FrameEvent, Networked, Store, System, World};
+use ambient_ecs::{components, query, query_mut, Entity, EntityId, FrameEvent, Networked, Store, System, World};
 use ambient_intent::{
     common_intent_systems, intent_registry,
     logic::{create_intent, push_intent, redo_intent, undo_head},
@@ -39,7 +39,7 @@ fn create_test_entities(state: &Mutex<ServerState>, user_id: &str) -> BTreeMap<E
     values
         .into_iter()
         .map(|v| {
-            let id = EntityData::new().set(value(), v).spawn(world);
+            let id = Entity::new().set(value(), v).spawn(world);
             (id, v)
         })
         .collect()

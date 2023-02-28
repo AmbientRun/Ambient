@@ -4,7 +4,7 @@ mod registry;
 use std::{fmt::Debug, sync::Arc, time::SystemTime};
 
 use ambient_ecs::{
-    components, index_system, query, ArchetypeFilter, Component, ComponentValue, Debuggable, EntityData, EntityId, Index, IndexColumns,
+    components, index_system, query, ArchetypeFilter, Component, ComponentValue, Debuggable, Entity, EntityId, Index, IndexColumns,
     Networked, QueryState, Resource, Store, SystemGroup,
 };
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
@@ -96,7 +96,7 @@ pub async fn server_push_intent<T: ComponentValue>(
     push_intent(state, user_id, create_intent(intent_arg, arg, collapse_id));
 }
 
-pub async fn rpc_push_intent(args: GameRpcArgs, intent: EntityData) -> Option<EntityId> {
+pub async fn rpc_push_intent(args: GameRpcArgs, intent: Entity) -> Option<EntityId> {
     Some(push_intent(args.state, args.user_id, intent))
 }
 

@@ -1,7 +1,7 @@
 use std::{num::NonZeroU32, ops::Deref, sync::Arc};
 
 use ambient_core::{asset_cache, async_ecs::async_run, gpu, mesh, name, runtime, transform::*, ui_scene, window_scale_factor};
-use ambient_ecs::{components, query, query_mut, Debuggable, Description, EntityData, Name, Networked, Store, SystemGroup};
+use ambient_ecs::{components, query, query_mut, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_gpu::{mesh_buffer::GpuMesh, texture::Texture};
 use ambient_renderer::{color, gpu_primitives, material, primitives, renderer_shader, SharedMaterial};
@@ -233,7 +233,7 @@ pub fn systems() -> SystemGroup {
                     world
                         .add_components(
                             id,
-                            EntityData::new()
+                            Entity::new()
                                 .set(text_texture(), texture)
                                 .set(renderer_shader(), cb(get_text_shader))
                                 .set(material(), SharedMaterial::new(TextMaterial::new(assets.clone(), texture_view)))
@@ -325,7 +325,7 @@ pub fn systems() -> SystemGroup {
                                     world
                                         .add_components(
                                             id,
-                                            EntityData::new()
+                                            Entity::new()
                                                 .set(width(), (bounding.max.x / scale_factor).max(min_width))
                                                 .set(height(), (bounding.max.y / scale_factor).max(min_height))
                                                 .set(mesh(), GpuMesh::from_mesh(assets.clone(), &cpu_mesh)),
@@ -356,7 +356,7 @@ pub fn systems() -> SystemGroup {
                                     world
                                         .add_components(
                                             id,
-                                            EntityData::new()
+                                            Entity::new()
                                                 .set(material(), SharedMaterial::new(TextMaterial::new(assets.clone(), view.clone())))
                                                 .set(text_texture(), texture),
                                         )

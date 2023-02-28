@@ -13,8 +13,8 @@ impl<T: ComponentValue + Serialize + DeserializeOwned + Clone + std::fmt::Debug>
 impl_downcast!(ComponentValueBase);
 
 impl<T: ComponentValue + Default> Component<T> {
-    pub fn with_default(&self) -> EntityData {
-        EntityData::new().set(*self, T::default())
+    pub fn with_default(&self) -> Entity {
+        Entity::new().set(*self, T::default())
     }
 }
 

@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
-use ambient_ecs::{Component, ComponentDesc, ComponentValue, EntityData, EntityId, World};
+use ambient_ecs::{Component, ComponentDesc, ComponentValue, Entity, EntityId, World};
 
 use crate::ElementComponent;
 
@@ -11,7 +11,7 @@ pub(crate) struct ElementConfig {
     pub components: ElementComponents,
     pub init_components: ElementComponents,
     #[derivative(Debug = "ignore")]
-    pub spawner: Arc<dyn Fn(&mut World, EntityData) -> EntityId + Sync + Send>,
+    pub spawner: Arc<dyn Fn(&mut World, Entity) -> EntityId + Sync + Send>,
     #[derivative(Debug = "ignore")]
     pub despawner: Arc<dyn Fn(&mut World, EntityId) + Sync + Send>,
     #[derivative(Debug = "ignore")]
@@ -52,7 +52,7 @@ impl ElementConfig {
 
 #[derive(Clone)]
 #[allow(clippy::type_complexity)]
-pub(crate) struct ElementComponents(pub(crate) HashMap<usize, Arc<dyn Fn(&World, &mut EntityData) + Sync + Send>>);
+pub(crate) struct ElementComponents(pub(crate) HashMap<usize, Arc<dyn Fn(&World, &mut Entity) + Sync + Send>>);
 impl ElementComponents {
     pub fn new() -> Self {
         Self(HashMap::new())
@@ -60,13 +60,13 @@ impl ElementComponents {
     pub fn set<T: ComponentValue + Clone>(&mut self, component: Component<T>, value: T) {
         self.set_writer(component, Arc::new(move |_, ed| ed.set_self(component, value.clone())));
     }
-    pub fn set_writer(&mut self, component: impl Into<ComponentDesc>, writer: Arc<dyn Fn(&World, &mut EntityData) + Sync + Send>) {
+    pub fn set_writer(&mut self, component: impl Into<ComponentDesc>, writer: Arc<dyn Fn(&World, &mut Entity) + Sync + Send>) {
         self.0.insert(component.into().index() as _, writer);
     }
     pub fn remove<T: ComponentValue + Clone>(&mut self, component: Component<T>) {
         self.0.remove(&(component.index() as usize));
     }
-    pub fn write_to_entity_data(&self, world: &World, entity_data: &mut EntityData) {
+    pub fn write_to_entity_data(&self, world: &World, entity_data: &mut Entity) {
         for writer in self.0.values() {
             writer(world, entity_data);
         }

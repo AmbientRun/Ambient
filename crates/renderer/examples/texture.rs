@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use ambient_app::{gpu, App, AppBuilder};
 use ambient_core::{asset_cache, camera::active_camera, main_scene, transform::*};
-use ambient_ecs::EntityData;
+use ambient_ecs::Entity;
 use ambient_gpu::{
     std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey},
     texture::Texture,
@@ -40,7 +40,7 @@ async fn init(app: &mut App) {
         },
     ));
 
-    EntityData::new()
+    Entity::new()
         .set(primitives(), vec![RenderPrimitive { shader: cb(get_pbr_shader), material: mat, mesh: CubeMeshKey.get(&assets), lod: 0 }])
         .set_default(gpu_primitives())
         .set(main_scene(), ())

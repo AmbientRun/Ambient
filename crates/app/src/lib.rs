@@ -16,7 +16,7 @@ use ambient_core::{
     window_logical_size, window_physical_size, window_scale_factor, RuntimeKey, TimeResourcesSystem,
 };
 use ambient_ecs::{
-    components, world_events, Debuggable, DynSystem, EntityData, FrameEvent, MakeDefault, MaybeResource, System, SystemGroup, World,
+    components, world_events, Debuggable, DynSystem, Entity, FrameEvent, MakeDefault, MaybeResource, System, SystemGroup, World,
     WorldEventsSystem,
 };
 use ambient_element::ambient_system;
@@ -133,9 +133,9 @@ impl AppResources {
     }
 }
 
-pub fn world_instance_resources(resources: AppResources) -> EntityData {
+pub fn world_instance_resources(resources: AppResources) -> Entity {
     let current_time = ambient_sys::time::current_epoch_time();
-    EntityData::new()
+    Entity::new()
         .set(self::gpu(), resources.gpu.clone())
         .set(gizmos(), Gizmos::new())
         .set(self::runtime(), resources.runtime)

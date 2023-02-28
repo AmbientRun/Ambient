@@ -7,7 +7,7 @@ use ambient_core::{
     name,
     transform::{local_to_parent, local_to_world, rotation, scale, translation},
 };
-use ambient_ecs::{EntityData, World};
+use ambient_ecs::{Entity, World};
 use ambient_model::{model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, ModelSkin, PbrRenderPrimitiveFromUrl};
 use ambient_renderer::materials::pbr_material::PbrMaterialFromUrl;
 use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl, mesh::Mesh, shapes::AABB};
@@ -207,7 +207,7 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
         .map(|node| {
             let (trans, rot, scal) = node.transform().decomposed();
 
-            let mut ed = EntityData::new()
+            let mut ed = Entity::new()
                 .set(translation(), Vec3::from_slice(&trans))
                 .set(rotation(), Quat::from_slice(&rot))
                 .set(scale(), Vec3::from_slice(&scal))

@@ -2,7 +2,7 @@ use std::{io::Cursor, sync::Arc};
 
 use ambient_asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt};
 use ambient_decals::decal;
-use ambient_ecs::EntityData;
+use ambient_ecs::Entity;
 use ambient_model_import::{
     model_crate::{cap_texture_size, ModelCrate},
     ModelTextureSize,
@@ -86,7 +86,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
                 let mut model_crate = ModelCrate::new();
                 let decal_path = out_model_url.path().join("prefabs").relative(mat_url.path());
                 model_crate.create_prefab(
-                    EntityData::new()
+                    Entity::new()
                         .set(decal(), decal_path.into())
                         .set(collider(), ambient_physics::collider::ColliderDef::Box { size: Vec3::ONE, center: Vec3::ZERO })
                         .set(collider_type(), ambient_physics::collider::ColliderType::Picking),

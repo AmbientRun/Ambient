@@ -1,4 +1,4 @@
-use ambient_ecs::{components, query_mut, EntityData, SystemGroup};
+use ambient_ecs::{components, query_mut, Entity, SystemGroup};
 use ambient_std::math::SphericalCoords;
 use derive_more::Display;
 use winit::event::{DeviceEvent, ElementState, Event, MouseScrollDelta, VirtualKeyCode, WindowEvent};
@@ -27,9 +27,9 @@ impl SphericalCamera {
     }
 }
 
-pub fn new(lookat: glam::Vec3, orientation: SphericalCoords) -> EntityData {
+pub fn new(lookat: glam::Vec3, orientation: SphericalCoords) -> Entity {
     let spherical = SphericalCamera { orientation, ..Default::default() };
-    EntityData::new()
+    Entity::new()
         .set_default(local_to_world())
         .set_default(inv_local_to_world())
         .set(near(), 0.1)

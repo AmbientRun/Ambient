@@ -1,4 +1,4 @@
-use ambient_ecs::{components, query, query_mut, ECSError, EntityData, EntityId, Query, QueryState, Resource, World};
+use ambient_ecs::{components, query, query_mut, ECSError, Entity, EntityId, Query, QueryState, Resource, World};
 use itertools::Itertools;
 
 components!("test", {
@@ -23,7 +23,7 @@ fn unsound() {
     let mut world = World::new("unsound");
     let query = query_mut(a(), a());
 
-    world.spawn(EntityData::new().set(a(), 5.0));
+    world.spawn(Entity::new().set(a(), 5.0));
     for (_, unique, shared) in query.iter(&mut world, None) {
         let old = *shared;
         *unique = 42.0;
@@ -40,8 +40,8 @@ fn unsound() {
 fn remove() {
     init();
     let mut world = World::new("remove");
-    let a = world.spawn(EntityData::new().set(test(), "a"));
-    let b = world.spawn(EntityData::new().set(test2(), "b"));
+    let a = world.spawn(Entity::new().set(test(), "a"));
+    let b = world.spawn(Entity::new().set(test2(), "b"));
     world.despawn(a);
     world.despawn(b);
 }
@@ -50,9 +50,9 @@ fn remove() {
 fn iter_gap() {
     init();
     let mut world = World::new("iter_gap");
-    let _a = world.spawn(EntityData::new().set(test(), "a"));
-    let b = world.spawn(EntityData::new().set(test(), "b"));
-    let _c = world.spawn(EntityData::new().set(test(), "c"));
+    let _a = world.spawn(Entity::new().set(test(), "a"));
+    let b = world.spawn(Entity::new().set(test(), "b"));
+    let _c = world.spawn(Entity::new().set(test(), "c"));
     world.despawn(b);
     let entities = query((test(),)).iter(&world, None).map(|(_, (test,))| *test).collect_vec();
     assert_eq!(&["a", "c"], &entities[..]);
@@ -62,7 +62,7 @@ fn iter_gap() {
 fn add_component() {
     init();
     let mut world = World::new("add_component");
-    let x = world.spawn(EntityData::new().set(a(), 0.));
+    let x = world.spawn(Entity::new().set(a(), 0.));
     world.add_component(x, b(), 1.).unwrap();
     assert_eq!(1., world.get(x, b()).unwrap());
     let a_changed = query((a().changed(),)).iter(&world, Some(&mut QueryState::new())).map(|(id, _)| id).collect_vec();
@@ -75,7 +75,7 @@ fn add_component() {
 fn remove_component() {
     init();
     let mut world = World::new("remove_component");
-    let x = world.spawn(EntityData::new().set(a(), 0.).set(b(), 0.));
+    let x = world.spawn(Entity::new().set(a(), 0.).set(b(), 0.));
     assert_eq!(world.get_components(x).unwrap().len(), 2);
     world.remove_component(x, a()).unwrap();
     assert_eq!(world.get_components(x).unwrap().len(), 1);
@@ -91,10 +91,10 @@ fn spawn_all_excl_query() {
     let q = Query::all().excl(a()).spawned();
     assert_eq!(q.iter(&world, Some(&mut qs)).count(), 1); // resources
     assert_eq!(q.iter(&world, Some(&mut qs)).count(), 0);
-    let _x = world.spawn(EntityData::new().set(b(), 2.));
+    let _x = world.spawn(Entity::new().set(b(), 2.));
     assert_eq!(q.iter(&world, Some(&mut qs)).count(), 1);
     assert_eq!(q.iter(&world, Some(&mut qs)).count(), 0);
-    world.spawn(EntityData::new().set(a(), 1.));
+    world.spawn(Entity::new().set(a(), 1.));
     assert_eq!(q.iter(&world, Some(&mut qs)).count(), 0);
 }
 
@@ -102,7 +102,7 @@ fn spawn_all_excl_query() {
 fn query_created_late() {
     init();
     let mut world = World::new("query_create_late");
-    let _e_a = world.spawn(EntityData::new().set(a(), 1.));
+    let _e_a = world.spawn(Entity::new().set(a(), 1.));
     // Simulation runs for a while first
     for _ in 0..500 {
         world.next_frame();
@@ -119,8 +119,8 @@ fn query_created_late() {
 fn remove_despawn() {
     init();
     let mut world = World::new("remove_despawn");
-    let x = world.spawn(EntityData::new().set(a(), 0.));
-    let y = world.spawn(EntityData::new().set(a(), 0.));
+    let x = world.spawn(Entity::new().set(a(), 0.));
+    let y = world.spawn(Entity::new().set(a(), 0.));
     world.remove_component(x, a()).unwrap();
     world.despawn(y);
 }
@@ -132,15 +132,15 @@ fn mirroring() {
     let id1 = EntityId(5);
     let id1b = EntityId(7);
     let id2 = EntityId(9);
-    world.spawn_with_id(id1, EntityData::new().set(a(), 3.));
+    world.spawn_with_id(id1, Entity::new().set(a(), 3.));
     world.get(id1, a()).unwrap();
     assert_eq!(query((a(),)).iter(&world, None).count(), 1);
-    world.spawn_with_id(id2, EntityData::new().set(a(), 2.));
+    world.spawn_with_id(id2, Entity::new().set(a(), 2.));
     world.get(id2, a()).unwrap();
     assert_eq!(query((a(),)).iter(&world, None).count(), 2);
     world.despawn(id1);
     assert_eq!(query((a(),)).iter(&world, None).count(), 1);
-    world.spawn_with_id(id1b, EntityData::new().set(a(), 3.));
+    world.spawn_with_id(id1b, Entity::new().set(a(), 3.));
     assert_eq!(query((a(),)).iter(&world, None).count(), 2);
     world.get(id2, a()).unwrap();
     world.despawn(id2);
@@ -151,8 +151,8 @@ fn mirroring() {
 fn content_version_should_remain_on_remove() {
     init();
     let mut world = World::new("content_version_should_remain_one");
-    let x = EntityData::new().set(a(), 5.).set(b(), 2.).spawn(&mut world);
-    let y = EntityData::new().set(a(), 5.).set(b(), 2.).spawn(&mut world);
+    let x = Entity::new().set(a(), 5.).set(b(), 2.).spawn(&mut world);
+    let y = Entity::new().set(a(), 5.).set(b(), 2.).spawn(&mut world);
     let x_start = world.get_component_content_version(x, a().index()).unwrap();
     let y_start = world.get_component_content_version(y, a().index()).unwrap();
     world.remove_component(x, b()).unwrap();
@@ -186,7 +186,7 @@ fn fresh_moveout_event_reader_should_work() {
     let spawn_query = query(a()).spawned();
     assert_eq!(spawn_query.iter(&world, Some(&mut spawn_query_state)).count(), 0);
 
-    let id = EntityData::new().set(a(), 5.).set(b(), 2.).spawn(&mut world);
+    let id = Entity::new().set(a(), 5.).set(b(), 2.).spawn(&mut world);
 
     assert_eq!(spawn_query.iter(&world, Some(&mut spawn_query_state)).count(), 1);
 
@@ -210,7 +210,7 @@ fn fresh_moveout_event_reader_should_work() {
 fn errors_on_adding_a_resource_to_an_entity() {
     init();
     let mut world = World::new("errors_on_adding_a_resource_to_an_entity");
-    let entity_id = world.spawn(EntityData::new());
+    let entity_id = world.spawn(Entity::new());
     assert_eq!(
         world.add_component(entity_id, a_resource(), ()),
         Err(ECSError::AddedResourceToEntity { component_path: "core::test::a_resource".to_string(), entity_id })

@@ -1,7 +1,7 @@
 use ambient_app::AppBuilder;
 use ambient_cameras::UICamera;
 use ambient_core::{async_ecs::async_run, camera::active_camera};
-use ambient_ecs::{EntityData, World};
+use ambient_ecs::{Entity, World};
 use ambient_ecs_editor::ECSEditor;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
 use ambient_std::cb;
@@ -18,7 +18,7 @@ impl ElementComponent for ECSEditorUIWorld {
                 async_run.run(move |world| run(world));
             }),
             on_change: cb(|world, diff| {
-                diff.apply(world, EntityData::new(), false);
+                diff.apply(world, Entity::new(), false);
             }),
         }
         .el()
