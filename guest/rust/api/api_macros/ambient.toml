@@ -68,6 +68,18 @@ How long the previous tick took in seconds.
 Also known as frametime."""
 attributes = ["Debuggable", "Resource"]
 
+[components."core::app::element"]
+type = "String"
+name = "Element"
+description = "The id of the Element which controls this Entity"
+attributes = ["Debuggable", "Networked"]
+
+[components."core::app::element_unmanaged_children"]
+type = "Empty"
+name = "Element unmanaged children"
+description = "If this is set, the user is expected to manage the children of the element themselves"
+attributes = ["Debuggable", "Networked"]
+
 [components."core::app::main_scene"]
 type = "Empty"
 name = "Main scene"

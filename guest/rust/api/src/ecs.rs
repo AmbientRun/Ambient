@@ -4,5 +4,5 @@ pub use crate::internal::component::{
         GeneralQueryBuilder, QueryEvent,
     },
     Component, ComponentsTuple, Entity, SupportedComponentTypeGet, SupportedComponentTypeSet,
-    __internal_get_component,
+    UntypedComponent, __internal_get_component,
 };

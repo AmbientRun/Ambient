@@ -1,6 +1,8 @@
 use std::{collections::HashMap, sync::Arc};
 
-use ambient_ecs::{Component, ComponentDesc, ComponentValue, Entity, EntityId, World};
+#[cfg(feature = "guest")]
+use ambient_guest_bridge::ecs::UntypedComponent;
+use ambient_guest_bridge::ecs::{Component, ComponentDesc, ComponentValue, Entity, EntityId, World};
 
 use crate::ElementComponent;
 
@@ -27,7 +29,7 @@ impl ElementConfig {
             part: None,
             components: ElementComponents::new(),
             init_components: ElementComponents::new(),
-            spawner: Arc::new(|world, props| props.spawn(world)),
+            spawner: Arc::new(|world, props| world.spawn(props)),
             despawner: Arc::new(|world, entity| {
                 world.despawn(entity);
             }),
@@ -57,7 +59,7 @@ impl ElementComponents {
     pub fn new() -> Self {
         Self(HashMap::new())
     }
-    pub fn set<T: ComponentValue + Clone>(&mut self, component: Component<T>, value: T) {
+    pub fn set<T: ComponentValue + Clone + Sync + Send + 'static>(&mut self, component: Component<T>, value: T) {
         self.set_writer(component, Arc::new(move |_, ed| ed.set(component, value.clone())));
     }
     pub fn set_writer(&mut self, component: impl Into<ComponentDesc>, writer: Arc<dyn Fn(&World, &mut Entity) + Sync + Send>) {

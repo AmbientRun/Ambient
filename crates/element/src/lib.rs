@@ -3,7 +3,9 @@ extern crate derivative;
 
 use std::{any::Any, sync::Arc};
 
-use ambient_ecs::{components, Component, ComponentDesc, ComponentValue, Entity, EntityId, SystemGroup, World};
+#[cfg(feature = "native")]
+use ambient_guest_bridge::ecs::{components, Debuggable, Description, Name, Networked, SystemGroup};
+use ambient_guest_bridge::ecs::{Component, ComponentDesc, ComponentValue, Entity, EntityId, World};
 use as_any::AsAny;
 use dyn_clonable::clonable;
 use parking_lot::Mutex;
@@ -12,18 +14,31 @@ mod element_config;
 mod hooks;
 mod standard;
 mod tree;
+#[cfg(feature = "native")]
 pub use ambient_element_component::element_component;
 use element_config::*;
 pub use hooks::*;
 pub use standard::*;
 pub use tree::*;
 
-components!("element", {
+#[cfg(feature = "native")]
+components!("app", {
+    @[
+        Networked, Debuggable,
+        Name["Element"],
+        Description["The id of the Element which controls this Entity."]
+    ]
     element: String,
     element_tree: ShareableElementTree,
-    // If this is set, the user is expected to manage the children of the element themselves
+    @[
+        Networked, Debuggable,
+        Name["Element unmanaged children"],
+        Description["If this is set, the user is expected to manage the children of the element themselves."]
+    ]
     element_unmanaged_children: (),
 });
+#[cfg(feature = "guest")]
+pub use ambient_guest_bridge::api::components::core::app::{element, element_unmanaged_children};
 
 #[clonable]
 pub trait AnyCloneable: AsAny + Clone + std::fmt::Debug {}
@@ -79,40 +94,50 @@ impl Element {
     pub fn vec_of(self) -> Vec<Self> {
         vec![self]
     }
-    pub fn set<T: ComponentValue + Clone>(mut self, component: Component<T>, value: T) -> Self {
+    pub fn set<T: ComponentValue + Sync + Send + Clone + 'static>(mut self, component: Component<T>, value: T) -> Self {
         self.config.components.set(component, value);
         self
     }
-    pub fn set_with<T: ComponentValue, F: Fn(&World) -> T + ComponentValue>(mut self, component: Component<T>, value: F) -> Self {
+    pub fn set_with<T: ComponentValue + Sync + Send + 'static, F: Fn(&World) -> T + ComponentValue + Sync + Send + 'static>(
+        mut self,
+        component: Component<T>,
+        value: F,
+    ) -> Self {
         self.config.components.set_writer(component, Arc::new(move |world, ed| ed.set(component, value(world))));
         self
     }
-    pub fn set_default<T: ComponentValue + Clone + Default>(mut self, component: Component<T>) -> Self {
+    pub fn set_default<T: ComponentValue + Sync + Send + Clone + Default + 'static>(mut self, component: Component<T>) -> Self {
         self.config.components.set(component, T::default());
         self
     }
     /// Sets the component of the element component instantiation
-    pub fn init<T: ComponentValue + Clone>(mut self, component: Component<T>, value: T) -> Self {
+    pub fn init<T: ComponentValue + Sync + Send + Clone + 'static>(mut self, component: Component<T>, value: T) -> Self {
         self.config.init_components.set(component, value);
         self
     }
     /// See [`Element::init`]
-    pub fn init_with<T: ComponentValue, F: Fn(&World) -> T + ComponentValue>(mut self, component: Component<T>, value: F) -> Self {
+    pub fn init_with<T: ComponentValue + Sync + Send + 'static, F: Fn(&World) -> T + ComponentValue + Sync + Send + 'static>(
+        mut self,
+        component: Component<T>,
+        value: F,
+    ) -> Self {
         self.config.init_components.set_writer(component, Arc::new(move |world, ed| ed.set(component, value(world))));
         self
     }
     /// See [`Element::init`]
-    pub fn init_default<T: ComponentValue + Clone + Default>(mut self, component: Component<T>) -> Self {
+    pub fn init_default<T: ComponentValue + Sync + Send + Clone + Default + 'static>(mut self, component: Component<T>) -> Self {
         self.config.init_components.set(component, T::default());
         self
     }
+    #[cfg(feature = "native")]
     pub fn extend(mut self, entity_data: Entity) -> Self {
         for unit in entity_data.into_iter() {
             self.config.components.set_writer(unit.desc(), Arc::new(move |_, ed| ed.set_entry(unit.clone())));
         }
         self
     }
-    /// See [`Element::init`]; adds each entry in the EntityData to init
+    /// See [`Element::init`]; adds each entry in the Entity to init
+    #[cfg(feature = "native")]
     pub fn init_extend(mut self, entity_data: Entity) -> Self {
         for unit in entity_data.into_iter() {
             self.config.init_components.set_writer(unit.desc(), Arc::new(move |_, ed| ed.set_entry(unit.clone())));
@@ -132,19 +157,19 @@ impl Element {
         self.children = children;
         self
     }
-    pub fn spawner<F: Fn(&mut World, Entity) -> EntityId + ComponentValue>(mut self, handler: F) -> Self {
+    pub fn spawner<F: Fn(&mut World, Entity) -> EntityId + ComponentValue + Sync + Send + 'static>(mut self, handler: F) -> Self {
         self.config.spawner = Arc::new(handler);
         self
     }
-    pub fn despawner<F: Fn(&mut World, EntityId) + ComponentValue>(mut self, handler: F) -> Self {
+    pub fn despawner<F: Fn(&mut World, EntityId) + ComponentValue + Sync + Send + 'static>(mut self, handler: F) -> Self {
         self.config.despawner = Arc::new(handler);
         self
     }
-    pub fn on_spawned<F: Fn(&mut World, EntityId) + ComponentValue>(mut self, handler: F) -> Self {
+    pub fn on_spawned<F: Fn(&mut World, EntityId) + ComponentValue + Sync + Send + 'static>(mut self, handler: F) -> Self {
         self.config.on_spawned = Some(Arc::new(handler));
         self
     }
-    pub fn on_despawn<F: Fn(&mut World, EntityId) + ComponentValue>(mut self, handler: F) -> Self {
+    pub fn on_despawn<F: Fn(&mut World, EntityId) + ComponentValue + Sync + Send + 'static>(mut self, handler: F) -> Self {
         self.config.on_despawn = Some(Arc::new(handler));
         self
     }
@@ -167,6 +192,7 @@ impl Element {
     }
     /// This spawns the element tree plus a handle entity which will have an `element_tree` component on it. All
     /// `element_tree` components get updated each frame so this entity tree will be updated
+    #[cfg(feature = "native")]
     pub fn spawn_interactive(self, world: &mut World) -> EntityId {
         let tree = self.spawn_tree(world);
         Entity::new().with(self::element_tree(), ShareableElementTree(Arc::new(Mutex::new(tree)))).spawn(world)
@@ -184,6 +210,7 @@ impl Default for Element {
     }
 }
 
+#[cfg(feature = "native")]
 pub fn ambient_system() -> SystemGroup {
     ElementTree::systems_for_component(element_tree())
 }
@@ -199,6 +226,7 @@ macro_rules! define_el_function_for_vec_element_newtype {
     };
 }
 
+#[cfg(feature = "native")]
 pub fn render_parented_with_component(world: &mut World, id: EntityId, handle: Component<ShareableElementTree>, mut element: Element) {
     use ambient_core::{
         hierarchy::{children, parent},

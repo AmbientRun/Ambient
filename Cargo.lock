@@ -175,6 +175,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_api"
+version = "0.1.1"
+dependencies = [
+ "ambient_api_macros",
+ "anyhow",
+ "bincode",
+ "data-encoding",
+ "glam 0.22.0",
+ "once_cell",
+ "paste",
+ "rand 0.8.5",
+ "serde",
+ "wasi 0.11.0+wasi-snapshot-preview1",
+]
+
+[[package]]
+name = "ambient_api_macros"
+version = "0.1.1"
+dependencies = [
+ "anyhow",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "syn",
+ "toml 0.7.2",
+]
+
+[[package]]
 name = "ambient_app"
 version = "0.1.1"
 dependencies = [
@@ -549,14 +577,15 @@ name = "ambient_element"
 version = "0.1.1"
 dependencies = [
  "ambient_core",
- "ambient_ecs",
  "ambient_element_component",
- "ambient_std",
+ "ambient_guest_bridge",
  "ambient_sys",
  "as-any",
  "atomic_refcell",
+ "cb",
  "derivative",
  "dyn-clonable",
+ "friendly_id",
  "futures",
  "itertools",
  "parking_lot",
@@ -622,6 +651,14 @@ dependencies = [
  "wgpu 0.14.2",
  "wgpu 0.15.1",
  "winit",
+]
+
+[[package]]
+name = "ambient_guest_bridge"
+version = "0.1.0"
+dependencies = [
+ "ambient_api",
+ "ambient_ecs",
 ]
 
 [[package]]
