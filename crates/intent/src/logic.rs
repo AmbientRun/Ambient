@@ -26,7 +26,7 @@ pub fn push_intent(state: SharedServerState, user_id: String, mut data: Entity) 
         // Make sure to remove the undone intents, to start with a fresh stack
         despawn_reverted_intents(world, &user_id);
 
-        data.set_self(intent_user_id(), user_id.clone());
+        data.set(intent_user_id(), user_id.clone());
         let intent = data.get(intent()).expect("Missing intent kind for intent");
 
         let id = data.spawn(world);

@@ -58,20 +58,20 @@ impl Entity {
         self.content.set(entry.desc().index() as _, entry);
     }
 
-    pub fn set_self<T: ComponentValue>(&mut self, component: Component<T>, value: T) {
+    pub fn set<T: ComponentValue>(&mut self, component: Component<T>, value: T) {
         let index = component.index() as _;
         self.content.set(index, ComponentEntry::new(component, value));
         self.active_components.insert(component.desc());
     }
 
     pub fn with<T: ComponentValue>(mut self, component: Component<T>, value: T) -> Self {
-        self.set_self(component, value);
+        self.set(component, value);
         self
     }
 
     pub fn with_opt<T: ComponentValue>(mut self, component: Component<T>, value: Option<T>) -> Self {
         if let Some(value) = value {
-            self.set_self(component, value);
+            self.set(component, value);
         }
         self
     }
@@ -82,14 +82,14 @@ impl Entity {
 
     pub fn with_if_empty<T: ComponentValue>(mut self, component: Component<T>, value: T) -> Self {
         if !self.contains(component) {
-            self.set_self(component, value);
+            self.set(component, value);
         }
         self
     }
 
     pub fn with_default_if_empty<T: Default + ComponentValue>(mut self, component: Component<T>) -> Self {
         if !self.contains(component) {
-            self.set_self(component, T::default());
+            self.set(component, T::default());
         }
         self
     }

@@ -127,19 +127,19 @@ fn create_resources(assets: AssetCache) -> Entity {
     ambient_physics::create_server_resources(&assets, &mut server_resources);
 
     server_resources.merge(ambient_core::async_ecs::async_ecs_resources());
-    server_resources.set_self(ambient_core::runtime(), RuntimeHandle::current());
+    server_resources.set(ambient_core::runtime(), RuntimeHandle::current());
     let now = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
-    server_resources.set_self(time(), now);
-    server_resources.set_self(app_start_time(), now);
-    server_resources.set_self(dtime(), 1. / 60.);
+    server_resources.set(time(), now);
+    server_resources.set(app_start_time(), now);
+    server_resources.set(dtime(), 1. / 60.);
 
     let mut handlers = HashMap::new();
     ambient_network::register_rpc_bi_stream_handler(&mut handlers, shared::create_rpc_registry());
-    server_resources.set_self(bi_stream_handlers(), handlers);
+    server_resources.set(bi_stream_handlers(), handlers);
 
     let mut handlers = HashMap::new();
     shared::player::register_datagram_handler(&mut handlers);
-    server_resources.set_self(datagram_handlers(), handlers);
+    server_resources.set(datagram_handlers(), handlers);
 
     server_resources
 }

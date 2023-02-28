@@ -214,7 +214,7 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
                 .with_default(local_to_world());
 
             if let Some(node_name) = node.name() {
-                ed.set_self(name(), node_name.to_string());
+                ed.set(name(), node_name.to_string());
             }
 
             if let Some(mesh_) = node.mesh() {
@@ -226,7 +226,7 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
                         lod: 0,
                     })
                     .collect_vec();
-                ed.set_self(pbr_renderer_primitives_from_url(), primitive_defs);
+                ed.set(pbr_renderer_primitives_from_url(), primitive_defs);
 
                 let aabbs = mesh_
                     .primitives()
@@ -236,12 +236,12 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
                     })
                     .collect_vec();
                 if let Some(aabb) = AABB::unions(&aabbs) {
-                    ed.set_self(local_bounding_aabb(), aabb);
+                    ed.set(local_bounding_aabb(), aabb);
                 }
             }
 
             if let Some(skin) = node.skin() {
-                ed.set_self(model_skin_ix(), skin.index());
+                ed.set(model_skin_ix(), skin.index());
             }
 
             ed.spawn(&mut world)

@@ -58,7 +58,7 @@ impl ElementComponents {
         Self(HashMap::new())
     }
     pub fn set<T: ComponentValue + Clone>(&mut self, component: Component<T>, value: T) {
-        self.set_writer(component, Arc::new(move |_, ed| ed.set_self(component, value.clone())));
+        self.set_writer(component, Arc::new(move |_, ed| ed.set(component, value.clone())));
     }
     pub fn set_writer(&mut self, component: impl Into<ComponentDesc>, writer: Arc<dyn Fn(&World, &mut Entity) + Sync + Send>) {
         self.0.insert(component.into().index() as _, writer);

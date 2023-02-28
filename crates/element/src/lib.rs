@@ -84,7 +84,7 @@ impl Element {
         self
     }
     pub fn set_with<T: ComponentValue, F: Fn(&World) -> T + ComponentValue>(mut self, component: Component<T>, value: F) -> Self {
-        self.config.components.set_writer(component, Arc::new(move |world, ed| ed.set_self(component, value(world))));
+        self.config.components.set_writer(component, Arc::new(move |world, ed| ed.set(component, value(world))));
         self
     }
     pub fn set_default<T: ComponentValue + Clone + Default>(mut self, component: Component<T>) -> Self {
@@ -98,7 +98,7 @@ impl Element {
     }
     /// See [`Element::init`]
     pub fn init_with<T: ComponentValue, F: Fn(&World) -> T + ComponentValue>(mut self, component: Component<T>, value: F) -> Self {
-        self.config.init_components.set_writer(component, Arc::new(move |world, ed| ed.set_self(component, value(world))));
+        self.config.init_components.set_writer(component, Arc::new(move |world, ed| ed.set(component, value(world))));
         self
     }
     /// See [`Element::init`]

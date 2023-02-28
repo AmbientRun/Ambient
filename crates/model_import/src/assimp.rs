@@ -175,7 +175,7 @@ fn import_sync(buffer: &[u8], model_crate: &mut ModelCrate, extension: &str) -> 
             .with(scale(), scl)
             .with_default(local_to_world());
         if !node.meshes.is_empty() {
-            ed.set_self(
+            ed.set(
                 pbr_renderer_primitives_from_url(),
                 node.meshes
                     .iter()

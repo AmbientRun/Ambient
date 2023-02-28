@@ -398,15 +398,15 @@ async fn recursively_create_game_objects<'a: 'async_recursion>(
         Entity::new()
     };
 
-    node.set_self(name(), object.name.clone());
+    node.set(name(), object.name.clone());
 
     if let Some(transform) = object.get_component::<unity_parser::prefab::Transform>(prefab) {
-        node.set_self(scale(), transform.local_scale);
-        node.set_self(rotation(), transform.local_rotation);
-        node.set_self(translation(), transform.local_position);
+        node.set(scale(), transform.local_scale);
+        node.set(rotation(), transform.local_rotation);
+        node.set(translation(), transform.local_position);
     }
     if let Some(parent_id) = parent_id {
-        node.set_self(parent(), parent_id);
+        node.set(parent(), parent_id);
     }
     let id = node.spawn(model_crate.lock().model_world_mut());
     if !has_lod_group {

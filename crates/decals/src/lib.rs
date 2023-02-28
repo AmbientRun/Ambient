@@ -110,13 +110,13 @@ pub fn client_systems() -> SystemGroup {
                             .with(world_bounding_sphere(), aabb.to_sphere())
                             .with(world_bounding_aabb(), aabb);
                         if !world.has_component(id, local_to_world()) {
-                            data.set_self(local_to_world(), Default::default());
+                            data.set(local_to_world(), Default::default());
                         }
                         if !world.has_component(id, mesh_to_world()) {
-                            data.set_self(mesh_to_world(), Default::default());
+                            data.set(mesh_to_world(), Default::default());
                         }
                         if !world.has_component(id, color()) {
-                            data.set_self(color(), Vec4::ONE);
+                            data.set(color(), Vec4::ONE);
                         }
                         world.add_components(id, data).ok();
                     })
