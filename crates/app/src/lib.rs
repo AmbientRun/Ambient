@@ -292,15 +292,21 @@ impl AppBuilder {
         world.add_components(world.resource_entity(), resources).unwrap();
         tracing::info!("Setup renderers");
         if self.ui_renderer || self.main_renderer {
-            let _span = info_span!("setup_renderers").entered();
+            // let _span = info_span!("setup_renderers").entered();
             if !self.main_renderer {
+                tracing::info!("Setting up UI renderer");
                 let renderer = Arc::new(Mutex::new(UIRender::new(&mut world)));
                 world.add_resource(ui_renderer(), renderer);
             } else {
-                let renderer = Arc::new(Mutex::new(ExamplesRender::new(&mut world, self.ui_renderer, self.main_renderer)));
+                tracing::info!("Settinp up ExamplesRenderer");
+                let renderer = ExamplesRender::new(&mut world, self.ui_renderer, self.main_renderer);
+                tracing::info!("Created examples renderer");
+                let renderer = Arc::new(Mutex::new(renderer));
                 world.add_resource(examples_renderer(), renderer);
             }
         }
+
+        tracing::info!("Adding window event systems");
 
         let mut window_event_systems = SystemGroup::new(
             "window_event_systems",
@@ -404,6 +410,7 @@ impl App {
 
         let event_loop = self.event_loop.take().unwrap();
 
+        tracing::info!("Spawning event loop");
         event_loop.spawn(move |event, _, control_flow| {
             tracing::info!("Event: {event:?}");
             // HACK(philpax): treat dpi changes as resize events. Ideally we'd handle this in handle_event proper,
