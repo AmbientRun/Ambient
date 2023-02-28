@@ -113,7 +113,6 @@ components!("app", {
     remove_at_time: Duration,
 
 
-    on_event: EventDispatcher<dyn Fn(&mut World, EntityId, &winit::event::Event<()>) + Sync + Send>,
     on_window_event: EventDispatcher<dyn Fn(&mut World, EntityId, &winit::event::WindowEvent) + Sync + Send>,
     on_device_event: EventDispatcher<dyn Fn(&mut World, EntityId, &winit::event::DeviceEvent) + Sync + Send>,
 
@@ -172,11 +171,6 @@ impl WinitEventsSystem {
 }
 impl System<Event<'static, ()>> for WinitEventsSystem {
     fn run(&mut self, world: &mut World, event: &Event<'static, ()>) {
-        for (id, (dispatcher,)) in query((on_event(),)).collect_cloned(world, Some(&mut self.event_qs)) {
-            for handler in dispatcher.iter() {
-                handler(world, id, event);
-            }
-        }
         match event {
             Event::WindowEvent { event, .. } => {
                 for (id, (dispatcher,)) in query((on_window_event(),)).collect_cloned(world, Some(&mut self.window_event_qs)) {
