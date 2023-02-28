@@ -980,9 +980,11 @@ dependencies = [
  "async-trait",
  "bincode",
  "bytemuck",
+ "cb",
  "chrono",
  "convert_case 0.6.0",
  "data-encoding",
+ "friendly_id",
  "futures",
  "glam 0.22.0",
  "hex",
@@ -1756,6 +1758,10 @@ dependencies = [
  "serde",
  "toml 0.7.2",
 ]
+
+[[package]]
+name = "cb"
+version = "0.1.0"
 
 [[package]]
 name = "cc"
@@ -2761,6 +2767,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a9c384f161156f5260c24a097c56119f9be8c798586aecc13afbcbe7b7e26bf8"
 dependencies = [
  "percent-encoding",
+]
+
+[[package]]
+name = "friendly_id"
+version = "0.1.0"
+dependencies = [
+ "rand 0.8.5",
 ]
 
 [[package]]
