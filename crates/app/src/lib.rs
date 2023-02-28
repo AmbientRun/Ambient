@@ -17,7 +17,7 @@ use ambient_core::{
     mouse_position, remove_at_time_system, runtime, time,
     transform::TransformSystem,
     window::WindowCtl,
-    window_logical_size, window_physical_size, window_scale_factor, RuntimeKey, TimeResourcesSystem, WinitEventsSystem,
+    window_logical_size, window_physical_size, window_scale_factor, RuntimeKey, TimeResourcesSystem,
 };
 use ambient_ecs::{
     components, world_events, Debuggable, DynSystem, EntityData, FrameEvent, MakeDefault, MaybeResource, System, SystemGroup, World,
@@ -284,12 +284,7 @@ impl AppBuilder {
 
         let mut window_event_systems = SystemGroup::new(
             "window_event_systems",
-            vec![
-                Box::new(assets_camera_systems()),
-                Box::new(WinitEventsSystem::new()),
-                Box::new(ambient_input::event_systems()),
-                Box::new(renderers::systems()),
-            ],
+            vec![Box::new(assets_camera_systems()), Box::new(ambient_input::event_systems()), Box::new(renderers::systems())],
         );
         if self.examples_systems {
             window_event_systems.add(Box::new(ExamplesSystem));

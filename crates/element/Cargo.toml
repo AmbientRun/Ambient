@@ -15,7 +15,6 @@ ambient_element_component = { path = "../element_component" }
 itertools = { workspace = true }
 as-any = { workspace = true }
 dyn-clonable = { workspace = true }
-closure = { workspace = true }
 derivative = { workspace = true }
 parking_lot = { workspace = true }
 tracing = { workspace = true }

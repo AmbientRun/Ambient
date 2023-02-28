@@ -7,9 +7,7 @@ use std::{
     },
 };
 
-use ambient_core::{
-    hierarchy::children, on_window_event, transform::*, window::WindowCtl, window_ctl, window_logical_size, window_physical_size,
-};
+use ambient_core::{hierarchy::children, transform::*, window::WindowCtl, window_ctl, window_logical_size, window_physical_size};
 pub use ambient_ecs::{EntityId, SystemGroup, World};
 pub use ambient_editor_derive::ElementEditor;
 pub use ambient_element as element;
@@ -26,7 +24,7 @@ use glam::*;
 use itertools::Itertools;
 use parking_lot::Mutex;
 use winit::{
-    event::{ElementState, ModifiersState, MouseButton, MouseScrollDelta, WindowEvent},
+    event::{ElementState, ModifiersState, MouseButton, MouseScrollDelta},
     window::CursorGrabMode,
 };
 

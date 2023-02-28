@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use ambient_ecs::query_mut;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 mod common;

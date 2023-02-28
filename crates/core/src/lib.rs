@@ -8,28 +8,24 @@ use std::{
 };
 use window::WindowCtl;
 
-use ambient_ecs::{
-    components, query, Debuggable, Description, DynSystem, EntityId, FrameEvent, Name, Networked, QueryState, Resource, Store, System,
-    World,
-};
+use ambient_ecs::{components, query, Debuggable, Description, DynSystem, FrameEvent, Name, Networked, Resource, Store, System, World};
 use ambient_gpu::{gpu::Gpu, mesh_buffer::GpuMesh};
 
-pub mod async_ecs;
-pub mod gpu_ecs;
-pub mod hierarchy;
-pub mod window;
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey},
-    events::EventDispatcher,
     math::interpolate,
 };
 use glam::{uvec2, vec2, UVec2, Vec2};
 pub use paste;
 use serde::{Deserialize, Serialize};
-use winit::{event::Event, window::Window};
+use winit::window::Window;
+pub mod async_ecs;
 pub mod bounding;
 pub mod camera;
+pub mod gpu_ecs;
+pub mod hierarchy;
 pub mod transform;
+pub mod window;
 
 components!("app", {
     @[Debuggable, Networked, Store, Name["Name"], Description["A human-friendly name for this entity."]]
@@ -112,10 +108,6 @@ components!("app", {
     @[Debuggable, Store]
     remove_at_time: Duration,
 
-
-    on_window_event: EventDispatcher<dyn Fn(&mut World, EntityId, &winit::event::WindowEvent) + Sync + Send>,
-    on_device_event: EventDispatcher<dyn Fn(&mut World, EntityId, &winit::event::DeviceEvent) + Sync + Send>,
-
     /// Generic component that indicates the entity shouldn't be sent over network
     @[Debuggable, Networked, Store]
     no_sync: (),
@@ -157,39 +149,6 @@ impl SyncAssetKey<RuntimeHandle> for RuntimeKey {}
 pub struct WindowKey;
 #[cfg(not(target_os = "unknown"))]
 impl SyncAssetKey<Arc<Window>> for WindowKey {}
-
-#[derive(Debug)]
-pub struct WinitEventsSystem {
-    event_qs: QueryState,
-    window_event_qs: QueryState,
-    device_event_qs: QueryState,
-}
-impl WinitEventsSystem {
-    pub fn new() -> Self {
-        Self { event_qs: QueryState::new(), window_event_qs: QueryState::new(), device_event_qs: QueryState::new() }
-    }
-}
-impl System<Event<'static, ()>> for WinitEventsSystem {
-    fn run(&mut self, world: &mut World, event: &Event<'static, ()>) {
-        match event {
-            Event::WindowEvent { event, .. } => {
-                for (id, (dispatcher,)) in query((on_window_event(),)).collect_cloned(world, Some(&mut self.window_event_qs)) {
-                    for handler in dispatcher.iter() {
-                        handler(world, id, event);
-                    }
-                }
-            }
-            Event::DeviceEvent { ref event, .. } => {
-                for (id, (dispatcher,)) in query((on_device_event(),)).collect_cloned(world, Some(&mut self.device_event_qs)) {
-                    for handler in dispatcher.iter() {
-                        handler(world, id, event);
-                    }
-                }
-            }
-            _ => {}
-        }
-    }
-}
 
 pub fn remove_at_time_system() -> DynSystem {
     query((remove_at_time(),)).to_system(|q, world, qs, _| {

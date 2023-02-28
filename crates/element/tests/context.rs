@@ -1,6 +1,5 @@
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 mod common;
-use std::sync::Arc;
 
 use ambient_std::cb;
 use common::*;

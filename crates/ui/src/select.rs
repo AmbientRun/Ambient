@@ -1,10 +1,7 @@
-use std::sync::Arc;
-
-use ambient_core::on_window_event;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_std::Cb;
 use closure::closure;
-use winit::event::{ElementState, WindowEvent};
+use winit::event::ElementState;
 
 use super::{Button, ButtonStyle, FlowColumn, FlowRow, Text, UIExt};
 use crate::{

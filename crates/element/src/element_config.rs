@@ -1,7 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
 use ambient_ecs::{Component, ComponentDesc, ComponentValue, EntityData, EntityId, World};
-use ambient_std::events::EventDispatcher;
 
 use crate::ElementComponent;
 
@@ -77,10 +76,4 @@ impl std::fmt::Debug for ElementComponents {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "ElementComponents")
     }
-}
-
-#[derive(Clone)]
-pub(crate) struct ElementEventHandler {
-    add: Arc<dyn Fn(&mut World, EntityId) + Sync + Send>,
-    remove: Arc<dyn Fn(&mut World, EntityId) + Sync + Send>,
 }

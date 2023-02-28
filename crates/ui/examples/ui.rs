@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use ambient_app::{App, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_core::{camera::active_camera, hierarchy::children, transform::translation};

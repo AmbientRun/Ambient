@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use ambient_ecs::{components, query_mut, Resource, World};
-use ambient_std::{events::EventDispatcher, Cb};
+use ambient_std::Cb;
 use itertools::Itertools;
 
 components!("test", {

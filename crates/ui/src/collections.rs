@@ -1,6 +1,5 @@
 use std::{collections::HashMap, fmt::Debug, hash::Hash, ops::Deref, sync::Arc};
 
-use ambient_core::on_window_event;
 use ambient_ecs::EntityId;
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_input::{event_keyboard_input, event_mouse_input, KeyboardEvent};
@@ -8,7 +7,7 @@ use ambient_std::{cb, color::Color, Cb};
 use closure::closure;
 use indexmap::IndexMap;
 use itertools::Itertools;
-use winit::event::{ElementState, VirtualKeyCode, WindowEvent};
+use winit::event::{ElementState, VirtualKeyCode};
 
 use super::{Button, ButtonStyle, Dropdown, Editor, EditorOpts, FlowColumn, FlowRow, Focus, UIBase, UIExt};
 use crate::{layout::*, StylesExt, COLLECTION_ADD_ICON, COLLECTION_DELETE_ICON, MOVE_DOWN_ICON, MOVE_UP_ICON, STREET};
