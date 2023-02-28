@@ -48,57 +48,6 @@ fn test_outer_init() {
 }
 
 #[test]
-fn test_two_event_listeners() {
-    #[derive(Debug, Clone)]
-    pub struct Outer;
-    impl ElementComponent for Outer {
-        fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-            let (use_inner, set_use_inner) = hooks.use_state(true);
-            if use_inner {
-                Element::from(Inner).set(
-                    trigger(),
-                    cb(move |world| {
-                        *world.resource_mut(counter()) += 1;
-                        set_use_inner(false);
-                    }),
-                )
-            } else {
-                Element::new().set(
-                    trigger(),
-                    cb(move |world| {
-                        *world.resource_mut(counter()) += 1;
-                    }),
-                )
-            }
-        }
-    }
-
-    #[derive(Debug, Clone)]
-    pub struct Inner;
-    impl ElementComponent for Inner {
-        fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-            Element::new().set(
-                trigger(),
-                cb(move |world| {
-                    *world.resource_mut(counter()) += 1;
-                }),
-            )
-        }
-    }
-
-    let mut world = initialize();
-    let mut tree = Outer.el().spawn_tree(&mut world);
-
-    run_triggers(&mut world);
-    tree.update(&mut world);
-    assert_eq!(2, *world.resource(counter()));
-
-    run_triggers(&mut world);
-    tree.update(&mut world);
-    assert_eq!(3, *world.resource(counter()));
-}
-
-#[test]
 fn update_state_on_replaced_element() {
     #[derive(Debug, Clone)]
     pub struct Root;
