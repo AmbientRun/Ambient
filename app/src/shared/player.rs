@@ -3,7 +3,7 @@ use std::{io::Write, sync::Arc};
 use ambient_audio::AudioListener;
 use ambient_core::{
     camera::{active_camera, aspect_ratio_from_window},
-    main_scene, on_frame, runtime,
+    main_scene, runtime,
 };
 use ambient_ecs::{query, query_mut, EntityData, SystemGroup};
 use ambient_element::{element_component, Element, Hooks};
@@ -162,27 +162,25 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
             }
         }
     });
+    hooks.use_frame(move |world| {
+        if !has_focus {
+            return;
+        }
 
-    Element::new().listener(
-        on_frame(),
-        Arc::new(move |world, _, _| {
-            if !has_focus {
-                return;
-            }
+        if let Some(Some(gc)) = world.resource_opt(game_client()).cloned() {
+            let runtime = world.resource(runtime()).clone();
+            let input = input.clone();
 
-            if let Some(Some(gc)) = world.resource_opt(game_client()).cloned() {
-                let runtime = world.resource(runtime()).clone();
-                let input = input.clone();
+            runtime.spawn(async move {
+                let mut data = Vec::new();
+                data.write_u32::<BigEndian>(PLAYER_INPUT_DATAGRAM_ID).unwrap();
 
-                runtime.spawn(async move {
-                    let mut data = Vec::new();
-                    data.write_u32::<BigEndian>(PLAYER_INPUT_DATAGRAM_ID).unwrap();
+                let msg = bincode::serialize(&*input.lock()).unwrap();
+                data.write_all(&msg).unwrap();
+                gc.connection.send_datagram(data.into()).ok();
+            });
+        }
+    });
 
-                    let msg = bincode::serialize(&*input.lock()).unwrap();
-                    data.write_all(&msg).unwrap();
-                    gc.connection.send_datagram(data.into()).ok();
-                });
-            }
-        }),
-    )
+    Element::new()
 }
