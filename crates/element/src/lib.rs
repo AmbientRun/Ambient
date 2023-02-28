@@ -131,10 +131,6 @@ impl Element {
         self.config.init_components.remove(component);
         self
     }
-    pub fn listener<T: 'static + Sync + Send + ?Sized>(mut self, component: Component<EventDispatcher<T>>, listener: Arc<T>) -> Self {
-        self.config.event_listeners.set(component, listener);
-        self
-    }
     pub fn children(mut self, children: Vec<Element>) -> Self {
         self.children = children;
         self

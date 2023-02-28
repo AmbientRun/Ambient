@@ -244,7 +244,6 @@ impl ElementTree {
         self.gather_parent_components(world, instance_id, &mut components);
         let instance = self.instances.get(instance_id).unwrap();
         world.add_components(instance.entity, components).unwrap();
-        instance.config.event_listeners.add_to_entity(world, instance.entity);
         if spawn {
             if let Some(on_spawned) = &instance.config.on_spawned {
                 on_spawned(world, entity);
@@ -315,7 +314,6 @@ impl ElementTree {
     fn migrate_instance(&mut self, world: &mut World, instance_id: &str, node_parent: Option<EntityId>, new_node: Element) {
         {
             let instance = self.instances.get_mut(instance_id).unwrap();
-            instance.config.event_listeners.remove_from_entity(world, instance.entity);
             instance.config = new_node.config;
             instance.parent_entity = node_parent;
         }
