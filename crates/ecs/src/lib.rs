@@ -33,6 +33,7 @@ mod component_entry;
 mod component_registry;
 mod component_ser;
 mod component_traits;
+mod concept;
 mod entity_data;
 mod events;
 mod index;
@@ -47,6 +48,7 @@ pub use component::{Component, ComponentDesc, ComponentValue, ComponentValueBase
 pub use component_entry::*;
 pub use component_registry::*;
 pub use component_ser::*;
+pub use concept::*;
 pub use entity_data::*;
 pub use events::*;
 pub use index::*;

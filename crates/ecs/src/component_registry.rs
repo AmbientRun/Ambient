@@ -98,7 +98,6 @@ macro_rules! define_external_component_attribute_flags {
         }
     }
 }
-
 define_external_component_attribute_flags![(debuggable, Debuggable), (networked, Networked), (resource, Resource), (store, Store)];
 
 #[derive(Default)]

@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
 use ambient_ecs::{
-    components, ensure_has_component, query, query_mut, Debuggable, Description, ECSError, EntityId, FrameEvent, MakeDefault,
-    MaybeResource, Name, Networked, QueryState, Store, System, SystemGroup, World,
+    components, ensure_has_component, query, query_mut, Concept, Debuggable, Description, ECSError, EntityData, EntityId, FrameEvent,
+    MakeDefault, MaybeResource, Name, Networked, QueryState, RefConcept, Store, System, SystemGroup, World,
 };
 use glam::*;
 
@@ -126,6 +126,17 @@ components!("transform", {
 
 gpu_components! {
     mesh_to_world() => mesh_to_world: GpuComponentFormat::Mat4,
+}
+
+pub fn concepts() -> Vec<Concept> {
+    vec![RefConcept {
+        id: "transformable",
+        name: "Transformable",
+        description: "Can be translated, rotated and scaled.",
+        extends: &[],
+        data: EntityData::new().set(translation(), Vec3::ZERO).set(rotation(), Quat::IDENTITY).set(scale(), Vec3::ONE),
+    }
+    .to_owned()]
 }
 
 #[derive(Debug)]
