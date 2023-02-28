@@ -49,6 +49,8 @@ jobs:
         run: cd guest/rust && RUSTDOCFLAGS="-D warnings" cargo doc --workspace --all-features --no-deps
       # - name: Run screenshot tests
       #   run: node scripts/update_screenshots.js
+      - name: Test hello world
+        run: cargo run --example hello_world -p ambient_app
       # Provides a history of the cache content builds over build to make troubleshooting easier
       - name: Display target directory content
         run: tree --du -h target
