@@ -554,7 +554,6 @@ dependencies = [
  "ambient_sys",
  "as-any",
  "atomic_refcell",
- "closure",
  "derivative",
  "dyn-clonable",
  "futures",

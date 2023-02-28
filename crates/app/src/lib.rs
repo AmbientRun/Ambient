@@ -10,12 +10,15 @@ use ambient_core::{
     frame_index, get_window_sizes,
     gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate},
     hierarchy::dump_world_hierarchy_to_tmp_file,
-    mouse_position, on_frame_system, remove_at_time_system, runtime, time,
+    mouse_position, remove_at_time_system, runtime, time,
     transform::TransformSystem,
     window::WindowCtl,
-    window_logical_size, window_physical_size, window_scale_factor, RuntimeKey, TimeResourcesSystem, WinitEventsSystem,
+    window_logical_size, window_physical_size, window_scale_factor, RuntimeKey, TimeResourcesSystem,
 };
-use ambient_ecs::{components, Debuggable, DynSystem, EntityData, FrameEvent, MakeDefault, MaybeResource, System, SystemGroup, World};
+use ambient_ecs::{
+    components, world_events, Debuggable, DynSystem, EntityData, FrameEvent, MakeDefault, MaybeResource, System, SystemGroup, World,
+    WorldEventsSystem,
+};
 use ambient_element::ambient_system;
 use ambient_gizmos::{gizmos, Gizmos};
 use ambient_gpu::{
@@ -89,8 +92,8 @@ pub fn world_instance_systems(full: bool) -> SystemGroup {
         vec![
             Box::new(TimeResourcesSystem::new()),
             Box::new(async_ecs_systems()),
-            on_frame_system(),
             remove_at_time_system(),
+            Box::new(WorldEventsSystem),
             if full { Box::new(ambient_input::picking::frame_systems()) } else { Box::new(DummySystem) },
             Box::new(lod_system()),
             Box::new(ambient_renderer::systems()),
@@ -139,6 +142,7 @@ pub fn world_instance_resources(resources: AppResources) -> EntityData {
         .set(self::window_title(), "".to_string())
         .set(self::fps_stats(), FpsSample::default())
         .set(self::asset_cache(), resources.assets.clone())
+        .set_default(world_events())
         .set(frame_index(), 0_usize)
         .set(ambient_core::mouse_position(), Vec2::ZERO)
         .set(ambient_core::app_start_time(), current_time)
@@ -300,12 +304,7 @@ impl AppBuilder {
 
         let mut window_event_systems = SystemGroup::new(
             "window_event_systems",
-            vec![
-                Box::new(assets_camera_systems()),
-                Box::new(WinitEventsSystem::new()),
-                Box::new(ambient_input::event_systems()),
-                Box::new(renderers::systems()),
-            ],
+            vec![Box::new(assets_camera_systems()), Box::new(ambient_input::event_systems()), Box::new(renderers::systems())],
         );
         if self.examples_systems {
             window_event_systems.add(Box::new(ExamplesSystem));

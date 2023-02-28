@@ -37,7 +37,8 @@ impl ElementComponent for ScreenContainer {
             UIBase.el().set(screen(), ()).children(vec![WindowSized(vec![Dock(vec![content]).el().set(translation(), vec3(0., 0., 0.1))])
                 .el()
                 .with_background(*app_background_color().set_a(0.99))
-                .with_clickarea()])
+                .with_clickarea()
+                .el()])
         } else {
             Element::new()
         }
@@ -53,6 +54,7 @@ impl ElementComponent for PageScreen {
             .el()
             .with_background(*app_background_color().set_a(0.99))
             .with_clickarea()
+            .el()
     }
 }
 
@@ -64,5 +66,6 @@ impl ElementComponent for DialogScreen {
             .el()
             .with_background(*app_background_color().set_a(0.99))
             .with_clickarea()
+            .el()
     }
 }

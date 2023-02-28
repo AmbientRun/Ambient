@@ -7,7 +7,9 @@ use std::{
 };
 
 use ambient_core::{app_start_time, asset_cache, dtime, no_sync, project_name, time};
-use ambient_ecs::{world_events, ComponentDesc, ComponentRegistry, EntityData, Networked, SystemGroup, World, WorldStreamCompEvent};
+use ambient_ecs::{
+    world_events, ComponentDesc, ComponentRegistry, EntityData, Networked, SystemGroup, World, WorldEventsSystem, WorldStreamCompEvent,
+};
 use ambient_network::{
     bi_stream_handlers, datagram_handlers,
     server::{ForkingEvent, GameServer, ShutdownEvent},
@@ -100,6 +102,7 @@ fn systems(_world: &mut World) -> SystemGroup {
             Box::new(ambient_physics::physx::sync_ecs_physics()),
             Box::new(ambient_core::transform::TransformSystem::new()),
             ambient_core::remove_at_time_system(),
+            Box::new(WorldEventsSystem),
             Box::new(ambient_physics::server_systems()),
             Box::new(shared::player::server_systems()),
             Box::new(wasm::systems()),

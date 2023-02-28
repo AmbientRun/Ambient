@@ -1,7 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
 use ambient_ecs::{Component, ComponentDesc, ComponentValue, EntityData, EntityId, World};
-use ambient_std::events::EventDispatcher;
 
 use crate::ElementComponent;
 
@@ -11,7 +10,6 @@ pub(crate) struct ElementConfig {
     pub part: Option<Box<dyn ElementComponent>>,
     pub components: ElementComponents,
     pub init_components: ElementComponents,
-    pub event_listeners: ElementEventHandlers,
     #[derivative(Debug = "ignore")]
     pub spawner: Arc<dyn Fn(&mut World, EntityData) -> EntityId + Sync + Send>,
     #[derivative(Debug = "ignore")]
@@ -29,7 +27,6 @@ impl ElementConfig {
             part: None,
             components: ElementComponents::new(),
             init_components: ElementComponents::new(),
-            event_listeners: ElementEventHandlers::new(),
             spawner: Arc::new(|world, props| props.spawn(world)),
             despawner: Arc::new(|world, entity| {
                 world.despawn(entity);
@@ -78,59 +75,5 @@ impl ElementComponents {
 impl std::fmt::Debug for ElementComponents {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "ElementComponents")
-    }
-}
-
-#[derive(Clone)]
-pub(crate) struct ElementEventHandler {
-    add: Arc<dyn Fn(&mut World, EntityId) + Sync + Send>,
-    remove: Arc<dyn Fn(&mut World, EntityId) + Sync + Send>,
-}
-
-#[derive(Clone)]
-pub(crate) struct ElementEventHandlers(HashMap<usize, Vec<ElementEventHandler>>);
-impl ElementEventHandlers {
-    pub fn new() -> Self {
-        Self(HashMap::new())
-    }
-    pub fn set<T: 'static + Sync + Send + ?Sized>(&mut self, component: Component<EventDispatcher<T>>, listener: Arc<T>) {
-        let entry = self.0.entry(component.index() as usize).or_default();
-        entry.push(ElementEventHandler {
-            add: Arc::new(closure!(clone listener, |world, entity| {
-                if let Ok(event_dispatcher) = world.get_mut(entity, component) {
-                    event_dispatcher.add(listener.clone());
-                } else {
-                    world.add_component(entity, component, EventDispatcher::<T>::new_with(listener.clone())).unwrap();
-                }
-            })),
-            remove: Arc::new(move |world, entity| {
-                let event_dispatcher = world.get_mut(entity, component).unwrap();
-                event_dispatcher.remove(listener.clone());
-            }),
-        });
-    }
-    pub fn add_to_entity(&self, world: &mut World, entity: EntityId) {
-        for handlers in self.0.values() {
-            for handler in handlers {
-                (handler.add)(world, entity);
-            }
-        }
-    }
-    pub fn remove_from_entity(&self, world: &mut World, entity: EntityId) {
-        for handlers in self.0.values() {
-            for handler in handlers {
-                (handler.remove)(world, entity);
-            }
-        }
-    }
-
-    #[allow(dead_code)]
-    pub fn len(&self) -> usize {
-        self.0.len()
-    }
-}
-impl std::fmt::Debug for ElementEventHandlers {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "ElementEventHandlers")
     }
 }

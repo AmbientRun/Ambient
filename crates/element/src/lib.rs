@@ -1,12 +1,9 @@
 #[macro_use]
-extern crate closure;
-#[macro_use]
 extern crate derivative;
 
 use std::{any::Any, sync::Arc};
 
 use ambient_ecs::{components, Component, ComponentDesc, ComponentValue, EntityData, EntityId, SystemGroup, World};
-use ambient_std::events::EventDispatcher;
 use as_any::AsAny;
 use dyn_clonable::clonable;
 use parking_lot::Mutex;
@@ -129,10 +126,6 @@ impl Element {
     pub fn remove<T: ComponentValue + Clone>(mut self, component: Component<T>) -> Self {
         self.config.components.remove(component);
         self.config.init_components.remove(component);
-        self
-    }
-    pub fn listener<T: 'static + Sync + Send + ?Sized>(mut self, component: Component<EventDispatcher<T>>, listener: Arc<T>) -> Self {
-        self.config.event_listeners.set(component, listener);
         self
     }
     pub fn children(mut self, children: Vec<Element>) -> Self {

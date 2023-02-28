@@ -1,14 +1,13 @@
 use std::{collections::HashMap, fmt::Debug, hash::Hash, ops::Deref, sync::Arc};
 
-use ambient_core::on_window_event;
 use ambient_ecs::EntityId;
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_input::{on_app_keyboard_input, KeyboardEvent};
+use ambient_input::{event_keyboard_input, event_mouse_input, KeyboardEvent};
 use ambient_std::{cb, color::Color, Cb};
 use closure::closure;
 use indexmap::IndexMap;
 use itertools::Itertools;
-use winit::event::{ElementState, VirtualKeyCode, WindowEvent};
+use winit::event::{ElementState, VirtualKeyCode};
 
 use super::{Button, ButtonStyle, Dropdown, Editor, EditorOpts, FlowColumn, FlowRow, Focus, UIBase, UIExt};
 use crate::{layout::*, StylesExt, COLLECTION_ADD_ICON, COLLECTION_DELETE_ICON, MOVE_DOWN_ICON, MOVE_UP_ICON, STREET};
@@ -145,6 +144,17 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { value, on_change, item_opts, add_presets, add_title, item_editor } = *self;
         let (add_action, set_add_action) = hooks.use_state(false);
+        let has_on_change = on_change.is_some();
+        hooks.use_world_event({
+            let set_add_action = set_add_action.clone();
+            move |_world, event| {
+                if let Some(event) = event.get_ref(event_mouse_input()) {
+                    if event.state == ElementState::Pressed && has_on_change {
+                        set_add_action(false);
+                    }
+                }
+            }
+        });
         FlowColumn::el([
             FlowColumn(
                 value
@@ -192,11 +202,13 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                                 .into_iter()
                                 .map(move |item| {
                                     item_editor.0(item.clone(), None, Default::default())
+                                        .with_clickarea()
                                         .on_mouse_down(closure!(clone value, clone on_change, |_, _, _| {
                                             let mut value = value.clone();
                                             value.push(item.clone());
                                             on_change.0(value);
                                         }))
+                                        .el()
                                         .set(margin(), Borders::even(STREET))
                                 })
                                 .collect(),
@@ -209,14 +221,6 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                     }
                     .el()
                     .set(margin(), Borders::top(STREET))
-                    .listener(
-                        on_window_event(),
-                        Arc::new(move |_, _, event| {
-                            if let WindowEvent::MouseInput { state: ElementState::Pressed, .. } = event {
-                                set_add_action(false);
-                            }
-                        }),
-                    )
                 } else {
                     Button::new(
                         add_title,
@@ -251,7 +255,21 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
         let (self_id, set_self_id) = hooks.use_state(EntityId::null());
         let (focus, set_focus) = hooks.consume_context::<Focus>().expect("No FocusRoot found");
         let focused = focus == Focus(Some(self_id));
-        let item = FlowRow(vec![
+        hooks.use_world_event(move |_world, event| {
+            if let Some(event) = event.get_ref(event_keyboard_input()) {
+                if !focused {
+                    return;
+                }
+                if let Some(on_delete) = &on_delete {
+                    if let KeyboardEvent { keycode: Some(keycode), state: ElementState::Pressed, .. } = event {
+                        if *keycode == VirtualKeyCode::Back || *keycode == VirtualKeyCode::Delete {
+                            on_delete.0();
+                        }
+                    }
+                }
+            }
+        });
+        FlowRow(vec![
             UIBase
                 .el()
                 .set(width(), 5.)
@@ -262,31 +280,13 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
         ])
         .el()
         .on_spawned(move |_, id| set_self_id(id))
+        .with_clickarea()
         .on_mouse_down(move |_, id, _| {
             set_focus(Focus(Some(id)));
         })
+        .el()
         .set(padding(), Borders::vertical(STREET))
-        .set(fit_horizontal(), Fit::Parent);
-        if focused {
-            if let Some(on_delete) = on_delete {
-                item.listener(
-                    on_app_keyboard_input(),
-                    Arc::new(move |_, _, event| {
-                        if let KeyboardEvent { keycode: Some(keycode), state: ElementState::Pressed, .. } = event {
-                            if *keycode == VirtualKeyCode::Back || *keycode == VirtualKeyCode::Delete {
-                                on_delete.0();
-                                return true;
-                            }
-                        }
-                        false
-                    }),
-                )
-            } else {
-                item
-            }
-        } else {
-            item
-        }
+        .set(fit_horizontal(), Fit::Parent)
     }
 }
 
