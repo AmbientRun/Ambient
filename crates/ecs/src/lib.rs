@@ -792,3 +792,11 @@ impl<'de> Deserialize<'de> for ComponentSet {
 
 pub type WorldEvents = FramedEvents<EntityData>;
 pub type WorldEventReader = FramedEventsReader<EntityData>;
+
+#[derive(Debug)]
+pub struct WorldEventsSystem;
+impl System for WorldEventsSystem {
+    fn run(&mut self, world: &mut World, _event: &FrameEvent) {
+        world.resource_mut(world_events()).next_frame();
+    }
+}

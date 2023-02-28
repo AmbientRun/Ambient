@@ -21,6 +21,7 @@ use ambient_core::{
 };
 use ambient_ecs::{
     components, world_events, Debuggable, DynSystem, EntityData, FrameEvent, MakeDefault, MaybeResource, System, SystemGroup, World,
+    WorldEventsSystem,
 };
 use ambient_element::ambient_system;
 use ambient_gizmos::{gizmos, Gizmos};
@@ -95,6 +96,7 @@ pub fn world_instance_systems(full: bool) -> SystemGroup {
             Box::new(TimeResourcesSystem::new()),
             Box::new(async_ecs_systems()),
             remove_at_time_system(),
+            Box::new(WorldEventsSystem),
             if full { Box::new(ambient_input::picking::frame_systems()) } else { Box::new(DummySystem) },
             Box::new(lod_system()),
             Box::new(ambient_renderer::systems()),
