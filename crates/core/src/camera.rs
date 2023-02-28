@@ -1,5 +1,6 @@
 use ambient_ecs::{
-    components, query, query_mut, Component, Description, ECSError, EntityData, EntityId, Name, Networked, Store, SystemGroup, World,
+    components, query, query_mut, Component, Concept, Description, ECSError, EntityData, EntityId, Name, Networked, RefConcept, Store,
+    SystemGroup, World,
 };
 use ambient_std::{
     math::Line,
@@ -135,19 +136,57 @@ components!("camera", {
     shadows_far: f32,
 });
 
-/*
-query((
-    orthographic_left().changed(),
-    orthographic_right().changed(),
-    orthographic_top().changed(),
-    orthographic_bottom().changed(),
-))
-.incl(orthographic())
-.to_system(|q, world, qs, _| {
-    for (id, (left, right, top, bottom)) in q.collect_cloned(world, qs) {
-        world.add_component(id, orthographic_rect(), OrthographicRect { left, right, top, bottom }).unwrap();
-    }
-}), */
+pub fn concepts() -> Vec<Concept> {
+    vec![
+        RefConcept {
+            id: "camera",
+            name: "Camera",
+            description: "Base components for a camera. You will need other components to make a fully-functioning camera.",
+            extends: &["transformable"],
+            data: EntityData::new().set(projection(), glam::Mat4::IDENTITY).set(projection_view(), glam::Mat4::IDENTITY).set(near(), 0.1),
+        }
+        .to_owned(),
+        RefConcept {
+            id: "perspective_common_camera",
+            name: "Perspective Common Camera",
+            description:
+                "Base components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.",
+            extends: &["camera"],
+            data: EntityData::new().set(aspect_ratio(), 1.0).set(fovy(), 1.0),
+        }
+        .to_owned(),
+        RefConcept {
+            id: "perspective_camera",
+            name: "Perspective Camera",
+            description: "A perspective camera.",
+            extends: &["perspective_common_camera"],
+            data: EntityData::new().set(perspective(), ()).set(far(), 1_000.0),
+        }
+        .to_owned(),
+        RefConcept {
+            id: "perspective_infinite_reverse_camera",
+            name: "Perspective-Infinite-Reverse Camera",
+            description: "A perspective-infinite-reverse camera. This is recommended for most use-cases.",
+            extends: &["perspective_common_camera"],
+            data: EntityData::new().set(perspective_infinite_reverse(), ()),
+        }
+        .to_owned(),
+        RefConcept {
+            id: "orthographic_camera",
+            name: "Orthographic Camera",
+            description: "An orthographic camera.",
+            extends: &["camera"],
+            data: EntityData::new()
+                .set(orthographic(), ())
+                .set(orthographic_left(), -1.0)
+                .set(orthographic_right(), 1.0)
+                .set(orthographic_top(), 1.0)
+                .set(orthographic_bottom(), -1.0)
+                .set(far(), 1_000.0),
+        }
+        .to_owned(),
+    ]
+}
 
 pub fn camera_systems() -> SystemGroup {
     SystemGroup::new(
@@ -172,6 +211,18 @@ pub fn camera_systems() -> SystemGroup {
             query_mut((projection(),), (near(), far(), fovy(), aspect_ratio())).incl(perspective()).to_system(|q, world, qs, _| {
                 for (_, (projection,), (&near, &far, &fovy, &aspect_ratio)) in q.iter(world, qs) {
                     *projection = perspective_reverse(fovy, aspect_ratio, near, far);
+                }
+            }),
+            query((
+                orthographic_left().changed(),
+                orthographic_right().changed(),
+                orthographic_top().changed(),
+                orthographic_bottom().changed(),
+            ))
+            .incl(orthographic())
+            .to_system(|q, world, qs, _| {
+                for (id, (left, right, top, bottom)) in q.collect_cloned(world, qs) {
+                    world.add_component(id, orthographic_rect(), OrthographicRect { left, right, top, bottom }).unwrap();
                 }
             }),
             query_mut((projection(),), (near(), far(), orthographic_rect())).to_system(|q, world, qs, _| {

@@ -360,7 +360,7 @@ impl<'a> Drop for ClientInstance<'a> {
 impl<'a> ClientInstance<'a> {
     #[tracing::instrument(skip(self))]
     async fn run(mut self) -> anyhow::Result<()> {
-        tracing::info!("Connecting to server at: {}", self.server_addr);
+        log::info!("Connecting to server at {}", self.server_addr);
         (self.set_connection_status)(format!("Connecting to {}", self.server_addr));
         let conn = open_connection(self.server_addr).await?;
 
@@ -441,15 +441,15 @@ pub struct GameClientServerStats(pub FpsSample);
 
 /// Connnect to the server endpoint.
 /// Does not handle a protocol.
-#[tracing::instrument]
+#[tracing::instrument(level = "debug")]
 pub async fn open_connection(server_addr: SocketAddr) -> anyhow::Result<NewConnection> {
-    tracing::info!("Connecting to world instance: {:?}", server_addr);
+    log::debug!("Connecting to world instance: {server_addr:?}");
 
     let endpoint = create_client_endpoint_random_port().context("Failed to create client endpoint")?;
 
-    tracing::info!("Got endpoint");
+    log::debug!("Got endpoint");
     let conn = endpoint.connect(server_addr, "localhost")?.await?;
 
-    tracing::info!("Got connection");
+    log::debug!("Got connection");
     Ok(conn)
 }

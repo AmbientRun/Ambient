@@ -238,6 +238,22 @@ impl AppBuilder {
         let window = self.window_builder.unwrap_or_default();
         let window = Arc::new(window.build(&event_loop).unwrap());
 
+        #[cfg(target_os = "unknown")]
+        /// Insert a canvas element for the window to attach to
+        {
+            use winit::platform::web::WindowExtWebSys;
+
+            let canvas = window.canvas();
+
+            let window = web_sys::window().unwrap();
+            let document = window.document().unwrap();
+            let body = document.body().unwrap();
+
+            // Set a background color for the canvas to make it easier to tell where the canvas is for debugging purposes.
+            canvas.style().set_css_text("background-color: crimson;");
+            body.append_child(&canvas).unwrap();
+        }
+
         #[cfg(feature = "profile")]
         let puffin_server = {
             let puffin_addr = format!(
@@ -378,6 +394,28 @@ impl std::fmt::Debug for App {
 impl App {
     pub fn builder() -> AppBuilder {
         AppBuilder::new()
+    }
+
+    #[cfg(target_os = "unknown")]
+    pub fn spawn(mut self) {
+        use winit::platform::web::EventLoopExtWebSys;
+
+        let event_loop = self.event_loop.take().unwrap();
+
+        event_loop.spawn(move |event, _, control_flow| {
+            tracing::info!("Event: {event:?}");
+            // HACK(philpax): treat dpi changes as resize events. Ideally we'd handle this in handle_event proper,
+            // but https://github.com/rust-windowing/winit/issues/1968 restricts us
+            if let Event::WindowEvent { window_id, event: WindowEvent::ScaleFactorChanged { new_inner_size, scale_factor } } = &event {
+                *self.world.resource_mut(window_scale_factor()) = *scale_factor;
+                self.handle_static_event(
+                    &Event::WindowEvent { window_id: *window_id, event: WindowEvent::Resized(**new_inner_size) },
+                    control_flow,
+                );
+            } else if let Some(event) = event.to_static() {
+                self.handle_static_event(&event, control_flow);
+            }
+        });
     }
 
     pub fn run_blocking(mut self) {

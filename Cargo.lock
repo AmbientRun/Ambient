@@ -201,6 +201,7 @@ dependencies = [
  "thread-priority",
  "tokio",
  "tracing",
+ "web-sys",
  "wgpu 0.14.2",
  "winit",
 ]
@@ -678,6 +679,7 @@ dependencies = [
  "ambient_meshes",
  "ambient_renderer",
  "ambient_std",
+ "ambient_sys",
  "ambient_ui",
  "anyhow",
  "async-trait",
@@ -1086,6 +1088,7 @@ dependencies = [
  "ambient_meshes",
  "ambient_renderer",
  "ambient_std",
+ "ambient_sys",
  "anyhow",
  "arboard",
  "async-trait",
@@ -1174,9 +1177,12 @@ dependencies = [
 name = "ambient_web"
 version = "0.1.1"
 dependencies = [
+ "ambient_app",
  "ambient_core",
  "ambient_ecs",
  "ambient_sys",
+ "anyhow",
+ "chrono",
  "futures",
  "getrandom 0.2.8",
  "time",
@@ -1186,7 +1192,6 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
- "wgpu 0.14.2",
 ]
 
 [[package]]
@@ -1792,9 +1797,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "16b0a3d9ed01224b22057780a37bb8c5dbfe1be8ba48678e7bf57ec4b385411f"
 dependencies = [
  "iana-time-zone",
+ "js-sys",
  "num-integer",
  "num-traits",
  "serde",
+ "wasm-bindgen",
  "winapi",
 ]
 

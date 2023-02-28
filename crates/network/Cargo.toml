@@ -38,7 +38,7 @@ manual_future = { workspace = true }
 tracing = { workspace = true }
 once_cell = { workspace = true }
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+[target.'cfg(not(target_os = "unknown"))'.dependencies]
 quinn = { workspace = true }
 rustls = { workspace = true }
 tokio-util = "0.7"

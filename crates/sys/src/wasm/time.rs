@@ -29,6 +29,14 @@ impl Add<Duration> for Instant {
     }
 }
 
+impl Sub<Duration> for Instant {
+    type Output = Self;
+
+    fn sub(self, rhs: Duration) -> Self::Output {
+        Self(NotNan::new(*self.0 - rhs.as_nanos() as f64 / 1e6).unwrap())
+    }
+}
+
 impl Instant {
     #[cfg(not(test))]
     pub fn now() -> Self {
@@ -56,11 +64,36 @@ pub fn schedule_wakeup<F: 'static + Send + FnOnce()>(dur: Duration, callback: F)
     mem::forget(timer);
 }
 
-use crate::timer::{get_global_timers, Sleep};
+use crate::{
+    timer::{self, get_global_timers, Sleep},
+    MissedTickBehavior,
+};
 pub fn sleep_until(instant: Instant) -> Sleep {
     Sleep::new_at(&get_global_timers().expect("No timers"), instant)
 }
 
 pub fn sleep(dur: Duration) -> Sleep {
     Sleep::new(&get_global_timers().expect("No timers"), dur)
+}
+
+pub struct Interval {
+    inner: timer::Interval,
+}
+
+impl Interval {
+    pub fn new(period: Duration) -> Self {
+        Self::new_at(Instant::now(), period)
+    }
+
+    pub fn new_at(start: Instant, period: Duration) -> Self {
+        Self { inner: timer::Interval::new_at(&get_global_timers().expect("No timers"), start, period) }
+    }
+
+    pub async fn tick(&mut self) -> Instant {
+        self.inner.tick().await
+    }
+
+    pub fn set_missed_tick_behavior(&mut self, behavior: MissedTickBehavior) {
+        self.inner.set_missed_tick_behavior(behavior)
+    }
 }

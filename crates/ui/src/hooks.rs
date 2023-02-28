@@ -7,7 +7,7 @@ use ambient_std::asset_cache::{Asset, AsyncAssetKeyExt};
 pub fn use_interval<F: Fn() + Sync + Send + 'static>(hooks: &mut Hooks, seconds: f32, cb: F) {
     hooks.use_spawn(move |world| {
         let thread = world.resource(runtime()).spawn(async move {
-            let mut interval = tokio::time::interval(Duration::from_secs_f32(seconds));
+            let mut interval = ambient_sys::time::interval(Duration::from_secs_f32(seconds));
             interval.tick().await;
             loop {
                 interval.tick().await;
@@ -35,7 +35,7 @@ pub fn use_interval_deps<D>(
         }
 
         let task = world.resource(runtime()).spawn(async move {
-            let mut interval = tokio::time::interval(duration);
+            let mut interval = ambient_sys::time::interval(duration);
             interval.tick().await;
             loop {
                 interval.tick().await;

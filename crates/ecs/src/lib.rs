@@ -33,6 +33,7 @@ mod component_entry;
 mod component_registry;
 mod component_ser;
 mod component_traits;
+mod concept;
 mod entity_data;
 mod events;
 mod index;
@@ -47,6 +48,7 @@ pub use component::{Component, ComponentDesc, ComponentValue, ComponentValueBase
 pub use component_entry::*;
 pub use component_registry::*;
 pub use component_ser::*;
+pub use concept::*;
 pub use entity_data::*;
 pub use events::*;
 pub use index::*;
@@ -152,19 +154,22 @@ impl World {
         res
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(target_os = "unknown"))]
     pub async fn from_file(path: impl AsRef<Path>) -> anyhow::Result<Self> {
         let content = tokio::fs::read(&path).await.with_context(|| format!("No such file: {:?}", path.as_ref()))?;
         Self::from_slice(&content)
     }
+
     pub fn from_slice(content: &[u8]) -> anyhow::Result<Self> {
         let DeserWorldWithWarnings { world, warnings } = serde_json::from_slice(content)?;
         warnings.log_warnings();
         Ok(world)
     }
+
     pub fn spawn(&mut self, entity_data: EntityData) -> EntityId {
         self.batch_spawn(entity_data, 1).pop().unwrap()
     }
+
     pub fn batch_spawn(&mut self, entity_data: EntityData, count: usize) -> Vec<EntityId> {
         let ids = (0..count).map(|_| EntityId::new()).collect_vec();
         for id in &ids {
@@ -176,6 +181,7 @@ impl World {
         self.batch_spawn_with_ids(EntityMoveData::from_entity_data(entity_data, self.version() + 1), ids.clone());
         ids
     }
+
     /// Returns false if the id already exists
     pub fn spawn_with_id(&mut self, entity_id: EntityId, entity_data: EntityData) -> bool {
         if let std::collections::hash_map::Entry::Vacant(e) = self.locs.entry(entity_id) {

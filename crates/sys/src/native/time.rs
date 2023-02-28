@@ -18,6 +18,14 @@ impl Sub<Instant> for Instant {
     }
 }
 
+impl Sub<Duration> for Instant {
+    type Output = Instant;
+
+    fn sub(self, rhs: Duration) -> Self::Output {
+        Self(self.0 - rhs)
+    }
+}
+
 impl Add<Duration> for Instant {
     type Output = Instant;
 
@@ -27,6 +35,10 @@ impl Add<Duration> for Instant {
 }
 
 impl Instant {
+    pub fn from_tokio(instant: tokio::time::Instant) -> Self {
+        Self(instant.into())
+    }
+
     pub fn now() -> Self {
         Self(std::time::Instant::now())
     }
@@ -49,6 +61,8 @@ pub fn schedule_wakeup<F: 'static + Send + FnOnce()>(dur: Duration, callback: F)
 
 use derive_more::{From, Into};
 
+use crate::MissedTickBehavior;
+
 #[inline]
 pub fn sleep_until(deadline: Instant) -> tokio::time::Sleep {
     tokio::time::sleep_until(deadline.0.into())
@@ -57,4 +71,26 @@ pub fn sleep_until(deadline: Instant) -> tokio::time::Sleep {
 #[inline]
 pub fn sleep(duration: Duration) -> tokio::time::Sleep {
     tokio::time::sleep(duration)
+}
+
+pub struct Interval {
+    inner: tokio::time::Interval,
+}
+
+impl Interval {
+    pub fn new(period: Duration) -> Self {
+        Self::new_at(Instant::now(), period)
+    }
+
+    pub fn new_at(start: Instant, period: Duration) -> Self {
+        Self { inner: tokio::time::interval_at(start.0.into(), period) }
+    }
+
+    pub async fn tick(&mut self) -> Instant {
+        Instant::from_tokio(self.inner.tick().await)
+    }
+
+    pub fn set_missed_tick_behavior(&mut self, behavior: MissedTickBehavior) {
+        self.inner.set_missed_tick_behavior(behavior.into())
+    }
 }

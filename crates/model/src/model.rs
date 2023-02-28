@@ -70,6 +70,7 @@ impl Default for ModelSpawnOpts {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Model(pub World);
 impl Model {
+    #[cfg(not(target_os = "unknown"))]
     pub async fn from_file(path: impl AsRef<Path>) -> anyhow::Result<Self> {
         Ok(Self(World::from_file(path).await?))
     }

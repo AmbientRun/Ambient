@@ -187,7 +187,7 @@ impl ServerState {
         self.get_player_world_instance(user_id).map(|i| &i.world)
     }
     pub fn remove_instance(&mut self, instance_id: &str) {
-        log::info!("Removing server instance id={}", instance_id);
+        log::debug!("Removing server instance id={}", instance_id);
         let mut sys = (self.create_shutdown_systems)();
         let old_instance = self.instances.get_mut(instance_id).unwrap();
         sys.run(&mut old_instance.world, &ShutdownEvent);
@@ -203,17 +203,17 @@ pub struct GameServer {
     pub use_inactivity_shutdown: bool,
 }
 impl GameServer {
-    pub async fn new_with_port(port: u16) -> anyhow::Result<Self> {
+    pub async fn new_with_port(port: u16, use_inactivity_shutdown: bool) -> anyhow::Result<Self> {
         let server_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port);
 
         let (endpoint, incoming) = create_server(server_addr)?;
 
-        log::info!("GameServer listening on port {}", port);
-        Ok(Self { _endpoint: endpoint, incoming, port, use_inactivity_shutdown: true })
+        log::debug!("GameServer listening on port {}", port);
+        Ok(Self { _endpoint: endpoint, incoming, port, use_inactivity_shutdown })
     }
-    pub async fn new_with_port_in_range(port_range: Range<u16>) -> anyhow::Result<Self> {
+    pub async fn new_with_port_in_range(port_range: Range<u16>, use_inactivity_shutdown: bool) -> anyhow::Result<Self> {
         for port in port_range {
-            match Self::new_with_port(port).await {
+            match Self::new_with_port(port, use_inactivity_shutdown).await {
                 Ok(server) => {
                     return Ok(server);
                 }
@@ -263,18 +263,18 @@ impl GameServer {
             tracing::debug_span!("Listening for incoming connections");
             tokio::select! {
                 Some(conn) = incoming.next() => {
-                    tracing::info!("Received connection");
+                    log::debug!("Received connection");
 
                     let conn = match conn.await {
                         Ok(v) => v,
                         Err(e) => {
-                            tracing::error!("Failed to accept incoming connection. {e}");
+                            log::error!("Failed to accept incoming connection. {e}");
                             continue;
                         }
                     };
 
 
-                    tracing::info!("Accepted connection");
+                    log::debug!("Accepted connection");
                     run_connection(conn, state.clone(), world_stream_filter.clone(), assets.clone());
                 }
                 _ = sim_interval.tick() => {
@@ -305,12 +305,12 @@ impl GameServer {
                     }
                 }
                 else => {
-                    tracing::info!("No more connections. Shuttin down");
+                    log::info!("No more connections. Shutting down.");
                     break
                 }
             }
         }
-        log::info!("[{}] GameServer shutting down", self.port);
+        log::debug!("[{}] GameServer shutting down", self.port);
         {
             let mut state = state.lock();
             let create_shutdown_systems = state.create_shutdown_systems.clone();
@@ -319,7 +319,7 @@ impl GameServer {
                 sys.run(&mut instance.world, &ShutdownEvent);
             }
         }
-        log::info!("[{}] GameServer finnished shutting down", self.port);
+        log::debug!("[{}] GameServer finished shutting down", self.port);
         state
     }
 }
@@ -338,20 +338,21 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
                 let (events_tx, events_rx) = flume::unbounded();
 
                 let on_init = |client: ClientInfo| {
-                    log::info!("Locking world");
+                    let user_id = &client.user_id;
+                    log::debug!("[{}] Locking world", user_id);
                     let mut state = state.lock();
                     // If there's an old player
-                    let reconnecting = if let Some(player) = state.players.get_mut(&client.user_id) {
+                    let reconnecting = if let Some(player) = state.players.get_mut(user_id) {
                         if let Some(handle) = player.abort_handle.get() {
                             handle.abort();
                         }
                         player.abort_handle = handle.clone();
                         player.connection_id = connection_id.clone();
-                        log::info!("Player reconnecting");
+                        log::debug!("[{}] Player reconnecting", user_id);
                         true
                     } else {
                         state.players.insert(
-                            client.user_id.clone(),
+                            user_id.clone(),
                             Player {
                                 instance: MAIN_INSTANCE_ID.to_string(),
                                 abort_handle: handle.clone(),
@@ -364,36 +365,31 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
                     let instance = state.instances.get_mut(MAIN_INSTANCE_ID).unwrap();
 
                     // Bring world stream up to the current time
-                    log::info!("Broadcasting diffs");
+                    log::debug!("[{}] Broadcasting diffs", user_id);
                     instance.broadcast_diffs();
-                    log::info!("Creating init diff");
+                    log::debug!("[{}] Creating init diff", user_id);
 
                     let diff = world_stream_filter.initial_diff(&instance.world);
                     let diff = bincode::serialize(&diff).unwrap();
 
                     log_result!(diffs_tx.send(diff));
-                    log::info!("Init diff sent");
+                    log::debug!("[{}] Init diff sent", user_id);
 
                     if !reconnecting {
-                        instance.spawn_player(create_player_entity_data(
-                            &client.user_id,
-                            diffs_tx.clone(),
-                            events_tx.clone(),
-                            stats_tx.clone(),
-                        ));
-                        log::info!("Player spawned");
+                        instance.spawn_player(create_player_entity_data(&user_id, diffs_tx.clone(), events_tx.clone(), stats_tx.clone()));
+                        log::info!("[{}] Player spawned", user_id);
                     } else {
-                        let entity = get_player_by_user_id(&instance.world, &client.user_id).unwrap();
+                        let entity = get_player_by_user_id(&instance.world, user_id).unwrap();
                         instance.world.set(entity, player_entity_stream(), diffs_tx.clone()).unwrap();
                         instance.world.set(entity, player_stats_stream(), stats_tx.clone()).unwrap();
                         instance.world.set(entity, player_event_stream(), events_tx.clone()).unwrap();
-                        log::info!("Player reconnected");
+                        log::info!("[{}] Player reconnected", user_id);
                     }
                 };
 
                 let on_disconnect = |user_id: &Option<String>| {
                     if let Some(user_id) = user_id {
-                        log::info!("[{}] Disconnecting", user_id);
+                        log::debug!("[{}] Disconnecting", user_id);
                         let mut state = state.lock();
                         if state.players.get(user_id).map(|p| p.connection_id != connection_id).unwrap_or(false) {
                             log::info!("[{}] Disconnected (reconnection)", user_id);
@@ -506,7 +502,7 @@ struct ClientInstance<'a> {
 
 impl<'a> Drop for ClientInstance<'a> {
     fn drop(&mut self) {
-        log::info!("Closed server side connection for");
+        log::debug!("Closed server-side connection for {:?}", self.user_id);
         tokio::task::block_in_place(|| {
             (self.on_disconnect)(&self.user_id);
         })
@@ -516,7 +512,7 @@ impl<'a> Drop for ClientInstance<'a> {
 impl<'a> ClientInstance<'a> {
     #[tracing::instrument(skip_all)]
     pub async fn run(mut self, conn: NewConnection, server_info: ServerInfo) -> Result<(), NetworkError> {
-        tracing::info!("Connecting to client");
+        log::debug!("Connecting to client");
         let mut proto = ServerProtocol::new(conn, server_info).await?;
 
         log::debug!("Client loop starting");

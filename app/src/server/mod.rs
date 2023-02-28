@@ -42,7 +42,7 @@ pub fn start(
 ) -> u16 {
     log::info!("Creating server");
     let server = runtime.block_on(async move {
-        GameServer::new_with_port_in_range(QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10))
+        GameServer::new_with_port_in_range(QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10), false)
             .await
             .context("failed to create game server with port in range")
             .unwrap()

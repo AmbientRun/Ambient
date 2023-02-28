@@ -32,13 +32,21 @@ impl Gpu {
     }
     pub async fn with_config(window: Option<&Window>, will_be_polled: bool) -> Self {
         // From: https://github.com/KhronosGroup/Vulkan-Loader/issues/552
-        std::env::set_var("DISABLE_LAYER_AMD_SWITCHABLE_GRAPHICS_1", "1");
-        std::env::set_var("DISABLE_LAYER_NV_OPTIMUS_1", "1");
+        #[cfg(not(target_os = "unknown"))]
+        {
+            std::env::set_var("DISABLE_LAYER_AMD_SWITCHABLE_GRAPHICS_1", "1");
+            std::env::set_var("DISABLE_LAYER_NV_OPTIMUS_1", "1");
+        }
 
         #[cfg(target_os = "windows")]
         let backend = wgpu::Backends::VULKAN;
-        #[cfg(not(target_os = "windows"))]
+
+        #[cfg(all(not(target_os = "windows"), not(target_os = "unknown")))]
         let backend = wgpu::Backends::PRIMARY;
+
+        #[cfg(target_os = "unknown")]
+        let backend = wgpu::Backends::all();
+
         let instance = wgpu::Instance::new(backend);
         let surface = window.map(|window| unsafe { instance.create_surface(window) });
         #[cfg(not(target_os = "unknown"))]
@@ -50,7 +58,7 @@ impl Gpu {
         }
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
-                power_preference: wgpu::PowerPreference::HighPerformance,
+                power_preference: wgpu::PowerPreference::default(),
                 compatible_surface: surface.as_ref(),
                 force_fallback_adapter: false,
             })

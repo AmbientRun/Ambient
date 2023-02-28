@@ -64,6 +64,6 @@ hotload-includes = [
     'ambient_decals/hotload-includes',
 ]
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+[target.'cfg(not(target_os = "unknown"))'.dependencies]
 tokio = { workspace = true }
 quinn = { workspace = true }

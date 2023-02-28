@@ -27,11 +27,6 @@ where
     ctl
 }
 
-#[inline]
-pub async fn sleep(dur: Duration) {
-    gloo::timers::future::sleep(dur).await
-}
-
 #[derive(Debug, Clone)]
 pub struct RuntimeHandle;
 

@@ -248,7 +248,7 @@ impl AsyncAssetKey<Result<Arc<Model>, AssetError>> for ModelFromUrl {
         let data = BytesFromUrl::new(url.clone(), true).get(&assets).await?;
         let semaphore = ModelLoadSemaphore.get(&assets);
         let _permit = semaphore.acquire().await;
-        let mut model = tokio::task::block_in_place(|| Model::from_slice(&data))?;
+        let mut model = ambient_sys::task::block_in_place(|| Model::from_slice(&data))?;
         model.load(&assets, &url).await?;
         Ok(Arc::new(model))
     }

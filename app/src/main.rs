@@ -33,7 +33,6 @@ fn main() -> anyhow::Result<()> {
                     "ambient_build",
                     "ambient_gpu",
                     "ambient_model",
-                    "ambient_network",
                     "ambient_physics",
                     "ambient_std",
                     "naga",

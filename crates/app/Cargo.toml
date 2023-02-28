@@ -25,7 +25,6 @@ glam = { workspace = true }
 tokio = { workspace = true }
 profiling = { workspace = true }
 anyhow = { workspace = true }
-thread-priority = { workspace = true }
 wgpu = { workspace = true }
 puffin = { workspace = true, optional = true }
 puffin_http = { workspace = true, optional = true }
@@ -45,3 +44,17 @@ hotload-includes = [
     'ambient_ui/hotload-includes',
     'ambient_model/hotload-includes',
 ]
+
+[target.'cfg(target_os = "unknown")'.dependencies]
+web-sys = { version = "0.3.61", features = [
+    "CanvasRenderingContext2d",
+    "Document",
+    "Element",
+    "HtmlCanvasElement",
+    "HtmlDocument",
+    "Performance",
+    "Window",
+] }
+
+[target.'cfg(not(target_os = "unknown"))'.dependencies]
+thread-priority = { workspace = true }

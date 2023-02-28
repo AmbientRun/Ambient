@@ -58,12 +58,12 @@ impl AbsAssetUrl {
         }
     }
 
-    #[cfg(target_arch = "wasm32")]
-    pub fn from_file_path(path: impl AsRef<Path>) -> Self {
+    #[cfg(target_os = "unknown")]
+    pub fn from_file_path(_: impl AsRef<Path>) -> Self {
         unimplemented!("Url::from_file_path")
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(target_os = "unknown"))]
     pub fn from_file_path(path: impl AsRef<Path>) -> Self {
         if path.as_ref().is_absolute() {
             Self(Url::from_file_path(path).unwrap())
@@ -73,12 +73,12 @@ impl AbsAssetUrl {
         }
     }
 
-    #[cfg(target_arch = "wasm32")]
-    pub fn from_directory_path(path: impl AsRef<Path>) -> Self {
+    #[cfg(target_os = "unknown")]
+    pub fn from_directory_path(_: impl AsRef<Path>) -> Self {
         unimplemented!("Url::from_file_path")
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(target_os = "unknown"))]
     pub fn from_directory_path(path: impl AsRef<Path>) -> Self {
         if path.as_ref().is_absolute() {
             Self(Url::from_directory_path(path).unwrap())
@@ -108,12 +108,12 @@ impl AbsAssetUrl {
         Self(url)
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(target_os = "unknown")]
     pub fn to_file_path(&self) -> anyhow::Result<Option<PathBuf>> {
         Ok(None)
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(target_os = "unknown"))]
     pub fn to_file_path(&self) -> anyhow::Result<Option<PathBuf>> {
         if self.0.scheme() == "file" {
             match self.0.to_file_path() {

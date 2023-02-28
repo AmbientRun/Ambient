@@ -53,17 +53,18 @@ tokio = { workspace = true }
 tower-http = { workspace = true }
 walkdir = { workspace = true }
 
-toml_edit = { optional = true, workspace = true }
-paste = { optional = true, workspace = true }
+toml_edit = { workspace = true }
+paste = { workspace = true }
 
 [dev-dependencies]
 glam = { workspace = true }
 rusty-hook = "^0.11.2"
 
 [features]
-default = ["dep:toml_edit", "dep:paste"]
+default = ["assimp"]
 production = []
 profile = ["ambient_app/profile"]
+assimp = ["ambient_model_import/russimp"]
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+[target.'cfg(not(target_os = "unknown"))'.dependencies]
 axum = { workspace = true }
