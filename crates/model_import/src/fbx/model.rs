@@ -124,7 +124,7 @@ impl FbxModel {
         asset_crate: &ModelCrate,
         n_meshes: &HashMap<i64, usize>,
     ) {
-        let mut out_node = Entity::new().set(name(), self.node_name.to_string()).set_default(children());
+        let mut out_node = Entity::new().with(name(), self.node_name.to_string()).with_default(children());
         if self.double_sided {
             out_node.set_self(double_sided(), true);
         }

@@ -87,9 +87,9 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
                 let decal_path = out_model_url.path().join("prefabs").relative(mat_url.path());
                 model_crate.create_prefab(
                     Entity::new()
-                        .set(decal(), decal_path.into())
-                        .set(collider(), ambient_physics::collider::ColliderDef::Box { size: Vec3::ONE, center: Vec3::ZERO })
-                        .set(collider_type(), ambient_physics::collider::ColliderType::Picking),
+                        .with(decal(), decal_path.into())
+                        .with(collider(), ambient_physics::collider::ColliderDef::Box { size: Vec3::ONE, center: Vec3::ZERO })
+                        .with(collider_type(), ambient_physics::collider::ColliderType::Picking),
                 );
                 let model_url = ctx.write_model_crate(&model_crate, &model_path).await;
                 res.push(OutAsset {

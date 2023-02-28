@@ -169,11 +169,11 @@ fn import_sync(buffer: &[u8], model_crate: &mut ModelCrate, extension: &str) -> 
                 .transpose();
         let (scl, rot, pos) = transform.to_scale_rotation_translation();
         let mut ed = Entity::new()
-            .set(name(), node.name.clone())
-            .set(translation(), pos)
-            .set(rotation(), rot)
-            .set(scale(), scl)
-            .set_default(local_to_world());
+            .with(name(), node.name.clone())
+            .with(translation(), pos)
+            .with(rotation(), rot)
+            .with(scale(), scl)
+            .with_default(local_to_world());
         if !node.meshes.is_empty() {
             ed.set_self(
                 pbr_renderer_primitives_from_url(),

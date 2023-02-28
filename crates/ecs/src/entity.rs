@@ -64,30 +64,30 @@ impl Entity {
         self.active_components.insert(component.desc());
     }
 
-    pub fn set<T: ComponentValue>(mut self, component: Component<T>, value: T) -> Self {
+    pub fn with<T: ComponentValue>(mut self, component: Component<T>, value: T) -> Self {
         self.set_self(component, value);
         self
     }
 
-    pub fn set_opt<T: ComponentValue>(mut self, component: Component<T>, value: Option<T>) -> Self {
+    pub fn with_opt<T: ComponentValue>(mut self, component: Component<T>, value: Option<T>) -> Self {
         if let Some(value) = value {
             self.set_self(component, value);
         }
         self
     }
 
-    pub fn set_default<T: Default + ComponentValue>(self, component: Component<T>) -> Self {
-        self.set(component, T::default())
+    pub fn with_default<T: Default + ComponentValue>(self, component: Component<T>) -> Self {
+        self.with(component, T::default())
     }
 
-    pub fn set_if_empty<T: ComponentValue>(mut self, component: Component<T>, value: T) -> Self {
+    pub fn with_if_empty<T: ComponentValue>(mut self, component: Component<T>, value: T) -> Self {
         if !self.contains(component) {
             self.set_self(component, value);
         }
         self
     }
 
-    pub fn set_default_if_empty<T: Default + ComponentValue>(mut self, component: Component<T>) -> Self {
+    pub fn with_default_if_empty<T: Default + ComponentValue>(mut self, component: Component<T>) -> Self {
         if !self.contains(component) {
             self.set_self(component, T::default());
         }
@@ -113,12 +113,12 @@ impl Entity {
         self
     }
 
-    pub fn append(mut self, other: Entity) -> Entity {
-        self.append_self(other);
+    pub fn with_merge(mut self, other: Entity) -> Entity {
+        self.merge(other);
         self
     }
 
-    pub fn append_self(&mut self, other: Entity) {
+    pub fn merge(&mut self, other: Entity) {
         let other = other.content;
         for entry in other {
             self.set_entry(entry);
@@ -347,7 +347,7 @@ mod test {
     #[test]
     pub fn test_serialize_entity_data() {
         init_components();
-        let source = Entity::new().set(ser_test2(), "hello".to_string());
+        let source = Entity::new().with(ser_test2(), "hello".to_string());
         let ser = serde_json::to_string(&source).unwrap();
         assert_eq!(&ser, "{\"core::test::ser_test2\":\"hello\"}");
         let deser: Entity = serde_json::from_str(&ser).unwrap();

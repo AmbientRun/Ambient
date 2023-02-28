@@ -208,9 +208,9 @@ async fn update_natural_layer(
                                     &ModelSpawnOpts {
                                         root: ModelSpawnRoot::Spawn,
                                         root_components: Entity::new()
-                                            .set(natural_model(), model.clone())
-                                            .set(color(), element.color.into())
-                                            .set_default(local_to_world()),
+                                            .with(natural_model(), model.clone())
+                                            .with(color(), element.color.into())
+                                            .with_default(local_to_world()),
                                         animatable: Some(false),
                                         ..Default::default()
                                     },
@@ -261,10 +261,10 @@ pub fn client_systems() -> SystemGroup {
                     log_result!(world.add_components(
                         id,
                         Entity::new()
-                            .set(terrain_cell_nature_conf_hash(), 0u64)
-                            .set(terrain_cell_nature_version(), -1)
-                            .set_default(natural_layers_in_progress())
-                            .set_default(natural_entities()),
+                            .with(terrain_cell_nature_conf_hash(), 0u64)
+                            .with(terrain_cell_nature_version(), -1)
+                            .with_default(natural_layers_in_progress())
+                            .with_default(natural_entities()),
                     ));
                 }
             }),

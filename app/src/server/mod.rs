@@ -71,7 +71,7 @@ pub fn start(
 
         // Keep track of the project name
         let name = manifest.project.name.clone().unwrap_or_else(|| "Ambient".into());
-        server_world.add_components(server_world.resource_entity(), Entity::new().set(project_name(), name)).unwrap();
+        server_world.add_components(server_world.resource_entity(), Entity::new().with(project_name(), name)).unwrap();
 
         wasm::initialize(&mut server_world, project_path.clone(), &manifest).await.unwrap();
 
@@ -122,11 +122,11 @@ fn is_sync_component(component: ComponentDesc, _: WorldStreamCompEvent) -> bool 
 }
 
 fn create_resources(assets: AssetCache) -> Entity {
-    let mut server_resources = Entity::new().set(asset_cache(), assets.clone()).set(no_sync(), ()).set_default(world_events());
+    let mut server_resources = Entity::new().with(asset_cache(), assets.clone()).with(no_sync(), ()).with_default(world_events());
 
     ambient_physics::create_server_resources(&assets, &mut server_resources);
 
-    server_resources.append_self(ambient_core::async_ecs::async_ecs_resources());
+    server_resources.merge(ambient_core::async_ecs::async_ecs_resources());
     server_resources.set_self(ambient_core::runtime(), RuntimeHandle::current());
     let now = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
     server_resources.set_self(time(), now);

@@ -159,7 +159,7 @@ mod test {
     pub fn test_serialize_world() {
         init();
         let mut world = World::new("test");
-        let id = Entity::new().set(ser_test3(), "hi".to_string()).spawn(&mut world);
+        let id = Entity::new().with(ser_test3(), "hi".to_string()).spawn(&mut world);
 
         let ser = serde_json::to_string(&world).unwrap();
         assert_eq!(&ser, &format!("{{\"AQAAAAAAAAAAAAAAAAAAAA\":{{}},\"{id}\":{{\"core::test::ser_test3\":\"hi\"}}}}"));

@@ -37,20 +37,20 @@ async fn init(app: &mut App) {
             ));
 
             Entity::new()
-                .set(
+                .with(
                     primitives(),
                     vec![RenderPrimitive { shader: cb(get_pbr_shader), material: mat.clone(), mesh: CubeMeshKey.get(&assets), lod: 0 }],
                 )
-                .set_default(gpu_primitives())
-                .set(main_scene(), ())
-                .set_default(local_to_world())
-                .set_default(mesh_to_world())
-                .set(translation(), vec3(x as f32, y as f32, 0.))
-                .set(scale(), Vec3::ONE * 0.4)
+                .with_default(gpu_primitives())
+                .with(main_scene(), ())
+                .with_default(local_to_world())
+                .with_default(mesh_to_world())
+                .with(translation(), vec3(x as f32, y as f32, 0.))
+                .with(scale(), Vec3::ONE * 0.4)
                 .spawn(world);
 
             Entity::new()
-                .set(
+                .with(
                     primitives(),
                     vec![RenderPrimitive {
                         shader: cb(get_pbr_shader),
@@ -59,19 +59,19 @@ async fn init(app: &mut App) {
                         lod: 0,
                     }],
                 )
-                .set_default(gpu_primitives())
-                .set(main_scene(), ())
-                .set_default(local_to_world())
-                .set_default(mesh_to_world())
-                .set(translation(), vec3(x as f32, y as f32, 2.))
-                .set(scale(), Vec3::ONE * 0.4)
+                .with_default(gpu_primitives())
+                .with(main_scene(), ())
+                .with_default(local_to_world())
+                .with_default(mesh_to_world())
+                .with(translation(), vec3(x as f32, y as f32, 2.))
+                .with(scale(), Vec3::ONE * 0.4)
                 .spawn(world);
         }
     }
 
     ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
-        .set(active_camera(), 0.)
-        .set(main_scene(), ())
+        .with(active_camera(), 0.)
+        .with(main_scene(), ())
         .spawn(world);
 }
 

@@ -14,5 +14,5 @@ pub fn send(shared_state: &mut BaseHostGuestState, event_name: &str, data: Entit
     shared_state
         .world_mut()
         .resource_mut(world_events())
-        .add_event(data.set(name(), event_name.to_string()));
+        .add_event(data.with(name(), event_name.to_string()));
 }

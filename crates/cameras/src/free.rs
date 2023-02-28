@@ -25,19 +25,19 @@ pub struct FreeCamera {
 pub fn new(position: glam::Vec3, orientation: glam::Vec2) -> Entity {
     let free = FreeCamera { orientation, ..Default::default() };
     Entity::new()
-        .set_default(local_to_world())
-        .set_default(inv_local_to_world())
-        .set(near(), 0.1)
-        .set(fovy(), 1.0)
-        .set(perspective_infinite_reverse(), ())
-        .set(aspect_ratio(), 1.)
-        .set(aspect_ratio_from_window(), ())
-        .set_default(projection())
-        .set_default(projection_view())
-        .set(translation(), position)
-        .set_default(rotation())
-        .set(free_camera(), free)
-        .set(camera_movement_speed(), 0.1)
+        .with_default(local_to_world())
+        .with_default(inv_local_to_world())
+        .with(near(), 0.1)
+        .with(fovy(), 1.0)
+        .with(perspective_infinite_reverse(), ())
+        .with(aspect_ratio(), 1.)
+        .with(aspect_ratio_from_window(), ())
+        .with_default(projection())
+        .with_default(projection_view())
+        .with(translation(), position)
+        .with_default(rotation())
+        .with(free_camera(), free)
+        .with(camera_movement_speed(), 0.1)
 }
 
 pub fn free_camera_system() -> SystemGroup<Event<'static, ()>> {

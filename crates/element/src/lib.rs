@@ -169,7 +169,7 @@ impl Element {
     /// `element_tree` components get updated each frame so this entity tree will be updated
     pub fn spawn_interactive(self, world: &mut World) -> EntityId {
         let tree = self.spawn_tree(world);
-        Entity::new().set(self::element_tree(), ShareableElementTree(Arc::new(Mutex::new(tree)))).spawn(world)
+        Entity::new().with(self::element_tree(), ShareableElementTree(Arc::new(Mutex::new(tree)))).spawn(world)
     }
     /// This spawns the elemet tree and returns it. The tree won't be automatically updated, but can manually be updated
     /// by calling the `update` method.

@@ -79,7 +79,7 @@ pub fn systems() -> SystemGroup {
                     world
                         .add_components(
                             id,
-                            Entity::new().set(mesh(), UIRectMeshKey.get(&assets)).set(renderer_shader(), cb(get_rect_shader)),
+                            Entity::new().with(mesh(), UIRectMeshKey.get(&assets)).with(renderer_shader(), cb(get_rect_shader)),
                         )
                         .unwrap();
                 }

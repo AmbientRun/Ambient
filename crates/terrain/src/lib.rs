@@ -93,15 +93,15 @@ pub fn spawn_terrain(world: &mut World, terrain_compressed: Arc<TerrainStateCpu>
     let position = (cell.as_vec2() * TerrainSize::new().size_in_meters()).extend(TERRAIN_BASE);
 
     Entity::new()
-        .set(scale(), Vec3::ONE)
-        .set(rotation(), Quat::IDENTITY)
-        .set(translation(), position)
-        .set_default(local_to_world())
-        .set(collider_type(), ColliderType::Static)
-        .set(terrain_state_cpu(), terrain_compressed)
-        .set(name(), "Terrain".to_string())
-        .set(terrain_world_cell(), cell)
-        .set(terrain_cell_needs_cpu_download(), false)
+        .with(scale(), Vec3::ONE)
+        .with(rotation(), Quat::IDENTITY)
+        .with(translation(), position)
+        .with_default(local_to_world())
+        .with(collider_type(), ColliderType::Static)
+        .with(terrain_state_cpu(), terrain_compressed)
+        .with(name(), "Terrain".to_string())
+        .with(terrain_world_cell(), cell)
+        .with(terrain_cell_needs_cpu_download(), false)
         .spawn(world)
 }
 
@@ -190,9 +190,9 @@ pub fn server_systems() -> SystemGroup {
                             .add_components(
                                 id,
                                 Entity::new()
-                                    .set(physics_shape(), body.get_shapes()[0].clone())
-                                    .set(rigid_static(), body)
-                                    .set(collider_type(), ColliderType::Static),
+                                    .with(physics_shape(), body.get_shapes()[0].clone())
+                                    .with(rigid_static(), body)
+                                    .with(collider_type(), ColliderType::Static),
                             )
                             .unwrap();
                     }

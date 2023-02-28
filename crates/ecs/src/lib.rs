@@ -421,7 +421,7 @@ impl World {
     }
     // will also replace the existing component of the same type if it exists
     pub fn add_component<T: ComponentValue>(&mut self, entity_id: EntityId, component: Component<T>, value: T) -> Result<(), ECSError> {
-        self.add_components(entity_id, Entity::new().set(component, value))
+        self.add_components(entity_id, Entity::new().with(component, value))
     }
 
     pub fn add_resource<T: ComponentValue>(&mut self, component: Component<T>, value: T) {
@@ -506,7 +506,7 @@ impl World {
         for (old_id, mut entity) in self.entities().into_iter() {
             if old_id != self.resource_entity() {
                 if let Some(components) = components.as_ref() {
-                    entity.append_self(components.clone());
+                    entity.merge(components.clone());
                 }
                 let new_id = entity.spawn(world);
                 old_to_new_ids.insert(old_id, new_id);

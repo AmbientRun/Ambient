@@ -110,8 +110,8 @@ pub fn EditorUI(hooks: &mut Hooks) -> Element {
                             .rpc(
                                 rpc_fork_instance,
                                 RpcForkInstance {
-                                    resources: Entity::new().set(make_physics_static(), false),
-                                    synced_res: Entity::new().set(game_mode(), GameMode::Play),
+                                    resources: Entity::new().with(make_physics_static(), false),
+                                    synced_res: Entity::new().with(game_mode(), GameMode::Play),
                                     id: Some(PLAY_INSTANCE_ID.to_string())
                                 }
                             )

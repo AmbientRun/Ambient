@@ -14,7 +14,7 @@ impl_downcast!(ComponentValueBase);
 
 impl<T: ComponentValue + Default> Component<T> {
     pub fn with_default(&self) -> Entity {
-        Entity::new().set(*self, T::default())
+        Entity::new().with(*self, T::default())
     }
 }
 

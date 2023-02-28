@@ -60,12 +60,12 @@ pub fn systems() -> SystemGroup {
                 let assets = world.resource(asset_cache()).clone();
                 for (id, (_, normals)) in q.collect_cloned(world, qs) {
                     let data = Entity::new()
-                        .append(ambient_primitives::quad_data(&assets))
-                        .set(renderer_shader(), cb(get_water_shader))
-                        .set(material(), WaterMaterialKey::new(normals).get(&assets))
-                        .set(main_scene(), ())
-                        .set(mesh(), QuadMeshKey.get(&assets))
-                        .set(color(), Vec4::ONE);
+                        .with_merge(ambient_primitives::quad_data(&assets))
+                        .with(renderer_shader(), cb(get_water_shader))
+                        .with(material(), WaterMaterialKey::new(normals).get(&assets))
+                        .with(main_scene(), ())
+                        .with(mesh(), QuadMeshKey.get(&assets))
+                        .with(color(), Vec4::ONE);
                     world.add_components(id, data).unwrap();
                 }
             }),

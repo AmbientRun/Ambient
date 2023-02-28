@@ -23,7 +23,7 @@ impl AsyncRun {
 }
 
 pub fn async_ecs_resources() -> Entity {
-    Entity::new().set(async_run(), AsyncRun::new())
+    Entity::new().with(async_run(), AsyncRun::new())
 }
 
 pub fn async_ecs_systems() -> SystemGroup {

@@ -92,20 +92,20 @@ async fn init(app: &mut App) {
     let grey = FlatMaterial::new(assets.clone(), vec4(0.5, 0.5, 0.5, 1.), Some(false));
 
     Entity::new()
-        .set(mesh(), QuadMeshKey.get(&assets))
-        .set(renderer_shader(), cb(get_flat_shader))
-        .set(material(), SharedMaterial::new(grey))
-        .set(primitives(), vec![])
-        .set_default(gpu_primitives())
-        .set_default(local_to_world())
-        .set_default(mesh_to_world())
-        .set(scale(), vec3(20., 20., 1.))
-        .set(main_scene(), ())
+        .with(mesh(), QuadMeshKey.get(&assets))
+        .with(renderer_shader(), cb(get_flat_shader))
+        .with(material(), SharedMaterial::new(grey))
+        .with(primitives(), vec![])
+        .with_default(gpu_primitives())
+        .with_default(local_to_world())
+        .with_default(mesh_to_world())
+        .with(scale(), vec3(20., 20., 1.))
+        .with(main_scene(), ())
         .spawn(world);
 
     ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
-        .set(active_camera(), 0.)
-        .set(main_scene(), ())
+        .with(active_camera(), 0.)
+        .with(main_scene(), ())
         .spawn(world);
 }
 

@@ -234,11 +234,11 @@ pub fn systems() -> SystemGroup {
                         .add_components(
                             id,
                             Entity::new()
-                                .set(text_texture(), texture)
-                                .set(renderer_shader(), cb(get_text_shader))
-                                .set(material(), SharedMaterial::new(TextMaterial::new(assets.clone(), texture_view)))
-                                .set(primitives(), vec![])
-                                .set_default(gpu_primitives()),
+                                .with(text_texture(), texture)
+                                .with(renderer_shader(), cb(get_text_shader))
+                                .with(material(), SharedMaterial::new(TextMaterial::new(assets.clone(), texture_view)))
+                                .with(primitives(), vec![])
+                                .with_default(gpu_primitives()),
                         )
                         .unwrap();
                 }
@@ -326,9 +326,9 @@ pub fn systems() -> SystemGroup {
                                         .add_components(
                                             id,
                                             Entity::new()
-                                                .set(width(), (bounding.max.x / scale_factor).max(min_width))
-                                                .set(height(), (bounding.max.y / scale_factor).max(min_height))
-                                                .set(mesh(), GpuMesh::from_mesh(assets.clone(), &cpu_mesh)),
+                                                .with(width(), (bounding.max.x / scale_factor).max(min_width))
+                                                .with(height(), (bounding.max.y / scale_factor).max(min_height))
+                                                .with(mesh(), GpuMesh::from_mesh(assets.clone(), &cpu_mesh)),
                                         )
                                         .unwrap();
                                     break;
@@ -357,8 +357,8 @@ pub fn systems() -> SystemGroup {
                                         .add_components(
                                             id,
                                             Entity::new()
-                                                .set(material(), SharedMaterial::new(TextMaterial::new(assets.clone(), view.clone())))
-                                                .set(text_texture(), texture),
+                                                .with(material(), SharedMaterial::new(TextMaterial::new(assets.clone(), view.clone())))
+                                                .with(text_texture(), texture),
                                         )
                                         .unwrap();
                                 }

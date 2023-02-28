@@ -117,12 +117,12 @@ impl Model {
         self.batch_spawn(world, opts, 1).pop().unwrap()
     }
     pub fn batch_spawn(&self, world: &mut World, opts: &ModelSpawnOpts, count: usize) -> Vec<EntityId> {
-        let mut root_components = opts.root_components.clone().set(main_scene(), ()).set_default(model_loaded());
+        let mut root_components = opts.root_components.clone().with(main_scene(), ()).with_default(model_loaded());
         if let Some(aabb) = self.aabb() {
             root_components = root_components
-                .set(local_bounding_aabb(), aabb)
-                .set(world_bounding_aabb(), aabb)
-                .set(world_bounding_sphere(), aabb.to_sphere())
+                .with(local_bounding_aabb(), aabb)
+                .with(world_bounding_aabb(), aabb)
+                .with(world_bounding_sphere(), aabb.to_sphere())
         }
 
         // See README.md
@@ -162,18 +162,18 @@ impl Model {
                     if let Some(name_) = self.name() {
                         root_components.set_self(name(), name_.clone());
                     }
-                    world.batch_spawn(root_components.set(children(), vec![]).set_default(local_to_world()), count)
+                    world.batch_spawn(root_components.with(children(), vec![]).with_default(local_to_world()), count)
                 }
             };
 
             let transform_roots = if let Some(transform) = self.get_transform() {
                 let transform_roots = world.batch_spawn(
                     Entity::new()
-                        .set(parent(), EntityId::null())
-                        .set(children(), vec![])
-                        .set(local_to_parent(), transform)
-                        .set_default(local_to_world())
-                        .set_default(is_model_node()),
+                        .with(parent(), EntityId::null())
+                        .with(children(), vec![])
+                        .with(local_to_parent(), transform)
+                        .with_default(local_to_world())
+                        .with_default(is_model_node()),
                     count,
                 );
                 for (transform, root) in transform_roots.iter().zip(roots.iter()) {
@@ -230,7 +230,7 @@ impl Model {
         } else {
             let root_node = self.roots()[0];
             let root_ed = self.create_entity_data(root_node, opts, Some(self.get_transform().unwrap_or(Mat4::IDENTITY)));
-            root_components.append_self(root_ed);
+            root_components.merge(root_ed);
             match &opts.root {
                 ModelSpawnRoot::AttachTo(entities) => {
                     for entity in entities.iter() {
@@ -260,7 +260,7 @@ impl Model {
                     if let Some(name_) = self.name() {
                         root_components.set_self(name(), name_.clone());
                     }
-                    world.batch_spawn(root_components.set(local_to_world(), glam::Mat4::IDENTITY), count)
+                    world.batch_spawn(root_components.with(local_to_world(), glam::Mat4::IDENTITY), count)
                 }
             }
         }
@@ -279,9 +279,9 @@ impl Model {
     ) -> Vec<EntityId> {
         let mut ed = self
             .create_entity_data(id, opts, None)
-            .set(parent(), EntityId::null())
-            .set_default(is_model_node())
-            .set(local_to_parent(), Mat4::IDENTITY);
+            .with(parent(), EntityId::null())
+            .with_default(is_model_node())
+            .with(local_to_parent(), Mat4::IDENTITY);
 
         if let Some(skin_ix) = ed.remove_self(model_skin_ix()) {
             let skin = self.skins().unwrap()[skin_ix].clone();
@@ -448,7 +448,7 @@ impl Model {
         }
     }
     fn create_entity_data(&self, node: EntityId, opts: &ModelSpawnOpts, single_mesh_transform: Option<Mat4>) -> Entity {
-        let mut ed = self.0.clone_entity(node).unwrap().set_default(local_to_world());
+        let mut ed = self.0.clone_entity(node).unwrap().with_default(local_to_world());
         if let Some(mat) = single_mesh_transform {
             ed.set_self(
                 mesh_to_local(),

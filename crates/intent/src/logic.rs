@@ -40,10 +40,10 @@ pub fn push_intent(state: SharedServerState, user_id: String, mut data: Entity) 
 
 pub fn create_intent<T: ComponentValue>(intent_arg: Component<T>, arg: T, collapse_id: Option<String>) -> Entity {
     Entity::new()
-        .set(intent(), intent_arg.index())
-        .set(intent_timestamp(), SystemTime::now())
-        .set(intent_arg, arg)
-        .set(intent_id(), collapse_id.unwrap_or_else(friendly_id))
+        .with(intent(), intent_arg.index())
+        .with(intent_timestamp(), SystemTime::now())
+        .with(intent_arg, arg)
+        .with(intent_id(), collapse_id.unwrap_or_else(friendly_id))
 }
 
 /// Reverts the head intent iff it is the specified intent

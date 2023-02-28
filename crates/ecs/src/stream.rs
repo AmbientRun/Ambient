@@ -185,7 +185,7 @@ impl WorldChange {
         match self {
             Self::Spawn(id, data) => {
                 if let Some(id) = id {
-                    if !world.spawn_with_id(id, data.append(spanwed_extra_data.clone())) {
+                    if !world.spawn_with_id(id, data.with_merge(spanwed_extra_data.clone())) {
                         if panic_on_error {
                             panic!("WorldChange::apply spawn_mirror entity already exists: {id:?}");
                         } else {
@@ -196,7 +196,7 @@ impl WorldChange {
                         return Some(Self::Despawn(id));
                     }
                 } else {
-                    let id = world.spawn(data.append(spanwed_extra_data.clone()));
+                    let id = world.spawn(data.with_merge(spanwed_extra_data.clone()));
                     if create_revert {
                         return Some(Self::Despawn(id));
                     }

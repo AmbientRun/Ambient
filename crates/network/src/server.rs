@@ -65,12 +65,12 @@ pub fn create_player_entity_data(
     stats_tx: Sender<FpsSample>,
 ) -> Entity {
     Entity::new()
-        .set(crate::player::player(), ())
-        .set(crate::player::user_id(), user_id.to_string())
-        .set(player_entity_stream(), entities_tx)
-        .set(player_stats_stream(), stats_tx)
-        .set(player_event_stream(), events_tx)
-        .set_default(dont_store())
+        .with(crate::player::player(), ())
+        .with(crate::player::user_id(), user_id.to_string())
+        .with(player_entity_stream(), entities_tx)
+        .with(player_stats_stream(), stats_tx)
+        .with(player_event_stream(), events_tx)
+        .with_default(dont_store())
 }
 
 impl WorldInstance {

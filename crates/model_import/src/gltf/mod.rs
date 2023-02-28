@@ -208,10 +208,10 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
             let (trans, rot, scal) = node.transform().decomposed();
 
             let mut ed = Entity::new()
-                .set(translation(), Vec3::from_slice(&trans))
-                .set(rotation(), Quat::from_slice(&rot))
-                .set(scale(), Vec3::from_slice(&scal))
-                .set_default(local_to_world());
+                .with(translation(), Vec3::from_slice(&trans))
+                .with(rotation(), Quat::from_slice(&rot))
+                .with(scale(), Vec3::from_slice(&scal))
+                .with_default(local_to_world());
 
             if let Some(node_name) = node.name() {
                 ed.set_self(name(), node_name.to_string());

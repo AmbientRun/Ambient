@@ -219,9 +219,9 @@ impl ElementTree {
         } else {
             let instance = self.instances.get(instance_id).unwrap();
             if instance.entity.is_null() {
-                let mut entity_data = Entity::new().set_default(crate::element());
+                let mut entity_data = Entity::new().with_default(crate::element());
                 if let Some(parent_entity) = instance.parent_entity {
-                    entity_data = entity_data.set(parent(), parent_entity);
+                    entity_data = entity_data.with(parent(), parent_entity);
                 }
                 (instance.config.spawner)(world, entity_data)
             } else {

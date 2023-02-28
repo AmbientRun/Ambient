@@ -259,7 +259,7 @@ impl ElementComponent for GameClientView {
                             on_in_entities(&diff);
                         }
                         let mut gs = game_state.lock();
-                        diff.apply(&mut gs.world, Entity::new().set(is_remote_entity(), ()), false);
+                        diff.apply(&mut gs.world, Entity::new().with(is_remote_entity(), ()), false);
                     };
 
                     let mut on_server_stats = |stats| {

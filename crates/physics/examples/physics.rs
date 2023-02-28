@@ -44,8 +44,8 @@ fn init(world: &mut World) -> PxSceneRef {
     }
 
     ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
-        .set(active_camera(), 0.)
-        .set(main_scene(), ())
+        .with(active_camera(), 0.)
+        .with(main_scene(), ())
         .spawn(world);
 
     scene

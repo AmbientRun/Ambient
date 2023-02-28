@@ -18,7 +18,7 @@ fn init() {
 fn from_a_to_b_diff() {
     init();
     let mut from = World::new("from_a_to_b_diff");
-    Entity::new().set(a(), 5.).set(b(), 2.).spawn(&mut from);
+    Entity::new().with(a(), 5.).with(b(), 2.).spawn(&mut from);
     let to = from.clone();
     let diff = WorldDiff::from_a_to_b(WorldStreamFilter::default(), &from, &to);
     assert_eq!(diff.changes.len(), 0);
@@ -28,8 +28,8 @@ fn from_a_to_b_diff() {
 fn from_a_to_b_remove_component() {
     init();
     let mut from = World::new("from_a_to_b_remove_component");
-    let x = Entity::new().set(a(), 5.).set(b(), 2.).spawn(&mut from);
-    let y = Entity::new().set(a(), 5.).set(b(), 2.).spawn(&mut from);
+    let x = Entity::new().with(a(), 5.).with(b(), 2.).spawn(&mut from);
+    let y = Entity::new().with(a(), 5.).with(b(), 2.).spawn(&mut from);
     let mut to = from.clone();
     to.remove_component(x, b()).unwrap();
     to.remove_component(y, b()).unwrap();
@@ -49,7 +49,7 @@ fn streaming() {
     let mut dest = World::new("streaming_dst");
     let mut stream = WorldStream::new(WorldStreamFilter::new(ArchetypeFilter::new().excl(no_sync()), Arc::new(|_, _| true)));
 
-    let x = Entity::new().set(a(), 1.).spawn(&mut source);
+    let x = Entity::new().with(a(), 1.).spawn(&mut source);
     let diff = stream.next_diff(&source);
     diff.apply(&mut dest, Entity::new(), true);
     assert_eq!(dump_content_string(&source), dump_content_string(&dest));

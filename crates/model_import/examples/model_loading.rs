@@ -110,13 +110,13 @@ async fn init(app: &mut App) {
     for (i, mod_def) in model_defs.iter().enumerate() {
         let xy = vec2(i as f32 * 3., 3.);
         Cube.el().set(translation(), xy.extend(-0.9)).set(color(), vec4(0.3, 0.3, 0.3, 1.)).spawn_static(world);
-        Entity::new().set(model_from_url(), mod_def.0.to_string()).set(translation(), xy.extend(0.1)).spawn(world);
+        Entity::new().with(model_from_url(), mod_def.0.to_string()).with(translation(), xy.extend(0.1)).spawn(world);
     }
 
     ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
-        .set(active_camera(), 0.)
-        .set(main_scene(), ())
-        .set(far(), 2000.)
+        .with(active_camera(), 0.)
+        .with(main_scene(), ())
+        .with(far(), 2000.)
         .spawn(world);
 }
 

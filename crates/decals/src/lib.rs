@@ -90,8 +90,8 @@ pub fn client_systems() -> SystemGroup {
                     async_run.run(move |world| {
                         let aabb = AABB { min: -Vec3::ONE, max: Vec3::ONE };
                         let mut data = Entity::new()
-                            .set(material(), mat.into())
-                            .set(
+                            .with(material(), mat.into())
+                            .with(
                                 renderer_shader(),
                                 cb(move |assets, config| {
                                     DecalShaderKey {
@@ -102,13 +102,13 @@ pub fn client_systems() -> SystemGroup {
                                     .get(assets)
                                 }),
                             )
-                            .set(mesh(), CubeMeshKey.get(&assets))
-                            .set(primitives(), vec![])
-                            .set_default(gpu_primitives())
-                            .set(main_scene(), ())
-                            .set(local_bounding_aabb(), aabb)
-                            .set(world_bounding_sphere(), aabb.to_sphere())
-                            .set(world_bounding_aabb(), aabb);
+                            .with(mesh(), CubeMeshKey.get(&assets))
+                            .with(primitives(), vec![])
+                            .with_default(gpu_primitives())
+                            .with(main_scene(), ())
+                            .with(local_bounding_aabb(), aabb)
+                            .with(world_bounding_sphere(), aabb.to_sphere())
+                            .with(world_bounding_aabb(), aabb);
                         if !world.has_component(id, local_to_world()) {
                             data.set_self(local_to_world(), Default::default());
                         }

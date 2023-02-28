@@ -44,7 +44,7 @@ pub async fn rpc_fork_instance(args: GameRpcArgs, RpcForkInstance { resources, s
             for (id, _) in query(user_id()).collect_cloned(&world, None) {
                 world.despawn(id);
             }
-            world.add_components(world.resource_entity(), resources.append(ambient_core::async_ecs::async_ecs_resources())).unwrap();
+            world.add_components(world.resource_entity(), resources.with_merge(ambient_core::async_ecs::async_ecs_resources())).unwrap();
             world.add_components(world.synced_resource_entity().unwrap(), synced_res).unwrap();
 
             let mut on_forking = (state.create_on_forking_systems)();

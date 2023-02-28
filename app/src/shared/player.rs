@@ -68,7 +68,7 @@ pub fn server_systems() -> SystemGroup {
         vec![query(player()).spawned().to_system(|q, world, qs, _| {
             let player_ids = q.collect_ids(world, qs);
             for player_id in player_ids {
-                world.add_components(player_id, Entity::new().set_default(player_raw_input()).set_default(player_prev_raw_input())).ok();
+                world.add_components(player_id, Entity::new().with_default(player_raw_input()).with_default(player_prev_raw_input())).ok();
             }
         })],
     )
@@ -105,10 +105,10 @@ pub fn client_systems() -> SystemGroup {
                     .add_components(
                         id,
                         Entity::new()
-                            .set(active_camera(), 0.)
-                            .set(main_scene(), ())
-                            .set(audio_listener(), Arc::new(Mutex::new(AudioListener::new(Mat4::IDENTITY, Vec3::X * 0.2))))
-                            .set(aspect_ratio_from_window(), ()),
+                            .with(active_camera(), 0.)
+                            .with(main_scene(), ())
+                            .with(audio_listener(), Arc::new(Mutex::new(AudioListener::new(Mat4::IDENTITY, Vec3::X * 0.2))))
+                            .with(aspect_ratio_from_window(), ()),
                     )
                     .unwrap();
             }

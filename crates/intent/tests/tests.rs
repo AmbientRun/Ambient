@@ -39,7 +39,7 @@ fn create_test_entities(state: &Mutex<ServerState>, user_id: &str) -> BTreeMap<E
     values
         .into_iter()
         .map(|v| {
-            let id = Entity::new().set(value(), v).spawn(world);
+            let id = Entity::new().with(value(), v).spawn(world);
             (id, v)
         })
         .collect()

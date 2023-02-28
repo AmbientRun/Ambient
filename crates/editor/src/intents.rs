@@ -518,7 +518,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
             let world = ctx.world;
 
             tokio::task::block_in_place(|| {
-                let data = Entity::new().set(translation(), position).set_default(selectable()).set(prefab_from_url(), object_url);
+                let data = Entity::new().with(translation(), position).with_default(selectable()).with(prefab_from_url(), object_url);
                 world.spawn_with_id(entity_id, data);
             });
 

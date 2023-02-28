@@ -21,7 +21,7 @@ async fn start() {
     let mut world = World::new("main");
 
     ambient_core::init_all_components();
-    let id = Entity::new().set(name(), "wasm-entity".into()).spawn(&mut world);
+    let id = Entity::new().with(name(), "wasm-entity".into()).spawn(&mut world);
 
     tracing::info!("Spawned {id}");
 

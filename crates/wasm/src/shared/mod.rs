@@ -339,11 +339,11 @@ pub fn spawn_module(
     }
 
     let ed = Entity::new()
-        .set(ambient_core::name(), name.to_string())
-        .set_default(module())
-        .set(module_enabled(), enabled)
-        .set_default(module_errors())
-        .set(ambient_project::description(), description);
+        .with(ambient_core::name(), name.to_string())
+        .with_default(module())
+        .with(module_enabled(), enabled)
+        .with_default(module_errors())
+        .with(ambient_project::description(), description);
 
     Ok(ed.spawn(world))
 }
