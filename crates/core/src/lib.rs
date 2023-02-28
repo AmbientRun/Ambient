@@ -112,7 +112,6 @@ components!("app", {
     @[Debuggable, Store]
     remove_at_time: Duration,
 
-    on_frame: EventDispatcher<dyn Fn(&mut World, EntityId, f32) + Sync + Send>,
 
     on_event: EventDispatcher<dyn Fn(&mut World, EntityId, &winit::event::Event<()>) + Sync + Send>,
     on_window_event: EventDispatcher<dyn Fn(&mut World, EntityId, &winit::event::WindowEvent) + Sync + Send>,
@@ -196,17 +195,6 @@ impl System<Event<'static, ()>> for WinitEventsSystem {
             _ => {}
         }
     }
-}
-
-pub fn on_frame_system() -> DynSystem {
-    query((on_frame(),)).to_system(|q, world, qs, _| {
-        let dtime = *world.resource(self::dtime());
-        for (id, (on_frame,)) in q.collect_cloned(world, qs) {
-            for handler in on_frame.iter() {
-                handler(world, id, dtime);
-            }
-        }
-    })
 }
 
 pub fn remove_at_time_system() -> DynSystem {

@@ -14,7 +14,7 @@ use ambient_core::{
     frame_index, get_window_sizes,
     gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate},
     hierarchy::dump_world_hierarchy_to_tmp_file,
-    mouse_position, on_frame_system, remove_at_time_system, runtime, time,
+    mouse_position, remove_at_time_system, runtime, time,
     transform::TransformSystem,
     window::WindowCtl,
     window_logical_size, window_physical_size, window_scale_factor, RuntimeKey, TimeResourcesSystem, WinitEventsSystem,
@@ -94,7 +94,6 @@ pub fn world_instance_systems(full: bool) -> SystemGroup {
         vec![
             Box::new(TimeResourcesSystem::new()),
             Box::new(async_ecs_systems()),
-            on_frame_system(),
             remove_at_time_system(),
             if full { Box::new(ambient_input::picking::frame_systems()) } else { Box::new(DummySystem) },
             Box::new(lod_system()),
