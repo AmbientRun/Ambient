@@ -40,8 +40,13 @@ impl Gpu {
 
         #[cfg(target_os = "windows")]
         let backend = wgpu::Backends::VULKAN;
-        #[cfg(not(target_os = "windows"))]
+
+        #[cfg(all(not(target_os = "windows"), not(target_os = "unknown")))]
         let backend = wgpu::Backends::PRIMARY;
+
+        #[cfg(target_os = "unknown")]
+        let backend = wgpu::Backends::all();
+
         let instance = wgpu::Instance::new(backend);
         let surface = window.map(|window| unsafe { instance.create_surface(window) });
         #[cfg(not(target_os = "unknown"))]
@@ -53,7 +58,7 @@ impl Gpu {
         }
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
-                power_preference: wgpu::PowerPreference::HighPerformance,
+                power_preference: wgpu::PowerPreference::default(),
                 compatible_surface: surface.as_ref(),
                 force_fallback_adapter: false,
             })

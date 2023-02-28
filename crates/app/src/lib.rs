@@ -234,6 +234,22 @@ impl AppBuilder {
         let window = self.window_builder.unwrap_or_default();
         let window = Arc::new(window.build(&event_loop).unwrap());
 
+        #[cfg(target_os = "unknown")]
+        /// Insert a canvas element for the window to attach to
+        {
+            use winit::platform::web::WindowExtWebSys;
+
+            let canvas = window.canvas();
+
+            let window = web_sys::window().unwrap();
+            let document = window.document().unwrap();
+            let body = document.body().unwrap();
+
+            // Set a background color for the canvas to make it easier to tell where the canvas is for debugging purposes.
+            canvas.style().set_css_text("background-color: crimson;");
+            body.append_child(&canvas).unwrap();
+        }
+
         #[cfg(feature = "profile")]
         let puffin_server = {
             let puffin_addr = format!(
@@ -384,22 +400,6 @@ impl App {
     #[cfg(target_arch = "wasm32")]
     pub fn spawn(mut self) {
         use winit::platform::web::EventLoopExtWebSys;
-
-        pub fn insert_canvas(window: &Window) {
-            use winit::platform::web::WindowExtWebSys;
-
-            let canvas = window.canvas();
-
-            let window = web_sys::window().unwrap();
-            let document = window.document().unwrap();
-            let body = document.body().unwrap();
-
-            // Set a background color for the canvas to make it easier to tell where the canvas is for debugging purposes.
-            canvas.style().set_css_text("background-color: crimson;");
-            body.append_child(&canvas).unwrap();
-        }
-
-        insert_canvas(&self.window);
 
         let event_loop = self.event_loop.take().unwrap();
 
