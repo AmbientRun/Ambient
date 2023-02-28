@@ -25,8 +25,6 @@ tracing-web = "0.1"
 time = { version = "0.3", features = ["wasm-bindgen"] }
 chrono = { workspace = true, features = ["wasmbind"] }
 
-wgpu = { workspace = true, features = ["webgl"] }
-
 getrandom = { version = "0.2.8", features = ["js"] }
 web-sys = { version = "0.3.61", features = [
     "CanvasRenderingContext2d",
