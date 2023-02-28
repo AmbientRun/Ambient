@@ -8,8 +8,7 @@ use ambient_element::ElementComponentExt;
 use ambient_primitives::{Cube, Quad};
 use ambient_renderer::{cast_shadows, color, outline};
 use ambient_std::math::SphericalCoords;
-use glam::{uvec2, vec3, vec4, Vec3, Vec4};
-use std::{process::exit, time::Duration};
+use glam::{vec3, vec4, Vec3, Vec4};
 
 async fn init(app: &mut App) {
     let world = &mut app.world;
@@ -26,11 +25,9 @@ async fn init(app: &mut App) {
         .set(active_camera(), 0.)
         .set(main_scene(), ())
         .spawn(world);
-    tokio::time::sleep(Duration::from_secs_f32(1.)).await;
-    exit(0);
 }
 
 fn main() {
     // wgpu_subscriber::initialize_default_subscriber(None);
-    AppBuilder::simple().headless(Some(uvec2(400, 400))).block_on(init);
+    AppBuilder::simple().block_on(init);
 }
