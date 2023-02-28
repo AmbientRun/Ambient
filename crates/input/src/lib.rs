@@ -1,15 +1,12 @@
 use std::collections::HashSet;
 
-use ambient_ecs::{components, world_events, EntityData, EntityId, System, SystemGroup, World};
-use ambient_std::events::EventDispatcher;
+use ambient_ecs::{components, world_events, EntityData, System, SystemGroup};
 use glam::{vec2, Vec2};
 use serde::{Deserialize, Serialize};
 pub use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, MouseButton, MouseScrollDelta, VirtualKeyCode, WindowEvent};
 use winit::event::{ModifiersState, ScanCode};
 
 pub mod picking;
-
-pub type EventCallback<Event, Ret = bool> = EventDispatcher<dyn Fn(&mut World, EntityId, Event) -> Ret + Sync + Send>;
 
 #[derive(Debug, Clone)]
 /// Represents a keyboard event with attached modifiers
