@@ -112,9 +112,6 @@ hex = "0.4.3"
 ring = "0.16.20"
 data-encoding = "2.3.2"
 convert_case = "0.6.0"
-wasmtime = "1.0"
-wasmtime-wasi = "1.0"
-wasi-common = "1.0"
 fs_extra = "1.2.0"
 slugify = "0.1.0"
 serde_yaml = "0.9.17"
@@ -135,9 +132,9 @@ arboard = "3.2.0"
 noise = { version = "0.7.0", default-features = false }
 russimp = { version = "1.0.6", features = ['prebuilt'] }
 
-# Patch cap-std until wasmtime/wit-bindgen can be updated
-[patch.crates-io]
-# branch = 0.26-with-a-0.25-version-number
-cap-std = { git = "https://github.com/bytecodealliance/cap-std.git", rev = "535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b" }
-cap-primitives = { git = "https://github.com/bytecodealliance/cap-std.git", rev = "535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b" }
-cap-fs-ext = { git = "https://github.com/bytecodealliance/cap-std.git", rev = "535747a00b8d9d115bf4e7f7a468b1a3a4ecec8b" }
+# WASM dependencies. Should be able to move off these once this all begins to stabilise a little.
+wasmtime = { git = "https://github.com/bytecodealliance/wasmtime.git", rev = "b5e9fb710ba73bde295eec5ab57f6ef4f6459e79", features = ["component-model"] }
+wasi-common = { git = "https://github.com/bytecodealliance/preview2-prototyping.git" }
+wasi-cap-std-sync = { git = "https://github.com/bytecodealliance/preview2-prototyping.git" }
+wit-bindgen-core = { git = "https://github.com/bytecodealliance/wit-bindgen.git" }
+wit-bindgen-rust = { git = "https://github.com/bytecodealliance/wit-bindgen.git" }
