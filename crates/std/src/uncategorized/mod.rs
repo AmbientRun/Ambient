@@ -16,4 +16,7 @@ pub mod time;
 
 pub use encode::sha256_digest;
 pub use id::friendly_id;
-pub use time::{from_now, pretty_duration, FromDuration, IntoDuration};
+pub use time::{pretty_duration, FromDuration, IntoDuration};
+
+#[cfg(not(target_os = "unknown"))]
+pub use time::from_now;
