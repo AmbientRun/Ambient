@@ -6,6 +6,7 @@ resolver = "2"
 
 [workspace.package]
 version = "0.1.1"
+rust-version = "1.67"
 
 [workspace.dependencies]
 # TEMP: https://github.com/aclysma/profiling/pull/45

@@ -1,6 +1,7 @@
 [package]
 name = "ambient_api_macros"
 version = { workspace = true }
+rust-version = { workspace = true }
 edition = "2021"
 description = "Macros for the Ambient API"
 license = "MIT OR Apache-2.0"

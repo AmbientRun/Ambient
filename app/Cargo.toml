@@ -2,6 +2,7 @@
 edition = "2021"
 name = "ambient"
 version = { workspace = true }
+rust-version = { workspace = true }
 repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]

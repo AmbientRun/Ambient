@@ -52,7 +52,7 @@ apt-get update
 apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers
 ```
 
-Ambient currently assumes that you have access to GPU drivers (but not necessarily a _GPU_ by itself) in headless mode. This requirement may be relaxed in future.
+Ambient currently assumes that you have access to GPU drivers (but not necessarily a GPU) in headless mode. This requirement may be relaxed in future.
 
 ## Dockerfile
 
