@@ -71,6 +71,7 @@ pub fn TextInput(
                         }
                         VirtualKeyCode::V => {
                             if command && state == &ElementState::Pressed {
+                                #[cfg(not(target_os = "unknown"))]
                                 if let Ok(paste) = arboard::Clipboard::new().unwrap().get_text() {
                                     on_change.0(format!("{value}{paste}"));
                                 }

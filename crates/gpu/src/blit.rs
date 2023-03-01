@@ -28,6 +28,7 @@ impl Blitter {
             source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!("blit.wgsl"))),
         });
 
+        log::info!("Setting up blitter");
         let pipeline = gpu.device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("Blitter.pipeline"),
             layout: None,
