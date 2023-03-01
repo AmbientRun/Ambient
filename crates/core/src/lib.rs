@@ -34,6 +34,7 @@ components!("app", {
     runtime: RuntimeHandle,
     @[Resource]
     gpu: Arc<Gpu>,
+    @[Debuggable]
     mesh: Arc<GpuMesh>,
 
     @[Resource, Name["Window Control"], Description["Allows controlling the window from afar"]]
