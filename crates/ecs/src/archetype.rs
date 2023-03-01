@@ -327,7 +327,7 @@ impl Archetype {
         writeln!(f, "Archetype id: {} ({} entities)", self.id, self.entity_count()).unwrap();
         for component in self.components.iter() {
             let desc = component.component;
-            writeln!(f, "  Component {:#?}: {} changes", desc, component.changes.borrow().n_events()).unwrap();
+            writeln!(f, "  Component {}: {} changes", desc.path(), component.changes.borrow().n_events()).unwrap();
         }
         for i in 0..self.entity_count() {
             self.dump_entity(i, 2, f);
