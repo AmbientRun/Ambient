@@ -6,7 +6,7 @@ use ambient_core::{
     gpu_ecs::GpuWorldSyncEvent,
     main_scene,
     transform::local_to_world,
-    window_physical_size,
+    ui_scene, window_physical_size,
 };
 use ambient_ecs::{components, query, Entity, FrameEvent, System, SystemGroup, World};
 use ambient_gizmos::render::GizmoRenderer;
@@ -34,6 +34,7 @@ pub struct ClientGameState {
     temporary_systems: Vec<TempSystem>,
     gpu_world_sync_systems: SystemGroup<GpuWorldSyncEvent>,
     pub renderer: Renderer,
+    pub ui_renderer: Renderer,
     assets: AssetCache,
     user_id: String,
 }
@@ -65,12 +66,15 @@ impl ClientGameState {
             Renderer::new(world, assets.clone(), RendererConfig { scene: main_scene(), shadows: true, ..Default::default() });
         renderer.post_transparent = Some(Box::new(GizmoRenderer::new(&assets)));
 
+        let ui_renderer = Renderer::new(world, assets.clone(), RendererConfig { scene: ui_scene(), shadows: false, ..Default::default() });
+
         Self {
             world: game_world,
             systems,
             temporary_systems: Default::default(),
             gpu_world_sync_systems: gpu_world_sync_systems(),
             renderer,
+            ui_renderer,
             assets,
             user_id: player_id,
         }
@@ -91,6 +95,7 @@ impl ClientGameState {
             RendererTarget::Target(target),
             Some(Color::rgba(0., 0., 0., 1.)),
         );
+        self.ui_renderer.render(&mut self.world, &mut encoder, &mut post_submit, RendererTarget::Target(target), None);
         gpu.queue.submit(Some(encoder.finish()));
         for action in post_submit {
             action();

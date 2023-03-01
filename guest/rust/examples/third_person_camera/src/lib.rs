@@ -8,7 +8,7 @@ use ambient_api::{
         player::{player, user_id},
         primitives::{cube, quad},
         rendering::color,
-        transform::{lookat_center, rotation, scale, translation},
+        transform::{lookat_center, rotation, scale, translation}, app::main_scene,
     },
     concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
     player::KeyCode,
@@ -40,6 +40,7 @@ pub async fn main() -> EventResult {
             let camera = Entity::new()
                 .with_merge(make_perspective_infinite_reverse_camera())
                 .with_default(player_camera())
+                .with_default(main_scene())
                 .with(user_id(), user)
                 .with(translation(), Vec3::ONE * 5.)
                 .with(lookat_center(), vec3(0., 0., 0.))

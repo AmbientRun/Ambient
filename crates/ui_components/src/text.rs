@@ -15,7 +15,7 @@ use glam::{vec4, Mat4};
 
 /// A text element. Use the `text`, `font_size`, `font` and `color` components to set its state
 #[element_component(without_el)]
-pub fn Text(hooks: &mut Hooks) -> Element {
+pub fn Text(_hooks: &mut Hooks) -> Element {
     UIBase
         .el()
         .init(width(), 1.)

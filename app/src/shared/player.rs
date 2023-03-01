@@ -106,7 +106,6 @@ pub fn client_systems() -> SystemGroup {
                         id,
                         Entity::new()
                             .with(active_camera(), 0.)
-                            .with(main_scene(), ())
                             .with(audio_listener(), Arc::new(Mutex::new(AudioListener::new(Mat4::IDENTITY, Vec3::X * 0.2))))
                             .with(aspect_ratio_from_window(), ()),
                     )
