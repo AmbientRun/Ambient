@@ -331,7 +331,7 @@ pub fn HighjackMouse(
         })
     });
     hooks.use_world_event({
-        let focused = focused.clone();
+        let focused = focused;
         move |world, event| {
             if let Some(delta) = event.get_ref(event_mouse_motion()) {
                 let pos = {
@@ -464,7 +464,7 @@ impl ElementComponent for ClickArea {
         });
         hooks.use_world_event({
             let id = id.clone();
-            let is_mouse_over = is_mouse_over.clone();
+            let is_mouse_over = is_mouse_over;
             move |world, event| {
                 if let Some(id) = *id.lock() {
                     if let Some(event) = event.get_ref(event_mouse_input()) {
@@ -476,7 +476,7 @@ impl ElementComponent for ClickArea {
                     } else if let Some(event) = event.get_ref(event_mouse_wheel()) {
                         if *is_mouse_over.lock() {
                             for handler in &on_mouse_wheel {
-                                handler(world, id, event.clone());
+                                handler(world, id, *event);
                             }
                         }
                     }

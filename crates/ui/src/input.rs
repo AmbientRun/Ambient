@@ -277,14 +277,12 @@ impl ElementComponent for Slider {
                             *dragging.lock() = false;
                         }
                     }
-                    if *dragging.lock() {
-                        if let Some(_) = event.get_ref(event_mouse_motion()) {
-                            let block_id = *block_id.lock();
-                            let block_position = get_world_position(world, block_id).unwrap_or_default();
-                            let block_width = world.get(block_id, width()).unwrap_or_default();
-                            let position = world.resource(mouse_position());
-                            on_change_factor(interpolate_clamped(position.x, block_position.x, block_width, 0., 1.));
-                        }
+                    if *dragging.lock() && event.get_ref(event_mouse_motion()).is_some() {
+                        let block_id = *block_id.lock();
+                        let block_position = get_world_position(world, block_id).unwrap_or_default();
+                        let block_width = world.get(block_id, width()).unwrap_or_default();
+                        let position = world.resource(mouse_position());
+                        on_change_factor(interpolate_clamped(position.x, block_position.x, block_width, 0., 1.));
                     }
                 }
             }

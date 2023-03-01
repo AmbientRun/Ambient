@@ -86,9 +86,7 @@ pub fn TextInput(
     let el = if value.is_empty() && !focused && placeholder.is_some() {
         Text.el().set(text(), placeholder.unwrap()).set(color(), vec4(1., 1., 1., 0.2))
     } else {
-        Text.el()
-            .set(text(), if password { value.chars().map(|_| '*').collect() } else { value.clone() })
-            .set(color(), vec4(0.9, 0.9, 0.9, 1.))
+        Text.el().set(text(), if password { value.chars().map(|_| '*').collect() } else { value }).set(color(), vec4(0.9, 0.9, 0.9, 1.))
     }
     .init(layout(), Layout::Flow)
     .set(fit_horizontal(), Fit::None)

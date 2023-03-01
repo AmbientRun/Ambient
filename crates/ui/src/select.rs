@@ -26,10 +26,8 @@ impl ElementComponent for DropdownSelect {
             let set_show = set_show.clone();
             move |_world, event| {
                 if let Some(event) = event.get_ref(event_mouse_input()) {
-                    if show {
-                        if event.state == ElementState::Released {
-                            set_show(false);
-                        }
+                    if show && event.state == ElementState::Released {
+                        set_show(false);
                     }
                 }
             }

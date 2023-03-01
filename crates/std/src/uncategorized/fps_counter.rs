@@ -1,4 +1,5 @@
-use std::time::{Duration, Instant};
+use ambient_sys::time::Instant;
+use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
 

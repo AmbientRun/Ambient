@@ -394,7 +394,7 @@ impl ElementComponent for Hotkey {
         let Self { on_is_pressed_changed, content, hotkey, hotkey_modifier, on_invoke } = *self;
         let (is_pressed, _) = hooks.use_state_with(|_| Arc::new(AtomicBool::new(false)));
         hooks.use_world_event({
-            let is_pressed = is_pressed.clone();
+            let is_pressed = is_pressed;
             move |world, event| {
                 if let Some(event) = event.get_ref(event_keyboard_input()) {
                     if let KeyboardEvent { keycode: Some(virtual_keycode), state, modifiers, .. } = event {
@@ -405,7 +405,6 @@ impl ElementComponent for Hotkey {
                                         on_is_pressed_changed.0(true);
                                     }
                                     is_pressed.store(true, Ordering::Relaxed);
-                                    return;
                                 }
                             } else {
                                 let pressed = is_pressed.load(Ordering::Relaxed);
@@ -416,7 +415,6 @@ impl ElementComponent for Hotkey {
                                         on_is_pressed_changed.0(false);
                                     }
                                     is_pressed.store(false, Ordering::Relaxed);
-                                    return;
                                 }
                             }
                         }

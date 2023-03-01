@@ -46,7 +46,7 @@ impl Blitter {
                 BindGroupLayoutEntry {
                     binding: 1,
                     visibility: ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Sampler({ wgpu::SamplerBindingType::Filtering }),
+                    ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
                     count: None,
                 },
             ],

@@ -1,6 +1,5 @@
-use std::time::Instant;
-
 use ambient_ecs::{components, Entity, FnSystem, Resource, SystemGroup, World};
+use ambient_sys::time::Instant;
 
 components!("ecs", {
     @[Resource]

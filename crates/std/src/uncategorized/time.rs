@@ -1,6 +1,7 @@
 //! Provides time related functionality like Clocks and TimeInfo. Also extends Duration for easier
 //! construction like 5.secs().
-use std::time::{Duration, Instant, SystemTime};
+use ambient_sys::time::Instant;
+use std::time::Duration;
 
 use itertools::{Itertools, PeekingNext};
 use thiserror::Error;
@@ -286,8 +287,9 @@ pub fn parse_duration(mut s: &str) -> Result<Duration, DurationParseError> {
     Ok(dur)
 }
 
-pub fn from_now(time: SystemTime) -> Option<String> {
-    let duration = SystemTime::now().duration_since(time).ok()?;
+#[cfg(not(target_os = "unknown"))]
+pub fn from_now(time: std::time::SystemTime) -> Option<String> {
+    let duration = std::time::SystemTime::now().duration_since(time).ok()?;
     Some(format!("{} ago", pretty_duration(duration)))
 }
 pub fn pretty_duration(duration: Duration) -> String {

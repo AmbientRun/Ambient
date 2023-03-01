@@ -376,7 +376,7 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
                     log::debug!("[{}] Init diff sent", user_id);
 
                     if !reconnecting {
-                        instance.spawn_player(create_player_entity_data(&user_id, diffs_tx.clone(), events_tx.clone(), stats_tx.clone()));
+                        instance.spawn_player(create_player_entity_data(user_id, diffs_tx.clone(), events_tx.clone(), stats_tx.clone()));
                         log::info!("[{}] Player spawned", user_id);
                     } else {
                         let entity = get_player_by_user_id(&instance.world, user_id).unwrap();
