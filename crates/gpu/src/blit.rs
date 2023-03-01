@@ -1,6 +1,7 @@
 use std::{borrow::Cow, sync::Arc};
 
 use ambient_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
+use wgpu::{BindGroupLayoutDescriptor, BindGroupLayoutEntry, PipelineLayoutDescriptor, ShaderStages, TextureSampleType};
 
 use super::gpu::{Gpu, GpuKey};
 
@@ -23,15 +24,44 @@ pub struct Blitter {
 }
 impl Blitter {
     pub fn new(gpu: Arc<Gpu>, conf: &BlitterKey) -> Self {
+        log::info!("Creating blitter: {conf:#?}");
         let shader = gpu.device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("Blitter.shader"),
             source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!("blit.wgsl"))),
         });
 
+        let bind_group_layout = gpu.device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+            label: Some("blitter.bind_group_layout"),
+            entries: &[
+                BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Texture {
+                        sample_type: TextureSampleType::Float { filterable: true },
+                        view_dimension: wgpu::TextureViewDimension::D2,
+                        multisampled: false,
+                    },
+                    count: None,
+                },
+                BindGroupLayoutEntry {
+                    binding: 1,
+                    visibility: ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Sampler({ wgpu::SamplerBindingType::Filtering }),
+                    count: None,
+                },
+            ],
+        });
+
+        let layout = gpu.device.create_pipeline_layout(&PipelineLayoutDescriptor {
+            label: Some("blitter.layout"),
+            bind_group_layouts: &[&bind_group_layout],
+            push_constant_ranges: &[],
+        });
+
         log::info!("Setting up blitter");
         let pipeline = gpu.device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("Blitter.pipeline"),
-            layout: None,
+            layout: Some(&layout),
             vertex: wgpu::VertexState { module: &shader, entry_point: "vs_main", buffers: &[] },
             fragment: Some(wgpu::FragmentState { module: &shader, entry_point: "fs_main", targets: &[Some(conf.format.clone())] }),
             primitive: wgpu::PrimitiveState { topology: wgpu::PrimitiveTopology::TriangleStrip, ..Default::default() },
