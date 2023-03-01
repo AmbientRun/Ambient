@@ -1,10 +1,11 @@
 use ambient_api::{
     components::core::{
         app::main_scene,
+        camera::{orthographic_bottom, orthographic_left, orthographic_right, orthographic_top},
         game_objects::player_camera,
         transform::{lookat_center, translation},
     },
-    concepts::make_perspective_infinite_reverse_camera,
+    concepts::{make_orthographic_camera, make_perspective_infinite_reverse_camera},
     prelude::*,
 };
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
@@ -18,10 +19,12 @@ fn App(hooks: &mut Hooks) -> Element {
 #[main]
 pub async fn main() -> EventResult {
     Entity::new()
-        .with_merge(make_perspective_infinite_reverse_camera())
+        .with_merge(make_orthographic_camera())
+        .with(orthographic_left(), -300.)
+        .with(orthographic_right(), 300.)
+        .with(orthographic_top(), -300.)
+        .with(orthographic_bottom(), 300.)
         .with_default(player_camera())
-        .with(translation(), vec3(5., 5., 4.))
-        .with(lookat_center(), vec3(0., 0., 0.))
         .spawn();
 
     let tree = App.el().spawn_tree();
