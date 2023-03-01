@@ -143,6 +143,8 @@ pub struct GameClientView {
     pub on_in_entities: Option<Cb<dyn Fn(&WorldDiff) + Sync + Send>>,
     pub on_disconnect: Cb<dyn Fn() + Sync + Send + 'static>,
     pub create_rpc_registry: Cb<dyn Fn() -> RpcRegistry<GameRpcArgs> + Sync + Send>,
+    pub on_network_stats: Cb<dyn Fn(GameClientNetworkStats) + Sync + Send>,
+    pub on_server_stats: Cb<dyn Fn(GameClientServerStats) + Sync + Send>,
     pub ui: Element,
 }
 
@@ -159,6 +161,8 @@ impl Clone for GameClientView {
             on_in_entities: self.on_in_entities.clone(),
             on_disconnect: self.on_disconnect.clone(),
             create_rpc_registry: self.create_rpc_registry.clone(),
+            on_network_stats: self.on_network_stats.clone(),
+            on_server_stats: self.on_server_stats.clone(),
             ui: self.ui.clone(),
         }
     }
@@ -178,10 +182,9 @@ impl ElementComponent for GameClientView {
             on_in_entities,
             ui,
             on_disconnect,
+            on_network_stats,
+            on_server_stats,
         } = *self;
-
-        let (_, client_stats_ctx) = hooks.consume_context::<GameClientNetworkStats>().unwrap();
-        let (_, server_stats_ctx) = hooks.consume_context::<GameClientServerStats>().unwrap();
 
         let gpu = hooks.world.resource(gpu()).clone();
 
@@ -263,11 +266,11 @@ impl ElementComponent for GameClientView {
                     };
 
                     let mut on_server_stats = |stats| {
-                        server_stats_ctx(stats);
+                        on_server_stats(stats);
                     };
 
-                    let mut on_client_stats = |stats| {
-                        client_stats_ctx(stats);
+                    let mut on_network_stats = |stats| {
+                        on_network_stats(stats);
                     };
 
                     let client_loop = ClientInstance {
@@ -277,7 +280,7 @@ impl ElementComponent for GameClientView {
                         on_init: &mut on_init,
                         on_diff: &mut on_diff,
                         on_server_stats: &mut on_server_stats,
-                        on_client_stats: &mut on_client_stats,
+                        on_client_stats: &mut on_network_stats,
                         on_event: &mut on_event,
                         on_disconnect,
                         init_destructor: None,
