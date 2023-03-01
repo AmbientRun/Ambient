@@ -20,7 +20,8 @@
             },
             "args": [
                 "run",
-                "guest/rust/examples/image"
+                "guest/rust/examples/text",
+                "--debug"
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [

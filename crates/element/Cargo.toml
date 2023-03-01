@@ -9,12 +9,12 @@ edition = "2021"
 
 [dependencies]
 ambient_guest_bridge = { path = "../guest_bridge" }
+ambient_element_component = { path = "../element_component" }
 cb = { path = "../../libs/cb" }
 friendly_id = { path = "../../libs/friendly_id" }
 
 ambient_sys = { path = "../sys", optional = true }
 ambient_core = { path = "../core", optional = true }
-ambient_element_component = { path = "../element_component", optional = true }
 tokio = { workspace = true, optional = true }
 
 parking_lot = { workspace = true }
@@ -32,5 +32,5 @@ tokio = { workspace = true }
 
 [features]
 default = ["native"]
-native = ["ambient_sys", "ambient_core", "ambient_element_component", "ambient_guest_bridge/native",  "tokio"]
+native = ["ambient_sys", "ambient_core",  "ambient_guest_bridge/native",  "tokio"]
 guest = ["ambient_guest_bridge/guest"]

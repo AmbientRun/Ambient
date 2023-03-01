@@ -14,7 +14,6 @@ mod element_config;
 mod hooks;
 mod standard;
 mod tree;
-#[cfg(feature = "native")]
 pub use ambient_element_component::element_component;
 use element_config::*;
 pub use hooks::*;
@@ -187,6 +186,7 @@ impl Element {
         self.config.components.0.contains_key(&index) || self.config.init_components.0.contains_key(&index)
     }
     /// This spawns the element tree as a number of entities, but they won't react to changes. Returns the root entity
+    #[cfg(feature = "native")]
     pub fn spawn_static(self, world: &mut World) -> EntityId {
         ElementTree::new(world, self).root_entity().unwrap()
     }
@@ -195,12 +195,20 @@ impl Element {
     #[cfg(feature = "native")]
     pub fn spawn_interactive(self, world: &mut World) -> EntityId {
         let tree = self.spawn_tree(world);
-        Entity::new().with(self::element_tree(), ShareableElementTree(Arc::new(Mutex::new(tree)))).spawn(world)
+        let entity = Entity::new().with(self::element_tree(), ShareableElementTree(Arc::new(Mutex::new(tree))));
+        world.spawn(entity)
     }
     /// This spawns the elemet tree and returns it. The tree won't be automatically updated, but can manually be updated
     /// by calling the `update` method.
+    #[cfg(feature = "native")]
     pub fn spawn_tree(self, world: &mut World) -> ElementTree {
         ElementTree::new(world, self)
+    }
+    /// This spawns the elemet tree and returns it. The tree won't be automatically updated, but can manually be updated
+    /// by calling the `update` method.
+    #[cfg(feature = "guest")]
+    pub fn spawn_tree(self) -> ElementTree {
+        ElementTree::new(&mut World, self)
     }
 }
 

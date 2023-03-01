@@ -2,7 +2,6 @@ use std::{num::NonZeroU32, ops::Deref, sync::Arc};
 
 use ambient_core::{asset_cache, async_ecs::async_run, gpu, mesh, name, runtime, transform::*, ui_scene, window_scale_factor};
 use ambient_ecs::{components, query, query_mut, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_gpu::{mesh_buffer::GpuMesh, texture::Texture};
 use ambient_renderer::{color, gpu_primitives, material, primitives, renderer_shader, SharedMaterial};
 use ambient_std::{
@@ -23,11 +22,10 @@ use glyph_brush::{
 use log::info;
 use parking_lot::Mutex;
 
-use crate::{
-    layout::*,
-    text_material::{get_text_shader, TextMaterial},
-    UIBase, UIElement,
-};
+use crate::text_material::{get_text_shader, TextMaterial};
+use ambient_layout::{height, min_height, min_width, width};
+
+mod text_material;
 
 components!("ui", {
     @[Debuggable, Networked, Store, Name["Text"], Description["Create a text mesh on this entity."]]
@@ -42,45 +40,6 @@ components!("ui", {
     glyph_brush: Arc<Mutex<GlyphBrush<GlyphVertex>>>,
     text_texture: Arc<Texture>,
 });
-
-/// A text element. Use the `text`, `font_size`, `font` and `color` components to set its state
-#[element_component(without_el)]
-pub fn Text(hooks: &mut Hooks) -> Element {
-    let scale_factor = *hooks.world.resource(window_scale_factor()) as f32;
-
-    UIBase
-        .el()
-        .init(width(), 1.)
-        .init(height(), 1.)
-        .init(mesh_to_local(), Mat4::from_scale(Vec3::ONE / scale_factor))
-        .init(color(), vec4(0.6, 0.6, 0.6, 1.))
-        .init(name(), "Text".to_string())
-        .init(ui_scene(), ())
-        .init_default(font_family())
-        .init_default(font_style())
-        .init(font_size(), 12.)
-        .init(text(), "".to_string())
-}
-impl Text {
-    pub fn el(value: impl Into<String>) -> Element {
-        Text.el().set(text(), value.into())
-    }
-}
-impl From<&str> for UIElement {
-    fn from(value: &str) -> Self {
-        UIElement(Text.el().set(text(), value.to_string()))
-    }
-}
-impl From<String> for UIElement {
-    fn from(value: String) -> Self {
-        UIElement(Text.el().set(text(), value))
-    }
-}
-impl From<&String> for UIElement {
-    fn from(value: &String) -> Self {
-        UIElement(Text.el().set(text(), value.to_string()))
-    }
-}
 
 #[derive(Debug, Clone, Copy)]
 pub enum TextCase {
@@ -366,6 +325,13 @@ pub fn systems() -> SystemGroup {
                         }
                     }
                 }),
+            query(window_scale_factor().changed()).to_system(|q, world, qs, _| {
+                if let Some((_, scale_factor)) = q.collect_cloned(world, qs).iter().next() {
+                    for (id, _) in query(()).incl(text()).collect_cloned(world, None) {
+                        world.add_component(id, mesh_to_local(), Mat4::from_scale(Vec3::ONE / (*scale_factor as f32))).unwrap();
+                    }
+                }
+            }),
         ],
     )
 }

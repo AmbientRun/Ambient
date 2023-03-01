@@ -2,15 +2,18 @@ use ambient_api::{
     components::core::{
         app::main_scene,
         game_objects::player_camera,
-        rendering::color,
-        transform::{
-            local_to_world, lookat_center, mesh_to_local, mesh_to_world, scale, translation,
-        },
-        ui::text,
+        transform::{lookat_center, translation},
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
+    concepts::make_perspective_infinite_reverse_camera,
     prelude::*,
 };
+use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_ui_components::text::Text;
+
+#[element_component]
+fn App(hooks: &mut Hooks) -> Element {
+    Text::el("Hello world").set_default(main_scene())
+}
 
 #[main]
 pub async fn main() -> EventResult {
@@ -21,17 +24,7 @@ pub async fn main() -> EventResult {
         .with(lookat_center(), vec3(0., 0., 0.))
         .spawn();
 
-    Entity::new()
-        .with_merge(make_transformable())
-        .with(text(), "Hello world".to_string())
-        .with(color(), vec4(1., 1., 1., 1.))
-        .with(translation(), vec3(0., 0., 0.01))
-        .with(scale(), Vec3::ONE * 0.05)
-        .with_default(local_to_world())
-        .with_default(mesh_to_local())
-        .with_default(mesh_to_world())
-        .with_default(main_scene())
-        .spawn();
+    let tree = App.el().spawn_tree();
 
     EventOk
 }

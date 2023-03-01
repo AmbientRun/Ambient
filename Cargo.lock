@@ -661,6 +661,8 @@ dependencies = [
  "ambient_core",
  "ambient_ecs",
  "ambient_layout",
+ "ambient_renderer",
+ "ambient_text",
 ]
 
 [[package]]
@@ -1130,6 +1132,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_text"
+version = "0.1.0"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_gpu",
+ "ambient_input",
+ "ambient_layout",
+ "ambient_renderer",
+ "ambient_std",
+ "anyhow",
+ "async-trait",
+ "glam 0.22.0",
+ "glyph_brush",
+ "log",
+ "parking_lot",
+ "wgpu 0.14.2",
+]
+
+[[package]]
 name = "ambient_ui"
 version = "0.1.1"
 dependencies = [
@@ -1146,6 +1168,7 @@ dependencies = [
  "ambient_renderer",
  "ambient_std",
  "ambient_sys",
+ "ambient_text",
  "ambient_ui_components",
  "anyhow",
  "arboard",
@@ -1157,7 +1180,6 @@ dependencies = [
  "fixed-vec-deque",
  "futures",
  "glam 0.22.0",
- "glyph_brush",
  "indexmap",
  "itertools",
  "log",

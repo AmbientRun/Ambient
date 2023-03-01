@@ -10,6 +10,7 @@ ambient_api = { path = "../../api" }
 ambient_element = { path = "../../../../crates/element", default-features = false, features = [
     "guest",
 ] }
+ambient_ui_components = { path = "../../../../crates/ui_components" }
 
 [lib]
 crate-type = ["cdylib"]

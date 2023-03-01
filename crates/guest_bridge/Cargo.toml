@@ -9,8 +9,10 @@ edition = "2021"
 ambient_ecs = { path = "../ecs", optional = true }
 ambient_core = { path = "../core", optional = true }
 ambient_layout = { path = "../layout", optional = true }
+ambient_renderer = { path = "../renderer", optional = true }
+ambient_text = { path = "../text", optional = true }
 ambient_api = { path = "../../guest/rust/api", optional = true }
 
 [features]
-native = ["ambient_ecs", "ambient_core", "ambient_layout"]
+native = ["ambient_ecs", "ambient_core", "ambient_layout", "ambient_renderer", "ambient_text"]
 guest = ["ambient_api"]

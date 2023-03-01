@@ -44,12 +44,13 @@ mod screens;
 mod select;
 mod style_constants;
 mod tabs;
-mod text;
 mod text_input;
-mod text_material;
 mod throbber;
 
 pub use ambient_layout as layout;
+use ambient_text as text;
+pub use ambient_text::*;
+pub use ambient_ui_components::text::*;
 pub use ambient_ui_components::*;
 pub use asset_url::*;
 pub use button::*;
@@ -67,7 +68,6 @@ pub use screens::*;
 pub use select::*;
 pub use style_constants::*;
 pub use tabs::*;
-pub use text::*;
 pub use text_input::*;
 pub use throbber::*;
 
@@ -107,15 +107,6 @@ pub fn use_window_logical_resolution(hooks: &mut Hooks) -> UVec2 {
         }
     });
     res
-}
-
-/// This only exists so that we can implement From<String> for Text, and then use it in
-/// for instance Button
-pub struct UIElement(pub Element);
-impl From<Element> for UIElement {
-    fn from(el: Element) -> Self {
-        Self(el)
-    }
 }
 
 #[derive(Debug, Clone)]
