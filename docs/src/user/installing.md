@@ -34,15 +34,17 @@ Note that if you are running a project outside of the `guest/rust` workspace, it
 
 ### Build dependencies: Linux/Ubuntu
 
-For the above to work on linux, you also need to install the following build dependencies;
+For the above to work on Linux, you also need to install the following build dependencies:
 
 ```sh
-apt-get install -y build-essential cmake pkg-config libfontconfig1-dev clang libasound2-dev ninja-build
+apt-get install -y \
+    build-essential cmake pkg-config \
+    libfontconfig1-dev clang libasound2-dev ninja-build
 ```
 
 ## Running on headless Linux/Ubuntu
 
-To run on a headless linux machine, install the following dependencies;
+To run on a headless Linux machine, install the following dependencies in addition to the dependencies specified above:
 
 ```sh
 add-apt-repository ppa:oibaf/graphics-drivers -y
@@ -51,3 +53,19 @@ apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers
 ```
 
 Ambient currently assumes that you have access to GPU drivers (but not necessarily a _GPU_ by itself) in headless mode. This requirement may be relaxed in future.
+
+## Dockerfile
+
+A `Dockerfile` is also provided that provides a headless Debian environment with all of the dependencies required to run Ambient as a server. This Dockerfile is intended for development, not production, so it has more dependencies than are strictly required to run Ambient.
+
+To build the Dockerfile:
+
+```sh
+docker build -t ambient .
+```
+
+To run the Dockerfile with `bash` in the current directory:
+
+```sh
+docker run --rm -it -e bash -v "$(pwd)":/app ambient
+```
