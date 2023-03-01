@@ -20,7 +20,7 @@
             },
             "args": [
                 "run",
-                "guest/rust/examples/tictactoe",
+                "guest/rust/examples/text",
                 "--debug"
             ],
             "cwd": "${workspaceFolder}",

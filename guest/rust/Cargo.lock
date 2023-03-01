@@ -747,6 +747,7 @@ version = "0.1.1"
 dependencies = [
  "ambient_api",
  "ambient_element",
+ "ambient_guest_bridge",
  "ambient_ui_components",
 ]
 
