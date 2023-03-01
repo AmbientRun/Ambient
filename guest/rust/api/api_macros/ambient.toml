@@ -790,8 +790,8 @@ description = "Can be translated, rotated and scaled."
 
 [concepts.transformable.components]
 "core::transform::translation" = [0.0, 0.0, 0.0]
-"core::transform::rotation" = [0.0, 0.0, 0.0, 1.0]
 "core::transform::scale" = [1.0, 1.0, 1.0]
+"core::transform::rotation" = [0.0, 0.0, 0.0, 1.0]
 
 [concepts.sphere]
 name = "Sphere"
@@ -809,9 +809,9 @@ description = "Base components for a camera. You will need other components to m
 extends = ["transformable"]
 
 [concepts.camera.components]
+"core::camera::near" = 0.10000000149011612
 "core::camera::projection" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
 "core::camera::projection_view" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
-"core::camera::near" = 0.10000000149011612
 
 [concepts.perspective_common_camera]
 name = "Perspective Common Camera"
@@ -819,8 +819,8 @@ description = "Base components for a perspective camera. Consider `perspective_c
 extends = ["camera"]
 
 [concepts.perspective_common_camera.components]
-"core::camera::aspect_ratio" = 1.0
 "core::camera::fovy" = 1.0
+"core::camera::aspect_ratio" = 1.0
 
 [concepts.perspective_camera]
 name = "Perspective Camera"

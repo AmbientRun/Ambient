@@ -5,7 +5,7 @@ use crate::{
     picking_scene, trigger_areas_scene,
 };
 use ambient_core::transform::get_world_transform;
-use ambient_ecs::{components, dont_store, query, Description, EntityData, EntityId, FnSystem, Name, Networked, SystemGroup, World};
+use ambient_ecs::{components, dont_store, query, Description, Entity, EntityId, FnSystem, Name, Networked, SystemGroup, World};
 use ambient_element::{ElementComponentExt, ElementTree};
 use ambient_gizmos::{gizmos, GizmoPrimitive};
 use ambient_primitives::BoxLine;
@@ -131,7 +131,7 @@ pub fn server_systems() -> SystemGroup {
                 #[allow(clippy::comparison_chain)]
                 if render_buffer.lines.len() > existing.len() {
                     for i in existing.len()..render_buffer.lines.len() {
-                        EntityData::new().set_default(dont_store()).set(physx_viz_line(), render_buffer.lines[i].clone()).spawn(world);
+                        Entity::new().with_default(dont_store()).with(physx_viz_line(), render_buffer.lines[i].clone()).spawn(world);
                     }
                 } else if existing.len() > render_buffer.lines.len() {
                     for entity in existing.iter().skip(render_buffer.lines.len()) {

@@ -2,6 +2,7 @@
 [package]
 name = "ambient_gpu"
 version = { workspace = true }
+rust-version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -31,6 +32,6 @@ tracing = { workspace = true }
 hotload-includes = ['ambient_std/hotload-includes']
 
 
-[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+[target.'cfg(target_os = "unknown")'.dev-dependencies]
 # TODO: use provided webgpu api when released
 wgpu = { version = "0.15", features = ["webgl"] }

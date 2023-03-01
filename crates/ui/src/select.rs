@@ -1,10 +1,7 @@
-use std::sync::Arc;
-
-use ambient_core::on_window_event;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_std::Cb;
 use closure::closure;
-use winit::event::{ElementState, WindowEvent};
+use winit::event::ElementState;
 
 use super::{Button, ButtonStyle, FlowColumn, FlowRow, Text, UIExt};
 use crate::{
@@ -12,6 +9,7 @@ use crate::{
     layout::{margin, Borders},
     padding, tooltip_background_color, Corners, Dropdown, SMALL_ROUNDING, STREET,
 };
+use ambient_input::event_mouse_input;
 
 #[derive(Debug, Clone)]
 pub struct DropdownSelect {
@@ -24,7 +22,17 @@ impl ElementComponent for DropdownSelect {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { content, on_select, items, inline } = *self;
         let (show, set_show) = hooks.use_state(false);
-        let dropdown = Dropdown {
+        hooks.use_world_event({
+            let set_show = set_show.clone();
+            move |_world, event| {
+                if let Some(event) = event.get_ref(event_mouse_input()) {
+                    if show && event.state == ElementState::Released {
+                        set_show(false);
+                    }
+                }
+            }
+        });
+        Dropdown {
             content: Button::new(
                 FlowRow(vec![content, Text::el("\u{f078}").set(margin(), Borders::left(5.))]).el(),
                 closure!(clone set_show, |_| set_show(!show)),
@@ -63,19 +71,7 @@ impl ElementComponent for DropdownSelect {
             .with_background(tooltip_background_color()),
             show,
         }
-        .el();
-        if show {
-            dropdown.listener(
-                on_window_event(),
-                Arc::new(move |_, _, event| {
-                    if let WindowEvent::MouseInput { state: ElementState::Released, .. } = event {
-                        set_show(false);
-                    }
-                }),
-            )
-        } else {
-            dropdown
-        }
+        .el()
     }
 }
 

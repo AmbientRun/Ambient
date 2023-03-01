@@ -7,7 +7,7 @@ use ambient_core::{
 };
 use ambient_decals::decal;
 use ambient_ecs::{
-    with_component_registry, Component, ComponentDesc, ComponentEntry, ComponentValue, EntityData, EntityId, PrimitiveComponentType, World,
+    with_component_registry, Component, ComponentDesc, ComponentEntry, ComponentValue, Entity, EntityId, PrimitiveComponentType, World,
 };
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_intent::client_push_intent;
@@ -111,7 +111,7 @@ impl EntityComponentChange {
             }
         }
     }
-    pub fn apply_to_entity_data(self, entity: &mut EntityData) {
+    pub fn apply_to_entity_data(self, entity: &mut Entity) {
         match self {
             EntityComponentChange::Change(entry) => entity.set_entry(entry),
             EntityComponentChange::Add(entry) => entity.set_entry(entry),
@@ -125,10 +125,10 @@ impl EntityComponentChange {
 #[tracing::instrument(level = "info", skip_all)]
 #[profiling::function]
 #[element_component]
-fn EntityComponentsEditor(_hooks: &mut Hooks, value: EntityData, on_change: Cb<dyn Fn(EntityComponentChange) + Sync + Send>) -> Element {
+fn EntityComponentsEditor(_hooks: &mut Hooks, value: Entity, on_change: Cb<dyn Fn(EntityComponentChange) + Sync + Send>) -> Element {
     let mut missing_components = Vec::new();
     fn reg_component<T: ComponentValue + Editor + std::fmt::Debug + Clone + Sync + Send + 'static>(
-        entity: &EntityData,
+        entity: &Entity,
         on_change: Cb<dyn Fn(EntityComponentChange) + Sync + Send>,
         missing_components: &mut Vec<(String, Arc<dyn Fn() + Sync + Send>)>,
         display_name: &str,
@@ -190,7 +190,7 @@ fn EntityComponentsEditor(_hooks: &mut Hooks, value: EntityData, on_change: Cb<d
         profiling::scope!("setup_component_editors");
         fn register_dynamic_component<T: ComponentValue + Editor + std::fmt::Debug + Clone + Sync + Send + Default + 'static>(
             (entity, on_change, missing_components): (
-                &EntityData,
+                &Entity,
                 Cb<dyn Fn(EntityComponentChange) + Sync + Send>,
                 &mut Vec<(String, Arc<dyn Fn() + Sync + Send>)>,
             ),

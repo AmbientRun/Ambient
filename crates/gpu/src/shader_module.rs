@@ -238,7 +238,7 @@ impl Shader {
             source = source.replace(&format!("#{key}"), &value.to_wgsl());
         }
 
-        #[cfg(debug_assertions)]
+        #[cfg(all(not(target_os = "unknown"), debug_assertions))]
         {
             std::fs::create_dir_all("tmp/").unwrap();
             std::fs::write(format!("tmp/{label}.wgsl"), source.as_bytes()).unwrap();

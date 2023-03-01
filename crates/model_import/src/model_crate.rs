@@ -7,7 +7,7 @@ use ambient_core::{
     name,
     transform::{local_to_parent, local_to_world, mesh_to_local, TransformSystem},
 };
-use ambient_ecs::{query, query_mut, Component, ComponentValue, EntityData, EntityId, FrameEvent, System, World};
+use ambient_ecs::{query, query_mut, Component, ComponentValue, Entity, EntityId, FrameEvent, System, World};
 use ambient_model::{
     animation_bind_id, model_from_url, model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl,
 };
@@ -260,19 +260,19 @@ impl ModelCrate {
             world.add_resource(local_to_parent(), *ltp);
         }
 
-        let mut root = EntityData::new()
-            .set(name(), "root".to_string())
-            .set(lod_cutoffs(), cutoffs)
-            .set_default(gpu_lod())
-            .set(
+        let mut root = Entity::new()
+            .with(name(), "root".to_string())
+            .with(lod_cutoffs(), cutoffs)
+            .with_default(gpu_lod())
+            .with(
                 mesh_to_local(),
                 lod_0_world.get(lod_0_node, local_to_world()).unwrap_or_default()
                     * lod_0_world.get(lod_0_node, mesh_to_local()).unwrap_or(Mat4::IDENTITY),
             )
-            .set(double_sided(), lod_0_world.get(lod_0_node, double_sided()).unwrap_or_default())
-            .set(local_bounding_aabb(), lod_0_world.get(lod_0_node, local_bounding_aabb()).unwrap_or_default())
-            .set_default(local_to_world())
-            .set_default(pbr_renderer_primitives_from_url());
+            .with(double_sided(), lod_0_world.get(lod_0_node, double_sided()).unwrap_or_default())
+            .with(local_bounding_aabb(), lod_0_world.get(lod_0_node, local_bounding_aabb()).unwrap_or_default())
+            .with_default(local_to_world())
+            .with_default(pbr_renderer_primitives_from_url());
 
         for (i, lod) in lods.iter().enumerate() {
             let lod_world = lod.world();
@@ -443,10 +443,10 @@ impl ModelCrate {
     }
 
     pub fn create_prefab_from_model(&mut self) {
-        self.create_prefab(EntityData::new().set(model_from_url(), dotdot_path(self.models.loc.path(ModelCrate::MAIN)).into()))
+        self.create_prefab(Entity::new().with(model_from_url(), dotdot_path(self.models.loc.path(ModelCrate::MAIN)).into()))
     }
 
-    pub fn create_prefab(&mut self, data: EntityData) {
+    pub fn create_prefab(&mut self, data: Entity) {
         let mut prefab = World::new("prefab_asset");
         let o = data.spawn(&mut prefab);
         prefab.add_resource(children(), vec![o]);

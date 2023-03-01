@@ -1,9 +1,9 @@
-use std::{self, sync::Arc, time::Duration};
+use std::{self, time::Duration};
 
 use ambient_core::{transform::translation, window::WindowCtl, window_ctl};
 use ambient_ecs::EntityId;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_input::{on_app_keyboard_input, on_app_received_character, KeyboardEvent};
+use ambient_input::{event_keyboard_input, event_received_character, KeyboardEvent};
 use ambient_renderer::color;
 use ambient_std::{cb, Cb};
 use closure::closure;
@@ -36,12 +36,57 @@ pub fn TextInput(
             }
         })
     }));
+    hooks.use_world_event({
+        let value = value.clone();
+        let on_change = on_change.clone();
+        move |_world, event| {
+            if let Some(c) = event.get(event_received_character()) {
+                if command || !focused {
+                    return;
+                }
+                if c == '\u{7f}' || c == '\u{8}' {
+                    let mut value = value.clone();
+                    value.pop();
+                    on_change.0(value);
+                } else if c == '\r' {
+                    if let Some(on_submit) = on_submit.clone() {
+                        on_submit.0(value.clone());
+                    }
+                } else if c != '\t' && c != '\n' && c != '\r' {
+                    on_change.0(format!("{value}{c}"))
+                }
+            } else if let Some(event) = event.get_ref(event_keyboard_input()) {
+                if !focused {
+                    return;
+                }
+                if let KeyboardEvent { keycode: Some(kc), state, .. } = event {
+                    match kc {
+                        VirtualKeyCode::LWin => {
+                            #[cfg(target_os = "macos")]
+                            set_command(state == &ElementState::Pressed);
+                        }
+                        VirtualKeyCode::LControl => {
+                            #[cfg(not(target_os = "macos"))]
+                            set_command(state == &ElementState::Pressed);
+                        }
+                        VirtualKeyCode::V => {
+                            if command && state == &ElementState::Pressed {
+                                #[cfg(not(target_os = "unknown"))]
+                                if let Ok(paste) = arboard::Clipboard::new().unwrap().get_text() {
+                                    on_change.0(format!("{value}{paste}"));
+                                }
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
+    });
     let el = if value.is_empty() && !focused && placeholder.is_some() {
         Text.el().set(text(), placeholder.unwrap()).set(color(), vec4(1., 1., 1., 0.2))
     } else {
-        Text.el()
-            .set(text(), if password { value.chars().map(|_| '*').collect() } else { value.clone() })
-            .set(color(), vec4(0.9, 0.9, 0.9, 1.))
+        Text.el().set(text(), if password { value.chars().map(|_| '*').collect() } else { value }).set(color(), vec4(0.9, 0.9, 0.9, 1.))
     }
     .init(layout(), Layout::Flow)
     .set(fit_horizontal(), Fit::None)
@@ -49,6 +94,7 @@ pub fn TextInput(
     .set(min_width(), 3.)
     .set(min_height(), 13.)
     .on_spawned(move |_, id| set_self_id(id))
+    .with_clickarea()
     .on_mouse_up(move |_, id, _| {
         set_focus(Focus(Some(id)));
     })
@@ -57,58 +103,11 @@ pub fn TextInput(
     })
     .on_mouse_leave(|world, _| {
         world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Default)).ok();
-    });
+    })
+    .el();
 
     if focused {
-        el.set(align_horizontal(), Align::End)
-            .children(vec![Cursor.el()])
-            .listener(
-                on_app_received_character(),
-                Arc::new(closure!(clone value, clone on_change, clone on_submit, |_, _, c| {
-                    if command {
-                        return true;
-                    }
-                    if c == '\u{7f}' || c == '\u{8}' {
-                        let mut value = value.clone();
-                        value.pop();
-                        on_change.0(value);
-                    } else if c == '\r' {
-                        if let Some(on_submit) = on_submit.clone() {
-                            on_submit.0(value.clone());
-                        }
-                    } else if c != '\t' && c != '\n' && c != '\r' {
-                        on_change.0(format!("{value}{c}"))
-                    }
-                    true
-                })),
-            )
-            .listener(
-                on_app_keyboard_input(),
-                Arc::new(move |_, _, event| {
-                    if let KeyboardEvent { keycode: Some(kc), state, .. } = event {
-                        match kc {
-                            VirtualKeyCode::LWin => {
-                                #[cfg(target_os = "macos")]
-                                set_command(state == &ElementState::Pressed);
-                            }
-                            VirtualKeyCode::LControl => {
-                                #[cfg(not(target_os = "macos"))]
-                                set_command(state == &ElementState::Pressed);
-                            }
-                            VirtualKeyCode::V => {
-                                if command && state == &ElementState::Pressed {
-                                    #[cfg(not(target_os = "unknown"))]
-                                    if let Ok(paste) = arboard::Clipboard::new().unwrap().get_text() {
-                                        on_change.0(format!("{value}{paste}"));
-                                    }
-                                }
-                            }
-                            _ => {}
-                        }
-                    }
-                    true
-                }),
-            )
+        el.set(align_horizontal(), Align::End).children(vec![Cursor.el()])
     } else {
         el
     }

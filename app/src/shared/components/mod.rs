@@ -1,3 +1,5 @@
+use ambient_ecs::Concept;
+
 use crate::shared;
 
 pub(crate) fn init() -> anyhow::Result<()> {
@@ -16,6 +18,17 @@ pub(crate) fn init() -> anyhow::Result<()> {
     shared::player::init_all_components();
 
     Ok(())
+}
+
+#[allow(dead_code)]
+fn concepts() -> Vec<Concept> {
+    [
+        // Comment to force line break
+        ambient_core::transform::concepts(),
+        ambient_primitives::concepts(),
+        ambient_core::camera::concepts(),
+    ]
+    .concat()
 }
 
 #[cfg(not(feature = "production"))]

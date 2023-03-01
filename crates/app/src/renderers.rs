@@ -74,15 +74,19 @@ impl ExamplesRender {
         world.add_component(world.resource_entity(), renderer_stats(), "".to_string()).unwrap();
         let wind_size = *world.resource(ambient_core::window_physical_size());
 
+        tracing::info!("Creating render target");
         let render_target = RenderTarget::new(gpu.clone(), wind_size, None);
 
+        tracing::info!("Creating self");
         Self {
             main: if main {
+                tracing::info!("Creating renderer");
                 let mut renderer = Renderer::new(
                     world,
                     world.resource(asset_cache()).clone(),
                     RendererConfig { scene: main_scene(), shadows: true, ..Default::default() },
                 );
+                tracing::info!("Creating gizmo renderer");
                 renderer.post_transparent = Some(Box::new(GizmoRenderer::new(&assets)));
                 Some(renderer)
             } else {

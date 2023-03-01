@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fmt::Debug, marker::Send};
 
-use ambient_ecs::{ArchetypeFilter, Component, ComponentValue, EntityData, EntityId, IndexExt, SystemGroup, World};
+use ambient_ecs::{ArchetypeFilter, Component, ComponentValue, Entity, EntityId, IndexExt, SystemGroup, World};
 use ambient_network::{
     assert_networked,
     server::{ServerState, SharedServerState},
@@ -112,10 +112,10 @@ where
                 world
                     .add_components(
                         id,
-                        EntityData::new()
-                            .set(intent_applied(), format!("{state:?}"))
-                            .set(intent_success(), ())
-                            .set(self.intent_revert, state),
+                        Entity::new()
+                            .with(intent_applied(), format!("{state:?}"))
+                            .with(intent_success(), ())
+                            .with(self.intent_revert, state),
                     )
                     .unwrap();
             }
@@ -124,7 +124,7 @@ where
                 world
                     .add_components(
                         id,
-                        EntityData::new().set(intent_applied(), format!("failed: {err:#}")).set(intent_failed(), format!("{err:#}")),
+                        Entity::new().with(intent_applied(), format!("failed: {err:#}")).with(intent_failed(), format!("{err:#}")),
                     )
                     .unwrap();
             }
@@ -174,11 +174,11 @@ where
         let world = &mut ctx.world;
         match result {
             Ok(()) => {
-                world.add_components(id, EntityData::new().set(intent_reverted(), ())).unwrap();
+                world.add_components(id, Entity::new().with(intent_reverted(), ())).unwrap();
             }
             Err(err) => {
                 tracing::error!("Failed to revert intent: {name} {err:?}");
-                world.add_components(id, EntityData::new().set(intent_reverted(), ()).set(intent_failed(), format!("{err:#}"))).unwrap();
+                world.add_components(id, Entity::new().with(intent_reverted(), ()).with(intent_failed(), format!("{err:#}"))).unwrap();
             }
         }
 

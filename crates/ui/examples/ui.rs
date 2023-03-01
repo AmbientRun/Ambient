@@ -1,8 +1,6 @@
-use std::sync::Arc;
-
 use ambient_app::{App, AppBuilder};
 use ambient_cameras::UICamera;
-use ambient_core::{camera::active_camera, hierarchy::children, on_frame, transform::translation};
+use ambient_core::{camera::active_camera, hierarchy::children, transform::translation};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::color;
 use ambient_std::color::Color;
@@ -17,12 +15,13 @@ struct WobbleRect;
 impl ElementComponent for WobbleRect {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (state, set_state) = hooks.use_state(0.);
-        UIBase
-            .el()
-            .set(width(), 150.)
-            .set(height(), 30. + (state as f32 * 0.01).sin() * 20.)
-            .with_background(Color::rgba(1., 0., (state as f32 * 0.01).sin(), 1.))
-            .listener(on_frame(), Arc::new(move |_world, _, _| set_state(state + 1.)))
+        hooks.use_frame(move |_| set_state(state + 1.));
+        UIBase.el().set(width(), 150.).set(height(), 30. + (state as f32 * 0.01).sin() * 20.).with_background(Color::rgba(
+            1.,
+            0.,
+            (state as f32 * 0.01).sin(),
+            1.,
+        ))
     }
 }
 
@@ -78,7 +77,8 @@ impl ElementComponent for Example {
                         .set(width(), 30. - count as f32 * 2.)
                         .set(height(), 30. + count as f32 * 30.)
                         .with_background(Color::rgba(0.5, 0.5, 0.5, 1.))
-                        .with_clickarea(),
+                        .with_clickarea()
+                        .el(),
                     // .set(on_click(), Arc::new(move |world, _| {
                     //     set_count(count + 1);
                     // }))

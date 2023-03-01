@@ -1,6 +1,6 @@
 use std::{collections::HashMap, time::Duration};
 
-use ambient_ecs::{with_component_registry, ComponentDesc, EntityData, EntityId, Query, World, WorldDiff};
+use ambient_ecs::{with_component_registry, ComponentDesc, Entity, EntityId, Query, World, WorldDiff};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::color;
 use ambient_std::{cb, Cb};
@@ -73,6 +73,7 @@ impl ElementComponent for ECSEditor {
                             None => Vec4::ONE,
                         },
                     )
+                    .with_clickarea()
                     .on_mouse_up(move |_, _, _| {
                         let mut comps = components.clone();
                         if let Some(v) = comps.get(&comp).cloned() {
@@ -85,7 +86,8 @@ impl ElementComponent for ECSEditor {
                             comps.insert(comp, true);
                         }
                         set_components(comps);
-                    }),
+                    })
+                    .el(),
             ])
             .set(space_between_items(), 5.)
         };
@@ -118,7 +120,7 @@ impl ElementComponent for ECSEditor {
 #[derive(Debug, Clone)]
 struct EntityEditor {
     id: EntityId,
-    data: EntityData,
+    data: Entity,
     on_change: Cb<dyn Fn(&mut World, WorldDiff) + Sync + Send>,
 }
 

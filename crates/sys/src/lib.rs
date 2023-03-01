@@ -14,15 +14,15 @@ pub fn set_panic_hook() {
     //
     // For more details see
     // https://github.com/rustwasm/console_error_panic_hook#readme
-    #[cfg(all(target_arch = "wasm32", feature = "console_error_panic_hook"))]
+    #[cfg(all(target_os = "unknown", feature = "console_error_panic_hook"))]
     {
         tracing::info!("Setting panic hook");
         console_error_panic_hook::set_once();
     }
 }
 
-#[cfg_attr(not(target_arch = "wasm32"), path = "./native/mod.rs")]
-#[cfg_attr(target_arch = "wasm32", path = "./wasm/mod.rs")]
+#[cfg_attr(not(target_os = "unknown"), path = "./native/mod.rs")]
+#[cfg_attr(target_os = "unknown", path = "./wasm/mod.rs")]
 pub(crate) mod platform;
 
 /// Platform agnostic file io.

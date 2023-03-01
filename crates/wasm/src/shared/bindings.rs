@@ -1,6 +1,6 @@
 use ambient_ecs::{
     paste::paste, primitive_component_definitions, with_component_registry, Component,
-    ComponentDesc, ComponentEntry, ECSError, EntityData, EntityId, World,
+    ComponentDesc, ComponentEntry, ECSError, Entity as EntityData, EntityId, World,
 };
 
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};

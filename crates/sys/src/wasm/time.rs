@@ -76,6 +76,10 @@ pub fn sleep(dur: Duration) -> Sleep {
     Sleep::new(&get_global_timers().expect("No timers"), dur)
 }
 
+pub fn current_epoch_time() -> Duration {
+    Duration::from_millis(js_sys::Date::now() as _)
+}
+
 pub struct Interval {
     inner: timer::Interval,
 }

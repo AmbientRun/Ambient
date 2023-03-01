@@ -2,6 +2,7 @@
 [package]
 name = "ambient_terrain"
 version = { workspace = true }
+rust-version = { workspace = true }
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -44,5 +45,5 @@ tracing = { workspace = true }
 [features]
 hotload-includes = ['ambient_std/hotload-includes']
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+[target.'cfg(not(target_os = "unknown"))'.dependencies]
 quinn = { workspace = true }

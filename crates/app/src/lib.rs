@@ -1,8 +1,4 @@
-use std::{
-    future::Future,
-    sync::Arc,
-    time::{Duration, SystemTime},
-};
+use std::{future::Future, sync::Arc, time::Duration};
 
 use ambient_cameras::assets_camera_systems;
 pub use ambient_core::gpu;
@@ -14,12 +10,15 @@ use ambient_core::{
     frame_index, get_window_sizes,
     gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate},
     hierarchy::dump_world_hierarchy_to_tmp_file,
-    mouse_position, on_frame_system, remove_at_time_system, runtime, time,
+    mouse_position, remove_at_time_system, runtime, time,
     transform::TransformSystem,
     window::WindowCtl,
-    window_logical_size, window_physical_size, window_scale_factor, RuntimeKey, TimeResourcesSystem, WinitEventsSystem,
+    window_logical_size, window_physical_size, window_scale_factor, RuntimeKey, TimeResourcesSystem,
 };
-use ambient_ecs::{components, Debuggable, DynSystem, EntityData, FrameEvent, MakeDefault, MaybeResource, System, SystemGroup, World};
+use ambient_ecs::{
+    components, world_events, Debuggable, DynSystem, Entity, FrameEvent, MakeDefault, MaybeResource, System, SystemGroup, World,
+    WorldEventsSystem,
+};
 use ambient_element::ambient_system;
 use ambient_gizmos::{gizmos, Gizmos};
 use ambient_gpu::{
@@ -92,8 +91,8 @@ pub fn world_instance_systems(full: bool) -> SystemGroup {
         vec![
             Box::new(TimeResourcesSystem::new()),
             Box::new(async_ecs_systems()),
-            on_frame_system(),
             remove_at_time_system(),
+            Box::new(WorldEventsSystem),
             if full { Box::new(ambient_input::picking::frame_systems()) } else { Box::new(DummySystem) },
             Box::new(lod_system()),
             Box::new(ambient_renderer::systems()),
@@ -133,26 +132,28 @@ impl AppResources {
     }
 }
 
-pub fn world_instance_resources(resources: AppResources) -> EntityData {
-    EntityData::new()
-        .set(self::gpu(), resources.gpu.clone())
-        .set(gizmos(), Gizmos::new())
-        .set(self::runtime(), resources.runtime)
-        .set(self::window_title(), "".to_string())
-        .set(self::fps_stats(), FpsSample::default())
-        .set(self::asset_cache(), resources.assets.clone())
-        .set(frame_index(), 0_usize)
-        .set(ambient_core::mouse_position(), Vec2::ZERO)
-        .set(ambient_core::app_start_time(), SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap())
-        .set(ambient_core::time(), SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap())
-        .set(ambient_core::dtime(), 0.)
-        .set(gpu_world(), GpuWorld::new_arced(resources.assets))
-        .append(ambient_input::picking::resources())
-        .append(ambient_core::async_ecs::async_ecs_resources())
-        .set(ambient_core::window_physical_size(), resources.window_physical_size)
-        .set(ambient_core::window_logical_size(), resources.window_logical_size)
-        .set(ambient_core::window_scale_factor(), resources.window_scale_factor)
-        .set(ambient_core::window_ctl(), resources.ctl_tx)
+pub fn world_instance_resources(resources: AppResources) -> Entity {
+    let current_time = ambient_sys::time::current_epoch_time();
+    Entity::new()
+        .with(self::gpu(), resources.gpu.clone())
+        .with(gizmos(), Gizmos::new())
+        .with(self::runtime(), resources.runtime)
+        .with(self::window_title(), "".to_string())
+        .with(self::fps_stats(), FpsSample::default())
+        .with(self::asset_cache(), resources.assets.clone())
+        .with_default(world_events())
+        .with(frame_index(), 0_usize)
+        .with(ambient_core::mouse_position(), Vec2::ZERO)
+        .with(ambient_core::app_start_time(), current_time)
+        .with(ambient_core::time(), current_time)
+        .with(ambient_core::dtime(), 0.)
+        .with(gpu_world(), GpuWorld::new_arced(resources.assets))
+        .with_merge(ambient_input::picking::resources())
+        .with_merge(ambient_core::async_ecs::async_ecs_resources())
+        .with(ambient_core::window_physical_size(), resources.window_physical_size)
+        .with(ambient_core::window_logical_size(), resources.window_logical_size)
+        .with(ambient_core::window_scale_factor(), resources.window_scale_factor)
+        .with(ambient_core::window_ctl(), resources.ctl_tx)
 }
 
 pub fn get_time_since_app_start(world: &World) -> Duration {
@@ -253,6 +254,22 @@ impl AppBuilder {
             (Some(window), Some(event_loop))
         };
 
+        #[cfg(target_os = "unknown")]
+        // Insert a canvas element for the window to attach to
+        {
+            use winit::platform::web::WindowExtWebSys;
+
+            let canvas = window.canvas();
+
+            let window = web_sys::window().unwrap();
+            let document = window.document().unwrap();
+            let body = document.body().unwrap();
+
+            // Set a background color for the canvas to make it easier to tell where the canvas is for debugging purposes.
+            canvas.style().set_css_text("background-color: crimson;");
+            body.append_child(&canvas).unwrap();
+        }
+
         #[cfg(feature = "profile")]
         let puffin_server = {
             let puffin_addr = format!(
@@ -275,10 +292,12 @@ impl AppBuilder {
         let mut world = World::new("main_app");
         let gpu = Arc::new(Gpu::with_config(window.as_ref().map(|x| &**x), true).await);
 
+        tracing::info!("Inserting runtime");
         RuntimeKey.insert(&assets, runtime.clone());
         GpuKey.insert(&assets, gpu.clone());
         // WindowKey.insert(&assets, window.clone());
 
+        tracing::info!("Inserting app resources");
         let (ctl_tx, ctl_rx) = flume::unbounded();
 
         let (window_physical_size, window_logical_size, window_scale_factor) = if let Some(window) = window.as_ref() {
@@ -294,24 +313,27 @@ impl AppBuilder {
         let resources = world_instance_resources(app_resources);
 
         world.add_components(world.resource_entity(), resources).unwrap();
+        tracing::info!("Setup renderers");
         if self.ui_renderer || self.main_renderer {
+            // let _span = info_span!("setup_renderers").entered();
             if !self.main_renderer {
+                tracing::info!("Setting up UI renderer");
                 let renderer = Arc::new(Mutex::new(UIRender::new(&mut world)));
                 world.add_resource(ui_renderer(), renderer);
             } else {
-                let renderer = Arc::new(Mutex::new(ExamplesRender::new(&mut world, self.ui_renderer, self.main_renderer)));
+                tracing::info!("Setting up ExamplesRenderer");
+                let renderer = ExamplesRender::new(&mut world, self.ui_renderer, self.main_renderer);
+                tracing::info!("Created examples renderer");
+                let renderer = Arc::new(Mutex::new(renderer));
                 world.add_resource(examples_renderer(), renderer);
             }
         }
 
+        tracing::info!("Adding window event systems");
+
         let mut window_event_systems = SystemGroup::new(
             "window_event_systems",
-            vec![
-                Box::new(assets_camera_systems()),
-                Box::new(WinitEventsSystem::new()),
-                Box::new(ambient_input::event_systems()),
-                Box::new(renderers::systems()),
-            ],
+            vec![Box::new(assets_camera_systems()), Box::new(ambient_input::event_systems()), Box::new(renderers::systems())],
         );
         if self.examples_systems {
             window_event_systems.add(Box::new(ExamplesSystem));
@@ -405,28 +427,13 @@ impl App {
         AppBuilder::new()
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(target_os = "unknown")]
     pub fn spawn(mut self) {
         use winit::platform::web::EventLoopExtWebSys;
 
-        pub fn insert_canvas(window: &Window) {
-            use winit::platform::web::WindowExtWebSys;
-
-            let canvas = window.canvas();
-
-            let window = web_sys::window().unwrap();
-            let document = window.document().unwrap();
-            let body = document.body().unwrap();
-
-            // Set a background color for the canvas to make it easier to tell where the canvas is for debugging purposes.
-            canvas.style().set_css_text("background-color: crimson;");
-            body.append_child(&canvas).unwrap();
-        }
-
-        insert_canvas(&self.window);
-
         let event_loop = self.event_loop.take().unwrap();
 
+        tracing::info!("Spawning event loop");
         event_loop.spawn(move |event, _, control_flow| {
             tracing::info!("Event: {event:?}");
             // HACK(philpax): treat dpi changes as resize events. Ideally we'd handle this in handle_event proper,

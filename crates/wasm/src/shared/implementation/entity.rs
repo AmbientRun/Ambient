@@ -2,14 +2,14 @@ use crate::shared::host_guest_state::QueryStateMap;
 use ambient_animation::{animation_controller, AnimationController};
 use ambient_core::transform::translation;
 use ambient_ecs::{
-    query as ecs_query, with_component_registry, Component, ComponentValue, EntityData, EntityId,
+    query as ecs_query, with_component_registry, Component, ComponentValue, Entity, EntityId,
     QueryEvent, QueryState, World,
 };
 use anyhow::Context;
 use glam::Vec3;
 use slotmap::Key;
 
-pub fn spawn(world: &mut World, data: EntityData) -> EntityId {
+pub fn spawn(world: &mut World, data: Entity) -> EntityId {
     data.spawn(world)
 }
 

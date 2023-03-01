@@ -83,10 +83,10 @@ async fn init(app: &mut App) {
     }
 
     ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
-        .set(active_camera(), 0.)
-        .set(main_scene(), ())
-        .set(near(), 1.)
-        .set(far(), 8000.)
+        .with(active_camera(), 0.)
+        .with(main_scene(), ())
+        .with(near(), 1.)
+        .with(far(), 8000.)
         .spawn(world);
 
     app.world.add_component(app.world.resource_entity(), gizmo_state(), GizmoState::default()).unwrap();

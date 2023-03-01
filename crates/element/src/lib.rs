@@ -1,12 +1,9 @@
 #[macro_use]
-extern crate closure;
-#[macro_use]
 extern crate derivative;
 
 use std::{any::Any, sync::Arc};
 
-use ambient_ecs::{components, Component, ComponentDesc, ComponentValue, EntityData, EntityId, SystemGroup, World};
-use ambient_std::events::EventDispatcher;
+use ambient_ecs::{components, Component, ComponentDesc, ComponentValue, Entity, EntityId, SystemGroup, World};
 use as_any::AsAny;
 use dyn_clonable::clonable;
 use parking_lot::Mutex;
@@ -87,7 +84,7 @@ impl Element {
         self
     }
     pub fn set_with<T: ComponentValue, F: Fn(&World) -> T + ComponentValue>(mut self, component: Component<T>, value: F) -> Self {
-        self.config.components.set_writer(component, Arc::new(move |world, ed| ed.set_self(component, value(world))));
+        self.config.components.set_writer(component, Arc::new(move |world, ed| ed.set(component, value(world))));
         self
     }
     pub fn set_default<T: ComponentValue + Clone + Default>(mut self, component: Component<T>) -> Self {
@@ -101,7 +98,7 @@ impl Element {
     }
     /// See [`Element::init`]
     pub fn init_with<T: ComponentValue, F: Fn(&World) -> T + ComponentValue>(mut self, component: Component<T>, value: F) -> Self {
-        self.config.init_components.set_writer(component, Arc::new(move |world, ed| ed.set_self(component, value(world))));
+        self.config.init_components.set_writer(component, Arc::new(move |world, ed| ed.set(component, value(world))));
         self
     }
     /// See [`Element::init`]
@@ -109,14 +106,14 @@ impl Element {
         self.config.init_components.set(component, T::default());
         self
     }
-    pub fn extend(mut self, entity_data: EntityData) -> Self {
+    pub fn extend(mut self, entity_data: Entity) -> Self {
         for unit in entity_data.into_iter() {
             self.config.components.set_writer(unit.desc(), Arc::new(move |_, ed| ed.set_entry(unit.clone())));
         }
         self
     }
     /// See [`Element::init`]; adds each entry in the EntityData to init
-    pub fn init_extend(mut self, entity_data: EntityData) -> Self {
+    pub fn init_extend(mut self, entity_data: Entity) -> Self {
         for unit in entity_data.into_iter() {
             self.config.init_components.set_writer(unit.desc(), Arc::new(move |_, ed| ed.set_entry(unit.clone())));
         }
@@ -131,15 +128,11 @@ impl Element {
         self.config.init_components.remove(component);
         self
     }
-    pub fn listener<T: 'static + Sync + Send + ?Sized>(mut self, component: Component<EventDispatcher<T>>, listener: Arc<T>) -> Self {
-        self.config.event_listeners.set(component, listener);
-        self
-    }
     pub fn children(mut self, children: Vec<Element>) -> Self {
         self.children = children;
         self
     }
-    pub fn spawner<F: Fn(&mut World, EntityData) -> EntityId + ComponentValue>(mut self, handler: F) -> Self {
+    pub fn spawner<F: Fn(&mut World, Entity) -> EntityId + ComponentValue>(mut self, handler: F) -> Self {
         self.config.spawner = Arc::new(handler);
         self
     }
@@ -176,7 +169,7 @@ impl Element {
     /// `element_tree` components get updated each frame so this entity tree will be updated
     pub fn spawn_interactive(self, world: &mut World) -> EntityId {
         let tree = self.spawn_tree(world);
-        EntityData::new().set(self::element_tree(), ShareableElementTree(Arc::new(Mutex::new(tree)))).spawn(world)
+        Entity::new().with(self::element_tree(), ShareableElementTree(Arc::new(Mutex::new(tree)))).spawn(world)
     }
     /// This spawns the elemet tree and returns it. The tree won't be automatically updated, but can manually be updated
     /// by calling the `update` method.

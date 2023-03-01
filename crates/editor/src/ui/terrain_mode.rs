@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use ambient_core::{
-    asset_cache, get_mouse_clip_space_position, on_frame, runtime,
+    asset_cache, get_mouse_clip_space_position, runtime,
     transform::{scale, translation},
 };
 use ambient_decals::DecalShaderKey;
@@ -11,7 +11,7 @@ use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::{BindGroupDesc, ShaderModule},
 };
-use ambient_input::{on_app_mouse_input, ElementState};
+use ambient_input::{event_mouse_input, ElementState};
 use ambient_intent::client_push_intent;
 use ambient_network::client::GameClient;
 use ambient_physics::{
@@ -88,9 +88,79 @@ impl ElementComponent for TerrainRaycastPicker {
                 game_state.lock().world.despawn(new_vis_brush_id);
             })
         });
+        hooks.use_world_event({
+            let set_mousedown = set_mousedown.clone();
+            move |_world, event| {
+                if let Some(input) = event.get_ref(event_mouse_input()) {
+                    if input.state == ElementState::Released && input.button == action_button {
+                        set_mousedown(None);
+                    }
+                }
+            }
+        });
+        hooks.use_frame(move |world| {
+            let mouse_clip_pos = get_mouse_clip_space_position(world);
+            let mut state = game_client.game_state.lock();
+
+            // Update the target position with the result of our raycast.
+            {
+                let ray = state.screen_ray(mouse_clip_pos);
+                let filter = filter.clone();
+                let set_target_position = set_target_position.clone();
+                let game_client = game_client.clone();
+                world.resource(runtime()).clone().spawn(async move {
+                    if let Ok(resp) = game_client.rpc(rpc_pick, (ray, filter)).await {
+                        set_target_position(resp.map(|(_, dist)| ray.origin + ray.dir * dist));
+                    }
+                });
+            }
+
+            // If we have a target position, update our visualisation brush and issue
+            // terrain brush strokes if the user's mouse is active.
+            if let Some(target_position) = target_position {
+                if let Some(vis_brush_id) = vis_brush_id {
+                    let brush_size = brush_size.0;
+                    state.world.set(vis_brush_id, translation(), target_position).unwrap();
+                    state.world.set(vis_brush_id, scale(), Vec3::ONE * brush_size).unwrap();
+                    if brush_size != 0.0 {
+                        if let Ok(material) = state.world.get_ref(vis_brush_id, material()) {
+                            let picker_material: &BrushCursorMaterial = material.borrow_downcast();
+                            picker_material.upload_params(brush, target_position, brush_size, brush_strength.0, brush_shape);
+                        }
+                    }
+                }
+
+                if let Some(start_position) = mousedown {
+                    let center = target_position.xy();
+
+                    let erosion = erosion_config.clone();
+                    let game_client = game_client.clone();
+                    world.resource(runtime()).spawn({
+                        client_push_intent(
+                            game_client,
+                            intent_terrain_stroke(),
+                            TerrainBrushStroke {
+                                center,
+                                layer,
+                                brush,
+                                brush_size,
+                                brush_strength,
+                                brush_smoothness,
+                                brush_shape,
+                                start_position,
+                                erosion,
+                            },
+                            None,
+                            None,
+                        )
+                    });
+                }
+            }
+        });
 
         UIBase
             .el()
+            .with_clickarea()
             .on_mouse_enter(closure!(clone set_mouseover, |_, _| { set_mouseover(true) }))
             .on_mouse_leave(closure!(clone set_mouseover, |_, _| { set_mouseover(false); }))
             .on_mouse_down(closure!(clone set_mousedown, |_, _, button| {
@@ -98,76 +168,7 @@ impl ElementComponent for TerrainRaycastPicker {
                     set_mousedown(Some(target_position.unwrap_or_default()));
                 }
             }))
-            .listener(
-                on_app_mouse_input(),
-                Arc::new(move |_, _, input| {
-                    if input.state == ElementState::Released && input.button == action_button {
-                        set_mousedown(None);
-                    }
-                }),
-            )
-            .listener(
-                on_frame(),
-                Arc::new(move |world, _, _| {
-                    let mouse_clip_pos = get_mouse_clip_space_position(world);
-                    let mut state = game_client.game_state.lock();
-
-                    // Update the target position with the result of our raycast.
-                    {
-                        let ray = state.screen_ray(mouse_clip_pos);
-                        let filter = filter.clone();
-                        let set_target_position = set_target_position.clone();
-                        let game_client = game_client.clone();
-                        world.resource(runtime()).clone().spawn(async move {
-                            if let Ok(resp) = game_client.rpc(rpc_pick, (ray, filter)).await {
-                                set_target_position(resp.map(|(_, dist)| ray.origin + ray.dir * dist));
-                            }
-                        });
-                    }
-
-                    // If we have a target position, update our visualisation brush and issue
-                    // terrain brush strokes if the user's mouse is active.
-                    if let Some(target_position) = target_position {
-                        if let Some(vis_brush_id) = vis_brush_id {
-                            let brush_size = brush_size.0;
-                            state.world.set(vis_brush_id, translation(), target_position).unwrap();
-                            state.world.set(vis_brush_id, scale(), Vec3::ONE * brush_size).unwrap();
-                            if brush_size != 0.0 {
-                                if let Ok(material) = state.world.get_ref(vis_brush_id, material()) {
-                                    let picker_material: &BrushCursorMaterial = material.borrow_downcast();
-                                    picker_material.upload_params(brush, target_position, brush_size, brush_strength.0, brush_shape);
-                                }
-                            }
-                        }
-
-                        if let Some(start_position) = mousedown {
-                            let center = target_position.xy();
-
-                            let erosion = erosion_config.clone();
-                            let game_client = game_client.clone();
-                            world.resource(runtime()).spawn({
-                                client_push_intent(
-                                    game_client,
-                                    intent_terrain_stroke(),
-                                    TerrainBrushStroke {
-                                        center,
-                                        layer,
-                                        brush,
-                                        brush_size,
-                                        brush_strength,
-                                        brush_smoothness,
-                                        brush_shape,
-                                        start_position,
-                                        erosion,
-                                    },
-                                    None,
-                                    None,
-                                )
-                            });
-                        }
-                    }
-                }),
-            )
+            .el()
     }
 }
 

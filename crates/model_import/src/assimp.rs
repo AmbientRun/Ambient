@@ -5,13 +5,14 @@ use ambient_core::{
     name,
     transform::{local_to_parent, local_to_world, rotation, scale, translation},
 };
-use ambient_ecs::{EntityData, EntityId, World};
+use ambient_ecs::{Entity, EntityId, World};
 use ambient_model::{pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl};
 use ambient_renderer::materials::pbr_material::PbrMaterialFromUrl;
 use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl, mesh::Mesh};
 use glam::{vec2, vec3, vec4, Mat4};
 use itertools::Itertools;
 use relative_path::RelativePathBuf;
+#[cfg(feature = "russimp")]
 use russimp::{
     material::{Material, PropertyTypeInfo},
     node::Node,
@@ -21,17 +22,23 @@ use russimp::{
 
 use crate::{dotdot_path, model_crate::ModelCrate, TextureResolver};
 
-pub async fn import_url(
-    assets: &AssetCache,
-    url: &AbsAssetUrl,
-    model_crate: &mut ModelCrate,
+pub async fn import_url<'a>(
+    assets: &'a AssetCache,
+    url: &'a AbsAssetUrl,
+    model_crate: &'a mut ModelCrate,
     resolve_texture: TextureResolver,
 ) -> anyhow::Result<RelativePathBuf> {
-    let content = url.download_bytes(assets).await?;
-    let extension = url.extension().unwrap_or_default();
-    import(&content, model_crate, &extension, resolve_texture).await
+    #[cfg(feature = "russimp")]
+    {
+        let content = url.download_bytes(assets).await?;
+        let extension = url.extension().unwrap_or_default();
+        import(&content, model_crate, &extension, resolve_texture).await
+    }
+    #[cfg(not(feature = "russimp"))]
+    panic!("This binary was built without assimp support");
 }
 
+#[cfg(feature = "russimp")]
 pub async fn import<'a>(
     buffer: &'a [u8],
     model_crate: &'a mut ModelCrate,
@@ -113,6 +120,7 @@ pub async fn import<'a>(
     Ok(path)
 }
 
+#[cfg(feature = "russimp")]
 fn import_sync(buffer: &[u8], model_crate: &mut ModelCrate, extension: &str) -> anyhow::Result<(RelativePathBuf, Vec<Material>)> {
     let scene = Scene::from_buffer(
         buffer,
@@ -160,14 +168,14 @@ fn import_sync(buffer: &[u8], model_crate: &mut ModelCrate, extension: &str) -> 
             Mat4::from_cols_array(&[t.a1, t.a2, t.a3, t.a4, t.b1, t.b2, t.b3, t.b4, t.c1, t.c2, t.c3, t.c4, t.d1, t.d2, t.d3, t.d4])
                 .transpose();
         let (scl, rot, pos) = transform.to_scale_rotation_translation();
-        let mut ed = EntityData::new()
-            .set(name(), node.name.clone())
-            .set(translation(), pos)
-            .set(rotation(), rot)
-            .set(scale(), scl)
-            .set_default(local_to_world());
+        let mut ed = Entity::new()
+            .with(name(), node.name.clone())
+            .with(translation(), pos)
+            .with(rotation(), rot)
+            .with(scale(), scl)
+            .with_default(local_to_world());
         if !node.meshes.is_empty() {
-            ed.set_self(
+            ed.set(
                 pbr_renderer_primitives_from_url(),
                 node.meshes
                     .iter()

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use ambient_ecs::{
-    query, Component, ComponentEntry, EntityData, EntityId, FnSystem, SystemGroup, World,
+    query, Component, ComponentEntry, Entity, EntityId, FnSystem, SystemGroup, World,
 };
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
 use ambient_physics::{collider_loads, collisions, PxShapeUserData};
@@ -78,7 +78,7 @@ pub fn systems<
                     run_all(
                         world,
                         state_component,
-                        &RunContext::new(world, &event.name, event.data),
+                        &RunContext::new(world, "world_event", event),
                     );
                 }
             })),
@@ -88,7 +88,7 @@ pub fn systems<
                 run_all(
                     world,
                     state_component,
-                    &RunContext::new(world, "core/frame", EntityData::new()),
+                    &RunContext::new(world, "core/frame", Entity::new()),
                 );
             })),
             Box::new(FnSystem::new(move |world, _| {

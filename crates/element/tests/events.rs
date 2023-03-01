@@ -1,8 +1,7 @@
-use std::sync::Arc;
-
 use ambient_ecs::query_mut;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 mod common;
+use ambient_std::cb;
 use common::*;
 
 #[test]
@@ -29,7 +28,7 @@ fn test_outer_init() {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
             let (count, set_count) = hooks.use_state(0);
             if count < 2 {
-                Element::new().listener(trigger(), Arc::new(move |_| set_count(count + 1)))
+                Element::new().set(trigger(), cb(move |_| set_count(count + 1)))
             } else {
                 Dummy.into()
             }
@@ -49,66 +48,15 @@ fn test_outer_init() {
 }
 
 #[test]
-fn test_two_event_listeners() {
-    #[derive(Debug, Clone)]
-    pub struct Outer;
-    impl ElementComponent for Outer {
-        fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-            let (use_inner, set_use_inner) = hooks.use_state(true);
-            if use_inner {
-                Element::from(Inner).listener(
-                    trigger(),
-                    Arc::new(move |world| {
-                        *world.resource_mut(counter()) += 1;
-                        set_use_inner(false);
-                    }),
-                )
-            } else {
-                Element::new().listener(
-                    trigger(),
-                    Arc::new(move |world| {
-                        *world.resource_mut(counter()) += 1;
-                    }),
-                )
-            }
-        }
-    }
-
-    #[derive(Debug, Clone)]
-    pub struct Inner;
-    impl ElementComponent for Inner {
-        fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-            Element::new().listener(
-                trigger(),
-                Arc::new(move |world| {
-                    *world.resource_mut(counter()) += 1;
-                }),
-            )
-        }
-    }
-
-    let mut world = initialize();
-    let mut tree = Outer.el().spawn_tree(&mut world);
-
-    run_triggers(&mut world);
-    tree.update(&mut world);
-    assert_eq!(2, *world.resource(counter()));
-
-    run_triggers(&mut world);
-    tree.update(&mut world);
-    assert_eq!(3, *world.resource(counter()));
-}
-
-#[test]
 fn update_state_on_replaced_element() {
     #[derive(Debug, Clone)]
     pub struct Root;
     impl ElementComponent for Root {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
             let (state, set_state) = hooks.use_state(0);
-            Element::new().listener(
+            Element::new().set(
                 trigger(),
-                Arc::new(move |_| {
+                cb(move |_| {
                     set_state(state + 1);
                 }),
             )
@@ -135,9 +83,9 @@ fn update_state_on_root_and_child_simultaneously() {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
             let (state, set_state) = hooks.use_state(0);
             Element::new()
-                .listener(
+                .set(
                     trigger(),
-                    Arc::new(move |_| {
+                    cb(move |_| {
                         set_state(state + 1);
                     }),
                 )
@@ -151,9 +99,9 @@ fn update_state_on_root_and_child_simultaneously() {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
             let (state, set_state) = hooks.use_state(0);
             *hooks.world.resource_mut(counter()) = state;
-            Element::new().listener(
+            Element::new().set(
                 trigger(),
-                Arc::new(move |_| {
+                cb(move |_| {
                     set_state(state + 1);
                 }),
             )

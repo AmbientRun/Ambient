@@ -1,6 +1,3 @@
-use ambient_app::App;
-use ambient_core::name;
-use ambient_ecs::{EntityData, World};
 use tracing_subscriber::{filter::LevelFilter, fmt::time::UtcTime, prelude::*, registry};
 use tracing_web::MakeConsoleWriter;
 use wasm_bindgen::prelude::wasm_bindgen;
@@ -18,12 +15,7 @@ async fn start() {
 
     tracing::info!("Hello, Wasm!");
 
-    let mut world = World::new("main");
-
     ambient_core::init_all_components();
-    let id = EntityData::new().set(name(), "wasm-entity".into()).spawn(&mut world);
-
-    tracing::info!("Spawned {id}");
 
     if let Err(err) = run().await {
         tracing::error!("{err:?}")
@@ -32,6 +24,8 @@ async fn start() {
 
 #[cfg(target_os = "unknown")]
 async fn run() -> anyhow::Result<()> {
+    use ambient_app::App;
+
     use ambient_sys::timer::TimerWheel;
     ambient_sys::task::spawn(TimerWheel::new().start());
 

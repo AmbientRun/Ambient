@@ -2,8 +2,8 @@ use std::{sync::Arc, time::Duration};
 
 use ambient_core::{asset_cache, async_ecs::async_run, get_mouse_clip_space_position, runtime};
 use ambient_ecs::{Component, ComponentValue, EntityId};
-use ambient_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
-use ambient_input::{on_app_keyboard_input, MouseButton};
+use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_input::{event_keyboard_input, MouseButton};
 use ambient_intent::{client_push_intent, rpc_undo_head_exact};
 use ambient_network::client::GameClient;
 use ambient_sys::task::RuntimeHandle;
@@ -154,24 +154,15 @@ impl ElementComponent for EditorBuildMode {
 
             use_interval_deps(hooks, Duration::from_millis(2000), true, selection.clone(), update_targets);
         }
-
-        // Make sure to get the value *after* the `use_interval_deps`
-        let targets = targets.lock();
-
-        Dock(vec![
-            EditorPlayerInputHandler.el(),
-            ScreenContainer(screen).el(),
-            Group(vec![Element::new().listener(
-                on_app_keyboard_input(),
-                Arc::new(move |_, _, event| match event.keycode {
+        hooks.use_world_event(move |_world, event| {
+            if let Some(event) = event.get_ref(event_keyboard_input()) {
+                match event.keycode {
                     Some(VirtualKeyCode::LShift) => {
                         if event.state == ElementState::Pressed {
                             set_select_mode(SelectMode::Add);
                         } else {
                             set_select_mode(SelectMode::Set);
                         }
-                        // Do not interfere with the player movement
-                        false
                     }
                     Some(VirtualKeyCode::LControl) => {
                         if event.state == ElementState::Pressed {
@@ -179,12 +170,18 @@ impl ElementComponent for EditorBuildMode {
                         } else {
                             set_select_mode(SelectMode::Set);
                         }
-                        false
                     }
-                    _ => false,
-                }),
-            )])
-                .el(),
+                    _ => {}
+                }
+            }
+        });
+
+        // Make sure to get the value *after* the `use_interval_deps`
+        let targets = targets.lock();
+
+        Dock(vec![
+            EditorPlayerInputHandler.el(),
+            ScreenContainer(screen).el(),
             if !selection.is_empty() {
                 SelectionPanel { selection: selection.clone(), set_selection: set_selection.clone() }
                     .el()

@@ -4,7 +4,7 @@ use ambient_app::{App, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_core::camera::active_camera;
 use ambient_element::{ElementComponent, ElementComponentExt};
-use ambient_input::on_app_mouse_motion;
+use ambient_input::event_mouse_motion;
 use ambient_ui::{padding, space_between_items, Borders, Button, Cb, FlowColumn, FlowRow, Text, STREET};
 use tracing_subscriber::EnvFilter;
 
@@ -63,13 +63,13 @@ impl ElementComponent for B {
         let (shared, _) = hooks.use_state(self.shared.clone());
         let keepalive = DroppedClosure;
 
-        Text::el(shared.0.to_string()).listener(
-            on_app_mouse_motion(),
-            Arc::new(move |_, _, _| {
+        hooks.use_world_event(move |_world, event| {
+            if let Some(_event) = event.get_ref(event_mouse_motion()) {
                 let _val = &keepalive;
-                // tracing::info!("Moving mouse to {pos}.");
-            }),
-        )
+            }
+        });
+
+        Text::el(shared.0.to_string())
     }
 }
 

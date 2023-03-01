@@ -4,7 +4,7 @@ use ambient_app::{window_title, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_core::{camera::active_camera, runtime};
 use ambient_debugger::Debugger;
-use ambient_ecs::{EntityData, SystemGroup, World};
+use ambient_ecs::{Entity, SystemGroup, World};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_network::{
     client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce},
@@ -65,7 +65,7 @@ fn MainApp(
             }))),
             on_loaded: cb(move |_game_state, _game_client| Ok(Box::new(|| {}))),
             error_view: cb(move |error| Dock(vec![Text::el("Error").header_style(), Text::el(error)]).el()),
-            systems_and_resources: cb(|| (systems(), EntityData::new())),
+            systems_and_resources: cb(|| (systems(), Entity::new())),
             create_rpc_registry: cb(shared::create_rpc_registry),
             on_in_entities: None,
             ui: GameView { show_debug }.el(),

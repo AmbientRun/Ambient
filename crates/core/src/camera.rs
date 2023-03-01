@@ -1,5 +1,6 @@
 use ambient_ecs::{
-    components, query, query_mut, Component, Description, ECSError, EntityData, EntityId, Name, Networked, Store, SystemGroup, World,
+    components, query, query_mut, Component, Concept, Description, ECSError, Entity, EntityId, Name, Networked, RefConcept, Store,
+    SystemGroup, World,
 };
 use ambient_std::{
     math::Line,
@@ -135,19 +136,57 @@ components!("camera", {
     shadows_far: f32,
 });
 
-/*
-query((
-    orthographic_left().changed(),
-    orthographic_right().changed(),
-    orthographic_top().changed(),
-    orthographic_bottom().changed(),
-))
-.incl(orthographic())
-.to_system(|q, world, qs, _| {
-    for (id, (left, right, top, bottom)) in q.collect_cloned(world, qs) {
-        world.add_component(id, orthographic_rect(), OrthographicRect { left, right, top, bottom }).unwrap();
-    }
-}), */
+pub fn concepts() -> Vec<Concept> {
+    vec![
+        RefConcept {
+            id: "camera",
+            name: "Camera",
+            description: "Base components for a camera. You will need other components to make a fully-functioning camera.",
+            extends: &["transformable"],
+            data: Entity::new().with(projection(), glam::Mat4::IDENTITY).with(projection_view(), glam::Mat4::IDENTITY).with(near(), 0.1),
+        }
+        .to_owned(),
+        RefConcept {
+            id: "perspective_common_camera",
+            name: "Perspective Common Camera",
+            description:
+                "Base components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.",
+            extends: &["camera"],
+            data: Entity::new().with(aspect_ratio(), 1.0).with(fovy(), 1.0),
+        }
+        .to_owned(),
+        RefConcept {
+            id: "perspective_camera",
+            name: "Perspective Camera",
+            description: "A perspective camera.",
+            extends: &["perspective_common_camera"],
+            data: Entity::new().with(perspective(), ()).with(far(), 1_000.0),
+        }
+        .to_owned(),
+        RefConcept {
+            id: "perspective_infinite_reverse_camera",
+            name: "Perspective-Infinite-Reverse Camera",
+            description: "A perspective-infinite-reverse camera. This is recommended for most use-cases.",
+            extends: &["perspective_common_camera"],
+            data: Entity::new().with(perspective_infinite_reverse(), ()),
+        }
+        .to_owned(),
+        RefConcept {
+            id: "orthographic_camera",
+            name: "Orthographic Camera",
+            description: "An orthographic camera.",
+            extends: &["camera"],
+            data: Entity::new()
+                .with(orthographic(), ())
+                .with(orthographic_left(), -1.0)
+                .with(orthographic_right(), 1.0)
+                .with(orthographic_top(), 1.0)
+                .with(orthographic_bottom(), -1.0)
+                .with(far(), 1_000.0),
+        }
+        .to_owned(),
+    ]
+}
 
 pub fn camera_systems() -> SystemGroup {
     SystemGroup::new(
@@ -172,6 +211,18 @@ pub fn camera_systems() -> SystemGroup {
             query_mut((projection(),), (near(), far(), fovy(), aspect_ratio())).incl(perspective()).to_system(|q, world, qs, _| {
                 for (_, (projection,), (&near, &far, &fovy, &aspect_ratio)) in q.iter(world, qs) {
                     *projection = perspective_reverse(fovy, aspect_ratio, near, far);
+                }
+            }),
+            query((
+                orthographic_left().changed(),
+                orthographic_right().changed(),
+                orthographic_top().changed(),
+                orthographic_bottom().changed(),
+            ))
+            .incl(orthographic())
+            .to_system(|q, world, qs, _| {
+                for (id, (left, right, top, bottom)) in q.collect_cloned(world, qs) {
+                    world.add_component(id, orthographic_rect(), OrthographicRect { left, right, top, bottom }).unwrap();
                 }
             }),
             query_mut((projection(),), (near(), far(), orthographic_rect())).to_system(|q, world, qs, _| {
@@ -299,22 +350,22 @@ impl Projection {
             Projection::Identity => Mat4::IDENTITY,
         }
     }
-    pub fn to_entity_data(&self) -> EntityData {
+    pub fn to_entity_data(&self) -> Entity {
         match self.clone() {
             Projection::Orthographic { rect, near, far } => {
-                EntityData::new().set(orthographic_rect(), rect).set(self::near(), near).set(self::far(), far)
+                Entity::new().with(orthographic_rect(), rect).with(self::near(), near).with(self::far(), far)
             }
-            Projection::PerspectiveInfiniteReverse { fovy, aspect_ratio, near } => EntityData::new()
-                .set(perspective_infinite_reverse(), ())
-                .set(self::near(), near)
-                .set(self::fovy(), fovy)
-                .set(self::aspect_ratio(), aspect_ratio),
-            Projection::Perspective { fovy, aspect_ratio, near, far } => EntityData::new()
-                .set(perspective(), ())
-                .set(self::near(), near)
-                .set(self::far(), far)
-                .set(self::fovy(), fovy)
-                .set(self::aspect_ratio(), aspect_ratio),
+            Projection::PerspectiveInfiniteReverse { fovy, aspect_ratio, near } => Entity::new()
+                .with(perspective_infinite_reverse(), ())
+                .with(self::near(), near)
+                .with(self::fovy(), fovy)
+                .with(self::aspect_ratio(), aspect_ratio),
+            Projection::Perspective { fovy, aspect_ratio, near, far } => Entity::new()
+                .with(perspective(), ())
+                .with(self::near(), near)
+                .with(self::far(), far)
+                .with(self::fovy(), fovy)
+                .with(self::aspect_ratio(), aspect_ratio),
             Projection::Identity => panic!("Identity projection is not supported"),
         }
     }
@@ -506,12 +557,12 @@ impl Camera {
         };
         Self { projection: Projection::Orthographic { rect: ortho, near: bounding.min.z, far: bounding.max.z }, view, shadows_far: 100. }
     }
-    pub fn to_entity_data(&self) -> EntityData {
+    pub fn to_entity_data(&self) -> Entity {
         self.projection
             .to_entity_data()
-            .set(local_to_world(), self.view.inverse())
-            .set(inv_local_to_world(), self.view)
-            .set(projection_view(), self.projection_view())
+            .with(local_to_world(), self.view.inverse())
+            .with(inv_local_to_world(), self.view)
+            .with(projection_view(), self.projection_view())
     }
 }
 

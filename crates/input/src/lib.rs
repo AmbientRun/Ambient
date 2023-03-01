@@ -1,17 +1,12 @@
-use std::{cmp::Reverse, collections::HashSet};
+use std::collections::HashSet;
 
-use ambient_ecs::{components, query, EntityId, QueryState, System, SystemGroup, World};
-use ambient_std::events::EventDispatcher;
+use ambient_ecs::{components, world_events, Entity, System, SystemGroup};
 use glam::{vec2, Vec2};
 use serde::{Deserialize, Serialize};
 pub use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, MouseButton, MouseScrollDelta, VirtualKeyCode, WindowEvent};
 use winit::event::{ModifiersState, ScanCode};
 
-use crate::picking::picking_winit_event_system;
-
 pub mod picking;
-
-pub type EventCallback<Event, Ret = bool> = EventDispatcher<dyn Fn(&mut World, EntityId, Event) -> Ret + Sync + Send>;
 
 #[derive(Debug, Clone)]
 /// Represents a keyboard event with attached modifiers
@@ -32,13 +27,13 @@ pub struct PlayerRawInput {
 }
 
 components!("input", {
-    on_app_received_character: EventCallback<char>,
-    on_app_keyboard_input: EventDispatcher<dyn Fn(&mut World, EntityId, &KeyboardEvent) -> bool + Sync + Send>,
-    on_app_mouse_input: EventDispatcher<dyn Fn(&mut World, EntityId, &MouseInput) + Sync + Send>,
-    on_app_mouse_motion: EventCallback<Vec2, ()>,
-    on_app_mouse_wheel: EventCallback<MouseScrollDelta>,
-    on_app_modifiers_change: EventCallback<ModifiersState, ()>,
-    on_app_focus_change: EventCallback<bool, ()>,
+    event_received_character: char,
+    event_keyboard_input: KeyboardEvent,
+    event_mouse_input: MouseInput,
+    event_mouse_motion: Vec2,
+    event_mouse_wheel: MouseScrollDelta,
+    event_modifiers_change: ModifiersState,
+    event_focus_change: bool,
 
     player_raw_input: PlayerRawInput,
     player_prev_raw_input: PlayerRawInput,
@@ -50,31 +45,18 @@ pub fn init_all_components() {
 }
 
 pub fn event_systems() -> SystemGroup<Event<'static, ()>> {
-    SystemGroup::new("inputs", vec![Box::new(InputSystem::new()), Box::new(picking_winit_event_system())])
+    SystemGroup::new("inputs", vec![Box::new(InputSystem::new())])
 }
 
 #[derive(Debug)]
 pub struct InputSystem {
     modifiers: ModifiersState,
     is_focused: bool,
-    received_character_qs: QueryState,
-    keyboard_event_qs: QueryState,
-    mouse_input_qs: QueryState,
-    mouse_wheel_qs: QueryState,
-    mouse_motion_qs: QueryState,
 }
 
 impl InputSystem {
     pub fn new() -> Self {
-        Self {
-            received_character_qs: QueryState::new(),
-            keyboard_event_qs: QueryState::new(),
-            mouse_input_qs: QueryState::new(),
-            mouse_wheel_qs: QueryState::new(),
-            mouse_motion_qs: QueryState::new(),
-            modifiers: ModifiersState::empty(),
-            is_focused: true,
-        }
+        Self { modifiers: ModifiersState::empty(), is_focused: true }
     }
 }
 
@@ -84,108 +66,50 @@ impl System<Event<'static, ()>> for InputSystem {
             Event::WindowEvent { event, .. } => match event {
                 &WindowEvent::Focused(focused) => {
                     self.is_focused = focused;
-                    let mut fire_event = |world: &mut World| {
-                        let mut handlers = query((on_app_focus_change(),)).collect_cloned(world, Some(&mut self.keyboard_event_qs));
-                        handlers.sort_by_key(|(_, (handler,))| Reverse(handler.created_timestamp));
-                        for (id, (dispatcher,)) in handlers {
-                            for handler in dispatcher.iter() {
-                                handler(world, id, focused)
-                            }
-                        }
-                    };
-                    fire_event(world);
+                    world.resource_mut(world_events()).add_event(Entity::new().with(event_focus_change(), focused));
                 }
                 WindowEvent::ReceivedCharacter(c) => {
-                    let mut fire_received_character = |world: &mut World| {
-                        let mut handlers =
-                            query((on_app_received_character(),)).collect_cloned(world, Some(&mut self.received_character_qs));
-                        handlers.sort_by_key(|(_, (handler,))| Reverse(handler.created_timestamp));
-                        for (id, (dispatcher,)) in handlers {
-                            for handler in dispatcher.iter() {
-                                if handler(world, id, *c) {
-                                    return;
-                                }
-                            }
-                        }
-                    };
-                    fire_received_character(world);
+                    world.resource_mut(world_events()).add_event(Entity::new().with(event_received_character(), *c));
                 }
 
                 WindowEvent::KeyboardInput { input, .. } => {
-                    let mut fire_keyboard_event = |world: &mut World| {
-                        let mut handlers = query((on_app_keyboard_input(),)).collect_cloned(world, Some(&mut self.keyboard_event_qs));
-
-                        let event = KeyboardEvent {
-                            scancode: input.scancode,
-                            state: input.state,
-                            keycode: input.virtual_keycode,
-                            modifiers: self.modifiers,
-                            is_focused: self.is_focused,
-                        };
-
-                        handlers.sort_by_key(|(_, (handler,))| Reverse(handler.created_timestamp));
-                        for (id, (dispatcher,)) in handlers {
-                            for handler in dispatcher.iter() {
-                                if handler(world, id, &event) {
-                                    return;
-                                }
-                            }
-                        }
+                    let event = KeyboardEvent {
+                        scancode: input.scancode,
+                        state: input.state,
+                        keycode: input.virtual_keycode,
+                        modifiers: self.modifiers,
+                        is_focused: self.is_focused,
                     };
-                    fire_keyboard_event(world);
+                    world.resource_mut(world_events()).add_event(Entity::new().with(event_keyboard_input(), event));
                 }
 
                 WindowEvent::MouseInput { state, button, .. } => {
-                    for (id, (dispatcher,)) in query((on_app_mouse_input(),)).collect_cloned(world, Some(&mut self.mouse_input_qs)) {
-                        for handle in dispatcher.iter() {
-                            handle(world, id, &MouseInput { state: *state, button: *button });
-                        }
-                    }
+                    world
+                        .resource_mut(world_events())
+                        .add_event(Entity::new().with(event_mouse_input(), MouseInput { state: *state, button: *button }));
                 }
 
                 WindowEvent::MouseWheel { delta, .. } => {
-                    let mut fire_wheel_event = |world: &mut World| {
-                        let mut handlers = query((on_app_mouse_wheel(),)).collect_cloned(world, Some(&mut self.mouse_wheel_qs));
-                        handlers.sort_by_key(|(_, (handler,))| Reverse(handler.created_timestamp));
-                        for (id, (dispatcher,)) in handlers {
-                            for handler in dispatcher.iter() {
-                                if handler(world, id, *delta) {
-                                    return;
-                                }
-                            }
-                        }
-                    };
-                    fire_wheel_event(world);
+                    world.resource_mut(world_events()).add_event(Entity::new().with(event_mouse_wheel(), *delta));
                 }
                 WindowEvent::ModifiersChanged(mods) => {
-                    self.modifiers = *mods;
-                    let mut fire_event = |world: &mut World| {
-                        let mut handlers = query((on_app_modifiers_change(),)).collect_cloned(world, Some(&mut self.keyboard_event_qs));
-                        handlers.sort_by_key(|(_, (handler,))| Reverse(handler.created_timestamp));
-                        for (id, (dispatcher,)) in handlers {
-                            for handler in dispatcher.iter() {
-                                handler(world, id, *mods)
-                            }
-                        }
-                    };
-                    fire_event(world);
+                    world.resource_mut(world_events()).add_event(Entity::new().with(event_modifiers_change(), *mods));
                 }
 
                 _ => {}
             },
 
             Event::DeviceEvent { event: DeviceEvent::MouseMotion { delta }, .. } => {
-                for (id, (dispatcher,)) in query((on_app_mouse_motion(),)).collect_cloned(world, Some(&mut self.mouse_motion_qs)) {
-                    for handle in dispatcher.iter() {
-                        handle(world, id, vec2(delta.0 as f32, delta.1 as f32));
-                    }
-                }
+                world
+                    .resource_mut(world_events())
+                    .add_event(Entity::new().with(event_mouse_motion(), vec2(delta.0 as f32, delta.1 as f32)));
             }
             _ => {}
         }
     }
 }
 
+#[derive(Clone)]
 pub struct MouseInput {
     pub state: ElementState,
     pub button: MouseButton,

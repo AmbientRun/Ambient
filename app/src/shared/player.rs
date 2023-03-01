@@ -3,12 +3,12 @@ use std::{io::Write, sync::Arc};
 use ambient_audio::AudioListener;
 use ambient_core::{
     camera::{active_camera, aspect_ratio_from_window},
-    main_scene, on_frame, runtime,
+    main_scene, runtime,
 };
-use ambient_ecs::{query, query_mut, EntityData, SystemGroup};
+use ambient_ecs::{query, query_mut, Entity, SystemGroup};
 use ambient_element::{element_component, Element, Hooks};
 use ambient_input::{
-    on_app_focus_change, on_app_keyboard_input, on_app_mouse_input, on_app_mouse_motion, on_app_mouse_wheel, player_prev_raw_input,
+    event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, player_prev_raw_input,
     player_raw_input, ElementState, MouseScrollDelta, PlayerRawInput,
 };
 use ambient_network::{
@@ -68,9 +68,7 @@ pub fn server_systems() -> SystemGroup {
         vec![query(player()).spawned().to_system(|q, world, qs, _| {
             let player_ids = q.collect_ids(world, qs);
             for player_id in player_ids {
-                world
-                    .add_components(player_id, EntityData::new().set_default(player_raw_input()).set_default(player_prev_raw_input()))
-                    .ok();
+                world.add_components(player_id, Entity::new().with_default(player_raw_input()).with_default(player_prev_raw_input())).ok();
             }
         })],
     )
@@ -106,11 +104,11 @@ pub fn client_systems() -> SystemGroup {
                 world
                     .add_components(
                         id,
-                        EntityData::new()
-                            .set(active_camera(), 0.)
-                            .set(main_scene(), ())
-                            .set(audio_listener(), Arc::new(Mutex::new(AudioListener::new(Mat4::IDENTITY, Vec3::X * 0.2))))
-                            .set(aspect_ratio_from_window(), ()),
+                        Entity::new()
+                            .with(active_camera(), 0.)
+                            .with(main_scene(), ())
+                            .with(audio_listener(), Arc::new(Mutex::new(AudioListener::new(Mat4::IDENTITY, Vec3::X * 0.2))))
+                            .with(aspect_ratio_from_window(), ()),
                     )
                     .unwrap();
             }
@@ -125,92 +123,62 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
     let input = hooks.use_ref_with(|_| PlayerRawInput::default());
     let (has_focus, set_has_focus) = hooks.use_state(false);
 
-    Element::new()
-        .listener(
-            on_app_focus_change(),
-            Arc::new(move |_, _, focus| {
-                set_has_focus(focus);
-            }),
-        )
-        .listener(
-            on_app_keyboard_input(),
-            Arc::new({
-                let input = input.clone();
-                move |_, _, event| {
-                    if let Some(keycode) = event.keycode {
-                        let mut lock = input.lock();
-                        match event.state {
-                            ElementState::Pressed => {
-                                lock.keys.insert(keycode);
-                            }
-                            ElementState::Released => {
-                                lock.keys.remove(&keycode);
-                            }
-                        }
-                    }
-                    true
-                }
-            }),
-        )
-        .listener(
-            on_app_mouse_motion(),
-            Arc::new({
-                let input = input.clone();
-                move |_, _, delta| {
-                    input.lock().mouse_position += delta;
-                }
-            }),
-        )
-        .listener(
-            on_app_mouse_wheel(),
-            Arc::new({
-                let input = input.clone();
-                move |_, _, delta| {
-                    input.lock().mouse_wheel += match delta {
-                        MouseScrollDelta::LineDelta(_, y) => y * PIXELS_PER_LINE,
-                        MouseScrollDelta::PixelDelta(pos) => pos.y as f32,
-                    };
-                    true
-                }
-            }),
-        )
-        .listener(
-            on_app_mouse_input(),
-            Arc::new({
-                let input = input.clone();
-                move |_, _, event| {
+    hooks.use_world_event({
+        let input = input.clone();
+        move |_world, event| {
+            if let Some(event) = event.get_ref(event_keyboard_input()) {
+                if let Some(keycode) = event.keycode {
                     let mut lock = input.lock();
                     match event.state {
                         ElementState::Pressed => {
-                            lock.mouse_buttons.insert(event.button);
+                            lock.keys.insert(keycode);
                         }
                         ElementState::Released => {
-                            lock.mouse_buttons.remove(&event.button);
+                            lock.keys.remove(&keycode);
                         }
                     }
                 }
-            }),
-        )
-        .listener(
-            on_frame(),
-            Arc::new(move |world, _, _| {
-                if !has_focus {
-                    return;
+            } else if let Some(event) = event.get_ref(event_mouse_input()) {
+                let mut lock = input.lock();
+                match event.state {
+                    ElementState::Pressed => {
+                        lock.mouse_buttons.insert(event.button);
+                    }
+                    ElementState::Released => {
+                        lock.mouse_buttons.remove(&event.button);
+                    }
                 }
+            } else if let Some(delta) = event.get(event_mouse_motion()) {
+                input.lock().mouse_position += delta;
+            } else if let Some(delta) = event.get(event_mouse_wheel()) {
+                input.lock().mouse_wheel += match delta {
+                    MouseScrollDelta::LineDelta(_, y) => y * PIXELS_PER_LINE,
+                    MouseScrollDelta::PixelDelta(pos) => pos.y as f32,
+                };
+            } else if let Some(focus) = event.get(event_focus_change()) {
+                set_has_focus(focus);
+            }
+        }
+    });
+    hooks.use_frame(move |world| {
+        if !has_focus {
+            return;
+        }
 
-                if let Some(Some(gc)) = world.resource_opt(game_client()).cloned() {
-                    let runtime = world.resource(runtime()).clone();
-                    let input = input.clone();
+        if let Some(Some(gc)) = world.resource_opt(game_client()).cloned() {
+            let runtime = world.resource(runtime()).clone();
+            let input = input.clone();
 
-                    runtime.spawn(async move {
-                        let mut data = Vec::new();
-                        data.write_u32::<BigEndian>(PLAYER_INPUT_DATAGRAM_ID).unwrap();
+            runtime.spawn(async move {
+                let mut data = Vec::new();
+                data.write_u32::<BigEndian>(PLAYER_INPUT_DATAGRAM_ID).unwrap();
 
-                        let msg = bincode::serialize(&*input.lock()).unwrap();
-                        data.write_all(&msg).unwrap();
-                        gc.connection.send_datagram(data.into()).ok();
-                    });
-                }
-            }),
-        )
+                let msg = bincode::serialize(&*input.lock()).unwrap();
+                data.write_all(&msg).unwrap();
+                gc.connection.send_datagram(data.into()).ok();
+            });
+        }
+    });
+
+    Element::new()
 }

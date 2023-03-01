@@ -4,24 +4,16 @@ use ambient_core::{
     transform::local_to_world,
     ui_scene, window_physical_size,
 };
-use ambient_ecs::{components, query, EntityData, EntityId, FnSystem, Resource, SystemGroup, World};
-use ambient_std::{
-    events::EventDispatcher,
-    shapes::{RayIntersectable, AABB},
-};
+use ambient_ecs::{components, query, Entity, EntityId, FnSystem, Resource, SystemGroup};
+use ambient_std::shapes::{RayIntersectable, AABB};
 use glam::Vec2;
-use winit::event::{ElementState, Event, MouseButton, MouseScrollDelta, WindowEvent};
 
 components!("input", {
     @[Resource]
     picker_intersecting: Option<PickerIntersection>,
 
     mouse_pickable: AABB,
-    on_mouse_input: EventDispatcher<dyn Fn(&mut World, EntityId, ElementState, MouseButton) + Send + Sync>,
-    on_mouse_enter: EventDispatcher<dyn Fn(&mut World, EntityId) + Send + Sync>,
-    on_mouse_leave: EventDispatcher<dyn Fn(&mut World, EntityId) + Send + Sync>,
-    on_mouse_hover: EventDispatcher<dyn Fn(&mut World, EntityId) + Send + Sync>,
-    on_mouse_wheel: EventDispatcher<dyn Fn(&mut World, EntityId, MouseScrollDelta) + Sync + Send>,
+    mouse_over: bool,
 });
 
 #[derive(Debug, Clone, Copy)]
@@ -30,8 +22,8 @@ pub struct PickerIntersection {
     pub distance: f32,
 }
 
-pub fn resources() -> EntityData {
-    EntityData::new().set_default(picker_intersecting())
+pub fn resources() -> Entity {
+    Entity::new().with_default(picker_intersecting())
 }
 
 pub fn frame_systems() -> SystemGroup {
@@ -48,9 +40,6 @@ pub fn frame_systems() -> SystemGroup {
             };
             let ray = screen_ray(world, camera, mouse_origin).unwrap_or_default();
 
-            let mut on_leaves = Vec::new();
-            let mut on_enters = Vec::new();
-            let mut on_hovers = Vec::new();
             let prev_intersecting = *world.resource(picker_intersecting());
 
             let mut intersecting: Option<PickerIntersection> = None;
@@ -69,67 +58,13 @@ pub fn frame_systems() -> SystemGroup {
             let intersecting_entity = intersecting.map(|x| x.entity);
             if prev_intersecting_entity != intersecting_entity {
                 if let Some(prev) = prev_intersecting_entity {
-                    if let Ok(on_leave) = world.get_ref(prev, on_mouse_leave()) {
-                        on_leaves.push((on_leave.clone(), prev));
-                    }
+                    world.add_component(prev, mouse_over(), false).unwrap();
                 }
                 if let Some(new) = intersecting_entity {
-                    if let Ok(on_enter) = world.get_ref(new, on_mouse_enter()) {
-                        on_enters.push((on_enter.clone(), new));
-                    }
-                }
-            }
-            if let Some(new) = intersecting_entity {
-                if let Ok(on_hover) = world.get_ref(new, on_mouse_hover()) {
-                    on_hovers.push((on_hover.clone(), new));
+                    world.add_component(new, mouse_over(), true).unwrap();
                 }
             }
             *world.resource_mut(picker_intersecting()) = intersecting;
-
-            for (on_leave, ent) in on_leaves.into_iter() {
-                for handler in on_leave.iter() {
-                    handler(world, ent);
-                }
-            }
-            for (on_enter, ent) in on_enters.into_iter() {
-                for handler in on_enter.iter() {
-                    handler(world, ent);
-                }
-            }
-            for (on_hover, ent) in on_hovers.into_iter() {
-                for handler in on_hover.iter() {
-                    handler(world, ent);
-                }
-            }
-        }))],
-    )
-}
-
-pub fn picking_winit_event_system() -> SystemGroup<Event<'static, ()>> {
-    SystemGroup::new(
-        "picking_winit_event_system",
-        vec![Box::new(FnSystem::new(|world, event| match event {
-            Event::WindowEvent { event: WindowEvent::MouseInput { button, state, .. }, .. } => {
-                let intersecting = *world.resource(picker_intersecting());
-                if let Some(intersecting) = intersecting {
-                    if let Ok(on_mouse_input) = world.get_ref(intersecting.entity, on_mouse_input()).cloned() {
-                        for handler in on_mouse_input.iter() {
-                            handler(world, intersecting.entity, *state, *button);
-                        }
-                    }
-                }
-            }
-            Event::WindowEvent { event: WindowEvent::MouseWheel { delta, .. }, .. } => {
-                let intersecting = *world.resource(picker_intersecting());
-                if let Some(intersecting) = intersecting {
-                    if let Ok(on_mouse_wheel) = world.get_ref(intersecting.entity, on_mouse_wheel()).cloned() {
-                        for handler in on_mouse_wheel.iter() {
-                            handler(world, intersecting.entity, *delta);
-                        }
-                    }
-                }
-            }
-            _ => {}
         }))],
     )
 }

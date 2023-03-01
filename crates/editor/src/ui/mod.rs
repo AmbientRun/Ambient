@@ -5,7 +5,7 @@ pub mod entity_editor;
 mod terrain_mode;
 
 use ambient_core::{game_mode, runtime, transform::translation, GameMode};
-use ambient_ecs::{EntityData, EntityId};
+use ambient_ecs::{Entity, EntityId};
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Group, Hooks, Setter};
 use ambient_intent::{rpc_redo, rpc_undo_head, IntentHistoryVisualizer};
 use ambient_naturals::{get_default_natural_layers, natural_layers, NaturalLayer, NaturalsPreset};
@@ -110,8 +110,8 @@ pub fn EditorUI(hooks: &mut Hooks) -> Element {
                             .rpc(
                                 rpc_fork_instance,
                                 RpcForkInstance {
-                                    resources: EntityData::new().set(make_physics_static(), false),
-                                    synced_res: EntityData::new().set(game_mode(), GameMode::Play),
+                                    resources: Entity::new().with(make_physics_static(), false),
+                                    synced_res: Entity::new().with(game_mode(), GameMode::Play),
                                     id: Some(PLAY_INSTANCE_ID.to_string())
                                 }
                             )

@@ -7,9 +7,7 @@ use std::{
     },
 };
 
-use ambient_core::{
-    hierarchy::children, on_frame, on_window_event, transform::*, window::WindowCtl, window_ctl, window_logical_size, window_physical_size,
-};
+use ambient_core::{hierarchy::children, transform::*, window::WindowCtl, window_ctl, window_logical_size, window_physical_size};
 pub use ambient_ecs::{EntityId, SystemGroup, World};
 pub use ambient_editor_derive::ElementEditor;
 pub use ambient_element as element;
@@ -17,17 +15,16 @@ use ambient_element::{
     define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent, ElementComponentExt, Hooks,
 };
 use ambient_input::{
-    on_app_mouse_input, on_app_mouse_motion, on_app_mouse_wheel,
-    picking::{mouse_pickable, on_mouse_enter, on_mouse_hover, on_mouse_input, on_mouse_leave, on_mouse_wheel},
+    event_focus_change, event_mouse_input, event_mouse_motion, event_mouse_wheel,
+    picking::{mouse_over, mouse_pickable},
 };
 pub use ambient_std::{cb, Cb};
 use ambient_std::{color::Color, shapes::AABB};
-use closure::closure;
 use glam::*;
 use itertools::Itertools;
 use parking_lot::Mutex;
 use winit::{
-    event::{ElementState, ModifiersState, MouseButton, MouseScrollDelta, WindowEvent},
+    event::{ElementState, ModifiersState, MouseButton, MouseScrollDelta},
     window::CursorGrabMode,
 };
 
@@ -237,6 +234,17 @@ pub struct ScrollArea(pub Element);
 impl ElementComponent for ScrollArea {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (scroll, set_scroll) = hooks.use_state(0.);
+        hooks.use_world_event(move |_world, event| {
+            if let Some(delta) = event.get_ref(event_mouse_wheel()) {
+                set_scroll(
+                    scroll
+                        + match delta {
+                            MouseScrollDelta::LineDelta(_, y) => y * 20.,
+                            MouseScrollDelta::PixelDelta(p) => p.y as f32,
+                        },
+                );
+            }
+        });
         UIBase
             .el()
             .init_default(children())
@@ -245,19 +253,6 @@ impl ElementComponent for ScrollArea {
                 Flow(vec![self.0]).el().set(fit_horizontal(), Fit::Parent).set(translation(), vec3(0., scroll, 0.)),
             ])
             .set(layout(), Layout::WidthToChildren)
-            .listener(
-                on_app_mouse_wheel(),
-                Arc::new(move |_, _, delta| {
-                    set_scroll(
-                        scroll
-                            + match delta {
-                                MouseScrollDelta::LineDelta(_, y) => y * 20.,
-                                MouseScrollDelta::PixelDelta(p) => p.y as f32,
-                            },
-                    );
-                    true
-                }),
-            )
     }
 }
 impl ScrollArea {
@@ -295,7 +290,12 @@ define_el_function_for_vec_element_newtype!(FocusRoot);
 impl ElementComponent for FocusRoot {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let set_focus = hooks.provide_context(|| Focus(None));
-        Element::new().listener(on_app_mouse_input(), Arc::new(move |_, _, _| set_focus(Focus(None)))).children(self.0)
+        hooks.use_world_event(move |_world, event| {
+            if let Some(_event) = event.get_ref(event_mouse_input()) {
+                set_focus(Focus(None));
+            }
+        });
+        Element::new().children(self.0)
     }
 }
 
@@ -330,105 +330,181 @@ pub fn HighjackMouse(
             }
         })
     });
-    WindowSized(vec![])
-        .el()
-        .on_mouse_down(move |_, _, button| on_click(button))
-        .set(translation(), -Vec3::Z * 0.99)
-        .listener(
-            on_app_mouse_motion(),
-            Arc::new(closure!(clone focused, |world, _, delta| {
+    hooks.use_world_event({
+        let focused = focused;
+        move |world, event| {
+            if let Some(delta) = event.get_ref(event_mouse_motion()) {
                 let pos = {
                     let mut pos = position.lock();
-                    *pos += delta;
+                    *pos += *delta;
                     *pos
                 };
 
                 if focused.load(Ordering::Relaxed) {
-                    on_mouse_move(world, pos, delta);
+                    on_mouse_move(world, pos, *delta);
                 }
-            })),
-        )
-        .listener(
-            on_window_event(),
-            Arc::new(move |w, _, event| {
-                if let WindowEvent::Focused(f) = event {
-                    let ctl = w.resource(window_ctl());
-                    ctl.send(WindowCtl::ShowCursor(!f)).ok();
-                    // window.set_cursor_visible(!f);
-                    // Fails on android/IOS
-                    ctl.send(WindowCtl::GrabCursor(if *f {
-                        winit::window::CursorGrabMode::Locked
-                    } else {
-                        winit::window::CursorGrabMode::None
-                    }))
-                    .ok();
+            } else if let Some(f) = event.get(event_focus_change()) {
+                let ctl = world.resource(window_ctl());
+                ctl.send(WindowCtl::ShowCursor(!f)).ok();
+                // window.set_cursor_visible(!f);
+                // Fails on android/IOS
+                ctl.send(WindowCtl::GrabCursor(if f {
+                    winit::window::CursorGrabMode::Locked
+                } else {
+                    winit::window::CursorGrabMode::None
+                }))
+                .ok();
 
-                    focused.store(*f, Ordering::Relaxed);
-                }
-            }),
-        )
+                focused.store(f, Ordering::Relaxed);
+            }
+        }
+    });
+    WindowSized(vec![]).el().with_clickarea().on_mouse_down(move |_, _, button| on_click(button)).el().set(translation(), -Vec3::Z * 0.99)
 }
 
 pub trait UIExt {
-    fn on_mouse_hover<F: Fn(&mut World, EntityId) + Sync + Send + 'static>(self, handle: F) -> Self;
-    fn on_mouse_enter<F: Fn(&mut World, EntityId) + Sync + Send + 'static>(self, handle: F) -> Self;
-    fn on_mouse_leave<F: Fn(&mut World, EntityId) + Sync + Send + 'static>(self, handle: F) -> Self;
-    fn on_mouse_wheel<F: Fn(&mut World, EntityId, MouseScrollDelta) + Sync + Send + 'static>(self, handle: F) -> Self;
-    fn on_mouse_input<F: Fn(&mut World, EntityId, ElementState, MouseButton) + Sync + Send + 'static>(self, handle: F) -> Self;
-    fn on_mouse_down<F: Fn(&mut World, EntityId, MouseButton) + Sync + Send + 'static>(self, handle: F) -> Self;
-    fn on_mouse_up<F: Fn(&mut World, EntityId, MouseButton) + Sync + Send + 'static>(self, handle: F) -> Self;
-    fn with_clickarea(self) -> Self;
+    fn with_clickarea(self) -> ClickArea;
     fn with_background(self, color: Color) -> Self;
-    fn on_size_change(self, current: Vec2, on_change: Arc<dyn Fn(Vec2) + Sync + Send + 'static>) -> Self;
 }
 impl UIExt for Element {
-    fn on_mouse_hover<F: Fn(&mut World, EntityId) + Sync + Send + 'static>(self, handle: F) -> Self {
-        self.with_clickarea().listener(on_mouse_hover(), Arc::new(handle))
+    fn with_clickarea(self) -> ClickArea {
+        ClickArea::new(self)
     }
-    fn on_mouse_enter<F: Fn(&mut World, EntityId) + Sync + Send + 'static>(self, handle: F) -> Self {
-        self.with_clickarea().listener(on_mouse_enter(), Arc::new(handle))
+    fn with_background(self, background: Color) -> Self {
+        with_rect(self).set(background_color(), background)
     }
-    fn on_mouse_leave<F: Fn(&mut World, EntityId) + Sync + Send + 'static>(self, handle: F) -> Self {
-        self.with_clickarea().listener(on_mouse_leave(), Arc::new(handle))
+}
+
+#[derive(Debug, Clone)]
+pub struct ClickArea {
+    pub inner: Element,
+    pub on_mouse_enter: Vec<Cb<dyn Fn(&mut World, EntityId) + Sync + Send>>,
+    pub on_mouse_leave: Vec<Cb<dyn Fn(&mut World, EntityId) + Sync + Send>>,
+    pub on_mouse_hover: Vec<Cb<dyn Fn(&mut World, EntityId) + Sync + Send>>,
+    pub on_mouse_input: Vec<Cb<dyn Fn(&mut World, EntityId, ElementState, MouseButton) + Sync + Send>>,
+    pub on_mouse_wheel: Vec<Cb<dyn Fn(&mut World, EntityId, MouseScrollDelta) + Sync + Send>>,
+}
+impl ClickArea {
+    pub fn new(inner: Element) -> Self {
+        Self {
+            inner,
+            on_mouse_enter: Vec::new(),
+            on_mouse_leave: Vec::new(),
+            on_mouse_hover: Vec::new(),
+            on_mouse_input: Vec::new(),
+            on_mouse_wheel: Vec::new(),
+        }
     }
-    fn on_mouse_wheel<F: Fn(&mut World, EntityId, MouseScrollDelta) + Sync + Send + 'static>(self, handle: F) -> Self {
-        self.with_clickarea().listener(on_mouse_wheel(), Arc::new(handle))
+    pub fn on_mouse_hover<F: Fn(&mut World, EntityId) + Sync + Send + 'static>(mut self, handle: F) -> Self {
+        self.on_mouse_hover.push(cb(handle));
+        self
     }
-    fn on_mouse_input<F: Fn(&mut World, EntityId, ElementState, MouseButton) + Sync + Send + 'static>(self, handle: F) -> Self {
-        self.with_clickarea().listener(on_mouse_input(), Arc::new(handle))
+    pub fn on_mouse_enter<F: Fn(&mut World, EntityId) + Sync + Send + 'static>(mut self, handle: F) -> Self {
+        self.on_mouse_enter.push(cb(handle));
+        self
     }
-    fn on_mouse_down<F: Fn(&mut World, EntityId, MouseButton) + Sync + Send + 'static>(self, handle: F) -> Self {
+    pub fn on_mouse_leave<F: Fn(&mut World, EntityId) + Sync + Send + 'static>(mut self, handle: F) -> Self {
+        self.on_mouse_leave.push(cb(handle));
+        self
+    }
+    pub fn on_mouse_input<F: Fn(&mut World, EntityId, ElementState, MouseButton) + Sync + Send + 'static>(mut self, handle: F) -> Self {
+        self.on_mouse_input.push(cb(handle));
+        self
+    }
+    pub fn on_mouse_wheel<F: Fn(&mut World, EntityId, MouseScrollDelta) + Sync + Send + 'static>(mut self, handle: F) -> Self {
+        self.on_mouse_wheel.push(cb(handle));
+        self
+    }
+
+    pub fn on_mouse_down<F: Fn(&mut World, EntityId, MouseButton) + Sync + Send + 'static>(self, handle: F) -> Self {
         self.on_mouse_input(move |world, id, state, button| {
             if state == ElementState::Pressed {
                 handle(world, id, button)
             }
         })
     }
-    fn on_mouse_up<F: Fn(&mut World, EntityId, MouseButton) + Sync + Send + 'static>(self, handle: F) -> Self {
+    pub fn on_mouse_up<F: Fn(&mut World, EntityId, MouseButton) + Sync + Send + 'static>(self, handle: F) -> Self {
         self.on_mouse_input(move |world, id, state, button| {
             if state == ElementState::Released {
                 handle(world, id, button)
             }
         })
     }
-    fn with_clickarea(self) -> Self {
-        self.init(mouse_pickable(), AABB::ZERO)
-    }
-    fn with_background(self, background: Color) -> Self {
-        with_rect(self).set(background_color(), background)
-    }
-    fn on_size_change(self, current: Vec2, on_change: Arc<dyn Fn(Vec2) + Sync + Send + 'static>) -> Self {
-        self.listener(
-            on_frame(),
-            Arc::new(move |world, id, _| {
-                let width = world.get(id, width()).unwrap_or(0.);
-                let height = world.get(id, height()).unwrap_or(0.);
-                if current.x != width || current.y != height {
-                    on_change(vec2(width, height));
+}
+impl ElementComponent for ClickArea {
+    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
+        let Self { inner, on_mouse_enter, on_mouse_leave, on_mouse_hover, on_mouse_input, on_mouse_wheel } = *self;
+        let id = hooks.use_ref_with(|_| None);
+        let is_mouse_over = hooks.use_ref_with(|_| false);
+        hooks.use_frame({
+            let id = id.clone();
+            let is_mouse_over = is_mouse_over.clone();
+            move |world| {
+                if let Some(id) = *id.lock() {
+                    let next = world.get(id, mouse_over()).unwrap_or(false);
+                    let mut state = is_mouse_over.lock();
+                    if !*state && next {
+                        for handler in &on_mouse_enter {
+                            handler(world, id);
+                        }
+                    }
+                    if *state && !next {
+                        for handler in &on_mouse_leave {
+                            handler(world, id);
+                        }
+                    }
+                    if next {
+                        for handler in &on_mouse_hover {
+                            handler(world, id);
+                        }
+                    }
+                    *state = next;
                 }
-            }),
-        )
+            }
+        });
+        hooks.use_world_event({
+            let id = id.clone();
+            let is_mouse_over = is_mouse_over;
+            move |world, event| {
+                if let Some(id) = *id.lock() {
+                    if let Some(event) = event.get_ref(event_mouse_input()) {
+                        if *is_mouse_over.lock() {
+                            for handler in &on_mouse_input {
+                                handler(world, id, event.state, event.button);
+                            }
+                        }
+                    } else if let Some(event) = event.get_ref(event_mouse_wheel()) {
+                        if *is_mouse_over.lock() {
+                            for handler in &on_mouse_wheel {
+                                handler(world, id, *event);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        inner.init(mouse_pickable(), AABB::ZERO).on_spawned(move |_, new_id| {
+            *id.lock() = Some(new_id);
+        })
     }
+}
+
+#[element_component]
+pub fn MeasureSize(hooks: &mut Hooks, inner: Element, on_change: Cb<dyn Fn(Vec2) + Sync + Send + 'static>) -> Element {
+    let (id, set_id) = hooks.use_state(None);
+    let (current, set_current) = hooks.use_state(Vec2::ZERO);
+    hooks.use_frame(move |world| {
+        if let Some(id) = id {
+            let width = world.get(id, width()).unwrap_or(0.);
+            let height = world.get(id, height()).unwrap_or(0.);
+            let next = vec2(width, height);
+            if current != next {
+                on_change(next);
+                set_current(next);
+            }
+        }
+    });
+    inner.on_spawned(move |_, id| set_id(Some(id)))
 }
 
 #[derive(Debug, Clone)]

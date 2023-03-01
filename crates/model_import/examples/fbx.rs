@@ -40,9 +40,9 @@ async fn init(app: &mut App) {
     }
 
     ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
-        .set(active_camera(), 0.)
-        .set(main_scene(), ())
-        .set(far(), 2000.)
+        .with(active_camera(), 0.)
+        .with(main_scene(), ())
+        .with(far(), 2000.)
         .spawn(world);
 }
 

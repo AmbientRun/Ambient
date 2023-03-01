@@ -1,7 +1,9 @@
 use std::fmt;
 
 use serde::{
-    de::{self, SeqAccess, Visitor}, ser::SerializeTuple, Deserializer, Serializer
+    de::{self, SeqAccess, Visitor},
+    ser::SerializeTuple,
+    Deserializer, Serializer,
 };
 
 use super::*;
@@ -50,17 +52,17 @@ impl<'de> Deserialize<'de> for ComponentEntry {
     }
 }
 
-impl From<Vec<ComponentEntry>> for EntityData {
+impl From<Vec<ComponentEntry>> for Entity {
     fn from(entries: Vec<ComponentEntry>) -> Self {
-        let mut data = EntityData::new();
+        let mut data = Entity::new();
         for entry in entries.into_iter() {
             data.set_entry(entry);
         }
         data
     }
 }
-impl From<EntityData> for Vec<ComponentEntry> {
-    fn from(ed: EntityData) -> Self {
+impl From<Entity> for Vec<ComponentEntry> {
+    fn from(ed: Entity) -> Self {
         ed.iter().cloned().collect_vec()
     }
 }

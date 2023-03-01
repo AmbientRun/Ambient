@@ -4,26 +4,26 @@ use std::{
     fmt::Debug,
     hash::Hash,
     str::FromStr,
-    sync::Arc,
     time::{Duration, SystemTime},
 };
 
-use ambient_core::{mouse_position, on_event, transform::translation, window::WindowCtl, window_ctl, window_scale_factor};
+use ambient_core::{
+    mouse_position,
+    transform::{get_world_position, translation},
+    window::WindowCtl,
+    window_ctl,
+};
 use ambient_ecs::{ComponentValue, EntityId};
 use ambient_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_input::MouseButton;
+use ambient_input::{event_mouse_input, event_mouse_motion};
 use ambient_std::{
     cb,
-    events::EventDispatcher,
-    math::{interpolate, interpolate_clamped, Saturate},
+    math::{interpolate, interpolate_clamped},
     Cb,
 };
 use glam::*;
 use itertools::Itertools;
-use winit::{
-    event::{ElementState, Event, WindowEvent},
-    window::CursorIcon,
-};
+use winit::{event::ElementState, window::CursorIcon};
 
 use super::{Editor, EditorOpts, FlowColumn, FlowRow, Focus, Text, UIBase, UIExt};
 use crate::{
@@ -249,7 +249,8 @@ impl ElementComponent for Slider {
                 Box::new(|_| {})
             }
         });
-
+        let block_id = hooks.use_ref_with(|_| EntityId::null());
+        let is_moveable = self.on_change.is_some();
         // Sets the value with some sanitization
         let on_change_raw =
             self.on_change.map(|f| -> Cb<dyn Fn(f32) + Sync + Send> { cb(move |value: f32| f(cleanup_value(value, min, max, round))) });
@@ -257,22 +258,45 @@ impl ElementComponent for Slider {
         let on_change_factor =
             on_change_raw.clone().map(|f| cb(move |p: f32| f(if logarithmic { p.powf(E) } else { p } * (max - min) + min)));
 
+        // f(x) = p ^ e
+        // f'(f(x)) = x
+        // f'(y) = y ^ (1/e)
+        // (p ^ e) ^ (1/e) = p ^ (e / e) = p ^ 1 = p
+        let p = interpolate(value, min, max, 0., 1.);
+        let block_left_offset = if logarithmic { p.powf(1. / E) } else { p } * (slider_width - THUMB_WIDTH);
+        let block_left_offset = if block_left_offset.is_nan() || block_left_offset.is_infinite() { 0. } else { block_left_offset };
+
+        let dragging = hooks.use_ref_with(|_| false);
+        hooks.use_world_event({
+            let dragging = dragging.clone();
+            let block_id = block_id.clone();
+            move |world, event| {
+                if let Some(on_change_factor) = &on_change_factor {
+                    if let Some(event) = event.get_ref(event_mouse_input()) {
+                        if event.state == ElementState::Released {
+                            *dragging.lock() = false;
+                        }
+                    }
+                    if *dragging.lock() && event.get_ref(event_mouse_motion()).is_some() {
+                        let block_id = *block_id.lock();
+                        let block_position = get_world_position(world, block_id).unwrap_or_default();
+                        let block_width = world.get(block_id, width()).unwrap_or_default();
+                        let position = world.resource(mouse_position());
+                        on_change_factor(interpolate_clamped(position.x, block_position.x, block_width, 0., 1.));
+                    }
+                }
+            }
+        });
+
         let rectangle = Rectangle
             .el()
             .set(width(), slider_width)
             .set(height(), 2.)
             .set(translation(), vec3(0., (SLIDER_HEIGHT - 2.) / 2., 0.))
-            .set(background_color(), primary_color());
+            .set(background_color(), primary_color())
+            .on_spawned(move |_, id| *block_id.lock() = id);
 
         let thumb = {
-            let p = interpolate(value, min, max, 0., 1.);
-            let block_left_offset = if logarithmic { p.powf(1. / E) } else { p } * (slider_width - THUMB_WIDTH);
-            let block_left_offset = if block_left_offset.is_nan() || block_left_offset.is_infinite() { 0. } else { block_left_offset };
-            // f(x) = p ^ e
-            // f'(f(x)) = x
-            // f'(y) = y ^ (1/e)
-            // (p ^ e) ^ (1/e) = p ^ (e / e) = p ^ 1 = p
-
             let thumb = UIBase
                 .el()
                 .set(width(), THUMB_WIDTH)
@@ -280,6 +304,7 @@ impl ElementComponent for Slider {
                 .with_background(primary_color())
                 .set(border_radius(), Corners::even(THUMB_WIDTH / 2.))
                 .set(translation(), vec3(block_left_offset, 0., -0.01))
+                .with_clickarea()
                 .on_mouse_enter(|world, _| {
                     world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Hand)).ok();
                 })
@@ -287,52 +312,19 @@ impl ElementComponent for Slider {
                     world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Default)).ok();
                 });
 
-            if let Some(on_change_factor) = on_change_factor.clone() {
-                thumb.on_mouse_down(move |world, id, _| {
-                    let on_change_factor = on_change_factor.clone();
-                    let scale_factor = *world.resource(window_scale_factor());
-                    let start_pos = *world.resource(mouse_position()) / scale_factor as f32;
-                    let screen_min = start_pos.x - block_left_offset;
-                    let screen_max = screen_min + slider_width - THUMB_WIDTH;
-                    world
-                        .add_component(
-                            id,
-                            on_event(),
-                            EventDispatcher::new_with(Arc::new(move |world, id, event| match event {
-                                Event::WindowEvent { event: WindowEvent::CursorMoved { position, .. }, .. } => {
-                                    let x = position.x as f32 / scale_factor as f32;
-                                    on_change_factor(interpolate_clamped(x, screen_min, screen_max, 0., 1.));
-                                }
-                                Event::WindowEvent { event: WindowEvent::MouseInput { state: ElementState::Released, .. }, .. } => {
-                                    world.remove_component(id, on_event()).unwrap();
-                                }
-                                _ => {}
-                            })),
-                        )
-                        .unwrap();
-                })
-            } else {
+            if is_moveable {
                 thumb
+                    .on_mouse_down(move |_world, _id, _| {
+                        *dragging.lock() = true;
+                    })
+                    .el()
+            } else {
+                thumb.el()
             }
         };
 
         FlowRow::el([
-            UIBase.el().set(width(), slider_width).set(height(), SLIDER_HEIGHT).children(vec![rectangle, thumb]).on_mouse_up(
-                move |world, id, button| {
-                    if let Some(on_change_factor) = on_change_factor.clone() {
-                        if button != MouseButton::Left {
-                            return;
-                        }
-                        let scale_factor = *world.resource(window_scale_factor());
-                        let mouse_pos = *world.resource(mouse_position()) / scale_factor as f32;
-
-                        let screen_to_local = world.get(id, ambient_core::transform::mesh_to_world()).unwrap_or_default().inverse();
-                        let mouse_pos_relative = screen_to_local * Vec4::from((mouse_pos, 0.0, 1.0));
-
-                        on_change_factor((mouse_pos_relative.x / slider_width).saturate());
-                    }
-                },
-            ),
+            UIBase.el().set(width(), slider_width).set(height(), SLIDER_HEIGHT).children(vec![rectangle, thumb]),
             FlowRow::el([f32::edit_or_view(value, on_change_raw, EditorOpts::default()), suffix.map(Text::el).unwrap_or_default()]),
         ])
         .set(space_between_items(), STREET)

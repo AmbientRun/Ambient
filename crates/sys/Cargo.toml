@@ -25,8 +25,9 @@ time = { version = "0.3", features = ["wasm-bindgen"] }
 # code size when deploying.
 console_error_panic_hook = { version = "0.1.6", optional = true }
 
-[target.'cfg(target_arch = "wasm32")'.dependencies]
+[target.'cfg(target_os = "unknown")'.dependencies]
 web-sys = { version = "0.3", features = ["Performance", "Document"] }
+js-sys = "0.3"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 gloo = { version = "0.8", features = ["futures"] }

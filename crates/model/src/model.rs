@@ -10,7 +10,7 @@ use ambient_core::{
         fbx_scaling_pivot, inv_local_to_world, local_to_parent, local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation,
     },
 };
-use ambient_ecs::{query, ComponentDesc, EntityData, EntityId, World};
+use ambient_ecs::{query, ComponentDesc, Entity, EntityId, World};
 use ambient_renderer::{
     cast_shadows, color, gpu_primitives,
     lod::cpu_lod_visible,
@@ -48,7 +48,7 @@ pub struct ModelSpawnOpts {
     pub animatable: Option<bool>,
     pub lod_group_states: bool,
     pub cast_shadows: bool,
-    pub root_components: EntityData,
+    pub root_components: Entity,
 }
 impl Default for ModelSpawnOpts {
     fn default() -> Self {
@@ -57,7 +57,7 @@ impl Default for ModelSpawnOpts {
             animatable: None,
             lod_group_states: false,
             cast_shadows: true,
-            root_components: EntityData::new(),
+            root_components: Entity::new(),
         }
     }
 }
@@ -117,12 +117,12 @@ impl Model {
         self.batch_spawn(world, opts, 1).pop().unwrap()
     }
     pub fn batch_spawn(&self, world: &mut World, opts: &ModelSpawnOpts, count: usize) -> Vec<EntityId> {
-        let mut root_components = opts.root_components.clone().set(main_scene(), ()).set_default(model_loaded());
+        let mut root_components = opts.root_components.clone().with(main_scene(), ()).with_default(model_loaded());
         if let Some(aabb) = self.aabb() {
             root_components = root_components
-                .set(local_bounding_aabb(), aabb)
-                .set(world_bounding_aabb(), aabb)
-                .set(world_bounding_sphere(), aabb.to_sphere())
+                .with(local_bounding_aabb(), aabb)
+                .with(world_bounding_aabb(), aabb)
+                .with(world_bounding_sphere(), aabb.to_sphere())
         }
 
         // See README.md
@@ -131,7 +131,7 @@ impl Model {
 
         if spawn_as_scene {
             if animatable {
-                root_components.set_self(animation_binder(), Default::default());
+                root_components.set(animation_binder(), Default::default());
             }
 
             let skins_buffer_h = SkinsBufferKey.get(world.resource(asset_cache()));
@@ -143,10 +143,10 @@ impl Model {
                     for entity in entities.iter() {
                         let mut root_components = root_components.clone();
                         if !world.has_component(*entity, local_to_world()) {
-                            root_components.set_self(local_to_world(), glam::Mat4::IDENTITY);
+                            root_components.set(local_to_world(), glam::Mat4::IDENTITY);
                         }
                         if !world.has_component(*entity, children()) {
-                            root_components.set_self(children(), vec![]);
+                            root_components.set(children(), vec![]);
                         }
                         if world.has_component(*entity, name()) {
                             root_components.remove_self(name());
@@ -160,20 +160,20 @@ impl Model {
                 }
                 ModelSpawnRoot::Spawn => {
                     if let Some(name_) = self.name() {
-                        root_components.set_self(name(), name_.clone());
+                        root_components.set(name(), name_.clone());
                     }
-                    world.batch_spawn(root_components.set(children(), vec![]).set_default(local_to_world()), count)
+                    world.batch_spawn(root_components.with(children(), vec![]).with_default(local_to_world()), count)
                 }
             };
 
             let transform_roots = if let Some(transform) = self.get_transform() {
                 let transform_roots = world.batch_spawn(
-                    EntityData::new()
-                        .set(parent(), EntityId::null())
-                        .set(children(), vec![])
-                        .set(local_to_parent(), transform)
-                        .set_default(local_to_world())
-                        .set_default(is_model_node()),
+                    Entity::new()
+                        .with(parent(), EntityId::null())
+                        .with(children(), vec![])
+                        .with(local_to_parent(), transform)
+                        .with_default(local_to_world())
+                        .with_default(is_model_node()),
                     count,
                 );
                 for (transform, root) in transform_roots.iter().zip(roots.iter()) {
@@ -230,7 +230,7 @@ impl Model {
         } else {
             let root_node = self.roots()[0];
             let root_ed = self.create_entity_data(root_node, opts, Some(self.get_transform().unwrap_or(Mat4::IDENTITY)));
-            root_components.append_self(root_ed);
+            root_components.merge(root_ed);
             match &opts.root {
                 ModelSpawnRoot::AttachTo(entities) => {
                     for entity in entities.iter() {
@@ -238,7 +238,7 @@ impl Model {
                         if world.has_component(*entity, local_to_world()) {
                             root_components.remove_self(local_to_world());
                         } else {
-                            root_components.set_self(local_to_world(), glam::Mat4::IDENTITY);
+                            root_components.set(local_to_world(), glam::Mat4::IDENTITY);
                         }
                         if world.has_component(*entity, name()) {
                             root_components.remove_self(name());
@@ -258,9 +258,9 @@ impl Model {
                 }
                 ModelSpawnRoot::Spawn => {
                     if let Some(name_) = self.name() {
-                        root_components.set_self(name(), name_.clone());
+                        root_components.set(name(), name_.clone());
                     }
-                    world.batch_spawn(root_components.set(local_to_world(), glam::Mat4::IDENTITY), count)
+                    world.batch_spawn(root_components.with(local_to_world(), glam::Mat4::IDENTITY), count)
                 }
             }
         }
@@ -279,22 +279,22 @@ impl Model {
     ) -> Vec<EntityId> {
         let mut ed = self
             .create_entity_data(id, opts, None)
-            .set(parent(), EntityId::null())
-            .set_default(is_model_node())
-            .set(local_to_parent(), Mat4::IDENTITY);
+            .with(parent(), EntityId::null())
+            .with_default(is_model_node())
+            .with(local_to_parent(), Mat4::IDENTITY);
 
         if let Some(skin_ix) = ed.remove_self(model_skin_ix()) {
             let skin = self.skins().unwrap()[skin_ix].clone();
             let count = skin.inverse_bind_matrices.len();
-            ed.set_self(skinning::inverse_bind_matrices(), skin.inverse_bind_matrices.clone());
-            ed.set_self(skinning::joints(), skin.joints);
-            ed.set_self(skinning::joint_matrices(), vec![Mat4::IDENTITY; count]);
-            ed.set_self(skinning::skin(), Skin::null());
-            ed.set_self(inv_local_to_world(), Default::default());
+            ed.set(skinning::inverse_bind_matrices(), skin.inverse_bind_matrices.clone());
+            ed.set(skinning::joints(), skin.joints);
+            ed.set(skinning::joint_matrices(), vec![Mat4::IDENTITY; count]);
+            ed.set(skinning::skin(), Skin::null());
+            ed.set(inv_local_to_world(), Default::default());
         }
 
         if self.0.has_component(id, primitives()) {
-            ed.set_self(visibility_from(), EntityId::null());
+            ed.set(visibility_from(), EntityId::null());
         }
         let entities = world.batch_spawn(ed, count);
         if let Ok(skin_ix) = self.0.get(id, model_skin_ix()) {
@@ -382,27 +382,27 @@ impl Model {
     }
 
     fn apply_transform_to_entity(&self, source_entity: EntityId, world: &mut World, id: EntityId, rotation_only: bool) {
-        let mut ed = EntityData::new();
+        let mut ed = Entity::new();
         let mut remove = Vec::new();
         self.build_transform(source_entity, &mut ed, Some(&mut remove), rotation_only);
         world.remove_components(id, remove).ok();
         world.add_components(id, ed).ok();
     }
 
-    fn build_transform(&self, node: EntityId, ed: &mut EntityData, mut remove: Option<&mut Vec<ComponentDesc>>, rotation_only: bool) {
+    fn build_transform(&self, node: EntityId, ed: &mut Entity, mut remove: Option<&mut Vec<ComponentDesc>>, rotation_only: bool) {
         if let Ok(rot) = self.0.get(node, rotation()) {
-            ed.set_self(rotation(), rot);
+            ed.set(rotation(), rot);
         } else if let Some(remove) = &mut remove {
             remove.push(rotation().desc());
         }
         if !rotation_only {
             if let Ok(pos) = self.0.get(node, translation()) {
-                ed.set_self(translation(), pos);
+                ed.set(translation(), pos);
             } else if let Some(remove) = &mut remove {
                 remove.push(translation().desc());
             }
             if let Ok(scl) = self.0.get(node, scale()) {
-                ed.set_self(scale(), scl);
+                ed.set(scale(), scl);
             } else if let Some(remove) = &mut remove {
                 remove.push(scale().desc());
             }
@@ -410,47 +410,47 @@ impl Model {
 
         // fbx
         if self.0.has_component(node, fbx_complex_transform()) {
-            ed.set_self(fbx_complex_transform(), ());
+            ed.set(fbx_complex_transform(), ());
         } else if let Some(remove) = &mut remove {
             remove.push(fbx_complex_transform().desc());
         }
         if let Ok(val) = self.0.get(node, fbx_rotation_offset()) {
-            ed.set_self(fbx_rotation_offset(), val);
+            ed.set(fbx_rotation_offset(), val);
         } else if let Some(remove) = &mut remove {
             remove.push(fbx_rotation_offset().desc());
         }
         if let Ok(val) = self.0.get(node, fbx_rotation_pivot()) {
-            ed.set_self(fbx_rotation_pivot(), val);
+            ed.set(fbx_rotation_pivot(), val);
         } else if let Some(remove) = &mut remove {
             remove.push(fbx_rotation_pivot().desc());
         }
         if let Ok(val) = self.0.get(node, fbx_pre_rotation()) {
-            ed.set_self(fbx_pre_rotation(), val);
+            ed.set(fbx_pre_rotation(), val);
         } else if let Some(remove) = &mut remove {
             remove.push(fbx_pre_rotation().desc());
         }
         if let Ok(val) = self.0.get(node, fbx_post_rotation()) {
-            ed.set_self(fbx_post_rotation(), val);
+            ed.set(fbx_post_rotation(), val);
         } else if let Some(remove) = &mut remove {
             remove.push(fbx_post_rotation().desc());
         }
         if !rotation_only {
             if let Ok(val) = self.0.get(node, fbx_scaling_offset()) {
-                ed.set_self(fbx_scaling_offset(), val);
+                ed.set(fbx_scaling_offset(), val);
             } else if let Some(remove) = &mut remove {
                 remove.push(fbx_scaling_offset().desc());
             }
             if let Ok(val) = self.0.get(node, fbx_scaling_pivot()) {
-                ed.set_self(fbx_scaling_pivot(), val);
+                ed.set(fbx_scaling_pivot(), val);
             } else if let Some(remove) = &mut remove {
                 remove.push(fbx_scaling_pivot().desc());
             }
         }
     }
-    fn create_entity_data(&self, node: EntityId, opts: &ModelSpawnOpts, single_mesh_transform: Option<Mat4>) -> EntityData {
-        let mut ed = self.0.clone_entity(node).unwrap().set_default(local_to_world());
+    fn create_entity_data(&self, node: EntityId, opts: &ModelSpawnOpts, single_mesh_transform: Option<Mat4>) -> Entity {
+        let mut ed = self.0.clone_entity(node).unwrap().with_default(local_to_world());
         if let Some(mat) = single_mesh_transform {
-            ed.set_self(
+            ed.set(
                 mesh_to_local(),
                 mat * self.0.get(node, local_to_world()).unwrap_or_default() * self.0.get(node, mesh_to_local()).unwrap_or_default(),
             );
@@ -459,23 +459,23 @@ impl Model {
             }
         } else {
             if let Ok(transform) = self.0.get(node, mesh_to_local()) {
-                ed.set_self(mesh_to_local(), transform);
+                ed.set(mesh_to_local(), transform);
             }
             self.build_transform(node, &mut ed, None, false);
         }
 
         if self.0.has_component(node, primitives()) {
-            ed.set_self(gpu_primitives(), Default::default());
+            ed.set(gpu_primitives(), Default::default());
             if !ed.contains(color()) {
-                ed.set_self(color(), Vec4::ONE);
+                ed.set(color(), Vec4::ONE);
             }
-            ed.set_self(main_scene(), ());
-            ed.set_self(mesh_to_world(), Mat4::IDENTITY);
+            ed.set(main_scene(), ());
+            ed.set(mesh_to_world(), Mat4::IDENTITY);
             if opts.lod_group_states {
-                ed.set_self(cpu_lod_visible(), false);
+                ed.set(cpu_lod_visible(), false);
             }
             if opts.cast_shadows {
-                ed.set_self(cast_shadows(), ());
+                ed.set(cast_shadows(), ());
             }
         }
         ed

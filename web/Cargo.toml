@@ -1,6 +1,7 @@
 [package]
 name = "ambient_web"
 version = { workspace = true }
+rust-version = { workspace = true }
 edition = "2021"
 
 [lib]
@@ -16,7 +17,7 @@ ambient_core = { path = "../crates/core" }
 ambient_ecs = { path = "../crates/ecs" }
 ambient_app = { path = "../crates/app" }
 
-anyhow.workspace = true
+anyhow = { workspace = true }
 
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
@@ -24,8 +25,6 @@ tracing-subscriber = { version = "0.3", features = ["time"] }
 tracing-web = "0.1"
 time = { version = "0.3", features = ["wasm-bindgen"] }
 chrono = { workspace = true, features = ["wasmbind"] }
-
-wgpu = { workspace = true, features = ["webgl"] }
 
 getrandom = { version = "0.2.8", features = ["js"] }
 web-sys = { version = "0.3.61", features = [

@@ -7,7 +7,7 @@ use ambient_core::{
     name,
     transform::{local_to_parent, local_to_world, rotation, scale, translation},
 };
-use ambient_ecs::{EntityData, World};
+use ambient_ecs::{Entity, World};
 use ambient_model::{model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, ModelSkin, PbrRenderPrimitiveFromUrl};
 use ambient_renderer::materials::pbr_material::PbrMaterialFromUrl;
 use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl, mesh::Mesh, shapes::AABB};
@@ -207,14 +207,14 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
         .map(|node| {
             let (trans, rot, scal) = node.transform().decomposed();
 
-            let mut ed = EntityData::new()
-                .set(translation(), Vec3::from_slice(&trans))
-                .set(rotation(), Quat::from_slice(&rot))
-                .set(scale(), Vec3::from_slice(&scal))
-                .set_default(local_to_world());
+            let mut ed = Entity::new()
+                .with(translation(), Vec3::from_slice(&trans))
+                .with(rotation(), Quat::from_slice(&rot))
+                .with(scale(), Vec3::from_slice(&scal))
+                .with_default(local_to_world());
 
             if let Some(node_name) = node.name() {
-                ed.set_self(name(), node_name.to_string());
+                ed.set(name(), node_name.to_string());
             }
 
             if let Some(mesh_) = node.mesh() {
@@ -226,7 +226,7 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
                         lod: 0,
                     })
                     .collect_vec();
-                ed.set_self(pbr_renderer_primitives_from_url(), primitive_defs);
+                ed.set(pbr_renderer_primitives_from_url(), primitive_defs);
 
                 let aabbs = mesh_
                     .primitives()
@@ -236,12 +236,12 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
                     })
                     .collect_vec();
                 if let Some(aabb) = AABB::unions(&aabbs) {
-                    ed.set_self(local_bounding_aabb(), aabb);
+                    ed.set(local_bounding_aabb(), aabb);
                 }
             }
 
             if let Some(skin) = node.skin() {
-                ed.set_self(model_skin_ix(), skin.index());
+                ed.set(model_skin_ix(), skin.index());
             }
 
             ed.spawn(&mut world)

@@ -9,7 +9,7 @@ use ambient_core::{
     runtime,
     transform::{local_to_world, translation},
 };
-use ambient_ecs::{components, query, EntityData, EntityId, FnSystem, SystemGroup};
+use ambient_ecs::{components, query, Entity, EntityId, FnSystem, SystemGroup};
 use ambient_model::{Model, ModelFromUrl, ModelSpawnOpts, ModelSpawnRoot};
 use ambient_renderer::color;
 use ambient_std::{
@@ -38,8 +38,8 @@ components!("game_objects", {
     terrain_cell_nature_conf_hash: u64,
 });
 
-pub fn init_world_resources() -> EntityData {
-    EntityData::new()
+pub fn init_world_resources() -> Entity {
+    Entity::new()
 }
 
 const NATURALS_MAX_ENTITIES: u32 = 1_000_000;
@@ -207,10 +207,10 @@ async fn update_natural_layer(
                                     world,
                                     &ModelSpawnOpts {
                                         root: ModelSpawnRoot::Spawn,
-                                        root_components: EntityData::new()
-                                            .set(natural_model(), model.clone())
-                                            .set(color(), element.color.into())
-                                            .set_default(local_to_world()),
+                                        root_components: Entity::new()
+                                            .with(natural_model(), model.clone())
+                                            .with(color(), element.color.into())
+                                            .with_default(local_to_world()),
                                         animatable: Some(false),
                                         ..Default::default()
                                     },
@@ -260,11 +260,11 @@ pub fn client_systems() -> SystemGroup {
                 for (id, _) in q.collect_cloned(world, qs) {
                     log_result!(world.add_components(
                         id,
-                        EntityData::new()
-                            .set(terrain_cell_nature_conf_hash(), 0u64)
-                            .set(terrain_cell_nature_version(), -1)
-                            .set_default(natural_layers_in_progress())
-                            .set_default(natural_entities()),
+                        Entity::new()
+                            .with(terrain_cell_nature_conf_hash(), 0u64)
+                            .with(terrain_cell_nature_version(), -1)
+                            .with_default(natural_layers_in_progress())
+                            .with_default(natural_entities()),
                     ));
                 }
             }),

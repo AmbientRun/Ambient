@@ -555,7 +555,6 @@ dependencies = [
  "ambient_sys",
  "as-any",
  "atomic_refcell",
- "closure",
  "derivative",
  "dyn-clonable",
  "futures",
@@ -906,6 +905,7 @@ dependencies = [
  "ambient_model_import",
  "ambient_primitives",
  "ambient_std",
+ "ambient_sys",
  "anyhow",
  "async-trait",
  "bytemuck",
@@ -1019,6 +1019,7 @@ dependencies = [
  "flume",
  "futures",
  "gloo",
+ "js-sys",
  "once_cell",
  "ordered-float",
  "parking_lot",
@@ -1194,7 +1195,6 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
- "wgpu 0.14.2",
 ]
 
 [[package]]

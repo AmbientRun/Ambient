@@ -7,7 +7,9 @@ use std::{
 };
 
 use ambient_core::{app_start_time, asset_cache, dtime, no_sync, project_name, time};
-use ambient_ecs::{world_events, ComponentDesc, ComponentRegistry, EntityData, Networked, SystemGroup, World, WorldStreamCompEvent};
+use ambient_ecs::{
+    world_events, ComponentDesc, ComponentRegistry, Entity, Networked, SystemGroup, World, WorldEventsSystem, WorldStreamCompEvent,
+};
 use ambient_network::{
     bi_stream_handlers, datagram_handlers,
     server::{ForkingEvent, GameServer, ShutdownEvent},
@@ -69,7 +71,7 @@ pub fn start(
 
         // Keep track of the project name
         let name = manifest.project.name.clone().unwrap_or_else(|| "Ambient".into());
-        server_world.add_components(server_world.resource_entity(), EntityData::new().set(project_name(), name)).unwrap();
+        server_world.add_components(server_world.resource_entity(), Entity::new().with(project_name(), name)).unwrap();
 
         wasm::initialize(&mut server_world, project_path.clone(), &manifest).await.unwrap();
 
@@ -100,6 +102,7 @@ fn systems(_world: &mut World) -> SystemGroup {
             Box::new(ambient_physics::physx::sync_ecs_physics()),
             Box::new(ambient_core::transform::TransformSystem::new()),
             ambient_core::remove_at_time_system(),
+            Box::new(WorldEventsSystem),
             Box::new(ambient_physics::server_systems()),
             Box::new(shared::player::server_systems()),
             Box::new(wasm::systems()),
@@ -118,25 +121,25 @@ fn is_sync_component(component: ComponentDesc, _: WorldStreamCompEvent) -> bool 
     component.has_attribute::<Networked>()
 }
 
-fn create_resources(assets: AssetCache) -> EntityData {
-    let mut server_resources = EntityData::new().set(asset_cache(), assets.clone()).set(no_sync(), ()).set_default(world_events());
+fn create_resources(assets: AssetCache) -> Entity {
+    let mut server_resources = Entity::new().with(asset_cache(), assets.clone()).with(no_sync(), ()).with_default(world_events());
 
     ambient_physics::create_server_resources(&assets, &mut server_resources);
 
-    server_resources.append_self(ambient_core::async_ecs::async_ecs_resources());
-    server_resources.set_self(ambient_core::runtime(), RuntimeHandle::current());
+    server_resources.merge(ambient_core::async_ecs::async_ecs_resources());
+    server_resources.set(ambient_core::runtime(), RuntimeHandle::current());
     let now = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
-    server_resources.set_self(time(), now);
-    server_resources.set_self(app_start_time(), now);
-    server_resources.set_self(dtime(), 1. / 60.);
+    server_resources.set(time(), now);
+    server_resources.set(app_start_time(), now);
+    server_resources.set(dtime(), 1. / 60.);
 
     let mut handlers = HashMap::new();
     ambient_network::register_rpc_bi_stream_handler(&mut handlers, shared::create_rpc_registry());
-    server_resources.set_self(bi_stream_handlers(), handlers);
+    server_resources.set(bi_stream_handlers(), handlers);
 
     let mut handlers = HashMap::new();
     shared::player::register_datagram_handler(&mut handlers);
-    server_resources.set_self(datagram_handlers(), handlers);
+    server_resources.set(datagram_handlers(), handlers);
 
     server_resources
 }

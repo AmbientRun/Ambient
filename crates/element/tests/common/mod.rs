@@ -1,13 +1,13 @@
 use std::sync::Arc;
 
 use ambient_ecs::{components, query_mut, Resource, World};
-use ambient_std::events::EventDispatcher;
+use ambient_std::Cb;
 use itertools::Itertools;
 
 components!("test", {
     prop_a: (),
     prop_b: u32,
-    trigger: EventDispatcher<dyn Fn(&mut World) + Send + Sync>,
+    trigger: Cb<dyn Fn(&mut World) + Send + Sync>,
     @[Resource]
     counter: u32,
     @[Resource]
@@ -30,8 +30,6 @@ pub fn initialize() -> World {
 pub fn run_triggers(world: &mut World) {
     let triggers = query_mut((), (trigger(),)).iter(world, None).map(|x| x.2 .0.clone()).collect_vec();
     for trigger in triggers.into_iter() {
-        for handler in trigger.iter() {
-            handler(world);
-        }
+        (*trigger)(world);
     }
 }

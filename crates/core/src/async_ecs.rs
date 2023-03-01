@@ -1,6 +1,5 @@
-use std::time::Instant;
-
-use ambient_ecs::{components, EntityData, FnSystem, Resource, SystemGroup, World};
+use ambient_ecs::{components, Entity, FnSystem, Resource, SystemGroup, World};
+use ambient_sys::time::Instant;
 
 components!("ecs", {
     @[Resource]
@@ -22,8 +21,8 @@ impl AsyncRun {
     }
 }
 
-pub fn async_ecs_resources() -> EntityData {
-    EntityData::new().set(async_run(), AsyncRun::new())
+pub fn async_ecs_resources() -> Entity {
+    Entity::new().with(async_run(), AsyncRun::new())
 }
 
 pub fn async_ecs_systems() -> SystemGroup {

@@ -7,7 +7,7 @@ use std::{
 };
 
 use ambient_core::runtime;
-use ambient_ecs::{ComponentQuery, ComponentValue, FrameEvent, QueryState, TypedReadQuery, World};
+use ambient_ecs::{world_events, ComponentQuery, ComponentValue, Entity, FrameEvent, QueryState, TypedReadQuery, World, WorldEventReader};
 use ambient_std::{cb, Cb};
 use ambient_sys::task;
 use as_any::Downcast;
@@ -16,6 +16,7 @@ use parking_lot::Mutex;
 use tracing::info_span;
 
 use crate::{AnyCloneable, ElementTree, HookContext, InstanceId};
+use itertools::Itertools;
 
 pub type Setter<T> = Cb<dyn Fn(T) + Sync + Send>;
 
@@ -134,6 +135,17 @@ impl<'a> Hooks<'a> {
         if let Some(ref mut on_spawn) = self.on_spawn {
             on_spawn.push(Box::new(func) as SpawnFn);
         }
+    }
+
+    pub fn use_world_event(&mut self, func: impl Fn(&mut World, &Entity) + Sync + Send + 'static) {
+        let reader = self.use_ref_with(|_| WorldEventReader::new());
+        self.use_frame(move |world| {
+            let mut reader = reader.lock();
+            let events = reader.iter(world.resource(world_events())).map(|(_, event)| event.clone()).collect_vec();
+            for event in events {
+                func(world, &event);
+            }
+        })
     }
 
     /// Spawns the provided future as a task, and aborts the task when the

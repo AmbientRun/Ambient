@@ -52,5 +52,6 @@ impl ElementComponent for SelectionPanel {
         .set(fit_horizontal(), Fit::None)
         .set(fit_vertical(), Fit::None)
         .with_clickarea()
+        .el()
     }
 }
