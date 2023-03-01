@@ -1,0 +1,219 @@
+default interface player {
+    use pkg.types.{vec2, entity-id}
+
+    enum virtual-key-code {
+        /// The '1' key over the letters.
+        key1,
+        /// The '2' key over the letters.
+        key2,
+        /// The '3' key over the letters.
+        key3,
+        /// The '4' key over the letters.
+        key4,
+        /// The '5' key over the letters.
+        key5,
+        /// The '6' key over the letters.
+        key6,
+        /// The '7' key over the letters.
+        key7,
+        /// The '8' key over the letters.
+        key8,
+        /// The '9' key over the letters.
+        key9,
+        /// The '0' key over the 'O' and 'P' keys.
+        key0,
+
+        a,
+        b,
+        c,
+        d,
+        e,
+        f,
+        g,
+        h,
+        i,
+        j,
+        k,
+        l,
+        m,
+        n,
+        o,
+        p,
+        q,
+        r,
+        s,
+        t,
+        u,
+        v,
+        w,
+        x,
+        y,
+        z,
+
+        /// The Escape key, next to F1.
+        escape,
+
+        f1,
+        f2,
+        f3,
+        f4,
+        f5,
+        f6,
+        f7,
+        f8,
+        f9,
+        f10,
+        f11,
+        f12,
+        f13,
+        f14,
+        f15,
+        f16,
+        f17,
+        f18,
+        f19,
+        f20,
+        f21,
+        f22,
+        f23,
+        f24,
+
+        /// Print Screen/SysRq.
+        snapshot,
+        /// Scroll Lock.
+        scroll,
+        /// Pause/Break key, next to Scroll lock.
+        pause,
+
+        /// `Insert`, next to Backspace.
+        insert,
+        home,
+        delete,
+        end,
+        page-down,
+        page-up,
+
+        left,
+        up,
+        right,
+        down,
+
+        /// The Backspace key, right over Enter.
+        // TODO: rename
+        back,
+        /// The Enter key.
+        return,
+        /// The space bar.
+        space,
+
+        /// The "Compose" key on Linux.
+        compose,
+
+        caret,
+
+        numlock,
+        numpad0,
+        numpad1,
+        numpad2,
+        numpad3,
+        numpad4,
+        numpad5,
+        numpad6,
+        numpad7,
+        numpad8,
+        numpad9,
+        numpad-add,
+        numpad-divide,
+        numpad-decimal,
+        numpad-comma,
+        numpad-enter,
+        numpad-equals,
+        numpad-multiply,
+        numpad-subtract,
+
+        abnt-c1,
+        abnt-c2,
+        apostrophe,
+        apps,
+        asterisk,
+        at,
+        ax,
+        backslash,
+        calculator,
+        capital,
+        colon,
+        comma,
+        convert,
+        equals,
+        grave,
+        kana,
+        kanji,
+        l-alt,
+        l-bracket,
+        l-control,
+        l-shift,
+        l-win,
+        mail,
+        media-select,
+        media-stop,
+        minus,
+        mute,
+        my-computer,
+        // also called "Next"
+        navigate-forward,
+        // also called "Prior"
+        navigate-backward,
+        next-track,
+        no-convert,
+        oem102,
+        period,
+        play-pause,
+        plus,
+        power,
+        prev-track,
+        r-alt,
+        r-bracket,
+        r-control,
+        r-shift,
+        r-win,
+        semicolon,
+        slash,
+        sleep,
+        stop,
+        sysrq,
+        tab,
+        underline,
+        unlabeled,
+        volume-down,
+        volume-up,
+        wake,
+        web-back,
+        web-favorites,
+        web-forward,
+        web-home,
+        web-refresh,
+        web-search,
+        web-stop,
+        yen,
+        copy,
+        paste,
+        cut,
+    }
+
+    variant mouse-button {
+        left,
+        right,
+        middle,
+        other(u16),
+    }
+
+    record raw-input {
+        keys: list<virtual-key-code>,
+        mouse-position: vec2,
+        mouse-wheel: float32,
+        mouse-buttons: list<mouse-button>,
+    }
+
+    get-raw-input: func(player: entity-id) -> option<raw-input>
+    get-prev-raw-input: func(player: entity-id) -> option<raw-input>
+}

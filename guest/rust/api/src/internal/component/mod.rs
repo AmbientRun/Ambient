@@ -1,4 +1,4 @@
-use crate::internal::host;
+use crate::internal::wit;
 use std::{collections::HashMap, marker::PhantomData};
 
 mod borrowed_types;
@@ -53,11 +53,11 @@ macro_rules! lazy_component {
     };
 }
 
-/// An Entity is a collection of components and associated values.
+/// An [Entity] is a collection of components and associated values.
 ///
-/// Use the `.spawn` method to insert the Entity into the World.
+/// Use the [spawn](Entity::spawn) method to insert the [Entity] into the world.
 #[derive(Clone)]
-pub struct Entity(pub(crate) HashMap<u32, host::ComponentTypeResult>);
+pub struct Entity(pub(crate) HashMap<u32, wit::component::ComponentTypeResult>);
 impl Entity {
     /// Creates a new `Entity`.
     pub fn new() -> Self {
@@ -119,10 +119,12 @@ impl Entity {
 
     pub(crate) fn call_with<R>(
         &self,
-        callback: impl FnOnce(&[(u32, host::ComponentTypeParam<'_>)]) -> R,
+        callback: impl FnOnce(&[(u32, wit::component::ComponentTypeParam<'_>)]) -> R,
     ) -> R {
-        let data = borrowed_types::create_owned_types(&self.0);
-        let data = borrowed_types::create_borrowed_types(&data);
+        let data: Vec<(u32, borrowed_types::ComponentTypeBorrow)> =
+            self.0.iter().map(|(id, v)| (*id, v.into())).collect();
+        let data: Vec<(u32, wit::component::ComponentTypeParam<'_>)> =
+            data.iter().map(|(id, v)| (*id, v.as_wit())).collect();
         callback(&data)
     }
 }
@@ -135,7 +137,9 @@ pub trait ComponentsTuple {
     #[doc(hidden)]
     fn as_indices(&self) -> Vec<u32>;
     #[doc(hidden)]
-    fn from_component_types(component_types: Vec<host::ComponentTypeResult>) -> Option<Self::Data>;
+    fn from_component_types(
+        component_types: Vec<wit::component::ComponentTypeResult>,
+    ) -> Option<Self::Data>;
 }
 
 // From: https://stackoverflow.com/questions/56697029/is-there-a-way-to-impl-trait-for-a-tuple-that-may-have-any-number-elements
@@ -150,7 +154,7 @@ macro_rules! tuple_impls {
                 let ($($name,)+) = self;
                 vec![$($name.index(),)*]
             }
-            fn from_component_types(component_types: Vec<host::ComponentTypeResult>) -> Option<Self::Data> {
+            fn from_component_types(component_types: Vec<wit::component::ComponentTypeResult>) -> Option<Self::Data> {
                 paste::paste! {
                     #[allow(non_snake_case)]
                     if let [$([<value_ $name>],)+] = &component_types[..] {
@@ -178,7 +182,9 @@ impl<T: SupportedComponentTypeGet> ComponentsTuple for Component<T> {
     fn as_indices(&self) -> Vec<u32> {
         vec![self.index()]
     }
-    fn from_component_types(component_types: Vec<host::ComponentTypeResult>) -> Option<Self::Data> {
+    fn from_component_types(
+        component_types: Vec<wit::component::ComponentTypeResult>,
+    ) -> Option<Self::Data> {
         assert_eq!(component_types.len(), 1);
         T::from_result(component_types[0].clone())
     }
@@ -189,7 +195,9 @@ impl ComponentsTuple for () {
     fn as_indices(&self) -> Vec<u32> {
         vec![]
     }
-    fn from_component_types(component_types: Vec<host::ComponentTypeResult>) -> Option<Self::Data> {
+    fn from_component_types(
+        component_types: Vec<wit::component::ComponentTypeResult>,
+    ) -> Option<Self::Data> {
         assert!(component_types.is_empty());
         Some(())
     }

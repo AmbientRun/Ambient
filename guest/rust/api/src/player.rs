@@ -4,7 +4,7 @@ use crate::{
     global::{EntityId, Vec2},
     internal::{
         conversion::{FromBindgen, IntoBindgen},
-        host,
+        wit,
     },
 };
 
@@ -209,7 +209,7 @@ pub enum KeyCode {
     Paste,
     Cut,
 }
-impl FromBindgen for host::VirtualKeyCode {
+impl FromBindgen for wit::player::VirtualKeyCode {
     type Item = KeyCode;
 
     fn from_bindgen(self) -> Self::Item {
@@ -393,7 +393,7 @@ pub enum MouseButton {
     /// Other buttons
     Other(u16),
 }
-impl FromBindgen for host::MouseButton {
+impl FromBindgen for wit::player::MouseButton {
     type Item = MouseButton;
 
     fn from_bindgen(self) -> Self::Item {
@@ -418,7 +418,7 @@ pub struct RawInput {
     /// All of the mouse buttons being pressed this frame.
     pub mouse_buttons: HashSet<MouseButton>,
 }
-impl FromBindgen for host::PlayerRawInput {
+impl FromBindgen for wit::player::RawInput {
     type Item = RawInput;
     fn from_bindgen(self) -> Self::Item {
         Self::Item {
@@ -471,12 +471,12 @@ impl RawInput {
 ///
 /// To determine if the player just supplied an input, compare it to [get_prev_raw_input] or use [get_raw_input_delta].
 pub fn get_raw_input(player_id: EntityId) -> Option<RawInput> {
-    host::player_get_raw_input(player_id.into_bindgen()).from_bindgen()
+    wit::player::get_raw_input(player_id.into_bindgen()).from_bindgen()
 }
 
 /// Gets `player_id`'s raw input state prior to the most recent update.
 pub fn get_prev_raw_input(player_id: EntityId) -> Option<RawInput> {
-    host::player_get_prev_raw_input(player_id.into_bindgen()).from_bindgen()
+    wit::player::get_prev_raw_input(player_id.into_bindgen()).from_bindgen()
 }
 
 /// Gets both the previous and current raw input states of `player_id`

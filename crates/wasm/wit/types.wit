@@ -1,0 +1,38 @@
+default interface types {
+    record entity-id {
+        id0: u64,
+        id1: u64,
+    }
+
+    record vec2 {
+        x: float32,
+        y: float32,
+    }
+
+    record vec3 {
+        x: float32,
+        y: float32,
+        z: float32,
+    }
+
+    record vec4 {
+        x: float32,
+        y: float32,
+        z: float32,
+        w: float32,
+    }
+
+    record quat {
+        x: float32,
+        y: float32,
+        z: float32,
+        w: float32,
+    }
+
+    record mat4 {
+        x: vec4,
+        y: vec4,
+        z: vec4,
+        w: vec4,
+    }
+}

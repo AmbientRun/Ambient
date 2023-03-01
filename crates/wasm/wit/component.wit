@@ -1,0 +1,93 @@
+// This lives in its own interface due to a wit-bindgen bug where `component-type` is only partially expanded
+// (i.e. `list-type` and `option-type` are not expanded), and it's only expanded in the first interface to use it.
+//
+// To work around this, we just give it its own interface and have functions that use it in the same interface.
+default interface component {
+    use pkg.types.{entity-id, mat4, quat, vec2, vec3, vec4}
+
+    variant component-list-type {
+        type-empty(list<tuple<>>),
+        type-bool(list<bool>),
+        type-entity-id(list<entity-id>),
+        type-f32(list<float32>),
+        type-f64(list<float64>),
+        type-mat4(list<mat4>),
+        type-i32(list<s32>),
+        type-quat(list<quat>),
+        type-string(list<string>),
+        type-u32(list<u32>),
+        type-u64(list<u64>),
+        type-vec2(list<vec2>),
+        type-vec3(list<vec3>),
+        type-vec4(list<vec4>),
+    }
+
+    variant component-option-type {
+        type-empty(option<tuple<>>),
+        type-bool(option<bool>),
+        type-entity-id(option<entity-id>),
+        type-f32(option<float32>),
+        type-f64(option<float64>),
+        type-mat4(option<mat4>),
+        type-i32(option<s32>),
+        type-quat(option<quat>),
+        type-string(option<string>),
+        type-u32(option<u32>),
+        type-u64(option<u64>),
+        type-vec2(option<vec2>),
+        type-vec3(option<vec3>),
+        type-vec4(option<vec4>),
+    }
+
+    variant component-type {
+        type-empty(tuple<>),
+        type-bool(bool),
+        type-entity-id(entity-id),
+        type-f32(float32),
+        type-f64(float64),
+        type-mat4(mat4),
+        type-i32(s32),
+        type-quat(quat),
+        type-string(string),
+        type-u32(u32),
+        type-u64(u64),
+        type-vec2(vec2),
+        type-vec3(vec3),
+        type-vec4(vec4),
+        type-list(component-list-type),
+        type-option(component-option-type),
+    }
+
+    type entity = list<tuple<u32, component-type>>
+    get-index: func(id: string) -> option<u32>
+
+    get-component: func(entity: entity-id, index: u32) -> option<component-type>
+
+    add-component: func(entity: entity-id, index: u32, value: component-type)
+    add-components: func(entity: entity-id, data: entity)
+
+    set-component: func(entity: entity-id, index: u32, value: component-type)
+    set-components: func(entity: entity-id, data: entity)
+
+    has-component: func(entity: entity-id, index: u32) -> bool
+    has-components: func(entity: entity-id, indices: list<u32>) -> bool
+
+    remove-component: func(entity: entity-id, index: u32)
+    remove-components: func(entity: entity-id, indices: list<u32>)
+
+    record query-build {
+        components: list<u32>,
+        include: list<u32>,
+        exclude: list<u32>,
+        changed: list<u32>,
+    }
+
+    enum query-event {
+        frame,
+        spawn,
+        despawn
+    }
+
+    query: func(q: query-build, t: query-event) -> u64
+    query-eval: func(q: u64) -> list<tuple<entity-id, list<component-type>>>
+}

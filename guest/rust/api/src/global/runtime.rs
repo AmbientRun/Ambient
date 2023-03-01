@@ -3,7 +3,7 @@ use std::{cell::RefCell, future::Future, rc::Rc, task::Poll};
 use crate::{
     components, entity,
     global::EventResult,
-    internal::{component::Entity, executor::EXECUTOR, host},
+    internal::{component::Entity, executor::EXECUTOR, wit},
 };
 
 /// The time, relative to when the application started, in seconds.
@@ -35,7 +35,7 @@ pub fn on_async<R: Future<Output = EventResult> + 'static>(
     event: &str,
     callback: impl Fn(&Entity) -> R + 'static,
 ) {
-    host::event_subscribe(event);
+    wit::event::subscribe(event);
     EXECUTOR.register_callback(
         event.to_string(),
         Box::new(move |args| Box::pin(callback(args))),
@@ -60,7 +60,7 @@ pub fn once_async<R: Future<Output = EventResult> + 'static>(
     event: &str,
     callback: impl FnOnce(&Entity) -> R + 'static,
 ) {
-    host::event_subscribe(event);
+    wit::event::subscribe(event);
     EXECUTOR.register_callback_once(
         event.to_string(),
         Box::new(move |args| Box::pin(callback(args))),
@@ -147,5 +147,5 @@ pub async fn until_this(event: &str, condition: impl Fn(&Entity) -> bool + 'stat
 
 /// This method resolves a relative path to an asset in a Ambient module, to an absolute url
 pub fn asset_url(path: impl AsRef<str>) -> Option<String> {
-    host::asset_url(path.as_ref())
+    wit::asset::url(path.as_ref())
 }

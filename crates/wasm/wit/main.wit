@@ -1,0 +1,12 @@
+world server {
+    import types: pkg.types
+
+    import component: pkg.component
+    import entity: pkg.entity
+    import player: pkg.player
+    import physics: pkg.physics
+    import event: pkg.event
+    import asset: pkg.asset
+
+    export guest: pkg.guest
+}

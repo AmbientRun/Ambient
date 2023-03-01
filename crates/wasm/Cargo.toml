@@ -17,6 +17,7 @@ ambient_prefab = { path = "../prefab" }
 ambient_physics = { path = "../physics" }
 ambient_project = { path = "../project" }
 ambient_std = { path = "../std" }
+ambient_wasmtime_wasi = { path = "../wasmtime_wasi" }
 physxx = { path = "../../libs/physxx" }
 
 anyhow = { workspace = true }
@@ -38,16 +39,14 @@ serde_json = { workspace = true }
 serde = { workspace = true }
 slotmap = { workspace = true }
 
-wasi-common = { workspace = true }
-wasmtime-wasi = { workspace = true }
 wasmtime = { workspace = true }
-wit-bindgen-host-wasmtime-rust = { git = "https://github.com/bytecodealliance/wit-bindgen.git", rev = "181093b58f49b194ee34be2d986d737f4f553d3d" }
+wasi-common = { workspace = true }
+wasi-cap-std-sync = { workspace = true }
 
 [target.'cfg(windows)'.build-dependencies]
 dunce = "1.0"
 
 [build-dependencies]
 ambient_std = { path = "../std", default-features = false }
-# make sure this is synchronised with the version used for the host
-wit-bindgen-core = { git = "https://github.com/bytecodealliance/wit-bindgen.git", rev = "181093b58f49b194ee34be2d986d737f4f553d3d" }
-wit-bindgen-gen-guest-rust = { git = "https://github.com/bytecodealliance/wit-bindgen.git", rev = "181093b58f49b194ee34be2d986d737f4f553d3d" }
+wit-bindgen-core = { git = "https://github.com/bytecodealliance/wit-bindgen.git" }
+wit-bindgen-rust = { git = "https://github.com/bytecodealliance/wit-bindgen.git" }
