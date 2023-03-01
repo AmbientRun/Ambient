@@ -1,7 +1,6 @@
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     download_asset::AssetsCacheOnDisk,
-    friendly_id,
 };
 use clap::Parser;
 
@@ -138,8 +137,7 @@ fn main() -> anyhow::Result<()> {
     let handle = runtime.handle().clone();
     if let Some(run) = cli.run() {
         // If we have run parameters, start a client and join a server
-        let user_id = run.user_id.clone().unwrap_or_else(|| format!("user_{}", friendly_id()));
-        runtime.block_on(client::run(assets, server_addr, user_id, run.debug));
+        runtime.block_on(client::run(assets, server_addr, run, cli.project().and_then(|p| p.path.clone())));
     } else {
         // Otherwise, wait for the Ctrl+C signal
         handle.block_on(async move {

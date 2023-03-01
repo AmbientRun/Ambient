@@ -167,6 +167,7 @@ pub struct AppBuilder {
     pub ui_renderer: bool,
     pub main_renderer: bool,
     pub examples_systems: bool,
+    pub headless: Option<UVec2>,
 }
 
 pub trait AsyncInit<'a> {
@@ -188,7 +189,15 @@ where
 
 impl AppBuilder {
     pub fn new() -> Self {
-        Self { event_loop: None, window_builder: None, asset_cache: None, ui_renderer: false, main_renderer: true, examples_systems: false }
+        Self {
+            event_loop: None,
+            window_builder: None,
+            asset_cache: None,
+            ui_renderer: false,
+            main_renderer: true,
+            examples_systems: false,
+            headless: None,
+        }
     }
     pub fn simple() -> Self {
         Self::new().examples_systems(true)
@@ -229,11 +238,21 @@ impl AppBuilder {
         self
     }
 
+    pub fn headless(mut self, value: Option<UVec2>) -> Self {
+        self.headless = value;
+        self
+    }
+
     pub async fn build(self) -> anyhow::Result<App> {
         crate::init_all_components();
-        let event_loop = self.event_loop.unwrap_or_else(EventLoop::new);
-        let window = self.window_builder.unwrap_or_default();
-        let window = Arc::new(window.build(&event_loop).unwrap());
+        let (window, event_loop) = if self.headless.is_some() {
+            (None, None)
+        } else {
+            let event_loop = self.event_loop.unwrap_or_else(EventLoop::new);
+            let window = self.window_builder.unwrap_or_default();
+            let window = Arc::new(window.build(&event_loop).unwrap());
+            (Some(window), Some(event_loop))
+        };
 
         #[cfg(target_os = "unknown")]
         // Insert a canvas element for the window to attach to
@@ -271,7 +290,7 @@ impl AppBuilder {
         let assets = self.asset_cache.unwrap_or_else(|| AssetCache::new(runtime.clone()));
 
         let mut world = World::new("main_app");
-        let gpu = Arc::new(Gpu::with_config(Some(&window), true).await);
+        let gpu = Arc::new(Gpu::with_config(window.as_ref().map(|x| &**x), true).await);
 
         tracing::info!("Inserting runtime");
         RuntimeKey.insert(&assets, runtime.clone());
@@ -281,7 +300,12 @@ impl AppBuilder {
         tracing::info!("Inserting app resources");
         let (ctl_tx, ctl_rx) = flume::unbounded();
 
-        let (window_physical_size, window_logical_size, window_scale_factor) = get_window_sizes(&window);
+        let (window_physical_size, window_logical_size, window_scale_factor) = if let Some(window) = window.as_ref() {
+            get_window_sizes(&window)
+        } else {
+            let headless_size = self.headless.unwrap();
+            (headless_size, headless_size, 1.)
+        };
 
         let app_resources =
             AppResources { gpu, runtime: runtime.clone(), assets, ctl_tx, window_physical_size, window_logical_size, window_scale_factor };
@@ -323,7 +347,7 @@ impl AppBuilder {
             world,
             gpu_world_sync_systems: gpu_world_sync_systems(),
             window_event_systems,
-            event_loop: Some(event_loop),
+            event_loop: event_loop,
 
             fps: FpsCounter::new(),
             #[cfg(feature = "profile")]
@@ -368,7 +392,7 @@ pub struct App {
     pub gpu_world_sync_systems: SystemGroup<GpuWorldSyncEvent>,
     pub window_event_systems: SystemGroup<Event<'static, ()>>,
     pub runtime: RuntimeHandle,
-    pub window: Arc<Window>,
+    pub window: Option<Arc<Window>>,
     event_loop: Option<EventLoop<()>>,
     fps: FpsCounter,
     #[cfg(feature = "profile")]
@@ -427,20 +451,30 @@ impl App {
     }
 
     pub fn run_blocking(mut self) {
-        let event_loop = self.event_loop.take().unwrap();
-        event_loop.run(move |event, _, control_flow| {
-            // HACK(philpax): treat dpi changes as resize events. Ideally we'd handle this in handle_event proper,
-            // but https://github.com/rust-windowing/winit/issues/1968 restricts us
-            if let Event::WindowEvent { window_id, event: WindowEvent::ScaleFactorChanged { new_inner_size, scale_factor } } = &event {
-                *self.world.resource_mut(window_scale_factor()) = *scale_factor;
-                self.handle_static_event(
-                    &Event::WindowEvent { window_id: *window_id, event: WindowEvent::Resized(**new_inner_size) },
-                    control_flow,
-                );
-            } else if let Some(event) = event.to_static() {
-                self.handle_static_event(&event, control_flow);
+        if let Some(event_loop) = self.event_loop.take() {
+            event_loop.run(move |event, _, control_flow| {
+                // HACK(philpax): treat dpi changes as resize events. Ideally we'd handle this in handle_event proper,
+                // but https://github.com/rust-windowing/winit/issues/1968 restricts us
+                if let Event::WindowEvent { window_id, event: WindowEvent::ScaleFactorChanged { new_inner_size, scale_factor } } = &event {
+                    *self.world.resource_mut(window_scale_factor()) = *scale_factor;
+                    self.handle_static_event(
+                        &Event::WindowEvent { window_id: *window_id, event: WindowEvent::Resized(**new_inner_size) },
+                        control_flow,
+                    );
+                } else if let Some(event) = event.to_static() {
+                    self.handle_static_event(&event, control_flow);
+                }
+            });
+        } else {
+            // Fake event loop in headless mode
+            loop {
+                let mut control_flow = ControlFlow::default();
+                self.handle_static_event(&Event::MainEventsCleared, &mut control_flow);
+                if control_flow == ControlFlow::Exit {
+                    return;
+                }
             }
-        });
+        }
     }
 
     pub fn handle_static_event(&mut self, event: &Event<'static, ()>, control_flow: &mut ControlFlow) {
@@ -466,10 +500,20 @@ impl App {
                     tracing::info!("Window control: {v:?}");
                     match v {
                         WindowCtl::GrabCursor(mode) => {
-                            self.window.set_cursor_grab(mode).ok();
+                            if let Some(window) = &self.window {
+                                window.set_cursor_grab(mode).ok();
+                            }
                         }
-                        WindowCtl::ShowCursor(show) => self.window.set_cursor_visible(show),
-                        WindowCtl::SetCursorIcon(icon) => self.window.set_cursor_icon(icon),
+                        WindowCtl::ShowCursor(show) => {
+                            if let Some(window) = &self.window {
+                                window.set_cursor_visible(show);
+                            }
+                        }
+                        WindowCtl::SetCursorIcon(icon) => {
+                            if let Some(window) = &self.window {
+                                window.set_cursor_icon(icon);
+                            }
+                        }
                     }
                 }
 
@@ -484,10 +528,14 @@ impl App {
 
                 if let Some(fps) = self.fps.frame_next() {
                     world.set(world.resource_entity(), self::fps_stats(), fps.clone()).unwrap();
-                    self.window.set_title(&format!("{} [{}, {} entities]", world.resource(window_title()), fps.dump_both(), world.len()));
+                    if let Some(window) = &self.window {
+                        window.set_title(&format!("{} [{}, {} entities]", world.resource(window_title()), fps.dump_both(), world.len()));
+                    }
                 }
 
-                self.window.request_redraw();
+                if let Some(window) = &self.window {
+                    window.request_redraw();
+                }
                 profiling::finish_frame!();
             }
 
@@ -503,10 +551,12 @@ impl App {
                     gpu.resize(*size);
 
                     let size = uvec2(size.width, size.height);
-                    let logical_size = (size.as_dvec2() * self.window.scale_factor()).as_uvec2();
+                    if let Some(window) = &self.window {
+                        let logical_size = (size.as_dvec2() * window.scale_factor()).as_uvec2();
 
-                    world.set_if_changed(world.resource_entity(), window_physical_size(), size).unwrap();
-                    world.set_if_changed(world.resource_entity(), window_logical_size(), logical_size).unwrap();
+                        world.set_if_changed(world.resource_entity(), window_physical_size(), size).unwrap();
+                        world.set_if_changed(world.resource_entity(), window_logical_size(), logical_size).unwrap();
+                    }
                 }
                 WindowEvent::CloseRequested => {
                     tracing::info!("Closing...");

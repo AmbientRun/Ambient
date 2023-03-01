@@ -170,21 +170,29 @@ impl System for ExamplesRender {
                 if self.main.is_some() { None } else { Some(app_background_color()) },
             );
         }
-        let frame = {
-            profiling::scope!("Get swapchain texture");
-            self.gpu.surface.as_ref().unwrap().get_current_texture().expect("Failed to acquire next swap chain texture")
-        };
-        let frame_view = frame.texture.create_view(&wgpu::TextureViewDescriptor::default());
-        self.blit.run(&mut encoder, &self.render_target.color_buffer_view, &frame_view);
+        if let Some(surface) = &self.gpu.surface {
+            let frame = {
+                profiling::scope!("Get swapchain texture");
+                surface.get_current_texture().expect("Failed to acquire next swap chain texture")
+            };
+            let frame_view = frame.texture.create_view(&wgpu::TextureViewDescriptor::default());
+            self.blit.run(&mut encoder, &self.render_target.color_buffer_view, &frame_view);
 
-        {
-            profiling::scope!("Submit");
-            self.gpu.queue.submit(Some(encoder.finish()));
+            {
+                profiling::scope!("Submit");
+                self.gpu.queue.submit(Some(encoder.finish()));
+            }
+            {
+                profiling::scope!("Present");
+                frame.present();
+            }
+        } else {
+            {
+                profiling::scope!("Submit");
+                self.gpu.queue.submit(Some(encoder.finish()));
+            }
         }
-        {
-            profiling::scope!("Present");
-            frame.present();
-        }
+
         for action in post_submit.into_iter() {
             action();
         }

@@ -61,6 +61,14 @@ pub struct RunCli {
     #[arg(long)]
     pub debug: bool,
 
+    /// Run in headless mode
+    #[arg(long)]
+    pub headless: bool,
+
+    /// Take a screenshot after N seconds, compare it to the existing one and then exit with an exit code of 1 if they are different
+    #[arg(long)]
+    pub screenshot_test: Option<f32>,
+
     /// The user ID to join this server with
     #[clap(short, long)]
     pub user_id: Option<String>,
