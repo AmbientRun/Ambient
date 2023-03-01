@@ -2,6 +2,7 @@
 [package]
 name = "ambient_editor_derive"
 version = { workspace = true }
+rust-version = { workspace = true }
 edition = "2021"
 
 [lib]

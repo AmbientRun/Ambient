@@ -1,6 +1,7 @@
 [package]
 name = "physxx"
 version = { workspace = true }
+rust-version = { workspace = true }
 authors = ["Fredrik Norén <fredrik.jw.noren@gmail.com>"]
 edition = "2021"
 
