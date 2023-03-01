@@ -70,7 +70,6 @@ Let us peek at the server log:
 
 and the client log is:
 
-
 ```
 [2023-02-23T17:54:24Z INFO  ambient_network::client] Connecting to server at: 127.0.0.1:9000
 [2023-02-23T17:54:24Z INFO  ambient_network::client] open_connection; server_addr=127.0.0.1:9000
@@ -79,7 +78,6 @@ and the client log is:
 [2023-02-23T17:54:24Z INFO  ambient_network::client] Got connection
 [2023-02-23T17:54:24Z INFO  ambient_network::protocol] Setup client side protocol
 ```
-
 
 ### Server Perspective
 
@@ -128,11 +126,113 @@ Some(msg) = events_rx.next() => {
 }
 ```
 
-The next arm of the `select` is actually the first receiving data.
+The next arm of the `select` is actually the first receiving data. This allows the client to send data to the server using traditional UDP datagrams.
 
 ```rust
  Some(Ok(datagram)) = proto.conn.datagrams.next() => {
     let _span = tracing::debug_span!("datagram").entered();
     tokio::task::block_in_place(|| (self.on_datagram)(&user_id, datagram))
 }
+```
+
+With the actualy datagram from the client, we call the `on_datagram` callback. Which reads the first four bytes if the diagrams as the datagram handler.id.
+
+```rust
+ let on_datagram = |user_id: &String, mut bytes: Bytes| {
+    let data = bytes.split_off(4);
+    let handler_id = u32::from_be_bytes(bytes[0..4].try_into().unwrap());
+    let state = state.clone();
+    let handler = {
+        let state = state.lock();
+        let world = match state.get_player_world(user_id) {
+            Some(world) => world,
+            None => {
+                log::warn!("Player missing for datagram."); // Probably disconnected
+                return;
+            }
+        };
+        world.resource(datagram_handlers()).get(&handler_id).cloned()
+    };
+    match handler {
+        Some(handler) => {
+            handler(state, assets.clone(), user_id, data);
+        }
+        None => {
+            log::error!("No such datagram handler: {:?}", handler_id);
+        }
+    }
+};
+```
+
+The last arm is the one that allows the client to call specific procedures in the server. Each RPC call is a new stream because they are "free" and they are dispatched to the `on_rpc` function as soon as they are received.
+
+After this we need to lock the server state, which shared using an `Arc<Mutex<ServerState>>`. With access to the server state, we get the player world using the player_id, in the code below called `user_id`.
+
+The `world` give us access to its singleton repository throught the `resource` method. In this case we ask for the resource `datagram_handlers` which are the handlers for all the possible RPCs. `datagram_handlers` are actually a `HashMap<u32, Arc<dyn Fn(...)>>`. So we are actually getting a callback that is cloned into the variable `handler`.
+
+Then we just call this handler.
+
+```rust
+Some(Ok((tx, mut rx))) = proto.conn.bi_streams.next() => {
+    let span = tracing::debug_span!("rpc");
+    let stream_id = rx.read_u32().instrument(span).await;
+    if let Ok(stream_id) = stream_id {
+        tokio::task::block_in_place(|| { (self.on_rpc)(&user_id, stream_id, tx, rx); })
+    }
+}
+```
+
+The implementation of the `on_rpc` is at crates/network/src/server.rs:409. The first thing is to lock the server state, which shared using an `Arc<Mutex<ServerState>>`. With access to the server state, we get the player world using the player_id, in the code below called `user_id`.
+
+The `world` give us access to its singleton repository throught the `resource` method. In this case we ask for the resource `bi_stream_handlers` which are the handlers for all the possible RPCs. `bi_stream_handlers` are actually a `HashMap<u32, Arc<dyn Fn(...)>>`. So we are actually getting a callback that is cloned into the variable `handler`.
+
+Then we just call this handler.
+
+```rust
+let on_rpc = |user_id: &String, stream_id, tx, rx| {
+    let _span = debug_span!("on_rpc").entered();
+    let handler = {
+        let state = state.lock();
+        let world = match state.get_player_world(user_id) {
+            Some(world) => world,
+            None => {
+                log::error!("Player missing for rpc."); // Probably disconnected
+                return;
+            }
+        };
+
+        world.resource(bi_stream_handlers()).get(&stream_id).cloned()
+    };
+    if let Some(handler) = handler {
+        handler(state.clone(), assets.clone(), user_id, tx, rx);
+    } else {
+        log::error!("Unrecognized stream type: {}", stream_id);
+    }
+};
+```
+
+It is interesting to note that both datagrams and RPCs, including the actual handler logic, run under `block_in_place`, which means that they are blocking the network task, which will block the network loop.
+
+# Server Sending diffs
+
+When the client connects, the server runs the method `initial_diff` at crates/network/src/server.rs:370. This first initial diff, will iterate over all filtered entities using the method `all_entities`. For each will create a `Spawn` change, which is a variant of the enum `WorldChange`. This variant, of course, asks the client to spawn a entity with the specified `id` and initialize it with the specified data, in the case below this data is coming from `self.read_entity_components(world, id)`.
+
+The interesting part of `read_entity_components` is that it does not collect all entity components, but only those, that pass a specified filter. The default filter, as state above, is for components with the `Networked` metadata.
+
+```rust
+pub fn initial_diff(&self, world: &World) -> WorldDiff {
+    WorldDiff {
+        changes: self
+            .all_entities(world)
+            .map(|id| WorldChange::Spawn(Some(id), self.read_entity_components(world, id).into()))
+            .collect_vec(),
+    }
+}
+```
+
+After all this we have an instance of `WorldDiff` which is serialized using `bincode` and then sent to this `diffs_tx`. This is the sender side of the channel that we saw above as the firm arm of the network loop. This means that this `bincode` serialized version of the diff will reach the client.
+
+```rust
+let diff = bincode::serialize(&diff).unwrap();
+diffs_tx.send(diff)
 ```
