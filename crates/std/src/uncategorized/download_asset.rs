@@ -169,7 +169,7 @@ impl AsyncAssetKey<AssetResult<Arc<PathBuf>>> for BytesFromUrlCachedPath {
         AssetKeepalive::Forever
     }
 
-    async fn load(self, assets: AssetCache) -> AssetResult<Arc<PathBuf>> {
+    async fn load(self, _: AssetCache) -> AssetResult<Arc<PathBuf>> {
         return Err(anyhow::anyhow!("Asset caching is not supported on wasm").into());
     }
 }

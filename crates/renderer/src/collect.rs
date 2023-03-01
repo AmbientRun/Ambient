@@ -43,6 +43,7 @@ pub struct RendererCollectState {
 }
 impl RendererCollectState {
     pub fn new(assets: &AssetCache) -> Self {
+        log::info!("Setting up renderer collect state");
         let gpu = GpuKey.get(assets);
         Self {
             params: TypedBuffer::new(

@@ -1,4 +1,4 @@
-use std::{sync::Arc, time::Instant};
+use std::sync::Arc;
 
 use ambient_core::{
     camera::{far, fog, get_active_camera, projection_view},
@@ -158,12 +158,13 @@ pub(crate) struct ForwardGlobals {
     dummy_shadow_texture: TextureView,
     pub(crate) params: GlobalParams,
     scene: Component<()>,
-    start_time: Instant,
+    start_time: ambient_sys::time::Instant,
     layout: Arc<wgpu::BindGroupLayout>,
 }
 
 impl ForwardGlobals {
     pub fn new(gpu: Arc<Gpu>, layout: Arc<wgpu::BindGroupLayout>, shadow_cascades: u32, scene: Component<()>) -> Self {
+        log::info!("Setting up forward globals");
         let buffer = gpu.device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("ForwardGlobals.buffer"),
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
@@ -199,7 +200,7 @@ impl ForwardGlobals {
             params,
             gpu,
             scene,
-            start_time: Instant::now(),
+            start_time: ambient_sys::time::Instant::now(),
             layout,
         }
     }
@@ -251,7 +252,7 @@ impl ForwardGlobals {
             update(&mut p.fog_height_falloff, world.get(sun, fog_height_falloff()), |v| v);
             update(&mut p.fog_density, world.get(sun, fog_density()), |v| v);
         }
-        self.params.time = Instant::now().duration_since(self.start_time).as_secs_f32();
+        self.params.time = ambient_sys::time::Instant::now().duration_since(self.start_time).as_secs_f32();
         self.gpu.queue.write_buffer(&self.buffer, 0, bytemuck::cast_slice(&[self.params]));
         self.gpu.queue.write_buffer(&self.shadow_cameras_buffer, 0, bytemuck::cast_slice(shadow_cameras));
     }

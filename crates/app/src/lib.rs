@@ -34,7 +34,6 @@ use ambient_sys::task::RuntimeHandle;
 use glam::{uvec2, vec2, UVec2, Vec2};
 use parking_lot::Mutex;
 use renderers::{examples_renderer, ui_renderer, UIRender};
-use tracing::info_span;
 use winit::{
     event::{ElementState, Event, KeyboardInput, ModifiersState, VirtualKeyCode, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
@@ -237,7 +236,7 @@ impl AppBuilder {
         let window = Arc::new(window.build(&event_loop).unwrap());
 
         #[cfg(target_os = "unknown")]
-        /// Insert a canvas element for the window to attach to
+        // Insert a canvas element for the window to attach to
         {
             use winit::platform::web::WindowExtWebSys;
 
@@ -298,7 +297,7 @@ impl AppBuilder {
                 let renderer = Arc::new(Mutex::new(UIRender::new(&mut world)));
                 world.add_resource(ui_renderer(), renderer);
             } else {
-                tracing::info!("Settinp up ExamplesRenderer");
+                tracing::info!("Setting up ExamplesRenderer");
                 let renderer = ExamplesRender::new(&mut world, self.ui_renderer, self.main_renderer);
                 tracing::info!("Created examples renderer");
                 let renderer = Arc::new(Mutex::new(renderer));

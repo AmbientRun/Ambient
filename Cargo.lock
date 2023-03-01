@@ -904,6 +904,7 @@ dependencies = [
  "ambient_model_import",
  "ambient_primitives",
  "ambient_std",
+ "ambient_sys",
  "anyhow",
  "async-trait",
  "bytemuck",
