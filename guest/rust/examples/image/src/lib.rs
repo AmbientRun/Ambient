@@ -1,11 +1,11 @@
 use ambient_api::{
     components::core::{
         game_objects::player_camera,
-        primitives::{cube, quad, sphere_radius, sphere_sectors, sphere_stacks},
-        rendering::{color, pbr_material_from_url},
+        primitives::quad,
+        rendering::pbr_material_from_url,
         transform::{lookat_center, scale, translation},
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
+    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     prelude::*,
 };
 

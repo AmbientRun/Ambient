@@ -8,6 +8,7 @@ use ambient_guest_bridge::ecs::{components, Debuggable, Description, Name, Netwo
 use ambient_guest_bridge::ecs::{Component, ComponentDesc, ComponentValue, Entity, EntityId, World};
 use as_any::AsAny;
 use dyn_clonable::clonable;
+#[cfg(feature = "native")]
 use parking_lot::Mutex;
 
 mod element_config;

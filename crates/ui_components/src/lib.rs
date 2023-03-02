@@ -28,6 +28,8 @@ impl From<Element> for UIElement {
     }
 }
 
+// We need `clone` as resource is a ref on host and a copy on guest
+#[allow(clippy::clone_on_copy)]
 pub fn use_window_physical_resolution(hooks: &mut Hooks) -> UVec2 {
     let (res, set_res) = hooks.use_state(hooks.world.resource(window_physical_size()).clone());
     hooks.use_frame(move |world| {
@@ -38,6 +40,8 @@ pub fn use_window_physical_resolution(hooks: &mut Hooks) -> UVec2 {
     });
     res
 }
+// We need `clone` as resource is a ref on host and a copy on guest
+#[allow(clippy::clone_on_copy)]
 pub fn use_window_logical_resolution(hooks: &mut Hooks) -> UVec2 {
     let (res, set_res) = hooks.use_state(hooks.world.resource(window_logical_size()).clone());
     hooks.use_frame(move |world| {

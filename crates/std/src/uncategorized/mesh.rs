@@ -170,7 +170,7 @@ impl Mesh {
     }
     pub fn try_ensure_tangents(&mut self) {
         if self.tangents.is_some() || self.positions.is_none() || self.texcoords.is_empty() {
-            log::info!("Tangents loaded from mesh");
+            log::debug!("Tangents loaded from mesh");
             return;
         }
         self.create_tangents();

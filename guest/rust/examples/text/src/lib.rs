@@ -25,8 +25,8 @@ fn App(hooks: &mut Hooks) -> Element {
         });
         Box::new(|_| {})
     });
-    println!("{}", count);
-    Text::el(format!("Hello world: {}", count))
+    println!("{count}");
+    Text::el(format!("Hello world: {count}"))
 }
 
 #[main]
