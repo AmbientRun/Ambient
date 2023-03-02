@@ -1,8 +1,8 @@
-use ambient_core::{camera::*, transform::*, ui_scene, window_logical_size};
-use ambient_ecs::{components, query, query_mut, Description, Name, Networked, Store, SystemGroup};
+use ambient_core::{camera::*, transform::*, ui_scene};
+use ambient_ecs::{components, Networked, Store, SystemGroup};
 use ambient_element::{element_component, Element, Hooks};
 use ambient_std::shapes::BoundingBox;
-use glam::{Mat4, Quat, Vec3};
+use glam::{Quat, Vec3};
 use winit::event::Event;
 
 use crate::{free::free_camera_system, spherical::spherical_camera_system};

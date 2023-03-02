@@ -1,9 +1,9 @@
 use std::{num::NonZeroU32, ops::Deref, sync::Arc};
 
-use ambient_core::{asset_cache, async_ecs::async_run, gpu, mesh, name, runtime, transform::*, ui_scene, window_scale_factor};
+use ambient_core::{asset_cache, async_ecs::async_run, gpu, mesh, runtime, transform::*, window_scale_factor};
 use ambient_ecs::{components, query, query_mut, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
 use ambient_gpu::{mesh_buffer::GpuMesh, texture::Texture};
-use ambient_renderer::{color, gpu_primitives, material, primitives, renderer_shader, SharedMaterial};
+use ambient_renderer::{gpu_primitives, material, primitives, renderer_shader, SharedMaterial};
 use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt},
     asset_url::AbsAssetUrl,

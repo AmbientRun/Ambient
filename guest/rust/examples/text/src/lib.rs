@@ -1,11 +1,10 @@
 use ambient_api::{
     components::core::{
-        app::{main_scene, ui_scene},
+        app::ui_scene,
         camera::{orthographic_bottom, orthographic_left, orthographic_right, orthographic_top},
         game_objects::player_camera,
-        transform::{lookat_center, translation},
     },
-    concepts::{make_orthographic_camera, make_perspective_infinite_reverse_camera},
+    concepts::make_orthographic_camera,
     prelude::*,
 };
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
