@@ -18,11 +18,9 @@ use ambient_renderer::{
 };
 use ambient_std::{
     asset_url::{MaterialAssetType, TypedAssetUrl},
-    cb,
-    download_asset::JsonFromUrl,
-    include_file,
+    cb, include_file,
     shapes::AABB,
-    unwrap_log_err, unwrap_log_warn,
+    unwrap_log_warn,
 };
 use ambient_ui::Editable;
 use glam::{Vec3, Vec4};
@@ -85,8 +83,7 @@ pub fn client_systems() -> SystemGroup {
                 let assets = world.resource(asset_cache()).clone();
                 let async_run = world.resource(async_run()).clone();
                 world.resource(runtime()).spawn(async move {
-                    let mat_def = unwrap_log_warn!(JsonFromUrl::<PbrMaterialFromUrl>::new(decal.clone(), true).get(&assets).await);
-                    let mat = unwrap_log_warn!(unwrap_log_err!(mat_def.resolve(&decal)).get(&assets).await);
+                    let mat = unwrap_log_warn!(PbrMaterialFromUrl(decal).get(&assets).await);
                     async_run.run(move |world| {
                         let aabb = AABB { min: -Vec3::ONE, max: Vec3::ONE };
                         let mut data = Entity::new()

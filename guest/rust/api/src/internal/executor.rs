@@ -11,7 +11,7 @@ use once_cell::sync::Lazy;
 use crate::{global::EventResult, internal::component::Entity};
 
 type EventFuture = Pin<Box<dyn Future<Output = EventResult>>>;
-type EventCallbackFn = Box<dyn Fn(&Entity) -> EventFuture>;
+type EventCallbackFn = Box<dyn FnMut(&Entity) -> EventFuture>;
 type EventCallbackFnOnce = Box<dyn FnOnce(&Entity) -> EventFuture>;
 
 // the function is too general to be passed in directly
@@ -77,7 +77,7 @@ impl Executor {
         {
             let mut new_futures = vec![];
             let mut callbacks = self.current_callbacks.borrow_mut();
-            if let Some(callbacks) = callbacks.on.get(event_name) {
+            if let Some(callbacks) = callbacks.on.get_mut(event_name) {
                 for callback in callbacks {
                     new_futures.push(callback(components));
                 }

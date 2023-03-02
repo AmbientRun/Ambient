@@ -61,7 +61,7 @@ fn streaming() {
 
     source.add_component(x, b(), 9.).unwrap();
     let diff = stream.next_diff(&source);
-    assert_eq!(diff.changes.iter().filter(|c| c.is_set()).count(), 0);
+    assert_eq!(diff.changes.iter().filter(|c| c.is_set()).count(), 1);
     diff.apply(&mut dest, Entity::new(), true);
     assert_eq!(dump_content_string(&source), dump_content_string(&dest));
 

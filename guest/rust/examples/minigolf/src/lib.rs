@@ -119,6 +119,7 @@ pub async fn main() -> EventResult {
                     .with(user_id(), player_user_id.clone())
                     .with(player_camera_state(), camera_state)
                     .with_default(player_camera())
+                    .with_default(main_scene())
                     .with_default(local_to_world())
                     .with_default(inv_local_to_world())
                     .with_default(translation())

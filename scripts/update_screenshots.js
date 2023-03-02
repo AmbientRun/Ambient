@@ -6,6 +6,7 @@ const { exit } = require("process");
 const samples = [
     ["guest/rust/examples/async", 1],
     ["guest/rust/examples/input", 1],
+    ["guest/rust/examples/image", 3],
     ["guest/rust/examples/primitives", 1],
     ["guest/rust/examples/text", 1],
     ["guest/rust/examples/tictactoe", 1],

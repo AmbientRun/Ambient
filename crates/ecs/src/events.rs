@@ -46,6 +46,12 @@ impl<T> FramedEvents<T> {
         let index = id.frame - self.start_frame;
         self.events[index].get(id.index)
     }
+    /// Creates a reader and moves it to the end of the events
+    pub fn reader(&self) -> FramedEventsReader<T> {
+        let mut reader = FramedEventsReader::<T>::new();
+        reader.move_to_end(self);
+        reader
+    }
     pub fn n_events(&self) -> usize {
         self.events[self.events.len() - 1].len()
     }

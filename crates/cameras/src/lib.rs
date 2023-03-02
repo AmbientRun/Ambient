@@ -1,8 +1,8 @@
-use ambient_core::{camera::*, transform::*, ui_scene, window_logical_size};
-use ambient_ecs::{components, query_mut, Description, Name, Networked, Store, SystemGroup};
+use ambient_core::{camera::*, transform::*, ui_scene};
+use ambient_ecs::{components, Networked, Store, SystemGroup};
 use ambient_element::{element_component, Element, Hooks};
 use ambient_std::shapes::BoundingBox;
-use glam::{Mat4, Quat, Vec3};
+use glam::{Quat, Vec3};
 use winit::event::Event;
 
 use crate::{free::free_camera_system, spherical::spherical_camera_system};
@@ -13,8 +13,6 @@ pub mod spherical;
 components!("camera", {
     @[Networked, Store]
     camera_movement_speed: f32,
-    @[Networked, Store, Name["UI camera"], Description["This entity is a camera that is used to render UI.\nEnsure that you have the remaining camera components."]]
-    ui_camera: (),
 });
 
 pub fn init_all_components() {
@@ -24,26 +22,7 @@ pub fn init_all_components() {
 }
 
 pub fn assets_camera_systems() -> SystemGroup<Event<'static, ()>> {
-    SystemGroup::new(
-        "assets_camera_systems",
-        vec![Box::new(free_camera_system()), Box::new(spherical_camera_system()), Box::new(ui_camera_system())],
-    )
-}
-
-pub fn ui_camera_system() -> SystemGroup<Event<'static, ()>> {
-    SystemGroup::new(
-        "ui_camera_system",
-        vec![query_mut((orthographic_rect(), local_to_world()), (ui_camera(),)).to_system(|q, world, qs, _| {
-            let window_size = world.resource(window_logical_size()).as_vec2();
-            for (_, (orth, ltw), (_,)) in q.iter(world, qs) {
-                *ltw = Mat4::from_translation((window_size / 2.).extend(0.));
-                orth.left = -window_size.x / 2.;
-                orth.right = window_size.x / 2.;
-                orth.top = -window_size.y / 2.;
-                orth.bottom = window_size.y / 2.;
-            }
-        })],
-    )
+    SystemGroup::new("assets_camera_systems", vec![Box::new(free_camera_system()), Box::new(spherical_camera_system())])
 }
 
 #[element_component]
@@ -53,12 +32,17 @@ pub fn UICamera(_: &mut Hooks) -> Element {
         .init_default(inv_local_to_world())
         .init(near(), -1.)
         .init(far(), 1.0)
+        .init_default(orthographic())
+        .init(orthographic_left(), 0.)
+        .init(orthographic_right(), 100.)
+        .init(orthographic_top(), 0.)
+        .init(orthographic_bottom(), 100.)
         .init(orthographic_rect(), OrthographicRect { left: 0.0, right: 100., top: 0., bottom: 100. })
         .init_default(projection())
         .init_default(projection_view())
         .init_default(translation())
         .init_default(rotation())
-        .init_default(ui_camera())
+        .init_default(orthographic_from_window())
         .init_default(ui_scene())
 }
 

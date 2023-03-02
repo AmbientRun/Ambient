@@ -10,7 +10,7 @@ use ambient_element::ElementComponentExt;
 use ambient_model::{model_from_url, ModelFromUrl};
 use ambient_model_import::{MaterialFilter, ModelImportPipeline, ModelImportTransform, ModelTransform};
 use ambient_primitives::{Cube, Quad};
-use ambient_renderer::{color, materials::pbr_material::PbrMaterialFromUrl};
+use ambient_renderer::{color, materials::pbr_material::PbrMaterialDesc};
 use ambient_std::{
     asset_cache::AsyncAssetKeyExt,
     asset_url::{AbsAssetUrl, AssetUrl, TypedAssetUrl},
@@ -37,7 +37,7 @@ async fn init(app: &mut App) {
                 })
                 .add_step(ModelImportTransform::OverrideMaterial {
                     filter: MaterialFilter::by_name("M_leaves_Fir"),
-                    material: Box::new(PbrMaterialFromUrl {
+                    material: Box::new(PbrMaterialDesc {
                         base_color: Some(AssetUrl::parse(format!("{fir_base}Textures/T_Fir_leaves_BC_T.TGA")).unwrap()),
                         ..Default::default()
                     }),
@@ -45,13 +45,13 @@ async fn init(app: &mut App) {
         },
         {
             let grass_base = "https://dims-content.fra1.digitaloceanspaces.com/assets/models/Quixel/Grass_vlkhcbxia_2K_3dplant_ms/";
-            let grass_atlas = PbrMaterialFromUrl {
+            let grass_atlas = PbrMaterialDesc {
                 base_color: Some(AssetUrl::parse(format!("{grass_base}Textures/Atlas/vlkhcbxia_2K_Albedo.jpg")).unwrap()),
                 opacity: Some(AssetUrl::parse(format!("{grass_base}Textures/Atlas/vlkhcbxia_2K_Opacity.jpg")).unwrap()),
                 double_sided: Some(true),
                 ..Default::default()
             };
-            let grass_billboard = PbrMaterialFromUrl {
+            let grass_billboard = PbrMaterialDesc {
                 base_color: Some(AssetUrl::parse(format!("{grass_base}Textures/Billboard/Billboard_2K_Albedo.jpg")).unwrap()),
                 opacity: Some(AssetUrl::parse(format!("{grass_base}Textures/Billboard/Billboard_2K_Opacity.jpg")).unwrap()),
                 alpha_cutoff: Some(0.1),

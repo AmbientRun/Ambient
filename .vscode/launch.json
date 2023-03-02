@@ -20,7 +20,8 @@
             },
             "args": [
                 "run",
-                "guest/rust/examples/third_person_camera"
+                "guest/rust/examples/text",
+                "--debug"
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [

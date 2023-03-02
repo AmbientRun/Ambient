@@ -14,7 +14,7 @@ use ambient_model_import::{
 };
 use ambient_renderer::{
     lod::{gpu_lod, lod_cutoffs},
-    materials::pbr_material::PbrMaterialFromUrl,
+    materials::pbr_material::PbrMaterialDesc,
 };
 use ambient_std::{
     asset_cache::AssetCache,
@@ -196,7 +196,7 @@ struct UnityCtx<'a> {
 // metalic_r_ao_g_smothness_a might be called something else in another materials.
 // Need to do something about that at some point
 struct UnityMaterials {
-    materials: HashMap<String, PbrMaterialFromUrl>,
+    materials: HashMap<String, PbrMaterialDesc>,
     ctx: PipelineCtx,
 }
 impl UnityMaterials {
@@ -205,7 +205,7 @@ impl UnityMaterials {
         config: &ModelsPipeline,
         guid_lookup: &HashMap<String, AbsAssetUrl>,
         unity_ref: &UnityRef,
-    ) -> anyhow::Result<PbrMaterialFromUrl> {
+    ) -> anyhow::Result<PbrMaterialDesc> {
         let material_path = guid_lookup.get(unity_ref.guid.as_ref().unwrap()).unwrap();
         if unity_ref.type_ == Some(2) {
             self.get_unity_material(config, guid_lookup, material_path, unity_ref.guid.as_ref().unwrap())
@@ -223,7 +223,7 @@ impl UnityMaterials {
         guid_lookup: &HashMap<String, AbsAssetUrl>,
         material_url: &AbsAssetUrl,
         name: &str,
-    ) -> anyhow::Result<PbrMaterialFromUrl> {
+    ) -> anyhow::Result<PbrMaterialDesc> {
         if let Some(mat) = self.materials.get(&material_url.to_string()) {
             Ok(mat.clone())
         } else {
@@ -315,7 +315,7 @@ impl UnityMaterials {
             };
             let (base_color, normalmap, metallic_roughness) =
                 futures::join!(get_image(base_color), get_image(normalmap), get_image(metallic_roughness));
-            let mat = PbrMaterialFromUrl {
+            let mat = PbrMaterialDesc {
                 name: Some(name.to_string()),
                 source: None,
                 base_color: base_color.map(|x| x.into()),

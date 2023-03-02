@@ -10,7 +10,7 @@ use ambient_gpu::{
 use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, AssetUrl},
-    download_asset::AssetError,
+    download_asset::{AssetError, JsonFromUrl},
     friendly_id, include_file,
 };
 use async_trait::async_trait;
@@ -237,8 +237,19 @@ impl Default for AlphaMode {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct PbrMaterialFromUrl(pub AbsAssetUrl);
+#[async_trait]
+impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialFromUrl {
+    async fn load(self, assets: AssetCache) -> Result<Arc<PbrMaterial>, AssetError> {
+        let mat_def = JsonFromUrl::<PbrMaterialDesc>::new(self.0.clone(), true).get(&assets).await?;
+        let mat = mat_def.resolve(&self.0)?.get(&assets).await?;
+        Ok(mat)
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
-pub struct PbrMaterialFromUrl {
+pub struct PbrMaterialDesc {
     pub name: Option<String>,
     pub source: Option<String>,
 
@@ -257,7 +268,7 @@ pub struct PbrMaterialFromUrl {
     #[serde(default)]
     pub roughness: f32,
 }
-impl PbrMaterialFromUrl {
+impl PbrMaterialDesc {
     pub fn resolve(&self, base_url: &AbsAssetUrl) -> anyhow::Result<Self> {
         Ok(Self {
             name: self.name.clone(),
@@ -299,7 +310,7 @@ impl PbrMaterialFromUrl {
 }
 
 #[async_trait]
-impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialFromUrl {
+impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialDesc {
     async fn load(self, assets: AssetCache) -> Result<Arc<PbrMaterial>, AssetError> {
         let color = if let (Some(opacity), Some(albedo)) = (&self.opacity, &self.base_color) {
             Some(

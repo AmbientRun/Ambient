@@ -5,17 +5,21 @@ use std::{
     sync::Arc,
 };
 
+#[cfg(feature = "native")]
+use crate::element_tree;
+use crate::element_unmanaged_children;
+use crate::{AnyCloneable, ContextUpdate, DespawnFn, Element, ElementConfig, Hooks, HooksEnvironment, InstanceId, StateUpdate};
+#[cfg(feature = "native")]
 use ambient_core::hierarchy::{children, parent};
-use ambient_ecs::{query, Component, Entity, EntityId, SystemGroup, World};
-use ambient_std::friendly_id;
+#[cfg(feature = "guest")]
+use ambient_guest_bridge::api::components::core::ecs::{children, parent};
+#[cfg(feature = "native")]
+use ambient_guest_bridge::ecs::{query, SystemGroup};
+use ambient_guest_bridge::ecs::{Component, Entity, EntityId, World};
+use friendly_id::friendly_id;
 use itertools::Itertools;
 use parking_lot::Mutex;
 use tracing::debug_span;
-
-use crate::{
-    element_tree, element_unmanaged_children, AnyCloneable, ContextUpdate, DespawnFn, Element, ElementConfig, Hooks, HooksEnvironment,
-    InstanceId, StateUpdate,
-};
 
 #[derive(Debug)]
 pub(crate) struct HookContext {
@@ -98,6 +102,7 @@ impl ElementTree {
         })
     }
 
+    #[cfg(feature = "native")]
     pub fn render_with_component(world: &mut World, id: EntityId, handle: Component<ShareableElementTree>, element: Element) {
         if let Ok(tree) = world.get_ref(id, handle).map(|x| x.clone()) {
             tree.0.lock().migrate_root(world, element);
@@ -106,9 +111,11 @@ impl ElementTree {
             world.add_component(id, handle, tree).unwrap();
         }
     }
+    #[cfg(feature = "native")]
     pub fn render(world: &mut World, id: EntityId, element: Element) {
         Self::render_with_component(world, id, element_tree(), element)
     }
+    #[cfg(feature = "native")]
     pub fn systems_for_component(component: Component<ShareableElementTree>) -> SystemGroup {
         SystemGroup::new(
             "ElementTree::systems_for_component",
@@ -262,12 +269,13 @@ impl ElementTree {
         let instance = self.instances.get_mut(instance_id).unwrap();
         if instance.entity != old_entity {
             if let Some(parent) = instance.parent_entity {
-                let children = world.get_mut(parent, children()).unwrap();
-                for c in children.iter_mut() {
+                let mut childs = world.get_ref(parent, children()).unwrap().clone();
+                for c in childs.iter_mut() {
                     if *c == old_entity {
                         *c = instance.entity;
                     }
                 }
+                world.set(parent, children(), childs).unwrap();
             }
         }
     }

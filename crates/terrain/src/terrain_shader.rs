@@ -12,7 +12,7 @@ use ambient_gpu::{
     texture::{Texture, TextureView},
     texture_loaders::TextureArrayFromUrls,
 };
-use ambient_renderer::{get_forward_module, materials::pbr_material::PbrMaterialFromUrl, Material, RendererShader, MATERIAL_BIND_GROUP};
+use ambient_renderer::{get_forward_module, materials::pbr_material::PbrMaterialDesc, Material, RendererShader, MATERIAL_BIND_GROUP};
 use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, MaterialAssetType, TypedAssetUrl},
@@ -260,7 +260,7 @@ impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for TerrainTexturesKey {
                     let assets = assets.clone();
                     async move {
                         let mat_url = tex.abs().context("Not an absolute url")?;
-                        let mat: Arc<PbrMaterialFromUrl> = JsonFromUrl::new(mat_url.clone(), true).get(&assets).await?;
+                        let mat: Arc<PbrMaterialDesc> = JsonFromUrl::new(mat_url.clone(), true).get(&assets).await?;
                         let mat = mat.resolve(&mat_url)?;
                         Ok(mat.base_color.as_ref().unwrap().clone().unwrap_abs())
                     }

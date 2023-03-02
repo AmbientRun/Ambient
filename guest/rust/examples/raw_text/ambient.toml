@@ -1,0 +1,4 @@
+[project]
+id = "raw_text"
+name = "Raw Text"
+version = "0.0.1"

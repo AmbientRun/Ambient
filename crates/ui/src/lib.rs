@@ -37,7 +37,6 @@ pub mod graph;
 mod hooks;
 mod image;
 mod input;
-pub mod layout;
 mod loadable;
 mod prompt;
 mod rect;
@@ -45,11 +44,14 @@ mod screens;
 mod select;
 mod style_constants;
 mod tabs;
-mod text;
 mod text_input;
-mod text_material;
 mod throbber;
 
+pub use ambient_layout as layout;
+use ambient_text as text;
+pub use ambient_text::*;
+pub use ambient_ui_components::text::*;
+pub use ambient_ui_components::*;
 pub use asset_url::*;
 pub use button::*;
 pub use collections::*;
@@ -66,7 +68,6 @@ pub use screens::*;
 pub use select::*;
 pub use style_constants::*;
 pub use tabs::*;
-pub use text::*;
 pub use text_input::*;
 pub use throbber::*;
 
@@ -85,26 +86,6 @@ pub fn systems() -> SystemGroup {
         "ui",
         vec![Box::new(rect::systems()), Box::new(text::systems()), Box::new(layout::layout_systems()), Box::new(screens::systems())],
     )
-}
-
-/// This only exists so that we can implement From<String> for Text, and then use it in
-/// for instance Button
-pub struct UIElement(pub Element);
-impl From<Element> for UIElement {
-    fn from(el: Element) -> Self {
-        Self(el)
-    }
-}
-
-#[element_component]
-pub fn UIBase(_: &mut Hooks) -> Element {
-    Element::new()
-        .init(translation(), vec3(0., 0., -0.001))
-        .init_default(local_to_world())
-        .init_default(local_to_parent())
-        .init_default(mesh_to_world())
-        .init(width(), 0.)
-        .init(height(), 0.)
 }
 
 pub fn use_window_physical_resolution(hooks: &mut Hooks) -> UVec2 {

@@ -19,7 +19,7 @@ use ambient_physics::{
 use ambient_renderer::{
     double_sided,
     lod::{gpu_lod, lod_cutoffs},
-    materials::pbr_material::PbrMaterialFromUrl,
+    materials::pbr_material::PbrMaterialDesc,
 };
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
@@ -96,7 +96,7 @@ pub struct ModelCrate {
     pub meshes: AssetMap<Mesh>,
     pub animations: AssetMap<AnimationClip>,
     pub images: AssetMap<image::RgbaImage>,
-    pub materials: AssetMap<PbrMaterialFromUrl>,
+    pub materials: AssetMap<PbrMaterialDesc>,
     pub px_triangle_meshes: AssetMap<Vec<u8>>,
     pub px_convex_meshes: AssetMap<Vec<u8>>,
     pub colliders: AssetMap<ColliderFromUrls>,
@@ -305,7 +305,7 @@ impl ModelCrate {
         });
         self.merge_mesh_lods(cutoffs, lods.into_iter().map(|id| ModelNodeRef { model: source, root: Some(id) }).collect())
     }
-    pub fn set_all_material(&mut self, material: PbrMaterialFromUrl) {
+    pub fn set_all_material(&mut self, material: PbrMaterialDesc) {
         self.materials.content.clear();
         let mat_path = dotdot_path(self.materials.insert("main".to_string(), material).path);
         for (_, primitives, _) in query_mut(pbr_renderer_primitives_from_url(), ()).iter(self.model_world_mut(), None) {
@@ -409,7 +409,7 @@ impl ModelCrate {
     //         }
     //     }
     // }
-    pub fn override_material(&mut self, filter: &MaterialFilter, material: PbrMaterialFromUrl) {
+    pub fn override_material(&mut self, filter: &MaterialFilter, material: PbrMaterialDesc) {
         if filter.is_all() {
             self.set_all_material(material);
         } else {

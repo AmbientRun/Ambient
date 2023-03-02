@@ -27,6 +27,14 @@ impl EntityId {
             id1: u64::from_le_bytes(bytes[8..].try_into().unwrap()),
         }
     }
+    /// Return a null EntityId
+    pub fn null() -> Self {
+        Self { id0: 0, id1: 0 }
+    }
+    /// Returns true if this is a null EntityId
+    pub fn is_null(&self) -> bool {
+        self.id0 == 0 && self.id1 == 0
+    }
 }
 impl std::fmt::Display for EntityId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

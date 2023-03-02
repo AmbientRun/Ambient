@@ -1,0 +1,11 @@
+[package]
+name = "ambient_ui_components"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ambient_element = { path = "../element", default-features = false }
+ambient_guest_bridge = { path = "../guest_bridge", default-features = false }
+glam = { workspace = true }
