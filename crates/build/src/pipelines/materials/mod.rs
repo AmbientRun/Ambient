@@ -8,7 +8,7 @@ use ambient_model_import::{
     ModelTextureSize,
 };
 use ambient_physics::collider::{collider, collider_type};
-use ambient_renderer::materials::pbr_material::PbrMaterialFromUrl;
+use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
 use ambient_std::{
     asset_url::{AbsAssetUrl, AssetType, AssetUrl},
     download_asset::AssetResult,
@@ -151,7 +151,7 @@ pub struct PipelinePbrMaterial {
     pub specular_exponent: Option<f32>,
 }
 impl PipelinePbrMaterial {
-    pub async fn to_mat(&self, ctx: &PipelineCtx, source_root: &AbsAssetUrl, out_root: &AbsAssetUrl) -> anyhow::Result<PbrMaterialFromUrl> {
+    pub async fn to_mat(&self, ctx: &PipelineCtx, source_root: &AbsAssetUrl, out_root: &AbsAssetUrl) -> anyhow::Result<PbrMaterialDesc> {
         let pipe_image = |path: &Option<AssetUrl>| -> BoxFuture<'_, anyhow::Result<Option<AssetUrl>>> {
             let source_root = source_root.clone();
             let path = path.clone();
@@ -165,7 +165,7 @@ impl PipelinePbrMaterial {
             }
             .boxed()
         };
-        Ok(PbrMaterialFromUrl {
+        Ok(PbrMaterialDesc {
             name: self.name.clone(),
             source: self.source.clone(),
             base_color: pipe_image(&self.base_color).await?,

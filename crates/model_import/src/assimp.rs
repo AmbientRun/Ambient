@@ -7,7 +7,7 @@ use ambient_core::{
 };
 use ambient_ecs::{Entity, EntityId, World};
 use ambient_model::{pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl};
-use ambient_renderer::materials::pbr_material::PbrMaterialFromUrl;
+use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
 use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl, mesh::Mesh};
 use glam::{vec2, vec3, vec4, Mat4};
 use itertools::Itertools;
@@ -64,7 +64,7 @@ pub async fn import<'a>(
             //     println!("{:?} {} {:?}", key, tex.data.is_some(), tex);
             // }
         }
-        let mut out_material = PbrMaterialFromUrl {
+        let mut out_material = PbrMaterialDesc {
             // source: todo!(),
             base_color: if let Some(tex) = textures.remove(&TextureType::BaseColor).or_else(|| textures.remove(&TextureType::Diffuse)) {
                 Some(dotdot_path(model_crate.images.insert("base_color", tex).path).into())

@@ -632,6 +632,12 @@ name = "Overlay"
 description = "If attached, this entity will be rendered with an overlay."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::rendering::pbr_material_from_url"]
+type = "String"
+name = "Pbr material from url"
+description = "Load a pbr material from the url and attach it to this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::rendering::sky"]
 type = "Empty"
 name = "Sky"

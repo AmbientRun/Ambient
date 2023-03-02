@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use ambient_renderer::materials::pbr_material::PbrMaterialFromUrl;
+use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
 use ambient_std::asset_url::AssetUrl;
 use fbxcel::tree::v7400::NodeHandle;
 use glam::{vec3, Vec3};
@@ -109,7 +109,7 @@ impl FbxMaterial {
         videos: &HashMap<i64, FbxVideo>,
         images: &HashMap<i64, AssetLoc>,
         asset_crate: &mut ModelCrate,
-    ) -> PbrMaterialFromUrl {
+    ) -> PbrMaterialDesc {
         let find_video_with_filename =
             |filename: &str, exclude_id: i64| videos.iter().find(|v| *v.0 != exclude_id && v.1.filename == filename).map(|v| *v.0);
         let get_map = |id: Option<i64>| {
@@ -128,7 +128,7 @@ impl FbxMaterial {
             None
         };
         let img_to_asset = |(image, _id): (AssetLoc, i64)| -> AssetUrl { dotdot_path(image.path).into() };
-        PbrMaterialFromUrl {
+        PbrMaterialDesc {
             name: Some(self.name.to_string()),
             source: Some(source),
             base_color_factor: self.diffuse_color.map(|x| x.extend(self.opacity.unwrap_or(1.))),

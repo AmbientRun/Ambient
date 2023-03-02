@@ -9,7 +9,7 @@ use ambient_core::{
 };
 use ambient_ecs::{Entity, World};
 use ambient_model::{model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, ModelSkin, PbrRenderPrimitiveFromUrl};
-use ambient_renderer::materials::pbr_material::PbrMaterialFromUrl;
+use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
 use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl, mesh::Mesh, shapes::AABB};
 use glam::{uvec4, Mat4, Quat, UVec4, Vec2, Vec3, Vec4, Vec4Swizzles};
 use gltf::animation::util::ReadOutputs;
@@ -179,7 +179,7 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
     for (index, mat) in import.document.materials().enumerate() {
         let pbr = mat.pbr_metallic_roughness();
 
-        let mat_def = PbrMaterialFromUrl {
+        let mat_def = PbrMaterialDesc {
             name: mat.name().map(|x| x.to_string()),
             source: Some(import.name.clone()),
             base_color_factor: Some(glam::Vec4::from_slice(&mat.pbr_metallic_roughness().base_color_factor())),

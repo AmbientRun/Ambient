@@ -3,7 +3,7 @@ use std::{f32::consts::PI, path::PathBuf, sync::Arc};
 use ambient_animation::AnimationOutputs;
 use ambient_core::{bounding::local_bounding_aabb, transform::translation};
 use ambient_editor_derive::ElementEditor;
-use ambient_renderer::materials::pbr_material::PbrMaterialFromUrl;
+use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
@@ -90,7 +90,7 @@ impl MaterialFilter {
     pub fn by_name(name: impl Into<String>) -> Self {
         Self::ByName { name: name.into() }
     }
-    fn matches(&self, mat: &PbrMaterialFromUrl) -> bool {
+    fn matches(&self, mat: &PbrMaterialDesc) -> bool {
         match self {
             MaterialFilter::All => true,
             MaterialFilter::ByName { name } => mat.name.as_ref() == Some(name),
@@ -113,7 +113,7 @@ pub enum ModelImportTransform {
     MergeUnityMeshLods { url: AbsAssetUrl, lod_cutoffs: Option<Vec<f32>> },
     SetName { name: String },
     Transform(ModelTransform),
-    OverrideMaterial { filter: MaterialFilter, material: Box<PbrMaterialFromUrl> },
+    OverrideMaterial { filter: MaterialFilter, material: Box<PbrMaterialDesc> },
     CapTextureSizes { max_size: ModelTextureSize },
     // RemoveAllMaterials,
     // SetAnimatable { animatable: bool },

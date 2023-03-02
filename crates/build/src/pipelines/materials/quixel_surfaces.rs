@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use ambient_model_import::{dotdot_path, model_crate::ModelCrate};
-use ambient_renderer::materials::pbr_material::PbrMaterialFromUrl;
+use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
 use ambient_std::{
     asset_cache::AssetCache,
     asset_url::{AbsAssetUrl, AssetType},
@@ -105,7 +105,7 @@ impl QuixelSurfaceDef {
                 b[3] = op[0];
             }
         }
-        let mat = PbrMaterialFromUrl {
+        let mat = PbrMaterialDesc {
             transparent,
             base_color: albedo.map(|albedo| asset_crate.images.insert("base_color", albedo).path).map(|x| dotdot_path(x).into()),
             normalmap: normal.map(|normal| asset_crate.images.insert("normalmap", normal).path).map(|x| dotdot_path(x).into()),

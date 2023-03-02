@@ -16,15 +16,16 @@ use ambient_renderer::{
     color, gpu_primitives,
     materials::{
         flat_material::{get_flat_shader, FlatMaterialKey},
-        pbr_material::{get_pbr_shader, PbrMaterialFromUrl},
+        pbr_material::get_pbr_shader,
     },
+    pbr_material::PbrMaterialFromUrl,
     primitives, RenderPrimitive, StandardShaderKey,
 };
 use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, AssetUrl, ModelAssetType, TypedAssetUrl},
     cb,
-    download_asset::{AssetError, BytesFromUrl, JsonFromUrl},
+    download_asset::{AssetError, BytesFromUrl},
     log_result,
     math::Line,
 };
@@ -288,8 +289,7 @@ impl AsyncAssetKey<Result<Arc<RenderPrimitive>, AssetError>> for PbrRenderPrimit
     async fn load(self, assets: AssetCache) -> Result<Arc<RenderPrimitive>, AssetError> {
         let mesh = GpuMeshFromUrl { url: self.mesh, cache_on_disk: true }.get(&assets).await?;
         if let Some(mat_url) = self.material {
-            let mat_def = JsonFromUrl::<PbrMaterialFromUrl>::new(mat_url.clone(), true).get(&assets).await?;
-            let mat = mat_def.resolve(&mat_url)?.get(&assets).await?;
+            let mat = PbrMaterialFromUrl(mat_url).get(&assets).await?;
             Ok(Arc::new(RenderPrimitive { material: mat.into(), shader: cb(get_pbr_shader), mesh, lod: self.lod }))
         } else {
             Ok(Arc::new(RenderPrimitive {

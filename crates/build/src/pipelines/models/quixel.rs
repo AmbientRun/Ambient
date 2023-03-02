@@ -1,6 +1,6 @@
 use ambient_asset_cache::AsyncAssetKeyExt;
 use ambient_model_import::{fbx::FbxDoc, MaterialFilter, ModelImportPipeline, ModelImportTransform, ModelTransform};
-use ambient_renderer::materials::pbr_material::PbrMaterialFromUrl;
+use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
 use ambient_std::asset_url::{AbsAssetUrl, AssetType, AssetUrl};
 use convert_case::{Case, Casing};
 use futures::{future::BoxFuture, FutureExt};
@@ -132,7 +132,7 @@ pub async fn object_pipelines_from_quixel_json(
     };
     match get_path(quixel, vec!["semanticTags", "asset_type"]).unwrap().as_str().unwrap() as &str {
         "3D asset" => {
-            let material = PbrMaterialFromUrl {
+            let material = PbrMaterialDesc {
                 base_color: Some(pipe_image(&format!("{}_Albedo.jpg", quixel_id.resolution)).await?),
                 opacity: if quixel_has_opacity(quixel).unwrap_or(false) {
                     Some(pipe_image(&format!("{}_Opacity.jpg", quixel_id.resolution)).await?)
@@ -256,7 +256,7 @@ pub async fn object_pipelines_from_quixel_json(
                 .boxed()
             };
 
-            let atlas = PbrMaterialFromUrl {
+            let atlas = PbrMaterialDesc {
                 base_color: pipe_image_opt(get_map_v1("maps", "Albedo").or_else(|| get_map_v2("components", "Albedo"))).await?,
                 opacity: pipe_image_opt(get_map_v1("maps", "Opacity").or_else(|| get_map_v2("components", "Opacity"))).await?,
                 normalmap: pipe_image_opt(get_map_v1("maps", "Normal").or_else(|| get_map_v2("components", "Normal"))).await?,
@@ -268,7 +268,7 @@ pub async fn object_pipelines_from_quixel_json(
                 ..Default::default()
             }
             .relative_path_from(out_materials_url);
-            let billboard = PbrMaterialFromUrl {
+            let billboard = PbrMaterialDesc {
                 base_color: pipe_image_opt(get_map_v1("billboards", "Albedo")).await?,
                 opacity: pipe_image_opt(get_map_v1("billboards", "Opacity")).await?,
                 normalmap: pipe_image_opt(get_map_v1("billboards", "Normal")).await?,
