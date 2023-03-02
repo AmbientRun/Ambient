@@ -51,13 +51,13 @@ impl Gpu {
         let surface = window.map(|window| unsafe { instance.create_surface(window) });
         #[cfg(not(target_os = "unknown"))]
         {
-            log::info!("Available adapters:");
+            log::debug!("Available adapters:");
             for adapter in instance.enumerate_adapters(wgpu::Backends::PRIMARY) {
-                log::info!("Adapter: {:?}", adapter.get_info());
+                log::debug!("Adapter: {:?}", adapter.get_info());
             }
         }
 
-        log::info!("Requesting adapter");
+        log::debug!("Requesting adapter");
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
                 power_preference: wgpu::PowerPreference::HighPerformance,
@@ -67,10 +67,10 @@ impl Gpu {
             .await
             .expect("Failed to find an appropriate adapter");
 
-        log::info!("Using gpu adapter: {:?}", adapter.get_info());
-        log::info!("Adapter features:\n{:#?}", adapter.features());
+        log::debug!("Using gpu adapter: {:?}", adapter.get_info());
+        log::debug!("Adapter features:\n{:#?}", adapter.features());
         let adapter_limits = adapter.limits();
-        log::info!("Adapter limits:\n{:#?}", adapter_limits);
+        log::debug!("Adapter limits:\n{:#?}", adapter_limits);
 
         #[cfg(target_os = "macos")]
         let features = wgpu::Features::empty();
@@ -96,23 +96,23 @@ impl Gpu {
             .await
             .expect("Failed to create device");
 
-        log::info!("Device limits:\n{:#?}", device.limits());
+        log::debug!("Device limits:\n{:#?}", device.limits());
 
         let swapchain_format = surface.as_ref().map(|surface| surface.get_supported_formats(&adapter)[0]);
-        log::info!("Swapchain format: {swapchain_format:?}");
+        log::debug!("Swapchain format: {swapchain_format:?}");
         let swapchain_mode = surface.as_ref().map(|surface| surface.get_supported_present_modes(&adapter)).as_ref().map(|modes| {
             [PresentMode::Immediate, PresentMode::Fifo, PresentMode::Mailbox]
                 .into_iter()
                 .find(|pm| modes.contains(pm))
                 .expect("unable to find compatible swapchain mode")
         });
-        log::info!("Swapchain present mode: {swapchain_mode:?}");
+        log::debug!("Swapchain present mode: {swapchain_mode:?}");
 
         if let (Some(surface), Some(mode), Some(format)) = (&surface, swapchain_mode, swapchain_format) {
             let size = window.as_ref().unwrap().inner_size();
             surface.configure(&device, &Self::create_sc_desc(format, mode, uvec2(size.width, size.height)));
         }
-        log::info!("Created gpu");
+        log::debug!("Created gpu");
 
         Self { device, surface, queue, swapchain_format, swapchain_mode, adapter, will_be_polled }
     }

@@ -118,7 +118,7 @@ impl SubRenderer for GizmoRenderer {
         }
 
         self.buffer.fill(primitives, |_| {
-            log::info!("Resizing bind group for gizmos");
+            log::debug!("Resizing bind group for gizmos");
         });
 
         let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
