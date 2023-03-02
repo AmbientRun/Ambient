@@ -12,7 +12,7 @@
                     "DIMS_DISABLE_TIMEOUT": "true",
                     "RUST_BACKTRACE": "1"
                 },
-                "cwd": "${workspaceFolder}",
+                "cwd": "${workspaceFolder}"
             },
             "args": [
                 "run",
@@ -26,5 +26,14 @@
                 "kind": "build"
             }
         },
+        {
+            "type": "shell",
+            "command": "wasm-pack build web --dev",
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "group": "build",
+            "label": "build-web"
+        }
     ]
 }

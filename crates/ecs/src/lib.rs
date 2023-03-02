@@ -257,6 +257,7 @@ impl World {
     pub fn set_entry(&mut self, entity_id: EntityId, entry: ComponentEntry) -> Result<ComponentEntry, ECSError> {
         if let Some(loc) = self.locs.get(&entity_id) {
             let version = self.inc_version();
+            eprintln!("set_entry version: {version}");
             let arch = self.archetypes.get_mut(loc.archetype).expect("Archetype doesn't exist");
             arch.replace_with_entry(entity_id, loc.index, entry, version)
         } else {
