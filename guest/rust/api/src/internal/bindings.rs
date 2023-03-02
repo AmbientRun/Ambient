@@ -45,6 +45,39 @@
   }
   #[repr(C)]
   #[derive(Copy, Clone)]
+  pub struct Uvec2 {
+    pub x: u32,
+    pub y: u32,
+  }
+  impl core::fmt::Debug for Uvec2 {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+      f.debug_struct("Uvec2").field("x", &self.x).field("y", &self.y).finish()}
+  }
+  #[repr(C)]
+  #[derive(Copy, Clone)]
+  pub struct Uvec3 {
+    pub x: u32,
+    pub y: u32,
+    pub z: u32,
+  }
+  impl core::fmt::Debug for Uvec3 {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+      f.debug_struct("Uvec3").field("x", &self.x).field("y", &self.y).field("z", &self.z).finish()}
+  }
+  #[repr(C)]
+  #[derive(Copy, Clone)]
+  pub struct Uvec4 {
+    pub x: u32,
+    pub y: u32,
+    pub z: u32,
+    pub w: u32,
+  }
+  impl core::fmt::Debug for Uvec4 {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+      f.debug_struct("Uvec4").field("x", &self.x).field("y", &self.y).field("z", &self.z).field("w", &self.w).finish()}
+  }
+  #[repr(C)]
+  #[derive(Copy, Clone)]
   pub struct Quat {
     pub x: f32,
     pub y: f32,
@@ -110,6 +143,9 @@
     TypeVec2(&'a [Vec2]),
     TypeVec3(&'a [Vec3]),
     TypeVec4(&'a [Vec4]),
+    TypeUvec2(&'a [Uvec2]),
+    TypeUvec3(&'a [Uvec3]),
+    TypeUvec4(&'a [Uvec4]),
   }
   impl<'a,> core::fmt::Debug for ComponentListTypeParam<'a,> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -156,6 +192,15 @@
         ComponentListTypeParam::TypeVec4(e) => {
           f.debug_tuple("ComponentListTypeParam::TypeVec4").field(e).finish()
         }
+        ComponentListTypeParam::TypeUvec2(e) => {
+          f.debug_tuple("ComponentListTypeParam::TypeUvec2").field(e).finish()
+        }
+        ComponentListTypeParam::TypeUvec3(e) => {
+          f.debug_tuple("ComponentListTypeParam::TypeUvec3").field(e).finish()
+        }
+        ComponentListTypeParam::TypeUvec4(e) => {
+          f.debug_tuple("ComponentListTypeParam::TypeUvec4").field(e).finish()
+        }
       }
     }
   }
@@ -175,6 +220,9 @@
     TypeVec2(Vec<Vec2>),
     TypeVec3(Vec<Vec3>),
     TypeVec4(Vec<Vec4>),
+    TypeUvec2(Vec<Uvec2>),
+    TypeUvec3(Vec<Uvec3>),
+    TypeUvec4(Vec<Uvec4>),
   }
   impl core::fmt::Debug for ComponentListTypeResult {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -221,6 +269,15 @@
         ComponentListTypeResult::TypeVec4(e) => {
           f.debug_tuple("ComponentListTypeResult::TypeVec4").field(e).finish()
         }
+        ComponentListTypeResult::TypeUvec2(e) => {
+          f.debug_tuple("ComponentListTypeResult::TypeUvec2").field(e).finish()
+        }
+        ComponentListTypeResult::TypeUvec3(e) => {
+          f.debug_tuple("ComponentListTypeResult::TypeUvec3").field(e).finish()
+        }
+        ComponentListTypeResult::TypeUvec4(e) => {
+          f.debug_tuple("ComponentListTypeResult::TypeUvec4").field(e).finish()
+        }
       }
     }
   }
@@ -240,6 +297,9 @@
     TypeVec2(Option<Vec2>),
     TypeVec3(Option<Vec3>),
     TypeVec4(Option<Vec4>),
+    TypeUvec2(Option<Uvec2>),
+    TypeUvec3(Option<Uvec3>),
+    TypeUvec4(Option<Uvec4>),
   }
   impl<'a,> core::fmt::Debug for ComponentOptionTypeParam<'a,> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -286,6 +346,15 @@
         ComponentOptionTypeParam::TypeVec4(e) => {
           f.debug_tuple("ComponentOptionTypeParam::TypeVec4").field(e).finish()
         }
+        ComponentOptionTypeParam::TypeUvec2(e) => {
+          f.debug_tuple("ComponentOptionTypeParam::TypeUvec2").field(e).finish()
+        }
+        ComponentOptionTypeParam::TypeUvec3(e) => {
+          f.debug_tuple("ComponentOptionTypeParam::TypeUvec3").field(e).finish()
+        }
+        ComponentOptionTypeParam::TypeUvec4(e) => {
+          f.debug_tuple("ComponentOptionTypeParam::TypeUvec4").field(e).finish()
+        }
       }
     }
   }
@@ -305,6 +374,9 @@
     TypeVec2(Option<Vec2>),
     TypeVec3(Option<Vec3>),
     TypeVec4(Option<Vec4>),
+    TypeUvec2(Option<Uvec2>),
+    TypeUvec3(Option<Uvec3>),
+    TypeUvec4(Option<Uvec4>),
   }
   impl core::fmt::Debug for ComponentOptionTypeResult {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -351,6 +423,15 @@
         ComponentOptionTypeResult::TypeVec4(e) => {
           f.debug_tuple("ComponentOptionTypeResult::TypeVec4").field(e).finish()
         }
+        ComponentOptionTypeResult::TypeUvec2(e) => {
+          f.debug_tuple("ComponentOptionTypeResult::TypeUvec2").field(e).finish()
+        }
+        ComponentOptionTypeResult::TypeUvec3(e) => {
+          f.debug_tuple("ComponentOptionTypeResult::TypeUvec3").field(e).finish()
+        }
+        ComponentOptionTypeResult::TypeUvec4(e) => {
+          f.debug_tuple("ComponentOptionTypeResult::TypeUvec4").field(e).finish()
+        }
       }
     }
   }
@@ -370,6 +451,9 @@
     TypeVec2(Vec2),
     TypeVec3(Vec3),
     TypeVec4(Vec4),
+    TypeUvec2(Uvec2),
+    TypeUvec3(Uvec3),
+    TypeUvec4(Uvec4),
     TypeList(ComponentListTypeParam<'a,>),
     TypeOption(ComponentOptionTypeParam<'a,>),
   }
@@ -418,6 +502,15 @@
         ComponentTypeParam::TypeVec4(e) => {
           f.debug_tuple("ComponentTypeParam::TypeVec4").field(e).finish()
         }
+        ComponentTypeParam::TypeUvec2(e) => {
+          f.debug_tuple("ComponentTypeParam::TypeUvec2").field(e).finish()
+        }
+        ComponentTypeParam::TypeUvec3(e) => {
+          f.debug_tuple("ComponentTypeParam::TypeUvec3").field(e).finish()
+        }
+        ComponentTypeParam::TypeUvec4(e) => {
+          f.debug_tuple("ComponentTypeParam::TypeUvec4").field(e).finish()
+        }
         ComponentTypeParam::TypeList(e) => {
           f.debug_tuple("ComponentTypeParam::TypeList").field(e).finish()
         }
@@ -443,6 +536,9 @@
     TypeVec2(Vec2),
     TypeVec3(Vec3),
     TypeVec4(Vec4),
+    TypeUvec2(Uvec2),
+    TypeUvec3(Uvec3),
+    TypeUvec4(Uvec4),
     TypeList(ComponentListTypeResult),
     TypeOption(ComponentOptionTypeResult),
   }
@@ -490,6 +586,15 @@
         }
         ComponentTypeResult::TypeVec4(e) => {
           f.debug_tuple("ComponentTypeResult::TypeVec4").field(e).finish()
+        }
+        ComponentTypeResult::TypeUvec2(e) => {
+          f.debug_tuple("ComponentTypeResult::TypeUvec2").field(e).finish()
+        }
+        ComponentTypeResult::TypeUvec3(e) => {
+          f.debug_tuple("ComponentTypeResult::TypeUvec3").field(e).finish()
+        }
+        ComponentTypeResult::TypeUvec4(e) => {
+          f.debug_tuple("ComponentTypeResult::TypeUvec4").field(e).finish()
         }
         ComponentTypeResult::TypeList(e) => {
           f.debug_tuple("ComponentTypeResult::TypeList").field(e).finish()
@@ -1285,22 +1390,22 @@
   pub fn entity_spawn(data: Entity<'_,>,) -> EntityId{
     unsafe {
       let mut cleanup_list = Vec::new();
-      let vec40 = data;
-      let len40 = vec40.len() as i32;
-      let layout40 = core::alloc::Layout::from_size_align_unchecked(vec40.len() * 88, 8);
-      let result40 = if layout40.size() != 0
+      let vec49 = data;
+      let len49 = vec49.len() as i32;
+      let layout49 = core::alloc::Layout::from_size_align_unchecked(vec49.len() * 88, 8);
+      let result49 = if layout49.size() != 0
       {
-        let ptr = std::alloc::alloc(layout40);
+        let ptr = std::alloc::alloc(layout49);
         if ptr.is_null()
         {
-          std::alloc::handle_alloc_error(layout40);
+          std::alloc::handle_alloc_error(layout49);
         }
         ptr
       }else {
         std::ptr::null_mut()
       };
-      for (i, e) in vec40.into_iter().enumerate() {
-        let base = result40 as i32 + (i as i32) * 88;
+      for (i, e) in vec49.into_iter().enumerate() {
+        let base = result49 as i32 + (i as i32) * 88;
         {
           let (t0_0, t0_1, ) = e;
           *((base + 0) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(t0_0);
@@ -1414,74 +1519,71 @@
               *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w12);
               
             },
-            ComponentTypeParam::TypeList(e) => {
+            ComponentTypeParam::TypeUvec2(e) => {
               *((base + 8) as *mut u8) = (14i32) as u8;
+              let Uvec2{ x:x13, y:y13, } = e;
+              *((base + 16) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x13);
+              *((base + 20) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y13);
+              
+            },
+            ComponentTypeParam::TypeUvec3(e) => {
+              *((base + 8) as *mut u8) = (15i32) as u8;
+              let Uvec3{ x:x14, y:y14, z:z14, } = e;
+              *((base + 16) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x14);
+              *((base + 20) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y14);
+              *((base + 24) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z14);
+              
+            },
+            ComponentTypeParam::TypeUvec4(e) => {
+              *((base + 8) as *mut u8) = (16i32) as u8;
+              let Uvec4{ x:x15, y:y15, z:z15, w:w15, } = e;
+              *((base + 16) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x15);
+              *((base + 20) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y15);
+              *((base + 24) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z15);
+              *((base + 28) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(w15);
+              
+            },
+            ComponentTypeParam::TypeList(e) => {
+              *((base + 8) as *mut u8) = (17i32) as u8;
               match e {
                 ComponentListTypeParam::TypeEmpty(e) => {
                   *((base + 16) as *mut u8) = (0i32) as u8;
-                  let vec13 = e;
-                  let ptr13 = vec13.as_ptr() as i32;
-                  let len13 = vec13.len() as i32;
-                  *((base + 24) as *mut i32) = len13;
-                  *((base + 20) as *mut i32) = ptr13;
+                  let vec16 = e;
+                  let ptr16 = vec16.as_ptr() as i32;
+                  let len16 = vec16.len() as i32;
+                  *((base + 24) as *mut i32) = len16;
+                  *((base + 20) as *mut i32) = ptr16;
                   
                 },
                 ComponentListTypeParam::TypeBool(e) => {
                   *((base + 16) as *mut u8) = (1i32) as u8;
-                  let vec14 = e;
-                  let len14 = vec14.len() as i32;
-                  let layout14 = core::alloc::Layout::from_size_align_unchecked(vec14.len() * 1, 1);
-                  let result14 = if layout14.size() != 0
+                  let vec17 = e;
+                  let len17 = vec17.len() as i32;
+                  let layout17 = core::alloc::Layout::from_size_align_unchecked(vec17.len() * 1, 1);
+                  let result17 = if layout17.size() != 0
                   {
-                    let ptr = std::alloc::alloc(layout14);
+                    let ptr = std::alloc::alloc(layout17);
                     if ptr.is_null()
                     {
-                      std::alloc::handle_alloc_error(layout14);
+                      std::alloc::handle_alloc_error(layout17);
                     }
                     ptr
                   }else {
                     std::ptr::null_mut()
                   };
-                  for (i, e) in vec14.into_iter().enumerate() {
-                    let base = result14 as i32 + (i as i32) * 1;
+                  for (i, e) in vec17.into_iter().enumerate() {
+                    let base = result17 as i32 + (i as i32) * 1;
                     {
                       *((base + 0) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                       
                     }}
-                    *((base + 24) as *mut i32) = len14;
-                    *((base + 20) as *mut i32) = result14 as i32;
-                    cleanup_list.extend_from_slice(&[(result14, layout14),]);
+                    *((base + 24) as *mut i32) = len17;
+                    *((base + 20) as *mut i32) = result17 as i32;
+                    cleanup_list.extend_from_slice(&[(result17, layout17),]);
                     
                   },
                   ComponentListTypeParam::TypeEntityId(e) => {
                     *((base + 16) as *mut u8) = (2i32) as u8;
-                    let vec15 = e;
-                    let ptr15 = vec15.as_ptr() as i32;
-                    let len15 = vec15.len() as i32;
-                    *((base + 24) as *mut i32) = len15;
-                    *((base + 20) as *mut i32) = ptr15;
-                    
-                  },
-                  ComponentListTypeParam::TypeF32(e) => {
-                    *((base + 16) as *mut u8) = (3i32) as u8;
-                    let vec16 = e;
-                    let ptr16 = vec16.as_ptr() as i32;
-                    let len16 = vec16.len() as i32;
-                    *((base + 24) as *mut i32) = len16;
-                    *((base + 20) as *mut i32) = ptr16;
-                    
-                  },
-                  ComponentListTypeParam::TypeF64(e) => {
-                    *((base + 16) as *mut u8) = (4i32) as u8;
-                    let vec17 = e;
-                    let ptr17 = vec17.as_ptr() as i32;
-                    let len17 = vec17.len() as i32;
-                    *((base + 24) as *mut i32) = len17;
-                    *((base + 20) as *mut i32) = ptr17;
-                    
-                  },
-                  ComponentListTypeParam::TypeMat4(e) => {
-                    *((base + 16) as *mut u8) = (5i32) as u8;
                     let vec18 = e;
                     let ptr18 = vec18.as_ptr() as i32;
                     let len18 = vec18.len() as i32;
@@ -1489,8 +1591,8 @@
                     *((base + 20) as *mut i32) = ptr18;
                     
                   },
-                  ComponentListTypeParam::TypeI32(e) => {
-                    *((base + 16) as *mut u8) = (6i32) as u8;
+                  ComponentListTypeParam::TypeF32(e) => {
+                    *((base + 16) as *mut u8) = (3i32) as u8;
                     let vec19 = e;
                     let ptr19 = vec19.as_ptr() as i32;
                     let len19 = vec19.len() as i32;
@@ -1498,8 +1600,8 @@
                     *((base + 20) as *mut i32) = ptr19;
                     
                   },
-                  ComponentListTypeParam::TypeQuat(e) => {
-                    *((base + 16) as *mut u8) = (7i32) as u8;
+                  ComponentListTypeParam::TypeF64(e) => {
+                    *((base + 16) as *mut u8) = (4i32) as u8;
                     let vec20 = e;
                     let ptr20 = vec20.as_ptr() as i32;
                     let len20 = vec20.len() as i32;
@@ -1507,66 +1609,66 @@
                     *((base + 20) as *mut i32) = ptr20;
                     
                   },
+                  ComponentListTypeParam::TypeMat4(e) => {
+                    *((base + 16) as *mut u8) = (5i32) as u8;
+                    let vec21 = e;
+                    let ptr21 = vec21.as_ptr() as i32;
+                    let len21 = vec21.len() as i32;
+                    *((base + 24) as *mut i32) = len21;
+                    *((base + 20) as *mut i32) = ptr21;
+                    
+                  },
+                  ComponentListTypeParam::TypeI32(e) => {
+                    *((base + 16) as *mut u8) = (6i32) as u8;
+                    let vec22 = e;
+                    let ptr22 = vec22.as_ptr() as i32;
+                    let len22 = vec22.len() as i32;
+                    *((base + 24) as *mut i32) = len22;
+                    *((base + 20) as *mut i32) = ptr22;
+                    
+                  },
+                  ComponentListTypeParam::TypeQuat(e) => {
+                    *((base + 16) as *mut u8) = (7i32) as u8;
+                    let vec23 = e;
+                    let ptr23 = vec23.as_ptr() as i32;
+                    let len23 = vec23.len() as i32;
+                    *((base + 24) as *mut i32) = len23;
+                    *((base + 20) as *mut i32) = ptr23;
+                    
+                  },
                   ComponentListTypeParam::TypeString(e) => {
                     *((base + 16) as *mut u8) = (8i32) as u8;
-                    let vec22 = e;
-                    let len22 = vec22.len() as i32;
-                    let layout22 = core::alloc::Layout::from_size_align_unchecked(vec22.len() * 8, 4);
-                    let result22 = if layout22.size() != 0
+                    let vec25 = e;
+                    let len25 = vec25.len() as i32;
+                    let layout25 = core::alloc::Layout::from_size_align_unchecked(vec25.len() * 8, 4);
+                    let result25 = if layout25.size() != 0
                     {
-                      let ptr = std::alloc::alloc(layout22);
+                      let ptr = std::alloc::alloc(layout25);
                       if ptr.is_null()
                       {
-                        std::alloc::handle_alloc_error(layout22);
+                        std::alloc::handle_alloc_error(layout25);
                       }
                       ptr
                     }else {
                       std::ptr::null_mut()
                     };
-                    for (i, e) in vec22.into_iter().enumerate() {
-                      let base = result22 as i32 + (i as i32) * 8;
+                    for (i, e) in vec25.into_iter().enumerate() {
+                      let base = result25 as i32 + (i as i32) * 8;
                       {
-                        let vec21 = e;
-                        let ptr21 = vec21.as_ptr() as i32;
-                        let len21 = vec21.len() as i32;
-                        *((base + 4) as *mut i32) = len21;
-                        *((base + 0) as *mut i32) = ptr21;
+                        let vec24 = e;
+                        let ptr24 = vec24.as_ptr() as i32;
+                        let len24 = vec24.len() as i32;
+                        *((base + 4) as *mut i32) = len24;
+                        *((base + 0) as *mut i32) = ptr24;
                         
                       }}
-                      *((base + 24) as *mut i32) = len22;
-                      *((base + 20) as *mut i32) = result22 as i32;
-                      cleanup_list.extend_from_slice(&[(result22, layout22),]);
+                      *((base + 24) as *mut i32) = len25;
+                      *((base + 20) as *mut i32) = result25 as i32;
+                      cleanup_list.extend_from_slice(&[(result25, layout25),]);
                       
                     },
                     ComponentListTypeParam::TypeU32(e) => {
                       *((base + 16) as *mut u8) = (9i32) as u8;
-                      let vec23 = e;
-                      let ptr23 = vec23.as_ptr() as i32;
-                      let len23 = vec23.len() as i32;
-                      *((base + 24) as *mut i32) = len23;
-                      *((base + 20) as *mut i32) = ptr23;
-                      
-                    },
-                    ComponentListTypeParam::TypeU64(e) => {
-                      *((base + 16) as *mut u8) = (10i32) as u8;
-                      let vec24 = e;
-                      let ptr24 = vec24.as_ptr() as i32;
-                      let len24 = vec24.len() as i32;
-                      *((base + 24) as *mut i32) = len24;
-                      *((base + 20) as *mut i32) = ptr24;
-                      
-                    },
-                    ComponentListTypeParam::TypeVec2(e) => {
-                      *((base + 16) as *mut u8) = (11i32) as u8;
-                      let vec25 = e;
-                      let ptr25 = vec25.as_ptr() as i32;
-                      let len25 = vec25.len() as i32;
-                      *((base + 24) as *mut i32) = len25;
-                      *((base + 20) as *mut i32) = ptr25;
-                      
-                    },
-                    ComponentListTypeParam::TypeVec3(e) => {
-                      *((base + 16) as *mut u8) = (12i32) as u8;
                       let vec26 = e;
                       let ptr26 = vec26.as_ptr() as i32;
                       let len26 = vec26.len() as i32;
@@ -1574,8 +1676,8 @@
                       *((base + 20) as *mut i32) = ptr26;
                       
                     },
-                    ComponentListTypeParam::TypeVec4(e) => {
-                      *((base + 16) as *mut u8) = (13i32) as u8;
+                    ComponentListTypeParam::TypeU64(e) => {
+                      *((base + 16) as *mut u8) = (10i32) as u8;
                       let vec27 = e;
                       let ptr27 = vec27.as_ptr() as i32;
                       let len27 = vec27.len() as i32;
@@ -1583,11 +1685,65 @@
                       *((base + 20) as *mut i32) = ptr27;
                       
                     },
+                    ComponentListTypeParam::TypeVec2(e) => {
+                      *((base + 16) as *mut u8) = (11i32) as u8;
+                      let vec28 = e;
+                      let ptr28 = vec28.as_ptr() as i32;
+                      let len28 = vec28.len() as i32;
+                      *((base + 24) as *mut i32) = len28;
+                      *((base + 20) as *mut i32) = ptr28;
+                      
+                    },
+                    ComponentListTypeParam::TypeVec3(e) => {
+                      *((base + 16) as *mut u8) = (12i32) as u8;
+                      let vec29 = e;
+                      let ptr29 = vec29.as_ptr() as i32;
+                      let len29 = vec29.len() as i32;
+                      *((base + 24) as *mut i32) = len29;
+                      *((base + 20) as *mut i32) = ptr29;
+                      
+                    },
+                    ComponentListTypeParam::TypeVec4(e) => {
+                      *((base + 16) as *mut u8) = (13i32) as u8;
+                      let vec30 = e;
+                      let ptr30 = vec30.as_ptr() as i32;
+                      let len30 = vec30.len() as i32;
+                      *((base + 24) as *mut i32) = len30;
+                      *((base + 20) as *mut i32) = ptr30;
+                      
+                    },
+                    ComponentListTypeParam::TypeUvec2(e) => {
+                      *((base + 16) as *mut u8) = (14i32) as u8;
+                      let vec31 = e;
+                      let ptr31 = vec31.as_ptr() as i32;
+                      let len31 = vec31.len() as i32;
+                      *((base + 24) as *mut i32) = len31;
+                      *((base + 20) as *mut i32) = ptr31;
+                      
+                    },
+                    ComponentListTypeParam::TypeUvec3(e) => {
+                      *((base + 16) as *mut u8) = (15i32) as u8;
+                      let vec32 = e;
+                      let ptr32 = vec32.as_ptr() as i32;
+                      let len32 = vec32.len() as i32;
+                      *((base + 24) as *mut i32) = len32;
+                      *((base + 20) as *mut i32) = ptr32;
+                      
+                    },
+                    ComponentListTypeParam::TypeUvec4(e) => {
+                      *((base + 16) as *mut u8) = (16i32) as u8;
+                      let vec33 = e;
+                      let ptr33 = vec33.as_ptr() as i32;
+                      let len33 = vec33.len() as i32;
+                      *((base + 24) as *mut i32) = len33;
+                      *((base + 20) as *mut i32) = ptr33;
+                      
+                    },
                   };
                   
                 },
                 ComponentTypeParam::TypeOption(e) => {
-                  *((base + 8) as *mut u8) = (15i32) as u8;
+                  *((base + 8) as *mut u8) = (18i32) as u8;
                   match e {
                     ComponentOptionTypeParam::TypeEmpty(e) => {
                       *((base + 16) as *mut u8) = (0i32) as u8;
@@ -1630,9 +1786,9 @@
                       match e {
                         Some(e) => {
                           *((base + 24) as *mut u8) = (1i32) as u8;
-                          let EntityId{ id0:id029, id1:id129, } = e;
-                          *((base + 32) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id029);
-                          *((base + 40) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id129);
+                          let EntityId{ id0:id035, id1:id135, } = e;
+                          *((base + 32) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id035);
+                          *((base + 40) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id135);
                           
                         },
                         None => {
@@ -1686,27 +1842,27 @@
                       match e {
                         Some(e) => {
                           *((base + 24) as *mut u8) = (1i32) as u8;
-                          let Mat4{ x:x30, y:y30, z:z30, w:w30, } = e;
-                          let Vec4{ x:x31, y:y31, z:z31, w:w31, } = x30;
-                          *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x31);
-                          *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y31);
-                          *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z31);
-                          *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w31);
-                          let Vec4{ x:x32, y:y32, z:z32, w:w32, } = y30;
-                          *((base + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x32);
-                          *((base + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y32);
-                          *((base + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z32);
-                          *((base + 56) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w32);
-                          let Vec4{ x:x33, y:y33, z:z33, w:w33, } = z30;
-                          *((base + 60) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x33);
-                          *((base + 64) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y33);
-                          *((base + 68) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z33);
-                          *((base + 72) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w33);
-                          let Vec4{ x:x34, y:y34, z:z34, w:w34, } = w30;
-                          *((base + 76) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x34);
-                          *((base + 80) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y34);
-                          *((base + 84) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z34);
-                          *((base + 88) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w34);
+                          let Mat4{ x:x36, y:y36, z:z36, w:w36, } = e;
+                          let Vec4{ x:x37, y:y37, z:z37, w:w37, } = x36;
+                          *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x37);
+                          *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y37);
+                          *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z37);
+                          *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w37);
+                          let Vec4{ x:x38, y:y38, z:z38, w:w38, } = y36;
+                          *((base + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x38);
+                          *((base + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y38);
+                          *((base + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z38);
+                          *((base + 56) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w38);
+                          let Vec4{ x:x39, y:y39, z:z39, w:w39, } = z36;
+                          *((base + 60) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x39);
+                          *((base + 64) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y39);
+                          *((base + 68) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z39);
+                          *((base + 72) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w39);
+                          let Vec4{ x:x40, y:y40, z:z40, w:w40, } = w36;
+                          *((base + 76) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x40);
+                          *((base + 80) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y40);
+                          *((base + 84) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z40);
+                          *((base + 88) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w40);
                           
                         },
                         None => {
@@ -1742,11 +1898,11 @@
                       match e {
                         Some(e) => {
                           *((base + 24) as *mut u8) = (1i32) as u8;
-                          let Quat{ x:x35, y:y35, z:z35, w:w35, } = e;
-                          *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x35);
-                          *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y35);
-                          *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z35);
-                          *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w35);
+                          let Quat{ x:x41, y:y41, z:z41, w:w41, } = e;
+                          *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x41);
+                          *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y41);
+                          *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z41);
+                          *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w41);
                           
                         },
                         None => {
@@ -1764,11 +1920,11 @@
                       match e {
                         Some(e) => {
                           *((base + 24) as *mut u8) = (1i32) as u8;
-                          let vec36 = e;
-                          let ptr36 = vec36.as_ptr() as i32;
-                          let len36 = vec36.len() as i32;
-                          *((base + 32) as *mut i32) = len36;
-                          *((base + 28) as *mut i32) = ptr36;
+                          let vec42 = e;
+                          let ptr42 = vec42.as_ptr() as i32;
+                          let len42 = vec42.len() as i32;
+                          *((base + 32) as *mut i32) = len42;
+                          *((base + 28) as *mut i32) = ptr42;
                           
                         },
                         None => {
@@ -1822,9 +1978,9 @@
                       match e {
                         Some(e) => {
                           *((base + 24) as *mut u8) = (1i32) as u8;
-                          let Vec2{ x:x37, y:y37, } = e;
-                          *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x37);
-                          *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y37);
+                          let Vec2{ x:x43, y:y43, } = e;
+                          *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x43);
+                          *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y43);
                           
                         },
                         None => {
@@ -1842,10 +1998,10 @@
                       match e {
                         Some(e) => {
                           *((base + 24) as *mut u8) = (1i32) as u8;
-                          let Vec3{ x:x38, y:y38, z:z38, } = e;
-                          *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x38);
-                          *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y38);
-                          *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z38);
+                          let Vec3{ x:x44, y:y44, z:z44, } = e;
+                          *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x44);
+                          *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y44);
+                          *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z44);
                           
                         },
                         None => {
@@ -1863,11 +2019,74 @@
                       match e {
                         Some(e) => {
                           *((base + 24) as *mut u8) = (1i32) as u8;
-                          let Vec4{ x:x39, y:y39, z:z39, w:w39, } = e;
-                          *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x39);
-                          *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y39);
-                          *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z39);
-                          *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w39);
+                          let Vec4{ x:x45, y:y45, z:z45, w:w45, } = e;
+                          *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x45);
+                          *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y45);
+                          *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z45);
+                          *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w45);
+                          
+                        },
+                        None => {
+                          let e = ();
+                          {
+                            *((base + 24) as *mut u8) = (0i32) as u8;
+                            let () = e;
+                            
+                          }
+                        },
+                      };
+                    },
+                    ComponentOptionTypeParam::TypeUvec2(e) => {
+                      *((base + 16) as *mut u8) = (14i32) as u8;
+                      match e {
+                        Some(e) => {
+                          *((base + 24) as *mut u8) = (1i32) as u8;
+                          let Uvec2{ x:x46, y:y46, } = e;
+                          *((base + 28) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x46);
+                          *((base + 32) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y46);
+                          
+                        },
+                        None => {
+                          let e = ();
+                          {
+                            *((base + 24) as *mut u8) = (0i32) as u8;
+                            let () = e;
+                            
+                          }
+                        },
+                      };
+                    },
+                    ComponentOptionTypeParam::TypeUvec3(e) => {
+                      *((base + 16) as *mut u8) = (15i32) as u8;
+                      match e {
+                        Some(e) => {
+                          *((base + 24) as *mut u8) = (1i32) as u8;
+                          let Uvec3{ x:x47, y:y47, z:z47, } = e;
+                          *((base + 28) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x47);
+                          *((base + 32) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y47);
+                          *((base + 36) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z47);
+                          
+                        },
+                        None => {
+                          let e = ();
+                          {
+                            *((base + 24) as *mut u8) = (0i32) as u8;
+                            let () = e;
+                            
+                          }
+                        },
+                      };
+                    },
+                    ComponentOptionTypeParam::TypeUvec4(e) => {
+                      *((base + 16) as *mut u8) = (16i32) as u8;
+                      match e {
+                        Some(e) => {
+                          *((base + 24) as *mut u8) = (1i32) as u8;
+                          let Uvec4{ x:x48, y:y48, z:z48, w:w48, } = e;
+                          *((base + 28) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x48);
+                          *((base + 32) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y48);
+                          *((base + 36) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z48);
+                          *((base + 40) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(w48);
                           
                         },
                         None => {
@@ -1886,16 +2105,16 @@
               };
               
             }}
-            let ptr41 = __HOST_RET_AREA.0.as_mut_ptr() as i32;
+            let ptr50 = __HOST_RET_AREA.0.as_mut_ptr() as i32;
             #[link(wasm_import_module = "host")]
             extern "C" {
-              #[cfg_attr(target_arch = "wasm32", link_name = "entity-spawn: func(data: list<tuple<u32, variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>) }) }>>) -> record { id0: u64, id1: u64 }")]
-              #[cfg_attr(not(target_arch = "wasm32"), link_name = "host_entity-spawn: func(data: list<tuple<u32, variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>) }) }>>) -> record { id0: u64, id1: u64 }")]
+              #[cfg_attr(target_arch = "wasm32", link_name = "entity-spawn: func(data: list<tuple<u32, variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-uvec2(record { x: u32, y: u32 }), type-uvec3(record { x: u32, y: u32, z: u32 }), type-uvec4(record { x: u32, y: u32, z: u32, w: u32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(list<record { x: u32, y: u32 }>), type-uvec3(list<record { x: u32, y: u32, z: u32 }>), type-uvec4(list<record { x: u32, y: u32, z: u32, w: u32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(option<record { x: u32, y: u32 }>), type-uvec3(option<record { x: u32, y: u32, z: u32 }>), type-uvec4(option<record { x: u32, y: u32, z: u32, w: u32 }>) }) }>>) -> record { id0: u64, id1: u64 }")]
+              #[cfg_attr(not(target_arch = "wasm32"), link_name = "host_entity-spawn: func(data: list<tuple<u32, variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-uvec2(record { x: u32, y: u32 }), type-uvec3(record { x: u32, y: u32, z: u32 }), type-uvec4(record { x: u32, y: u32, z: u32, w: u32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(list<record { x: u32, y: u32 }>), type-uvec3(list<record { x: u32, y: u32, z: u32 }>), type-uvec4(list<record { x: u32, y: u32, z: u32, w: u32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(option<record { x: u32, y: u32 }>), type-uvec3(option<record { x: u32, y: u32, z: u32 }>), type-uvec4(option<record { x: u32, y: u32, z: u32, w: u32 }>) }) }>>) -> record { id0: u64, id1: u64 }")]
               fn wit_import(_: i32, _: i32, _: i32, );
             }
-            wit_import(result40 as i32, len40, ptr41);
-            if layout40.size() != 0 {
-              std::alloc::dealloc(result40, layout40);
+            wit_import(result49 as i32, len49, ptr50);
+            if layout49.size() != 0 {
+              std::alloc::dealloc(result49, layout49);
             }
             for (ptr, layout) in cleanup_list {
               
@@ -1906,7 +2125,7 @@
               }
               
             }
-            EntityId{id0:*((ptr41 + 0) as *const i64) as u64, id1:*((ptr41 + 8) as *const i64) as u64, }
+            EntityId{id0:*((ptr50 + 0) as *const i64) as u64, id1:*((ptr50 + 8) as *const i64) as u64, }
           }
         }
         pub fn entity_despawn(entity: EntityId,) -> bool{
@@ -1991,8 +2210,8 @@
               let ptr1 = __HOST_RET_AREA.0.as_mut_ptr() as i32;
               #[link(wasm_import_module = "host")]
               extern "C" {
-                #[cfg_attr(target_arch = "wasm32", link_name = "entity-get-component: func(entity: record { id0: u64, id1: u64 }, index: u32) -> option<variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>) }) }>")]
-                #[cfg_attr(not(target_arch = "wasm32"), link_name = "host_entity-get-component: func(entity: record { id0: u64, id1: u64 }, index: u32) -> option<variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>) }) }>")]
+                #[cfg_attr(target_arch = "wasm32", link_name = "entity-get-component: func(entity: record { id0: u64, id1: u64 }, index: u32) -> option<variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-uvec2(record { x: u32, y: u32 }), type-uvec3(record { x: u32, y: u32, z: u32 }), type-uvec4(record { x: u32, y: u32, z: u32, w: u32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(list<record { x: u32, y: u32 }>), type-uvec3(list<record { x: u32, y: u32, z: u32 }>), type-uvec4(list<record { x: u32, y: u32, z: u32, w: u32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(option<record { x: u32, y: u32 }>), type-uvec3(option<record { x: u32, y: u32, z: u32 }>), type-uvec4(option<record { x: u32, y: u32, z: u32, w: u32 }>) }) }>")]
+                #[cfg_attr(not(target_arch = "wasm32"), link_name = "host_entity-get-component: func(entity: record { id0: u64, id1: u64 }, index: u32) -> option<variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-uvec2(record { x: u32, y: u32 }), type-uvec3(record { x: u32, y: u32, z: u32 }), type-uvec4(record { x: u32, y: u32, z: u32, w: u32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(list<record { x: u32, y: u32 }>), type-uvec3(list<record { x: u32, y: u32, z: u32 }>), type-uvec4(list<record { x: u32, y: u32, z: u32, w: u32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(option<record { x: u32, y: u32 }>), type-uvec3(option<record { x: u32, y: u32, z: u32 }>), type-uvec4(option<record { x: u32, y: u32, z: u32, w: u32 }>) }) }>")]
                 fn wit_import(_: i64, _: i64, _: i32, _: i32, );
               }
               wit_import(wit_bindgen_guest_rust::rt::as_i64(id00), wit_bindgen_guest_rust::rt::as_i64(id10), wit_bindgen_guest_rust::rt::as_i32(index), ptr1);
@@ -2021,7 +2240,10 @@
                   11 => ComponentTypeResult::TypeVec2(Vec2{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), }),
                   12 => ComponentTypeResult::TypeVec3(Vec3{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), z:*((ptr1 + 24) as *const f32), }),
                   13 => ComponentTypeResult::TypeVec4(Vec4{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), z:*((ptr1 + 24) as *const f32), w:*((ptr1 + 28) as *const f32), }),
-                  14 => ComponentTypeResult::TypeList(match i32::from(*((ptr1 + 16) as *const u8)) {
+                  14 => ComponentTypeResult::TypeUvec2(Uvec2{x:*((ptr1 + 16) as *const i32) as u32, y:*((ptr1 + 20) as *const i32) as u32, }),
+                  15 => ComponentTypeResult::TypeUvec3(Uvec3{x:*((ptr1 + 16) as *const i32) as u32, y:*((ptr1 + 20) as *const i32) as u32, z:*((ptr1 + 24) as *const i32) as u32, }),
+                  16 => ComponentTypeResult::TypeUvec4(Uvec4{x:*((ptr1 + 16) as *const i32) as u32, y:*((ptr1 + 20) as *const i32) as u32, z:*((ptr1 + 24) as *const i32) as u32, w:*((ptr1 + 28) as *const i32) as u32, }),
+                  17 => ComponentTypeResult::TypeList(match i32::from(*((ptr1 + 16) as *const u8)) {
                     0 => ComponentListTypeResult::TypeEmpty({
                       let len3 = *((ptr1 + 24) as *const i32) as usize;
                       
@@ -2118,9 +2340,24 @@
                       
                       Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len17, len17)
                     }),
+                    14 => ComponentListTypeResult::TypeUvec2({
+                      let len18 = *((ptr1 + 24) as *const i32) as usize;
+                      
+                      Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len18, len18)
+                    }),
+                    15 => ComponentListTypeResult::TypeUvec3({
+                      let len19 = *((ptr1 + 24) as *const i32) as usize;
+                      
+                      Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len19, len19)
+                    }),
+                    16 => ComponentListTypeResult::TypeUvec4({
+                      let len20 = *((ptr1 + 24) as *const i32) as usize;
+                      
+                      Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len20, len20)
+                    }),
                     _ => panic!("invalid enum discriminant"),
                   }),
-                  15 => ComponentTypeResult::TypeOption(match i32::from(*((ptr1 + 16) as *const u8)) {
+                  18 => ComponentTypeResult::TypeOption(match i32::from(*((ptr1 + 16) as *const u8)) {
                     0 => ComponentOptionTypeResult::TypeEmpty(match i32::from(*((ptr1 + 24) as *const u8)) {
                       0 => None,
                       1 => Some(()),
@@ -2168,9 +2405,9 @@
                     8 => ComponentOptionTypeResult::TypeString(match i32::from(*((ptr1 + 24) as *const u8)) {
                       0 => None,
                       1 => Some({
-                        let len18 = *((ptr1 + 32) as *const i32) as usize;
+                        let len21 = *((ptr1 + 32) as *const i32) as usize;
                         
-                        String::from_utf8(Vec::from_raw_parts(*((ptr1 + 28) as *const i32) as *mut _, len18, len18)).unwrap()
+                        String::from_utf8(Vec::from_raw_parts(*((ptr1 + 28) as *const i32) as *mut _, len21, len21)).unwrap()
                       }),
                       _ => panic!("invalid enum discriminant"),
                     }),
@@ -2197,6 +2434,21 @@
                     13 => ComponentOptionTypeResult::TypeVec4(match i32::from(*((ptr1 + 24) as *const u8)) {
                       0 => None,
                       1 => Some(Vec4{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), w:*((ptr1 + 40) as *const f32), }),
+                      _ => panic!("invalid enum discriminant"),
+                    }),
+                    14 => ComponentOptionTypeResult::TypeUvec2(match i32::from(*((ptr1 + 24) as *const u8)) {
+                      0 => None,
+                      1 => Some(Uvec2{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, }),
+                      _ => panic!("invalid enum discriminant"),
+                    }),
+                    15 => ComponentOptionTypeResult::TypeUvec3(match i32::from(*((ptr1 + 24) as *const u8)) {
+                      0 => None,
+                      1 => Some(Uvec3{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, }),
+                      _ => panic!("invalid enum discriminant"),
+                    }),
+                    16 => ComponentOptionTypeResult::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
+                      0 => None,
+                      1 => Some(Uvec4{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, w:*((ptr1 + 40) as *const i32) as u32, }),
                       _ => panic!("invalid enum discriminant"),
                     }),
                     _ => panic!("invalid enum discriminant"),
@@ -2325,74 +2577,71 @@
                   *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w13);
                   
                 },
-                ComponentTypeParam::TypeList(e) => {
+                ComponentTypeParam::TypeUvec2(e) => {
                   *((ptr0 + 24) as *mut u8) = (14i32) as u8;
+                  let Uvec2{ x:x14, y:y14, } = e;
+                  *((ptr0 + 32) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x14);
+                  *((ptr0 + 36) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y14);
+                  
+                },
+                ComponentTypeParam::TypeUvec3(e) => {
+                  *((ptr0 + 24) as *mut u8) = (15i32) as u8;
+                  let Uvec3{ x:x15, y:y15, z:z15, } = e;
+                  *((ptr0 + 32) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x15);
+                  *((ptr0 + 36) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y15);
+                  *((ptr0 + 40) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z15);
+                  
+                },
+                ComponentTypeParam::TypeUvec4(e) => {
+                  *((ptr0 + 24) as *mut u8) = (16i32) as u8;
+                  let Uvec4{ x:x16, y:y16, z:z16, w:w16, } = e;
+                  *((ptr0 + 32) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x16);
+                  *((ptr0 + 36) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y16);
+                  *((ptr0 + 40) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z16);
+                  *((ptr0 + 44) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(w16);
+                  
+                },
+                ComponentTypeParam::TypeList(e) => {
+                  *((ptr0 + 24) as *mut u8) = (17i32) as u8;
                   match e {
                     ComponentListTypeParam::TypeEmpty(e) => {
                       *((ptr0 + 32) as *mut u8) = (0i32) as u8;
-                      let vec14 = e;
-                      let ptr14 = vec14.as_ptr() as i32;
-                      let len14 = vec14.len() as i32;
-                      *((ptr0 + 40) as *mut i32) = len14;
-                      *((ptr0 + 36) as *mut i32) = ptr14;
+                      let vec17 = e;
+                      let ptr17 = vec17.as_ptr() as i32;
+                      let len17 = vec17.len() as i32;
+                      *((ptr0 + 40) as *mut i32) = len17;
+                      *((ptr0 + 36) as *mut i32) = ptr17;
                       
                     },
                     ComponentListTypeParam::TypeBool(e) => {
                       *((ptr0 + 32) as *mut u8) = (1i32) as u8;
-                      let vec15 = e;
-                      let len15 = vec15.len() as i32;
-                      let layout15 = core::alloc::Layout::from_size_align_unchecked(vec15.len() * 1, 1);
-                      let result15 = if layout15.size() != 0
+                      let vec18 = e;
+                      let len18 = vec18.len() as i32;
+                      let layout18 = core::alloc::Layout::from_size_align_unchecked(vec18.len() * 1, 1);
+                      let result18 = if layout18.size() != 0
                       {
-                        let ptr = std::alloc::alloc(layout15);
+                        let ptr = std::alloc::alloc(layout18);
                         if ptr.is_null()
                         {
-                          std::alloc::handle_alloc_error(layout15);
+                          std::alloc::handle_alloc_error(layout18);
                         }
                         ptr
                       }else {
                         std::ptr::null_mut()
                       };
-                      for (i, e) in vec15.into_iter().enumerate() {
-                        let base = result15 as i32 + (i as i32) * 1;
+                      for (i, e) in vec18.into_iter().enumerate() {
+                        let base = result18 as i32 + (i as i32) * 1;
                         {
                           *((base + 0) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                           
                         }}
-                        *((ptr0 + 40) as *mut i32) = len15;
-                        *((ptr0 + 36) as *mut i32) = result15 as i32;
-                        cleanup_list.extend_from_slice(&[(result15, layout15),]);
+                        *((ptr0 + 40) as *mut i32) = len18;
+                        *((ptr0 + 36) as *mut i32) = result18 as i32;
+                        cleanup_list.extend_from_slice(&[(result18, layout18),]);
                         
                       },
                       ComponentListTypeParam::TypeEntityId(e) => {
                         *((ptr0 + 32) as *mut u8) = (2i32) as u8;
-                        let vec16 = e;
-                        let ptr16 = vec16.as_ptr() as i32;
-                        let len16 = vec16.len() as i32;
-                        *((ptr0 + 40) as *mut i32) = len16;
-                        *((ptr0 + 36) as *mut i32) = ptr16;
-                        
-                      },
-                      ComponentListTypeParam::TypeF32(e) => {
-                        *((ptr0 + 32) as *mut u8) = (3i32) as u8;
-                        let vec17 = e;
-                        let ptr17 = vec17.as_ptr() as i32;
-                        let len17 = vec17.len() as i32;
-                        *((ptr0 + 40) as *mut i32) = len17;
-                        *((ptr0 + 36) as *mut i32) = ptr17;
-                        
-                      },
-                      ComponentListTypeParam::TypeF64(e) => {
-                        *((ptr0 + 32) as *mut u8) = (4i32) as u8;
-                        let vec18 = e;
-                        let ptr18 = vec18.as_ptr() as i32;
-                        let len18 = vec18.len() as i32;
-                        *((ptr0 + 40) as *mut i32) = len18;
-                        *((ptr0 + 36) as *mut i32) = ptr18;
-                        
-                      },
-                      ComponentListTypeParam::TypeMat4(e) => {
-                        *((ptr0 + 32) as *mut u8) = (5i32) as u8;
                         let vec19 = e;
                         let ptr19 = vec19.as_ptr() as i32;
                         let len19 = vec19.len() as i32;
@@ -2400,8 +2649,8 @@
                         *((ptr0 + 36) as *mut i32) = ptr19;
                         
                       },
-                      ComponentListTypeParam::TypeI32(e) => {
-                        *((ptr0 + 32) as *mut u8) = (6i32) as u8;
+                      ComponentListTypeParam::TypeF32(e) => {
+                        *((ptr0 + 32) as *mut u8) = (3i32) as u8;
                         let vec20 = e;
                         let ptr20 = vec20.as_ptr() as i32;
                         let len20 = vec20.len() as i32;
@@ -2409,8 +2658,8 @@
                         *((ptr0 + 36) as *mut i32) = ptr20;
                         
                       },
-                      ComponentListTypeParam::TypeQuat(e) => {
-                        *((ptr0 + 32) as *mut u8) = (7i32) as u8;
+                      ComponentListTypeParam::TypeF64(e) => {
+                        *((ptr0 + 32) as *mut u8) = (4i32) as u8;
                         let vec21 = e;
                         let ptr21 = vec21.as_ptr() as i32;
                         let len21 = vec21.len() as i32;
@@ -2418,66 +2667,66 @@
                         *((ptr0 + 36) as *mut i32) = ptr21;
                         
                       },
+                      ComponentListTypeParam::TypeMat4(e) => {
+                        *((ptr0 + 32) as *mut u8) = (5i32) as u8;
+                        let vec22 = e;
+                        let ptr22 = vec22.as_ptr() as i32;
+                        let len22 = vec22.len() as i32;
+                        *((ptr0 + 40) as *mut i32) = len22;
+                        *((ptr0 + 36) as *mut i32) = ptr22;
+                        
+                      },
+                      ComponentListTypeParam::TypeI32(e) => {
+                        *((ptr0 + 32) as *mut u8) = (6i32) as u8;
+                        let vec23 = e;
+                        let ptr23 = vec23.as_ptr() as i32;
+                        let len23 = vec23.len() as i32;
+                        *((ptr0 + 40) as *mut i32) = len23;
+                        *((ptr0 + 36) as *mut i32) = ptr23;
+                        
+                      },
+                      ComponentListTypeParam::TypeQuat(e) => {
+                        *((ptr0 + 32) as *mut u8) = (7i32) as u8;
+                        let vec24 = e;
+                        let ptr24 = vec24.as_ptr() as i32;
+                        let len24 = vec24.len() as i32;
+                        *((ptr0 + 40) as *mut i32) = len24;
+                        *((ptr0 + 36) as *mut i32) = ptr24;
+                        
+                      },
                       ComponentListTypeParam::TypeString(e) => {
                         *((ptr0 + 32) as *mut u8) = (8i32) as u8;
-                        let vec23 = e;
-                        let len23 = vec23.len() as i32;
-                        let layout23 = core::alloc::Layout::from_size_align_unchecked(vec23.len() * 8, 4);
-                        let result23 = if layout23.size() != 0
+                        let vec26 = e;
+                        let len26 = vec26.len() as i32;
+                        let layout26 = core::alloc::Layout::from_size_align_unchecked(vec26.len() * 8, 4);
+                        let result26 = if layout26.size() != 0
                         {
-                          let ptr = std::alloc::alloc(layout23);
+                          let ptr = std::alloc::alloc(layout26);
                           if ptr.is_null()
                           {
-                            std::alloc::handle_alloc_error(layout23);
+                            std::alloc::handle_alloc_error(layout26);
                           }
                           ptr
                         }else {
                           std::ptr::null_mut()
                         };
-                        for (i, e) in vec23.into_iter().enumerate() {
-                          let base = result23 as i32 + (i as i32) * 8;
+                        for (i, e) in vec26.into_iter().enumerate() {
+                          let base = result26 as i32 + (i as i32) * 8;
                           {
-                            let vec22 = e;
-                            let ptr22 = vec22.as_ptr() as i32;
-                            let len22 = vec22.len() as i32;
-                            *((base + 4) as *mut i32) = len22;
-                            *((base + 0) as *mut i32) = ptr22;
+                            let vec25 = e;
+                            let ptr25 = vec25.as_ptr() as i32;
+                            let len25 = vec25.len() as i32;
+                            *((base + 4) as *mut i32) = len25;
+                            *((base + 0) as *mut i32) = ptr25;
                             
                           }}
-                          *((ptr0 + 40) as *mut i32) = len23;
-                          *((ptr0 + 36) as *mut i32) = result23 as i32;
-                          cleanup_list.extend_from_slice(&[(result23, layout23),]);
+                          *((ptr0 + 40) as *mut i32) = len26;
+                          *((ptr0 + 36) as *mut i32) = result26 as i32;
+                          cleanup_list.extend_from_slice(&[(result26, layout26),]);
                           
                         },
                         ComponentListTypeParam::TypeU32(e) => {
                           *((ptr0 + 32) as *mut u8) = (9i32) as u8;
-                          let vec24 = e;
-                          let ptr24 = vec24.as_ptr() as i32;
-                          let len24 = vec24.len() as i32;
-                          *((ptr0 + 40) as *mut i32) = len24;
-                          *((ptr0 + 36) as *mut i32) = ptr24;
-                          
-                        },
-                        ComponentListTypeParam::TypeU64(e) => {
-                          *((ptr0 + 32) as *mut u8) = (10i32) as u8;
-                          let vec25 = e;
-                          let ptr25 = vec25.as_ptr() as i32;
-                          let len25 = vec25.len() as i32;
-                          *((ptr0 + 40) as *mut i32) = len25;
-                          *((ptr0 + 36) as *mut i32) = ptr25;
-                          
-                        },
-                        ComponentListTypeParam::TypeVec2(e) => {
-                          *((ptr0 + 32) as *mut u8) = (11i32) as u8;
-                          let vec26 = e;
-                          let ptr26 = vec26.as_ptr() as i32;
-                          let len26 = vec26.len() as i32;
-                          *((ptr0 + 40) as *mut i32) = len26;
-                          *((ptr0 + 36) as *mut i32) = ptr26;
-                          
-                        },
-                        ComponentListTypeParam::TypeVec3(e) => {
-                          *((ptr0 + 32) as *mut u8) = (12i32) as u8;
                           let vec27 = e;
                           let ptr27 = vec27.as_ptr() as i32;
                           let len27 = vec27.len() as i32;
@@ -2485,8 +2734,8 @@
                           *((ptr0 + 36) as *mut i32) = ptr27;
                           
                         },
-                        ComponentListTypeParam::TypeVec4(e) => {
-                          *((ptr0 + 32) as *mut u8) = (13i32) as u8;
+                        ComponentListTypeParam::TypeU64(e) => {
+                          *((ptr0 + 32) as *mut u8) = (10i32) as u8;
                           let vec28 = e;
                           let ptr28 = vec28.as_ptr() as i32;
                           let len28 = vec28.len() as i32;
@@ -2494,11 +2743,65 @@
                           *((ptr0 + 36) as *mut i32) = ptr28;
                           
                         },
+                        ComponentListTypeParam::TypeVec2(e) => {
+                          *((ptr0 + 32) as *mut u8) = (11i32) as u8;
+                          let vec29 = e;
+                          let ptr29 = vec29.as_ptr() as i32;
+                          let len29 = vec29.len() as i32;
+                          *((ptr0 + 40) as *mut i32) = len29;
+                          *((ptr0 + 36) as *mut i32) = ptr29;
+                          
+                        },
+                        ComponentListTypeParam::TypeVec3(e) => {
+                          *((ptr0 + 32) as *mut u8) = (12i32) as u8;
+                          let vec30 = e;
+                          let ptr30 = vec30.as_ptr() as i32;
+                          let len30 = vec30.len() as i32;
+                          *((ptr0 + 40) as *mut i32) = len30;
+                          *((ptr0 + 36) as *mut i32) = ptr30;
+                          
+                        },
+                        ComponentListTypeParam::TypeVec4(e) => {
+                          *((ptr0 + 32) as *mut u8) = (13i32) as u8;
+                          let vec31 = e;
+                          let ptr31 = vec31.as_ptr() as i32;
+                          let len31 = vec31.len() as i32;
+                          *((ptr0 + 40) as *mut i32) = len31;
+                          *((ptr0 + 36) as *mut i32) = ptr31;
+                          
+                        },
+                        ComponentListTypeParam::TypeUvec2(e) => {
+                          *((ptr0 + 32) as *mut u8) = (14i32) as u8;
+                          let vec32 = e;
+                          let ptr32 = vec32.as_ptr() as i32;
+                          let len32 = vec32.len() as i32;
+                          *((ptr0 + 40) as *mut i32) = len32;
+                          *((ptr0 + 36) as *mut i32) = ptr32;
+                          
+                        },
+                        ComponentListTypeParam::TypeUvec3(e) => {
+                          *((ptr0 + 32) as *mut u8) = (15i32) as u8;
+                          let vec33 = e;
+                          let ptr33 = vec33.as_ptr() as i32;
+                          let len33 = vec33.len() as i32;
+                          *((ptr0 + 40) as *mut i32) = len33;
+                          *((ptr0 + 36) as *mut i32) = ptr33;
+                          
+                        },
+                        ComponentListTypeParam::TypeUvec4(e) => {
+                          *((ptr0 + 32) as *mut u8) = (16i32) as u8;
+                          let vec34 = e;
+                          let ptr34 = vec34.as_ptr() as i32;
+                          let len34 = vec34.len() as i32;
+                          *((ptr0 + 40) as *mut i32) = len34;
+                          *((ptr0 + 36) as *mut i32) = ptr34;
+                          
+                        },
                       };
                       
                     },
                     ComponentTypeParam::TypeOption(e) => {
-                      *((ptr0 + 24) as *mut u8) = (15i32) as u8;
+                      *((ptr0 + 24) as *mut u8) = (18i32) as u8;
                       match e {
                         ComponentOptionTypeParam::TypeEmpty(e) => {
                           *((ptr0 + 32) as *mut u8) = (0i32) as u8;
@@ -2541,9 +2844,9 @@
                           match e {
                             Some(e) => {
                               *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                              let EntityId{ id0:id030, id1:id130, } = e;
-                              *((ptr0 + 48) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id030);
-                              *((ptr0 + 56) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id130);
+                              let EntityId{ id0:id036, id1:id136, } = e;
+                              *((ptr0 + 48) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id036);
+                              *((ptr0 + 56) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id136);
                               
                             },
                             None => {
@@ -2597,27 +2900,27 @@
                           match e {
                             Some(e) => {
                               *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                              let Mat4{ x:x31, y:y31, z:z31, w:w31, } = e;
-                              let Vec4{ x:x32, y:y32, z:z32, w:w32, } = x31;
-                              *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x32);
-                              *((ptr0 + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y32);
-                              *((ptr0 + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z32);
-                              *((ptr0 + 56) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w32);
-                              let Vec4{ x:x33, y:y33, z:z33, w:w33, } = y31;
-                              *((ptr0 + 60) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x33);
-                              *((ptr0 + 64) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y33);
-                              *((ptr0 + 68) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z33);
-                              *((ptr0 + 72) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w33);
-                              let Vec4{ x:x34, y:y34, z:z34, w:w34, } = z31;
-                              *((ptr0 + 76) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x34);
-                              *((ptr0 + 80) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y34);
-                              *((ptr0 + 84) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z34);
-                              *((ptr0 + 88) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w34);
-                              let Vec4{ x:x35, y:y35, z:z35, w:w35, } = w31;
-                              *((ptr0 + 92) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x35);
-                              *((ptr0 + 96) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y35);
-                              *((ptr0 + 100) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z35);
-                              *((ptr0 + 104) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w35);
+                              let Mat4{ x:x37, y:y37, z:z37, w:w37, } = e;
+                              let Vec4{ x:x38, y:y38, z:z38, w:w38, } = x37;
+                              *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x38);
+                              *((ptr0 + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y38);
+                              *((ptr0 + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z38);
+                              *((ptr0 + 56) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w38);
+                              let Vec4{ x:x39, y:y39, z:z39, w:w39, } = y37;
+                              *((ptr0 + 60) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x39);
+                              *((ptr0 + 64) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y39);
+                              *((ptr0 + 68) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z39);
+                              *((ptr0 + 72) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w39);
+                              let Vec4{ x:x40, y:y40, z:z40, w:w40, } = z37;
+                              *((ptr0 + 76) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x40);
+                              *((ptr0 + 80) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y40);
+                              *((ptr0 + 84) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z40);
+                              *((ptr0 + 88) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w40);
+                              let Vec4{ x:x41, y:y41, z:z41, w:w41, } = w37;
+                              *((ptr0 + 92) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x41);
+                              *((ptr0 + 96) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y41);
+                              *((ptr0 + 100) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z41);
+                              *((ptr0 + 104) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w41);
                               
                             },
                             None => {
@@ -2653,11 +2956,11 @@
                           match e {
                             Some(e) => {
                               *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                              let Quat{ x:x36, y:y36, z:z36, w:w36, } = e;
-                              *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x36);
-                              *((ptr0 + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y36);
-                              *((ptr0 + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z36);
-                              *((ptr0 + 56) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w36);
+                              let Quat{ x:x42, y:y42, z:z42, w:w42, } = e;
+                              *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x42);
+                              *((ptr0 + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y42);
+                              *((ptr0 + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z42);
+                              *((ptr0 + 56) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w42);
                               
                             },
                             None => {
@@ -2675,11 +2978,11 @@
                           match e {
                             Some(e) => {
                               *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                              let vec37 = e;
-                              let ptr37 = vec37.as_ptr() as i32;
-                              let len37 = vec37.len() as i32;
-                              *((ptr0 + 48) as *mut i32) = len37;
-                              *((ptr0 + 44) as *mut i32) = ptr37;
+                              let vec43 = e;
+                              let ptr43 = vec43.as_ptr() as i32;
+                              let len43 = vec43.len() as i32;
+                              *((ptr0 + 48) as *mut i32) = len43;
+                              *((ptr0 + 44) as *mut i32) = ptr43;
                               
                             },
                             None => {
@@ -2733,9 +3036,9 @@
                           match e {
                             Some(e) => {
                               *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                              let Vec2{ x:x38, y:y38, } = e;
-                              *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x38);
-                              *((ptr0 + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y38);
+                              let Vec2{ x:x44, y:y44, } = e;
+                              *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x44);
+                              *((ptr0 + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y44);
                               
                             },
                             None => {
@@ -2753,10 +3056,10 @@
                           match e {
                             Some(e) => {
                               *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                              let Vec3{ x:x39, y:y39, z:z39, } = e;
-                              *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x39);
-                              *((ptr0 + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y39);
-                              *((ptr0 + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z39);
+                              let Vec3{ x:x45, y:y45, z:z45, } = e;
+                              *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x45);
+                              *((ptr0 + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y45);
+                              *((ptr0 + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z45);
                               
                             },
                             None => {
@@ -2774,11 +3077,74 @@
                           match e {
                             Some(e) => {
                               *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                              let Vec4{ x:x40, y:y40, z:z40, w:w40, } = e;
-                              *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x40);
-                              *((ptr0 + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y40);
-                              *((ptr0 + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z40);
-                              *((ptr0 + 56) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w40);
+                              let Vec4{ x:x46, y:y46, z:z46, w:w46, } = e;
+                              *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x46);
+                              *((ptr0 + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y46);
+                              *((ptr0 + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z46);
+                              *((ptr0 + 56) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w46);
+                              
+                            },
+                            None => {
+                              let e = ();
+                              {
+                                *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                let () = e;
+                                
+                              }
+                            },
+                          };
+                        },
+                        ComponentOptionTypeParam::TypeUvec2(e) => {
+                          *((ptr0 + 32) as *mut u8) = (14i32) as u8;
+                          match e {
+                            Some(e) => {
+                              *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                              let Uvec2{ x:x47, y:y47, } = e;
+                              *((ptr0 + 44) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x47);
+                              *((ptr0 + 48) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y47);
+                              
+                            },
+                            None => {
+                              let e = ();
+                              {
+                                *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                let () = e;
+                                
+                              }
+                            },
+                          };
+                        },
+                        ComponentOptionTypeParam::TypeUvec3(e) => {
+                          *((ptr0 + 32) as *mut u8) = (15i32) as u8;
+                          match e {
+                            Some(e) => {
+                              *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                              let Uvec3{ x:x48, y:y48, z:z48, } = e;
+                              *((ptr0 + 44) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x48);
+                              *((ptr0 + 48) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y48);
+                              *((ptr0 + 52) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z48);
+                              
+                            },
+                            None => {
+                              let e = ();
+                              {
+                                *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                let () = e;
+                                
+                              }
+                            },
+                          };
+                        },
+                        ComponentOptionTypeParam::TypeUvec4(e) => {
+                          *((ptr0 + 32) as *mut u8) = (16i32) as u8;
+                          match e {
+                            Some(e) => {
+                              *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                              let Uvec4{ x:x49, y:y49, z:z49, w:w49, } = e;
+                              *((ptr0 + 44) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x49);
+                              *((ptr0 + 48) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y49);
+                              *((ptr0 + 52) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z49);
+                              *((ptr0 + 56) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(w49);
                               
                             },
                             None => {
@@ -2797,8 +3163,8 @@
                   };
                   #[link(wasm_import_module = "host")]
                   extern "C" {
-                    #[cfg_attr(target_arch = "wasm32", link_name = "entity-add-component: func(entity: record { id0: u64, id1: u64 }, index: u32, value: variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>) }) }) -> unit")]
-                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "host_entity-add-component: func(entity: record { id0: u64, id1: u64 }, index: u32, value: variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>) }) }) -> unit")]
+                    #[cfg_attr(target_arch = "wasm32", link_name = "entity-add-component: func(entity: record { id0: u64, id1: u64 }, index: u32, value: variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-uvec2(record { x: u32, y: u32 }), type-uvec3(record { x: u32, y: u32, z: u32 }), type-uvec4(record { x: u32, y: u32, z: u32, w: u32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(list<record { x: u32, y: u32 }>), type-uvec3(list<record { x: u32, y: u32, z: u32 }>), type-uvec4(list<record { x: u32, y: u32, z: u32, w: u32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(option<record { x: u32, y: u32 }>), type-uvec3(option<record { x: u32, y: u32, z: u32 }>), type-uvec4(option<record { x: u32, y: u32, z: u32, w: u32 }>) }) }) -> unit")]
+                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "host_entity-add-component: func(entity: record { id0: u64, id1: u64 }, index: u32, value: variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-uvec2(record { x: u32, y: u32 }), type-uvec3(record { x: u32, y: u32, z: u32 }), type-uvec4(record { x: u32, y: u32, z: u32, w: u32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(list<record { x: u32, y: u32 }>), type-uvec3(list<record { x: u32, y: u32, z: u32 }>), type-uvec4(list<record { x: u32, y: u32, z: u32, w: u32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(option<record { x: u32, y: u32 }>), type-uvec3(option<record { x: u32, y: u32, z: u32 }>), type-uvec4(option<record { x: u32, y: u32, z: u32, w: u32 }>) }) }) -> unit")]
                     fn wit_import(_: i32, );
                   }
                   wit_import(ptr0);
@@ -2818,22 +3184,22 @@
                 unsafe {
                   let mut cleanup_list = Vec::new();
                   let EntityId{ id0:id00, id1:id10, } = entity;
-                  let vec41 = data;
-                  let len41 = vec41.len() as i32;
-                  let layout41 = core::alloc::Layout::from_size_align_unchecked(vec41.len() * 88, 8);
-                  let result41 = if layout41.size() != 0
+                  let vec50 = data;
+                  let len50 = vec50.len() as i32;
+                  let layout50 = core::alloc::Layout::from_size_align_unchecked(vec50.len() * 88, 8);
+                  let result50 = if layout50.size() != 0
                   {
-                    let ptr = std::alloc::alloc(layout41);
+                    let ptr = std::alloc::alloc(layout50);
                     if ptr.is_null()
                     {
-                      std::alloc::handle_alloc_error(layout41);
+                      std::alloc::handle_alloc_error(layout50);
                     }
                     ptr
                   }else {
                     std::ptr::null_mut()
                   };
-                  for (i, e) in vec41.into_iter().enumerate() {
-                    let base = result41 as i32 + (i as i32) * 88;
+                  for (i, e) in vec50.into_iter().enumerate() {
+                    let base = result50 as i32 + (i as i32) * 88;
                     {
                       let (t1_0, t1_1, ) = e;
                       *((base + 0) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(t1_0);
@@ -2947,74 +3313,71 @@
                           *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w13);
                           
                         },
-                        ComponentTypeParam::TypeList(e) => {
+                        ComponentTypeParam::TypeUvec2(e) => {
                           *((base + 8) as *mut u8) = (14i32) as u8;
+                          let Uvec2{ x:x14, y:y14, } = e;
+                          *((base + 16) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x14);
+                          *((base + 20) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y14);
+                          
+                        },
+                        ComponentTypeParam::TypeUvec3(e) => {
+                          *((base + 8) as *mut u8) = (15i32) as u8;
+                          let Uvec3{ x:x15, y:y15, z:z15, } = e;
+                          *((base + 16) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x15);
+                          *((base + 20) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y15);
+                          *((base + 24) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z15);
+                          
+                        },
+                        ComponentTypeParam::TypeUvec4(e) => {
+                          *((base + 8) as *mut u8) = (16i32) as u8;
+                          let Uvec4{ x:x16, y:y16, z:z16, w:w16, } = e;
+                          *((base + 16) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x16);
+                          *((base + 20) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y16);
+                          *((base + 24) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z16);
+                          *((base + 28) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(w16);
+                          
+                        },
+                        ComponentTypeParam::TypeList(e) => {
+                          *((base + 8) as *mut u8) = (17i32) as u8;
                           match e {
                             ComponentListTypeParam::TypeEmpty(e) => {
                               *((base + 16) as *mut u8) = (0i32) as u8;
-                              let vec14 = e;
-                              let ptr14 = vec14.as_ptr() as i32;
-                              let len14 = vec14.len() as i32;
-                              *((base + 24) as *mut i32) = len14;
-                              *((base + 20) as *mut i32) = ptr14;
+                              let vec17 = e;
+                              let ptr17 = vec17.as_ptr() as i32;
+                              let len17 = vec17.len() as i32;
+                              *((base + 24) as *mut i32) = len17;
+                              *((base + 20) as *mut i32) = ptr17;
                               
                             },
                             ComponentListTypeParam::TypeBool(e) => {
                               *((base + 16) as *mut u8) = (1i32) as u8;
-                              let vec15 = e;
-                              let len15 = vec15.len() as i32;
-                              let layout15 = core::alloc::Layout::from_size_align_unchecked(vec15.len() * 1, 1);
-                              let result15 = if layout15.size() != 0
+                              let vec18 = e;
+                              let len18 = vec18.len() as i32;
+                              let layout18 = core::alloc::Layout::from_size_align_unchecked(vec18.len() * 1, 1);
+                              let result18 = if layout18.size() != 0
                               {
-                                let ptr = std::alloc::alloc(layout15);
+                                let ptr = std::alloc::alloc(layout18);
                                 if ptr.is_null()
                                 {
-                                  std::alloc::handle_alloc_error(layout15);
+                                  std::alloc::handle_alloc_error(layout18);
                                 }
                                 ptr
                               }else {
                                 std::ptr::null_mut()
                               };
-                              for (i, e) in vec15.into_iter().enumerate() {
-                                let base = result15 as i32 + (i as i32) * 1;
+                              for (i, e) in vec18.into_iter().enumerate() {
+                                let base = result18 as i32 + (i as i32) * 1;
                                 {
                                   *((base + 0) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                                   
                                 }}
-                                *((base + 24) as *mut i32) = len15;
-                                *((base + 20) as *mut i32) = result15 as i32;
-                                cleanup_list.extend_from_slice(&[(result15, layout15),]);
+                                *((base + 24) as *mut i32) = len18;
+                                *((base + 20) as *mut i32) = result18 as i32;
+                                cleanup_list.extend_from_slice(&[(result18, layout18),]);
                                 
                               },
                               ComponentListTypeParam::TypeEntityId(e) => {
                                 *((base + 16) as *mut u8) = (2i32) as u8;
-                                let vec16 = e;
-                                let ptr16 = vec16.as_ptr() as i32;
-                                let len16 = vec16.len() as i32;
-                                *((base + 24) as *mut i32) = len16;
-                                *((base + 20) as *mut i32) = ptr16;
-                                
-                              },
-                              ComponentListTypeParam::TypeF32(e) => {
-                                *((base + 16) as *mut u8) = (3i32) as u8;
-                                let vec17 = e;
-                                let ptr17 = vec17.as_ptr() as i32;
-                                let len17 = vec17.len() as i32;
-                                *((base + 24) as *mut i32) = len17;
-                                *((base + 20) as *mut i32) = ptr17;
-                                
-                              },
-                              ComponentListTypeParam::TypeF64(e) => {
-                                *((base + 16) as *mut u8) = (4i32) as u8;
-                                let vec18 = e;
-                                let ptr18 = vec18.as_ptr() as i32;
-                                let len18 = vec18.len() as i32;
-                                *((base + 24) as *mut i32) = len18;
-                                *((base + 20) as *mut i32) = ptr18;
-                                
-                              },
-                              ComponentListTypeParam::TypeMat4(e) => {
-                                *((base + 16) as *mut u8) = (5i32) as u8;
                                 let vec19 = e;
                                 let ptr19 = vec19.as_ptr() as i32;
                                 let len19 = vec19.len() as i32;
@@ -3022,8 +3385,8 @@
                                 *((base + 20) as *mut i32) = ptr19;
                                 
                               },
-                              ComponentListTypeParam::TypeI32(e) => {
-                                *((base + 16) as *mut u8) = (6i32) as u8;
+                              ComponentListTypeParam::TypeF32(e) => {
+                                *((base + 16) as *mut u8) = (3i32) as u8;
                                 let vec20 = e;
                                 let ptr20 = vec20.as_ptr() as i32;
                                 let len20 = vec20.len() as i32;
@@ -3031,8 +3394,8 @@
                                 *((base + 20) as *mut i32) = ptr20;
                                 
                               },
-                              ComponentListTypeParam::TypeQuat(e) => {
-                                *((base + 16) as *mut u8) = (7i32) as u8;
+                              ComponentListTypeParam::TypeF64(e) => {
+                                *((base + 16) as *mut u8) = (4i32) as u8;
                                 let vec21 = e;
                                 let ptr21 = vec21.as_ptr() as i32;
                                 let len21 = vec21.len() as i32;
@@ -3040,66 +3403,66 @@
                                 *((base + 20) as *mut i32) = ptr21;
                                 
                               },
+                              ComponentListTypeParam::TypeMat4(e) => {
+                                *((base + 16) as *mut u8) = (5i32) as u8;
+                                let vec22 = e;
+                                let ptr22 = vec22.as_ptr() as i32;
+                                let len22 = vec22.len() as i32;
+                                *((base + 24) as *mut i32) = len22;
+                                *((base + 20) as *mut i32) = ptr22;
+                                
+                              },
+                              ComponentListTypeParam::TypeI32(e) => {
+                                *((base + 16) as *mut u8) = (6i32) as u8;
+                                let vec23 = e;
+                                let ptr23 = vec23.as_ptr() as i32;
+                                let len23 = vec23.len() as i32;
+                                *((base + 24) as *mut i32) = len23;
+                                *((base + 20) as *mut i32) = ptr23;
+                                
+                              },
+                              ComponentListTypeParam::TypeQuat(e) => {
+                                *((base + 16) as *mut u8) = (7i32) as u8;
+                                let vec24 = e;
+                                let ptr24 = vec24.as_ptr() as i32;
+                                let len24 = vec24.len() as i32;
+                                *((base + 24) as *mut i32) = len24;
+                                *((base + 20) as *mut i32) = ptr24;
+                                
+                              },
                               ComponentListTypeParam::TypeString(e) => {
                                 *((base + 16) as *mut u8) = (8i32) as u8;
-                                let vec23 = e;
-                                let len23 = vec23.len() as i32;
-                                let layout23 = core::alloc::Layout::from_size_align_unchecked(vec23.len() * 8, 4);
-                                let result23 = if layout23.size() != 0
+                                let vec26 = e;
+                                let len26 = vec26.len() as i32;
+                                let layout26 = core::alloc::Layout::from_size_align_unchecked(vec26.len() * 8, 4);
+                                let result26 = if layout26.size() != 0
                                 {
-                                  let ptr = std::alloc::alloc(layout23);
+                                  let ptr = std::alloc::alloc(layout26);
                                   if ptr.is_null()
                                   {
-                                    std::alloc::handle_alloc_error(layout23);
+                                    std::alloc::handle_alloc_error(layout26);
                                   }
                                   ptr
                                 }else {
                                   std::ptr::null_mut()
                                 };
-                                for (i, e) in vec23.into_iter().enumerate() {
-                                  let base = result23 as i32 + (i as i32) * 8;
+                                for (i, e) in vec26.into_iter().enumerate() {
+                                  let base = result26 as i32 + (i as i32) * 8;
                                   {
-                                    let vec22 = e;
-                                    let ptr22 = vec22.as_ptr() as i32;
-                                    let len22 = vec22.len() as i32;
-                                    *((base + 4) as *mut i32) = len22;
-                                    *((base + 0) as *mut i32) = ptr22;
+                                    let vec25 = e;
+                                    let ptr25 = vec25.as_ptr() as i32;
+                                    let len25 = vec25.len() as i32;
+                                    *((base + 4) as *mut i32) = len25;
+                                    *((base + 0) as *mut i32) = ptr25;
                                     
                                   }}
-                                  *((base + 24) as *mut i32) = len23;
-                                  *((base + 20) as *mut i32) = result23 as i32;
-                                  cleanup_list.extend_from_slice(&[(result23, layout23),]);
+                                  *((base + 24) as *mut i32) = len26;
+                                  *((base + 20) as *mut i32) = result26 as i32;
+                                  cleanup_list.extend_from_slice(&[(result26, layout26),]);
                                   
                                 },
                                 ComponentListTypeParam::TypeU32(e) => {
                                   *((base + 16) as *mut u8) = (9i32) as u8;
-                                  let vec24 = e;
-                                  let ptr24 = vec24.as_ptr() as i32;
-                                  let len24 = vec24.len() as i32;
-                                  *((base + 24) as *mut i32) = len24;
-                                  *((base + 20) as *mut i32) = ptr24;
-                                  
-                                },
-                                ComponentListTypeParam::TypeU64(e) => {
-                                  *((base + 16) as *mut u8) = (10i32) as u8;
-                                  let vec25 = e;
-                                  let ptr25 = vec25.as_ptr() as i32;
-                                  let len25 = vec25.len() as i32;
-                                  *((base + 24) as *mut i32) = len25;
-                                  *((base + 20) as *mut i32) = ptr25;
-                                  
-                                },
-                                ComponentListTypeParam::TypeVec2(e) => {
-                                  *((base + 16) as *mut u8) = (11i32) as u8;
-                                  let vec26 = e;
-                                  let ptr26 = vec26.as_ptr() as i32;
-                                  let len26 = vec26.len() as i32;
-                                  *((base + 24) as *mut i32) = len26;
-                                  *((base + 20) as *mut i32) = ptr26;
-                                  
-                                },
-                                ComponentListTypeParam::TypeVec3(e) => {
-                                  *((base + 16) as *mut u8) = (12i32) as u8;
                                   let vec27 = e;
                                   let ptr27 = vec27.as_ptr() as i32;
                                   let len27 = vec27.len() as i32;
@@ -3107,8 +3470,8 @@
                                   *((base + 20) as *mut i32) = ptr27;
                                   
                                 },
-                                ComponentListTypeParam::TypeVec4(e) => {
-                                  *((base + 16) as *mut u8) = (13i32) as u8;
+                                ComponentListTypeParam::TypeU64(e) => {
+                                  *((base + 16) as *mut u8) = (10i32) as u8;
                                   let vec28 = e;
                                   let ptr28 = vec28.as_ptr() as i32;
                                   let len28 = vec28.len() as i32;
@@ -3116,11 +3479,65 @@
                                   *((base + 20) as *mut i32) = ptr28;
                                   
                                 },
+                                ComponentListTypeParam::TypeVec2(e) => {
+                                  *((base + 16) as *mut u8) = (11i32) as u8;
+                                  let vec29 = e;
+                                  let ptr29 = vec29.as_ptr() as i32;
+                                  let len29 = vec29.len() as i32;
+                                  *((base + 24) as *mut i32) = len29;
+                                  *((base + 20) as *mut i32) = ptr29;
+                                  
+                                },
+                                ComponentListTypeParam::TypeVec3(e) => {
+                                  *((base + 16) as *mut u8) = (12i32) as u8;
+                                  let vec30 = e;
+                                  let ptr30 = vec30.as_ptr() as i32;
+                                  let len30 = vec30.len() as i32;
+                                  *((base + 24) as *mut i32) = len30;
+                                  *((base + 20) as *mut i32) = ptr30;
+                                  
+                                },
+                                ComponentListTypeParam::TypeVec4(e) => {
+                                  *((base + 16) as *mut u8) = (13i32) as u8;
+                                  let vec31 = e;
+                                  let ptr31 = vec31.as_ptr() as i32;
+                                  let len31 = vec31.len() as i32;
+                                  *((base + 24) as *mut i32) = len31;
+                                  *((base + 20) as *mut i32) = ptr31;
+                                  
+                                },
+                                ComponentListTypeParam::TypeUvec2(e) => {
+                                  *((base + 16) as *mut u8) = (14i32) as u8;
+                                  let vec32 = e;
+                                  let ptr32 = vec32.as_ptr() as i32;
+                                  let len32 = vec32.len() as i32;
+                                  *((base + 24) as *mut i32) = len32;
+                                  *((base + 20) as *mut i32) = ptr32;
+                                  
+                                },
+                                ComponentListTypeParam::TypeUvec3(e) => {
+                                  *((base + 16) as *mut u8) = (15i32) as u8;
+                                  let vec33 = e;
+                                  let ptr33 = vec33.as_ptr() as i32;
+                                  let len33 = vec33.len() as i32;
+                                  *((base + 24) as *mut i32) = len33;
+                                  *((base + 20) as *mut i32) = ptr33;
+                                  
+                                },
+                                ComponentListTypeParam::TypeUvec4(e) => {
+                                  *((base + 16) as *mut u8) = (16i32) as u8;
+                                  let vec34 = e;
+                                  let ptr34 = vec34.as_ptr() as i32;
+                                  let len34 = vec34.len() as i32;
+                                  *((base + 24) as *mut i32) = len34;
+                                  *((base + 20) as *mut i32) = ptr34;
+                                  
+                                },
                               };
                               
                             },
                             ComponentTypeParam::TypeOption(e) => {
-                              *((base + 8) as *mut u8) = (15i32) as u8;
+                              *((base + 8) as *mut u8) = (18i32) as u8;
                               match e {
                                 ComponentOptionTypeParam::TypeEmpty(e) => {
                                   *((base + 16) as *mut u8) = (0i32) as u8;
@@ -3163,9 +3580,9 @@
                                   match e {
                                     Some(e) => {
                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                      let EntityId{ id0:id030, id1:id130, } = e;
-                                      *((base + 32) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id030);
-                                      *((base + 40) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id130);
+                                      let EntityId{ id0:id036, id1:id136, } = e;
+                                      *((base + 32) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id036);
+                                      *((base + 40) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id136);
                                       
                                     },
                                     None => {
@@ -3219,27 +3636,27 @@
                                   match e {
                                     Some(e) => {
                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                      let Mat4{ x:x31, y:y31, z:z31, w:w31, } = e;
-                                      let Vec4{ x:x32, y:y32, z:z32, w:w32, } = x31;
-                                      *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x32);
-                                      *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y32);
-                                      *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z32);
-                                      *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w32);
-                                      let Vec4{ x:x33, y:y33, z:z33, w:w33, } = y31;
-                                      *((base + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x33);
-                                      *((base + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y33);
-                                      *((base + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z33);
-                                      *((base + 56) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w33);
-                                      let Vec4{ x:x34, y:y34, z:z34, w:w34, } = z31;
-                                      *((base + 60) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x34);
-                                      *((base + 64) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y34);
-                                      *((base + 68) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z34);
-                                      *((base + 72) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w34);
-                                      let Vec4{ x:x35, y:y35, z:z35, w:w35, } = w31;
-                                      *((base + 76) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x35);
-                                      *((base + 80) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y35);
-                                      *((base + 84) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z35);
-                                      *((base + 88) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w35);
+                                      let Mat4{ x:x37, y:y37, z:z37, w:w37, } = e;
+                                      let Vec4{ x:x38, y:y38, z:z38, w:w38, } = x37;
+                                      *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x38);
+                                      *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y38);
+                                      *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z38);
+                                      *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w38);
+                                      let Vec4{ x:x39, y:y39, z:z39, w:w39, } = y37;
+                                      *((base + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x39);
+                                      *((base + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y39);
+                                      *((base + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z39);
+                                      *((base + 56) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w39);
+                                      let Vec4{ x:x40, y:y40, z:z40, w:w40, } = z37;
+                                      *((base + 60) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x40);
+                                      *((base + 64) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y40);
+                                      *((base + 68) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z40);
+                                      *((base + 72) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w40);
+                                      let Vec4{ x:x41, y:y41, z:z41, w:w41, } = w37;
+                                      *((base + 76) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x41);
+                                      *((base + 80) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y41);
+                                      *((base + 84) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z41);
+                                      *((base + 88) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w41);
                                       
                                     },
                                     None => {
@@ -3275,11 +3692,11 @@
                                   match e {
                                     Some(e) => {
                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                      let Quat{ x:x36, y:y36, z:z36, w:w36, } = e;
-                                      *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x36);
-                                      *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y36);
-                                      *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z36);
-                                      *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w36);
+                                      let Quat{ x:x42, y:y42, z:z42, w:w42, } = e;
+                                      *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x42);
+                                      *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y42);
+                                      *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z42);
+                                      *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w42);
                                       
                                     },
                                     None => {
@@ -3297,11 +3714,11 @@
                                   match e {
                                     Some(e) => {
                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                      let vec37 = e;
-                                      let ptr37 = vec37.as_ptr() as i32;
-                                      let len37 = vec37.len() as i32;
-                                      *((base + 32) as *mut i32) = len37;
-                                      *((base + 28) as *mut i32) = ptr37;
+                                      let vec43 = e;
+                                      let ptr43 = vec43.as_ptr() as i32;
+                                      let len43 = vec43.len() as i32;
+                                      *((base + 32) as *mut i32) = len43;
+                                      *((base + 28) as *mut i32) = ptr43;
                                       
                                     },
                                     None => {
@@ -3355,9 +3772,9 @@
                                   match e {
                                     Some(e) => {
                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                      let Vec2{ x:x38, y:y38, } = e;
-                                      *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x38);
-                                      *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y38);
+                                      let Vec2{ x:x44, y:y44, } = e;
+                                      *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x44);
+                                      *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y44);
                                       
                                     },
                                     None => {
@@ -3375,10 +3792,10 @@
                                   match e {
                                     Some(e) => {
                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                      let Vec3{ x:x39, y:y39, z:z39, } = e;
-                                      *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x39);
-                                      *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y39);
-                                      *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z39);
+                                      let Vec3{ x:x45, y:y45, z:z45, } = e;
+                                      *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x45);
+                                      *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y45);
+                                      *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z45);
                                       
                                     },
                                     None => {
@@ -3396,11 +3813,74 @@
                                   match e {
                                     Some(e) => {
                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                      let Vec4{ x:x40, y:y40, z:z40, w:w40, } = e;
-                                      *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x40);
-                                      *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y40);
-                                      *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z40);
-                                      *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w40);
+                                      let Vec4{ x:x46, y:y46, z:z46, w:w46, } = e;
+                                      *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x46);
+                                      *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y46);
+                                      *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z46);
+                                      *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w46);
+                                      
+                                    },
+                                    None => {
+                                      let e = ();
+                                      {
+                                        *((base + 24) as *mut u8) = (0i32) as u8;
+                                        let () = e;
+                                        
+                                      }
+                                    },
+                                  };
+                                },
+                                ComponentOptionTypeParam::TypeUvec2(e) => {
+                                  *((base + 16) as *mut u8) = (14i32) as u8;
+                                  match e {
+                                    Some(e) => {
+                                      *((base + 24) as *mut u8) = (1i32) as u8;
+                                      let Uvec2{ x:x47, y:y47, } = e;
+                                      *((base + 28) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x47);
+                                      *((base + 32) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y47);
+                                      
+                                    },
+                                    None => {
+                                      let e = ();
+                                      {
+                                        *((base + 24) as *mut u8) = (0i32) as u8;
+                                        let () = e;
+                                        
+                                      }
+                                    },
+                                  };
+                                },
+                                ComponentOptionTypeParam::TypeUvec3(e) => {
+                                  *((base + 16) as *mut u8) = (15i32) as u8;
+                                  match e {
+                                    Some(e) => {
+                                      *((base + 24) as *mut u8) = (1i32) as u8;
+                                      let Uvec3{ x:x48, y:y48, z:z48, } = e;
+                                      *((base + 28) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x48);
+                                      *((base + 32) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y48);
+                                      *((base + 36) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z48);
+                                      
+                                    },
+                                    None => {
+                                      let e = ();
+                                      {
+                                        *((base + 24) as *mut u8) = (0i32) as u8;
+                                        let () = e;
+                                        
+                                      }
+                                    },
+                                  };
+                                },
+                                ComponentOptionTypeParam::TypeUvec4(e) => {
+                                  *((base + 16) as *mut u8) = (16i32) as u8;
+                                  match e {
+                                    Some(e) => {
+                                      *((base + 24) as *mut u8) = (1i32) as u8;
+                                      let Uvec4{ x:x49, y:y49, z:z49, w:w49, } = e;
+                                      *((base + 28) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x49);
+                                      *((base + 32) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y49);
+                                      *((base + 36) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z49);
+                                      *((base + 40) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(w49);
                                       
                                     },
                                     None => {
@@ -3421,13 +3901,13 @@
                         }}
                         #[link(wasm_import_module = "host")]
                         extern "C" {
-                          #[cfg_attr(target_arch = "wasm32", link_name = "entity-add-components: func(entity: record { id0: u64, id1: u64 }, data: list<tuple<u32, variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>) }) }>>) -> unit")]
-                          #[cfg_attr(not(target_arch = "wasm32"), link_name = "host_entity-add-components: func(entity: record { id0: u64, id1: u64 }, data: list<tuple<u32, variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>) }) }>>) -> unit")]
+                          #[cfg_attr(target_arch = "wasm32", link_name = "entity-add-components: func(entity: record { id0: u64, id1: u64 }, data: list<tuple<u32, variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-uvec2(record { x: u32, y: u32 }), type-uvec3(record { x: u32, y: u32, z: u32 }), type-uvec4(record { x: u32, y: u32, z: u32, w: u32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(list<record { x: u32, y: u32 }>), type-uvec3(list<record { x: u32, y: u32, z: u32 }>), type-uvec4(list<record { x: u32, y: u32, z: u32, w: u32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(option<record { x: u32, y: u32 }>), type-uvec3(option<record { x: u32, y: u32, z: u32 }>), type-uvec4(option<record { x: u32, y: u32, z: u32, w: u32 }>) }) }>>) -> unit")]
+                          #[cfg_attr(not(target_arch = "wasm32"), link_name = "host_entity-add-components: func(entity: record { id0: u64, id1: u64 }, data: list<tuple<u32, variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-uvec2(record { x: u32, y: u32 }), type-uvec3(record { x: u32, y: u32, z: u32 }), type-uvec4(record { x: u32, y: u32, z: u32, w: u32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(list<record { x: u32, y: u32 }>), type-uvec3(list<record { x: u32, y: u32, z: u32 }>), type-uvec4(list<record { x: u32, y: u32, z: u32, w: u32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(option<record { x: u32, y: u32 }>), type-uvec3(option<record { x: u32, y: u32, z: u32 }>), type-uvec4(option<record { x: u32, y: u32, z: u32, w: u32 }>) }) }>>) -> unit")]
                           fn wit_import(_: i64, _: i64, _: i32, _: i32, );
                         }
-                        wit_import(wit_bindgen_guest_rust::rt::as_i64(id00), wit_bindgen_guest_rust::rt::as_i64(id10), result41 as i32, len41);
-                        if layout41.size() != 0 {
-                          std::alloc::dealloc(result41, layout41);
+                        wit_import(wit_bindgen_guest_rust::rt::as_i64(id00), wit_bindgen_guest_rust::rt::as_i64(id10), result50 as i32, len50);
+                        if layout50.size() != 0 {
+                          std::alloc::dealloc(result50, layout50);
                         }
                         for (ptr, layout) in cleanup_list {
                           
@@ -3559,74 +4039,71 @@
                             *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w13);
                             
                           },
-                          ComponentTypeParam::TypeList(e) => {
+                          ComponentTypeParam::TypeUvec2(e) => {
                             *((ptr0 + 24) as *mut u8) = (14i32) as u8;
+                            let Uvec2{ x:x14, y:y14, } = e;
+                            *((ptr0 + 32) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x14);
+                            *((ptr0 + 36) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y14);
+                            
+                          },
+                          ComponentTypeParam::TypeUvec3(e) => {
+                            *((ptr0 + 24) as *mut u8) = (15i32) as u8;
+                            let Uvec3{ x:x15, y:y15, z:z15, } = e;
+                            *((ptr0 + 32) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x15);
+                            *((ptr0 + 36) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y15);
+                            *((ptr0 + 40) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z15);
+                            
+                          },
+                          ComponentTypeParam::TypeUvec4(e) => {
+                            *((ptr0 + 24) as *mut u8) = (16i32) as u8;
+                            let Uvec4{ x:x16, y:y16, z:z16, w:w16, } = e;
+                            *((ptr0 + 32) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x16);
+                            *((ptr0 + 36) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y16);
+                            *((ptr0 + 40) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z16);
+                            *((ptr0 + 44) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(w16);
+                            
+                          },
+                          ComponentTypeParam::TypeList(e) => {
+                            *((ptr0 + 24) as *mut u8) = (17i32) as u8;
                             match e {
                               ComponentListTypeParam::TypeEmpty(e) => {
                                 *((ptr0 + 32) as *mut u8) = (0i32) as u8;
-                                let vec14 = e;
-                                let ptr14 = vec14.as_ptr() as i32;
-                                let len14 = vec14.len() as i32;
-                                *((ptr0 + 40) as *mut i32) = len14;
-                                *((ptr0 + 36) as *mut i32) = ptr14;
+                                let vec17 = e;
+                                let ptr17 = vec17.as_ptr() as i32;
+                                let len17 = vec17.len() as i32;
+                                *((ptr0 + 40) as *mut i32) = len17;
+                                *((ptr0 + 36) as *mut i32) = ptr17;
                                 
                               },
                               ComponentListTypeParam::TypeBool(e) => {
                                 *((ptr0 + 32) as *mut u8) = (1i32) as u8;
-                                let vec15 = e;
-                                let len15 = vec15.len() as i32;
-                                let layout15 = core::alloc::Layout::from_size_align_unchecked(vec15.len() * 1, 1);
-                                let result15 = if layout15.size() != 0
+                                let vec18 = e;
+                                let len18 = vec18.len() as i32;
+                                let layout18 = core::alloc::Layout::from_size_align_unchecked(vec18.len() * 1, 1);
+                                let result18 = if layout18.size() != 0
                                 {
-                                  let ptr = std::alloc::alloc(layout15);
+                                  let ptr = std::alloc::alloc(layout18);
                                   if ptr.is_null()
                                   {
-                                    std::alloc::handle_alloc_error(layout15);
+                                    std::alloc::handle_alloc_error(layout18);
                                   }
                                   ptr
                                 }else {
                                   std::ptr::null_mut()
                                 };
-                                for (i, e) in vec15.into_iter().enumerate() {
-                                  let base = result15 as i32 + (i as i32) * 1;
+                                for (i, e) in vec18.into_iter().enumerate() {
+                                  let base = result18 as i32 + (i as i32) * 1;
                                   {
                                     *((base + 0) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                                     
                                   }}
-                                  *((ptr0 + 40) as *mut i32) = len15;
-                                  *((ptr0 + 36) as *mut i32) = result15 as i32;
-                                  cleanup_list.extend_from_slice(&[(result15, layout15),]);
+                                  *((ptr0 + 40) as *mut i32) = len18;
+                                  *((ptr0 + 36) as *mut i32) = result18 as i32;
+                                  cleanup_list.extend_from_slice(&[(result18, layout18),]);
                                   
                                 },
                                 ComponentListTypeParam::TypeEntityId(e) => {
                                   *((ptr0 + 32) as *mut u8) = (2i32) as u8;
-                                  let vec16 = e;
-                                  let ptr16 = vec16.as_ptr() as i32;
-                                  let len16 = vec16.len() as i32;
-                                  *((ptr0 + 40) as *mut i32) = len16;
-                                  *((ptr0 + 36) as *mut i32) = ptr16;
-                                  
-                                },
-                                ComponentListTypeParam::TypeF32(e) => {
-                                  *((ptr0 + 32) as *mut u8) = (3i32) as u8;
-                                  let vec17 = e;
-                                  let ptr17 = vec17.as_ptr() as i32;
-                                  let len17 = vec17.len() as i32;
-                                  *((ptr0 + 40) as *mut i32) = len17;
-                                  *((ptr0 + 36) as *mut i32) = ptr17;
-                                  
-                                },
-                                ComponentListTypeParam::TypeF64(e) => {
-                                  *((ptr0 + 32) as *mut u8) = (4i32) as u8;
-                                  let vec18 = e;
-                                  let ptr18 = vec18.as_ptr() as i32;
-                                  let len18 = vec18.len() as i32;
-                                  *((ptr0 + 40) as *mut i32) = len18;
-                                  *((ptr0 + 36) as *mut i32) = ptr18;
-                                  
-                                },
-                                ComponentListTypeParam::TypeMat4(e) => {
-                                  *((ptr0 + 32) as *mut u8) = (5i32) as u8;
                                   let vec19 = e;
                                   let ptr19 = vec19.as_ptr() as i32;
                                   let len19 = vec19.len() as i32;
@@ -3634,8 +4111,8 @@
                                   *((ptr0 + 36) as *mut i32) = ptr19;
                                   
                                 },
-                                ComponentListTypeParam::TypeI32(e) => {
-                                  *((ptr0 + 32) as *mut u8) = (6i32) as u8;
+                                ComponentListTypeParam::TypeF32(e) => {
+                                  *((ptr0 + 32) as *mut u8) = (3i32) as u8;
                                   let vec20 = e;
                                   let ptr20 = vec20.as_ptr() as i32;
                                   let len20 = vec20.len() as i32;
@@ -3643,8 +4120,8 @@
                                   *((ptr0 + 36) as *mut i32) = ptr20;
                                   
                                 },
-                                ComponentListTypeParam::TypeQuat(e) => {
-                                  *((ptr0 + 32) as *mut u8) = (7i32) as u8;
+                                ComponentListTypeParam::TypeF64(e) => {
+                                  *((ptr0 + 32) as *mut u8) = (4i32) as u8;
                                   let vec21 = e;
                                   let ptr21 = vec21.as_ptr() as i32;
                                   let len21 = vec21.len() as i32;
@@ -3652,66 +4129,66 @@
                                   *((ptr0 + 36) as *mut i32) = ptr21;
                                   
                                 },
+                                ComponentListTypeParam::TypeMat4(e) => {
+                                  *((ptr0 + 32) as *mut u8) = (5i32) as u8;
+                                  let vec22 = e;
+                                  let ptr22 = vec22.as_ptr() as i32;
+                                  let len22 = vec22.len() as i32;
+                                  *((ptr0 + 40) as *mut i32) = len22;
+                                  *((ptr0 + 36) as *mut i32) = ptr22;
+                                  
+                                },
+                                ComponentListTypeParam::TypeI32(e) => {
+                                  *((ptr0 + 32) as *mut u8) = (6i32) as u8;
+                                  let vec23 = e;
+                                  let ptr23 = vec23.as_ptr() as i32;
+                                  let len23 = vec23.len() as i32;
+                                  *((ptr0 + 40) as *mut i32) = len23;
+                                  *((ptr0 + 36) as *mut i32) = ptr23;
+                                  
+                                },
+                                ComponentListTypeParam::TypeQuat(e) => {
+                                  *((ptr0 + 32) as *mut u8) = (7i32) as u8;
+                                  let vec24 = e;
+                                  let ptr24 = vec24.as_ptr() as i32;
+                                  let len24 = vec24.len() as i32;
+                                  *((ptr0 + 40) as *mut i32) = len24;
+                                  *((ptr0 + 36) as *mut i32) = ptr24;
+                                  
+                                },
                                 ComponentListTypeParam::TypeString(e) => {
                                   *((ptr0 + 32) as *mut u8) = (8i32) as u8;
-                                  let vec23 = e;
-                                  let len23 = vec23.len() as i32;
-                                  let layout23 = core::alloc::Layout::from_size_align_unchecked(vec23.len() * 8, 4);
-                                  let result23 = if layout23.size() != 0
+                                  let vec26 = e;
+                                  let len26 = vec26.len() as i32;
+                                  let layout26 = core::alloc::Layout::from_size_align_unchecked(vec26.len() * 8, 4);
+                                  let result26 = if layout26.size() != 0
                                   {
-                                    let ptr = std::alloc::alloc(layout23);
+                                    let ptr = std::alloc::alloc(layout26);
                                     if ptr.is_null()
                                     {
-                                      std::alloc::handle_alloc_error(layout23);
+                                      std::alloc::handle_alloc_error(layout26);
                                     }
                                     ptr
                                   }else {
                                     std::ptr::null_mut()
                                   };
-                                  for (i, e) in vec23.into_iter().enumerate() {
-                                    let base = result23 as i32 + (i as i32) * 8;
+                                  for (i, e) in vec26.into_iter().enumerate() {
+                                    let base = result26 as i32 + (i as i32) * 8;
                                     {
-                                      let vec22 = e;
-                                      let ptr22 = vec22.as_ptr() as i32;
-                                      let len22 = vec22.len() as i32;
-                                      *((base + 4) as *mut i32) = len22;
-                                      *((base + 0) as *mut i32) = ptr22;
+                                      let vec25 = e;
+                                      let ptr25 = vec25.as_ptr() as i32;
+                                      let len25 = vec25.len() as i32;
+                                      *((base + 4) as *mut i32) = len25;
+                                      *((base + 0) as *mut i32) = ptr25;
                                       
                                     }}
-                                    *((ptr0 + 40) as *mut i32) = len23;
-                                    *((ptr0 + 36) as *mut i32) = result23 as i32;
-                                    cleanup_list.extend_from_slice(&[(result23, layout23),]);
+                                    *((ptr0 + 40) as *mut i32) = len26;
+                                    *((ptr0 + 36) as *mut i32) = result26 as i32;
+                                    cleanup_list.extend_from_slice(&[(result26, layout26),]);
                                     
                                   },
                                   ComponentListTypeParam::TypeU32(e) => {
                                     *((ptr0 + 32) as *mut u8) = (9i32) as u8;
-                                    let vec24 = e;
-                                    let ptr24 = vec24.as_ptr() as i32;
-                                    let len24 = vec24.len() as i32;
-                                    *((ptr0 + 40) as *mut i32) = len24;
-                                    *((ptr0 + 36) as *mut i32) = ptr24;
-                                    
-                                  },
-                                  ComponentListTypeParam::TypeU64(e) => {
-                                    *((ptr0 + 32) as *mut u8) = (10i32) as u8;
-                                    let vec25 = e;
-                                    let ptr25 = vec25.as_ptr() as i32;
-                                    let len25 = vec25.len() as i32;
-                                    *((ptr0 + 40) as *mut i32) = len25;
-                                    *((ptr0 + 36) as *mut i32) = ptr25;
-                                    
-                                  },
-                                  ComponentListTypeParam::TypeVec2(e) => {
-                                    *((ptr0 + 32) as *mut u8) = (11i32) as u8;
-                                    let vec26 = e;
-                                    let ptr26 = vec26.as_ptr() as i32;
-                                    let len26 = vec26.len() as i32;
-                                    *((ptr0 + 40) as *mut i32) = len26;
-                                    *((ptr0 + 36) as *mut i32) = ptr26;
-                                    
-                                  },
-                                  ComponentListTypeParam::TypeVec3(e) => {
-                                    *((ptr0 + 32) as *mut u8) = (12i32) as u8;
                                     let vec27 = e;
                                     let ptr27 = vec27.as_ptr() as i32;
                                     let len27 = vec27.len() as i32;
@@ -3719,8 +4196,8 @@
                                     *((ptr0 + 36) as *mut i32) = ptr27;
                                     
                                   },
-                                  ComponentListTypeParam::TypeVec4(e) => {
-                                    *((ptr0 + 32) as *mut u8) = (13i32) as u8;
+                                  ComponentListTypeParam::TypeU64(e) => {
+                                    *((ptr0 + 32) as *mut u8) = (10i32) as u8;
                                     let vec28 = e;
                                     let ptr28 = vec28.as_ptr() as i32;
                                     let len28 = vec28.len() as i32;
@@ -3728,11 +4205,65 @@
                                     *((ptr0 + 36) as *mut i32) = ptr28;
                                     
                                   },
+                                  ComponentListTypeParam::TypeVec2(e) => {
+                                    *((ptr0 + 32) as *mut u8) = (11i32) as u8;
+                                    let vec29 = e;
+                                    let ptr29 = vec29.as_ptr() as i32;
+                                    let len29 = vec29.len() as i32;
+                                    *((ptr0 + 40) as *mut i32) = len29;
+                                    *((ptr0 + 36) as *mut i32) = ptr29;
+                                    
+                                  },
+                                  ComponentListTypeParam::TypeVec3(e) => {
+                                    *((ptr0 + 32) as *mut u8) = (12i32) as u8;
+                                    let vec30 = e;
+                                    let ptr30 = vec30.as_ptr() as i32;
+                                    let len30 = vec30.len() as i32;
+                                    *((ptr0 + 40) as *mut i32) = len30;
+                                    *((ptr0 + 36) as *mut i32) = ptr30;
+                                    
+                                  },
+                                  ComponentListTypeParam::TypeVec4(e) => {
+                                    *((ptr0 + 32) as *mut u8) = (13i32) as u8;
+                                    let vec31 = e;
+                                    let ptr31 = vec31.as_ptr() as i32;
+                                    let len31 = vec31.len() as i32;
+                                    *((ptr0 + 40) as *mut i32) = len31;
+                                    *((ptr0 + 36) as *mut i32) = ptr31;
+                                    
+                                  },
+                                  ComponentListTypeParam::TypeUvec2(e) => {
+                                    *((ptr0 + 32) as *mut u8) = (14i32) as u8;
+                                    let vec32 = e;
+                                    let ptr32 = vec32.as_ptr() as i32;
+                                    let len32 = vec32.len() as i32;
+                                    *((ptr0 + 40) as *mut i32) = len32;
+                                    *((ptr0 + 36) as *mut i32) = ptr32;
+                                    
+                                  },
+                                  ComponentListTypeParam::TypeUvec3(e) => {
+                                    *((ptr0 + 32) as *mut u8) = (15i32) as u8;
+                                    let vec33 = e;
+                                    let ptr33 = vec33.as_ptr() as i32;
+                                    let len33 = vec33.len() as i32;
+                                    *((ptr0 + 40) as *mut i32) = len33;
+                                    *((ptr0 + 36) as *mut i32) = ptr33;
+                                    
+                                  },
+                                  ComponentListTypeParam::TypeUvec4(e) => {
+                                    *((ptr0 + 32) as *mut u8) = (16i32) as u8;
+                                    let vec34 = e;
+                                    let ptr34 = vec34.as_ptr() as i32;
+                                    let len34 = vec34.len() as i32;
+                                    *((ptr0 + 40) as *mut i32) = len34;
+                                    *((ptr0 + 36) as *mut i32) = ptr34;
+                                    
+                                  },
                                 };
                                 
                               },
                               ComponentTypeParam::TypeOption(e) => {
-                                *((ptr0 + 24) as *mut u8) = (15i32) as u8;
+                                *((ptr0 + 24) as *mut u8) = (18i32) as u8;
                                 match e {
                                   ComponentOptionTypeParam::TypeEmpty(e) => {
                                     *((ptr0 + 32) as *mut u8) = (0i32) as u8;
@@ -3775,9 +4306,9 @@
                                     match e {
                                       Some(e) => {
                                         *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                        let EntityId{ id0:id030, id1:id130, } = e;
-                                        *((ptr0 + 48) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id030);
-                                        *((ptr0 + 56) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id130);
+                                        let EntityId{ id0:id036, id1:id136, } = e;
+                                        *((ptr0 + 48) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id036);
+                                        *((ptr0 + 56) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id136);
                                         
                                       },
                                       None => {
@@ -3831,27 +4362,27 @@
                                     match e {
                                       Some(e) => {
                                         *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                        let Mat4{ x:x31, y:y31, z:z31, w:w31, } = e;
-                                        let Vec4{ x:x32, y:y32, z:z32, w:w32, } = x31;
-                                        *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x32);
-                                        *((ptr0 + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y32);
-                                        *((ptr0 + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z32);
-                                        *((ptr0 + 56) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w32);
-                                        let Vec4{ x:x33, y:y33, z:z33, w:w33, } = y31;
-                                        *((ptr0 + 60) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x33);
-                                        *((ptr0 + 64) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y33);
-                                        *((ptr0 + 68) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z33);
-                                        *((ptr0 + 72) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w33);
-                                        let Vec4{ x:x34, y:y34, z:z34, w:w34, } = z31;
-                                        *((ptr0 + 76) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x34);
-                                        *((ptr0 + 80) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y34);
-                                        *((ptr0 + 84) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z34);
-                                        *((ptr0 + 88) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w34);
-                                        let Vec4{ x:x35, y:y35, z:z35, w:w35, } = w31;
-                                        *((ptr0 + 92) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x35);
-                                        *((ptr0 + 96) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y35);
-                                        *((ptr0 + 100) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z35);
-                                        *((ptr0 + 104) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w35);
+                                        let Mat4{ x:x37, y:y37, z:z37, w:w37, } = e;
+                                        let Vec4{ x:x38, y:y38, z:z38, w:w38, } = x37;
+                                        *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x38);
+                                        *((ptr0 + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y38);
+                                        *((ptr0 + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z38);
+                                        *((ptr0 + 56) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w38);
+                                        let Vec4{ x:x39, y:y39, z:z39, w:w39, } = y37;
+                                        *((ptr0 + 60) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x39);
+                                        *((ptr0 + 64) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y39);
+                                        *((ptr0 + 68) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z39);
+                                        *((ptr0 + 72) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w39);
+                                        let Vec4{ x:x40, y:y40, z:z40, w:w40, } = z37;
+                                        *((ptr0 + 76) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x40);
+                                        *((ptr0 + 80) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y40);
+                                        *((ptr0 + 84) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z40);
+                                        *((ptr0 + 88) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w40);
+                                        let Vec4{ x:x41, y:y41, z:z41, w:w41, } = w37;
+                                        *((ptr0 + 92) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x41);
+                                        *((ptr0 + 96) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y41);
+                                        *((ptr0 + 100) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z41);
+                                        *((ptr0 + 104) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w41);
                                         
                                       },
                                       None => {
@@ -3887,11 +4418,11 @@
                                     match e {
                                       Some(e) => {
                                         *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                        let Quat{ x:x36, y:y36, z:z36, w:w36, } = e;
-                                        *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x36);
-                                        *((ptr0 + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y36);
-                                        *((ptr0 + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z36);
-                                        *((ptr0 + 56) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w36);
+                                        let Quat{ x:x42, y:y42, z:z42, w:w42, } = e;
+                                        *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x42);
+                                        *((ptr0 + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y42);
+                                        *((ptr0 + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z42);
+                                        *((ptr0 + 56) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w42);
                                         
                                       },
                                       None => {
@@ -3909,11 +4440,11 @@
                                     match e {
                                       Some(e) => {
                                         *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                        let vec37 = e;
-                                        let ptr37 = vec37.as_ptr() as i32;
-                                        let len37 = vec37.len() as i32;
-                                        *((ptr0 + 48) as *mut i32) = len37;
-                                        *((ptr0 + 44) as *mut i32) = ptr37;
+                                        let vec43 = e;
+                                        let ptr43 = vec43.as_ptr() as i32;
+                                        let len43 = vec43.len() as i32;
+                                        *((ptr0 + 48) as *mut i32) = len43;
+                                        *((ptr0 + 44) as *mut i32) = ptr43;
                                         
                                       },
                                       None => {
@@ -3967,9 +4498,9 @@
                                     match e {
                                       Some(e) => {
                                         *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                        let Vec2{ x:x38, y:y38, } = e;
-                                        *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x38);
-                                        *((ptr0 + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y38);
+                                        let Vec2{ x:x44, y:y44, } = e;
+                                        *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x44);
+                                        *((ptr0 + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y44);
                                         
                                       },
                                       None => {
@@ -3987,10 +4518,10 @@
                                     match e {
                                       Some(e) => {
                                         *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                        let Vec3{ x:x39, y:y39, z:z39, } = e;
-                                        *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x39);
-                                        *((ptr0 + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y39);
-                                        *((ptr0 + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z39);
+                                        let Vec3{ x:x45, y:y45, z:z45, } = e;
+                                        *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x45);
+                                        *((ptr0 + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y45);
+                                        *((ptr0 + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z45);
                                         
                                       },
                                       None => {
@@ -4008,11 +4539,74 @@
                                     match e {
                                       Some(e) => {
                                         *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                        let Vec4{ x:x40, y:y40, z:z40, w:w40, } = e;
-                                        *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x40);
-                                        *((ptr0 + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y40);
-                                        *((ptr0 + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z40);
-                                        *((ptr0 + 56) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w40);
+                                        let Vec4{ x:x46, y:y46, z:z46, w:w46, } = e;
+                                        *((ptr0 + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x46);
+                                        *((ptr0 + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y46);
+                                        *((ptr0 + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z46);
+                                        *((ptr0 + 56) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w46);
+                                        
+                                      },
+                                      None => {
+                                        let e = ();
+                                        {
+                                          *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                          let () = e;
+                                          
+                                        }
+                                      },
+                                    };
+                                  },
+                                  ComponentOptionTypeParam::TypeUvec2(e) => {
+                                    *((ptr0 + 32) as *mut u8) = (14i32) as u8;
+                                    match e {
+                                      Some(e) => {
+                                        *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                        let Uvec2{ x:x47, y:y47, } = e;
+                                        *((ptr0 + 44) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x47);
+                                        *((ptr0 + 48) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y47);
+                                        
+                                      },
+                                      None => {
+                                        let e = ();
+                                        {
+                                          *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                          let () = e;
+                                          
+                                        }
+                                      },
+                                    };
+                                  },
+                                  ComponentOptionTypeParam::TypeUvec3(e) => {
+                                    *((ptr0 + 32) as *mut u8) = (15i32) as u8;
+                                    match e {
+                                      Some(e) => {
+                                        *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                        let Uvec3{ x:x48, y:y48, z:z48, } = e;
+                                        *((ptr0 + 44) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x48);
+                                        *((ptr0 + 48) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y48);
+                                        *((ptr0 + 52) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z48);
+                                        
+                                      },
+                                      None => {
+                                        let e = ();
+                                        {
+                                          *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                          let () = e;
+                                          
+                                        }
+                                      },
+                                    };
+                                  },
+                                  ComponentOptionTypeParam::TypeUvec4(e) => {
+                                    *((ptr0 + 32) as *mut u8) = (16i32) as u8;
+                                    match e {
+                                      Some(e) => {
+                                        *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                        let Uvec4{ x:x49, y:y49, z:z49, w:w49, } = e;
+                                        *((ptr0 + 44) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x49);
+                                        *((ptr0 + 48) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y49);
+                                        *((ptr0 + 52) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z49);
+                                        *((ptr0 + 56) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(w49);
                                         
                                       },
                                       None => {
@@ -4031,8 +4625,8 @@
                             };
                             #[link(wasm_import_module = "host")]
                             extern "C" {
-                              #[cfg_attr(target_arch = "wasm32", link_name = "entity-set-component: func(entity: record { id0: u64, id1: u64 }, index: u32, value: variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>) }) }) -> unit")]
-                              #[cfg_attr(not(target_arch = "wasm32"), link_name = "host_entity-set-component: func(entity: record { id0: u64, id1: u64 }, index: u32, value: variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>) }) }) -> unit")]
+                              #[cfg_attr(target_arch = "wasm32", link_name = "entity-set-component: func(entity: record { id0: u64, id1: u64 }, index: u32, value: variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-uvec2(record { x: u32, y: u32 }), type-uvec3(record { x: u32, y: u32, z: u32 }), type-uvec4(record { x: u32, y: u32, z: u32, w: u32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(list<record { x: u32, y: u32 }>), type-uvec3(list<record { x: u32, y: u32, z: u32 }>), type-uvec4(list<record { x: u32, y: u32, z: u32, w: u32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(option<record { x: u32, y: u32 }>), type-uvec3(option<record { x: u32, y: u32, z: u32 }>), type-uvec4(option<record { x: u32, y: u32, z: u32, w: u32 }>) }) }) -> unit")]
+                              #[cfg_attr(not(target_arch = "wasm32"), link_name = "host_entity-set-component: func(entity: record { id0: u64, id1: u64 }, index: u32, value: variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-uvec2(record { x: u32, y: u32 }), type-uvec3(record { x: u32, y: u32, z: u32 }), type-uvec4(record { x: u32, y: u32, z: u32, w: u32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(list<record { x: u32, y: u32 }>), type-uvec3(list<record { x: u32, y: u32, z: u32 }>), type-uvec4(list<record { x: u32, y: u32, z: u32, w: u32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(option<record { x: u32, y: u32 }>), type-uvec3(option<record { x: u32, y: u32, z: u32 }>), type-uvec4(option<record { x: u32, y: u32, z: u32, w: u32 }>) }) }) -> unit")]
                               fn wit_import(_: i32, );
                             }
                             wit_import(ptr0);
@@ -4052,22 +4646,22 @@
                           unsafe {
                             let mut cleanup_list = Vec::new();
                             let EntityId{ id0:id00, id1:id10, } = entity;
-                            let vec41 = data;
-                            let len41 = vec41.len() as i32;
-                            let layout41 = core::alloc::Layout::from_size_align_unchecked(vec41.len() * 88, 8);
-                            let result41 = if layout41.size() != 0
+                            let vec50 = data;
+                            let len50 = vec50.len() as i32;
+                            let layout50 = core::alloc::Layout::from_size_align_unchecked(vec50.len() * 88, 8);
+                            let result50 = if layout50.size() != 0
                             {
-                              let ptr = std::alloc::alloc(layout41);
+                              let ptr = std::alloc::alloc(layout50);
                               if ptr.is_null()
                               {
-                                std::alloc::handle_alloc_error(layout41);
+                                std::alloc::handle_alloc_error(layout50);
                               }
                               ptr
                             }else {
                               std::ptr::null_mut()
                             };
-                            for (i, e) in vec41.into_iter().enumerate() {
-                              let base = result41 as i32 + (i as i32) * 88;
+                            for (i, e) in vec50.into_iter().enumerate() {
+                              let base = result50 as i32 + (i as i32) * 88;
                               {
                                 let (t1_0, t1_1, ) = e;
                                 *((base + 0) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(t1_0);
@@ -4181,74 +4775,71 @@
                                     *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w13);
                                     
                                   },
-                                  ComponentTypeParam::TypeList(e) => {
+                                  ComponentTypeParam::TypeUvec2(e) => {
                                     *((base + 8) as *mut u8) = (14i32) as u8;
+                                    let Uvec2{ x:x14, y:y14, } = e;
+                                    *((base + 16) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x14);
+                                    *((base + 20) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y14);
+                                    
+                                  },
+                                  ComponentTypeParam::TypeUvec3(e) => {
+                                    *((base + 8) as *mut u8) = (15i32) as u8;
+                                    let Uvec3{ x:x15, y:y15, z:z15, } = e;
+                                    *((base + 16) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x15);
+                                    *((base + 20) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y15);
+                                    *((base + 24) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z15);
+                                    
+                                  },
+                                  ComponentTypeParam::TypeUvec4(e) => {
+                                    *((base + 8) as *mut u8) = (16i32) as u8;
+                                    let Uvec4{ x:x16, y:y16, z:z16, w:w16, } = e;
+                                    *((base + 16) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x16);
+                                    *((base + 20) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y16);
+                                    *((base + 24) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z16);
+                                    *((base + 28) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(w16);
+                                    
+                                  },
+                                  ComponentTypeParam::TypeList(e) => {
+                                    *((base + 8) as *mut u8) = (17i32) as u8;
                                     match e {
                                       ComponentListTypeParam::TypeEmpty(e) => {
                                         *((base + 16) as *mut u8) = (0i32) as u8;
-                                        let vec14 = e;
-                                        let ptr14 = vec14.as_ptr() as i32;
-                                        let len14 = vec14.len() as i32;
-                                        *((base + 24) as *mut i32) = len14;
-                                        *((base + 20) as *mut i32) = ptr14;
+                                        let vec17 = e;
+                                        let ptr17 = vec17.as_ptr() as i32;
+                                        let len17 = vec17.len() as i32;
+                                        *((base + 24) as *mut i32) = len17;
+                                        *((base + 20) as *mut i32) = ptr17;
                                         
                                       },
                                       ComponentListTypeParam::TypeBool(e) => {
                                         *((base + 16) as *mut u8) = (1i32) as u8;
-                                        let vec15 = e;
-                                        let len15 = vec15.len() as i32;
-                                        let layout15 = core::alloc::Layout::from_size_align_unchecked(vec15.len() * 1, 1);
-                                        let result15 = if layout15.size() != 0
+                                        let vec18 = e;
+                                        let len18 = vec18.len() as i32;
+                                        let layout18 = core::alloc::Layout::from_size_align_unchecked(vec18.len() * 1, 1);
+                                        let result18 = if layout18.size() != 0
                                         {
-                                          let ptr = std::alloc::alloc(layout15);
+                                          let ptr = std::alloc::alloc(layout18);
                                           if ptr.is_null()
                                           {
-                                            std::alloc::handle_alloc_error(layout15);
+                                            std::alloc::handle_alloc_error(layout18);
                                           }
                                           ptr
                                         }else {
                                           std::ptr::null_mut()
                                         };
-                                        for (i, e) in vec15.into_iter().enumerate() {
-                                          let base = result15 as i32 + (i as i32) * 1;
+                                        for (i, e) in vec18.into_iter().enumerate() {
+                                          let base = result18 as i32 + (i as i32) * 1;
                                           {
                                             *((base + 0) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                                             
                                           }}
-                                          *((base + 24) as *mut i32) = len15;
-                                          *((base + 20) as *mut i32) = result15 as i32;
-                                          cleanup_list.extend_from_slice(&[(result15, layout15),]);
+                                          *((base + 24) as *mut i32) = len18;
+                                          *((base + 20) as *mut i32) = result18 as i32;
+                                          cleanup_list.extend_from_slice(&[(result18, layout18),]);
                                           
                                         },
                                         ComponentListTypeParam::TypeEntityId(e) => {
                                           *((base + 16) as *mut u8) = (2i32) as u8;
-                                          let vec16 = e;
-                                          let ptr16 = vec16.as_ptr() as i32;
-                                          let len16 = vec16.len() as i32;
-                                          *((base + 24) as *mut i32) = len16;
-                                          *((base + 20) as *mut i32) = ptr16;
-                                          
-                                        },
-                                        ComponentListTypeParam::TypeF32(e) => {
-                                          *((base + 16) as *mut u8) = (3i32) as u8;
-                                          let vec17 = e;
-                                          let ptr17 = vec17.as_ptr() as i32;
-                                          let len17 = vec17.len() as i32;
-                                          *((base + 24) as *mut i32) = len17;
-                                          *((base + 20) as *mut i32) = ptr17;
-                                          
-                                        },
-                                        ComponentListTypeParam::TypeF64(e) => {
-                                          *((base + 16) as *mut u8) = (4i32) as u8;
-                                          let vec18 = e;
-                                          let ptr18 = vec18.as_ptr() as i32;
-                                          let len18 = vec18.len() as i32;
-                                          *((base + 24) as *mut i32) = len18;
-                                          *((base + 20) as *mut i32) = ptr18;
-                                          
-                                        },
-                                        ComponentListTypeParam::TypeMat4(e) => {
-                                          *((base + 16) as *mut u8) = (5i32) as u8;
                                           let vec19 = e;
                                           let ptr19 = vec19.as_ptr() as i32;
                                           let len19 = vec19.len() as i32;
@@ -4256,8 +4847,8 @@
                                           *((base + 20) as *mut i32) = ptr19;
                                           
                                         },
-                                        ComponentListTypeParam::TypeI32(e) => {
-                                          *((base + 16) as *mut u8) = (6i32) as u8;
+                                        ComponentListTypeParam::TypeF32(e) => {
+                                          *((base + 16) as *mut u8) = (3i32) as u8;
                                           let vec20 = e;
                                           let ptr20 = vec20.as_ptr() as i32;
                                           let len20 = vec20.len() as i32;
@@ -4265,8 +4856,8 @@
                                           *((base + 20) as *mut i32) = ptr20;
                                           
                                         },
-                                        ComponentListTypeParam::TypeQuat(e) => {
-                                          *((base + 16) as *mut u8) = (7i32) as u8;
+                                        ComponentListTypeParam::TypeF64(e) => {
+                                          *((base + 16) as *mut u8) = (4i32) as u8;
                                           let vec21 = e;
                                           let ptr21 = vec21.as_ptr() as i32;
                                           let len21 = vec21.len() as i32;
@@ -4274,66 +4865,66 @@
                                           *((base + 20) as *mut i32) = ptr21;
                                           
                                         },
+                                        ComponentListTypeParam::TypeMat4(e) => {
+                                          *((base + 16) as *mut u8) = (5i32) as u8;
+                                          let vec22 = e;
+                                          let ptr22 = vec22.as_ptr() as i32;
+                                          let len22 = vec22.len() as i32;
+                                          *((base + 24) as *mut i32) = len22;
+                                          *((base + 20) as *mut i32) = ptr22;
+                                          
+                                        },
+                                        ComponentListTypeParam::TypeI32(e) => {
+                                          *((base + 16) as *mut u8) = (6i32) as u8;
+                                          let vec23 = e;
+                                          let ptr23 = vec23.as_ptr() as i32;
+                                          let len23 = vec23.len() as i32;
+                                          *((base + 24) as *mut i32) = len23;
+                                          *((base + 20) as *mut i32) = ptr23;
+                                          
+                                        },
+                                        ComponentListTypeParam::TypeQuat(e) => {
+                                          *((base + 16) as *mut u8) = (7i32) as u8;
+                                          let vec24 = e;
+                                          let ptr24 = vec24.as_ptr() as i32;
+                                          let len24 = vec24.len() as i32;
+                                          *((base + 24) as *mut i32) = len24;
+                                          *((base + 20) as *mut i32) = ptr24;
+                                          
+                                        },
                                         ComponentListTypeParam::TypeString(e) => {
                                           *((base + 16) as *mut u8) = (8i32) as u8;
-                                          let vec23 = e;
-                                          let len23 = vec23.len() as i32;
-                                          let layout23 = core::alloc::Layout::from_size_align_unchecked(vec23.len() * 8, 4);
-                                          let result23 = if layout23.size() != 0
+                                          let vec26 = e;
+                                          let len26 = vec26.len() as i32;
+                                          let layout26 = core::alloc::Layout::from_size_align_unchecked(vec26.len() * 8, 4);
+                                          let result26 = if layout26.size() != 0
                                           {
-                                            let ptr = std::alloc::alloc(layout23);
+                                            let ptr = std::alloc::alloc(layout26);
                                             if ptr.is_null()
                                             {
-                                              std::alloc::handle_alloc_error(layout23);
+                                              std::alloc::handle_alloc_error(layout26);
                                             }
                                             ptr
                                           }else {
                                             std::ptr::null_mut()
                                           };
-                                          for (i, e) in vec23.into_iter().enumerate() {
-                                            let base = result23 as i32 + (i as i32) * 8;
+                                          for (i, e) in vec26.into_iter().enumerate() {
+                                            let base = result26 as i32 + (i as i32) * 8;
                                             {
-                                              let vec22 = e;
-                                              let ptr22 = vec22.as_ptr() as i32;
-                                              let len22 = vec22.len() as i32;
-                                              *((base + 4) as *mut i32) = len22;
-                                              *((base + 0) as *mut i32) = ptr22;
+                                              let vec25 = e;
+                                              let ptr25 = vec25.as_ptr() as i32;
+                                              let len25 = vec25.len() as i32;
+                                              *((base + 4) as *mut i32) = len25;
+                                              *((base + 0) as *mut i32) = ptr25;
                                               
                                             }}
-                                            *((base + 24) as *mut i32) = len23;
-                                            *((base + 20) as *mut i32) = result23 as i32;
-                                            cleanup_list.extend_from_slice(&[(result23, layout23),]);
+                                            *((base + 24) as *mut i32) = len26;
+                                            *((base + 20) as *mut i32) = result26 as i32;
+                                            cleanup_list.extend_from_slice(&[(result26, layout26),]);
                                             
                                           },
                                           ComponentListTypeParam::TypeU32(e) => {
                                             *((base + 16) as *mut u8) = (9i32) as u8;
-                                            let vec24 = e;
-                                            let ptr24 = vec24.as_ptr() as i32;
-                                            let len24 = vec24.len() as i32;
-                                            *((base + 24) as *mut i32) = len24;
-                                            *((base + 20) as *mut i32) = ptr24;
-                                            
-                                          },
-                                          ComponentListTypeParam::TypeU64(e) => {
-                                            *((base + 16) as *mut u8) = (10i32) as u8;
-                                            let vec25 = e;
-                                            let ptr25 = vec25.as_ptr() as i32;
-                                            let len25 = vec25.len() as i32;
-                                            *((base + 24) as *mut i32) = len25;
-                                            *((base + 20) as *mut i32) = ptr25;
-                                            
-                                          },
-                                          ComponentListTypeParam::TypeVec2(e) => {
-                                            *((base + 16) as *mut u8) = (11i32) as u8;
-                                            let vec26 = e;
-                                            let ptr26 = vec26.as_ptr() as i32;
-                                            let len26 = vec26.len() as i32;
-                                            *((base + 24) as *mut i32) = len26;
-                                            *((base + 20) as *mut i32) = ptr26;
-                                            
-                                          },
-                                          ComponentListTypeParam::TypeVec3(e) => {
-                                            *((base + 16) as *mut u8) = (12i32) as u8;
                                             let vec27 = e;
                                             let ptr27 = vec27.as_ptr() as i32;
                                             let len27 = vec27.len() as i32;
@@ -4341,8 +4932,8 @@
                                             *((base + 20) as *mut i32) = ptr27;
                                             
                                           },
-                                          ComponentListTypeParam::TypeVec4(e) => {
-                                            *((base + 16) as *mut u8) = (13i32) as u8;
+                                          ComponentListTypeParam::TypeU64(e) => {
+                                            *((base + 16) as *mut u8) = (10i32) as u8;
                                             let vec28 = e;
                                             let ptr28 = vec28.as_ptr() as i32;
                                             let len28 = vec28.len() as i32;
@@ -4350,11 +4941,65 @@
                                             *((base + 20) as *mut i32) = ptr28;
                                             
                                           },
+                                          ComponentListTypeParam::TypeVec2(e) => {
+                                            *((base + 16) as *mut u8) = (11i32) as u8;
+                                            let vec29 = e;
+                                            let ptr29 = vec29.as_ptr() as i32;
+                                            let len29 = vec29.len() as i32;
+                                            *((base + 24) as *mut i32) = len29;
+                                            *((base + 20) as *mut i32) = ptr29;
+                                            
+                                          },
+                                          ComponentListTypeParam::TypeVec3(e) => {
+                                            *((base + 16) as *mut u8) = (12i32) as u8;
+                                            let vec30 = e;
+                                            let ptr30 = vec30.as_ptr() as i32;
+                                            let len30 = vec30.len() as i32;
+                                            *((base + 24) as *mut i32) = len30;
+                                            *((base + 20) as *mut i32) = ptr30;
+                                            
+                                          },
+                                          ComponentListTypeParam::TypeVec4(e) => {
+                                            *((base + 16) as *mut u8) = (13i32) as u8;
+                                            let vec31 = e;
+                                            let ptr31 = vec31.as_ptr() as i32;
+                                            let len31 = vec31.len() as i32;
+                                            *((base + 24) as *mut i32) = len31;
+                                            *((base + 20) as *mut i32) = ptr31;
+                                            
+                                          },
+                                          ComponentListTypeParam::TypeUvec2(e) => {
+                                            *((base + 16) as *mut u8) = (14i32) as u8;
+                                            let vec32 = e;
+                                            let ptr32 = vec32.as_ptr() as i32;
+                                            let len32 = vec32.len() as i32;
+                                            *((base + 24) as *mut i32) = len32;
+                                            *((base + 20) as *mut i32) = ptr32;
+                                            
+                                          },
+                                          ComponentListTypeParam::TypeUvec3(e) => {
+                                            *((base + 16) as *mut u8) = (15i32) as u8;
+                                            let vec33 = e;
+                                            let ptr33 = vec33.as_ptr() as i32;
+                                            let len33 = vec33.len() as i32;
+                                            *((base + 24) as *mut i32) = len33;
+                                            *((base + 20) as *mut i32) = ptr33;
+                                            
+                                          },
+                                          ComponentListTypeParam::TypeUvec4(e) => {
+                                            *((base + 16) as *mut u8) = (16i32) as u8;
+                                            let vec34 = e;
+                                            let ptr34 = vec34.as_ptr() as i32;
+                                            let len34 = vec34.len() as i32;
+                                            *((base + 24) as *mut i32) = len34;
+                                            *((base + 20) as *mut i32) = ptr34;
+                                            
+                                          },
                                         };
                                         
                                       },
                                       ComponentTypeParam::TypeOption(e) => {
-                                        *((base + 8) as *mut u8) = (15i32) as u8;
+                                        *((base + 8) as *mut u8) = (18i32) as u8;
                                         match e {
                                           ComponentOptionTypeParam::TypeEmpty(e) => {
                                             *((base + 16) as *mut u8) = (0i32) as u8;
@@ -4397,9 +5042,9 @@
                                             match e {
                                               Some(e) => {
                                                 *((base + 24) as *mut u8) = (1i32) as u8;
-                                                let EntityId{ id0:id030, id1:id130, } = e;
-                                                *((base + 32) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id030);
-                                                *((base + 40) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id130);
+                                                let EntityId{ id0:id036, id1:id136, } = e;
+                                                *((base + 32) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id036);
+                                                *((base + 40) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id136);
                                                 
                                               },
                                               None => {
@@ -4453,27 +5098,27 @@
                                             match e {
                                               Some(e) => {
                                                 *((base + 24) as *mut u8) = (1i32) as u8;
-                                                let Mat4{ x:x31, y:y31, z:z31, w:w31, } = e;
-                                                let Vec4{ x:x32, y:y32, z:z32, w:w32, } = x31;
-                                                *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x32);
-                                                *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y32);
-                                                *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z32);
-                                                *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w32);
-                                                let Vec4{ x:x33, y:y33, z:z33, w:w33, } = y31;
-                                                *((base + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x33);
-                                                *((base + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y33);
-                                                *((base + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z33);
-                                                *((base + 56) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w33);
-                                                let Vec4{ x:x34, y:y34, z:z34, w:w34, } = z31;
-                                                *((base + 60) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x34);
-                                                *((base + 64) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y34);
-                                                *((base + 68) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z34);
-                                                *((base + 72) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w34);
-                                                let Vec4{ x:x35, y:y35, z:z35, w:w35, } = w31;
-                                                *((base + 76) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x35);
-                                                *((base + 80) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y35);
-                                                *((base + 84) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z35);
-                                                *((base + 88) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w35);
+                                                let Mat4{ x:x37, y:y37, z:z37, w:w37, } = e;
+                                                let Vec4{ x:x38, y:y38, z:z38, w:w38, } = x37;
+                                                *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x38);
+                                                *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y38);
+                                                *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z38);
+                                                *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w38);
+                                                let Vec4{ x:x39, y:y39, z:z39, w:w39, } = y37;
+                                                *((base + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x39);
+                                                *((base + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y39);
+                                                *((base + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z39);
+                                                *((base + 56) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w39);
+                                                let Vec4{ x:x40, y:y40, z:z40, w:w40, } = z37;
+                                                *((base + 60) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x40);
+                                                *((base + 64) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y40);
+                                                *((base + 68) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z40);
+                                                *((base + 72) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w40);
+                                                let Vec4{ x:x41, y:y41, z:z41, w:w41, } = w37;
+                                                *((base + 76) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x41);
+                                                *((base + 80) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y41);
+                                                *((base + 84) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z41);
+                                                *((base + 88) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w41);
                                                 
                                               },
                                               None => {
@@ -4509,11 +5154,11 @@
                                             match e {
                                               Some(e) => {
                                                 *((base + 24) as *mut u8) = (1i32) as u8;
-                                                let Quat{ x:x36, y:y36, z:z36, w:w36, } = e;
-                                                *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x36);
-                                                *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y36);
-                                                *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z36);
-                                                *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w36);
+                                                let Quat{ x:x42, y:y42, z:z42, w:w42, } = e;
+                                                *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x42);
+                                                *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y42);
+                                                *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z42);
+                                                *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w42);
                                                 
                                               },
                                               None => {
@@ -4531,11 +5176,11 @@
                                             match e {
                                               Some(e) => {
                                                 *((base + 24) as *mut u8) = (1i32) as u8;
-                                                let vec37 = e;
-                                                let ptr37 = vec37.as_ptr() as i32;
-                                                let len37 = vec37.len() as i32;
-                                                *((base + 32) as *mut i32) = len37;
-                                                *((base + 28) as *mut i32) = ptr37;
+                                                let vec43 = e;
+                                                let ptr43 = vec43.as_ptr() as i32;
+                                                let len43 = vec43.len() as i32;
+                                                *((base + 32) as *mut i32) = len43;
+                                                *((base + 28) as *mut i32) = ptr43;
                                                 
                                               },
                                               None => {
@@ -4589,9 +5234,9 @@
                                             match e {
                                               Some(e) => {
                                                 *((base + 24) as *mut u8) = (1i32) as u8;
-                                                let Vec2{ x:x38, y:y38, } = e;
-                                                *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x38);
-                                                *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y38);
+                                                let Vec2{ x:x44, y:y44, } = e;
+                                                *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x44);
+                                                *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y44);
                                                 
                                               },
                                               None => {
@@ -4609,10 +5254,10 @@
                                             match e {
                                               Some(e) => {
                                                 *((base + 24) as *mut u8) = (1i32) as u8;
-                                                let Vec3{ x:x39, y:y39, z:z39, } = e;
-                                                *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x39);
-                                                *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y39);
-                                                *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z39);
+                                                let Vec3{ x:x45, y:y45, z:z45, } = e;
+                                                *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x45);
+                                                *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y45);
+                                                *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z45);
                                                 
                                               },
                                               None => {
@@ -4630,11 +5275,74 @@
                                             match e {
                                               Some(e) => {
                                                 *((base + 24) as *mut u8) = (1i32) as u8;
-                                                let Vec4{ x:x40, y:y40, z:z40, w:w40, } = e;
-                                                *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x40);
-                                                *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y40);
-                                                *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z40);
-                                                *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w40);
+                                                let Vec4{ x:x46, y:y46, z:z46, w:w46, } = e;
+                                                *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x46);
+                                                *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y46);
+                                                *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z46);
+                                                *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w46);
+                                                
+                                              },
+                                              None => {
+                                                let e = ();
+                                                {
+                                                  *((base + 24) as *mut u8) = (0i32) as u8;
+                                                  let () = e;
+                                                  
+                                                }
+                                              },
+                                            };
+                                          },
+                                          ComponentOptionTypeParam::TypeUvec2(e) => {
+                                            *((base + 16) as *mut u8) = (14i32) as u8;
+                                            match e {
+                                              Some(e) => {
+                                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                                let Uvec2{ x:x47, y:y47, } = e;
+                                                *((base + 28) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x47);
+                                                *((base + 32) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y47);
+                                                
+                                              },
+                                              None => {
+                                                let e = ();
+                                                {
+                                                  *((base + 24) as *mut u8) = (0i32) as u8;
+                                                  let () = e;
+                                                  
+                                                }
+                                              },
+                                            };
+                                          },
+                                          ComponentOptionTypeParam::TypeUvec3(e) => {
+                                            *((base + 16) as *mut u8) = (15i32) as u8;
+                                            match e {
+                                              Some(e) => {
+                                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                                let Uvec3{ x:x48, y:y48, z:z48, } = e;
+                                                *((base + 28) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x48);
+                                                *((base + 32) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y48);
+                                                *((base + 36) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z48);
+                                                
+                                              },
+                                              None => {
+                                                let e = ();
+                                                {
+                                                  *((base + 24) as *mut u8) = (0i32) as u8;
+                                                  let () = e;
+                                                  
+                                                }
+                                              },
+                                            };
+                                          },
+                                          ComponentOptionTypeParam::TypeUvec4(e) => {
+                                            *((base + 16) as *mut u8) = (16i32) as u8;
+                                            match e {
+                                              Some(e) => {
+                                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                                let Uvec4{ x:x49, y:y49, z:z49, w:w49, } = e;
+                                                *((base + 28) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x49);
+                                                *((base + 32) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y49);
+                                                *((base + 36) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z49);
+                                                *((base + 40) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(w49);
                                                 
                                               },
                                               None => {
@@ -4655,13 +5363,13 @@
                                   }}
                                   #[link(wasm_import_module = "host")]
                                   extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "entity-set-components: func(entity: record { id0: u64, id1: u64 }, data: list<tuple<u32, variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>) }) }>>) -> unit")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "host_entity-set-components: func(entity: record { id0: u64, id1: u64 }, data: list<tuple<u32, variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>) }) }>>) -> unit")]
+                                    #[cfg_attr(target_arch = "wasm32", link_name = "entity-set-components: func(entity: record { id0: u64, id1: u64 }, data: list<tuple<u32, variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-uvec2(record { x: u32, y: u32 }), type-uvec3(record { x: u32, y: u32, z: u32 }), type-uvec4(record { x: u32, y: u32, z: u32, w: u32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(list<record { x: u32, y: u32 }>), type-uvec3(list<record { x: u32, y: u32, z: u32 }>), type-uvec4(list<record { x: u32, y: u32, z: u32, w: u32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(option<record { x: u32, y: u32 }>), type-uvec3(option<record { x: u32, y: u32, z: u32 }>), type-uvec4(option<record { x: u32, y: u32, z: u32, w: u32 }>) }) }>>) -> unit")]
+                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "host_entity-set-components: func(entity: record { id0: u64, id1: u64 }, data: list<tuple<u32, variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-uvec2(record { x: u32, y: u32 }), type-uvec3(record { x: u32, y: u32, z: u32 }), type-uvec4(record { x: u32, y: u32, z: u32, w: u32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(list<record { x: u32, y: u32 }>), type-uvec3(list<record { x: u32, y: u32, z: u32 }>), type-uvec4(list<record { x: u32, y: u32, z: u32, w: u32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(option<record { x: u32, y: u32 }>), type-uvec3(option<record { x: u32, y: u32, z: u32 }>), type-uvec4(option<record { x: u32, y: u32, z: u32, w: u32 }>) }) }>>) -> unit")]
                                     fn wit_import(_: i64, _: i64, _: i32, _: i32, );
                                   }
-                                  wit_import(wit_bindgen_guest_rust::rt::as_i64(id00), wit_bindgen_guest_rust::rt::as_i64(id10), result41 as i32, len41);
-                                  if layout41.size() != 0 {
-                                    std::alloc::dealloc(result41, layout41);
+                                  wit_import(wit_bindgen_guest_rust::rt::as_i64(id00), wit_bindgen_guest_rust::rt::as_i64(id10), result50 as i32, len50);
+                                  if layout50.size() != 0 {
+                                    std::alloc::dealloc(result50, layout50);
                                   }
                                   for (ptr, layout) in cleanup_list {
                                     
@@ -4819,23 +5527,23 @@
                                   let ptr0 = __HOST_RET_AREA.0.as_mut_ptr() as i32;
                                   #[link(wasm_import_module = "host")]
                                   extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "query-eval: func(q: u64) -> list<tuple<record { id0: u64, id1: u64 }, list<variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>) }) }>>>")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "host_query-eval: func(q: u64) -> list<tuple<record { id0: u64, id1: u64 }, list<variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>) }) }>>>")]
+                                    #[cfg_attr(target_arch = "wasm32", link_name = "query-eval: func(q: u64) -> list<tuple<record { id0: u64, id1: u64 }, list<variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-uvec2(record { x: u32, y: u32 }), type-uvec3(record { x: u32, y: u32, z: u32 }), type-uvec4(record { x: u32, y: u32, z: u32, w: u32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(list<record { x: u32, y: u32 }>), type-uvec3(list<record { x: u32, y: u32, z: u32 }>), type-uvec4(list<record { x: u32, y: u32, z: u32, w: u32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(option<record { x: u32, y: u32 }>), type-uvec3(option<record { x: u32, y: u32, z: u32 }>), type-uvec4(option<record { x: u32, y: u32, z: u32, w: u32 }>) }) }>>>")]
+                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "host_query-eval: func(q: u64) -> list<tuple<record { id0: u64, id1: u64 }, list<variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-uvec2(record { x: u32, y: u32 }), type-uvec3(record { x: u32, y: u32, z: u32 }), type-uvec4(record { x: u32, y: u32, z: u32, w: u32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(list<record { x: u32, y: u32 }>), type-uvec3(list<record { x: u32, y: u32, z: u32 }>), type-uvec4(list<record { x: u32, y: u32, z: u32, w: u32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(option<record { x: u32, y: u32 }>), type-uvec3(option<record { x: u32, y: u32, z: u32 }>), type-uvec4(option<record { x: u32, y: u32, z: u32, w: u32 }>) }) }>>>")]
                                     fn wit_import(_: i64, _: i32, );
                                   }
                                   wit_import(wit_bindgen_guest_rust::rt::as_i64(q), ptr0);
-                                  let base19 = *((ptr0 + 0) as *const i32);
-                                  let len19 = *((ptr0 + 4) as *const i32);
-                                  let mut result19 = Vec::with_capacity(len19 as usize);
-                                  for i in 0..len19 {
-                                    let base = base19 + i *24;
-                                    result19.push({
-                                      let base18 = *((base + 16) as *const i32);
-                                      let len18 = *((base + 20) as *const i32);
-                                      let mut result18 = Vec::with_capacity(len18 as usize);
-                                      for i in 0..len18 {
-                                        let base = base18 + i *80;
-                                        result18.push(match i32::from(*((base + 0) as *const u8)) {
+                                  let base22 = *((ptr0 + 0) as *const i32);
+                                  let len22 = *((ptr0 + 4) as *const i32);
+                                  let mut result22 = Vec::with_capacity(len22 as usize);
+                                  for i in 0..len22 {
+                                    let base = base22 + i *24;
+                                    result22.push({
+                                      let base21 = *((base + 16) as *const i32);
+                                      let len21 = *((base + 20) as *const i32);
+                                      let mut result21 = Vec::with_capacity(len21 as usize);
+                                      for i in 0..len21 {
+                                        let base = base21 + i *80;
+                                        result21.push(match i32::from(*((base + 0) as *const u8)) {
                                           0 => ComponentTypeResult::TypeEmpty(()),
                                           1 => ComponentTypeResult::TypeBool(match i32::from(*((base + 8) as *const u8)) {
                                             0 => false,
@@ -4858,7 +5566,10 @@
                                           11 => ComponentTypeResult::TypeVec2(Vec2{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), }),
                                           12 => ComponentTypeResult::TypeVec3(Vec3{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), z:*((base + 16) as *const f32), }),
                                           13 => ComponentTypeResult::TypeVec4(Vec4{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), z:*((base + 16) as *const f32), w:*((base + 20) as *const f32), }),
-                                          14 => ComponentTypeResult::TypeList(match i32::from(*((base + 8) as *const u8)) {
+                                          14 => ComponentTypeResult::TypeUvec2(Uvec2{x:*((base + 8) as *const i32) as u32, y:*((base + 12) as *const i32) as u32, }),
+                                          15 => ComponentTypeResult::TypeUvec3(Uvec3{x:*((base + 8) as *const i32) as u32, y:*((base + 12) as *const i32) as u32, z:*((base + 16) as *const i32) as u32, }),
+                                          16 => ComponentTypeResult::TypeUvec4(Uvec4{x:*((base + 8) as *const i32) as u32, y:*((base + 12) as *const i32) as u32, z:*((base + 16) as *const i32) as u32, w:*((base + 20) as *const i32) as u32, }),
+                                          17 => ComponentTypeResult::TypeList(match i32::from(*((base + 8) as *const u8)) {
                                             0 => ComponentListTypeResult::TypeEmpty({
                                               let len2 = *((base + 16) as *const i32) as usize;
                                               
@@ -4955,9 +5666,24 @@
                                               
                                               Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len16, len16)
                                             }),
+                                            14 => ComponentListTypeResult::TypeUvec2({
+                                              let len17 = *((base + 16) as *const i32) as usize;
+                                              
+                                              Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len17, len17)
+                                            }),
+                                            15 => ComponentListTypeResult::TypeUvec3({
+                                              let len18 = *((base + 16) as *const i32) as usize;
+                                              
+                                              Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len18, len18)
+                                            }),
+                                            16 => ComponentListTypeResult::TypeUvec4({
+                                              let len19 = *((base + 16) as *const i32) as usize;
+                                              
+                                              Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len19, len19)
+                                            }),
                                             _ => panic!("invalid enum discriminant"),
                                           }),
-                                          15 => ComponentTypeResult::TypeOption(match i32::from(*((base + 8) as *const u8)) {
+                                          18 => ComponentTypeResult::TypeOption(match i32::from(*((base + 8) as *const u8)) {
                                             0 => ComponentOptionTypeResult::TypeEmpty(match i32::from(*((base + 16) as *const u8)) {
                                               0 => None,
                                               1 => Some(()),
@@ -5005,9 +5731,9 @@
                                             8 => ComponentOptionTypeResult::TypeString(match i32::from(*((base + 16) as *const u8)) {
                                               0 => None,
                                               1 => Some({
-                                                let len17 = *((base + 24) as *const i32) as usize;
+                                                let len20 = *((base + 24) as *const i32) as usize;
                                                 
-                                                String::from_utf8(Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len17, len17)).unwrap()
+                                                String::from_utf8(Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len20, len20)).unwrap()
                                               }),
                                               _ => panic!("invalid enum discriminant"),
                                             }),
@@ -5036,22 +5762,37 @@
                                               1 => Some(Vec4{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), w:*((base + 32) as *const f32), }),
                                               _ => panic!("invalid enum discriminant"),
                                             }),
+                                            14 => ComponentOptionTypeResult::TypeUvec2(match i32::from(*((base + 16) as *const u8)) {
+                                              0 => None,
+                                              1 => Some(Uvec2{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, }),
+                                              _ => panic!("invalid enum discriminant"),
+                                            }),
+                                            15 => ComponentOptionTypeResult::TypeUvec3(match i32::from(*((base + 16) as *const u8)) {
+                                              0 => None,
+                                              1 => Some(Uvec3{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, }),
+                                              _ => panic!("invalid enum discriminant"),
+                                            }),
+                                            16 => ComponentOptionTypeResult::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
+                                              0 => None,
+                                              1 => Some(Uvec4{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, w:*((base + 32) as *const i32) as u32, }),
+                                              _ => panic!("invalid enum discriminant"),
+                                            }),
                                             _ => panic!("invalid enum discriminant"),
                                           }),
                                           _ => panic!("invalid enum discriminant"),
                                         });
                                       }
-                                      if len18 != 0 {
-                                        std::alloc::dealloc(base18 as *mut _, std::alloc::Layout::from_size_align_unchecked((len18 as usize) * 80, 8));
+                                      if len21 != 0 {
+                                        std::alloc::dealloc(base21 as *mut _, std::alloc::Layout::from_size_align_unchecked((len21 as usize) * 80, 8));
                                       }
                                       
-                                      (EntityId{id0:*((base + 0) as *const i64) as u64, id1:*((base + 8) as *const i64) as u64, }, result18)
+                                      (EntityId{id0:*((base + 0) as *const i64) as u64, id1:*((base + 8) as *const i64) as u64, }, result21)
                                     });
                                   }
-                                  if len19 != 0 {
-                                    std::alloc::dealloc(base19 as *mut _, std::alloc::Layout::from_size_align_unchecked((len19 as usize) * 24, 8));
+                                  if len22 != 0 {
+                                    std::alloc::dealloc(base22 as *mut _, std::alloc::Layout::from_size_align_unchecked((len22 as usize) * 24, 8));
                                   }
-                                  result19
+                                  result22
                                 }
                               }
                               pub fn player_get_raw_input(player: EntityId,) -> Option<PlayerRawInput>{
@@ -5665,22 +6406,22 @@
                                   let vec0 = name;
                                   let ptr0 = vec0.as_ptr() as i32;
                                   let len0 = vec0.len() as i32;
-                                  let vec41 = data;
-                                  let len41 = vec41.len() as i32;
-                                  let layout41 = core::alloc::Layout::from_size_align_unchecked(vec41.len() * 88, 8);
-                                  let result41 = if layout41.size() != 0
+                                  let vec50 = data;
+                                  let len50 = vec50.len() as i32;
+                                  let layout50 = core::alloc::Layout::from_size_align_unchecked(vec50.len() * 88, 8);
+                                  let result50 = if layout50.size() != 0
                                   {
-                                    let ptr = std::alloc::alloc(layout41);
+                                    let ptr = std::alloc::alloc(layout50);
                                     if ptr.is_null()
                                     {
-                                      std::alloc::handle_alloc_error(layout41);
+                                      std::alloc::handle_alloc_error(layout50);
                                     }
                                     ptr
                                   }else {
                                     std::ptr::null_mut()
                                   };
-                                  for (i, e) in vec41.into_iter().enumerate() {
-                                    let base = result41 as i32 + (i as i32) * 88;
+                                  for (i, e) in vec50.into_iter().enumerate() {
+                                    let base = result50 as i32 + (i as i32) * 88;
                                     {
                                       let (t1_0, t1_1, ) = e;
                                       *((base + 0) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(t1_0);
@@ -5794,74 +6535,71 @@
                                           *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w13);
                                           
                                         },
-                                        ComponentTypeParam::TypeList(e) => {
+                                        ComponentTypeParam::TypeUvec2(e) => {
                                           *((base + 8) as *mut u8) = (14i32) as u8;
+                                          let Uvec2{ x:x14, y:y14, } = e;
+                                          *((base + 16) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x14);
+                                          *((base + 20) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y14);
+                                          
+                                        },
+                                        ComponentTypeParam::TypeUvec3(e) => {
+                                          *((base + 8) as *mut u8) = (15i32) as u8;
+                                          let Uvec3{ x:x15, y:y15, z:z15, } = e;
+                                          *((base + 16) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x15);
+                                          *((base + 20) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y15);
+                                          *((base + 24) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z15);
+                                          
+                                        },
+                                        ComponentTypeParam::TypeUvec4(e) => {
+                                          *((base + 8) as *mut u8) = (16i32) as u8;
+                                          let Uvec4{ x:x16, y:y16, z:z16, w:w16, } = e;
+                                          *((base + 16) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x16);
+                                          *((base + 20) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y16);
+                                          *((base + 24) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z16);
+                                          *((base + 28) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(w16);
+                                          
+                                        },
+                                        ComponentTypeParam::TypeList(e) => {
+                                          *((base + 8) as *mut u8) = (17i32) as u8;
                                           match e {
                                             ComponentListTypeParam::TypeEmpty(e) => {
                                               *((base + 16) as *mut u8) = (0i32) as u8;
-                                              let vec14 = e;
-                                              let ptr14 = vec14.as_ptr() as i32;
-                                              let len14 = vec14.len() as i32;
-                                              *((base + 24) as *mut i32) = len14;
-                                              *((base + 20) as *mut i32) = ptr14;
+                                              let vec17 = e;
+                                              let ptr17 = vec17.as_ptr() as i32;
+                                              let len17 = vec17.len() as i32;
+                                              *((base + 24) as *mut i32) = len17;
+                                              *((base + 20) as *mut i32) = ptr17;
                                               
                                             },
                                             ComponentListTypeParam::TypeBool(e) => {
                                               *((base + 16) as *mut u8) = (1i32) as u8;
-                                              let vec15 = e;
-                                              let len15 = vec15.len() as i32;
-                                              let layout15 = core::alloc::Layout::from_size_align_unchecked(vec15.len() * 1, 1);
-                                              let result15 = if layout15.size() != 0
+                                              let vec18 = e;
+                                              let len18 = vec18.len() as i32;
+                                              let layout18 = core::alloc::Layout::from_size_align_unchecked(vec18.len() * 1, 1);
+                                              let result18 = if layout18.size() != 0
                                               {
-                                                let ptr = std::alloc::alloc(layout15);
+                                                let ptr = std::alloc::alloc(layout18);
                                                 if ptr.is_null()
                                                 {
-                                                  std::alloc::handle_alloc_error(layout15);
+                                                  std::alloc::handle_alloc_error(layout18);
                                                 }
                                                 ptr
                                               }else {
                                                 std::ptr::null_mut()
                                               };
-                                              for (i, e) in vec15.into_iter().enumerate() {
-                                                let base = result15 as i32 + (i as i32) * 1;
+                                              for (i, e) in vec18.into_iter().enumerate() {
+                                                let base = result18 as i32 + (i as i32) * 1;
                                                 {
                                                   *((base + 0) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                                                   
                                                 }}
-                                                *((base + 24) as *mut i32) = len15;
-                                                *((base + 20) as *mut i32) = result15 as i32;
-                                                cleanup_list.extend_from_slice(&[(result15, layout15),]);
+                                                *((base + 24) as *mut i32) = len18;
+                                                *((base + 20) as *mut i32) = result18 as i32;
+                                                cleanup_list.extend_from_slice(&[(result18, layout18),]);
                                                 
                                               },
                                               ComponentListTypeParam::TypeEntityId(e) => {
                                                 *((base + 16) as *mut u8) = (2i32) as u8;
-                                                let vec16 = e;
-                                                let ptr16 = vec16.as_ptr() as i32;
-                                                let len16 = vec16.len() as i32;
-                                                *((base + 24) as *mut i32) = len16;
-                                                *((base + 20) as *mut i32) = ptr16;
-                                                
-                                              },
-                                              ComponentListTypeParam::TypeF32(e) => {
-                                                *((base + 16) as *mut u8) = (3i32) as u8;
-                                                let vec17 = e;
-                                                let ptr17 = vec17.as_ptr() as i32;
-                                                let len17 = vec17.len() as i32;
-                                                *((base + 24) as *mut i32) = len17;
-                                                *((base + 20) as *mut i32) = ptr17;
-                                                
-                                              },
-                                              ComponentListTypeParam::TypeF64(e) => {
-                                                *((base + 16) as *mut u8) = (4i32) as u8;
-                                                let vec18 = e;
-                                                let ptr18 = vec18.as_ptr() as i32;
-                                                let len18 = vec18.len() as i32;
-                                                *((base + 24) as *mut i32) = len18;
-                                                *((base + 20) as *mut i32) = ptr18;
-                                                
-                                              },
-                                              ComponentListTypeParam::TypeMat4(e) => {
-                                                *((base + 16) as *mut u8) = (5i32) as u8;
                                                 let vec19 = e;
                                                 let ptr19 = vec19.as_ptr() as i32;
                                                 let len19 = vec19.len() as i32;
@@ -5869,8 +6607,8 @@
                                                 *((base + 20) as *mut i32) = ptr19;
                                                 
                                               },
-                                              ComponentListTypeParam::TypeI32(e) => {
-                                                *((base + 16) as *mut u8) = (6i32) as u8;
+                                              ComponentListTypeParam::TypeF32(e) => {
+                                                *((base + 16) as *mut u8) = (3i32) as u8;
                                                 let vec20 = e;
                                                 let ptr20 = vec20.as_ptr() as i32;
                                                 let len20 = vec20.len() as i32;
@@ -5878,8 +6616,8 @@
                                                 *((base + 20) as *mut i32) = ptr20;
                                                 
                                               },
-                                              ComponentListTypeParam::TypeQuat(e) => {
-                                                *((base + 16) as *mut u8) = (7i32) as u8;
+                                              ComponentListTypeParam::TypeF64(e) => {
+                                                *((base + 16) as *mut u8) = (4i32) as u8;
                                                 let vec21 = e;
                                                 let ptr21 = vec21.as_ptr() as i32;
                                                 let len21 = vec21.len() as i32;
@@ -5887,66 +6625,66 @@
                                                 *((base + 20) as *mut i32) = ptr21;
                                                 
                                               },
+                                              ComponentListTypeParam::TypeMat4(e) => {
+                                                *((base + 16) as *mut u8) = (5i32) as u8;
+                                                let vec22 = e;
+                                                let ptr22 = vec22.as_ptr() as i32;
+                                                let len22 = vec22.len() as i32;
+                                                *((base + 24) as *mut i32) = len22;
+                                                *((base + 20) as *mut i32) = ptr22;
+                                                
+                                              },
+                                              ComponentListTypeParam::TypeI32(e) => {
+                                                *((base + 16) as *mut u8) = (6i32) as u8;
+                                                let vec23 = e;
+                                                let ptr23 = vec23.as_ptr() as i32;
+                                                let len23 = vec23.len() as i32;
+                                                *((base + 24) as *mut i32) = len23;
+                                                *((base + 20) as *mut i32) = ptr23;
+                                                
+                                              },
+                                              ComponentListTypeParam::TypeQuat(e) => {
+                                                *((base + 16) as *mut u8) = (7i32) as u8;
+                                                let vec24 = e;
+                                                let ptr24 = vec24.as_ptr() as i32;
+                                                let len24 = vec24.len() as i32;
+                                                *((base + 24) as *mut i32) = len24;
+                                                *((base + 20) as *mut i32) = ptr24;
+                                                
+                                              },
                                               ComponentListTypeParam::TypeString(e) => {
                                                 *((base + 16) as *mut u8) = (8i32) as u8;
-                                                let vec23 = e;
-                                                let len23 = vec23.len() as i32;
-                                                let layout23 = core::alloc::Layout::from_size_align_unchecked(vec23.len() * 8, 4);
-                                                let result23 = if layout23.size() != 0
+                                                let vec26 = e;
+                                                let len26 = vec26.len() as i32;
+                                                let layout26 = core::alloc::Layout::from_size_align_unchecked(vec26.len() * 8, 4);
+                                                let result26 = if layout26.size() != 0
                                                 {
-                                                  let ptr = std::alloc::alloc(layout23);
+                                                  let ptr = std::alloc::alloc(layout26);
                                                   if ptr.is_null()
                                                   {
-                                                    std::alloc::handle_alloc_error(layout23);
+                                                    std::alloc::handle_alloc_error(layout26);
                                                   }
                                                   ptr
                                                 }else {
                                                   std::ptr::null_mut()
                                                 };
-                                                for (i, e) in vec23.into_iter().enumerate() {
-                                                  let base = result23 as i32 + (i as i32) * 8;
+                                                for (i, e) in vec26.into_iter().enumerate() {
+                                                  let base = result26 as i32 + (i as i32) * 8;
                                                   {
-                                                    let vec22 = e;
-                                                    let ptr22 = vec22.as_ptr() as i32;
-                                                    let len22 = vec22.len() as i32;
-                                                    *((base + 4) as *mut i32) = len22;
-                                                    *((base + 0) as *mut i32) = ptr22;
+                                                    let vec25 = e;
+                                                    let ptr25 = vec25.as_ptr() as i32;
+                                                    let len25 = vec25.len() as i32;
+                                                    *((base + 4) as *mut i32) = len25;
+                                                    *((base + 0) as *mut i32) = ptr25;
                                                     
                                                   }}
-                                                  *((base + 24) as *mut i32) = len23;
-                                                  *((base + 20) as *mut i32) = result23 as i32;
-                                                  cleanup_list.extend_from_slice(&[(result23, layout23),]);
+                                                  *((base + 24) as *mut i32) = len26;
+                                                  *((base + 20) as *mut i32) = result26 as i32;
+                                                  cleanup_list.extend_from_slice(&[(result26, layout26),]);
                                                   
                                                 },
                                                 ComponentListTypeParam::TypeU32(e) => {
                                                   *((base + 16) as *mut u8) = (9i32) as u8;
-                                                  let vec24 = e;
-                                                  let ptr24 = vec24.as_ptr() as i32;
-                                                  let len24 = vec24.len() as i32;
-                                                  *((base + 24) as *mut i32) = len24;
-                                                  *((base + 20) as *mut i32) = ptr24;
-                                                  
-                                                },
-                                                ComponentListTypeParam::TypeU64(e) => {
-                                                  *((base + 16) as *mut u8) = (10i32) as u8;
-                                                  let vec25 = e;
-                                                  let ptr25 = vec25.as_ptr() as i32;
-                                                  let len25 = vec25.len() as i32;
-                                                  *((base + 24) as *mut i32) = len25;
-                                                  *((base + 20) as *mut i32) = ptr25;
-                                                  
-                                                },
-                                                ComponentListTypeParam::TypeVec2(e) => {
-                                                  *((base + 16) as *mut u8) = (11i32) as u8;
-                                                  let vec26 = e;
-                                                  let ptr26 = vec26.as_ptr() as i32;
-                                                  let len26 = vec26.len() as i32;
-                                                  *((base + 24) as *mut i32) = len26;
-                                                  *((base + 20) as *mut i32) = ptr26;
-                                                  
-                                                },
-                                                ComponentListTypeParam::TypeVec3(e) => {
-                                                  *((base + 16) as *mut u8) = (12i32) as u8;
                                                   let vec27 = e;
                                                   let ptr27 = vec27.as_ptr() as i32;
                                                   let len27 = vec27.len() as i32;
@@ -5954,8 +6692,8 @@
                                                   *((base + 20) as *mut i32) = ptr27;
                                                   
                                                 },
-                                                ComponentListTypeParam::TypeVec4(e) => {
-                                                  *((base + 16) as *mut u8) = (13i32) as u8;
+                                                ComponentListTypeParam::TypeU64(e) => {
+                                                  *((base + 16) as *mut u8) = (10i32) as u8;
                                                   let vec28 = e;
                                                   let ptr28 = vec28.as_ptr() as i32;
                                                   let len28 = vec28.len() as i32;
@@ -5963,11 +6701,65 @@
                                                   *((base + 20) as *mut i32) = ptr28;
                                                   
                                                 },
+                                                ComponentListTypeParam::TypeVec2(e) => {
+                                                  *((base + 16) as *mut u8) = (11i32) as u8;
+                                                  let vec29 = e;
+                                                  let ptr29 = vec29.as_ptr() as i32;
+                                                  let len29 = vec29.len() as i32;
+                                                  *((base + 24) as *mut i32) = len29;
+                                                  *((base + 20) as *mut i32) = ptr29;
+                                                  
+                                                },
+                                                ComponentListTypeParam::TypeVec3(e) => {
+                                                  *((base + 16) as *mut u8) = (12i32) as u8;
+                                                  let vec30 = e;
+                                                  let ptr30 = vec30.as_ptr() as i32;
+                                                  let len30 = vec30.len() as i32;
+                                                  *((base + 24) as *mut i32) = len30;
+                                                  *((base + 20) as *mut i32) = ptr30;
+                                                  
+                                                },
+                                                ComponentListTypeParam::TypeVec4(e) => {
+                                                  *((base + 16) as *mut u8) = (13i32) as u8;
+                                                  let vec31 = e;
+                                                  let ptr31 = vec31.as_ptr() as i32;
+                                                  let len31 = vec31.len() as i32;
+                                                  *((base + 24) as *mut i32) = len31;
+                                                  *((base + 20) as *mut i32) = ptr31;
+                                                  
+                                                },
+                                                ComponentListTypeParam::TypeUvec2(e) => {
+                                                  *((base + 16) as *mut u8) = (14i32) as u8;
+                                                  let vec32 = e;
+                                                  let ptr32 = vec32.as_ptr() as i32;
+                                                  let len32 = vec32.len() as i32;
+                                                  *((base + 24) as *mut i32) = len32;
+                                                  *((base + 20) as *mut i32) = ptr32;
+                                                  
+                                                },
+                                                ComponentListTypeParam::TypeUvec3(e) => {
+                                                  *((base + 16) as *mut u8) = (15i32) as u8;
+                                                  let vec33 = e;
+                                                  let ptr33 = vec33.as_ptr() as i32;
+                                                  let len33 = vec33.len() as i32;
+                                                  *((base + 24) as *mut i32) = len33;
+                                                  *((base + 20) as *mut i32) = ptr33;
+                                                  
+                                                },
+                                                ComponentListTypeParam::TypeUvec4(e) => {
+                                                  *((base + 16) as *mut u8) = (16i32) as u8;
+                                                  let vec34 = e;
+                                                  let ptr34 = vec34.as_ptr() as i32;
+                                                  let len34 = vec34.len() as i32;
+                                                  *((base + 24) as *mut i32) = len34;
+                                                  *((base + 20) as *mut i32) = ptr34;
+                                                  
+                                                },
                                               };
                                               
                                             },
                                             ComponentTypeParam::TypeOption(e) => {
-                                              *((base + 8) as *mut u8) = (15i32) as u8;
+                                              *((base + 8) as *mut u8) = (18i32) as u8;
                                               match e {
                                                 ComponentOptionTypeParam::TypeEmpty(e) => {
                                                   *((base + 16) as *mut u8) = (0i32) as u8;
@@ -6010,9 +6802,9 @@
                                                   match e {
                                                     Some(e) => {
                                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                                      let EntityId{ id0:id030, id1:id130, } = e;
-                                                      *((base + 32) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id030);
-                                                      *((base + 40) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id130);
+                                                      let EntityId{ id0:id036, id1:id136, } = e;
+                                                      *((base + 32) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id036);
+                                                      *((base + 40) as *mut i64) = wit_bindgen_guest_rust::rt::as_i64(id136);
                                                       
                                                     },
                                                     None => {
@@ -6066,27 +6858,27 @@
                                                   match e {
                                                     Some(e) => {
                                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                                      let Mat4{ x:x31, y:y31, z:z31, w:w31, } = e;
-                                                      let Vec4{ x:x32, y:y32, z:z32, w:w32, } = x31;
-                                                      *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x32);
-                                                      *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y32);
-                                                      *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z32);
-                                                      *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w32);
-                                                      let Vec4{ x:x33, y:y33, z:z33, w:w33, } = y31;
-                                                      *((base + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x33);
-                                                      *((base + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y33);
-                                                      *((base + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z33);
-                                                      *((base + 56) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w33);
-                                                      let Vec4{ x:x34, y:y34, z:z34, w:w34, } = z31;
-                                                      *((base + 60) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x34);
-                                                      *((base + 64) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y34);
-                                                      *((base + 68) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z34);
-                                                      *((base + 72) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w34);
-                                                      let Vec4{ x:x35, y:y35, z:z35, w:w35, } = w31;
-                                                      *((base + 76) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x35);
-                                                      *((base + 80) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y35);
-                                                      *((base + 84) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z35);
-                                                      *((base + 88) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w35);
+                                                      let Mat4{ x:x37, y:y37, z:z37, w:w37, } = e;
+                                                      let Vec4{ x:x38, y:y38, z:z38, w:w38, } = x37;
+                                                      *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x38);
+                                                      *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y38);
+                                                      *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z38);
+                                                      *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w38);
+                                                      let Vec4{ x:x39, y:y39, z:z39, w:w39, } = y37;
+                                                      *((base + 44) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x39);
+                                                      *((base + 48) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y39);
+                                                      *((base + 52) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z39);
+                                                      *((base + 56) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w39);
+                                                      let Vec4{ x:x40, y:y40, z:z40, w:w40, } = z37;
+                                                      *((base + 60) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x40);
+                                                      *((base + 64) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y40);
+                                                      *((base + 68) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z40);
+                                                      *((base + 72) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w40);
+                                                      let Vec4{ x:x41, y:y41, z:z41, w:w41, } = w37;
+                                                      *((base + 76) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x41);
+                                                      *((base + 80) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y41);
+                                                      *((base + 84) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z41);
+                                                      *((base + 88) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w41);
                                                       
                                                     },
                                                     None => {
@@ -6122,11 +6914,11 @@
                                                   match e {
                                                     Some(e) => {
                                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                                      let Quat{ x:x36, y:y36, z:z36, w:w36, } = e;
-                                                      *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x36);
-                                                      *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y36);
-                                                      *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z36);
-                                                      *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w36);
+                                                      let Quat{ x:x42, y:y42, z:z42, w:w42, } = e;
+                                                      *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x42);
+                                                      *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y42);
+                                                      *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z42);
+                                                      *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w42);
                                                       
                                                     },
                                                     None => {
@@ -6144,11 +6936,11 @@
                                                   match e {
                                                     Some(e) => {
                                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                                      let vec37 = e;
-                                                      let ptr37 = vec37.as_ptr() as i32;
-                                                      let len37 = vec37.len() as i32;
-                                                      *((base + 32) as *mut i32) = len37;
-                                                      *((base + 28) as *mut i32) = ptr37;
+                                                      let vec43 = e;
+                                                      let ptr43 = vec43.as_ptr() as i32;
+                                                      let len43 = vec43.len() as i32;
+                                                      *((base + 32) as *mut i32) = len43;
+                                                      *((base + 28) as *mut i32) = ptr43;
                                                       
                                                     },
                                                     None => {
@@ -6202,9 +6994,9 @@
                                                   match e {
                                                     Some(e) => {
                                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                                      let Vec2{ x:x38, y:y38, } = e;
-                                                      *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x38);
-                                                      *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y38);
+                                                      let Vec2{ x:x44, y:y44, } = e;
+                                                      *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x44);
+                                                      *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y44);
                                                       
                                                     },
                                                     None => {
@@ -6222,10 +7014,10 @@
                                                   match e {
                                                     Some(e) => {
                                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                                      let Vec3{ x:x39, y:y39, z:z39, } = e;
-                                                      *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x39);
-                                                      *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y39);
-                                                      *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z39);
+                                                      let Vec3{ x:x45, y:y45, z:z45, } = e;
+                                                      *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x45);
+                                                      *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y45);
+                                                      *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z45);
                                                       
                                                     },
                                                     None => {
@@ -6243,11 +7035,74 @@
                                                   match e {
                                                     Some(e) => {
                                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                                      let Vec4{ x:x40, y:y40, z:z40, w:w40, } = e;
-                                                      *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x40);
-                                                      *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y40);
-                                                      *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z40);
-                                                      *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w40);
+                                                      let Vec4{ x:x46, y:y46, z:z46, w:w46, } = e;
+                                                      *((base + 28) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(x46);
+                                                      *((base + 32) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(y46);
+                                                      *((base + 36) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(z46);
+                                                      *((base + 40) as *mut f32) = wit_bindgen_guest_rust::rt::as_f32(w46);
+                                                      
+                                                    },
+                                                    None => {
+                                                      let e = ();
+                                                      {
+                                                        *((base + 24) as *mut u8) = (0i32) as u8;
+                                                        let () = e;
+                                                        
+                                                      }
+                                                    },
+                                                  };
+                                                },
+                                                ComponentOptionTypeParam::TypeUvec2(e) => {
+                                                  *((base + 16) as *mut u8) = (14i32) as u8;
+                                                  match e {
+                                                    Some(e) => {
+                                                      *((base + 24) as *mut u8) = (1i32) as u8;
+                                                      let Uvec2{ x:x47, y:y47, } = e;
+                                                      *((base + 28) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x47);
+                                                      *((base + 32) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y47);
+                                                      
+                                                    },
+                                                    None => {
+                                                      let e = ();
+                                                      {
+                                                        *((base + 24) as *mut u8) = (0i32) as u8;
+                                                        let () = e;
+                                                        
+                                                      }
+                                                    },
+                                                  };
+                                                },
+                                                ComponentOptionTypeParam::TypeUvec3(e) => {
+                                                  *((base + 16) as *mut u8) = (15i32) as u8;
+                                                  match e {
+                                                    Some(e) => {
+                                                      *((base + 24) as *mut u8) = (1i32) as u8;
+                                                      let Uvec3{ x:x48, y:y48, z:z48, } = e;
+                                                      *((base + 28) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x48);
+                                                      *((base + 32) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y48);
+                                                      *((base + 36) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z48);
+                                                      
+                                                    },
+                                                    None => {
+                                                      let e = ();
+                                                      {
+                                                        *((base + 24) as *mut u8) = (0i32) as u8;
+                                                        let () = e;
+                                                        
+                                                      }
+                                                    },
+                                                  };
+                                                },
+                                                ComponentOptionTypeParam::TypeUvec4(e) => {
+                                                  *((base + 16) as *mut u8) = (16i32) as u8;
+                                                  match e {
+                                                    Some(e) => {
+                                                      *((base + 24) as *mut u8) = (1i32) as u8;
+                                                      let Uvec4{ x:x49, y:y49, z:z49, w:w49, } = e;
+                                                      *((base + 28) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(x49);
+                                                      *((base + 32) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(y49);
+                                                      *((base + 36) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(z49);
+                                                      *((base + 40) as *mut i32) = wit_bindgen_guest_rust::rt::as_i32(w49);
                                                       
                                                     },
                                                     None => {
@@ -6268,13 +7123,13 @@
                                         }}
                                         #[link(wasm_import_module = "host")]
                                         extern "C" {
-                                          #[cfg_attr(target_arch = "wasm32", link_name = "event-send: func(name: string, data: list<tuple<u32, variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>) }) }>>) -> unit")]
-                                          #[cfg_attr(not(target_arch = "wasm32"), link_name = "host_event-send: func(name: string, data: list<tuple<u32, variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>) }) }>>) -> unit")]
+                                          #[cfg_attr(target_arch = "wasm32", link_name = "event-send: func(name: string, data: list<tuple<u32, variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-uvec2(record { x: u32, y: u32 }), type-uvec3(record { x: u32, y: u32, z: u32 }), type-uvec4(record { x: u32, y: u32, z: u32, w: u32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(list<record { x: u32, y: u32 }>), type-uvec3(list<record { x: u32, y: u32, z: u32 }>), type-uvec4(list<record { x: u32, y: u32, z: u32, w: u32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(option<record { x: u32, y: u32 }>), type-uvec3(option<record { x: u32, y: u32, z: u32 }>), type-uvec4(option<record { x: u32, y: u32, z: u32, w: u32 }>) }) }>>) -> unit")]
+                                          #[cfg_attr(not(target_arch = "wasm32"), link_name = "host_event-send: func(name: string, data: list<tuple<u32, variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-uvec2(record { x: u32, y: u32 }), type-uvec3(record { x: u32, y: u32, z: u32 }), type-uvec4(record { x: u32, y: u32, z: u32, w: u32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(list<record { x: u32, y: u32 }>), type-uvec3(list<record { x: u32, y: u32, z: u32 }>), type-uvec4(list<record { x: u32, y: u32, z: u32, w: u32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(option<record { x: u32, y: u32 }>), type-uvec3(option<record { x: u32, y: u32, z: u32 }>), type-uvec4(option<record { x: u32, y: u32, z: u32, w: u32 }>) }) }>>) -> unit")]
                                           fn wit_import(_: i32, _: i32, _: i32, _: i32, );
                                         }
-                                        wit_import(ptr0, len0, result41 as i32, len41);
-                                        if layout41.size() != 0 {
-                                          std::alloc::dealloc(result41, layout41);
+                                        wit_import(ptr0, len0, result50 as i32, len50);
+                                        if layout50.size() != 0 {
+                                          std::alloc::dealloc(result50, layout50);
                                         }
                                         for (ptr, layout) in cleanup_list {
                                           
@@ -6373,6 +7228,39 @@
   }
   #[repr(C)]
   #[derive(Copy, Clone)]
+  pub struct Uvec2 {
+    pub x: u32,
+    pub y: u32,
+  }
+  impl core::fmt::Debug for Uvec2 {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+      f.debug_struct("Uvec2").field("x", &self.x).field("y", &self.y).finish()}
+  }
+  #[repr(C)]
+  #[derive(Copy, Clone)]
+  pub struct Uvec3 {
+    pub x: u32,
+    pub y: u32,
+    pub z: u32,
+  }
+  impl core::fmt::Debug for Uvec3 {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+      f.debug_struct("Uvec3").field("x", &self.x).field("y", &self.y).field("z", &self.z).finish()}
+  }
+  #[repr(C)]
+  #[derive(Copy, Clone)]
+  pub struct Uvec4 {
+    pub x: u32,
+    pub y: u32,
+    pub z: u32,
+    pub w: u32,
+  }
+  impl core::fmt::Debug for Uvec4 {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+      f.debug_struct("Uvec4").field("x", &self.x).field("y", &self.y).field("z", &self.z).field("w", &self.w).finish()}
+  }
+  #[repr(C)]
+  #[derive(Copy, Clone)]
   pub struct Quat {
     pub x: f32,
     pub y: f32,
@@ -6411,6 +7299,9 @@
     TypeVec2(Vec<Vec2>),
     TypeVec3(Vec<Vec3>),
     TypeVec4(Vec<Vec4>),
+    TypeUvec2(Vec<Uvec2>),
+    TypeUvec3(Vec<Uvec3>),
+    TypeUvec4(Vec<Uvec4>),
   }
   impl core::fmt::Debug for ComponentListType {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -6457,6 +7348,15 @@
         ComponentListType::TypeVec4(e) => {
           f.debug_tuple("ComponentListType::TypeVec4").field(e).finish()
         }
+        ComponentListType::TypeUvec2(e) => {
+          f.debug_tuple("ComponentListType::TypeUvec2").field(e).finish()
+        }
+        ComponentListType::TypeUvec3(e) => {
+          f.debug_tuple("ComponentListType::TypeUvec3").field(e).finish()
+        }
+        ComponentListType::TypeUvec4(e) => {
+          f.debug_tuple("ComponentListType::TypeUvec4").field(e).finish()
+        }
       }
     }
   }
@@ -6476,6 +7376,9 @@
     TypeVec2(Option<Vec2>),
     TypeVec3(Option<Vec3>),
     TypeVec4(Option<Vec4>),
+    TypeUvec2(Option<Uvec2>),
+    TypeUvec3(Option<Uvec3>),
+    TypeUvec4(Option<Uvec4>),
   }
   impl core::fmt::Debug for ComponentOptionType {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -6522,6 +7425,15 @@
         ComponentOptionType::TypeVec4(e) => {
           f.debug_tuple("ComponentOptionType::TypeVec4").field(e).finish()
         }
+        ComponentOptionType::TypeUvec2(e) => {
+          f.debug_tuple("ComponentOptionType::TypeUvec2").field(e).finish()
+        }
+        ComponentOptionType::TypeUvec3(e) => {
+          f.debug_tuple("ComponentOptionType::TypeUvec3").field(e).finish()
+        }
+        ComponentOptionType::TypeUvec4(e) => {
+          f.debug_tuple("ComponentOptionType::TypeUvec4").field(e).finish()
+        }
       }
     }
   }
@@ -6541,6 +7453,9 @@
     TypeVec2(Vec2),
     TypeVec3(Vec3),
     TypeVec4(Vec4),
+    TypeUvec2(Uvec2),
+    TypeUvec3(Uvec3),
+    TypeUvec4(Uvec4),
     TypeList(ComponentListType),
     TypeOption(ComponentOptionType),
   }
@@ -6589,6 +7504,15 @@
         ComponentType::TypeVec4(e) => {
           f.debug_tuple("ComponentType::TypeVec4").field(e).finish()
         }
+        ComponentType::TypeUvec2(e) => {
+          f.debug_tuple("ComponentType::TypeUvec2").field(e).finish()
+        }
+        ComponentType::TypeUvec3(e) => {
+          f.debug_tuple("ComponentType::TypeUvec3").field(e).finish()
+        }
+        ComponentType::TypeUvec4(e) => {
+          f.debug_tuple("ComponentType::TypeUvec4").field(e).finish()
+        }
         ComponentType::TypeList(e) => {
           f.debug_tuple("ComponentType::TypeList").field(e).finish()
         }
@@ -6603,15 +7527,15 @@
     let result = <super::Guest as Guest>::init();
     let () = result;
   }
-  #[export_name = "exec: func(ctx: record { time: float32 }, event-name: string, event-data: list<tuple<u32, variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>) }) }>>) -> unit"]
+  #[export_name = "exec: func(ctx: record { time: float32 }, event-name: string, event-data: list<tuple<u32, variant { type-empty(tuple<>), type-bool(bool), type-entity-id(record { id0: u64, id1: u64 }), type-f32(float32), type-f64(float64), type-mat4(record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }), type-i32(s32), type-quat(record { x: float32, y: float32, z: float32, w: float32 }), type-string(string), type-u32(u32), type-u64(u64), type-vec2(record { x: float32, y: float32 }), type-vec3(record { x: float32, y: float32, z: float32 }), type-vec4(record { x: float32, y: float32, z: float32, w: float32 }), type-uvec2(record { x: u32, y: u32 }), type-uvec3(record { x: u32, y: u32, z: u32 }), type-uvec4(record { x: u32, y: u32, z: u32, w: u32 }), type-list(variant { type-empty(list<tuple<>>), type-bool(list<bool>), type-entity-id(list<record { id0: u64, id1: u64 }>), type-f32(list<float32>), type-f64(list<float64>), type-mat4(list<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(list<s32>), type-quat(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(list<string>), type-u32(list<u32>), type-u64(list<u64>), type-vec2(list<record { x: float32, y: float32 }>), type-vec3(list<record { x: float32, y: float32, z: float32 }>), type-vec4(list<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(list<record { x: u32, y: u32 }>), type-uvec3(list<record { x: u32, y: u32, z: u32 }>), type-uvec4(list<record { x: u32, y: u32, z: u32, w: u32 }>) }), type-option(variant { type-empty(option<tuple<>>), type-bool(option<bool>), type-entity-id(option<record { id0: u64, id1: u64 }>), type-f32(option<float32>), type-f64(option<float64>), type-mat4(option<record { x: record { x: float32, y: float32, z: float32, w: float32 }, y: record { x: float32, y: float32, z: float32, w: float32 }, z: record { x: float32, y: float32, z: float32, w: float32 }, w: record { x: float32, y: float32, z: float32, w: float32 } }>), type-i32(option<s32>), type-quat(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-string(option<string>), type-u32(option<u32>), type-u64(option<u64>), type-vec2(option<record { x: float32, y: float32 }>), type-vec3(option<record { x: float32, y: float32, z: float32 }>), type-vec4(option<record { x: float32, y: float32, z: float32, w: float32 }>), type-uvec2(option<record { x: u32, y: u32 }>), type-uvec3(option<record { x: u32, y: u32, z: u32 }>), type-uvec4(option<record { x: u32, y: u32, z: u32, w: u32 }>) }) }>>) -> unit"]
   unsafe extern "C" fn __wit_bindgen_guest_exec(arg0: f32, arg1: i32, arg2: i32, arg3: i32, arg4: i32, ){
     let len0 = arg2 as usize;
-    let base18 = arg3;
-    let len18 = arg4;
-    let mut result18 = Vec::with_capacity(len18 as usize);
-    for i in 0..len18 {
-      let base = base18 + i *88;
-      result18.push((*((base + 0) as *const i32) as u32, match i32::from(*((base + 8) as *const u8)) {
+    let base21 = arg3;
+    let len21 = arg4;
+    let mut result21 = Vec::with_capacity(len21 as usize);
+    for i in 0..len21 {
+      let base = base21 + i *88;
+      result21.push((*((base + 0) as *const i32) as u32, match i32::from(*((base + 8) as *const u8)) {
         0 => ComponentType::TypeEmpty(()),
         1 => ComponentType::TypeBool(match i32::from(*((base + 16) as *const u8)) {
           0 => false,
@@ -6634,7 +7558,10 @@
         11 => ComponentType::TypeVec2(Vec2{x:*((base + 16) as *const f32), y:*((base + 20) as *const f32), }),
         12 => ComponentType::TypeVec3(Vec3{x:*((base + 16) as *const f32), y:*((base + 20) as *const f32), z:*((base + 24) as *const f32), }),
         13 => ComponentType::TypeVec4(Vec4{x:*((base + 16) as *const f32), y:*((base + 20) as *const f32), z:*((base + 24) as *const f32), w:*((base + 28) as *const f32), }),
-        14 => ComponentType::TypeList(match i32::from(*((base + 16) as *const u8)) {
+        14 => ComponentType::TypeUvec2(Uvec2{x:*((base + 16) as *const i32) as u32, y:*((base + 20) as *const i32) as u32, }),
+        15 => ComponentType::TypeUvec3(Uvec3{x:*((base + 16) as *const i32) as u32, y:*((base + 20) as *const i32) as u32, z:*((base + 24) as *const i32) as u32, }),
+        16 => ComponentType::TypeUvec4(Uvec4{x:*((base + 16) as *const i32) as u32, y:*((base + 20) as *const i32) as u32, z:*((base + 24) as *const i32) as u32, w:*((base + 28) as *const i32) as u32, }),
+        17 => ComponentType::TypeList(match i32::from(*((base + 16) as *const u8)) {
           0 => ComponentListType::TypeEmpty({
             let len2 = *((base + 24) as *const i32) as usize;
             
@@ -6731,9 +7658,24 @@
             
             Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len16, len16)
           }),
+          14 => ComponentListType::TypeUvec2({
+            let len17 = *((base + 24) as *const i32) as usize;
+            
+            Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len17, len17)
+          }),
+          15 => ComponentListType::TypeUvec3({
+            let len18 = *((base + 24) as *const i32) as usize;
+            
+            Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len18, len18)
+          }),
+          16 => ComponentListType::TypeUvec4({
+            let len19 = *((base + 24) as *const i32) as usize;
+            
+            Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len19, len19)
+          }),
           _ => panic!("invalid enum discriminant"),
         }),
-        15 => ComponentType::TypeOption(match i32::from(*((base + 16) as *const u8)) {
+        18 => ComponentType::TypeOption(match i32::from(*((base + 16) as *const u8)) {
           0 => ComponentOptionType::TypeEmpty(match i32::from(*((base + 24) as *const u8)) {
             0 => None,
             1 => Some(()),
@@ -6781,9 +7723,9 @@
           8 => ComponentOptionType::TypeString(match i32::from(*((base + 24) as *const u8)) {
             0 => None,
             1 => Some({
-              let len17 = *((base + 32) as *const i32) as usize;
+              let len20 = *((base + 32) as *const i32) as usize;
               
-              String::from_utf8(Vec::from_raw_parts(*((base + 28) as *const i32) as *mut _, len17, len17)).unwrap()
+              String::from_utf8(Vec::from_raw_parts(*((base + 28) as *const i32) as *mut _, len20, len20)).unwrap()
             }),
             _ => panic!("invalid enum discriminant"),
           }),
@@ -6812,15 +7754,30 @@
             1 => Some(Vec4{x:*((base + 28) as *const f32), y:*((base + 32) as *const f32), z:*((base + 36) as *const f32), w:*((base + 40) as *const f32), }),
             _ => panic!("invalid enum discriminant"),
           }),
+          14 => ComponentOptionType::TypeUvec2(match i32::from(*((base + 24) as *const u8)) {
+            0 => None,
+            1 => Some(Uvec2{x:*((base + 28) as *const i32) as u32, y:*((base + 32) as *const i32) as u32, }),
+            _ => panic!("invalid enum discriminant"),
+          }),
+          15 => ComponentOptionType::TypeUvec3(match i32::from(*((base + 24) as *const u8)) {
+            0 => None,
+            1 => Some(Uvec3{x:*((base + 28) as *const i32) as u32, y:*((base + 32) as *const i32) as u32, z:*((base + 36) as *const i32) as u32, }),
+            _ => panic!("invalid enum discriminant"),
+          }),
+          16 => ComponentOptionType::TypeUvec4(match i32::from(*((base + 24) as *const u8)) {
+            0 => None,
+            1 => Some(Uvec4{x:*((base + 28) as *const i32) as u32, y:*((base + 32) as *const i32) as u32, z:*((base + 36) as *const i32) as u32, w:*((base + 40) as *const i32) as u32, }),
+            _ => panic!("invalid enum discriminant"),
+          }),
           _ => panic!("invalid enum discriminant"),
         }),
         _ => panic!("invalid enum discriminant"),
       }));
     }
-    if len18 != 0 {
-      std::alloc::dealloc(base18 as *mut _, std::alloc::Layout::from_size_align_unchecked((len18 as usize) * 88, 8));
+    if len21 != 0 {
+      std::alloc::dealloc(base21 as *mut _, std::alloc::Layout::from_size_align_unchecked((len21 as usize) * 88, 8));
     }
-    let result = <super::Guest as Guest>::exec(RunContext{time:arg0, }, String::from_utf8(Vec::from_raw_parts(arg1 as *mut _, len0, len0)).unwrap(), result18);
+    let result = <super::Guest as Guest>::exec(RunContext{time:arg0, }, String::from_utf8(Vec::from_raw_parts(arg1 as *mut _, len0, len0)).unwrap(), result21);
     let () = result;
   }
   

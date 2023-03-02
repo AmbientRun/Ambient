@@ -52,6 +52,39 @@ impl GuestConvert for guest::Vec4 {
     }
 }
 
+impl GuestConvert for guest::Uvec2 {
+    type Item = host::Uvec2;
+    fn guest_convert(self) -> Self::Item {
+        Self::Item {
+            x: self.x,
+            y: self.y,
+        }
+    }
+}
+
+impl GuestConvert for guest::Uvec3 {
+    type Item = host::Uvec3;
+    fn guest_convert(self) -> Self::Item {
+        Self::Item {
+            x: self.x,
+            y: self.y,
+            z: self.z,
+        }
+    }
+}
+
+impl GuestConvert for guest::Uvec4 {
+    type Item = host::Uvec4;
+    fn guest_convert(self) -> Self::Item {
+        Self::Item {
+            x: self.x,
+            y: self.y,
+            z: self.z,
+            w: self.w,
+        }
+    }
+}
+
 impl GuestConvert for guest::Quat {
     type Item = host::Quat;
     fn guest_convert(self) -> Self::Item {
@@ -134,6 +167,9 @@ impl GuestConvert for guest::ComponentListType {
             Self::TypeVec2(c) => Self::Item::TypeVec2(c.guest_convert()),
             Self::TypeVec3(c) => Self::Item::TypeVec3(c.guest_convert()),
             Self::TypeVec4(c) => Self::Item::TypeVec4(c.guest_convert()),
+            Self::TypeUvec2(c) => Self::Item::TypeUvec2(c.guest_convert()),
+            Self::TypeUvec3(c) => Self::Item::TypeUvec3(c.guest_convert()),
+            Self::TypeUvec4(c) => Self::Item::TypeUvec4(c.guest_convert()),
         }
     }
 }
@@ -156,6 +192,9 @@ impl GuestConvert for guest::ComponentOptionType {
             Self::TypeVec2(c) => Self::Item::TypeVec2(c.guest_convert()),
             Self::TypeVec3(c) => Self::Item::TypeVec3(c.guest_convert()),
             Self::TypeVec4(c) => Self::Item::TypeVec4(c.guest_convert()),
+            Self::TypeUvec2(c) => Self::Item::TypeUvec2(c.guest_convert()),
+            Self::TypeUvec3(c) => Self::Item::TypeUvec3(c.guest_convert()),
+            Self::TypeUvec4(c) => Self::Item::TypeUvec4(c.guest_convert()),
         }
     }
 }
@@ -178,6 +217,9 @@ impl GuestConvert for guest::ComponentType {
             Self::TypeVec2(c) => Self::Item::TypeVec2(c.guest_convert()),
             Self::TypeVec3(c) => Self::Item::TypeVec3(c.guest_convert()),
             Self::TypeVec4(c) => Self::Item::TypeVec4(c.guest_convert()),
+            Self::TypeUvec2(c) => Self::Item::TypeUvec2(c.guest_convert()),
+            Self::TypeUvec3(c) => Self::Item::TypeUvec3(c.guest_convert()),
+            Self::TypeUvec4(c) => Self::Item::TypeUvec4(c.guest_convert()),
             Self::TypeList(c) => Self::Item::TypeList(c.guest_convert()),
             Self::TypeOption(c) => Self::Item::TypeOption(c.guest_convert()),
         }

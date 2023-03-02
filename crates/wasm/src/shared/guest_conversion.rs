@@ -51,6 +51,39 @@ impl GuestConvert for host::Vec4 {
     }
 }
 
+impl GuestConvert for host::Uvec2 {
+    type Item = guest::Uvec2;
+    fn guest_convert(self) -> Self::Item {
+        Self::Item {
+            x: self.x,
+            y: self.y,
+        }
+    }
+}
+
+impl GuestConvert for host::Uvec3 {
+    type Item = guest::Uvec3;
+    fn guest_convert(self) -> Self::Item {
+        Self::Item {
+            x: self.x,
+            y: self.y,
+            z: self.z,
+        }
+    }
+}
+
+impl GuestConvert for host::Uvec4 {
+    type Item = guest::Uvec4;
+    fn guest_convert(self) -> Self::Item {
+        Self::Item {
+            x: self.x,
+            y: self.y,
+            z: self.z,
+            w: self.w,
+        }
+    }
+}
+
 impl GuestConvert for host::Quat {
     type Item = guest::Quat;
     fn guest_convert(self) -> Self::Item {
@@ -134,6 +167,9 @@ pub(crate) enum ComponentListType<'a> {
     TypeVec2(Vec<guest::Vec2>),
     TypeVec3(Vec<guest::Vec3>),
     TypeVec4(Vec<guest::Vec4>),
+    TypeUVec2(Vec<guest::Uvec2>),
+    TypeUVec3(Vec<guest::Uvec3>),
+    TypeUVec4(Vec<guest::Uvec4>),
 }
 impl<'a> ComponentListType<'a> {
     pub fn as_guest(&'a self) -> guest::ComponentListType<'a> {
@@ -152,6 +188,9 @@ impl<'a> ComponentListType<'a> {
             Self::TypeVec2(v) => guest::ComponentListType::TypeVec2(v),
             Self::TypeVec3(v) => guest::ComponentListType::TypeVec3(v),
             Self::TypeVec4(v) => guest::ComponentListType::TypeVec4(v),
+            Self::TypeUVec2(v) => guest::ComponentListType::TypeUvec2(v),
+            Self::TypeUVec3(v) => guest::ComponentListType::TypeUvec3(v),
+            Self::TypeUVec4(v) => guest::ComponentListType::TypeUvec4(v),
         }
     }
 }
@@ -171,6 +210,9 @@ pub(crate) enum ComponentOptionType<'a> {
     TypeVec2(Option<guest::Vec2>),
     TypeVec3(Option<guest::Vec3>),
     TypeVec4(Option<guest::Vec4>),
+    TypeUVec2(Option<guest::Uvec2>),
+    TypeUVec3(Option<guest::Uvec3>),
+    TypeUVec4(Option<guest::Uvec4>),
 }
 impl<'a> ComponentOptionType<'a> {
     pub fn as_guest(&self) -> guest::ComponentOptionType<'a> {
@@ -189,6 +231,9 @@ impl<'a> ComponentOptionType<'a> {
             Self::TypeVec2(v) => guest::ComponentOptionType::TypeVec2(*v),
             Self::TypeVec3(v) => guest::ComponentOptionType::TypeVec3(*v),
             Self::TypeVec4(v) => guest::ComponentOptionType::TypeVec4(*v),
+            Self::TypeUVec2(v) => guest::ComponentOptionType::TypeUvec2(*v),
+            Self::TypeUVec3(v) => guest::ComponentOptionType::TypeUvec3(*v),
+            Self::TypeUVec4(v) => guest::ComponentOptionType::TypeUvec4(*v),
         }
     }
 }
@@ -208,6 +253,9 @@ pub(crate) enum ComponentType<'a> {
     TypeVec2(guest::Vec2),
     TypeVec3(guest::Vec3),
     TypeVec4(guest::Vec4),
+    TypeUVec2(guest::Uvec2),
+    TypeUVec3(guest::Uvec3),
+    TypeUVec4(guest::Uvec4),
     TypeList(ComponentListType<'a>),
     TypeOption(ComponentOptionType<'a>),
 }
@@ -228,6 +276,9 @@ impl<'a> ComponentType<'a> {
             Self::TypeVec2(v) => guest::ComponentType::TypeVec2(*v),
             Self::TypeVec3(v) => guest::ComponentType::TypeVec3(*v),
             Self::TypeVec4(v) => guest::ComponentType::TypeVec4(*v),
+            Self::TypeUVec2(v) => guest::ComponentType::TypeUvec2(*v),
+            Self::TypeUVec3(v) => guest::ComponentType::TypeUvec3(*v),
+            Self::TypeUVec4(v) => guest::ComponentType::TypeUvec4(*v),
             Self::TypeList(v) => guest::ComponentType::TypeList(v.as_guest()),
             Self::TypeOption(v) => guest::ComponentType::TypeOption(v.as_guest()),
         }
@@ -255,6 +306,9 @@ impl<'a> GuestConvert for &'a host::ComponentListTypeResult {
             S::TypeVec2(c) => Self::Item::TypeVec2(c.iter().map(|s| s.guest_convert()).collect()),
             S::TypeVec3(c) => Self::Item::TypeVec3(c.iter().map(|s| s.guest_convert()).collect()),
             S::TypeVec4(c) => Self::Item::TypeVec4(c.iter().map(|s| s.guest_convert()).collect()),
+            S::TypeUvec2(c) => Self::Item::TypeUVec2(c.iter().map(|s| s.guest_convert()).collect()),
+            S::TypeUvec3(c) => Self::Item::TypeUVec3(c.iter().map(|s| s.guest_convert()).collect()),
+            S::TypeUvec4(c) => Self::Item::TypeUVec4(c.iter().map(|s| s.guest_convert()).collect()),
         }
     }
 }
@@ -278,6 +332,9 @@ impl<'a> GuestConvert for &'a host::ComponentOptionTypeResult {
             S::TypeVec2(c) => Self::Item::TypeVec2(c.guest_convert()),
             S::TypeVec3(c) => Self::Item::TypeVec3(c.guest_convert()),
             S::TypeVec4(c) => Self::Item::TypeVec4(c.guest_convert()),
+            S::TypeUvec2(c) => Self::Item::TypeUVec2(c.guest_convert()),
+            S::TypeUvec3(c) => Self::Item::TypeUVec3(c.guest_convert()),
+            S::TypeUvec4(c) => Self::Item::TypeUVec4(c.guest_convert()),
         }
     }
 }
@@ -304,6 +361,9 @@ impl<'a> GuestConvert for &'a host::ComponentTypeResult {
             S::TypeVec2(c) => Self::Item::TypeVec2(c.guest_convert()),
             S::TypeVec3(c) => Self::Item::TypeVec3(c.guest_convert()),
             S::TypeVec4(c) => Self::Item::TypeVec4(c.guest_convert()),
+            S::TypeUvec2(c) => Self::Item::TypeUVec2(c.guest_convert()),
+            S::TypeUvec3(c) => Self::Item::TypeUVec3(c.guest_convert()),
+            S::TypeUvec4(c) => Self::Item::TypeUVec4(c.guest_convert()),
             S::TypeList(c) => Self::Item::TypeList(c.guest_convert()),
             S::TypeOption(c) => Self::Item::TypeOption(c.guest_convert()),
         }
