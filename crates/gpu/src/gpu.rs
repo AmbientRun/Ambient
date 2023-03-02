@@ -60,7 +60,7 @@ impl Gpu {
         log::info!("Requesting adapter");
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
-                power_preference: wgpu::PowerPreference::default(),
+                power_preference: wgpu::PowerPreference::HighPerformance,
                 compatible_surface: surface.as_ref(),
                 force_fallback_adapter: false,
             })
