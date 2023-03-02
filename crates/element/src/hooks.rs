@@ -138,7 +138,7 @@ impl<'a> Hooks<'a> {
     }
 
     pub fn use_world_event(&mut self, func: impl Fn(&mut World, &Entity) + Sync + Send + 'static) {
-        let reader = self.use_ref_with(|_| WorldEventReader::new());
+        let reader = self.use_ref_with(|world| world.resource(world_events()).reader());
         self.use_frame(move |world| {
             let mut reader = reader.lock();
             let events = reader.iter(world.resource(world_events())).map(|(_, event)| event.clone()).collect_vec();
