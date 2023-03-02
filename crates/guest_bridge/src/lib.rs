@@ -4,7 +4,7 @@ pub use ambient_ecs as ecs;
 #[cfg(feature = "native")]
 pub mod components {
     pub mod app {
-        pub use ambient_core::{name, ui_scene};
+        pub use ambient_core::{name, ui_scene, window_logical_size, window_physical_size, window_scale_factor};
     }
     pub mod ecs {
         pub use ambient_core::hierarchy::{children, parent};
@@ -76,6 +76,9 @@ pub mod ecs {
         }
         pub fn has_component<T: SupportedComponentTypeGet>(&self, entity_id: EntityId, component: Component<T>) -> bool {
             ambient_api::entity::has_component(entity_id, component)
+        }
+        pub fn resource<T: ComponentValue + SupportedComponentTypeGet>(&self, component: Component<T>) -> T {
+            ambient_api::entity::get_component(ambient_api::entity::resources(), component).unwrap()
         }
     }
     #[derive(Debug)]
