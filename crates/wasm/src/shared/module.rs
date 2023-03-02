@@ -163,8 +163,7 @@ impl<Bindings: BindingsBound> ModuleStateInnerImpl<Bindings> {
         let mut config = wasmtime::Config::new();
         config.wasm_backtrace_details(wasmtime::WasmBacktraceDetails::Enable);
         config.wasm_component_model(true);
-
-        let engine = wasmtime::Engine::default();
+        let engine = wasmtime::Engine::new(&config)?;
 
         let (stdout_output, stdout_consumer) = WasiOutputStream::make(stdout_output);
         let (stderr_output, stderr_consumer) = WasiOutputStream::make(stderr_output);
