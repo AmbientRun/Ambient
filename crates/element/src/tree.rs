@@ -14,8 +14,8 @@ use ambient_core::hierarchy::{children, parent};
 #[cfg(feature = "guest")]
 use ambient_guest_bridge::api::components::core::ecs::{children, parent};
 #[cfg(feature = "native")]
-use ambient_guest_bridge::ecs::{query, SystemGroup};
-use ambient_guest_bridge::ecs::{Component, Entity, EntityId, World};
+use ambient_guest_bridge::ecs::{query, Component, SystemGroup};
+use ambient_guest_bridge::ecs::{Entity, EntityId, World};
 use friendly_id::friendly_id;
 use itertools::Itertools;
 use parking_lot::Mutex;
