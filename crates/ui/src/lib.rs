@@ -88,27 +88,6 @@ pub fn systems() -> SystemGroup {
     )
 }
 
-pub fn use_window_physical_resolution(hooks: &mut Hooks) -> UVec2 {
-    let (res, set_res) = hooks.use_state(*hooks.world.resource(window_physical_size()));
-    hooks.use_frame(move |world| {
-        let new_res = *world.resource(window_physical_size());
-        if new_res != res {
-            set_res(new_res);
-        }
-    });
-    res
-}
-pub fn use_window_logical_resolution(hooks: &mut Hooks) -> UVec2 {
-    let (res, set_res) = hooks.use_state(*hooks.world.resource(window_logical_size()));
-    hooks.use_frame(move |world| {
-        let new_res = *world.resource(window_logical_size());
-        if new_res != res {
-            set_res(new_res);
-        }
-    });
-    res
-}
-
 #[derive(Debug, Clone)]
 pub struct WindowSized(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(WindowSized);
