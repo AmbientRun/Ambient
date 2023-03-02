@@ -175,10 +175,7 @@ impl World {
         for id in &ids {
             self.locs.insert(*id, EntityLocation::empty());
         }
-        if let Some(events) = &mut self.shape_change_events {
-            events.add_events(ids.iter().map(|id| WorldChange::Spawn(Some(*id), entity_data.clone())));
-        }
-        self.batch_spawn_with_ids(EntityMoveData::from_entity_data(entity_data, self.version() + 1), ids.clone());
+        self.batch_spawn_with_ids(entity_data, ids.clone());
         ids
     }
 
@@ -186,14 +183,21 @@ impl World {
     pub fn spawn_with_id(&mut self, entity_id: EntityId, entity_data: Entity) -> bool {
         if let std::collections::hash_map::Entry::Vacant(e) = self.locs.entry(entity_id) {
             e.insert(EntityLocation::empty());
-            self.batch_spawn_with_ids(EntityMoveData::from_entity_data(entity_data, self.version() + 1), vec![entity_id]);
+            let version = self.inc_version();
+            self.batch_spawn_with_ids_internal(EntityMoveData::from_entity_data(entity_data, version), vec![entity_id]);
             true
         } else {
             false
         }
     }
-    pub fn batch_spawn_with_ids(&mut self, entity_data: EntityMoveData, ids: Vec<EntityId>) {
-        self.inc_version();
+    pub fn batch_spawn_with_ids(&mut self, entity_data: Entity, ids: Vec<EntityId>) {
+        if let Some(events) = &mut self.shape_change_events {
+            events.add_events(ids.iter().map(|id| WorldChange::Spawn(Some(*id), entity_data.clone())));
+        }
+        let version = self.inc_version();
+        self.batch_spawn_with_ids_internal(EntityMoveData::from_entity_data(entity_data, version), ids.clone());
+    }
+    fn batch_spawn_with_ids_internal(&mut self, entity_data: EntityMoveData, ids: Vec<EntityId>) {
         let arch_id = self.archetypes.iter().position(|x| x.active_components == entity_data.active_components);
         let arch_id = if let Some(arch_id) = arch_id {
             arch_id
@@ -295,9 +299,9 @@ impl World {
     }
     pub(crate) fn get_mut_unsafe<T: ComponentValue>(&self, entity_id: EntityId, component: Component<T>) -> Result<&mut T, ECSError> {
         if let Some(loc) = self.locs.get(&entity_id) {
-            self.inc_version();
+            let version = self.inc_version();
             let arch = self.archetypes.get(loc.archetype).expect("Archetype doesn't exist");
-            match arch.get_component_mut(loc.index, entity_id, component, self.version()) {
+            match arch.get_component_mut(loc.index, entity_id, component, version) {
                 Some(d) => Ok(d),
                 None => Err(ECSError::EntityDoesntHaveComponent { component_index: component.desc().index() as _, name: component.path() }),
             }
@@ -398,7 +402,7 @@ impl World {
                 self.loc_changed.add_event(entity_id);
                 let mut data = arch.moveout(loc.index, entity_id, version);
                 mapping.write_to_entity_data(&mut data, version);
-                self.batch_spawn_with_ids(data, vec![entity_id]);
+                self.batch_spawn_with_ids_internal(data, vec![entity_id]);
             }
             Ok(())
         } else {
@@ -525,7 +529,7 @@ impl World {
         self.version.0.load(Ordering::Relaxed)
     }
     fn inc_version(&self) -> u64 {
-        self.version.0.fetch_add(1, Ordering::Relaxed)
+        self.version.0.fetch_add(1, Ordering::Relaxed) + 1
     }
     /// Number of entities in the world, including the resource entity
     pub fn len(&self) -> usize {

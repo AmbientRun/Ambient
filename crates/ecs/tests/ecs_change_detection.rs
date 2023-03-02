@@ -30,6 +30,9 @@ fn change_query() {
     assert_eq!(&[e_a], &q.iter(&world, Some(&mut state)).map(|x| x.id()).collect_vec()[..]);
     assert_eq!(&[] as &[EntityId], &q.iter(&world, Some(&mut state)).map(|x| x.id()).collect_vec()[..]);
 
+    world.set(e_a, a(), 8.).unwrap();
+    assert_eq!(&[e_a], &q.iter(&world, Some(&mut state)).map(|x| x.id()).collect_vec()[..]);
+
     world.set(e_a, a(), 2.).unwrap();
     world.set(e_a, a(), 2.).unwrap();
     assert_eq!(&[e_a], &q.iter(&world, Some(&mut state)).map(|x| x.id()).collect_vec()[..]);
