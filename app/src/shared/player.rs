@@ -3,7 +3,7 @@ use std::{io::Write, sync::Arc};
 use ambient_audio::AudioListener;
 use ambient_core::{
     camera::{active_camera, aspect_ratio_from_window},
-    main_scene, runtime,
+    runtime,
 };
 use ambient_ecs::{query, query_mut, Entity, SystemGroup};
 use ambient_element::{element_component, Element, Hooks};
@@ -106,7 +106,6 @@ pub fn client_systems() -> SystemGroup {
                         id,
                         Entity::new()
                             .with(active_camera(), 0.)
-                            .with(main_scene(), ())
                             .with(audio_listener(), Arc::new(Mutex::new(AudioListener::new(Mat4::IDENTITY, Vec3::X * 0.2))))
                             .with(aspect_ratio_from_window(), ()),
                     )

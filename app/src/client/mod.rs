@@ -44,8 +44,8 @@ fn MainApp(
 ) -> Element {
     let resolution = use_window_physical_resolution(hooks);
 
-    hooks.provide_context(GameClientNetworkStats::default);
-    hooks.provide_context(GameClientServerStats::default);
+    let update_network_stats = hooks.provide_context(GameClientNetworkStats::default);
+    let update_server_stats = hooks.provide_context(GameClientServerStats::default);
 
     *hooks.world.resource_mut(window_title()) = "Ambient".to_string();
 
@@ -65,6 +65,8 @@ fn MainApp(
             }))),
             on_loaded: cb(move |_game_state, _game_client| Ok(Box::new(|| {}))),
             error_view: cb(move |error| Dock(vec![Text::el("Error").header_style(), Text::el(error)]).el()),
+            on_network_stats: cb(move |stats| update_network_stats(stats)),
+            on_server_stats: cb(move |stats| update_server_stats(stats)),
             systems_and_resources: cb(|| (systems(), Entity::new())),
             create_rpc_registry: cb(shared::create_rpc_registry),
             on_in_entities: None,

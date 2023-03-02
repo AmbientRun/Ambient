@@ -6,12 +6,16 @@ use std::{
     sync::Arc,
 };
 
+#[cfg(feature = "native")]
 use ambient_core::runtime;
-use ambient_ecs::{world_events, ComponentQuery, ComponentValue, Entity, FrameEvent, QueryState, TypedReadQuery, World, WorldEventReader};
-use ambient_std::{cb, Cb};
+#[cfg(feature = "native")]
+use ambient_guest_bridge::ecs::{world_events, ComponentQuery, FrameEvent, QueryState, TypedReadQuery, WorldEventReader};
+use ambient_guest_bridge::ecs::{ComponentValue, Entity, World};
+#[cfg(feature = "native")]
 use ambient_sys::task;
 use as_any::Downcast;
 use atomic_refcell::AtomicRefCell;
+use cb::{cb, Cb};
 use parking_lot::Mutex;
 use tracing::info_span;
 
@@ -33,7 +37,7 @@ pub struct Hooks<'a> {
 }
 
 impl<'a> Hooks<'a> {
-    pub fn use_state<T: Clone + Debug + ComponentValue>(&mut self, init: T) -> (T, Setter<T>) {
+    pub fn use_state<T: Clone + Debug + ComponentValue + Send + 'static>(&mut self, init: T) -> (T, Setter<T>) {
         self.use_state_with(|_| init)
     }
 
@@ -79,7 +83,10 @@ impl<'a> Hooks<'a> {
     ///
     /// **Note**: Does not rely on order, and is therefore safe to use inside
     /// conditionals.
-    pub fn provide_context<T: Clone + Debug + ComponentValue>(&mut self, default_value: impl FnOnce() -> T) -> Setter<T> {
+    pub fn provide_context<T: Clone + Debug + ComponentValue + Send + Sync + 'static>(
+        &mut self,
+        default_value: impl FnOnce() -> T,
+    ) -> Setter<T> {
         let instance = self.tree.instances.get_mut(&self.element).unwrap();
         let type_id = TypeId::of::<T>();
         instance
@@ -98,7 +105,7 @@ impl<'a> Hooks<'a> {
         })
     }
     #[allow(clippy::type_complexity)]
-    pub fn consume_context<T: Clone + Debug + ComponentValue>(&mut self) -> Option<(T, Setter<T>)> {
+    pub fn consume_context<T: Clone + Debug + ComponentValue + Sync + Send + 'static>(&mut self) -> Option<(T, Setter<T>)> {
         let type_id = TypeId::of::<T>();
         if let Some(provider) = self.tree.get_context_provider(&self.element, type_id) {
             let value = {
@@ -137,6 +144,7 @@ impl<'a> Hooks<'a> {
         }
     }
 
+    #[cfg(feature = "native")]
     pub fn use_world_event(&mut self, func: impl Fn(&mut World, &Entity) + Sync + Send + 'static) {
         let reader = self.use_ref_with(|world| world.resource(world_events()).reader());
         self.use_frame(move |world| {
@@ -150,6 +158,7 @@ impl<'a> Hooks<'a> {
 
     /// Spawns the provided future as a task, and aborts the task when the
     /// entity is despawned.
+    #[cfg(feature = "native")]
     #[tracing::instrument(level = "debug", skip_all)]
     pub fn use_task<T: Future<Output = ()> + Send + 'static>(&mut self, task: impl FnOnce(&mut World) -> T + Send + Sync + 'static) {
         if let Some(ref mut on_spawn) = self.on_spawn {
@@ -164,6 +173,7 @@ impl<'a> Hooks<'a> {
     }
 
     /// Use state dependent on a future
+    #[cfg(feature = "native")]
     pub fn use_async<T, U>(&mut self, future: impl FnOnce(&mut World) -> T + Send + Sync + 'static) -> Option<U>
     where
         T: Future<Output = U> + Send + 'static,
@@ -187,6 +197,7 @@ impl<'a> Hooks<'a> {
     }
 
     /// Use memoized state dependent on a future
+    #[cfg(feature = "native")]
     pub fn use_memo_async<T, F, D, U>(&mut self, deps: D, init: F) -> Option<T>
     where
         F: FnOnce(&mut World, D) -> U,
@@ -256,7 +267,10 @@ impl<'a> Hooks<'a> {
     }
 
     #[profiling::function]
-    pub fn use_memo_with<T: Clone + ComponentValue + Debug, D: PartialEq + Clone + Sync + Send + Debug + 'static>(
+    pub fn use_memo_with<
+        T: Clone + ComponentValue + Debug + Sync + Send + 'static,
+        D: PartialEq + Clone + Sync + Send + Debug + 'static,
+    >(
         &mut self,
         dependencies: D,
         create: impl FnOnce(&mut World, &D) -> T,
@@ -282,7 +296,7 @@ impl<'a> Hooks<'a> {
     /// The provided functions returns a function which is run when the part is
     /// removed or `use_effect` is run again.
     ///
-    pub fn use_effect<D: PartialEq + ComponentValue + Debug>(
+    pub fn use_effect<D: PartialEq + ComponentValue + Debug + Sync + Send + 'static>(
         &mut self,
         dependencies: D,
         run: impl FnOnce(&mut World, &D) -> Box<dyn FnOnce(&mut World) + Sync + Send> + Sync + Send,
@@ -320,6 +334,7 @@ impl<'a> Hooks<'a> {
         }
     }
 
+    #[cfg(feature = "native")]
     pub fn use_system<
         'b,
         R: ComponentQuery<'b> + Clone + 'static,

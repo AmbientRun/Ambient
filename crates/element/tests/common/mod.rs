@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use ambient_ecs::{components, query_mut, Resource, World};
-use ambient_std::Cb;
+use ambient_guest_bridge::ecs::{components, query_mut, Resource, World};
+use cb::Cb;
 use itertools::Itertools;
 
 components!("test", {

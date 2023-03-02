@@ -16,8 +16,10 @@ ambient_meshes = { path = "../meshes" }
 ambient_element = { path = "../element" }
 ambient_input = { path = "../input" }
 ambient_renderer = { path = "../renderer" }
+ambient_layout = { path = "../layout" }
+ambient_text = { path = "../text" }
+ambient_ui_components = { path = "../ui_components" }
 ambient_editor_derive = { path = "../editor_derive" }
-glyph_brush = { workspace = true }
 glam = { workspace = true }
 winit = { workspace = true }
 itertools = { workspace = true }

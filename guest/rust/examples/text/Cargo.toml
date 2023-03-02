@@ -7,6 +7,13 @@ publish = false
 
 [dependencies]
 ambient_api = { path = "../../api" }
+ambient_element = { path = "../../../../crates/element", default-features = false, features = [
+    "guest",
+] }
+ambient_ui_components = { path = "../../../../crates/ui_components" }
+ambient_guest_bridge = { path = "../../../../crates/guest_bridge", default-features = false, features = [
+    "guest",
+] }
 
 [lib]
 crate-type = ["cdylib"]

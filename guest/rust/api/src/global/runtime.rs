@@ -22,7 +22,7 @@ pub fn frametime() -> f32 {
 /// If you only want to be notified once, use [once].
 ///
 /// The `callback` is a `fn`. This can be a closure (e.g. `|args| { ... }`).
-pub fn on(event: &str, callback: impl Fn(&Entity) -> EventResult + 'static) {
+pub fn on(event: &str, mut callback: impl FnMut(&Entity) -> EventResult + 'static) {
     on_async(event, move |args| std::future::ready(callback(args)))
 }
 
@@ -33,7 +33,7 @@ pub fn on(event: &str, callback: impl Fn(&Entity) -> EventResult + 'static) {
 /// The `callback` is a `async fn`. This can be a closure (e.g. `|args| async move { ... }`).
 pub fn on_async<R: Future<Output = EventResult> + 'static>(
     event: &str,
-    callback: impl Fn(&Entity) -> R + 'static,
+    mut callback: impl FnMut(&Entity) -> R + 'static,
 ) {
     host::event_subscribe(event);
     EXECUTOR.register_callback(
