@@ -1,12 +1,11 @@
 use std::time::SystemTime;
 
-use ambient_animation as ea;
+use ambient_animation as animation;
 use ambient_ecs::EntityId;
 use ambient_std::asset_url::TypedAssetUrl;
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
-use wit_bindgen_host_wasmtime_rust::{Endian, Le};
 
-use super::interface::host;
+use super::wit;
 
 /// Converts from a Rust representation to a wit-bindgen representation.
 pub trait IntoBindgen {
@@ -22,14 +21,14 @@ pub trait FromBindgen {
 }
 
 impl IntoBindgen for EntityId {
-    type Item = host::EntityId;
+    type Item = wit::types::EntityId;
     fn into_bindgen(self) -> Self::Item {
         let (id0, id1) = self.to_u64s();
 
-        host::EntityId { id0, id1 }
+        wit::types::EntityId { id0, id1 }
     }
 }
-impl FromBindgen for host::EntityId {
+impl FromBindgen for wit::types::EntityId {
     type Item = EntityId;
     fn from_bindgen(self) -> Self::Item {
         EntityId::from_u64s(self.id0, self.id1)
@@ -37,15 +36,15 @@ impl FromBindgen for host::EntityId {
 }
 
 impl IntoBindgen for Vec2 {
-    type Item = host::Vec2;
+    type Item = wit::types::Vec2;
     fn into_bindgen(self) -> Self::Item {
-        host::Vec2 {
+        wit::types::Vec2 {
             x: self.x,
             y: self.y,
         }
     }
 }
-impl FromBindgen for host::Vec2 {
+impl FromBindgen for wit::types::Vec2 {
     type Item = Vec2;
     fn from_bindgen(self) -> Self::Item {
         Vec2::new(self.x, self.y)
@@ -53,16 +52,16 @@ impl FromBindgen for host::Vec2 {
 }
 
 impl IntoBindgen for Vec3 {
-    type Item = host::Vec3;
+    type Item = wit::types::Vec3;
     fn into_bindgen(self) -> Self::Item {
-        host::Vec3 {
+        wit::types::Vec3 {
             x: self.x,
             y: self.y,
             z: self.z,
         }
     }
 }
-impl FromBindgen for host::Vec3 {
+impl FromBindgen for wit::types::Vec3 {
     type Item = Vec3;
     fn from_bindgen(self) -> Self::Item {
         Vec3::new(self.x, self.y, self.z)
@@ -70,9 +69,9 @@ impl FromBindgen for host::Vec3 {
 }
 
 impl IntoBindgen for Vec4 {
-    type Item = host::Vec4;
+    type Item = wit::types::Vec4;
     fn into_bindgen(self) -> Self::Item {
-        host::Vec4 {
+        wit::types::Vec4 {
             x: self.x,
             y: self.y,
             z: self.z,
@@ -80,7 +79,7 @@ impl IntoBindgen for Vec4 {
         }
     }
 }
-impl FromBindgen for host::Vec4 {
+impl FromBindgen for wit::types::Vec4 {
     type Item = Vec4;
     fn from_bindgen(self) -> Self::Item {
         Vec4::new(self.x, self.y, self.z, self.w)
@@ -88,9 +87,9 @@ impl FromBindgen for host::Vec4 {
 }
 
 impl IntoBindgen for Quat {
-    type Item = host::Quat;
+    type Item = wit::types::Quat;
     fn into_bindgen(self) -> Self::Item {
-        host::Quat {
+        wit::types::Quat {
             x: self.x,
             y: self.y,
             z: self.z,
@@ -98,7 +97,7 @@ impl IntoBindgen for Quat {
         }
     }
 }
-impl FromBindgen for host::Quat {
+impl FromBindgen for wit::types::Quat {
     type Item = Quat;
     fn from_bindgen(self) -> Self::Item {
         Quat::from_array([self.x, self.y, self.z, self.w])
@@ -106,9 +105,9 @@ impl FromBindgen for host::Quat {
 }
 
 impl IntoBindgen for Mat4 {
-    type Item = host::Mat4;
+    type Item = wit::types::Mat4;
     fn into_bindgen(self) -> Self::Item {
-        host::Mat4 {
+        wit::types::Mat4 {
             x: self.x_axis.into_bindgen(),
             y: self.y_axis.into_bindgen(),
             z: self.z_axis.into_bindgen(),
@@ -116,7 +115,7 @@ impl IntoBindgen for Mat4 {
         }
     }
 }
-impl FromBindgen for host::Mat4 {
+impl FromBindgen for wit::types::Mat4 {
     type Item = Mat4;
     fn from_bindgen(self) -> Self::Item {
         Mat4::from_cols(
@@ -208,25 +207,14 @@ where
     }
 }
 
-impl<T> FromBindgen for Le<T>
-where
-    T: FromBindgen + Endian,
-{
-    type Item = T::Item;
-
+impl FromBindgen for wit::entity::AnimationAction {
+    type Item = animation::AnimationAction;
     fn from_bindgen(self) -> Self::Item {
-        self.get().from_bindgen()
-    }
-}
-
-impl FromBindgen for host::AnimationAction<'_> {
-    type Item = ea::AnimationAction;
-    fn from_bindgen(self) -> Self::Item {
-        ea::AnimationAction {
-            clip: ea::AnimationClipRef::FromModelAsset(
+        animation::AnimationAction {
+            clip: animation::AnimationClipRef::FromModelAsset(
                 TypedAssetUrl::parse(self.clip_url).unwrap(),
             ),
-            time: ea::AnimationActionTime::Offset {
+            time: animation::AnimationActionTime::Offset {
                 start_time: SystemTime::now()
                     .duration_since(SystemTime::UNIX_EPOCH)
                     .unwrap(),
@@ -238,10 +226,10 @@ impl FromBindgen for host::AnimationAction<'_> {
     }
 }
 
-impl FromBindgen for host::AnimationController<'_> {
-    type Item = ea::AnimationController;
+impl FromBindgen for wit::entity::AnimationController {
+    type Item = animation::AnimationController;
     fn from_bindgen(self) -> Self::Item {
-        ea::AnimationController {
+        animation::AnimationController {
             actions: self.actions.into_iter().map(|s| s.from_bindgen()).collect(),
             apply_base_pose: self.apply_base_pose,
         }
@@ -249,7 +237,7 @@ impl FromBindgen for host::AnimationController<'_> {
 }
 
 impl IntoBindgen for ambient_input::PlayerRawInput {
-    type Item = host::PlayerRawInput;
+    type Item = wit::player::RawInput;
 
     fn into_bindgen(self) -> Self::Item {
         Self::Item {
@@ -266,7 +254,7 @@ impl IntoBindgen for ambient_input::PlayerRawInput {
 }
 
 impl IntoBindgen for ambient_input::VirtualKeyCode {
-    type Item = host::VirtualKeyCode;
+    type Item = wit::player::VirtualKeyCode;
 
     fn into_bindgen(self) -> Self::Item {
         match self {
@@ -438,7 +426,7 @@ impl IntoBindgen for ambient_input::VirtualKeyCode {
 }
 
 impl IntoBindgen for ambient_input::MouseButton {
-    type Item = host::MouseButton;
+    type Item = wit::player::MouseButton;
 
     fn into_bindgen(self) -> Self::Item {
         match self {

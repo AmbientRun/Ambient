@@ -1,4 +1,4 @@
-world server {
+world bindings {
     import types: pkg.types
 
     import component: pkg.component

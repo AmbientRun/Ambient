@@ -1,4 +1,3 @@
-use crate::shared::host_guest_state::QueryStateMap;
 use ambient_animation::{animation_controller, AnimationController};
 use ambient_core::transform::translation;
 use ambient_ecs::{
@@ -8,6 +7,8 @@ use ambient_ecs::{
 use anyhow::Context;
 use glam::Vec3;
 use slotmap::Key;
+
+use crate::shared::bindings::QueryStateMap;
 
 pub fn spawn(world: &mut World, data: Entity) -> EntityId {
     data.spawn(world)
@@ -59,20 +60,21 @@ pub fn get_all(world: &mut World, index: u32) -> Vec<EntityId> {
 }
 pub fn query(
     query_states: &mut QueryStateMap,
-    components: impl Iterator<Item = u32> + Sync + Send,
-    include: impl Iterator<Item = u32> + Sync + Send,
-    exclude: impl Iterator<Item = u32> + Sync + Send,
-    changed: impl Iterator<Item = u32> + Sync + Send,
+    components: &[u32],
+    include: &[u32],
+    exclude: &[u32],
+    changed: &[u32],
     query_event: QueryEvent,
 ) -> anyhow::Result<u64> {
     fn get_components(
         registry: &ambient_ecs::ComponentRegistry,
-        components: impl Iterator<Item = u32> + Sync + Send,
+        components: &[u32],
     ) -> anyhow::Result<Vec<ambient_ecs::PrimitiveComponent>> {
         components
+            .iter()
             .map(|c| {
                 registry
-                    .get_primitive_component(c)
+                    .get_primitive_component(*c)
                     .context("no primitive component")
             })
             .collect()

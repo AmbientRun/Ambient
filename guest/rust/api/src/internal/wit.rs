@@ -93,6 +93,6 @@ mod wit_bindgen {
         }
     }
 }
-include!("server.rs");
+include!("bindings.rs");
 
-pub(crate) use export_server;
+pub(crate) use export_bindings;

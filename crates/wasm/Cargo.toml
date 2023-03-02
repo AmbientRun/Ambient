@@ -32,6 +32,7 @@ indoc = { workspace = true }
 itertools = { workspace = true }
 log = { workspace = true }
 parking_lot = { workspace = true }
+paste = { workspace = true }
 profiling = { workspace = true }
 reqwest = { workspace = true }
 serde_bytes = { workspace = true }
@@ -41,7 +42,6 @@ slotmap = { workspace = true }
 
 wasmtime = { workspace = true }
 wasi-common = { workspace = true }
-wasi-cap-std-sync = { workspace = true }
 
 [target.'cfg(windows)'.build-dependencies]
 dunce = "1.0"

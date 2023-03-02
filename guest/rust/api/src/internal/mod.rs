@@ -27,4 +27,4 @@ impl wit::guest::Guest for Guest {
 }
 
 use wit::{__link_section, guest};
-wit::export_server!(Guest);
+wit::export_bindings!(Guest);

@@ -1,22 +1,14 @@
-use std::{marker::PhantomData, sync::Arc};
+use std::{any::Any, collections::HashSet, sync::Arc};
 
-use ambient_ecs::World;
-use anyhow::Context;
-use async_trait::async_trait;
+use ambient_ecs::{EntityId, World};
 use data_encoding::BASE64;
-use parking_lot::{Mutex, RwLock};
+use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
-use wasi_common::{
-    file::{FdFlags, FileType},
-    WasiCtx, WasiFile,
-};
 
 use super::{
-    bindings,
-    guest_conversion::GuestConvert,
-    host_guest_state::GetBaseHostGuestState,
-    interface::guest::{Guest, GuestData, RunContext as GuestRunContext},
-    RunContext,
+    bindings::{self, BindingsBound},
+    borrowed_types::ComponentTypeBorrow,
+    wit, RunContext,
 };
 
 #[derive(Clone)]
@@ -79,196 +71,223 @@ pub struct ModuleErrors {
     pub runtime: Vec<String>,
 }
 
-pub struct ModuleState<
-    Bindings: Send + Sync + 'static,
-    Context: WasmContext<Bindings>,
-    HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
-> {
-    _engine: wasmtime::Engine,
-    store: Arc<Mutex<wasmtime::Store<Context>>>,
-
-    guest_exports: Arc<Guest<Context>>,
-    _guest_instance: wasmtime::Instance,
-
-    _bindings: PhantomData<Bindings>,
-    pub shared_state: Arc<RwLock<HostGuestState>>,
-}
-impl<
-        Bindings: Send + Sync + 'static,
-        Context: WasmContext<Bindings>,
-        HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
-    > Clone for ModuleState<Bindings, Context, HostGuestState>
-{
-    fn clone(&self) -> Self {
-        Self {
-            _engine: self._engine.clone(),
-            store: self.store.clone(),
-            guest_exports: self.guest_exports.clone(),
-            _guest_instance: self._guest_instance,
-            _bindings: self._bindings,
-            shared_state: self.shared_state.clone(),
-        }
-    }
+struct WasmContext<Bindings: BindingsBound> {
+    wasi: ambient_wasmtime_wasi::WasiCtx,
+    bindings: Bindings,
 }
 
-impl<
-        Bindings: Send + Sync + 'static,
-        Context: WasmContext<Bindings>,
-        HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
-    > std::fmt::Debug for ModuleState<Bindings, Context, HostGuestState>
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ModuleState").finish()
-    }
+pub trait ModuleStateBehavior: Sync + Send {
+    fn run(&mut self, world: &mut World, context: &RunContext) -> anyhow::Result<()>;
+    fn drain_spawned_entities(&mut self) -> HashSet<EntityId>;
+    fn supports_event(&self, event_name: &str) -> bool;
 }
-impl<
-        Bindings: Send + Sync + 'static,
-        Context: WasmContext<Bindings>,
-        HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
-    > ModuleState<Bindings, Context, HostGuestState>
-{
-    pub fn new(
-        bytecode: &[u8],
-        stdout_output: Box<dyn Fn(&World, &str) + Sync + Send>,
-        stderr_output: Box<dyn Fn(&World, &str) + Sync + Send>,
-        make_wasm_context: impl Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context,
-        add_to_linker: impl Fn(&mut wasmtime::Linker<Context>) -> anyhow::Result<()>,
-        interface_version: u32,
+
+pub type Messenger = Box<dyn Fn(&World, &str) + Sync + Send>;
+
+pub struct ModuleStateArgs<'a> {
+    pub component_bytecode: &'a [u8],
+    pub stdout_output: Messenger,
+    pub stderr_output: Messenger,
+}
+
+#[derive(Clone)]
+pub struct ModuleState {
+    // Wrap the inner state to make it easily clonable and to allow for erasing
+    // the precise bindings in use
+    inner: Arc<RwLock<dyn ModuleStateBehavior>>,
+}
+impl ModuleState {
+    fn new<Bindings: BindingsBound + 'static>(
+        args: ModuleStateArgs<'_>,
+        bindings: Bindings,
     ) -> anyhow::Result<Self> {
-        let shared_state = Arc::new(RwLock::new(HostGuestState::default()));
-
-        let engine = wasmtime::Engine::default();
-        let mut store = wasmtime::Store::new(
-            &engine,
-            make_wasm_context(
-                wasmtime_wasi::sync::WasiCtxBuilder::new()
-                    .stdout(Box::new(WasiOutputFile(
-                        stdout_output,
-                        shared_state.clone(),
-                    )))
-                    .stderr(Box::new(WasiOutputFile(
-                        stderr_output,
-                        shared_state.clone(),
-                    )))
-                    .build(),
-                shared_state.clone(),
-            ),
-        );
-
-        let (guest_exports, guest_instance) = {
-            let mut linker: wasmtime::Linker<Context> = wasmtime::Linker::new(&engine);
-            wasmtime_wasi::add_to_linker(&mut linker, |cx| &mut cx.base_wasm_context_mut().wasi)?;
-            add_to_linker(&mut linker)?;
-
-            let module = wasmtime::Module::from_binary(&engine, bytecode)?;
-            Guest::instantiate(&mut store, &module, &mut linker, |cx| {
-                &mut cx.base_wasm_context_mut().guest_data
-            })?
-        };
-
-        // Initialise the runtime.
-        guest_exports.init(&mut store)?;
-        // Call the module's main function.
-        guest_instance
-            .get_func(&mut store, "call_main")
-            .context("not a func")?
-            .typed::<(u32,), (), _>(&store)?
-            .call(&mut store, (interface_version,))?;
+        let ModuleStateArgs {
+            component_bytecode,
+            stdout_output,
+            stderr_output,
+        } = args;
 
         Ok(Self {
-            shared_state,
-            _bindings: PhantomData,
-            _engine: engine,
-            store: Arc::new(Mutex::new(store)),
-            guest_exports: Arc::new(guest_exports),
-            _guest_instance: guest_instance,
+            inner: Arc::new(RwLock::new(ModuleStateInnerImpl::new(
+                component_bytecode,
+                stdout_output,
+                stderr_output,
+                bindings,
+            )?)),
         })
     }
 
-    pub fn run(&mut self, world: &mut World, context: &RunContext) -> anyhow::Result<()> {
+    pub fn create_state_maker<Bindings: BindingsBound + 'static>(
+        bindings: Bindings,
+    ) -> Arc<dyn Fn(ModuleStateArgs<'_>) -> anyhow::Result<Self> + Sync + Send> {
+        Arc::new(move |args: ModuleStateArgs<'_>| Self::new(args, bindings.clone()))
+    }
+}
+impl ModuleStateBehavior for ModuleState {
+    fn run(&mut self, world: &mut World, context: &RunContext) -> anyhow::Result<()> {
+        self.inner.write().run(world, context)
+    }
+
+    fn drain_spawned_entities(&mut self) -> HashSet<EntityId> {
+        self.inner.write().drain_spawned_entities()
+    }
+
+    fn supports_event(&self, event_name: &str) -> bool {
+        self.inner.read().supports_event(event_name)
+    }
+}
+
+struct ModuleStateInnerImpl<Bindings: BindingsBound> {
+    _engine: wasmtime::Engine,
+    store: wasmtime::Store<WasmContext<Bindings>>,
+
+    guest_bindings: wit::Bindings,
+    _guest_instance: wasmtime::component::Instance,
+
+    stdout_consumer: WasiOutputStreamConsumer,
+    stderr_consumer: WasiOutputStreamConsumer,
+}
+
+impl<Bindings: BindingsBound> std::fmt::Debug for ModuleStateInnerImpl<Bindings> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ModuleStateInner").finish()
+    }
+}
+impl<Bindings: BindingsBound> ModuleStateInnerImpl<Bindings> {
+    fn new(
+        component_bytecode: &[u8],
+        stdout_output: Box<dyn Fn(&World, &str) + Sync + Send>,
+        stderr_output: Box<dyn Fn(&World, &str) + Sync + Send>,
+        bindings: Bindings,
+    ) -> anyhow::Result<Self> {
+        let mut config = wasmtime::Config::new();
+        config.wasm_backtrace_details(wasmtime::WasmBacktraceDetails::Enable);
+        config.wasm_component_model(true);
+
+        let engine = wasmtime::Engine::default();
+
+        let (stdout_output, stdout_consumer) = WasiOutputStream::make(stdout_output);
+        let (stderr_output, stderr_consumer) = WasiOutputStream::make(stderr_output);
+        let mut store = wasmtime::Store::new(
+            &engine,
+            WasmContext {
+                wasi: ambient_wasmtime_wasi::WasiCtxBuilder::new()
+                    .stdout(stdout_output)
+                    .stderr(stderr_output)
+                    .build(),
+                bindings,
+            },
+        );
+
+        let mut linker = wasmtime::component::Linker::<WasmContext<Bindings>>::new(&engine);
+        ambient_wasmtime_wasi::add_to_linker(&mut linker, |x| &mut x.wasi)?;
+        wit::Bindings::add_to_linker(&mut linker, |x| &mut x.bindings)?;
+
+        let component = wasmtime::component::Component::from_binary(&engine, component_bytecode)?;
+
+        let (guest_bindings, guest_instance) =
+            wit::Bindings::instantiate(&mut store, &component, &linker)?;
+
+        // Initialise the runtime.
+        guest_bindings
+            .guest()
+            .call_init(&mut store, wit::shared::INTERFACE_VERSION)?;
+
+        Ok(Self {
+            _engine: engine,
+            store,
+            guest_bindings,
+            _guest_instance: guest_instance,
+
+            stdout_consumer,
+            stderr_consumer,
+        })
+    }
+}
+impl<Bindings: BindingsBound> ModuleStateBehavior for ModuleStateInnerImpl<Bindings> {
+    fn run(&mut self, world: &mut World, context: &RunContext) -> anyhow::Result<()> {
         let RunContext {
             event_name,
             event_data,
             time,
         } = context;
 
-        self.shared_state().write().base_mut().set_world(world);
+        self.store.data_mut().bindings.base_mut().set_world(world);
 
-        // remap the generated entitydata to components to send across
         let components = bindings::convert_entity_data_to_components(event_data);
-        // TEMPORARY: convert the host rep components to owned guest rep components
         let components: Vec<_> = components
             .iter()
-            .map(|(id, ct)| (*id, ct.guest_convert()))
+            .map(|(k, v)| (*k, ComponentTypeBorrow::from(v)))
             .collect();
-        // then get the borrowing representation
-        // these two steps should be unnecessary once we can update to the component version of wit-bindgen
-        let components: Vec<_> = components
-            .iter()
-            .map(|(id, ct)| (*id, ct.as_guest()))
-            .collect();
+        let components: Vec<_> = components.iter().map(|(k, v)| (*k, v.as_wit())).collect();
+        self.guest_bindings
+            .guest()
+            .call_exec(&mut self.store, *time, event_name, &components)?;
 
-        Ok(self.guest_exports.exec(
-            &mut *self.store.lock(),
-            GuestRunContext { time: *time },
-            event_name,
-            &components,
-        )?)
+        self.store.data_mut().bindings.base_mut().clear_world();
+
+        self.stdout_consumer.process_incoming(world);
+        self.stderr_consumer.process_incoming(world);
+
+        Ok(())
     }
 
-    pub fn shared_state(&self) -> Arc<RwLock<HostGuestState>> {
-        self.shared_state.clone()
+    fn drain_spawned_entities(&mut self) -> HashSet<EntityId> {
+        std::mem::take(&mut self.store.data_mut().bindings.base_mut().spawned_entities)
+    }
+
+    fn supports_event(&self, event_name: &str) -> bool {
+        self.store
+            .data()
+            .bindings
+            .base()
+            .subscribed_events
+            .contains(event_name)
     }
 }
 
-// TODO(philpax): come up with a more optimal way to do this that doesn't
-// implicitly require unsafe and mutex locking
-struct WasiOutputFile(
-    Box<dyn Fn(&World, &str) + Sync + Send>,
-    Arc<RwLock<dyn GetBaseHostGuestState + Sync + Send>>,
-);
-#[async_trait]
-impl WasiFile for WasiOutputFile {
-    fn as_any(&self) -> &dyn std::any::Any {
+struct WasiOutputStream(flume::Sender<String>);
+impl WasiOutputStream {
+    fn make(
+        outputter: Box<dyn Fn(&World, &str) + Sync + Send>,
+    ) -> (Box<Self>, WasiOutputStreamConsumer) {
+        let (tx, rx) = flume::unbounded();
+        (
+            Box::new(Self(tx)),
+            WasiOutputStreamConsumer { rx, outputter },
+        )
+    }
+}
+
+#[async_trait::async_trait]
+impl wasi_common::OutputStream for WasiOutputStream {
+    fn as_any(&self) -> &dyn Any {
         self
     }
 
-    async fn get_filetype(&mut self) -> Result<FileType, wasmtime_wasi::Error> {
-        Ok(FileType::Unknown)
+    async fn writable(&self) -> Result<(), wasi_common::Error> {
+        Ok(())
     }
 
-    async fn get_fdflags(&mut self) -> Result<FdFlags, wasmtime_wasi::Error> {
-        Ok(FdFlags::APPEND)
-    }
-
-    async fn write_vectored<'a>(
-        &mut self,
-        bufs: &[std::io::IoSlice<'a>],
-    ) -> Result<u64, wasmtime_wasi::Error> {
-        let mut count = 0;
-        for buf in bufs {
-            if let Ok(text) = std::str::from_utf8(buf) {
-                self.0(self.1.read().base().world(), text);
-                count += text.len();
-            }
-        }
-        Ok(count as u64)
+    async fn write(&mut self, buf: &[u8]) -> Result<u64, wasi_common::Error> {
+        let msg = std::str::from_utf8(buf)
+            .map_err(|e| wasi_common::Error::trap(e.into()))?
+            .trim();
+        self.0
+            .send(msg.to_string())
+            .map_err(|e| wasi_common::Error::trap(e.into()))?;
+        Ok(buf.len().try_into()?)
     }
 }
 
-pub trait WasmContext<Bindings> {
-    fn base_wasm_context_mut(&mut self) -> &mut BaseWasmContext;
+struct WasiOutputStreamConsumer {
+    rx: flume::Receiver<String>,
+    outputter: Box<dyn Fn(&World, &str) + Sync + Send>,
 }
-
-pub struct BaseWasmContext {
-    wasi: wasmtime_wasi::WasiCtx,
-    guest_data: GuestData,
-}
-impl BaseWasmContext {
-    pub fn new(wasi: wasmtime_wasi::WasiCtx) -> Self {
-        Self {
-            wasi,
-            guest_data: Default::default(),
+impl WasiOutputStreamConsumer {
+    fn process_incoming(&self, world: &World) {
+        for msg in self.rx.drain() {
+            (self.outputter)(world, &msg);
         }
     }
 }

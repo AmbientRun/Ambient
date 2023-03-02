@@ -63,7 +63,7 @@ fn main() {
             let pkg = resolve.push_dir(Path::new("wit")).unwrap().0;
 
             let mut files = Files::default();
-            let world = resolve.select_world(pkg, Some("main.server")).unwrap();
+            let world = resolve.select_world(pkg, Some("main.bindings")).unwrap();
             generator.generate(&resolve, world, &mut files);
 
             for (filename, contents) in files.iter() {
