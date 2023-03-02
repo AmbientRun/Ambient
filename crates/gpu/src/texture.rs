@@ -1,7 +1,12 @@
 use std::{
-    io::Cursor, num::NonZeroU32, ops::Deref, path::Path, sync::{
-        atomic::{AtomicU32, AtomicU64, Ordering}, Arc
-    }
+    io::Cursor,
+    num::NonZeroU32,
+    ops::Deref,
+    path::Path,
+    sync::{
+        atomic::{AtomicU32, AtomicU64, Ordering},
+        Arc,
+    },
 };
 
 use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
@@ -15,7 +20,9 @@ use ordered_float::OrderedFloat;
 use wgpu::util::DeviceExt;
 
 use super::{
-    fill::FillerKey, gpu::{Gpu, GpuKey}, mipmap::generate_mipmaps
+    fill::FillerKey,
+    gpu::{Gpu, GpuKey},
+    mipmap::generate_mipmaps,
 };
 
 static TEXTURE_ALIVE_COUNT: AtomicU32 = AtomicU32::new(0);
@@ -601,9 +608,11 @@ impl NTextureChannels for wgpu::TextureFormat {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
 
     #[tokio::test]
     async fn test_read_texture() {
+        use std::sync::Arc;
         let gpu = Arc::new(Gpu::new(None).await);
         let tex = Texture::new_with_data(
             gpu,
