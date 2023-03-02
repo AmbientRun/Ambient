@@ -1,26 +1,22 @@
 use std::{
-    any::{type_name, TypeId},
-    collections::{HashMap, HashSet},
-    fmt::Debug,
-    future::Future,
-    sync::Arc,
+    any::{type_name, TypeId}, collections::{HashMap, HashSet}, fmt::Debug, future::Future, sync::Arc
 };
 
 #[cfg(feature = "native")]
 use ambient_core::runtime;
 #[cfg(feature = "native")]
-use ambient_guest_bridge::ecs::{world_events, ComponentQuery, FrameEvent, QueryState, TypedReadQuery, WorldEventReader};
+use ambient_guest_bridge::ecs::{world_events, ComponentQuery, FrameEvent, QueryState, TypedReadQuery};
 use ambient_guest_bridge::ecs::{ComponentValue, Entity, World};
 #[cfg(feature = "native")]
 use ambient_sys::task;
 use as_any::Downcast;
 use atomic_refcell::AtomicRefCell;
 use cb::{cb, Cb};
+use itertools::Itertools;
 use parking_lot::Mutex;
 use tracing::info_span;
 
 use crate::{AnyCloneable, ElementTree, HookContext, InstanceId};
-use itertools::Itertools;
 
 pub type Setter<T> = Cb<dyn Fn(T) + Sync + Send>;
 

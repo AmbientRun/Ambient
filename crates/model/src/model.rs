@@ -33,15 +33,13 @@ use super::{
     pbr_renderer_primitives_from_url,
 };
 
+#[derive(Default)]
 pub enum ModelSpawnRoot {
     AttachTo(Vec<EntityId>),
+    #[default]
     Spawn,
 }
-impl Default for ModelSpawnRoot {
-    fn default() -> Self {
-        ModelSpawnRoot::Spawn
-    }
-}
+
 pub struct ModelSpawnOpts {
     pub root: ModelSpawnRoot,
     /// Spawn the model as a scene, and include an animation_binder

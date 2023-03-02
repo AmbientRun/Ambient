@@ -326,7 +326,7 @@ pub fn systems() -> SystemGroup {
                     }
                 }),
             query(window_scale_factor().changed()).to_system(|q, world, qs, _| {
-                if let Some((_, scale_factor)) = q.collect_cloned(world, qs).iter().next() {
+                if let Some((_, scale_factor)) = q.collect_cloned(world, qs).first() {
                     for (id, _) in query(()).incl(text()).collect_cloned(world, None) {
                         world.add_component(id, mesh_to_local(), Mat4::from_scale(Vec3::ONE / (*scale_factor as f32))).unwrap();
                     }

@@ -275,7 +275,7 @@ impl AppBuilder {
         let assets = self.asset_cache.unwrap_or_else(|| AssetCache::new(runtime.clone()));
 
         let mut world = World::new("main_app");
-        let gpu = Arc::new(Gpu::with_config(window.as_ref().map(|x| &**x), true).await);
+        let gpu = Arc::new(Gpu::with_config(window.as_deref(), true).await);
 
         tracing::info!("Inserting runtime");
         RuntimeKey.insert(&assets, runtime.clone());
@@ -286,7 +286,7 @@ impl AppBuilder {
         let (ctl_tx, ctl_rx) = flume::unbounded();
 
         let (window_physical_size, window_logical_size, window_scale_factor) = if let Some(window) = window.as_ref() {
-            get_window_sizes(&window)
+            get_window_sizes(window)
         } else {
             let headless_size = self.headless.unwrap();
             (headless_size, headless_size, 1.)
@@ -332,7 +332,7 @@ impl AppBuilder {
             world,
             gpu_world_sync_systems: gpu_world_sync_systems(),
             window_event_systems,
-            event_loop: event_loop,
+            event_loop,
 
             fps: FpsCounter::new(),
             #[cfg(feature = "profile")]
