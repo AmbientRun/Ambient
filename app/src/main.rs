@@ -34,6 +34,7 @@ fn main() -> anyhow::Result<()> {
                     "ambient_model",
                     "ambient_physics",
                     "ambient_std",
+                    "cranelift_codegen",
                     "naga",
                     "tracing",
                     "wgpu_core",
