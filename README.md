@@ -9,7 +9,7 @@ Ambient is a runtime for building high-performance multiplayer games and 3D appl
 
 See our [announcement blog post](https://www.ambient.run/post/introducing-ambient) for more details.
 
-## Features
+## Design principles
 
 - **Seamless networking**: Ambient is both your server and client. All you need to do is to build your server and/or client-side logic: the runtime handles synchronization of data for you.
 - **Isolation**: Projects you build for Ambient are executed in isolation through the power of [WebAssembly](https://webassembly.org/) - so that if something crashes, it won’t take down your entire program. It also means that you can run untrusted code safely.
