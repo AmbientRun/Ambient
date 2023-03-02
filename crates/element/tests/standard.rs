@@ -1,5 +1,5 @@
-use ambient_ecs::query;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks, Memo};
+use ambient_guest_bridge::ecs::query;
 mod common;
 use common::*;
 

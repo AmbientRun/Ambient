@@ -2,6 +2,7 @@ use crate::{
     global::{EntityId, Mat4, Quat, Vec2, Vec3, Vec4},
     internal::wit,
 };
+use glam::{UVec2, UVec3, UVec4};
 
 /// Converts from a Rust representation to a wit-bindgen representation.
 pub trait IntoBindgen {
@@ -84,6 +85,57 @@ impl FromBindgen for wit::types::Vec4 {
     type Item = Vec4;
     fn from_bindgen(self) -> Self::Item {
         Vec4::new(self.x, self.y, self.z, self.w)
+    }
+}
+
+impl IntoBindgen for UVec2 {
+    type Item = wit::types::Uvec2;
+    fn into_bindgen(self) -> Self::Item {
+        wit::types::Uvec2 {
+            x: self.x,
+            y: self.y,
+        }
+    }
+}
+impl FromBindgen for wit::types::Uvec2 {
+    type Item = UVec2;
+    fn from_bindgen(self) -> Self::Item {
+        UVec2::new(self.x, self.y)
+    }
+}
+
+impl IntoBindgen for UVec3 {
+    type Item = wit::types::Uvec3;
+    fn into_bindgen(self) -> Self::Item {
+        wit::types::Uvec3 {
+            x: self.x,
+            y: self.y,
+            z: self.z,
+        }
+    }
+}
+impl FromBindgen for wit::types::Uvec3 {
+    type Item = UVec3;
+    fn from_bindgen(self) -> Self::Item {
+        UVec3::new(self.x, self.y, self.z)
+    }
+}
+
+impl IntoBindgen for UVec4 {
+    type Item = wit::types::Uvec4;
+    fn into_bindgen(self) -> Self::Item {
+        wit::types::Uvec4 {
+            x: self.x,
+            y: self.y,
+            z: self.z,
+            w: self.w,
+        }
+    }
+}
+impl FromBindgen for wit::types::Uvec4 {
+    type Item = UVec4;
+    fn from_bindgen(self) -> Self::Item {
+        UVec4::new(self.x, self.y, self.z, self.w)
     }
 }
 

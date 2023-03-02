@@ -3,41 +3,26 @@ use std::{future::Future, sync::Arc, time::Duration};
 use ambient_cameras::assets_camera_systems;
 pub use ambient_core::gpu;
 use ambient_core::{
-    app_start_time, asset_cache,
-    async_ecs::async_ecs_systems,
-    bounding::bounding_systems,
-    camera::camera_systems,
-    frame_index, get_window_sizes,
-    gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate},
-    hierarchy::dump_world_hierarchy_to_tmp_file,
-    mouse_position, remove_at_time_system, runtime, time,
-    transform::TransformSystem,
-    window::WindowCtl,
-    window_logical_size, window_physical_size, window_scale_factor, RuntimeKey, TimeResourcesSystem,
+    app_start_time, asset_cache, async_ecs::async_ecs_systems, bounding::bounding_systems, camera::camera_systems, frame_index, get_window_sizes, gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate}, hierarchy::dump_world_hierarchy_to_tmp_file, mouse_position, remove_at_time_system, runtime, time, transform::TransformSystem, window::WindowCtl, window_logical_size, window_physical_size, window_scale_factor, RuntimeKey, TimeResourcesSystem
 };
 use ambient_ecs::{
-    components, world_events, Debuggable, DynSystem, Entity, FrameEvent, MakeDefault, MaybeResource, System, SystemGroup, World,
-    WorldEventsSystem,
+    components, world_events, Debuggable, DynSystem, Entity, FrameEvent, MakeDefault, MaybeResource, System, SystemGroup, World, WorldEventsSystem
 };
 use ambient_element::ambient_system;
 use ambient_gizmos::{gizmos, Gizmos};
 use ambient_gpu::{
-    gpu::{Gpu, GpuKey},
-    mesh_buffer::MeshBufferKey,
+    gpu::{Gpu, GpuKey}, mesh_buffer::MeshBufferKey
 };
 use ambient_renderer::lod::lod_system;
 use ambient_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt},
-    fps_counter::{FpsCounter, FpsSample},
+    asset_cache::{AssetCache, SyncAssetKeyExt}, fps_counter::{FpsCounter, FpsSample}
 };
 use ambient_sys::task::RuntimeHandle;
 use glam::{uvec2, vec2, UVec2, Vec2};
 use parking_lot::Mutex;
 use renderers::{examples_renderer, ui_renderer, UIRender};
 use winit::{
-    event::{ElementState, Event, KeyboardInput, ModifiersState, VirtualKeyCode, WindowEvent},
-    event_loop::{ControlFlow, EventLoop},
-    window::{Window, WindowBuilder},
+    event::{ElementState, Event, KeyboardInput, ModifiersState, VirtualKeyCode, WindowEvent}, event_loop::{ControlFlow, EventLoop}, window::{Window, WindowBuilder}
 };
 
 use crate::renderers::ExamplesRender;
@@ -256,7 +241,7 @@ impl AppBuilder {
 
         #[cfg(target_os = "unknown")]
         // Insert a canvas element for the window to attach to
-        {
+        if let Some(window) = &window {
             use winit::platform::web::WindowExtWebSys;
 
             let canvas = window.canvas();
@@ -290,7 +275,7 @@ impl AppBuilder {
         let assets = self.asset_cache.unwrap_or_else(|| AssetCache::new(runtime.clone()));
 
         let mut world = World::new("main_app");
-        let gpu = Arc::new(Gpu::with_config(window.as_ref().map(|x| &**x), true).await);
+        let gpu = Arc::new(Gpu::with_config(window.as_deref(), true).await);
 
         tracing::info!("Inserting runtime");
         RuntimeKey.insert(&assets, runtime.clone());
@@ -301,7 +286,7 @@ impl AppBuilder {
         let (ctl_tx, ctl_rx) = flume::unbounded();
 
         let (window_physical_size, window_logical_size, window_scale_factor) = if let Some(window) = window.as_ref() {
-            get_window_sizes(&window)
+            get_window_sizes(window)
         } else {
             let headless_size = self.headless.unwrap();
             (headless_size, headless_size, 1.)
@@ -347,7 +332,7 @@ impl AppBuilder {
             world,
             gpu_world_sync_systems: gpu_world_sync_systems(),
             window_event_systems,
-            event_loop: event_loop,
+            event_loop,
 
             fps: FpsCounter::new(),
             #[cfg(feature = "profile")]

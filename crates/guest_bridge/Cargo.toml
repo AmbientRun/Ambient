@@ -1,0 +1,18 @@
+[package]
+name = "ambient_guest_bridge"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ambient_ecs = { path = "../ecs", optional = true }
+ambient_core = { path = "../core", optional = true }
+ambient_layout = { path = "../layout", optional = true }
+ambient_renderer = { path = "../renderer", optional = true }
+ambient_text = { path = "../text", optional = true }
+ambient_api = { path = "../../guest/rust/api", optional = true }
+
+[features]
+native = ["ambient_ecs", "ambient_core", "ambient_layout", "ambient_renderer", "ambient_text"]
+guest = ["ambient_api"]

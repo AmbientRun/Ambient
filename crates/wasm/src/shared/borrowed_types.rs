@@ -120,7 +120,10 @@ generate_borrowing_types!(
         (U64, u64),
         (Vec2, wit::types::Vec2),
         (Vec3, wit::types::Vec3),
-        (Vec4, wit::types::Vec4)
+        (Vec4, wit::types::Vec4),
+        (Uvec2, wit::types::Uvec2),
+        (Uvec3, wit::types::Uvec3),
+        (Uvec4, wit::types::Uvec4)
     ],
     borrowed: [
         (String, String, &'a str)

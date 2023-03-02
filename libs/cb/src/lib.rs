@@ -28,13 +28,6 @@ pub fn cb<T>(f: T) -> Cb<T> {
     Arc::new(CbDebuggable(f))
 }
 
-pub fn log_error(err: &anyhow::Error) {
-    #[cfg(feature = "sentry")]
-    sentry_anyhow::capture_anyhow(err);
-    #[cfg(not(feature = "sentry"))]
-    tracing::error!("{:?}", err);
-}
-
 pub type CallbackFn<T, U = ()> = Cb<dyn Fn(T) -> U + Sync + Send + 'static>;
 pub type CallbackBox<T, U = ()> = Box<dyn Fn(T) -> U + Sync + Send + 'static>;
 

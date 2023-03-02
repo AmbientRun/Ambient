@@ -2,10 +2,7 @@ use std::sync::Arc;
 
 use ambient_animation::{animation_bind_id_from_name, AnimationClip, AnimationOutputs, AnimationTarget, AnimationTrack};
 use ambient_core::{
-    bounding::local_bounding_aabb,
-    hierarchy::{children, parent},
-    name,
-    transform::{local_to_parent, local_to_world, rotation, scale, translation},
+    bounding::local_bounding_aabb, hierarchy::{children, parent}, name, transform::{local_to_parent, local_to_world, rotation, scale, translation}
 };
 use ambient_ecs::{Entity, World};
 use ambient_model::{model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, ModelSkin, PbrRenderPrimitiveFromUrl};
@@ -77,7 +74,6 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
     for (index, animation) in import.document.animations().into_iter().enumerate() {
         let tracks = animation
             .channels()
-            .into_iter()
             .map(|channel| {
                 let reader = channel.reader(|buffer| Some(&import.buffers[buffer.index()]));
                 let target = AnimationTarget::BinderId(animation_bind_id_from_name(channel.target().node().name().unwrap_or("")));

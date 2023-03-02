@@ -1,6 +1,5 @@
 use std::sync::{
-    atomic::{AtomicU32, Ordering},
-    Arc,
+    atomic::{AtomicU32, Ordering}, Arc
 };
 
 use ambient_ecs::{components, query, query_mut, ArchetypeFilter, ComponentEntry, Entity, EntityId, FrameEvent, Query, QueryState, World};
@@ -17,6 +16,26 @@ components!("test", {
 
 fn init() {
     init_components();
+}
+
+#[test]
+fn single_change_query() {
+    init();
+    let mut world = World::new("change_query");
+    let id = world.spawn(Entity::new().with(a(), 1.));
+    let q = Query::new(ArchetypeFilter::new().incl(a())).when_changed(a());
+    // At version 0
+    let mut state = QueryState::new();
+    // Everything *after* 0
+    assert_eq!(&[id], &q.iter(&world, Some(&mut state)).map(|x| x.id()).collect_vec()[..]);
+    // Equal to current version
+    assert_eq!(&[] as &[EntityId], &q.iter(&world, Some(&mut state)).map(|x| x.id()).collect_vec()[..]);
+
+    // Generates change event with the current version
+    world.set_entry(id, ComponentEntry::new(a(), 2.)).unwrap();
+
+    // Everything after the current version, which is nothing.
+    assert_eq!(&[id], &q.iter(&world, Some(&mut state)).map(|x| x.id()).collect_vec()[..]);
 }
 
 #[test]

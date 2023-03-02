@@ -1,6 +1,6 @@
 #[macro_use]
 extern crate closure;
-use std::{f32::consts::PI, num::NonZeroU32, sync::Arc, time::Instant};
+use std::{f32::consts::PI, num::NonZeroU32, sync::Arc};
 
 use ambient_core::{
     asset_cache,
@@ -54,6 +54,7 @@ mod gather_spread;
 pub mod intents;
 mod terrain_shader;
 use ambient_network::ServerWorldExt;
+use ambient_sys::time::Instant;
 use ambient_ui::use_async_asset;
 pub use gather_spread::*;
 pub use intents::*;

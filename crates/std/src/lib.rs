@@ -5,15 +5,11 @@ mod uncategorized;
 #[cfg(feature = "uncategorized")]
 pub use uncategorized::*;
 
-#[cfg(feature = "cb")]
-mod cb;
-#[cfg(feature = "cb")]
-pub use cb::*;
-
 pub mod colorspace;
 pub mod events;
 pub mod line_hash;
 pub mod path;
+pub use cb::*;
 
 /// Read a file as a string during debug at runtime, or use include_str at release
 /// # Panics
@@ -57,6 +53,13 @@ macro_rules! include_file_bytes {
             content.to_vec()
         }
     }};
+}
+
+pub fn log_error(err: &anyhow::Error) {
+    #[cfg(feature = "sentry")]
+    sentry_anyhow::capture_anyhow(err);
+    #[cfg(not(feature = "sentry"))]
+    tracing::error!("{:?}", err);
 }
 
 #[macro_export]

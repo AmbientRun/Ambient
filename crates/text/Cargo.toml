@@ -1,0 +1,22 @@
+[package]
+name = "ambient_text"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ambient_std = { path = "../std" }
+ambient_ecs = { path = "../ecs" }
+ambient_gpu = { path = "../gpu" }
+ambient_core = { path = "../core" }
+ambient_input = { path = "../input" }
+ambient_renderer = { path = "../renderer" }
+ambient_layout = { path = "../layout" }
+glyph_brush = { workspace = true }
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+glam = { workspace = true }
+log = { workspace = true }
+parking_lot = { workspace = true }
+wgpu = { workspace = true }

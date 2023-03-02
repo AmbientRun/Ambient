@@ -175,6 +175,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_api"
+version = "0.1.1"
+dependencies = [
+ "ambient_api_macros",
+ "anyhow",
+ "bincode",
+ "data-encoding",
+ "glam 0.22.0",
+ "once_cell",
+ "paste",
+ "rand 0.8.5",
+ "serde",
+ "wasi 0.11.0+wasi-snapshot-preview1",
+]
+
+[[package]]
+name = "ambient_api_macros"
+version = "0.1.1"
+dependencies = [
+ "anyhow",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "syn",
+ "toml 0.7.2",
+]
+
+[[package]]
 name = "ambient_app"
 version = "0.1.1"
 dependencies = [
@@ -549,14 +577,15 @@ name = "ambient_element"
 version = "0.1.1"
 dependencies = [
  "ambient_core",
- "ambient_ecs",
  "ambient_element_component",
- "ambient_std",
+ "ambient_guest_bridge",
  "ambient_sys",
  "as-any",
  "atomic_refcell",
+ "cb",
  "derivative",
  "dyn-clonable",
+ "friendly_id",
  "futures",
  "itertools",
  "parking_lot",
@@ -625,6 +654,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_guest_bridge"
+version = "0.1.0"
+dependencies = [
+ "ambient_api",
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_layout",
+ "ambient_renderer",
+ "ambient_text",
+]
+
+[[package]]
 name = "ambient_input"
 version = "0.1.1"
 dependencies = [
@@ -657,6 +698,18 @@ dependencies = [
  "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "ambient_layout"
+version = "0.1.0"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_input",
+ "glam 0.22.0",
+ "itertools",
+ "log",
 ]
 
 [[package]]
@@ -980,9 +1033,11 @@ dependencies = [
  "async-trait",
  "bincode",
  "bytemuck",
+ "cb",
  "chrono",
  "convert_case 0.6.0",
  "data-encoding",
+ "friendly_id",
  "futures",
  "glam 0.22.0",
  "hex",
@@ -1052,6 +1107,7 @@ dependencies = [
  "ambient_physics",
  "ambient_renderer",
  "ambient_std",
+ "ambient_sys",
  "ambient_ui",
  "anyhow",
  "async-trait",
@@ -1077,6 +1133,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_text"
+version = "0.1.0"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_gpu",
+ "ambient_input",
+ "ambient_layout",
+ "ambient_renderer",
+ "ambient_std",
+ "anyhow",
+ "async-trait",
+ "glam 0.22.0",
+ "glyph_brush",
+ "log",
+ "parking_lot",
+ "wgpu 0.14.2",
+]
+
+[[package]]
 name = "ambient_ui"
 version = "0.1.1"
 dependencies = [
@@ -1088,10 +1164,13 @@ dependencies = [
  "ambient_element",
  "ambient_gpu",
  "ambient_input",
+ "ambient_layout",
  "ambient_meshes",
  "ambient_renderer",
  "ambient_std",
  "ambient_sys",
+ "ambient_text",
+ "ambient_ui_components",
  "anyhow",
  "arboard",
  "async-trait",
@@ -1102,7 +1181,6 @@ dependencies = [
  "fixed-vec-deque",
  "futures",
  "glam 0.22.0",
- "glyph_brush",
  "indexmap",
  "itertools",
  "log",
@@ -1116,6 +1194,15 @@ dependencies = [
  "tracing-subscriber",
  "wgpu 0.14.2",
  "winit",
+]
+
+[[package]]
+name = "ambient_ui_components"
+version = "0.1.0"
+dependencies = [
+ "ambient_element",
+ "ambient_guest_bridge",
+ "glam 0.22.0",
 ]
 
 [[package]]
@@ -1771,6 +1858,10 @@ dependencies = [
  "serde",
  "toml 0.7.2",
 ]
+
+[[package]]
+name = "cb"
+version = "0.1.0"
 
 [[package]]
 name = "cc"
@@ -2770,6 +2861,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a9c384f161156f5260c24a097c56119f9be8c798586aecc13afbcbe7b7e26bf8"
 dependencies = [
  "percent-encoding",
+]
+
+[[package]]
+name = "friendly_id"
+version = "0.1.0"
+dependencies = [
+ "rand 0.8.5",
 ]
 
 [[package]]

@@ -8,21 +8,29 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_ecs = { path = "../ecs" }
-ambient_sys = { path = "../sys" }
-ambient_std = { path = "../std" }
-ambient_core = { path = "../core" }
+ambient_guest_bridge = { path = "../guest_bridge" }
 ambient_element_component = { path = "../element_component" }
+cb = { path = "../../libs/cb" }
+friendly_id = { path = "../../libs/friendly_id" }
+
+ambient_sys = { path = "../sys", optional = true }
+ambient_core = { path = "../core", optional = true }
+tokio = { workspace = true, optional = true }
+
+parking_lot = { workspace = true }
 itertools = { workspace = true }
 as-any = { workspace = true }
 dyn-clonable = { workspace = true }
 derivative = { workspace = true }
-parking_lot = { workspace = true }
 tracing = { workspace = true }
 profiling = { workspace = true }
 atomic_refcell = { workspace = true }
-tokio = { workspace = true }
 futures = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }
+
+[features]
+default = ["native"]
+native = ["ambient_sys", "ambient_core",  "ambient_guest_bridge/native",  "tokio"]
+guest = ["ambient_guest_bridge/guest"]
