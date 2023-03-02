@@ -29,7 +29,7 @@ pub async fn initialize(world: &mut World, project_path: PathBuf, manifest: &amb
             MessageType::Info => ("info", log::Level::Info),
             MessageType::Error => ("error", log::Level::Error),
             MessageType::Stdout => ("stdout", log::Level::Info),
-            MessageType::Stderr => ("stderr", log::Level::Warn),
+            MessageType::Stderr => ("stderr", log::Level::Info),
         };
 
         log::log!(level, "[{name}] {prefix}: {}", message.strip_suffix('\n').unwrap_or(message));
