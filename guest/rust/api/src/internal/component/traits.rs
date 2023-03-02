@@ -6,6 +6,7 @@ use crate::{
         host,
     },
 };
+use glam::{UVec2, UVec3, UVec4};
 
 #[doc(hidden)]
 pub fn get_component<T>(id: &str) -> Component<T> {
@@ -87,7 +88,10 @@ define_component_types!(
     (u64, TypeU64),
     (Vec2, TypeVec2),
     (Vec3, TypeVec3),
-    (Vec4, TypeVec4)
+    (Vec4, TypeVec4),
+    (UVec2, TypeUvec2),
+    (UVec3, TypeUvec3),
+    (UVec4, TypeUvec4)
 );
 
 impl SupportedComponentTypeGet for String {
@@ -184,7 +188,10 @@ define_vec_opt_component_types!(
     (u64, TypeU64),
     (Vec2, TypeVec2),
     (Vec3, TypeVec3),
-    (Vec4, TypeVec4)
+    (Vec4, TypeVec4),
+    (UVec2, TypeUvec2),
+    (UVec3, TypeUvec3),
+    (UVec4, TypeUvec4)
 );
 
 impl SupportedComponentTypeGet for Vec<String> {

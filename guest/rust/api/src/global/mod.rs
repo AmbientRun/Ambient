@@ -11,7 +11,7 @@ mod entity_id;
 pub use entity_id::*;
 
 // Re-exports from other crates.
-pub use glam::{f32::*, Vec2Swizzles, Vec3Swizzles, Vec4Swizzles};
+pub use glam::{f32::*, u32::*, Vec2Swizzles, Vec3Swizzles, Vec4Swizzles};
 
 #[inline]
 /// Helper function that returns the [Default](std::default::Default::default) for the type `T`.
