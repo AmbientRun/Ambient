@@ -33,6 +33,21 @@ jobs:
         with:
           command: clippy
           args: --workspace --examples --tests
+  clippy-web:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          target: wasm32-unknown-unknown
+          override: true
+      - name: Run clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --target wasm32-unknown-unknown -p ambient_web
+
   test-linux:
     runs-on: ubuntu-20.04
 
@@ -60,27 +75,14 @@ jobs:
       - uses: Leafwing-Studios/cargo-cache@v1
         with:
           cache-group: "test"
+      - uses: taiki-e/install-action@cargo-hack
       - name: Run tests
         uses: actions-rs/cargo@v1
         env:
           RUSTFLAGS: "-C debuginfo=0"
         with:
-          command: test
-          args: --workspace
-  clippy-web:
-    runs-on: ubuntu-20.04
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          target: wasm32-unknown-unknown
-          override: true
-      - name: Run clippy
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --target wasm32-unknown-unknown -p ambient_web
+          command: nextest
+          args: run --workspace
 
   build-linux:
     runs-on: ubuntu-20.04
