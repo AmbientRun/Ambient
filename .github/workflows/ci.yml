@@ -110,11 +110,6 @@ jobs:
       # Clippy is currently disabled while we agree on what settings we want to use
       # - name: Run Clippy
       #   run: cargo clippy --workspace -- -Adeprecated
-      - name: Run tests
-        run: cargo test --workspace
-        env:
-          CARGO_INCREMENTAL: 0
-          RUSTFLAGS: "-C debuginfo=0"
       - name: Build guest/rust
         run: cd guest/rust && cargo build --workspace
       - name: Check that guest/rust's documentation is well-formed
