@@ -2,7 +2,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/ambient_api)](https://crates.io/crates/ambient_api)
 [![docs.rs](https://img.shields.io/docsrs/ambient_api)](https://docs.rs/ambient_api)
-[![MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AmbientRun/Ambient#license)
+[![MIT/Apache 2.0](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)](https://github.com/AmbientRun/Ambient#license)
 [![Discord](https://img.shields.io/discord/894505972289134632)](https://discord.gg/PhmPn6m8Tw)
 
 Ambient is a runtime for building high-performance multiplayer games and 3D applications, powered by WebAssembly, Rust and WebGPU.

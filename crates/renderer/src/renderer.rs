@@ -27,7 +27,7 @@ use super::{
     Culling, FSMain, ForwardGlobals, Outlines, OutlinesConfig, RenderTarget, RendererCollect, RendererCollectState, TransparentRenderer,
     TransparentRendererConfig, TreeRenderer, TreeRendererConfig,
 };
-use crate::{skinning::SkinsBufferKey, ShaderDebugParams};
+use crate::{skinning::SkinsBufferKey, to_linear_format, ShaderDebugParams};
 pub const GLOBALS_BIND_GROUP: &str = "GLOBALS_BIND_GROUP";
 pub const MATERIAL_BIND_GROUP: &str = "MATERIAL_BIND_GROUP";
 pub const RESOURCES_BIND_GROUP: &str = "RESOURCES_BIND_GROUP";
@@ -156,6 +156,8 @@ impl Renderer {
         let shadows =
             if config.shadows { Some(ShadowsRenderer::new(assets.clone(), renderer_resources.clone(), config.clone())) } else { None };
 
+        let normals_format = to_linear_format(gpu.swapchain_format()).into();
+
         Self {
             culling: Culling::new(&assets, config.clone()),
             forward_globals: ForwardGlobals::new(gpu.clone(), renderer_resources.globals_layout.clone(), shadow_cascades, config.scene),
@@ -175,7 +177,7 @@ impl Renderer {
                 gpu: gpu.clone(),
                 assets: assets.clone(),
                 renderer_config: config.clone(),
-                targets: vec![Some(gpu.swapchain_format().into()), Some(wgpu::TextureFormat::Rgba8Snorm.into())],
+                targets: vec![Some(gpu.swapchain_format().into()), Some(normals_format)],
                 filter: ArchetypeFilter::new().incl(config.scene),
                 renderer_resources: renderer_resources.clone(),
                 fs_main: FSMain::Forward,

@@ -4,7 +4,7 @@
 set -e
 
 BASEDIR=$(dirname $(dirname $(realpath "$0")))
-PATHS=$(find "$BASEDIR/guest/rust/examples" -mindepth 1 -maxdepth 1 -type d | sort)
+PATHS=$(find "$BASEDIR/guest/rust/examples" -mindepth 2 -maxdepth 2 -type d | sort)
 while IFS= read -r line; do
     cargo run -- run "$line"
 done <<< "$PATHS"

@@ -16,7 +16,7 @@ use ambient_renderer::{RenderTarget, Renderer};
 use ambient_rpc::RpcRegistry;
 use ambient_std::{asset_cache::SyncAssetKeyExt, cb, color::Color, download_asset::AssetsCacheDir, line_hash, Cb};
 use ambient_ui::{
-    fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit, FlowColumn, FlowRow, Image, UIExt,
+    fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit, FlowColumn, FlowRow, Image, UIExt2,
     VirtualKeyCode,
 };
 use glam::Vec3;
@@ -157,7 +157,7 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
             Element::new()
         },
     ])
-    .with_background(Color::rgba(0., 0., 0., 1.))
+    .with_background(Color::rgba(0., 0., 0., 1.).into())
     .set(fit_horizontal(), Fit::Parent)
 }
 
@@ -172,7 +172,7 @@ fn ShadowMapsViz(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
     });
     FlowRow::el((0..shadow_cascades).map(|i| ShadowMapViz { get_state: get_state.clone(), cascade: i }.el()).collect::<Vec<_>>())
         .set(space_between_items(), 5.)
-        .with_background(Color::rgb(0.0, 0., 0.3))
+        .with_background(Color::rgb(0.0, 0., 0.3).into())
 }
 
 #[element_component]

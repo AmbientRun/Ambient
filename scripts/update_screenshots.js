@@ -4,12 +4,12 @@ const exec = util.promisify(require('node:child_process').exec);
 const { exit } = require("process");
 
 const samples = [
-    ["guest/rust/examples/async", 1],
-    ["guest/rust/examples/input", 1],
-    ["guest/rust/examples/image", 3],
-    ["guest/rust/examples/primitives", 1],
-    ["guest/rust/examples/text", 1],
-    ["guest/rust/examples/tictactoe", 1],
+    ["guest/rust/examples/basics/async", 1],
+    ["guest/rust/examples/basics/input", 1],
+    ["guest/rust/examples/basics/image", 3],
+    ["guest/rust/examples/basics/primitives", 1],
+    ["guest/rust/examples/ui/raw_text", 1],
+    ["guest/rust/examples/games/tictactoe", 1],
 ]
 
 async function run() {

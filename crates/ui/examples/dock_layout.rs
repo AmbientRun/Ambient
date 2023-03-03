@@ -9,7 +9,11 @@ use glam::vec3;
 async fn init(app: &mut App) {
     let world = &mut app.world;
     let background = |e| {
-        FlowRow(vec![e]).el().with_background(Color::rgba(1., 1., 1., 0.02)).set(fit_vertical(), Fit::None).set(fit_horizontal(), Fit::None)
+        FlowRow(vec![e])
+            .el()
+            .with_background(Color::rgba(1., 1., 1., 0.02).into())
+            .set(fit_vertical(), Fit::None)
+            .set(fit_horizontal(), Fit::None)
     };
     Group(vec![
         UICamera.el().set(active_camera(), 0.),
@@ -21,11 +25,11 @@ async fn init(app: &mut App) {
                 .el()
                 .set(padding(), Borders::even(10.))
                 .set(height(), 70.)
-                .with_background(Color::rgba(1., 1., 1., 0.02)),
+                .with_background(Color::rgba(1., 1., 1., 0.02).into()),
             background(Text::el("Fill remainder")).set(margin(), Borders::even(30.)),
         ])
         .el()
-        .with_background(Color::rgba(1., 1., 1., 0.02))
+        .with_background(Color::rgba(1., 1., 1., 0.02).into())
         .set(translation(), vec3(10., 10., 0.))
         .set(width(), 500.)
         .set(height(), 500.),

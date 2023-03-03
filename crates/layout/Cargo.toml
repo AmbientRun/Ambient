@@ -12,3 +12,4 @@ ambient_input = { path = "../input" }
 glam = { workspace = true }
 itertools = { workspace = true }
 log = { workspace = true }
+serde = { workspace = true }

@@ -5,6 +5,23 @@ use ambient_gpu::{
     texture::{Texture, TextureView},
 };
 use glam::UVec2;
+use wgpu::TextureFormat;
+
+/// TODO: remove in favor of https://docs.rs/wgpu/latest/wgpu/enum.TextureFormat.html#method.add_srgb_suffix after upgrading to wgpu@0.15.2
+pub(crate) fn to_linear_format(format: TextureFormat) -> TextureFormat {
+    match format {
+        TextureFormat::Rgba8UnormSrgb => TextureFormat::Rgba8Unorm,
+        TextureFormat::Bgra8UnormSrgb => TextureFormat::Bgra8Unorm,
+        TextureFormat::Bc1RgbaUnormSrgb => TextureFormat::Bc1RgbaUnorm,
+        TextureFormat::Bc2RgbaUnormSrgb => TextureFormat::Bc2RgbaUnorm,
+        TextureFormat::Bc3RgbaUnormSrgb => TextureFormat::Bc3RgbaUnorm,
+        TextureFormat::Bc7RgbaUnormSrgb => TextureFormat::Bc7RgbaUnorm,
+        TextureFormat::Etc2Rgb8UnormSrgb => TextureFormat::Etc2Rgb8Unorm,
+        TextureFormat::Etc2Rgb8A1UnormSrgb => TextureFormat::Etc2Rgb8A1Unorm,
+        TextureFormat::Etc2Rgba8UnormSrgb => TextureFormat::Etc2Rgba8Unorm,
+        _ => format,
+    }
+}
 
 #[derive(Debug)]
 pub struct RenderTarget {
@@ -52,7 +69,7 @@ impl RenderTarget {
                 mip_level_count: 1,
                 sample_count: 1,
                 dimension: wgpu::TextureDimension::D2,
-                format: wgpu::TextureFormat::Rgba8Snorm,
+                format: to_linear_format(sc_desc.format),
                 usage,
             },
         ));

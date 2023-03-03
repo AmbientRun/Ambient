@@ -1,8 +1,5 @@
 [workspace]
-members = [
-  "api",
-  "examples/*",
-]
+members = ["api", "examples/*/*"]
 
 [workspace.package]
 version = "0.1.1"

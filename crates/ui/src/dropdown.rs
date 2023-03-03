@@ -9,6 +9,7 @@ use crate::{
     layout::{margin, Borders},
     padding, tooltip_background_color, Corners, SMALL_ROUNDING, STREET,
 };
+use ambient_ui_components::UIExt2;
 
 #[element_component]
 pub fn Dropdown(_: &mut Hooks, content: Element, dropdown: Element, show: bool) -> Element {
@@ -30,8 +31,8 @@ pub fn Tooltip(hooks: &mut Hooks, inner: Element, tooltip: Element) -> Element {
         dropdown: FlowColumn(vec![tooltip])
             .el()
             .set(padding(), Borders::even(STREET))
-            .with_background(tooltip_background_color())
-            .set(border_radius(), Corners::even(SMALL_ROUNDING))
+            .with_background(tooltip_background_color().into())
+            .set(border_radius(), Corners::even(SMALL_ROUNDING).into())
             .set(margin(), Borders::top(STREET)),
         show: hover,
     }

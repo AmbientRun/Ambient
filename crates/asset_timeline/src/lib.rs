@@ -10,7 +10,7 @@ use ambient_std::{
 };
 use ambient_ui::{
     docking, fit_horizontal, height, margin, use_interval, width, Borders, Button, ButtonStyle, Dock, Docking, Editor, Fit, FlowColumn,
-    FlowRow, Rectangle, StylesExt, Text, Tooltip, UIBase, UIExt, STREET,
+    FlowRow, Rectangle, StylesExt, Text, Tooltip, UIBase, UIExt, UIExt2, STREET,
 };
 use glam::{vec3, vec4, Vec4};
 use itertools::Itertools;
@@ -255,7 +255,7 @@ impl ElementComponent for AssetLifetimeViz {
                             children.push(
                                 Rectangle
                                     .el()
-                                    .with_background(Color::rgb(1.0, 0.5, 0.5))
+                                    .with_background(Color::rgb(1.0, 0.5, 0.5).into())
                                     .set(width(), abort_width)
                                     .set(height(), bar_height),
                             );
@@ -270,7 +270,11 @@ impl ElementComponent for AssetLifetimeViz {
                         let load_width = duration_to_width(load_time);
                         if load_width >= 0.5 {
                             children.push(
-                                Rectangle.el().with_background(Color::rgb(0.0, 1., 0.0)).set(width(), load_width).set(height(), bar_height),
+                                Rectangle
+                                    .el()
+                                    .with_background(Color::rgb(0.0, 1., 0.0).into())
+                                    .set(width(), load_width)
+                                    .set(height(), bar_height),
                             );
                         }
                         if let (Some(end_load), Some(k_start), k_end) =
@@ -297,7 +301,7 @@ impl ElementComponent for AssetLifetimeViz {
                                 children.push(
                                     Rectangle
                                         .el()
-                                        .with_background(Color::rgb(0.5, 0.5, 1.))
+                                        .with_background(Color::rgb(0.5, 0.5, 1.).into())
                                         .set(width(), keepalive_width)
                                         .set(height(), bar_height),
                                 );
@@ -315,7 +319,7 @@ impl ElementComponent for AssetLifetimeViz {
                                 children.push(
                                     Rectangle
                                         .el()
-                                        .with_background(Color::rgb(1., 1., 1.))
+                                        .with_background(Color::rgb(1., 1., 1.).into())
                                         .set(width(), alive_width)
                                         .set(height(), bar_height),
                                 );
@@ -334,7 +338,7 @@ impl ElementComponent for AssetLifetimeViz {
                                 children.push(
                                     Rectangle
                                         .el()
-                                        .with_background(Color::rgb(1., 1., 1.))
+                                        .with_background(Color::rgb(1., 1., 1.).into())
                                         .set(width(), alive_width)
                                         .set(height(), bar_height),
                                 );

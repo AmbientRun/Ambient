@@ -9,7 +9,7 @@ use ambient_network::{client::GameClient, log_network_result};
 use ambient_std::{color::Color, math::interpolate};
 use ambient_ui::{
     layout::{height, width},
-    UIBase, UIExt,
+    UIBase, UIExt, UIExt2,
 };
 use glam::{vec2, vec3, Vec2, Vec3Swizzles};
 use winit::event::ElementState;
@@ -131,7 +131,7 @@ impl ElementComponent for SelectArea {
                 let max_y = dragging.y.max(mouse_pos.y);
                 UIBase
                     .el()
-                    .with_background(Color::rgba(0., 0., 1., 0.3))
+                    .with_background(Color::rgba(0., 0., 1., 0.3).into())
                     .set(translation(), vec3(min_x, min_y, -0.05) - area_offset.extend(0.))
                     .set(width(), max_x - min_x)
                     .set(height(), max_y - min_y)
