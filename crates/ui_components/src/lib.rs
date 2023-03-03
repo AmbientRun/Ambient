@@ -1,9 +1,10 @@
 use ambient_element::{element_component, Element, Hooks};
 use ambient_guest_bridge::components::{
+    app::{window_logical_size, window_physical_size},
     transform::{local_to_parent, local_to_world, mesh_to_world, translation},
     ui::{height, width},
 };
-use glam::vec3;
+use glam::{vec3, UVec2};
 
 pub mod text;
 
@@ -25,4 +26,29 @@ impl From<Element> for UIElement {
     fn from(el: Element) -> Self {
         Self(el)
     }
+}
+
+// We need `clone` as resource is a ref on host and a copy on guest
+#[allow(clippy::clone_on_copy)]
+pub fn use_window_physical_resolution(hooks: &mut Hooks) -> UVec2 {
+    let (res, set_res) = hooks.use_state(hooks.world.resource(window_physical_size()).clone());
+    hooks.use_frame(move |world| {
+        let new_res = world.resource(window_physical_size()).clone();
+        if new_res != res {
+            set_res(new_res);
+        }
+    });
+    res
+}
+// We need `clone` as resource is a ref on host and a copy on guest
+#[allow(clippy::clone_on_copy)]
+pub fn use_window_logical_resolution(hooks: &mut Hooks) -> UVec2 {
+    let (res, set_res) = hooks.use_state(hooks.world.resource(window_logical_size()).clone());
+    hooks.use_frame(move |world| {
+        let new_res = world.resource(window_logical_size()).clone();
+        if new_res != res {
+            set_res(new_res);
+        }
+    });
+    res
 }

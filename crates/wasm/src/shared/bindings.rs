@@ -3,7 +3,7 @@ use ambient_ecs::{
     ComponentDesc, ComponentEntry, ECSError, Entity as EntityData, EntityId, World,
 };
 
-use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
+use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 
 use super::{
     conversion::{FromBindgen, IntoBindgen},

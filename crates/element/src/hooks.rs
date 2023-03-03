@@ -1,19 +1,27 @@
+#[cfg(feature = "native")]
+use std::future::Future;
 use std::{
-    any::{type_name, TypeId}, collections::{HashMap, HashSet}, fmt::Debug, future::Future, sync::Arc
+    any::{type_name, TypeId},
+    collections::{HashMap, HashSet},
+    fmt::Debug,
+    sync::Arc,
 };
 
 #[cfg(feature = "native")]
 use ambient_core::runtime;
 #[cfg(feature = "native")]
-use ambient_guest_bridge::ecs::{world_events, ComponentQuery, FrameEvent, QueryState, TypedReadQuery};
-use ambient_guest_bridge::ecs::{ComponentValue, Entity, World};
+use ambient_guest_bridge::ecs::{world_events, ComponentQuery, Entity, FrameEvent, QueryState, TypedReadQuery};
+use ambient_guest_bridge::ecs::{ComponentValue, World};
 #[cfg(feature = "native")]
 use ambient_sys::task;
 use as_any::Downcast;
+#[cfg(feature = "native")]
 use atomic_refcell::AtomicRefCell;
 use cb::{cb, Cb};
+#[cfg(feature = "native")]
 use itertools::Itertools;
 use parking_lot::Mutex;
+#[cfg(feature = "native")]
 use tracing::info_span;
 
 use crate::{AnyCloneable, ElementTree, HookContext, InstanceId};

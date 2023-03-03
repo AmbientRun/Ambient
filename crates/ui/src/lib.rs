@@ -7,7 +7,7 @@ use std::{
     },
 };
 
-use ambient_core::{hierarchy::children, transform::*, window::WindowCtl, window_ctl, window_logical_size, window_physical_size};
+use ambient_core::{hierarchy::children, transform::*, window::WindowCtl, window_ctl};
 pub use ambient_ecs::{EntityId, SystemGroup, World};
 pub use ambient_editor_derive::ElementEditor;
 pub use ambient_element as element;
@@ -86,27 +86,6 @@ pub fn systems() -> SystemGroup {
         "ui",
         vec![Box::new(rect::systems()), Box::new(text::systems()), Box::new(layout::layout_systems()), Box::new(screens::systems())],
     )
-}
-
-pub fn use_window_physical_resolution(hooks: &mut Hooks) -> UVec2 {
-    let (res, set_res) = hooks.use_state(*hooks.world.resource(window_physical_size()));
-    hooks.use_frame(move |world| {
-        let new_res = *world.resource(window_physical_size());
-        if new_res != res {
-            set_res(new_res);
-        }
-    });
-    res
-}
-pub fn use_window_logical_resolution(hooks: &mut Hooks) -> UVec2 {
-    let (res, set_res) = hooks.use_state(*hooks.world.resource(window_logical_size()));
-    hooks.use_frame(move |world| {
-        let new_res = *world.resource(window_logical_size());
-        if new_res != res {
-            set_res(new_res);
-        }
-    });
-    res
 }
 
 #[derive(Debug, Clone)]

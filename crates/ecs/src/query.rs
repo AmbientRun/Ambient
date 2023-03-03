@@ -489,7 +489,6 @@ impl Query {
         }
         match &self.event {
             QueryEvent::Changed { components } => {
-                eprintln!("Change event with world version: {:?}", state.world_version);
                 self.get_spawned(world, state);
                 self.get_changed(world, state, components);
             }

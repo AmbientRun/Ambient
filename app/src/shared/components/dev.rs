@@ -2,7 +2,7 @@ use ambient_ecs::{
     primitive_component_definitions, ComponentDesc, ComponentEntry, ComponentRegistry, ComponentValue, DefaultValue, EntityId,
     ExternalComponentAttributes, PrimitiveComponentType,
 };
-use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
+use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 
 pub fn build_components_toml() -> toml_edit::Document {
     let mut doc = toml_edit::Document::new();
@@ -199,7 +199,7 @@ impl ToToml for f64 {
 }
 impl ToToml for Mat4 {
     fn to_toml(&self) -> Option<toml_edit::Value> {
-        convert_array(self.to_cols_array())
+        convert_array_f32(self.to_cols_array())
     }
 }
 impl ToToml for i32 {
@@ -209,7 +209,7 @@ impl ToToml for i32 {
 }
 impl ToToml for Quat {
     fn to_toml(&self) -> Option<toml_edit::Value> {
-        convert_array(self.to_array())
+        convert_array_f32(self.to_array())
     }
 }
 impl ToToml for String {
@@ -229,17 +229,32 @@ impl ToToml for u64 {
 }
 impl ToToml for Vec2 {
     fn to_toml(&self) -> Option<toml_edit::Value> {
-        convert_array(self.to_array())
+        convert_array_f32(self.to_array())
     }
 }
 impl ToToml for Vec3 {
     fn to_toml(&self) -> Option<toml_edit::Value> {
-        convert_array(self.to_array())
+        convert_array_f32(self.to_array())
     }
 }
 impl ToToml for Vec4 {
     fn to_toml(&self) -> Option<toml_edit::Value> {
-        convert_array(self.to_array())
+        convert_array_f32(self.to_array())
+    }
+}
+impl ToToml for UVec2 {
+    fn to_toml(&self) -> Option<toml_edit::Value> {
+        convert_array_u32(self.to_array())
+    }
+}
+impl ToToml for UVec3 {
+    fn to_toml(&self) -> Option<toml_edit::Value> {
+        convert_array_u32(self.to_array())
+    }
+}
+impl ToToml for UVec4 {
+    fn to_toml(&self) -> Option<toml_edit::Value> {
+        convert_array_u32(self.to_array())
     }
 }
 
@@ -254,6 +269,10 @@ impl<T: ToToml> ToToml for Option<T> {
     }
 }
 
-fn convert_array<const N: usize>(arr: [f32; N]) -> Option<toml_edit::Value> {
+fn convert_array_f32<const N: usize>(arr: [f32; N]) -> Option<toml_edit::Value> {
     Some(toml_edit::Array::from_iter(arr.map(|v| v as f64)).into())
+}
+
+fn convert_array_u32<const N: usize>(arr: [u32; N]) -> Option<toml_edit::Value> {
+    Some(toml_edit::Array::from_iter(arr.map(|v| v as i64)).into())
 }

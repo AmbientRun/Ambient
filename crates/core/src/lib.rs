@@ -35,16 +35,14 @@ components!("app", {
     @[Debuggable]
     mesh: Arc<GpuMesh>,
 
-    @[Resource, Name["Window Control"], Description["Allows controlling the window from afar"]]
+    @[Resource, Name["Window Control"], Description["Allows controlling the window from afar."]]
     window_ctl: flume::Sender<WindowCtl>,
 
-    @[Resource]
+    @[Resource, Name["Window scale factor"], Description["This number is usually 1, but on for instance retina displays it's 2."]]
     window_scale_factor: f64,
-    /// The logical size is the physical size divided by the scale factor
-    @[Resource]
+    @[Resource, Name["Window logical size"], Description["The logical size is the physical size divided by the scale factor."]]
     window_logical_size: UVec2,
-    /// The physical size is the actual number of pixels on the screen
-    @[Resource]
+    @[Resource, Name["Window physical size"], Description["The physical size is the actual number of pixels on the screen."]]
     window_physical_size: UVec2,
     /// Mouse position in screen space
     @[Resource]

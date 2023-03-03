@@ -21,6 +21,24 @@ record vec4 {
     w: float32,
 }
 
+record uvec2 {
+    x: u32,
+    y: u32,
+}
+
+record uvec3 {
+    x: u32,
+    y: u32,
+    z: u32,
+}
+
+record uvec4 {
+    x: u32,
+    y: u32,
+    z: u32,
+    w: u32,
+}
+
 record quat {
     x: float32,
     y: float32,
@@ -72,6 +90,9 @@ variant component-list-type {
     type-vec2(list<vec2>),
     type-vec3(list<vec3>),
     type-vec4(list<vec4>),
+    type-uvec2(list<uvec2>),
+    type-uvec3(list<uvec3>),
+    type-uvec4(list<uvec4>),
 }
 
 variant component-option-type {
@@ -89,6 +110,9 @@ variant component-option-type {
     type-vec2(option<vec2>),
     type-vec3(option<vec3>),
     type-vec4(option<vec4>),
+    type-uvec2(option<uvec2>),
+    type-uvec3(option<uvec3>),
+    type-uvec4(option<uvec4>),
 }
 
 variant component-type {
@@ -106,6 +130,9 @@ variant component-type {
     type-vec2(vec2),
     type-vec3(vec3),
     type-vec4(vec4),
+    type-uvec2(uvec2),
+    type-uvec3(uvec3),
+    type-uvec4(uvec4),
     type-list(component-list-type),
     type-option(component-option-type),
 }

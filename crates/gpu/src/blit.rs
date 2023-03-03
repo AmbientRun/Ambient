@@ -24,7 +24,7 @@ pub struct Blitter {
 }
 impl Blitter {
     pub fn new(gpu: Arc<Gpu>, conf: &BlitterKey) -> Self {
-        log::info!("Creating blitter: {conf:#?}");
+        log::debug!("Creating blitter: {conf:#?}");
         let shader = gpu.device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("Blitter.shader"),
             source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!("blit.wgsl"))),
@@ -58,7 +58,7 @@ impl Blitter {
             push_constant_ranges: &[],
         });
 
-        log::info!("Setting up blitter");
+        log::debug!("Setting up blitter");
         let pipeline = gpu.device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("Blitter.pipeline"),
             layout: Some(&layout),

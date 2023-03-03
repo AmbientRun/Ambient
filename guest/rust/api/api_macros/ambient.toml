@@ -132,6 +132,24 @@ name = "UI scene"
 description = "If attached, this entity belongs to the UI scene."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::app::window_logical_size"]
+type = "Uvec2"
+name = "Window logical size"
+description = "The logical size is the physical size divided by the scale factor."
+attributes = ["Resource"]
+
+[components."core::app::window_physical_size"]
+type = "Uvec2"
+name = "Window physical size"
+description = "The physical size is the actual number of pixels on the screen."
+attributes = ["Resource"]
+
+[components."core::app::window_scale_factor"]
+type = "F64"
+name = "Window scale factor"
+description = "This number is usually 1, but on for instance retina displays it's 2."
+attributes = ["Resource"]
+
 [components."core::camera::active_camera"]
 type = "F32"
 name = "Active camera"

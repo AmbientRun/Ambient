@@ -277,7 +277,7 @@ impl AppBuilder {
                 std::env::var("PUFFIN_PORT").ok().and_then(|port| port.parse::<u16>().ok()).unwrap_or(puffin_http::DEFAULT_PORT)
             );
             let server = puffin_http::Server::new(&puffin_addr)?;
-            tracing::info!("Puffin server running on {}", puffin_addr);
+            tracing::debug!("Puffin server running on {}", puffin_addr);
             puffin::set_scopes_on(true);
             server
         };
@@ -292,12 +292,12 @@ impl AppBuilder {
         let mut world = World::new("main_app");
         let gpu = Arc::new(Gpu::with_config(window.as_deref(), true).await);
 
-        tracing::info!("Inserting runtime");
+        tracing::debug!("Inserting runtime");
         RuntimeKey.insert(&assets, runtime.clone());
         GpuKey.insert(&assets, gpu.clone());
         // WindowKey.insert(&assets, window.clone());
 
-        tracing::info!("Inserting app resources");
+        tracing::debug!("Inserting app resources");
         let (ctl_tx, ctl_rx) = flume::unbounded();
 
         let (window_physical_size, window_logical_size, window_scale_factor) = if let Some(window) = window.as_ref() {
@@ -313,23 +313,23 @@ impl AppBuilder {
         let resources = world_instance_resources(app_resources);
 
         world.add_components(world.resource_entity(), resources).unwrap();
-        tracing::info!("Setup renderers");
+        tracing::debug!("Setup renderers");
         if self.ui_renderer || self.main_renderer {
             // let _span = info_span!("setup_renderers").entered();
             if !self.main_renderer {
-                tracing::info!("Setting up UI renderer");
+                tracing::debug!("Setting up UI renderer");
                 let renderer = Arc::new(Mutex::new(UIRender::new(&mut world)));
                 world.add_resource(ui_renderer(), renderer);
             } else {
-                tracing::info!("Setting up ExamplesRenderer");
+                tracing::debug!("Setting up ExamplesRenderer");
                 let renderer = ExamplesRender::new(&mut world, self.ui_renderer, self.main_renderer);
-                tracing::info!("Created examples renderer");
+                tracing::debug!("Created examples renderer");
                 let renderer = Arc::new(Mutex::new(renderer));
                 world.add_resource(examples_renderer(), renderer);
             }
         }
 
-        tracing::info!("Adding window event systems");
+        tracing::debug!("Adding window event systems");
 
         let mut window_event_systems = SystemGroup::new(
             "window_event_systems",
@@ -433,9 +433,9 @@ impl App {
 
         let event_loop = self.event_loop.take().unwrap();
 
-        tracing::info!("Spawning event loop");
+        tracing::debug!("Spawning event loop");
         event_loop.spawn(move |event, _, control_flow| {
-            tracing::info!("Event: {event:?}");
+            tracing::debug!("Event: {event:?}");
             // HACK(philpax): treat dpi changes as resize events. Ideally we'd handle this in handle_event proper,
             // but https://github.com/rust-windowing/winit/issues/1968 restricts us
             if let Event::WindowEvent { window_id, event: WindowEvent::ScaleFactorChanged { new_inner_size, scale_factor } } = &event {
@@ -497,7 +497,7 @@ impl App {
             Event::MainEventsCleared => {
                 // Handle window control events
                 for v in self.ctl_rx.try_iter() {
-                    tracing::info!("Window control: {v:?}");
+                    tracing::debug!("Window control: {v:?}");
                     match v {
                         WindowCtl::GrabCursor(mode) => {
                             if let Some(window) = &self.window {
@@ -559,7 +559,7 @@ impl App {
                     }
                 }
                 WindowEvent::CloseRequested => {
-                    tracing::info!("Closing...");
+                    tracing::debug!("Closing...");
                     *control_flow = ControlFlow::Exit;
                 }
                 WindowEvent::KeyboardInput { input, .. } => {

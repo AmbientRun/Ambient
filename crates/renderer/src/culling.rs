@@ -76,7 +76,7 @@ pub struct Culling {
 
 impl Culling {
     pub fn new(assets: &AssetCache, config: RendererConfig) -> Self {
-        log::info!("Setting up culling");
+        log::debug!("Setting up culling");
         let module = ShaderModule::new(
             "CullingParams",
             include_file!("culling.wgsl"),
