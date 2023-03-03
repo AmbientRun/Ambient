@@ -12,6 +12,7 @@ const samples = [
     ["guest/rust/examples/games/tictactoe", 1],
     ["guest/rust/examples/ui/text", 1],
     ["guest/rust/examples/ui/flow_layout", 1],
+    ["guest/rust/examples/ui/dock_layout", 1],
     ["guest/rust/examples/ui/rect", 1],
 ]
 
