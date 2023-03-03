@@ -10,7 +10,8 @@ use ambient_api::{
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
     components::ui::{
-        background_color, border_color, border_thickness, height, space_between_items, width,
+        background_color, border_color, border_radius, border_thickness, height,
+        space_between_items, width,
     },
     ecs::World,
 };
@@ -26,7 +27,8 @@ fn App(_hooks: &mut Hooks) -> Element {
             .set(height(), 50.)
             .set(background_color(), vec4(1., 0., 0., 1.))
             .set(border_color(), vec4(0., 1., 0., 1.))
-            .set(border_thickness(), 10.),
+            .set(border_thickness(), 10.)
+            .set(border_radius(), vec4(20., 10., 5., 0.)),
     ])
     .set(space_between_items(), 10.)
 }

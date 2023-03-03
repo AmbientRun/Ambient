@@ -830,6 +830,12 @@ name = "Border color"
 description = "Border color of a rect() entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::ui::border_radius"]
+type = "Vec4"
+name = "Border radius"
+description = "x = top left, y = top right, z = bottom left, w = bottom right."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::ui::border_thickness"]
 type = "F32"
 name = "Border thickness"

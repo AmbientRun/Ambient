@@ -25,7 +25,7 @@ use ambient_std::{
     color::Color,
     friendly_id, include_file,
 };
-use glam::{UVec3, Vec4};
+use glam::{vec4, UVec3, Vec4};
 use wgpu::BindGroup;
 
 components!("ui", {
@@ -33,7 +33,8 @@ components!("ui", {
     background_color: Vec4,
     @[Debuggable, Networked, Store, Name["Border color"], Description["Border color of a rect() entity."]]
     border_color: Vec4,
-    border_radius: Corners,
+    @[Debuggable, Networked, Store, Name["Border radius"], Description["x = top left, y = top right, z = bottom left, w = bottom right."]]
+    border_radius: Vec4,
     @[Debuggable, Networked, Store, Name["Border thickness"], Description["Border thickness of a rect() entity."]]
     border_thickness: f32,
     @[Debuggable, Networked, Store, Name["Rect"], Description["Make this into a rectangle, with optionally rounded corners and borders."]]
@@ -51,6 +52,16 @@ pub struct Corners {
 impl Corners {
     pub fn even(value: f32) -> Self {
         Self { top_left: value, top_right: value, bottom_left: value, bottom_right: value }
+    }
+}
+impl From<Corners> for Vec4 {
+    fn from(value: Corners) -> Self {
+        vec4(value.top_left, value.top_right, value.bottom_left, value.bottom_right)
+    }
+}
+impl From<Vec4> for Corners {
+    fn from(value: Vec4) -> Self {
+        Self { top_left: value.x, top_right: value.y, bottom_left: value.z, bottom_right: value.w }
     }
 }
 
@@ -88,7 +99,7 @@ pub fn systems() -> SystemGroup {
                                     params: RectMaterialParams {
                                         background_color: world.get(id, background_color()).unwrap_or(Color::WHITE.into()).into(),
                                         border_color: world.get(id, border_color()).unwrap_or(Color::WHITE.into()).into(),
-                                        border_radius: world.get(id, border_radius()).unwrap_or_default(),
+                                        border_radius: world.get(id, border_radius()).unwrap_or_default().into(),
                                         border_thickness: world.get(id, border_thickness()).unwrap_or(0.),
                                         _padding: Default::default(),
                                     },

@@ -178,7 +178,8 @@ impl ButtonStyle {
                         Self::Card => Corners::even(3.),
                         Self::Flat => Corners::even(3.),
                         _ => Corners::even(26. / 2.),
-                    },
+                    }
+                    .into(),
                 )
                 .set(border_thickness(), 0.)
                 .set(border_color(), Color::WHITE.into());

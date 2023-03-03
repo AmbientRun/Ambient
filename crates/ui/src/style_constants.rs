@@ -55,11 +55,11 @@ impl StylesExt for Element {
     }
     fn floating_panel(self) -> Self {
         self.with_background(*Color::hex("1D1C22").unwrap().set_a(0.9))
-            .set(border_radius(), Corners::even(5.))
+            .set(border_radius(), Corners::even(5.).into())
             .set(padding(), Borders::even(STREET))
     }
     fn panel(self) -> Self {
-        self.with_background(Color::rgba(1., 1., 1., 0.01)).set(border_radius(), Corners::even(5.))
+        self.with_background(Color::rgba(1., 1., 1., 0.01)).set(border_radius(), Corners::even(5.).into())
     }
     fn keyboard(self) -> Self {
         self.set(space_between_items(), STREET).set(padding(), Borders::even(STREET)).set(align_vertical(), Align::Center)

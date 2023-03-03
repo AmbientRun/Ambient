@@ -31,7 +31,7 @@ pub fn Tooltip(hooks: &mut Hooks, inner: Element, tooltip: Element) -> Element {
             .el()
             .set(padding(), Borders::even(STREET))
             .with_background(tooltip_background_color())
-            .set(border_radius(), Corners::even(SMALL_ROUNDING))
+            .set(border_radius(), Corners::even(SMALL_ROUNDING).into())
             .set(margin(), Borders::top(STREET)),
         show: hover,
     }

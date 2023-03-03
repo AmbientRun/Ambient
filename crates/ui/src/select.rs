@@ -67,7 +67,7 @@ impl ElementComponent for DropdownSelect {
             )
             .el()
             .set(padding(), Borders::even(STREET))
-            .set(border_radius(), Corners::even(SMALL_ROUNDING))
+            .set(border_radius(), Corners::even(SMALL_ROUNDING).into())
             .with_background(tooltip_background_color()),
             show,
         }

@@ -295,7 +295,7 @@ impl ElementComponent for Slider {
                 .set(width(), THUMB_WIDTH)
                 .set(height(), SLIDER_HEIGHT)
                 .with_background(primary_color())
-                .set(border_radius(), Corners::even(THUMB_WIDTH / 2.))
+                .set(border_radius(), Corners::even(THUMB_WIDTH / 2.).into())
                 .set(translation(), vec3(block_left_offset, 0., -0.01))
                 .with_clickarea()
                 .on_mouse_enter(|world, _| {
