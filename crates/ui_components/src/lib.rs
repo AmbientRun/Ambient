@@ -6,6 +6,7 @@ use ambient_guest_bridge::components::{
 };
 use glam::{vec3, UVec2};
 
+pub mod layout;
 pub mod text;
 
 #[element_component]

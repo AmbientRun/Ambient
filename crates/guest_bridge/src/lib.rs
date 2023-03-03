@@ -13,7 +13,15 @@ pub mod components {
         pub use ambient_core::transform::{local_to_parent, local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation};
     }
     pub mod ui {
-        pub use ambient_layout::{height, min_height, min_width, width};
+        pub use ambient_layout::{
+            guest_api::{
+                align_horizontal_begin, align_horizontal_center, align_horizontal_end, align_vertical_begin, align_vertical_center,
+                align_vertical_end, fit_horizontal_children, fit_horizontal_none, fit_horizontal_parent, fit_vertical_children,
+                fit_vertical_none, fit_vertical_parent, layout_bookcase, layout_dock, layout_flow, layout_width_to_children,
+                orientation_horizontal, orientation_vertical,
+            },
+            height, is_book_file, min_height, min_width, space_between_items, width,
+        };
         pub use ambient_text::{font_size, text};
     }
     pub mod rendering {

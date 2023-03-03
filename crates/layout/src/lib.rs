@@ -4,12 +4,19 @@ use ambient_core::{
     hierarchy::{children, parent},
     transform::{local_to_parent, mesh_to_local, translation},
 };
-use ambient_ecs::{components, query, query_mut, Debuggable, Description, DynSystem, EntityId, Name, Networked, Store, SystemGroup, World};
+use ambient_ecs::{
+    components, ensure_has_component, query, query_mut, Debuggable, Description, DynSystem, EntityId, Name, Networked, Store, SystemGroup,
+    World,
+};
 use ambient_input::picking::mouse_pickable;
 use glam::{vec2, vec3, vec4, Mat4, Vec2, Vec4};
 use itertools::Itertools;
+use serde::{Deserialize, Serialize};
+
+pub mod guest_api;
 
 components!("ui", {
+    @[Debuggable, Networked, Store, Name["Layout"], Description["The layout to apply to this entity's children."]]
     layout: Layout,
     mesh_to_local_from_size: (),
     @[Debuggable, Networked, Store, Name["Width"], Description["The width of a UI element."]]
@@ -28,12 +35,19 @@ components!("ui", {
     orientation: Orientation,
     align_horizontal: Align,
     align_vertical: Align,
+    @[Debuggable, Networked, Store, Name["Space between items"], Description["Space between items in a layout."]]
     space_between_items: f32,
+    @[Debuggable, Networked, Store, Name["Is book file"], Description["This is a file in a layout_bookcase."]]
     is_book_file: (),
     gpu_ui_size: Vec4,
 });
 gpu_components! {
     gpu_ui_size() => ui_size: GpuComponentFormat::Vec4,
+}
+
+pub fn init_all_components() {
+    init_components();
+    guest_api::init_components();
 }
 
 #[derive(Clone, Copy, Debug, Default)]
@@ -137,7 +151,7 @@ pub enum Docking {
     Fill,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum Layout {
     Flow,
     Dock,
@@ -150,6 +164,7 @@ pub fn layout_systems() -> SystemGroup {
     SystemGroup::new(
         "layout",
         vec![
+            Box::new(guest_api::systems()),
             // For all "normal" components, i.e. non-layout components
             query((width().changed(),)).excl(layout()).to_system(|q, world, qs, _| {
                 for (id, _) in q.collect_cloned(world, qs) {
