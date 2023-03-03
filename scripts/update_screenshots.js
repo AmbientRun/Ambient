@@ -8,8 +8,11 @@ const samples = [
     ["guest/rust/examples/basics/input", 1],
     ["guest/rust/examples/basics/image", 3],
     ["guest/rust/examples/basics/primitives", 1],
-    ["guest/rust/examples/ui/raw_text", 1],
     ["guest/rust/examples/games/tictactoe", 1],
+    ["guest/rust/examples/ui/raw_text", 1],
+    ["guest/rust/examples/ui/text", 1],
+    ["guest/rust/examples/ui/flow_layout", 1],
+    ["guest/rust/examples/ui/rect", 1],
 ]
 
 async function run() {
