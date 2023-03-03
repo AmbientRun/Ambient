@@ -19,7 +19,6 @@ tracing = { workspace = true }
 itertools = { workspace = true }
 tokio = { workspace = true }
 anyhow = { workspace = true }
-pretty_assertions = "1.3"
 atomic_refcell = { workspace = true }
 futures = { workspace = true }
 parking_lot = { workspace = true }
@@ -28,3 +27,6 @@ chrono = { workspace = true }
 
 [features]
 intent_block_detection = []
+
+[dev-dependencies]
+pretty_assertions = { workspace = true }
