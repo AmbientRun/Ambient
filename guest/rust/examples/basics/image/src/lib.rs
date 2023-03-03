@@ -1,5 +1,6 @@
 use ambient_api::{
     components::core::{
+        app::main_scene,
         game_objects::player_camera,
         primitives::quad,
         rendering::pbr_material_from_url,
@@ -16,6 +17,7 @@ pub async fn main() -> EventResult {
         .with_default(player_camera())
         .with(translation(), vec3(5., 5., 6.))
         .with(lookat_center(), vec3(0., 0., 2.))
+        .with_default(main_scene())
         .spawn();
 
     Entity::new()
