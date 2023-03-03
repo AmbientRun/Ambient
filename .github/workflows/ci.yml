@@ -92,7 +92,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-      - name: Build guest/rust
       - name: Check that guest/rust's documentation is well-formed
         run: cd guest/rust && RUSTDOCFLAGS="-Dwarnings" cargo doc --workspace --all-features --no-deps
       # - name: Run screenshot tests
