@@ -3,26 +3,41 @@ use std::{future::Future, sync::Arc, time::Duration};
 use ambient_cameras::assets_camera_systems;
 pub use ambient_core::gpu;
 use ambient_core::{
-    app_start_time, asset_cache, async_ecs::async_ecs_systems, bounding::bounding_systems, camera::camera_systems, frame_index, get_window_sizes, gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate}, hierarchy::dump_world_hierarchy_to_tmp_file, mouse_position, remove_at_time_system, runtime, time, transform::TransformSystem, window::WindowCtl, window_logical_size, window_physical_size, window_scale_factor, RuntimeKey, TimeResourcesSystem
+    app_start_time, asset_cache,
+    async_ecs::async_ecs_systems,
+    bounding::bounding_systems,
+    camera::camera_systems,
+    frame_index, get_window_sizes,
+    gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate},
+    hierarchy::dump_world_hierarchy_to_tmp_file,
+    mouse_position, remove_at_time_system, runtime, time,
+    transform::TransformSystem,
+    window::WindowCtl,
+    window_logical_size, window_physical_size, window_scale_factor, RuntimeKey, TimeResourcesSystem,
 };
 use ambient_ecs::{
-    components, world_events, Debuggable, DynSystem, Entity, FrameEvent, MakeDefault, MaybeResource, System, SystemGroup, World, WorldEventsSystem
+    components, world_events, Debuggable, DynSystem, Entity, FrameEvent, MakeDefault, MaybeResource, System, SystemGroup, World,
+    WorldEventsSystem,
 };
 use ambient_element::ambient_system;
 use ambient_gizmos::{gizmos, Gizmos};
 use ambient_gpu::{
-    gpu::{Gpu, GpuKey}, mesh_buffer::MeshBufferKey
+    gpu::{Gpu, GpuKey},
+    mesh_buffer::MeshBufferKey,
 };
 use ambient_renderer::lod::lod_system;
 use ambient_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt}, fps_counter::{FpsCounter, FpsSample}
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    fps_counter::{FpsCounter, FpsSample},
 };
-use ambient_sys::task::RuntimeHandle;
+use ambient_sys::{task::RuntimeHandle, time::SystemTime};
 use glam::{uvec2, vec2, UVec2, Vec2};
 use parking_lot::Mutex;
 use renderers::{examples_renderer, ui_renderer, UIRender};
 use winit::{
-    event::{ElementState, Event, KeyboardInput, ModifiersState, VirtualKeyCode, WindowEvent}, event_loop::{ControlFlow, EventLoop}, window::{Window, WindowBuilder}
+    event::{ElementState, Event, KeyboardInput, ModifiersState, VirtualKeyCode, WindowEvent},
+    event_loop::{ControlFlow, EventLoop},
+    window::{Window, WindowBuilder},
 };
 
 use crate::renderers::ExamplesRender;
@@ -118,7 +133,7 @@ impl AppResources {
 }
 
 pub fn world_instance_resources(resources: AppResources) -> Entity {
-    let current_time = ambient_sys::time::current_epoch_time();
+    let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
     Entity::new()
         .with(self::gpu(), resources.gpu.clone())
         .with(gizmos(), Gizmos::new())

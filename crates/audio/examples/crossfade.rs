@@ -1,9 +1,7 @@
-use std::{
-    f32::consts::TAU,
-    time::{Duration, Instant},
-};
+use std::{f32::consts::TAU, time::Duration};
 
 use ambient_audio::{AudioStream, Frame, SampleRate, SineWave, Source};
+use ambient_sys::time::Instant;
 
 #[derive(Debug, Clone)]
 pub struct BinauralSine {

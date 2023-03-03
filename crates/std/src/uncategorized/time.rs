@@ -288,10 +288,12 @@ pub fn parse_duration(mut s: &str) -> Result<Duration, DurationParseError> {
 }
 
 #[cfg(not(target_os = "unknown"))]
+#[allow(clippy::disallowed_types)]
 pub fn from_now(time: std::time::SystemTime) -> Option<String> {
     let duration = std::time::SystemTime::now().duration_since(time).ok()?;
     Some(format!("{} ago", pretty_duration(duration)))
 }
+
 pub fn pretty_duration(duration: Duration) -> String {
     let mut secs = duration.as_secs();
     if secs == 0 {

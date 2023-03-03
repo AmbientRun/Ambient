@@ -21,6 +21,7 @@ use glam::uvec2;
 pub async fn run(assets: AssetCache, server_addr: SocketAddr, run: &RunCli, project_path: Option<PathBuf>) {
     let user_id = run.user_id.clone().unwrap_or_else(|| format!("user_{}", friendly_id()));
     let headless = if run.headless { Some(uvec2(400, 400)) } else { None };
+
     AppBuilder::simple()
         .ui_renderer(true)
         .with_asset_cache(assets)

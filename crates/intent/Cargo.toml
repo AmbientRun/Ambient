@@ -24,6 +24,7 @@ atomic_refcell = { workspace = true }
 futures = { workspace = true }
 parking_lot = { workspace = true }
 profiling = { workspace = true }
+chrono = { workspace = true }
 
 [features]
 intent_block_detection = []

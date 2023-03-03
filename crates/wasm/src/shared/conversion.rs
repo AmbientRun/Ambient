@@ -1,4 +1,4 @@
-use std::time::SystemTime;
+use ambient_sys::time::SystemTime;
 
 use ambient_animation as ea;
 use ambient_ecs::EntityId;

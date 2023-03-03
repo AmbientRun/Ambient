@@ -1,6 +1,6 @@
-use std::time::{Duration, Instant};
-
 use ambient_audio::{AudioStream, SineWave, Source};
+use ambient_sys::time::Instant;
+use std::time::Duration;
 
 fn main() {
     let stream = AudioStream::new().unwrap();

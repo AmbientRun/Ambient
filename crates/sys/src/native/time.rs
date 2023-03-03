@@ -1,7 +1,7 @@
 #![allow(clippy::disallowed_types)]
 use std::{
     ops::{Add, Sub},
-    time::{Duration, SystemTime},
+    time::{Duration, SystemTimeError},
 };
 
 /// Represents an abstract point in time
@@ -52,15 +52,42 @@ impl Instant {
     }
 }
 
+/// Measurement of the system clock
+#[derive(From, Into, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct SystemTime(pub(crate) std::time::SystemTime);
+
+impl Add<Duration> for SystemTime {
+    type Output = SystemTime;
+
+    fn add(self, rhs: Duration) -> Self::Output {
+        Self(self.0 + rhs)
+    }
+}
+
+impl Sub<Duration> for SystemTime {
+    type Output = SystemTime;
+
+    fn sub(self, rhs: Duration) -> Self::Output {
+        Self(self.0 - rhs)
+    }
+}
+
+impl SystemTime {
+    pub const UNIX_EPOCH: Self = SystemTime(std::time::SystemTime::UNIX_EPOCH);
+    pub fn now() -> Self {
+        Self(std::time::SystemTime::now())
+    }
+
+    pub fn duration_since(&self, earlier: Self) -> Result<Duration, SystemTimeError> {
+        self.0.duration_since(earlier.0)
+    }
+}
+
 pub fn schedule_wakeup<F: 'static + Send + FnOnce()>(dur: Duration, callback: F) {
     tokio::spawn(async move {
         tokio::time::sleep(dur).await;
         callback()
     });
-}
-
-pub fn current_epoch_time() -> Duration {
-    SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap()
 }
 
 use derive_more::{From, Into};

@@ -7,6 +7,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+ambient_sys = { path = "../sys" }
 ambient_animation = { path = "../animation" }
 ambient_app = { path = "../app" }
 ambient_core = { path = "../core" }
