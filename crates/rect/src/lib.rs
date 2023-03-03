@@ -1,13 +1,8 @@
 use std::sync::Arc;
 
-use ambient_core::{
-    asset_cache, mesh,
-    transform::{mesh_to_local, scale},
-    ui_scene,
-};
+use ambient_core::{asset_cache, mesh};
 use ambient_ecs::{
-    components, ensure_has_component, ensure_has_component_with_default, query, Debuggable, Description, Entity, Name, Networked, Store,
-    SystemGroup,
+    components, ensure_has_component_with_default, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup,
 };
 use ambient_gpu::{
     gpu::GpuKey,
@@ -97,8 +92,8 @@ pub fn systems() -> SystemGroup {
                                 material(),
                                 RectMaterialKey {
                                     params: RectMaterialParams {
-                                        background_color: world.get(id, background_color()).unwrap_or(Color::WHITE.into()).into(),
-                                        border_color: world.get(id, border_color()).unwrap_or(Color::WHITE.into()).into(),
+                                        background_color: world.get(id, background_color()).unwrap_or(Color::WHITE.into()),
+                                        border_color: world.get(id, border_color()).unwrap_or(Color::WHITE.into()),
                                         border_radius: world.get(id, border_radius()).unwrap_or_default().into(),
                                         border_thickness: world.get(id, border_thickness()).unwrap_or(0.),
                                         _padding: Default::default(),
