@@ -1,6 +1,6 @@
 use super::{
     identifier::{Identifier, IdentifierPath, IdentifierPathBuf},
-    manifest::{Component, Manifest, Namespace, NamespaceOrComponent},
+    manifest::{Component, Manifest, Namespace,  NamespaceOrOther},
 };
 use anyhow::Context;
 use quote::quote;
@@ -24,10 +24,11 @@ impl Tree {
 
         for (id, namespace_or_component) in manifest.components.clone() {
             let node = match namespace_or_component {
-                NamespaceOrComponent::Namespace(n) => {
+                NamespaceOrOther::Namespace(n) => {
                     TreeNodeInner::Namespace(TreeNodeNamespace::new(Some(n)))
                 }
-                NamespaceOrComponent::Component(c) => TreeNodeInner::Component(c),
+                NamespaceOrOther::Component(c) => TreeNodeInner::Other(c),
+                _ => unreachable!(),
             };
 
             tree.insert(id, node)?;
@@ -58,7 +59,7 @@ impl Tree {
         self.root.get(path)
     }
 
-    fn insert(&mut self, path: IdentifierPathBuf, inner: TreeNodeInner) -> anyhow::Result<()> {
+    fn insert(&mut self, path: IdentifierPathBuf, inner: TreeNodeInner<Component>) -> anyhow::Result<()> {
         let mut manifest_head = &mut self.root.children;
         let (leaf_id, namespaces) = path.split_last().context("empty segments")?;
 
@@ -118,10 +119,10 @@ impl Tree {
 #[derive(Debug, Clone)]
 struct TreeNode {
     path: IdentifierPathBuf,
-    inner: TreeNodeInner,
+    inner: TreeNodeInner<Component>,
 }
 impl TreeNode {
-    fn new(path: IdentifierPathBuf, inner: TreeNodeInner) -> Self {
+    fn new(path: IdentifierPathBuf, inner: TreeNodeInner<Component>) -> Self {
         Self { path, inner }
     }
 
@@ -169,7 +170,7 @@ impl TreeNode {
                     }
                 })
             }
-            TreeNodeInner::Component(component) => {
+            TreeNodeInner::Other(component) => {
                 let name_ident: syn::Path = syn::parse_str(name)?;
                 let name_uppercase_ident: syn::Path = syn::parse_str(&name.to_ascii_uppercase())?;
                 let component_ty = component.type_.to_token_stream(api_name)?;
@@ -208,9 +209,9 @@ impl TreeNode {
 }
 
 #[derive(Debug, Clone)]
-enum TreeNodeInner {
+enum TreeNodeInner<T> {
     Namespace(TreeNodeNamespace),
-    Component(Component),
+    Other(T),
 }
 
 #[derive(Debug, Clone)]
@@ -231,7 +232,7 @@ impl TreeNodeNamespace {
         let child = self.children.get(root)?;
         match &child.inner {
             TreeNodeInner::Namespace(ns) => ns.get(IdentifierPath(rest)),
-            TreeNodeInner::Component(c) => Some(c),
+            TreeNodeInner::Other(c) => Some(c),
         }
     }
 }
