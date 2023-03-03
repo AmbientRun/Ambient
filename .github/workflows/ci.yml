@@ -10,6 +10,32 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  clippy:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Run clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --workspace --examples --tests
+  clippy-web:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          target: wasm32-unknown-unknown
+          override: true
+      - name: Run clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --target wasm32-unknown-unknown -p ambient_web
+
   build-linux:
     runs-on: ubuntu-20.04
 

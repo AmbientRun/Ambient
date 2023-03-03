@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::Path, sync::Arc};
+use std::{collections::HashMap, sync::Arc};
 
 use ambient_core::{
     asset_cache,
@@ -69,7 +69,7 @@ impl Default for ModelSpawnOpts {
 pub struct Model(pub World);
 impl Model {
     #[cfg(not(target_os = "unknown"))]
-    pub async fn from_file(path: impl AsRef<Path>) -> anyhow::Result<Self> {
+    pub async fn from_file(path: impl AsRef<std::path::Path>) -> anyhow::Result<Self> {
         Ok(Self(World::from_file(path).await?))
     }
     pub fn from_slice(content: &[u8]) -> anyhow::Result<Self> {
