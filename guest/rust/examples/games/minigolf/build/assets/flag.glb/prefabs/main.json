@@ -1,1 +1,0 @@
-{"AQAAAAAAAAAAAAAAAAAAAA":{"core::ecs::children":["Qe8h_BhfEQypofZaZ0blaw"]},"Qe8h_BhfEQypofZaZ0blaw":{"core::model::model_from_url":"../models/main.json","core::physics::collider":{"Asset":{"collider":"../colliders/main.json"}},"core::physics::collider_type":"Static"}}
