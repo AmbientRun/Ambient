@@ -4,7 +4,7 @@ use ambient_core::{asset_cache, camera::active_camera, runtime};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_gpu::std_assets::PixelTextureViewKey;
 use ambient_std::{asset_cache::SyncAssetKeyExt, color::Color};
-use ambient_ui::{FlowColumn, Image, Text, UIExt};
+use ambient_ui::{FlowColumn, Image, Text, UIExt, UIExt2};
 
 #[derive(Debug, Clone)]
 struct Example;
@@ -27,8 +27,8 @@ impl ElementComponent for Example {
 
         // After 5 seconds, on rerender, this component crashes the app
         FlowColumn(vec![
-            Image { texture: Some(texture) }.el().with_background(Color::rgba(1.0, 1.0, 0.0, 1.0)),
-            Text::el("Hello, World!").with_background(Color::rgba(0.5, 0.0, 1.0, 1.0)),
+            Image { texture: Some(texture) }.el().with_background(Color::rgba(1.0, 1.0, 0.0, 1.0).into()),
+            Text::el("Hello, World!").with_background(Color::rgba(0.5, 0.0, 1.0, 1.0).into()),
         ])
         .el()
     }

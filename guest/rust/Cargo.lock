@@ -221,6 +221,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "flow_layout"
+version = "0.1.1"
+dependencies = [
+ "ambient_api",
+ "ambient_element",
+ "ambient_guest_bridge",
+ "ambient_ui_components",
+]
+
+[[package]]
 name = "friendly_id"
 version = "0.1.0"
 dependencies = [
@@ -366,16 +376,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
 dependencies = [
  "either",
-]
-
-[[package]]
-name = "layout"
-version = "0.1.1"
-dependencies = [
- "ambient_api",
- "ambient_element",
- "ambient_guest_bridge",
- "ambient_ui_components",
 ]
 
 [[package]]

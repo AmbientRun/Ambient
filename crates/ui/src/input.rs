@@ -294,7 +294,7 @@ impl ElementComponent for Slider {
                 .el()
                 .set(width(), THUMB_WIDTH)
                 .set(height(), SLIDER_HEIGHT)
-                .with_background(primary_color())
+                .with_background(primary_color().into())
                 .set(border_radius(), Corners::even(THUMB_WIDTH / 2.).into())
                 .set(translation(), vec3(block_left_offset, 0., -0.01))
                 .with_clickarea()
@@ -387,6 +387,7 @@ impl From<&EditableDuration> for Duration {
 }
 use ambient_renderer::color;
 use ambient_std::time::parse_duration;
+use ambient_ui_components::UIExt2;
 use convert_case::{Case, Casing};
 
 impl From<String> for EditableDuration {

@@ -16,12 +16,11 @@ impl ElementComponent for WobbleRect {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (state, set_state) = hooks.use_state(0.);
         hooks.use_frame(move |_| set_state(state + 1.));
-        UIBase.el().set(width(), 150.).set(height(), 30. + (state as f32 * 0.01).sin() * 20.).with_background(Color::rgba(
-            1.,
-            0.,
-            (state as f32 * 0.01).sin(),
-            1.,
-        ))
+        UIBase
+            .el()
+            .set(width(), 150.)
+            .set(height(), 30. + (state as f32 * 0.01).sin() * 20.)
+            .with_background(Color::rgba(1., 0., (state as f32 * 0.01).sin(), 1.).into())
     }
 }
 
@@ -68,7 +67,7 @@ impl ElementComponent for Example {
         eprintln!("Render example {count}");
         if count < 5 {
             Two {
-                first: UIBase.el().set(width(), 150.).set(height(), 30.).with_background(Color::rgba(0.5, 1., 0.5, 1.)),
+                first: UIBase.el().set(width(), 150.).set(height(), 30.).with_background(Color::rgba(0.5, 1., 0.5, 1.).into()),
                 second: FlowColumn(vec![
                     InputTest.el(),
                     Text::el(format!("You clicked {count} times")),
@@ -76,14 +75,14 @@ impl ElementComponent for Example {
                         .el()
                         .set(width(), 30. - count as f32 * 2.)
                         .set(height(), 30. + count as f32 * 30.)
-                        .with_background(Color::rgba(0.5, 0.5, 0.5, 1.))
+                        .with_background(Color::rgba(0.5, 0.5, 0.5, 1.).into())
                         .with_clickarea()
                         .el(),
                     // .set(on_click(), Arc::new(move |world, _| {
                     //     set_count(count + 1);
                     // }))
                     WobbleRect.into(),
-                    UIBase.el().set(width(), 250.).set(height(), 60.).with_background(Color::rgba(0.1, 0.1, 1.0, 1.)),
+                    UIBase.el().set(width(), 250.).set(height(), 60.).with_background(Color::rgba(0.1, 0.1, 1.0, 1.).into()),
                     ContextUser.into(),
                 ])
                 .into(),

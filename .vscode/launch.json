@@ -20,7 +20,7 @@
             },
             "args": [
                 "run",
-                "guest/rust/examples/rect"
+                "guest/rust/examples/flow_layout"
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [

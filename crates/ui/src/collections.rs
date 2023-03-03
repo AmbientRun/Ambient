@@ -11,6 +11,7 @@ use winit::event::{ElementState, VirtualKeyCode};
 
 use super::{Button, ButtonStyle, Dropdown, Editor, EditorOpts, FlowColumn, FlowRow, Focus, UIBase, UIExt};
 use crate::{layout::*, StylesExt, COLLECTION_ADD_ICON, COLLECTION_DELETE_ICON, MOVE_DOWN_ICON, MOVE_UP_ICON, STREET};
+use ambient_ui_components::UIExt2;
 
 #[element_component]
 pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static>(
@@ -214,7 +215,7 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                                 .collect(),
                         )
                         .el()
-                        .with_background(Color::rgba(0.05, 0.05, 0.05, 1.))
+                        .with_background(Color::rgba(0.05, 0.05, 0.05, 1.).into())
                         .set(fit_horizontal(), Fit::None)
                         .set(width(), 400.),
                         show: add_action,
@@ -274,7 +275,7 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                 .el()
                 .set(width(), 5.)
                 .set(fit_vertical(), Fit::Parent)
-                .with_background(if focused { Color::rgba(0.0, 1., 0., 1.) } else { Color::rgba(0.5, 0.5, 0.5, 1.) })
+                .with_background(if focused { Color::rgba(0.0, 1., 0., 1.) } else { Color::rgba(0.5, 0.5, 0.5, 1.) }.into())
                 .set(margin(), Borders::right(5.)),
             item_editor.0(value, on_change, item_opts).set(fit_horizontal(), Fit::Parent),
         ])

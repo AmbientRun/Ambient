@@ -18,8 +18,9 @@ pub mod components {
             guest_api::{
                 align_horizontal_begin, align_horizontal_center, align_horizontal_end, align_vertical_begin, align_vertical_center,
                 align_vertical_end, fit_horizontal_children, fit_horizontal_none, fit_horizontal_parent, fit_vertical_children,
-                fit_vertical_none, fit_vertical_parent, layout_bookcase, layout_dock, layout_flow, layout_width_to_children,
-                orientation_horizontal, orientation_vertical,
+                fit_vertical_none, fit_vertical_parent, layout_bookcase, layout_dock, layout_flow, layout_width_to_children, margin_bottom,
+                margin_left, margin_right, margin_top, orientation_horizontal, orientation_vertical, padding_bottom, padding_left,
+                padding_right, padding_top,
             },
             height, is_book_file, mesh_to_local_from_size, min_height, min_width, space_between_items, width,
         };

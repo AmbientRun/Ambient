@@ -27,6 +27,7 @@ use crate::{
     border_color, border_radius, border_thickness, cutout_color, font_style, layout::*, primary_color, secondary_color, Corners, FontStyle,
     Tooltip,
 };
+use ambient_ui_components::UIExt2;
 
 #[derive(Clone, Debug)]
 pub enum ButtonCb {
@@ -143,10 +144,10 @@ impl ButtonStyle {
                     .el()
                     .set(fit_horizontal(), Fit::Parent)
                     .set(height(), 2.)
-                    .with_background(Color::WHITE)
+                    .with_background(Color::WHITE.into())
                     .set(margin(), Borders::top(2.)),
             ])
-            .with_background(background)
+            .with_background(background.into())
         } else {
             let content = content.set(font_style(), FontStyle::Bold);
             let tooltip = if let Some(hotkey) = hotkey {
@@ -171,7 +172,7 @@ impl ButtonStyle {
                     },
                 )
                 .set(align_vertical(), Align::Center)
-                .with_background(background)
+                .with_background(background.into())
                 .set(
                     border_radius(),
                     match self {

@@ -10,6 +10,7 @@ use crate::{
     padding, tooltip_background_color, Corners, Dropdown, SMALL_ROUNDING, STREET,
 };
 use ambient_input::event_mouse_input;
+use ambient_ui_components::UIExt2;
 
 #[derive(Debug, Clone)]
 pub struct DropdownSelect {
@@ -68,7 +69,7 @@ impl ElementComponent for DropdownSelect {
             .el()
             .set(padding(), Borders::even(STREET))
             .set(border_radius(), Corners::even(SMALL_ROUNDING).into())
-            .with_background(tooltip_background_color()),
+            .with_background(tooltip_background_color().into()),
             show,
         }
         .el()
