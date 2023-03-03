@@ -3,7 +3,7 @@ use ambient_api::{
     concepts::make_orthographic_camera,
     prelude::*,
 };
-use ambient_element::{element_component, Element, ElementComponentExt, Group, Hooks};
+use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
     components::{
         camera::orthographic_from_window,
@@ -29,7 +29,7 @@ fn App(_hooks: &mut Hooks) -> Element {
             .el()
             .with_background(vec4(1., 1., 1., 0.02))
     };
-    Group(vec![FlowColumn(vec![
+    FlowColumn(vec![
         FlowRow(vec![Text::el("Basic")])
             .el()
             .with_background(vec4(0.1, 0.1, 0.1, 1.))
@@ -85,8 +85,7 @@ fn App(_hooks: &mut Hooks) -> Element {
     ])
     .el()
     .set(space_between_items(), 5.)
-    .with_padding_even(5.)])
-    .el()
+    .with_padding_even(5.)
 }
 
 #[main]

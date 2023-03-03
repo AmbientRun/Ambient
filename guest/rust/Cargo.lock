@@ -179,6 +179,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "dock_layout"
+version = "0.1.1"
+dependencies = [
+ "ambient_api",
+ "ambient_element",
+ "ambient_guest_bridge",
+ "ambient_ui_components",
+]
+
+[[package]]
 name = "dyn-clonable"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

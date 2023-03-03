@@ -1,0 +1,4 @@
+[project]
+id = "dock_layout"
+name = "Dock Layout"
+version = "0.0.1"
