@@ -5,8 +5,10 @@ use ambient_core::{
     transform::{mesh_to_local, scale},
     ui_scene,
 };
-use ambient_ecs::{components, query, Entity, SystemGroup};
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_ecs::{
+    components, ensure_has_component, ensure_has_component_with_default, query, Debuggable, Description, Entity, Name, Networked, Store,
+    SystemGroup,
+};
 use ambient_gpu::{
     gpu::GpuKey,
     shader_module::{BindGroupDesc, ShaderModule},
@@ -23,17 +25,20 @@ use ambient_std::{
     color::Color,
     friendly_id, include_file,
 };
-use glam::{Mat4, UVec3, Vec3, Vec4};
+use glam::{vec4, UVec3, Vec4};
 use wgpu::BindGroup;
 
-use crate::{gpu_ui_size, mesh_to_local_from_size, UIBase};
-
 components!("ui", {
-    background_color: Color,
-    border_color: Color,
-    border_radius: Corners,
+    @[Debuggable, Networked, Store, Name["Background color"], Description["Background color of a rect() entity."]]
+    background_color: Vec4,
+    @[Debuggable, Networked, Store, Name["Border color"], Description["Border color of a rect() entity."]]
+    border_color: Vec4,
+    @[Debuggable, Networked, Store, Name["Border radius"], Description["x = top left, y = top right, z = bottom left, w = bottom right."]]
+    border_radius: Vec4,
+    @[Debuggable, Networked, Store, Name["Border thickness"], Description["Border thickness of a rect() entity."]]
     border_thickness: f32,
-    ui_rect: (),
+    @[Debuggable, Networked, Store, Name["Rect"], Description["Make this into a rectangle, with optionally rounded corners and borders."]]
+    rect: (),
 });
 
 #[repr(C)]
@@ -49,31 +54,24 @@ impl Corners {
         Self { top_left: value, top_right: value, bottom_left: value, bottom_right: value }
     }
 }
-
-/// A simple UI rect. Use components such as `width`, `height`, `background_color`, `border_color`, `border_radius` and `border_thickness`
-/// to control its appearance
-#[element_component]
-pub fn Rectangle(_hooks: &mut Hooks) -> Element {
-    with_rect(UIBase.el())
+impl From<Corners> for Vec4 {
+    fn from(value: Corners) -> Self {
+        vec4(value.top_left, value.top_right, value.bottom_left, value.bottom_right)
+    }
 }
-
-pub(crate) fn with_rect(element: Element) -> Element {
-    element
-        .init(ui_rect(), ())
-        .init(gpu_ui_size(), Vec4::ZERO)
-        .init(mesh_to_local(), Mat4::IDENTITY)
-        .init(primitives(), vec![])
-        .init_default(gpu_primitives())
-        .init(scale(), Vec3::ONE)
-        .init(mesh_to_local_from_size(), ())
-        .init(ui_scene(), ())
+impl From<Vec4> for Corners {
+    fn from(value: Vec4) -> Self {
+        Self { top_left: value.x, top_right: value.y, bottom_left: value.z, bottom_right: value.w }
+    }
 }
 
 pub fn systems() -> SystemGroup {
     SystemGroup::new(
         "ui/rect",
         vec![
-            query(()).incl(ui_rect()).excl(mesh()).to_system(|q, world, qs, _| {
+            ensure_has_component_with_default(rect(), primitives()),
+            ensure_has_component_with_default(rect(), gpu_primitives()),
+            query(()).incl(rect()).excl(mesh()).to_system(|q, world, qs, _| {
                 let assets = world.resource(asset_cache()).clone();
                 for (id, _) in q.collect_cloned(world, qs) {
                     world
@@ -85,7 +83,7 @@ pub fn systems() -> SystemGroup {
                 }
             }),
             query(())
-                .incl(ui_rect())
+                .incl(rect())
                 .optional_changed(background_color())
                 .optional_changed(border_color())
                 .optional_changed(border_radius())
@@ -99,9 +97,9 @@ pub fn systems() -> SystemGroup {
                                 material(),
                                 RectMaterialKey {
                                     params: RectMaterialParams {
-                                        background_color: world.get(id, background_color()).unwrap_or(Color::WHITE).into(),
-                                        border_color: world.get(id, border_color()).unwrap_or(Color::WHITE).into(),
-                                        border_radius: world.get(id, border_radius()).unwrap_or_default(),
+                                        background_color: world.get(id, background_color()).unwrap_or(Color::WHITE.into()).into(),
+                                        border_color: world.get(id, border_color()).unwrap_or(Color::WHITE.into()).into(),
+                                        border_radius: world.get(id, border_radius()).unwrap_or_default().into(),
                                         border_thickness: world.get(id, border_thickness()).unwrap_or(0.),
                                         _padding: Default::default(),
                                     },

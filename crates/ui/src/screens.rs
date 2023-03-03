@@ -7,6 +7,7 @@ use ambient_element::{define_el_function_for_vec_element_newtype, Element, Eleme
 use glam::vec3;
 
 use crate::{app_background_color, padding, Borders, Dock, UIBase, UIExt, WindowSized};
+use ambient_ui_components::UIExt2;
 
 components!("ui", {
     screen: (),
@@ -36,7 +37,7 @@ impl ElementComponent for ScreenContainer {
         if let Some(content) = self.0 {
             UIBase.el().set(screen(), ()).children(vec![WindowSized(vec![Dock(vec![content]).el().set(translation(), vec3(0., 0., 0.1))])
                 .el()
-                .with_background(*app_background_color().set_a(0.99))
+                .with_background(app_background_color().set_a(0.99).clone().into())
                 .with_clickarea()
                 .el()])
         } else {
@@ -52,7 +53,7 @@ impl ElementComponent for PageScreen {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         WindowSized(vec![Dock(self.0).el().init(padding(), Borders::even(30.))])
             .el()
-            .with_background(*app_background_color().set_a(0.99))
+            .with_background(app_background_color().set_a(0.99).clone().into())
             .with_clickarea()
             .el()
     }
@@ -64,7 +65,7 @@ impl ElementComponent for DialogScreen {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         WindowSized(vec![Dock(vec![self.0]).el().init(padding(), Borders::even(30.))])
             .el()
-            .with_background(*app_background_color().set_a(0.99))
+            .with_background(app_background_color().set_a(0.99).clone().into())
             .with_clickarea()
             .el()
     }

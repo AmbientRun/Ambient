@@ -4,6 +4,7 @@ use ambient_std::color::Color;
 use glam::vec4;
 
 use crate::{align_vertical, border_radius, font_size, padding, space_between_items, Align, Borders, Corners, UIExt};
+use ambient_ui_components::UIExt2;
 
 pub fn primary_color() -> Color {
     Color::hex("DE0B5D").unwrap()
@@ -54,12 +55,12 @@ impl StylesExt for Element {
         self.set(color(), vec4(1., 0.5, 0.5, 1.))
     }
     fn floating_panel(self) -> Self {
-        self.with_background(*Color::hex("1D1C22").unwrap().set_a(0.9))
-            .set(border_radius(), Corners::even(5.))
+        self.with_background(Color::hex("1D1C22").unwrap().set_a(0.9).clone().into())
+            .set(border_radius(), Corners::even(5.).into())
             .set(padding(), Borders::even(STREET))
     }
     fn panel(self) -> Self {
-        self.with_background(Color::rgba(1., 1., 1., 0.01)).set(border_radius(), Corners::even(5.))
+        self.with_background(Color::rgba(1., 1., 1., 0.01).into()).set(border_radius(), Corners::even(5.).into())
     }
     fn keyboard(self) -> Self {
         self.set(space_between_items(), STREET).set(padding(), Borders::even(STREET)).set(align_vertical(), Align::Center)

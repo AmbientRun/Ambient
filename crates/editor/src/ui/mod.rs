@@ -27,7 +27,7 @@ use ambient_ui::{
     command_modifier, height,
     layout::{docking, space_between_items, width, Borders, Docking},
     margin, use_interval, use_window_logical_resolution, Button, Editor, FlowColumn, FlowRow, FontAwesomeIcon, Hotkey, Rectangle,
-    ScreenContainer, ScrollArea, Separator, StylesExt, Text, UIExt, WindowSized, STREET,
+    ScreenContainer, ScrollArea, Separator, StylesExt, Text, UIExt, UIExt2, WindowSized, STREET,
 };
 use build_mode::*;
 use glam::{vec3, Vec3};
@@ -536,7 +536,7 @@ pub fn Crosshair(hooks: &mut Hooks) -> Element {
         .el()
         .set(width(), 2.)
         .set(height(), 2.)
-        .with_background(Color::WHITE)
+        .with_background(Color::WHITE.into())
         .set(translation(), vec3(window_size.x / 2. - 1., window_size.y / 2. - 1., -0.01))
 }
 

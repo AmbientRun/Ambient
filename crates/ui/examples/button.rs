@@ -8,7 +8,7 @@ use ambient_ui::*;
 async fn init(app: &mut App) {
     let world = &mut app.world;
     let card_inner =
-        |text| FlowRow(vec![Text::el(text)]).el().with_background(Color::rgba(0.3, 0.3, 0.3, 1.)).set(padding(), Borders::even(20.));
+        |text| FlowRow(vec![Text::el(text)]).el().with_background(Color::rgba(0.3, 0.3, 0.3, 1.).into()).set(padding(), Borders::even(20.));
     Group(vec![
         UICamera.el().set(active_camera(), 0.),
         FlowRow(vec![

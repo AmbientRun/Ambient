@@ -286,7 +286,7 @@ impl ElementComponent for Slider {
             .set(width(), slider_width)
             .set(height(), 2.)
             .set(translation(), vec3(0., (SLIDER_HEIGHT - 2.) / 2., 0.))
-            .set(background_color(), primary_color())
+            .set(background_color(), primary_color().into())
             .on_spawned(move |_, id| *block_id.lock() = id);
 
         let thumb = {
@@ -294,8 +294,8 @@ impl ElementComponent for Slider {
                 .el()
                 .set(width(), THUMB_WIDTH)
                 .set(height(), SLIDER_HEIGHT)
-                .with_background(primary_color())
-                .set(border_radius(), Corners::even(THUMB_WIDTH / 2.))
+                .with_background(primary_color().into())
+                .set(border_radius(), Corners::even(THUMB_WIDTH / 2.).into())
                 .set(translation(), vec3(block_left_offset, 0., -0.01))
                 .with_clickarea()
                 .on_mouse_enter(|world, _| {
@@ -387,6 +387,7 @@ impl From<&EditableDuration> for Duration {
 }
 use ambient_renderer::color;
 use ambient_std::time::parse_duration;
+use ambient_ui_components::UIExt2;
 use convert_case::{Case, Casing};
 
 impl From<String> for EditableDuration {

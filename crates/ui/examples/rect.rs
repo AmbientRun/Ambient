@@ -18,10 +18,10 @@ async fn init(app: &mut App) {
                 .el()
                 .set(width(), 200.)
                 .set(height(), 100.)
-                .set(background_color(), Color::rgba(1., 0., 0., 1.))
-                .set(border_radius(), Corners::even(10.))
+                .set(background_color(), Color::rgba(1., 0., 0., 1.).into())
+                .set(border_radius(), Corners::even(10.).into())
                 .set(border_thickness(), 3.)
-                .set(border_color(), Color::rgba(1., 1., 1., 1.)),
+                .set(border_color(), Color::rgba(1., 1., 1., 1.).into()),
         ])
         .el()
         .set(space_between_items(), 5.),

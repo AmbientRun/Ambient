@@ -221,6 +221,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "flow_layout"
+version = "0.1.1"
+dependencies = [
+ "ambient_api",
+ "ambient_element",
+ "ambient_guest_bridge",
+ "ambient_ui_components",
+]
+
+[[package]]
 name = "friendly_id"
 version = "0.1.0"
 dependencies = [
@@ -649,6 +659,16 @@ name = "raw_text"
 version = "0.1.1"
 dependencies = [
  "ambient_api",
+]
+
+[[package]]
+name = "rect"
+version = "0.1.1"
+dependencies = [
+ "ambient_api",
+ "ambient_element",
+ "ambient_guest_bridge",
+ "ambient_ui_components",
 ]
 
 [[package]]

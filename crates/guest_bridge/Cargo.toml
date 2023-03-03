@@ -11,8 +11,9 @@ ambient_core = { path = "../core", optional = true }
 ambient_layout = { path = "../layout", optional = true }
 ambient_renderer = { path = "../renderer", optional = true }
 ambient_text = { path = "../text", optional = true }
+ambient_rect = { path = "../rect", optional = true }
 ambient_api = { path = "../../guest/rust/api", optional = true }
 
 [features]
-native = ["ambient_ecs", "ambient_core", "ambient_layout", "ambient_renderer", "ambient_text"]
+native = ["ambient_ecs", "ambient_core", "ambient_layout", "ambient_renderer", "ambient_text", "ambient_rect"]
 guest = ["ambient_api"]

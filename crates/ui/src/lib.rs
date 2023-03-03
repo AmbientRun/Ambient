@@ -39,7 +39,7 @@ mod image;
 mod input;
 mod loadable;
 mod prompt;
-mod rect;
+
 mod screens;
 mod select;
 mod style_constants;
@@ -48,8 +48,11 @@ mod text_input;
 mod throbber;
 
 pub use ambient_layout as layout;
+pub use ambient_rect as rect;
+pub use ambient_rect::{background_color, border_color, border_radius, border_thickness, Corners};
 use ambient_text as text;
 pub use ambient_text::*;
+pub use ambient_ui_components::layout::*;
 pub use ambient_ui_components::text::*;
 pub use ambient_ui_components::*;
 pub use asset_url::*;
@@ -62,8 +65,6 @@ pub use input::*;
 pub use layout::*;
 pub use loadable::*;
 pub use prompt::*;
-use rect::with_rect;
-pub use rect::{background_color, border_color, border_radius, border_thickness, Corners, Rectangle};
 pub use screens::*;
 pub use select::*;
 pub use style_constants::*;
@@ -74,7 +75,7 @@ pub use throbber::*;
 pub use self::image::*;
 
 pub fn init_all_componets() {
-    layout::init_components();
+    layout::init_all_components();
     layout::init_gpu_components();
     rect::init_components();
     text::init_components();
@@ -86,107 +87,6 @@ pub fn systems() -> SystemGroup {
         "ui",
         vec![Box::new(rect::systems()), Box::new(text::systems()), Box::new(layout::layout_systems()), Box::new(screens::systems())],
     )
-}
-
-#[derive(Debug, Clone)]
-pub struct WindowSized(pub Vec<Element>);
-define_el_function_for_vec_element_newtype!(WindowSized);
-impl ElementComponent for WindowSized {
-    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let res = use_window_logical_resolution(hooks);
-        Dock(self.0).el().set(width(), res.x as _).set(height(), res.y as _).remove(local_to_parent())
-    }
-}
-
-/// See https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/layout?view=netdesktop-6.0#dock
-#[derive(Debug, Clone)]
-pub struct Dock(pub Vec<Element>);
-define_el_function_for_vec_element_newtype!(Dock);
-impl ElementComponent for Dock {
-    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        Element::from(UIBase).init(layout(), Layout::Dock).init_default(children()).children(self.0)
-    }
-}
-
-/// See <https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/layout?view=netdesktop-6.0#container-flow-layout>
-#[derive(Debug, Clone)]
-pub struct Flow(pub Vec<Element>);
-define_el_function_for_vec_element_newtype!(Flow);
-impl ElementComponent for Flow {
-    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        Element::from(UIBase).init(layout(), Layout::Flow).init_default(children()).children(self.0)
-    }
-}
-
-/// A bookcase layout is a min-max layout; it should be a list of BookFiles, where each BookFile
-/// has a `container` and a `book`. The book's determine the size of the entire Bookcase, but their
-/// sizes are not manipulated. The containers are resized to fit the bookcase though, to aline them.
-#[derive(Debug, Clone)]
-pub struct Bookcase(pub Vec<BookFile>);
-impl ElementComponent for Bookcase {
-    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        Element::from(UIBase)
-            .init(layout(), Layout::Bookcase)
-            .init_default(children())
-            .children(self.0.into_iter().map(|x| x.el()).collect())
-    }
-}
-#[derive(Debug, Clone)]
-pub struct BookFile {
-    container: Element,
-    book: Element,
-}
-impl ElementComponent for BookFile {
-    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        Element::from(UIBase).init_default(is_book_file()).children(vec![self.container, self.book])
-    }
-}
-
-/// See <https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/layout?view=netdesktop-6.0#container-flow-layout>
-#[derive(Debug, Clone)]
-pub struct FlowColumn(pub Vec<Element>);
-define_el_function_for_vec_element_newtype!(FlowColumn);
-impl ElementComponent for FlowColumn {
-    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        Flow(self.0)
-            .el()
-            .set(orientation(), Orientation::Vertical)
-            .set(align_horizontal(), Align::Begin)
-            .set(align_vertical(), Align::Begin)
-            .set(fit_horizontal(), Fit::Children)
-            .set(fit_vertical(), Fit::Children)
-    }
-}
-
-/// See <https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/layout?view=netdesktop-6.0#container-flow-layout>
-#[derive(Debug, Clone)]
-pub struct FlowRow(pub Vec<Element>);
-define_el_function_for_vec_element_newtype!(FlowRow);
-impl ElementComponent for FlowRow {
-    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        Flow(self.0)
-            .el()
-            .set(orientation(), Orientation::Horizontal)
-            .set(align_horizontal(), Align::Begin)
-            .set(align_vertical(), Align::Begin)
-            .set(fit_horizontal(), Fit::Children)
-            .set(fit_vertical(), Fit::Children)
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct Centered(pub Vec<Element>);
-define_el_function_for_vec_element_newtype!(Centered);
-impl ElementComponent for Centered {
-    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        Flow(self.0)
-            .el()
-            .set(orientation(), Orientation::Vertical)
-            .set(align_horizontal(), Align::Center)
-            .set(align_vertical(), Align::Center)
-            .set(fit_horizontal(), Fit::None)
-            .set(fit_vertical(), Fit::None)
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -324,14 +224,10 @@ pub fn HighjackMouse(
 
 pub trait UIExt {
     fn with_clickarea(self) -> ClickArea;
-    fn with_background(self, color: Color) -> Self;
 }
 impl UIExt for Element {
     fn with_clickarea(self) -> ClickArea {
         ClickArea::new(self)
-    }
-    fn with_background(self, background: Color) -> Self {
-        with_rect(self).set(background_color(), background)
     }
 }
 
@@ -509,7 +405,7 @@ pub fn FontAwesomeIcon(_hooks: &mut Hooks, icon: u32, solid: bool) -> Element {
 
 #[element_component]
 pub fn Separator(_hooks: &mut Hooks, vertical: bool) -> Element {
-    let el = Flow(vec![]).el().with_background(Color::rgba(0., 0., 0., 0.8));
+    let el = Flow(vec![]).el().with_background(Color::rgba(0., 0., 0., 0.8).into());
     if vertical {
         el.set(width(), 1.).set(fit_horizontal(), Fit::None).set(fit_vertical(), Fit::Parent)
     } else {

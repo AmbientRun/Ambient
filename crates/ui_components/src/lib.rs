@@ -1,11 +1,15 @@
-use ambient_element::{element_component, Element, Hooks};
+use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_guest_bridge::components::{
-    app::{window_logical_size, window_physical_size},
-    transform::{local_to_parent, local_to_world, mesh_to_world, translation},
-    ui::{height, width},
+    app::{ui_scene, window_logical_size, window_physical_size},
+    transform::{local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation},
+    ui::{
+        background_color, gpu_ui_size, height, mesh_to_local_from_size, padding_bottom, padding_left, padding_right, padding_top, rect,
+        width,
+    },
 };
-use glam::{vec3, UVec2};
+use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
 
+pub mod layout;
 pub mod text;
 
 #[element_component]
@@ -51,4 +55,34 @@ pub fn use_window_logical_resolution(hooks: &mut Hooks) -> UVec2 {
         }
     });
     res
+}
+
+/// A simple UI rect. Use components such as `width`, `height`, `background_color`, `border_color`, `border_radius` and `border_thickness`
+/// to control its appearance
+#[element_component]
+pub fn Rectangle(_hooks: &mut Hooks) -> Element {
+    with_rect(UIBase.el()).set(width(), 100.).set(height(), 100.).set(background_color(), Vec4::ONE)
+}
+
+pub fn with_rect(element: Element) -> Element {
+    element
+        .init(rect(), ())
+        .init(gpu_ui_size(), Vec4::ZERO)
+        .init(mesh_to_local(), Mat4::IDENTITY)
+        .init(scale(), Vec3::ONE)
+        .init(mesh_to_local_from_size(), ())
+        .init(ui_scene(), ())
+}
+
+pub trait UIExt2 {
+    fn with_background(self, color: Vec4) -> Self;
+    fn with_padding_even(self, padding: f32) -> Self;
+}
+impl UIExt2 for Element {
+    fn with_background(self, background: Vec4) -> Self {
+        with_rect(self).set(background_color(), background)
+    }
+    fn with_padding_even(self, padding: f32) -> Self {
+        self.set(padding_left(), padding).set(padding_right(), padding).set(padding_top(), padding).set(padding_bottom(), padding)
+    }
 }
