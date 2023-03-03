@@ -4,12 +4,10 @@ use std::{
     fmt::{Debug, Formatter},
     fs::File,
     iter::once,
-    path::Path,
     sync::atomic::{AtomicU64, Ordering},
 };
 
 use ambient_std::sparse_vec::SparseVec;
-use anyhow::Context;
 use bit_set::BitSet;
 use bit_vec::BitVec;
 use itertools::Itertools;
@@ -155,7 +153,8 @@ impl World {
     }
 
     #[cfg(not(target_os = "unknown"))]
-    pub async fn from_file(path: impl AsRef<Path>) -> anyhow::Result<Self> {
+    pub async fn from_file(path: impl AsRef<std::path::Path>) -> anyhow::Result<Self> {
+        use anyhow::Context;
         let content = tokio::fs::read(&path).await.with_context(|| format!("No such file: {:?}", path.as_ref()))?;
         Self::from_slice(&content)
     }
