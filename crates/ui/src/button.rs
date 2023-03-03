@@ -181,7 +181,7 @@ impl ButtonStyle {
                     },
                 )
                 .set(border_thickness(), 0.)
-                .set(border_color(), Color::WHITE);
+                .set(border_color(), Color::WHITE.into());
             if *self != Self::Flat {
                 el = el.set(min_height(), 26.);
             }

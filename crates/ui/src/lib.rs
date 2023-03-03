@@ -39,7 +39,7 @@ mod image;
 mod input;
 mod loadable;
 mod prompt;
-mod rect;
+
 mod screens;
 mod select;
 mod style_constants;
@@ -48,6 +48,8 @@ mod text_input;
 mod throbber;
 
 pub use ambient_layout as layout;
+pub use ambient_rect as rect;
+pub use ambient_rect::{background_color, border_color, border_radius, border_thickness, Corners};
 use ambient_text as text;
 pub use ambient_text::*;
 pub use ambient_ui_components::layout::*;
@@ -63,8 +65,6 @@ pub use input::*;
 pub use layout::*;
 pub use loadable::*;
 pub use prompt::*;
-use rect::with_rect;
-pub use rect::{background_color, border_color, border_radius, border_thickness, Corners, Rectangle};
 pub use screens::*;
 pub use select::*;
 pub use style_constants::*;
@@ -231,7 +231,7 @@ impl UIExt for Element {
         ClickArea::new(self)
     }
     fn with_background(self, background: Color) -> Self {
-        with_rect(self).set(background_color(), background)
+        with_rect(self).set(background_color(), background.into())
     }
 }
 

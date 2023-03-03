@@ -818,6 +818,24 @@ name = "Align vertical end"
 description = "Layout component."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::ui::background_color"]
+type = "Vec4"
+name = "Background color"
+description = "Background color of a rect() entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::border_color"]
+type = "Vec4"
+name = "Border color"
+description = "Border color of a rect() entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::border_thickness"]
+type = "F32"
+name = "Border thickness"
+description = "Border thickness of a rect() entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::ui::fit_horizontal_children"]
 type = "Empty"
 name = "Fit horizontal children"
@@ -858,6 +876,12 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "F32"
 name = "Font size"
 description = "Size of the font."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::gpu_ui_size"]
+type = "Vec4"
+name = "Gpu ui size"
+description = "Upload the width and height of this to the gpu."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::ui::height"]
@@ -920,6 +944,12 @@ name = "Margin top"
 description = "Layout component."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::ui::mesh_to_local_from_size"]
+type = "Empty"
+name = "Mest to local from size"
+description = "Update the mesh_to_local based on the width and height of this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::ui::min_height"]
 type = "F32"
 name = "Minimum height"
@@ -966,6 +996,12 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "F32"
 name = "Padding top"
 description = "Layout component."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::rect"]
+type = "Empty"
+name = "Rect"
+description = "Make this into a rectangle, with optionally rounded corners and borders."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::ui::space_between_items"]

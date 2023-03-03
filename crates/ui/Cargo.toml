@@ -18,6 +18,7 @@ ambient_input = { path = "../input" }
 ambient_renderer = { path = "../renderer" }
 ambient_layout = { path = "../layout" }
 ambient_text = { path = "../text" }
+ambient_rect = { path = "../rect" }
 ambient_ui_components = { path = "../ui_components" }
 ambient_editor_derive = { path = "../editor_derive" }
 glam = { workspace = true }

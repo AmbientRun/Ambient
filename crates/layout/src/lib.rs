@@ -4,10 +4,7 @@ use ambient_core::{
     hierarchy::{children, parent},
     transform::{local_to_parent, mesh_to_local, translation},
 };
-use ambient_ecs::{
-    components, ensure_has_component, query, query_mut, Debuggable, Description, DynSystem, EntityId, Name, Networked, Store, SystemGroup,
-    World,
-};
+use ambient_ecs::{components, query, query_mut, Debuggable, Description, DynSystem, EntityId, Name, Networked, Store, SystemGroup, World};
 use ambient_input::picking::mouse_pickable;
 use glam::{vec2, vec3, vec4, Mat4, Vec2, Vec4};
 use itertools::Itertools;
@@ -18,6 +15,7 @@ pub mod guest_api;
 components!("ui", {
     @[Debuggable, Networked, Store, Name["Layout"], Description["The layout to apply to this entity's children."]]
     layout: Layout,
+    @[Debuggable, Networked, Store, Name["Mest to local from size"], Description["Update the mesh_to_local based on the width and height of this entity."]]
     mesh_to_local_from_size: (),
     @[Debuggable, Networked, Store, Name["Width"], Description["The width of a UI element."]]
     width: f32,
@@ -39,6 +37,7 @@ components!("ui", {
     space_between_items: f32,
     @[Debuggable, Networked, Store, Name["Is book file"], Description["This is a file in a layout_bookcase."]]
     is_book_file: (),
+    @[Debuggable, Networked, Store, Name["Gpu ui size"], Description["Upload the width and height of this to the gpu."]]
     gpu_ui_size: Vec4,
 });
 gpu_components! {

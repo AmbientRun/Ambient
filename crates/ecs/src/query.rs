@@ -899,6 +899,13 @@ pub fn ensure_has_component<X: ComponentValue + 'static, T: ComponentValue + Clo
     })
 }
 
+pub fn ensure_has_component_with_default<X: ComponentValue + 'static, T: ComponentValue + Default + Clone + 'static>(
+    if_has_component: Component<X>,
+    ensure_this_component_too: Component<T>,
+) -> DynSystem {
+    ensure_has_component(if_has_component, ensure_this_component_too, T::default())
+}
+
 /// Uses the MakeDefault attribute. Will panic if this attribute is not present.
 pub fn ensure_has_component_with_make_default<X: ComponentValue + 'static, T: ComponentValue + Clone + 'static>(
     if_has_component: Component<X>,

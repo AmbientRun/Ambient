@@ -665,6 +665,7 @@ dependencies = [
  "ambient_core",
  "ambient_ecs",
  "ambient_layout",
+ "ambient_rect",
  "ambient_renderer",
  "ambient_text",
 ]
@@ -950,6 +951,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_rect"
+version = "0.1.0"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_gpu",
+ "ambient_meshes",
+ "ambient_renderer",
+ "ambient_std",
+ "bytemuck",
+ "glam 0.22.0",
+ "wgpu 0.14.2",
+]
+
+[[package]]
 name = "ambient_renderer"
 version = "0.1.1"
 dependencies = [
@@ -1172,6 +1188,7 @@ dependencies = [
  "ambient_input",
  "ambient_layout",
  "ambient_meshes",
+ "ambient_rect",
  "ambient_renderer",
  "ambient_std",
  "ambient_sys",

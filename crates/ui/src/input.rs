@@ -286,7 +286,7 @@ impl ElementComponent for Slider {
             .set(width(), slider_width)
             .set(height(), 2.)
             .set(translation(), vec3(0., (SLIDER_HEIGHT - 2.) / 2., 0.))
-            .set(background_color(), primary_color())
+            .set(background_color(), primary_color().into())
             .on_spawned(move |_, id| *block_id.lock() = id);
 
         let thumb = {
