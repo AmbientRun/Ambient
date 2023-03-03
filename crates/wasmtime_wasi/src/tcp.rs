@@ -4,11 +4,11 @@ use crate::{
     wasi_io::{InputStream, OutputStream},
     wasi_network::{Error, IpAddressFamily, Network},
     wasi_poll::Pollable,
-    wasi_tcp::{IpSocketAddress, ShutdownType, TcpSocket, WasiTcp},
+    wasi_tcp::{Host, IpSocketAddress, ShutdownType, TcpSocket},
     HostResult, WasiCtx,
 };
 
-impl WasiTcp for WasiCtx {
+impl Host for WasiCtx {
     fn listen(&mut self, socket: TcpSocket, backlog: Option<u64>) -> HostResult<(), Error> {
         todo!()
     }

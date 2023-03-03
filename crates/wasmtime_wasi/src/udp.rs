@@ -3,12 +3,12 @@
 use crate::{
     wasi_network::{Error, IpAddressFamily, Network},
     wasi_poll::Pollable,
-    wasi_udp::{Datagram, IpSocketAddress, UdpSocket, WasiUdp},
+    wasi_udp::{Datagram, Host, IpSocketAddress, UdpSocket},
     HostResult, WasiCtx,
 };
 use wasi_common::udp_socket::TableUdpSocketExt;
 
-impl WasiUdp for WasiCtx {
+impl Host for WasiCtx {
     fn connect(
         &mut self,
         network: Network,

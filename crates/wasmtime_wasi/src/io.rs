@@ -1,6 +1,6 @@
 use crate::{
     poll::PollableEntry,
-    wasi_io::{InputStream, OutputStream, StreamError, WasiIo},
+    wasi_io::{Host, InputStream, OutputStream, StreamError},
     wasi_poll::Pollable,
     HostResult, WasiCtx,
 };
@@ -15,7 +15,7 @@ fn convert(error: wasi_common::Error) -> anyhow::Error {
     }
 }
 
-impl WasiIo for WasiCtx {
+impl Host for WasiCtx {
     fn drop_input_stream(&mut self, stream: InputStream) -> anyhow::Result<()> {
         self.table_mut()
             .delete::<Box<dyn wasi_common::InputStream>>(stream)

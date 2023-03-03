@@ -133,8 +133,8 @@ noise = { version = "0.7.0", default-features = false }
 russimp = { version = "1.0.6", features = ['prebuilt'] }
 
 # WASM dependencies. Should be able to move off these once this all begins to stabilise a little.
-wasmtime = { git = "https://github.com/bytecodealliance/wasmtime.git", rev = "b5e9fb710ba73bde295eec5ab57f6ef4f6459e79", features = ["component-model"] }
-wasi-common = { git = "https://github.com/bytecodealliance/preview2-prototyping.git" }
-wasi-cap-std-sync = { git = "https://github.com/bytecodealliance/preview2-prototyping.git" }
-wit-bindgen-core = { git = "https://github.com/bytecodealliance/wit-bindgen.git" }
-wit-bindgen-rust = { git = "https://github.com/bytecodealliance/wit-bindgen.git" }
+wasmtime = { git = "https://github.com/bytecodealliance/wasmtime.git", rev = "3ff3994a128e900dfe7a465c7f36fc5a074d07ef", features = ["component-model"] }
+wasi-common = { git = "https://github.com/bytecodealliance/preview2-prototyping.git", rev = "75f8fc6151bc9e8cb92f2547f81a3b7056889735" }
+wasi-cap-std-sync = { git = "https://github.com/bytecodealliance/preview2-prototyping.git", rev = "75f8fc6151bc9e8cb92f2547f81a3b7056889735" }
+wit-bindgen-core = { git = "https://github.com/bytecodealliance/wit-bindgen.git", rev = "39030f9adabe581ceae7d574e4a902e37d1be6eb" }
+wit-bindgen-rust = { git = "https://github.com/bytecodealliance/wit-bindgen.git", rev = "39030f9adabe581ceae7d574e4a902e37d1be6eb" }

@@ -3,7 +3,7 @@ use wasi_common::stream::TableStreamExt;
 
 use crate::{wasi_stderr, WasiCtx};
 
-impl wasi_stderr::WasiStderr for WasiCtx {
+impl wasi_stderr::Host for WasiCtx {
     fn print(&mut self, message: String) -> anyhow::Result<()> {
         let s: &mut Box<dyn wasi_common::OutputStream> = self
             .table_mut()

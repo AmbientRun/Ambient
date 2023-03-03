@@ -42,13 +42,13 @@ impl BindingsBase {
 }
 
 pub trait BindingsBound:
-    wit::types::Types
-    + wit::component::Component
-    + wit::entity::Entity
-    + wit::player::Player
-    + wit::physics::Physics
-    + wit::event::Event
-    + wit::asset::Asset
+    wit::types::Host
+    + wit::component::Host
+    + wit::entity::Host
+    + wit::player::Host
+    + wit::physics::Host
+    + wit::event::Host
+    + wit::asset::Host
     + Clone
     + Sync
     + Send

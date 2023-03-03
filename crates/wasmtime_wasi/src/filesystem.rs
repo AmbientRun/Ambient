@@ -3,7 +3,7 @@
 use crate::wasi_io::{InputStream, OutputStream};
 use crate::{wasi_filesystem, HostResult, WasiCtx};
 
-impl wasi_filesystem::WasiFilesystem for WasiCtx {
+impl wasi_filesystem::Host for WasiCtx {
     fn get_preopens(
         &mut self,
     ) -> Result<Vec<(wasi_filesystem::Descriptor, String)>, anyhow::Error> {

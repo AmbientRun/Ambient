@@ -36,8 +36,8 @@ impl Bindings {
     }
 }
 
-impl wit::types::Types for Bindings {}
-impl wit::entity::Entity for Bindings {
+impl wit::types::Host for Bindings {}
+impl wit::entity::Host for Bindings {
     fn spawn(&mut self, data: ComponentsParam) -> anyhow::Result<wit::types::EntityId> {
         let id =
             shared_impl::entity::spawn(self.world_mut(), convert_components_to_entity_data(data));
@@ -92,7 +92,7 @@ impl wit::entity::Entity for Bindings {
         Ok(shared_impl::entity::get_all(self.world_mut(), index).into_bindgen())
     }
 }
-impl wit::component::Component for Bindings {
+impl wit::component::Host for Bindings {
     fn get_index(&mut self, id: String) -> anyhow::Result<Option<u32>> {
         Ok(shared_impl::entity::get_component_index(&id))
     }
@@ -257,7 +257,7 @@ impl wit::component::Component for Bindings {
         Ok(result)
     }
 }
-impl wit::player::Player for Bindings {
+impl wit::player::Host for Bindings {
     fn get_raw_input(
         &mut self,
         player: wit::types::EntityId,
@@ -275,7 +275,7 @@ impl wit::player::Player for Bindings {
         )
     }
 }
-impl wit::physics::Physics for Bindings {
+impl wit::physics::Host for Bindings {
     fn apply_force(
         &mut self,
         entities: Vec<wit::types::EntityId>,
@@ -385,7 +385,7 @@ impl wit::physics::Physics for Bindings {
         }
     }
 }
-impl wit::event::Event for Bindings {
+impl wit::event::Host for Bindings {
     fn subscribe(&mut self, name: String) -> anyhow::Result<()> {
         Ok(shared_impl::event::subscribe(
             &mut self.base.subscribed_events,
@@ -401,7 +401,7 @@ impl wit::event::Event for Bindings {
         ))
     }
 }
-impl wit::asset::Asset for Bindings {
+impl wit::asset::Host for Bindings {
     fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
         let base_url = ServerBaseUrlKey.get(self.world().resource(asset_cache()));
         Ok(Some(AssetUrl::parse(path)?.resolve(&base_url)?.to_string()))

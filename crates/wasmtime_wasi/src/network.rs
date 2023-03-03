@@ -1,8 +1,4 @@
-use crate::{
-    wasi_default_network::WasiDefaultNetwork,
-    wasi_network::{Network, WasiNetwork},
-    WasiCtx,
-};
+use crate::{wasi_default_network, wasi_network, WasiCtx};
 use crate::{
     //wasi_network::{IpSocketAddress, Ipv4SocketAddress, Ipv6SocketAddress},
     wasi_tcp,
@@ -10,14 +6,14 @@ use crate::{
 };
 use std::net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
 
-impl WasiNetwork for WasiCtx {
-    fn drop_network(&mut self, _network: Network) -> anyhow::Result<()> {
+impl wasi_network::Host for WasiCtx {
+    fn drop_network(&mut self, _network: wasi_network::Network) -> anyhow::Result<()> {
         todo!()
     }
 }
 
-impl WasiDefaultNetwork for WasiCtx {
-    fn default_network(&mut self) -> anyhow::Result<Network> {
+impl wasi_default_network::Host for WasiCtx {
+    fn default_network(&mut self) -> anyhow::Result<wasi_network::Network> {
         todo!()
     }
 }

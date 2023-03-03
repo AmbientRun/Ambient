@@ -1,6 +1,6 @@
 use crate::{wasi_logging, WasiCtx};
 
-impl wasi_logging::WasiLogging for WasiCtx {
+impl wasi_logging::Host for WasiCtx {
     fn log(
         &mut self,
         level: wasi_logging::Level,

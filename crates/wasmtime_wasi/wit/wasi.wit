@@ -2,7 +2,7 @@ default world wasi {
   import wasi-monotonic-clock: pkg.wasi-monotonic-clock
   import wasi-wall-clock: pkg.wasi-wall-clock
   import wasi-timezone: pkg.wasi-timezone
-  import wasi-default-clocks: pkg.wasi-default-clocks.wasi-default-clocks
+  import wasi-default-clocks: pkg.wasi-default-clocks
   import wasi-logging: pkg.wasi-logging
   import wasi-stderr: pkg.wasi-stderr
   import wasi-filesystem: pkg.wasi-filesystem

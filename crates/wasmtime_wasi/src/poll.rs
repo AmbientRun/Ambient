@@ -1,7 +1,7 @@
 use crate::{
     wasi_io::{InputStream, OutputStream},
     wasi_monotonic_clock::{Instant, MonotonicClock},
-    wasi_poll::{Pollable, WasiPoll},
+    wasi_poll::{Host, Pollable},
     WasiCtx,
 };
 
@@ -16,7 +16,7 @@ pub(crate) enum PollableEntry {
     MonotonicClock(MonotonicClock, Instant, bool),
 }
 
-impl WasiPoll for WasiCtx {
+impl Host for WasiCtx {
     fn drop_pollable(&mut self, _pollable: Pollable) -> anyhow::Result<()> {
         anyhow::bail!("unsupported");
     }

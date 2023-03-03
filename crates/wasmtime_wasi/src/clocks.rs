@@ -1,9 +1,10 @@
-use crate::poll::PollableEntry;
+// use crate::poll::PollableEntry;
 use crate::{
+    poll::PollableEntry,
     wasi_default_clocks,
-    wasi_monotonic_clock::{Instant, MonotonicClock, WasiMonotonicClock},
+    wasi_monotonic_clock::{self, Instant, MonotonicClock},
     wasi_poll::Pollable,
-    wasi_wall_clock::{Datetime, WallClock, WasiWallClock},
+    wasi_wall_clock::{self, Datetime, WallClock},
     WasiCtx,
 };
 use cap_std::time::SystemTime;
@@ -23,7 +24,7 @@ impl TryFrom<SystemTime> for Datetime {
     }
 }
 
-impl wasi_default_clocks::WasiDefaultClocks for WasiCtx {
+impl wasi_default_clocks::Host for WasiCtx {
     fn default_wall_clock(&mut self) -> anyhow::Result<WallClock> {
         // Create a new handle to the default wall clock.
         let new = self.clocks.default_wall_clock.dup();
@@ -37,7 +38,7 @@ impl wasi_default_clocks::WasiDefaultClocks for WasiCtx {
     }
 }
 
-impl WasiWallClock for WasiCtx {
+impl wasi_wall_clock::Host for WasiCtx {
     fn now(&mut self, fd: WallClock) -> anyhow::Result<Datetime> {
         let clock = self.table().get_wall_clock(fd)?;
         let now = clock.now();
@@ -61,7 +62,7 @@ impl WasiWallClock for WasiCtx {
     }
 }
 
-impl WasiMonotonicClock for WasiCtx {
+impl wasi_monotonic_clock::Host for WasiCtx {
     fn now(&mut self, fd: MonotonicClock) -> anyhow::Result<Instant> {
         Ok(self.table().get_monotonic_clock(fd)?.now())
     }
