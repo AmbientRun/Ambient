@@ -96,7 +96,6 @@ jobs:
       # - name: Run screenshot tests
       #   run: node scripts/update_screenshots.js
 
-
   build:
     strategy:
       matrix:
@@ -109,7 +108,7 @@ jobs:
 
     steps:
       - name: Free up disk space
-        if: matrix.os == "ubuntu-20.04"
+        if: startsWith(matrix.os,'ubuntu')
         run: |
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /opt/ghc
