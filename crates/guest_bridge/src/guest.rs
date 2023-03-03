@@ -1,3 +1,4 @@
+pub use ambient_api as api;
 pub use ambient_api::components::core as components;
 
 pub mod ecs {
