@@ -1,4 +1,4 @@
-use std::time::Instant;
+use ambient_sys::time::Instant;
 
 use ambient_audio::{track::Track, AudioStream, Source};
 use ambient_std::IntoDuration;

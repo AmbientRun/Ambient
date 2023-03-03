@@ -8,5 +8,6 @@ disallowed-macros = [
 ]
 disallowed-types = [
     { path = "std::time::Instant", reason = "time is not implemented on wasm" },
+    { path = "std::time::SystemTime", reason = "time is not implemented on wasm" },
 ]
 allow-dbg-in-tests = true

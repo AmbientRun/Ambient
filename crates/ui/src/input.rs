@@ -1,11 +1,4 @@
-use std::{
-    self,
-    f32::consts::E,
-    fmt::Debug,
-    hash::Hash,
-    str::FromStr,
-    time::{Duration, SystemTime},
-};
+use std::{self, f32::consts::E, fmt::Debug, hash::Hash, str::FromStr, time::Duration};
 
 use ambient_core::{
     mouse_position,
@@ -429,6 +422,8 @@ impl ElementComponent for DurationEditor {
         }
     }
 }
+
+use ambient_sys::time::SystemTime;
 
 #[derive(Debug, Clone)]
 pub struct SystemTimeEditor {

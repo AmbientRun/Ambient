@@ -3,7 +3,7 @@
 // wit-bindgen is not released on crates.io, and we are using an old version at the time of writing.
 // To get around this, we engage in Hacks.
 //
-// // https://github.com/bytecodealliance/wit-bindgen/blob/cd9d253d115040a8474eba6350340d7491e3183f/crates/guest-rust/src/lib.rs (Apache2)
+// https://github.com/bytecodealliance/wit-bindgen/blob/cd9d253d115040a8474eba6350340d7491e3183f/crates/guest-rust/src/lib.rs (Apache2)
 mod wit_bindgen {
     extern crate alloc;
 

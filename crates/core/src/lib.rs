@@ -1,11 +1,9 @@
 #[macro_use]
 extern crate lazy_static;
 
-use ambient_sys::{task::RuntimeHandle, time::Instant};
-use std::{
-    sync::Arc,
-    time::{Duration, SystemTime},
-};
+use ambient_sys::{task::RuntimeHandle, time::Instant, time::SystemTime};
+use chrono::{DateTime, Utc};
+use std::{sync::Arc, time::Duration};
 use window::WindowCtl;
 
 use ambient_ecs::{components, query, Debuggable, Description, DynSystem, FrameEvent, Name, Networked, Resource, Store, System, World};
@@ -86,7 +84,7 @@ components!("app", {
         Name["Session start time"],
         Description["When the current server session was started."]
     ]
-    session_start: SystemTime,
+    session_start: DateTime<Utc>,
     @[
         Debuggable, Networked, Store,
         Name["Tags"],

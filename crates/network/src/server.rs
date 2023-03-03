@@ -3,7 +3,7 @@ use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
     ops::Range,
     sync::Arc,
-    time::{Duration, SystemTime},
+    time::Duration,
 };
 
 use ambient_core::{asset_cache, no_sync, project_name};
@@ -16,7 +16,7 @@ use ambient_std::{
     fps_counter::{FpsCounter, FpsSample},
     friendly_id, log_result,
 };
-use ambient_sys::time::Instant;
+use ambient_sys::time::{Instant, SystemTime};
 use anyhow::bail;
 use bytes::Bytes;
 use flume::Sender;

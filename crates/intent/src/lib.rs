@@ -1,7 +1,7 @@
 pub mod logic;
 mod registry;
 
-use std::{fmt::Debug, sync::Arc, time::SystemTime};
+use std::{fmt::Debug, sync::Arc};
 
 use ambient_ecs::{
     components, index_system, query, ArchetypeFilter, Component, ComponentValue, Debuggable, Entity, EntityId, Index, IndexColumns,
@@ -16,6 +16,7 @@ use ambient_network::{
 };
 use ambient_rpc::RpcRegistry;
 use ambient_ui::{FlowColumn, StylesExt, Text};
+use chrono::{DateTime, Utc};
 use itertools::Itertools;
 use logic::{create_intent, push_intent, redo_intent, undo_head, undo_head_exact};
 pub use registry::*;
@@ -31,7 +32,7 @@ components!("intent", {
     @[Debuggable, Networked, Store]
     intent_id: String,
     @[Debuggable, Networked, Store]
-    intent_timestamp: SystemTime,
+    intent_timestamp: DateTime<Utc>,
     @[Debuggable, Networked, Store]
     intent_user_id: String,
     @[Debuggable, Networked, Store]

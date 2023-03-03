@@ -146,6 +146,7 @@ dependencies = [
  "tokio",
  "toml_edit 0.19.3",
  "tower-http",
+ "tracing",
  "walkdir",
 ]
 
@@ -165,6 +166,7 @@ dependencies = [
  "ambient_element",
  "ambient_model",
  "ambient_std",
+ "ambient_sys",
  "ambient_ui",
  "anyhow",
  "async-trait",
@@ -286,6 +288,7 @@ name = "ambient_audio"
 version = "0.1.1"
 dependencies = [
  "ambient_std",
+ "ambient_sys",
  "ambient_ui",
  "approx",
  "async-trait",
@@ -382,6 +385,7 @@ dependencies = [
  "ambient_std",
  "ambient_sys",
  "bytemuck",
+ "chrono",
  "derive_more",
  "flume",
  "glam 0.22.0",
@@ -693,6 +697,7 @@ dependencies = [
  "ambient_ui",
  "anyhow",
  "atomic_refcell",
+ "chrono",
  "futures",
  "itertools",
  "parking_lot",
@@ -1221,6 +1226,7 @@ dependencies = [
  "ambient_prefab",
  "ambient_project",
  "ambient_std",
+ "ambient_sys",
  "ambient_wasmtime_wasi",
  "anyhow",
  "async-trait",

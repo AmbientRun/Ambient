@@ -3,7 +3,6 @@ use std::{
     net::SocketAddr,
     path::{Path, PathBuf},
     sync::Arc,
-    time::SystemTime,
 };
 
 use ambient_core::{app_start_time, asset_cache, dtime, no_sync, project_name, time};
@@ -19,7 +18,7 @@ use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ServerBaseUrlKey},
 };
-use ambient_sys::task::RuntimeHandle;
+use ambient_sys::{task::RuntimeHandle, time::SystemTime};
 use anyhow::Context;
 use axum::{
     http::{Method, StatusCode},
@@ -128,6 +127,7 @@ fn create_resources(assets: AssetCache) -> Entity {
 
     server_resources.merge(ambient_core::async_ecs::async_ecs_resources());
     server_resources.set(ambient_core::runtime(), RuntimeHandle::current());
+
     let now = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
     server_resources.set(time(), now);
     server_resources.set(app_start_time(), now);

@@ -30,7 +30,7 @@ use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     fps_counter::{FpsCounter, FpsSample},
 };
-use ambient_sys::task::RuntimeHandle;
+use ambient_sys::{task::RuntimeHandle, time::SystemTime};
 use glam::{uvec2, vec2, UVec2, Vec2};
 use parking_lot::Mutex;
 use renderers::{examples_renderer, ui_renderer, UIRender};
@@ -133,7 +133,7 @@ impl AppResources {
 }
 
 pub fn world_instance_resources(resources: AppResources) -> Entity {
-    let current_time = ambient_sys::time::current_epoch_time();
+    let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
     Entity::new()
         .with(self::gpu(), resources.gpu.clone())
         .with(gizmos(), Gizmos::new())

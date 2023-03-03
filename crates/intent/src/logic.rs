@@ -1,8 +1,7 @@
-use std::time::SystemTime;
-
 use ambient_ecs::{query, Component, ComponentValue, Entity, EntityId, IndexField, IndexKey, World};
 use ambient_network::server::SharedServerState;
 use ambient_std::friendly_id;
+use chrono::Utc;
 
 use crate::{
     intent, intent_applied, intent_id, intent_index, intent_index_applied, intent_index_reverted, intent_registry, intent_reverted,
@@ -41,7 +40,7 @@ pub fn push_intent(state: SharedServerState, user_id: String, mut data: Entity) 
 pub fn create_intent<T: ComponentValue>(intent_arg: Component<T>, arg: T, collapse_id: Option<String>) -> Entity {
     Entity::new()
         .with(intent(), intent_arg.index())
-        .with(intent_timestamp(), SystemTime::now())
+        .with(intent_timestamp(), Utc::now())
         .with(intent_arg, arg)
         .with(intent_id(), collapse_id.unwrap_or_else(friendly_id))
 }
