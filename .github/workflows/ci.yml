@@ -31,6 +31,12 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
 
@@ -44,6 +50,10 @@ jobs:
           sudo add-apt-repository ppa:oibaf/graphics-drivers -y
           sudo apt-get update
           sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers
+
+      - uses: Leafwing-Studios/cargo-cache@v1
+        with:
+          cache-group: "test"
       - name: Run tests
         uses: actions-rs/cargo@v1
         with:
