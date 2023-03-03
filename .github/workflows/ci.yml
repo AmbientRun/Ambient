@@ -62,6 +62,8 @@ jobs:
           cache-group: "test"
       - name: Run tests
         uses: actions-rs/cargo@v1
+        env:
+          RUSTFLAGS: "-C debuginfo=0"
         with:
           command: test
           args: --workspace
