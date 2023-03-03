@@ -40,7 +40,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           target: wasm32-unknown-unknown
-          override: true
       - name: Run clippy
         uses: actions-rs/cargo@v1
         with:
