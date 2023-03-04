@@ -1,132 +1,325 @@
+use std::collections::BTreeMap;
+
 use super::{
-    components::Tree,
+    components::Tree as ComponentTree,
     identifier::{Identifier, IdentifierPath, IdentifierPathBuf},
-    manifest::{ComponentType, Concept, Manifest},
+    manifest::{ComponentType, Concept, Manifest, Namespace, NamespaceOrOther},
 };
 use anyhow::Context;
 use proc_macro2::TokenStream;
 use quote::quote;
 
-pub(super) fn generate_tokens(
-    manifest: &Manifest,
-    components_tree: &Tree,
-    api_name: &syn::Path,
-) -> anyhow::Result<TokenStream> {
-    if manifest.concepts.is_empty() {
-        return Ok(quote! {});
+#[derive(Debug, Clone)]
+pub struct Tree {
+    root: TreeNodeNamespace,
+}
+impl Tree {
+    pub(super) fn new(
+        manifest: &Manifest,
+        validate_namespaces_documented: bool,
+    ) -> anyhow::Result<Self> {
+        let mut tree = Self {
+            root: TreeNodeNamespace {
+                children: BTreeMap::new(),
+                namespace: None,
+            },
+        };
+
+        for (id, namespace_or_component) in manifest.concepts.clone() {
+            let node = match namespace_or_component {
+                NamespaceOrOther::Namespace(n) => {
+                    TreeNodeInner::Namespace(TreeNodeNamespace::new(Some(n)))
+                }
+                NamespaceOrOther::Concept(c) => TreeNodeInner::Other(c),
+                _ => unreachable!(),
+            };
+
+            tree.insert(id, node)?;
+        }
+
+        if validate_namespaces_documented {
+            for node in tree.root.children.values() {
+                ensure_namespace_documented(node)?;
+            }
+        }
+
+        Ok(tree)
     }
 
-    let concepts_tokens = manifest
-        .concepts
-        .iter()
-        .map(|concept| {
-            let make_concept = generate_make(components_tree, concept.0, concept.1)?;
-            let is_concept = generate_is(concept.0, concept.1)?;
+    pub fn to_token_stream(
+        &self,
+        components_tree: &ComponentTree,
+        api_name: &syn::Path,
+    ) -> anyhow::Result<proc_macro2::TokenStream> {
+        TreeNode::new(
+            IdentifierPathBuf::empty(),
+            TreeNodeInner::Namespace(self.root.clone()),
+        )
+        .to_token_stream(components_tree, api_name)
+    }
 
-            Ok(quote! {
-                #make_concept
-                #is_concept
+    fn insert(
+        &mut self,
+        path: IdentifierPathBuf,
+        inner: TreeNodeInner<Concept>,
+    ) -> anyhow::Result<()> {
+        let mut manifest_head = &mut self.root.children;
+        let (leaf_id, namespaces) = path.split_last().context("empty segments")?;
+
+        let mut segments_so_far = IdentifierPathBuf::empty();
+        for segment in namespaces {
+            segments_so_far.push(segment.clone());
+
+            let new_head = manifest_head
+                .entry(segment.clone())
+                .or_insert(TreeNode::new(
+                    segments_so_far.clone(),
+                    TreeNodeInner::Namespace(TreeNodeNamespace::new(None)),
+                ));
+
+            manifest_head = match &mut new_head.inner {
+                TreeNodeInner::Namespace(ns) => &mut ns.children,
+                _ => anyhow::bail!("found a non-namespace where a namespace was expected"),
+            };
+        }
+
+        match manifest_head.get_mut(leaf_id) {
+            Some(leaf) => {
+                leaf.inner = match (leaf.inner.clone(), inner.clone()) {
+                    (
+                        TreeNodeInner::Namespace(TreeNodeNamespace {
+                            children: mut existing,
+                            namespace: None,
+                        }),
+                        TreeNodeInner::Namespace(TreeNodeNamespace {
+                            children: mut new,
+                            namespace: Some(ns),
+                        }),
+                    ) => {
+                        existing.append(&mut new);
+                        TreeNodeInner::Namespace(TreeNodeNamespace {
+                            children: existing,
+                            namespace: Some(ns),
+                        })
+                    }
+                    _ => anyhow::bail!(
+                        "Attempted to replace {:?} at `{}` with {:?}",
+                        leaf.inner,
+                        path,
+                        inner
+                    ),
+                };
+            }
+            None => {
+                manifest_head.insert(leaf_id.clone(), TreeNode::new(path, inner));
+            }
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone)]
+struct TreeNode {
+    path: IdentifierPathBuf,
+    inner: TreeNodeInner<Concept>,
+}
+impl TreeNode {
+    fn new(path: IdentifierPathBuf, inner: TreeNodeInner<Concept>) -> Self {
+        Self { path, inner }
+    }
+
+    fn to_token_stream(
+        &self,
+        components_tree: &ComponentTree,
+        api_name: &syn::Path,
+    ) -> anyhow::Result<proc_macro2::TokenStream> {
+        let name = self.path.last().map(|s| s.as_ref()).unwrap_or_default();
+        match &self.inner {
+            TreeNodeInner::Namespace(ns) => {
+                let children = ns
+                    .children
+                    .values()
+                    .map(|child| child.to_token_stream(components_tree, api_name))
+                    .collect::<Result<Vec<_>, _>>()?;
+
+                let prelude = quote! {
+                    use super::components;
+                    use #api_name::prelude::*;
+                };
+
+                Ok(if name.is_empty() {
+                    quote! {
+                        #prelude
+                        #(#children)*
+                    }
+                } else {
+                    let name_ident: syn::Path = syn::parse_str(name)?;
+                    let doc_comment_fragment = ns.namespace.as_ref().map(|n| {
+                        let mut doc_comment = format!("**{}**", n.name);
+                        if !n.description.is_empty() {
+                            doc_comment += &format!(": {}", n.description.replace('\n', "\n\n"));
+                        }
+
+                        quote! {
+                            #[doc = #doc_comment]
+                        }
+                    });
+                    quote! {
+                        #doc_comment_fragment
+                        pub mod #name_ident {
+                            #prelude
+                            #(#children)*
+                        }
+                    }
+                })
+            }
+            TreeNodeInner::Other(concept) => {
+                let make_concept = self.generate_make(components_tree, name, concept)?;
+                let is_concept = self.generate_is(name, concept)?;
+                Ok(quote! {
+                    #make_concept
+                    #is_concept
+                })
+            }
+        }
+    }
+
+    fn generate_make(
+        &self,
+        components_tree: &ComponentTree,
+        name: &str,
+        concept: &Concept,
+    ) -> anyhow::Result<TokenStream> {
+        let make_comment = format!("Makes a {} ({})", concept.name, concept.description);
+        let make_ident = quote::format_ident!("make_{}", name);
+
+        let extends: Vec<_> = concept
+            .extends
+            .iter()
+            .map(|i| {
+                let extend_ident = quote::format_ident!("make_{}", i.as_ref());
+                quote! {
+                    with_merge(#extend_ident())
+                }
             })
+            .collect();
+
+        let components_prefix = Identifier::new("components").map_err(anyhow::Error::msg)?;
+        let components = concept
+            .components
+            .iter()
+            .map(|component| {
+                let full_path = build_component_path(&components_prefix, component.0.as_path());
+
+                let manifest_component =
+                    components_tree
+                        .get(component.0.as_path())
+                        .with_context(|| {
+                            format!("there is no component defined at `{}`", component.0)
+                        })?;
+
+                let default = toml_value_to_tokens(
+                    component.0.as_path(),
+                    &manifest_component.type_,
+                    component.1,
+                )?;
+
+                Ok(quote! { with(#full_path(), #default) })
+            })
+            .collect::<anyhow::Result<Vec<_>>>()?;
+
+        Ok(quote! {
+            #[allow(clippy::approx_constant)]
+            #[doc = #make_comment]
+            pub fn #make_ident() -> Entity {
+                Entity::new()
+                    #(.#extends)*
+                    #(.#components)*
+            }
         })
-        .collect::<anyhow::Result<Vec<_>>>()?;
+    }
 
-    Ok(quote! {
-        use super::components;
-        use #api_name::prelude::*;
+    fn generate_is(&self, name: &str, concept: &Concept) -> anyhow::Result<TokenStream> {
+        let is_comment = format!(
+            "Checks if the entity is a {} ({})",
+            concept.name, concept.description
+        );
+        let is_ident = quote::format_ident!("is_{}", name);
 
-        #(#concepts_tokens)*
-    })
+        let extends: Vec<_> = concept
+            .extends
+            .iter()
+            .map(|i| {
+                let extend_ident = quote::format_ident!("is_{}", i.as_ref());
+                quote! {
+                    #extend_ident(id)
+                }
+            })
+            .collect();
+
+        let components_prefix = Identifier::new("components").map_err(anyhow::Error::msg)?;
+        let components: Vec<_> = concept
+            .components
+            .iter()
+            .map(|c| build_component_path(&components_prefix, c.0.as_path()))
+            .map(|p| quote! { #p() })
+            .collect();
+
+        Ok(quote! {
+            #[doc = #is_comment]
+            pub fn #is_ident(id: EntityId) -> bool {
+                #(#extends && )* entity::has_components(id, &[
+                    #(&#components),*
+                ])
+            }
+        })
+    }
+}
+
+#[derive(Debug, Clone)]
+enum TreeNodeInner<T> {
+    Namespace(TreeNodeNamespace),
+    Other(T),
+}
+
+#[derive(Debug, Clone)]
+struct TreeNodeNamespace {
+    pub children: BTreeMap<Identifier, TreeNode>,
+    pub namespace: Option<Namespace>,
+}
+impl TreeNodeNamespace {
+    fn new(namespace: Option<Namespace>) -> Self {
+        Self {
+            children: BTreeMap::new(),
+            namespace,
+        }
+    }
+}
+
+fn ensure_namespace_documented(node: &TreeNode) -> anyhow::Result<()> {
+    match &node.inner {
+        TreeNodeInner::Namespace(TreeNodeNamespace {
+            namespace: None, ..
+        }) => anyhow::bail!(
+            "The namespace `{}` is missing a name and description.",
+            node.path
+        ),
+        TreeNodeInner::Namespace(TreeNodeNamespace {
+            children,
+            namespace: Some(_),
+        }) => {
+            for node in children.values() {
+                ensure_namespace_documented(node)?;
+            }
+        }
+        _ => {}
+    }
+    Ok(())
 }
 
 fn build_component_path(prefix: &Identifier, path: IdentifierPath) -> IdentifierPathBuf {
     IdentifierPathBuf::from_iter(std::iter::once(prefix).chain(path.iter()).cloned())
-}
-
-fn generate_make(
-    components_tree: &Tree,
-    identifier: &Identifier,
-    concept: &Concept,
-) -> anyhow::Result<TokenStream> {
-    let make_comment = format!("Makes a {} ({})", concept.name, concept.description);
-    let make_ident = quote::format_ident!("make_{}", identifier.as_ref());
-
-    let extends: Vec<_> = concept
-        .extends
-        .iter()
-        .map(|i| {
-            let extend_ident = quote::format_ident!("make_{}", i.as_ref());
-            quote! {
-                with_merge(#extend_ident())
-            }
-        })
-        .collect();
-
-    let components_prefix = Identifier::new("components").map_err(anyhow::Error::msg)?;
-    let components = concept
-        .components
-        .iter()
-        .map(|component| {
-            let full_path = build_component_path(&components_prefix, component.0.as_path());
-
-            let manifest_component = components_tree
-                .get(component.0.as_path())
-                .with_context(|| format!("there is no component defined at `{}`", component.0))?;
-
-            let default = toml_value_to_tokens(
-                component.0.as_path(),
-                &manifest_component.type_,
-                component.1,
-            )?;
-
-            Ok(quote! { with(#full_path(), #default) })
-        })
-        .collect::<anyhow::Result<Vec<_>>>()?;
-
-    Ok(quote! {
-        #[allow(clippy::approx_constant)]
-        #[doc = #make_comment]
-        pub fn #make_ident() -> Entity {
-            Entity::new()
-                #(.#extends)*
-                #(.#components)*
-        }
-    })
-}
-
-fn generate_is(identifier: &Identifier, concept: &Concept) -> anyhow::Result<TokenStream> {
-    let is_comment = format!(
-        "Checks if the entity is a {} ({})",
-        concept.name, concept.description
-    );
-    let is_ident = quote::format_ident!("is_{}", identifier.as_ref());
-
-    let extends: Vec<_> = concept
-        .extends
-        .iter()
-        .map(|i| {
-            let extend_ident = quote::format_ident!("is_{}", i.as_ref());
-            quote! {
-                #extend_ident(id)
-            }
-        })
-        .collect();
-
-    let components_prefix = Identifier::new("components").map_err(anyhow::Error::msg)?;
-    let components: Vec<_> = concept
-        .components
-        .iter()
-        .map(|c| build_component_path(&components_prefix, c.0.as_path()))
-        .map(|p| quote! { #p() })
-        .collect();
-
-    Ok(quote! {
-        #[doc = #is_comment]
-        pub fn #is_ident(id: EntityId) -> bool {
-            #(#extends && )* entity::has_components(id, &[
-                #(&#components),*
-            ])
-        }
-    })
 }
 
 fn toml_value_to_tokens(

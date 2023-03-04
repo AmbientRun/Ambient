@@ -1,14 +1,15 @@
 use ambient_api::{
     components::core::{
+        app::main_scene,
         game_objects::player_camera,
         physics::{
-            character_controller_height, character_controller_radius, plane_collider,
-            sphere_collider, visualizing, physics_controlled,
+            character_controller_height, character_controller_radius, physics_controlled,
+            plane_collider, sphere_collider, visualizing,
         },
         player::{player, user_id},
         primitives::{cube, quad},
         rendering::color,
-        transform::{lookat_center, rotation, scale, translation}, app::main_scene,
+        transform::{lookat_center, rotation, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
     player::KeyCode,

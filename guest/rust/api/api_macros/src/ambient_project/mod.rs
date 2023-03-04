@@ -36,9 +36,11 @@ pub fn implementation(
         IdentifierPathBuf::empty()
     };
 
-    let tree = components::Tree::new(&manifest, validate_namespaces_documented)?;
-    let components_tokens = tree.to_token_stream(&api_name, project_path.as_path())?;
-    let concepts = concepts::generate_tokens(&manifest, &tree, &api_name)?;
+
+    let component_tree = components::Tree::new(&manifest, validate_namespaces_documented)?;
+    let components_tokens = component_tree.to_token_stream(&api_name, project_path.as_path())?;
+    let concept_tree = concepts::Tree::new(&manifest, validate_namespaces_documented)?;
+    let concept_tokens = concept_tree.to_token_stream(&component_tree, &api_name)?;
 
     let manifest = file_path.map(
         |file_path| quote! { const _PROJECT_MANIFEST: &'static str = include_str!(#file_path); },
@@ -51,7 +53,7 @@ pub fn implementation(
         }
         /// Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept.
         pub mod concepts {
-            #concepts
+            #concept_tokens
         }
     ))
 }

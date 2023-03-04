@@ -1,6 +1,6 @@
 use super::{
     identifier::{Identifier, IdentifierPath, IdentifierPathBuf},
-    manifest::{Component, Manifest, Namespace,  NamespaceOrOther},
+    manifest::{Component, Manifest, Namespace, NamespaceOrOther},
 };
 use anyhow::Context;
 use quote::quote;
@@ -59,7 +59,11 @@ impl Tree {
         self.root.get(path)
     }
 
-    fn insert(&mut self, path: IdentifierPathBuf, inner: TreeNodeInner<Component>) -> anyhow::Result<()> {
+    fn insert(
+        &mut self,
+        path: IdentifierPathBuf,
+        inner: TreeNodeInner<Component>,
+    ) -> anyhow::Result<()> {
         let mut manifest_head = &mut self.root.children;
         let (leaf_id, namespaces) = path.split_last().context("empty segments")?;
 
