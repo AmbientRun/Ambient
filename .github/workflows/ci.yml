@@ -47,7 +47,7 @@ jobs:
           args: --target wasm32-unknown-unknown -p ambient_web
 
   test-linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Free up disk space
@@ -103,7 +103,7 @@ jobs:
         include:
           - os: macos-latest
           - os: windows-latest
-          - os: ubuntu-20.04
+          - os: ubuntu-latest
 
     runs-on: ${{ matrix.os }}
     steps:
