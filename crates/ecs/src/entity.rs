@@ -177,8 +177,10 @@ impl Entity {
     /// Example:
     ///
     /// ```should_panic
-    /// # components!("doctest, {my_non_networked_component: String}")
-    /// let entity = Entity::new().set(my_non_networked_component(), "Can't serialize me!");
+    /// # use ambient_ecs::{components, Entity, Networked};
+    /// # components!("doctest", {my_non_networked_component: String,});
+    /// # init_components();
+    /// let entity = Entity::new().with(my_non_networked_component(), "Can't serialize me!".into());
     /// entity.assert_all(Networked);
     /// ```
     ///
