@@ -1,8 +1,7 @@
 use std::{collections::HashMap, fmt::Display};
 
 use ambient_ecs::{
-    components, ExternalComponentAttributes, ExternalComponentDesc, ExternalComponentFlagAttributes, Networked, PrimitiveComponentType,
-    Store,
+    components, ExternalComponentAttributes, ExternalComponentDesc, ExternalComponentFlagAttributes, Networked, PrimitiveComponentType, Store
 };
 use serde::{de::Visitor, Deserialize, Serialize};
 use thiserror::Error;
@@ -245,10 +244,11 @@ pub struct Version {
     major: u32,
     minor: u32,
     patch: u32,
+    suffix: Option<String>,
 }
 impl Version {
-    pub fn new(major: u32, minor: u32, patch: u32) -> Self {
-        Self { major, minor, patch }
+    pub fn new(major: u32, minor: u32, patch: u32, suffix: Option<String>) -> Self {
+        Self { major, minor, patch, suffix }
     }
 
     pub fn new_from_str(id: &str) -> Result<Self, VersionError> {
@@ -260,6 +260,10 @@ impl Version {
         let major = segments.next().ok_or(VersionError::TooFewComponents)?.parse()?;
         let minor = segments.next().map(|s| s.parse()).transpose()?.unwrap_or(0);
         let patch = segments.next().map(|s| s.parse()).transpose()?.unwrap_or(0);
+        let suffix = match segments.next() {
+            None => None,
+            Some(suf) => Some(suf.to_string()),
+        };
 
         if segments.next().is_some() {
             return Err(VersionError::TooManyComponents);
@@ -269,12 +273,15 @@ impl Version {
             return Err(VersionError::AllZero);
         }
 
-        Ok(Self { major, minor, patch })
+        Ok(Self { major, minor, patch, suffix })
     }
 }
 impl Display for Version {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}.{}.{}", self.major, self.minor, self.patch)
+        match &self.suffix {
+            None => write!(f, "{}.{}.{}", self.major, self.minor, self.patch),
+            Some(suf) => write!(f, "{}.{}.{}-{}", self.major, self.minor, self.patch, suf),
+        }
     }
 }
 impl Serialize for Version {
