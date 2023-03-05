@@ -22,8 +22,8 @@ impl Tree {
             },
         };
 
-        for (id, namespace_or_component) in manifest.components.clone() {
-            let node = match namespace_or_component {
+        for (id, namespace_or_other) in manifest.components.clone() {
+            let node = match namespace_or_other{
                 NamespaceOrOther::Namespace(n) => {
                     TreeNodeInner::Namespace(TreeNodeNamespace::new(Some(n)))
                 }
