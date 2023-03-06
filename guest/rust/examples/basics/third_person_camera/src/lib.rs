@@ -1,14 +1,16 @@
 use ambient_api::{
     components::core::{
+        app::main_scene,
+        camera::aspect_ratio_from_window,
         game_objects::player_camera,
         physics::{
-            character_controller_height, character_controller_radius, plane_collider,
-            sphere_collider, visualizing, physics_controlled,
+            character_controller_height, character_controller_radius, physics_controlled,
+            plane_collider, sphere_collider, visualizing,
         },
         player::{player, user_id},
         primitives::{cube, quad},
         rendering::color,
-        transform::{lookat_center, rotation, scale, translation}, app::main_scene, camera::aspect_ratio_from_window,
+        transform::{lookat_center, rotation, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
     player::KeyCode,
@@ -53,7 +55,7 @@ pub async fn main() -> EventResult {
                     .with_merge(make_transformable())
                     .with_default(cube())
                     .with(player_camera_ref(), camera)
-                    .with(color(), rand::random())
+                    .with(color(), rand::random::<Vec3>().extend(1.0))
                     .with(character_controller_height(), 2.)
                     .with(character_controller_radius(), 0.5)
                     .with_default(physics_controlled())
@@ -84,7 +86,7 @@ pub async fn main() -> EventResult {
                 }
                 if pressed.keys.contains(&KeyCode::D) {
                     displace += right * speed;
-                } 
+                }
                 displace.z = -0.1;
                 physics::move_character(player_id, displace, 0.01, frametime());
 

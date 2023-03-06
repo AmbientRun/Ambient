@@ -30,7 +30,7 @@ pub async fn main() -> EventResult {
                 .with_merge(make_transformable())
                 .with_default(cube())
                 .with(translation(), rand::random())
-                .with(color(), rand::random())
+                .with(color(), rand::random::<Vec3>().extend(1.0))
                 .spawn();
         }
     });
