@@ -3,7 +3,8 @@ use std::{io::Write, sync::Arc};
 use ambient_audio::AudioListener;
 use ambient_core::{
     camera::{active_camera, aspect_ratio_from_window},
-    runtime, window_logical_size, window_physical_size,
+    runtime,
+    window::{window_logical_size, window_physical_size},
 };
 use ambient_ecs::{query, query_mut, Entity, SystemGroup, WorldDiff};
 use ambient_element::{element_component, Element, Hooks};

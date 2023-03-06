@@ -1,10 +1,9 @@
 use std::{self, f32::consts::E, fmt::Debug, hash::Hash, str::FromStr, time::Duration};
 
 use ambient_core::{
-    mouse_position,
     transform::{get_world_position, translation},
     window::WindowCtl,
-    window_ctl,
+    window::{mouse_position, window_ctl},
 };
 use ambient_ecs::{ComponentValue, EntityId};
 use ambient_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};

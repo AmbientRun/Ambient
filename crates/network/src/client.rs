@@ -6,7 +6,7 @@ use std::{
 };
 
 use ambient_app::window_title;
-use ambient_core::{asset_cache, gpu, mirror_window_components, runtime};
+use ambient_core::{asset_cache, gpu, runtime, window::mirror_window_components};
 use ambient_ecs::{components, query, Entity, EntityId, Resource, SystemGroup, World, WorldDiff};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;

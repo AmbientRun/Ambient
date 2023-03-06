@@ -6,7 +6,8 @@ use ambient_core::{
     gpu_ecs::GpuWorldSyncEvent,
     main_scene,
     transform::local_to_world,
-    ui_scene, window_physical_size,
+    ui_scene,
+    window::window_physical_size,
 };
 use ambient_ecs::{components, query, Entity, FrameEvent, System, SystemGroup, World};
 use ambient_gizmos::render::GizmoRenderer;

@@ -6,7 +6,7 @@ use std::{
     },
 };
 
-use ambient_core::{hierarchy::children, transform::*, window::WindowCtl, window_ctl};
+use ambient_core::{hierarchy::children, transform::*, window::window_ctl, window::WindowCtl};
 pub use ambient_ecs::{EntityId, SystemGroup, World};
 pub use ambient_editor_derive::ElementEditor;
 pub use ambient_element as element;

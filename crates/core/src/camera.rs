@@ -12,7 +12,7 @@ use ordered_float::OrderedFloat;
 
 use crate::{
     transform::{inv_local_to_world, local_to_world},
-    window_logical_size, window_physical_size,
+    window::{window_logical_size, window_physical_size},
 };
 
 #[derive(Clone, Copy, Debug)]
