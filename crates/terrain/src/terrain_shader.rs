@@ -12,7 +12,7 @@ use ambient_gpu::{
     texture::{Texture, TextureView},
     texture_loaders::TextureArrayFromUrls,
 };
-use ambient_renderer::{get_forward_module, materials::pbr_material::PbrMaterialDesc, Material, RendererShader, MATERIAL_BIND_GROUP};
+use ambient_renderer::{get_forward_modules, materials::pbr_material::PbrMaterialDesc, Material, RendererShader, MATERIAL_BIND_GROUP};
 use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, MaterialAssetType, TypedAssetUrl},
@@ -132,10 +132,11 @@ impl SyncAssetKey<Arc<RendererShader>> for TerrainShaderKey {
         let shader = Shader::from_modules(
             &assets,
             "terrrain shader",
-            [
-                &get_forward_module(&assets, self.shadow_cascades),
-                &ShaderModule::new("Terrain", wgsl_terrain_preprocess(include_file!("terrain.wgsl")), vec![layout.into()]),
-            ],
+            get_forward_modules(&assets, self.shadow_cascades).iter().chain([&ShaderModule::new(
+                "Terrain",
+                wgsl_terrain_preprocess(include_file!("terrain.wgsl")),
+                vec![layout.into()],
+            )]),
         );
 
         Arc::new(RendererShader {
