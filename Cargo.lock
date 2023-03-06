@@ -664,6 +664,7 @@ dependencies = [
  "ambient_api",
  "ambient_core",
  "ambient_ecs",
+ "ambient_input",
  "ambient_layout",
  "ambient_rect",
  "ambient_renderer",
@@ -1228,6 +1229,7 @@ dependencies = [
  "cb",
  "glam 0.22.0",
  "itertools",
+ "winit",
 ]
 
 [[package]]

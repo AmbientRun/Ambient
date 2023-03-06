@@ -28,4 +28,10 @@ pub mod components {
     pub mod rendering {
         pub use ambient_renderer::color;
     }
+    pub mod input {
+        pub use ambient_input::{
+            event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels, mouse_button,
+            picking::{mouse_over, mouse_pickable_max, mouse_pickable_min},
+        };
+    }
 }
