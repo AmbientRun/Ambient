@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use anyhow::Context;
 use quote::quote;
 
-use self::identifier::IdentifierPathBuf;
+use self::{identifier::IdentifierPathBuf, tree::Tree};
 
 #[cfg(test)]
 mod tests;
@@ -12,6 +12,7 @@ mod components;
 mod concepts;
 mod identifier;
 mod manifest;
+mod tree;
 
 pub fn read_file(file_path: String) -> anyhow::Result<(Option<String>, String)> {
     let file_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").context("no manifest dir")?)
@@ -36,9 +37,12 @@ pub fn implementation(
         IdentifierPathBuf::empty()
     };
 
-    let tree = components::Tree::new(&manifest, validate_namespaces_documented)?;
-    let components_tokens = tree.to_token_stream(&api_name, project_path.as_path())?;
-    let concepts = concepts::generate_tokens(&manifest, &tree, &api_name)?;
+    let component_tree = Tree::new(&manifest.components, validate_namespaces_documented)?;
+    let concept_tree = Tree::new(&manifest.concepts, validate_namespaces_documented)?;
+
+    let components_tokens =
+        components::tree_to_token_stream(&component_tree, &api_name, project_path.as_path())?;
+    let concept_tokens = concepts::tree_to_token_stream(&concept_tree, &component_tree, &api_name)?;
 
     let manifest = file_path.map(
         |file_path| quote! { const _PROJECT_MANIFEST: &'static str = include_str!(#file_path); },
@@ -51,7 +55,7 @@ pub fn implementation(
         }
         /// Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept.
         pub mod concepts {
-            #concepts
+            #concept_tokens
         }
     ))
 }
