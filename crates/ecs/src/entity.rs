@@ -1,19 +1,15 @@
 use std::{
-    self,
-    fmt::{self, Debug},
-    iter::Flatten,
+    self, fmt::{self, Debug}, iter::Flatten
 };
 
 use ambient_std::sparse_vec::SparseVec;
 use itertools::Itertools;
 use serde::{
-    de::{self, DeserializeSeed, MapAccess, Visitor},
-    ser::SerializeMap,
-    Deserialize, Deserializer, Serialize, Serializer,
+    de::{self, DeserializeSeed, MapAccess, Visitor}, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer
 };
 
 use super::{with_component_registry, Component, ComponentValue, ECSError, EntityId, World};
-use crate::{ComponentDesc, ComponentEntry, ComponentSet, ECSDeserializationWarnings, Serializable};
+use crate::{ComponentAttribute, ComponentDesc, ComponentEntry, ComponentSet, ECSDeserializationWarnings, Serializable};
 
 #[derive(Clone)]
 pub struct Entity {
@@ -171,6 +167,29 @@ impl Entity {
     }
     pub fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+
+    /// Asserts that all components in this Entity have the provided attribute.
+    ///
+    /// # Panics
+    /// Will panic if this Entity has any components that do NOT have the provided attribute.
+    ///
+    /// Example:
+    ///
+    /// ```should_panic
+    /// # use ambient_ecs::{components, Entity, Networked};
+    /// # components!("doctest", {my_non_networked_component: String,});
+    /// # init_components();
+    /// let entity = Entity::new().with(my_non_networked_component(), "Can't serialize me!".into());
+    /// entity.assert_all(Networked);
+    /// ```
+    ///
+    pub fn assert_all<A: ComponentAttribute>(&self, attribute: A) {
+        for comp in self.components() {
+            if !comp.has_attribute::<A>() {
+                panic!("Component {} does not have attribute {}", comp.type_name(), attribute.type_name());
+            }
+        }
     }
 }
 impl Default for Entity {

@@ -1225,7 +1225,9 @@ version = "0.1.0"
 dependencies = [
  "ambient_element",
  "ambient_guest_bridge",
+ "cb",
  "glam 0.22.0",
+ "itertools",
 ]
 
 [[package]]
