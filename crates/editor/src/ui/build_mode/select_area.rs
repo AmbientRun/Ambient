@@ -4,7 +4,7 @@ use ambient_core::{
     window_logical_size, window_scale_factor,
 };
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_input::{event_mouse_input, event_mouse_motion, MouseButton};
+use ambient_input::{event_mouse_input, event_mouse_motion};
 use ambient_network::{client::GameClient, log_network_result};
 use ambient_std::{color::Color, math::interpolate};
 use ambient_ui::{
@@ -12,7 +12,6 @@ use ambient_ui::{
     UIBase, UIExt,
 };
 use glam::{vec2, vec3, Vec2, Vec3Swizzles};
-use winit::event::ElementState;
 
 use crate::{
     intents::SelectMode,

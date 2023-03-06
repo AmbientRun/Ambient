@@ -11,7 +11,7 @@ use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::{BindGroupDesc, ShaderModule},
 };
-use ambient_input::{event_mouse_input, mouse_button, mouse_button_from_u32, ElementState};
+use ambient_input::{event_mouse_input, mouse_button, mouse_button_from_u32};
 use ambient_intent::client_push_intent;
 use ambient_network::client::GameClient;
 use ambient_physics::{
