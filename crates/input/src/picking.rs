@@ -10,7 +10,7 @@ use ambient_std::shapes::{RayIntersectable, AABB};
 use glam::{Vec2, Vec3};
 
 components!("input", {
-    @[MaybeResource]
+    @[MaybeResource, Debuggable]
     picker_intersecting: Option<PickerIntersection>,
 
     @[Debuggable, Networked, Store, Name["Mouse pickable min"], Description["This entity can be clicked by the mouse, and this component defines the min AABB bound of the click area."]]
@@ -74,7 +74,9 @@ pub fn frame_systems() -> SystemGroup {
                     if prev_intersecting_entity != intersecting_entity {
                         if let Some(prev) = prev_intersecting_entity {
                             if let Ok(prev_mouse_over) = world.get(prev, mouse_over()) {
-                                world.add_component(prev, mouse_over(), prev_mouse_over - 1).unwrap();
+                                if prev_mouse_over > 0 {
+                                    world.add_component(prev, mouse_over(), prev_mouse_over - 1).unwrap();
+                                }
                             }
                         }
                         if let Some(new) = intersecting_entity {

@@ -6,18 +6,31 @@ use ambient_guest_bridge::{
     components::{
         camera::orthographic_from_window,
         player::{player, user_id},
+        transform::translation,
     },
     ecs::World,
 };
-use ambient_ui_components::{text::Text, UIExt};
+use ambient_ui_components::{
+    layout::{Centered, WindowSized},
+    text::Text,
+    UIExt,
+};
 
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
     let (count, set_count) = hooks.use_state(0);
+    // WindowSized::el([Centered::el([
+
     Text::el(format!("Hello world: {count}"))
         .with_clickarea()
-        .on_mouse_down(move |_, _, _| set_count(count + 1))
+        // .on_mouse_down(move |_, _, _| set_count(count + 1))
+        .on_mouse_enter(move |_, _| {
+            println!("enter");
+            set_count(count + 1)
+        })
         .el()
+        .set(translation(), vec3(100., 100., 0.))
+    // ])])
 }
 
 #[main]

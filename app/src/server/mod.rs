@@ -102,6 +102,7 @@ fn systems(_world: &mut World) -> SystemGroup {
             Box::new(ambient_core::transform::TransformSystem::new()),
             ambient_core::remove_at_time_system(),
             Box::new(WorldEventsSystem),
+            Box::new(ambient_input::picking::frame_systems()),
             Box::new(ambient_physics::server_systems()),
             Box::new(ambient_core::camera::camera_systems()),
             Box::new(shared::player::server_systems()),
