@@ -2,7 +2,6 @@ use ambient_api::{
     components::core::{
         app::main_scene,
         camera::aspect_ratio_from_window,
-        game_objects::player_camera,
         rendering::color,
         transform::{
             local_to_world, lookat_center, mesh_to_local, mesh_to_world, scale, translation,
@@ -18,7 +17,6 @@ pub async fn main() -> EventResult {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
-        .with_default(player_camera())
         .with_default(main_scene())
         .with(translation(), vec3(5., 5., 4.))
         .with(lookat_center(), vec3(0., 0., 0.))

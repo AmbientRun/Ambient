@@ -15,8 +15,6 @@ pub(crate) fn init() -> anyhow::Result<()> {
     ambient_sky::init_components();
     ambient_water::init_components();
 
-    shared::player::init_all_components();
-
     Ok(())
 }
 

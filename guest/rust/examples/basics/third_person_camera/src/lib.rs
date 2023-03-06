@@ -2,7 +2,6 @@ use ambient_api::{
     components::core::{
         app::main_scene,
         camera::aspect_ratio_from_window,
-        game_objects::player_camera,
         physics::{
             character_controller_height, character_controller_radius, physics_controlled,
             plane_collider, sphere_collider, visualizing,
@@ -42,7 +41,6 @@ pub async fn main() -> EventResult {
             let camera = Entity::new()
                 .with_merge(make_perspective_infinite_reverse_camera())
                 .with(aspect_ratio_from_window(), EntityId::resources())
-                .with_default(player_camera())
                 .with_default(main_scene())
                 .with(user_id(), user)
                 .with(translation(), Vec3::ONE * 5.)

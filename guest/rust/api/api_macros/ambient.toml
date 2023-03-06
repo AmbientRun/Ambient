@@ -157,7 +157,9 @@ attributes = ["Debuggable", "Networked"]
 [components."core::camera::active_camera"]
 type = "F32"
 name = "Active camera"
-description = "The camera with the highest `active_camera` value will be used for rendering."
+description = """
+The camera with the highest `active_camera` value will be used for rendering. Cameras are also filtered by the `user_id`.
+        If there's no `user_id`, the camera is considered global and potentially applies to all users (if its active_camera value is high enough)"""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::camera::aspect_ratio"]
@@ -307,15 +309,6 @@ type = "EntityId"
 name = "Parent"
 description = "The parent of this entity."
 attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::game_objects::player_camera"]
-type = "Empty"
-name = "Player Camera"
-description = """
-If attached to a camera entity, this camera will be used as a player's primary camera.
-If a `user_id` is specified, this camera will only be used for that player; otherwise, it will be used for every player.
-This component is temporary and will likely be removed with the addition of clientside scripting."""
-attributes = ["Debuggable", "Networked"]
 
 [components."core::input::event_mouse_input"]
 type = "Bool"
@@ -1138,6 +1131,7 @@ extends = ["transformable"]
 "core::camera::near" = 0.10000000149011612
 "core::camera::projection" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
 "core::camera::projection_view" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+"core::camera::active_camera" = 0.0
 "core::transform::local_to_world" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
 "core::transform::inv_local_to_world" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
 

@@ -3,7 +3,6 @@ use ambient_api::{
         app::main_scene,
         camera::aspect_ratio_from_window,
         ecs::children,
-        game_objects::player_camera,
         model::model_from_url,
         physics::{
             angular_velocity, collider_from_url, dynamic, kinematic, linear_velocity,
@@ -120,7 +119,6 @@ pub async fn main() -> EventResult {
                     .with(aspect_ratio_from_window(), EntityId::resources())
                     .with(user_id(), player_user_id.clone())
                     .with(player_camera_state(), camera_state)
-                    .with_default(player_camera())
                     .with_default(main_scene())
                     .with_default(local_to_world())
                     .with_default(inv_local_to_world())
@@ -218,23 +216,16 @@ pub async fn main() -> EventResult {
         });
 
     // Update player cameras every frame.
-    query(player_camera_state())
-        .requires(player_camera())
-        .build()
-        .each_frame({
-            move |cameras| {
-                for (id, camera_state) in cameras {
-                    let camera_state = CameraState(camera_state);
-                    let (camera_translation, camera_rotation) = camera_state.get_transform();
-                    entity::set_component(id, translation(), camera_translation);
-                    entity::set_component(
-                        id,
-                        rotation(),
-                        camera_rotation * Quat::from_rotation_x(90.),
-                    );
-                }
+    query(player_camera_state()).build().each_frame({
+        move |cameras| {
+            for (id, camera_state) in cameras {
+                let camera_state = CameraState(camera_state);
+                let (camera_translation, camera_rotation) = camera_state.get_transform();
+                entity::set_component(id, translation(), camera_translation);
+                entity::set_component(id, rotation(), camera_rotation * Quat::from_rotation_x(90.));
             }
-        });
+        }
+    });
 
     // When a player despawns, clean up their objects.
     let player_objects_query = query(user_id()).build();

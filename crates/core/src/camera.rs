@@ -124,7 +124,8 @@ components!("camera", {
     @[
         Networked, Store, Debuggable,
         Name["Active camera"],
-        Description["The camera with the highest `active_camera` value will be used for rendering."]
+        Description["The camera with the highest `active_camera` value will be used for rendering. Cameras are also filtered by the `user_id`.
+        If there's no `user_id`, the camera is considered global and potentially applies to all users (if its active_camera value is high enough)"]
     ]
     active_camera: f32,
     @[
@@ -155,7 +156,8 @@ pub fn concepts() -> Vec<Concept> {
                 .with(projection_view(), glam::Mat4::IDENTITY)
                 .with(near(), 0.1)
                 .with_default(local_to_world())
-                .with_default(inv_local_to_world()),
+                .with_default(inv_local_to_world())
+                .with(active_camera(), 0.),
         }
         .to_owned(),
         RefConcept {
@@ -294,12 +296,14 @@ pub fn get_active_camera(world: &World, scene: Component<()>, user_id: Option<&S
         .iter(world, None)
         .filter(|(id, _)| {
             if let Some(user_id) = &user_id {
-                if world.get_ref(*id, crate::player::user_id()) == Ok(user_id) {
-                    true
+                if let Ok(cam_user_id) = world.get_ref(*id, crate::player::user_id()) {
+                    cam_user_id == *user_id
                 } else {
-                    false
+                    // The camera is considered global, as it doens't have a user_id attached
+                    true
                 }
             } else {
+                // No user_id was supplied, so all cameras are considered
                 true
             }
         })
