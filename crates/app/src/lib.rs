@@ -12,8 +12,8 @@ use ambient_core::{
     hierarchy::dump_world_hierarchy_to_tmp_file,
     remove_at_time_system, runtime, time,
     transform::TransformSystem,
+    window::cursor_position,
     window::get_window_sizes,
-    window::mouse_position,
     window::WindowCtl,
     window::{window_logical_size, window_physical_size, window_scale_factor},
     RuntimeKey, TimeResourcesSystem,
@@ -146,7 +146,7 @@ pub fn world_instance_resources(resources: AppResources) -> Entity {
         .with(self::asset_cache(), resources.assets.clone())
         .with_default(world_events())
         .with(frame_index(), 0_usize)
-        .with(ambient_core::window::mouse_position(), Vec2::ZERO)
+        .with(ambient_core::window::cursor_position(), Vec2::ZERO)
         .with(ambient_core::app_start_time(), current_time)
         .with(ambient_core::time(), current_time)
         .with(ambient_core::dtime(), 0.)
@@ -581,7 +581,7 @@ impl App {
                 }
                 WindowEvent::CursorMoved { position, .. } => {
                     if self.window_focused {
-                        world.set(world.resource_entity(), mouse_position(), vec2(position.x as f32, position.y as f32)).unwrap();
+                        world.set(world.resource_entity(), cursor_position(), vec2(position.x as f32, position.y as f32)).unwrap();
                     }
                 }
                 _ => {}

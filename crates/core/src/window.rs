@@ -14,9 +14,8 @@ components!("app", {
     window_logical_size: UVec2,
     @[MaybeResource, Debuggable, Networked, Name["Window physical size"], Description["The physical size is the actual number of pixels on the screen."]]
     window_physical_size: UVec2,
-    /// Mouse position in screen space
-    @[MaybeResource, Debuggable, Networked]
-    mouse_position: Vec2,
+    @[MaybeResource, Debuggable, Networked, Name["Cursor position"], Description["Absolute mouse cursor position in screen space."]]
+    cursor_position: Vec2,
 });
 
 pub fn screen_to_clip_space(world: &World, screen_pos: Vec2) -> Vec2 {
@@ -24,7 +23,7 @@ pub fn screen_to_clip_space(world: &World, screen_pos: Vec2) -> Vec2 {
     interpolate(screen_pos, Vec2::ZERO, screen_size.as_vec2(), vec2(-1., 1.), vec2(1., -1.))
 }
 pub fn get_mouse_clip_space_position(world: &World) -> Vec2 {
-    let mouse_position = *world.resource(mouse_position());
+    let mouse_position = *world.resource(cursor_position());
     screen_to_clip_space(world, mouse_position)
 }
 
@@ -41,7 +40,7 @@ pub fn mirror_window_components(src: &mut World, dst: &mut World) {
     dst.set_if_changed(dr, window_logical_size(), *src.resource(window_logical_size())).unwrap();
     dst.set_if_changed(dr, window_scale_factor(), *src.resource(window_scale_factor())).unwrap();
 
-    dst.set_if_changed(dr, mouse_position(), *src.resource(mouse_position())).unwrap();
+    dst.set_if_changed(dr, cursor_position(), *src.resource(cursor_position())).unwrap();
 }
 
 /// Allows controlling the window

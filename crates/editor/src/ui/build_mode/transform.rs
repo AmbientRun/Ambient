@@ -1,6 +1,6 @@
 use std::{sync::Arc, time::Duration};
 
-use ambient_core::{runtime, transform::get_world_transform, window::mouse_position, window::screen_to_clip_space};
+use ambient_core::{runtime, transform::get_world_transform, window::cursor_position, window::screen_to_clip_space};
 use ambient_ecs::{EntityId, World};
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Group, Hooks};
 use ambient_network::client::GameClient;
@@ -140,7 +140,7 @@ pub(super) fn PlaceController(
         },
         on_mouse_move: cb(move |world, _, _| {
             let state = game_client.game_state.lock();
-            let mouse_clip_pos = screen_to_clip_space(world, *world.resource(mouse_position()));
+            let mouse_clip_pos = screen_to_clip_space(world, *world.resource(cursor_position()));
 
             let targets = targets.clone();
 
@@ -198,7 +198,7 @@ impl ElementComponent for TranslationController {
         let action = Arc::downgrade(&action);
 
         let (initial_cursor_offset, _) = hooks.use_state_with(|world| {
-            let mouse_clip_pos = screen_to_clip_space(world, *world.resource(mouse_position()));
+            let mouse_clip_pos = screen_to_clip_space(world, *world.resource(cursor_position()));
             let clip_pos = game_state.proj_view().unwrap().project_point3(initial_state.midpoint).xy();
             mouse_clip_pos - clip_pos
         });
@@ -281,7 +281,7 @@ impl ElementComponent for TranslationController {
                 },
                 on_mouse_move: cb(move |world, _, _| {
                     let game_state = game_client.game_state.lock();
-                    let mouse_clip_pos = screen_to_clip_space(world, *world.resource(mouse_position())) - initial_cursor_offset;
+                    let mouse_clip_pos = screen_to_clip_space(world, *world.resource(cursor_position())) - initial_cursor_offset;
 
                     assert!(!axis.is_empty());
 

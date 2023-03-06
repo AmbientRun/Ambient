@@ -3,7 +3,7 @@ use std::{io::Write, sync::Arc};
 use ambient_core::{
     player::{get_player_by_user_id, player},
     runtime,
-    window::{mouse_position, window_logical_size, window_physical_size},
+    window::{cursor_position, window_logical_size, window_physical_size},
 };
 use ambient_ecs::{query, query_mut, Entity, SystemGroup, WorldDiff};
 use ambient_element::{element_component, Element, Hooks};
@@ -26,7 +26,7 @@ pub fn register_datagram_handler(handlers: &mut DatagramHandlers) {
             let mut state = state.lock();
             if let Some(world) = state.get_player_world_mut(user_id) {
                 if let Some(player_id) = get_player_by_user_id(world, user_id) {
-                    world.add_component(player_id, mouse_position(), input.mouse_position).unwrap();
+                    world.add_component(player_id, cursor_position(), input.cursor_position).unwrap();
                     world.set(player_id, player_raw_input(), input).ok();
                 }
             }
@@ -133,12 +133,17 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
         if let Some(Some(gc)) = world.resource_opt(game_client()).cloned() {
             let runtime = world.resource(runtime()).clone();
             let input = input.clone();
+            let cursor_position = *world.resource(cursor_position());
 
             runtime.spawn(async move {
                 let mut data = Vec::new();
                 data.write_u32::<BigEndian>(PLAYER_INPUT_DATAGRAM_ID).unwrap();
 
-                let msg = bincode::serialize(&*input.lock()).unwrap();
+                let msg = {
+                    let mut input = input.lock();
+                    input.cursor_position = cursor_position;
+                    bincode::serialize(&*input).unwrap()
+                };
                 data.write_all(&msg).unwrap();
                 gc.connection.send_datagram(data.into()).ok();
             });

@@ -3,7 +3,7 @@ use ambient_core::{
     player::{local_user_id, user_id},
     transform::local_to_world,
     ui_scene,
-    window::{mouse_position, window_physical_size},
+    window::{cursor_position, window_physical_size},
 };
 use ambient_ecs::{components, query, Debuggable, Description, Entity, EntityId, MaybeResource, Name, Networked, Store, SystemGroup};
 use ambient_std::shapes::{RayIntersectable, AABB};
@@ -41,7 +41,7 @@ pub fn frame_systems() -> SystemGroup {
                     world.add_component(id, mouse_pickable(), AABB { min, max }).unwrap();
                 }
             }),
-            query((window_physical_size(), mouse_position())).to_system(|q, world, qs, _| {
+            query((window_physical_size(), cursor_position())).to_system(|q, world, qs, _| {
                 for (id, (window_size, mouse_position)) in q.collect_cloned(world, qs) {
                     let mut mouse_origin = -Vec2::ONE + (mouse_position / window_size.as_vec2()) * 2.;
                     mouse_origin.y = -mouse_origin.y;
