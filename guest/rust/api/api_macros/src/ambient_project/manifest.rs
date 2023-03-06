@@ -135,6 +135,6 @@ pub struct Concept {
     pub name: String,
     pub description: String,
     #[serde(default)]
-    pub extends: Vec<Identifier>,
+    pub extends: Vec<IdentifierPathBuf>,
     pub components: BTreeMap<IdentifierPathBuf, toml::Value>,
 }

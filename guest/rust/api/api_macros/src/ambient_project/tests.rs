@@ -790,6 +790,7 @@ fn can_generate_concepts_with_documented_namespace_from_manifest() {
         [concepts]
         "ns" = { name = "Namespace", description = "A Test Namespace" }
         "ns::transformable" = { name = "Transformable", description = "Can be translated, rotated and scaled.", components = {"core::transform::translation" = [0, 0, 0], "core::transform::rotation" = [0, 0, 0, 1], "core::transform::scale" = [1, 1, 1]} }
+        "ns::concept2" = { name = "Concept 2", description = "Just a transformable", extends = ["ns::transformable"], components = {} }
         "#};
 
     let expected_output = quote::quote! {
@@ -824,6 +825,19 @@ fn can_generate_concepts_with_documented_namespace_from_manifest() {
             pub mod ns{
                 use super::components;
                 use ambient_api2::prelude::*;
+
+                #[allow(clippy::approx_constant)]
+                #[doc = "Makes a Concept 2 (Just a transformable)"]
+                pub fn make_concept2() -> Entity {
+                    Entity::new()
+                        .with_merge(super::ns::make_transformable())
+                }
+
+                #[doc = "Checks if the entity is a Concept 2 (Just a transformable)"]
+                pub fn is_concept2(id: EntityId) -> bool {
+                    super::ns::is_transformable(id) && entity::has_components(id, &[])
+                }
+
                 #[allow(clippy::approx_constant)]
                 #[doc = "Makes a Transformable (Can be translated, rotated and scaled.)"]
                 pub fn make_transformable() -> Entity {

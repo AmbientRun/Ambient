@@ -198,9 +198,11 @@ impl TreeNode {
             .extends
             .iter()
             .map(|i| {
-                let extend_ident = quote::format_ident!("make_{}", i.as_ref());
+                let (last, namespaces) = i.split_last().unwrap();
+                let extend_ident = quote::format_ident!("make_{}", last.as_ref());
+                let supers = namespaces.iter().map(|_| quote! { super });
                 quote! {
-                    with_merge(#extend_ident())
+                    with_merge(#(#supers::)* #(#namespaces::)* #extend_ident())
                 }
             })
             .collect();
@@ -251,9 +253,11 @@ impl TreeNode {
             .extends
             .iter()
             .map(|i| {
-                let extend_ident = quote::format_ident!("is_{}", i.as_ref());
+                let (last, namespaces) = i.split_last().unwrap();
+                let extend_ident = quote::format_ident!("is_{}", last.as_ref());
+                let supers = namespaces.iter().map(|_| quote! { super });
                 quote! {
-                    #extend_ident(id)
+                    #(#supers::)* #(#namespaces::)* #extend_ident(id)
                 }
             })
             .collect();
