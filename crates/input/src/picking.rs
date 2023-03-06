@@ -17,6 +17,7 @@ components!("input", {
     mouse_pickable_min: Vec3,
     @[Debuggable, Networked, Store, Name["Mouse pickable max"], Description["This entity can be clicked by the mouse, and this component defines the max AABB bound of the click area."]]
     mouse_pickable_max: Vec3,
+    @[Debuggable]
     mouse_pickable: AABB,
     @[Debuggable, Networked, Store, Name["Mouse over"], Description["The number of mouse cursors that are currently over this entity."]]
     mouse_over: u32,
