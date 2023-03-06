@@ -140,19 +140,19 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "Uvec2"
 name = "Window logical size"
 description = "The logical size is the physical size divided by the scale factor."
-attributes = ["Resource"]
+attributes = ["Debuggable", "Networked"]
 
 [components."core::app::window_physical_size"]
 type = "Uvec2"
 name = "Window physical size"
 description = "The physical size is the actual number of pixels on the screen."
-attributes = ["Resource"]
+attributes = ["Debuggable", "Networked"]
 
 [components."core::app::window_scale_factor"]
 type = "F64"
 name = "Window scale factor"
 description = "This number is usually 1, but on for instance retina displays it's 2."
-attributes = ["Resource"]
+attributes = ["Debuggable", "Networked"]
 
 [components."core::camera::active_camera"]
 type = "F32"
@@ -169,9 +169,9 @@ If `aspect_ratio_from_window` is set, this will be automatically updated to matc
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::camera::aspect_ratio_from_window"]
-type = "Empty"
+type = "EntityId"
 name = "Aspect ratio from window"
-description = "If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window."
+description = "If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window. Should point to an entity with a `window_physical_size` component."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::camera::far"]
@@ -213,9 +213,9 @@ description = "The bottom bound for this `orthographic` camera."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::camera::orthographic_from_window"]
-type = "Empty"
+type = "EntityId"
 name = "Orthographic from window"
-description = "The bounds of this orthographic camera will be updated to match the window automatically."
+description = "The bounds of this orthographic camera will be updated to match the window automatically. Should point to an entity with a `window_logical_size` component."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::camera::orthographic_left"]

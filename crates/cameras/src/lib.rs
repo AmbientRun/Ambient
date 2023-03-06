@@ -1,5 +1,5 @@
 use ambient_core::{camera::*, transform::*, ui_scene};
-use ambient_ecs::{components, Networked, Store, SystemGroup};
+use ambient_ecs::{components, EntityId, Networked, Store, SystemGroup};
 use ambient_element::{element_component, Element, Hooks};
 use ambient_std::shapes::BoundingBox;
 use glam::{Quat, Vec3};
@@ -42,7 +42,7 @@ pub fn UICamera(_: &mut Hooks) -> Element {
         .init_default(projection_view())
         .init_default(translation())
         .init_default(rotation())
-        .init_default(orthographic_from_window())
+        .init(orthographic_from_window(), EntityId::resources())
         .init_default(ui_scene())
 }
 
@@ -55,7 +55,7 @@ pub fn LookatCamera(_: &mut Hooks, eye: Vec3, lookat: Vec3, up: Vec3) -> Element
         .init(fovy(), 1.0)
         .init(perspective_infinite_reverse(), ())
         .init(aspect_ratio(), 1.)
-        .init(aspect_ratio_from_window(), ())
+        .init(aspect_ratio_from_window(), EntityId::resources())
         .init_default(projection())
         .init_default(projection_view())
         .set(translation(), eye)
@@ -72,7 +72,7 @@ pub fn FreeCamera(_: &mut Hooks, position: Vec3, rotation: Quat) -> Element {
         .init(fovy(), 1.0)
         .init(perspective_infinite_reverse(), ())
         .init(aspect_ratio(), 1.)
-        .init(aspect_ratio_from_window(), ())
+        .init(aspect_ratio_from_window(), EntityId::resources())
         .init_default(projection())
         .init_default(projection_view())
         .set(ambient_core::transform::translation(), position)

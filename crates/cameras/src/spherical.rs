@@ -36,7 +36,7 @@ pub fn new(lookat: glam::Vec3, orientation: SphericalCoords) -> Entity {
         .with(fovy(), 1.0)
         .with(perspective_infinite_reverse(), ())
         .with(aspect_ratio(), 1.)
-        .with(aspect_ratio_from_window(), ())
+        .with(aspect_ratio_from_window(), EntityId::resources())
         .with_default(projection())
         .with_default(projection_view())
         .with(translation(), spherical.translation(lookat))

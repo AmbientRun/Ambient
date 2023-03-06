@@ -37,4 +37,7 @@ pub mod components {
             picking::{mouse_over, mouse_pickable_max, mouse_pickable_min},
         };
     }
+    pub mod player {
+        pub use ambient_core::player::{local_user_id, player, user_id};
+    }
 }

@@ -1,5 +1,5 @@
 use ambient_core::{camera::*, transform::*};
-use ambient_ecs::{components, query_mut, Entity, SystemGroup};
+use ambient_ecs::{components, query_mut, Entity, EntityId, SystemGroup};
 use derive_more::Display;
 use glam::vec2;
 use winit::event::{DeviceEvent, ElementState, Event, VirtualKeyCode, WindowEvent};
@@ -31,7 +31,7 @@ pub fn new(position: glam::Vec3, orientation: glam::Vec2) -> Entity {
         .with(fovy(), 1.0)
         .with(perspective_infinite_reverse(), ())
         .with(aspect_ratio(), 1.)
-        .with(aspect_ratio_from_window(), ())
+        .with(aspect_ratio_from_window(), EntityId::resources())
         .with_default(projection())
         .with_default(projection_view())
         .with(translation(), position)
