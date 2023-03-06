@@ -30,12 +30,12 @@ struct VertexOutput {
 @vertex
 fn vs_main(@builtin(instance_index) instance_index: u32,
 @builtin(vertex_index) vertex_index: u32) -> VertexOutput {
-  let pos = get_raw_mesh_position(vertex_index);
+  let local_pos = get_raw_mesh_position(vertex_index);
   let uv = get_raw_mesh_uv(vertex_index);
 
   let gizmo = gizmo_buffer.gizmos[instance_index];
 
-  let pos = gizmo.model_matrix * vec4<f32>(pos, 1.);
+  let pos = gizmo.model_matrix * vec4<f32>(local_pos, 1.);
   let clip_pos = (global_params.projection_view * pos);
 
   let ndc = clip_pos.xyz / clip_pos.w;
@@ -43,9 +43,9 @@ fn vs_main(@builtin(instance_index) instance_index: u32,
 }
 
 fn corner(radius: f32, uv: vec2<f32>, stretch: vec2<f32>, scale: vec2<f32>) -> bool {
-  let scale = max(scale, vec2<f32>(0., 0.));
+  let pos_scale = max(scale, vec2<f32>(0., 0.));
   // Position rel center of quad
-  let unstretched_mid = vec2<f32>(uv.x - 0.5, uv.y - 0.5) * 2.0 / scale;
+  let unstretched_mid = vec2<f32>(uv.x - 0.5, uv.y - 0.5) * 2.0 / pos_scale;
   let mid = unstretched_mid / stretch;
 
   // Pos to the nearest corner on quad
@@ -54,15 +54,15 @@ fn corner(radius: f32, uv: vec2<f32>, stretch: vec2<f32>, scale: vec2<f32>) -> b
   // let max_len = min(stretch.x, stretch.y);
   let aspect = (stretch.y / stretch.x);
   let short_side = max(stretch.x, stretch.y);
-  let radius = radius / short_side;
-  let anchor = corner - vec2<f32>(sign(mid.x), sign(mid.y)) * radius ;
+  let r = radius / short_side;
+  let anchor = corner - vec2<f32>(sign(mid.x), sign(mid.y)) * r ;
 
   let rel = mid - anchor;
   let to_corner = corner - mid;
-  let ang = dot(normalize((mid - anchor)), normalize(corner));
+
   let ang = dot(normalize(mid - anchor), normalize(corner - anchor));
 
-  return length(mid - anchor) > radius &&
+  return length(mid - anchor) > r &&
     (ang > 0.707 || abs(unstretched_mid.x) > 1.0 || abs(unstretched_mid.y) > 1.0);
 }
 

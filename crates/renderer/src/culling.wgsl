@@ -91,10 +91,12 @@ fn update(entity_loc: vec2<u32>) {
     for (var i=0; i < #SHADOW_CASCADES; i = i + 1) {
         let radius = bounding_sphere.w;
         let pixel_size = vec2<f32>(radius) * 2. / params.shadow_cameras[i].orthographic_size;
-        let pixel_size = min(pixel_size.x, pixel_size.y);
-        if (pixel_size < 0.01) {
+        let min_pixel_size = min(pixel_size.x, pixel_size.y);
+
+        if (min_pixel_size < 0.01) {
             break;
         }
+
         let res = cull_camera(params.shadow_cameras[i], bounding_sphere);
         if (res.inside) {
             cameras[i + 1] = u32(true);
