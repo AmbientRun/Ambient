@@ -174,3 +174,18 @@ fn can_convert_component_types() {
 
     primitive_component_definitions!(make_test_cases);
 }
+
+#[test]
+fn can_roundtrip_serialize_versions() {
+    let versions = [
+        Version::new(1, 0, 0, None),
+        Version::new(1, 0, 0, Some("dev".to_string())),
+        Version::new(1, 0, 0, Some("rc1".to_string())),
+        Version::new(123, 456, 789, Some("rc1".to_string())),
+        Version::new(123, 456, 789, None),
+    ];
+
+    for version in versions {
+        assert_eq!(version, serde_json::from_str(&serde_json::to_string(&version).unwrap()).unwrap());
+    }
+}
