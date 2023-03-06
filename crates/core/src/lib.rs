@@ -6,7 +6,9 @@ use chrono::{DateTime, Utc};
 use std::{sync::Arc, time::Duration};
 use window::WindowCtl;
 
-use ambient_ecs::{components, query, Debuggable, Description, DynSystem, FrameEvent, Name, Networked, Resource, Store, System, World};
+use ambient_ecs::{
+    components, query, Debuggable, Description, DynSystem, FrameEvent, MaybeResource, Name, Networked, Resource, Store, System, World,
+};
 use ambient_gpu::{gpu::Gpu, mesh_buffer::GpuMesh};
 
 use ambient_std::{
@@ -38,14 +40,14 @@ components!("app", {
     @[Resource, Name["Window Control"], Description["Allows controlling the window from afar."]]
     window_ctl: flume::Sender<WindowCtl>,
 
-    @[Resource, Name["Window scale factor"], Description["This number is usually 1, but on for instance retina displays it's 2."]]
+    @[Resource, Debuggable, Networked, Name["Window scale factor"], Description["This number is usually 1, but on for instance retina displays it's 2."]]
     window_scale_factor: f64,
-    @[Resource, Name["Window logical size"], Description["The logical size is the physical size divided by the scale factor."]]
+    @[MaybeResource, Debuggable, Networked, Name["Window logical size"], Description["The logical size is the physical size divided by the scale factor."]]
     window_logical_size: UVec2,
-    @[Resource, Name["Window physical size"], Description["The physical size is the actual number of pixels on the screen."]]
+    @[MaybeResource, Debuggable, Networked, Name["Window physical size"], Description["The physical size is the actual number of pixels on the screen."]]
     window_physical_size: UVec2,
     /// Mouse position in screen space
-    @[Resource]
+    @[MaybeResource, Debuggable, Networked]
     mouse_position: Vec2,
     @[
         Debuggable, Networked, Store,
