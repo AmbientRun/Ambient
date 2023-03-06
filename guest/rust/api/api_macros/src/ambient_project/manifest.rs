@@ -8,9 +8,9 @@ use std::collections::BTreeMap;
 pub struct Manifest {
     pub project: Project,
     #[serde(default)]
-    pub components: BTreeMap<IdentifierPathBuf, NamespaceOrOther>,
+    pub components: BTreeMap<IdentifierPathBuf, NamespaceOrComponent>,
     #[serde(default)]
-    pub concepts: BTreeMap<IdentifierPathBuf, NamespaceOrOther>,
+    pub concepts: BTreeMap<IdentifierPathBuf, NamespaceOrConcept>,
 }
 impl Manifest {
     pub fn project_path(&self) -> IdentifierPathBuf {
@@ -29,18 +29,35 @@ pub struct Project {
     pub organization: Option<Identifier>,
 }
 
-#[derive(Deserialize, Debug, Clone)]
-#[serde(untagged)]
-pub enum NamespaceOrOther {
-    Concept(Concept),
-    Component(Component),
-    Namespace(Namespace),
-}
-
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct Namespace {
     pub name: String,
     pub description: String,
+}
+
+#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[serde(untagged)]
+pub enum NamespaceOr<T> {
+    Other(T),
+    Namespace(Namespace),
+}
+
+pub type NamespaceOrComponent = NamespaceOr<Component>;
+pub type NamespaceOrConcept = NamespaceOr<Concept>;
+impl<T> From<Namespace> for NamespaceOr<T> {
+    fn from(value: Namespace) -> Self {
+        Self::Namespace(value)
+    }
+}
+impl From<Component> for NamespaceOr<Component> {
+    fn from(value: Component) -> Self {
+        Self::Other(value)
+    }
+}
+impl From<Concept> for NamespaceOr<Concept> {
+    fn from(value: Concept) -> Self {
+        Self::Other(value)
+    }
 }
 
 #[derive(Deserialize, Debug, Clone)]
