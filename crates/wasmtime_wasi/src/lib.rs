@@ -1,3 +1,7 @@
+//! Custom synchronous implementation of wasmtime_wasi. Disabling Clippy because this isn't really
+//! our code, and this is a short-to-medium term solution anyway.
+#![allow(clippy::all)]
+
 mod clocks;
 mod env;
 mod exit;
