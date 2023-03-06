@@ -3,8 +3,8 @@ use ambient_guest_bridge::components::{
     app::{ui_scene, window_logical_size, window_physical_size},
     transform::{local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation},
     ui::{
-        background_color, gpu_ui_size, height, mesh_to_local_from_size, padding_bottom, padding_left, padding_right, padding_top, rect,
-        width,
+        background_color, gpu_ui_size, height, margin_bottom, margin_left, margin_right, margin_top, mesh_to_local_from_size,
+        padding_bottom, padding_left, padding_right, padding_top, rect, width,
     },
 };
 use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
@@ -77,6 +77,7 @@ pub fn with_rect(element: Element) -> Element {
 pub trait UIExt2 {
     fn with_background(self, color: Vec4) -> Self;
     fn with_padding_even(self, padding: f32) -> Self;
+    fn with_margin_even(self, margin: f32) -> Self;
 }
 impl UIExt2 for Element {
     fn with_background(self, background: Vec4) -> Self {
@@ -84,5 +85,8 @@ impl UIExt2 for Element {
     }
     fn with_padding_even(self, padding: f32) -> Self {
         self.set(padding_left(), padding).set(padding_right(), padding).set(padding_top(), padding).set(padding_bottom(), padding)
+    }
+    fn with_margin_even(self, margin: f32) -> Self {
+        self.set(margin_left(), margin).set(margin_right(), margin).set(margin_top(), margin).set(margin_bottom(), margin)
     }
 }

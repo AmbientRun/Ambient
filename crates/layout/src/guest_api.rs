@@ -1,4 +1,6 @@
-use crate::{align_horizontal, align_vertical, fit_horizontal, fit_vertical, layout, margin, orientation, padding, Borders, Layout};
+use crate::{
+    align_horizontal, align_vertical, docking, fit_horizontal, fit_vertical, layout, margin, orientation, padding, Borders, Docking, Layout,
+};
 use ambient_ecs::{components, ensure_has_component, query, Debuggable, Description, Name, Networked, Store, SystemGroup};
 
 // This file only exists because Enums aren't available in the wasm layer yet; once that exists this can be removed
@@ -60,6 +62,17 @@ components!("ui", {
     padding_top: f32,
     @[Debuggable, Networked, Store, Name["Padding bottom"], Description["Layout component."]]
     padding_bottom: f32,
+
+    @[Debuggable, Networked, Store, Name["Docking top"], Description["Layout component."]]
+    docking_top: (),
+    @[Debuggable, Networked, Store, Name["Docking bottom"], Description["Layout component."]]
+    docking_bottom: (),
+    @[Debuggable, Networked, Store, Name["Docking left"], Description["Layout component."]]
+    docking_left: (),
+    @[Debuggable, Networked, Store, Name["Docking right"], Description["Layout component."]]
+    docking_right: (),
+    @[Debuggable, Networked, Store, Name["Docking fill"], Description["Layout component."]]
+    docking_fill: (),
 });
 
 pub fn systems() -> SystemGroup {
@@ -84,6 +97,11 @@ pub fn systems() -> SystemGroup {
             ensure_has_component(fit_horizontal_none(), fit_horizontal(), crate::Fit::None),
             ensure_has_component(fit_horizontal_parent(), fit_horizontal(), crate::Fit::Parent),
             ensure_has_component(fit_horizontal_children(), fit_horizontal(), crate::Fit::Children),
+            ensure_has_component(docking_top(), docking(), Docking::Top),
+            ensure_has_component(docking_bottom(), docking(), Docking::Bottom),
+            ensure_has_component(docking_left(), docking(), Docking::Left),
+            ensure_has_component(docking_right(), docking(), Docking::Right),
+            ensure_has_component(docking_fill(), docking(), Docking::Fill),
             query((margin_left().changed(), margin_right().changed(), margin_top().changed(), margin_bottom().changed())).to_system(
                 |q, world, qs, _| {
                     for (id, (left, right, top, bottom)) in q.collect_cloned(world, qs) {

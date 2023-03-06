@@ -1,17 +1,16 @@
 use ambient_api::{
-    components::core::{
-        app::ui_scene,
-        camera::{orthographic_bottom, orthographic_left, orthographic_right, orthographic_top},
-        game_objects::player_camera,
-    },
+    components::core::{app::ui_scene, game_objects::player_camera},
     concepts::make_orthographic_camera,
     prelude::*,
 };
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
-    components::ui::{
-        background_color, border_color, border_radius, border_thickness, height,
-        space_between_items, width,
+    components::{
+        camera::orthographic_from_window,
+        ui::{
+            background_color, border_color, border_radius, border_thickness, height,
+            space_between_items, width,
+        },
     },
     ecs::World,
 };
@@ -37,10 +36,7 @@ fn App(_hooks: &mut Hooks) -> Element {
 pub async fn main() -> EventResult {
     Entity::new()
         .with_merge(make_orthographic_camera())
-        .with(orthographic_left(), -300.)
-        .with(orthographic_right(), 300.)
-        .with(orthographic_top(), -300.)
-        .with(orthographic_bottom(), 300.)
+        .with_default(orthographic_from_window())
         .with_default(player_camera())
         .with_default(ui_scene())
         .spawn();

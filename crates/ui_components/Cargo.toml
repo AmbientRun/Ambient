@@ -8,4 +8,6 @@ edition = "2021"
 [dependencies]
 ambient_element = { path = "../element", default-features = false }
 ambient_guest_bridge = { path = "../guest_bridge", default-features = false }
+cb = { path = "../../libs/cb" }
 glam = { workspace = true }
+itertools = { workspace = true }

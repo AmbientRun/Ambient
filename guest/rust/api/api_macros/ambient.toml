@@ -842,6 +842,36 @@ name = "Border thickness"
 description = "Border thickness of a rect() entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::ui::docking_bottom"]
+type = "Empty"
+name = "Docking bottom"
+description = "Layout component."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::docking_fill"]
+type = "Empty"
+name = "Docking fill"
+description = "Layout component."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::docking_left"]
+type = "Empty"
+name = "Docking left"
+description = "Layout component."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::docking_right"]
+type = "Empty"
+name = "Docking right"
+description = "Layout component."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::docking_top"]
+type = "Empty"
+name = "Docking top"
+description = "Layout component."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::ui::fit_horizontal_children"]
 type = "Empty"
 name = "Fit horizontal children"

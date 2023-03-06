@@ -74,7 +74,9 @@ version = "0.1.0"
 dependencies = [
  "ambient_element",
  "ambient_guest_bridge",
+ "cb",
  "glam",
+ "itertools",
 ]
 
 [[package]]
@@ -176,6 +178,16 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "dock_layout"
+version = "0.1.1"
+dependencies = [
+ "ambient_api",
+ "ambient_element",
+ "ambient_guest_bridge",
+ "ambient_ui_components",
 ]
 
 [[package]]

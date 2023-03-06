@@ -288,14 +288,15 @@ where
 
 /// No bind groups
 pub fn get_defs_module(_: &AssetCache) -> ShaderModule {
-    ShaderModule::from_str(
-        "Definitions",
-        [("PI", PI)]
-            .iter()
-            .map(|(k, v)| format!("let {k}: f32 = {v};\n"))
-            .chain([wgsl_interpolate(), include_file!("polyfill.wgsl"), MESH_BUFFER_TYPES_WGSL.to_string()])
-            .collect::<String>(),
-    )
+    let iter = [("PI", PI)].iter();
+    #[cfg(not(target_os = "unknown"))]
+    let iter = iter.map(|(k, v)| format!("let {k}: f32 = {v};\n"));
+    #[cfg(target_os = "unknown")]
+    let iter = iter.map(|(k, v)| format!("const {k}: f32 = {v};\n"));
+
+    let iter = iter.chain([wgsl_interpolate(), include_file!("polyfill.wgsl"), MESH_BUFFER_TYPES_WGSL.to_string()]).collect::<String>();
+
+    ShaderModule::from_str("Definitions", iter)
 }
 
 pub fn get_resources_module() -> ShaderModule {
