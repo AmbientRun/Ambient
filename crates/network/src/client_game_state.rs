@@ -108,12 +108,12 @@ impl ClientGameState {
     }
 
     pub fn proj_view(&self) -> Option<Mat4> {
-        let camera = get_active_camera(&self.world, main_scene())?;
+        let camera = get_active_camera(&self.world, main_scene(), Some(&self.user_id))?;
         // This can only work client side, since project_view only exists there (which in turn requires the screen size)
         self.world.get(camera, projection_view()).ok()
     }
     pub fn view(&self) -> Option<Mat4> {
-        let camera = get_active_camera(&self.world, main_scene())?;
+        let camera = get_active_camera(&self.world, main_scene(), Some(&self.user_id))?;
         // // This can only work client side, since project_view only exists there (which in turn requires the screen size)
         Some(self.world.get(camera, local_to_world()).ok()?.inverse())
     }

@@ -5,6 +5,7 @@ use ambient_core::{
     camera::{shadow_cameras_from_world, Camera},
     gpu_components,
     gpu_ecs::{GpuComponentFormat, GpuWorldUpdater},
+    player::local_user_id,
 };
 use ambient_ecs::{ArchetypeFilter, World};
 use ambient_gpu::{
@@ -121,7 +122,7 @@ impl Culling {
         world: &World,
         binding_context: &HashMap<String, &'a wgpu::BindGroup>,
     ) {
-        let main_camera = if let Some(camera) = Camera::get_active(world, self.config.scene) {
+        let main_camera = if let Some(camera) = Camera::get_active(world, self.config.scene, world.resource_opt(local_user_id())) {
             camera
         } else {
             // log::warn!("No valid camera");
@@ -137,6 +138,7 @@ impl Culling {
                 self.config.shadow_map_resolution,
                 get_sun_light_direction(world, self.config.scene),
                 self.config.scene,
+                world.resource_opt(local_user_id()),
             );
             #[allow(clippy::needless_range_loop)]
             for i in 0..(self.config.shadow_cascades as usize) {

@@ -5,6 +5,7 @@ use ambient_core::{
     camera::*,
     gpu,
     gpu_ecs::{gpu_world, ENTITIES_BIND_GROUP},
+    player::local_user_id,
     ui_scene,
 };
 use ambient_ecs::{ArchetypeFilter, Component, World};
@@ -249,7 +250,7 @@ impl Renderer {
             gpu_world.create_bind_group(true)
         };
 
-        let main_camera = Camera::get_active(world, self.config.scene).unwrap_or_default();
+        let main_camera = Camera::get_active(world, self.config.scene, world.resource_opt(local_user_id())).unwrap_or_default();
         {
             profiling::scope!("Update");
             self.culling.run(encoder, world, &Default::default());
