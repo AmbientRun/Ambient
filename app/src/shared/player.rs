@@ -1,9 +1,7 @@
 use std::{io::Write, sync::Arc};
 
-use ambient_audio::AudioListener;
 use ambient_core::{
-    camera::active_camera,
-    player::{get_player_by_user_id, local_user_id, player, user_id},
+    player::{get_player_by_user_id, player},
     runtime,
     window::{window_logical_size, window_physical_size},
 };

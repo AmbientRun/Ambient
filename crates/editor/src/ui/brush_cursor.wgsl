@@ -54,7 +54,7 @@ fn get_material(in: MaterialInput) -> MaterialOutput {
     let brush_alpha = mix(0.3, 0.9, params.brush_remapped_strength);
     let alpha = grid_falloff * brush_alpha * distance_factor;
 
-    // HACK(mithun): our transparent renderer doesn't handle the blend between transparent elements correctly yet, so
+    // HACK(philpax): our transparent renderer doesn't handle the blend between transparent elements correctly yet, so
     // we're opting not to render it at all under water. fix once we have some time.
     let alpha = select(alpha, 0.0, in.world_position.z < 0.0);
 

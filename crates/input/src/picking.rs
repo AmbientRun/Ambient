@@ -5,9 +5,7 @@ use ambient_core::{
     ui_scene,
     window::{mouse_position, window_physical_size},
 };
-use ambient_ecs::{
-    components, query, Debuggable, Description, Entity, EntityId, FnSystem, MaybeResource, Name, Networked, Resource, Store, SystemGroup,
-};
+use ambient_ecs::{components, query, Debuggable, Description, Entity, EntityId, MaybeResource, Name, Networked, Store, SystemGroup};
 use ambient_std::shapes::{RayIntersectable, AABB};
 use glam::{Vec2, Vec3};
 
