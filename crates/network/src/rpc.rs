@@ -11,8 +11,9 @@ use crate::{
         create_player_entity_data, player_entity_stream, player_event_stream, player_stats_stream, ForkingEvent, WorldInstance,
         MAIN_INSTANCE_ID,
     },
-    user_id, ServerWorldExt,
+    ServerWorldExt,
 };
+use ambient_core::player::user_id;
 
 pub fn register_rpcs(reg: &mut RpcRegistry<GameRpcArgs>) {
     reg.register(rpc_world_diff);

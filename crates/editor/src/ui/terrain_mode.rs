@@ -1,8 +1,9 @@
 use std::sync::Arc;
 
 use ambient_core::{
-    asset_cache, get_mouse_clip_space_position, runtime,
+    asset_cache, runtime,
     transform::{scale, translation},
+    window::get_mouse_clip_space_position,
 };
 use ambient_decals::DecalShaderKey;
 use ambient_ecs::{query, ArchetypeFilter};

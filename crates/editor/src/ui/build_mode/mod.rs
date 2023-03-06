@@ -1,6 +1,6 @@
 use std::{sync::Arc, time::Duration};
 
-use ambient_core::{asset_cache, async_ecs::async_run, get_mouse_clip_space_position, runtime};
+use ambient_core::{asset_cache, async_ecs::async_run, runtime, window::get_mouse_clip_space_position};
 use ambient_ecs::{Component, ComponentValue, EntityId};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_input::event_keyboard_input;

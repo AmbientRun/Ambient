@@ -4,7 +4,13 @@ use ambient_api::{
     prelude::*,
 };
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::{components::camera::orthographic_from_window, ecs::World};
+use ambient_guest_bridge::{
+    components::{
+        camera::orthographic_from_window,
+        player::{player, user_id},
+    },
+    ecs::World,
+};
 use ambient_ui_components::text::Text;
 
 #[element_component]
@@ -27,12 +33,18 @@ fn App(hooks: &mut Hooks) -> Element {
 
 #[main]
 pub async fn main() -> EventResult {
-    Entity::new()
-        .with_merge(make_orthographic_camera())
-        .with_default(orthographic_from_window())
-        .with_default(player_camera())
-        .with_default(ui_scene())
-        .spawn();
+    spawn_query((player(), user_id())).bind(move |players| {
+        for (id, _) in players {
+            entity::add_components(
+                id,
+                Entity::new()
+                    .with_merge(make_orthographic_camera())
+                    .with(orthographic_from_window(), id)
+                    .with_default(player_camera())
+                    .with_default(ui_scene()),
+            );
+        }
+    });
 
     let mut tree = App.el().spawn_tree();
     on(ambient_api::event::FRAME, move |_| {

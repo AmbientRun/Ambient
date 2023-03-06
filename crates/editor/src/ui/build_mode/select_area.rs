@@ -1,7 +1,8 @@
 use ambient_core::{
-    mouse_position, runtime,
+    runtime,
     transform::{get_world_position, translation},
-    window_logical_size, window_scale_factor,
+    window::mouse_position,
+    window::{window_logical_size, window_scale_factor},
 };
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_input::{event_mouse_input, event_mouse_motion};

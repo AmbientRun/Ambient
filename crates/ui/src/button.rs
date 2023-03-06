@@ -6,7 +6,7 @@ use std::{
     },
 };
 
-use ambient_core::{runtime, window::WindowCtl, window_ctl};
+use ambient_core::{runtime, window::window_ctl, window::WindowCtl};
 use ambient_ecs::World;
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_input::{event_focus_change, event_keyboard_input, event_mouse_input, KeyboardEvent};

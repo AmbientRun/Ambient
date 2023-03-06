@@ -1,8 +1,8 @@
 use ambient_core::{
     camera::{get_active_camera, screen_ray},
-    mouse_position,
     transform::local_to_world,
-    ui_scene, window_physical_size,
+    ui_scene,
+    window::{mouse_position, window_physical_size},
 };
 use ambient_ecs::{components, query, Debuggable, Description, Entity, EntityId, FnSystem, Name, Networked, Resource, Store, SystemGroup};
 use ambient_std::shapes::{RayIntersectable, AABB};
