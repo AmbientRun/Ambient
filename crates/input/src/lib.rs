@@ -31,8 +31,12 @@ components!("input", {
     event_keyboard_input: KeyboardEvent,
     @[Debuggable, Networked, Store, Name["Event mouse input"], Description["A mouse button was pressed (true) or released (false). Will also contain a `mouse_button` component."]]
     event_mouse_input: bool,
+    @[Debuggable, Networked, Store, Name["Event mouse motion"], Description["The mouse was moved. The value represents the delta. Use mouse_position to get the current position."]]
     event_mouse_motion: Vec2,
-    event_mouse_wheel: MouseScrollDelta,
+    @[Debuggable, Networked, Store, Name["Event mouse wheel"], Description["The mouse wheel moved. The value represents the delta."]]
+    event_mouse_wheel: Vec2,
+    @[Debuggable, Networked, Store, Name["Event mouse wheel"], Description["If true, the mouse_wheel_event should be interpreted as pixels, if false it should be interpreted as lines."]]
+    event_mouse_wheel_pixels: bool,
     event_modifiers_change: ModifiersState,
     event_focus_change: bool,
 
@@ -111,7 +115,17 @@ impl System<Event<'static, ()>> for InputSystem {
                 }
 
                 WindowEvent::MouseWheel { delta, .. } => {
-                    world.resource_mut(world_events()).add_event(Entity::new().with(event_mouse_wheel(), *delta));
+                    world.resource_mut(world_events()).add_event(
+                        Entity::new()
+                            .with(
+                                event_mouse_wheel(),
+                                match *delta {
+                                    MouseScrollDelta::LineDelta(x, y) => vec2(x, y),
+                                    MouseScrollDelta::PixelDelta(p) => vec2(p.x as f32, p.y as f32),
+                                },
+                            )
+                            .with(event_mouse_wheel_pixels(), matches!(delta, MouseScrollDelta::PixelDelta(..))),
+                    );
                 }
                 WindowEvent::ModifiersChanged(mods) => {
                     world.resource_mut(world_events()).add_event(Entity::new().with(event_modifiers_change(), *mods));

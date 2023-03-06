@@ -14,7 +14,7 @@ use ambient_element::{
     define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent, ElementComponentExt, Hooks,
 };
 use ambient_input::{
-    event_focus_change, event_mouse_input, event_mouse_motion, event_mouse_wheel, mouse_button,
+    event_focus_change, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels, mouse_button,
     picking::{mouse_over, mouse_pickable},
 };
 pub use ambient_std::{cb, Cb};
@@ -22,7 +22,7 @@ use ambient_std::{color::Color, shapes::AABB};
 use glam::*;
 use parking_lot::Mutex;
 use winit::{
-    event::{ModifiersState, MouseScrollDelta},
+    event::{ModifiersState},
     window::CursorGrabMode,
 };
 
@@ -93,14 +93,8 @@ impl ElementComponent for ScrollArea {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (scroll, set_scroll) = hooks.use_state(0.);
         hooks.use_world_event(move |_world, event| {
-            if let Some(delta) = event.get_ref(event_mouse_wheel()) {
-                set_scroll(
-                    scroll
-                        + match delta {
-                            MouseScrollDelta::LineDelta(_, y) => y * 20.,
-                            MouseScrollDelta::PixelDelta(p) => p.y as f32,
-                        },
-                );
+            if let Some(delta) = event.get(event_mouse_wheel()) {
+                set_scroll(scroll + if event.get(event_mouse_wheel_pixels()).unwrap() { delta.y } else { delta.y * 20. });
             }
         });
         UIBase
@@ -273,7 +267,7 @@ pub struct ClickArea {
     pub on_mouse_leave: Vec<Cb<dyn Fn(&mut World, EntityId) + Sync + Send>>,
     pub on_mouse_hover: Vec<Cb<dyn Fn(&mut World, EntityId) + Sync + Send>>,
     pub on_mouse_input: Vec<Cb<dyn Fn(&mut World, EntityId, MouseInput, MouseButton) + Sync + Send>>,
-    pub on_mouse_wheel: Vec<Cb<dyn Fn(&mut World, EntityId, MouseScrollDelta) + Sync + Send>>,
+    pub on_mouse_wheel: Vec<Cb<dyn Fn(&mut World, EntityId, Vec2, bool) + Sync + Send>>,
 }
 impl ClickArea {
     pub fn new(inner: Element) -> Self {
@@ -302,7 +296,7 @@ impl ClickArea {
         self.on_mouse_input.push(cb(handle));
         self
     }
-    pub fn on_mouse_wheel<F: Fn(&mut World, EntityId, MouseScrollDelta) + Sync + Send + 'static>(mut self, handle: F) -> Self {
+    pub fn on_mouse_wheel<F: Fn(&mut World, EntityId, Vec2, bool) + Sync + Send + 'static>(mut self, handle: F) -> Self {
         self.on_mouse_wheel.push(cb(handle));
         self
     }
@@ -364,10 +358,10 @@ impl ElementComponent for ClickArea {
                                 handler(world, id, pressed.into(), event.get(mouse_button()).unwrap().into());
                             }
                         }
-                    } else if let Some(event) = event.get_ref(event_mouse_wheel()) {
+                    } else if let Some(delta) = event.get(event_mouse_wheel()) {
                         if *is_mouse_over.lock() {
                             for handler in &on_mouse_wheel {
-                                handler(world, id, *event);
+                                handler(world, id, delta, event.get(event_mouse_wheel_pixels()).unwrap());
                             }
                         }
                     }
