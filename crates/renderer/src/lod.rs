@@ -7,6 +7,7 @@ use ambient_core::{
     gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent},
     hierarchy::children,
     main_scene,
+    player::local_user_id,
     transform::translation,
 };
 use ambient_ecs::{components, query, ECSError, EntityId, Networked, Store, SystemGroup, World};
@@ -38,7 +39,7 @@ pub fn lod_system() -> SystemGroup {
         "lod",
         vec![
             query((lod_cutoffs(), cpu_lod(), world_bounding_sphere())).to_system(|q, world, qs, _| {
-                if let Some(main_camera) = get_active_camera(world, main_scene()) {
+                if let Some(main_camera) = get_active_camera(world, main_scene(), world.resource_opt(local_user_id())) {
                     let camera_pos = world.get(main_camera, translation()).unwrap_or(Vec3::ZERO);
                     let main_camera_fov = match world.get(main_camera, fovy()) {
                         Ok(val) => val,

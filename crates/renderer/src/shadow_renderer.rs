@@ -1,6 +1,6 @@
 use std::{num::NonZeroU32, sync::Arc};
 
-use ambient_core::{camera::Camera, gpu_ecs::ENTITIES_BIND_GROUP, main_scene, transform::*};
+use ambient_core::{camera::Camera, gpu_ecs::ENTITIES_BIND_GROUP, main_scene, player::local_user_id, transform::*};
 use ambient_ecs::{ArchetypeFilter, World};
 use ambient_gpu::{
     gpu::GpuKey,
@@ -105,7 +105,7 @@ impl ShadowsRenderer {
         entities_bind_group: &wgpu::BindGroup,
         mesh_buffer: &MeshBuffer,
     ) {
-        let main_camera = Camera::get_active(world, main_scene()).unwrap_or_default();
+        let main_camera = Camera::get_active(world, main_scene(), world.resource_opt(local_user_id())).unwrap_or_default();
 
         let sun_direction = if let Some(sun) = get_active_sun(world, main_scene()) {
             get_world_rotation(world, sun).unwrap().mul_vec3(Vec3::X)

@@ -348,9 +348,9 @@ description = "The mouse button. 0=left, 1=right, 2=middle."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::input::mouse_over"]
-type = "Bool"
+type = "U32"
 name = "Mouse over"
-description = "A mouse cursor is currently over this entity."
+description = "The number of mouse cursors that are currently over this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::input::mouse_pickable_max"]

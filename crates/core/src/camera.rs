@@ -289,8 +289,22 @@ pub fn screen_ray(world: &World, camera: EntityId, mouse_origin: Vec2) -> Result
     Ok(Ray::new(camera_mouse_origin, camera_mouse_dir))
 }
 
-pub fn get_active_camera(world: &World, scene: Component<()>) -> Option<EntityId> {
-    query((scene, active_camera())).iter(world, None).max_by_key(|(_, (_, x))| OrderedFloat(**x)).map(|(id, _)| id)
+pub fn get_active_camera(world: &World, scene: Component<()>, user_id: Option<&String>) -> Option<EntityId> {
+    query((scene, active_camera()))
+        .iter(world, None)
+        .filter(|(id, _)| {
+            if let Some(user_id) = &user_id {
+                if world.get_ref(*id, crate::player::user_id()) == Ok(user_id) {
+                    true
+                } else {
+                    false
+                }
+            } else {
+                true
+            }
+        })
+        .max_by_key(|(_, (_, x))| OrderedFloat(**x))
+        .map(|(id, _)| id)
 }
 
 #[derive(Clone, Debug)]
@@ -431,8 +445,8 @@ impl Camera {
             shadows_far: world.get(entity, shadows_far()).unwrap_or(2_000.0),
         })
     }
-    pub fn get_active(world: &World, scene: Component<()>) -> Option<Self> {
-        if let Some(cam) = get_active_camera(world, scene) {
+    pub fn get_active(world: &World, scene: Component<()>, user_id: Option<&String>) -> Option<Self> {
+        if let Some(cam) = get_active_camera(world, scene, user_id) {
             Self::from_world(world, cam)
         } else {
             None
@@ -614,8 +628,9 @@ pub fn shadow_cameras_from_world(
     shadow_map_resolution: u32,
     light_direction: Vec3,
     scene: Component<()>,
+    user_id: Option<&String>,
 ) -> Vec<Camera> {
-    let camera = Camera::get_active(world, scene).unwrap();
+    let camera = Camera::get_active(world, scene, user_id).unwrap();
     (0..shadow_cascades)
         .map(|cascade| camera.create_snapping_shadow_camera(light_direction, cascade, shadow_cascades, shadow_map_resolution))
         .collect()
