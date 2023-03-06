@@ -9,7 +9,7 @@
                 "env": {
                     "RUST_LOG": "info,wgpu=warn,naga=warn,quinn=warn,sentry=debug,sentry-anyhow=debug,sentry-core=debug,fbxcel=error",
                     "NO_ELP_TIMEOUT": "true",
-                    "DIMS_DISABLE_TIMEOUT": "true",
+                    "AMBIENT_DISABLE_TIMEOUT": "true",
                     "RUST_BACKTRACE": "1"
                 },
                 "cwd": "${workspaceFolder}"
