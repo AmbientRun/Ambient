@@ -35,6 +35,7 @@ fn make_components() -> toml_edit::Table {
         ("core::network", "Network", "Network-related state."),
         ("core::prefab", "Prefab", "Prefab-related state, including loading of prefabs."),
         ("core::physics", "Physics", "Physics functionality and state."),
+        ("core::input", "Input", "Mouse, keyboard and controller input."),
         ("core::player", "Player", "Components that are attached to player entities."),
         (
             "core::primitives",

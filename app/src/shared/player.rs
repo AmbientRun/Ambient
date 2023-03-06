@@ -8,8 +8,8 @@ use ambient_core::{
 use ambient_ecs::{query, query_mut, Entity, SystemGroup};
 use ambient_element::{element_component, Element, Hooks};
 use ambient_input::{
-    event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, player_prev_raw_input,
-    player_raw_input, ElementState, MouseScrollDelta, PlayerRawInput,
+    event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels,
+    mouse_button, mouse_button_from_u32, player_prev_raw_input, player_raw_input, ElementState, PlayerRawInput,
 };
 use ambient_network::{
     client::game_client,
@@ -18,6 +18,7 @@ use ambient_network::{
     DatagramHandlers,
 };
 use ambient_std::unwrap_log_err;
+
 use ambient_world_audio::audio_listener;
 use byteorder::{BigEndian, WriteBytesExt};
 pub use components::game_objects::player_camera;
@@ -137,22 +138,19 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
                         }
                     }
                 }
-            } else if let Some(event) = event.get_ref(event_mouse_input()) {
+            } else if let Some(pressed) = event.get(event_mouse_input()) {
                 let mut lock = input.lock();
-                match event.state {
-                    ElementState::Pressed => {
-                        lock.mouse_buttons.insert(event.button);
-                    }
-                    ElementState::Released => {
-                        lock.mouse_buttons.remove(&event.button);
-                    }
+                if pressed {
+                    lock.mouse_buttons.insert(mouse_button_from_u32(event.get(mouse_button()).unwrap()));
+                } else {
+                    lock.mouse_buttons.remove(&mouse_button_from_u32(event.get(mouse_button()).unwrap()));
                 }
             } else if let Some(delta) = event.get(event_mouse_motion()) {
                 input.lock().mouse_position += delta;
             } else if let Some(delta) = event.get(event_mouse_wheel()) {
-                input.lock().mouse_wheel += match delta {
-                    MouseScrollDelta::LineDelta(_, y) => y * PIXELS_PER_LINE,
-                    MouseScrollDelta::PixelDelta(pos) => pos.y as f32,
+                input.lock().mouse_wheel += match event.get(event_mouse_wheel_pixels()).unwrap() {
+                    false => delta.y * PIXELS_PER_LINE,
+                    true => delta.y,
                 };
             } else if let Some(focus) = event.get(event_focus_change()) {
                 set_has_focus(focus);

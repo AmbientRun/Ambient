@@ -10,7 +10,7 @@ use ambient_std::{
 };
 use ambient_ui::{
     docking, fit_horizontal, height, margin, use_interval, width, Borders, Button, ButtonStyle, Dock, Docking, Editor, Fit, FlowColumn,
-    FlowRow, Rectangle, StylesExt, Text, Tooltip, UIBase, UIExt2, STREET,
+    FlowRow, Rectangle, StylesExt, Text, Tooltip, UIBase, UIExt, STREET,
 };
 use glam::{vec3, vec4, Vec4};
 use itertools::Itertools;

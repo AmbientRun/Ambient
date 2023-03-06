@@ -4,7 +4,7 @@ use ambient_core::{asset_cache, camera::active_camera, runtime};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_gpu::std_assets::PixelTextureViewKey;
 use ambient_std::{asset_cache::SyncAssetKeyExt, color::Color};
-use ambient_ui::{FlowColumn, Image, Text, UIExt2};
+use ambient_ui::{FlowColumn, Image, Text, UIExt};
 
 #[derive(Debug, Clone)]
 struct Example;

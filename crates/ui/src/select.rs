@@ -1,16 +1,15 @@
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_std::Cb;
 use closure::closure;
-use winit::event::ElementState;
 
-use super::{Button, ButtonStyle, FlowColumn, FlowRow, Text, };
+use super::{Button, ButtonStyle, FlowColumn, FlowRow, Text};
 use crate::{
     border_radius,
     layout::{margin, Borders},
     padding, tooltip_background_color, Corners, Dropdown, SMALL_ROUNDING, STREET,
 };
 use ambient_input::event_mouse_input;
-use ambient_ui_components::UIExt2;
+use ambient_ui_components::UIExt;
 
 #[derive(Debug, Clone)]
 pub struct DropdownSelect {
@@ -26,8 +25,8 @@ impl ElementComponent for DropdownSelect {
         hooks.use_world_event({
             let set_show = set_show.clone();
             move |_world, event| {
-                if let Some(event) = event.get_ref(event_mouse_input()) {
-                    if show && event.state == ElementState::Released {
+                if let Some(pressed) = event.get(event_mouse_input()) {
+                    if show && !pressed {
                         set_show(false);
                     }
                 }
