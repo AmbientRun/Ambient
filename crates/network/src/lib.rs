@@ -359,7 +359,7 @@ pub fn create_client_endpoint_random_port() -> Option<Endpoint> {
             let crypto = rustls::ClientConfig::builder().with_safe_defaults().with_root_certificates(roots).with_no_client_auth();
             let mut transport = TransportConfig::default();
             transport.keep_alive_interval(Some(Duration::from_secs_f32(1.)));
-            if std::env::var("DIMS_DISABLE_TIMEOUT").is_ok() {
+            if std::env::var("AMBIENT_DISABLE_TIMEOUT").is_ok() {
                 transport.max_idle_timeout(None);
             } else {
                 transport.max_idle_timeout(Some(Duration::from_secs_f32(60.).try_into().unwrap()));
@@ -379,7 +379,7 @@ fn create_server(server_addr: SocketAddr) -> anyhow::Result<(Endpoint, Incoming)
     let cert_key = PrivateKey(CERT_KEY.to_vec());
     let mut server_conf = ServerConfig::with_single_cert(vec![cert], cert_key)?;
     let mut transport = TransportConfig::default();
-    if std::env::var("DIMS_DISABLE_TIMEOUT").is_ok() {
+    if std::env::var("AMBIENT_DISABLE_TIMEOUT").is_ok() {
         transport.max_idle_timeout(None);
     } else {
         transport.max_idle_timeout(Some(Duration::from_secs_f32(60.).try_into()?));

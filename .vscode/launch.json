@@ -16,7 +16,7 @@
             },
             "env": {
                 "RUST_LOG": "info,wgpu=warn,naga=warn,quinn=warn,sentry=debug,sentry-anyhow=debug,sentry-core=debug,fbxcel=error",
-                "DIMS_DISABLE_TIMEOUT": "true"
+                "AMBIENT_DISABLE_TIMEOUT": "true"
             },
             "args": [
                 "run",
@@ -42,7 +42,7 @@
             },
             "env": {
                 "RUST_LOG": "info,wgpu=warn,naga=warn,quinn=warn,sentry=debug,sentry-anyhow=debug,sentry-core=debug,fbxcel=error",
-                "DIMS_DISABLE_TIMEOUT": "true"
+                "AMBIENT_DISABLE_TIMEOUT": "true"
             },
             "args": [
                 "run",
@@ -70,7 +70,7 @@
             },
             "env": {
                 "RUST_LOG": "info,wgpu=warn,naga=warn,quinn=warn,sentry=debug,sentry-anyhow=debug,sentry-core=debug,fbxcel=error",
-                "DIMS_DISABLE_TIMEOUT": "true"
+                "AMBIENT_DISABLE_TIMEOUT": "true"
             },
             "args": [],
             "cwd": "${workspaceFolder}",
