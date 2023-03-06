@@ -21,7 +21,7 @@ pub struct Manifest {
     #[serde(default)]
     pub components: HashMap<IdentifierPathBuf, NamespaceOrComponent>,
     #[serde(default)]
-    pub concepts: HashMap<Identifier, Concept>,
+    pub concepts: HashMap<IdentifierPathBuf, NamespaceOrConcept>,
 }
 impl Manifest {
     pub fn parse(manifest: &str) -> Result<Self, toml::de::Error> {
@@ -38,7 +38,7 @@ impl Manifest {
         self.components
             .iter()
             .filter_map(|(id, component)| match component {
-                NamespaceOrComponent::Component(c) => Some((id, c)),
+                NamespaceOrComponent::Other(c) => Some((id, c)),
                 NamespaceOrComponent::Namespace(_) => None,
             })
             .map(|(id, component)| {
@@ -69,25 +69,33 @@ pub struct Project {
 }
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]
-#[serde(untagged)]
-pub enum NamespaceOrComponent {
-    Component(Component),
-    Namespace(Namespace),
-}
-impl From<Component> for NamespaceOrComponent {
-    fn from(value: Component) -> Self {
-        NamespaceOrComponent::Component(value)
-    }
-}
-
-#[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct Namespace {
     pub name: String,
     pub description: String,
 }
-impl From<Namespace> for NamespaceOrComponent {
+
+#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[serde(untagged)]
+pub enum NamespaceOr<T> {
+    Other(T),
+    Namespace(Namespace),
+}
+
+pub type NamespaceOrComponent = NamespaceOr<Component>;
+pub type NamespaceOrConcept = NamespaceOr<Concept>;
+impl<T> From<Namespace> for NamespaceOr<T> {
     fn from(value: Namespace) -> Self {
-        NamespaceOrComponent::Namespace(value)
+        Self::Namespace(value)
+    }
+}
+impl From<Component> for NamespaceOr<Component> {
+    fn from(value: Component) -> Self {
+        Self::Other(value)
+    }
+}
+impl From<Concept> for NamespaceOr<Concept> {
+    fn from(value: Concept) -> Self {
+        Self::Other(value)
     }
 }
 
@@ -138,7 +146,7 @@ pub struct Concept {
     pub name: String,
     pub description: String,
     #[serde(default)]
-    pub extends: Vec<Identifier>,
+    pub extends: Vec<IdentifierPathBuf>,
     pub components: HashMap<IdentifierPathBuf, toml::Value>,
 }
 

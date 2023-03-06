@@ -6,8 +6,8 @@ use ambient_ecs::{components, query, SystemGroup};
 use ambient_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
 use glam::vec3;
 
-use crate::{app_background_color, padding, Borders, Dock, UIBase, UIExt, WindowSized};
-use ambient_ui_components::UIExt2;
+use crate::{app_background_color, padding, Borders, Dock, UIBase, WindowSized};
+use ambient_ui_components::UIExt;
 
 components!("ui", {
     screen: (),

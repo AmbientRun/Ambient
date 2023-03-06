@@ -1,8 +1,9 @@
 use std::sync::Arc;
 
 use ambient_core::{
-    asset_cache, get_mouse_clip_space_position, runtime,
+    asset_cache, runtime,
     transform::{scale, translation},
+    window::get_mouse_clip_space_position,
 };
 use ambient_decals::DecalShaderKey;
 use ambient_ecs::{query, ArchetypeFilter};
@@ -11,7 +12,7 @@ use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::{BindGroupDesc, ShaderModule},
 };
-use ambient_input::{event_mouse_input, ElementState};
+use ambient_input::{event_mouse_input, mouse_button, mouse_button_from_u32};
 use ambient_intent::client_push_intent;
 use ambient_network::client::GameClient;
 use ambient_physics::{
@@ -91,8 +92,8 @@ impl ElementComponent for TerrainRaycastPicker {
         hooks.use_world_event({
             let set_mousedown = set_mousedown.clone();
             move |_world, event| {
-                if let Some(input) = event.get_ref(event_mouse_input()) {
-                    if input.state == ElementState::Released && input.button == action_button {
+                if let Some(pressed) = event.get(event_mouse_input()) {
+                    if !pressed && mouse_button_from_u32(event.get(mouse_button()).unwrap()) == action_button {
                         set_mousedown(None);
                     }
                 }
@@ -164,7 +165,7 @@ impl ElementComponent for TerrainRaycastPicker {
             .on_mouse_enter(closure!(clone set_mouseover, |_, _| { set_mouseover(true) }))
             .on_mouse_leave(closure!(clone set_mouseover, |_, _| { set_mouseover(false); }))
             .on_mouse_down(closure!(clone set_mousedown, |_, _, button| {
-                if mouseover && button == action_button {
+                if mouseover && button == action_button.into() {
                     set_mousedown(Some(target_position.unwrap_or_default()));
                 }
             }))

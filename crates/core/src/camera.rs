@@ -12,7 +12,7 @@ use ordered_float::OrderedFloat;
 
 use crate::{
     transform::{inv_local_to_world, local_to_world},
-    window_logical_size, window_physical_size,
+    window::{window_logical_size, window_physical_size},
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -59,9 +59,9 @@ components!("camera", {
     @[
         Networked, Store, Debuggable,
         Name["Orthographic from window"],
-        Description["The bounds of this orthographic camera will be updated to match the window automatically."]
+        Description["The bounds of this orthographic camera will be updated to match the window automatically. Should point to an entity with a `window_logical_size` component."]
     ]
-    orthographic_from_window: (),
+    orthographic_from_window: EntityId,
 
 
     // Perspective
@@ -106,9 +106,9 @@ components!("camera", {
     @[
         Networked, Store, Debuggable,
         Name["Aspect ratio from window"],
-        Description["If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window."]
+        Description["If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window. Should point to an entity with a `window_physical_size` component."]
     ]
-    aspect_ratio_from_window: (),
+    aspect_ratio_from_window: EntityId,
     @[
         Networked, Store, Debuggable,
         Name["Projection"],
@@ -205,10 +205,10 @@ pub fn camera_systems() -> SystemGroup {
     SystemGroup::new(
         "camera_systems",
         vec![
-            query(aspect_ratio()).incl(aspect_ratio_from_window()).to_system(|q, world, qs, _| {
-                let window_size = world.resource(window_physical_size());
-                let aspect_ratio = window_size.x as f32 / window_size.y as f32;
-                for (id, ratio) in q.collect_cloned(world, qs) {
+            query((aspect_ratio_from_window(), aspect_ratio())).to_system(|q, world, qs, _| {
+                for (id, (window, ratio)) in q.collect_cloned(world, qs) {
+                    let window_size = world.get(window, window_physical_size()).unwrap_or_default();
+                    let aspect_ratio = window_size.x as f32 / window_size.y as f32;
                     if aspect_ratio != ratio {
                         world.set(id, self::aspect_ratio(), aspect_ratio).unwrap();
                     }
@@ -226,16 +226,15 @@ pub fn camera_systems() -> SystemGroup {
                     *projection = perspective_reverse(fovy, aspect_ratio, near, far);
                 }
             }),
-            query(())
-                .incl(orthographic_from_window())
+            query(orthographic_from_window())
                 .incl(orthographic_left())
                 .incl(orthographic_right())
                 .incl(orthographic_top())
                 .incl(orthographic_bottom())
                 .incl(local_to_world())
                 .to_system(|q, world, qs, _| {
-                    let window_size = world.resource(window_logical_size()).as_vec2();
-                    for (id, _) in q.collect_cloned(world, qs) {
+                    for (id, window) in q.collect_cloned(world, qs) {
+                        let window_size = world.get(window, window_logical_size()).unwrap_or_default().as_vec2();
                         world.set_if_changed(id, local_to_world(), Mat4::from_translation((window_size / 2.).extend(0.))).unwrap();
                         world.set_if_changed(id, orthographic_left(), -window_size.x / 2.).unwrap();
                         world.set_if_changed(id, orthographic_right(), window_size.x / 2.).unwrap();

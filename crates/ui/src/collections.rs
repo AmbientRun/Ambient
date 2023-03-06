@@ -9,9 +9,9 @@ use indexmap::IndexMap;
 use itertools::Itertools;
 use winit::event::{ElementState, VirtualKeyCode};
 
-use super::{Button, ButtonStyle, Dropdown, Editor, EditorOpts, FlowColumn, FlowRow, Focus, UIBase, UIExt};
+use super::{Button, ButtonStyle, Dropdown, Editor, EditorOpts, FlowColumn, FlowRow, Focus, UIBase};
 use crate::{layout::*, StylesExt, COLLECTION_ADD_ICON, COLLECTION_DELETE_ICON, MOVE_DOWN_ICON, MOVE_UP_ICON, STREET};
-use ambient_ui_components::UIExt2;
+use ambient_ui_components::UIExt;
 
 #[element_component]
 pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static>(
@@ -149,8 +149,8 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
         hooks.use_world_event({
             let set_add_action = set_add_action.clone();
             move |_world, event| {
-                if let Some(event) = event.get_ref(event_mouse_input()) {
-                    if event.state == ElementState::Pressed && has_on_change {
+                if let Some(pressed) = event.get(event_mouse_input()) {
+                    if pressed && has_on_change {
                         set_add_action(false);
                     }
                 }

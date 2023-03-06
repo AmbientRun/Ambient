@@ -193,11 +193,9 @@ impl SyncAssetKey<Arc<RendererShader>> for CloudShaderKey {
             shader: Shader::from_modules(
                 &assets,
                 id.clone(),
-                [
-                    &get_overlay_module(&assets, self.shadow_cascades),
-                    &get_scatter_module(),
-                    &ShaderModule::new("Clouds", shader, vec![layout.into()]),
-                ],
+                get_overlay_modules(&assets, self.shadow_cascades)
+                    .iter()
+                    .chain([&get_scatter_module(), &ShaderModule::new("Clouds", shader, vec![layout.into()])]),
             ),
             id,
             vs_main: "vs_main".to_string(),

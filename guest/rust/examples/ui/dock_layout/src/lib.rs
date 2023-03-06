@@ -7,6 +7,7 @@ use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
     components::{
         camera::orthographic_from_window,
+        player::{player, user_id},
         transform::translation,
         ui::{docking_bottom, docking_left, fit_horizontal_none, fit_vertical_none, height, width},
     },
@@ -15,7 +16,7 @@ use ambient_guest_bridge::{
 use ambient_ui_components::{
     layout::{Dock, FlowRow},
     text::Text,
-    UIExt2,
+    UIExt,
 };
 
 #[element_component]
@@ -54,12 +55,18 @@ fn App(_hooks: &mut Hooks) -> Element {
 
 #[main]
 pub async fn main() -> EventResult {
-    Entity::new()
-        .with_merge(make_orthographic_camera())
-        .with_default(orthographic_from_window())
-        .with_default(player_camera())
-        .with_default(ui_scene())
-        .spawn();
+    spawn_query((player(), user_id())).bind(move |players| {
+        for (id, _) in players {
+            entity::add_components(
+                id,
+                Entity::new()
+                    .with_merge(make_orthographic_camera())
+                    .with(orthographic_from_window(), id)
+                    .with_default(player_camera())
+                    .with_default(ui_scene()),
+            );
+        }
+    });
 
     let mut tree = App.el().spawn_tree();
     on(ambient_api::event::FRAME, move |_| {

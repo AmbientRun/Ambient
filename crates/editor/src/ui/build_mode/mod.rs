@@ -1,12 +1,13 @@
 use std::{sync::Arc, time::Duration};
 
-use ambient_core::{asset_cache, async_ecs::async_run, get_mouse_clip_space_position, runtime};
+use ambient_core::{asset_cache, async_ecs::async_run, runtime, window::get_mouse_clip_space_position};
 use ambient_ecs::{Component, ComponentValue, EntityId};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_input::{event_keyboard_input, MouseButton};
+use ambient_input::event_keyboard_input;
 use ambient_intent::{client_push_intent, rpc_undo_head_exact};
 use ambient_network::client::GameClient;
 use ambient_sys::task::RuntimeHandle;
+use ambient_ui::MouseButton;
 use derive_more::Display;
 use futures_signals::signal::SignalExt;
 use itertools::Itertools;

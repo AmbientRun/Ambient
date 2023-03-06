@@ -11,24 +11,15 @@ use ambient_guest_bridge::{
     },
     ecs::World,
 };
-use ambient_ui_components::text::Text;
+use ambient_ui_components::{text::Text, UIExt};
 
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
     let (count, set_count) = hooks.use_state(0);
-    hooks.use_spawn(move |_| {
-        run_async(async move {
-            let mut count = 0;
-            loop {
-                sleep(0.5).await;
-                count += 1;
-                set_count(count);
-            }
-        });
-        Box::new(|_| {})
-    });
-    println!("{count}");
     Text::el(format!("Hello world: {count}"))
+        .with_clickarea()
+        .on_mouse_down(move |_, _, _| set_count(count + 1))
+        .el()
 }
 
 #[main]

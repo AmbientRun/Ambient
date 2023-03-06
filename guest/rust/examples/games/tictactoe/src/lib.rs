@@ -2,6 +2,7 @@ use ambient_api::{
     components::core::{
         self,
         app::main_scene,
+        camera::aspect_ratio_from_window,
         game_objects::player_camera,
         player::player,
         primitives::cube,
@@ -18,6 +19,7 @@ use palette::{FromColor, Hsl, Srgb};
 pub async fn main() -> EventResult {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
+        .with(aspect_ratio_from_window(), EntityId::resources())
         .with_default(player_camera())
         .with_default(main_scene())
         .with(translation(), vec3(3., 3., 2.5))

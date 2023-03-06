@@ -4,7 +4,7 @@ use ambient_std::color::Color;
 use glam::vec4;
 
 use crate::{align_vertical, border_radius, font_size, padding, space_between_items, Align, Borders, Corners};
-use ambient_ui_components::UIExt2;
+use ambient_ui_components::UIExt;
 
 pub fn primary_color() -> Color {
     Color::hex("DE0B5D").unwrap()

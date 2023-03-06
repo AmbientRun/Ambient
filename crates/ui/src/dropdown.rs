@@ -3,13 +3,13 @@ use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use closure::closure;
 use glam::vec3;
 
-use super::{FlowColumn, UIBase, UIExt};
+use super::{FlowColumn, UIBase};
 use crate::{
     border_radius,
     layout::{margin, Borders},
     padding, tooltip_background_color, Corners, SMALL_ROUNDING, STREET,
 };
-use ambient_ui_components::UIExt2;
+use ambient_ui_components::UIExt;
 
 #[element_component]
 pub fn Dropdown(_: &mut Hooks, content: Element, dropdown: Element, show: bool) -> Element {

@@ -1,24 +1,27 @@
 use std::{self, f32::consts::E, fmt::Debug, hash::Hash, str::FromStr, time::Duration};
 
 use ambient_core::{
-    mouse_position,
     transform::{get_world_position, translation},
     window::WindowCtl,
-    window_ctl,
+    window::{mouse_position, window_ctl},
 };
 use ambient_ecs::{ComponentValue, EntityId};
 use ambient_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_input::{event_mouse_input, event_mouse_motion};
+use ambient_renderer::color;
+use ambient_std::time::parse_duration;
 use ambient_std::{
     cb,
     math::{interpolate, interpolate_clamped},
     Cb,
 };
+use ambient_ui_components::UIExt;
+use convert_case::{Case, Casing};
 use glam::*;
 use itertools::Itertools;
-use winit::{event::ElementState, window::CursorIcon};
+use winit::window::CursorIcon;
 
-use super::{Editor, EditorOpts, FlowColumn, FlowRow, Focus, Text, UIBase, UIExt};
+use super::{Editor, EditorOpts, FlowColumn, FlowRow, Focus, Text, UIBase};
 use crate::{
     background_color, border_radius, layout::*, primary_color, text_input::TextInput, Button, ButtonStyle, ChangeCb, Corners,
     FontAwesomeIcon, Rectangle, STREET,
@@ -265,8 +268,8 @@ impl ElementComponent for Slider {
             let block_id = block_id.clone();
             move |world, event| {
                 if let Some(on_change_factor) = &on_change_factor {
-                    if let Some(event) = event.get_ref(event_mouse_input()) {
-                        if event.state == ElementState::Released {
+                    if let Some(pressed) = event.get(event_mouse_input()) {
+                        if !pressed {
                             *dragging.lock() = false;
                         }
                     }
@@ -385,10 +388,6 @@ impl From<&EditableDuration> for Duration {
         v.dur
     }
 }
-use ambient_renderer::color;
-use ambient_std::time::parse_duration;
-use ambient_ui_components::UIExt2;
-use convert_case::{Case, Casing};
 
 impl From<String> for EditableDuration {
     fn from(s: String) -> Self {
