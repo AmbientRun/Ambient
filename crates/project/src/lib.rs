@@ -1,7 +1,8 @@
 use std::{collections::HashMap, fmt::Display};
 
 use ambient_ecs::{
-    components, ExternalComponentAttributes, ExternalComponentDesc, ExternalComponentFlagAttributes, Networked, PrimitiveComponentType, Store
+    components, ExternalComponentAttributes, ExternalComponentDesc, ExternalComponentFlagAttributes, Networked, PrimitiveComponentType,
+    Store,
 };
 use serde::{de::Visitor, Deserialize, Serialize};
 use thiserror::Error;
@@ -259,10 +260,16 @@ impl Version {
         let mut segments = id.split('.');
         let major = segments.next().ok_or(VersionError::TooFewComponents)?.parse()?;
         let minor = segments.next().map(|s| s.parse()).transpose()?.unwrap_or(0);
-        let patch = segments.next().map(|s| s.parse()).transpose()?.unwrap_or(0);
-        let suffix = match segments.next() {
-            None => None,
-            Some(suf) => Some(suf.to_string()),
+        // We handle patch separately as it may have a suffix.
+        let (patch, suffix) = if let Some(patch) = segments.next() {
+            let (patch, suffix) = match patch.split_once('-') {
+                Some((patch, suffix)) => (patch, Some(suffix)),
+                None => (patch, None),
+            };
+
+            (patch.parse()?, suffix.map(|s| s.to_string()))
+        } else {
+            (0, None)
         };
 
         if segments.next().is_some() {
