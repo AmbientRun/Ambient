@@ -149,8 +149,8 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
         hooks.use_world_event({
             let set_add_action = set_add_action.clone();
             move |_world, event| {
-                if let Some(event) = event.get_ref(event_mouse_input()) {
-                    if event.state == ElementState::Pressed && has_on_change {
+                if let Some(pressed) = event.get(event_mouse_input()) {
+                    if pressed && has_on_change {
                         set_add_action(false);
                     }
                 }

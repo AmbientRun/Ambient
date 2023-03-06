@@ -14,7 +14,7 @@ use ambient_element::{
     define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent, ElementComponentExt, Hooks,
 };
 use ambient_input::{
-    event_focus_change, event_mouse_input, event_mouse_motion, event_mouse_wheel,
+    event_focus_change, event_mouse_input, event_mouse_motion, event_mouse_wheel, mouse_button,
     picking::{mouse_over, mouse_pickable},
 };
 pub use ambient_std::{cb, Cb};
@@ -22,7 +22,7 @@ use ambient_std::{color::Color, shapes::AABB};
 use glam::*;
 use parking_lot::Mutex;
 use winit::{
-    event::{ElementState, ModifiersState, MouseButton, MouseScrollDelta},
+    event::{ModifiersState, MouseScrollDelta},
     window::CursorGrabMode,
 };
 
@@ -214,13 +214,65 @@ impl UIExt for Element {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MouseInput {
+    Pressed,
+    Released,
+}
+impl From<bool> for MouseInput {
+    fn from(value: bool) -> Self {
+        if value {
+            Self::Pressed
+        } else {
+            Self::Released
+        }
+    }
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MouseButton {
+    Left,
+    Right,
+    Middle,
+    Other(u32),
+}
+impl From<u32> for MouseButton {
+    fn from(value: u32) -> Self {
+        match value {
+            0 => Self::Left,
+            1 => Self::Right,
+            2 => Self::Middle,
+            x => Self::Other(x),
+        }
+    }
+}
+impl From<winit::event::MouseButton> for MouseButton {
+    fn from(value: winit::event::MouseButton) -> Self {
+        match value {
+            ambient_input::MouseButton::Left => Self::Left,
+            ambient_input::MouseButton::Right => Self::Right,
+            ambient_input::MouseButton::Middle => Self::Middle,
+            ambient_input::MouseButton::Other(x) => Self::Other(x as _),
+        }
+    }
+}
+impl From<MouseButton> for winit::event::MouseButton {
+    fn from(value: MouseButton) -> Self {
+        match value {
+            MouseButton::Left => Self::Left,
+            MouseButton::Right => Self::Right,
+            MouseButton::Middle => Self::Middle,
+            MouseButton::Other(x) => Self::Other(x as _),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct ClickArea {
     pub inner: Element,
     pub on_mouse_enter: Vec<Cb<dyn Fn(&mut World, EntityId) + Sync + Send>>,
     pub on_mouse_leave: Vec<Cb<dyn Fn(&mut World, EntityId) + Sync + Send>>,
     pub on_mouse_hover: Vec<Cb<dyn Fn(&mut World, EntityId) + Sync + Send>>,
-    pub on_mouse_input: Vec<Cb<dyn Fn(&mut World, EntityId, ElementState, MouseButton) + Sync + Send>>,
+    pub on_mouse_input: Vec<Cb<dyn Fn(&mut World, EntityId, MouseInput, MouseButton) + Sync + Send>>,
     pub on_mouse_wheel: Vec<Cb<dyn Fn(&mut World, EntityId, MouseScrollDelta) + Sync + Send>>,
 }
 impl ClickArea {
@@ -246,7 +298,7 @@ impl ClickArea {
         self.on_mouse_leave.push(cb(handle));
         self
     }
-    pub fn on_mouse_input<F: Fn(&mut World, EntityId, ElementState, MouseButton) + Sync + Send + 'static>(mut self, handle: F) -> Self {
+    pub fn on_mouse_input<F: Fn(&mut World, EntityId, MouseInput, MouseButton) + Sync + Send + 'static>(mut self, handle: F) -> Self {
         self.on_mouse_input.push(cb(handle));
         self
     }
@@ -257,14 +309,14 @@ impl ClickArea {
 
     pub fn on_mouse_down<F: Fn(&mut World, EntityId, MouseButton) + Sync + Send + 'static>(self, handle: F) -> Self {
         self.on_mouse_input(move |world, id, state, button| {
-            if state == ElementState::Pressed {
+            if state == MouseInput::Pressed {
                 handle(world, id, button)
             }
         })
     }
     pub fn on_mouse_up<F: Fn(&mut World, EntityId, MouseButton) + Sync + Send + 'static>(self, handle: F) -> Self {
         self.on_mouse_input(move |world, id, state, button| {
-            if state == ElementState::Released {
+            if state == MouseInput::Released {
                 handle(world, id, button)
             }
         })
@@ -306,10 +358,10 @@ impl ElementComponent for ClickArea {
             let is_mouse_over = is_mouse_over;
             move |world, event| {
                 if let Some(id) = *id.lock() {
-                    if let Some(event) = event.get_ref(event_mouse_input()) {
+                    if let Some(pressed) = event.get(event_mouse_input()) {
                         if *is_mouse_over.lock() {
                             for handler in &on_mouse_input {
-                                handler(world, id, event.state, event.button);
+                                handler(world, id, pressed.into(), event.get(mouse_button()).unwrap().into());
                             }
                         }
                     } else if let Some(event) = event.get_ref(event_mouse_wheel()) {

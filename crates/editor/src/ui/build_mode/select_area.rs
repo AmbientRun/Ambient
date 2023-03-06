@@ -46,8 +46,8 @@ impl ElementComponent for SelectArea {
                 let scl = *world.resource(window_scale_factor()) as f32;
                 if let Some(position) = event.get(event_mouse_motion()) {
                     set_mouse_pos(position / scl);
-                } else if let Some(event) = event.get_ref(event_mouse_input()) {
-                    if event.state == ElementState::Released {
+                } else if let Some(pressed) = event.get_ref(event_mouse_input()) {
+                    if !pressed {
                         let mut is_clicking = is_clicking.lock();
                         if !*is_clicking {
                             return;
@@ -112,7 +112,7 @@ impl ElementComponent for SelectArea {
             .el()
             .with_clickarea()
             .on_mouse_down(closure!(clone set_dragging, clone is_clicking, |world, id, button| {
-                if button != MouseButton::Left {
+                if button != ambient_ui::MouseButton::Left {
                     return;
                 }
 

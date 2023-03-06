@@ -225,12 +225,12 @@ pub fn Button(
         let on_invoked = on_invoked.clone();
         let set_is_working = set_is_working.clone();
         move |world, event| {
-            if let Some(event) = event.get_ref(event_mouse_input()) {
-                if event.state == ElementState::Pressed && hover {
+            if let Some(pressed) = event.get(event_mouse_input()) {
+                if pressed && hover {
                     set_is_pressed(true);
                     is_pressed_immediate.store(true, Ordering::SeqCst);
                 }
-                if event.state == ElementState::Released {
+                if !pressed {
                     let is_pressed = is_pressed_immediate.load(Ordering::SeqCst);
                     if hover && !disabled && is_pressed {
                         on_invoked.invoke(world, set_is_working.clone());

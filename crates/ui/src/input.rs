@@ -16,7 +16,7 @@ use ambient_std::{
 };
 use glam::*;
 use itertools::Itertools;
-use winit::{event::ElementState, window::CursorIcon};
+use winit::window::CursorIcon;
 
 use super::{Editor, EditorOpts, FlowColumn, FlowRow, Focus, Text, UIBase, UIExt};
 use crate::{
@@ -265,8 +265,8 @@ impl ElementComponent for Slider {
             let block_id = block_id.clone();
             move |world, event| {
                 if let Some(on_change_factor) = &on_change_factor {
-                    if let Some(event) = event.get_ref(event_mouse_input()) {
-                        if event.state == ElementState::Released {
+                    if let Some(pressed) = event.get(event_mouse_input()) {
+                        if !pressed {
                             *dragging.lock() = false;
                         }
                     }
