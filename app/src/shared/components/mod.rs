@@ -1,7 +1,5 @@
 use ambient_ecs::Concept;
 
-use crate::shared;
-
 pub(crate) fn init() -> anyhow::Result<()> {
     ambient_app::init_all_components();
     ambient_network::init_all_components();

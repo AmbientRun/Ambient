@@ -22,7 +22,7 @@ fn App(_hooks: &mut Hooks) -> Element {
     let background = |e| {
         FlowRow(vec![e])
             .el()
-            .with_background(vec4(1., 1., 1., 0.02).into())
+            .with_background(vec4(1., 1., 1., 0.02))
             .set_default(fit_vertical_none())
             .set_default(fit_horizontal_none())
     };
@@ -41,11 +41,11 @@ fn App(_hooks: &mut Hooks) -> Element {
             .el()
             .with_padding_even(10.)
             .set(height(), 70.)
-            .with_background(vec4(1., 1., 1., 0.02).into()),
+            .with_background(vec4(1., 1., 1., 0.02)),
         background(Text::el("Fill remainder")).with_margin_even(30.),
     ])
     .el()
-    .with_background(vec4(1., 1., 1., 0.02).into())
+    .with_background(vec4(1., 1., 1., 0.02))
     .set(translation(), vec3(10., 10., 0.))
     .set(width(), 500.)
     .set(height(), 500.)
