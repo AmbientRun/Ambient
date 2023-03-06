@@ -1,6 +1,7 @@
 use ambient_api::{
     components::core::{
         app::main_scene,
+        camera::aspect_ratio_from_window,
         game_objects::player_camera,
         physics::{
             character_controller_height, character_controller_radius, physics_controlled,
@@ -40,6 +41,7 @@ pub async fn main() -> EventResult {
         for (id, (_, user)) in players {
             let camera = Entity::new()
                 .with_merge(make_perspective_infinite_reverse_camera())
+                .with(aspect_ratio_from_window(), EntityId::resources())
                 .with_default(player_camera())
                 .with_default(main_scene())
                 .with(user_id(), user)
@@ -84,7 +86,7 @@ pub async fn main() -> EventResult {
                 }
                 if pressed.keys.contains(&KeyCode::D) {
                     displace += right * speed;
-                } 
+                }
                 displace.z = -0.1;
                 physics::move_character(player_id, displace, 0.01, frametime());
 

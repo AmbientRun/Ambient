@@ -2,22 +2,20 @@ use std::{io::Write, sync::Arc};
 
 use ambient_audio::AudioListener;
 use ambient_core::{
-    camera::{active_camera, aspect_ratio_from_window},
+    camera::active_camera,
+    player::{get_player_by_user_id, local_user_id, player, user_id},
     runtime,
+    window::{window_logical_size, window_physical_size},
 };
-use ambient_ecs::{query, query_mut, Entity, SystemGroup};
+use ambient_ecs::{query, query_mut, Entity, SystemGroup, WorldDiff};
 use ambient_element::{element_component, Element, Hooks};
 use ambient_input::{
-    event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, player_prev_raw_input,
-    player_raw_input, ElementState, MouseScrollDelta, PlayerRawInput,
+    event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels,
+    mouse_button, mouse_button_from_u32, player_prev_raw_input, player_raw_input, ElementState, PlayerRawInput,
 };
-use ambient_network::{
-    client::game_client,
-    get_player_by_user_id,
-    player::{local_user_id, player, user_id},
-    DatagramHandlers,
-};
+use ambient_network::{client::game_client, log_network_result, rpc::rpc_world_diff, DatagramHandlers};
 use ambient_std::unwrap_log_err;
+
 use ambient_world_audio::audio_listener;
 use byteorder::{BigEndian, WriteBytesExt};
 pub use components::game_objects::player_camera;
@@ -106,13 +104,39 @@ pub fn client_systems() -> SystemGroup {
                         id,
                         Entity::new()
                             .with(active_camera(), 0.)
-                            .with(audio_listener(), Arc::new(Mutex::new(AudioListener::new(Mat4::IDENTITY, Vec3::X * 0.2))))
-                            .with(aspect_ratio_from_window(), ()),
+                            .with(audio_listener(), Arc::new(Mutex::new(AudioListener::new(Mat4::IDENTITY, Vec3::X * 0.2)))),
                     )
                     .unwrap();
             }
         })],
     )
+}
+
+#[element_component]
+pub fn PlayerDataUpload(hooks: &mut Hooks) -> Element {
+    hooks.use_frame(move |world| {
+        if let Some(Some(gc)) = world.resource_opt(game_client()).cloned() {
+            let state = gc.game_state.lock();
+            if let Some(player_id) = get_player_by_user_id(&state.world, &gc.user_id) {
+                let physical_size = *world.resource(window_physical_size());
+                let logical_size = *world.resource(window_logical_size());
+                let mut diff = WorldDiff::new();
+                if state.world.get(player_id, window_physical_size()) != Ok(physical_size) {
+                    diff = diff.add_component(player_id, window_physical_size(), physical_size);
+                }
+                if state.world.get(player_id, window_logical_size()) != Ok(logical_size) {
+                    diff = diff.add_component(player_id, window_logical_size(), logical_size);
+                }
+                if !diff.is_empty() {
+                    drop(state);
+                    world.resource(runtime()).spawn(async move {
+                        log_network_result!(gc.rpc(rpc_world_diff, diff).await);
+                    });
+                }
+            }
+        }
+    });
+    Element::new()
 }
 
 #[element_component]
@@ -137,22 +161,19 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
                         }
                     }
                 }
-            } else if let Some(event) = event.get_ref(event_mouse_input()) {
+            } else if let Some(pressed) = event.get(event_mouse_input()) {
                 let mut lock = input.lock();
-                match event.state {
-                    ElementState::Pressed => {
-                        lock.mouse_buttons.insert(event.button);
-                    }
-                    ElementState::Released => {
-                        lock.mouse_buttons.remove(&event.button);
-                    }
+                if pressed {
+                    lock.mouse_buttons.insert(mouse_button_from_u32(event.get(mouse_button()).unwrap()));
+                } else {
+                    lock.mouse_buttons.remove(&mouse_button_from_u32(event.get(mouse_button()).unwrap()));
                 }
             } else if let Some(delta) = event.get(event_mouse_motion()) {
                 input.lock().mouse_position += delta;
             } else if let Some(delta) = event.get(event_mouse_wheel()) {
-                input.lock().mouse_wheel += match delta {
-                    MouseScrollDelta::LineDelta(_, y) => y * PIXELS_PER_LINE,
-                    MouseScrollDelta::PixelDelta(pos) => pos.y as f32,
+                input.lock().mouse_wheel += match event.get(event_mouse_wheel_pixels()).unwrap() {
+                    false => delta.y * PIXELS_PER_LINE,
+                    true => delta.y,
                 };
             } else if let Some(focus) = event.get(event_focus_change()) {
                 set_has_focus(focus);

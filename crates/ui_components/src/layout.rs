@@ -1,14 +1,19 @@
 use crate::{use_window_logical_resolution, UIBase};
-use ambient_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{
+    define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent, ElementComponentExt, Hooks,
+};
 use ambient_guest_bridge::components::{
     ecs::children,
-    transform::local_to_parent,
+    transform::{local_to_parent, translation},
     ui::{
         align_horizontal_begin, align_horizontal_center, align_vertical_begin, align_vertical_center, fit_horizontal_children,
         fit_horizontal_none, fit_vertical_children, fit_vertical_none, height, is_book_file, layout_bookcase, layout_dock, layout_flow,
         orientation_horizontal, orientation_vertical, width,
     },
 };
+use cb::Cb;
+use glam::{vec2, vec3, Vec2};
+use itertools::Itertools;
 
 #[derive(Debug, Clone)]
 pub struct WindowSized(pub Vec<Element>);
@@ -124,4 +129,37 @@ impl ElementComponent for Centered {
         // .set(fit_horizontal(), Fit::None)
         // .set(fit_vertical(), Fit::None)
     }
+}
+
+#[element_component]
+pub fn FixedGrid(_: &mut Hooks, items: Vec<Element>, item_stride: Vec2, items_horizontal: usize) -> Element {
+    UIBase.el().children(
+        items
+            .into_iter()
+            .enumerate()
+            .map(|(i, item)| {
+                let x = i % items_horizontal;
+                let y = i / items_horizontal;
+                item.set(translation(), vec3(x as f32 * item_stride.x, y as f32 * item_stride.y, 0.))
+            })
+            .collect_vec(),
+    )
+}
+
+#[element_component]
+pub fn MeasureSize(hooks: &mut Hooks, inner: Element, on_change: Cb<dyn Fn(Vec2) + Sync + Send + 'static>) -> Element {
+    let (id, set_id) = hooks.use_state(None);
+    let (current, set_current) = hooks.use_state(Vec2::ZERO);
+    hooks.use_frame(move |world| {
+        if let Some(id) = id {
+            let width = world.get(id, width()).unwrap_or(0.);
+            let height = world.get(id, height()).unwrap_or(0.);
+            let next = vec2(width, height);
+            if current != next {
+                on_change(next);
+                set_current(next);
+            }
+        }
+    });
+    inner.on_spawned(move |_, id| set_id(Some(id)))
 }

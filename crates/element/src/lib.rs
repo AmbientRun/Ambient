@@ -157,19 +157,19 @@ impl Element {
         self.children = children;
         self
     }
-    pub fn spawner<F: Fn(&mut World, Entity) -> EntityId + ComponentValue + Sync + Send + 'static>(mut self, handler: F) -> Self {
+    pub fn spawner<F: Fn(&mut World, Entity) -> EntityId + Sync + Send + 'static>(mut self, handler: F) -> Self {
         self.config.spawner = Arc::new(handler);
         self
     }
-    pub fn despawner<F: Fn(&mut World, EntityId) + ComponentValue + Sync + Send + 'static>(mut self, handler: F) -> Self {
+    pub fn despawner<F: Fn(&mut World, EntityId) + Sync + Send + 'static>(mut self, handler: F) -> Self {
         self.config.despawner = Arc::new(handler);
         self
     }
-    pub fn on_spawned<F: Fn(&mut World, EntityId) + ComponentValue + Sync + Send + 'static>(mut self, handler: F) -> Self {
+    pub fn on_spawned<F: Fn(&mut World, EntityId) + Sync + Send + 'static>(mut self, handler: F) -> Self {
         self.config.on_spawned = Some(Arc::new(handler));
         self
     }
-    pub fn on_despawn<F: Fn(&mut World, EntityId) + ComponentValue + Sync + Send + 'static>(mut self, handler: F) -> Self {
+    pub fn on_despawn<F: Fn(&mut World, EntityId) + Sync + Send + 'static>(mut self, handler: F) -> Self {
         self.config.on_despawn = Some(Arc::new(handler));
         self
     }

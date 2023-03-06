@@ -6,7 +6,7 @@ use ambient_std::{
     include_file,
 };
 
-use super::{get_forward_module, MaterialShader, RendererShader};
+use super::{get_forward_modules, MaterialShader, RendererShader};
 
 pub struct StandardShaderKey {
     pub material_shader: Arc<MaterialShader>,
@@ -24,12 +24,9 @@ impl SyncAssetKey<Arc<RendererShader>> for StandardShaderKey {
         let shader = Shader::from_modules(
             &assets,
             id.clone(),
-            [
-                &get_forward_module(&assets, self.shadow_cascades),
-                &self.material_shader.shader,
-                &ShaderModule::new("StandardMaterial", include_file!("standard.wgsl"), vec![]),
-            ]
-            .into_iter(),
+            get_forward_modules(&assets, self.shadow_cascades)
+                .iter()
+                .chain([&self.material_shader.shader, &ShaderModule::new("StandardMaterial", include_file!("standard.wgsl"), vec![])]),
         );
 
         Arc::new(RendererShader {

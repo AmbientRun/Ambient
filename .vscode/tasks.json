@@ -9,7 +9,7 @@
                 "env": {
                     "RUST_LOG": "info,wgpu=warn,naga=warn,quinn=warn,sentry=debug,sentry-anyhow=debug,sentry-core=debug,fbxcel=error",
                     "NO_ELP_TIMEOUT": "true",
-                    "DIMS_DISABLE_TIMEOUT": "true",
+                    "AMBIENT_DISABLE_TIMEOUT": "true",
                     "RUST_BACKTRACE": "1"
                 },
                 "cwd": "${workspaceFolder}"
@@ -46,6 +46,19 @@
             ],
             "group": "build",
             "label": "rust: cargo clippy"
+        },
+        {
+            "type": "npm",
+            "script": "start",
+            "path": "www",
+            "problemMatcher": [],
+            "label": "npm: start - www",
+            "detail": "webpack-dev-server",
+            "options": {
+                "env": {
+                    "NODE_OPTIONS": "--openssl-legacy-provider"
+                }
+            },
         }
     ]
 }

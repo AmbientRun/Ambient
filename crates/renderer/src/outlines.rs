@@ -60,7 +60,7 @@ impl Outlines {
         let shader = Shader::from_modules(
             assets,
             "Outlines",
-            [&ShaderModule::new(
+            &[ShaderModule::new(
                 "Outlines",
                 include_file!("outlines.wgsl"),
                 vec![BindGroupDesc {

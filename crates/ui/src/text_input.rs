@@ -1,6 +1,6 @@
 use std::{self, time::Duration};
 
-use ambient_core::{transform::translation, window::WindowCtl, window_ctl};
+use ambient_core::{transform::translation, window::window_ctl, window::WindowCtl};
 use ambient_ecs::EntityId;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_input::{event_keyboard_input, event_received_character, KeyboardEvent};

@@ -1,6 +1,7 @@
 use ambient_api::{
     components::core::{
         app::main_scene,
+        camera::aspect_ratio_from_window,
         ecs::children,
         game_objects::player_camera,
         model::model_from_url,
@@ -116,6 +117,7 @@ pub async fn main() -> EventResult {
                 entity::add_component(player, player_camera_state(), camera_state);
 
                 make_perspective_infinite_reverse_camera()
+                    .with(aspect_ratio_from_window(), EntityId::resources())
                     .with(user_id(), player_user_id.clone())
                     .with(player_camera_state(), camera_state)
                     .with_default(player_camera())

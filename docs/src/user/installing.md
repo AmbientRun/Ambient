@@ -42,6 +42,10 @@ apt-get install -y \
     libfontconfig1-dev clang libasound2-dev ninja-build
 ```
 
+## Installing via asdf (Linux, Macos)
+
+Thanks to [@jtakakura](https://github.com/jtakakura), Ambient can also be installed using [asdf](https://asdf-vm.com/) by running `asdf plugin add ambient`. For more details visit https://github.com/jtakakura/asdf-ambient.
+
 ## Running on headless Linux/Ubuntu
 
 To run on a headless Linux machine, install the following dependencies in addition to the dependencies specified above:

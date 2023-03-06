@@ -58,7 +58,7 @@ impl GpuWorldUpdater {
         modules.insert(0, gpu_world_module);
         modules.push(module);
 
-        let shader = Shader::from_modules(&assets, format!("GpuWorldUpdate.{label}"), modules.iter());
+        let shader = Shader::from_modules(&assets, format!("GpuWorldUpdate.{label}"), &modules);
         let pipeline = shader.to_compute_pipeline(&gpu, "main");
         Self {
             pipeline,

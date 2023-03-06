@@ -1,10 +1,10 @@
+use ambient_core::player::get_player_by_user_id;
 use ambient_core::{
     self, selectable, snap_to_ground,
     transform::{get_world_transform, rotation, scale, translation},
 };
 use ambient_ecs::{components, Entity, EntityId, World};
 use ambient_intent::{use_old_state, IntentContext, IntentRegistry};
-use ambient_network::get_player_by_user_id;
 use ambient_physics::{collider::collider_shapes_convex, main_physics_scene, physx::rigid_actor, PxShapeUserData};
 use anyhow::Context;
 use glam::{Mat4, Vec3, Vec3Swizzles};

@@ -1,18 +1,18 @@
 use ambient_core::{
-    mouse_position, runtime,
+    runtime,
     transform::{get_world_position, translation},
-    window_logical_size, window_scale_factor,
+    window::mouse_position,
+    window::{window_logical_size, window_scale_factor},
 };
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_input::{event_mouse_input, event_mouse_motion, MouseButton};
+use ambient_input::{event_mouse_input, event_mouse_motion};
 use ambient_network::{client::GameClient, log_network_result};
 use ambient_std::{color::Color, math::interpolate};
 use ambient_ui::{
     layout::{height, width},
-    UIBase, UIExt, UIExt2,
+    UIBase, UIExt,
 };
 use glam::{vec2, vec3, Vec2, Vec3Swizzles};
-use winit::event::ElementState;
 
 use crate::{
     intents::SelectMode,
@@ -46,8 +46,8 @@ impl ElementComponent for SelectArea {
                 let scl = *world.resource(window_scale_factor()) as f32;
                 if let Some(position) = event.get(event_mouse_motion()) {
                     set_mouse_pos(position / scl);
-                } else if let Some(event) = event.get_ref(event_mouse_input()) {
-                    if event.state == ElementState::Released {
+                } else if let Some(pressed) = event.get_ref(event_mouse_input()) {
+                    if !pressed {
                         let mut is_clicking = is_clicking.lock();
                         if !*is_clicking {
                             return;
@@ -112,7 +112,7 @@ impl ElementComponent for SelectArea {
             .el()
             .with_clickarea()
             .on_mouse_down(closure!(clone set_dragging, clone is_clicking, |world, id, button| {
-                if button != MouseButton::Left {
+                if button != ambient_ui::MouseButton::Left {
                     return;
                 }
 
