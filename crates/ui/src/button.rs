@@ -22,12 +22,12 @@ use winit::{
     window::CursorIcon,
 };
 
-use super::{FlowColumn, FlowRow, Text, UIBase, UIElement, UIExt};
+use super::{FlowColumn, FlowRow, Text, UIBase, UIElement};
 use crate::{
     border_color, border_radius, border_thickness, cutout_color, font_style, layout::*, primary_color, secondary_color, Corners, FontStyle,
     Tooltip,
 };
-use ambient_ui_components::UIExt2;
+use ambient_ui_components::UIExt;
 
 #[derive(Clone, Debug)]
 pub enum ButtonCb {

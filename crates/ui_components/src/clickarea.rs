@@ -43,10 +43,10 @@ impl From<u32> for MouseButton {
 impl From<winit::event::MouseButton> for MouseButton {
     fn from(value: winit::event::MouseButton) -> Self {
         match value {
-            ambient_input::MouseButton::Left => Self::Left,
-            ambient_input::MouseButton::Right => Self::Right,
-            ambient_input::MouseButton::Middle => Self::Middle,
-            ambient_input::MouseButton::Other(x) => Self::Other(x as _),
+            winit::event::MouseButton::Left => Self::Left,
+            winit::event::MouseButton::Right => Self::Right,
+            winit::event::MouseButton::Middle => Self::Middle,
+            winit::event::MouseButton::Other(x) => Self::Other(x as _),
         }
     }
 }

@@ -19,7 +19,7 @@ use ambient_guest_bridge::{
 use ambient_ui_components::{
     layout::{FlowColumn, FlowRow},
     text::Text,
-    UIExt2,
+    UIExt,
 };
 
 #[element_component]

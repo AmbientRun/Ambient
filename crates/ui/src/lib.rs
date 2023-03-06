@@ -194,15 +194,6 @@ pub fn HighjackMouse(
     WindowSized(vec![]).el().with_clickarea().on_mouse_down(move |_, _, button| on_click(button)).el().set(translation(), -Vec3::Z * 0.99)
 }
 
-pub trait UIExt {
-    fn with_clickarea(self) -> ClickArea;
-}
-impl UIExt for Element {
-    fn with_clickarea(self) -> ClickArea {
-        ClickArea::new(self)
-    }
-}
-
 /// Ctrl on windows, Command on osx
 pub fn command_modifier() -> ModifiersState {
     #[cfg(target_os = "macos")]

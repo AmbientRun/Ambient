@@ -9,7 +9,7 @@ use ambient_network::{client::GameClient, log_network_result};
 use ambient_std::{color::Color, math::interpolate};
 use ambient_ui::{
     layout::{height, width},
-    UIBase, UIExt, UIExt2,
+    UIBase, UIExt,
 };
 use glam::{vec2, vec3, Vec2, Vec3Swizzles};
 use winit::event::ElementState;

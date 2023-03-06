@@ -15,7 +15,7 @@ use ambient_guest_bridge::{
 use ambient_ui_components::{
     layout::{Dock, FlowRow},
     text::Text,
-    UIExt2,
+    UIExt,
 };
 
 #[element_component]

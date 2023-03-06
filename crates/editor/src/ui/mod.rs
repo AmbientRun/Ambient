@@ -27,7 +27,7 @@ use ambient_ui::{
     command_modifier, height,
     layout::{docking, space_between_items, width, Borders, Docking},
     margin, use_interval, use_window_logical_resolution, Button, Editor, FlowColumn, FlowRow, FontAwesomeIcon, Hotkey, Rectangle,
-    ScreenContainer, ScrollArea, Separator, StylesExt, Text, UIExt2, WindowSized, STREET,
+    ScreenContainer, ScrollArea, Separator, StylesExt, Text, UIExt, WindowSized, STREET,
 };
 use build_mode::*;
 use glam::{vec3, Vec3};

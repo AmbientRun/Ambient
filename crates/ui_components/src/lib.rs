@@ -7,6 +7,7 @@ use ambient_guest_bridge::components::{
         padding_bottom, padding_left, padding_right, padding_top, rect, width,
     },
 };
+use clickarea::ClickArea;
 use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
 
 pub mod clickarea;
@@ -75,12 +76,16 @@ pub fn with_rect(element: Element) -> Element {
         .init(ui_scene(), ())
 }
 
-pub trait UIExt2 {
+pub trait UIExt {
+    fn with_clickarea(self) -> ClickArea;
     fn with_background(self, color: Vec4) -> Self;
     fn with_padding_even(self, padding: f32) -> Self;
     fn with_margin_even(self, margin: f32) -> Self;
 }
-impl UIExt2 for Element {
+impl UIExt for Element {
+    fn with_clickarea(self) -> ClickArea {
+        ClickArea::new(self)
+    }
     fn with_background(self, background: Vec4) -> Self {
         with_rect(self).set(background_color(), background)
     }

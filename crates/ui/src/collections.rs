@@ -9,9 +9,9 @@ use indexmap::IndexMap;
 use itertools::Itertools;
 use winit::event::{ElementState, VirtualKeyCode};
 
-use super::{Button, ButtonStyle, Dropdown, Editor, EditorOpts, FlowColumn, FlowRow, Focus, UIBase, UIExt};
+use super::{Button, ButtonStyle, Dropdown, Editor, EditorOpts, FlowColumn, FlowRow, Focus, UIBase};
 use crate::{layout::*, StylesExt, COLLECTION_ADD_ICON, COLLECTION_DELETE_ICON, MOVE_DOWN_ICON, MOVE_UP_ICON, STREET};
-use ambient_ui_components::UIExt2;
+use ambient_ui_components::UIExt;
 
 #[element_component]
 pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static>(

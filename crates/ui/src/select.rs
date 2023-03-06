@@ -9,7 +9,7 @@ use crate::{
     padding, tooltip_background_color, Corners, Dropdown, SMALL_ROUNDING, STREET,
 };
 use ambient_input::event_mouse_input;
-use ambient_ui_components::UIExt2;
+use ambient_ui_components::UIExt;
 
 #[derive(Debug, Clone)]
 pub struct DropdownSelect {
