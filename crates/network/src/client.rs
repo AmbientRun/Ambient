@@ -6,7 +6,12 @@ use std::{
 };
 
 use ambient_app::window_title;
-use ambient_core::{asset_cache, gpu, runtime, window::mirror_window_components};
+use ambient_core::{
+    asset_cache, gpu,
+    player::{player, user_id},
+    runtime,
+    window::mirror_window_components,
+};
 use ambient_ecs::{components, query, Entity, EntityId, Resource, SystemGroup, World, WorldDiff};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
@@ -24,11 +29,11 @@ use crate::{
     client_game_state::ClientGameState,
     create_client_endpoint_random_port,
     events::event_registry,
-    is_remote_entity, log_network_result, player,
+    is_remote_entity, log_network_result,
     protocol::{ClientInfo, ClientProtocol},
     rpc_request,
     server::{ServerInfo, SharedServerState},
-    user_id, NetworkError,
+    NetworkError,
 };
 
 components!("network", {

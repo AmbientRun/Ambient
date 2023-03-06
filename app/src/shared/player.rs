@@ -3,6 +3,7 @@ use std::{io::Write, sync::Arc};
 use ambient_audio::AudioListener;
 use ambient_core::{
     camera::{active_camera, aspect_ratio_from_window},
+    player::{get_player_by_user_id, local_user_id, player, user_id},
     runtime,
     window::{window_logical_size, window_physical_size},
 };
@@ -12,13 +13,7 @@ use ambient_input::{
     event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels,
     mouse_button, mouse_button_from_u32, player_prev_raw_input, player_raw_input, ElementState, PlayerRawInput,
 };
-use ambient_network::{
-    client::game_client,
-    get_player_by_user_id, log_network_result,
-    player::{local_user_id, player, user_id},
-    rpc::rpc_world_diff,
-    DatagramHandlers,
-};
+use ambient_network::{client::game_client, log_network_result, rpc::rpc_world_diff, DatagramHandlers};
 use ambient_std::unwrap_log_err;
 
 use ambient_world_audio::audio_listener;

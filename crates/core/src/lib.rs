@@ -18,6 +18,7 @@ pub mod bounding;
 pub mod camera;
 pub mod gpu_ecs;
 pub mod hierarchy;
+pub mod player;
 pub mod transform;
 pub mod window;
 
@@ -103,6 +104,7 @@ components!("app", {
 
 pub fn init_all_components() {
     init_components();
+    player::init_components();
     window::init_components();
     hierarchy::init_components();
     async_ecs::init_components();

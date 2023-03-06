@@ -1,6 +1,9 @@
 use std::{collections::HashMap, sync::Arc};
 
-use ambient_core::runtime;
+use ambient_core::{
+    player::{player, user_id},
+    runtime,
+};
 use ambient_ecs::{
     query, ArchetypeFilter, Component, ComponentQuery, ComponentValue, ECSError, EntityId, FrameEvent, QueryState, TypedReadQuery, World,
     WorldDiff,
@@ -8,7 +11,7 @@ use ambient_ecs::{
 use ambient_element::{Hooks, Setter};
 use ambient_std::{cb, Cb};
 
-use crate::{client::GameClient, log_network_result, persistent_resources, player, rpc::rpc_world_diff, synced_resources, user_id};
+use crate::{client::GameClient, log_network_result, persistent_resources, rpc::rpc_world_diff, synced_resources};
 
 pub fn use_remote_world_system<
     'a,
