@@ -10,8 +10,9 @@ pub mod wit;
 use std::sync::Arc;
 
 use ambient_ecs::{
-    components, dont_despawn_on_unload, query, world_events, ComponentEntry, Description, Entity,
-    EntityId, FnSystem, Networked, Resource, Store, SystemGroup, World, WorldEventReader,
+    components, dont_despawn_on_unload, query, world_events, ComponentEntry, Debuggable,
+    Description, Entity, EntityId, FnSystem, Networked, Resource, Store, SystemGroup, World,
+    WorldEventReader,
 };
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
 use ambient_physics::{collider_loads, collisions, PxShapeUserData};
@@ -21,14 +22,14 @@ pub use module::*;
 use physxx::{PxRigidActor, PxRigidActorRef, PxUserData};
 
 components!("wasm::shared", {
-    @[Networked, Store]
+    @[Networked, Store, Debuggable]
     module: (),
     module_state: ModuleState,
     @[Store]
     module_bytecode: ModuleBytecode,
-    @[Networked, Store]
+    @[Networked, Store, Debuggable]
     module_enabled: bool,
-    @[Networked, Store]
+    @[Networked, Store, Debuggable]
     module_errors: ModuleErrors,
 
     @[Resource, Description["Used to signal messages from the WASM host/runtime"]]

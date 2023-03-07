@@ -79,13 +79,13 @@ components!("app", {
     @[Debuggable, Networked, Store]
     game_mode: GameMode,
 
-    @[Resource]
+    @[Resource, Debuggable]
     time: Duration,
     @[Resource, Debuggable, Name["Delta Time"], Description["How long the previous tick took in seconds.\nAlso known as frametime."]]
     dtime: f32,
-    @[Resource]
+    @[Resource, Debuggable]
     app_start_time: Duration,
-    @[Resource]
+    @[Resource, Debuggable]
     frame_index: usize,
     @[Debuggable, Store]
     remove_at_time: Duration,

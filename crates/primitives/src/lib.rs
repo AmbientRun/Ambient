@@ -5,7 +5,8 @@ use ambient_core::{
     transform::{local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation},
 };
 use ambient_ecs::{
-    components, query, Concept, DefaultValue, Description, Entity, EntityId, Name, Networked, RefConcept, Store, SystemGroup, World,
+    components, query, Concept, Debuggable, DefaultValue, Description, Entity, EntityId, Name, Networked, RefConcept, Store, SystemGroup,
+    World,
 };
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_gpu::mesh_buffer::GpuMesh;
@@ -26,38 +27,38 @@ use glam::{vec3, Mat4, Quat, Vec3, Vec4};
 
 components!("primitives", {
     @[
-        Networked, Store,
+        Networked, Store, Debuggable,
         Name["Cube"],
         Description["If attached to an entity, the entity will be converted to a cube primitive.\nThe cube is unit-sized (i.e. 0.5 metres out to each side)."]
     ]
     cube: (),
     @[
-        Networked, Store,
+        Networked, Store, Debuggable,
         Name["Quad"],
         Description["If attached to an entity, the entity will be converted to a quad primitive.\nThe quad is unit-sized on the XY axes, and flat on the Z axis (i.e. 0.5 metres out to the XY axes)."]
     ]
     quad: (),
 
     @[
-        Networked, Store,
+        Networked, Store, Debuggable,
         Name["Sphere"],
         Description["If attached to an entity, the entity will be converted to a unit-diameter sphere primitive.\nThe sphere can be customized using the `sphere_radius`, `sphere_sectors` and `sphere_stacks` components."]
     ]
     sphere: (),
     @[
-        Networked, Store, DefaultValue<_>[0.5],
+        Networked, Store, DefaultValue<_>[0.5], Debuggable,
         Name["Sphere radius"],
         Description["Set the radius of a `sphere` entity."]
     ]
     sphere_radius: f32,
     @[
-        Networked, Store, DefaultValue<_>[36],
+        Networked, Store, DefaultValue<_>[36], Debuggable,
         Name["Sphere sectors"],
         Description["Set the longitudinal sectors of a `sphere` entity."]
     ]
     sphere_sectors: u32,
     @[
-        Networked, Store, DefaultValue<_>[18],
+        Networked, Store, DefaultValue<_>[18], Debuggable,
         Name["Sphere stacks"],
         Description["Set the latitudinal stacks of a `sphere` entity."]
     ]
