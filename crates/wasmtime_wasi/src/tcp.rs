@@ -1,15 +1,18 @@
 #![allow(unused_variables)]
 
 use crate::{
-    wasi_io::{InputStream, OutputStream},
-    wasi_network::{Error, IpAddressFamily, Network},
-    wasi_poll::Pollable,
-    wasi_tcp::{Host, IpSocketAddress, ShutdownType, TcpSocket},
+    network::convert,
+    wasi::network::{Error, IpAddressFamily, Network},
+    wasi::poll::Pollable,
+    wasi::streams::{InputStream, OutputStream},
+    wasi::tcp::{self, IpSocketAddress, ShutdownType, TcpSocket},
+    wasi::tcp_create_socket,
     HostResult, WasiCtx,
 };
+use wasi_common::tcp_socket::TableTcpSocketExt;
 
-impl Host for WasiCtx {
-    fn listen(&mut self, socket: TcpSocket, backlog: Option<u64>) -> HostResult<(), Error> {
+impl tcp::Host for WasiCtx {
+    fn listen(&mut self, socket: TcpSocket, backlog: u32) -> HostResult<(), Error> {
         todo!()
     }
 
@@ -17,12 +20,22 @@ impl Host for WasiCtx {
         &mut self,
         socket: TcpSocket,
     ) -> HostResult<(TcpSocket, InputStream, OutputStream), Error> {
-        todo!()
+        let table = self.table_mut();
+        let l = table.get_tcp_socket_mut(socket)?;
+
+        let (connection, input_stream, output_stream, _addr) = pollster::block_on(l.accept(false))?;
+
+        let connection = table.push(Box::new(connection)).map_err(convert)?;
+        let input_stream = table.push(Box::new(input_stream)).map_err(convert)?;
+        let output_stream = table.push(Box::new(output_stream)).map_err(convert)?;
+
+        Ok(Ok((connection, input_stream, output_stream)))
     }
 
     fn connect(
         &mut self,
         socket: TcpSocket,
+        network: Network,
         remote_address: IpSocketAddress,
     ) -> HostResult<(InputStream, OutputStream), Error> {
         todo!()
@@ -44,15 +57,12 @@ impl Host for WasiCtx {
         todo!()
     }
 
-    fn create_tcp_socket(
+    fn bind(
         &mut self,
+        this: TcpSocket,
         network: Network,
-        address_family: IpAddressFamily,
-    ) -> HostResult<TcpSocket, Error> {
-        todo!()
-    }
-
-    fn bind(&mut self, this: TcpSocket, local_address: IpSocketAddress) -> HostResult<(), Error> {
+        local_address: IpSocketAddress,
+    ) -> HostResult<(), Error> {
         todo!()
     }
 
@@ -84,7 +94,7 @@ impl Host for WasiCtx {
         todo!()
     }
 
-    fn address_family(&mut self, this: TcpSocket) -> anyhow::Result<IpAddressFamily> {
+    fn address_family(&mut self, this: TcpSocket) -> HostResult<IpAddressFamily, Error> {
         todo!()
     }
 
@@ -93,6 +103,10 @@ impl Host for WasiCtx {
     }
 
     fn set_unicast_hop_limit(&mut self, this: TcpSocket, value: u8) -> HostResult<(), Error> {
+        todo!()
+    }
+
+    fn set_listen_backlog_size(&mut self, this: TcpSocket, value: u64) -> HostResult<(), Error> {
         todo!()
     }
 
@@ -130,6 +144,15 @@ impl Host for WasiCtx {
 
     fn drop_tcp_socket(&mut self, socket: TcpSocket) -> anyhow::Result<()> {
         drop(socket);
+        todo!()
+    }
+}
+
+impl tcp_create_socket::Host for WasiCtx {
+    fn create_tcp_socket(
+        &mut self,
+        address_family: IpAddressFamily,
+    ) -> HostResult<TcpSocket, Error> {
         todo!()
     }
 }

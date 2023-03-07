@@ -679,7 +679,7 @@ pub mod component{ use super::wit_bindgen;
     unsafe {
       
       #[repr(align(8))]
-      struct RetArea([u8; 88]);
+      struct RetArea([u8; 96]);
       let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
       let super::types::EntityId{ id0:id00, id1:id10, } = entity;
       let ptr1 = ret_area.as_mut_ptr() as i32;
@@ -1190,7 +1190,7 @@ pub mod component{ use super::wit_bindgen;
       let mut cleanup_list = Vec::new();
       
       #[repr(align(8))]
-      struct RetArea([u8; 104]);
+      struct RetArea([u8; 112]);
       let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
       let ptr0 = ret_area.as_mut_ptr() as i32;let super::types::EntityId{ id0:id01, id1:id11, } = entity;
       *((ptr0 + 0) as *mut i64) = wit_bindgen::rt::as_i64(id01);
@@ -1886,7 +1886,7 @@ pub mod component{ use super::wit_bindgen;
           let super::types::EntityId{ id0:id00, id1:id10, } = entity;
           let vec50 = data;
           let len50 = vec50.len() as i32;
-          let layout50 = alloc::Layout::from_size_align_unchecked(vec50.len() * 88, 8);
+          let layout50 = alloc::Layout::from_size_align_unchecked(vec50.len() * 96, 8);
           let result50 = if layout50.size() != 0
           {
             let ptr = alloc::alloc(layout50);
@@ -1899,7 +1899,7 @@ pub mod component{ use super::wit_bindgen;
             core::ptr::null_mut()
           };
           for (i, e) in vec50.into_iter().enumerate() {
-            let base = result50 as i32 + (i as i32) * 88;
+            let base = result50 as i32 + (i as i32) * 96;
             {
               let (t1_0, t1_1, ) = e;
               *((base + 0) as *mut i32) = wit_bindgen::rt::as_i32(t1_0);
@@ -2597,7 +2597,7 @@ pub mod component{ use super::wit_bindgen;
                 let mut cleanup_list = Vec::new();
                 
                 #[repr(align(8))]
-                struct RetArea([u8; 104]);
+                struct RetArea([u8; 112]);
                 let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
                 let ptr0 = ret_area.as_mut_ptr() as i32;let super::types::EntityId{ id0:id01, id1:id11, } = entity;
                 *((ptr0 + 0) as *mut i64) = wit_bindgen::rt::as_i64(id01);
@@ -3293,7 +3293,7 @@ pub mod component{ use super::wit_bindgen;
                     let super::types::EntityId{ id0:id00, id1:id10, } = entity;
                     let vec50 = data;
                     let len50 = vec50.len() as i32;
-                    let layout50 = alloc::Layout::from_size_align_unchecked(vec50.len() * 88, 8);
+                    let layout50 = alloc::Layout::from_size_align_unchecked(vec50.len() * 96, 8);
                     let result50 = if layout50.size() != 0
                     {
                       let ptr = alloc::alloc(layout50);
@@ -3306,7 +3306,7 @@ pub mod component{ use super::wit_bindgen;
                       core::ptr::null_mut()
                     };
                     for (i, e) in vec50.into_iter().enumerate() {
-                      let base = result50 as i32 + (i as i32) * 88;
+                      let base = result50 as i32 + (i as i32) * 96;
                       {
                         let (t1_0, t1_1, ) = e;
                         *((base + 0) as *mut i32) = wit_bindgen::rt::as_i32(t1_0);
@@ -4161,7 +4161,7 @@ pub mod component{ use super::wit_bindgen;
                               let len21 = *((base + 20) as *const i32);
                               let mut result21 = Vec::with_capacity(len21 as usize);
                               for i in 0..len21 {
-                                let base = base21 + i *80;
+                                let base = base21 + i *88;
                                 result21.push({{match i32::from(*((base + 0) as *const u8)) {
                                   0 => ComponentTypeResult::TypeEmpty(()),
                                   1 => ComponentTypeResult::TypeBool({
@@ -4644,7 +4644,7 @@ pub mod component{ use super::wit_bindgen;
                                   #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
                                 }}});
                               }
-                              wit_bindgen::rt::dealloc(base21, (len21 as usize) * 80, 8);
+                              wit_bindgen::rt::dealloc(base21, (len21 as usize) * 88, 8);
                               
                               (super::types::EntityId{id0:*((base + 0) as *const i64) as u64, id1:*((base + 8) as *const i64) as u64, }, result21)
                             });
@@ -4705,7 +4705,7 @@ pub mod component{ use super::wit_bindgen;
                           let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
                           let vec49 = data;
                           let len49 = vec49.len() as i32;
-                          let layout49 = alloc::Layout::from_size_align_unchecked(vec49.len() * 88, 8);
+                          let layout49 = alloc::Layout::from_size_align_unchecked(vec49.len() * 96, 8);
                           let result49 = if layout49.size() != 0
                           {
                             let ptr = alloc::alloc(layout49);
@@ -4718,7 +4718,7 @@ pub mod component{ use super::wit_bindgen;
                             core::ptr::null_mut()
                           };
                           for (i, e) in vec49.into_iter().enumerate() {
-                            let base = result49 as i32 + (i as i32) * 88;
+                            let base = result49 as i32 + (i as i32) * 96;
                             {
                               let (t0_0, t0_1, ) = e;
                               *((base + 0) as *mut i32) = wit_bindgen::rt::as_i32(t0_0);
@@ -7061,7 +7061,7 @@ pub mod component{ use super::wit_bindgen;
                                   let len0 = vec0.len() as i32;
                                   let vec50 = data;
                                   let len50 = vec50.len() as i32;
-                                  let layout50 = alloc::Layout::from_size_align_unchecked(vec50.len() * 88, 8);
+                                  let layout50 = alloc::Layout::from_size_align_unchecked(vec50.len() * 96, 8);
                                   let result50 = if layout50.size() != 0
                                   {
                                     let ptr = alloc::alloc(layout50);
@@ -7074,7 +7074,7 @@ pub mod component{ use super::wit_bindgen;
                                     core::ptr::null_mut()
                                   };
                                   for (i, e) in vec50.into_iter().enumerate() {
-                                    let base = result50 as i32 + (i as i32) * 88;
+                                    let base = result50 as i32 + (i as i32) * 96;
                                     {
                                       let (t1_0, t1_1, ) = e;
                                       *((base + 0) as *mut i32) = wit_bindgen::rt::as_i32(t1_0);
@@ -7835,7 +7835,7 @@ pub mod component{ use super::wit_bindgen;
                                       let len21 = arg4;
                                       let mut result21 = Vec::with_capacity(len21 as usize);
                                       for i in 0..len21 {
-                                        let base = base21 + i *88;
+                                        let base = base21 + i *96;
                                         result21.push((*((base + 0) as *const i32) as u32, {{match i32::from(*((base + 8) as *const u8)) {
                                           0 => super::component::ComponentTypeResult::TypeEmpty(()),
                                           1 => super::component::ComponentTypeResult::TypeBool({
@@ -8318,7 +8318,7 @@ pub mod component{ use super::wit_bindgen;
                                           #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
                                         }}}));
                                       }
-                                      wit_bindgen::rt::dealloc(base21, (len21 as usize) * 88, 8);
+                                      wit_bindgen::rt::dealloc(base21, (len21 as usize) * 96, 8);
                                       T::exec(arg0, {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(arg1 as *mut _, len0, len0))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(arg1 as *mut _, len0, len0)).unwrap()}}, result21);
                                     }
                                     

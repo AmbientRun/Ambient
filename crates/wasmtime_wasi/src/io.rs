@@ -1,10 +1,9 @@
 use crate::{
     poll::PollableEntry,
-    wasi_io::{Host, InputStream, OutputStream, StreamError},
-    wasi_poll::Pollable,
+    wasi::poll::Pollable,
+    wasi::streams::{self, InputStream, OutputStream, StreamError},
     HostResult, WasiCtx,
 };
-use pollster::FutureExt as _;
 use wasi_common::stream::TableStreamExt;
 
 fn convert(error: wasi_common::Error) -> anyhow::Error {
@@ -15,7 +14,7 @@ fn convert(error: wasi_common::Error) -> anyhow::Error {
     }
 }
 
-impl Host for WasiCtx {
+impl streams::Host for WasiCtx {
     fn drop_input_stream(&mut self, stream: InputStream) -> anyhow::Result<()> {
         self.table_mut()
             .delete::<Box<dyn wasi_common::InputStream>>(stream)
@@ -31,51 +30,19 @@ impl Host for WasiCtx {
     }
 
     fn read(&mut self, stream: InputStream, len: u64) -> HostResult<(Vec<u8>, bool), StreamError> {
-        let s: &mut Box<dyn wasi_common::InputStream> = self
-            .table_mut()
-            .get_input_stream_mut(stream)
-            .map_err(convert)?;
-
-        let mut buffer = vec![0; len.try_into().unwrap()];
-
-        let (bytes_read, end) = s.read(&mut buffer).block_on().map_err(convert)?;
-
-        buffer.truncate(bytes_read as usize);
-
-        Ok(Ok((buffer, end)))
+        anyhow::bail!("unimplemented!");
     }
 
     fn write(&mut self, stream: OutputStream, bytes: Vec<u8>) -> HostResult<u64, StreamError> {
-        let s: &mut Box<dyn wasi_common::OutputStream> = self
-            .table_mut()
-            .get_output_stream_mut(stream)
-            .map_err(convert)?;
-
-        let bytes_written: u64 = s.write(&bytes).block_on().map_err(convert)?;
-
-        Ok(Ok(u64::try_from(bytes_written).unwrap()))
+        anyhow::bail!("unimplemented!");
     }
 
     fn skip(&mut self, stream: InputStream, len: u64) -> HostResult<(u64, bool), StreamError> {
-        let s: &mut Box<dyn wasi_common::InputStream> = self
-            .table_mut()
-            .get_input_stream_mut(stream)
-            .map_err(convert)?;
-
-        let (bytes_skipped, end) = s.skip(len).block_on().map_err(convert)?;
-
-        Ok(Ok((bytes_skipped, end)))
+        anyhow::bail!("unimplemented!");
     }
 
     fn write_zeroes(&mut self, stream: OutputStream, len: u64) -> HostResult<u64, StreamError> {
-        let s: &mut Box<dyn wasi_common::OutputStream> = self
-            .table_mut()
-            .get_output_stream_mut(stream)
-            .map_err(convert)?;
-
-        let bytes_written: u64 = s.write_zeroes(len).block_on().map_err(convert)?;
-
-        Ok(Ok(bytes_written))
+        anyhow::bail!("unimplemented!");
     }
 
     fn splice(
@@ -133,13 +100,13 @@ impl Host for WasiCtx {
         todo!()
     }
 
-    fn subscribe_read(&mut self, stream: InputStream) -> anyhow::Result<Pollable> {
+    fn subscribe_to_input_stream(&mut self, stream: InputStream) -> anyhow::Result<Pollable> {
         Ok(self
             .table_mut()
             .push(Box::new(PollableEntry::Read(stream)))?)
     }
 
-    fn subscribe(&mut self, stream: OutputStream) -> anyhow::Result<Pollable> {
+    fn subscribe_to_output_stream(&mut self, stream: OutputStream) -> anyhow::Result<Pollable> {
         Ok(self
             .table_mut()
             .push(Box::new(PollableEntry::Write(stream)))?)

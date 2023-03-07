@@ -1,4 +1,4 @@
-default interface wasi-environment {
+default interface environment {
   /// Get the POSIX-style environment variables.
   ///
   /// Each environment variable is provided as a pair of string variable names
@@ -9,4 +9,3 @@ default interface wasi-environment {
   /// values each time it is called.
   get-environment: func() -> list<tuple<string, string>>
 }
-

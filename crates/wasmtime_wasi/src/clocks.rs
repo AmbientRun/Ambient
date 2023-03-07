@@ -1,12 +1,14 @@
-// use crate::poll::PollableEntry;
-use crate::{
-    poll::PollableEntry,
-    wasi_default_clocks,
-    wasi_monotonic_clock::{self, Instant, MonotonicClock},
-    wasi_poll::Pollable,
-    wasi_wall_clock::{self, Datetime, WallClock},
-    WasiCtx,
+#![allow(unused_variables)]
+
+use crate::poll::PollableEntry;
+use crate::wasi::{
+    instance_monotonic_clock, instance_wall_clock,
+    monotonic_clock::{self, Instant, MonotonicClock},
+    poll::Pollable,
+    timezone::{self, Timezone, TimezoneDisplay},
+    wall_clock::{self, Datetime, WallClock},
 };
+use crate::WasiCtx;
 use cap_std::time::SystemTime;
 use wasi_common::clocks::{TableMonotonicClockExt, TableWallClockExt};
 
@@ -24,21 +26,23 @@ impl TryFrom<SystemTime> for Datetime {
     }
 }
 
-impl wasi_default_clocks::Host for WasiCtx {
-    fn default_wall_clock(&mut self) -> anyhow::Result<WallClock> {
+impl instance_wall_clock::Host for WasiCtx {
+    fn instance_wall_clock(&mut self) -> anyhow::Result<WallClock> {
         // Create a new handle to the default wall clock.
-        let new = self.clocks.default_wall_clock.dup();
-        Ok(self.table_mut().push(Box::new(new))?)
-    }
-
-    fn default_monotonic_clock(&mut self) -> anyhow::Result<MonotonicClock> {
-        // Create a new handle to the default monotonic clock.
-        let new = self.clocks.default_monotonic_clock.dup();
+        let new = self.clocks.instance_wall_clock.dup();
         Ok(self.table_mut().push(Box::new(new))?)
     }
 }
 
-impl wasi_wall_clock::Host for WasiCtx {
+impl instance_monotonic_clock::Host for WasiCtx {
+    fn instance_monotonic_clock(&mut self) -> anyhow::Result<MonotonicClock> {
+        // Create a new handle to the default monotonic clock.
+        let new = self.clocks.instance_monotonic_clock.dup();
+        Ok(self.table_mut().push(Box::new(new))?)
+    }
+}
+
+impl wall_clock::Host for WasiCtx {
     fn now(&mut self, fd: WallClock) -> anyhow::Result<Datetime> {
         let clock = self.table().get_wall_clock(fd)?;
         let now = clock.now();
@@ -62,7 +66,7 @@ impl wasi_wall_clock::Host for WasiCtx {
     }
 }
 
-impl wasi_monotonic_clock::Host for WasiCtx {
+impl monotonic_clock::Host for WasiCtx {
     fn now(&mut self, fd: MonotonicClock) -> anyhow::Result<Instant> {
         Ok(self.table().get_monotonic_clock(fd)?.now())
     }
@@ -86,5 +90,19 @@ impl wasi_monotonic_clock::Host for WasiCtx {
             .push(Box::new(PollableEntry::MonotonicClock(
                 clock, when, absolute,
             )))?)
+    }
+}
+
+impl timezone::Host for WasiCtx {
+    fn display(&mut self, timezone: Timezone, when: Datetime) -> anyhow::Result<TimezoneDisplay> {
+        todo!()
+    }
+
+    fn utc_offset(&mut self, timezone: Timezone, when: Datetime) -> anyhow::Result<i32> {
+        todo!()
+    }
+
+    fn drop_timezone(&mut self, timezone: Timezone) -> anyhow::Result<()> {
+        todo!()
     }
 }

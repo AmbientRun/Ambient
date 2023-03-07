@@ -1,13 +1,13 @@
 #![allow(unused_variables)]
 
 use crate::{
-    wasi_ip_name_lookup::{Host, ResolveAddressStream},
-    wasi_network::{Error, IpAddress, IpAddressFamily, Network},
-    wasi_poll::Pollable,
+    wasi::ip_name_lookup::{self, ResolveAddressStream},
+    wasi::network::{Error, IpAddress, IpAddressFamily, Network},
+    wasi::poll::Pollable,
     HostResult, WasiCtx,
 };
 
-impl Host for WasiCtx {
+impl ip_name_lookup::Host for WasiCtx {
     fn resolve_addresses(
         &mut self,
         network: Network,
