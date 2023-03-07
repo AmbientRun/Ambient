@@ -43,11 +43,12 @@ slotmap = { workspace = true }
 
 wasmtime = { workspace = true }
 wasi-common = { workspace = true }
+wit-component = { workspace = true }
 
 [target.'cfg(windows)'.build-dependencies]
 dunce = "1.0"
 
 [build-dependencies]
 ambient_std = { path = "../std", default-features = false }
-wit-bindgen-core = { git = "https://github.com/bytecodealliance/wit-bindgen.git" }
-wit-bindgen-rust = { git = "https://github.com/bytecodealliance/wit-bindgen.git" }
+wit-bindgen-core = { workspace = true }
+wit-bindgen-rust = { workspace = true }

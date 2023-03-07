@@ -1,5 +1,6 @@
 pub(crate) mod bindings;
 mod borrowed_types;
+pub mod build;
 pub mod conversion;
 pub mod host_guest_state;
 pub(crate) mod implementation;

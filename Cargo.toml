@@ -138,3 +138,4 @@ wasi-common = { git = "https://github.com/bytecodealliance/preview2-prototyping.
 wasi-cap-std-sync = { git = "https://github.com/bytecodealliance/preview2-prototyping.git", rev = "59b622b10efb7db3bd53250ee9933357f5110ce9" }
 wit-bindgen-core = { git = "https://github.com/bytecodealliance/wit-bindgen.git", rev = "b8277ba682fb544894f1fa5f6f9b4f0a42667b3f" }
 wit-bindgen-rust = { git = "https://github.com/bytecodealliance/wit-bindgen.git", rev = "b8277ba682fb544894f1fa5f6f9b4f0a42667b3f" }
+wit-component = "0.7.3"
