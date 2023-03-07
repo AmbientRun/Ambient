@@ -2,13 +2,13 @@
 
 ## ECS
 
-When the client is run with the `--debug` parameter, several buttons are shown at the top:
+When the client is run with the `AMBIENT_DEBUG` environment variable, several buttons are shown at the top:
 
 ```sh
-ambient run --debug examples/minigolf
+AMBIENT_DEBUG=1 ambient run --debug examples/minigolf # or $env:AMBIENT_DEBUG=1 on Windows/PowerShell
 ```
 
-![Debug buttons at the top of the window with --debug](debug_buttons.png)
+![Debug buttons at the top of the window with `AMBIENT_DEBUG`](debug_buttons.png)
 
 These can be used to inspect the state of the client and server ECSes, as well as the renderer. When one of these buttons are pressed, a YAML file will be created with the corresponding state, and its path will be written to `stdout`:
 

@@ -57,10 +57,6 @@ pub enum Cli {
 }
 #[derive(Args, Clone)]
 pub struct RunCli {
-    /// Whether or not debug menus should be shown
-    #[arg(long)]
-    pub debug: bool,
-
     /// Run in headless mode
     #[arg(long)]
     pub headless: bool,
