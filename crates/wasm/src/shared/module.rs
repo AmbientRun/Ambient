@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{
     bindings::{self, BindingsBound},
-    borrowed_types::ComponentTypeBorrow,
+    borrowed_types::ValueBorrow,
     wit, RunContext,
 };
 
@@ -216,7 +216,7 @@ impl<Bindings: BindingsBound> ModuleStateBehavior for ModuleStateInnerImpl<Bindi
         let components = bindings::convert_entity_data_to_components(event_data);
         let components: Vec<_> = components
             .iter()
-            .map(|(k, v)| (*k, ComponentTypeBorrow::from(v)))
+            .map(|(k, v)| (*k, ValueBorrow::from(v)))
             .collect();
         let components: Vec<_> = components.iter().map(|(k, v)| (*k, v.as_wit())).collect();
         self.guest_bindings

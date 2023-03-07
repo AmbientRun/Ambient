@@ -5,7 +5,7 @@
 default interface component {
     use pkg.types.{entity-id, mat4, quat, vec2, vec3, vec4, uvec2, uvec3, uvec4}
 
-    variant component-list-type {
+    variant vec-value {
         type-empty(list<tuple<>>),
         type-bool(list<bool>),
         type-entity-id(list<entity-id>),
@@ -25,7 +25,7 @@ default interface component {
         type-uvec4(list<uvec4>),
     }
 
-    variant component-option-type {
+    variant option-value {
         type-empty(option<tuple<>>),
         type-bool(option<bool>),
         type-entity-id(option<entity-id>),
@@ -45,7 +45,7 @@ default interface component {
         type-uvec4(option<uvec4>),
     }
 
-    variant component-type {
+    variant value {
         type-empty(tuple<>),
         type-bool(bool),
         type-entity-id(entity-id),
@@ -63,19 +63,19 @@ default interface component {
         type-uvec2(uvec2),
         type-uvec3(uvec3),
         type-uvec4(uvec4),
-        type-list(component-list-type),
-        type-option(component-option-type),
+        type-vec(vec-value),
+        type-option(option-value),
     }
 
-    type entity = list<tuple<u32, component-type>>
+    type entity = list<tuple<u32, value>>
     get-index: func(id: string) -> option<u32>
 
-    get-component: func(entity: entity-id, index: u32) -> option<component-type>
+    get-component: func(entity: entity-id, index: u32) -> option<value>
 
-    add-component: func(entity: entity-id, index: u32, value: component-type)
+    add-component: func(entity: entity-id, index: u32, value: value)
     add-components: func(entity: entity-id, data: entity)
 
-    set-component: func(entity: entity-id, index: u32, value: component-type)
+    set-component: func(entity: entity-id, index: u32, value: value)
     set-components: func(entity: entity-id, data: entity)
 
     has-component: func(entity: entity-id, index: u32) -> bool
@@ -98,5 +98,5 @@ default interface component {
     }
 
     query: func(q: query-build, t: query-event) -> u64
-    query-eval: func(q: u64) -> list<tuple<entity-id, list<component-type>>>
+    query-eval: func(q: u64) -> list<tuple<entity-id, list<value>>>
 }

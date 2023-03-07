@@ -10,7 +10,7 @@ use crate::internal::{
 use once_cell::sync::Lazy;
 
 extern "C" {
-    fn call_main(interface_version: u32) -> ();
+    fn call_main(interface_version: u32);
 }
 
 struct Guest;
@@ -20,7 +20,7 @@ impl wit::guest::Guest for Guest {
         unsafe { call_main(interface_version) }
     }
 
-    fn exec(time: f32, event_name: String, components: Vec<(u32, wit::guest::ComponentType)>) {
+    fn exec(time: f32, event_name: String, components: guest::Entity) {
         let components = Entity(components.into_iter().collect());
         EXECUTOR.execute(FrameState::new(time), event_name.as_str(), &components);
     }

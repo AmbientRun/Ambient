@@ -2,8 +2,8 @@ use crate::{
     global::{EntityId, Vec3},
     internal::{
         component::{
-            traits::AsParam, Component, Entity, SupportedComponentTypeGet,
-            SupportedComponentTypeSet, UntypedComponent,
+            traits::AsParam, Component, Entity, SupportedValueGet, SupportedValueSet,
+            UntypedComponent,
         },
         conversion::{FromBindgen, IntoBindgen},
         wit,
@@ -27,10 +27,7 @@ pub fn spawn(components: &Entity) -> EntityId {
 /// Waits until `id` has the `component`. Note that this may never resolve if the entity
 /// does not complete spawning, or the id in question refers to an entity that does
 /// not exist.
-pub async fn wait_for_component<T: SupportedComponentTypeGet>(
-    entity: EntityId,
-    component: Component<T>,
-) {
+pub async fn wait_for_component<T: SupportedValueGet>(entity: EntityId, component: Component<T>) {
     block_until(move || wit::component::has_component(entity.into_bindgen(), component.index()))
         .await;
 }
@@ -62,10 +59,7 @@ pub fn in_area(position: Vec3, radius: f32) -> Vec<EntityId> {
 }
 
 /// Retrieves the component `component` for `entity` if it exists, or `None` if it doesn't.
-pub fn get_component<T: SupportedComponentTypeGet>(
-    entity: EntityId,
-    component: Component<T>,
-) -> Option<T> {
+pub fn get_component<T: SupportedValueGet>(entity: EntityId, component: Component<T>) -> Option<T> {
     T::from_result(wit::component::get_component(
         entity.into_bindgen(),
         component.index(),
@@ -73,11 +67,7 @@ pub fn get_component<T: SupportedComponentTypeGet>(
 }
 
 /// Adds the component `component` for `entity` with `value`. Will replace an existing component if present.
-pub fn add_component<T: SupportedComponentTypeSet>(
-    entity: EntityId,
-    component: Component<T>,
-    value: T,
-) {
+pub fn add_component<T: SupportedValueSet>(entity: EntityId, component: Component<T>, value: T) {
     let owned = value.into_owned_param();
     wit::component::add_component(entity.into_bindgen(), component.index(), owned.as_param())
 }
@@ -88,11 +78,7 @@ pub fn add_components(entity: EntityId, components: Entity) {
 }
 
 /// Sets the component `component` for `entity` with `value`.
-pub fn set_component<T: SupportedComponentTypeSet>(
-    entity: EntityId,
-    component: Component<T>,
-    value: T,
-) {
+pub fn set_component<T: SupportedValueSet>(entity: EntityId, component: Component<T>, value: T) {
     let owned = value.into_owned_param();
     wit::component::set_component(entity.into_bindgen(), component.index(), owned.as_param())
 }
@@ -103,10 +89,7 @@ pub fn set_components(entity: EntityId, components: Entity) {
 }
 
 /// Checks if the `entity` has a `component`.
-pub fn has_component<T: SupportedComponentTypeGet>(
-    entity: EntityId,
-    component: Component<T>,
-) -> bool {
+pub fn has_component<T: SupportedValueGet>(entity: EntityId, component: Component<T>) -> bool {
     wit::component::has_component(entity.into_bindgen(), component.index())
 }
 
@@ -117,7 +100,7 @@ pub fn has_components(entity: EntityId, components: &[&dyn UntypedComponent]) ->
 }
 
 /// Adds the `component` with `value` to `entity` if `entity` does not already have that component.
-pub fn add_component_if_required<T: SupportedComponentTypeGet + SupportedComponentTypeSet>(
+pub fn add_component_if_required<T: SupportedValueGet + SupportedValueSet>(
     entity: EntityId,
     component: Component<T>,
     value: T,
@@ -146,9 +129,7 @@ pub fn remove_components(entity: EntityId, components: &[&dyn UntypedComponent])
 ///
 /// This will not set the component if the value is the same, which will prevent change events from
 /// being unnecessarily fired.
-pub fn mutate_component<
-    T: SupportedComponentTypeGet + SupportedComponentTypeSet + Clone + PartialEq,
->(
+pub fn mutate_component<T: SupportedValueGet + SupportedValueSet + Clone + PartialEq>(
     entity: EntityId,
     component: Component<T>,
     mutator: impl FnOnce(&mut T),
@@ -168,7 +149,7 @@ pub fn mutate_component<
 /// This will not set the component if the value is the same, which will prevent change events from
 /// being unnecessarily fired.
 pub fn mutate_component_with_default<
-    T: SupportedComponentTypeGet + SupportedComponentTypeSet + Clone + PartialEq,
+    T: SupportedValueGet + SupportedValueSet + Clone + PartialEq,
 >(
     entity: EntityId,
     component: Component<T>,

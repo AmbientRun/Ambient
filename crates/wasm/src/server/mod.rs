@@ -101,7 +101,7 @@ impl wit::component::Host for Bindings {
         &mut self,
         entity: wit::types::EntityId,
         index: u32,
-    ) -> anyhow::Result<Option<wit::component::ComponentTypeResult>> {
+    ) -> anyhow::Result<Option<wit::component::ValueResult>> {
         Ok(read_component_from_world(
             self.world(),
             entity.from_bindgen(),
@@ -113,7 +113,7 @@ impl wit::component::Host for Bindings {
         &mut self,
         entity: wit::types::EntityId,
         index: u32,
-        value: wit::component::ComponentTypeResult,
+        value: wit::component::ValueResult,
     ) -> anyhow::Result<()> {
         Ok(add_component(
             self.world_mut(),
@@ -138,7 +138,7 @@ impl wit::component::Host for Bindings {
         &mut self,
         entity: wit::types::EntityId,
         index: u32,
-        value: wit::component::ComponentTypeResult,
+        value: wit::component::ValueResult,
     ) -> anyhow::Result<()> {
         Ok(set_component(
             self.world_mut(),
@@ -221,12 +221,7 @@ impl wit::component::Host for Bindings {
     fn query_eval(
         &mut self,
         query_index: u64,
-    ) -> anyhow::Result<
-        Vec<(
-            wit::types::EntityId,
-            Vec<wit::component::ComponentTypeResult>,
-        )>,
-    > {
+    ) -> anyhow::Result<Vec<(wit::types::EntityId, Vec<wit::component::ValueResult>)>> {
         let key = slotmap::DefaultKey::from(slotmap::KeyData::from_ffi(query_index));
 
         let (query, query_state, primitive_components) = self
@@ -387,18 +382,17 @@ impl wit::physics::Host for Bindings {
 }
 impl wit::event::Host for Bindings {
     fn subscribe(&mut self, name: String) -> anyhow::Result<()> {
-        Ok(shared_impl::event::subscribe(
-            &mut self.base.subscribed_events,
-            &name,
-        ))
+        shared_impl::event::subscribe(&mut self.base.subscribed_events, &name);
+        Ok(())
     }
 
     fn send(&mut self, name: String, data: ComponentsParam) -> anyhow::Result<()> {
-        Ok(shared_impl::event::send(
+        shared_impl::event::send(
             self.world_mut(),
             &name,
             convert_components_to_entity_data(data),
-        ))
+        );
+        Ok(())
     }
 }
 impl wit::asset::Host for Bindings {

@@ -1,12 +1,11 @@
 use crate::internal::wit::{
     self,
     component::{
-        ComponentListTypeParam, ComponentListTypeResult, ComponentOptionTypeParam,
-        ComponentOptionTypeResult, ComponentTypeParam, ComponentTypeResult,
+        OptionValueParam, OptionValueResult, ValueParam, ValueResult, VecValueParam, VecValueResult,
     },
 };
 
-// We need to convert WIT's owned representation of `ComponentType` to the borrowed representation.
+// We need to convert WIT's owned representation of `Value` to the borrowed representation.
 // Unfortunately, it contains types that contain other borrowed types, so we need an intermediate step:
 //  Vec<String> -> Vec<&str> -> &[&str]
 // This defines types for that intermediate step.
@@ -14,62 +13,62 @@ use crate::internal::wit::{
 macro_rules! generate_borrowing_types_all {
     ($(($value:ident, $type:ty, $borrowed_type:ty)),*) => {
         paste::paste! {
-            pub(super) enum ComponentListTypeBorrow<'a> {
+            pub(super) enum VecValueBorrow<'a> {
                 $([<Type $value>](Vec<$borrowed_type>),)*
             }
-            impl<'a> From<&'a ComponentListTypeResult> for ComponentListTypeBorrow<'a> {
-                fn from(owned: &'a ComponentListTypeResult) -> Self {
+            impl<'a> From<&'a VecValueResult> for VecValueBorrow<'a> {
+                fn from(owned: &'a VecValueResult) -> Self {
                     match owned {
-                        $(ComponentListTypeResult::[<Type $value>](v) => ComponentListTypeBorrow::[<Type $value>](v.borrow_if_required()),)*
+                        $(VecValueResult::[<Type $value>](v) => VecValueBorrow::[<Type $value>](v.borrow_if_required()),)*
                     }
                 }
             }
-            impl<'a> ComponentListTypeBorrow<'a> {
-                fn as_wit(&'a self) -> ComponentListTypeParam<'a> {
+            impl<'a> VecValueBorrow<'a> {
+                fn as_wit(&'a self) -> VecValueParam<'a> {
                     match self {
-                        $(Self::[<Type $value>](v) => ComponentListTypeParam::[<Type $value>](v.as_slice()),)*
+                        $(Self::[<Type $value>](v) => VecValueParam::[<Type $value>](v.as_slice()),)*
                     }
                 }
             }
 
-            pub(super) enum ComponentOptionTypeBorrow<'a> {
+            pub(super) enum OptionValueBorrow<'a> {
                 $([<Type $value>](Option<$borrowed_type>),)*
             }
-            impl<'a> From<&'a ComponentOptionTypeResult> for ComponentOptionTypeBorrow<'a> {
-                fn from(owned: &'a ComponentOptionTypeResult) -> Self {
+            impl<'a> From<&'a OptionValueResult> for OptionValueBorrow<'a> {
+                fn from(owned: &'a OptionValueResult) -> Self {
                     match owned {
-                        $(ComponentOptionTypeResult::[<Type $value>](v) => ComponentOptionTypeBorrow::[<Type $value>](v.borrow_if_required()),)*
+                        $(OptionValueResult::[<Type $value>](v) => OptionValueBorrow::[<Type $value>](v.borrow_if_required()),)*
                     }
                 }
             }
-            impl<'a> ComponentOptionTypeBorrow<'a> {
-                fn as_wit(&'a self) -> ComponentOptionTypeParam<'a> {
+            impl<'a> OptionValueBorrow<'a> {
+                fn as_wit(&'a self) -> OptionValueParam<'a> {
                     match self {
-                        $(Self::[<Type $value>](v) => ComponentOptionTypeParam::[<Type $value>](*v),)*
+                        $(Self::[<Type $value>](v) => OptionValueParam::[<Type $value>](*v),)*
                     }
                 }
             }
 
-            pub(super) enum ComponentTypeBorrow<'a> {
+            pub(super) enum ValueBorrow<'a> {
                 $([<Type $value>]($borrowed_type),)*
-                TypeList(ComponentListTypeBorrow<'a>),
-                TypeOption(ComponentOptionTypeBorrow<'a>),
+                TypeVec(VecValueBorrow<'a>),
+                TypeOption(OptionValueBorrow<'a>),
             }
-            impl<'a> From<&'a ComponentTypeResult> for ComponentTypeBorrow<'a> {
-                fn from(owned: &'a ComponentTypeResult) -> Self {
+            impl<'a> From<&'a ValueResult> for ValueBorrow<'a> {
+                fn from(owned: &'a ValueResult) -> Self {
                     match owned {
-                        $(ComponentTypeResult::[<Type $value>](v) => ComponentTypeBorrow::[<Type $value>](v.borrow_if_required()),)*
-                        ComponentTypeResult::TypeList(v) => ComponentTypeBorrow::TypeList(v.into()),
-                        ComponentTypeResult::TypeOption(v) => ComponentTypeBorrow::TypeOption(v.into()),
+                        $(ValueResult::[<Type $value>](v) => ValueBorrow::[<Type $value>](v.borrow_if_required()),)*
+                        ValueResult::TypeVec(v) => ValueBorrow::TypeVec(v.into()),
+                        ValueResult::TypeOption(v) => ValueBorrow::TypeOption(v.into()),
                     }
                 }
             }
-            impl<'a> ComponentTypeBorrow<'a> {
-                pub fn as_wit(&'a self) -> ComponentTypeParam<'a> {
+            impl<'a> ValueBorrow<'a> {
+                pub fn as_wit(&'a self) -> ValueParam<'a> {
                     match self {
-                        $(Self::[<Type $value>](v) => ComponentTypeParam::[<Type $value>](*v),)*
-                        Self::TypeList(v) => ComponentTypeParam::TypeList(v.as_wit()),
-                        Self::TypeOption(v) => ComponentTypeParam::TypeOption(v.as_wit()),
+                        $(Self::[<Type $value>](v) => ValueParam::[<Type $value>](*v),)*
+                        Self::TypeVec(v) => ValueParam::TypeVec(v.as_wit()),
+                        Self::TypeOption(v) => ValueParam::TypeOption(v.as_wit()),
                     }
                 }
             }

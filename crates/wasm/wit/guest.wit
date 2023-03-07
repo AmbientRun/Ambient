@@ -1,6 +1,6 @@
 default interface guest {
-    use pkg.component.{component-type}
+    use pkg.component.{entity}
 
     init: func(interface-version: u32)
-    exec: func(time: float32, event-name: string, event-data: list<tuple<u32, component-type>>)
+    exec: func(time: float32, event-name: string, event-data: entity)
 }

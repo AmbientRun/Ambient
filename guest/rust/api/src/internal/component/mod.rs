@@ -5,9 +5,7 @@ mod borrowed_types;
 pub(crate) mod query;
 pub(crate) mod traits;
 
-pub use traits::{
-    get_component as __internal_get_component, SupportedComponentTypeGet, SupportedComponentTypeSet,
-};
+pub use traits::{get_component as __internal_get_component, SupportedValueGet, SupportedValueSet};
 
 /// Implemented by all [Component]s.
 pub trait UntypedComponent {
@@ -57,7 +55,7 @@ macro_rules! lazy_component {
 ///
 /// Use the [spawn](Entity::spawn) method to insert the [Entity] into the world.
 #[derive(Clone)]
-pub struct Entity(pub(crate) HashMap<u32, wit::component::ComponentTypeResult>);
+pub struct Entity(pub(crate) HashMap<u32, wit::component::ValueResult>);
 impl Entity {
     /// Creates a new `Entity`.
     pub fn new() -> Self {
@@ -65,31 +63,28 @@ impl Entity {
     }
 
     /// Gets the data for `component` in this, if it exists.
-    pub fn get<T: SupportedComponentTypeGet>(&self, component: Component<T>) -> Option<T> {
+    pub fn get<T: SupportedValueGet>(&self, component: Component<T>) -> Option<T> {
         T::from_result(self.0.get(&component.index())?.clone())
     }
 
     /// Adds `component` to this with `value`. It will replace an existing component if present.
-    pub fn set<T: SupportedComponentTypeSet>(&mut self, component: Component<T>, value: T) {
+    pub fn set<T: SupportedValueSet>(&mut self, component: Component<T>, value: T) {
         self.0.insert(component.index(), value.into_result());
     }
 
     /// Sets the `component` in this to the default value for `T`.
-    pub fn set_default<T: SupportedComponentTypeSet + Default>(&mut self, component: Component<T>) {
+    pub fn set_default<T: SupportedValueSet + Default>(&mut self, component: Component<T>) {
         self.set(component, T::default())
     }
 
     /// Adds `component` to this with `value`, and returns `self` to allow for easy chaining.
-    pub fn with<T: SupportedComponentTypeSet>(mut self, component: Component<T>, value: T) -> Self {
+    pub fn with<T: SupportedValueSet>(mut self, component: Component<T>, value: T) -> Self {
         self.set(component, value);
         self
     }
 
     /// Sets the `component` in this to the default value for `T`, and returns `self` to allow for easy chaining.
-    pub fn with_default<T: SupportedComponentTypeSet + Default>(
-        mut self,
-        component: Component<T>,
-    ) -> Self {
+    pub fn with_default<T: SupportedValueSet + Default>(mut self, component: Component<T>) -> Self {
         self.set_default(component);
         self
     }
@@ -101,7 +96,7 @@ impl Entity {
     }
 
     /// Removes the specified component from this, and returns the value if it was present.
-    pub fn remove<T: SupportedComponentTypeGet>(&mut self, component: Component<T>) -> Option<T> {
+    pub fn remove<T: SupportedValueGet>(&mut self, component: Component<T>) -> Option<T> {
         T::from_result(self.0.remove(&component.index())?)
     }
 
@@ -119,11 +114,11 @@ impl Entity {
 
     pub(crate) fn call_with<R>(
         &self,
-        callback: impl FnOnce(&[(u32, wit::component::ComponentTypeParam<'_>)]) -> R,
+        callback: impl FnOnce(&[(u32, wit::component::ValueParam<'_>)]) -> R,
     ) -> R {
-        let data: Vec<(u32, borrowed_types::ComponentTypeBorrow)> =
+        let data: Vec<(u32, borrowed_types::ValueBorrow)> =
             self.0.iter().map(|(id, v)| (*id, v.into())).collect();
-        let data: Vec<(u32, wit::component::ComponentTypeParam<'_>)> =
+        let data: Vec<(u32, wit::component::ValueParam<'_>)> =
             data.iter().map(|(id, v)| (*id, v.as_wit())).collect();
         callback(&data)
     }
@@ -138,14 +133,14 @@ pub trait ComponentsTuple {
     fn as_indices(&self) -> Vec<u32>;
     #[doc(hidden)]
     fn from_component_types(
-        component_types: Vec<wit::component::ComponentTypeResult>,
+        component_types: Vec<wit::component::ValueResult>,
     ) -> Option<Self::Data>;
 }
 
 // From: https://stackoverflow.com/questions/56697029/is-there-a-way-to-impl-trait-for-a-tuple-that-may-have-any-number-elements
 macro_rules! tuple_impls {
     ( $( $name:ident )+ ) => {
-        impl<$($name: SupportedComponentTypeGet),+> ComponentsTuple for ($(Component<$name>,)+) {
+        impl<$($name: SupportedValueGet),+> ComponentsTuple for ($(Component<$name>,)+) {
             #[allow(unused_parens)]
             type Data = ($($name),+);
 
@@ -154,7 +149,7 @@ macro_rules! tuple_impls {
                 let ($($name,)+) = self;
                 vec![$($name.index(),)*]
             }
-            fn from_component_types(component_types: Vec<wit::component::ComponentTypeResult>) -> Option<Self::Data> {
+            fn from_component_types(component_types: Vec<wit::component::ValueResult>) -> Option<Self::Data> {
                 paste::paste! {
                     #[allow(non_snake_case)]
                     if let [$([<value_ $name>],)+] = &component_types[..] {
@@ -176,14 +171,14 @@ tuple_impls! { A B C D E F }
 tuple_impls! { A B C D E F G }
 tuple_impls! { A B C D E F G H }
 tuple_impls! { A B C D E F G H I }
-impl<T: SupportedComponentTypeGet> ComponentsTuple for Component<T> {
+impl<T: SupportedValueGet> ComponentsTuple for Component<T> {
     type Data = T;
 
     fn as_indices(&self) -> Vec<u32> {
         vec![self.index()]
     }
     fn from_component_types(
-        component_types: Vec<wit::component::ComponentTypeResult>,
+        component_types: Vec<wit::component::ValueResult>,
     ) -> Option<Self::Data> {
         assert_eq!(component_types.len(), 1);
         T::from_result(component_types[0].clone())
@@ -196,7 +191,7 @@ impl ComponentsTuple for () {
         vec![]
     }
     fn from_component_types(
-        component_types: Vec<wit::component::ComponentTypeResult>,
+        component_types: Vec<wit::component::ValueResult>,
     ) -> Option<Self::Data> {
         assert!(component_types.is_empty());
         Some(())
