@@ -60,7 +60,7 @@ fn to_token_stream(
         TreeNodeInner::Other(component) => {
             let name_ident: syn::Path = syn::parse_str(name)?;
             let name_uppercase_ident: syn::Path = syn::parse_str(&name.to_ascii_uppercase())?;
-            let component_ty = component.type_.to_token_stream(api_name)?;
+            let component_ty = component.type_.to_token_stream(api_name, true)?;
 
             let mut doc_comment = format!("**{}**", component.name);
 

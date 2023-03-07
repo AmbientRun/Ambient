@@ -40,6 +40,11 @@ impl IdentifierPathBuf {
         Self(vec![])
     }
 
+    #[cfg(test)]
+    pub fn new(id: impl Into<String>) -> Result<Self, &'static str> {
+        Self::new_impl(id.into())
+    }
+
     fn new_impl(path: String) -> Result<Self, &'static str> {
         Ok(Self(
             path.split("::")
