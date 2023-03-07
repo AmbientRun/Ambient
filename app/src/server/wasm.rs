@@ -2,7 +2,9 @@ use std::{path::PathBuf, sync::Arc};
 
 use ambient_ecs::{components, EntityId, SystemGroup, World};
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
+use ambient_project::Identifier;
 use ambient_wasm::shared::{get_module_name, module_bytecode, spawn_module, MessageType, ModuleBytecode};
+use anyhow::Context;
 
 components!("wasm::server", {});
 
@@ -37,11 +39,28 @@ pub async fn initialize(world: &mut World, project_path: PathBuf, manifest: &amb
 
     ambient_wasm::server::initialize(world, messenger)?;
 
-    let main_wasm_path = project_path.join("build").join(format!("{}.wasm", manifest.project.id));
-    if main_wasm_path.exists() {
-        let bytecode = std::fs::read(main_wasm_path)?;
+    let wasm_component_paths: Vec<PathBuf> = std::fs::read_dir(project_path.join("build"))?
+        .filter_map(Result::ok)
+        .map(|p| p.path())
+        .filter(|p| p.extension().unwrap_or_default() == "wasm")
+        .collect();
 
-        let id = spawn_module(world, &manifest.project.id, manifest.project.description.clone().unwrap_or_default(), true)?;
+    let is_sole_module = wasm_component_paths.len() == 1;
+    for path in wasm_component_paths {
+        let filename_identifier =
+            Identifier::new(&*path.file_stem().context("no file stem for {path:?}")?.to_string_lossy()).map_err(anyhow::Error::msg)?;
+
+        let bytecode = std::fs::read(path)?;
+        let name = if is_sole_module {
+            manifest.project.id.clone()
+        } else {
+            Identifier::new(format!("{}_{}", manifest.project.id, filename_identifier)).map_err(anyhow::Error::msg)?
+        };
+
+        let description = manifest.project.description.clone().unwrap_or_default();
+        let description = if is_sole_module { description } else { format!("{description} ({filename_identifier})") };
+
+        let id = spawn_module(world, &name, description, true)?;
         world.add_component(id, module_bytecode(), ModuleBytecode(bytecode))?;
     }
 

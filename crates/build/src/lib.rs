@@ -35,7 +35,7 @@ pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, manife
 
     std::fs::create_dir_all(&build_path).unwrap();
     build_assets(physics, &assets_path, &build_path).await;
-    build_scripts(&path, manifest, &build_path, optimize).await.unwrap();
+    build_rust_if_available(&path, manifest, &build_path, optimize).await.unwrap();
 }
 
 async fn build_assets(physics: Physics, assets_path: &Path, build_path: &Path) {
@@ -79,7 +79,7 @@ async fn build_assets(physics: Physics, assets_path: &Path, build_path: &Path) {
     pipelines::process_pipelines(&ctx).await;
 }
 
-async fn build_scripts(path: &Path, manifest: &ProjectManifest, build_path: &Path, optimize: bool) -> anyhow::Result<()> {
+async fn build_rust_if_available(path: &Path, manifest: &ProjectManifest, build_path: &Path, optimize: bool) -> anyhow::Result<()> {
     let cargo_toml_path = path.join("Cargo.toml");
     if !cargo_toml_path.exists() {
         return Ok(());

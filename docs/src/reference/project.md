@@ -4,6 +4,24 @@ All Ambient projects must have an `ambient.toml` project manifest that describes
 
 At present, dependencies are _not_ supported, but this will change in future.
 
+## WebAssembly
+
+All `.wasm` components in the `build/` directory will be loaded, regardless of provenance.
+
+This means any `.wasm` that implements the Ambient [WIT interface](https://github.com/AmbientRun/Ambient/tree/main/crates/wasm/wit) and targets WASI snapshot 2 (or uses an adapter that targets WASI snapshot 2) should run within Ambient.
+
+As a convenience for Rust users, Ambient will automatically build a `Cargo.toml` at the root of your project, if present, as `wasm32-wasi`. The resulting WASM bytecode is then converted to a component and placed in `build/`.
+
+The process it takes is equivalent to these commands:
+
+```sh
+cd your_project
+cargo build --target wasm32-wasi
+wasm-tools component new target/wasm32-wasi/debug/your_project.wasm -o build/your_project.wasm --adapt wasi_snapshot_preview1.wasm
+```
+
+using [wasm-tools](https://github.com/bytecodealliance/wasm-tools) and a bundled version of the [preview2-prototyping WASI adapter](https://github.com/bytecodealliance/preview2-prototyping).
+
 ## Reference
 
 The full structure for `ambient.toml` is shown below with a sample:
