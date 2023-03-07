@@ -17,7 +17,7 @@
             "env": {
                 "RUST_LOG": "info,wgpu=warn,naga=warn,quinn=warn,sentry=debug,sentry-anyhow=debug,sentry-core=debug,fbxcel=error",
                 "AMBIENT_DISABLE_TIMEOUT": "true",
-                "AMBIENT_DEBUG": "true"
+                "AMBIENT_DEBUGGER": "true"
             },
             "args": [
                 "run",
@@ -44,7 +44,7 @@
             "env": {
                 "RUST_LOG": "info,wgpu=warn,naga=warn,quinn=warn,sentry=debug,sentry-anyhow=debug,sentry-core=debug,fbxcel=error",
                 "AMBIENT_DISABLE_TIMEOUT": "true",
-                "AMBIENT_DEBUG": "true"
+                "AMBIENT_DEBUGGER": "true"
             },
             "args": [
                 "run",
