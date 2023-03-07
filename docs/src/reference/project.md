@@ -6,7 +6,7 @@ At present, dependencies are _not_ supported, but this will change in future.
 
 ## WebAssembly
 
-All `.wasm` components in the `build/` directory will be loaded, regardless of provenance.
+All `.wasm` components in the `build/` directory will be loaded, regardless of provenance. The `.wasm` filenames must be snake-case ASCII identifiers, like the `id` in the manifest.
 
 This means any `.wasm` that implements the Ambient [WIT interface](https://github.com/AmbientRun/Ambient/tree/main/crates/wasm/wit) and targets WASI snapshot 2 (or uses an adapter that targets WASI snapshot 2) should run within Ambient.
 
