@@ -16,7 +16,7 @@ async fn init(app: &mut App) {
     let white_mat = FlatMaterialKey::white().get(&assets);
     let red_mat = FlatMaterialKey::new(vec4(1., 0., 0., 1.), Some(false)).get(&assets);
 
-    let aabb = AABB { min: -Vec3::ONE * 0.5, max: Vec3::ONE * 0.5 };
+    let aabb = AABB { min: -Vec3::ONE, max: Vec3::ONE };
     Entity::new()
         .with_default(local_to_world())
         .with_default(mesh_to_world())
