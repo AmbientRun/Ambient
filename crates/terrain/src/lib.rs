@@ -7,7 +7,9 @@ use ambient_core::{
     async_ecs::async_run,
     bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere},
     camera::{get_active_camera, projection_view},
-    main_scene, mesh, name, runtime, snap_to_ground,
+    main_scene, mesh, name,
+    player::local_user_id,
+    runtime, snap_to_ground,
     transform::{local_to_parent, local_to_world, mesh_to_world, rotation, scale, translation},
     FixedTimestepSystem,
 };
@@ -266,7 +268,7 @@ pub fn client_systems() -> SystemGroup {
                 .incl(terrain_cell())
                 .to_system(|q, world, qs, _| {
                     profiling::scope!("terrain.lod");
-                    if let Some(main_camera) = get_active_camera(world, main_scene()) {
+                    if let Some(main_camera) = get_active_camera(world, main_scene(), world.resource_opt(local_user_id())) {
                         let pw = world.get(main_camera, projection_view()).unwrap_or(Mat4::IDENTITY);
                         let camera_position = pw.inverse().project_point3(vec3(0., 0., -1.));
 

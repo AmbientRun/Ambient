@@ -1,7 +1,5 @@
 use ambient_api::{
-    components::core::{app::ui_scene, game_objects::player_camera},
-    concepts::make_orthographic_camera,
-    prelude::*,
+    components::core::app::ui_scene, concepts::make_orthographic_camera, prelude::*,
 };
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
@@ -24,7 +22,7 @@ fn App(_hooks: &mut Hooks) -> Element {
     let background = |e| {
         FlowRow(vec![e])
             .el()
-            .with_background(vec4(1., 1., 1., 0.02).into())
+            .with_background(vec4(1., 1., 1., 0.02))
             .set_default(fit_vertical_none())
             .set_default(fit_horizontal_none())
     };
@@ -43,11 +41,11 @@ fn App(_hooks: &mut Hooks) -> Element {
             .el()
             .with_padding_even(10.)
             .set(height(), 70.)
-            .with_background(vec4(1., 1., 1., 0.02).into()),
+            .with_background(vec4(1., 1., 1., 0.02)),
         background(Text::el("Fill remainder")).with_margin_even(30.),
     ])
     .el()
-    .with_background(vec4(1., 1., 1., 0.02).into())
+    .with_background(vec4(1., 1., 1., 0.02))
     .set(translation(), vec3(10., 10., 0.))
     .set(width(), 500.)
     .set(height(), 500.)
@@ -62,7 +60,6 @@ pub async fn main() -> EventResult {
                 Entity::new()
                     .with_merge(make_orthographic_camera())
                     .with(orthographic_from_window(), id)
-                    .with_default(player_camera())
                     .with_default(ui_scene()),
             );
         }

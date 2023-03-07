@@ -1,5 +1,5 @@
 [package]
-name = "image"
+name = "image_quad"
 edition = "2021"
 version = { workspace = true }
 rust-version = { workspace = true }

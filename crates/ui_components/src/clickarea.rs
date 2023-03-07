@@ -122,25 +122,25 @@ impl ElementComponent for ClickArea {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { inner, on_mouse_enter, on_mouse_leave, on_mouse_hover, on_mouse_input, on_mouse_wheel } = *self;
         let id = hooks.use_ref_with(|_| None);
-        let is_mouse_over = hooks.use_ref_with(|_| false);
+        let mouse_over_count = hooks.use_ref_with(|_| 0);
         hooks.use_frame({
             let id = id.clone();
-            let is_mouse_over = is_mouse_over.clone();
+            let mouse_over_count = mouse_over_count.clone();
             move |world| {
                 if let Some(id) = *id.lock() {
-                    let next = world.get(id, mouse_over()).unwrap_or(false);
-                    let mut state = is_mouse_over.lock();
-                    if !*state && next {
+                    let next = world.get(id, mouse_over()).unwrap_or(0);
+                    let mut state = mouse_over_count.lock();
+                    if *state == 0 && next > 0 {
                         for handler in &on_mouse_enter {
                             handler(world, id);
                         }
                     }
-                    if *state && !next {
+                    if *state > 0 && next == 0 {
                         for handler in &on_mouse_leave {
                             handler(world, id);
                         }
                     }
-                    if next {
+                    if next > 0 {
                         for handler in &on_mouse_hover {
                             handler(world, id);
                         }
@@ -151,17 +151,17 @@ impl ElementComponent for ClickArea {
         });
         hooks.use_world_event({
             let id = id.clone();
-            let is_mouse_over = is_mouse_over;
+            let mouse_over_count = mouse_over_count;
             move |world, event| {
                 if let Some(id) = *id.lock() {
                     if let Some(pressed) = event.get(event_mouse_input()) {
-                        if *is_mouse_over.lock() {
+                        if *mouse_over_count.lock() > 0 {
                             for handler in &on_mouse_input {
                                 handler(world, id, pressed.into(), event.get(mouse_button()).unwrap().into());
                             }
                         }
                     } else if let Some(delta) = event.get(event_mouse_wheel()) {
-                        if *is_mouse_over.lock() {
+                        if *mouse_over_count.lock() > 0 {
                             for handler in &on_mouse_wheel {
                                 handler(world, id, delta, event.get(event_mouse_wheel_pixels()).unwrap());
                             }

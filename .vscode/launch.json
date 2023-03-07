@@ -20,7 +20,7 @@
             },
             "args": [
                 "run",
-                "guest/rust/examples/ui/flow_layout",
+                "guest/rust/examples/ui/button",
                 "--debug"
             ],
             "cwd": "${workspaceFolder}",

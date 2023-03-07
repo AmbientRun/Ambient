@@ -3,7 +3,7 @@ use std::{self, f32::consts::E, fmt::Debug, hash::Hash, str::FromStr, time::Dura
 use ambient_core::{
     transform::{get_world_position, translation},
     window::WindowCtl,
-    window::{mouse_position, window_ctl},
+    window::{cursor_position, window_ctl},
 };
 use ambient_ecs::{ComponentValue, EntityId};
 use ambient_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
@@ -277,7 +277,7 @@ impl ElementComponent for Slider {
                         let block_id = *block_id.lock();
                         let block_position = get_world_position(world, block_id).unwrap_or_default();
                         let block_width = world.get(block_id, width()).unwrap_or_default();
-                        let position = world.resource(mouse_position());
+                        let position = world.resource(cursor_position());
                         on_change_factor(interpolate_clamped(position.x, block_position.x, block_width, 0., 1.));
                     }
                 }

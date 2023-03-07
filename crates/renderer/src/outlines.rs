@@ -68,7 +68,7 @@ impl Outlines {
                         binding: 0,
                         visibility: ShaderStages::FRAGMENT,
                         ty: BindingType::Texture {
-                            sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                            sample_type: wgpu::TextureSampleType::Float { filterable: false },
                             view_dimension: wgpu::TextureViewDimension::D2,
                             multisampled: false,
                         },
@@ -192,6 +192,7 @@ impl Outlines {
             })],
             depth_stencil_attachment: None,
         });
+
         rpass.set_pipeline(self.pipeline.pipeline());
         rpass.set_bind_group(0, &bind_group, &[]);
         rpass.draw(0..4, 0..1);

@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use ambient_core::{
     camera::{far, fog, get_active_camera, projection_view},
+    player::local_user_id,
     transform::{get_world_position, get_world_rotation, local_to_world},
 };
 use ambient_ecs::{Component, ECSError, World};
@@ -229,7 +230,7 @@ impl ForwardGlobals {
     }
     pub fn update(&mut self, world: &World, shadow_cameras: &[ShadowCameraData]) {
         let mut p = &mut self.params;
-        if let Some(id) = get_active_camera(world, self.scene) {
+        if let Some(id) = get_active_camera(world, self.scene, world.resource_opt(local_user_id())) {
             p.projection_view = world.get(id, projection_view()).unwrap_or_default();
             p.inv_projection_view = p.projection_view.inverse();
             p.camera_position = get_world_position(world, id).unwrap_or_default().extend(1.);
@@ -338,7 +339,7 @@ impl ShadowAndUIGlobals {
             camera_position: projection_view.inverse().project_point3(-Vec3::Z).extend(1.),
             ..Default::default()
         };
-        if let Some(id) = get_active_camera(world, scene) {
+        if let Some(id) = get_active_camera(world, scene, world.resource_opt(local_user_id())) {
             params.forward_camera_position = get_world_position(world, id).unwrap_or_default().extend(1.);
         }
         self.gpu.queue.write_buffer(&self.buffer, 0, bytemuck::cast_slice(&[params]));

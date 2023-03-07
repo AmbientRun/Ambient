@@ -1,7 +1,5 @@
 use ambient_api::{
-    components::core::{app::ui_scene, game_objects::player_camera},
-    concepts::make_orthographic_camera,
-    prelude::*,
+    components::core::app::ui_scene, concepts::make_orthographic_camera, prelude::*,
 };
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
@@ -98,7 +96,6 @@ pub async fn main() -> EventResult {
                 Entity::new()
                     .with_merge(make_orthographic_camera())
                     .with(orthographic_from_window(), id)
-                    .with_default(player_camera())
                     .with_default(ui_scene()),
             );
         }

@@ -125,7 +125,8 @@ fn project_point(transform: mat4x4<f32>, position: vec3<f32>) -> vec3<f32> {
 
 fn get_solids_screen_depth(screen_ndc: vec3<f32>) -> f32 {
     let screen_tc = screen_ndc_to_uv(screen_ndc);
-    return textureSampleLevel(solids_screen_depth, default_sampler, screen_tc, 0.);
+    // return textureSampleLevel(solids_screen_depth, default_sampler, screen_tc, 0.);
+    return textureSample(solids_screen_depth, default_sampler, screen_tc);
 }
 
 fn get_solids_screen_color(screen_ndc: vec3<f32>) -> vec3<f32> {
