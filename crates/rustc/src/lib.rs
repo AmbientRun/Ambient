@@ -39,22 +39,31 @@ impl Rust {
         Ok(Self(installation))
     }
 
-    pub fn build(&self, working_directory: &Path, package_name: &str) -> anyhow::Result<Vec<u8>> {
+    pub fn build(
+        &self,
+        working_directory: &Path,
+        package_name: &str,
+        optimize: bool,
+    ) -> anyhow::Result<Vec<u8>> {
         Ok(std::fs::read(
-            parse_command_result_for_filenames(self.0.run(
-                "cargo",
-                [
-                    "build",
-                    "--release",
-                    "--message-format",
-                    "json",
-                    "--target",
-                    "wasm32-wasi",
-                    "--package",
-                    package_name,
-                ],
-                Some(working_directory),
-            ))?
+            parse_command_result_for_filenames(
+                self.0.run(
+                    "cargo",
+                    [
+                        "build",
+                        if optimize { "--release" } else { "" },
+                        "--message-format",
+                        "json",
+                        "--target",
+                        "wasm32-wasi",
+                        "--package",
+                        package_name,
+                    ]
+                    .into_iter()
+                    .filter(|a| !a.is_empty()),
+                    Some(working_directory),
+                ),
+            )?
             .into_iter()
             .find(|p| p.extension().unwrap_or_default() == "wasm")
             .context("no wasm artifact")?,

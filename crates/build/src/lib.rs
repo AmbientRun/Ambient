@@ -21,7 +21,7 @@ pub mod pipelines;
 /// src/**  This is where you store Rust source files
 /// build  This is the output directory, and is created when building
 /// ambient.toml  This is a metadata file to describe the project
-pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, manifest: &ProjectManifest) {
+pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, manifest: &ProjectManifest, optimize: bool) {
     log::info!(
         "Building project `{}` ({})",
         manifest.project.id,
@@ -35,7 +35,7 @@ pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, manife
 
     std::fs::create_dir_all(&build_path).unwrap();
     build_assets(physics, &assets_path, &build_path).await;
-    build_scripts(&path, manifest, &build_path).await.unwrap();
+    build_scripts(&path, manifest, &build_path, optimize).await.unwrap();
 }
 
 async fn build_assets(physics: Physics, assets_path: &Path, build_path: &Path) {
@@ -99,7 +99,7 @@ async fn build_scripts(path: &Path, manifest: &ProjectManifest, build_path: &Pat
     }
 
     let rustc = ambient_rustc::Rust::get_system_installation().await?;
-    let bytecode = rustc.build(path, manifest.project.id.as_ref())?;
+    let bytecode = rustc.build(path, manifest.project.id.as_ref(), optimize)?;
 
     tokio::fs::write(build_path.join(format!("{}.wasm", manifest.project.id)), bytecode).await?;
 
