@@ -1,0 +1,8 @@
+{
+  "editor.detectIndentation": false,
+  "editor.tabSize": 4,
+  "files.trimTrailingWhitespace": true,
+  "[toml]": {
+    "editor.formatOnSave": false
+  }
+}

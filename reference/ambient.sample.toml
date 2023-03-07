@@ -1,0 +1,58 @@
+#
+# The project section describes all project metadata.
+#
+[project]
+# This must be a snake-cased name.
+id = "my_cool_project"
+# This name is human-readable and can contain anything.
+name = "My Cool Project"
+# This description is human-readable and can contain anything.
+description = "A sample project that's the coolest thing ever."
+# Projects are expected to use (major, minor, patch) semantic versioning.
+# Other formats are not accepted. This requirement may be relaxed later.
+version = "0.0.1"
+
+#
+# Custom components defined by this project.
+#
+[components]
+# Inline tables can be used.
+cool_component = { type = "I32", name = "Cool Component", description = "A cool component", attributes = ["Debuggable"] }
+# Explicit tables can also be used.
+[components.cool_component2]
+# At time of writing, supported component types are:
+#   Empty, Bool, EntityId, F32, F64, Mat4, I32, Quat, String, U32, U64, Vec2, Vec3, Vec4, Vec4
+# or
+#   { type = "Vec", element_type = "TypeFromAbove" }
+#   { type = "Option", element_type = "TypeFromAbove" }
+# You cannot nest container types.
+type = "I32"
+name = "Cool Component 2"
+description = "A cool component 2"
+# At time of writing, supported attributes are:
+#   Debuggable, Networked, Resource, Store
+attributes = ["Debuggable"]
+# Namespaces are also supported:
+"cool::component" = { type = "I32", name = "Cool Component", description = "A cool component", attributes = ["Debuggable"] }
+
+#
+# Custom concepts defined by this project.
+#
+[concepts.concept1]
+# The name of the concept.
+name = "Concept 1"
+# The description of the concept.
+description = "The best"
+[concepts.transformable.components]
+# Each component needs to be specified with a default value.
+# At time of writing, you can only use components defined in this project manifest.
+cool_component = 0
+
+# A concept that extends `concept1` and has both `cool_component` and `cool_component2`.
+[concepts.concept2]
+name = "Concept 2"
+description = "The successor"
+# At time of writing, all concepts being extended must be defined in this project manifest.
+extends = ["concept1"]
+[concepts.concept2.components]
+cool_component2 = 1

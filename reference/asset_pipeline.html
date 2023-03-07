@@ -1,0 +1,510 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Asset pipeline - Ambient Documentation</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../introduction.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">User Guide</li><li class="chapter-item expanded "><a href="../user/installing.html"><strong aria-hidden="true">1.</strong> Installing</a></li><li class="chapter-item expanded "><a href="../user/running.html"><strong aria-hidden="true">2.</strong> Running</a></li><li class="chapter-item expanded "><a href="../user/api.html"><strong aria-hidden="true">3.</strong> API</a></li><li class="chapter-item expanded "><a href="../user/debugging.html"><strong aria-hidden="true">4.</strong> Debugging</a></li><li class="chapter-item expanded affix "><li class="part-title">Reference Guide</li><li class="chapter-item expanded "><a href="../reference/runtime.html"><strong aria-hidden="true">5.</strong> Runtime</a></li><li class="chapter-item expanded "><a href="../reference/project.html"><strong aria-hidden="true">6.</strong> Project</a></li><li class="chapter-item expanded "><a href="../reference/asset_pipeline.html" class="active"><strong aria-hidden="true">7.</strong> Asset pipeline</a></li><li class="chapter-item expanded "><a href="../reference/terminology.html"><strong aria-hidden="true">8.</strong> Terminology</a></li><li class="chapter-item expanded "><a href="../reference/common_pitfalls.html"><strong aria-hidden="true">9.</strong> Common pitfalls</a></li><li class="chapter-item expanded affix "><li class="part-title">Community</li><li class="chapter-item expanded "><a href="../community/contributing.html"><strong aria-hidden="true">10.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../community/changelog.html"><strong aria-hidden="true">11.</strong> Changelog</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Ambient Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="asset-pipeline"><a class="header" href="#asset-pipeline">Asset pipeline</a></h1>
+<!-- markdownlint-disable-file MD024 -->
+<p>Ambient features an automated asset pipeline that is capable of loading and processing a number of assets and formats.</p>
+<p>To use it, create a file named <code>pipeline.json</code> anywhere in your project. You can also prepend anything you'd like to the filename, which means <code>hello_pipeline.json</code> and such will also work. The full reference structure of the <code>json</code> is described in <a href="#reference">Reference</a>.</p>
+<p>This pipeline will look at, but not necessarily process, all of the files adjacent to it in the folder. By convention, our examples place their assets in the <code>assets</code> folder, but this is not necessary.</p>
+<p>A <code>pipeline.json</code> can contain one or more pipelines. To use more than one pipeline, wrap your pipeline object in a JSON array (<code>[]</code>).</p>
+<h2 id="models"><a class="header" href="#models">Models</a></h2>
+<p>The <code>Models</code> pipeline can be used to compile a model, or models, to meshes that can be used by Ambient. Additionally, by default, prefabs are created for each mesh. These prefabs can have components added to them automatically through the <code>object_components</code> field of the pipeline.</p>
+<h3 id="supported-formats"><a class="header" href="#supported-formats">Supported formats</a></h3>
+<ul>
+<li>FBX: Native support</li>
+<li>glTF: Native support</li>
+<li>Unity models: Native support</li>
+<li>Quixel models: Native support</li>
+<li>~30 other formats: This support is provided through the <a href="https://github.com/assimp/assimp">assimp</a> library. It is not guaranteed to be fully integrated.</li>
+</ul>
+<h3 id="examples"><a class="header" href="#examples">Examples</a></h3>
+<h4 id="basic-models"><a class="header" href="#basic-models">Basic models</a></h4>
+<p>The following will load <code>.glb</code> and <code>.fbx</code> files in the folder or any of the sub-folders.</p>
+<pre><code class="language-json">{
+  &quot;pipeline&quot;: {
+    &quot;type&quot;: &quot;Models&quot;
+  }
+}
+</code></pre>
+<h4 id="a-more-complex-model-example"><a class="header" href="#a-more-complex-model-example">A more complex model example</a></h4>
+<p>The following will filter to just files that contain <code>table</code>, scale it down, and override materials for the <code>wood</code> material.</p>
+<pre><code class="language-json">{
+  &quot;pipeline&quot;: {
+    &quot;type&quot;: &quot;Models&quot;,
+    &quot;collider&quot;: {
+      &quot;type&quot;: &quot;FromModel&quot;
+    },
+    &quot;material_overrides&quot;: [
+      {
+        &quot;filter&quot;: {
+          &quot;type&quot;: &quot;ByName&quot;,
+          &quot;name&quot;: &quot;wood&quot;
+        },
+        &quot;material&quot;: {
+          &quot;base_color&quot;: &quot;wood_albedo.png&quot;,
+          &quot;metalic&quot;: 0.5,
+          &quot;roughness&quot;: 0.2
+        }
+      }
+    ],
+    &quot;transforms&quot;: [
+      {
+        &quot;type&quot;: &quot;Scale&quot;,
+        &quot;scale&quot;: 0.1
+      }
+    ]
+  },
+  &quot;sources&quot;: [&quot;**/*table*&quot;],
+  &quot;tags&quot;: [&quot;Man made&quot;]
+}
+</code></pre>
+<h3 id="notes"><a class="header" href="#notes">Notes</a></h3>
+<ul>
+<li>If you are using components in your prefab and are hot-reloading it, the incoming prefab will overwrite any corresponding components on the current state of the entity. These components should only be used for static data - that is, <code>max_hitpoints</code> but not <code>current_hitpoints</code>.</li>
+</ul>
+<h2 id="materials"><a class="header" href="#materials">Materials</a></h2>
+<p>Detailed documentation is pending, but please consult the <a href="#reference">Reference</a>.</p>
+<h3 id="supported-formats-1"><a class="header" href="#supported-formats-1">Supported formats</a></h3>
+<ul>
+<li><code>jpg</code></li>
+<li><code>png</code></li>
+<li><code>gif</code></li>
+<li><code>webp</code></li>
+<li>as well as other common image formats</li>
+</ul>
+<h2 id="audio"><a class="header" href="#audio">Audio</a></h2>
+<p>Detailed documentation is pending, but please consult the <a href="#reference">Reference</a>.</p>
+<h3 id="supported-formats-2"><a class="header" href="#supported-formats-2">Supported formats</a></h3>
+<ul>
+<li><code>ogg</code></li>
+<li><code>wav</code></li>
+<li><code>mp3</code></li>
+</ul>
+<h2 id="reference"><a class="header" href="#reference">Reference</a></h2>
+<p>The full structure for <code>pipeline.json</code> is described below in TypeScript <code>.d.ts</code> format:</p>
+<pre><code class="language-typescript">// This file is generated by the `generate-docs` tool. Please do not manually edit it.
+// pipeline.json
+export type u32 = number;
+export type f32 = number;
+export type Vec2 = [number, number];
+export type Vec3 = [number, number, number];
+export type Vec4 = [number, number, number, number];
+export type EntityData = {[component_id: string]: any};
+export type AssetUrl = string;
+
+export type Pipeline = {
+  /// The type of pipeline to use.
+  pipeline: {
+    /// The models asset pipeline.
+    /// Will import models (including constituent materials and animations) and generate prefabs for them by default.
+    type: &quot;Models&quot;,
+    /// The importer to use to process models.
+    importer?: {
+      /// The default importer is sufficient for the majority of needs.
+      type: &quot;Regular&quot;,
+    } | {
+      /// Import Unity models.
+      type: &quot;UnityModels&quot;,
+      /// Whether or not the Unity prefabs should be converted to Ambient prefabs.
+      use_prefabs: boolean,
+    } | {
+      /// Import Quixel models.
+      type: &quot;Quixel&quot;,
+    },
+    /// Use assimp as the importer.
+    /// This will support more file formats, but is less well-integrated. Off by default.
+    force_assimp?: boolean,
+    /// The physics collider to use for this mesh.
+    collider?: {
+      /// No physics collider. The default.
+      type: &quot;None&quot;,
+    } | {
+      /// Extract the physics collider from the model.
+      type: &quot;FromModel&quot;,
+      /// Whether or not the normals should be flipped.
+      flip_normals?: boolean,
+      /// Whether or not the indices should be reversed for each triangle. On by default.
+      reverse_indices?: boolean,
+    } | {
+      /// Use a spherical character collider.
+      type: &quot;Character&quot;,
+      /// The radius of the collider.
+      radius?: f32,
+      /// The height of the collider.
+      height?: f32,
+    },
+    /// If a collider is present, this controls how it will interact with other colliders.
+    collider_type?: 
+      /// This object cannot move (e.g. a wall).
+      &quot;Static&quot; | 
+      /// This object can move dynamically in the scene (e.g. a physics object).
+      &quot;Dynamic&quot; | 
+      /// This object should only be present in the trigger-area scene.
+      &quot;TriggerArea&quot; | 
+      /// This object should only be present in the picking scene.
+      &quot;Picking&quot;,
+    /// Whether or not this mesh should have its texture sizes capped.
+    cap_texture_sizes?: 
+      /// Cap this model's textures to 128x128.
+      &quot;X128&quot; | 
+      /// Cap this model's textures to 256x256.
+      &quot;X256&quot; | 
+      /// Cap this model's textures to 512x512.
+      &quot;X512&quot; | 
+      /// Cap this model's textures to 1024x1024.
+      &quot;X1024&quot; | 
+      /// Cap this model's textures to 2048x2048.
+      &quot;X2048&quot; | 
+      /// Cap this model's textures to 4096x4096.
+      &quot;X4096&quot; | 
+      /// Cap this model's textures to SIZE x SIZE.
+      /// It is strongly recommended that this is a power of two.
+      {&quot;Custom&quot;: u32},
+    /// Treats all assets in the pipeline as variations, and outputs a single asset which is a collection of all assets.
+    /// Most useful for grass and other entities whose individual identity is not important.
+    collection_of_variants?: boolean,
+    /// Output prefabs that can be spawned. On by default.
+    output_prefabs?: boolean,
+    /// Output the animations that belonged to this model.
+    output_animations?: boolean,
+    /// If specified, these components will be added to the prefabs produced by `output_prefabs`.
+    /// 
+    /// This is a great way to specify additional information about your prefab that can be used by gameplay logic.
+    /// Note that these components should have static data (i.e. statistics), not dynamic state, as any such state could be
+    /// replaced by this prefab being reloaded.
+    prefab_components?: EntityData,
+    /// If specified, a list of overrides to use for the materials for the mesh.
+    material_overrides?: {
+      /// The filter for this override (i.e. what it should apply to).
+      filter: {
+        /// Replace all materials.
+        type: &quot;All&quot;,
+      } | {
+        /// Replace all materials that match this name exactly.
+        type: &quot;ByName&quot;,
+        /// The material name to replace. Must match exactly (i.e. is case-sensitive and does not ignore whitespace).
+        name: string,
+      },
+      /// The material to use as the replacement.
+      material: {
+        /// The name of the material.
+        name?: string,
+        /// Where the material came from.
+        source?: string,
+        /// The base color map (i.e. texture) of this material.
+        base_color?: AssetUrl,
+        /// The opacity map of this material.
+        opacity?: AssetUrl,
+        /// The normal map of this material.
+        normalmap?: AssetUrl,
+        /// The metallic roughness map of this material.
+        metallic_roughness?: AssetUrl,
+        /// The color that this material should be multiplied by. Defaults to white for PBR.
+        base_color_factor?: Vec4,
+        /// The emissive factor of this material (i.e. the color that it emits). Defaults to black for PBR.
+        emissive_factor?: Vec4,
+        /// Whether or not this material is transparent. Defaults to false for PBR.
+        transparent?: boolean,
+        /// The opacity level (between 0 and 1) at which this material will not be rendered.
+        /// If the opacity map at a point has an opacity lower than this, that point will not be rendered.
+        /// Defaults to 0.5 for PBR.
+        alpha_cutoff?: f32,
+        /// Whether or not this material is double-sided. Defaults to false for PBR.
+        double_sided?: boolean,
+        /// The metallic coefficient of this material. Defaults to 1 for PBR.
+        metallic?: f32,
+        /// The roughness coefficient of this material. Defaults to 1 for PBR.
+        roughness?: f32,
+        /// The non-PBR specular map of this material. If specified, it will be translated to a PBR equivalent.
+        specular?: AssetUrl,
+        /// The non-PBR specular exponent of this material. If specified alongside `specular`, it will be translated to a PBR equivalent.
+        specular_exponent?: f32,
+      },
+    }[],
+    /// If specified, a list of transformations to apply to this model. This can be used
+    /// to correct coordinate space differences between your asset source and the runtime.
+    /// 
+    /// These will be applied in sequence.
+    transforms?: ({
+      /// Rotate Y up to Z up.
+      type: &quot;RotateYUpToZUp&quot;,
+    } | {
+      /// Rotate X by `deg` degrees.
+      type: &quot;RotateX&quot;,
+      /// The degrees to rotate this model around the X axis.
+      deg: f32,
+    } | {
+      /// Rotate Y by `deg` degrees.
+      type: &quot;RotateY&quot;,
+      /// The degrees to rotate this model around the Y axis.
+      deg: f32,
+    } | {
+      /// Rotate Z by `deg` degrees.
+      type: &quot;RotateZ&quot;,
+      /// The degrees to rotate this model around the Z axis.
+      deg: f32,
+    } | {
+      /// Scale this model.
+      type: &quot;Scale&quot;,
+      /// The factor to scale this model by.
+      scale: f32,
+    } | {
+      /// Translate this model.
+      type: &quot;Translate&quot;,
+      /// The translation to apply to this model (i.e. this model will be moved by `translation` in the current coordinate space).
+      translation: Vec3,
+    } | {
+      /// Scale this model's AABB.
+      type: &quot;ScaleAABB&quot;,
+      /// The factor to scale this model's AABB by.
+      scale: f32,
+    } | {
+      /// Scale this model's animations (spatially, not in time).
+      type: &quot;ScaleAnimations&quot;,
+      /// The factor to scale this model's animations by.
+      scale: f32,
+    } | {
+      /// Re-root this mesh.
+      type: &quot;SetRoot&quot;,
+      /// The name of the node to set as the new root for this mesh.
+      name: string,
+    } | {
+      /// Re-center this mesh such that the root is located at the origin.
+      type: &quot;Center&quot;,
+    })[],
+  } | {
+    /// The materials asset pipeline.
+    /// Will import specific materials without needing to be part of a model.
+    type: &quot;Materials&quot;,
+    /// The importer to use for materials.
+    importer: {
+      /// Import a single material, as specified.
+      /// All of its dependent assets (URLs, etc) will be resolved during the build process.
+      type: &quot;Single&quot;,
+      /// The name of the material.
+      name?: string,
+      /// Where the material came from.
+      source?: string,
+      /// The base color map (i.e. texture) of this material.
+      base_color?: AssetUrl,
+      /// The opacity map of this material.
+      opacity?: AssetUrl,
+      /// The normal map of this material.
+      normalmap?: AssetUrl,
+      /// The metallic roughness map of this material.
+      metallic_roughness?: AssetUrl,
+      /// The color that this material should be multiplied by. Defaults to white for PBR.
+      base_color_factor?: Vec4,
+      /// The emissive factor of this material (i.e. the color that it emits). Defaults to black for PBR.
+      emissive_factor?: Vec4,
+      /// Whether or not this material is transparent. Defaults to false for PBR.
+      transparent?: boolean,
+      /// The opacity level (between 0 and 1) at which this material will not be rendered.
+      /// If the opacity map at a point has an opacity lower than this, that point will not be rendered.
+      /// Defaults to 0.5 for PBR.
+      alpha_cutoff?: f32,
+      /// Whether or not this material is double-sided. Defaults to false for PBR.
+      double_sided?: boolean,
+      /// The metallic coefficient of this material. Defaults to 1 for PBR.
+      metallic?: f32,
+      /// The roughness coefficient of this material. Defaults to 1 for PBR.
+      roughness?: f32,
+      /// The non-PBR specular map of this material. If specified, it will be translated to a PBR equivalent.
+      specular?: AssetUrl,
+      /// The non-PBR specular exponent of this material. If specified alongside `specular`, it will be translated to a PBR equivalent.
+      specular_exponent?: f32,
+    } | {
+      /// Import Quixel materials.
+      type: &quot;Quixel&quot;,
+    },
+    /// Whether or not decal prefabs should be created for each of these materials.
+    output_decals?: boolean,
+  } | {
+    /// The audio asset pipeline.
+    /// Will import supported audio file formats and produce Ogg Vorbis files to be used by the runtime.
+    type: &quot;Audio&quot;,
+  },
+  /// Filter the sources used to feed this pipeline.
+  /// This is a list of glob patterns for accepted files.
+  /// All files are accepted if this is empty.
+  sources?: string[],
+  /// Tags to apply to the output resources.
+  tags?: string[],
+  /// Categories to apply to the output resources.
+  categories?: string[][],
+}
+</code></pre>
+<p>In addition, a single <code>pipeline.json</code> can contain more than one pipeline. To do this, wrap your existing object in <code>[]</code> (i.e. a JSON array) and add more pipelines as required.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../reference/project.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="../reference/terminology.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../reference/project.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="../reference/terminology.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>
