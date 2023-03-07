@@ -31,7 +31,7 @@ pub struct MultiBuffer {
     gpu: Arc<Gpu>,
     buffer: wgpu::Buffer,
     sub_buffers: Vec<Option<SubBuffer>>,
-    free_ids: Vec<usize>,
+    free_ids: Vec<SubBufferId>,
     label: String,
     usage: wgpu::BufferUsages,
     total_capacity: u64,
@@ -55,12 +55,15 @@ impl MultiBuffer {
     pub fn total_bytes_used() -> usize {
         MULTI_BUFFERS_TOTAL_SIZE.load(Ordering::SeqCst)
     }
+
     pub fn buffer(&self) -> &wgpu::Buffer {
         &self.buffer
     }
+
     pub fn total_capacity_in_bytes(&self) -> u64 {
         self.total_capacity
     }
+
     pub fn create_buffer(&mut self, capacity: Option<u64>) -> SubBufferId {
         let mut encoder =
             self.gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("MultiBuffer.create_buffer") });
@@ -100,9 +103,11 @@ impl MultiBuffer {
             Err(MultiBufferError::NoSuchSubBuffer(id))
         }
     }
+
     pub fn buffer_exists(&self, id: SubBufferId) -> bool {
         matches!(self.sub_buffers.get(id), Some(Some(_)))
     }
+
     pub fn resize_buffer(&mut self, id: SubBufferId, len: u64) -> Result<(), MultiBufferError> {
         let mut encoder =
             self.gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("MultiBuffer.resize_buffer") });
@@ -110,6 +115,7 @@ impl MultiBuffer {
         self.gpu.queue.submit(Some(encoder.finish()));
         res
     }
+
     pub fn resize_buffer_with_encoder(
         &mut self,
         encoder: &mut wgpu::CommandEncoder,
@@ -134,6 +140,7 @@ impl MultiBuffer {
         }
         Ok(())
     }
+
     pub fn write(&self, id: SubBufferId, offset: u64, data: &[u8]) -> Result<(), MultiBufferError> {
         if let Some(Some(buf)) = &self.sub_buffers.get(id) {
             if offset + (data.len() as u64) > buf.size_bytes {

@@ -65,13 +65,15 @@ fn get_lod(entity_loc: vec2<u32>) -> u32 {
     let bounding_sphere = get_entity_world_bounding_sphere(entity_loc);
 	let radius = bounding_sphere.w;
 
-    var lod_cutoffs = get_entity_lod_cutoffs(entity_loc);
+    var lod_cutoffs = get_entity_lod_cutoffs(entity_loc) ;
 
     let dist = length(params.main_camera.position.xyz - bounding_sphere.xyz);
     let clip_space_radius = radius * params.main_camera.cot_fov_2 / dist;
-    for (var i=0u; i < 20u; i = i + 1u) {
-        if (clip_space_radius >= lod_cutoffs[i] * params.lod_cutoff_scaling) {
-            return i;
+    for (var i=0u; i < 4u; i = i + 1u) {
+        for (var j=0u; j < 4u; j = j + 1u) {
+            if (clip_space_radius >= lod_cutoffs[i][j] * params.lod_cutoff_scaling) {
+                return i * 4u + j;
+            }
         }
     }
 

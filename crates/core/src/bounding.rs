@@ -29,7 +29,7 @@ components!("rendering", {
 });
 gpu_components! {
     world_bounding_sphere() => world_bounding_sphere: GpuComponentFormat::Vec4,
-    visibility_from() => visibility_from: GpuComponentFormat::UVec4,
+    visibility_from() => visibility_from: GpuComponentFormat::Vec4,
 }
 
 pub fn bounding_systems() -> SystemGroup {
@@ -89,7 +89,7 @@ impl System<GpuWorldSyncEvent> for VisibilityFromToGpuSystem {
         let gpu = world.resource(gpu());
         for arch in world.archetypes() {
             if let Some((gpu_buff, offset, layout_version)) =
-                gpu_world.get_buffer(GpuComponentFormat::UVec4, gpu_components::visibility_from(), arch.id)
+                gpu_world.get_buffer(GpuComponentFormat::Vec4, gpu_components::visibility_from(), arch.id)
             {
                 let content_changed = self.changed.changed(arch, visibility_from(), layout_version);
                 let buf = arch.get_component_buffer(visibility_from()).unwrap();
@@ -118,6 +118,7 @@ impl System<GpuWorldSyncEvent> for VisibilityFromToGpuSystem {
                             }
                         })
                         .collect_vec();
+
                     gpu.queue.write_buffer(gpu_buff, offset, bytemuck::cast_slice(&data));
                 }
             }

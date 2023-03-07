@@ -19,18 +19,20 @@ use crate::primitives;
 components!("rendering", {
     mesh_lods: Vec<Arc<GpuMesh>>,
     @[Networked, Store]
-    lod_cutoffs: [f32; 20],
+    lod_cutoffs: [f32; 16],
     @[Networked, Store]
     cpu_lod: usize,
     @[Networked, Store]
     cpu_lod_group: (),
     @[Networked, Store]
     cpu_lod_visible: bool,
+    /// Updated by the gpu
+    /// Stores the computed current lod-level as calculated from the lod cutoffs
     @[Networked, Store]
     gpu_lod: (),
 });
 gpu_components! {
-    lod_cutoffs(), gpu_lod() => lod_cutoffs: GpuComponentFormat::F32Array20,
+    lod_cutoffs(), gpu_lod() => lod_cutoffs: GpuComponentFormat::Mat4,
     gpu_lod() => gpu_lod: GpuComponentFormat::U32,
 }
 
@@ -90,7 +92,7 @@ pub fn lod_system() -> SystemGroup {
 pub fn gpu_world_system() -> SystemGroup<GpuWorldSyncEvent> {
     SystemGroup::new(
         "lod/gpu_world",
-        vec![Box::new(ComponentToGpuSystem::new(GpuComponentFormat::F32Array20, lod_cutoffs(), gpu_components::lod_cutoffs()))],
+        vec![Box::new(ComponentToGpuSystem::new(GpuComponentFormat::Mat4, lod_cutoffs(), gpu_components::lod_cutoffs()))],
     )
 }
 
