@@ -8,7 +8,7 @@ use ambient_core::{
     gpu_ecs::{GpuComponentFormat, GpuWorldSyncEvent, MappedComponentToGpuSystem},
     transform::{inv_local_to_world, local_to_world},
 };
-use ambient_ecs::{components, query, Commands, Description, EntityId, Name, Networked, Store, SystemGroup};
+use ambient_ecs::{components, query, Commands, Debuggable, Description, EntityId, Name, Networked, Store, SystemGroup};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     typed_buffer::TypedBuffer,
@@ -22,13 +22,13 @@ components!("rendering", {
     @[Networked, Store]
     inverse_bind_matrices: Arc<Vec<glam::Mat4>>,
     @[
-        Networked, Store,
+        Networked, Store, Debuggable,
         Name["Joints"],
         Description["Contains the joints that comprise this skinned mesh."]
     ]
     joints: Vec<EntityId>,
     @[
-        Networked, Store,
+        Networked, Store, Debuggable,
         Name["Joint Matrices"],
         Description["Contains the matrices for each joint of this skinned mesh.\nThis should be used in combination with `joints`."]
     ]

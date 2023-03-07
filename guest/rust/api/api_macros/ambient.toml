@@ -64,6 +64,12 @@ description = "Entity transform state (including translation, rotation and scale
 name = "UI"
 description = "Anything related to UI and text."
 
+[components."core::app::cursor_position"]
+type = "Vec2"
+name = "Cursor position"
+description = "Absolute mouse cursor position in screen space."
+attributes = ["Debuggable", "Networked"]
+
 [components."core::app::dtime"]
 type = "F32"
 name = "Delta Time"
@@ -454,6 +460,7 @@ name = "Density"
 description = """
 The density of this entity.
 This is used to update the `mass` when the entity is rescaled."""
+default = 1.0
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::physics::dynamic"]
@@ -486,6 +493,7 @@ attributes = ["Debuggable", "Networked", "Resource", "Store"]
 type = "F32"
 name = "Mass"
 description = "The mass of this entity, measured in kilograms."
+default = 1.0
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::physics::physics_controlled"]
@@ -540,13 +548,13 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "Empty"
 name = "Visualizing"
 description = "If attached, the physics state of this object will be rendered for debugging purposes."
-attributes = ["Networked"]
+attributes = ["Debuggable", "Networked"]
 
 [components."core::player::local_user_id"]
 type = "String"
 name = "Local user ID"
 description = "The user ID of the local player."
-attributes = ["Networked", "Resource", "Store"]
+attributes = ["Debuggable", "Networked", "Resource", "Store"]
 
 [components."core::player::player"]
 type = "Empty"
@@ -554,7 +562,7 @@ name = "Player"
 description = """
 This entity is a player.
 Note that this is a logical construct; a player's body may be separate from the player itself."""
-attributes = ["Networked", "Store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::player::user_id"]
 type = "String"
@@ -562,7 +570,7 @@ name = "User ID"
 description = """
 An identifier attached to all things owned by a user, and supplied by the user.
 This can be attached to more than just the player; by convention, it is also attached to related entities, including their camera and body."""
-attributes = ["Networked", "Store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::prefab::prefab_from_url"]
 type = "String"
@@ -584,7 +592,7 @@ name = "Cube"
 description = """
 If attached to an entity, the entity will be converted to a cube primitive.
 The cube is unit-sized (i.e. 0.5 metres out to each side)."""
-attributes = ["Networked", "Store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::primitives::quad"]
 type = "Empty"
@@ -592,7 +600,7 @@ name = "Quad"
 description = """
 If attached to an entity, the entity will be converted to a quad primitive.
 The quad is unit-sized on the XY axes, and flat on the Z axis (i.e. 0.5 metres out to the XY axes)."""
-attributes = ["Networked", "Store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::primitives::sphere"]
 type = "Empty"
@@ -600,28 +608,28 @@ name = "Sphere"
 description = """
 If attached to an entity, the entity will be converted to a unit-diameter sphere primitive.
 The sphere can be customized using the `sphere_radius`, `sphere_sectors` and `sphere_stacks` components."""
-attributes = ["Networked", "Store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::primitives::sphere_radius"]
 type = "F32"
 name = "Sphere radius"
 description = "Set the radius of a `sphere` entity."
 default = 0.5
-attributes = ["Networked", "Store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::primitives::sphere_sectors"]
 type = "U32"
 name = "Sphere sectors"
 description = "Set the longitudinal sectors of a `sphere` entity."
 default = 36
-attributes = ["Networked", "Store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::primitives::sphere_stacks"]
 type = "U32"
 name = "Sphere stacks"
 description = "Set the latitudinal stacks of a `sphere` entity."
 default = 18
-attributes = ["Networked", "Store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::rendering::cast_shadows"]
 type = "Empty"
@@ -665,13 +673,13 @@ name = "Joint Matrices"
 description = """
 Contains the matrices for each joint of this skinned mesh.
 This should be used in combination with `joints`."""
-attributes = ["Networked", "Store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::rendering::joints"]
 type = { type = "Vec", element_type = "EntityId" }
 name = "Joints"
 description = "Contains the joints that comprise this skinned mesh."
-attributes = ["Networked", "Store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::rendering::light_ambient"]
 type = "Vec3"
@@ -689,7 +697,7 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "Vec4"
 name = "Outline"
 description = "If attached, this entity will be rendered with an outline with the color specified."
-attributes = ["Networked", "Store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::rendering::outline_recursive"]
 type = "Vec4"
@@ -697,7 +705,7 @@ name = "Outline (recursive)"
 description = """
 If attached, this entity and all of its children will be rendered with an outline with the color specified.
 You do not need to attach `outline` if you have attached `outline_recursive`."""
-attributes = ["Networked", "Store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::rendering::overlay"]
 type = "Empty"

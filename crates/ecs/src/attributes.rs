@@ -177,7 +177,18 @@ impl<T: ComponentValue, F: 'static + Send + Sync + Fn() -> T> AttributeConstruct
     }
 }
 
-/// Store the component on disc
+/// Provides a default for this component that will work with `MakeDefault`.
+#[derive(Clone)]
+pub struct DefaultValue<T: ComponentValue>(pub T);
+impl<T: ComponentValue> ComponentAttribute for DefaultValue<T> {}
+impl<T: ComponentValue> AttributeConstructor<T, T> for DefaultValue<T> {
+    fn construct(store: &mut AttributeStore, value: T) {
+        store.set(Self(value.clone()));
+        MakeDefault::construct(store, move || value.clone());
+    }
+}
+
+/// Store the component on disk
 ///
 /// Provides `Serializable`
 #[derive(Debug, Clone, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
@@ -261,16 +272,5 @@ impl ComponentAttribute for MaybeResource {}
 impl<T: ComponentValue> AttributeConstructor<T, ()> for MaybeResource {
     fn construct(store: &mut AttributeStore, _: ()) {
         store.set(Self)
-    }
-}
-
-/// Provides a default for this component that will work with `MakeDefault`.
-#[derive(Clone)]
-pub struct DefaultValue<T: ComponentValue>(pub T);
-impl<T: ComponentValue> ComponentAttribute for DefaultValue<T> {}
-impl<T: ComponentValue> AttributeConstructor<T, T> for DefaultValue<T> {
-    fn construct(store: &mut AttributeStore, value: T) {
-        store.set(Self(value.clone()));
-        MakeDefault::construct(store, move || value.clone());
     }
 }
