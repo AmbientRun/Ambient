@@ -1,7 +1,5 @@
 use ambient_ecs::Concept;
 
-use crate::shared;
-
 pub(crate) fn init() -> anyhow::Result<()> {
     ambient_app::init_all_components();
     ambient_network::init_all_components();
@@ -14,8 +12,6 @@ pub(crate) fn init() -> anyhow::Result<()> {
     ambient_prefab::init_components();
     ambient_sky::init_components();
     ambient_water::init_components();
-
-    shared::player::init_all_components();
 
     Ok(())
 }

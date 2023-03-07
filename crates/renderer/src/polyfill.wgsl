@@ -1,10 +1,15 @@
 
 // From https://github.com/glslify/glsl-inverse/blob/master/index.glsl
 fn inverse(m: mat4x4<f32>) -> mat4x4<f32> {
-    let a00 = m.x.x; let a01 = m.x.y; let a02 = m.x.z; let a03 = m.x.w;
-    let a10 = m.y.x; let a11 = m.y.y; let a12 = m.y.z; let a13 = m.y.w;
-    let a20 = m.z.x; let a21 = m.z.y; let a22 = m.z.z; let a23 = m.z.w;
-    let a30 = m.w.x; let a31 = m.w.y; let a32 = m.w.z; let a33 = m.w.w;
+    let x = m[0];
+    let y = m[1];
+    let z = m[2];
+    let w = m[3];
+
+    let a00 = x.x; let a01 = x.y; let a02 = x.z; let a03 = x.w;
+    let a10 = y.x; let a11 = y.y; let a12 = y.z; let a13 = y.w;
+    let a20 = z.x; let a21 = z.y; let a22 = z.z; let a23 = z.w;
+    let a30 = w.x; let a31 = w.y; let a32 = w.z; let a33 = w.w;
 
     let b00 = a00 * a11 - a01 * a10;
     let b01 = a00 * a12 - a02 * a10;

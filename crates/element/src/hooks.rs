@@ -10,8 +10,8 @@ use std::{
 #[cfg(feature = "native")]
 use ambient_core::runtime;
 #[cfg(feature = "native")]
-use ambient_guest_bridge::ecs::{world_events, ComponentQuery, Entity, FrameEvent, QueryState, TypedReadQuery};
-use ambient_guest_bridge::ecs::{ComponentValue, World};
+use ambient_guest_bridge::ecs::{world_events, ComponentQuery, FrameEvent, QueryState, TypedReadQuery};
+use ambient_guest_bridge::ecs::{ComponentValue, Entity, World};
 #[cfg(feature = "native")]
 use ambient_sys::task;
 use as_any::Downcast;
@@ -148,16 +148,25 @@ impl<'a> Hooks<'a> {
         }
     }
 
-    #[cfg(feature = "native")]
     pub fn use_world_event(&mut self, func: impl Fn(&mut World, &Entity) + Sync + Send + 'static) {
-        let reader = self.use_ref_with(|world| world.resource(world_events()).reader());
-        self.use_frame(move |world| {
-            let mut reader = reader.lock();
-            let events = reader.iter(world.resource(world_events())).map(|(_, event)| event.clone()).collect_vec();
-            for event in events {
-                func(world, &event);
-            }
-        })
+        #[cfg(feature = "native")]
+        {
+            let reader = self.use_ref_with(|world| world.resource(world_events()).reader());
+            self.use_frame(move |world| {
+                let mut reader = reader.lock();
+                let events = reader.iter(world.resource(world_events())).map(|(_, event)| event.clone()).collect_vec();
+                for event in events {
+                    func(world, &event);
+                }
+            })
+        }
+        #[cfg(feature = "guest")]
+        {
+            ambient_guest_bridge::api::global::on(ambient_guest_bridge::api::event::WORLD_EVENT, move |data| {
+                func(&mut World, data);
+                ambient_guest_bridge::api::prelude::EventOk
+            });
+        }
     }
 
     /// Spawns the provided future as a task, and aborts the task when the

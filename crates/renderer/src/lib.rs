@@ -1,4 +1,4 @@
-use std::{f32::consts::PI, sync::Arc};
+use std::{f32::consts::PI, fmt::Debug, sync::Arc};
 
 use ambient_core::{
     asset_cache,
@@ -12,7 +12,7 @@ use ambient_ecs::{
     components, query_mut, Debuggable, Description, Entity, EntityId, MakeDefault, Name, Networked, Resource, Store, SystemGroup, World,
 };
 use ambient_gpu::{
-    mesh_buffer::{get_mesh_buffer_types, GpuMesh, MESH_BUFFER_TYPES_WGSL},
+    mesh_buffer::{get_mesh_buffer_types, GpuMesh},
     shader_module::{BindGroupDesc, Shader, ShaderModule, ShaderModuleIdentifier},
     wgsl_utils::wgsl_interpolate,
 };
@@ -294,7 +294,7 @@ pub fn get_defs_module(_: &AssetCache) -> ShaderModule {
     #[cfg(target_os = "unknown")]
     let iter = iter.map(|(k, v)| format!("const {k}: f32 = {v};\n"));
 
-    let iter = iter.chain([wgsl_interpolate(), include_file!("polyfill.wgsl"), MESH_BUFFER_TYPES_WGSL.to_string()]).collect::<String>();
+    let iter = iter.chain([wgsl_interpolate(), include_file!("polyfill.wgsl")]).collect::<String>();
 
     ShaderModule::from_str("Definitions", iter)
 }
@@ -346,8 +346,9 @@ pub fn get_globals_module(_assets: &AssetCache, shadow_cascades: u32) -> ShaderM
     )
 }
 
-pub fn get_forward_module(assets: &AssetCache, shadow_cascades: u32) -> ShaderModule {
+pub fn get_forward_modules(assets: &AssetCache, shadow_cascades: u32) -> [ShaderModule; 7] {
     [
+        get_mesh_buffer_types(),
         get_defs_module(assets),
         get_resources_module(),
         get_globals_module(assets, shadow_cascades),
@@ -355,12 +356,10 @@ pub fn get_forward_module(assets: &AssetCache, shadow_cascades: u32) -> ShaderMo
         get_common_module(assets),
         get_mesh_buffer_types(),
     ]
-    .iter()
-    .collect()
 }
 
-pub fn get_overlay_module(assets: &AssetCache, shadow_cascades: u32) -> ShaderModule {
-    [get_defs_module(assets), get_globals_module(assets, shadow_cascades)].iter().collect()
+pub fn get_overlay_modules(assets: &AssetCache, shadow_cascades: u32) -> [ShaderModule; 3] {
+    [get_mesh_buffer_types(), get_defs_module(assets), get_globals_module(assets, shadow_cascades)]
 }
 
 pub struct MaterialShader {
@@ -368,7 +367,7 @@ pub struct MaterialShader {
     pub shader: ShaderModule,
 }
 
-pub trait Material: std::fmt::Debug + Sync + Send + DowncastSync {
+pub trait Material: Debug + Sync + Send + DowncastSync {
     fn id(&self) -> &str;
     fn name(&self) -> &str {
         self.id()
@@ -437,7 +436,7 @@ impl RendererShader {
         }
     }
 }
-impl std::fmt::Debug for RendererShader {
+impl Debug for RendererShader {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("RendererShader").field("id", &self.id).finish()
     }

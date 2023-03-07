@@ -24,8 +24,6 @@ use crate::{
     typed_buffer::TypedBuffer,
 };
 
-pub static MESH_BUFFER_TYPES_WGSL: &str = include_str!("mesh_buffer.wgsl");
-
 pub fn get_mesh_buffer_types() -> ShaderModule {
     ShaderModule::from_str("MeshBufferTypes", include_str!("mesh_buffer.wgsl"))
 }

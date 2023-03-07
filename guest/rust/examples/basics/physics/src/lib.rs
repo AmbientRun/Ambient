@@ -1,8 +1,8 @@
 use ambient_api::{
     components::core::{
         app::main_scene,
+        camera::aspect_ratio_from_window,
         ecs::ids,
-        game_objects::player_camera,
         physics::{
             angular_velocity, box_collider, dynamic, linear_velocity, physics_controlled,
             visualizing,
@@ -21,7 +21,7 @@ use ambient_api::{
 pub async fn main() -> EventResult {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
-        .with_default(player_camera())
+        .with(aspect_ratio_from_window(), EntityId::resources())
         .with_default(main_scene())
         .with(translation(), vec3(5., 5., 4.))
         .with(lookat_center(), vec3(0., 0., 0.))

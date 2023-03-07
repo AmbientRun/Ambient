@@ -5,7 +5,9 @@ use ambient_core::{
     bounding::world_bounding_sphere,
     camera::shadow_cameras_from_world,
     hierarchy::{dump_world_hierarchy, dump_world_hierarchy_to_tmp_file},
-    main_scene, runtime,
+    main_scene,
+    player::local_user_id,
+    runtime,
 };
 use ambient_ecs::{query, World};
 use ambient_ecs_editor::ECSEditor;
@@ -16,7 +18,7 @@ use ambient_renderer::{RenderTarget, Renderer};
 use ambient_rpc::RpcRegistry;
 use ambient_std::{asset_cache::SyncAssetKeyExt, cb, color::Color, download_asset::AssetsCacheDir, line_hash, Cb};
 use ambient_ui::{
-    fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit, FlowColumn, FlowRow, Image, UIExt2,
+    fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit, FlowColumn, FlowRow, Image, UIExt,
     VirtualKeyCode,
 };
 use glam::Vec3;
@@ -104,8 +106,16 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
                         let gizmos = world.resource(gizmos());
                         let mut g = gizmos.scope(line_hash!());
                         let cascades = 5;
-                        for (i, cam) in
-                            shadow_cameras_from_world(world, cascades, 1024, Vec3::ONE.normalize(), main_scene()).into_iter().enumerate()
+                        for (i, cam) in shadow_cameras_from_world(
+                            world,
+                            cascades,
+                            1024,
+                            Vec3::ONE.normalize(),
+                            main_scene(),
+                            world.resource_opt(local_user_id()),
+                        )
+                        .into_iter()
+                        .enumerate()
                         {
                             for line in cam.world_space_frustum_lines() {
                                 g.draw(

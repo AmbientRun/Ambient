@@ -83,12 +83,10 @@ fn get_shadow_cascade(world_position: vec4<f32>) -> i32 {
 
 fn fetch_shadow(light_angle: f32, world_position: vec4<f32>) -> f32 {
     for (var i: i32=0; i < #SHADOW_CASCADES; i = i + 1) {
-        let cam = shadow_cameras.cameras[i];
-
         // The texel size is in world coordinates, transform to depth buffer by
         // dividing by the depth of the camera
-        let p = cam.viewproj * world_position;
-        let p = p.xyz / p.w;
+        let cam = shadow_cameras.cameras[i].viewproj * world_position;
+        let p = cam.xyz / cam.w;
         if (inside(p)) {
             return fetch_shadow_cascade(i, p);
         }
@@ -99,21 +97,27 @@ fn fetch_shadow(light_angle: f32, world_position: vec4<f32>) -> f32 {
 fn screen_pixel_to_uv(pixel_position: vec2<f32>, screen_size: vec2<f32>) -> vec2<f32> {
     return pixel_position / screen_size;
 }
+
 fn screen_uv_to_pixel(uv: vec2<f32>, screen_size: vec2<f32>) -> vec2<f32> {
     return uv * screen_size;
 }
+
 fn screen_uv_to_ndc(uv: vec2<f32>) -> vec3<f32> {
     return vec3<f32>(uv.x * 2. - 1., -(uv.y * 2. - 1.), 0.);
 }
+
 fn screen_ndc_to_uv(ndc: vec3<f32>) -> vec2<f32> {
     return vec2<f32>((ndc.x + 1.) / 2., (-ndc.y + 1.) / 2.);
 }
+
 fn screen_pixel_to_ndc(pixel_position: vec2<f32>, screen_size: vec2<f32>) -> vec3<f32> {
     return screen_uv_to_ndc(screen_pixel_to_uv(pixel_position, screen_size));
 }
+
 fn screen_ndc_to_pixel(ndc: vec3<f32>, screen_size: vec2<f32>) -> vec2<f32> {
     return screen_uv_to_pixel(screen_ndc_to_uv(ndc), screen_size);
 }
+
 fn project_point(transform: mat4x4<f32>, position: vec3<f32>) -> vec3<f32> {
     let p = transform * vec4<f32>(position, 1.);
     return p.xyz / p.w;
@@ -121,12 +125,15 @@ fn project_point(transform: mat4x4<f32>, position: vec3<f32>) -> vec3<f32> {
 
 fn get_solids_screen_depth(screen_ndc: vec3<f32>) -> f32 {
     let screen_tc = screen_ndc_to_uv(screen_ndc);
-    return textureSampleLevel(solids_screen_depth, default_sampler, screen_tc, 0.);
+    // return textureSampleLevel(solids_screen_depth, default_sampler, screen_tc, 0.);
+    return textureSample(solids_screen_depth, default_sampler, screen_tc);
 }
+
 fn get_solids_screen_color(screen_ndc: vec3<f32>) -> vec3<f32> {
     let screen_tc = screen_ndc_to_uv(screen_ndc);
     return textureSample(solids_screen_color, default_sampler, screen_tc).rgb;
 }
+
 fn get_solids_screen_normal_quat(screen_ndc: vec3<f32>) -> vec4<f32> {
     let screen_tc = screen_ndc_to_uv(screen_ndc);
     return textureSample(solids_screen_normal_quat, default_sampler, screen_tc);
@@ -193,8 +200,8 @@ fn distribution_ggx(normal: vec3<f32>, h: vec3<f32>, roughness: f32) -> f32 {
     let numerator =a2;
     let denom = ndoth2 * (a2 - 1.0) + 1.0;
 
-    let denom = PI * denom * denom;
-    return numerator / denom;
+    let denom2 = PI * denom * denom;
+    return numerator / denom2;
 }
 
 fn geometry_schlick_ggx(ndotv: f32, k: f32) -> f32 {

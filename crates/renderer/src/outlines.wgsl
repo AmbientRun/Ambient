@@ -35,9 +35,9 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let bottom = textureLoad(r_color, p + vec2<i32>(0, size), 0).a > 0.5;
     let left = textureLoad(r_color, p + vec2<i32>(-size, 0), 0).a > 0.5;
     let right = textureLoad(r_color, p + vec2<i32>(size, 0), 0).a > 0.5;
-    if (center && (!top || !bottom || !left || !right)) {
-        return vec4<f32>(center_color.rgb, 1.);
-    } else {
+    if (!(center && (!top || !bottom || !left || !right))) {
         discard;
     }
+
+    return vec4<f32>(center_color.rgb, 1.);
 }

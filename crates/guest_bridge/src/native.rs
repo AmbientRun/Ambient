@@ -2,7 +2,10 @@ pub use ambient_ecs as ecs;
 
 pub mod components {
     pub mod app {
-        pub use ambient_core::{name, ui_scene, window_logical_size, window_physical_size, window_scale_factor};
+        pub use ambient_core::{
+            name, ui_scene,
+            window::{window_logical_size, window_physical_size, window_scale_factor},
+        };
     }
     pub mod ecs {
         pub use ambient_core::hierarchy::{children, parent};
@@ -27,5 +30,14 @@ pub mod components {
     }
     pub mod rendering {
         pub use ambient_renderer::color;
+    }
+    pub mod input {
+        pub use ambient_input::{
+            event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels, mouse_button,
+            picking::{mouse_over, mouse_pickable_max, mouse_pickable_min},
+        };
+    }
+    pub mod player {
+        pub use ambient_core::player::{local_user_id, player, user_id};
     }
 }

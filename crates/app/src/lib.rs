@@ -7,13 +7,16 @@ use ambient_core::{
     async_ecs::async_ecs_systems,
     bounding::bounding_systems,
     camera::camera_systems,
-    frame_index, get_window_sizes,
+    frame_index,
     gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate},
     hierarchy::dump_world_hierarchy_to_tmp_file,
-    mouse_position, remove_at_time_system, runtime, time,
+    remove_at_time_system, runtime, time,
     transform::TransformSystem,
+    window::cursor_position,
+    window::get_window_sizes,
     window::WindowCtl,
-    window_logical_size, window_physical_size, window_scale_factor, RuntimeKey, TimeResourcesSystem,
+    window::{window_logical_size, window_physical_size, window_scale_factor},
+    RuntimeKey, TimeResourcesSystem,
 };
 use ambient_ecs::{
     components, world_events, Debuggable, DynSystem, Entity, FrameEvent, MakeDefault, MaybeResource, System, SystemGroup, World,
@@ -124,10 +127,10 @@ impl AppResources {
             assets: world.resource(self::asset_cache()).clone(),
             gpu: world.resource(self::gpu()).clone(),
             runtime: world.resource(self::runtime()).clone(),
-            ctl_tx: world.resource(ambient_core::window_ctl()).clone(),
-            window_physical_size: *world.resource(ambient_core::window_physical_size()),
-            window_logical_size: *world.resource(ambient_core::window_logical_size()),
-            window_scale_factor: *world.resource(ambient_core::window_scale_factor()),
+            ctl_tx: world.resource(ambient_core::window::window_ctl()).clone(),
+            window_physical_size: *world.resource(ambient_core::window::window_physical_size()),
+            window_logical_size: *world.resource(ambient_core::window::window_logical_size()),
+            window_scale_factor: *world.resource(ambient_core::window::window_scale_factor()),
         }
     }
 }
@@ -143,17 +146,17 @@ pub fn world_instance_resources(resources: AppResources) -> Entity {
         .with(self::asset_cache(), resources.assets.clone())
         .with_default(world_events())
         .with(frame_index(), 0_usize)
-        .with(ambient_core::mouse_position(), Vec2::ZERO)
+        .with(ambient_core::window::cursor_position(), Vec2::ZERO)
         .with(ambient_core::app_start_time(), current_time)
         .with(ambient_core::time(), current_time)
         .with(ambient_core::dtime(), 0.)
         .with(gpu_world(), GpuWorld::new_arced(resources.assets))
         .with_merge(ambient_input::picking::resources())
         .with_merge(ambient_core::async_ecs::async_ecs_resources())
-        .with(ambient_core::window_physical_size(), resources.window_physical_size)
-        .with(ambient_core::window_logical_size(), resources.window_logical_size)
-        .with(ambient_core::window_scale_factor(), resources.window_scale_factor)
-        .with(ambient_core::window_ctl(), resources.ctl_tx)
+        .with(ambient_core::window::window_physical_size(), resources.window_physical_size)
+        .with(ambient_core::window::window_logical_size(), resources.window_logical_size)
+        .with(ambient_core::window::window_scale_factor(), resources.window_scale_factor)
+        .with(ambient_core::window::window_ctl(), resources.ctl_tx)
 }
 
 pub fn get_time_since_app_start(world: &World) -> Duration {
@@ -578,7 +581,7 @@ impl App {
                 }
                 WindowEvent::CursorMoved { position, .. } => {
                     if self.window_focused {
-                        world.set(world.resource_entity(), mouse_position(), vec2(position.x as f32, position.y as f32)).unwrap();
+                        world.set(world.resource_entity(), cursor_position(), vec2(position.x as f32, position.y as f32)).unwrap();
                     }
                 }
                 _ => {}

@@ -6,7 +6,11 @@ use std::{
     time::Duration,
 };
 
-use ambient_core::{asset_cache, no_sync, project_name};
+use ambient_core::{
+    asset_cache, no_sync,
+    player::{get_player_by_user_id, player},
+    project_name,
+};
 use ambient_ecs::{
     components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent, System, SystemGroup, World, WorldStream,
     WorldStreamCompEvent, WorldStreamFilter,
@@ -32,7 +36,7 @@ use tokio::{
 use tracing::{debug_span, Instrument};
 
 use crate::{
-    bi_stream_handlers, create_server, datagram_handlers, get_player_by_user_id, player,
+    bi_stream_handlers, create_server, datagram_handlers,
     protocol::{ClientInfo, ServerProtocol},
     NetworkError,
 };
@@ -65,8 +69,8 @@ pub fn create_player_entity_data(
     stats_tx: Sender<FpsSample>,
 ) -> Entity {
     Entity::new()
-        .with(crate::player::player(), ())
-        .with(crate::player::user_id(), user_id.to_string())
+        .with(ambient_core::player::player(), ())
+        .with(ambient_core::player::user_id(), user_id.to_string())
         .with(player_entity_stream(), entities_tx)
         .with(player_stats_stream(), stats_tx)
         .with(player_event_stream(), events_tx)

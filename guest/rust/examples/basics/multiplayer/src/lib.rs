@@ -1,7 +1,7 @@
 use ambient_api::{
     components::core::{
         app::main_scene,
-        game_objects::player_camera,
+        camera::aspect_ratio_from_window,
         player::player,
         primitives::cube,
         rendering::color,
@@ -15,7 +15,7 @@ use ambient_api::{
 pub async fn main() -> EventResult {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
-        .with_default(player_camera())
+        .with(aspect_ratio_from_window(), EntityId::resources())
         .with_default(main_scene())
         .with(translation(), Vec3::ONE * 5.)
         .with(lookat_center(), vec3(0., 0., 0.))
@@ -28,7 +28,7 @@ pub async fn main() -> EventResult {
                 .with_merge(make_transformable())
                 .with_default(cube())
                 .with(translation(), rand::random())
-                .with(color(), rand::random())
+                .with(color(), rand::random::<Vec3>().extend(1.0))
                 .spawn();
         }
     });

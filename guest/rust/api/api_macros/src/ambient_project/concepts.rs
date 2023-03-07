@@ -1,62 +1,100 @@
 use super::{
-    components::Tree,
     identifier::{Identifier, IdentifierPath, IdentifierPathBuf},
-    manifest::{ComponentType, Concept, Manifest},
+    manifest::{Component, ComponentType, Concept},
+    tree::{Tree, TreeNode, TreeNodeInner},
 };
 use anyhow::Context;
 use proc_macro2::TokenStream;
 use quote::quote;
 
-pub(super) fn generate_tokens(
-    manifest: &Manifest,
-    components_tree: &Tree,
+pub fn tree_to_token_stream(
+    tree: &Tree<Concept>,
+    components_tree: &Tree<Component>,
     api_name: &syn::Path,
-) -> anyhow::Result<TokenStream> {
-    if manifest.concepts.is_empty() {
-        return Ok(quote! {});
-    }
+) -> anyhow::Result<proc_macro2::TokenStream> {
+    to_token_stream(
+        &TreeNode::new(
+            IdentifierPathBuf::empty(),
+            TreeNodeInner::Namespace(tree.root.clone()),
+        ),
+        components_tree,
+        api_name,
+    )
+}
 
-    let concepts_tokens = manifest
-        .concepts
-        .iter()
-        .map(|concept| {
-            let make_concept = generate_make(components_tree, concept.0, concept.1)?;
-            let is_concept = generate_is(concept.0, concept.1)?;
+fn to_token_stream(
+    node: &TreeNode<Concept>,
+    components_tree: &Tree<Component>,
+    api_name: &syn::Path,
+) -> anyhow::Result<proc_macro2::TokenStream> {
+    let name = node.path.last().map(|s| s.as_ref()).unwrap_or_default();
+    match &node.inner {
+        TreeNodeInner::Namespace(ns) => {
+            let children = ns
+                .children
+                .values()
+                .map(|child| to_token_stream(child, components_tree, api_name))
+                .collect::<Result<Vec<_>, _>>()?;
 
+            let prelude = quote! {
+                use super::components;
+                use #api_name::prelude::*;
+            };
+
+            Ok(if name.is_empty() {
+                quote! {
+                    #prelude
+                    #(#children)*
+                }
+            } else {
+                let name_ident: syn::Path = syn::parse_str(name)?;
+                let doc_comment_fragment = ns.namespace.as_ref().map(|n| {
+                    let mut doc_comment = format!("**{}**", n.name);
+                    if !n.description.is_empty() {
+                        doc_comment += &format!(": {}", n.description.replace('\n', "\n\n"));
+                    }
+
+                    quote! {
+                        #[doc = #doc_comment]
+                    }
+                });
+                quote! {
+                    #doc_comment_fragment
+                    pub mod #name_ident {
+                        #prelude
+                        #(#children)*
+                    }
+                }
+            })
+        }
+        TreeNodeInner::Other(concept) => {
+            let make_concept = generate_make(components_tree, name, concept)?;
+            let is_concept = generate_is(name, concept)?;
             Ok(quote! {
                 #make_concept
                 #is_concept
             })
-        })
-        .collect::<anyhow::Result<Vec<_>>>()?;
-
-    Ok(quote! {
-        use super::components;
-        use #api_name::prelude::*;
-
-        #(#concepts_tokens)*
-    })
-}
-
-fn build_component_path(prefix: &Identifier, path: IdentifierPath) -> IdentifierPathBuf {
-    IdentifierPathBuf::from_iter(std::iter::once(prefix).chain(path.iter()).cloned())
+        }
+    }
 }
 
 fn generate_make(
-    components_tree: &Tree,
-    identifier: &Identifier,
+    components_tree: &Tree<Component>,
+    name: &str,
     concept: &Concept,
 ) -> anyhow::Result<TokenStream> {
     let make_comment = format!("Makes a {} ({})", concept.name, concept.description);
-    let make_ident = quote::format_ident!("make_{}", identifier.as_ref());
+    let make_ident = quote::format_ident!("make_{}", name);
 
     let extends: Vec<_> = concept
         .extends
         .iter()
         .map(|i| {
-            let extend_ident = quote::format_ident!("make_{}", i.as_ref());
+            let (last, namespaces) = i.split_last().unwrap();
+            let extend_ident = quote::format_ident!("make_{}", last.as_ref());
+            let supers = namespaces.iter().map(|_| quote! { super });
             quote! {
-                with_merge(#extend_ident())
+                with_merge(#(#supers::)* #(#namespaces::)* #extend_ident())
             }
         })
         .collect();
@@ -93,20 +131,22 @@ fn generate_make(
     })
 }
 
-fn generate_is(identifier: &Identifier, concept: &Concept) -> anyhow::Result<TokenStream> {
+fn generate_is(name: &str, concept: &Concept) -> anyhow::Result<TokenStream> {
     let is_comment = format!(
         "Checks if the entity is a {} ({})",
         concept.name, concept.description
     );
-    let is_ident = quote::format_ident!("is_{}", identifier.as_ref());
+    let is_ident = quote::format_ident!("is_{}", name);
 
     let extends: Vec<_> = concept
         .extends
         .iter()
         .map(|i| {
-            let extend_ident = quote::format_ident!("is_{}", i.as_ref());
+            let (last, namespaces) = i.split_last().unwrap();
+            let extend_ident = quote::format_ident!("is_{}", last.as_ref());
+            let supers = namespaces.iter().map(|_| quote! { super });
             quote! {
-                #extend_ident(id)
+                #(#supers::)* #(#namespaces::)* #extend_ident(id)
             }
         })
         .collect();
@@ -127,6 +167,10 @@ fn generate_is(identifier: &Identifier, concept: &Concept) -> anyhow::Result<Tok
             ])
         }
     })
+}
+
+fn build_component_path(prefix: &Identifier, path: IdentifierPath) -> IdentifierPathBuf {
+    IdentifierPathBuf::from_iter(std::iter::once(prefix).chain(path.iter()).cloned())
 }
 
 fn toml_value_to_tokens(

@@ -6,7 +6,8 @@ use ambient_core::{
     gpu_ecs::GpuWorldSyncEvent,
     main_scene,
     transform::local_to_world,
-    ui_scene, window_physical_size,
+    ui_scene,
+    window::window_physical_size,
 };
 use ambient_ecs::{components, query, Entity, FrameEvent, System, SystemGroup, World};
 use ambient_gizmos::render::GizmoRenderer;
@@ -20,7 +21,7 @@ use ambient_std::{
 };
 use glam::{vec2, Mat4, Vec2, Vec3, Vec3Swizzles};
 
-use crate::{player, user_id};
+use ambient_core::player::{player, user_id};
 
 components!("rendering", {
     game_screen_render_target: Arc<RenderTarget>,
@@ -56,7 +57,7 @@ impl ClientGameState {
     ) -> Self {
         let mut game_world = World::new("client_game_world");
         let local_resources = world_instance_resources(AppResources::from_world(world))
-            .with(crate::local_user_id(), player_id.clone())
+            .with(ambient_core::player::local_user_id(), player_id.clone())
             .with(game_screen_render_target(), render_target)
             .with_merge(client_resources);
         game_world.add_components(game_world.resource_entity(), local_resources).unwrap();
@@ -107,12 +108,12 @@ impl ClientGameState {
     }
 
     pub fn proj_view(&self) -> Option<Mat4> {
-        let camera = get_active_camera(&self.world, main_scene())?;
+        let camera = get_active_camera(&self.world, main_scene(), Some(&self.user_id))?;
         // This can only work client side, since project_view only exists there (which in turn requires the screen size)
         self.world.get(camera, projection_view()).ok()
     }
     pub fn view(&self) -> Option<Mat4> {
-        let camera = get_active_camera(&self.world, main_scene())?;
+        let camera = get_active_camera(&self.world, main_scene(), Some(&self.user_id))?;
         // // This can only work client side, since project_view only exists there (which in turn requires the screen size)
         Some(self.world.get(camera, local_to_world()).ok()?.inverse())
     }

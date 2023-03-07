@@ -1,7 +1,7 @@
 use ambient_api::{
     components::core::{
         app::main_scene,
-        game_objects::player_camera,
+        camera::aspect_ratio_from_window,
         prefab::{prefab_from_url, spawned},
         transform::{lookat_center, rotation, translation},
     },
@@ -13,7 +13,7 @@ use ambient_api::{
 pub async fn main() -> EventResult {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
-        .with_default(player_camera())
+        .with(aspect_ratio_from_window(), EntityId::resources())
         .with_default(main_scene())
         .with(translation(), vec3(5., 5., 4.))
         .with(lookat_center(), vec3(0., 0., 0.))

@@ -96,7 +96,7 @@ impl Gpu {
             .await
             .expect("Failed to create device");
 
-        log::debug!("Device limits:\n{:#?}", device.limits());
+        log::info!("Device limits:\n{:#?}", device.limits());
 
         let swapchain_format = surface.as_ref().map(|surface| surface.get_supported_formats(&adapter)[0]);
         log::debug!("Swapchain format: {swapchain_format:?}");

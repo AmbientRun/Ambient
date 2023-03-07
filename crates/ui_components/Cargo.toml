@@ -11,3 +11,7 @@ ambient_guest_bridge = { path = "../guest_bridge", default-features = false }
 cb = { path = "../../libs/cb" }
 glam = { workspace = true }
 itertools = { workspace = true }
+winit = { workspace = true, optional = true }
+
+[features]
+native = ["winit"]

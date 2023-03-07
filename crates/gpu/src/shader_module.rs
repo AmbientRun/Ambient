@@ -109,12 +109,12 @@ pub struct ShaderModule {
     pub label: CowStr,
     pub source: CowStr,
     // Use the label to preprocess constants
-    pub idents: Vec<ShaderModuleIdentifier>,
+    pub idents: Arc<Vec<ShaderModuleIdentifier>>,
 }
 
 impl ShaderModule {
     pub fn new(label: impl Into<CowStr>, source: impl Into<CowStr>, idents: Vec<ShaderModuleIdentifier>) -> Self {
-        Self { label: label.into(), source: source.into(), idents }
+        Self { label: label.into(), source: source.into(), idents: Arc::new(idents) }
     }
 
     /// With empty idents
@@ -141,24 +141,6 @@ impl ShaderModule {
             ShaderModuleIdentifier::BindGroup(v) => v.label == name,
             ShaderModuleIdentifier::Constant { name: n, .. } => n == name,
         })
-    }
-}
-
-impl<'a> FromIterator<&'a ShaderModule> for ShaderModule {
-    fn from_iter<T: IntoIterator<Item = &'a Self>>(iter: T) -> Self {
-        let mut source = String::new();
-        let mut idents = Vec::new();
-        let mut label = String::new();
-        for v in iter {
-            source.push_str(&v.source[..]);
-            idents.extend_from_slice(&v.idents);
-            if !label.is_empty() {
-                label.push(':');
-            }
-            label.push_str(&v.label);
-        }
-
-        Self { label: label.into(), source: source.into(), idents }
     }
 }
 
@@ -199,14 +181,19 @@ impl Shader {
         let label = label.into();
         let gpu = GpuKey.get(assets);
 
+        let _span = tracing::info_span!("Shader::from_modules", ?label).entered();
+
         let mut idents: HashMap<CowStr, WgslValue> = HashMap::new();
         let mut bind_group_layouts = Vec::new();
         let mut bind_group_labels = Vec::new();
 
+        let mut module_names = Vec::new();
+
+        let mut modules = modules.into_iter();
         #[allow(unstable_name_collisions)]
         let mut source: String = modules
-            .into_iter()
-            .flat_map(|module| {
+            .by_ref()
+            .map(|module| {
                 for ident in module.idents.iter() {
                     match ident {
                         ShaderModuleIdentifier::BindGroup(desc) => {
@@ -227,12 +214,13 @@ impl Shader {
                         }
                     }
                 }
+                module_names.push(&module.label);
 
-                module.source.lines()
+                &module.source
             })
-            .filter(|line| !line.starts_with("//"))
-            .intersperse("\n")
-            .collect();
+            .join("\n\n");
+
+        tracing::info!("Using modules: {module_names:#?}");
 
         for (key, value) in idents.iter() {
             source = source.replace(&format!("#{key}"), &value.to_wgsl());

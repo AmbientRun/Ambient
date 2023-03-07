@@ -1,12 +1,11 @@
 use ambient_api::{
-    components::core::{app::ui_scene, game_objects::player_camera},
-    concepts::make_orthographic_camera,
-    prelude::*,
+    components::core::app::ui_scene, concepts::make_orthographic_camera, prelude::*,
 };
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
     components::{
         camera::orthographic_from_window,
+        player::{player, user_id},
         ui::{
             align_horizontal_center, align_horizontal_end, align_vertical_center,
             align_vertical_end, fit_horizontal_children, fit_horizontal_none,
@@ -19,7 +18,7 @@ use ambient_guest_bridge::{
 use ambient_ui_components::{
     layout::{FlowColumn, FlowRow},
     text::Text,
-    UIExt2,
+    UIExt,
 };
 
 #[element_component]
@@ -90,12 +89,17 @@ fn App(_hooks: &mut Hooks) -> Element {
 
 #[main]
 pub async fn main() -> EventResult {
-    Entity::new()
-        .with_merge(make_orthographic_camera())
-        .with_default(orthographic_from_window())
-        .with_default(player_camera())
-        .with_default(ui_scene())
-        .spawn();
+    spawn_query((player(), user_id())).bind(move |players| {
+        for (id, _) in players {
+            entity::add_components(
+                id,
+                Entity::new()
+                    .with_merge(make_orthographic_camera())
+                    .with(orthographic_from_window(), id)
+                    .with_default(ui_scene()),
+            );
+        }
+    });
 
     let mut tree = App.el().spawn_tree();
     on(ambient_api::event::FRAME, move |_| {

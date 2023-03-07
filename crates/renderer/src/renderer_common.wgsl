@@ -24,35 +24,35 @@ fn model_to_world(loc: vec2<u32>, mesh_index: u32, vertex_index: u32) -> ModelTo
         let weight = get_mesh_weight(mesh_index, vertex_index);
         let skin_offset = get_entity_skin(loc);
 
-        let ltw_x: mat4x4<f32> = skins.data[skin_offset + joint.x]; 
-        let ltw_y: mat4x4<f32> = skins.data[skin_offset + joint.y]; 
-        let ltw_z: mat4x4<f32> = skins.data[skin_offset + joint.z]; 
-        let ltw_w: mat4x4<f32> = skins.data[skin_offset + joint.w]; 
+        let ltw_x: mat4x4<f32> = skins.data[skin_offset + joint.x];
+        let ltw_y: mat4x4<f32> = skins.data[skin_offset + joint.y];
+        let ltw_z: mat4x4<f32> = skins.data[skin_offset + joint.z];
+        let ltw_w: mat4x4<f32> = skins.data[skin_offset + joint.w];
 
         var total_pos     = vec4<f32>(0.0);
         var total_norm    = vec4<f32>(0.0);
         var total_tangent = vec4<f32>(0.0);
 
         // Normalize the weights
-        let weight = weight / dot(weight, vec4<f32>(1.0));
+        let mesh_weight = weight / dot(weight, vec4<f32>(1.0));
 
-        total_pos = total_pos + (ltw_x * pos) * weight.x;
-        total_pos = total_pos + (ltw_y * pos) * weight.y;
-        total_pos = total_pos + (ltw_z * pos) * weight.z;
-        total_pos = total_pos + (ltw_w * pos) * weight.w;
+        total_pos = total_pos + (ltw_x * pos) * mesh_weight.x;
+        total_pos = total_pos + (ltw_y * pos) * mesh_weight.y;
+        total_pos = total_pos + (ltw_z * pos) * mesh_weight.z;
+        total_pos = total_pos + (ltw_w * pos) * mesh_weight.w;
 
         total_pos.w = 1.0;
 
-        total_norm = total_norm + (ltw_x * normal) * weight.x;
-        total_norm = total_norm + (ltw_y * normal) * weight.y;
-        total_norm = total_norm + (ltw_z * normal) * weight.z;
-        total_norm = total_norm + (ltw_w * normal) * weight.w;
+        total_norm = total_norm + (ltw_x * normal) * mesh_weight.x;
+        total_norm = total_norm + (ltw_y * normal) * mesh_weight.y;
+        total_norm = total_norm + (ltw_z * normal) * mesh_weight.z;
+        total_norm = total_norm + (ltw_w * normal) * mesh_weight.w;
 
 
-        total_tangent = total_tangent + (ltw_x * tangent) * weight.x;
-        total_tangent = total_tangent + (ltw_y * tangent) * weight.y;
-        total_tangent = total_tangent + (ltw_z * tangent) * weight.z;
-        total_tangent = total_tangent + (ltw_w * tangent) * weight.w;
+        total_tangent = total_tangent + (ltw_x * tangent) * mesh_weight.x;
+        total_tangent = total_tangent + (ltw_y * tangent) * mesh_weight.y;
+        total_tangent = total_tangent + (ltw_z * tangent) * mesh_weight.z;
+        total_tangent = total_tangent + (ltw_w * tangent) * mesh_weight.w;
 
         return ModelToWorld(total_pos, model * total_pos, normalize((model * total_norm).xyz), normalize((model * normalize(tangent)).xyz));
     } else {

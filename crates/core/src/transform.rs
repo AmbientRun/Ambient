@@ -12,6 +12,7 @@ use crate::{
     gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent},
     hierarchy::{children, parent},
     main_scene,
+    player::local_user_id,
 };
 
 fn vec3_one() -> Vec3 {
@@ -409,7 +410,7 @@ impl System for TransformSystem {
     fn run(&mut self, world: &mut World, event: &FrameEvent) {
         profiling::scope!("TransformSystem::run");
         self.systems.run(world, event);
-        if let Some(camera) = get_active_camera(world, main_scene()) {
+        if let Some(camera) = get_active_camera(world, main_scene(), world.resource_opt(local_user_id())) {
             let inv_view = world.get(camera, local_to_world()).ok();
 
             if let Some(inv_view) = inv_view {

@@ -53,6 +53,7 @@ fn MainApp(
     FocusRoot::el([
         UICamera.el().set(active_camera(), 0.),
         shared::player::PlayerRawInputHandler.el(),
+        shared::player::PlayerDataUpload.el(),
         WindowSized::el([GameClientView {
             server_addr,
             user_id,
@@ -138,7 +139,6 @@ fn systems() -> SystemGroup {
             Box::new(ambient_sky::systems()),
             Box::new(ambient_water::systems()),
             Box::new(ambient_physics::client_systems()),
-            Box::new(shared::player::client_systems()),
         ],
     )
 }

@@ -1,6 +1,6 @@
 use std::{num::NonZeroU32, ops::Deref, sync::Arc};
 
-use ambient_core::{asset_cache, async_ecs::async_run, gpu, mesh, runtime, transform::*, window_scale_factor};
+use ambient_core::{asset_cache, async_ecs::async_run, gpu, mesh, runtime, transform::*, window::window_scale_factor};
 use ambient_ecs::{components, query, query_mut, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
 use ambient_gpu::{mesh_buffer::GpuMesh, texture::Texture};
 use ambient_renderer::{gpu_primitives, material, primitives, renderer_shader, SharedMaterial};
@@ -153,7 +153,7 @@ impl AsyncAssetKey<Arc<FontArc>> for FontDef {
     }
 }
 
-pub fn systems() -> SystemGroup {
+pub fn systems(use_gpu: bool) -> SystemGroup {
     SystemGroup::new(
         "ui/text",
         vec![
@@ -172,7 +172,10 @@ pub fn systems() -> SystemGroup {
                     world.add_component(id, font_size(), 12.).unwrap();
                 }
             }),
-            query(()).incl(text()).excl(renderer_shader()).spawned().to_system(|q, world, qs, _| {
+            query(()).incl(text()).excl(renderer_shader()).spawned().to_system(move |q, world, qs, _| {
+                if !use_gpu {
+                    return;
+                }
                 let assets = world.resource(asset_cache()).clone();
                 let gpu = world.resource(gpu()).clone();
                 for (id, _) in q.collect_cloned(world, qs) {
@@ -231,100 +234,108 @@ pub fn systems() -> SystemGroup {
                     *mesh_to_local = Mat4::from_scale(Vec3::ONE / scale_factor);
                 }
             }),
-            query((glyph_brush().changed(), text().changed(), font_size().changed(), font_arc()))
-                .incl(text_texture())
-                .optional_changed(text_case())
-                .optional_changed(min_width())
-                .to_system(|q, world, qs, _| {
-                    let scale_factor = *world.resource(window_scale_factor()) as f32;
-                    for (id, (glyph_brush, text, font_size, font)) in q.collect_cloned(world, qs) {
-                        let assets = world.resource(asset_cache()).clone();
-                        let text = world.get(id, text_case()).unwrap_or_default().format(text);
-                        let min_width = world.get(id, min_width()).unwrap_or(0.);
-                        let min_height = world.get(id, min_height()).unwrap_or(0.);
+            {
+                let q = query((glyph_brush().changed(), text().changed(), font_size().changed(), font_arc()));
+                if use_gpu {
+                    q.incl(text_texture())
+                } else {
+                    q
+                }
+            }
+            .optional_changed(text_case())
+            .optional_changed(min_width())
+            .to_system(move |q, world, qs, _| {
+                let scale_factor = world.resource_opt(window_scale_factor()).cloned().unwrap_or(1.) as f32;
+                for (id, (glyph_brush, text, font_size, font)) in q.collect_cloned(world, qs) {
+                    let assets = world.resource(asset_cache()).clone();
+                    let text = world.get(id, text_case()).unwrap_or_default().format(text);
+                    let min_width = world.get(id, min_width()).unwrap_or(0.);
+                    let min_height = world.get(id, min_height()).unwrap_or(0.);
 
-                        loop {
-                            let process_result =
-                                {
-                                    let mut brush = glyph_brush.lock();
-                                    brush.queue(Section::default().add_text(
-                                        glyph_brush::Text::new(&text).with_scale(pt_size_to_px_scale(&*font, font_size, scale_factor)),
-                                    ));
-                                    brush.process_queued(
-                                        |rect, tex_data| {
-                                            let gpu = world.resource(gpu());
+                    loop {
+                        let process_result = {
+                            let mut brush = glyph_brush.lock();
+                            brush.queue(Section::default().add_text(glyph_brush::Text::new(&text).with_scale(pt_size_to_px_scale(
+                                &*font,
+                                font_size,
+                                scale_factor,
+                            ))));
+                            brush.process_queued(
+                                |rect, tex_data| {
+                                    if !use_gpu {
+                                        return;
+                                    }
+                                    let gpu = world.resource(gpu());
 
-                                            gpu.queue.write_texture(
-                                                wgpu::ImageCopyTexture {
-                                                    texture: &world.get_ref(id, text_texture()).unwrap().handle,
-                                                    mip_level: 0,
-                                                    origin: wgpu::Origin3d { x: rect.min[0], y: rect.min[1], z: 0 },
-                                                    aspect: wgpu::TextureAspect::All,
-                                                },
-                                                tex_data,
-                                                wgpu::ImageDataLayout {
-                                                    offset: 0,
-                                                    bytes_per_row: NonZeroU32::new(rect.width()),
-                                                    rows_per_image: NonZeroU32::new(rect.height()),
-                                                },
-                                                wgpu::Extent3d { width: rect.width(), height: rect.height(), depth_or_array_layers: 1 },
-                                            );
+                                    gpu.queue.write_texture(
+                                        wgpu::ImageCopyTexture {
+                                            texture: &world.get_ref(id, text_texture()).unwrap().handle,
+                                            mip_level: 0,
+                                            origin: wgpu::Origin3d { x: rect.min[0], y: rect.min[1], z: 0 },
+                                            aspect: wgpu::TextureAspect::All,
                                         },
-                                        |vertex_data| GlyphVertex {
-                                            tex_coords: vertex_data.tex_coords,
-                                            pixel_coords: vertex_data.pixel_coords,
+                                        tex_data,
+                                        wgpu::ImageDataLayout {
+                                            offset: 0,
+                                            bytes_per_row: NonZeroU32::new(rect.width()),
+                                            rows_per_image: NonZeroU32::new(rect.height()),
                                         },
+                                        wgpu::Extent3d { width: rect.width(), height: rect.height(), depth_or_array_layers: 1 },
+                                    );
+                                },
+                                |vertex_data| GlyphVertex { tex_coords: vertex_data.tex_coords, pixel_coords: vertex_data.pixel_coords },
+                            )
+                        };
+                        match process_result {
+                            Ok(BrushAction::Draw(vertices)) => {
+                                let has_verts = !vertices.is_empty();
+                                let cpu_mesh = mesh_from_glyph_vertices(vertices);
+                                let bounding = if has_verts { cpu_mesh.aabb().unwrap() } else { AABB::new(Vec3::ZERO, Vec3::ZERO) };
+                                let mut data = Entity::new()
+                                    .with(width(), (bounding.max.x / scale_factor).max(min_width))
+                                    .with(height(), (bounding.max.y / scale_factor).max(min_height));
+                                if use_gpu {
+                                    data.set(mesh(), GpuMesh::from_mesh(assets.clone(), &cpu_mesh));
+                                }
+                                world.add_components(id, data).unwrap();
+                                break;
+                            }
+                            Ok(BrushAction::ReDraw) => {
+                                break;
+                            }
+                            Err(BrushError::TextureTooSmall { suggested }) => {
+                                if !use_gpu {
+                                    return;
+                                }
+                                let size = wgpu::Extent3d { width: suggested.0, height: suggested.1, depth_or_array_layers: 1 };
+                                let gpu = world.resource(gpu()).clone();
+                                let texture = Arc::new(Texture::new(
+                                    gpu,
+                                    &wgpu::TextureDescriptor {
+                                        size,
+                                        mip_level_count: 1,
+                                        sample_count: 1,
+                                        dimension: wgpu::TextureDimension::D2,
+                                        format: wgpu::TextureFormat::R8Unorm,
+                                        usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
+                                        label: Some("Text.texture"),
+                                    },
+                                ));
+                                glyph_brush.lock().resize_texture(suggested.0, suggested.1);
+                                let view = Arc::new(texture.create_view(&wgpu::TextureViewDescriptor::default()));
+                                world
+                                    .add_components(
+                                        id,
+                                        Entity::new()
+                                            .with(material(), SharedMaterial::new(TextMaterial::new(assets.clone(), view.clone())))
+                                            .with(text_texture(), texture),
                                     )
-                                };
-                            match process_result {
-                                Ok(BrushAction::Draw(vertices)) => {
-                                    let has_verts = !vertices.is_empty();
-                                    let cpu_mesh = mesh_from_glyph_vertices(vertices);
-                                    let bounding = if has_verts { cpu_mesh.aabb().unwrap() } else { AABB::new(Vec3::ZERO, Vec3::ZERO) };
-                                    world
-                                        .add_components(
-                                            id,
-                                            Entity::new()
-                                                .with(width(), (bounding.max.x / scale_factor).max(min_width))
-                                                .with(height(), (bounding.max.y / scale_factor).max(min_height))
-                                                .with(mesh(), GpuMesh::from_mesh(assets.clone(), &cpu_mesh)),
-                                        )
-                                        .unwrap();
-                                    break;
-                                }
-                                Ok(BrushAction::ReDraw) => {
-                                    break;
-                                }
-                                Err(BrushError::TextureTooSmall { suggested }) => {
-                                    let size = wgpu::Extent3d { width: suggested.0, height: suggested.1, depth_or_array_layers: 1 };
-                                    let gpu = world.resource(gpu()).clone();
-                                    let texture = Arc::new(Texture::new(
-                                        gpu,
-                                        &wgpu::TextureDescriptor {
-                                            size,
-                                            mip_level_count: 1,
-                                            sample_count: 1,
-                                            dimension: wgpu::TextureDimension::D2,
-                                            format: wgpu::TextureFormat::R8Unorm,
-                                            usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
-                                            label: Some("Text.texture"),
-                                        },
-                                    ));
-                                    glyph_brush.lock().resize_texture(suggested.0, suggested.1);
-                                    let view = Arc::new(texture.create_view(&wgpu::TextureViewDescriptor::default()));
-                                    world
-                                        .add_components(
-                                            id,
-                                            Entity::new()
-                                                .with(material(), SharedMaterial::new(TextMaterial::new(assets.clone(), view.clone())))
-                                                .with(text_texture(), texture),
-                                        )
-                                        .unwrap();
-                                }
+                                    .unwrap();
                             }
                         }
                     }
-                }),
+                }
+            }),
             query(window_scale_factor().changed()).to_system(|q, world, qs, _| {
                 if let Some((_, scale_factor)) = q.collect_cloned(world, qs).first() {
                     for (id, _) in query(()).incl(text()).collect_cloned(world, None) {

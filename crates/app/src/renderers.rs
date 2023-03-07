@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use ambient_core::{asset_cache, gpu, main_scene, ui_scene, window_physical_size};
+use ambient_core::{asset_cache, gpu, main_scene, ui_scene, window::window_physical_size};
 use ambient_ecs::{components, query, FrameEvent, System, SystemGroup, World};
 use ambient_gizmos::render::GizmoRenderer;
 use ambient_gpu::{
@@ -72,7 +72,7 @@ impl ExamplesRender {
         let gpu = world.resource(gpu()).clone();
         let assets = world.resource(asset_cache()).clone();
         world.add_component(world.resource_entity(), renderer_stats(), "".to_string()).unwrap();
-        let wind_size = *world.resource(ambient_core::window_physical_size());
+        let wind_size = *world.resource(ambient_core::window::window_physical_size());
 
         tracing::debug!("Creating render target");
         let render_target = RenderTarget::new(gpu.clone(), wind_size, None);

@@ -40,6 +40,10 @@ description = "Prefab-related state, including loading of prefabs."
 name = "Physics"
 description = "Physics functionality and state."
 
+[components."core::input"]
+name = "Input"
+description = "Mouse, keyboard and controller input."
+
 [components."core::player"]
 name = "Player"
 description = "Components that are attached to player entities."
@@ -136,24 +140,26 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "Uvec2"
 name = "Window logical size"
 description = "The logical size is the physical size divided by the scale factor."
-attributes = ["Resource"]
+attributes = ["Debuggable", "Networked"]
 
 [components."core::app::window_physical_size"]
 type = "Uvec2"
 name = "Window physical size"
 description = "The physical size is the actual number of pixels on the screen."
-attributes = ["Resource"]
+attributes = ["Debuggable", "Networked"]
 
 [components."core::app::window_scale_factor"]
 type = "F64"
 name = "Window scale factor"
 description = "This number is usually 1, but on for instance retina displays it's 2."
-attributes = ["Resource"]
+attributes = ["Debuggable", "Networked"]
 
 [components."core::camera::active_camera"]
 type = "F32"
 name = "Active camera"
-description = "The camera with the highest `active_camera` value will be used for rendering."
+description = """
+The camera with the highest `active_camera` value will be used for rendering. Cameras are also filtered by the `user_id`.
+        If there's no `user_id`, the camera is considered global and potentially applies to all users (if its active_camera value is high enough)"""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::camera::aspect_ratio"]
@@ -165,9 +171,9 @@ If `aspect_ratio_from_window` is set, this will be automatically updated to matc
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::camera::aspect_ratio_from_window"]
-type = "Empty"
+type = "EntityId"
 name = "Aspect ratio from window"
-description = "If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window."
+description = "If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window. Should point to an entity with a `window_physical_size` component."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::camera::far"]
@@ -209,9 +215,9 @@ description = "The bottom bound for this `orthographic` camera."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::camera::orthographic_from_window"]
-type = "Empty"
+type = "EntityId"
 name = "Orthographic from window"
-description = "The bounds of this orthographic camera will be updated to match the window automatically."
+description = "The bounds of this orthographic camera will be updated to match the window automatically. Should point to an entity with a `window_logical_size` component."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::camera::orthographic_left"]
@@ -304,14 +310,53 @@ name = "Parent"
 description = "The parent of this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::game_objects::player_camera"]
-type = "Empty"
-name = "Player Camera"
-description = """
-If attached to a camera entity, this camera will be used as a player's primary camera.
-If a `user_id` is specified, this camera will only be used for that player; otherwise, it will be used for every player.
-This component is temporary and will likely be removed with the addition of clientside scripting."""
-attributes = ["Debuggable", "Networked"]
+[components."core::input::event_mouse_input"]
+type = "Bool"
+name = "Event mouse input"
+description = "A mouse button was pressed (true) or released (false). Will also contain a `mouse_button` component."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::input::event_mouse_motion"]
+type = "Vec2"
+name = "Event mouse motion"
+description = "The mouse was moved. The value represents the delta. Use mouse_position to get the current position."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::input::event_mouse_wheel"]
+type = "Vec2"
+name = "Event mouse wheel"
+description = "The mouse wheel moved. The value represents the delta."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::input::event_mouse_wheel_pixels"]
+type = "Bool"
+name = "Event mouse wheel"
+description = "If true, the mouse_wheel_event should be interpreted as pixels, if false it should be interpreted as lines."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::input::mouse_button"]
+type = "U32"
+name = "Mouse button"
+description = "The mouse button. 0=left, 1=right, 2=middle."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::input::mouse_over"]
+type = "U32"
+name = "Mouse over"
+description = "The number of mouse cursors that are currently over this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::input::mouse_pickable_max"]
+type = "Vec3"
+name = "Mouse pickable max"
+description = "This entity can be clicked by the mouse, and this component defines the max AABB bound of the click area."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::input::mouse_pickable_min"]
+type = "Vec3"
+name = "Mouse pickable min"
+description = "This entity can be clicked by the mouse, and this component defines the min AABB bound of the click area."
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::model::model_animatable"]
 type = "Bool"
@@ -1086,6 +1131,7 @@ extends = ["transformable"]
 "core::camera::near" = 0.10000000149011612
 "core::camera::projection" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
 "core::camera::projection_view" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+"core::camera::active_camera" = 0.0
 "core::transform::local_to_world" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
 "core::transform::inv_local_to_world" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
 

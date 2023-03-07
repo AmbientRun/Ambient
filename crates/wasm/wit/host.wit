@@ -349,6 +349,7 @@ variant mouse-button {
 record player-raw-input {
     keys: list<virtual-key-code>,
     mouse-position: vec2,
+    cursor-position: vec2,
     mouse-wheel: float32,
     mouse-buttons: list<mouse-button>,
 }

@@ -1,6 +1,6 @@
 use std::{fmt::Debug, sync::Arc};
 
-use ambient_core::{asset_cache, camera::Camera, main_scene};
+use ambient_core::{asset_cache, camera::Camera, main_scene, player::local_user_id};
 use ambient_ecs::World;
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
@@ -9,7 +9,7 @@ use ambient_gpu::{
     typed_buffer::TypedBuffer,
 };
 use ambient_meshes::QuadMeshKey;
-use ambient_renderer::{get_overlay_module, get_resources_module, RendererTarget, SubRenderer};
+use ambient_renderer::{get_overlay_modules, get_resources_module, RendererTarget, SubRenderer};
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     include_file,
@@ -54,7 +54,7 @@ impl SubRenderer for GizmoRenderer {
         binds: &[(&str, &'a BindGroup)],
     ) {
         let gizmos = world.resource(gizmos());
-        let camera = Camera::get_active(world, main_scene()).unwrap_or_default();
+        let camera = Camera::get_active(world, main_scene(), world.resource_opt(local_user_id())).unwrap_or_default();
         let primitives = &mut self.primitives;
 
         primitives.clear();
@@ -92,7 +92,9 @@ impl SubRenderer for GizmoRenderer {
             let shader = Shader::from_modules(
                 assets,
                 "Gizmo Shader",
-                [&get_overlay_module(assets, 1), &get_resources_module(), &ShaderModule::new("Gizmo", source, vec![layout.into()])],
+                get_overlay_modules(assets, 1)
+                    .iter()
+                    .chain([&get_resources_module(), &ShaderModule::new("Gizmo", source, vec![layout.into()])]),
             );
 
             shader.to_pipeline(

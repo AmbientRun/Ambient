@@ -12,7 +12,7 @@ use ordered_float::OrderedFloat;
 
 use crate::{
     transform::{inv_local_to_world, local_to_world},
-    window_logical_size, window_physical_size,
+    window::{window_logical_size, window_physical_size},
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -59,9 +59,9 @@ components!("camera", {
     @[
         Networked, Store, Debuggable,
         Name["Orthographic from window"],
-        Description["The bounds of this orthographic camera will be updated to match the window automatically."]
+        Description["The bounds of this orthographic camera will be updated to match the window automatically. Should point to an entity with a `window_logical_size` component."]
     ]
-    orthographic_from_window: (),
+    orthographic_from_window: EntityId,
 
 
     // Perspective
@@ -106,9 +106,9 @@ components!("camera", {
     @[
         Networked, Store, Debuggable,
         Name["Aspect ratio from window"],
-        Description["If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window."]
+        Description["If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window. Should point to an entity with a `window_physical_size` component."]
     ]
-    aspect_ratio_from_window: (),
+    aspect_ratio_from_window: EntityId,
     @[
         Networked, Store, Debuggable,
         Name["Projection"],
@@ -124,7 +124,8 @@ components!("camera", {
     @[
         Networked, Store, Debuggable,
         Name["Active camera"],
-        Description["The camera with the highest `active_camera` value will be used for rendering."]
+        Description["The camera with the highest `active_camera` value will be used for rendering. Cameras are also filtered by the `user_id`.
+        If there's no `user_id`, the camera is considered global and potentially applies to all users (if its active_camera value is high enough)"]
     ]
     active_camera: f32,
     @[
@@ -155,7 +156,8 @@ pub fn concepts() -> Vec<Concept> {
                 .with(projection_view(), glam::Mat4::IDENTITY)
                 .with(near(), 0.1)
                 .with_default(local_to_world())
-                .with_default(inv_local_to_world()),
+                .with_default(inv_local_to_world())
+                .with(active_camera(), 0.),
         }
         .to_owned(),
         RefConcept {
@@ -205,10 +207,10 @@ pub fn camera_systems() -> SystemGroup {
     SystemGroup::new(
         "camera_systems",
         vec![
-            query(aspect_ratio()).incl(aspect_ratio_from_window()).to_system(|q, world, qs, _| {
-                let window_size = world.resource(window_physical_size());
-                let aspect_ratio = window_size.x as f32 / window_size.y as f32;
-                for (id, ratio) in q.collect_cloned(world, qs) {
+            query((aspect_ratio_from_window(), aspect_ratio())).to_system(|q, world, qs, _| {
+                for (id, (window, ratio)) in q.collect_cloned(world, qs) {
+                    let window_size = world.get(window, window_physical_size()).unwrap_or_default();
+                    let aspect_ratio = window_size.x as f32 / window_size.y as f32;
                     if aspect_ratio != ratio {
                         world.set(id, self::aspect_ratio(), aspect_ratio).unwrap();
                     }
@@ -226,16 +228,15 @@ pub fn camera_systems() -> SystemGroup {
                     *projection = perspective_reverse(fovy, aspect_ratio, near, far);
                 }
             }),
-            query(())
-                .incl(orthographic_from_window())
+            query(orthographic_from_window())
                 .incl(orthographic_left())
                 .incl(orthographic_right())
                 .incl(orthographic_top())
                 .incl(orthographic_bottom())
                 .incl(local_to_world())
                 .to_system(|q, world, qs, _| {
-                    let window_size = world.resource(window_logical_size()).as_vec2();
-                    for (id, _) in q.collect_cloned(world, qs) {
+                    for (id, window) in q.collect_cloned(world, qs) {
+                        let window_size = world.get(window, window_logical_size()).unwrap_or_default().as_vec2();
                         world.set_if_changed(id, local_to_world(), Mat4::from_translation((window_size / 2.).extend(0.))).unwrap();
                         world.set_if_changed(id, orthographic_left(), -window_size.x / 2.).unwrap();
                         world.set_if_changed(id, orthographic_right(), window_size.x / 2.).unwrap();
@@ -290,8 +291,24 @@ pub fn screen_ray(world: &World, camera: EntityId, mouse_origin: Vec2) -> Result
     Ok(Ray::new(camera_mouse_origin, camera_mouse_dir))
 }
 
-pub fn get_active_camera(world: &World, scene: Component<()>) -> Option<EntityId> {
-    query((scene, active_camera())).iter(world, None).max_by_key(|(_, (_, x))| OrderedFloat(**x)).map(|(id, _)| id)
+pub fn get_active_camera(world: &World, scene: Component<()>, user_id: Option<&String>) -> Option<EntityId> {
+    query((scene, active_camera()))
+        .iter(world, None)
+        .filter(|(id, _)| {
+            if let Some(user_id) = &user_id {
+                if let Ok(cam_user_id) = world.get_ref(*id, crate::player::user_id()) {
+                    cam_user_id == *user_id
+                } else {
+                    // The camera is considered global, as it doens't have a user_id attached
+                    true
+                }
+            } else {
+                // No user_id was supplied, so all cameras are considered
+                true
+            }
+        })
+        .max_by_key(|(_, (_, x))| OrderedFloat(**x))
+        .map(|(id, _)| id)
 }
 
 #[derive(Clone, Debug)]
@@ -432,8 +449,8 @@ impl Camera {
             shadows_far: world.get(entity, shadows_far()).unwrap_or(2_000.0),
         })
     }
-    pub fn get_active(world: &World, scene: Component<()>) -> Option<Self> {
-        if let Some(cam) = get_active_camera(world, scene) {
+    pub fn get_active(world: &World, scene: Component<()>, user_id: Option<&String>) -> Option<Self> {
+        if let Some(cam) = get_active_camera(world, scene, user_id) {
             Self::from_world(world, cam)
         } else {
             None
@@ -615,8 +632,9 @@ pub fn shadow_cameras_from_world(
     shadow_map_resolution: u32,
     light_direction: Vec3,
     scene: Component<()>,
+    user_id: Option<&String>,
 ) -> Vec<Camera> {
-    let camera = Camera::get_active(world, scene).unwrap();
+    let camera = Camera::get_active(world, scene, user_id).unwrap();
     (0..shadow_cascades)
         .map(|cascade| camera.create_snapping_shadow_camera(light_direction, cascade, shadow_cascades, shadow_map_resolution))
         .collect()

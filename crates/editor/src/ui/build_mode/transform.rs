@@ -1,6 +1,6 @@
 use std::{sync::Arc, time::Duration};
 
-use ambient_core::{mouse_position, runtime, screen_to_clip_space, transform::get_world_transform};
+use ambient_core::{runtime, transform::get_world_transform, window::cursor_position, window::screen_to_clip_space};
 use ambient_ecs::{EntityId, World};
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Group, Hooks};
 use ambient_network::client::GameClient;
@@ -9,12 +9,13 @@ use ambient_std::{
     shapes::{Plane, Ray, RayIntersectable},
     Cb,
 };
+use ambient_ui::MouseButton;
 use ambient_ui::{space_between_items, Button, FlowRow, HighjackMouse, Hotkey, Separator, STREET};
 use anyhow::Context;
 use glam::{vec3, Mat4, Quat, Vec2, Vec3, Vec3Swizzles};
 use itertools::Itertools;
 use parking_lot::Mutex;
-use winit::event::{ModifiersState, MouseButton, VirtualKeyCode};
+use winit::event::{ModifiersState, VirtualKeyCode};
 
 use crate::{
     intents::{intent_place_ray, intent_set_transform, intent_translate, IntentPlaceRay, IntentTransform, IntentTranslate, TerrainOffset},
@@ -104,7 +105,11 @@ fn initial_transforms(hooks: &mut Hooks, game_client: &GameClient, targets: Arc<
 }
 
 #[element_component]
-pub(super) fn PlaceController(hooks: &mut Hooks, targets: Arc<[EntityId]>, on_click: Cb<dyn Fn(MouseButton) + Sync + Send>) -> Element {
+pub(super) fn PlaceController(
+    hooks: &mut Hooks,
+    targets: Arc<[EntityId]>,
+    on_click: Cb<dyn Fn(ambient_ui::MouseButton) + Sync + Send>,
+) -> Element {
     assert_ne!(targets.len(), 0);
     let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
     let (prefs, _) = hooks.consume_context::<EditorPrefs>().unwrap();
@@ -124,7 +129,7 @@ pub(super) fn PlaceController(hooks: &mut Hooks, targets: Arc<[EntityId]>, on_cl
         on_click: {
             let action = action.clone();
             cb(move |button| {
-                if button != MouseButton::Left {
+                if button != ambient_ui::MouseButton::Left {
                     return;
                 }
                 if let Some(action) = action.upgrade() {
@@ -135,7 +140,7 @@ pub(super) fn PlaceController(hooks: &mut Hooks, targets: Arc<[EntityId]>, on_cl
         },
         on_mouse_move: cb(move |world, _, _| {
             let state = game_client.game_state.lock();
-            let mouse_clip_pos = screen_to_clip_space(world, *world.resource(mouse_position()));
+            let mouse_clip_pos = screen_to_clip_space(world, *world.resource(cursor_position()));
 
             let targets = targets.clone();
 
@@ -193,7 +198,7 @@ impl ElementComponent for TranslationController {
         let action = Arc::downgrade(&action);
 
         let (initial_cursor_offset, _) = hooks.use_state_with(|world| {
-            let mouse_clip_pos = screen_to_clip_space(world, *world.resource(mouse_position()));
+            let mouse_clip_pos = screen_to_clip_space(world, *world.resource(cursor_position()));
             let clip_pos = game_state.proj_view().unwrap().project_point3(initial_state.midpoint).xy();
             mouse_clip_pos - clip_pos
         });
@@ -263,7 +268,7 @@ impl ElementComponent for TranslationController {
                 on_click: {
                     let action = action.clone();
                     cb(move |button| {
-                        if button != MouseButton::Left {
+                        if button != ambient_ui::MouseButton::Left {
                             return;
                         }
 
@@ -276,7 +281,7 @@ impl ElementComponent for TranslationController {
                 },
                 on_mouse_move: cb(move |world, _, _| {
                     let game_state = game_client.game_state.lock();
-                    let mouse_clip_pos = screen_to_clip_space(world, *world.resource(mouse_position())) - initial_cursor_offset;
+                    let mouse_clip_pos = screen_to_clip_space(world, *world.resource(cursor_position())) - initial_cursor_offset;
 
                     assert!(!axis.is_empty());
 
