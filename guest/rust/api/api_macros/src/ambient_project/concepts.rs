@@ -12,14 +12,7 @@ pub fn tree_to_token_stream(
     components_tree: &Tree<Component>,
     api_name: &syn::Path,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    to_token_stream(
-        &TreeNode::new(
-            IdentifierPathBuf::empty(),
-            TreeNodeInner::Namespace(tree.root.clone()),
-        ),
-        components_tree,
-        api_name,
-    )
+    to_token_stream(tree.root(), components_tree, api_name)
 }
 
 fn to_token_stream(
