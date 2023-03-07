@@ -9,8 +9,14 @@ use ambient_core::{
 use ambient_ecs::Entity;
 use ambient_meshes::{CubeMeshKey, SphereMeshKey};
 use ambient_primitives::Cube;
-use ambient_renderer::lod::{cpu_lod, gpu_lod, lod_cutoffs, mesh_lods};
-use ambient_std::{asset_cache::SyncAssetKeyExt, math::SphericalCoords};
+use ambient_renderer::{
+    color,
+    flat_material::{get_flat_shader, FlatMaterialKey},
+    gpu_primitives,
+    lod::{cpu_lod, gpu_lod, lod_cutoffs},
+    primitives, RenderPrimitive,
+};
+use ambient_std::{asset_cache::SyncAssetKeyExt, cb, math::SphericalCoords, shapes::AABB};
 use glam::*;
 
 async fn init(app: &mut App) {
@@ -36,14 +42,14 @@ async fn init(app: &mut App) {
                 RenderPrimitive { mesh: CubeMeshKey.get(&assets), material: white_mat.clone(), shader: cb(get_flat_shader), lod: 0 },
                 RenderPrimitive {
                     mesh: SphereMeshKey(Default::default()).get(&assets),
-                    material: white_mat.clone(),
+                    material: white_mat,
                     shader: cb(get_flat_shader),
                     lod: 1,
                 },
                 RenderPrimitive { mesh: CubeMeshKey.get(&assets), material: red_mat.clone(), shader: cb(get_flat_shader), lod: 2 },
                 RenderPrimitive {
                     mesh: SphereMeshKey(Default::default()).get(&assets),
-                    material: red_mat.clone(),
+                    material: red_mat,
                     shader: cb(get_flat_shader),
                     lod: 3,
                 },
