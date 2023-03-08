@@ -190,7 +190,8 @@ fn run_all(world: &mut World, context: &RunContext) {
         .into_iter()
         .flat_map(|(id, sms)| run(world, id, sms, context))
         .collect();
-    update_errors(world, &errors, true);
+
+    update_errors(world, &errors);
 }
 
 fn reload(world: &mut World, module_id: EntityId, bytecode: Option<ModuleBytecode>) {
@@ -202,7 +203,7 @@ fn reload(world: &mut World, module_id: EntityId, bytecode: Option<ModuleBytecod
         }
     }
 
-    update_errors(world, &errors, true);
+    update_errors(world, &errors);
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -267,7 +268,7 @@ pub(crate) fn unload(
         .unwrap_or_default();
 
     if let Ok(module_errors) = world.get_mut(module_id, module_errors()) {
-        module_errors.runtime.clear();
+        module_errors.0.clear();
     }
 
     world.remove_component(module_id, module_state()).unwrap();
@@ -289,28 +290,19 @@ pub(crate) fn unload(
     errors
 }
 
-pub(crate) fn update_errors(world: &mut World, errors: &[(EntityId, String)], runtime: bool) {
+pub(crate) fn update_errors(world: &mut World, errors: &[(EntityId, String)]) {
     let messenger = world.resource(messenger()).clone();
     for (id, err) in errors {
         messenger(
             world,
             *id,
             MessageType::Error,
-            &format!(
-                "{} error: {}",
-                match runtime {
-                    true => "Run",
-                    false => "Compile",
-                },
-                err
-            ),
+            &format!("Runtime error: {}", err),
         );
 
         if let Ok(module_errors) = world.get_mut(*id, module_errors()) {
-            let error_stream = match runtime {
-                true => &mut module_errors.runtime,
-                false => &mut module_errors.compiletime,
-            };
+            let error_stream = &mut module_errors.0;
+
             error_stream.push(err.clone());
             if error_stream.len() > MAXIMUM_ERROR_COUNT {
                 unload(world, *id, "too many errors");

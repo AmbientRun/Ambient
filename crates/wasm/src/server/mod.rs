@@ -43,7 +43,7 @@ pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
             let modules = query(()).incl(shared::module()).collect_ids(world, None);
             for module_id in modules {
                 let errors = shared::unload(world, module_id, "shutting down");
-                shared::update_errors(world, &errors, true);
+                shared::update_errors(world, &errors);
             }
         }))],
     )

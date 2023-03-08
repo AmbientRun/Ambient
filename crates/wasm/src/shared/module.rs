@@ -65,10 +65,7 @@ impl<'de> Deserialize<'de> for ModuleBytecode {
 }
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
-pub struct ModuleErrors {
-    pub compiletime: Vec<String>,
-    pub runtime: Vec<String>,
-}
+pub struct ModuleErrors(pub Vec<String>);
 
 struct WasmContext<Bindings: BindingsBound> {
     wasi: ambient_wasmtime_wasi::WasiCtx,
