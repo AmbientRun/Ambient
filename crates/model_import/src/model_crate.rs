@@ -18,7 +18,7 @@ use ambient_physics::{
 };
 use ambient_renderer::{
     double_sided,
-    lod::{gpu_lod, lod_cutoffs},
+    lod::{gpu_lod, lod_cutoffs, LodCutoffs},
     materials::pbr_material::PbrMaterialDesc,
 };
 use ambient_std::{
@@ -245,8 +245,6 @@ impl ModelCrate {
         let default_min_screen_size = 0.04; // i.e. 4%
         let lod_step = (1. / default_min_screen_size).powf(1. / (lods.len() - 1) as f32);
         let mut cutoffs = cutoffs.unwrap_or_else(|| (0..lods.len()).map(|i| 1. / lod_step.powi(i as i32)).collect_vec());
-        cutoffs.resize(16, 0.);
-        let cutoffs: [f32; 16] = cutoffs.try_into().expect("Failed to convert mesh lods");
 
         let lod_0_node = lods[0].get_node_id();
         let lod_0_world = lods[0].world();
@@ -262,7 +260,7 @@ impl ModelCrate {
 
         let mut root = Entity::new()
             .with(name(), "root".to_string())
-            .with(lod_cutoffs(), cutoffs)
+            .with(lod_cutoffs(), LodCutoffs::new(&cutoffs))
             .with_default(gpu_lod())
             .with(
                 mesh_to_local(),

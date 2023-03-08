@@ -14,7 +14,7 @@ use ambient_gpu::{
     typed_buffer::TypedBuffer,
 };
 use ambient_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
-use glam::Mat4;
+use glam::{vec4, Mat4};
 use itertools::Itertools;
 use parking_lot::Mutex;
 
@@ -40,7 +40,7 @@ components!("rendering", {
     joints_by_fbx_id: Vec<i64>,
 });
 gpu_components! {
-    skin() => skin: GpuComponentFormat::U32,
+    skin() => skin: GpuComponentFormat::Vec4,
 }
 
 #[derive(Debug, Clone)]
@@ -119,10 +119,10 @@ pub fn gpu_world_systems() -> SystemGroup<GpuWorldSyncEvent> {
     SystemGroup::new(
         "skinning/gpu_world",
         vec![Box::new(MappedComponentToGpuSystem::new(
-            GpuComponentFormat::U32,
+            GpuComponentFormat::Vec4,
             skin(),
             gpu_components::skin(),
-            Box::new(|_, _, skin| skin.get_offset()),
+            Box::new(|_, _, skin| vec4(skin.get_offset() as f32, 0.0, 0.0, 0.0)),
         ))],
     )
 }

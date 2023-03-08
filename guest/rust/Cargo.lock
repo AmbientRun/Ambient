@@ -6,25 +6,7 @@ version = 3
 name = "ambient_api"
 version = "0.1.1"
 dependencies = [
- "ambient_api_macros 0.1.1",
- "anyhow",
- "bincode",
- "data-encoding",
- "glam",
- "once_cell",
- "paste",
- "rand",
- "serde",
- "wasi",
-]
-
-[[package]]
-name = "ambient_api"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "32315badcdaab402c702633b35da1bcdbf67b4e2f109039559ab29f836372dc3"
-dependencies = [
- "ambient_api_macros 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ambient_api_macros",
  "anyhow",
  "bincode",
  "data-encoding",
@@ -42,20 +24,6 @@ version = "0.1.1"
 dependencies = [
  "anyhow",
  "indoc",
- "proc-macro2",
- "quote",
- "serde",
- "syn",
- "toml 0.7.2",
-]
-
-[[package]]
-name = "ambient_api_macros"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a6fa5fa3291cc53ee20a10ad3315db5737719ec7ceb104b413966c5eb3413913"
-dependencies = [
- "anyhow",
  "proc-macro2",
  "quote",
  "serde",
@@ -97,7 +65,7 @@ dependencies = [
 name = "ambient_guest_bridge"
 version = "0.1.0"
 dependencies = [
- "ambient_api 0.1.1",
+ "ambient_api",
 ]
 
 [[package]]
@@ -136,14 +104,14 @@ checksum = "088ccb346677e658e7ccd9627c62576fba881f4db7fab71fa9e21bf31c0aa4cb"
 name = "asset_loading"
 version = "0.1.1"
 dependencies = [
- "ambient_api 0.1.1",
+ "ambient_api",
 ]
 
 [[package]]
 name = "async"
 version = "0.1.1"
 dependencies = [
- "ambient_api 0.1.1",
+ "ambient_api",
 ]
 
 [[package]]
@@ -177,7 +145,7 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 name = "button"
 version = "0.1.1"
 dependencies = [
- "ambient_api 0.1.1",
+ "ambient_api",
  "ambient_element",
  "ambient_guest_bridge",
  "ambient_ui_components",
@@ -226,7 +194,7 @@ dependencies = [
 name = "dock_layout"
 version = "0.1.1"
 dependencies = [
- "ambient_api 0.1.1",
+ "ambient_api",
  "ambient_element",
  "ambient_guest_bridge",
  "ambient_ui_components",
@@ -278,17 +246,10 @@ dependencies = [
 name = "flow_layout"
 version = "0.1.1"
 dependencies = [
- "ambient_api 0.1.1",
+ "ambient_api",
  "ambient_element",
  "ambient_guest_bridge",
  "ambient_ui_components",
-]
-
-[[package]]
-name = "foo"
-version = "0.0.1"
-dependencies = [
- "ambient_api 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -395,7 +356,7 @@ checksum = "8a9ee70c43aaf417c914396645a0fa852624801b24ebb7ae78fe8272889ac888"
 name = "image_quad"
 version = "0.1.1"
 dependencies = [
- "ambient_api 0.1.1",
+ "ambient_api",
 ]
 
 [[package]]
@@ -418,7 +379,7 @@ checksum = "9f2cb48b81b1dc9f39676bf99f5499babfec7cd8fe14307f7b3d747208fb5690"
 name = "input"
 version = "0.0.1"
 dependencies = [
- "ambient_api 0.1.1",
+ "ambient_api",
 ]
 
 [[package]]
@@ -466,14 +427,14 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 name = "minigolf"
 version = "0.0.1"
 dependencies = [
- "ambient_api 0.1.1",
+ "ambient_api",
 ]
 
 [[package]]
 name = "multiplayer"
 version = "0.1.1"
 dependencies = [
- "ambient_api 0.1.1",
+ "ambient_api",
  "rand",
 ]
 
@@ -591,7 +552,7 @@ dependencies = [
 name = "physics"
 version = "0.1.1"
 dependencies = [
- "ambient_api 0.1.1",
+ "ambient_api",
 ]
 
 [[package]]
@@ -616,7 +577,7 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 name = "primitives"
 version = "0.1.1"
 dependencies = [
- "ambient_api 0.1.1",
+ "ambient_api",
 ]
 
 [[package]]
@@ -710,14 +671,14 @@ dependencies = [
 name = "raw_text"
 version = "0.1.1"
 dependencies = [
- "ambient_api 0.1.1",
+ "ambient_api",
 ]
 
 [[package]]
 name = "rect"
 version = "0.1.1"
 dependencies = [
- "ambient_api 0.1.1",
+ "ambient_api",
  "ambient_element",
  "ambient_guest_bridge",
  "ambient_ui_components",
@@ -777,7 +738,7 @@ checksum = "7bd3e3206899af3f8b12af284fafc038cc1dc2b41d1b89dd17297221c5d225de"
 name = "skinmesh"
 version = "0.1.1"
 dependencies = [
- "ambient_api 0.1.1",
+ "ambient_api",
 ]
 
 [[package]]
@@ -799,7 +760,7 @@ checksum = "a507befe795404456341dfab10cef66ead4c041f62b8b11bbb92bffe5d0953e0"
 name = "sun"
 version = "0.1.1"
 dependencies = [
- "ambient_api 0.1.1",
+ "ambient_api",
 ]
 
 [[package]]
@@ -817,7 +778,7 @@ dependencies = [
 name = "text"
 version = "0.1.1"
 dependencies = [
- "ambient_api 0.1.1",
+ "ambient_api",
  "ambient_element",
  "ambient_guest_bridge",
  "ambient_ui_components",
@@ -827,14 +788,14 @@ dependencies = [
 name = "third_person_camera"
 version = "0.1.1"
 dependencies = [
- "ambient_api 0.1.1",
+ "ambient_api",
 ]
 
 [[package]]
 name = "tictactoe"
 version = "0.1.1"
 dependencies = [
- "ambient_api 0.1.1",
+ "ambient_api",
  "palette",
 ]
 

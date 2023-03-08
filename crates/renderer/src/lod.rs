@@ -1,14 +1,47 @@
 use ambient_core::{
-    bounding::world_bounding_sphere, camera::{fovy, get_active_camera}, gpu_components, gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent}, hierarchy::children, main_scene, player::local_user_id, transform::translation
+    bounding::world_bounding_sphere,
+    camera::{fovy, get_active_camera},
+    gpu_components,
+    gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent},
+    hierarchy::children,
+    main_scene,
+    player::local_user_id,
+    transform::translation,
 };
 use ambient_ecs::{components, query, ECSError, EntityId, Networked, Store, SystemGroup, World};
+use bytemuck::{Pod, Zeroable};
 use glam::Vec3;
+use serde::{Deserialize, Serialize};
 
 use crate::primitives;
 
+const MAX_LOD_LEVELS: usize = 16;
+#[repr(transparent)]
+/// Represents clip space size cutoffs for the lod levels.
+///
+/// Newtype enforces lod level count
+#[derive(Default, Clone, Copy, PartialEq, Pod, Zeroable, Serialize, Deserialize)]
+pub struct LodCutoffs([f32; MAX_LOD_LEVELS]);
+
+impl LodCutoffs {
+    /// Construct lod levels, truncates and logs if `lods` exceed [`MAX_LOG_LEVELS`]
+    pub fn new(lods: &[f32]) -> Self {
+        let mut val = [0.0; MAX_LOD_LEVELS];
+        if lods.len() > MAX_LOD_LEVELS {
+            tracing::error!("Truncating lod levels {lods:?} to {MAX_LOD_LEVELS} items")
+        }
+
+        let len = lods.len().min(MAX_LOD_LEVELS);
+
+        val[0..len].copy_from_slice(&lods[0..len]);
+
+        Self(val)
+    }
+}
+
 components!("rendering", {
     @[Networked, Store]
-    lod_cutoffs: [f32; 16],
+    lod_cutoffs: LodCutoffs,
     @[Networked, Store]
     cpu_lod: usize,
     @[Networked, Store]
@@ -22,7 +55,8 @@ components!("rendering", {
 });
 gpu_components! {
     lod_cutoffs(), gpu_lod() => lod_cutoffs: GpuComponentFormat::Mat4,
-    gpu_lod() => gpu_lod: GpuComponentFormat::U32,
+    // [lod, 0, 0, 0]
+    gpu_lod() => gpu_lod: GpuComponentFormat::Vec4,
 }
 
 pub fn lod_system() -> SystemGroup {
@@ -48,7 +82,7 @@ pub fn lod_system() -> SystemGroup {
                     let dist = (camera_pos - bounding_sphere.center).length();
                     let clip_space_radius = bounding_sphere.radius * main_camera_cot_fov_2 / dist;
 
-                    let l = lod_cutoffs.iter().position(|x| clip_space_radius >= *x).unwrap_or(lod_cutoffs.len());
+                    let l = lod_cutoffs.0.iter().position(|x| clip_space_radius >= *x).unwrap_or(lod_cutoffs.0.len());
                     if l != current_lod {
                         to_update.push((id, l, current_lod));
                     }

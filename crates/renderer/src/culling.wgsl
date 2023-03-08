@@ -82,7 +82,7 @@ fn get_lod(entity_loc: vec2<u32>) -> u32 {
 
 fn update(entity_loc: vec2<u32>) {
     if (has_entity_gpu_lod(entity_loc)) {
-        set_entity_gpu_lod(entity_loc, get_lod(entity_loc));
+        set_entity_gpu_lod(entity_loc, vec4<f32>(f32(get_lod(entity_loc)), 0.0, 0.0, 0.0));
     }
     var cameras: mat4x4<f32>;
     let bounding_sphere = get_entity_world_bounding_sphere(entity_loc);

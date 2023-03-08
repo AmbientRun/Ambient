@@ -19,7 +19,7 @@ use ambient_renderer::{
     color,
     flat_material::{get_flat_shader, FlatMaterialKey},
     gpu_primitives,
-    lod::{cpu_lod, gpu_lod, lod_cutoffs},
+    lod::{cpu_lod, gpu_lod, lod_cutoffs, LodCutoffs},
     primitives, RenderPrimitive,
 };
 use ambient_std::{asset_cache::SyncAssetKeyExt, cb, color::Color, math::SphericalCoords, shapes::AABB};
@@ -29,7 +29,11 @@ async fn init(app: &mut App) {
     let world = &mut app.world;
     let assets = world.resource(asset_cache()).clone();
     const LODS: usize = 16;
-    let (prims, mut lods): (Vec<_>, Vec<_>) = (0..LODS)
+
+    let default_min_screen_size = 0.04; // i.e. 4%
+    let lod_step = (1f32 / default_min_screen_size).powf(1. / (LODS - 1) as f32);
+
+    let (prims, lods): (Vec<_>, Vec<_>) = (0..LODS)
         .map(|i| {
             let detail = LODS - i;
             let mesh = SphereMeshKey(UVSphereMesh { radius: 1.0, sectors: 3 * detail + 2, stacks: detail + 2 }).get(&assets);
@@ -37,7 +41,7 @@ async fn init(app: &mut App) {
 
             let material = FlatMaterialKey::new(Color::hsl(f * 360.0, 1.0, 0.5).as_linear_rgba_f32().into(), Some(false)).get(&assets);
 
-            (RenderPrimitive { mesh, material, shader: cb(get_flat_shader), lod: i }, (LODS - 1 - i) as f32 / (LODS - 1) as f32)
+            (RenderPrimitive { mesh, material, shader: cb(get_flat_shader), lod: i }, 1. / lod_step.powi(i as i32))
         })
         .unzip();
 
@@ -55,10 +59,7 @@ async fn init(app: &mut App) {
         .with(world_bounding_sphere(), aabb.to_sphere())
         .with(world_bounding_aabb(), aabb)
         .with(primitives(), prims)
-        .with(lod_cutoffs(), {
-            lods.resize(16, 0.);
-            lods.try_into().unwrap()
-        })
+        .with(lod_cutoffs(), LodCutoffs::new(&lods))
         .with_default(gpu_lod())
         .spawn(world);
 

@@ -998,6 +998,7 @@ dependencies = [
  "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
  "serde",
  "smallvec",
+ "tracing",
  "wgpu 0.14.2",
  "winit",
 ]

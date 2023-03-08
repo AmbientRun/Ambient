@@ -22,7 +22,7 @@ fn model_to_world(loc: vec2<u32>, mesh_index: u32, vertex_index: u32) -> ModelTo
     if (has_entity_skin(loc)) {
         let joint = get_mesh_joint(mesh_index, vertex_index);
         let weight = get_mesh_weight(mesh_index, vertex_index);
-        let skin_offset = get_entity_skin(loc);
+        let skin_offset = u32(get_entity_skin(loc).x);
 
         let ltw_x: mat4x4<f32> = skins.data[skin_offset + joint.x];
         let ltw_y: mat4x4<f32> = skins.data[skin_offset + joint.y];
