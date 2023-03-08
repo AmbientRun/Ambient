@@ -30,6 +30,7 @@ pub const ENTITIES_BIND_GROUP: &str = "ENTITIES_BIND_GROUP";
 pub struct GpuWorldShaderModuleKey {
     pub read_only: bool,
 }
+
 impl SyncAssetKey<ShaderModule> for GpuWorldShaderModuleKey {
     fn load(&self, assets: AssetCache) -> ShaderModule {
         let config = GpuWorldConfigKey.get(&assets);
@@ -72,6 +73,9 @@ impl GpuWorld {
     pub fn new(assets: AssetCache) -> Self {
         let gpu = GpuKey.get(&assets);
         let config = GpuWorldConfigKey.get(&assets);
+
+        log::info!("Creating Gpu Ecs with buffers: {:#?}", config.buffers.iter().map(|v| v.format).collect_vec());
+
         Self {
             layout_buffer: TypedBuffer::new(
                 gpu.clone(),
@@ -120,6 +124,7 @@ pub struct GpuComponentsBuffer {
     layout_buffer_offset: u64,
     layout_version: u64,
 }
+
 impl GpuComponentsBuffer {
     pub fn new(gpu: Arc<Gpu>, config: GpuComponentsConfig) -> Self {
         Self {

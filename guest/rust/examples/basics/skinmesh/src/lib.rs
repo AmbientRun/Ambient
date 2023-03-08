@@ -16,7 +16,7 @@ use ambient_api::{
 
 #[main]
 pub async fn main() -> EventResult {
-    Entity::new()
+    let camera_id = Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
         .with_default(main_scene())
@@ -54,6 +54,11 @@ pub async fn main() -> EventResult {
     query(player()).build().each_frame(move |players| {
         for (player, _) in players {
             let Some((delta, _)) = player::get_raw_input_delta(player) else { continue; };
+
+            let mut camera_position = entity::get_component(camera_id, lookat_center()).unwrap();
+            camera_position += vec3(delta.mouse_position.x, 0.0, delta.mouse_position.y) / 1024.0;
+
+            entity::set_component(camera_id, lookat_center(), camera_position);
 
             if delta.keys.contains(&KeyCode::Key1) {
                 entity::set_animation_controller(

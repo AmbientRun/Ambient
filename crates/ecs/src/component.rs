@@ -59,7 +59,7 @@ impl<T: 'static> std::ops::Deref for Component<T> {
 
 impl<T> Debug for Component<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Component").field("path", &self.desc.vtable.path).field("index", &self.desc.index).finish()
+        f.debug_struct("Component").field("path", &self.path()).field("index", &self.desc.index).finish()
     }
 }
 

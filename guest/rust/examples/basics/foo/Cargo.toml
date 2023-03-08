@@ -1,0 +1,10 @@
+[package]
+name = "foo"
+edition = "2021"
+version = "0.0.1"
+
+[dependencies]
+ambient_api = "0.1.1"
+
+[lib]
+crate-type = ["cdylib"]

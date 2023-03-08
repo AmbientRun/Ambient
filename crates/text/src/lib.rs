@@ -1,29 +1,23 @@
 use std::{num::NonZeroU32, ops::Deref, sync::Arc};
 
 use ambient_core::{asset_cache, async_ecs::async_run, gpu, mesh, runtime, transform::*, window::window_scale_factor};
-use ambient_ecs::{components, query, query_mut, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
+use ambient_ecs::{components, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
 use ambient_gpu::{mesh_buffer::GpuMesh, texture::Texture};
+use ambient_layout::{height, min_height, min_width, width};
 use ambient_renderer::{gpu_primitives, material, primitives, renderer_shader, SharedMaterial};
 use ambient_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt},
-    asset_url::AbsAssetUrl,
-    cb,
-    download_asset::{AssetResult, BytesFromUrl},
-    mesh::*,
-    shapes::AABB,
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, asset_url::AbsAssetUrl, cb, download_asset::{AssetResult, BytesFromUrl}, mesh::*, shapes::AABB
 };
 use anyhow::Context;
 use async_trait::async_trait;
 use glam::*;
 use glyph_brush::{
-    ab_glyph::{Font, FontArc, PxScale, Rect},
-    BrushAction, BrushError, GlyphBrush, GlyphBrushBuilder, Section,
+    ab_glyph::{Font, FontArc, PxScale, Rect}, BrushAction, BrushError, GlyphBrush, GlyphBrushBuilder, Section
 };
 use log::info;
 use parking_lot::Mutex;
 
 use crate::text_material::{get_text_shader, TextMaterial};
-use ambient_layout::{height, min_height, min_width, width};
 
 mod text_material;
 
@@ -226,15 +220,10 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                     world.add_component(id, glyph_brush(), brush).unwrap();
                 }
             }),
-            query(window_scale_factor().changed()).to_system(|q, world, qs, _| {
-                let scale_factor = match q.iter(world, qs).next() {
-                    Some((_, wsf)) => *wsf as f32,
-                    None => return,
-                };
-
-                // Mark all glyph brushes as dirty to ensure they're rebuilt when the scale factor changes.
-                for (_, (mesh_to_local, _), _) in query_mut((mesh_to_local(), glyph_brush()), ()).iter(world, None) {
-                    *mesh_to_local = Mat4::from_scale(Vec3::ONE / scale_factor);
+            query(()).incl(mesh_to_local()).incl(text()).to_system(|q, world, qs, _| {
+                let scale_factor = world.resource_opt(window_scale_factor()).cloned().unwrap_or(1.) as f32;
+                for (id, _) in q.collect_cloned(world, qs) {
+                    world.set_if_changed(id, mesh_to_local(), Mat4::from_scale(Vec3::ONE / scale_factor)).unwrap();
                 }
             }),
             {
@@ -336,13 +325,6 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                                     .unwrap();
                             }
                         }
-                    }
-                }
-            }),
-            query(window_scale_factor().changed()).to_system(|q, world, qs, _| {
-                if let Some((_, scale_factor)) = q.collect_cloned(world, qs).first() {
-                    for (id, _) in query(()).incl(text()).collect_cloned(world, None) {
-                        world.add_component(id, mesh_to_local(), Mat4::from_scale(Vec3::ONE / (*scale_factor as f32))).unwrap();
                     }
                 }
             }),
