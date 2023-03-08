@@ -5,7 +5,9 @@ use crate::{
     picking_scene, trigger_areas_scene,
 };
 use ambient_core::transform::get_world_transform;
-use ambient_ecs::{components, dont_store, query, Description, Entity, EntityId, FnSystem, Name, Networked, SystemGroup, World};
+use ambient_ecs::{
+    components, dont_store, query, Debuggable, Description, Entity, EntityId, FnSystem, Name, Networked, SystemGroup, World,
+};
 use ambient_element::{ElementComponentExt, ElementTree};
 use ambient_gizmos::{gizmos, GizmoPrimitive};
 use ambient_primitives::BoxLine;
@@ -20,7 +22,7 @@ components!("physics", {
     @[Networked]
     shape_primitives: Vec<GizmoPrimitive>,
     @[
-        Networked,
+        Networked, Debuggable,
         Name["Visualizing"],
         Description["If attached, the physics state of this object will be rendered for debugging purposes."]
     ]

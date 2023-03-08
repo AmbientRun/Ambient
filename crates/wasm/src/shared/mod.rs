@@ -9,8 +9,8 @@ mod module;
 use std::sync::Arc;
 
 use ambient_ecs::{
-    components, dont_despawn_on_unload, query, Component, Entity, EntityId, Networked, Resource,
-    Store, World,
+    components, dont_despawn_on_unload, query, Component, Debuggable, Entity, EntityId, Networked,
+    Resource, Store, World,
 };
 use ambient_project::Identifier;
 use host_guest_state::GetBaseHostGuestState;
@@ -21,13 +21,13 @@ use wasi_common::WasiCtx;
 use wasmtime::Linker;
 
 components!("wasm::shared", {
-    @[Networked, Store]
+    @[Networked, Store, Debuggable]
     module: (),
     @[Store]
     module_bytecode: ModuleBytecode,
-    @[Networked, Store]
+    @[Networked, Store, Debuggable]
     module_enabled: bool,
-    @[Networked, Store]
+    @[Networked, Store, Debuggable]
     module_errors: ModuleErrors,
 
     /// used to signal messages from the WASM host/runtime

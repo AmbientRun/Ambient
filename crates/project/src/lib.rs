@@ -1,8 +1,8 @@
 use std::{collections::HashMap, fmt::Display};
 
 use ambient_ecs::{
-    components, ExternalComponentAttributes, ExternalComponentDesc, ExternalComponentFlagAttributes, Networked, PrimitiveComponentType,
-    Store,
+    components, Debuggable, ExternalComponentAttributes, ExternalComponentDesc, ExternalComponentFlagAttributes, Networked,
+    PrimitiveComponentType, Store,
 };
 use serde::{de::Visitor, Deserialize, Serialize};
 use thiserror::Error;
@@ -11,7 +11,7 @@ use thiserror::Error;
 mod tests;
 
 components!("project", {
-    @[Networked, Store]
+    @[Networked, Store, Debuggable]
     description: String,
 });
 

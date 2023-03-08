@@ -30,10 +30,13 @@ mod text_material;
 components!("ui", {
     @[Debuggable, Networked, Store, Name["Text"], Description["Create a text mesh on this entity."]]
     text: String,
+    @[Debuggable]
     text_case: TextCase,
     @[Debuggable, Networked, Store, Name["Font size"], Description["Size of the font."]]
     font_size: f32,
+    @[Debuggable]
     font_style: FontStyle,
+    @[Debuggable]
     font_family: FontFamily,
     font_arc: Arc<FontArc>,
 

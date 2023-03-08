@@ -7,7 +7,7 @@ use std::{collections::BTreeMap, fmt::Debug};
 
 #[derive(Debug, Clone)]
 pub struct Tree<T: Clone + Debug> {
-    pub root: TreeNodeNamespace<T>,
+    root: TreeNode<T>,
 }
 impl<T: Clone + Debug> Tree<T> {
     pub(super) fn new(
@@ -15,10 +15,13 @@ impl<T: Clone + Debug> Tree<T> {
         validate_namespaces_documented: bool,
     ) -> anyhow::Result<Self> {
         let mut tree = Self {
-            root: TreeNodeNamespace {
-                children: BTreeMap::new(),
-                namespace: None,
-            },
+            root: TreeNode::new(
+                IdentifierPathBuf::empty(),
+                TreeNodeInner::Namespace(TreeNodeNamespace {
+                    children: BTreeMap::new(),
+                    namespace: None,
+                }),
+            ),
         };
 
         for (id, namespace_or_other) in values {
@@ -33,7 +36,7 @@ impl<T: Clone + Debug> Tree<T> {
         }
 
         if validate_namespaces_documented {
-            for node in tree.root.children.values() {
+            for node in tree.root_namespace().children.values() {
                 ensure_namespace_documented(node)?;
             }
         }
@@ -42,11 +45,29 @@ impl<T: Clone + Debug> Tree<T> {
     }
 
     pub fn get(&self, path: IdentifierPath) -> Option<&T> {
-        self.root.get(path)
+        self.root_namespace().get(path)
+    }
+
+    pub fn root(&self) -> &TreeNode<T> {
+        &self.root
+    }
+
+    pub fn root_namespace(&self) -> &TreeNodeNamespace<T> {
+        match &self.root.inner {
+            TreeNodeInner::Namespace(namespace) => namespace,
+            _ => unreachable!(),
+        }
+    }
+
+    fn root_namespace_mut(&mut self) -> &mut TreeNodeNamespace<T> {
+        match &mut self.root.inner {
+            TreeNodeInner::Namespace(namespace) => namespace,
+            _ => unreachable!(),
+        }
     }
 
     fn insert(&mut self, path: IdentifierPathBuf, inner: TreeNodeInner<T>) -> anyhow::Result<()> {
-        let mut manifest_head = &mut self.root.children;
+        let mut manifest_head = &mut self.root_namespace_mut().children;
         let (leaf_id, namespaces) = path.split_last().context("empty segments")?;
 
         let mut segments_so_far = IdentifierPathBuf::empty();

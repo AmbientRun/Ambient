@@ -1,10 +1,11 @@
 use std::sync::Arc;
 
 use ambient_core::{
-    dtime, transform::{rotation, scale, translation}
+    dtime,
+    transform::{rotation, scale, translation},
 };
 use ambient_ecs::{
-    components, ensure_has_component, query, Debuggable, Description, FnSystem, Name, Networked, QueryState, Resource, Store, SystemGroup
+    components, ensure_has_component, query, Debuggable, Description, FnSystem, Name, Networked, QueryState, Resource, Store, SystemGroup,
 };
 use ambient_std::asset_cache::SyncAssetKey;
 use glam::{EulerRot, Quat, Vec3};
@@ -12,7 +13,8 @@ use parking_lot::Mutex;
 use physxx::{articulation_reduced_coordinate::*, *};
 
 use crate::{
-    collider::kinematic, helpers::{get_shapes, scale_shape}
+    collider::kinematic,
+    helpers::{get_shapes, scale_shape},
 };
 
 components!("physics", {
@@ -29,15 +31,35 @@ components!("physics", {
     articulation_link: PxArticulationLinkRef,
     articulation_cache: Option<PxArticulationCacheRef>,
     character_controller: PxControllerRef,
-    @[Debuggable, Networked, Store, Name["Physics controlled"], Description["If attached, this entity will be controlled by physics.\nNote that this requires the entity to have a collider."]]
+    @[
+        Debuggable, Networked, Store,
+        Name["Physics controlled"],
+        Description["If attached, this entity will be controlled by physics.\nNote that this requires the entity to have a collider."]
+    ]
     physics_controlled: (),
-    @[Debuggable, Networked, Store, Name["Linear velocity"], Description["Linear velocity (meters/second) of this entity in the physics scene.\nUpdating this component will update the entity's linear velocity in the physics scene."]]
+    @[
+        Debuggable, Networked, Store,
+        Name["Linear velocity"],
+        Description["Linear velocity (meters/second) of this entity in the physics scene.\nUpdating this component will update the entity's linear velocity in the physics scene."]
+    ]
     linear_velocity: Vec3,
-    @[Debuggable, Networked, Store, Name["Angular velocity"], Description["Angular velocity (radians/second) of this entity in the physics scene.\nUpdating this component will update the entity's angular velocity in the physics scene."]]
+    @[
+        Debuggable, Networked, Store,
+        Name["Angular velocity"],
+        Description["Angular velocity (radians/second) of this entity in the physics scene.\nUpdating this component will update the entity's angular velocity in the physics scene."]
+    ]
     angular_velocity: Vec3,
-    @[Debuggable, Networked, Store, Name["Contact offset"], Description["Contact offset (in meters) of this entity in the physics scene.\nUpdating this component will update the entity's contact offset for each attached shape in the physics scene."]]
+    @[
+        Debuggable, Networked, Store,
+        Name["Contact offset"],
+        Description["Contact offset (in meters) of this entity in the physics scene.\nUpdating this component will update the entity's contact offset for each attached shape in the physics scene."]
+    ]
     contact_offset: f32,
-    @[Debuggable, Networked, Store, Name["Rest offset"], Description["Rest offset (in meters) of this entity in the physics scene.\nUpdating this component will update the entity's rest offset for each attached shape in the physics scene."]]
+    @[
+        Debuggable, Networked, Store,
+        Name["Rest offset"],
+        Description["Rest offset (in meters) of this entity in the physics scene.\nUpdating this component will update the entity's rest offset for each attached shape in the physics scene."]
+    ]
     rest_offset: f32,
 });
 
@@ -246,19 +268,19 @@ pub fn sync_ecs_physics() -> SystemGroup {
                 },
             ),
             query(contact_offset().changed()).incl(physics_controlled()).to_system(|q, world, qs, _| {
-                    for (id, &off) in q.iter(world, qs) {
-                        for shape in get_shapes(world, id) {
-                            shape.set_contact_offset(off);
-                        }
+                for (id, &off) in q.iter(world, qs) {
+                    for shape in get_shapes(world, id) {
+                        shape.set_contact_offset(off);
                     }
-                }),
+                }
+            }),
             query(rest_offset().changed()).incl(physics_controlled()).to_system(|q, world, qs, _| {
-                    for (id, &off) in q.iter(world, qs) {
-                        for shape in get_shapes(world, id) {
-                            shape.set_rest_offset(off);
-                        }
+                for (id, &off) in q.iter(world, qs) {
+                    for shape in get_shapes(world, id) {
+                        shape.set_rest_offset(off);
                     }
-                }),
+                }
+            }),
             // Sync PhysX changes to ECS.
             query((rigid_dynamic(), translation(), rotation())).incl(physics_controlled()).to_system(|q, world, qs, _| {
                 for (id, (rigid_dynamic, pos, rot)) in q.collect_cloned(world, qs) {

@@ -46,7 +46,9 @@ components!("input", {
     @[Debuggable, Networked, Store, Name["Mouse button"], Description["The mouse button. 0=left, 1=right, 2=middle."]]
     mouse_button: u32,
 
+    @[Debuggable]
     player_raw_input: PlayerRawInput,
+    @[Debuggable]
     player_prev_raw_input: PlayerRawInput,
 });
 

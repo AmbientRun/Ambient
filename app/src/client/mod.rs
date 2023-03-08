@@ -22,12 +22,14 @@ pub async fn run(assets: AssetCache, server_addr: SocketAddr, run: &RunCli, proj
     let user_id = run.user_id.clone().unwrap_or_else(|| format!("user_{}", friendly_id()));
     let headless = if run.headless { Some(uvec2(400, 400)) } else { None };
 
+    let is_debug = std::env::var("AMBIENT_DEBUGGER").is_ok() || run.debugger;
+
     AppBuilder::simple()
         .ui_renderer(true)
         .with_asset_cache(assets)
         .headless(headless)
         .run(move |app, _runtime| {
-            MainApp { server_addr, user_id, show_debug: run.debug, screenshot_test: run.screenshot_test, project_path }
+            MainApp { server_addr, user_id, show_debug: is_debug, screenshot_test: run.screenshot_test, project_path }
                 .el()
                 .spawn_interactive(&mut app.world);
         })
