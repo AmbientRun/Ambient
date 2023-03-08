@@ -1,10 +1,6 @@
-use crate::shared::{self, wit};
-use ambient_ecs::{query, EntityId, FnSystem, SystemGroup, World};
-use ambient_network::server::{ForkingEvent, ShutdownEvent};
+use crate::shared::{self, client_module_bytecode, module_bytecode, wit};
+use ambient_ecs::{query, Commands, EntityId, SystemGroup, World};
 use std::sync::Arc;
-
-mod conversion;
-mod implementation;
 
 pub fn initialize(
     world: &mut World,
@@ -23,29 +19,18 @@ pub fn initialize(
 }
 
 pub fn systems() -> SystemGroup {
-    shared::systems()
-}
-
-pub fn on_forking_systems() -> SystemGroup<ForkingEvent> {
     SystemGroup::new(
-        "core/wasm/server/on_forking_systems",
-        vec![Box::new(FnSystem::new(move |world, _| {
-            // Reset the states of all the modules when we fork.
-            shared::reload_all(world);
-        }))],
-    )
-}
-
-pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
-    SystemGroup::new(
-        "core/wasm/server/on_shutdown_systems",
-        vec![Box::new(FnSystem::new(move |world, _| {
-            let modules = query(()).incl(shared::module()).collect_ids(world, None);
-            for module_id in modules {
-                let errors = shared::unload(world, module_id, "shutting down");
-                shared::update_errors(world, &errors, true);
-            }
-        }))],
+        "core/wasm/client",
+        vec![
+            query(client_module_bytecode().changed()).to_system(move |q, world, qs, _| {
+                let mut commands = Commands::new();
+                for (id, cmbc) in q.iter(world, qs) {
+                    commands.add_component(id, module_bytecode(), cmbc.clone());
+                }
+                commands.apply(world).unwrap();
+            }),
+            Box::new(shared::systems()),
+        ],
     )
 }
 
@@ -234,5 +219,97 @@ impl wit::event::Host for Bindings {
             name,
             shared::implementation::component::convert_components_to_entity_data(data),
         )
+    }
+}
+
+fn unsupported<T>() -> anyhow::Result<T> {
+    anyhow::bail!("This function is not supported on this side of the API. Please report this if you were able to access this function.")
+}
+
+impl wit::server_player::Host for Bindings {
+    fn get_raw_input(
+        &mut self,
+        _player: wit::types::EntityId,
+    ) -> anyhow::Result<Option<wit::server_player::RawInput>> {
+        unsupported()
+    }
+
+    fn get_prev_raw_input(
+        &mut self,
+        _player: wit::types::EntityId,
+    ) -> anyhow::Result<Option<wit::server_player::RawInput>> {
+        unsupported()
+    }
+}
+
+impl wit::server_physics::Host for Bindings {
+    fn apply_force(
+        &mut self,
+        _entities: Vec<wit::types::EntityId>,
+        _force: wit::types::Vec3,
+    ) -> anyhow::Result<()> {
+        unsupported()
+    }
+
+    fn explode_bomb(
+        &mut self,
+        _position: wit::types::Vec3,
+        _force: f32,
+        _radius: f32,
+        _falloff_radius: Option<f32>,
+    ) -> anyhow::Result<()> {
+        unsupported()
+    }
+
+    fn set_gravity(&mut self, _gravity: wit::types::Vec3) -> anyhow::Result<()> {
+        unsupported()
+    }
+
+    fn unfreeze(&mut self, _entity: wit::types::EntityId) -> anyhow::Result<()> {
+        unsupported()
+    }
+
+    fn freeze(&mut self, _entity: wit::types::EntityId) -> anyhow::Result<()> {
+        unsupported()
+    }
+
+    fn start_motor(&mut self, _entity: wit::types::EntityId, _velocity: f32) -> anyhow::Result<()> {
+        unsupported()
+    }
+
+    fn stop_motor(&mut self, _entity: wit::types::EntityId) -> anyhow::Result<()> {
+        unsupported()
+    }
+
+    fn raycast_first(
+        &mut self,
+        _origin: wit::types::Vec3,
+        _direction: wit::types::Vec3,
+    ) -> anyhow::Result<Option<(wit::types::EntityId, f32)>> {
+        unsupported()
+    }
+
+    fn raycast(
+        &mut self,
+        _origin: wit::types::Vec3,
+        _direction: wit::types::Vec3,
+    ) -> anyhow::Result<Vec<(wit::types::EntityId, f32)>> {
+        unsupported()
+    }
+
+    fn move_character(
+        &mut self,
+        _entity: wit::types::EntityId,
+        _displacement: wit::types::Vec3,
+        _min_dist: f32,
+        _elapsed_time: f32,
+    ) -> anyhow::Result<wit::server_physics::CharacterCollision> {
+        unsupported()
+    }
+}
+
+impl wit::server_asset::Host for Bindings {
+    fn url(&mut self, _path: String) -> anyhow::Result<Option<String>> {
+        unsupported()
     }
 }

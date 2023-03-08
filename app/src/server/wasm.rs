@@ -1,22 +1,16 @@
 use std::{path::PathBuf, sync::Arc};
 
-use ambient_ecs::{components, EntityId, SystemGroup, World};
+use ambient_ecs::{EntityId, SystemGroup, World};
 use ambient_project::Identifier;
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
-use ambient_wasm::shared::{get_module_name, module_bytecode, spawn_module, MessageType, ModuleBytecode};
+use ambient_wasm::shared::{client_module_bytecode, get_module_name, module_bytecode, spawn_module, MessageType, ModuleBytecode};
 use anyhow::Context;
 
-components!("wasm::server", {});
-
-pub fn init_all_components() {
-    init_components();
-}
-
 pub fn systems() -> SystemGroup {
-    ambient_wasm::shared::systems()
+    ambient_wasm::server::systems()
 }
 
-pub async fn initialize(world: &mut World, project_path: PathBuf, manifest: &ambient_project::Manifest) -> anyhow::Result<()> {
+pub fn initialize(world: &mut World, project_path: PathBuf, manifest: &ambient_project::Manifest) -> anyhow::Result<()> {
     let messenger = Arc::new(|world: &World, id: EntityId, type_: MessageType, message: &str| {
         let name = get_module_name(world, id);
         let (prefix, level) = match type_ {
@@ -31,7 +25,7 @@ pub async fn initialize(world: &mut World, project_path: PathBuf, manifest: &amb
 
     ambient_wasm::server::initialize(world, messenger)?;
 
-    for target in ["server"] {
+    for target in ["client", "server"] {
         let wasm_component_paths: Vec<PathBuf> = std::fs::read_dir(project_path.join("build").join(target))
             .ok()
             .map(|rd| rd.filter_map(Result::ok).map(|p| p.path()).filter(|p| p.extension().unwrap_or_default() == "wasm").collect())
@@ -53,7 +47,9 @@ pub async fn initialize(world: &mut World, project_path: PathBuf, manifest: &amb
             let description = if is_sole_module { description } else { format!("{description} ({filename_identifier})") };
 
             let id = spawn_module(world, &name, description, true)?;
-            world.add_component(id, module_bytecode(), ModuleBytecode(bytecode))?;
+
+            let component = if target == "client" { client_module_bytecode() } else { module_bytecode() };
+            world.add_component(id, component, ModuleBytecode(bytecode))?;
         }
     }
 

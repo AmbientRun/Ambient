@@ -48,7 +48,6 @@ pub fn start(
     });
     let port = server.port;
 
-    wasm::init_all_components();
     let public_host = cli
         .host()
         .and_then(|h| h.public_host.clone())
@@ -72,7 +71,7 @@ pub fn start(
         let name = manifest.project.name.clone().unwrap_or_else(|| "Ambient".into());
         server_world.add_components(server_world.resource_entity(), Entity::new().with(project_name(), name)).unwrap();
 
-        wasm::initialize(&mut server_world, project_path.clone(), &manifest).await.unwrap();
+        wasm::initialize(&mut server_world, project_path.clone(), &manifest).unwrap();
 
         if let Cli::View { asset_path, .. } = cli.clone() {
             let asset_path = AbsAssetUrl::from_file_path(project_path.join("build").join(asset_path).join("prefabs/main.json"));

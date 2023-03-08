@@ -24,14 +24,16 @@ components!("wasm::shared", {
     @[Networked, Store, Debuggable]
     module: (),
     module_state: ModuleState,
-    @[Store]
+    @[Store, Description["Bytecode of a WASM component; if attached, will be run."]]
     module_bytecode: ModuleBytecode,
+    @[Store, Networked, Description["Bytecode of a clientside WASM component. On the client, this will be copied over to `module_bytecode` automatically."]]
+    client_module_bytecode: ModuleBytecode,
     @[Networked, Store, Debuggable]
     module_enabled: bool,
     @[Networked, Store, Debuggable]
     module_errors: ModuleErrors,
 
-    @[Resource, Description["Used to signal messages from the WASM host/runtime"]]
+    @[Resource, Description["Used to signal messages from the WASM host/runtime."]]
     messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
     @[Resource]
     module_state_maker: Arc<dyn Fn(ModuleStateArgs<'_>) -> anyhow::Result<ModuleState> + Sync + Send>,
@@ -348,14 +350,6 @@ pub fn spawn_module(
     description: String,
     enabled: bool,
 ) -> anyhow::Result<EntityId> {
-    if query(())
-        .incl(module())
-        .iter(world, None)
-        .any(|(id, _)| &get_module_name(world, id) == name)
-    {
-        anyhow::bail!("a WASM module by the name {name} already exists");
-    }
-
     let ed = Entity::new()
         .with(ambient_core::name(), name.to_string())
         .with_default(module())
