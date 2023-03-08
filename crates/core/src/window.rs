@@ -39,7 +39,7 @@ pub fn mirror_window_components(src: &mut World, dst: &mut World) {
         T: ComponentValue + std::fmt::Debug + Copy,
     {
         let val = *src.resource(component);
-        dst.set(dst.resource_entity(), component, val).unwrap();
+        dst.set_if_changed(dst.resource_entity(), component, val).unwrap();
     }
 
     t(src, dst, window_physical_size());
