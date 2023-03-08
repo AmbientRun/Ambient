@@ -211,7 +211,7 @@ impl<Bindings: BindingsBound> ModuleStateBehavior for ModuleStateInnerImpl<Bindi
             time,
         } = context;
 
-        self.store.data_mut().bindings.base_mut().set_world(world);
+        self.store.data_mut().bindings.set_world(world);
 
         let components = bindings::convert_entity_data_to_components(event_data);
         let components: Vec<_> = components
@@ -223,7 +223,7 @@ impl<Bindings: BindingsBound> ModuleStateBehavior for ModuleStateInnerImpl<Bindi
             .guest()
             .call_exec(&mut self.store, *time, event_name, &components)?;
 
-        self.store.data_mut().bindings.base_mut().clear_world();
+        self.store.data_mut().bindings.clear_world();
 
         self.stdout_consumer.process_incoming(world);
         self.stderr_consumer.process_incoming(world);

@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use ambient_animation::{animation_controller, AnimationController};
 use ambient_core::transform::translation;
 use ambient_ecs::{
@@ -10,12 +12,27 @@ use slotmap::Key;
 
 use crate::shared::bindings::QueryStateMap;
 
-pub fn spawn(world: &mut World, data: Entity) -> EntityId {
-    data.spawn(world)
+pub fn spawn(
+    world: &mut World,
+    spawned_entities: &mut HashSet<EntityId>,
+    data: Entity,
+) -> EntityId {
+    let id = data.spawn(world);
+    spawned_entities.insert(id);
+    id
 }
 
-pub fn despawn(world: &mut World, entity: EntityId) -> Option<EntityId> {
-    world.despawn(entity).map(|_ed| entity)
+pub fn despawn(
+    world: &mut World,
+    spawned_entities: &mut HashSet<EntityId>,
+    id: EntityId,
+) -> Option<EntityId> {
+    if world.despawn(id).is_some() {
+        spawned_entities.remove(&id);
+        Some(id)
+    } else {
+        None
+    }
 }
 
 pub fn set_animation_controller(
@@ -108,6 +125,10 @@ pub fn query(
         .insert((query, QueryState::new(), components))
         .data()
         .as_ffi())
+}
+
+pub fn exists(world: &World, id: EntityId) -> bool {
+    world.exists(id)
 }
 
 pub fn resources(world: &World) -> EntityId {

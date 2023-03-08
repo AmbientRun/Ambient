@@ -15,7 +15,7 @@ use crate::shared::{
     bindings::{
         add_component, convert_components_to_entity_data, read_component_from_world,
         read_primitive_component_from_entity_accessor, set_component, BindingsBase, BindingsBound,
-        ComponentsParam,
+        ComponentsParam, WorldRef,
     },
     conversion::{FromBindgen, IntoBindgen},
     implementation as shared_impl, wit, MessageType,
@@ -26,35 +26,35 @@ use implementation as server_impl;
 #[derive(Clone)]
 struct Bindings {
     base: BindingsBase,
+    world_ref: WorldRef,
 }
 impl Bindings {
     pub fn world(&self) -> &World {
-        self.base.world()
+        unsafe { self.world_ref.world() }
     }
     pub fn world_mut(&mut self) -> &mut World {
-        self.base.world_mut()
+        unsafe { self.world_ref.world_mut() }
     }
 }
 
 impl wit::types::Host for Bindings {}
 impl wit::entity::Host for Bindings {
     fn spawn(&mut self, data: ComponentsParam) -> anyhow::Result<wit::types::EntityId> {
-        let id =
-            shared_impl::entity::spawn(self.world_mut(), convert_components_to_entity_data(data));
-
-        self.base.spawned_entities.insert(id);
-        Ok(id.into_bindgen())
+        Ok(shared_impl::entity::spawn(
+            unsafe { self.world_ref.world_mut() },
+            &mut self.base.spawned_entities,
+            convert_components_to_entity_data(data),
+        )
+        .into_bindgen())
     }
 
     fn despawn(&mut self, entity: wit::types::EntityId) -> anyhow::Result<bool> {
-        let entity = entity.from_bindgen();
-        let despawn = shared_impl::entity::despawn(self.world_mut(), entity);
-        Ok(if let Some(id) = despawn {
-            self.base.spawned_entities.remove(&id);
-            true
-        } else {
-            false
-        })
+        Ok(shared_impl::entity::despawn(
+            unsafe { self.world_ref.world_mut() },
+            &mut self.base.spawned_entities,
+            entity.from_bindgen(),
+        )
+        .is_some())
     }
 
     fn set_animation_controller(
@@ -70,7 +70,10 @@ impl wit::entity::Host for Bindings {
     }
 
     fn exists(&mut self, entity: wit::types::EntityId) -> anyhow::Result<bool> {
-        Ok(self.world().exists(entity.from_bindgen()))
+        Ok(shared_impl::entity::exists(
+            self.world(),
+            entity.from_bindgen(),
+        ))
     }
 
     fn resources(&mut self) -> anyhow::Result<wit::types::EntityId> {
@@ -409,6 +412,16 @@ impl BindingsBound for Bindings {
     fn base_mut(&mut self) -> &mut BindingsBase {
         &mut self.base
     }
+    fn set_world(&mut self, world: &mut World) {
+        unsafe {
+            self.world_ref.set_world(world);
+        }
+    }
+    fn clear_world(&mut self) {
+        unsafe {
+            self.world_ref.clear_world();
+        }
+    }
 }
 
 pub fn initialize(
@@ -420,6 +433,7 @@ pub fn initialize(
         messenger,
         Bindings {
             base: Default::default(),
+            world_ref: Default::default(),
         },
     )?;
 

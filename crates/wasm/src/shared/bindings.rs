@@ -24,21 +24,6 @@ pub struct BindingsBase {
     pub spawned_entities: HashSet<EntityId>,
     pub subscribed_events: HashSet<String>,
     pub query_states: QueryStateMap,
-    world_ref: WorldRef,
-}
-impl BindingsBase {
-    pub fn set_world(&mut self, world: &mut World) {
-        self.world_ref.0 = world;
-    }
-    pub fn clear_world(&mut self) {
-        self.world_ref.0 = std::ptr::null_mut();
-    }
-    pub fn world(&self) -> &World {
-        unsafe { self.world_ref.0.as_ref().unwrap() }
-    }
-    pub fn world_mut(&mut self) -> &mut World {
-        unsafe { self.world_ref.0.as_mut().unwrap() }
-    }
 }
 
 pub trait BindingsBound:
@@ -55,10 +40,13 @@ pub trait BindingsBound:
 {
     fn base(&self) -> &BindingsBase;
     fn base_mut(&mut self) -> &mut BindingsBase;
+
+    fn set_world(&mut self, world: &mut World);
+    fn clear_world(&mut self);
 }
 
 #[derive(Clone)]
-struct WorldRef(pub *mut World);
+pub struct WorldRef(*mut World);
 impl Default for WorldRef {
     fn default() -> Self {
         Self::new()
@@ -67,6 +55,18 @@ impl Default for WorldRef {
 impl WorldRef {
     const fn new() -> Self {
         WorldRef(std::ptr::null_mut())
+    }
+    pub unsafe fn world(&self) -> &World {
+        unsafe { self.0.as_ref().unwrap() }
+    }
+    pub unsafe fn world_mut(&mut self) -> &mut World {
+        unsafe { self.0.as_mut().unwrap() }
+    }
+    pub unsafe fn set_world(&mut self, world: &mut World) {
+        self.0 = world;
+    }
+    pub unsafe fn clear_world(&mut self) {
+        self.0 = std::ptr::null_mut();
     }
 }
 unsafe impl Send for WorldRef {}
