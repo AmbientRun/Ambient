@@ -13,7 +13,7 @@ use ambient_model_import::{
     ModelImportPipeline, ModelImportTransform, ModelTransform, RelativePathBufExt,
 };
 use ambient_renderer::{
-    lod::{gpu_lod, lod_cutoffs},
+    lod::{gpu_lod, lod_cutoffs, LodCutoffs},
     materials::pbr_material::PbrMaterialDesc,
 };
 use ambient_std::{
@@ -386,14 +386,15 @@ async fn recursively_create_game_objects<'a: 'async_recursion>(
             );
             cutoffs.push(lod.screen_relative_height);
         }
-        cutoffs.resize(20, 0.);
-        let cutoffs: [f32; 20] = cutoffs.try_into().unwrap();
 
-        Entity::new().with(lod_cutoffs(), cutoffs).with_default(gpu_lod()).with(pbr_renderer_primitives_from_url(), model_lods)
+        Entity::new()
+            .with(lod_cutoffs(), LodCutoffs::new(&cutoffs))
+            .with_default(gpu_lod())
+            .with(pbr_renderer_primitives_from_url(), model_lods)
     } else if let Some(mesh_renderer) = object.get_component::<unity_parser::prefab::MeshRenderer>(prefab) {
         let primitives =
             primitives_from_unity_mesh_renderer(ctx, prefab, mesh_renderer, model_crate, go_transform, 0, out_model_url).await?;
-        Entity::new().with(lod_cutoffs(), [0.; 20]).with_default(gpu_lod()).with(pbr_renderer_primitives_from_url(), primitives)
+        Entity::new().with_default(lod_cutoffs()).with_default(gpu_lod()).with(pbr_renderer_primitives_from_url(), primitives)
     } else {
         Entity::new()
     };

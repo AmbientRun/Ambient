@@ -7,8 +7,8 @@ use ambient_core::{
     transform::{rotation, scale, translation},
 };
 use ambient_ecs::{
-    components, query, Component, ComponentQuery, ComponentValueBase, Debuggable, Description, Entity, EntityId, MakeDefault, Name,
-    Networked, QueryEvent, QueryState, Store, SystemGroup, TypedReadQuery, World,
+    components, query, Component, ComponentQuery, ComponentValueBase, Debuggable, DefaultValue, Description, Entity, EntityId, MakeDefault,
+    Name, Networked, QueryEvent, QueryState, Store, SystemGroup, TypedReadQuery, World,
 };
 use ambient_editor_derive::ElementEditor;
 use ambient_model::model_from_url;
@@ -41,10 +41,6 @@ use crate::{
     wood_physics_material, ColliderScene, PxActorUserData, PxShapeUserData, PxWoodMaterialKey,
 };
 
-fn one() -> f32 {
-    1.0
-}
-
 components!("physics", {
     @[
         Debuggable, Networked, Store,
@@ -71,9 +67,9 @@ components!("physics", {
     ]
     collider_from_url: String,
 
-    @[MakeDefault, Editable, Networked, Store]
+    @[MakeDefault, Editable, Networked, Store, Debuggable]
     collider: ColliderDef,
-    @[MakeDefault, Editable, Networked, Store]
+    @[MakeDefault, Editable, Networked, Store, Debuggable]
     collider_type: ColliderType,
     collider_shapes: Vec<PxShape>,
     collider_shapes_convex: Vec<PxShape>,
@@ -92,13 +88,15 @@ components!("physics", {
     ]
     kinematic: (),
     @[
-        Debuggable, MakeDefault[one], Editable, Networked, Store,
+        Debuggable, Editable, Networked, Store,
+        DefaultValue<_>[1.0],
         Name["Mass"],
         Description["The mass of this entity, measured in kilograms."]
     ]
     mass: f32,
     @[
-        MakeDefault[one], Editable, Networked, Store, Debuggable,
+        Debuggable, Editable, Networked, Store,
+        DefaultValue<_>[1.0],
         Name["Density"],
         Description["The density of this entity.\nThis is used to update the `mass` when the entity is rescaled."]
     ]

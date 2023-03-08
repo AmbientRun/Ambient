@@ -22,43 +22,47 @@ pub struct GpuComponent {
 pub enum GpuComponentFormat {
     Mat4,
     Vec4,
-    UVec4,
-    U32,
+    // UVec4,
+    // U32,
     UVec4Array20,
-    F32Array20,
-    U32Array20,
+    // F32Array20,
+    // U32Array20,
 }
 impl GpuComponentFormat {
     pub fn size(&self) -> u64 {
         match self {
             GpuComponentFormat::Mat4 => std::mem::size_of::<Mat4>() as u64,
             GpuComponentFormat::Vec4 => std::mem::size_of::<Vec4>() as u64,
-            GpuComponentFormat::UVec4 => std::mem::size_of::<UVec4>() as u64,
-            GpuComponentFormat::U32 => std::mem::size_of::<u32>() as u64,
+            //GpuComponentFormat::UVec4 => std::mem::size_of::<UVec4>() as u64,
+            // GpuComponentFormat::U32 => std::mem::size_of::<u32>() as u64,
             GpuComponentFormat::UVec4Array20 => std::mem::size_of::<UVec4>() as u64 * 20,
-            GpuComponentFormat::F32Array20 => std::mem::size_of::<f32>() as u64 * 20,
-            GpuComponentFormat::U32Array20 => std::mem::size_of::<u32>() as u64 * 20,
+            //GpuComponentFormat::F32Array20 => std::mem::size_of::<f32>() as u64 * 20,
+            //GpuComponentFormat::U32Array20 => std::mem::size_of::<u32>() as u64 * 20,
         }
     }
     pub fn wgsl(&self) -> &'static str {
         match self {
             GpuComponentFormat::Mat4 => "mat4x4<f32>",
             GpuComponentFormat::Vec4 => "vec4<f32>",
-            GpuComponentFormat::UVec4 => "vec4<u32>",
-            GpuComponentFormat::U32 => "u32",
+            // GpuComponentFormat::UVec4 => "vec4<u32>",
+            // GpuComponentFormat::U32 => "u32",
             GpuComponentFormat::UVec4Array20 => "array<vec4<u32>, 20>",
-            GpuComponentFormat::F32Array20 => "array<f32, 20>",
-            GpuComponentFormat::U32Array20 => "array<u32, 20>",
+            // GpuComponentFormat::F32Array20 => "array<f32, 20>",
+            // GpuComponentFormat::U32Array20 => "array<u32, 20>",
         }
     }
 }
 
+/// Generates the wgsl for buffers storing the component type
 #[derive(Clone, Debug)]
 pub struct GpuComponentsConfig {
+    /// The primitive type of the component
     pub format: GpuComponentFormat,
+    /// The set of components which share the same type which will coexist in the same buffer, using `MultiBuffer`
     pub components: Vec<GpuComponent>,
     pub components_before_this: usize,
 }
+
 impl GpuComponentsConfig {
     pub fn new(format: GpuComponentFormat) -> Self {
         Self { format, components: Vec::new(), components_before_this: 0 }
@@ -66,6 +70,8 @@ impl GpuComponentsConfig {
     pub fn layout_offset(&self, archetypes: usize) -> usize {
         1 + self.components_before_this * archetypes
     }
+
+    /// Generate bindings for accessing this gpu component type in the specified `bind_group` and `buffer_index`
     fn wgsl(&self, bind_group: &str, buffer_index: u32, writeable: bool) -> String {
         format!(
             "
@@ -163,10 +169,12 @@ fn set_entity_{comp}(entity_loc: vec2<u32>, value: {wgsl_format}) {{
     }
 }
 
+/// Generates the wgsl code for the gpu ecs storage bindings and access functions.
 #[derive(Clone, Debug)]
 pub struct GpuWorldConfig {
     pub buffers: Vec<GpuComponentsConfig>,
 }
+
 impl GpuWorldConfig {
     pub fn new(mut buffers: Vec<GpuComponentsConfig>) -> Self {
         let mut comps = 0;

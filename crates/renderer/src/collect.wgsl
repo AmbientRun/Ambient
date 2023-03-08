@@ -43,23 +43,30 @@ var<storage> material_layouts: UVec2Buffer;
 
 fn is_visible(entity_loc: vec2<u32>, primitive_lod: u32) -> bool {
 
-    var visibility_from = entity_loc;
+    var visibility_from: vec2<u32> = entity_loc;
     if (has_entity_visibility_from(entity_loc)) {
-        visibility_from = get_entity_visibility_from(entity_loc).xy;
+        let visibility_from_raw = get_entity_visibility_from(entity_loc);
+        // reinterpret floats as u32
+        visibility_from = bitcast<vec4<u32>>(visibility_from_raw).xy;
     }
 
-    let entity_lod = get_entity_gpu_lod_or(visibility_from, 0u);
+    // let entity_lod = u32(get_entity_gpu_lod_or(visibility_from, 0.0).x);
+    let flod = get_entity_gpu_lod_or(visibility_from, vec4<f32>(0.0));
+    let entity_lod = u32(flod.x);
+
     if (entity_lod != primitive_lod) {
         return false;
     }
     if (has_entity_renderer_cameras_visible(visibility_from)) {
         var cameras = get_entity_renderer_cameras_visible(visibility_from);
-        return bool(cameras[params.camera]);
+        let camera_i = params.camera >> 2u;
+        let camera_j = params.camera & 3u;
+
+        return cameras[camera_i][camera_j] > 0.0;
     } else {
         return true;
     }
 }
-
 
 @compute
 @workgroup_size(#COLLECT_WORKGROUP_SIZE)

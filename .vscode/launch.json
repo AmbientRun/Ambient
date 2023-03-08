@@ -16,12 +16,12 @@
             },
             "env": {
                 "RUST_LOG": "info,wgpu=warn,naga=warn,quinn=warn,sentry=debug,sentry-anyhow=debug,sentry-core=debug,fbxcel=error",
-                "AMBIENT_DISABLE_TIMEOUT": "true"
+                "AMBIENT_DISABLE_TIMEOUT": "true",
+                "AMBIENT_DEBUGGER": "true"
             },
             "args": [
                 "run",
                 "guest/rust/examples/ui/button",
-                "--debug"
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [
@@ -43,12 +43,12 @@
             },
             "env": {
                 "RUST_LOG": "info,wgpu=warn,naga=warn,quinn=warn,sentry=debug,sentry-anyhow=debug,sentry-core=debug,fbxcel=error",
-                "AMBIENT_DISABLE_TIMEOUT": "true"
+                "AMBIENT_DISABLE_TIMEOUT": "true",
+                "AMBIENT_DEBUGGER": "true"
             },
             "args": [
                 "run",
                 "guest/rust/examples/third_person_camera",
-                "--debug"
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [

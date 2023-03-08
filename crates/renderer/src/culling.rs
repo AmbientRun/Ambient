@@ -24,7 +24,7 @@ use wgpu::{BindGroupLayoutEntry, BindingType, BufferBindingType, ShaderStages};
 use crate::{get_sun_light_direction, RendererConfig};
 
 gpu_components! {
-    world_bounding_sphere() => renderer_cameras_visible: GpuComponentFormat::U32Array20,
+    world_bounding_sphere() => renderer_cameras_visible: GpuComponentFormat::Mat4,
 }
 
 const CULLING_BIND_GROUP: &str = "LODDING_BIND_GROUP";

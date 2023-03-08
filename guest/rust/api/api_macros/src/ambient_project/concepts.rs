@@ -8,24 +8,18 @@ use proc_macro2::TokenStream;
 use quote::quote;
 
 pub fn tree_to_token_stream(
-    tree: &Tree<Concept>,
+    concept_tree: &Tree<Concept>,
     components_tree: &Tree<Component>,
     api_name: &syn::Path,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    to_token_stream(
-        &TreeNode::new(
-            IdentifierPathBuf::empty(),
-            TreeNodeInner::Namespace(tree.root.clone()),
-        ),
-        components_tree,
-        api_name,
-    )
+    to_token_stream(concept_tree, components_tree, api_name, concept_tree.root())
 }
 
 fn to_token_stream(
-    node: &TreeNode<Concept>,
+    concept_tree: &Tree<Concept>,
     components_tree: &Tree<Component>,
     api_name: &syn::Path,
+    node: &TreeNode<Concept>,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     let name = node.path.last().map(|s| s.as_ref()).unwrap_or_default();
     match &node.inner {
@@ -33,7 +27,7 @@ fn to_token_stream(
             let children = ns
                 .children
                 .values()
-                .map(|child| to_token_stream(child, components_tree, api_name))
+                .map(|child| to_token_stream(concept_tree, components_tree, api_name, child))
                 .collect::<Result<Vec<_>, _>>()?;
 
             let prelude = quote! {
@@ -68,8 +62,9 @@ fn to_token_stream(
             })
         }
         TreeNodeInner::Other(concept) => {
-            let make_concept = generate_make(components_tree, name, concept)?;
-            let is_concept = generate_is(name, concept)?;
+            let make_concept =
+                generate_make(concept_tree, components_tree, api_name, name, concept)?;
+            let is_concept = generate_is(concept_tree, components_tree, api_name, name, concept)?;
             Ok(quote! {
                 #make_concept
                 #is_concept
@@ -79,11 +74,18 @@ fn to_token_stream(
 }
 
 fn generate_make(
-    components_tree: &Tree<Component>,
+    concept_tree: &Tree<Concept>,
+    component_tree: &Tree<Component>,
+    api_name: &syn::Path,
     name: &str,
     concept: &Concept,
 ) -> anyhow::Result<TokenStream> {
-    let make_comment = format!("Makes a {} ({})", concept.name, concept.description);
+    let make_comment = format!(
+        "Makes a *{}*.\n\n{}\n\n{}",
+        concept.name,
+        concept.description,
+        generate_component_list_doc_comment(concept_tree, component_tree, api_name, concept)?
+    );
     let make_ident = quote::format_ident!("make_{}", name);
 
     let extends: Vec<_> = concept
@@ -106,7 +108,7 @@ fn generate_make(
         .map(|component| {
             let full_path = build_component_path(&components_prefix, component.0.as_path());
 
-            let manifest_component = components_tree
+            let manifest_component = component_tree
                 .get(component.0.as_path())
                 .with_context(|| format!("there is no component defined at `{}`", component.0))?;
 
@@ -131,10 +133,18 @@ fn generate_make(
     })
 }
 
-fn generate_is(name: &str, concept: &Concept) -> anyhow::Result<TokenStream> {
+fn generate_is(
+    concept_tree: &Tree<Concept>,
+    component_tree: &Tree<Component>,
+    api_name: &syn::Path,
+    name: &str,
+    concept: &Concept,
+) -> anyhow::Result<TokenStream> {
     let is_comment = format!(
-        "Checks if the entity is a {} ({})",
-        concept.name, concept.description
+        "Checks if the entity is a *{}*.\n\n{}\n\n{}",
+        concept.name,
+        concept.description,
+        generate_component_list_doc_comment(concept_tree, component_tree, api_name, concept)?,
     );
     let is_ident = quote::format_ident!("is_{}", name);
 
@@ -289,4 +299,92 @@ fn toml_array_f32_to_array_tokens(
         .collect::<anyhow::Result<Vec<_>>>()?;
 
     Ok(quote! { #(#members),* })
+}
+
+pub fn generate_component_list_doc_comment(
+    concept_tree: &Tree<Concept>,
+    component_tree: &Tree<Component>,
+    api_name: &syn::Path,
+    concept: &Concept,
+) -> anyhow::Result<String> {
+    let mut output = "*Components*:\n\n".to_string();
+
+    fn write_level(
+        concepts: &Tree<Concept>,
+        components: &Tree<Component>,
+        api_name: &syn::Path,
+        concept: &Concept,
+        output: &mut String,
+        level: usize,
+    ) -> anyhow::Result<()> {
+        use std::fmt::Write;
+
+        let padding = " ".repeat(level * 2);
+        for (component_path, value) in &concept.components {
+            let ty = components
+                .get(component_path.as_path())
+                .with_context(|| format!("no definition found for {component_path}"))?
+                .type_
+                .clone();
+
+            writeln!(
+                output,
+                "{padding}- `{component_path}: {} = {}`",
+                SemiprettyTokenStream(ty.to_token_stream(api_name, false)?),
+                SemiprettyTokenStream(toml_value_to_tokens(component_path.as_path(), &ty, value)?)
+            )?;
+        }
+        for concept_path in &concept.extends {
+            let concept = concepts
+                .get(concept_path.as_path())
+                .with_context(|| format!("no definition found for {concept_path}"))?;
+
+            writeln!(output, "{padding}- **`{concept_path}`**:")?;
+            write_level(concepts, components, api_name, concept, output, level + 1)?;
+        }
+
+        Ok(())
+    }
+
+    write_level(
+        concept_tree,
+        component_tree,
+        api_name,
+        concept,
+        &mut output,
+        0,
+    )?;
+
+    Ok(output)
+}
+
+/// Very, very basic one-line formatter for token streams
+struct SemiprettyTokenStream(proc_macro2::TokenStream);
+impl std::fmt::Display for SemiprettyTokenStream {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for token in self.0.clone() {
+            match &token {
+                proc_macro2::TokenTree::Group(g) => {
+                    let (open, close) = match g.delimiter() {
+                        proc_macro2::Delimiter::Parenthesis => ("(", ")"),
+                        proc_macro2::Delimiter::Brace => ("{", "}"),
+                        proc_macro2::Delimiter::Bracket => ("[", "]"),
+                        proc_macro2::Delimiter::None => ("", ""),
+                    };
+
+                    f.write_str(open)?;
+                    SemiprettyTokenStream(g.stream()).fmt(f)?;
+                    f.write_str(close)?
+                }
+                proc_macro2::TokenTree::Punct(p) => {
+                    token.fmt(f)?;
+                    if p.as_char() == ',' {
+                        write!(f, " ")?;
+                    }
+                }
+                _ => token.fmt(f)?,
+            }
+        }
+        Ok(())
+    }
 }

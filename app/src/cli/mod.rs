@@ -57,9 +57,9 @@ pub enum Cli {
 }
 #[derive(Args, Clone)]
 pub struct RunCli {
-    /// Whether or not debug menus should be shown
-    #[arg(long)]
-    pub debug: bool,
+    /// If set, show a debugger that can be used to investigate the state of the project. Can also be accessed through the `AMBIENT_DEBUGGER` environment variable
+    #[arg(short, long)]
+    pub debugger: bool,
 
     /// Run in headless mode
     #[arg(long)]

@@ -10,14 +10,7 @@ pub fn tree_to_token_stream(
     api_name: &syn::Path,
     project_path: IdentifierPath,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    to_token_stream(
-        &TreeNode::new(
-            IdentifierPathBuf::empty(),
-            TreeNodeInner::Namespace(tree.root.clone()),
-        ),
-        api_name,
-        project_path,
-    )
+    to_token_stream(tree.root(), api_name, project_path)
 }
 
 fn to_token_stream(
@@ -67,7 +60,7 @@ fn to_token_stream(
         TreeNodeInner::Other(component) => {
             let name_ident: syn::Path = syn::parse_str(name)?;
             let name_uppercase_ident: syn::Path = syn::parse_str(&name.to_ascii_uppercase())?;
-            let component_ty = component.type_.to_token_stream(api_name)?;
+            let component_ty = component.type_.to_token_stream(api_name, true)?;
 
             let mut doc_comment = format!("**{}**", component.name);
 
