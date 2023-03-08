@@ -51,13 +51,13 @@ fn create_environment() {
     make_transformable().with_default(sky()).spawn();
 
     make_transformable()
-        .with(prefab_from_url(), asset_url("assets/level.glb").unwrap())
+        .with(prefab_from_url(), asset::url("assets/level.glb").unwrap())
         .with(translation(), Vec3::Z * -0.25)
         .spawn();
 
     make_transformable()
-        .with(model_from_url(), asset_url("assets/fan.glb").unwrap())
-        .with(collider_from_url(), asset_url("assets/fan.glb").unwrap())
+        .with(model_from_url(), asset::url("assets/fan.glb").unwrap())
+        .with(collider_from_url(), asset::url("assets/fan.glb").unwrap())
         .with(kinematic(), ())
         .with(dynamic(), true)
         .with(angular_velocity(), vec3(0., 90_f32.to_radians(), 0.))
@@ -72,7 +72,7 @@ fn make_golf_ball() -> Entity {
         .with_default(physics_controlled())
         .with(dynamic(), true)
         .with(sphere_collider(), BALL_RADIUS)
-        .with(model_from_url(), asset_url("assets/ball.glb").unwrap())
+        .with(model_from_url(), asset::url("assets/ball.glb").unwrap())
 }
 
 fn make_text() -> Entity {
@@ -164,7 +164,10 @@ pub async fn main() -> EventResult {
                     make_transformable()
                         .with(color(), next_color)
                         .with(user_id(), player_user_id.clone())
-                        .with(model_from_url(), asset_url("assets/indicator.glb").unwrap())
+                        .with(
+                            model_from_url(),
+                            asset::url("assets/indicator.glb").unwrap(),
+                        )
                         .spawn(),
                 );
 
@@ -176,7 +179,7 @@ pub async fn main() -> EventResult {
                         .with(user_id(), player_user_id.clone())
                         .with(
                             model_from_url(),
-                            asset_url("assets/indicator_arrow.glb").unwrap(),
+                            asset::url("assets/indicator_arrow.glb").unwrap(),
                         )
                         .spawn(),
                 );
@@ -184,8 +187,8 @@ pub async fn main() -> EventResult {
         });
 
     let flag = make_transformable()
-        .with(model_from_url(), asset_url("assets/flag.glb").unwrap())
-        .with(collider_from_url(), asset_url("assets/flag.glb").unwrap())
+        .with(model_from_url(), asset::url("assets/flag.glb").unwrap())
+        .with(collider_from_url(), asset::url("assets/flag.glb").unwrap())
         .with(dynamic(), true)
         .with(kinematic(), ())
         .with(origin(), vec3(-35., 205., 0.3166))

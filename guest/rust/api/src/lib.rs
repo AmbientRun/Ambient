@@ -1,12 +1,14 @@
 //! # The Ambient Rust API
 //!
-//! Welcome to the Ambient Rust API! This API allows you to write logic for the Ambient Runtime in Rust.
+//! Welcome to the Ambient Rust API! This API allows you to write logic for Ambient, the multiplayer game engine, in Rust.
 //!
-//! You can find the Ambient Book at: <https://ambientrun.github.io/Ambient/>
+//! The Ambient Book can be found [here](https://ambientrun.github.io/Ambient/).
 //!
 //! Ambient has first-class support for Rust. Please report any issues you encounter to the repository.
 #![deny(missing_docs)]
 
+/// Asset-related functionality, including retrieval of assets and where to find them.
+pub mod asset;
 /// ECS-related functionality not directly related to entities.
 pub mod ecs;
 /// Entity-related functionality, including manipulation, creation, removal, and search.

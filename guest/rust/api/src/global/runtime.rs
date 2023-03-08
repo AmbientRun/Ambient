@@ -145,7 +145,8 @@ pub async fn until_this(event: &str, condition: impl Fn(&Entity) -> bool + 'stat
     .await
 }
 
-/// This method resolves a relative path to an asset in a Ambient module, to an absolute url
+#[deprecated = "Please use `asset::url` instead."]
+#[doc(hidden)]
 pub fn asset_url(path: impl AsRef<str>) -> Option<String> {
-    wit::server_asset::url(path.as_ref())
+    crate::asset::url(path)
 }

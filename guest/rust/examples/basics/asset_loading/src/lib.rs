@@ -21,7 +21,7 @@ pub async fn main() -> EventResult {
 
     let cube_id = Entity::new()
         .with_merge(make_transformable())
-        .with(prefab_from_url(), asset_url("assets/Cube.glb").unwrap())
+        .with(prefab_from_url(), asset::url("assets/Cube.glb").unwrap())
         .with(components::is_the_best(), true)
         .spawn();
     entity::wait_for_component(cube_id, spawned()).await;

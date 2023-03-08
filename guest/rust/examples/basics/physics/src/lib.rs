@@ -42,7 +42,7 @@ pub async fn main() -> EventResult {
 
     Entity::new()
         .with_merge(make_transformable())
-        .with(prefab_from_url(), asset_url("assets/Shape.glb").unwrap())
+        .with(prefab_from_url(), asset::url("assets/Shape.glb").unwrap())
         .spawn();
 
     on(event::COLLISION, |c| {

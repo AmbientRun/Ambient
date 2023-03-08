@@ -35,7 +35,7 @@ pub async fn main() -> EventResult {
         .with_merge(make_transformable())
         .with(
             prefab_from_url(),
-            asset_url("assets/Peasant Man.fbx").unwrap(),
+            asset::url("assets/Peasant Man.fbx").unwrap(),
         )
         .spawn();
 
@@ -43,7 +43,7 @@ pub async fn main() -> EventResult {
         unit_id,
         AnimationController {
             actions: &[AnimationAction {
-                clip_url: &asset_url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
+                clip_url: &asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
                 looping: true,
                 weight: 1.,
             }],
@@ -65,7 +65,7 @@ pub async fn main() -> EventResult {
                     unit_id,
                     AnimationController {
                         actions: &[AnimationAction {
-                            clip_url: &asset_url(
+                            clip_url: &asset::url(
                                 "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
                             )
                             .unwrap(),
@@ -82,7 +82,7 @@ pub async fn main() -> EventResult {
                     unit_id,
                     AnimationController {
                         actions: &[AnimationAction {
-                            clip_url: &asset_url("assets/Capoeira.fbx/animations/mixamo.com.anim")
+                            clip_url: &asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim")
                                 .unwrap(),
                             looping: true,
                             weight: 1.,
@@ -98,7 +98,7 @@ pub async fn main() -> EventResult {
                     AnimationController {
                         actions: &[
                             AnimationAction {
-                                clip_url: &asset_url(
+                                clip_url: &asset::url(
                                     "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
                                 )
                                 .unwrap(),
@@ -106,7 +106,7 @@ pub async fn main() -> EventResult {
                                 weight: 0.5,
                             },
                             AnimationAction {
-                                clip_url: &asset_url(
+                                clip_url: &asset::url(
                                     "assets/Capoeira.fbx/animations/mixamo.com.anim",
                                 )
                                 .unwrap(),
