@@ -39,7 +39,6 @@ pub fn mirror_window_components(src: &mut World, dst: &mut World) {
         T: ComponentValue + std::fmt::Debug + Copy,
     {
         let val = *src.resource(component);
-        eprintln!("Mirroring: {component:?}: {val:?}");
         dst.set(dst.resource_entity(), component, val).unwrap();
     }
 
