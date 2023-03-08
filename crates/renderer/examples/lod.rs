@@ -1,3 +1,9 @@
+//! Provides a sphere with varying LOD
+//!
+//! # Expected behavior
+//!
+//! When zooming out, the sphere should gradually decrease in subdivisions, and the hue should change gradually from 0 degrees to 360 degrees
+
 use ambient_app::{App, AppBuilder};
 use ambient_core::{
     asset_cache,
@@ -7,7 +13,7 @@ use ambient_core::{
     transform::{local_to_world, mesh_to_world, translation},
 };
 use ambient_ecs::Entity;
-use ambient_meshes::{CubeMeshKey, SphereMeshKey};
+use ambient_meshes::{CubeMeshKey, SphereMeshKey, UVSphereMesh};
 use ambient_primitives::Cube;
 use ambient_renderer::{
     color,
@@ -22,8 +28,20 @@ use glam::*;
 async fn init(app: &mut App) {
     let world = &mut app.world;
     let assets = world.resource(asset_cache()).clone();
-    let mut materials = (0..)
-        .map(|i| FlatMaterialKey::new(Color::hsl(i as f32 / 6.0 * 360.0, 1.0, 0.5).as_linear_rgba_f32().into(), Some(false)).get(&assets));
+    const LODS: usize = 16;
+    let (prims, mut lods): (Vec<_>, Vec<_>) = (0..LODS)
+        .map(|i| {
+            let detail = LODS - i;
+            let mesh = SphereMeshKey(UVSphereMesh { radius: 1.0, sectors: 3 * detail + 2, stacks: detail + 2 }).get(&assets);
+            let f = i as f32 / LODS as f32;
+
+            let material = FlatMaterialKey::new(Color::hsl(f * 360.0, 1.0, 0.5).as_linear_rgba_f32().into(), Some(false)).get(&assets);
+
+            (RenderPrimitive { mesh, material, shader: cb(get_flat_shader), lod: i }, (LODS - 1 - i) as f32 / (LODS - 1) as f32)
+        })
+        .unzip();
+
+    log::info!("Lod levels: {lods:?}");
 
     let aabb = AABB { min: -Vec3::ONE, max: Vec3::ONE };
     Entity::new()
@@ -36,43 +54,8 @@ async fn init(app: &mut App) {
         .with(local_bounding_aabb(), aabb)
         .with(world_bounding_sphere(), aabb.to_sphere())
         .with(world_bounding_aabb(), aabb)
-        .with(
-            primitives(),
-            vec![
-                RenderPrimitive {
-                    mesh: CubeMeshKey.get(&assets),
-                    material: materials.next().unwrap(),
-                    shader: cb(get_flat_shader),
-                    lod: 0,
-                },
-                RenderPrimitive {
-                    mesh: SphereMeshKey(Default::default()).get(&assets),
-                    material: materials.next().unwrap(),
-                    shader: cb(get_flat_shader),
-                    lod: 1,
-                },
-                RenderPrimitive {
-                    mesh: CubeMeshKey.get(&assets),
-                    material: materials.next().unwrap(),
-                    shader: cb(get_flat_shader),
-                    lod: 2,
-                },
-                RenderPrimitive {
-                    mesh: SphereMeshKey(Default::default()).get(&assets),
-                    material: materials.next().unwrap(),
-                    shader: cb(get_flat_shader),
-                    lod: 3,
-                },
-                RenderPrimitive {
-                    mesh: CubeMeshKey.get(&assets),
-                    material: materials.next().unwrap(),
-                    shader: cb(get_flat_shader),
-                    lod: 4,
-                },
-            ],
-        )
+        .with(primitives(), prims)
         .with(lod_cutoffs(), {
-            let mut lods = vec![1.0, 0.8, 0.5, 0.2, 0.0];
             lods.resize(16, 0.);
             lods.try_into().unwrap()
         })
