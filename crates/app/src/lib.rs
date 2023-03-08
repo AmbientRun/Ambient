@@ -309,6 +309,7 @@ impl AppBuilder {
             let headless_size = self.headless.unwrap();
             (headless_size, headless_size, 1.)
         };
+
         tracing::info!("Got initial window sizes: {window_physical_size} {window_logical_size} {window_scale_factor}");
 
         let app_resources =
