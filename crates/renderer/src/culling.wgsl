@@ -84,13 +84,17 @@ fn update(entity_loc: vec2<u32>) {
     if (has_entity_gpu_lod(entity_loc)) {
         set_entity_gpu_lod(entity_loc, get_lod(entity_loc));
     }
-    var cameras: array<u32, 20>;
+    var cameras: mat4x4<f32>;
     let bounding_sphere = get_entity_world_bounding_sphere(entity_loc);
-    cameras[0] = u32(cull_camera(params.main_camera, bounding_sphere).inside);
-    for (var i=0; i < #SHADOW_CASCADES; i = i + 1) {
-        cameras[i + 1] = u32(false);
+    cameras[0][0] = f32(cull_camera(params.main_camera, bounding_sphere).inside);
+
+    for (var i=1u; i <= #SHADOW_CASCADESu; i = i + 1u) {
+        let a = i >> 2u;
+        let b = i & 3u;
+
+        cameras[a][b] = 0.0;
     }
-    for (var i=0; i < #SHADOW_CASCADES; i = i + 1) {
+    for (var i=0u; i < #SHADOW_CASCADESu; i = i + 1u) {
         let radius = bounding_sphere.w;
         let pixel_size = vec2<f32>(radius) * 2. / params.shadow_cameras[i].orthographic_size;
         let min_pixel_size = min(pixel_size.x, pixel_size.y);
@@ -101,7 +105,9 @@ fn update(entity_loc: vec2<u32>) {
 
         let res = cull_camera(params.shadow_cameras[i], bounding_sphere);
         if (res.inside) {
-            cameras[i + 1] = u32(true);
+            let a = (i + 1u) >> 2u;
+            let b = (i + 1u) & 3u;
+            cameras[a][b] = 1.0;
         }
         if (res.fully_contained) {
             break;

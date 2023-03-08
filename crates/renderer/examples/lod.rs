@@ -53,10 +53,11 @@ async fn init(app: &mut App) {
                     shader: cb(get_flat_shader),
                     lod: 3,
                 },
+                RenderPrimitive { mesh: CubeMeshKey.get(&assets), material: red_mat.clone(), shader: cb(get_flat_shader), lod: 4 },
             ],
         )
         .with(lod_cutoffs(), {
-            let mut lods = vec![1., 0.5, 0.2, 0.];
+            let mut lods = vec![1.0, 0.8, 0.5, 0.2, 0.0];
             lods.resize(16, 0.);
             lods.try_into().unwrap()
         })
