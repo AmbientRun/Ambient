@@ -1,8 +1,8 @@
 use std::{path::PathBuf, sync::Arc};
 
 use ambient_ecs::{components, EntityId, SystemGroup, World};
-use ambient_network::server::{ForkingEvent, ShutdownEvent};
 use ambient_project::Identifier;
+pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
 use ambient_wasm::shared::{get_module_name, module_bytecode, spawn_module, MessageType, ModuleBytecode};
 use anyhow::Context;
 
@@ -14,14 +14,6 @@ pub fn init_all_components() {
 
 pub fn systems() -> SystemGroup {
     ambient_wasm::shared::systems()
-}
-
-pub fn on_forking_systems() -> SystemGroup<ForkingEvent> {
-    ambient_wasm::shared::on_forking_systems()
-}
-
-pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
-    ambient_wasm::shared::on_shutdown_systems()
 }
 
 pub async fn initialize(world: &mut World, project_path: PathBuf, manifest: &ambient_project::Manifest) -> anyhow::Result<()> {

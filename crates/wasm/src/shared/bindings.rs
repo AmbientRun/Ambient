@@ -4,8 +4,6 @@ use ambient_ecs::{EntityId, PrimitiveComponent, Query, QueryState, World};
 
 use super::wit;
 
-pub type ComponentsParam = Vec<(u32, wit::component::ValueResult)>;
-
 pub type QueryStateMap =
     slotmap::SlotMap<slotmap::DefaultKey, (Query, QueryState, Vec<PrimitiveComponent>)>;
 
@@ -20,10 +18,10 @@ pub trait BindingsBound:
     wit::types::Host
     + wit::component::Host
     + wit::entity::Host
-    + wit::player::Host
-    + wit::physics::Host
     + wit::event::Host
-    + wit::asset::Host
+    + wit::server_player::Host
+    + wit::server_physics::Host
+    + wit::server_asset::Host
     + Clone
     + Sync
     + Send

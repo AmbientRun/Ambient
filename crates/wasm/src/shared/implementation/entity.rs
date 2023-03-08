@@ -6,7 +6,6 @@ use ambient_ecs::{query as ecs_query, with_component_registry, EntityId, World};
 
 use super::{
     super::{
-        bindings::ComponentsParam,
         conversion::{FromBindgen, IntoBindgen},
         wit,
     },
@@ -16,7 +15,7 @@ use super::{
 pub fn spawn(
     world: &mut World,
     spawned_entities: &mut HashSet<EntityId>,
-    data: ComponentsParam,
+    data: wit::entity::EntityData,
 ) -> anyhow::Result<wit::types::EntityId> {
     let id = convert_components_to_entity_data(data).spawn(world);
     spawned_entities.insert(id);

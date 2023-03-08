@@ -1,218 +1,27 @@
-use std::collections::HashSet;
+use crate::shared::{conversion::IntoBindgen, wit};
 
-use crate::{
-    global::{EntityId, Vec2},
-    internal::{
-        conversion::{FromBindgen, IntoBindgen},
-        wit,
-    },
-};
+impl IntoBindgen for ambient_input::PlayerRawInput {
+    type Item = wit::server_player::RawInput;
 
-#[allow(missing_docs)]
-/// The code associated with a key on the keyboard.
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
-pub enum KeyCode {
-    /// The '1' key over the letters.
-    Key1,
-    /// The '2' key over the letters.
-    Key2,
-    /// The '3' key over the letters.
-    Key3,
-    /// The '4' key over the letters.
-    Key4,
-    /// The '5' key over the letters.
-    Key5,
-    /// The '6' key over the letters.
-    Key6,
-    /// The '7' key over the letters.
-    Key7,
-    /// The '8' key over the letters.
-    Key8,
-    /// The '9' key over the letters.
-    Key9,
-    /// The '0' key over the 'O' and 'P' keys.
-    Key0,
-
-    A,
-    B,
-    C,
-    D,
-    E,
-    F,
-    G,
-    H,
-    I,
-    J,
-    K,
-    L,
-    M,
-    N,
-    O,
-    P,
-    Q,
-    R,
-    S,
-    T,
-    U,
-    V,
-    W,
-    X,
-    Y,
-    Z,
-
-    /// The Escape key, next to F1.
-    Escape,
-
-    F1,
-    F2,
-    F3,
-    F4,
-    F5,
-    F6,
-    F7,
-    F8,
-    F9,
-    F10,
-    F11,
-    F12,
-    F13,
-    F14,
-    F15,
-    F16,
-    F17,
-    F18,
-    F19,
-    F20,
-    F21,
-    F22,
-    F23,
-    F24,
-
-    /// Print Screen/SysRq.
-    Snapshot,
-    /// Scroll Lock.
-    Scroll,
-    /// Pause/Break key, next to Scroll lock.
-    Pause,
-
-    /// `Insert`, next to Backspace.
-    Insert,
-    Home,
-    Delete,
-    End,
-    PageDown,
-    PageUp,
-
-    Left,
-    Up,
-    Right,
-    Down,
-
-    /// The Backspace key, right over Enter.
-    // TODO: rename
-    Back,
-    /// The Enter key.
-    Return,
-    /// The space bar.
-    Space,
-
-    /// The "Compose" key on Linux.
-    Compose,
-
-    Caret,
-
-    Numlock,
-    Numpad0,
-    Numpad1,
-    Numpad2,
-    Numpad3,
-    Numpad4,
-    Numpad5,
-    Numpad6,
-    Numpad7,
-    Numpad8,
-    Numpad9,
-    NumpadAdd,
-    NumpadDivide,
-    NumpadDecimal,
-    NumpadComma,
-    NumpadEnter,
-    NumpadEquals,
-    NumpadMultiply,
-    NumpadSubtract,
-
-    AbntC1,
-    AbntC2,
-    Apostrophe,
-    Apps,
-    Asterisk,
-    At,
-    Ax,
-    Backslash,
-    Calculator,
-    Capital,
-    Colon,
-    Comma,
-    Convert,
-    Equals,
-    Grave,
-    Kana,
-    Kanji,
-    LAlt,
-    LBracket,
-    LControl,
-    LShift,
-    LWin,
-    Mail,
-    MediaSelect,
-    MediaStop,
-    Minus,
-    Mute,
-    MyComputer,
-    // also called "Next"
-    NavigateForward,
-    // also called "Prior"
-    NavigateBackward,
-    NextTrack,
-    NoConvert,
-    OEM102,
-    Period,
-    PlayPause,
-    Plus,
-    Power,
-    PrevTrack,
-    RAlt,
-    RBracket,
-    RControl,
-    RShift,
-    RWin,
-    Semicolon,
-    Slash,
-    Sleep,
-    Stop,
-    Sysrq,
-    Tab,
-    Underline,
-    Unlabeled,
-    VolumeDown,
-    VolumeUp,
-    Wake,
-    WebBack,
-    WebFavorites,
-    WebForward,
-    WebHome,
-    WebRefresh,
-    WebSearch,
-    WebStop,
-    Yen,
-    Copy,
-    Paste,
-    Cut,
+    fn into_bindgen(self) -> Self::Item {
+        Self::Item {
+            keys: self.keys.into_iter().map(|k| k.into_bindgen()).collect(),
+            mouse_position: self.mouse_position.into_bindgen(),
+            cursor_position: self.cursor_position.into_bindgen(),
+            mouse_wheel: self.mouse_wheel,
+            mouse_buttons: self
+                .mouse_buttons
+                .into_iter()
+                .map(|b| b.into_bindgen())
+                .collect(),
+        }
+    }
 }
-impl FromBindgen for wit::server_player::VirtualKeyCode {
-    type Item = KeyCode;
 
-    fn from_bindgen(self) -> Self::Item {
+impl IntoBindgen for ambient_input::VirtualKeyCode {
+    type Item = wit::server_player::VirtualKeyCode;
+
+    fn into_bindgen(self) -> Self::Item {
         match self {
             Self::Key1 => Self::Item::Key1,
             Self::Key2 => Self::Item::Key2,
@@ -344,7 +153,7 @@ impl FromBindgen for wit::server_player::VirtualKeyCode {
             Self::NavigateBackward => Self::Item::NavigateBackward,
             Self::NextTrack => Self::Item::NextTrack,
             Self::NoConvert => Self::Item::NoConvert,
-            Self::Oem102 => Self::Item::OEM102,
+            Self::OEM102 => Self::Item::Oem102,
             Self::Period => Self::Item::Period,
             Self::PlayPause => Self::Item::PlayPause,
             Self::Plus => Self::Item::Plus,
@@ -381,22 +190,10 @@ impl FromBindgen for wit::server_player::VirtualKeyCode {
     }
 }
 
-/// A button on the mouse.
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
-pub enum MouseButton {
-    /// Left mouse button
-    Left,
-    /// Right mouse button
-    Right,
-    /// Middle mouse button (scroll-wheel click)
-    Middle,
-    /// Other buttons
-    Other(u16),
-}
-impl FromBindgen for wit::server_player::MouseButton {
-    type Item = MouseButton;
+impl IntoBindgen for ambient_input::MouseButton {
+    type Item = wit::server_player::MouseButton;
 
-    fn from_bindgen(self) -> Self::Item {
+    fn into_bindgen(self) -> Self::Item {
         match self {
             Self::Left => Self::Item::Left,
             Self::Right => Self::Item::Right,
@@ -404,91 +201,4 @@ impl FromBindgen for wit::server_player::MouseButton {
             Self::Other(id) => Self::Item::Other(id),
         }
     }
-}
-
-/// The state of a player's raw input. Get these with [get_raw_input] or [get_prev_raw_input].
-#[derive(Clone, Debug, PartialEq)]
-pub struct RawInput {
-    /// All of the keys being pressed this frame.
-    pub keys: HashSet<KeyCode>,
-    /// The current position of the mouse.
-    pub mouse_position: Vec2,
-    /// The current scroll position.
-    pub mouse_wheel: f32,
-    /// All of the mouse buttons being pressed this frame.
-    pub mouse_buttons: HashSet<MouseButton>,
-}
-impl FromBindgen for wit::server_player::RawInput {
-    type Item = RawInput;
-    fn from_bindgen(self) -> Self::Item {
-        Self::Item {
-            keys: self.keys.into_iter().map(|k| k.from_bindgen()).collect(),
-            mouse_position: self.mouse_position.from_bindgen(),
-            mouse_wheel: self.mouse_wheel,
-            mouse_buttons: self
-                .mouse_buttons
-                .into_iter()
-                .map(|b| b.from_bindgen())
-                .collect(),
-        }
-    }
-}
-
-/// The changes between the player's input state this update ([get_raw_input]) and their input state
-/// last update ([get_prev_raw_input]). Get this with ([get_raw_input_delta]).
-#[derive(Clone, Debug, PartialEq)]
-pub struct RawInputDelta {
-    /// All of the keys that were pressed this frame, but not last frame.
-    pub keys: HashSet<KeyCode>,
-    /// All of the keys that were released this frame.
-    pub keys_released: HashSet<KeyCode>,
-    /// The change between last frame's mouse position and this frame.
-    pub mouse_position: Vec2,
-    /// The amount the mouse wheel has scrolled since the last frame.
-    pub mouse_wheel: f32,
-    /// All of the mouse buttons that were pressed this frame, but not last frame.
-    pub mouse_buttons: HashSet<MouseButton>,
-    /// All of the mouse buttons that were released this frame.
-    pub mouse_buttons_released: HashSet<MouseButton>,
-}
-impl RawInput {
-    /// Returns whether or not each input has changed from `previous` to this [RawInput].
-    pub fn delta(&self, previous: &RawInput) -> RawInputDelta {
-        let (p, c) = (previous, self);
-
-        RawInputDelta {
-            keys: &c.keys - &p.keys,
-            keys_released: &p.keys - &c.keys,
-            mouse_position: c.mouse_position - p.mouse_position,
-            mouse_wheel: c.mouse_wheel - p.mouse_wheel,
-            mouse_buttons: &c.mouse_buttons - &p.mouse_buttons,
-            mouse_buttons_released: &p.mouse_buttons - &c.mouse_buttons,
-        }
-    }
-}
-
-/// Gets `player_id`'s most recent raw input state.
-///
-/// To determine if the player just supplied an input, compare it to [get_prev_raw_input] or use [get_raw_input_delta].
-pub fn get_raw_input(player_id: EntityId) -> Option<RawInput> {
-    wit::server_player::get_raw_input(player_id.into_bindgen()).from_bindgen()
-}
-
-/// Gets `player_id`'s raw input state prior to the most recent update.
-pub fn get_prev_raw_input(player_id: EntityId) -> Option<RawInput> {
-    wit::server_player::get_prev_raw_input(player_id.into_bindgen()).from_bindgen()
-}
-
-/// Gets both the previous and current raw input states of `player_id`
-pub fn get_prev_and_current_raw_input(player_id: EntityId) -> Option<(RawInput, RawInput)> {
-    Option::zip(get_prev_raw_input(player_id), get_raw_input(player_id))
-}
-
-/// Gets the changes to `player_id`'s raw input state in the last update,
-/// as well as the current raw input state.
-///
-/// This is a wrapper for [get_prev_and_current_raw_input] and [RawInput::delta].
-pub fn get_raw_input_delta(player_id: EntityId) -> Option<(RawInputDelta, RawInput)> {
-    let (p, c) = get_prev_and_current_raw_input(player_id)?;
-    Some((c.delta(&p), c))
 }

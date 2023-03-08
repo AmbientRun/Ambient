@@ -147,5 +147,5 @@ pub async fn until_this(event: &str, condition: impl Fn(&Entity) -> bool + 'stat
 
 /// This method resolves a relative path to an asset in a Ambient module, to an absolute url
 pub fn asset_url(path: impl AsRef<str>) -> Option<String> {
-    wit::asset::url(path.as_ref())
+    wit::server_asset::url(path.as_ref())
 }

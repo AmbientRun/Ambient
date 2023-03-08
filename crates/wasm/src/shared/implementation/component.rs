@@ -12,7 +12,6 @@ use slotmap::Key;
 use crate::shared::bindings::QueryStateMap;
 
 use super::super::{
-    bindings::ComponentsParam,
     conversion::{FromBindgen, IntoBindgen},
     wit,
 };
@@ -129,7 +128,7 @@ macro_rules! define_component_types {
 
         // todo: find a nice efficient abstraction to tie these three functions together
         pub(crate) fn convert_components_to_entity_data(
-            components: ComponentsParam,
+            components: wit::entity::EntityData,
         ) -> Entity {
             use wit::component::{
                 VecValueResult as VVR, OptionValueResult as OVR,

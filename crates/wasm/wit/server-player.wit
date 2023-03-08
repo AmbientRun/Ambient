@@ -1,4 +1,4 @@
-default interface player {
+default interface server-player {
     use pkg.types.{vec2, entity-id}
 
     enum virtual-key-code {

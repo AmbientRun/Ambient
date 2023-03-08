@@ -14,7 +14,6 @@ use ambient_ecs::{
     Description, Entity, EntityId, FnSystem, Networked, Resource, Store, SystemGroup, World,
     WorldEventReader,
 };
-use ambient_network::server::{ForkingEvent, ShutdownEvent};
 use ambient_physics::{collider_loads, collisions, PxShapeUserData};
 use ambient_project::Identifier;
 use itertools::Itertools;
@@ -158,29 +157,6 @@ pub fn systems() -> SystemGroup {
     )
 }
 
-pub fn on_forking_systems() -> SystemGroup<ForkingEvent> {
-    SystemGroup::new(
-        "core/wasm/server/on_forking_systems",
-        vec![Box::new(FnSystem::new(move |world, _| {
-            // Reset the states of all the modules when we fork.
-            reload_all(world);
-        }))],
-    )
-}
-
-pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
-    SystemGroup::new(
-        "core/wasm/server/on_shutdown_systems",
-        vec![Box::new(FnSystem::new(move |world, _| {
-            let modules = query(()).incl(module()).collect_ids(world, None);
-            for module_id in modules {
-                let errors = unload(world, module_id, "shutting down");
-                update_errors(world, &errors, true);
-            }
-        }))],
-    )
-}
-
 pub fn initialize<Bindings: bindings::BindingsBound + 'static>(
     world: &mut World,
     messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
@@ -195,7 +171,7 @@ pub fn initialize<Bindings: bindings::BindingsBound + 'static>(
     Ok(())
 }
 
-fn reload_all(world: &mut World) {
+pub(crate) fn reload_all(world: &mut World) {
     let modules = query((module(), module_bytecode(), module_enabled()))
         .iter(world, None)
         .map(|(id, (_, bc, enabled))| (id, enabled.then(|| bc.clone())))
@@ -267,7 +243,11 @@ fn load(
     }
 }
 
-fn unload(world: &mut World, module_id: EntityId, reason: &str) -> Vec<(EntityId, String)> {
+pub(crate) fn unload(
+    world: &mut World,
+    module_id: EntityId,
+    reason: &str,
+) -> Vec<(EntityId, String)> {
     let Ok(sms) = world.get_cloned(module_id, module_state()) else { return vec![]; };
 
     let errors = run(
@@ -307,7 +287,7 @@ fn unload(world: &mut World, module_id: EntityId, reason: &str) -> Vec<(EntityId
     errors
 }
 
-fn update_errors(world: &mut World, errors: &[(EntityId, String)], runtime: bool) {
+pub(crate) fn update_errors(world: &mut World, errors: &[(EntityId, String)], runtime: bool) {
     let messenger = world.resource(messenger()).clone();
     for (id, err) in errors {
         messenger(

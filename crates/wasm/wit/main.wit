@@ -3,10 +3,11 @@ world bindings {
 
     import component: pkg.component
     import entity: pkg.entity
-    import player: pkg.player
-    import physics: pkg.physics
     import event: pkg.event
-    import asset: pkg.asset
+
+    import server-player: pkg.server-player
+    import server-physics: pkg.server-physics
+    import server-asset: pkg.server-asset
 
     export guest: pkg.guest
 }

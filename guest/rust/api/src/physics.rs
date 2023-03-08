@@ -16,7 +16,7 @@ use crate::{
 /// `Vec3::Z * 3_000.0` (either are equivalent.)
 pub fn apply_force(entities: impl IntoIterator<Item = EntityId>, force: Vec3) {
     let entities: Vec<_> = entities.into_iter().map(|ent| ent.into_bindgen()).collect();
-    wit::physics::apply_force(&entities, force.into_bindgen())
+    wit::server_physics::apply_force(&entities, force.into_bindgen())
 }
 
 /// Applies a `force` (a [f32]) outwards to all entitities within `radius` of the `position`, with
@@ -28,34 +28,34 @@ pub fn apply_force(entities: impl IntoIterator<Item = EntityId>, force: Vec3) {
 /// Otherwise, the force will be of equal strength for all entities.
 // TODO: consider making `fallout_radius` an enum, so the behaviour is explicit
 pub fn explode_bomb(position: Vec3, force: f32, radius: f32, falloff_radius: Option<f32>) {
-    wit::physics::explode_bomb(position.into_bindgen(), force, radius, falloff_radius)
+    wit::server_physics::explode_bomb(position.into_bindgen(), force, radius, falloff_radius)
 }
 
 /// Sets the gravity of the entire world to `gravity`. The default `gravity` is `vec3(0.0, 0.0, -9.82)`.
 ///
 /// This can be used to simulate a different gravity from Earth's, or to create unconventional gameplay.
 pub fn set_gravity(gravity: Vec3) {
-    wit::physics::set_gravity(gravity.into_bindgen())
+    wit::server_physics::set_gravity(gravity.into_bindgen())
 }
 
 /// Unfreezes a frozen `entity`, so that it can move around. Does nothing if the entity wasn't frozen.
 pub fn unfreeze(entity: EntityId) {
-    wit::physics::unfreeze(entity.into_bindgen())
+    wit::server_physics::unfreeze(entity.into_bindgen())
 }
 
 /// Freezes an `entity`, so that it cannot move around. Does nothing if the entity was already frozen.
 pub fn freeze(entity: EntityId) {
-    wit::physics::freeze(entity.into_bindgen())
+    wit::server_physics::freeze(entity.into_bindgen())
 }
 
 /// Starts a motor on `entity` with `velocity`. Does nothing if the motor has already been started.
 pub fn start_motor(entity: EntityId, velocity: f32) {
-    wit::physics::start_motor(entity.into_bindgen(), velocity)
+    wit::server_physics::start_motor(entity.into_bindgen(), velocity)
 }
 
 /// Stops a motor on `entity`. Does nothing if the motor is not running.
 pub fn stop_motor(entity: EntityId) {
-    wit::physics::stop_motor(entity.into_bindgen())
+    wit::server_physics::stop_motor(entity.into_bindgen())
 }
 
 /// Where a [raycast] hit.
@@ -72,7 +72,7 @@ pub struct RaycastHit {
 ///
 /// `direction` must be normalized.
 pub fn raycast(origin: Vec3, direction: Vec3) -> Vec<RaycastHit> {
-    wit::physics::raycast(origin.into_bindgen(), direction.into_bindgen())
+    wit::server_physics::raycast(origin.into_bindgen(), direction.into_bindgen())
         .into_iter()
         .map(|(entity, distance)| raycast_result_to_hit(origin, direction, entity, distance))
         .collect()
@@ -81,7 +81,7 @@ pub fn raycast(origin: Vec3, direction: Vec3) -> Vec<RaycastHit> {
 ///
 /// `direction` must be normalized.
 pub fn raycast_first(origin: Vec3, direction: Vec3) -> Option<RaycastHit> {
-    wit::physics::raycast_first(origin.into_bindgen(), direction.into_bindgen())
+    wit::server_physics::raycast_first(origin.into_bindgen(), direction.into_bindgen())
         .map(|(entity, distance)| raycast_result_to_hit(origin, direction, entity, distance))
 }
 fn raycast_result_to_hit(
@@ -115,7 +115,7 @@ pub fn move_character(
     min_dist: f32,
     elapsed_time: f32,
 ) -> CharacterCollision {
-    let res = wit::physics::move_character(
+    let res = wit::server_physics::move_character(
         entity.into_bindgen(),
         displacement.into_bindgen(),
         min_dist,
