@@ -555,7 +555,7 @@ impl App {
 
                     let size = uvec2(size.width, size.height);
                     if let Some(window) = &self.window {
-                        let logical_size = (size.as_dvec2() * window.scale_factor()).as_uvec2();
+                        let logical_size = (size.as_dvec2() / window.scale_factor()).as_uvec2();
 
                         world.set_if_changed(world.resource_entity(), window_physical_size(), size).unwrap();
                         world.set_if_changed(world.resource_entity(), window_logical_size(), logical_size).unwrap();
