@@ -186,14 +186,11 @@ version = "0.1.1"
 dependencies = [
  "ambient_api_macros",
  "anyhow",
- "bincode",
  "data-encoding",
- "glam 0.22.0",
+ "glam 0.23.0",
  "once_cell",
  "paste",
  "rand 0.8.5",
- "serde",
- "wasi 0.11.0+wasi-snapshot-preview1",
 ]
 
 [[package]]
@@ -3140,6 +3137,15 @@ dependencies = [
  "bytemuck",
  "rand 0.8.5",
  "serde",
+]
+
+[[package]]
+name = "glam"
+version = "0.23.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e4afd9ad95555081e109fe1d21f2a30c691b5f0919c67dfa690a2e1eb6bd51c"
+dependencies = [
+ "rand 0.8.5",
 ]
 
 [[package]]
@@ -6613,7 +6619,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
  "cfg-if",
- "rand 0.7.3",
+ "rand 0.8.5",
  "static_assertions",
 ]
 
