@@ -6,9 +6,8 @@ use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 
 use super::{
-    bindings::{self, BindingsBound},
-    borrowed_types::ValueBorrow,
-    wit, RunContext,
+    bindings::BindingsBound, borrowed_types::ValueBorrow, implementation::component, wit,
+    RunContext,
 };
 
 #[derive(Clone)]
@@ -213,7 +212,7 @@ impl<Bindings: BindingsBound> ModuleStateBehavior for ModuleStateInnerImpl<Bindi
 
         self.store.data_mut().bindings.set_world(world);
 
-        let components = bindings::convert_entity_data_to_components(event_data);
+        let components = component::convert_entity_data_to_components(event_data);
         let components: Vec<_> = components
             .iter()
             .map(|(k, v)| (*k, ValueBorrow::from(v)))

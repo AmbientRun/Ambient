@@ -1,27 +1,39 @@
 use std::sync::Arc;
 
 use ambient_core::asset_cache;
-use ambient_ecs::{with_component_registry, ComponentSet, EntityId, QueryEvent, World};
+use ambient_ecs::{EntityId, World};
+use ambient_input::{player_prev_raw_input, player_raw_input};
 use ambient_physics::{helpers::PhysicsObjectCollection, physx::character_controller};
 use ambient_std::{
     asset_cache::SyncAssetKeyExt,
     asset_url::{AssetUrl, ServerBaseUrlKey},
+    shapes::Ray,
 };
 use anyhow::Context;
 use itertools::Itertools;
 use physxx::{PxControllerCollisionFlag, PxControllerFilters};
 
 use crate::shared::{
-    bindings::{
-        add_component, convert_components_to_entity_data, read_component_from_world,
-        read_primitive_component_from_entity_accessor, set_component, BindingsBase, BindingsBound,
-        ComponentsParam, WorldRef,
-    },
+    bindings::{BindingsBase, BindingsBound, ComponentsParam, WorldRef},
     conversion::{FromBindgen, IntoBindgen},
-    implementation as shared_impl, wit, MessageType,
+    implementation, wit, MessageType,
 };
-mod implementation;
-use implementation as server_impl;
+
+pub fn initialize(
+    world: &mut World,
+    messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
+) -> anyhow::Result<()> {
+    crate::shared::initialize(
+        world,
+        messenger,
+        Bindings {
+            base: Default::default(),
+            world_ref: Default::default(),
+        },
+    )?;
+
+    Ok(())
+}
 
 #[derive(Clone)]
 struct Bindings {
@@ -37,24 +49,42 @@ impl Bindings {
     }
 }
 
+impl BindingsBound for Bindings {
+    fn base(&self) -> &BindingsBase {
+        &self.base
+    }
+
+    fn base_mut(&mut self) -> &mut BindingsBase {
+        &mut self.base
+    }
+    fn set_world(&mut self, world: &mut World) {
+        unsafe {
+            self.world_ref.set_world(world);
+        }
+    }
+    fn clear_world(&mut self) {
+        unsafe {
+            self.world_ref.clear_world();
+        }
+    }
+}
+
 impl wit::types::Host for Bindings {}
 impl wit::entity::Host for Bindings {
     fn spawn(&mut self, data: ComponentsParam) -> anyhow::Result<wit::types::EntityId> {
-        Ok(shared_impl::entity::spawn(
+        implementation::entity::spawn(
             unsafe { self.world_ref.world_mut() },
             &mut self.base.spawned_entities,
-            convert_components_to_entity_data(data),
+            data,
         )
-        .into_bindgen())
     }
 
     fn despawn(&mut self, entity: wit::types::EntityId) -> anyhow::Result<bool> {
-        Ok(shared_impl::entity::despawn(
+        implementation::entity::despawn(
             unsafe { self.world_ref.world_mut() },
             &mut self.base.spawned_entities,
-            entity.from_bindgen(),
+            entity,
         )
-        .is_some())
     }
 
     fn set_animation_controller(
@@ -62,22 +92,19 @@ impl wit::entity::Host for Bindings {
         entity: wit::types::EntityId,
         animation_controller: wit::entity::AnimationController,
     ) -> anyhow::Result<()> {
-        shared_impl::entity::set_animation_controller(
+        implementation::entity::set_animation_controller(
             self.world_mut(),
-            entity.from_bindgen(),
-            animation_controller.from_bindgen(),
+            entity,
+            animation_controller,
         )
     }
 
     fn exists(&mut self, entity: wit::types::EntityId) -> anyhow::Result<bool> {
-        Ok(shared_impl::entity::exists(
-            self.world(),
-            entity.from_bindgen(),
-        ))
+        implementation::entity::exists(self.world(), entity)
     }
 
     fn resources(&mut self) -> anyhow::Result<wit::types::EntityId> {
-        Ok(shared_impl::entity::resources(self.world()).into_bindgen())
+        implementation::entity::resources(self.world())
     }
 
     fn in_area(
@@ -85,19 +112,16 @@ impl wit::entity::Host for Bindings {
         position: wit::types::Vec3,
         radius: f32,
     ) -> anyhow::Result<Vec<wit::types::EntityId>> {
-        Ok(
-            shared_impl::entity::in_area(self.world_mut(), position.from_bindgen(), radius)?
-                .into_bindgen(),
-        )
+        implementation::entity::in_area(self.world_mut(), position, radius)
     }
 
     fn get_all(&mut self, index: u32) -> anyhow::Result<Vec<wit::types::EntityId>> {
-        Ok(shared_impl::entity::get_all(self.world_mut(), index).into_bindgen())
+        implementation::entity::get_all(self.world_mut(), index)
     }
 }
 impl wit::component::Host for Bindings {
     fn get_index(&mut self, id: String) -> anyhow::Result<Option<u32>> {
-        Ok(shared_impl::entity::get_component_index(&id))
+        implementation::component::get_index(id)
     }
 
     fn get_component(
@@ -105,11 +129,7 @@ impl wit::component::Host for Bindings {
         entity: wit::types::EntityId,
         index: u32,
     ) -> anyhow::Result<Option<wit::component::ValueResult>> {
-        Ok(read_component_from_world(
-            self.world(),
-            entity.from_bindgen(),
-            index,
-        ))
+        implementation::component::get_component(self.world(), entity, index)
     }
 
     fn add_component(
@@ -118,23 +138,15 @@ impl wit::component::Host for Bindings {
         index: u32,
         value: wit::component::ValueResult,
     ) -> anyhow::Result<()> {
-        Ok(add_component(
-            self.world_mut(),
-            entity.from_bindgen(),
-            index,
-            value,
-        )?)
+        implementation::component::add_component(self.world_mut(), entity, index, value)
     }
 
     fn add_components(
         &mut self,
         entity: wit::types::EntityId,
-        data: ComponentsParam,
+        data: wit::entity::EntityData,
     ) -> anyhow::Result<()> {
-        Ok(self.world_mut().add_components(
-            entity.from_bindgen(),
-            convert_components_to_entity_data(data),
-        )?)
+        implementation::component::add_components(self.world_mut(), entity, data)
     }
 
     fn set_component(
@@ -143,12 +155,7 @@ impl wit::component::Host for Bindings {
         index: u32,
         value: wit::component::ValueResult,
     ) -> anyhow::Result<()> {
-        Ok(set_component(
-            self.world_mut(),
-            entity.from_bindgen(),
-            index,
-            value,
-        )?)
+        implementation::component::set_component(self.world_mut(), entity, index, value)
     }
 
     fn set_components(
@@ -156,18 +163,11 @@ impl wit::component::Host for Bindings {
         entity: wit::types::EntityId,
         data: ComponentsParam,
     ) -> anyhow::Result<()> {
-        Ok(self.world_mut().set_components(
-            entity.from_bindgen(),
-            convert_components_to_entity_data(data),
-        )?)
+        implementation::component::set_components(self.world_mut(), entity, data)
     }
 
     fn has_component(&mut self, entity: wit::types::EntityId, index: u32) -> anyhow::Result<bool> {
-        Ok(shared_impl::entity::has_component(
-            self.world(),
-            entity.from_bindgen(),
-            index,
-        ))
+        implementation::component::has_component(self.world(), entity, index)
     }
 
     fn has_components(
@@ -175,15 +175,11 @@ impl wit::component::Host for Bindings {
         entity: wit::types::EntityId,
         components: Vec<u32>,
     ) -> anyhow::Result<bool> {
-        let mut set = ComponentSet::new();
-        for idx in components {
-            set.insert_by_index(idx as usize);
-        }
-        Ok(self.world().has_components(entity.from_bindgen(), &set))
+        implementation::component::has_components(self.world(), entity, components)
     }
 
     fn remove_component(&mut self, entity: wit::types::EntityId, index: u32) -> anyhow::Result<()> {
-        shared_impl::entity::remove_component(self.world_mut(), entity.from_bindgen(), index)
+        implementation::component::remove_component(self.world_mut(), entity, index)
     }
 
     fn remove_components(
@@ -191,15 +187,7 @@ impl wit::component::Host for Bindings {
         entity: wit::types::EntityId,
         components: Vec<u32>,
     ) -> anyhow::Result<()> {
-        let components = with_component_registry(|cr| {
-            components
-                .into_iter()
-                .flat_map(|idx| cr.get_by_index(idx))
-                .collect()
-        });
-        Ok(self
-            .world_mut()
-            .remove_components(entity.from_bindgen(), components)?)
+        implementation::component::remove_components(self.world_mut(), entity, components)
     }
 
     fn query(
@@ -207,52 +195,18 @@ impl wit::component::Host for Bindings {
         query: wit::component::QueryBuild,
         query_event: wit::component::QueryEvent,
     ) -> anyhow::Result<u64> {
-        shared_impl::entity::query(
-            &mut self.base.query_states,
-            &query.components,
-            &query.include,
-            &query.exclude,
-            &query.changed,
-            match query_event {
-                wit::component::QueryEvent::Frame => QueryEvent::Frame,
-                wit::component::QueryEvent::Spawn => QueryEvent::Spawned,
-                wit::component::QueryEvent::Despawn => QueryEvent::Despawned,
-            },
-        )
+        implementation::component::query(&mut self.base.query_states, query, query_event)
     }
 
     fn query_eval(
         &mut self,
         query_index: u64,
     ) -> anyhow::Result<Vec<(wit::types::EntityId, Vec<wit::component::ValueResult>)>> {
-        let key = slotmap::DefaultKey::from(slotmap::KeyData::from_ffi(query_index));
-
-        let (query, query_state, primitive_components) = self
-            .base
-            .query_states
-            .get(key)
-            .context("no query state for key")?;
-
-        let mut query_state = query_state.clone();
-        let world = self.world();
-        let result = query
-            .iter(world, Some(&mut query_state))
-            .map(|ea| {
-                (
-                    ea.id().into_bindgen(),
-                    primitive_components
-                        .iter()
-                        .map(|pc| {
-                            read_primitive_component_from_entity_accessor(world, &ea, pc.clone())
-                                .unwrap()
-                        })
-                        .collect(),
-                )
-            })
-            .collect_vec();
-        self.base.query_states.get_mut(key).unwrap().1 = query_state;
-
-        Ok(result)
+        implementation::component::query_eval(
+            unsafe { self.world_ref.world() },
+            &mut self.base.query_states,
+            query_index,
+        )
     }
 }
 impl wit::player::Host for Bindings {
@@ -260,17 +214,22 @@ impl wit::player::Host for Bindings {
         &mut self,
         player: wit::types::EntityId,
     ) -> anyhow::Result<Option<wit::player::RawInput>> {
-        Ok(server_impl::player::get_raw_input(self.world(), player.from_bindgen()).into_bindgen())
+        Ok(self
+            .world()
+            .get_cloned(player.from_bindgen(), player_raw_input())
+            .ok()
+            .into_bindgen())
     }
 
     fn get_prev_raw_input(
         &mut self,
         player: wit::types::EntityId,
     ) -> anyhow::Result<Option<wit::player::RawInput>> {
-        Ok(
-            server_impl::player::get_prev_raw_input(self.world(), player.from_bindgen())
-                .into_bindgen(),
-        )
+        Ok(self
+            .world()
+            .get_cloned(player.from_bindgen(), player_prev_raw_input())
+            .ok()
+            .into_bindgen())
     }
 }
 impl wit::physics::Host for Bindings {
@@ -280,10 +239,11 @@ impl wit::physics::Host for Bindings {
         force: wit::types::Vec3,
     ) -> anyhow::Result<()> {
         let collection = PhysicsObjectCollection::from_entities(
-            self.world(),
+            self.world_mut(),
             &entities.iter().map(|id| id.from_bindgen()).collect_vec(),
         );
-        server_impl::physics::apply_force(self.world_mut(), collection, force.from_bindgen())
+        collection.apply_force(self.world_mut(), |_| force.from_bindgen());
+        Ok(())
     }
 
     fn explode_bomb(
@@ -293,33 +253,60 @@ impl wit::physics::Host for Bindings {
         radius: f32,
         falloff_radius: Option<f32>,
     ) -> anyhow::Result<()> {
-        server_impl::physics::explode_bomb(
+        let position = position.from_bindgen();
+        ambient_physics::helpers::PhysicsObjectCollection::from_radius(
             self.world_mut(),
-            position.from_bindgen(),
+            position,
             radius,
-            force,
-            falloff_radius,
         )
+        .apply_force_explosion(self.world_mut(), position, force, falloff_radius);
+        Ok(())
     }
 
     fn set_gravity(&mut self, gravity: wit::types::Vec3) -> anyhow::Result<()> {
-        server_impl::physics::set_gravity(self.world_mut(), gravity.from_bindgen())
+        self.world_mut()
+            .resource(ambient_physics::main_physics_scene())
+            .set_gravity(gravity.from_bindgen());
+        Ok(())
     }
 
     fn unfreeze(&mut self, entity: wit::types::EntityId) -> anyhow::Result<()> {
-        server_impl::physics::unfreeze(self.world_mut(), entity.from_bindgen())
+        ambient_physics::helpers::convert_rigid_static_to_dynamic(
+            self.world_mut(),
+            entity.from_bindgen(),
+        );
+        Ok(())
     }
 
     fn freeze(&mut self, entity: wit::types::EntityId) -> anyhow::Result<()> {
-        server_impl::physics::freeze(self.world_mut(), entity.from_bindgen())
+        ambient_physics::helpers::convert_rigid_dynamic_to_static(
+            self.world_mut(),
+            entity.from_bindgen(),
+        );
+        Ok(())
     }
 
     fn start_motor(&mut self, entity: wit::types::EntityId, velocity: f32) -> anyhow::Result<()> {
-        server_impl::physics::start_motor(self.world_mut(), entity.from_bindgen(), velocity)
+        let joint = ambient_physics::helpers::get_entity_revolute_joint(
+            self.world_mut(),
+            entity.from_bindgen(),
+        )
+        .context("Entity doesn't have a motor")?;
+        joint.set_drive_velocity(velocity, true);
+        joint.set_revolute_flag(physxx::PxRevoluteJointFlag::DRIVE_ENABLED, true);
+
+        Ok(())
     }
 
     fn stop_motor(&mut self, entity: wit::types::EntityId) -> anyhow::Result<()> {
-        server_impl::physics::stop_motor(self.world_mut(), entity.from_bindgen())
+        let joint = ambient_physics::helpers::get_entity_revolute_joint(
+            self.world_mut(),
+            entity.from_bindgen(),
+        )
+        .context("Entity doesn't have a motor")?;
+        joint.set_revolute_flag(physxx::PxRevoluteJointFlag::DRIVE_ENABLED, false);
+
+        Ok(())
     }
 
     fn raycast_first(
@@ -327,12 +314,13 @@ impl wit::physics::Host for Bindings {
         origin: wit::types::Vec3,
         direction: wit::types::Vec3,
     ) -> anyhow::Result<Option<(wit::types::EntityId, f32)>> {
-        Ok(server_impl::physics::raycast_first(
+        let result = ambient_physics::intersection::raycast_first(
             self.world(),
-            origin.from_bindgen(),
-            direction.from_bindgen(),
-        )?
-        .map(|t| (t.0.into_bindgen(), t.1.into_bindgen())))
+            Ray::new(origin.from_bindgen(), direction.from_bindgen()),
+        )
+        .map(|t| (t.0.into_bindgen(), t.1.into_bindgen()));
+
+        Ok(result)
     }
 
     fn raycast(
@@ -340,14 +328,15 @@ impl wit::physics::Host for Bindings {
         origin: wit::types::Vec3,
         direction: wit::types::Vec3,
     ) -> anyhow::Result<Vec<(wit::types::EntityId, f32)>> {
-        Ok(server_impl::physics::raycast(
+        let result = ambient_physics::intersection::raycast(
             self.world(),
-            origin.from_bindgen(),
-            direction.from_bindgen(),
-        )?
+            Ray::new(origin.from_bindgen(), direction.from_bindgen()),
+        )
         .into_iter()
         .map(|t| (t.0.into_bindgen(), t.1.into_bindgen()))
-        .collect())
+        .collect();
+
+        Ok(result)
     }
 
     fn move_character(
@@ -385,17 +374,15 @@ impl wit::physics::Host for Bindings {
 }
 impl wit::event::Host for Bindings {
     fn subscribe(&mut self, name: String) -> anyhow::Result<()> {
-        shared_impl::event::subscribe(&mut self.base.subscribed_events, &name);
-        Ok(())
+        implementation::event::subscribe(&mut self.base.subscribed_events, name)
     }
 
     fn send(&mut self, name: String, data: ComponentsParam) -> anyhow::Result<()> {
-        shared_impl::event::send(
+        implementation::event::send(
             self.world_mut(),
-            &name,
-            convert_components_to_entity_data(data),
-        );
-        Ok(())
+            name,
+            implementation::component::convert_components_to_entity_data(data),
+        )
     }
 }
 impl wit::asset::Host for Bindings {
@@ -403,39 +390,4 @@ impl wit::asset::Host for Bindings {
         let base_url = ServerBaseUrlKey.get(self.world().resource(asset_cache()));
         Ok(Some(AssetUrl::parse(path)?.resolve(&base_url)?.to_string()))
     }
-}
-impl BindingsBound for Bindings {
-    fn base(&self) -> &BindingsBase {
-        &self.base
-    }
-
-    fn base_mut(&mut self) -> &mut BindingsBase {
-        &mut self.base
-    }
-    fn set_world(&mut self, world: &mut World) {
-        unsafe {
-            self.world_ref.set_world(world);
-        }
-    }
-    fn clear_world(&mut self) {
-        unsafe {
-            self.world_ref.clear_world();
-        }
-    }
-}
-
-pub fn initialize(
-    world: &mut World,
-    messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
-) -> anyhow::Result<()> {
-    crate::shared::initialize(
-        world,
-        messenger,
-        Bindings {
-            base: Default::default(),
-            world_ref: Default::default(),
-        },
-    )?;
-
-    Ok(())
 }

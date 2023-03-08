@@ -1,143 +1,81 @@
 use std::collections::HashSet;
 
-use ambient_animation::{animation_controller, AnimationController};
+use ambient_animation::animation_controller;
 use ambient_core::transform::translation;
-use ambient_ecs::{
-    query as ecs_query, with_component_registry, Component, ComponentValue, Entity, EntityId,
-    QueryEvent, QueryState, World,
-};
-use anyhow::Context;
-use glam::Vec3;
-use slotmap::Key;
+use ambient_ecs::{query as ecs_query, with_component_registry, EntityId, World};
 
-use crate::shared::bindings::QueryStateMap;
+use super::{
+    super::{
+        bindings::ComponentsParam,
+        conversion::{FromBindgen, IntoBindgen},
+        wit,
+    },
+    component::convert_components_to_entity_data,
+};
 
 pub fn spawn(
     world: &mut World,
     spawned_entities: &mut HashSet<EntityId>,
-    data: Entity,
-) -> EntityId {
-    let id = data.spawn(world);
+    data: ComponentsParam,
+) -> anyhow::Result<wit::types::EntityId> {
+    let id = convert_components_to_entity_data(data).spawn(world);
     spawned_entities.insert(id);
-    id
+    Ok(id.into_bindgen())
 }
 
 pub fn despawn(
     world: &mut World,
     spawned_entities: &mut HashSet<EntityId>,
-    id: EntityId,
-) -> Option<EntityId> {
-    if world.despawn(id).is_some() {
-        spawned_entities.remove(&id);
-        Some(id)
-    } else {
-        None
-    }
+    id: wit::types::EntityId,
+) -> anyhow::Result<bool> {
+    let id = id.from_bindgen();
+    spawned_entities.remove(&id);
+    Ok(world.despawn(id).is_some())
 }
 
 pub fn set_animation_controller(
     world: &mut World,
-    entity: EntityId,
-    controller: AnimationController,
+    entity: wit::types::EntityId,
+    controller: wit::entity::AnimationController,
 ) -> anyhow::Result<()> {
-    Ok(world.add_component(entity, animation_controller(), controller)?)
+    Ok(world.add_component(
+        entity.from_bindgen(),
+        animation_controller(),
+        controller.from_bindgen(),
+    )?)
 }
 
-pub fn get_component_type<T: ComponentValue>(component_index: u32) -> Option<Component<T>> {
-    let desc = with_component_registry(|r| r.get_by_index(component_index))?;
-
-    Some(Component::new(desc))
+pub fn exists(world: &World, entity: wit::types::EntityId) -> anyhow::Result<bool> {
+    Ok(world.exists(entity.from_bindgen()))
 }
 
-pub fn get_component_index(id: &str) -> Option<u32> {
-    with_component_registry(|r| Some(r.get_by_path(id)?.index()))
+pub fn resources(world: &World) -> anyhow::Result<wit::types::EntityId> {
+    Ok(world.resource_entity().into_bindgen())
 }
 
-pub fn has_component(world: &World, entity_id: EntityId, index: u32) -> bool {
-    world.has_component_index(entity_id, index)
-}
-
-pub fn remove_component(world: &mut World, entity_id: EntityId, index: u32) -> anyhow::Result<()> {
-    let desc =
-        with_component_registry(|cr| cr.get_by_index(index)).context("no component for index")?;
-
-    Ok(world.remove_component(entity_id, desc)?)
-}
-
-pub fn get_all(world: &mut World, index: u32) -> Vec<EntityId> {
-    let desc = match with_component_registry(|r| r.get_by_index(index)) {
-        Some(c) => c,
-        None => return vec![],
-    };
-
-    ambient_ecs::Query::new(ambient_ecs::ArchetypeFilter::new().incl_ref(desc))
-        .iter(world, None)
-        .map(|ea| ea.id())
-        .collect()
-}
-pub fn query(
-    query_states: &mut QueryStateMap,
-    components: &[u32],
-    include: &[u32],
-    exclude: &[u32],
-    changed: &[u32],
-    query_event: QueryEvent,
-) -> anyhow::Result<u64> {
-    fn get_components(
-        registry: &ambient_ecs::ComponentRegistry,
-        components: &[u32],
-    ) -> anyhow::Result<Vec<ambient_ecs::PrimitiveComponent>> {
-        components
-            .iter()
-            .map(|c| {
-                registry
-                    .get_primitive_component(*c)
-                    .context("no primitive component")
-            })
-            .collect()
-    }
-
-    let (components, include, exclude, changed) = with_component_registry(|cr| {
-        anyhow::Ok((
-            get_components(cr, components)?,
-            get_components(cr, include)?,
-            get_components(cr, exclude)?,
-            get_components(cr, changed)?,
-        ))
-    })?;
-
-    let mut query = ambient_ecs::Query::new(ambient_ecs::ArchetypeFilter::new());
-    query.event = query_event;
-    for component in &components {
-        query = query.incl_ref(component.as_component());
-    }
-    for component in include {
-        query = query.incl_ref(component.as_component());
-    }
-    for component in exclude {
-        query = query.excl_ref(component.as_component());
-    }
-    for component in changed {
-        query = query.optional_changed_ref(component.as_component());
-    }
-
-    Ok(query_states
-        .insert((query, QueryState::new(), components))
-        .data()
-        .as_ffi())
-}
-
-pub fn exists(world: &World, id: EntityId) -> bool {
-    world.exists(id)
-}
-
-pub fn resources(world: &World) -> EntityId {
-    world.resource_entity()
-}
-
-pub fn in_area(world: &mut World, centre: Vec3, radius: f32) -> anyhow::Result<Vec<EntityId>> {
+pub fn in_area(
+    world: &mut World,
+    centre: wit::types::Vec3,
+    radius: f32,
+) -> anyhow::Result<Vec<wit::types::EntityId>> {
+    let centre = centre.from_bindgen();
     Ok(ecs_query((translation(),))
         .iter(world, None)
         .filter_map(|(id, (pos,))| ((*pos - centre).length() < radius).then_some(id))
+        .map(|id| id.into_bindgen())
         .collect())
+}
+
+pub fn get_all(world: &mut World, index: u32) -> anyhow::Result<Vec<wit::types::EntityId>> {
+    let desc = match with_component_registry(|r| r.get_by_index(index)) {
+        Some(c) => c,
+        None => return Ok(vec![]),
+    };
+
+    Ok(
+        ambient_ecs::Query::new(ambient_ecs::ArchetypeFilter::new().incl_ref(desc))
+            .iter(world, None)
+            .map(|ea| ea.id().into_bindgen())
+            .collect(),
+    )
 }
