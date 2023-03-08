@@ -27,6 +27,7 @@ log = { workspace = true }
 parking_lot = { workspace = true }
 async-trait = { workspace = true }
 anyhow = { workspace = true }
+tracing = { workspace = true }
 
 [dev-dependencies]
 ambient_app = { path = "../app" }

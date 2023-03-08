@@ -50,7 +50,10 @@ fn is_visible(entity_loc: vec2<u32>, primitive_lod: u32) -> bool {
         visibility_from = bitcast<vec4<u32>>(visibility_from_raw).xy;
     }
 
-    let entity_lod = get_entity_gpu_lod_or(visibility_from, 0u);
+    // let entity_lod = u32(get_entity_gpu_lod_or(visibility_from, 0.0).x);
+    let flod = get_entity_gpu_lod_or(visibility_from, vec4<f32>(0.0));
+    let entity_lod = u32(flod.x);
+
     if (entity_lod != primitive_lod) {
         return false;
     }
