@@ -36,7 +36,7 @@ pub fn get_window_sizes(window: &Window) -> (UVec2, UVec2, f64) {
 pub fn mirror_window_components(src: &mut World, dst: &mut World) {
     fn t<T>(src: &mut World, dst: &mut World, component: Component<T>)
     where
-        T: ComponentValue + std::fmt::Debug + Copy,
+        T: ComponentValue + std::fmt::Debug + Copy + PartialEq,
     {
         let val = *src.resource(component);
         dst.set_if_changed(dst.resource_entity(), component, val).unwrap();
