@@ -18,3 +18,7 @@ ambient_guest_bridge = { path = "../../../../../crates/guest_bridge", default-fe
 [lib]
 crate-type = ["cdylib"]
 required-features = []
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]

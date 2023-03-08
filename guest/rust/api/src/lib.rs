@@ -6,6 +6,7 @@
 //!
 //! Ambient has first-class support for Rust. Please report any issues you encounter to the repository.
 #![deny(missing_docs)]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
 /// Asset-related functionality, including retrieval of assets and where to find them.
 pub mod asset;
@@ -17,10 +18,12 @@ pub mod entity;
 pub mod event;
 /// Global functions and types for your convenience.
 pub mod global;
-/// Physics-related functionality, including applying forces, changing physical properties, and more.
-pub mod physics;
 /// Player-related functionality.
 pub mod player;
+
+/// Physics-related functionality, including applying forces, changing physical properties, and more.
+#[cfg(feature = "server")]
+pub mod physics;
 
 /// Helpful imports that almost all Ambient projects will use.
 pub mod prelude;

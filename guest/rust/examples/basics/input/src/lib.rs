@@ -1,10 +1,16 @@
-use ambient_api::{
-    components::core::player::{player, user_id},
-    prelude::*,
-};
+use ambient_api::prelude::*;
 
 #[main]
+#[cfg(not(feature = "server"))]
 pub async fn main() -> EventResult {
+    EventOk
+}
+
+#[main]
+#[cfg(feature = "server")]
+pub async fn main() -> EventResult {
+    use ambient_api::components::core::player::{player, user_id};
+
     query(player()).build().each_frame(|ids| {
         for (id, _) in ids {
             let Some((delta, _)) = player::get_raw_input_delta(id) else { continue; };

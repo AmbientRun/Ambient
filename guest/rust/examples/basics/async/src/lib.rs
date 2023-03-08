@@ -1,6 +1,13 @@
 use ambient_api::prelude::*;
 
 #[main]
+#[cfg(not(feature = "server"))]
+pub async fn main() -> EventResult {
+    EventOk
+}
+
+#[main]
+#[cfg(feature = "server")]
 pub async fn main() -> EventResult {
     loop {
         println!("Hello, world! {} seconds have passed.", time());

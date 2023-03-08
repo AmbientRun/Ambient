@@ -1,21 +1,31 @@
-use ambient_api::{
-    components::core::{
-        self,
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        player::player,
-        primitives::cube,
-        rendering::{color, outline},
-        transform::{lookat_center, scale, translation},
-    },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
-};
-use ambient_api::{player::KeyCode, prelude::*};
-use components::cell;
-use palette::{FromColor, Hsl, Srgb};
+use ambient_api::prelude::*;
 
 #[main]
+#[cfg(not(feature = "server"))]
 pub async fn main() -> EventResult {
+    EventOk
+}
+
+#[main]
+#[cfg(feature = "server")]
+pub async fn main() -> EventResult {
+    use ambient_api::{
+        components::core::{
+            self,
+            app::main_scene,
+            camera::aspect_ratio_from_window,
+            player::player,
+            primitives::cube,
+            rendering::{color, outline},
+            transform::{lookat_center, scale, translation},
+        },
+        concepts::{make_perspective_infinite_reverse_camera, make_transformable},
+        player::KeyCode,
+        prelude::*,
+    };
+    use components::cell;
+    use palette::{FromColor, Hsl, Srgb};
+
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())

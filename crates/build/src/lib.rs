@@ -79,8 +79,8 @@ async fn build_assets(physics: Physics, assets_path: &Path, build_path: &Path) {
     pipelines::process_pipelines(&ctx).await;
 }
 
-async fn build_rust_if_available(path: &Path, manifest: &ProjectManifest, build_path: &Path, optimize: bool) -> anyhow::Result<()> {
-    let cargo_toml_path = path.join("Cargo.toml");
+async fn build_rust_if_available(project_path: &Path, manifest: &ProjectManifest, build_path: &Path, optimize: bool) -> anyhow::Result<()> {
+    let cargo_toml_path = project_path.join("Cargo.toml");
     if !cargo_toml_path.exists() {
         return Ok(());
     }
@@ -100,10 +100,14 @@ async fn build_rust_if_available(path: &Path, manifest: &ProjectManifest, build_
 
     let rustc = ambient_rustc::Rust::get_system_installation().await?;
 
-    let wasm_bytecode = rustc.build(path, manifest.project.id.as_ref(), optimize)?;
-    let component_bytecode = ambient_wasm::shared::build::componentize(&wasm_bytecode)?;
+    for feature in ["client", "server"] {
+        let wasm_bytecode = rustc.build(project_path, manifest.project.id.as_ref(), optimize, &[feature])?;
+        let component_bytecode = ambient_wasm::shared::build::componentize(&wasm_bytecode)?;
 
-    tokio::fs::write(build_path.join(format!("{}.wasm", manifest.project.id)), component_bytecode).await?;
+        let output_path = build_path.join(feature);
+        std::fs::create_dir_all(&output_path)?;
+        tokio::fs::write(output_path.join(format!("{}.wasm", manifest.project.id)), component_bytecode).await?;
+    }
 
     Ok(())
 }

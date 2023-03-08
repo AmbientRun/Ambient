@@ -12,3 +12,7 @@ ambient_api = { path = "../../../api" }
 [lib]
 crate-type = ["cdylib"]
 required-features = []
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]

@@ -147,6 +147,7 @@ pub async fn until_this(event: &str, condition: impl Fn(&Entity) -> bool + 'stat
 
 #[deprecated = "Please use `asset::url` instead."]
 #[doc(hidden)]
+#[cfg(feature = "server")]
 pub fn asset_url(path: impl AsRef<str>) -> Option<String> {
     crate::asset::url(path)
 }

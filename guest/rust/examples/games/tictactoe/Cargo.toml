@@ -12,3 +12,7 @@ palette = "0.6.1"
 [lib]
 crate-type = ["cdylib"]
 required-features = []
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]

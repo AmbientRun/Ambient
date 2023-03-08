@@ -44,7 +44,14 @@ impl Rust {
         working_directory: &Path,
         package_name: &str,
         optimize: bool,
+        features: &[&str],
     ) -> anyhow::Result<Vec<u8>> {
+        let features = if features.is_empty() {
+            vec![]
+        } else {
+            vec!["--features".to_string(), features.iter().join(",")]
+        };
+
         Ok(std::fs::read(
             parse_command_result_for_filenames(
                 self.0.run(
@@ -60,6 +67,7 @@ impl Rust {
                         package_name,
                     ]
                     .into_iter()
+                    .chain(features.iter().map(|s| s.as_str()))
                     .filter(|a| !a.is_empty()),
                     Some(working_directory),
                 ),

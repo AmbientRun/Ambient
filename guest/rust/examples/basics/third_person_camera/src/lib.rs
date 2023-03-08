@@ -1,25 +1,35 @@
-use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        physics::{
-            character_controller_height, character_controller_radius, physics_controlled,
-            plane_collider, sphere_collider, visualizing,
-        },
-        player::{player, user_id},
-        primitives::{cube, quad},
-        rendering::color,
-        transform::{lookat_center, rotation, scale, translation},
-    },
-    concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
-    player::KeyCode,
-    prelude::*,
-    rand,
-};
-use components::player_camera_ref;
+use ambient_api::prelude::*;
 
 #[main]
+#[cfg(not(feature = "server"))]
 pub async fn main() -> EventResult {
+    EventOk
+}
+
+#[main]
+#[cfg(feature = "server")]
+pub async fn main() -> EventResult {
+    use ambient_api::{
+        components::core::{
+            app::main_scene,
+            camera::aspect_ratio_from_window,
+            physics::{
+                character_controller_height, character_controller_radius, physics_controlled,
+                plane_collider, sphere_collider, visualizing,
+            },
+            player::{player, user_id},
+            primitives::{cube, quad},
+            rendering::color,
+            transform::{lookat_center, rotation, scale, translation},
+        },
+        concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
+        player::KeyCode,
+        prelude::*,
+        rand,
+    };
+
+    use components::player_camera_ref;
+
     Entity::new()
         .with_merge(make_transformable())
         .with_default(quad())
