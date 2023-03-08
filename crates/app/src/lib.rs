@@ -309,6 +309,7 @@ impl AppBuilder {
             let headless_size = self.headless.unwrap();
             (headless_size, headless_size, 1.)
         };
+        tracing::info!("Got initial window sizes: {window_physical_size} {window_logical_size} {window_scale_factor}");
 
         let app_resources =
             AppResources { gpu, runtime: runtime.clone(), assets, ctl_tx, window_physical_size, window_logical_size, window_scale_factor };
@@ -555,7 +556,9 @@ impl App {
 
                     let size = uvec2(size.width, size.height);
                     if let Some(window) = &self.window {
-                        let logical_size = (size.as_dvec2() / window.scale_factor()).as_uvec2();
+                        let scale_factor = window.scale_factor();
+                        let logical_size = (size.as_dvec2() / scale_factor).as_uvec2();
+                        tracing::info!("Resized: {size} {logical_size} {scale_factor}");
 
                         world.set_if_changed(world.resource_entity(), window_physical_size(), size).unwrap();
                         world.set_if_changed(world.resource_entity(), window_logical_size(), logical_size).unwrap();
