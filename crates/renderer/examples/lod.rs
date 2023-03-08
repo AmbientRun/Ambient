@@ -16,14 +16,14 @@ use ambient_renderer::{
     lod::{cpu_lod, gpu_lod, lod_cutoffs},
     primitives, RenderPrimitive,
 };
-use ambient_std::{asset_cache::SyncAssetKeyExt, cb, math::SphericalCoords, shapes::AABB};
+use ambient_std::{asset_cache::SyncAssetKeyExt, cb, color::Color, math::SphericalCoords, shapes::AABB};
 use glam::*;
 
 async fn init(app: &mut App) {
     let world = &mut app.world;
     let assets = world.resource(asset_cache()).clone();
-    let white_mat = FlatMaterialKey::white().get(&assets);
-    let red_mat = FlatMaterialKey::new(vec4(1., 0., 0., 1.), Some(false)).get(&assets);
+    let mut materials = (0..)
+        .map(|i| FlatMaterialKey::new(Color::hsl(i as f32 / 6.0 * 360.0, 1.0, 0.5).as_linear_rgba_f32().into(), Some(false)).get(&assets));
 
     let aabb = AABB { min: -Vec3::ONE, max: Vec3::ONE };
     Entity::new()
@@ -39,21 +39,36 @@ async fn init(app: &mut App) {
         .with(
             primitives(),
             vec![
-                RenderPrimitive { mesh: CubeMeshKey.get(&assets), material: white_mat.clone(), shader: cb(get_flat_shader), lod: 0 },
+                RenderPrimitive {
+                    mesh: CubeMeshKey.get(&assets),
+                    material: materials.next().unwrap(),
+                    shader: cb(get_flat_shader),
+                    lod: 0,
+                },
                 RenderPrimitive {
                     mesh: SphereMeshKey(Default::default()).get(&assets),
-                    material: white_mat,
+                    material: materials.next().unwrap(),
                     shader: cb(get_flat_shader),
                     lod: 1,
                 },
-                RenderPrimitive { mesh: CubeMeshKey.get(&assets), material: red_mat.clone(), shader: cb(get_flat_shader), lod: 2 },
+                RenderPrimitive {
+                    mesh: CubeMeshKey.get(&assets),
+                    material: materials.next().unwrap(),
+                    shader: cb(get_flat_shader),
+                    lod: 2,
+                },
                 RenderPrimitive {
                     mesh: SphereMeshKey(Default::default()).get(&assets),
-                    material: red_mat,
+                    material: materials.next().unwrap(),
                     shader: cb(get_flat_shader),
                     lod: 3,
                 },
-                RenderPrimitive { mesh: CubeMeshKey.get(&assets), material: red_mat.clone(), shader: cb(get_flat_shader), lod: 4 },
+                RenderPrimitive {
+                    mesh: CubeMeshKey.get(&assets),
+                    material: materials.next().unwrap(),
+                    shader: cb(get_flat_shader),
+                    lod: 4,
+                },
             ],
         )
         .with(lod_cutoffs(), {
