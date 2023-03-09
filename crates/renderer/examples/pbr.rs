@@ -1,6 +1,6 @@
 use ambient_app::{App, AppBuilder};
 use ambient_core::{asset_cache, camera::active_camera, main_scene, transform::*};
-use ambient_ecs::{query, query_mut, Entity};
+use ambient_ecs::{query_mut, Entity};
 use ambient_gpu::std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey};
 use ambient_meshes::{CubeMeshKey, SphereMeshKey};
 use ambient_renderer::{

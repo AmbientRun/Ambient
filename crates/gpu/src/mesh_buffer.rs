@@ -15,7 +15,7 @@ use ambient_std::{
 use async_trait::async_trait;
 use bytemuck::{Pod, Zeroable};
 use glam::{UVec4, Vec2, Vec4};
-use itertools::{izip, Itertools};
+use itertools::Itertools;
 use parking_lot::Mutex;
 use wgpu::RenderPass;
 
