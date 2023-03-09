@@ -4,7 +4,7 @@ use ambient_audio::{
     blt::Lpf,
     hrtf::HrtfLib,
     track::Track,
-    util::{div_ceil, AvgIter},
+    utils::{div_ceil, AvgIter},
     AudioEmitter, AudioListener, AudioStream, DynamicMix, Frame, SineWave, Source,
 };
 use circular_queue::CircularQueue;
