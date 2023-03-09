@@ -36,13 +36,10 @@ pub const PRIMITIVES_BIND_GROUP: &str = "PRIMITIVES_BIND_GROUP";
 use ambient_gpu::mesh_buffer::MeshBufferKey;
 
 pub const MESH_METADATA_BINDING: u32 = 0;
-pub const MESH_POSITION_BINDING: u32 = 1;
-pub const MESH_NORMAL_BINDING: u32 = 2;
-pub const MESH_TANGENT_BINDING: u32 = 3;
-pub const MESH_TEXCOORD0_BINDING: u32 = 4;
-pub const MESH_JOINT_BINDING: u32 = 5;
-pub const MESH_WEIGHT_BINDING: u32 = 6;
-pub const SKINS_BINDING: u32 = 7;
+pub const MESH_BASE_BINDING: u32 = 1;
+pub const MESH_JOINT_BINDING: u32 = 2;
+pub const MESH_WEIGHT_BINDING: u32 = 3;
+pub const SKINS_BINDING: u32 = 4;
 
 #[derive(Clone)]
 pub struct RendererResources {
@@ -456,10 +453,7 @@ pub(crate) fn get_resources_layout() -> BindGroupDesc {
     BindGroupDesc {
         entries: vec![
             resource_storage_entry(MESH_METADATA_BINDING),
-            resource_storage_entry(MESH_POSITION_BINDING),
-            resource_storage_entry(MESH_NORMAL_BINDING),
-            resource_storage_entry(MESH_TANGENT_BINDING),
-            resource_storage_entry(MESH_TEXCOORD0_BINDING),
+            resource_storage_entry(MESH_BASE_BINDING),
             resource_storage_entry(MESH_JOINT_BINDING),
             resource_storage_entry(MESH_WEIGHT_BINDING),
             resource_storage_entry(SKINS_BINDING),
@@ -476,10 +470,10 @@ fn create_resources_bind_group(world: &World, layout: &BindGroupLayout, mesh_buf
         layout,
         entries: &[
             wgpu::BindGroupEntry { binding: MESH_METADATA_BINDING, resource: mesh_buffer.metadata_buffer.buffer().as_entire_binding() },
-            wgpu::BindGroupEntry { binding: MESH_POSITION_BINDING, resource: mesh_buffer.position_buffer.buffer().as_entire_binding() },
-            wgpu::BindGroupEntry { binding: MESH_NORMAL_BINDING, resource: mesh_buffer.normal_buffer.buffer().as_entire_binding() },
-            wgpu::BindGroupEntry { binding: MESH_TANGENT_BINDING, resource: mesh_buffer.tangent_buffer.buffer().as_entire_binding() },
-            wgpu::BindGroupEntry { binding: MESH_TEXCOORD0_BINDING, resource: mesh_buffer.texcoord0_buffer.buffer().as_entire_binding() },
+            wgpu::BindGroupEntry { binding: MESH_BASE_BINDING, resource: mesh_buffer.base_buffer.buffer().as_entire_binding() },
+            // wgpu::BindGroupEntry { binding: MESH_NORMAL_BINDING, resource: mesh_buffer.normal_buffer.buffer().as_entire_binding() },
+            // wgpu::BindGroupEntry { binding: MESH_TANGENT_BINDING, resource: mesh_buffer.tangent_buffer.buffer().as_entire_binding() },
+            // wgpu::BindGroupEntry { binding: MESH_TEXCOORD0_BINDING, resource: mesh_buffer.texcoord0_buffer.buffer().as_entire_binding() },
             wgpu::BindGroupEntry { binding: MESH_JOINT_BINDING, resource: mesh_buffer.joint_buffer.buffer().as_entire_binding() },
             wgpu::BindGroupEntry { binding: MESH_WEIGHT_BINDING, resource: mesh_buffer.weight_buffer.buffer().as_entire_binding() },
             wgpu::BindGroupEntry { binding: SKINS_BINDING, resource: skins.buffer.buffer().as_entire_binding() },

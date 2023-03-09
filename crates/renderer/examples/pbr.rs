@@ -1,14 +1,15 @@
 use ambient_app::{App, AppBuilder};
 use ambient_core::{asset_cache, camera::active_camera, main_scene, transform::*};
-use ambient_ecs::Entity;
+use ambient_ecs::{query, query_mut, Entity};
 use ambient_gpu::std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey};
 use ambient_meshes::{CubeMeshKey, SphereMeshKey};
 use ambient_renderer::{
-    gpu_primitives,
+    color, gpu_primitives,
     materials::pbr_material::{get_pbr_shader, PbrMaterial, PbrMaterialConfig, PbrMaterialParams},
     primitives, RenderPrimitive, SharedMaterial,
 };
-use ambient_std::{asset_cache::SyncAssetKeyExt, cb, math::SphericalCoords};
+use ambient_std::{asset_cache::SyncAssetKeyExt, cb, color::Color, math::SphericalCoords};
+use ambient_sys::time::Instant;
 use glam::*;
 
 async fn init(app: &mut App) {
@@ -41,6 +42,7 @@ async fn init(app: &mut App) {
                     primitives(),
                     vec![RenderPrimitive { shader: cb(get_pbr_shader), material: mat.clone(), mesh: CubeMeshKey.get(&assets), lod: 0 }],
                 )
+                .with(color(), Vec4::ONE)
                 .with_default(gpu_primitives())
                 .with(main_scene(), ())
                 .with_default(local_to_world())
@@ -59,6 +61,7 @@ async fn init(app: &mut App) {
                         lod: 0,
                     }],
                 )
+                .with(color(), Vec4::ONE)
                 .with_default(gpu_primitives())
                 .with(main_scene(), ())
                 .with_default(local_to_world())
@@ -73,6 +76,16 @@ async fn init(app: &mut App) {
         .with(active_camera(), 0.)
         .with(main_scene(), ())
         .spawn(world);
+
+    let start = Instant::now();
+    app.add_system(query_mut(color(), ()).to_system(move |q, w, qs, _| {
+        let t = start.elapsed().as_secs_f32();
+
+        let color = Color::hsl(t * 10.0 % 360.0, t.sin() * 0.5 + 0.5, 0.5).as_rgba_f32().into();
+        for (_, c, ()) in q.iter(w, qs) {
+            *c = color;
+        }
+    }));
 }
 
 fn main() {

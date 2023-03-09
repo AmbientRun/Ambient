@@ -1059,6 +1059,7 @@ dependencies = [
  "serde",
  "smallvec",
  "tracing",
+ "tracing-subscriber",
  "wgpu 0.14.2",
  "winit",
 ]

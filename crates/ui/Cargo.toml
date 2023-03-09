@@ -51,7 +51,7 @@ tokio = { workspace = true }
 itertools = { workspace = true }
 rand = { workspace = true }
 env_logger = { workspace = true }
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
 
 [features]
 hotload-includes = ['ambient_std/hotload-includes']

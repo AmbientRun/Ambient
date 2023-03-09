@@ -25,5 +25,5 @@ ambient_app = { path = "../app" }
 ambient_cameras = { path = "../cameras" }
 ambient_model = { path = "../model" }
 tokio = { workspace = true }
-tracing-subscriber = "0.3"
+tracing-subscriber = { workspace = true }
 async-trait = { workspace = true }

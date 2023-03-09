@@ -24,7 +24,7 @@ anyhow = { workspace = true }
 
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
-tracing-subscriber = { version = "0.3", features = ["time"] }
+tracing-subscriber = { workspace = true, features = ["time"] }
 tracing-web = "0.1"
 time = { version = "0.3", features = ["wasm-bindgen"] }
 chrono = { workspace = true, features = ["wasmbind"] }
