@@ -50,7 +50,8 @@ fn init(world: &mut World) -> (EntityId, EntityId, SharedMaterial, SharedMateria
 }
 
 fn main() {
-    env_logger::init();
+    tracing_subscriber::fmt::init();
+
     AppBuilder::simple().block_on(|app: &mut App| {
         let assets = app.world.resource(asset_cache()).clone();
         let (entity1, entity2, material1, material2) = init(&mut app.world);

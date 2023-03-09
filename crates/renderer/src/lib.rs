@@ -302,10 +302,7 @@ pub fn get_defs_module(_: &AssetCache) -> ShaderModule {
 pub fn get_resources_module() -> ShaderModule {
     let idents = vec![
         ShaderModuleIdentifier::constant("MESH_METADATA_BINDING", MESH_METADATA_BINDING),
-        ShaderModuleIdentifier::constant("MESH_NORMAL_BINDING", MESH_NORMAL_BINDING),
-        ShaderModuleIdentifier::constant("MESH_TANGENT_BINDING", MESH_TANGENT_BINDING),
-        ShaderModuleIdentifier::constant("MESH_POSITION_BINDING", MESH_POSITION_BINDING),
-        ShaderModuleIdentifier::constant("MESH_TEXCOORD0_BINDING", MESH_TEXCOORD0_BINDING),
+        ShaderModuleIdentifier::constant("MESH_BASE_BINDING", MESH_BASE_BINDING),
         ShaderModuleIdentifier::constant("MESH_JOINT_BINDING", MESH_JOINT_BINDING),
         ShaderModuleIdentifier::constant("MESH_WEIGHT_BINDING", MESH_WEIGHT_BINDING),
         ShaderModuleIdentifier::constant("SKINS_BINDING", SKINS_BINDING),
