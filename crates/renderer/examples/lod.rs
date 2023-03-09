@@ -13,13 +13,12 @@ use ambient_core::{
     transform::{local_to_world, mesh_to_world, translation},
 };
 use ambient_ecs::Entity;
-use ambient_meshes::{CubeMeshKey, SphereMeshKey, UVSphereMesh};
-use ambient_primitives::Cube;
+use ambient_meshes::{SphereMeshKey, UVSphereMesh};
 use ambient_renderer::{
     color,
     flat_material::{get_flat_shader, FlatMaterialKey},
     gpu_primitives,
-    lod::{cpu_lod, gpu_lod, lod_cutoffs, LodCutoffs},
+    lod::{gpu_lod, lod_cutoffs, LodCutoffs},
     primitives, RenderPrimitive,
 };
 use ambient_std::{asset_cache::SyncAssetKeyExt, cb, color::Color, math::SphericalCoords, shapes::AABB};
