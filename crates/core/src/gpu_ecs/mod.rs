@@ -56,8 +56,6 @@ impl SyncAssetKey<ShaderModule> for GpuWorldShaderModuleKey {
             label: ENTITIES_BIND_GROUP.into(),
         };
 
-        tracing::info!("GpuEcs binding layout: {desc:#?}");
-
         ShaderModule::new("GpuWorld", source, vec![desc.into()])
     }
 }
