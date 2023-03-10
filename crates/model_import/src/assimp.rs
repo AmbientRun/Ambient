@@ -1,16 +1,4 @@
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
-
-use ambient_core::{
-    hierarchy::{children, dump_world_hierarchy_to_tmp_file, parent},
-    name,
-    transform::{local_to_parent, local_to_world, rotation, scale, translation},
-};
-use ambient_ecs::{Entity, EntityId, World};
-use ambient_model::{pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl};
-use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
-use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl, mesh::Mesh};
-use glam::{vec2, vec3, vec4, Mat4};
-use itertools::Itertools;
+use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use relative_path::RelativePathBuf;
 #[cfg(feature = "russimp")]
 use russimp::{
@@ -20,8 +8,9 @@ use russimp::{
     texture::TextureType,
 };
 
-use crate::{dotdot_path, model_crate::ModelCrate, TextureResolver};
+use crate::{model_crate::ModelCrate, TextureResolver};
 
+#[allow(unused_variables)]
 pub async fn import_url<'a>(
     assets: &'a AssetCache,
     url: &'a AbsAssetUrl,
@@ -45,6 +34,10 @@ pub async fn import<'a>(
     extension: &'a str,
     resolve_texture: TextureResolver,
 ) -> anyhow::Result<RelativePathBuf> {
+    use crate::dotdot_path;
+    use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
+    use std::collections::HashMap;
+
     let (path, materials) = import_sync(buffer, model_crate, extension)?;
     for (i, material) in materials.iter().enumerate() {
         let mut textures = HashMap::new();
@@ -122,6 +115,15 @@ pub async fn import<'a>(
 
 #[cfg(feature = "russimp")]
 fn import_sync(buffer: &[u8], model_crate: &mut ModelCrate, extension: &str) -> anyhow::Result<(RelativePathBuf, Vec<Material>)> {
+    use crate::dotdot_path;
+    use ambient_core::hierarchy::{children, dump_world_hierarchy_to_tmp_file, parent};
+    use ambient_core::transform::{local_to_parent, local_to_world, rotation, scale, translation};
+    use ambient_ecs::{Entity, EntityId, World};
+    use ambient_model::{pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl};
+    use glam::*;
+    use itertools::Itertools;
+    use std::{cell::RefCell, rc::Rc};
+
     let scene = Scene::from_buffer(
         buffer,
         vec![
@@ -136,7 +138,7 @@ fn import_sync(buffer: &[u8], model_crate: &mut ModelCrate, extension: &str) -> 
         extension,
     )?;
     for (i, mesh) in scene.meshes.iter().enumerate() {
-        let out_mesh = Mesh {
+        let out_mesh = ambient_std::mesh::Mesh {
             name: mesh.name.clone(),
             positions: Some(mesh.vertices.iter().map(|v| vec3(v.x, v.y, v.z)).collect()),
             colors: if let Some(Some(colors)) = mesh.colors.get(0) {
@@ -169,7 +171,7 @@ fn import_sync(buffer: &[u8], model_crate: &mut ModelCrate, extension: &str) -> 
                 .transpose();
         let (scl, rot, pos) = transform.to_scale_rotation_translation();
         let mut ed = Entity::new()
-            .with(name(), node.name.clone())
+            .with(ambient_core::name(), node.name.clone())
             .with(translation(), pos)
             .with(rotation(), rot)
             .with(scale(), scl)
