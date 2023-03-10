@@ -164,3 +164,12 @@ pub fn mouse_button_from_u32(button: u32) -> MouseButton {
         x => MouseButton::Other(x as u16),
     }
 }
+
+pub fn mouse_button_to_u32(button: MouseButton) -> u32 {
+    match button {
+        MouseButton::Left => 0,
+        MouseButton::Right => 1,
+        MouseButton::Middle => 2,
+        MouseButton::Other(x) => x as u32,
+    }
+}
