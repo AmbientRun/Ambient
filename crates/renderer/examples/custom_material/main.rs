@@ -10,7 +10,7 @@ use ambient_gpu::{
 use ambient_meshes::QuadMeshKey;
 use ambient_model_import::model_crate::ModelCrate;
 use ambient_renderer::{
-    gpu_primitives, material,
+    gpu_primitives_lod, gpu_primitives_mesh, material,
     materials::flat_material::{get_flat_shader, FlatMaterial},
     primitives, renderer_shader, Material, MaterialShader, SharedMaterial, StandardShaderKey, MATERIAL_BIND_GROUP,
 };
@@ -96,7 +96,8 @@ async fn init(app: &mut App) {
         .with(renderer_shader(), cb(get_flat_shader))
         .with(material(), SharedMaterial::new(grey))
         .with(primitives(), vec![])
-        .with_default(gpu_primitives())
+        .with_default(gpu_primitives_mesh())
+        .with_default(gpu_primitives_lod())
         .with_default(local_to_world())
         .with_default(mesh_to_world())
         .with(scale(), vec3(20., 20., 1.))

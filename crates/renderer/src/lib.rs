@@ -51,12 +51,16 @@ pub use target::*;
 pub use transparent_renderer::*;
 pub use tree_renderer::*;
 
-pub const MAX_PRIMITIVE_COUNT: usize = 20;
+pub const MAX_PRIMITIVE_COUNT: usize = 16;
 
 components!("rendering", {
     @[Debuggable]
     primitives: Vec<RenderPrimitive>,
-    gpu_primitives: [GpuRenderPrimitive; MAX_PRIMITIVE_COUNT],
+
+    /// The (cpu) primitives are split into an SoA on the gpu side
+    gpu_primitives_mesh: [u32; MAX_PRIMITIVE_COUNT],
+    gpu_primitives_lod: [u32; MAX_PRIMITIVE_COUNT],
+
     renderer_shader: RendererShaderProducer,
     material: SharedMaterial,
     @[
@@ -136,7 +140,8 @@ components!("rendering", {
 });
 gpu_components! {
     color() => color: GpuComponentFormat::Vec4,
-    primitives() => primitives: GpuComponentFormat::UVec4Array20,
+    gpu_primitives_mesh() => gpu_primitives_mesh: GpuComponentFormat::Mat4,
+    gpu_primitives_lod() => gpu_primitives_lod: GpuComponentFormat::Mat4,
 }
 pub fn init_all_componets() {
     init_components();
@@ -194,14 +199,14 @@ pub fn systems() -> SystemGroup {
                     }
                 },
             ),
-            query_mut((gpu_primitives(),), (primitives().changed(),)).to_system(|q, world, qs, _| {
-                for (id, (gpu_primitives,), (primitives,)) in q.iter(world, qs) {
+            query_mut((gpu_primitives_mesh(), gpu_primitives_lod()), (primitives().changed(),)).to_system(|q, world, qs, _| {
+                for (id, (p_mesh, p_lod), (primitives,)) in q.iter(world, qs) {
                     if primitives.len() > MAX_PRIMITIVE_COUNT {
                         log::warn!("Entity {} has more than {MAX_PRIMITIVE_COUNT} primitives", id);
                     }
                     for (i, p) in primitives.iter().enumerate().take(MAX_PRIMITIVE_COUNT) {
-                        gpu_primitives[i].mesh = p.mesh.index() as u32;
-                        gpu_primitives[i].lod = p.lod as u32;
+                        p_mesh[i] = p.mesh.index() as u32;
+                        p_lod[i] = p.lod as u32;
                     }
                 }
             }),
@@ -216,7 +221,8 @@ pub fn gpu_world_systems() -> SystemGroup<GpuWorldSyncEvent> {
         vec![
             Box::new(outlines::gpu_world_systems()),
             Box::new(ComponentToGpuSystem::new(GpuComponentFormat::Vec4, color(), gpu_components::color())),
-            Box::new(ComponentToGpuSystem::new(GpuComponentFormat::UVec4Array20, gpu_primitives(), gpu_components::primitives())),
+            Box::new(ComponentToGpuSystem::new(GpuComponentFormat::Mat4, gpu_primitives_mesh(), gpu_components::gpu_primitives_mesh())),
+            Box::new(ComponentToGpuSystem::new(GpuComponentFormat::Mat4, gpu_primitives_lod(), gpu_components::gpu_primitives_lod())),
             Box::new(lod::gpu_world_system()),
             Box::new(skinning::gpu_world_systems()),
         ],
@@ -302,10 +308,7 @@ pub fn get_defs_module(_: &AssetCache) -> ShaderModule {
 pub fn get_resources_module() -> ShaderModule {
     let idents = vec![
         ShaderModuleIdentifier::constant("MESH_METADATA_BINDING", MESH_METADATA_BINDING),
-        ShaderModuleIdentifier::constant("MESH_NORMAL_BINDING", MESH_NORMAL_BINDING),
-        ShaderModuleIdentifier::constant("MESH_TANGENT_BINDING", MESH_TANGENT_BINDING),
-        ShaderModuleIdentifier::constant("MESH_POSITION_BINDING", MESH_POSITION_BINDING),
-        ShaderModuleIdentifier::constant("MESH_TEXCOORD0_BINDING", MESH_TEXCOORD0_BINDING),
+        ShaderModuleIdentifier::constant("MESH_BASE_BINDING", MESH_BASE_BINDING),
         ShaderModuleIdentifier::constant("MESH_JOINT_BINDING", MESH_JOINT_BINDING),
         ShaderModuleIdentifier::constant("MESH_WEIGHT_BINDING", MESH_WEIGHT_BINDING),
         ShaderModuleIdentifier::constant("SKINS_BINDING", SKINS_BINDING),

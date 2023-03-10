@@ -41,7 +41,7 @@ tracing = { workspace = true }
 derive_more = { workspace = true }
 
 [dev-dependencies]
-tracing-subscriber = "0.3"
+tracing-subscriber = { workspace = true }
 ambient_renderer = { path = "../renderer" }
 ambient_primitives = { path = "../primitives" }
 ambient_cameras = { path = "../cameras" }

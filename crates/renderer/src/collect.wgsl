@@ -85,14 +85,14 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
         return;
     }
 
-    var entity_primitives = get_entity_primitives(primitive.entity_loc);
-    let entity_primitive = entity_primitives[primitive.primitive_index];
+
+    var entity_primitive = get_entity_primitive(primitive.entity_loc, primitive.primitive_index);
+    let mesh_index = entity_primitive.x;
     let primitive_lod = entity_primitive.y;
 
     if (is_visible(primitive.entity_loc, primitive_lod)) {
         let out_offset = atomicAdd(&output_counts.data[primitive.material_index], 1u);
         let out_index = material_layout.x + out_offset;
-        let mesh_index = entity_primitive.x;
         let mesh = mesh_metadatas.data[mesh_index];
         output_commands.data[out_index].vertex_count = mesh.index_count;
         output_commands.data[out_index].instance_count = 1u;

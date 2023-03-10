@@ -8,7 +8,9 @@ use ambient_ecs::{Entity, EntityId, World};
 use ambient_element::{Element, ElementComponent};
 use ambient_meshes::QuadMeshKey;
 use ambient_network::client::GameClient;
-use ambient_renderer::{color, double_sided, gpu_primitives, material, primitives, renderer_shader, SharedMaterial, StandardShaderKey};
+use ambient_renderer::{
+    color, double_sided, gpu_primitives_lod, gpu_primitives_mesh, material, primitives, renderer_shader, SharedMaterial, StandardShaderKey,
+};
 use ambient_std::{asset_cache::SyncAssetKeyExt, cb, shapes::AABB};
 use glam::{vec2, vec3, vec4, EulerRot, Mat4, Quat, Vec2, Vec3};
 
@@ -28,7 +30,8 @@ fn spawn_entity(world: &mut World, mat: SharedMaterial) -> EntityId {
         .with_default(local_to_world())
         .with_default(mesh_to_world())
         .with(primitives(), vec![])
-        .with_default(gpu_primitives())
+        .with_default(gpu_primitives_mesh())
+        .with_default(gpu_primitives_lod())
         .with(main_scene(), ())
         .with(local_bounding_aabb(), aabb)
         .with(world_bounding_sphere(), aabb.to_sphere())

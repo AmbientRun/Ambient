@@ -13,7 +13,7 @@ use ambient_ecs::{
 };
 use ambient_gpu::mesh_buffer::GpuMeshFromUrl;
 use ambient_renderer::{
-    color, gpu_primitives,
+    color, gpu_primitives_lod, gpu_primitives_mesh,
     materials::{
         flat_material::{get_flat_shader, FlatMaterialKey},
         pbr_material::get_pbr_shader,
@@ -94,7 +94,8 @@ async fn internal_spawn_models_from_defs(
                 lod: 0,
             }],
         )
-        .with_default(gpu_primitives())
+        .with_default(gpu_primitives_mesh())
+        .with_default(gpu_primitives_lod())
         .with(color(), vec4(0.0, 0.5, 1.0, 1.0))
         .with(main_scene(), ())
         .with_default(local_to_world())
@@ -221,15 +222,18 @@ fn remove_model(world: &mut World, entity: EntityId) {
         });
         world.set(entity, children(), childs).ok();
     }
+
     let mut components: Vec<ComponentDesc> = vec![
         primitives().desc(),
-        gpu_primitives().desc(),
+        gpu_primitives_mesh().desc(),
+        gpu_primitives_lod().desc(),
         animation_binder().desc(),
         local_bounding_aabb().desc(),
         world_bounding_aabb().desc(),
         world_bounding_sphere().desc(),
         model_loaded().desc(),
     ];
+
     components.retain(|&comp| world.has_component_ref(entity, comp));
     world.remove_components(entity, components).ok();
 }
