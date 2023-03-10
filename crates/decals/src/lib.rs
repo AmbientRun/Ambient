@@ -12,7 +12,7 @@ use ambient_ecs::{components, query, Entity, MakeDefault, Networked, Store, Syst
 use ambient_gpu::shader_module::{Shader, ShaderModule};
 use ambient_meshes::CubeMeshKey;
 use ambient_renderer::{
-    color, get_forward_modules, gpu_primitives, material,
+    color, get_forward_modules, gpu_primitives_lod, gpu_primitives_mesh, material,
     pbr_material::{PbrMaterialFromUrl, PbrMaterialShaderKey},
     primitives, renderer_shader, MaterialShader, RendererShader,
 };
@@ -97,7 +97,8 @@ pub fn client_systems() -> SystemGroup {
                             )
                             .with(mesh(), CubeMeshKey.get(&assets))
                             .with(primitives(), vec![])
-                            .with_default(gpu_primitives())
+                            .with_default(gpu_primitives_mesh())
+                            .with_default(gpu_primitives_lod())
                             .with(main_scene(), ())
                             .with(local_bounding_aabb(), aabb)
                             .with(world_bounding_sphere(), aabb.to_sphere())

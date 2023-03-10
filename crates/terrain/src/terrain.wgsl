@@ -95,8 +95,7 @@ fn vs_main(@builtin(instance_index) instance_index: u32, @builtin(vertex_index) 
 
     let primitive = primitives.data[instance_index];
     let entity_loc = primitive.xy;
-    var entity_primitives = get_entity_primitives(entity_loc);
-    let mesh_index = entity_primitives[primitive.z].x;
+    let mesh_index = get_entity_primitive_mesh(entity_loc, primitive.z);
 
     let heightmap_size = vec2<f32>(textureDimensions(heightmap));
 

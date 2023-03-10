@@ -11,6 +11,7 @@ struct ModelToWorld {
     tangent: vec3<f32>,
 }
 
+
 /// Transform a vertex from model space to world space by applying
 // joint matrices (if applicable) and transformation matrices
 fn model_to_world(loc: vec2<u32>, mesh_index: u32, vertex_index: u32) -> ModelToWorld {

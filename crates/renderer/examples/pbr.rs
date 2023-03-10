@@ -4,7 +4,7 @@ use ambient_ecs::{query_mut, Entity};
 use ambient_gpu::std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey};
 use ambient_meshes::{CubeMeshKey, SphereMeshKey};
 use ambient_renderer::{
-    color, gpu_primitives,
+    color, gpu_primitives_lod, gpu_primitives_mesh,
     materials::pbr_material::{get_pbr_shader, PbrMaterial, PbrMaterialConfig, PbrMaterialParams},
     primitives, RenderPrimitive, SharedMaterial,
 };
@@ -43,7 +43,8 @@ async fn init(app: &mut App) {
                     vec![RenderPrimitive { shader: cb(get_pbr_shader), material: mat.clone(), mesh: CubeMeshKey.get(&assets), lod: 0 }],
                 )
                 .with(color(), Vec4::ONE)
-                .with_default(gpu_primitives())
+                .with_default(gpu_primitives_mesh())
+                .with_default(gpu_primitives_lod())
                 .with(main_scene(), ())
                 .with_default(local_to_world())
                 .with_default(mesh_to_world())
@@ -62,7 +63,8 @@ async fn init(app: &mut App) {
                     }],
                 )
                 .with(color(), Vec4::ONE)
-                .with_default(gpu_primitives())
+                .with_default(gpu_primitives_mesh())
+                .with_default(gpu_primitives_lod())
                 .with(main_scene(), ())
                 .with_default(local_to_world())
                 .with_default(mesh_to_world())

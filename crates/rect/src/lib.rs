@@ -16,8 +16,8 @@ use ambient_gpu::{
 use ambient_layout::{gpu_ui_size, height, mesh_to_local_from_size, width};
 use ambient_meshes::{UIRectMeshKey, UnitQuadMeshKey};
 use ambient_renderer::{
-    gpu_primitives, material, primitives, renderer_shader, Material, MaterialShader, RendererConfig, RendererShader, SharedMaterial,
-    StandardShaderKey, MATERIAL_BIND_GROUP,
+    gpu_primitives_lod, gpu_primitives_mesh, material, primitives, renderer_shader, Material, MaterialShader, RendererConfig,
+    RendererShader, SharedMaterial, StandardShaderKey, MATERIAL_BIND_GROUP,
 };
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
@@ -93,13 +93,14 @@ pub fn systems() -> SystemGroup {
                 }
             }),
             ensure_has_component_with_default(rect(), primitives()),
-            ensure_has_component_with_default(rect(), gpu_primitives()),
             ensure_has_component_with_default(rect(), gpu_ui_size()),
             ensure_has_component_with_default(rect(), mesh_to_local()),
             ensure_has_component_with_default(rect(), mesh_to_world()),
             ensure_has_component_with_default(rect(), local_to_world()),
             ensure_has_component(rect(), scale(), Vec3::ONE),
             ensure_has_component_with_default(rect(), mesh_to_local_from_size()),
+            ensure_has_component_with_default(rect(), gpu_primitives_mesh()),
+            ensure_has_component_with_default(rect(), gpu_primitives_lod()),
             query(()).incl(rect()).excl(mesh()).to_system(|q, world, qs, _| {
                 let assets = world.resource(asset_cache()).clone();
                 for (id, _) in q.collect_cloned(world, qs) {

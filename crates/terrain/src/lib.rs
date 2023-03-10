@@ -31,7 +31,9 @@ use ambient_physics::{
     physx::{character_controller, physics, physics_shape, rigid_static, Physics},
     PxActorUserData, PxShapeUserData,
 };
-use ambient_renderer::{cast_shadows, color, gpu_primitives, lod::cpu_lod, material, primitives, renderer_shader, SharedMaterial};
+use ambient_renderer::{
+    cast_shadows, color, gpu_primitives_lod, gpu_primitives_mesh, lod::cpu_lod, material, primitives, renderer_shader, SharedMaterial,
+};
 use ambient_std::{
     asset_cache::{Asset, AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
@@ -763,7 +765,8 @@ impl ElementComponent for Terrain {
             .set(renderer_shader(), cb(|assets, config| TerrainShaderKey { shadow_cascades: config.shadow_cascades }.get(assets)))
             .set(material(), terrain_material)
             .set(primitives(), vec![])
-            .set_default(gpu_primitives())
+            .set_default(gpu_primitives_mesh())
+            .set_default(gpu_primitives_lod())
             .set(main_scene(), ())
             .set(mesh(), lod_meshes[0].clone())
             .set(terrain_lods(), lod_meshes.clone())

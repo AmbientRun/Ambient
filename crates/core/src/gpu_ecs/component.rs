@@ -1,9 +1,12 @@
 use std::collections::HashMap;
 
 use ambient_ecs::ArchetypeFilter;
-use ambient_std::asset_cache::{AssetCache, SyncAssetKey};
+use ambient_std::{
+    asset_cache::{AssetCache, SyncAssetKey},
+    include_file,
+};
 use derive_more::Display;
-use glam::{Mat4, UVec4, Vec4};
+use glam::{Mat4, Vec4};
 use itertools::Itertools;
 use parking_lot::Mutex;
 
@@ -18,13 +21,21 @@ pub struct GpuComponent {
     pub exists_for: ArchetypeFilter,
 }
 
+/// Represents the type of the component in the shader.
+///
+/// Each separate type will have its own buffer, but the buffer is shared by all components of the same type.
+///
+/// **Note**: Prefer to use the existing types and casting, for example, using a Mat4 as an array,
+/// rather than adding a new type.
+///
+/// This is because there is an upper limit (8) to the number of storage buffers for each shader stage.
 #[derive(Display, Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum GpuComponentFormat {
     Mat4,
     Vec4,
     // UVec4,
     // U32,
-    UVec4Array20,
+    // UVec4Array20,
     // F32Array20,
     // U32Array20,
 }
@@ -35,7 +46,7 @@ impl GpuComponentFormat {
             GpuComponentFormat::Vec4 => std::mem::size_of::<Vec4>() as u64,
             //GpuComponentFormat::UVec4 => std::mem::size_of::<UVec4>() as u64,
             // GpuComponentFormat::U32 => std::mem::size_of::<u32>() as u64,
-            GpuComponentFormat::UVec4Array20 => std::mem::size_of::<UVec4>() as u64 * 20,
+            // GpuComponentFormat::UVec4Array20 => std::mem::size_of::<UVec4>() as u64 * 20,
             //GpuComponentFormat::F32Array20 => std::mem::size_of::<f32>() as u64 * 20,
             //GpuComponentFormat::U32Array20 => std::mem::size_of::<u32>() as u64 * 20,
         }
@@ -46,7 +57,7 @@ impl GpuComponentFormat {
             GpuComponentFormat::Vec4 => "vec4<f32>",
             // GpuComponentFormat::UVec4 => "vec4<u32>",
             // GpuComponentFormat::U32 => "u32",
-            GpuComponentFormat::UVec4Array20 => "array<vec4<u32>, 20>",
+            // GpuComponentFormat::UVec4Array20 => "array<vec4<u32>, 20>",
             // GpuComponentFormat::F32Array20 => "array<f32, 20>",
             // GpuComponentFormat::U32Array20 => "array<u32, 20>",
         }
@@ -205,6 +216,9 @@ impl GpuWorldConfig {
     }
     pub fn wgsl(&self, writeable: bool) -> String {
         let buffers = self.buffers.iter().enumerate().map(|(i, buf)| buf.wgsl(ENTITIES_BIND_GROUP, i as u32, writeable)).join("\n");
+
+        let utils = include_file!("utils.wgsl");
+
         format!(
             "
 struct EntityLayoutBuffer {{ data: array<i32>, }};
@@ -213,6 +227,8 @@ struct EntityLayoutBuffer {{ data: array<i32>, }};
 var<storage> entity_layout: EntityLayoutBuffer;
 
 {buffers}
+
+{utils}
 ",
         )
     }

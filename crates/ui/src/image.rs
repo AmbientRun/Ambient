@@ -9,7 +9,7 @@ use ambient_gpu::{
 };
 use ambient_meshes::UIRectMeshKey;
 use ambient_renderer::{
-    color, gpu_primitives, material,
+    color, gpu_primitives_lod, gpu_primitives_mesh, material,
     materials::pbr_material::{get_pbr_shader_unlit, PbrMaterial, PbrMaterialConfig, PbrMaterialParams},
     primitives, renderer_shader, SharedMaterial,
 };
@@ -60,7 +60,8 @@ impl ElementComponent for Image {
             .init_default(mesh_to_local_from_size())
             .init(renderer_shader(), cb(get_pbr_shader_unlit))
             .init(primitives(), vec![])
-            .init_default(gpu_primitives())
+            .init_default(gpu_primitives_mesh())
+            .init_default(gpu_primitives_lod())
             .init(ui_scene(), ())
             .init(color(), Vec4::ONE);
 

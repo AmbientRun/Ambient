@@ -17,7 +17,7 @@ use ambient_meshes::{SphereMeshKey, UVSphereMesh};
 use ambient_renderer::{
     color,
     flat_material::{get_flat_shader, FlatMaterialKey},
-    gpu_primitives,
+    gpu_primitives_lod, gpu_primitives_mesh,
     lod::{gpu_lod, lod_cutoffs, LodCutoffs},
     primitives, RenderPrimitive,
 };
@@ -51,7 +51,8 @@ async fn init(app: &mut App) {
         .with_default(local_to_world())
         .with_default(mesh_to_world())
         .with_default(translation())
-        .with_default(gpu_primitives())
+        .with_default(gpu_primitives_mesh())
+        .with_default(gpu_primitives_lod())
         .with(color(), Vec4::ONE)
         .with(main_scene(), ())
         .with(local_bounding_aabb(), aabb)
