@@ -13,7 +13,7 @@ use ambient_gpu::mesh_buffer::GpuMesh;
 pub use ambient_meshes::UVSphereMesh;
 use ambient_meshes::{UnitCubeMeshKey, UnitQuadMeshKey};
 use ambient_renderer::{
-    color, gpu_primitives, material,
+    color, gpu_primitives_lod, gpu_primitives_mesh, material,
     materials::flat_material::{get_flat_shader, FlatMaterialKey},
     primitives, renderer_shader,
 };
@@ -88,7 +88,8 @@ pub fn cube_data(assets: &AssetCache) -> Entity {
         .with(renderer_shader(), cb(get_flat_shader))
         .with(material(), FlatMaterialKey::white().get(assets))
         .with(primitives(), vec![])
-        .with_default(gpu_primitives())
+        .with_default(gpu_primitives_mesh())
+        .with_default(gpu_primitives_lod())
         .with(color(), Vec4::ONE)
         .with(main_scene(), ())
         .with(local_bounding_aabb(), aabb)
@@ -106,7 +107,8 @@ pub fn quad_data(assets: &AssetCache) -> Entity {
         .with(renderer_shader(), cb(get_flat_shader))
         .with(material(), FlatMaterialKey::white().get(assets))
         .with(primitives(), vec![])
-        .with_default(gpu_primitives())
+        .with_default(gpu_primitives_mesh())
+        .with_default(gpu_primitives_lod())
         .with(color(), Vec4::ONE)
         .with(main_scene(), ())
         .with(local_bounding_aabb(), aabb)
@@ -124,7 +126,8 @@ pub fn sphere_data(assets: &AssetCache, sphere: &UVSphereMesh) -> Entity {
         .with(renderer_shader(), cb(get_flat_shader))
         .with(material(), FlatMaterialKey::white().get(assets))
         .with(primitives(), vec![])
-        .with_default(gpu_primitives())
+        .with_default(gpu_primitives_mesh())
+        .with_default(gpu_primitives_lod())
         .with(color(), Vec4::ONE)
         .with(main_scene(), ())
         .with(local_bounding_aabb(), bound_sphere.to_aabb())

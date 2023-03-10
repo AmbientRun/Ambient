@@ -4,15 +4,21 @@ use ambient_core::{asset_cache, async_ecs::async_run, gpu, mesh, runtime, transf
 use ambient_ecs::{components, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
 use ambient_gpu::{mesh_buffer::GpuMesh, texture::Texture};
 use ambient_layout::{height, min_height, min_width, width};
-use ambient_renderer::{gpu_primitives, material, primitives, renderer_shader, SharedMaterial};
+use ambient_renderer::{gpu_primitives_lod, gpu_primitives_mesh, material, primitives, renderer_shader, SharedMaterial};
 use ambient_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, asset_url::AbsAssetUrl, cb, download_asset::{AssetResult, BytesFromUrl}, mesh::*, shapes::AABB
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt},
+    asset_url::AbsAssetUrl,
+    cb,
+    download_asset::{AssetResult, BytesFromUrl},
+    mesh::*,
+    shapes::AABB,
 };
 use anyhow::Context;
 use async_trait::async_trait;
 use glam::*;
 use glyph_brush::{
-    ab_glyph::{Font, FontArc, PxScale, Rect}, BrushAction, BrushError, GlyphBrush, GlyphBrushBuilder, Section
+    ab_glyph::{Font, FontArc, PxScale, Rect},
+    BrushAction, BrushError, GlyphBrush, GlyphBrushBuilder, Section,
 };
 use log::info;
 use parking_lot::Mutex;
@@ -197,7 +203,8 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                                 .with(renderer_shader(), cb(get_text_shader))
                                 .with(material(), SharedMaterial::new(TextMaterial::new(assets.clone(), texture_view)))
                                 .with(primitives(), vec![])
-                                .with_default(gpu_primitives()),
+                                .with_default(gpu_primitives_mesh())
+                                .with_default(gpu_primitives_lod()),
                         )
                         .unwrap();
                 }
