@@ -7,6 +7,7 @@ use ambient_core::{
     gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldShaderModuleKey, GpuWorldSyncEvent},
     mesh, runtime,
     transform::get_world_rotation,
+    RedrawEvent,
 };
 use ambient_ecs::{
     components, query_mut, Debuggable, Description, Entity, EntityId, MakeDefault, Name, Networked, Resource, Store, SystemGroup, World,

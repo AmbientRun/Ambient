@@ -220,13 +220,24 @@ impl ElementComponent for GameClientView {
 
         {
             let game_state = game_state.clone();
-            let render_target = render_target.clone();
             hooks.use_frame(move |app_world| {
                 let mut game_state = game_state.lock();
 
                 mirror_window_components(app_world, &mut game_state.world);
 
-                game_state.on_frame(&render_target);
+                game_state.on_frame();
+            });
+        }
+
+        {
+            let game_state = game_state.clone();
+            let render_target = render_target.clone();
+            hooks.use_redraw(move |app_world| {
+                let mut game_state = game_state.lock();
+
+                mirror_window_components(app_world, &mut game_state.world);
+
+                game_state.on_redraw(&render_target);
             });
         }
 

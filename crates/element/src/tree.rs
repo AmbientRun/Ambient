@@ -11,6 +11,8 @@ use crate::element_unmanaged_children;
 use crate::{AnyCloneable, ContextUpdate, DespawnFn, Element, ElementConfig, Hooks, HooksEnvironment, InstanceId, StateUpdate};
 #[cfg(feature = "native")]
 use ambient_core::hierarchy::{children, parent};
+#[cfg(feature = "native")]
+use ambient_core::RedrawEvent;
 #[cfg(feature = "guest")]
 use ambient_guest_bridge::api::components::core::ecs::{children, parent};
 #[cfg(feature = "native")]
@@ -44,6 +46,7 @@ pub(crate) struct ElementInstance {
     #[derivative(Debug = "ignore")]
     pub hooks_on_despawn: Vec<DespawnFn>,
 }
+
 impl ElementInstance {
     pub fn new(config: ElementConfig, parent_entity: Option<EntityId>, element_parent: ElementParent) -> Self {
         Self {
@@ -87,6 +90,7 @@ pub struct ElementTree {
     pub(crate) hooks_env: Arc<Mutex<HooksEnvironment>>,
     pub(crate) root: Option<InstanceId>,
 }
+
 impl ElementTree {
     pub fn new(world: &mut World, element: Element) -> Self {
         let mut s = Self { instances: HashMap::new(), hooks_env: Arc::new(Mutex::new(HooksEnvironment::new())), root: None };
@@ -120,17 +124,29 @@ impl ElementTree {
         SystemGroup::new(
             "ElementTree::systems_for_component",
             vec![
-                query((component,)).to_system_with_name("update tree", |q, world, qs, _| {
+                query((component,)).to_system_with_name("update_tree", |q, world, qs, _| {
                     for (_, (tree,)) in q.collect_cloned(world, qs) {
                         tree.0.lock().update(world);
                     }
                 }),
-                query((component,)).despawned().to_system_with_name("handle despawned", |q, world, qs, _| {
+                query((component,)).despawned().to_system_with_name("handle_despawned", |q, world, qs, _| {
                     for (_, (tree,)) in q.collect_cloned(world, qs) {
                         tree.remove(world);
                     }
                 }),
             ],
+        )
+    }
+
+    #[cfg(feature = "native")]
+    pub fn redraw_systems(component: Component<ShareableElementTree>) -> SystemGroup<RedrawEvent> {
+        SystemGroup::new(
+            "ElementTree::redraw_systems",
+            vec![query((component,)).to_system_with_name("redraw_tree", |q, world, qs, _| {
+                for (_, (tree,)) in q.collect_cloned(world, qs) {
+                    tree.0.lock().on_redraw(world);
+                }
+            })],
         )
     }
 
@@ -193,8 +209,14 @@ impl ElementTree {
         let part = instance.config.part.clone();
 
         let entity = if let Some(part) = part {
-            // Clear frame listeners as they are rebuilt during render
-            self.hooks_env.lock().frame_listeners.remove(instance_id);
+            // Clear listeners as they are rebuilt during render
+            {
+                let mut hooks_env = self.hooks_env.lock();
+
+                hooks_env.frame_listeners.remove(instance_id);
+                hooks_env.redraw_listeners.remove(instance_id);
+            }
+
             let _span = debug_span!("render_instance with part", key).entered();
             let (on_spawn, new_super, super_, parent_entity) = {
                 let mut hooks = Hooks {
@@ -258,6 +280,7 @@ impl ElementTree {
         }
         instance.entity
     }
+
     fn rerender_instance(&mut self, world: &mut World, instance_id: &str) {
         let old_entity = if let Some(instance) = self.instances.get(instance_id) {
             instance.entity
@@ -279,6 +302,7 @@ impl ElementTree {
             }
         }
     }
+
     fn migrate(
         &mut self,
         world: &mut World,
@@ -372,6 +396,17 @@ impl ElementTree {
         }
         for child in &instance.children {
             self.remove(world, child);
+        }
+    }
+
+    /// Invokes all [`Hooks::use_redraw`](crate::Hooks) hooks
+    pub fn on_redraw(&mut self, world: &mut World) {
+        let listeners = self.hooks_env.lock().redraw_listeners.clone();
+        for listeners in listeners.values() {
+            profiling::scope!("redraw_listeners");
+            for listener in listeners {
+                listener.0(world);
+            }
         }
     }
 

@@ -18,7 +18,7 @@ use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     color::Color,
 };
-use glam::uvec2;
+use glam::{uvec2, Vec4};
 use wgpu::{BindGroupLayout, TextureView};
 
 use super::{

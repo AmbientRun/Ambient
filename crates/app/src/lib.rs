@@ -13,13 +13,13 @@ use ambient_core::{
     remove_at_time_system, runtime, time,
     transform::TransformSystem,
     window::{cursor_position, get_window_sizes, window_logical_size, window_physical_size, window_scale_factor, WindowCtl},
-    RuntimeKey, TimeResourcesSystem,
+    RedrawEvent, RuntimeKey, TimeResourcesSystem,
 };
 use ambient_ecs::{
     components, world_events, Debuggable, DynSystem, Entity, FrameEvent, MakeDefault, MaybeResource, System, SystemGroup, World,
     WorldEventsSystem,
 };
-use ambient_element::ambient_system;
+use ambient_element::{ambient_system, element_tree, ElementTree};
 use ambient_gizmos::{gizmos, Gizmos};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
@@ -81,6 +81,18 @@ pub fn gpu_world_sync_systems() -> SystemGroup<GpuWorldSyncEvent> {
             Box::new(ambient_renderer::gpu_world_systems()),
             Box::new(ambient_core::bounding::gpu_world_systems()),
             Box::new(ambient_ui::layout::gpu_world_systems()),
+        ],
+    )
+}
+
+pub fn world_redraw_systems() -> SystemGroup<RedrawEvent> {
+    SystemGroup::new(
+        "world_redraw",
+        vec![
+            // br
+            // Box::new(lod_system()),
+            // Box::new(ambient_renderer::systems()),
+            Box::new(ElementTree::redraw_systems(element_tree())),
         ],
     )
 }
@@ -313,17 +325,17 @@ impl AppBuilder {
         let resources = world_instance_resources(app_resources);
 
         world.add_components(world.resource_entity(), resources).unwrap();
-        tracing::debug!("Setup renderers");
+        tracing::info!("Setup renderers");
         if self.ui_renderer || self.main_renderer {
             // let _span = info_span!("setup_renderers").entered();
             if !self.main_renderer {
-                tracing::debug!("Setting up UI renderer");
+                tracing::info!("Setting up UI renderer");
                 let renderer = Arc::new(Mutex::new(UIRender::new(&mut world)));
                 world.add_resource(ui_renderer(), renderer);
             } else {
-                tracing::debug!("Setting up ExamplesRenderer");
+                tracing::info!("Setting up ExamplesRenderer");
                 let renderer = ExamplesRender::new(&mut world, self.ui_renderer, self.main_renderer);
-                tracing::debug!("Created examples renderer");
+                tracing::info!("Created examples renderer");
                 let renderer = Arc::new(Mutex::new(renderer));
                 world.add_resource(examples_renderer(), renderer);
             }
@@ -335,9 +347,20 @@ impl AppBuilder {
             "window_event_systems",
             vec![Box::new(assets_camera_systems()), Box::new(ambient_input::event_systems()), Box::new(renderers::systems())],
         );
+
         if self.examples_systems {
             window_event_systems.add(Box::new(ExamplesSystem));
         }
+
+        let redraw_systems = SystemGroup::new(
+            "redraw_systems",
+            vec![
+                //
+                // Invokes the ui renderer and/or examples renderer
+                Box::new(world_redraw_systems()),
+                Box::new(renderers::redraw_systems()),
+            ],
+        );
 
         Ok(App {
             window_focused: true,
@@ -346,6 +369,7 @@ impl AppBuilder {
             systems: SystemGroup::new("app", vec![Box::new(MeshBufferUpdate), Box::new(world_instance_systems(true))]),
             world,
             gpu_world_sync_systems: gpu_world_sync_systems(),
+            redraw_systems,
             window_event_systems,
             event_loop,
 
@@ -389,8 +413,12 @@ pub struct App {
     pub world: World,
     pub ctl_rx: flume::Receiver<WindowCtl>,
     pub systems: SystemGroup,
+
+    /// Executes *after* `window_event_systems`
+    pub redraw_systems: SystemGroup<RedrawEvent>,
     pub gpu_world_sync_systems: SystemGroup<GpuWorldSyncEvent>,
     pub window_event_systems: SystemGroup<Event<'static, ()>>,
+
     pub runtime: RuntimeHandle,
     pub window: Option<Arc<Window>>,
     event_loop: Option<EventLoop<()>>,
@@ -493,6 +521,7 @@ impl App {
         world.resource(gpu()).device.poll(wgpu::Maintain::Poll);
 
         self.window_event_systems.run(world, event);
+
         match event {
             Event::MainEventsCleared => {
                 // Handle window control events
@@ -523,7 +552,7 @@ impl App {
                 {
                     profiling::scope!("systems");
                     systems.run(world, &FrameEvent);
-                    gpu_world_sync_systems.run(world, &GpuWorldSyncEvent);
+                    // gpu_world_sync_systems.run(world, &GpuWorldSyncEvent);
                 }
 
                 if let Some(fps) = self.fps.frame_next() {
@@ -538,7 +567,13 @@ impl App {
                 }
                 profiling::finish_frame!();
             }
-
+            Event::RedrawRequested(_window) => {
+                tracing::info!("\n\n---- Redrawing");
+                profiling::scope!("redraw_systems");
+                gpu_world_sync_systems.run(world, &GpuWorldSyncEvent);
+                self.redraw_systems.run(world, &RedrawEvent);
+                tracing::info!(" ---- Finished Redrawing\n");
+            }
             Event::WindowEvent { event, .. } => match event {
                 WindowEvent::Focused(focused) => {
                     self.window_focused = *focused;
@@ -587,6 +622,7 @@ impl App {
             _ => {}
         }
     }
+
     pub fn add_system(&mut self, system: DynSystem) -> &mut Self {
         self.systems.add(system);
         self

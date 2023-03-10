@@ -4,6 +4,7 @@ use ambient_core::{
     gpu_components,
     gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent},
     hierarchy::children,
+    RedrawEvent,
 };
 use ambient_ecs::{components, query, ArchetypeFilter, Component, Debuggable, Description, Name, Networked, Store, SystemGroup, World};
 use ambient_gpu::{
@@ -197,6 +198,7 @@ impl Outlines {
         rpass.set_bind_group(0, &bind_group, &[]);
         rpass.draw(0..4, 0..1);
     }
+
     pub fn dump(&self, f: &mut dyn std::io::Write) {
         self.renderer.dump(f);
     }

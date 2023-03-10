@@ -60,6 +60,7 @@ impl ClientGameState {
             .with(ambient_core::player::local_user_id(), player_id.clone())
             .with(game_screen_render_target(), render_target)
             .with_merge(client_resources);
+
         game_world.add_components(game_world.resource_entity(), local_resources).unwrap();
 
         let systems = SystemGroup::new("game", vec![Box::new(client_systems), Box::new(world_instance_systems(true))]);
@@ -80,29 +81,40 @@ impl ClientGameState {
             user_id: player_id,
         }
     }
-    #[profiling::function]
-    pub fn on_frame(&mut self, target: &RenderTarget) {
-        self.world.next_frame();
-        self.systems.run(&mut self.world, &FrameEvent);
-        self.temporary_systems.retain_mut(|system| !(system.0)(&mut self.world));
 
+    /// Draws the `game_world`
+    #[profiling::function]
+    pub fn on_redraw(&mut self, target: &RenderTarget) {
+        tracing::info!("Drawing client");
         self.gpu_world_sync_systems.run(&mut self.world, &GpuWorldSyncEvent);
+
         let gpu = GpuKey.get(&self.assets);
         let mut encoder = gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("GameState.render") });
         let mut post_submit = Vec::new();
+
         self.renderer.render(
             &mut self.world,
             &mut encoder,
             &mut post_submit,
             RendererTarget::Target(target),
-            Some(Color::rgba(0., 0., 0., 1.)),
+            Some(Color::rgba(1., 0., 1., 1.)),
         );
+
         self.ui_renderer.render(&mut self.world, &mut encoder, &mut post_submit, RendererTarget::Target(target), None);
         gpu.queue.submit(Some(encoder.finish()));
         for action in post_submit {
             action();
         }
     }
+
+    /// Update logic
+    #[profiling::function]
+    pub fn on_frame(&mut self) {
+        self.world.next_frame();
+        self.systems.run(&mut self.world, &FrameEvent);
+        self.temporary_systems.retain_mut(|system| !(system.0)(&mut self.world));
+    }
+
     /// Adds a temporary system; when it returns true it's removed
     pub fn add_temporary_system(&mut self, system: impl FnMut(&mut World) -> bool + Sync + Send + 'static) {
         self.temporary_systems.push(TempSystem(Box::new(system)));
@@ -113,6 +125,7 @@ impl ClientGameState {
         // This can only work client side, since project_view only exists there (which in turn requires the screen size)
         self.world.get(camera, projection_view()).ok()
     }
+
     pub fn view(&self) -> Option<Mat4> {
         let camera = get_active_camera(&self.world, main_scene(), Some(&self.user_id))?;
         // // This can only work client side, since project_view only exists there (which in turn requires the screen size)
@@ -122,6 +135,7 @@ impl ClientGameState {
     pub fn center_screen_ray(&self) -> Ray {
         self.screen_ray(Vec2::ZERO)
     }
+
     pub fn screen_ray(&self, clip_space_pos: Vec2) -> Ray {
         let inv_proj_view = self.proj_view().unwrap_or(Mat4::IDENTITY).inverse();
         let a = inv_proj_view.project_point3(clip_space_pos.extend(1.));
@@ -130,18 +144,22 @@ impl ClientGameState {
         let dir = (b - a).normalize();
         Ray { origin, dir }
     }
+
     pub fn clip_to_world_space(&self, p: Vec3) -> Vec3 {
         let inv_proj_view = self.proj_view().unwrap_or(Mat4::IDENTITY).inverse();
         inv_proj_view.project_point3(p)
     }
+
     pub fn world_to_clip_space(&self, p: Vec3) -> Vec3 {
         let proj_view = self.proj_view().unwrap_or(Mat4::IDENTITY);
         proj_view.project_point3(p)
     }
+
     pub fn clip_to_screen_space(&self, p: Vec3) -> Vec2 {
         let screen_size = *self.world.resource(window_physical_size());
         interpolate(p.xy(), vec2(-1., 1.), vec2(1., -1.), Vec2::ZERO, screen_size.as_vec2())
     }
+
     pub fn world_to_screen_space(&self, p: Vec3) -> Vec2 {
         self.clip_to_screen_space(self.world_to_clip_space(p))
     }

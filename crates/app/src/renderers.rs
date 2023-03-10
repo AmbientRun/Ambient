@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use ambient_core::{asset_cache, gpu, main_scene, ui_scene, window::window_physical_size};
+use ambient_core::{asset_cache, gpu, main_scene, ui_scene, window::window_physical_size, RedrawEvent};
 use ambient_ecs::{components, query, FrameEvent, System, SystemGroup, World};
 use ambient_gizmos::render::GizmoRenderer;
 use ambient_gpu::{
@@ -23,6 +23,28 @@ components!("app_renderers", {
     examples_renderer: Arc<Mutex<ExamplesRender>>,
 });
 
+pub fn redraw_systems() -> SystemGroup<RedrawEvent> {
+    SystemGroup::new(
+        "app_renderers_redraw_systems",
+        vec![
+            query(ui_renderer()).to_system(|q, world, qs, &RedrawEvent| {
+                for (_, ui_render) in q.collect_cloned(world, qs) {
+                    let mut ui_render = ui_render.lock();
+
+                    ui_render.render(world);
+                }
+            }),
+            query(examples_renderer()).to_system(|q, world, qs, &RedrawEvent| {
+                for (_, examples_render) in q.collect_cloned(world, qs) {
+                    let mut examples_render = examples_render.lock();
+
+                    examples_render.run(world, &FrameEvent);
+                }
+            }),
+        ],
+    )
+}
+
 pub fn systems() -> SystemGroup<Event<'static, ()>> {
     SystemGroup::new(
         "app_renderers",
@@ -37,21 +59,14 @@ pub fn systems() -> SystemGroup<Event<'static, ()>> {
                         }
                         _ => {}
                     }
-                    let cleared = matches!(event, Event::MainEventsCleared);
-                    if cleared {
-                        ui_render.render(world);
-                    }
                 }
             }),
             query(examples_renderer()).to_system(|q, world, qs, event| {
                 for (_, examples_render) in q.collect_cloned(world, qs) {
                     let mut examples_render = examples_render.lock();
-                    match event {
-                        Event::WindowEvent { event: WindowEvent::Resized(size), .. } => examples_render.resize(size),
-                        Event::MainEventsCleared => {
-                            examples_render.run(world, &FrameEvent);
-                        }
-                        _ => {}
+
+                    if let Event::WindowEvent { event: WindowEvent::Resized(size), .. } = event {
+                        examples_render.resize(size)
                     }
                 }
             }),
@@ -59,6 +74,11 @@ pub fn systems() -> SystemGroup<Event<'static, ()>> {
     )
 }
 
+/// Provides a simple renderer for drawing the element tree.
+///
+/// Used in examples.
+///
+/// For the client `ambient` the `GameClientView` handles rendering
 pub struct ExamplesRender {
     gpu: Arc<Gpu>,
     main: Option<Renderer>,
@@ -108,6 +128,7 @@ impl ExamplesRender {
             size: wind_size,
         }
     }
+
     fn resize(&mut self, size: &PhysicalSize<u32>) {
         self.size = uvec2(size.width, size.height);
 
@@ -122,10 +143,12 @@ impl ExamplesRender {
         self.dump(&mut f);
         tracing::info!("Wrote renderer to tmp/renderer.txt");
     }
+
     #[allow(dead_code)]
     pub fn n_entities(&self) -> usize {
         self.main.as_ref().map(|x| x.n_entities()).unwrap_or(0) + self.ui.as_ref().map(|x| x.n_entities()).unwrap_or(0)
     }
+
     pub fn stats(&self) -> String {
         if let Some(main) = &self.main {
             main.stats()
@@ -133,6 +156,7 @@ impl ExamplesRender {
             String::new()
         }
     }
+
     pub fn dump(&self, f: &mut dyn std::io::Write) {
         if let Some(main) = &self.main {
             writeln!(f, "## MAIN ##").unwrap();
@@ -153,6 +177,7 @@ impl std::fmt::Debug for ExamplesRender {
 
 impl System for ExamplesRender {
     fn run(&mut self, world: &mut World, _: &FrameEvent) {
+        tracing::info!("Drawing ExamplesRenderer");
         profiling::scope!("Renderers.run");
         let mut encoder = self.gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         let mut post_submit = Vec::new();
@@ -291,6 +316,8 @@ impl UIRender {
     }
 
     fn render(&mut self, world: &mut World) {
+        tracing::info!("Drawing UI");
+
         let gpu = world.resource(gpu()).clone();
         let mut encoder = gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("UIRenderer") });
         let frame = {

@@ -273,10 +273,23 @@ impl<'a> Hooks<'a> {
         x
     }
 
+    /// Invokes the callback each `frame`
     #[profiling::function]
     pub fn use_frame<F: Fn(&mut World) + Sync + Send + 'static>(&mut self, on_frame: F) {
         let mut env = self.environment.lock();
         let listeners = env.frame_listeners.entry(self.element.clone()).or_insert_with(Vec::new);
+        listeners.push(FrameListener(Arc::new(on_frame)));
+    }
+
+    /// Invokes the callback each time the window needs to be redrawn.
+    ///
+    /// This is the entrypoint for graphics state management.
+    ///
+    /// Callback *may* be called less frequently than [`Hooks::use_frame`].
+    #[profiling::function]
+    pub fn use_redraw<F: Fn(&mut World) + Sync + Send + 'static>(&mut self, on_frame: F) {
+        let mut env = self.environment.lock();
+        let listeners = env.redraw_listeners.entry(self.element.clone()).or_insert_with(Vec::new);
         listeners.push(FrameListener(Arc::new(on_frame)));
     }
 
@@ -403,12 +416,16 @@ pub(crate) struct HooksEnvironment {
     /// This is modified through the returned `Setter` closure
     pub(crate) set_contexts: Vec<ContextUpdate>,
     pub(crate) frame_listeners: HashMap<InstanceId, Vec<FrameListener>>,
+    pub(crate) redraw_listeners: HashMap<InstanceId, Vec<FrameListener>>,
 }
+
 impl HooksEnvironment {
     pub(crate) fn new() -> Self {
-        Self { set_states: Vec::new(), set_contexts: Vec::new(), frame_listeners: HashMap::new() }
+        Self { set_states: Vec::new(), set_contexts: Vec::new(), frame_listeners: HashMap::new(), redraw_listeners: Default::default() }
     }
+
     pub fn on_element_removed(&mut self, instance_id: &str) {
         self.frame_listeners.remove(instance_id);
+        self.redraw_listeners.remove(instance_id);
     }
 }

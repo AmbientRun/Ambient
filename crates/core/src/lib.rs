@@ -22,6 +22,8 @@ pub mod player;
 pub mod transform;
 pub mod window;
 
+pub struct RedrawEvent;
+
 components!("app", {
     @[Debuggable, Networked, Store, Name["Name"], Description["A human-friendly name for this entity."]]
     name: String,

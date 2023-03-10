@@ -7,6 +7,7 @@ use ambient_core::{
     main_scene,
     player::local_user_id,
     transform::translation,
+    RedrawEvent,
 };
 use ambient_ecs::{components, query, ECSError, EntityId, Networked, Store, SystemGroup, World};
 use bytemuck::{Pod, Zeroable};
@@ -69,6 +70,7 @@ pub fn lod_system() -> SystemGroup {
                     Ok(val) => val,
                     Err(_) => return,
                 };
+
                 let main_camera_cot_fov_2 = 1. / (main_camera_fov / 2.).tan();
 
                 // let frame = world.resource(frame_index());
