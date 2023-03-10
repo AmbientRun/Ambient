@@ -59,6 +59,7 @@ async fn init(app: &mut App) {
 }
 
 fn main() {
-    env_logger::init();
+    tracing_subscriber::fmt::init();
+
     AppBuilder::simple_ui().block_on(init);
 }
