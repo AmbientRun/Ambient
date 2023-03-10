@@ -85,6 +85,11 @@ impl System<Event<'static, ()>> for InputSystem {
                     world.resource_mut(world_events()).add_event(Entity::new().with(event_received_character(), *c));
                 }
 
+                WindowEvent::ModifiersChanged(mods) => {
+                    self.modifiers = *mods;
+                    world.resource_mut(world_events()).add_event(Entity::new().with(event_modifiers_change(), *mods));
+                }
+
                 WindowEvent::KeyboardInput { input, .. } => {
                     let event = KeyboardEvent {
                         scancode: input.scancode,
@@ -131,9 +136,6 @@ impl System<Event<'static, ()>> for InputSystem {
                             .with(event_mouse_wheel_pixels(), matches!(delta, MouseScrollDelta::PixelDelta(..))),
                     );
                 }
-                WindowEvent::ModifiersChanged(mods) => {
-                    world.resource_mut(world_events()).add_event(Entity::new().with(event_modifiers_change(), *mods));
-                }
 
                 _ => {}
             },
@@ -160,5 +162,14 @@ pub fn mouse_button_from_u32(button: u32) -> MouseButton {
         1 => MouseButton::Right,
         2 => MouseButton::Middle,
         x => MouseButton::Other(x as u16),
+    }
+}
+
+pub fn mouse_button_to_u32(button: MouseButton) -> u32 {
+    match button {
+        MouseButton::Left => 0,
+        MouseButton::Right => 1,
+        MouseButton::Middle => 2,
+        MouseButton::Other(x) => x as u32,
     }
 }

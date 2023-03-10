@@ -10,12 +10,12 @@ use ambient_network::{
     client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce},
     events::ServerEventRegistry,
 };
+use ambient_renderer::RenderTarget;
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
+use glam::uvec2;
 
 use crate::{cli::RunCli, shared};
-use ambient_renderer::RenderTarget;
-use glam::uvec2;
 
 /// Construct an app and enter the main client view
 pub async fn run(assets: AssetCache, server_addr: SocketAddr, run: &RunCli, project_path: Option<PathBuf>) {
@@ -24,7 +24,7 @@ pub async fn run(assets: AssetCache, server_addr: SocketAddr, run: &RunCli, proj
 
     let is_debug = std::env::var("AMBIENT_DEBUGGER").is_ok() || run.debugger;
 
-    AppBuilder::simple()
+    AppBuilder::new()
         .ui_renderer(true)
         .with_asset_cache(assets)
         .headless(headless)

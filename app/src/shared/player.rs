@@ -1,20 +1,19 @@
 use std::{io::Write, sync::Arc};
 
 use ambient_core::{
-    player::{get_player_by_user_id, player},
-    runtime,
-    window::{cursor_position, window_logical_size, window_physical_size},
+    player::{get_player_by_user_id, player}, runtime, time, window::{cursor_position, window_logical_size, window_physical_size}
 };
 use ambient_ecs::{query, query_mut, Entity, SystemGroup, WorldDiff};
 use ambient_element::{element_component, Element, Hooks};
 use ambient_input::{
-    event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels,
-    mouse_button, mouse_button_from_u32, player_prev_raw_input, player_raw_input, ElementState, PlayerRawInput,
+    event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels, mouse_button, mouse_button_from_u32, mouse_button_to_u32, player_prev_raw_input, player_raw_input, ElementState, MouseButton, PlayerRawInput
 };
 use ambient_network::{client::game_client, log_network_result, rpc::rpc_world_diff, DatagramHandlers};
 use ambient_std::unwrap_log_err;
-
+use ambient_wasm::shared::{run_all, RunContext};
 use byteorder::{BigEndian, WriteBytesExt};
+
+use crate::server::wasm::module_state;
 
 const PLAYER_INPUT_DATAGRAM_ID: u32 = 5;
 
@@ -27,7 +26,32 @@ pub fn register_datagram_handler(handlers: &mut DatagramHandlers) {
             if let Some(world) = state.get_player_world_mut(user_id) {
                 if let Some(player_id) = get_player_by_user_id(world, user_id) {
                     world.add_component(player_id, cursor_position(), input.cursor_position).unwrap();
-                    world.set(player_id, player_raw_input(), input).ok();
+                    let prev_play_input = world.get_ref(player_id, player_raw_input()).unwrap().clone();
+                    world.set(player_id, player_raw_input(), input.clone()).ok();
+                    let mut fire_mouse_input = |down: bool, button: MouseButton| {
+                        run_all(
+                            world,
+                            module_state(),
+                            &RunContext {
+                                event_name: "core/world_event".into(),
+                                event_data: Entity::new()
+                                    .with(event_mouse_input(), down)
+                                    .with(mouse_button(), mouse_button_to_u32(button))
+                                    .with(ambient_core::player::user_id(), user_id.clone()),
+                                time: world.resource(time()).as_secs_f32(),
+                            },
+                        );
+                    };
+                    for next_button in &input.mouse_buttons {
+                        if !prev_play_input.mouse_buttons.contains(&next_button) {
+                            fire_mouse_input(true, *next_button);
+                        }
+                    }
+                    for prev_button in &prev_play_input.mouse_buttons {
+                        if !input.mouse_buttons.contains(&prev_button) {
+                            fire_mouse_input(false, *prev_button);
+                        }
+                    }
                 }
             }
         }),
