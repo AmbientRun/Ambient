@@ -9,12 +9,10 @@ use ambient_core::{
     camera::camera_systems,
     frame_index,
     gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate},
+    hierarchy::dump_world_hierarchy_to_tmp_file,
     remove_at_time_system, runtime, time,
     transform::TransformSystem,
-    window::cursor_position,
-    window::get_window_sizes,
-    window::WindowCtl,
-    window::{window_logical_size, window_physical_size, window_scale_factor},
+    window::{cursor_position, get_window_sizes, window_logical_size, window_physical_size, window_scale_factor, WindowCtl},
     RuntimeKey, TimeResourcesSystem,
 };
 use ambient_ecs::{
@@ -609,7 +607,9 @@ impl System<Event<'static, ()>> for ExamplesSystem {
                     },
                 ..
             } => match virtual_keycode {
-                VirtualKeyCode::F9 => world.resource(examples_renderer()).lock().dump_to_tmp_file(),
+                VirtualKeyCode::F1 => dump_world_hierarchy_to_tmp_file(world),
+                VirtualKeyCode::F2 => world.dump_to_tmp_file(),
+                VirtualKeyCode::F3 => world.resource(examples_renderer()).lock().dump_to_tmp_file(),
                 _ => {}
             },
             _ => {}
