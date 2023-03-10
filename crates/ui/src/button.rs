@@ -400,24 +400,19 @@ impl ElementComponent for Hotkey {
             move |world, event| {
                 if let Some(event) = event.get_ref(event_keyboard_input()) {
                     if let KeyboardEvent { keycode: Some(virtual_keycode), state, modifiers, .. } = event {
-                        if virtual_keycode == &hotkey {
+                        let shortcut_pressed = modifiers == &hotkey_modifier && virtual_keycode == &hotkey;
+                        if shortcut_pressed {
+                            on_invoke.0(world);
                             if state == &ElementState::Pressed {
-                                if modifiers == &hotkey_modifier {
-                                    if let Some(on_is_pressed_changed) = on_is_pressed_changed.clone() {
-                                        on_is_pressed_changed.0(true);
-                                    }
-                                    is_pressed.store(true, Ordering::Relaxed);
+                                if let Some(on_is_pressed_changed) = on_is_pressed_changed.clone() {
+                                    on_is_pressed_changed.0(true);
                                 }
+                                is_pressed.store(true, Ordering::Relaxed);
                             } else {
-                                let pressed = is_pressed.load(Ordering::Relaxed);
-
-                                if pressed {
-                                    on_invoke.0(world);
-                                    if let Some(on_is_pressed_changed) = on_is_pressed_changed.clone() {
-                                        on_is_pressed_changed.0(false);
-                                    }
-                                    is_pressed.store(false, Ordering::Relaxed);
+                                if let Some(on_is_pressed_changed) = on_is_pressed_changed.clone() {
+                                    on_is_pressed_changed.0(false);
                                 }
+                                is_pressed.store(false, Ordering::Relaxed);
                             }
                         }
                     }
