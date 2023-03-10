@@ -1,5 +1,5 @@
 use std::{
-    ops::Range,
+    ops::{IndexMut, Range},
     sync::{
         atomic::{AtomicUsize, Ordering},
         Arc,
@@ -164,8 +164,6 @@ impl MeshBuffer {
         }
     }
     pub fn insert(&mut self, mesh: &Mesh) -> Arc<GpuMesh> {
-        tracing::info!("Inserting new mesh");
-
         let metadata = MeshMetadata {
             base_offset: self.base_buffer.front.len() as u32,
             joint_offset: self.joint_buffer.front.len() as u32,
@@ -174,37 +172,33 @@ impl MeshBuffer {
             index_count: mesh.indices.as_ref().map(|x| x.len()).unwrap_or_default() as u32,
         };
 
+        tracing::info!("Inserting new mesh {metadata:#?}");
+
         let mut internal_mesh = InternalMesh { metadata, ..Default::default() };
 
-        match (&mesh.positions, &mesh.normals, &mesh.tangents, mesh.texcoords.get(0)) {
+        match (&mesh.positions, &mesh.normals, &mesh.tangents, mesh.texcoords.first()) {
             (None, None, None, None) => {
                 tracing::warn!("No positions, normals, tangents, or texture coordinates on mesh");
             }
             (pos, norm, tan, uv) => {
-                let pos = pos.as_deref();
-                let norm = norm.as_deref();
-                let tan = tan.as_deref();
+                let pos = pos.as_deref().unwrap_or_default();
+                let norm = norm.as_deref().unwrap_or_default();
+                let tan = tan.as_deref().unwrap_or_default();
+                let uv = uv.map(|v| &**v).unwrap_or_default();
 
-                let len = ([
-                    pos.into_iter().flatten().count(),
-                    norm.into_iter().flatten().count(),
-                    tan.into_iter().flatten().count(),
-                    uv.into_iter().flatten().count(),
-                ])
-                .into_iter()
-                .max()
-                .unwrap_or(0);
+                let len = ([pos.len(), norm.len(), tan.len(), uv.len()]).into_iter().max().unwrap_or(0);
 
                 tracing::info!("Adding mesh with base count of {len}");
                 let mut data = vec![MeshBase::default(); len];
 
-                pos.into_iter().flatten().zip(&mut data).for_each(|(src, dst)| dst.position = src.extend(0.0));
-                norm.into_iter().flatten().zip(&mut data).for_each(|(src, dst)| dst.normal = src.extend(0.0));
-                tan.into_iter().flatten().zip(&mut data).for_each(|(src, dst)| dst.tangent = src.extend(0.0));
-                uv.into_iter().flatten().zip(&mut data).for_each(|(src, dst)| dst.texcoord0 = *src);
+                pos.iter().zip(&mut data).for_each(|(src, dst)| dst.position = src.extend(0.0));
+                norm.iter().zip(&mut data).for_each(|(src, dst)| dst.normal = src.extend(0.0));
+                tan.iter().zip(&mut data).for_each(|(src, dst)| dst.tangent = src.extend(0.0));
+                uv.iter().zip(&mut data).for_each(|(src, dst)| dst.texcoord0 = *src);
 
-                self.base_buffer.front.resize(self.base_buffer.front.len() + len as u64, true);
+                self.base_buffer.front.resize(self.base_buffer.front.len() + data.len() as u64, true);
                 self.base_buffer.front.write(metadata.base_offset as u64, &data);
+                internal_mesh.base_count += data.len() as u64;
             }
         };
 
@@ -213,11 +207,13 @@ impl MeshBuffer {
             self.joint_buffer.front.write(metadata.joint_offset as u64, joints);
             internal_mesh.joint_count = joints.len() as u64;
         }
+
         if let Some(weights) = &mesh.joint_weights {
             self.weight_buffer.front.resize(self.weight_buffer.front.len() + weights.len() as u64, true);
             self.weight_buffer.front.write(metadata.weight_offset as u64, weights);
             internal_mesh.weight_count = weights.len() as u64;
         }
+
         if let Some(indices) = &mesh.indices {
             self.index_buffer.front.resize(self.index_buffer.front.len() + indices.len() as u64, true);
             self.index_buffer.front.write(metadata.index_offset as u64, indices);
@@ -236,6 +232,7 @@ impl MeshBuffer {
 
         self.metadata_buffer.write(metadata_offset, &[metadata]);
         MESHES_TOTAL_SIZE.store(self.size() as usize, Ordering::SeqCst);
+
         Arc::new(GpuMesh {
             index: metadata_offset,
             name: mesh.name.clone(),

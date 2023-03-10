@@ -8,7 +8,6 @@ struct MeshBase {
     normal: vec4<f32>,
     tangent: vec4<f32>,
     texcoord0: vec2<f32>,
-    padding: vec2<f32>,
 }
 
 @group(#RESOURCES_BIND_GROUP)
@@ -18,6 +17,7 @@ var<storage> mesh_base: array<MeshBase>;
 @group(#RESOURCES_BIND_GROUP)
 @binding(#MESH_JOINT_BINDING)
 var<storage> mesh_joint: UVec4Buffer;
+
 @group(#RESOURCES_BIND_GROUP)
 @binding(#MESH_WEIGHT_BINDING)
 var<storage> mesh_weight: Vec4Buffer;
