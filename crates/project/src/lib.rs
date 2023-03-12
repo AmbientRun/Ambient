@@ -253,10 +253,11 @@ pub struct Version {
     major: u32,
     minor: u32,
     patch: u32,
+    suffix: Option<String>,
 }
 impl Version {
-    pub fn new(major: u32, minor: u32, patch: u32) -> Self {
-        Self { major, minor, patch }
+    pub fn new(major: u32, minor: u32, patch: u32, suffix: Option<String>) -> Self {
+        Self { major, minor, patch, suffix }
     }
 
     pub fn new_from_str(id: &str) -> Result<Self, VersionError> {
@@ -267,7 +268,17 @@ impl Version {
         let mut segments = id.split('.');
         let major = segments.next().ok_or(VersionError::TooFewComponents)?.parse()?;
         let minor = segments.next().map(|s| s.parse()).transpose()?.unwrap_or(0);
-        let patch = segments.next().map(|s| s.parse()).transpose()?.unwrap_or(0);
+        // We handle patch separately as it may have a suffix.
+        let (patch, suffix) = if let Some(patch) = segments.next() {
+            let (patch, suffix) = match patch.split_once('-') {
+                Some((patch, suffix)) => (patch, Some(suffix)),
+                None => (patch, None),
+            };
+
+            (patch.parse()?, suffix.map(|s| s.to_string()))
+        } else {
+            (0, None)
+        };
 
         if segments.next().is_some() {
             return Err(VersionError::TooManyComponents);
@@ -277,12 +288,15 @@ impl Version {
             return Err(VersionError::AllZero);
         }
 
-        Ok(Self { major, minor, patch })
+        Ok(Self { major, minor, patch, suffix })
     }
 }
 impl Display for Version {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}.{}.{}", self.major, self.minor, self.patch)
+        match &self.suffix {
+            None => write!(f, "{}.{}.{}", self.major, self.minor, self.patch),
+            Some(suf) => write!(f, "{}.{}.{}-{}", self.major, self.minor, self.patch, suf),
+        }
     }
 }
 impl Serialize for Version {

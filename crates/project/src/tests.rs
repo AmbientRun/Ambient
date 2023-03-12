@@ -28,7 +28,7 @@ fn can_parse_tictactoe_toml() {
             project: Project {
                 id: Identifier::new("tictactoe").unwrap(),
                 name: Some("Tic Tac Toe".to_string()),
-                version: Version::new(0, 0, 1),
+                version: Version::new(0, 0, 1, None),
                 description: None,
                 authors: vec![],
                 organization: None
@@ -78,7 +78,7 @@ fn can_parse_manifest_with_namespaces() {
             project: Project {
                 id: Identifier::new("tictactoe").unwrap(),
                 name: Some("Tic Tac Toe".to_string()),
-                version: Version::new(0, 0, 1),
+                version: Version::new(0, 0, 1, None),
                 description: None,
                 authors: vec![],
                 organization: None
@@ -231,10 +231,11 @@ fn can_validate_identifiers() {
 fn can_parse_versions() {
     use Version as V;
 
-    assert_eq!(V::new_from_str("1"), Ok(V::new(1, 0, 0)));
-    assert_eq!(V::new_from_str("1.0"), Ok(V::new(1, 0, 0)));
-    assert_eq!(V::new_from_str("1.0.0"), Ok(V::new(1, 0, 0)));
-    assert_eq!(V::new_from_str("1.2.3"), Ok(V::new(1, 2, 3)));
+    assert_eq!(V::new_from_str("1"), Ok(V::new(1, 0, 0, None)));
+    assert_eq!(V::new_from_str("1.0"), Ok(V::new(1, 0, 0, None)));
+    assert_eq!(V::new_from_str("1.0.0"), Ok(V::new(1, 0, 0, None)));
+    assert_eq!(V::new_from_str("1.2.3"), Ok(V::new(1, 2, 3, None)));
+    assert_eq!(V::new_from_str("1.2.3-rc1"), Ok(V::new(1, 2, 3, Some("rc1".to_string()))));
 
     assert_eq!(V::new_from_str(""), Err(VersionError::TooFewComponents));
     assert_eq!(V::new_from_str("0.0.0"), Err(VersionError::AllZero));
@@ -280,4 +281,19 @@ fn can_convert_component_types() {
     }
 
     primitive_component_definitions!(make_test_cases);
+}
+
+#[test]
+fn can_roundtrip_serialize_versions() {
+    let versions = [
+        Version::new(1, 0, 0, None),
+        Version::new(1, 0, 0, Some("dev".to_string())),
+        Version::new(1, 0, 0, Some("rc1".to_string())),
+        Version::new(123, 456, 789, Some("rc1".to_string())),
+        Version::new(123, 456, 789, None),
+    ];
+
+    for version in versions {
+        assert_eq!(version, serde_json::from_str(&serde_json::to_string(&version).unwrap()).unwrap());
+    }
 }
