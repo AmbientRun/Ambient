@@ -93,7 +93,7 @@ impl System<Event<'static, ()>> for InputSystem {
                                 ElementState::Released => false,
                             },
                         )
-                        .with(keyboard_modifiers(), input.modifiers.bits());
+                        .with(keyboard_modifiers(), self.modifiers.bits());
                     if let Some(key) = input.virtual_keycode {
                         data.set(keycode(), serde_json::to_string(&key).unwrap());
                     }
