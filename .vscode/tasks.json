@@ -27,6 +27,16 @@
             }
         },
         {
+            "type": "cargo",
+            "command": "run",
+            "label": "third_person_camera",
+            "args": [
+                "--",
+                "run",
+                "./guest/rust/examples/basics/third_person_camera"
+            ]
+        },
+        {
             "type": "shell",
             "command": "wasm-pack build web --dev",
             "problemMatcher": [

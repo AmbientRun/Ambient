@@ -13,7 +13,7 @@ ambient_std = { path = "../std" }
 ambient_gpu = { path = "../gpu" }
 itertools = { workspace = true }
 yaml-rust = { workspace = true }
-log = { workspace = true }
+tracing = { workspace = true }
 glam = { workspace = true }
 wgpu = { workspace = true }
 profiling = { workspace = true }

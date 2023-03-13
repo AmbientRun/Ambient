@@ -401,7 +401,7 @@ impl TransformSystem {
                     }
                 }
             } else {
-                log::warn!("Bad transform hierarchy; bad root: {}", id);
+                tracing::warn!("Bad transform hierarchy; bad root: {}", id);
             }
         }
     }

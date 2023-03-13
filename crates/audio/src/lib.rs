@@ -12,7 +12,7 @@ pub mod signal;
 pub mod source;
 mod spatial;
 pub mod track;
-pub mod util;
+pub mod utils;
 pub mod value;
 pub mod vorbis;
 pub mod wav;

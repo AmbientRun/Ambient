@@ -74,7 +74,7 @@ impl GpuWorld {
         let gpu = GpuKey.get(&assets);
         let config = GpuWorldConfigKey.get(&assets);
 
-        log::info!("Creating Gpu Ecs with buffers: {:#?}", config.buffers.iter().map(|v| v.format).collect_vec());
+        tracing::info!("Creating Gpu Ecs with buffers: {:#?}", config.buffers.iter().map(|v| v.format).collect_vec());
 
         Self {
             layout_buffer: TypedBuffer::new(

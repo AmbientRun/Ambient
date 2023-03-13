@@ -184,7 +184,7 @@ pub(crate) fn reload_all(world: &mut World) {
     }
 }
 
-fn run_all(world: &mut World, context: &RunContext) {
+pub fn run_all(world: &mut World, context: &RunContext) {
     let errors: Vec<(EntityId, String)> = query(module_state())
         .collect_cloned(world, None)
         .into_iter()

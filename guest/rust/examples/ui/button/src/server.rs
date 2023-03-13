@@ -5,6 +5,7 @@ use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
     components::{
         camera::orthographic_from_window,
+        input::event_mouse_input,
         player::{player, user_id},
         transform::translation,
     },
@@ -28,6 +29,13 @@ pub async fn main() -> EventResult {
     let mut tree = App.el().spawn_tree();
     on(ambient_api::event::FRAME, move |_| {
         tree.update(&mut World);
+        EventOk
+    });
+
+    on(ambient_api::event::WORLD_EVENT, move |data| {
+        if let Some(event) = data.get(event_mouse_input()) {
+            println!("mouse: {:?}", event);
+        }
         EventOk
     });
 
