@@ -78,7 +78,7 @@ pub fn systems<
                     run_all(
                         world,
                         state_component,
-                        &RunContext::new(world, "world_event", event),
+                        &RunContext::new(world, "core/world_event", event),
                     );
                 }
             })),

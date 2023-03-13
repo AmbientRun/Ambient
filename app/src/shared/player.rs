@@ -2,10 +2,10 @@ use std::{io::Write, sync::Arc};
 
 use ambient_core::{
     player::{get_player_by_user_id, player},
-    runtime, time,
+    runtime,
     window::{cursor_position, window_logical_size, window_physical_size},
 };
-use ambient_ecs::{query, query_mut, Entity, SystemGroup, WorldDiff};
+use ambient_ecs::{query, query_mut, world_events, Entity, SystemGroup, WorldDiff};
 use ambient_element::{element_component, Element, Hooks};
 use ambient_input::{
     event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels,
@@ -14,10 +14,7 @@ use ambient_input::{
 };
 use ambient_network::{client::game_client, log_network_result, rpc::rpc_world_diff, DatagramHandlers};
 use ambient_std::unwrap_log_err;
-use ambient_wasm::shared::{run_all, RunContext};
 use byteorder::{BigEndian, WriteBytesExt};
-
-use crate::server::wasm::module_state;
 
 const PLAYER_INPUT_DATAGRAM_ID: u32 = 5;
 
@@ -33,17 +30,11 @@ pub fn register_datagram_handler(handlers: &mut DatagramHandlers) {
                     let prev_play_input = world.get_ref(player_id, player_raw_input()).unwrap().clone();
                     world.set(player_id, player_raw_input(), input.clone()).ok();
                     let mut fire_mouse_input = |down: bool, button: MouseButton| {
-                        run_all(
-                            world,
-                            module_state(),
-                            &RunContext {
-                                event_name: "core/world_event".into(),
-                                event_data: Entity::new()
-                                    .with(event_mouse_input(), down)
-                                    .with(mouse_button(), mouse_button_to_u32(button))
-                                    .with(ambient_core::player::user_id(), user_id.clone()),
-                                time: world.resource(time()).as_secs_f32(),
-                            },
+                        world.resource_mut(world_events()).add_event(
+                            Entity::new()
+                                .with(event_mouse_input(), down)
+                                .with(mouse_button(), mouse_button_to_u32(button))
+                                .with(ambient_core::player::user_id(), user_id.clone()),
                         );
                     };
                     for next_button in &input.mouse_buttons {
