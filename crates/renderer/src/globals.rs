@@ -230,6 +230,7 @@ impl ForwardGlobals {
     }
     pub fn update(&mut self, world: &World, shadow_cameras: &[ShadowCameraData]) {
         let mut p = &mut self.params;
+
         if let Some(id) = get_active_camera(world, self.scene, world.resource_opt(local_user_id())) {
             p.projection_view = world.get(id, projection_view()).unwrap_or_default();
             p.inv_projection_view = p.projection_view.inverse();
@@ -238,12 +239,6 @@ impl ForwardGlobals {
             p.camera_far = world.get(id, far()).unwrap_or(1e3);
             p.fog = world.has_component(id, fog()) as i32;
             p.forward_camera_position = p.camera_position;
-            if p.projection_view.is_nan() {
-                tracing::error!("Projection view matrix is Nan: {:?}", p.projection_view);
-            }
-            tracing::info!("Updating globals with camera")
-        } else {
-            tracing::info!("No camera")
         }
 
         if let Some(sun) = get_active_sun(world, self.scene) {
