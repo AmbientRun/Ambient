@@ -4,6 +4,7 @@ use crate::{
     event,
     global::{on, on_async, EntityId, EventOk},
     internal::{component::ComponentsTuple, conversion::FromBindgen, host},
+    prelude::OnHandle,
 };
 
 /// Creates a new [GeneralQueryBuilder] that will find entities that have the specified `components`
@@ -73,7 +74,10 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> GeneralQuery<Componen
     }
 
     /// Consume this query and call `callback` (`fn`) each frame with the result of the query.
-    pub fn each_frame(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static) {
+    pub fn each_frame(
+        self,
+        callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static,
+    ) -> OnHandle {
         self.0.bind(callback)
     }
 
@@ -81,7 +85,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> GeneralQuery<Componen
     pub fn each_frame_async<R: Future<Output = ()>>(
         self,
         callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + 'static,
-    ) {
+    ) -> OnHandle {
         self.0.bind_async(callback)
     }
 }
@@ -147,7 +151,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> ChangeQuery<Component
 
     /// Each time the components marked by [Self::track_change] change,
     /// the `callback` (`fn`) is called with the result of the query.
-    pub fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static) {
+    pub fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static) -> OnHandle {
         self.build().bind(callback)
     }
 
@@ -156,7 +160,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> ChangeQuery<Component
     pub fn bind_async<R: Future<Output = ()>>(
         self,
         callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + 'static,
-    ) {
+    ) -> OnHandle {
         self.build().bind_async(callback)
     }
 
@@ -195,7 +199,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> EventQuery<Components
 
     /// Each time the entity associated with `components` experiences the event,
     /// the `callback` (`fn`) is called with the result of the query.
-    pub fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static) {
+    pub fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static) -> OnHandle {
         self.build().bind(callback)
     }
 
@@ -204,7 +208,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> EventQuery<Components
     pub fn bind_async<R: Future<Output = ()>>(
         self,
         callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + 'static,
-    ) {
+    ) -> OnHandle {
         self.build().bind_async(callback)
     }
 
@@ -242,7 +246,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryImpl<Components>
             .collect()
     }
 
-    fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static) {
+    fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static) -> OnHandle {
         on(event::FRAME, move |_| {
             let results = self.evaluate();
             if !results.is_empty() {
@@ -254,7 +258,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryImpl<Components>
     fn bind_async<R: Future<Output = ()>>(
         self,
         callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + 'static,
-    ) {
+    ) -> OnHandle {
         on_async(event::FRAME, move |_| async move {
             let results = self.evaluate();
             if !results.is_empty() {
