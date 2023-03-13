@@ -9,8 +9,8 @@ use ambient_ecs::{query, query_mut, world_events, Entity, SystemGroup, WorldDiff
 use ambient_element::{element_component, Element, Hooks};
 use ambient_input::{
     event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels, keycode,
-    mouse_button, mouse_button_from_u32, mouse_button_to_u32, player_prev_raw_input, player_raw_input, ElementState, MouseButton,
-    PlayerRawInput, VirtualKeyCode,
+    mouse_button, mouse_button_from_u32, mouse_button_to_u32, player_prev_raw_input, player_raw_input, MouseButton, PlayerRawInput,
+    VirtualKeyCode,
 };
 use ambient_network::{client::game_client, log_network_result, rpc::rpc_world_diff, DatagramHandlers};
 use ambient_std::unwrap_log_err;
