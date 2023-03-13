@@ -260,11 +260,18 @@ pub fn camera_systems() -> SystemGroup {
                     *projection = orthographic_reverse(orth.left, orth.right, orth.bottom, orth.top, near, far);
                 }
             }),
-            query_mut((projection_view(),), (projection().changed(), inv_local_to_world().changed())).to_system(|q, world, qs, _| {
-                for (_, (projection_view,), (projection, view)) in q.iter(world, qs) {
-                    *projection_view = *projection * *view;
-                }
-            }),
+            query_mut((projection_view(),), (projection().changed(), inv_local_to_world().changed())).to_system_with_name(
+                "update_projection_view",
+                |q, world, qs, _| {
+                    for (id, (projection_view,), (projection, view)) in q.iter(world, qs) {
+                        *projection_view = *projection * *view;
+
+                        if projection_view.is_nan() {
+                            tracing::error!("Projection view for {id} is nan.\nproj: {projection},\nview: {view:}")
+                        }
+                    }
+                },
+            ),
         ],
     )
 }
@@ -298,7 +305,7 @@ pub fn get_active_camera(world: &World, scene: Component<()>, user_id: Option<&S
                 if let Ok(cam_user_id) = world.get_ref(*id, crate::player::user_id()) {
                     cam_user_id == *user_id
                 } else {
-                    // The camera is considered global, as it doens't have a user_id attached
+                    // The camera is considered global, as it doesn't have a user_id attached
                     true
                 }
             } else {
