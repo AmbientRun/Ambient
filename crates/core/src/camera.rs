@@ -207,11 +207,18 @@ pub fn camera_systems() -> SystemGroup {
         "camera_systems",
         vec![
             query((aspect_ratio_from_window(), aspect_ratio())).to_system(|q, world, qs, _| {
-                for (id, (window, ratio)) in q.collect_cloned(world, qs) {
-                    let window_size = world.get(window, window_physical_size()).unwrap_or_default();
-                    let aspect_ratio = window_size.x as f32 / window_size.y as f32;
-                    if aspect_ratio != ratio {
-                        world.set(id, self::aspect_ratio(), aspect_ratio).unwrap();
+                for (id, (window, old_ratio)) in q.collect_cloned(world, qs) {
+                    if let Ok(window_size) = world.get(window, window_physical_size()) {
+                        let aspect_ratio = window_size.x as f32 / window_size.y as f32;
+                        if aspect_ratio != old_ratio {
+                            tracing::info!(
+                                old_ratio,
+                                aspect_ratio,
+                                world_name = world.name(),
+                                "Updating window aspect ratio from window: {window}"
+                            );
+                            world.set(id, self::aspect_ratio(), aspect_ratio).unwrap();
+                        }
                     }
                 }
             }),
@@ -219,6 +226,9 @@ pub fn camera_systems() -> SystemGroup {
                 |q, world, qs, _| {
                     for (_, (projection,), (&near, &fovy, &aspect_ratio)) in q.iter(world, qs) {
                         *projection = glam::Mat4::perspective_infinite_reverse_lh(fovy, aspect_ratio, near);
+                        if projection.is_nan() {
+                            tracing::error!(near, fovy, aspect_ratio, "Perspective projection is NaN");
+                        }
                     }
                 },
             ),
