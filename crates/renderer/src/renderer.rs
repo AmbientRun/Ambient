@@ -233,6 +233,7 @@ impl Renderer {
 
         if let RendererTarget::Target(target) = &target {
             if self.solids_frame.color_buffer.size != target.color_buffer.size {
+                tracing::info!("Resizing render target");
                 self.solids_frame = RenderTarget::new(
                     self.gpu.clone(),
                     uvec2(target.color_buffer.size.width, target.color_buffer.size.height),
@@ -269,6 +270,7 @@ impl Renderer {
 
         self.forward_globals.params.debug_params = self.shader_debug_params;
         self.forward_globals.update(world, &self.shadows.as_ref().map(|x| x.get_cameras()).unwrap_or_default());
+
         let forward_globals_bind_group = self.forward_globals.create_bind_group(
             world.resource(asset_cache()).clone(),
             self.shadows.as_ref().map(|x| &x.shadow_view),

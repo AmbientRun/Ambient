@@ -223,7 +223,7 @@ impl ElementComponent for GameClientView {
             hooks.use_frame(move |app_world| {
                 let mut game_state = game_state.lock();
 
-                mirror_window_components(app_world, &mut game_state.world);
+                // mirror_window_components(app_world, &mut game_state.world);
 
                 game_state.on_frame();
             });

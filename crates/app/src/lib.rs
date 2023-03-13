@@ -355,7 +355,6 @@ impl AppBuilder {
         let redraw_systems = SystemGroup::new(
             "redraw_systems",
             vec![
-                //
                 // Invokes the ui renderer and/or examples renderer
                 Box::new(world_redraw_systems()),
                 Box::new(renderers::redraw_systems()),
@@ -565,7 +564,6 @@ impl App {
                 if let Some(window) = &self.window {
                     window.request_redraw();
                 }
-                profiling::finish_frame!();
             }
             Event::RedrawRequested(_window) => {
                 tracing::info!("\n\n---- Redrawing");
@@ -621,6 +619,8 @@ impl App {
             },
             _ => {}
         }
+
+        profiling::finish_frame!()
     }
 
     pub fn add_system(&mut self, system: DynSystem) -> &mut Self {

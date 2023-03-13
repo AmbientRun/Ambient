@@ -192,6 +192,7 @@ impl System for ExamplesRender {
                 Some(Color::rgba(0., 0., 0., 1.)),
             );
         }
+
         if let Some(ui) = &mut self.ui {
             profiling::scope!("UI");
             ui.render(
@@ -202,6 +203,7 @@ impl System for ExamplesRender {
                 if self.main.is_some() { None } else { Some(app_background_color()) },
             );
         }
+
         if let Some(surface) = &self.gpu.surface {
             if self.size.x > 0 && self.size.y > 0 {
                 let frame = {

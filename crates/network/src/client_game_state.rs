@@ -1,7 +1,9 @@
+use core::time;
 use std::sync::Arc;
 
 use ambient_app::{gpu_world_sync_systems, world_instance_resources, world_instance_systems, AppResources};
 use ambient_core::{
+    app_start_time,
     camera::{get_active_camera, projection_view},
     gpu_ecs::GpuWorldSyncEvent,
     main_scene,
@@ -19,6 +21,7 @@ use ambient_std::{
     math::interpolate,
     shapes::Ray,
 };
+use ambient_sys::time::Instant;
 use glam::{vec2, Mat4, Vec2, Vec3, Vec3Swizzles};
 
 use ambient_core::player::{player, user_id};
@@ -38,6 +41,8 @@ pub struct ClientGameState {
     pub ui_renderer: Renderer,
     assets: AssetCache,
     user_id: String,
+
+    start: Instant,
 }
 struct TempSystem(Box<dyn FnMut(&mut World) -> bool + Sync + Send>);
 impl std::fmt::Debug for TempSystem {
@@ -55,6 +60,8 @@ impl ClientGameState {
         client_systems: SystemGroup,
         client_resources: Entity,
     ) -> Self {
+        tracing::info!("Creating new ClientGameState");
+
         let mut game_world = World::new("client_game_world");
         let local_resources = world_instance_resources(AppResources::from_world(world))
             .with(ambient_core::player::local_user_id(), player_id.clone())
@@ -79,6 +86,7 @@ impl ClientGameState {
             ui_renderer,
             assets,
             user_id: player_id,
+            start: Instant::now(),
         }
     }
 
@@ -92,12 +100,14 @@ impl ClientGameState {
         let mut encoder = gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("GameState.render") });
         let mut post_submit = Vec::new();
 
+        let t = self.start.elapsed().as_secs_f32();
+
         self.renderer.render(
             &mut self.world,
             &mut encoder,
             &mut post_submit,
             RendererTarget::Target(target),
-            Some(Color::rgba(1., 0., 1., 1.)),
+            Some(Color::rgba(t.sin(), 0.0, 0.0, 1.0)), // Some(Color::rgba(1., 0., 1., 1.)),
         );
 
         self.ui_renderer.render(&mut self.world, &mut encoder, &mut post_submit, RendererTarget::Target(target), None);
