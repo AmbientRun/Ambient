@@ -54,6 +54,8 @@ pub fn implementation(
             #components_tokens
         }
         /// Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept.
+        ///
+        /// They do not have any runtime representation outside of the components that compose them.
         pub mod concepts {
             #concept_tokens
         }
