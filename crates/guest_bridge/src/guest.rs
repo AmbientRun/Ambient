@@ -1,6 +1,14 @@
 pub use ambient_api as api;
 pub use ambient_api::components::core as components;
 
+use std::future::Future;
+pub fn run_async(_world: &ecs::World, future: impl Future<Output = ()> + Send + 'static) {
+    ambient_api::prelude::run_async(async {
+        future.await;
+        api::prelude::EventOk
+    });
+}
+
 pub mod ecs {
     use ambient_api::ecs::SupportedComponentTypeGet;
     pub use ambient_api::{
@@ -70,5 +78,13 @@ pub mod ecs {
         fn from(value: Component<T>) -> Self {
             Self(Box::new(value))
         }
+    }
+}
+
+pub mod window {
+    use ambient_window_types::CursorIcon;
+
+    pub fn set_cursor(_world: &crate::ecs::World, _cursor: CursorIcon) {
+        println!("error: set_cursor is not implemented yet on the guest side");
     }
 }

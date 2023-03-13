@@ -13,6 +13,7 @@ ambient_ecs = { path = "../ecs" }
 ambient_gpu = { path = "../gpu" }
 ambient_core = { path = "../core" }
 ambient_meshes = { path = "../meshes" }
+ambient_color = { path = "../../libs/color", features = ["wgpu"] }
 wgpu = { workspace = true }
 glam = { workspace = true }
 itertools = { workspace = true }

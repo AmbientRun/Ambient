@@ -21,6 +21,7 @@ ambient_text = { path = "../text" }
 ambient_rect = { path = "../rect" }
 ambient_ui_components = { path = "../ui_components", features = ["native"] }
 ambient_editor_derive = { path = "../editor_derive" }
+ambient_window_types = { path = "../window_types", features = ["native"] }
 glam = { workspace = true }
 winit = { workspace = true }
 itertools = { workspace = true }

@@ -1,30 +1,38 @@
 use std::{
     fmt::Debug,
+    str::FromStr,
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc,
     },
 };
 
-use ambient_core::{runtime, window::window_ctl, window::WindowCtl};
-use ambient_ecs::World;
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_input::{event_focus_change, event_keyboard_input, event_mouse_input, keyboard_modifiers, keycode};
-use ambient_renderer::color;
-use ambient_std::{cb, color::Color, Callback, Cb};
-use closure::closure;
 use futures::{future::BoxFuture, Future, FutureExt};
 use glam::*;
 use parking_lot::Mutex;
-pub use winit::event::VirtualKeyCode;
-use winit::{event::ModifiersState, window::CursorIcon};
 
-use super::{FlowColumn, FlowRow, Text, UIBase, UIElement};
 use crate::{
-    border_color, border_radius, border_thickness, cutout_color, font_style, layout::*, primary_color, secondary_color, Corners, FontStyle,
-    Tooltip,
+    default_theme::{cutout_color, primary_color, secondary_color},
+    dropdown::Tooltip,
+    UIExt,
 };
-use ambient_ui_components::UIExt;
+use crate::{layout::FlowColumn, layout::FlowRow, text::Text, UIBase, UIElement};
+use ambient_color::Color;
+use ambient_guest_bridge::{
+    components::{
+        input::{event_focus_change, event_keyboard_input, event_mouse_input, keyboard_modifiers, keycode},
+        rendering::color,
+        ui::{
+            align_vertical_center, border_color, border_radius, border_thickness, fit_horizontal_parent, font_style, height, margin_top,
+            min_height, padding_bottom, padding_left, padding_right, padding_top, space_between_items,
+        },
+    },
+    ecs::World,
+    run_async,
+};
+use ambient_window_types::{CursorIcon, ModifiersState, VirtualKeyCode};
+use cb::{cb, Callback, Cb};
 
 #[derive(Clone, Debug)]
 pub enum ButtonCb {
@@ -42,7 +50,7 @@ impl ButtonCb {
             ButtonCb::Async(cb) => {
                 set_is_working(true);
                 let cb = cb.clone();
-                world.resource(runtime()).spawn(async move {
+                run_async(world, async move {
                     cb.0(()).await;
                     set_is_working(false);
                 });
@@ -139,14 +147,14 @@ impl ButtonStyle {
                 content,
                 UIBase
                     .el()
-                    .set(fit_horizontal(), Fit::Parent)
+                    .set_default(fit_horizontal_parent())
                     .set(height(), 2.)
                     .with_background(Color::WHITE.into())
-                    .set(margin(), Borders::top(2.)),
+                    .set(margin_top(), 2.),
             ])
             .with_background(background.into())
         } else {
-            let content = content.set(font_style(), FontStyle::Bold);
+            let content = content.set(font_style(), "Bold".to_string());
             let tooltip = if let Some(hotkey) = hotkey {
                 let modifier = if hotkey_modifier != ModifiersState::empty() { format!("{hotkey_modifier:?} + ") } else { String::new() };
                 let hotkey = Text::el(format!("[{modifier}{hotkey:?}]"));
@@ -160,24 +168,19 @@ impl ButtonStyle {
             };
             let mut el = FlowRow(vec![content])
                 .el()
-                .set(
-                    padding(),
-                    match self {
-                        Self::Card => Borders::even(3.),
-                        Self::Flat => Borders::even(3.),
-                        _ => Borders::rect(3., 16.),
-                    },
-                )
-                .set(align_vertical(), Align::Center)
+                .set(padding_top(), 3.)
+                .set(padding_bottom(), 3.)
+                .set(padding_left(), if matches!(self, Self::Card) || matches!(self, Self::Flat) { 3. } else { 16. })
+                .set(padding_right(), if matches!(self, Self::Card) || matches!(self, Self::Flat) { 3. } else { 16. })
+                .set_default(align_vertical_center())
                 .with_background(background.into())
                 .set(
                     border_radius(),
                     match self {
-                        Self::Card => Corners::even(3.),
-                        Self::Flat => Corners::even(3.),
-                        _ => Corners::even(26. / 2.),
-                    }
-                    .into(),
+                        Self::Card => Vec4::ONE * 3.,
+                        Self::Flat => Vec4::ONE * 3.,
+                        _ => Vec4::ONE * 26. / 2.,
+                    },
                 )
                 .set(border_thickness(), 0.)
                 .set(border_color(), Color::WHITE.into());
@@ -242,12 +245,16 @@ pub fn Button(
     let content = style
         .create_container(is_pressed, is_working, disabled, toggled, hover, hotkey, hotkey_modifier, tooltip, content)
         .with_clickarea()
-        .on_mouse_enter(
-            closure!(clone set_hover, |world, _| { set_hover(true); world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Hand)).ok(); }),
-        )
+        .on_mouse_enter({
+            let set_hover = set_hover.clone();
+            move |world, _| {
+                set_hover(true);
+                ambient_guest_bridge::window::set_cursor(world, CursorIcon::Hand);
+            }
+        })
         .on_mouse_leave(move |world, _| {
             set_hover(false);
-            world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Default)).ok();
+            ambient_guest_bridge::window::set_cursor(world, CursorIcon::Default);
         })
         .el();
 
@@ -397,9 +404,7 @@ impl ElementComponent for Hotkey {
             move |world, event| {
                 if let Some(pressed) = event.get(event_keyboard_input()) {
                     let modifiers = ModifiersState::from_bits(event.get(keyboard_modifiers()).unwrap()).unwrap();
-                    if let Some(virtual_keycode) = event.get_ref(keycode()) {
-                        let virtual_keycode: VirtualKeyCode = serde_json::from_str(virtual_keycode).unwrap();
-                        // if let KeyboardEvent { keycode: Some(virtual_keycode), state, modifiers, .. } = event {
+                    if let Some(virtual_keycode) = event.get_ref(keycode()).and_then(|x| VirtualKeyCode::from_str(&x).ok()) {
                         let shortcut_pressed = modifiers == hotkey_modifier && virtual_keycode == hotkey;
                         if shortcut_pressed {
                             on_invoke.0(world);

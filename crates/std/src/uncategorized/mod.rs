@@ -1,7 +1,7 @@
 pub use ambient_asset_cache as asset_cache;
+pub use ambient_color as color;
 pub mod asset_url;
 pub mod barc;
-pub mod color;
 pub mod disk_cache;
 pub mod download_asset;
 pub mod encode;

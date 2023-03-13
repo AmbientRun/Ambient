@@ -126,6 +126,7 @@ dependencies = [
  "ambient_ui",
  "ambient_wasm",
  "ambient_water",
+ "ambient_window_types",
  "ambient_world_audio",
  "anyhow",
  "axum",
@@ -381,6 +382,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_color"
+version = "0.1.0"
+dependencies = [
+ "glam 0.22.0",
+ "hex",
+ "serde",
+ "thiserror",
+ "wgpu 0.14.2",
+]
+
+[[package]]
 name = "ambient_core"
 version = "0.1.1"
 dependencies = [
@@ -432,6 +444,7 @@ dependencies = [
  "ambient_rpc",
  "ambient_std",
  "ambient_ui",
+ "ambient_window_types",
  "glam 0.22.0",
  "log",
  "wgpu 0.14.2",
@@ -538,6 +551,7 @@ dependencies = [
  "ambient_sys",
  "ambient_terrain",
  "ambient_ui",
+ "ambient_window_types",
  "ambient_world_audio",
  "anyhow",
  "arboard",
@@ -676,6 +690,7 @@ dependencies = [
  "ambient_rect",
  "ambient_renderer",
  "ambient_text",
+ "ambient_window_types",
 ]
 
 [[package]]
@@ -685,6 +700,7 @@ dependencies = [
  "ambient_core",
  "ambient_ecs",
  "ambient_std",
+ "ambient_window_types",
  "glam 0.22.0",
  "serde",
  "serde_json",
@@ -980,6 +996,7 @@ version = "0.1.1"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
+ "ambient_color",
  "ambient_core",
  "ambient_ecs",
  "ambient_element",
@@ -1059,6 +1076,7 @@ name = "ambient_std"
 version = "0.1.1"
 dependencies = [
  "ambient_asset_cache",
+ "ambient_color",
  "ambient_sys",
  "anyhow",
  "as-any",
@@ -1072,7 +1090,6 @@ dependencies = [
  "friendly_id",
  "futures",
  "glam 0.22.0",
- "hex",
  "itertools",
  "log",
  "once_cell",
@@ -1181,6 +1198,7 @@ dependencies = [
  "glyph_brush",
  "log",
  "parking_lot",
+ "strum",
  "wgpu 0.14.2",
 ]
 
@@ -1204,6 +1222,7 @@ dependencies = [
  "ambient_sys",
  "ambient_text",
  "ambient_ui_components",
+ "ambient_window_types",
  "anyhow",
  "arboard",
  "async-trait",
@@ -1234,12 +1253,17 @@ dependencies = [
 name = "ambient_ui_components"
 version = "0.1.0"
 dependencies = [
+ "ambient_color",
  "ambient_element",
  "ambient_guest_bridge",
+ "ambient_window_types",
  "cb",
+ "futures",
  "glam 0.22.0",
  "itertools",
- "winit",
+ "parking_lot",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -1257,6 +1281,7 @@ dependencies = [
  "ambient_project",
  "ambient_std",
  "ambient_sys",
+ "ambient_window_types",
  "anyhow",
  "async-trait",
  "chrono",
@@ -1320,6 +1345,16 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
+]
+
+[[package]]
+name = "ambient_window_types"
+version = "0.1.0"
+dependencies = [
+ "bitflags",
+ "serde",
+ "strum",
+ "winit",
 ]
 
 [[package]]
@@ -6165,6 +6200,28 @@ name = "strsim"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
+
+[[package]]
+name = "strum"
+version = "0.24.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "063e6045c0e62079840579a7e47a355ae92f60eb74daaf156fb1e84ba164e63f"
+dependencies = [
+ "strum_macros",
+]
+
+[[package]]
+name = "strum_macros"
+version = "0.24.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e385be0d24f186b4ce2f9982191e7101bb737312ad61c1f2f984f34bcf85d59"
+dependencies = [
+ "heck 0.4.1",
+ "proc-macro2",
+ "quote",
+ "rustversion",
+ "syn",
+]
 
 [[package]]
 name = "syn"

@@ -1,0 +1,16 @@
+[package]
+name = "ambient_window_types"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bitflags = { workspace = true }
+strum = { workspace = true }
+serde = { workspace = true, optional = true }
+winit = { workspace = true, optional = true }
+
+[features]
+default = ["serde"]
+native = ["winit"]
