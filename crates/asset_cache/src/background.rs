@@ -41,10 +41,7 @@ where
 
         let key = self.0.clone();
         let runtime = assets.runtime().clone();
-        let task = runtime.spawn(async move {
-            let v = key.get(&assets).await;
-            v
-        });
+        let task = runtime.spawn(async move { key.get(&assets).await });
 
         task.await.expect("Failed to wait for load task")
     }

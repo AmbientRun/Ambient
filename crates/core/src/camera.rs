@@ -124,8 +124,7 @@ components!("camera", {
     @[
         Networked, Store, Debuggable,
         Name["Active camera"],
-        Description["The camera with the highest `active_camera` value will be used for rendering. Cameras are also filtered by the `user_id`.
-        If there's no `user_id`, the camera is considered global and potentially applies to all users (if its active_camera value is high enough)"]
+        Description["The camera with the highest `active_camera` value will be used for rendering. Cameras are also filtered by the `user_id`.\nIf there's no `user_id`, the camera is considered global and potentially applies to all users (if its `active_camera` value is high enough)."]
     ]
     active_camera: f32,
     @[

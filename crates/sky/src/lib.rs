@@ -24,7 +24,7 @@ mod tree;
 
 components!("rendering", {
     cloud_state: CloudState,
-    @[Debuggable, Networked, Store, Name["Sky"], Description["Add a realistic sky box to the scene."]]
+    @[Debuggable, Networked, Store, Name["Sky"], Description["Add a realistic skybox to the scene."]]
     sky: (),
 });
 

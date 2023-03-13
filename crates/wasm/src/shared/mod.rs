@@ -98,7 +98,7 @@ pub fn systems() -> SystemGroup {
                     .collect_vec();
 
                 for event in events {
-                    run_all(world, &RunContext::new(world, "world_event", event));
+                    run_all(world, &RunContext::new(world, "core/world_event", event));
                 }
             })),
             Box::new(FnSystem::new(move |world, _| {

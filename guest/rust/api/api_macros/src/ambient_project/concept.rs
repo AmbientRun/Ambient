@@ -318,7 +318,7 @@ pub fn generate_component_list_doc_comment(
     api_name: &syn::Path,
     concept: &Concept,
 ) -> anyhow::Result<String> {
-    let mut output = "*Components*:\n\n".to_string();
+    let mut output = "*Definition*:\n\n```\n{\n".to_string();
 
     fn write_level(
         concepts: &Tree<Concept>,
@@ -340,7 +340,7 @@ pub fn generate_component_list_doc_comment(
 
             writeln!(
                 output,
-                "{padding}- `{component_path}: {} = {}`",
+                "{padding}\"{component_path}\": {} = {},",
                 SemiprettyTokenStream(ty.to_token_stream(api_name, false)?),
                 SemiprettyTokenStream(toml_value_to_tokens(component_path.as_path(), &ty, value)?)
             )?;
@@ -350,8 +350,9 @@ pub fn generate_component_list_doc_comment(
                 .get(concept_path.as_path())
                 .with_context(|| format!("no definition found for {concept_path}"))?;
 
-            writeln!(output, "{padding}- **`{concept_path}`**:")?;
+            writeln!(output, "{padding}\"{concept_path}\": {{ // Concept.")?;
             write_level(concepts, components, api_name, concept, output, level + 1)?;
+            writeln!(output, "{padding}}},")?;
         }
 
         Ok(())
@@ -363,8 +364,10 @@ pub fn generate_component_list_doc_comment(
         api_name,
         concept,
         &mut output,
-        0,
+        1,
     )?;
+
+    output += "}\n```\n";
 
     Ok(output)
 }

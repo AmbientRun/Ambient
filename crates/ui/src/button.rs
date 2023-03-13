@@ -9,7 +9,7 @@ use std::{
 use ambient_core::{runtime, window::window_ctl, window::WindowCtl};
 use ambient_ecs::World;
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_input::{event_focus_change, event_keyboard_input, event_mouse_input, KeyboardEvent};
+use ambient_input::{event_focus_change, event_keyboard_input, event_mouse_input, keyboard_modifiers, keycode};
 use ambient_renderer::color;
 use ambient_std::{cb, color::Color, Callback, Cb};
 use closure::closure;
@@ -17,10 +17,7 @@ use futures::{future::BoxFuture, Future, FutureExt};
 use glam::*;
 use parking_lot::Mutex;
 pub use winit::event::VirtualKeyCode;
-use winit::{
-    event::{ElementState, ModifiersState},
-    window::CursorIcon,
-};
+use winit::{event::ModifiersState, window::CursorIcon};
 
 use super::{FlowColumn, FlowRow, Text, UIBase, UIElement};
 use crate::{
@@ -398,12 +395,15 @@ impl ElementComponent for Hotkey {
         hooks.use_world_event({
             let is_pressed = is_pressed;
             move |world, event| {
-                if let Some(event) = event.get_ref(event_keyboard_input()) {
-                    if let KeyboardEvent { keycode: Some(virtual_keycode), state, modifiers, .. } = event {
-                        let shortcut_pressed = modifiers == &hotkey_modifier && virtual_keycode == &hotkey;
+                if let Some(pressed) = event.get(event_keyboard_input()) {
+                    let modifiers = ModifiersState::from_bits(event.get(keyboard_modifiers()).unwrap()).unwrap();
+                    if let Some(virtual_keycode) = event.get_ref(keycode()) {
+                        let virtual_keycode: VirtualKeyCode = serde_json::from_str(virtual_keycode).unwrap();
+                        // if let KeyboardEvent { keycode: Some(virtual_keycode), state, modifiers, .. } = event {
+                        let shortcut_pressed = modifiers == hotkey_modifier && virtual_keycode == hotkey;
                         if shortcut_pressed {
                             on_invoke.0(world);
-                            if state == &ElementState::Pressed {
+                            if pressed {
                                 if let Some(on_is_pressed_changed) = on_is_pressed_changed.clone() {
                                     on_is_pressed_changed.0(true);
                                 }
