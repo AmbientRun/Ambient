@@ -381,6 +381,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_color"
+version = "0.1.0"
+dependencies = [
+ "glam 0.22.0",
+ "hex",
+ "serde",
+ "thiserror",
+ "wgpu 0.14.2",
+]
+
+[[package]]
 name = "ambient_core"
 version = "0.1.1"
 dependencies = [
@@ -980,6 +991,7 @@ version = "0.1.1"
 dependencies = [
  "ambient_app",
  "ambient_cameras",
+ "ambient_color",
  "ambient_core",
  "ambient_ecs",
  "ambient_element",
@@ -1059,6 +1071,7 @@ name = "ambient_std"
 version = "0.1.1"
 dependencies = [
  "ambient_asset_cache",
+ "ambient_color",
  "ambient_sys",
  "anyhow",
  "as-any",
@@ -1072,7 +1085,6 @@ dependencies = [
  "friendly_id",
  "futures",
  "glam 0.22.0",
- "hex",
  "itertools",
  "log",
  "once_cell",
