@@ -16,9 +16,10 @@ use ambient_element::{
 use ambient_input::{event_focus_change, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels};
 use ambient_std::color::Color;
 pub use ambient_std::{cb, Cb};
+use ambient_window_types::ModifiersState;
 use glam::*;
 use parking_lot::Mutex;
-use winit::{event::ModifiersState, window::CursorGrabMode};
+use winit::window::CursorGrabMode;
 
 mod asset_url;
 
@@ -67,6 +68,7 @@ pub use text_input::*;
 pub use throbber::*;
 
 pub use self::image::*;
+use ambient_window_types::MouseButton;
 
 pub fn init_all_components() {
     layout::init_all_components();

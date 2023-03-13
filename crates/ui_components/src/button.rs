@@ -1,5 +1,6 @@
 use std::{
     fmt::Debug,
+    str::FromStr,
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc,
@@ -10,8 +11,6 @@ use ambient_element::{element_component, Element, ElementComponent, ElementCompo
 use futures::{future::BoxFuture, Future, FutureExt};
 use glam::*;
 use parking_lot::Mutex;
-pub use winit::event::VirtualKeyCode;
-use winit::{event::ModifiersState, window::CursorIcon};
 
 use crate::{
     default_theme::{cutout_color, primary_color, secondary_color},
@@ -32,6 +31,7 @@ use ambient_guest_bridge::{
     ecs::World,
     run_async,
 };
+use ambient_window_types::{CursorIcon, ModifiersState, VirtualKeyCode};
 use cb::{cb, Callback, Cb};
 
 #[derive(Clone, Debug)]
@@ -404,9 +404,7 @@ impl ElementComponent for Hotkey {
             move |world, event| {
                 if let Some(pressed) = event.get(event_keyboard_input()) {
                     let modifiers = ModifiersState::from_bits(event.get(keyboard_modifiers()).unwrap()).unwrap();
-                    if let Some(virtual_keycode) = event.get_ref(keycode()) {
-                        let virtual_keycode: VirtualKeyCode = serde_json::from_str(virtual_keycode).unwrap();
-                        // if let KeyboardEvent { keycode: Some(virtual_keycode), state, modifiers, .. } = event {
+                    if let Some(virtual_keycode) = event.get_ref(keycode()).and_then(|x| VirtualKeyCode::from_str(&x).ok()) {
                         let shortcut_pressed = modifiers == hotkey_modifier && virtual_keycode == hotkey;
                         if shortcut_pressed {
                             on_invoke.0(world);

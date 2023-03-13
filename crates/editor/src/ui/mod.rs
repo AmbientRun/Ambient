@@ -29,12 +29,12 @@ use ambient_ui::{
     margin, use_interval, use_window_logical_resolution, Button, Editor, FlowColumn, FlowRow, FontAwesomeIcon, Hotkey, Rectangle,
     ScreenContainer, ScrollArea, Separator, StylesExt, Text, UIExt, WindowSized, STREET,
 };
+use ambient_window_types::{ModifiersState, VirtualKeyCode};
 use build_mode::*;
 use glam::{vec3, Vec3};
 use image::{DynamicImage, ImageOutputFormat, RgbImage};
 use itertools::Itertools;
 use terrain_mode::*;
-use winit::event::{ModifiersState, VirtualKeyCode};
 
 use crate::{selection, Selection};
 use serde::{de::DeserializeOwned, Serialize};

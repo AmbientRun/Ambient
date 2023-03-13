@@ -51,9 +51,9 @@ pub fn run_async(world: &ecs::World, future: impl Future<Output = ()> + Send + '
 pub mod window {
     use ambient_core::window::{window_ctl, WindowCtl};
     use ambient_ecs::World;
-    use winit::window::CursorIcon;
+    use ambient_window_types::CursorIcon;
 
     pub fn set_cursor(world: &World, cursor: CursorIcon) {
-        world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(cursor)).ok();
+        world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(cursor.into())).ok();
     }
 }

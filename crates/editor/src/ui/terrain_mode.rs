@@ -12,7 +12,7 @@ use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::{BindGroupDesc, ShaderModule},
 };
-use ambient_input::{event_mouse_input, mouse_button, mouse_button_from_u32};
+use ambient_input::{event_mouse_input, mouse_button};
 use ambient_intent::client_push_intent;
 use ambient_network::client::GameClient;
 use ambient_physics::{
@@ -33,9 +33,9 @@ use ambient_ui::{
     margin, space_between_items, use_interval, Borders, Button, FlowColumn, FlowRow, FontAwesomeIcon, Separator, Slider, StylesExt, Text,
     UIBase, UIExt, WindowSized, STREET,
 };
+use ambient_window_types::{MouseButton, VirtualKeyCode};
 use glam::{vec3, Vec3, Vec3Swizzles, Vec4};
 use wgpu::{util::DeviceExt, BindGroup};
-use winit::event::VirtualKeyCode;
 
 use super::EditorPlayerInputHandler;
 
@@ -52,7 +52,7 @@ pub struct TerrainRaycastPicker {
 }
 impl ElementComponent for TerrainRaycastPicker {
     fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> Element {
-        let action_button = ambient_input::MouseButton::Left;
+        let action_button = ambient_window_types::MouseButton::Left;
 
         let Self { filter, layer, brush, brush_size, brush_strength, brush_smoothness, brush_shape, erosion_config } = *self;
         let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
@@ -93,7 +93,7 @@ impl ElementComponent for TerrainRaycastPicker {
             let set_mousedown = set_mousedown.clone();
             move |_world, event| {
                 if let Some(pressed) = event.get(event_mouse_input()) {
-                    if !pressed && mouse_button_from_u32(event.get(mouse_button()).unwrap()) == action_button {
+                    if !pressed && MouseButton::from(event.get(mouse_button()).unwrap()) == action_button {
                         set_mousedown(None);
                     }
                 }

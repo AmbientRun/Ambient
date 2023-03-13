@@ -19,6 +19,7 @@ ambient_element_component = { path = "../element_component" }
 ambient_rpc = { path = "../rpc" }
 ambient_network = { path = "../network" }
 ambient_ecs_editor = { path = "../ecs_editor" }
+ambient_window_types = { path = "../window_types" }
 winit = { workspace = true }
 glam = { workspace = true }
 wgpu = { workspace = true }

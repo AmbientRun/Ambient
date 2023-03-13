@@ -317,7 +317,7 @@ impl IntoBindgen for ambient_input::PlayerRawInput {
     }
 }
 
-impl IntoBindgen for ambient_input::VirtualKeyCode {
+impl IntoBindgen for ambient_window_types::VirtualKeyCode {
     type Item = host::VirtualKeyCode;
 
     fn into_bindgen(self) -> Self::Item {
@@ -489,7 +489,7 @@ impl IntoBindgen for ambient_input::VirtualKeyCode {
     }
 }
 
-impl IntoBindgen for ambient_input::MouseButton {
+impl IntoBindgen for ambient_window_types::MouseButton {
     type Item = host::MouseButton;
 
     fn into_bindgen(self) -> Self::Item {
