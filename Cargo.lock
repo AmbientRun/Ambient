@@ -143,6 +143,7 @@ dependencies = [
  "paste",
  "rusty-hook",
  "serde",
+ "serde_json",
  "tokio",
  "toml_edit",
  "tower-http 0.3.5",
@@ -682,6 +683,7 @@ dependencies = [
  "ambient_std",
  "glam 0.22.0",
  "serde",
+ "serde_json",
  "tracing",
  "winit",
 ]
@@ -1215,6 +1217,7 @@ dependencies = [
  "parking_lot",
  "rand 0.8.5",
  "serde",
+ "serde_json",
  "thiserror",
  "tokio",
  "tracing",
