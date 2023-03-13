@@ -872,10 +872,13 @@ impl<E> System<E> for SystemGroup<E> {
         match &self.0 {
             Label::Static(s) => {
                 profiling::scope!(s);
+                let _span = tracing::debug_span!("SystemGroup::run", label = s).entered();
                 execute();
             }
             Label::Dynamic(s) => {
                 profiling::scope!("Dynamic", &s);
+                let _span = tracing::debug_span!("SystemGroup::run", label = s).entered();
+
                 execute();
             }
         }

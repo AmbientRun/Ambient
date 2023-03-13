@@ -14,6 +14,9 @@ profiling = { git = "https://github.com/philpax/profiling.git", features = [
     "profile-with-puffin",
 ] }
 tracing = "0.1.35"
+tracing-tree = { version = "0.2" }
+tracing-subscriber = { version = "0.3.16", features = [ "env-filter" ] }
+tracing-log = { version = "0.1" }
 wgpu = "0.14.2"
 winit = { version = "0.28.1", features = ["serde"] }
 futures = { version = "0.3", default-features = false, features = ["std"] }

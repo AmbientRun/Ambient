@@ -15,33 +15,36 @@ use cli::Cli;
 use log::LevelFilter;
 use server::QUIC_INTERFACE_PORT;
 
-fn main() -> anyhow::Result<()> {
-    // Initialize the logger and lower the log level for modules we don't need to hear from by default.
-    {
-        const MODULES: &[(LevelFilter, &[&str])] = &[
-            (
-                LevelFilter::Error,
-                &[
-                    // Warns about extra syntactic elements; we are not concerned with these.
-                    "fbxcel",
-                ],
-            ),
-            (
-                LevelFilter::Warn,
-                &[
-                    "ambient_build",
-                    "ambient_gpu",
-                    "ambient_model",
-                    "ambient_physics",
-                    "ambient_std",
-                    "naga",
-                    "tracing",
-                    "wgpu_core",
-                    "wgpu_hal",
-                ],
-            ),
-        ];
+use crate::shared::components::init;
 
+fn setup_logging() -> anyhow::Result<()> {
+    const MODULES: &[(LevelFilter, &[&str])] = &[
+        (
+            LevelFilter::Error,
+            &[
+                // Warns about extra syntactic elements; we are not concerned with these.
+                "fbxcel",
+            ],
+        ),
+        (
+            LevelFilter::Warn,
+            &[
+                "ambient_build",
+                "ambient_gpu",
+                "ambient_model",
+                "ambient_physics",
+                "ambient_std",
+                "naga",
+                "tracing",
+                "wgpu_core",
+                "wgpu_hal",
+            ],
+        ),
+    ];
+
+    // Initialize the logger and lower the log level for modules we don't need to hear from by default.
+    #[cfg(not(feature = "tracing"))]
+    {
         let mut builder = env_logger::builder();
         builder.filter_level(LevelFilter::Info);
 
@@ -52,7 +55,41 @@ fn main() -> anyhow::Result<()> {
         }
 
         builder.parse_default_env().try_init()?;
+
+        Ok(())
     }
+
+    #[cfg(feature = "tracing")]
+    {
+        use tracing::Level;
+        use tracing_log::AsTrace;
+        use tracing_subscriber::prelude::*;
+        use tracing_subscriber::{registry, EnvFilter};
+
+        let mut filter = tracing_subscriber::filter::Targets::new().with_default(tracing::metadata::LevelFilter::DEBUG);
+        for (level, modules) in MODULES {
+            for &module in *modules {
+                filter = filter.with_target(module, level.as_trace());
+            }
+        }
+
+        let env_filter = EnvFilter::builder().with_default_directive(Level::INFO.into()).from_env_lossy();
+
+        registry()
+            .with(filter)
+            .with(env_filter)
+            //
+            .with(tracing_tree::HierarchicalLayer::new(2).with_indent_lines(false).with_verbose_entry(true))
+            // .with(tracing_subscriber::fmt::Layer::new().pretty())
+            .try_init()?;
+
+        Ok(())
+    }
+}
+
+fn main() -> anyhow::Result<()> {
+    setup_logging()?;
+
     shared::components::init()?;
     let runtime = tokio::runtime::Builder::new_multi_thread().enable_all().build()?;
     let assets = AssetCache::new(runtime.handle().clone());

@@ -148,6 +148,9 @@ dependencies = [
  "toml_edit",
  "tower-http 0.3.5",
  "tracing",
+ "tracing-log",
+ "tracing-subscriber",
+ "tracing-tree",
  "walkdir",
 ]
 
@@ -485,6 +488,7 @@ dependencies = [
  "smallvec",
  "thiserror",
  "tokio",
+ "tracing",
  "yaml-rust-davvid",
 ]
 
@@ -6604,6 +6608,19 @@ dependencies = [
  "tracing",
  "tracing-core",
  "tracing-log",
+]
+
+[[package]]
+name = "tracing-tree"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "758e983ab7c54fee18403994507e7f212b9005e957ce7984996fac8d11facedb"
+dependencies = [
+ "atty",
+ "nu-ansi-term",
+ "tracing-core",
+ "tracing-log",
+ "tracing-subscriber",
 ]
 
 [[package]]
