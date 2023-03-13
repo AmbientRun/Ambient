@@ -28,19 +28,15 @@ impl Default for CapsuleMesh {
 
 #[derive(Clone, Copy)]
 /// Manner in which UV coordinates are distributed vertically.
+#[derive(Default)]
 pub enum CapsuleUvProfile {
     /// UV space is distributed by how much of the capsule consists of the hemispheres.
+    #[default]
     Aspect,
     /// Hemispheres get UV space according to the ratio of latitudes to rings.
     Uniform,
     /// Upper third of the texture goes to the northern hemisphere, middle third to the cylinder and lower third to the southern one.
     Fixed,
-}
-
-impl Default for CapsuleUvProfile {
-    fn default() -> Self {
-        CapsuleUvProfile::Aspect
-    }
 }
 
 impl From<CapsuleMesh> for Mesh {

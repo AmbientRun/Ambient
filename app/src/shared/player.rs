@@ -1,12 +1,16 @@
 use std::{io::Write, sync::Arc};
 
 use ambient_core::{
-    player::{get_player_by_user_id, player}, runtime, time, window::{cursor_position, window_logical_size, window_physical_size}
+    player::{get_player_by_user_id, player},
+    runtime, time,
+    window::{cursor_position, window_logical_size, window_physical_size},
 };
 use ambient_ecs::{query, query_mut, Entity, SystemGroup, WorldDiff};
 use ambient_element::{element_component, Element, Hooks};
 use ambient_input::{
-    event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels, mouse_button, mouse_button_from_u32, mouse_button_to_u32, player_prev_raw_input, player_raw_input, ElementState, MouseButton, PlayerRawInput
+    event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels,
+    mouse_button, mouse_button_from_u32, mouse_button_to_u32, player_prev_raw_input, player_raw_input, ElementState, MouseButton,
+    PlayerRawInput,
 };
 use ambient_network::{client::game_client, log_network_result, rpc::rpc_world_diff, DatagramHandlers};
 use ambient_std::unwrap_log_err;
@@ -43,12 +47,12 @@ pub fn register_datagram_handler(handlers: &mut DatagramHandlers) {
                         );
                     };
                     for next_button in &input.mouse_buttons {
-                        if !prev_play_input.mouse_buttons.contains(&next_button) {
+                        if !prev_play_input.mouse_buttons.contains(next_button) {
                             fire_mouse_input(true, *next_button);
                         }
                     }
                     for prev_button in &prev_play_input.mouse_buttons {
-                        if !input.mouse_buttons.contains(&prev_button) {
+                        if !input.mouse_buttons.contains(prev_button) {
                             fire_mouse_input(false, *prev_button);
                         }
                     }
