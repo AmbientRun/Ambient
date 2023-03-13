@@ -61,8 +61,8 @@ components!("rendering", {
     material: SharedMaterial,
     @[
         MakeDefault, Debuggable, Networked, Store,
-        Name["Pbr material from url"],
-        Description["Load a pbr material from the url and attach it to this entity."]
+        Name["PBR material from URL"],
+        Description["Load a PBR material from the URL and attach it to this entity."]
     ]
     pbr_material_from_url: String,
     @[Resource]
@@ -130,7 +130,7 @@ components!("rendering", {
     @[
         Debuggable, Networked, Store,
         Name["Transparency group"],
-        Description["Controls when this transparent object will be rendered. Transparent objects are sorted by (transparency_group, z-depth)."]
+        Description["Controls when this transparent object will be rendered. Transparent objects are sorted by `(transparency_group, z-depth)`."]
     ]
     transparency_group: i32,
 });
@@ -138,7 +138,7 @@ gpu_components! {
     color() => color: GpuComponentFormat::Vec4,
     primitives() => primitives: GpuComponentFormat::UVec4Array20,
 }
-pub fn init_all_componets() {
+pub fn init_all_components() {
     init_components();
     init_gpu_components();
     outlines::init_components();

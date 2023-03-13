@@ -67,7 +67,7 @@ pub use throbber::*;
 
 pub use self::image::*;
 
-pub fn init_all_componets() {
+pub fn init_all_components() {
     layout::init_all_components();
     layout::init_gpu_components();
     rect::init_components();

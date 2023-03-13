@@ -62,8 +62,8 @@ pub fn init_all_components() {
     ambient_gizmos::init_components();
     ambient_cameras::init_all_components();
     init_components();
-    ambient_renderer::init_all_componets();
-    ambient_ui::init_all_componets();
+    ambient_renderer::init_all_components();
+    ambient_ui::init_all_components();
     ambient_input::init_all_components();
     ambient_model::init_components();
     ambient_cameras::init_all_components();

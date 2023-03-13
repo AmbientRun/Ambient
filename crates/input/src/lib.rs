@@ -24,15 +24,14 @@ components!("input", {
     event_keyboard_input: bool,
     @[Debuggable, Networked, Store, Name["Event mouse input"], Description["A mouse button was pressed (true) or released (false). Will also contain a `mouse_button` component."]]
     event_mouse_input: bool,
-    @[Debuggable, Networked, Store, Name["Event mouse motion"], Description["The mouse was moved. The value represents the delta. Use mouse_position to get the current position."]]
+    @[Debuggable, Networked, Store, Name["Event mouse motion"], Description["The mouse was moved. The value represents the delta.\nUse `mouse_position` or `current_position` from `RawInput` to get the current position."]]
     event_mouse_motion: Vec2,
     @[Debuggable, Networked, Store, Name["Event mouse wheel"], Description["The mouse wheel moved. The value represents the delta."]]
     event_mouse_wheel: Vec2,
-    @[Debuggable, Networked, Store, Name["Event mouse wheel"], Description["If true, the mouse_wheel_event should be interpreted as pixels, if false it should be interpreted as lines."]]
+    @[Debuggable, Networked, Store, Name["Event mouse wheel"], Description["If true, the `mouse_wheel_event`'s value should be interpreted as pixels. If false, it should be interpreted as lines."]]
     event_mouse_wheel_pixels: bool,
     event_modifiers_change: ModifiersState,
     event_focus_change: bool,
-
 
     @[Debuggable, Networked, Store, Name["Keycode"], Description["Keycode when a keyboard key was pressed."]]
     keycode: String,

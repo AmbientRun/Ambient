@@ -9,7 +9,7 @@ mod ambient_project;
 
 const MANIFEST: &str = include_str!("../ambient.toml");
 
-/// Makes your `main()` function accessible to the WASM host, and generates a `components` module with your project's components.
+/// Makes your `main()` function accessible to the WASM host, and generates `components` and `concept` modules for your project.
 ///
 /// If you do not add this attribute to your `main()` function, your module will not run.
 #[proc_macro_attribute]
