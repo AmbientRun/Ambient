@@ -1,9 +1,14 @@
 use std::{path::PathBuf, sync::Arc};
 
+use ambient_core::asset_cache;
 use ambient_ecs::{EntityId, SystemGroup, World};
 use ambient_project::Identifier;
+use ambient_std::{
+    asset_cache::SyncAssetKeyExt,
+    asset_url::{AssetUrl, ServerBaseUrlKey},
+};
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
-use ambient_wasm::shared::{client_module_bytecode, get_module_name, module_bytecode, spawn_module, MessageType, ModuleBytecode};
+use ambient_wasm::shared::{client_bytecode_from_url, get_module_name, module_bytecode, spawn_module, MessageType, ModuleBytecode};
 use anyhow::Context;
 
 pub fn systems() -> SystemGroup {
@@ -25,8 +30,9 @@ pub fn initialize(world: &mut World, project_path: PathBuf, manifest: &ambient_p
 
     ambient_wasm::server::initialize(world, messenger)?;
 
+    let build_dir = project_path.join("build");
     for target in ["client", "server"] {
-        let wasm_component_paths: Vec<PathBuf> = std::fs::read_dir(project_path.join("build").join(target))
+        let wasm_component_paths: Vec<PathBuf> = std::fs::read_dir(build_dir.join(target))
             .ok()
             .map(|rd| rd.filter_map(Result::ok).map(|p| p.path()).filter(|p| p.extension().unwrap_or_default() == "wasm").collect())
             .unwrap_or_default();
@@ -36,7 +42,6 @@ pub fn initialize(world: &mut World, project_path: PathBuf, manifest: &ambient_p
             let filename_identifier =
                 Identifier::new(&*path.file_stem().context("no file stem for {path:?}")?.to_string_lossy()).map_err(anyhow::Error::msg)?;
 
-            let bytecode = std::fs::read(path)?;
             let name = if is_sole_module {
                 manifest.project.id.clone()
             } else {
@@ -48,8 +53,17 @@ pub fn initialize(world: &mut World, project_path: PathBuf, manifest: &ambient_p
 
             let id = spawn_module(world, &name, description, true)?;
 
-            let component = if target == "client" { client_module_bytecode() } else { module_bytecode() };
-            world.add_component(id, component, ModuleBytecode(bytecode))?;
+            if target == "client" {
+                let relative_path = path.strip_prefix(&build_dir)?;
+
+                let base_url = ServerBaseUrlKey.get(world.resource(asset_cache()));
+                let bytecode_url = AssetUrl::parse(&relative_path.to_string_lossy())?.resolve(&base_url)?.to_string();
+
+                world.add_component(id, client_bytecode_from_url(), bytecode_url)?;
+            } else {
+                let bytecode = std::fs::read(path)?;
+                world.add_component(id, module_bytecode(), ModuleBytecode(bytecode))?;
+            }
         }
     }
 

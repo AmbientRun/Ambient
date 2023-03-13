@@ -1,5 +1,9 @@
-use crate::shared::{self, client_module_bytecode, module_bytecode, wit};
-use ambient_ecs::{query, Commands, EntityId, SystemGroup, World};
+use crate::shared::{self, client_bytecode_from_url, module_bytecode, wit, ModuleBytecode};
+use ambient_core::{asset_cache, async_ecs::async_run, runtime};
+use ambient_ecs::{query, EntityId, SystemGroup, World};
+use ambient_std::{
+    asset_cache::AsyncAssetKeyExt, asset_url::AbsAssetUrl, download_asset::BytesFromUrl,
+};
 use std::sync::Arc;
 
 pub fn initialize(
@@ -17,17 +21,40 @@ pub fn initialize(
 
     Ok(())
 }
-
 pub fn systems() -> SystemGroup {
     SystemGroup::new(
         "core/wasm/client",
         vec![
-            query(client_module_bytecode().changed()).to_system(move |q, world, qs, _| {
-                let mut commands = Commands::new();
-                for (id, cmbc) in q.iter(world, qs) {
-                    commands.add_component(id, module_bytecode(), cmbc.clone());
+            query(client_bytecode_from_url().changed()).to_system(move |q, world, qs, _| {
+                for (id, url) in q.collect_cloned(world, qs) {
+                    let url = match AbsAssetUrl::parse(url) {
+                        Ok(value) => value,
+                        Err(err) => {
+                            log::warn!("Failed to parse client_bytecode_from_url url: {:?}", err);
+                            continue;
+                        }
+                    };
+                    let assets = world.resource(asset_cache()).clone();
+                    let async_run = world.resource(async_run()).clone();
+                    world.resource(runtime()).spawn(async move {
+                        match BytesFromUrl::new(url, true).get(&assets).await {
+                            Err(err) => {
+                                log::warn!("Failed to load client bytecode from url: {:?}", err);
+                            }
+                            Ok(bytecode) => {
+                                async_run.run(move |world| {
+                                    world
+                                        .add_component(
+                                            id,
+                                            module_bytecode(),
+                                            ModuleBytecode(bytecode.to_vec()),
+                                        )
+                                        .ok();
+                                });
+                            }
+                        }
+                    });
                 }
-                commands.apply(world).unwrap();
             }),
             Box::new(shared::systems()),
         ],

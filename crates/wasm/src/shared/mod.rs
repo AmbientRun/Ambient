@@ -26,8 +26,8 @@ components!("wasm::shared", {
     module_state: ModuleState,
     @[Store, Description["Bytecode of a WASM component; if attached, will be run."]]
     module_bytecode: ModuleBytecode,
-    @[Store, Networked, Description["Bytecode of a clientside WASM component. On the client, this will be copied over to `module_bytecode` automatically."]]
-    client_module_bytecode: ModuleBytecode,
+    @[Networked, Store, Debuggable, Description["Asset URL for the bytecode of a clientside WASM component."]]
+    client_bytecode_from_url: String,
     @[Networked, Store, Debuggable]
     module_enabled: bool,
     @[Networked, Store, Debuggable]
