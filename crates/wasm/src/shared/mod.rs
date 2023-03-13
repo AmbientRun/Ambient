@@ -360,11 +360,18 @@ fn run_and_catch_panics<R>(f: impl FnOnce() -> anyhow::Result<R>) -> Result<R, S
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(f));
     match result {
         Ok(Ok(r)) => Ok(r),
-        Ok(Err(e)) => Err(e.to_string()),
+        Ok(Err(e)) => {
+            let mut output = e.to_string();
+            let root_cause = e.root_cause().to_string();
+            if root_cause != output {
+                output = format!("{output}\nRoot cause: {root_cause}");
+            }
+            Err(output)
+        }
         Err(e) => Err(match e.downcast::<String>() {
-            Ok(e) => e.to_string(),
+            Ok(e) => format!("{e}"),
             Err(e) => match e.downcast::<&str>() {
-                Ok(e) => e.to_string(),
+                Ok(e) => format!("{e}"),
                 _ => "unknown error".to_string(),
             },
         }),
