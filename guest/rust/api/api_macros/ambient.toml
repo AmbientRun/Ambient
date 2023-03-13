@@ -165,7 +165,7 @@ type = "F32"
 name = "Active camera"
 description = """
 The camera with the highest `active_camera` value will be used for rendering. Cameras are also filtered by the `user_id`.
-        If there's no `user_id`, the camera is considered global and potentially applies to all users (if its active_camera value is high enough)"""
+If there's no `user_id`, the camera is considered global and potentially applies to all users (if its `active_camera` value is high enough)."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::camera::aspect_ratio"]
@@ -316,6 +316,12 @@ name = "Parent"
 description = "The parent of this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::input::event_keyboard_input"]
+type = "Bool"
+name = "Event keyboard input"
+description = "A keyboard key was pressed (true) or released (false). Will also contain a `keycode` component."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::input::event_mouse_input"]
 type = "Bool"
 name = "Event mouse input"
@@ -338,6 +344,18 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "Bool"
 name = "Event mouse wheel"
 description = "If true, the mouse_wheel_event should be interpreted as pixels, if false it should be interpreted as lines."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::input::keyboard_modifiers"]
+type = "U32"
+name = "Keyboard modifiers"
+description = "Modifiers active."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::input::keycode"]
+type = "String"
+name = "Keycode"
+description = "Keycode when a keyboard key was pressed."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::input::mouse_button"]
@@ -606,8 +624,8 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "Empty"
 name = "Sphere"
 description = """
-If attached to an entity, the entity will be converted to a unit-diameter sphere primitive.
-The sphere can be customized using the `sphere_radius`, `sphere_sectors` and `sphere_stacks` components."""
+If attached to an entity alongside the other `sphere_*` components, the entity will be converted to a sphere primitive.
+To easily instantiate a unit-diameter `sphere`, consider using the `sphere` concept (e.g. `make_sphere`)."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::primitives::sphere_radius"]
