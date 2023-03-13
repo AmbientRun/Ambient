@@ -2,12 +2,12 @@ use std::{collections::HashMap, fmt::Debug, hash::Hash, ops::Deref, sync::Arc};
 
 use ambient_ecs::EntityId;
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_input::{event_keyboard_input, event_mouse_input, KeyboardEvent};
+use ambient_input::{event_keyboard_input, event_mouse_input, keycode};
 use ambient_std::{cb, color::Color, Cb};
 use closure::closure;
 use indexmap::IndexMap;
 use itertools::Itertools;
-use winit::event::{ElementState, VirtualKeyCode};
+use winit::event::VirtualKeyCode;
 
 use super::{Button, ButtonStyle, Dropdown, Editor, EditorOpts, FlowColumn, FlowRow, Focus, UIBase};
 use crate::{layout::*, StylesExt, COLLECTION_ADD_ICON, COLLECTION_DELETE_ICON, MOVE_DOWN_ICON, MOVE_UP_ICON, STREET};
@@ -257,13 +257,14 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
         let (focus, set_focus) = hooks.consume_context::<Focus>().expect("No FocusRoot found");
         let focused = focus == Focus(Some(self_id));
         hooks.use_world_event(move |_world, event| {
-            if let Some(event) = event.get_ref(event_keyboard_input()) {
-                if !focused {
+            if let Some(pressed) = event.get(event_keyboard_input()) {
+                if !focused || !pressed {
                     return;
                 }
                 if let Some(on_delete) = &on_delete {
-                    if let KeyboardEvent { keycode: Some(keycode), state: ElementState::Pressed, .. } = event {
-                        if *keycode == VirtualKeyCode::Back || *keycode == VirtualKeyCode::Delete {
+                    if let Some(keycode) = event.get_ref(keycode()) {
+                        let keycode: VirtualKeyCode = serde_json::from_str(keycode).unwrap();
+                        if keycode == VirtualKeyCode::Back || keycode == VirtualKeyCode::Delete {
                             on_delete.0();
                         }
                     }

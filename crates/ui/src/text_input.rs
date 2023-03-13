@@ -3,15 +3,12 @@ use std::{self, time::Duration};
 use ambient_core::{transform::translation, window::window_ctl, window::WindowCtl};
 use ambient_ecs::EntityId;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_input::{event_keyboard_input, event_received_character, KeyboardEvent};
+use ambient_input::{event_keyboard_input, event_received_character, keycode};
 use ambient_renderer::color;
 use ambient_std::{cb, Cb};
 use closure::closure;
 use glam::*;
-use winit::{
-    event::{ElementState, VirtualKeyCode},
-    window::CursorIcon,
-};
+use winit::{event::VirtualKeyCode, window::CursorIcon};
 
 use super::{Editor, EditorOpts, Focus, Text, UIExt};
 use crate::{layout::*, text, use_interval_deps, Rectangle, UIBase};
@@ -55,22 +52,23 @@ pub fn TextInput(
                 } else if c != '\t' && c != '\n' && c != '\r' {
                     on_change.0(format!("{value}{c}"))
                 }
-            } else if let Some(event) = event.get_ref(event_keyboard_input()) {
+            } else if let Some(pressed) = event.get(event_keyboard_input()) {
                 if !focused {
                     return;
                 }
-                if let KeyboardEvent { keycode: Some(kc), state, .. } = event {
+                if let Some(kc) = event.get_ref(keycode()) {
+                    let kc: VirtualKeyCode = serde_json::from_str(kc).unwrap();
                     match kc {
                         VirtualKeyCode::LWin => {
                             #[cfg(target_os = "macos")]
-                            set_command(state == &ElementState::Pressed);
+                            set_command(pressed);
                         }
                         VirtualKeyCode::LControl => {
                             #[cfg(not(target_os = "macos"))]
-                            set_command(state == &ElementState::Pressed);
+                            set_command(pressed);
                         }
                         VirtualKeyCode::V => {
-                            if command && state == &ElementState::Pressed {
+                            if command && pressed {
                                 #[cfg(not(target_os = "unknown"))]
                                 if let Ok(paste) = arboard::Clipboard::new().unwrap().get_text() {
                                     on_change.0(format!("{value}{paste}"));
