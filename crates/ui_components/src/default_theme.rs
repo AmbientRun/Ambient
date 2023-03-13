@@ -1,10 +1,12 @@
-use ambient_element::Element;
-use ambient_renderer::color;
-use ambient_std::color::Color;
-use glam::vec4;
+use glam::{vec4, Vec4};
 
-use crate::{align_vertical, border_radius, font_size, padding, space_between_items, Align, Borders, Corners};
-use ambient_ui_components::UIExt;
+use crate::UIExt;
+use ambient_color::Color;
+use ambient_element::Element;
+use ambient_guest_bridge::components::{
+    rendering::color,
+    ui::{align_vertical_center, border_radius, font_size, space_between_items},
+};
 
 pub fn primary_color() -> Color {
     Color::hex("DE0B5D").unwrap()
@@ -57,14 +59,14 @@ impl StylesExt for Element {
     #[allow(clippy::clone_on_copy)]
     fn floating_panel(self) -> Self {
         self.with_background(Color::hex("1D1C22").unwrap().set_a(0.9).clone().into())
-            .set(border_radius(), Corners::even(5.).into())
-            .set(padding(), Borders::even(STREET))
+            .set(border_radius(), Vec4::ONE * 5.)
+            .with_padding_even(STREET)
     }
     fn panel(self) -> Self {
-        self.with_background(Color::rgba(1., 1., 1., 0.01).into()).set(border_radius(), Corners::even(5.).into())
+        self.with_background(Color::rgba(1., 1., 1., 0.01).into()).set(border_radius(), Vec4::ONE * 5.)
     }
     fn keyboard(self) -> Self {
-        self.set(space_between_items(), STREET).set(padding(), Borders::even(STREET)).set(align_vertical(), Align::Center)
+        self.set(space_between_items(), STREET).with_padding_even(STREET).set_default(align_vertical_center())
     }
 }
 

@@ -34,7 +34,7 @@ mod prompt;
 
 mod screens;
 mod select;
-mod style_constants;
+
 mod tabs;
 mod text_input;
 mod throbber;
@@ -45,6 +45,7 @@ pub use ambient_rect::{background_color, border_color, border_radius, border_thi
 use ambient_text as text;
 pub use ambient_text::*;
 pub use ambient_ui_components::clickarea::*;
+pub use ambient_ui_components::default_theme as style_constants;
 pub use ambient_ui_components::layout::*;
 pub use ambient_ui_components::text::*;
 pub use ambient_ui_components::*;

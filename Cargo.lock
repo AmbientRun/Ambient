@@ -1246,6 +1246,7 @@ dependencies = [
 name = "ambient_ui_components"
 version = "0.1.0"
 dependencies = [
+ "ambient_color",
  "ambient_element",
  "ambient_guest_bridge",
  "cb",

@@ -9,6 +9,7 @@ edition = "2021"
 ambient_element = { path = "../element", default-features = false }
 ambient_guest_bridge = { path = "../guest_bridge", default-features = false }
 cb = { path = "../../libs/cb" }
+ambient_color = { path = "../../libs/color" }
 glam = { workspace = true }
 itertools = { workspace = true }
 winit = { workspace = true, optional = true }

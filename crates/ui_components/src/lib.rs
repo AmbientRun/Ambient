@@ -11,6 +11,7 @@ use clickarea::ClickArea;
 use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
 
 pub mod clickarea;
+pub mod default_theme;
 pub mod layout;
 pub mod text;
 
