@@ -78,7 +78,7 @@ fn setup_logging() -> anyhow::Result<()> {
             .with(filter)
             .with(env_filter)
             //
-            .with(tracing_tree::HierarchicalLayer::new(2).with_indent_lines(false).with_verbose_entry(true))
+            .with(tracing_tree::HierarchicalLayer::new(4).with_indent_lines(true).with_verbose_entry(true))
             // .with(tracing_subscriber::fmt::Layer::new().pretty())
             .try_init()?;
 
