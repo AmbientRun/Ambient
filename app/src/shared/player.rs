@@ -8,9 +8,9 @@ use ambient_core::{
 use ambient_ecs::{query, query_mut, world_events, Entity, SystemGroup, WorldDiff};
 use ambient_element::{element_component, Element, Hooks};
 use ambient_input::{
-    event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels,
+    event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels, keycode,
     mouse_button, mouse_button_from_u32, mouse_button_to_u32, player_prev_raw_input, player_raw_input, ElementState, MouseButton,
-    PlayerRawInput,
+    PlayerRawInput, VirtualKeyCode,
 };
 use ambient_network::{client::game_client, log_network_result, rpc::rpc_world_diff, DatagramHandlers};
 use ambient_std::unwrap_log_err;
@@ -113,16 +113,14 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
     hooks.use_world_event({
         let input = input.clone();
         move |_world, event| {
-            if let Some(event) = event.get_ref(event_keyboard_input()) {
-                if let Some(keycode) = event.keycode {
+            if let Some(pressed) = event.get(event_keyboard_input()) {
+                if let Some(keycode) = event.get_ref(keycode()) {
+                    let keycode: VirtualKeyCode = serde_json::from_str(keycode).unwrap();
                     let mut lock = input.lock();
-                    match event.state {
-                        ElementState::Pressed => {
-                            lock.keys.insert(keycode);
-                        }
-                        ElementState::Released => {
-                            lock.keys.remove(&keycode);
-                        }
+                    if pressed {
+                        lock.keys.insert(keycode);
+                    } else {
+                        lock.keys.remove(&keycode);
                     }
                 }
             } else if let Some(pressed) = event.get(event_mouse_input()) {
