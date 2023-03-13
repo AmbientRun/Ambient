@@ -320,6 +320,12 @@ name = "Parent"
 description = "The parent of this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::input::event_focus_change"]
+type = "Bool"
+name = "Event focus change"
+description = "The window was focused or list its focus."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::input::event_keyboard_input"]
 type = "Bool"
 name = "Event keyboard input"
@@ -991,6 +997,12 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "F32"
 name = "Font size"
 description = "Size of the font."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::ui::font_style"]
+type = "String"
+name = "Font style"
+description = "One of Bold, BoldItalic, Medium, MediumItalic, Regular, Italic, Light or LightItalic."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::ui::gpu_ui_size"]

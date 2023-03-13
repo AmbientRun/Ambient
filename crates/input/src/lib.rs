@@ -10,12 +10,12 @@ pub mod picking;
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct PlayerRawInput {
-    pub keys: HashSet<VirtualKeyCode>,
+    pub keys: HashSet<ambient_window_types::VirtualKeyCode>,
     pub mouse_position: Vec2,
     /// cursor position is _not_ the sum of mouse_deltas; mouse_delta is
     pub cursor_position: Vec2,
     pub mouse_wheel: f32,
-    pub mouse_buttons: HashSet<MouseButton>,
+    pub mouse_buttons: HashSet<ambient_window_types::MouseButton>,
 }
 
 components!("input", {
@@ -31,6 +31,7 @@ components!("input", {
     @[Debuggable, Networked, Store, Name["Event mouse wheel"], Description["If true, the `mouse_wheel_event`'s value should be interpreted as pixels. If false, it should be interpreted as lines."]]
     event_mouse_wheel_pixels: bool,
     event_modifiers_change: ModifiersState,
+    @[Debuggable, Networked, Store, Name["Event focus change"], Description["The window was focused or list its focus."]]
     event_focus_change: bool,
 
     @[Debuggable, Networked, Store, Name["Keycode"], Description["Keycode when a keyboard key was pressed."]]
@@ -95,7 +96,7 @@ impl System<Event<'static, ()>> for InputSystem {
                         )
                         .with(keyboard_modifiers(), self.modifiers.bits());
                     if let Some(key) = input.virtual_keycode {
-                        data.set(keycode(), serde_json::to_string(&key).unwrap());
+                        data.set(keycode(), ambient_window_types::VirtualKeyCode::from(key).to_string());
                     }
                     world.resource_mut(world_events()).add_event(data);
                 }
@@ -110,15 +111,7 @@ impl System<Event<'static, ()>> for InputSystem {
                                     ElementState::Released => false,
                                 },
                             )
-                            .with(
-                                mouse_button(),
-                                match button {
-                                    MouseButton::Left => 0,
-                                    MouseButton::Right => 1,
-                                    MouseButton::Middle => 2,
-                                    MouseButton::Other(v) => *v as u32,
-                                },
-                            ),
+                            .with(mouse_button(), ambient_window_types::MouseButton::from(*button).into()),
                     );
                 }
 
@@ -153,22 +146,4 @@ impl System<Event<'static, ()>> for InputSystem {
 pub struct MouseInput {
     pub state: ElementState,
     pub button: MouseButton,
-}
-
-pub fn mouse_button_from_u32(button: u32) -> MouseButton {
-    match button {
-        0 => MouseButton::Left,
-        1 => MouseButton::Right,
-        2 => MouseButton::Middle,
-        x => MouseButton::Other(x as u16),
-    }
-}
-
-pub fn mouse_button_to_u32(button: MouseButton) -> u32 {
-    match button {
-        MouseButton::Left => 0,
-        MouseButton::Right => 1,
-        MouseButton::Middle => 2,
-        MouseButton::Other(x) => x as u32,
-    }
 }

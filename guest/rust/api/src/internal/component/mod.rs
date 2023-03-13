@@ -67,6 +67,12 @@ impl Entity {
         T::from_result(self.0.get(&component.index())?.clone())
     }
 
+    /// TODO: Temporary fix to get UI working, as UI requires get_ref for String components, which exists for the native Entity
+    #[doc(hidden)]
+    pub fn get_ref<T: SupportedValueGet>(&self, component: Component<T>) -> Option<T> {
+        T::from_result(self.0.get(&component.index())?.clone())
+    }
+
     /// Adds `component` to this with `value`. It will replace an existing component if present.
     pub fn set<T: SupportedValueSet>(&mut self, component: Component<T>, value: T) {
         self.0.insert(component.index(), value.into_result());

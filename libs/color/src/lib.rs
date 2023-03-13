@@ -8,6 +8,8 @@ use glam::{vec3, vec4, Vec3, Vec4};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+mod colorspace;
+
 use crate::colorspace::{HslRepresentation, SrgbColorSpace};
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -508,6 +510,7 @@ impl From<Vec4> for Color {
     }
 }
 
+#[cfg(feature = "wgpu")]
 impl From<Color> for wgpu::Color {
     fn from(color: Color) -> Self {
         if let Color::RgbaLinear { red, green, blue, alpha } = color.as_rgba_linear() {

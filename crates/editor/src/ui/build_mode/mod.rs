@@ -1,4 +1,4 @@
-use std::{sync::Arc, time::Duration};
+use std::{str::FromStr, sync::Arc, time::Duration};
 
 use ambient_core::{asset_cache, async_ecs::async_run, runtime, window::get_mouse_clip_space_position};
 use ambient_ecs::{Component, ComponentValue, EntityId};
@@ -7,7 +7,7 @@ use ambient_input::{event_keyboard_input, keycode};
 use ambient_intent::{client_push_intent, rpc_undo_head_exact};
 use ambient_network::client::GameClient;
 use ambient_sys::task::RuntimeHandle;
-use ambient_ui::MouseButton;
+use ambient_window_types::MouseButton;
 use derive_more::Display;
 use futures_signals::signal::SignalExt;
 use itertools::Itertools;
@@ -22,8 +22,8 @@ use ambient_ui::{
     margin, padding, space_between_items, use_interval_deps, Borders, Button, ButtonStyle, Dock, FlowRow, Hotkey, ScreenContainer,
     Separator, StylesExt, STREET,
 };
+use ambient_window_types::VirtualKeyCode;
 use tokio::time::sleep;
-use winit::event::VirtualKeyCode;
 
 use super::{terrain_mode::GenerateTerrainButton, EditorPlayerInputHandler, EditorPrefs};
 use crate::{
@@ -158,7 +158,7 @@ impl ElementComponent for EditorBuildMode {
         hooks.use_world_event(move |_world, event| {
             if let Some(pressed) = event.get(event_keyboard_input()) {
                 if let Some(keycode) = event.get_ref(keycode()) {
-                    let keycode: VirtualKeyCode = serde_json::from_str(keycode).unwrap();
+                    let keycode = VirtualKeyCode::from_str(keycode).unwrap();
                     match keycode {
                         VirtualKeyCode::LShift => {
                             if pressed {

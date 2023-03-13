@@ -5,7 +5,6 @@ mod uncategorized;
 #[cfg(feature = "uncategorized")]
 pub use uncategorized::*;
 
-pub mod colorspace;
 pub mod events;
 pub mod line_hash;
 pub mod path;

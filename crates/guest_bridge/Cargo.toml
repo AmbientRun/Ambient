@@ -13,8 +13,11 @@ ambient_renderer = { path = "../renderer", optional = true }
 ambient_text = { path = "../text", optional = true }
 ambient_rect = { path = "../rect", optional = true }
 ambient_input = { path = "../input", optional = true }
+
 ambient_api = { path = "../../guest/rust/api", optional = true }
 
+ambient_window_types = { path = "../window_types" }
+
 [features]
-native = ["ambient_ecs", "ambient_core", "ambient_layout", "ambient_renderer", "ambient_text", "ambient_rect", "ambient_input"]
+native = ["ambient_ecs", "ambient_core", "ambient_layout", "ambient_renderer", "ambient_text", "ambient_rect", "ambient_input", "ambient_window_types/native"]
 guest = ["ambient_api"]

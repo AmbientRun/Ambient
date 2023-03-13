@@ -19,10 +19,9 @@ use ambient_rpc::RpcRegistry;
 use ambient_std::{asset_cache::SyncAssetKeyExt, cb, color::Color, download_asset::AssetsCacheDir, line_hash, Cb};
 use ambient_ui::{
     fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit, FlowColumn, FlowRow, Image, UIExt,
-    VirtualKeyCode,
 };
+use ambient_window_types::{ModifiersState, VirtualKeyCode};
 use glam::Vec3;
-use winit::event::ModifiersState;
 
 type GetDebuggerState = Cb<dyn Fn(&mut dyn FnMut(&mut Renderer, &RenderTarget, &mut World)) + Sync + Send>;
 
@@ -230,9 +229,7 @@ fn ShaderDebug(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
     let shading = params.shading;
 
     Dropdown {
-        content: Button::new("Shader Debug", move |_| set_show(!show))
-            .toggled(show)
-            .el(),
+        content: Button::new("Shader Debug", move |_| set_show(!show)).toggled(show).el(),
         dropdown: FlowColumn::el([
             Button::new("Show metallic roughness", {
                 let get_state = get_state.clone();

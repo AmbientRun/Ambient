@@ -10,6 +10,7 @@ edition = "2021"
 ambient_asset_cache = { path = "../asset_cache/", optional = true }
 ambient_sys = { path = "../sys" }
 cb = { path = "../../libs/cb" }
+ambient_color = { path = "../../libs/color" }
 friendly_id = { path = "../../libs/friendly_id" }
 anyhow = { workspace = true }
 tracing = { workspace = true }
@@ -32,7 +33,6 @@ thiserror = { workspace = true, optional = true }
 yaml-rust = { workspace = true, optional = true }
 sentry-anyhow = { workspace = true, optional = true }
 parking_lot = { workspace = true, optional = true }
-hex = { workspace = true, optional = true }
 profiling = { workspace = true, optional = true }
 ring = { workspace = true, optional = true }
 data-encoding = { workspace = true, optional = true }
@@ -71,7 +71,6 @@ uncategorized = [
     "dep:thiserror",
     "dep:sentry-anyhow",
     "dep:parking_lot",
-    "dep:hex",
     "dep:profiling",
     "dep:ring",
     "dep:data-encoding",

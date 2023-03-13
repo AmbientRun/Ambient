@@ -1,4 +1,5 @@
 pub use ambient_ecs as ecs;
+use std::future::Future;
 
 pub mod components {
     pub mod app {
@@ -26,18 +27,33 @@ pub mod components {
             height, is_book_file, mesh_to_local_from_size, min_height, min_width, space_between_items, width,
         };
         pub use ambient_rect::{background_color, border_color, border_radius, border_thickness, rect};
-        pub use ambient_text::{font_size, text};
+        pub use ambient_text::{font_size, font_style, text};
     }
     pub mod rendering {
         pub use ambient_renderer::color;
     }
     pub mod input {
         pub use ambient_input::{
-            event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels, mouse_button,
+            event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels,
+            keyboard_modifiers, keycode, mouse_button,
             picking::{mouse_over, mouse_pickable_max, mouse_pickable_min},
         };
     }
     pub mod player {
         pub use ambient_core::player::{local_user_id, player, user_id};
+    }
+}
+
+pub fn run_async(world: &ecs::World, future: impl Future<Output = ()> + Send + 'static) {
+    world.resource(ambient_core::runtime()).spawn(future);
+}
+
+pub mod window {
+    use ambient_core::window::{window_ctl, WindowCtl};
+    use ambient_ecs::World;
+    use ambient_window_types::CursorIcon;
+
+    pub fn set_cursor(world: &World, cursor: CursorIcon) {
+        world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(cursor.into())).ok();
     }
 }
