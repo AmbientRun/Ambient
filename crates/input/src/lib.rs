@@ -31,6 +31,7 @@ components!("input", {
     @[Debuggable, Networked, Store, Name["Event mouse wheel"], Description["If true, the `mouse_wheel_event`'s value should be interpreted as pixels. If false, it should be interpreted as lines."]]
     event_mouse_wheel_pixels: bool,
     event_modifiers_change: ModifiersState,
+    @[Debuggable, Networked, Store, Name["Event focus change"], Description["The window was focused or list its focus."]]
     event_focus_change: bool,
 
     @[Debuggable, Networked, Store, Name["Keycode"], Description["Keycode when a keyboard key was pressed."]]

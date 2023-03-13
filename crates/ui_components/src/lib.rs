@@ -10,6 +10,7 @@ use ambient_guest_bridge::components::{
 use clickarea::ClickArea;
 use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
 
+pub mod button;
 pub mod clickarea;
 pub mod default_theme;
 pub mod dropdown;

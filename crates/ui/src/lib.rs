@@ -21,7 +21,7 @@ use parking_lot::Mutex;
 use winit::{event::ModifiersState, window::CursorGrabMode};
 
 mod asset_url;
-mod button;
+
 mod collections;
 mod editor;
 pub mod graph;
@@ -45,10 +45,10 @@ use ambient_text as text;
 pub use ambient_text::*;
 pub use ambient_ui_components::clickarea::*;
 pub use ambient_ui_components::default_theme as style_constants;
-pub use ambient_ui_components::dropdown;
 pub use ambient_ui_components::layout::*;
 pub use ambient_ui_components::text::*;
 pub use ambient_ui_components::*;
+pub use ambient_ui_components::{button, dropdown};
 pub use asset_url::*;
 pub use button::*;
 pub use collections::*;

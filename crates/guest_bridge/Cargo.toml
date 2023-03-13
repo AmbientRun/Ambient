@@ -14,6 +14,7 @@ ambient_text = { path = "../text", optional = true }
 ambient_rect = { path = "../rect", optional = true }
 ambient_input = { path = "../input", optional = true }
 ambient_api = { path = "../../guest/rust/api", optional = true }
+winit = { workspace = true }
 
 [features]
 native = ["ambient_ecs", "ambient_core", "ambient_layout", "ambient_renderer", "ambient_text", "ambient_rect", "ambient_input"]

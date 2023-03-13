@@ -12,6 +12,10 @@ cb = { path = "../../libs/cb" }
 ambient_color = { path = "../../libs/color" }
 glam = { workspace = true }
 itertools = { workspace = true }
+futures = { workspace = true }
+parking_lot = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
 winit = { workspace = true, optional = true }
 
 [features]
