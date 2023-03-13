@@ -77,14 +77,7 @@ fn main() {
                 // a Git dependency
                 let contents = contents
                     .lines()
-                    .map(|s| {
-                        if s.trim().starts_with("pub mod") {
-                            format!("{s} use super::wit_bindgen;")
-                        } else {
-                            s.to_string()
-                        }
-                    })
-                    .chain(std::iter::once(version_line))
+                    .chain(std::iter::once(version_line.as_str()))
                     .collect::<Vec<_>>()
                     .join("\n");
 
