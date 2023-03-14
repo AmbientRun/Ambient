@@ -48,7 +48,7 @@
             },
             "args": [
                 "run",
-                "guest/rust/examples/third_person_camera",
+                "guest/rust/examples/basics/third_person_camera",
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [
