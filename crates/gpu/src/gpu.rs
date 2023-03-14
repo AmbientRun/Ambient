@@ -118,7 +118,9 @@ impl Gpu {
     }
     pub fn resize(&self, size: winit::dpi::PhysicalSize<u32>) {
         if let Some(surface) = &self.surface {
-            surface.configure(&self.device, &self.sc_desc(uvec2(size.width, size.height)));
+            if size.width > 0 && size.height > 0 {
+                surface.configure(&self.device, &self.sc_desc(uvec2(size.width, size.height)));
+            }
         }
     }
     pub fn swapchain_format(&self) -> TextureFormat {

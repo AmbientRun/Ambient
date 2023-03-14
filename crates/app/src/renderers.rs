@@ -11,7 +11,7 @@ use ambient_gpu::{
 use ambient_renderer::{renderer_stats, RenderTarget, Renderer, RendererConfig, RendererTarget};
 use ambient_std::{asset_cache::SyncAssetKeyExt, color::Color};
 use ambient_ui::app_background_color;
-use glam::uvec2;
+use glam::{uvec2, UVec2};
 use parking_lot::Mutex;
 use winit::{
     dpi::PhysicalSize,
@@ -65,6 +65,7 @@ pub struct ExamplesRender {
     ui: Option<Renderer>,
     blit: Arc<Blitter>,
     render_target: RenderTarget,
+    size: UVec2,
 }
 
 impl ExamplesRender {
@@ -104,10 +105,15 @@ impl ExamplesRender {
             blit: BlitterKey { format: gpu.swapchain_format().into(), linear: false }.get(&world.resource(asset_cache()).clone()),
             render_target,
             gpu,
+            size: wind_size,
         }
     }
     fn resize(&mut self, size: &PhysicalSize<u32>) {
-        self.render_target = RenderTarget::new(self.gpu.clone(), uvec2(size.width, size.height), None);
+        self.size = uvec2(size.width, size.height);
+
+        if size.width > 0 && size.height > 0 {
+            self.render_target = RenderTarget::new(self.gpu.clone(), uvec2(size.width, size.height), None);
+        }
     }
 
     pub fn dump_to_tmp_file(&self) {
@@ -144,8 +150,14 @@ impl std::fmt::Debug for ExamplesRender {
         f.debug_struct("Renderer").finish()
     }
 }
+
 impl System for ExamplesRender {
     fn run(&mut self, world: &mut World, _: &FrameEvent) {
+        if self.size.x == 0 || self.size.y == 0 {
+            tracing::info!("Minimized");
+            return;
+        }
+
         profiling::scope!("Renderers.run");
         let mut encoder = self.gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         let mut post_submit = Vec::new();
@@ -173,7 +185,22 @@ impl System for ExamplesRender {
         if let Some(surface) = &self.gpu.surface {
             let frame = {
                 profiling::scope!("Get swapchain texture");
-                surface.get_current_texture().expect("Failed to acquire next swap chain texture")
+                match surface.get_current_texture() {
+                    Ok(v) => v,
+                    // Reconfigure the surface if lost
+                    Err(wgpu::SurfaceError::Lost) => {
+                        tracing::warn!("Surface lost");
+                        self.gpu.resize(PhysicalSize { width: self.size.x, height: self.size.y });
+                        return;
+                    }
+                    // The system is out of memory, we should probably quit
+                    Err(wgpu::SurfaceError::OutOfMemory) => panic!("Out of memory"),
+                    // All other errors (Outdated, Timeout) should be resolved by the next frame
+                    Err(err) => {
+                        tracing::warn!("{err:?}");
+                        return;
+                    }
+                }
             };
             let frame_view = frame.texture.create_view(&wgpu::TextureViewDescriptor::default());
             self.blit.run(&mut encoder, &self.render_target.color_buffer_view, &frame_view);
@@ -273,6 +300,7 @@ impl UIRender {
         let window_size = world.resource(window_physical_size());
         let frame_view = frame.texture.create_view(&wgpu::TextureViewDescriptor::default());
         let mut post_submit = Vec::new();
+
         self.ui_renderer.render(
             world,
             &mut encoder,

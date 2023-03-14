@@ -193,7 +193,17 @@ impl ElementComponent for GameClientView {
 
         let gpu = hooks.world.resource(gpu()).clone();
 
-        let render_target = hooks.use_memo_with(resolution, |_, &resolution| Arc::new(RenderTarget::new(gpu.clone(), resolution, None)));
+        let (render_target, set_render_target) = hooks.use_state_with(|_| Arc::new(RenderTarget::new(gpu.clone(), resolution, None)));
+
+        hooks.use_effect(resolution, |_, &resolution| {
+            if resolution.x > 0 && resolution.y > 0 {
+                set_render_target(Arc::new(RenderTarget::new(gpu.clone(), resolution, None)));
+            } else {
+                tracing::info!("Window is minimized. Skipping resize")
+            }
+
+            Box::new(|_| {})
+        });
 
         let (connection_status, set_connection_status) = hooks.use_state("Connecting".to_string());
 

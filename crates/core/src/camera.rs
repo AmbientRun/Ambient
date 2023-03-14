@@ -208,17 +208,20 @@ pub fn camera_systems() -> SystemGroup {
         vec![
             query((aspect_ratio_from_window(), aspect_ratio())).to_system(|q, world, qs, _| {
                 for (id, (window, old_ratio)) in q.collect_cloned(world, qs) {
-                    if let Ok(window_size) = world.get(window, window_physical_size()) {
-                        let aspect_ratio = window_size.x as f32 / window_size.y as f32;
-                        if aspect_ratio != old_ratio {
-                            tracing::info!(
-                                old_ratio,
-                                aspect_ratio,
-                                world_name = world.name(),
-                                "Updating window aspect ratio from window: {window}"
-                            );
-                            world.set(id, self::aspect_ratio(), aspect_ratio).unwrap();
-                        }
+                    let window_size = world.get(window, window_physical_size()).unwrap_or_default();
+                    if window_size.x == 0 || window_size.y == 0 {
+                        continue;
+                    }
+
+                    let aspect_ratio = window_size.x as f32 / window_size.y as f32;
+                    if aspect_ratio != old_ratio {
+                        tracing::info!(
+                            old_ratio,
+                            aspect_ratio,
+                            world_name = world.name(),
+                            "Updating window aspect ratio from window: {window}"
+                        );
+                        world.set(id, self::aspect_ratio(), aspect_ratio).unwrap();
                     }
                 }
             }),
@@ -246,6 +249,11 @@ pub fn camera_systems() -> SystemGroup {
                 .to_system(|q, world, qs, _| {
                     for (id, window) in q.collect_cloned(world, qs) {
                         let window_size = world.get(window, window_logical_size()).unwrap_or_default().as_vec2();
+
+                        if window_size.x <= 0.0 || window_size.y <= 0.0 {
+                            continue;
+                        }
+
                         world.set_if_changed(id, local_to_world(), Mat4::from_translation((window_size / 2.).extend(0.))).unwrap();
                         world.set_if_changed(id, orthographic_left(), -window_size.x / 2.).unwrap();
                         world.set_if_changed(id, orthographic_right(), window_size.x / 2.).unwrap();
