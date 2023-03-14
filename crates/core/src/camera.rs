@@ -215,12 +215,6 @@ pub fn camera_systems() -> SystemGroup {
 
                     let aspect_ratio = window_size.x as f32 / window_size.y as f32;
                     if aspect_ratio != old_ratio {
-                        tracing::info!(
-                            old_ratio,
-                            aspect_ratio,
-                            world_name = world.name(),
-                            "Updating window aspect ratio from window: {window}"
-                        );
                         world.set(id, self::aspect_ratio(), aspect_ratio).unwrap();
                     }
                 }

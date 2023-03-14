@@ -198,8 +198,6 @@ impl ElementComponent for GameClientView {
         hooks.use_effect(resolution, |_, &resolution| {
             if resolution.x > 0 && resolution.y > 0 {
                 set_render_target(Arc::new(RenderTarget::new(gpu.clone(), resolution, None)));
-            } else {
-                tracing::info!("Window is minimized. Skipping resize")
             }
 
             Box::new(|_| {})
