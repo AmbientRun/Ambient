@@ -14,8 +14,9 @@ const MANIFEST: &str = include_str!("../ambient.toml");
 /// If you do not add this attribute to your `main()` function, your module will not run.
 #[proc_macro_attribute]
 pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    let item = syn::parse_macro_input!(item as syn::ItemFn);
-    let fn_name = item.sig.ident.clone();
+    let mut item = syn::parse_macro_input!(item as syn::ItemFn);
+    let fn_name = quote::format_ident!("async_{}", item.sig.ident);
+    item.sig.ident = fn_name.clone();
     if item.sig.asyncness.is_none() {
         panic!("the `{fn_name}` function must be async");
     }
