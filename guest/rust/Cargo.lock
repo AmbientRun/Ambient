@@ -7,6 +7,7 @@ name = "ambient_api"
 version = "0.1.1"
 dependencies = [
  "ambient_api_macros",
+ "ambient_event_types",
  "anyhow",
  "data-encoding",
  "glam",
@@ -72,6 +73,10 @@ dependencies = [
  "quote",
  "syn",
 ]
+
+[[package]]
+name = "ambient_event_types"
+version = "0.1.0"
 
 [[package]]
 name = "ambient_guest_bridge"
