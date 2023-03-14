@@ -15,8 +15,6 @@ use cli::Cli;
 use log::LevelFilter;
 use server::QUIC_INTERFACE_PORT;
 
-use crate::shared::components::init;
-
 fn setup_logging() -> anyhow::Result<()> {
     const MODULES: &[(LevelFilter, &[&str])] = &[
         (
@@ -61,7 +59,7 @@ fn setup_logging() -> anyhow::Result<()> {
 
     #[cfg(feature = "tracing")]
     {
-        use tracing::Level;
+        use tracing::metadata::Level;
         use tracing_log::AsTrace;
         use tracing_subscriber::prelude::*;
         use tracing_subscriber::{registry, EnvFilter};
@@ -73,13 +71,26 @@ fn setup_logging() -> anyhow::Result<()> {
             }
         }
 
+        // BLOCKING: pending https://github.com/tokio-rs/tracing/issues/2507
+        // let modules: Vec<_> = MODULES.iter().flat_map(|&(level, modules)| modules.iter().map(move |&v| format!("{v}={level}"))).collect();
+
+        // eprintln!("{modules:#?}");
+        // let mut filter = tracing_subscriber::filter::EnvFilter::builder().with_default_directive(Level::INFO.into()).from_env_lossy();
+
+        // for module in modules {
+        //     filter = filter.add_directive(module.parse().unwrap());
+        // }
+
+        // let mut filter = std::env::var("RUST_LOG").unwrap_or_default().parse::<tracing_subscriber::filter::Targets>().unwrap_or_default();
+        // filter.extend(MODULES.iter().flat_map(|&(level, modules)| modules.iter().map(move |&v| (v, level.as_trace()))));
+
         let env_filter = EnvFilter::builder().with_default_directive(Level::INFO.into()).from_env_lossy();
 
         registry()
             .with(filter)
             .with(env_filter)
             //
-            .with(tracing_tree::HierarchicalLayer::new(4).with_indent_lines(true).with_verbose_entry(true))
+            .with(tracing_tree::HierarchicalLayer::new(4).with_indent_lines(true).with_verbose_entry(true).with_verbose_exit(true))
             // .with(tracing_subscriber::fmt::Layer::new().pretty())
             .try_init()?;
 
