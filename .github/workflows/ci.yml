@@ -58,6 +58,7 @@ jobs:
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
+      - run: rustup target add --toolchain stable wasm32-wasi
 
       - name: Install build dependencies
         run: |
@@ -82,7 +83,13 @@ jobs:
           command: nextest
           args: run --workspace
 
-      # - name: Run screenshot tests
+      - name: Run screenshot tests
+        run: cargo run -- run guest/rust/examples/basics/primitives --headless --screenshot-test 60
+        continue-on-error: true
+      - uses: actions/upload-artifact@v3
+        with:
+          name: screenshots
+          path: guest/rust/examples/*/*/screenshot.png
       #   run: node scripts/update_screenshots.js
       # Provides a history of the cache content builds over build to make troubleshooting easier
       - name: Display target directory content
