@@ -56,6 +56,7 @@ jobs:
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
+      - run: rustup target add --toolchain stable wasm32-wasi
 
       - name: Install build dependencies
         run: |
