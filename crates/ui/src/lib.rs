@@ -35,7 +35,6 @@ mod prompt;
 mod screens;
 mod select;
 
-mod tabs;
 mod text_input;
 mod throbber;
 
@@ -49,7 +48,7 @@ pub use ambient_ui_components::default_theme as style_constants;
 pub use ambient_ui_components::layout::*;
 pub use ambient_ui_components::text::*;
 pub use ambient_ui_components::*;
-pub use ambient_ui_components::{button, dropdown};
+pub use ambient_ui_components::{button, dropdown, tabs};
 pub use asset_url::*;
 pub use button::*;
 pub use collections::*;

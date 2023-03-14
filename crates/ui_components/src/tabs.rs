@@ -1,10 +1,13 @@
 use std::fmt::Debug;
 
+use crate::{
+    button::Button,
+    default_theme::STREET,
+    layout::{FlowColumn, FlowRow},
+};
+use ambient_cb::{cb, Cb};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_std::{cb, Cb};
-use closure::closure;
-
-use crate::{space_between_items, Button, FlowColumn, FlowRow, STREET};
+use ambient_guest_bridge::{components::ui::space_between_items, ecs::ComponentValue};
 
 #[derive(Clone, Debug)]
 pub struct TabBar<T: ToString + PartialEq + Clone + Debug + Sync + Send + 'static> {
@@ -18,9 +21,13 @@ impl<T: ToString + PartialEq + Clone + Debug + Sync + Send + 'static> ElementCom
         FlowRow(
             tabs.into_iter()
                 .map(|tab| {
-                    Button::new(tab.to_string(), closure!(clone on_change, clone tab, |_| on_change.0(tab.clone())))
-                        .toggled(tab == value)
-                        .el()
+                    Button::new(tab.to_string(), {
+                        let on_change = on_change.clone();
+                        let tab = tab.clone();
+                        move |_| on_change.0(tab.clone())
+                    })
+                    .toggled(tab == value)
+                    .el()
                 })
                 .collect(),
         )
@@ -43,7 +50,7 @@ impl<T: ToString + PartialEq + Default + Clone + Debug + Sync + Send + 'static> 
         self
     }
 }
-impl<T: ToString + PartialEq + Default + Clone + Debug + Sync + Send + 'static> ElementComponent for Tabs<T> {
+impl<T: ToString + PartialEq + Default + ComponentValue + Clone + Debug + Sync + Send + 'static> ElementComponent for Tabs<T> {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (value, set_value) = hooks.use_state(T::default());
         let selected_tab = self.tabs.iter().find(|it| it.0 == value).map(|it| it.1.clone()).unwrap_or(cb(Element::new));
