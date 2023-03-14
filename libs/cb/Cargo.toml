@@ -1,5 +1,5 @@
 [package]
-name = "cb"
+name = "ambient_cb"
 version = "0.1.0"
 edition = "2021"
 

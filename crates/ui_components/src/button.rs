@@ -18,6 +18,7 @@ use crate::{
     UIExt,
 };
 use crate::{layout::FlowColumn, layout::FlowRow, text::Text, UIBase, UIElement};
+use ambient_cb::{cb, Callback, Cb};
 use ambient_color::Color;
 use ambient_guest_bridge::{
     components::{
@@ -32,7 +33,6 @@ use ambient_guest_bridge::{
     run_async,
 };
 use ambient_window_types::{CursorIcon, ModifiersState, VirtualKeyCode};
-use cb::{cb, Callback, Cb};
 
 #[derive(Clone, Debug)]
 pub enum ButtonCb {

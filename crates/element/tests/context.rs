@@ -1,7 +1,7 @@
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 mod common;
 
-use cb::cb;
+use ambient_cb::cb;
 use common::*;
 
 #[test]

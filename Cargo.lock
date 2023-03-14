@@ -383,6 +383,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_cb"
+version = "0.1.0"
+
+[[package]]
 name = "ambient_color"
 version = "0.1.0"
 dependencies = [
@@ -602,13 +606,13 @@ dependencies = [
 name = "ambient_element"
 version = "0.1.1"
 dependencies = [
+ "ambient_cb",
  "ambient_core",
  "ambient_element_component",
  "ambient_guest_bridge",
  "ambient_sys",
  "as-any",
  "atomic_refcell",
- "cb",
  "derivative",
  "dyn-clonable",
  "friendly_id",
@@ -1077,6 +1081,7 @@ name = "ambient_std"
 version = "0.1.1"
 dependencies = [
  "ambient_asset_cache",
+ "ambient_cb",
  "ambient_color",
  "ambient_sys",
  "anyhow",
@@ -1084,7 +1089,6 @@ dependencies = [
  "async-trait",
  "bincode",
  "bytemuck",
- "cb",
  "chrono",
  "convert_case 0.6.0",
  "data-encoding",
@@ -1254,11 +1258,11 @@ dependencies = [
 name = "ambient_ui_components"
 version = "0.1.0"
 dependencies = [
+ "ambient_cb",
  "ambient_color",
  "ambient_element",
  "ambient_guest_bridge",
  "ambient_window_types",
- "cb",
  "futures",
  "glam 0.22.0",
  "itertools",
@@ -1933,10 +1937,6 @@ dependencies = [
  "serde",
  "toml 0.7.2",
 ]
-
-[[package]]
-name = "cb"
-version = "0.1.0"
 
 [[package]]
 name = "cc"

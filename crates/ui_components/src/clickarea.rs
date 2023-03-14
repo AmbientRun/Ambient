@@ -1,3 +1,4 @@
+use ambient_cb::{cb, Cb};
 use ambient_element::{Element, ElementComponent, Hooks};
 use ambient_guest_bridge::{
     components::input::{
@@ -6,7 +7,6 @@ use ambient_guest_bridge::{
     ecs::{EntityId, World},
 };
 use ambient_window_types::MouseButton;
-use cb::{cb, Cb};
 use glam::{Vec2, Vec3};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

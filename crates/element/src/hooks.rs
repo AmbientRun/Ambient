@@ -17,7 +17,7 @@ use ambient_sys::task;
 use as_any::Downcast;
 #[cfg(feature = "native")]
 use atomic_refcell::AtomicRefCell;
-use cb::{cb, Cb};
+use ambient_cb::{cb, Cb};
 #[cfg(feature = "native")]
 use itertools::Itertools;
 use parking_lot::Mutex;

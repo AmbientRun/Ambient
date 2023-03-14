@@ -8,7 +8,7 @@ pub use uncategorized::*;
 pub mod events;
 pub mod line_hash;
 pub mod path;
-pub use cb::*;
+pub use ambient_cb::*;
 
 /// Read a file as a string during debug at runtime, or use include_str at release
 /// # Panics

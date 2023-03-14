@@ -9,7 +9,7 @@ edition = "2021"
 [dependencies]
 ambient_asset_cache = { path = "../asset_cache/", optional = true }
 ambient_sys = { path = "../sys" }
-cb = { path = "../../libs/cb" }
+ambient_cb = { path = "../../libs/cb" }
 ambient_color = { path = "../../libs/color" }
 friendly_id = { path = "../../libs/friendly_id" }
 anyhow = { workspace = true }
