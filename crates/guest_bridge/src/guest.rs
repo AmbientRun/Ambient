@@ -77,6 +77,6 @@ pub mod window {
     use ambient_window_types::CursorIcon;
 
     pub fn set_cursor(_world: &crate::ecs::World, _cursor: CursorIcon) {
-        println!("error: set_cursor is not implemented yet on the guest side");
+        // TODO: Once we have client side scripting this needs to be hooked up to that
     }
 }
