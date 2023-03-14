@@ -202,7 +202,7 @@ pub fn concepts() -> Vec<Concept> {
     ]
 }
 
-pub fn camera_systems() -> SystemGroup {
+pub fn camera_systems<E: 'static>() -> SystemGroup<E> {
     SystemGroup::new(
         "camera_systems",
         vec![
@@ -215,12 +215,14 @@ pub fn camera_systems() -> SystemGroup {
 
                     let aspect_ratio = window_size.x as f32 / window_size.y as f32;
                     if aspect_ratio != old_ratio {
+                        tracing::info!(aspect_ratio, world_name = world.name(), "New aspect ratio");
                         world.set(id, self::aspect_ratio(), aspect_ratio).unwrap();
                     }
                 }
             }),
             query_mut((projection(),), (near(), fovy(), aspect_ratio())).incl(perspective_infinite_reverse()).to_system(
                 |q, world, qs, _| {
+                    let world_name = world.name();
                     for (_, (projection,), (&near, &fovy, &aspect_ratio)) in q.iter(world, qs) {
                         *projection = glam::Mat4::perspective_infinite_reverse_lh(fovy, aspect_ratio, near);
                         if projection.is_nan() {

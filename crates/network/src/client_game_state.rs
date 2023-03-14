@@ -93,7 +93,6 @@ impl ClientGameState {
     /// Draws the `game_world`
     #[profiling::function]
     pub fn on_redraw(&mut self, target: &RenderTarget) {
-        tracing::info!("Drawing client");
         self.gpu_world_sync_systems.run(&mut self.world, &GpuWorldSyncEvent);
 
         let gpu = GpuKey.get(&self.assets);

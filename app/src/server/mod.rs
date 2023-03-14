@@ -1,22 +1,30 @@
 use std::{
-    collections::HashMap, net::SocketAddr, path::{Path, PathBuf}, sync::Arc
+    collections::HashMap,
+    net::SocketAddr,
+    path::{Path, PathBuf},
+    sync::Arc,
 };
 
 use ambient_core::{app_start_time, asset_cache, dtime, no_sync, project_name, time};
 use ambient_ecs::{
-    world_events, ComponentDesc, ComponentRegistry, Entity, Networked, SystemGroup, World, WorldEventsSystem, WorldStreamCompEvent
+    world_events, ComponentDesc, ComponentRegistry, Entity, Networked, SystemGroup, World, WorldEventsSystem, WorldStreamCompEvent,
 };
 use ambient_network::{
-    bi_stream_handlers, datagram_handlers, server::{ForkingEvent, GameServer, ShutdownEvent}
+    bi_stream_handlers, datagram_handlers,
+    server::{ForkingEvent, GameServer, ShutdownEvent},
 };
 use ambient_prefab::PrefabFromUrl;
 use ambient_std::{
-    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, ServerBaseUrlKey}
+    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
+    asset_url::{AbsAssetUrl, ServerBaseUrlKey},
 };
 use ambient_sys::{task::RuntimeHandle, time::SystemTime};
 use anyhow::Context;
 use axum::{
-    http::{Method, StatusCode}, response::IntoResponse, routing::{get, get_service}, Router
+    http::{Method, StatusCode},
+    response::IntoResponse,
+    routing::{get, get_service},
+    Router,
 };
 use tower_http::{cors::CorsLayer, services::ServeDir};
 

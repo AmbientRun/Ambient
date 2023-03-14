@@ -92,6 +92,7 @@ pub fn world_redraw_systems() -> SystemGroup<RedrawEvent> {
             // br
             // Box::new(lod_system()),
             // Box::new(ambient_renderer::systems()),
+            Box::new(camera_systems()),
             Box::new(ElementTree::redraw_systems(element_tree())),
         ],
     )
@@ -115,7 +116,7 @@ pub fn world_instance_systems(full: bool) -> SystemGroup {
             Box::new(TransformSystem::new()),
             Box::new(ambient_renderer::skinning::skinning_systems()),
             Box::new(bounding_systems()),
-            Box::new(camera_systems()),
+            // Box::new(camera_systems()),
         ],
     )
 }
@@ -566,11 +567,9 @@ impl App {
                 }
             }
             Event::RedrawRequested(_window) => {
-                tracing::info!("\n\n---- Redrawing");
                 profiling::scope!("redraw_systems");
                 gpu_world_sync_systems.run(world, &GpuWorldSyncEvent);
                 self.redraw_systems.run(world, &RedrawEvent);
-                tracing::info!(" ---- Finished Redrawing\n");
             }
             Event::WindowEvent { event, .. } => match event {
                 WindowEvent::Focused(focused) => {

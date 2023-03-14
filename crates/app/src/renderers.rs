@@ -177,7 +177,6 @@ impl std::fmt::Debug for ExamplesRender {
 
 impl System for ExamplesRender {
     fn run(&mut self, world: &mut World, _: &FrameEvent) {
-        tracing::info!("Drawing ExamplesRenderer");
         profiling::scope!("Renderers.run");
         let mut encoder = self.gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         let mut post_submit = Vec::new();
