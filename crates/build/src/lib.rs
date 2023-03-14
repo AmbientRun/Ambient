@@ -100,7 +100,7 @@ async fn build_rust_if_available(project_path: &Path, manifest: &ProjectManifest
 
     let rustc = ambient_rustc::Rust::get_system_installation().await?;
 
-    for feature in ["client", "server"] {
+    for feature in &manifest.build.rust.feature_multibuild {
         let wasm_bytecode = rustc.build(project_path, manifest.project.id.as_ref(), optimize, &[feature])?;
         let component_bytecode = ambient_wasm::shared::build::componentize(&wasm_bytecode)?;
 

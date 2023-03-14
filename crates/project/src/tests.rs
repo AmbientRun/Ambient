@@ -2,7 +2,9 @@ use std::collections::HashMap;
 
 use ambient_ecs::primitive_component_definitions;
 
-use crate::{Component, ComponentType, Concept, Identifier, IdentifierPathBuf, Manifest, Namespace, Project, Version, VersionError};
+use crate::{
+    Build, BuildRust, Component, ComponentType, Concept, Identifier, IdentifierPathBuf, Manifest, Namespace, Project, Version, VersionError,
+};
 
 #[test]
 fn can_parse_tictactoe_toml() {
@@ -33,6 +35,7 @@ fn can_parse_tictactoe_toml() {
                 authors: vec![],
                 organization: None
             },
+            build: Build { rust: BuildRust { feature_multibuild: vec!["server".to_string()] } },
             components: HashMap::from_iter([(
                 IdentifierPathBuf::new("cell").unwrap(),
                 Component {
@@ -53,6 +56,36 @@ fn can_parse_tictactoe_toml() {
                 }
                 .into()
             )]),
+        })
+    )
+}
+
+#[test]
+fn can_parse_rust_build_settings() {
+    const TOML: &str = r#"
+    [project]
+    id = "tictactoe"
+    name = "Tic Tac Toe"
+    version = "0.0.1"
+
+    [build.rust]
+    feature-multibuild = ["client", "server"]
+    "#;
+
+    assert_eq!(
+        Manifest::parse(TOML),
+        Ok(Manifest {
+            project: Project {
+                id: Identifier::new("tictactoe").unwrap(),
+                name: Some("Tic Tac Toe".to_string()),
+                version: Version::new(0, 0, 1),
+                description: None,
+                authors: vec![],
+                organization: None
+            },
+            build: Build { rust: BuildRust { feature_multibuild: vec!["client".to_string(), "server".to_string()] } },
+            components: HashMap::new(),
+            concepts: HashMap::new(),
         })
     )
 }
@@ -83,6 +116,7 @@ fn can_parse_manifest_with_namespaces() {
                 authors: vec![],
                 organization: None
             },
+            build: Build { rust: BuildRust { feature_multibuild: vec!["server".to_string()] } },
             components: HashMap::from_iter([
                 (IdentifierPathBuf::new("core").unwrap(), Namespace { name: "Core".to_string(), description: String::new() }.into()),
                 (IdentifierPathBuf::new("core::app").unwrap(), Namespace { name: "App".to_string(), description: String::new() }.into()),
@@ -103,7 +137,7 @@ fn can_parse_manifest_with_namespaces() {
 }
 
 #[test]
-fn can_generate_concepts_with_documented_namespace_from_manifest() {
+fn can_parse_concepts_with_documented_namespace_from_manifest() {
     use toml::Value;
 
     const TOML: &str = r#"
@@ -134,6 +168,7 @@ fn can_generate_concepts_with_documented_namespace_from_manifest() {
                 authors: vec![],
                 organization: None
             },
+            build: Build { rust: BuildRust { feature_multibuild: vec!["server".to_string()] } },
             components: HashMap::from_iter([
                 (
                     IdentifierPathBuf::new("core::transform::rotation").unwrap(),

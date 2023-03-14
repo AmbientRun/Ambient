@@ -19,6 +19,8 @@ components!("project", {
 pub struct Manifest {
     pub project: Project,
     #[serde(default)]
+    pub build: Build,
+    #[serde(default)]
     pub components: HashMap<IdentifierPathBuf, NamespaceOrComponent>,
     #[serde(default)]
     pub concepts: HashMap<IdentifierPathBuf, NamespaceOrConcept>,
@@ -66,6 +68,23 @@ pub struct Project {
     #[serde(default)]
     pub authors: Vec<String>,
     pub organization: Option<Identifier>,
+}
+
+#[derive(Deserialize, Clone, Debug, PartialEq, Default)]
+pub struct Build {
+    #[serde(default)]
+    pub rust: BuildRust,
+}
+
+#[derive(Deserialize, Clone, Debug, PartialEq)]
+pub struct BuildRust {
+    #[serde(rename = "feature-multibuild")]
+    pub feature_multibuild: Vec<String>,
+}
+impl Default for BuildRust {
+    fn default() -> Self {
+        Self { feature_multibuild: vec!["server".to_string()] }
+    }
 }
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]

@@ -2,3 +2,6 @@
 id = "async"
 name = "Async"
 version = "0.0.1"
+
+[build.rust]
+feature-multibuild = ["client", "server"]

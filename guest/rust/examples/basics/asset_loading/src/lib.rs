@@ -1,13 +1,7 @@
+#![cfg(feature = "server")]
 use ambient_api::prelude::*;
 
 #[main]
-#[cfg(not(feature = "server"))]
-pub async fn main() -> EventResult {
-    EventOk
-}
-
-#[main]
-#[cfg(feature = "server")]
 pub async fn main() -> EventResult {
     use ambient_api::{
         components::core::{

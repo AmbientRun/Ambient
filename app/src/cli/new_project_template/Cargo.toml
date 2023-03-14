@@ -8,3 +8,7 @@ ambient_api = { path = "../../../../guest/rust/api" }
 
 [lib]
 crate-type = ["cdylib"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]
