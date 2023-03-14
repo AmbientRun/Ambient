@@ -153,11 +153,6 @@ impl std::fmt::Debug for ExamplesRender {
 
 impl System for ExamplesRender {
     fn run(&mut self, world: &mut World, _: &FrameEvent) {
-        if self.size.x == 0 || self.size.y == 0 {
-            tracing::info!("Minimized");
-            return;
-        }
-
         profiling::scope!("Renderers.run");
         let mut encoder = self.gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         let mut post_submit = Vec::new();
@@ -183,35 +178,40 @@ impl System for ExamplesRender {
             );
         }
         if let Some(surface) = &self.gpu.surface {
-            let frame = {
-                profiling::scope!("Get swapchain texture");
-                match surface.get_current_texture() {
-                    Ok(v) => v,
-                    // Reconfigure the surface if lost
-                    Err(wgpu::SurfaceError::Lost) => {
-                        tracing::warn!("Surface lost");
-                        self.gpu.resize(PhysicalSize { width: self.size.x, height: self.size.y });
-                        return;
+            if self.size.x > 0 && self.size.y > 0 {
+                let frame = {
+                    profiling::scope!("Get swapchain texture");
+                    match surface.get_current_texture() {
+                        Ok(v) => v,
+                        // Reconfigure the surface if lost
+                        Err(wgpu::SurfaceError::Lost) => {
+                            tracing::warn!("Surface lost");
+                            self.gpu.resize(PhysicalSize { width: self.size.x, height: self.size.y });
+                            return;
+                        }
+                        // The system is out of memory, we should probably quit
+                        Err(wgpu::SurfaceError::OutOfMemory) => panic!("Out of memory"),
+                        // All other errors (Outdated, Timeout) should be resolved by the next frame
+                        Err(err) => {
+                            tracing::warn!("{err:?}");
+                            return;
+                        }
                     }
-                    // The system is out of memory, we should probably quit
-                    Err(wgpu::SurfaceError::OutOfMemory) => panic!("Out of memory"),
-                    // All other errors (Outdated, Timeout) should be resolved by the next frame
-                    Err(err) => {
-                        tracing::warn!("{err:?}");
-                        return;
-                    }
-                }
-            };
-            let frame_view = frame.texture.create_view(&wgpu::TextureViewDescriptor::default());
-            self.blit.run(&mut encoder, &self.render_target.color_buffer_view, &frame_view);
+                };
+                let frame_view = frame.texture.create_view(&wgpu::TextureViewDescriptor::default());
+                self.blit.run(&mut encoder, &self.render_target.color_buffer_view, &frame_view);
 
-            {
+                {
+                    profiling::scope!("Submit");
+                    self.gpu.queue.submit(Some(encoder.finish()));
+                }
+                {
+                    profiling::scope!("Present");
+                    frame.present();
+                }
+            } else {
                 profiling::scope!("Submit");
                 self.gpu.queue.submit(Some(encoder.finish()));
-            }
-            {
-                profiling::scope!("Present");
-                frame.present();
             }
         } else {
             {
@@ -223,6 +223,7 @@ impl System for ExamplesRender {
         for action in post_submit.into_iter() {
             action();
         }
+
         world.set(world.resource_entity(), renderer_stats(), self.stats()).unwrap();
     }
 }
