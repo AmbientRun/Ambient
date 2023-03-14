@@ -9,6 +9,7 @@ use std::{
 use once_cell::sync::Lazy;
 
 use crate::{global::EventResult, internal::component::Entity};
+use rand::random;
 
 type EventFuture = Pin<Box<dyn Future<Output = EventResult>>>;
 type EventCallbackFn = Box<dyn FnMut(&Entity) -> EventFuture>;
@@ -62,14 +63,14 @@ impl Executor {
                     .on
                     .entry(event_name)
                     .or_default()
-                    .append(&mut new_callbacks);
+                    .extend(&mut new_callbacks.drain());
             }
             for (event_name, mut new_callbacks) in incoming.once.drain() {
                 current
                     .once
                     .entry(event_name)
                     .or_default()
-                    .append(&mut new_callbacks);
+                    .extend(&mut new_callbacks.drain());
             }
         }
 
@@ -78,12 +79,12 @@ impl Executor {
             let mut new_futures = vec![];
             let mut callbacks = self.current_callbacks.borrow_mut();
             if let Some(callbacks) = callbacks.on.get_mut(event_name) {
-                for callback in callbacks {
+                for (_, callback) in callbacks {
                     new_futures.push(callback(components));
                 }
             }
 
-            for callback in callbacks.once.remove(event_name).unwrap_or_default() {
+            for (_, callback) in callbacks.once.remove(event_name).unwrap_or_default() {
                 new_futures.push(callback(components));
             }
 
@@ -121,22 +122,47 @@ impl Executor {
         self.frame_state.borrow()
     }
 
-    pub fn register_callback(&self, event_name: String, callback: EventCallbackFn) {
+    pub fn register_callback(&self, event_name: String, callback: EventCallbackFn) -> u128 {
+        let uid = random::<u128>();
         self.incoming_callbacks
             .borrow_mut()
             .on
             .entry(event_name)
             .or_default()
-            .push(callback);
+            .insert(uid, callback);
+        uid
     }
 
-    pub fn register_callback_once(&self, event_name: String, callback: EventCallbackFnOnce) {
+    pub fn unregister_callback(&self, event_name: &str, uid: u128) {
+        if let Some(entry) = self.incoming_callbacks.borrow_mut().on.get_mut(event_name) {
+            entry.remove(&uid);
+        }
+    }
+
+    pub fn register_callback_once(
+        &self,
+        event_name: String,
+        callback: EventCallbackFnOnce,
+    ) -> u128 {
+        let uid = random::<u128>();
         self.incoming_callbacks
             .borrow_mut()
             .once
             .entry(event_name)
             .or_default()
-            .push(callback);
+            .insert(uid, callback);
+        uid
+    }
+
+    pub fn unregister_callback_once(&self, event_name: &str, uid: u128) {
+        if let Some(entry) = self
+            .incoming_callbacks
+            .borrow_mut()
+            .once
+            .get_mut(event_name)
+        {
+            entry.remove(&uid);
+        }
     }
 
     pub fn spawn(&self, fut: EventFuture) {
@@ -160,6 +186,6 @@ impl FrameState {
 
 #[derive(Default)]
 struct Callbacks {
-    on: HashMap<String, Vec<EventCallbackFn>>,
-    once: HashMap<String, Vec<EventCallbackFnOnce>>,
+    on: HashMap<String, HashMap<u128, EventCallbackFn>>,
+    once: HashMap<String, HashMap<u128, EventCallbackFnOnce>>,
 }
