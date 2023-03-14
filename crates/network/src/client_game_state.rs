@@ -85,6 +85,7 @@ impl ClientGameState {
         self.world.next_frame();
         self.systems.run(&mut self.world, &FrameEvent);
         self.temporary_systems.retain_mut(|system| !(system.0)(&mut self.world));
+
         self.gpu_world_sync_systems.run(&mut self.world, &GpuWorldSyncEvent);
         let gpu = GpuKey.get(&self.assets);
         let mut encoder = gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("GameState.render") });

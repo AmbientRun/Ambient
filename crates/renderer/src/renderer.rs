@@ -145,6 +145,7 @@ pub struct Renderer {
     pub post_forward: Option<Box<dyn SubRenderer>>,
     pub post_transparent: Option<Box<dyn SubRenderer>>,
 }
+
 impl Renderer {
     pub fn new(_: &mut World, assets: AssetCache, config: RendererConfig) -> Self {
         let gpu = GpuKey.get(&assets);
