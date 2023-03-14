@@ -162,9 +162,15 @@ impl<'a> Hooks<'a> {
         }
         #[cfg(feature = "guest")]
         {
-            ambient_guest_bridge::api::global::on(ambient_guest_bridge::api::event::WORLD_EVENT, move |data| {
-                func(&mut World, data);
-                ambient_guest_bridge::api::prelude::EventOk
+            use ambient_guest_bridge::api::global::*;
+            let handler = self.use_ref_with(|_| None);
+            *handler.lock() = Some(cb(func));
+            self.use_spawn(move |_| {
+                let listener = on(ambient_guest_bridge::api::event::WORLD_EVENT, move |data| {
+                    (handler.lock().as_ref().unwrap())(&mut World, data);
+                    ambient_guest_bridge::api::prelude::EventOk
+                });
+                Box::new(|_| listener.stop())
             });
         }
     }
