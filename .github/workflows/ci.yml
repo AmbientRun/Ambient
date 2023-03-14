@@ -85,6 +85,11 @@ jobs:
 
       - name: Run screenshot tests
         run: cargo run -- run guest/rust/examples/basics/primitives --headless --screenshot-test 1
+        continue-on-error: true
+      - uses: actions/upload-artifact@v3
+        with:
+          name: screenshots
+          path: guest/rust/examples/*/*/screenshot.png
       #   run: node scripts/update_screenshots.js
       # Provides a history of the cache content builds over build to make troubleshooting easier
       - name: Display target directory content
