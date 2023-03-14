@@ -1,4 +1,4 @@
-use crate::{ecs::Entity, internal::host};
+use crate::{ecs::Entity, internal::wit};
 
 /// Fired each frame.
 pub const FRAME: &str = "core/frame";
@@ -15,5 +15,5 @@ pub const WORLD_EVENT: &str = "core/world_event";
 
 /// Sends a (non-core) event to all other modules. This can be used for inter-module communication.
 pub fn send(name: impl AsRef<str>, data: Entity) {
-    data.call_with(|data| host::event_send(name.as_ref(), data))
+    data.call_with(|data| wit::event::send(name.as_ref(), data))
 }

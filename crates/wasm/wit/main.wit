@@ -1,0 +1,13 @@
+world bindings {
+    import types: pkg.types
+
+    import component: pkg.component
+    import entity: pkg.entity
+    import event: pkg.event
+
+    import server-player: pkg.server-player
+    import server-physics: pkg.server-physics
+    import server-asset: pkg.server-asset
+
+    export guest: pkg.guest
+}

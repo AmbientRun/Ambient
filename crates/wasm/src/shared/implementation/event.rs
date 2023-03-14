@@ -1,18 +1,20 @@
-use crate::shared::host_guest_state::BaseHostGuestState;
-use ambient_core::name;
-use ambient_ecs::world_events;
-use ambient_ecs::Entity;
+use std::collections::HashSet;
 
-pub fn subscribe(shared_state: &mut BaseHostGuestState, name: &str) {
-    shared_state.subscribed_events.insert(name.to_string());
+use ambient_core::name;
+use ambient_ecs::{world_events, Entity, World};
+
+pub fn subscribe(subscribed_events: &mut HashSet<String>, name: String) -> anyhow::Result<()> {
+    subscribed_events.insert(name);
+    Ok(())
 }
 
-pub fn send(shared_state: &mut BaseHostGuestState, event_name: &str, data: Entity) {
+pub fn send(world: &mut World, event_name: String, data: Entity) -> anyhow::Result<()> {
     if event_name.starts_with("core/") {
-        return;
+        return Ok(());
     }
-    shared_state
-        .world_mut()
+
+    world
         .resource_mut(world_events())
-        .add_event(data.with(name(), event_name.to_string()));
+        .add_event(data.with(name(), event_name));
+    Ok(())
 }

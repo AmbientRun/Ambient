@@ -1,12 +1,12 @@
 use std::collections::HashSet;
 
 use crate::{
-    global::{EntityId, Vec2},
-    internal::{
-        conversion::{FromBindgen, IntoBindgen},
-        host,
-    },
+    global::Vec2,
+    internal::{conversion::FromBindgen, wit},
 };
+
+#[cfg(feature = "server")]
+use crate::{global::EntityId, internal::conversion::IntoBindgen};
 
 #[allow(missing_docs)]
 /// The code associated with a key on the keyboard.
@@ -209,7 +209,7 @@ pub enum KeyCode {
     Paste,
     Cut,
 }
-impl FromBindgen for host::VirtualKeyCode {
+impl FromBindgen for wit::server_player::VirtualKeyCode {
     type Item = KeyCode;
 
     fn from_bindgen(self) -> Self::Item {
@@ -393,7 +393,7 @@ pub enum MouseButton {
     /// Other buttons
     Other(u16),
 }
-impl FromBindgen for host::MouseButton {
+impl FromBindgen for wit::server_player::MouseButton {
     type Item = MouseButton;
 
     fn from_bindgen(self) -> Self::Item {
@@ -418,7 +418,7 @@ pub struct RawInput {
     /// All of the mouse buttons being pressed this frame.
     pub mouse_buttons: HashSet<MouseButton>,
 }
-impl FromBindgen for host::PlayerRawInput {
+impl FromBindgen for wit::server_player::RawInput {
     type Item = RawInput;
     fn from_bindgen(self) -> Self::Item {
         Self::Item {
@@ -470,16 +470,19 @@ impl RawInput {
 /// Gets `player_id`'s most recent raw input state.
 ///
 /// To determine if the player just supplied an input, compare it to [get_prev_raw_input] or use [get_raw_input_delta].
+#[cfg(feature = "server")]
 pub fn get_raw_input(player_id: EntityId) -> Option<RawInput> {
-    host::player_get_raw_input(player_id.into_bindgen()).from_bindgen()
+    wit::server_player::get_raw_input(player_id.into_bindgen()).from_bindgen()
 }
 
 /// Gets `player_id`'s raw input state prior to the most recent update.
+#[cfg(feature = "server")]
 pub fn get_prev_raw_input(player_id: EntityId) -> Option<RawInput> {
-    host::player_get_prev_raw_input(player_id.into_bindgen()).from_bindgen()
+    wit::server_player::get_prev_raw_input(player_id.into_bindgen()).from_bindgen()
 }
 
-/// Gets both the previous and current raw input states of `player_id`
+/// Gets both the previous and current raw input states of `player_id`.
+#[cfg(feature = "server")]
 pub fn get_prev_and_current_raw_input(player_id: EntityId) -> Option<(RawInput, RawInput)> {
     Option::zip(get_prev_raw_input(player_id), get_raw_input(player_id))
 }
@@ -488,6 +491,7 @@ pub fn get_prev_and_current_raw_input(player_id: EntityId) -> Option<(RawInput, 
 /// as well as the current raw input state.
 ///
 /// This is a wrapper for [get_prev_and_current_raw_input] and [RawInput::delta].
+#[cfg(feature = "server")]
 pub fn get_raw_input_delta(player_id: EntityId) -> Option<(RawInputDelta, RawInput)> {
     let (p, c) = get_prev_and_current_raw_input(player_id)?;
     Some((c.delta(&p), c))

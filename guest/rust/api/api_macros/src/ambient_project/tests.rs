@@ -1,10 +1,10 @@
 use std::collections::BTreeMap;
 
 use super::{
-    concepts::generate_component_list_doc_comment,
+    component::{Component, ComponentType},
+    concept::{generate_component_list_doc_comment, Concept},
     identifier::IdentifierPathBuf,
     implementation,
-    manifest::{Component, ComponentType, Concept},
     tree::Tree,
 };
 use proc_macro2::Span;

@@ -32,6 +32,7 @@ fn setup_logging() -> anyhow::Result<()> {
                 "ambient_model",
                 "ambient_physics",
                 "ambient_std",
+                "cranelift_codegen",
                 "naga",
                 "tracing",
                 "wgpu_core",
@@ -157,7 +158,13 @@ fn main() -> anyhow::Result<()> {
     if let Some(manifest) = manifest.as_ref() {
         let project_name = manifest.project.name.as_deref().unwrap_or("project");
         log::info!("Building {}", project_name);
-        runtime.block_on(ambient_build::build(PhysicsKey.get(&assets), &assets, project_path.clone(), manifest));
+        runtime.block_on(ambient_build::build(
+            PhysicsKey.get(&assets),
+            &assets,
+            project_path.clone(),
+            manifest,
+            cli.project().map(|p| p.release).unwrap_or(false),
+        ));
         log::info!("Done building {}", project_name);
     }
 
