@@ -58,7 +58,7 @@ pub async fn main() -> EventResult {
                 0.5,
             )));
             let player_color = vec4(player_color.red, player_color.green, player_color.blue, 1.);
-            let cell = entity::get_component(player, components::cell()).unwrap();
+            let Some(cell) = entity::get_component(player, components::cell()) else { continue; };
             let Some((delta, _)) = player::get_raw_input_delta(player) else { continue; };
 
             let mut x = cell % 3;
