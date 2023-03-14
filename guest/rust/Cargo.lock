@@ -433,7 +433,7 @@ checksum = "9f2cb48b81b1dc9f39676bf99f5499babfec7cd8fe14307f7b3d747208fb5690"
 
 [[package]]
 name = "input"
-version = "0.0.1"
+version = "0.1.1"
 dependencies = [
  "ambient_api",
 ]
@@ -502,7 +502,7 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
 name = "minigolf"
-version = "0.0.1"
+version = "0.1.1"
 dependencies = [
  "ambient_api",
 ]

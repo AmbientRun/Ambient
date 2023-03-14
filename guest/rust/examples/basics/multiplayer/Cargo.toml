@@ -1,17 +1,19 @@
 [package]
 name = "multiplayer"
+
 edition = "2021"
-version = { workspace = true }
-rust-version = { workspace = true }
 publish = false
+rust-version = {workspace = true}
+version = {workspace = true}
 
 [dependencies]
+ambient_api = {path = "../../../api"}
 rand = "0.8.5"
-ambient_api = { path = "../../../api" }
 
-[lib]
-crate-type = ["cdylib"]
-required-features = []
+[[bin]]
+name = "multiplayer_server"
+path = "src/server.rs"
+required-features = ["server"]
 
 [features]
 client = ["ambient_api/client"]

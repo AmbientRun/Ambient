@@ -45,37 +45,40 @@ impl Rust {
         package_name: &str,
         optimize: bool,
         features: &[&str],
-    ) -> anyhow::Result<Vec<u8>> {
+    ) -> anyhow::Result<Option<Vec<u8>>> {
         let features = if features.is_empty() {
             vec![]
         } else {
             vec!["--features".to_string(), features.iter().join(",")]
         };
 
-        Ok(std::fs::read(
-            parse_command_result_for_filenames(
-                self.0.run(
-                    "cargo",
-                    [
-                        "build",
-                        if optimize { "--release" } else { "" },
-                        "--message-format",
-                        "json",
-                        "--target",
-                        "wasm32-wasi",
-                        "--package",
-                        package_name,
-                    ]
-                    .into_iter()
-                    .chain(features.iter().map(|s| s.as_str()))
-                    .filter(|a| !a.is_empty()),
-                    Some(working_directory),
-                ),
-            )?
-            .into_iter()
-            .find(|p| p.extension().unwrap_or_default() == "wasm")
-            .context("no wasm artifact")?,
-        )?)
+        let path = parse_command_result_for_filenames(
+            self.0.run(
+                "cargo",
+                [
+                    "build",
+                    if optimize { "--release" } else { "" },
+                    "--message-format",
+                    "json",
+                    "--target",
+                    "wasm32-wasi",
+                    "--package",
+                    package_name,
+                ]
+                .into_iter()
+                .chain(features.iter().map(|s| s.as_str()))
+                .filter(|a| !a.is_empty()),
+                Some(working_directory),
+            ),
+        )?
+        .into_iter()
+        .find(|p| p.extension().unwrap_or_default() == "wasm");
+
+        if let Some(path) = path {
+            Ok(Some(std::fs::read(path)?))
+        } else {
+            Ok(None)
+        }
     }
 }
 
@@ -160,14 +163,15 @@ fn parse_command_result_for_filenames(
         .collect();
 
     if success {
-        let last_compiler_artifact = messages
+        let Some(last_compiler_artifact) = messages
             .iter()
-            .rfind(|v| v.get("reason").and_then(|v| v.as_str()) == Some("compiler-artifact"))
-            .context("no compiler-artifact")?;
+            .rfind(|v| v.get("reason").and_then(|v| v.as_str()) == Some("compiler-artifact")) else { return Ok(vec![]) };
+
         let filenames = last_compiler_artifact
             .get("filenames")
             .and_then(|f| f.as_array())
             .context("no filenames")?;
+
         Ok(filenames
             .iter()
             .filter_map(|s| s.as_str())

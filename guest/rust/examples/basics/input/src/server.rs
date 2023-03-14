@@ -1,4 +1,3 @@
-#![cfg(feature = "server")]
 use ambient_api::prelude::*;
 
 #[main]

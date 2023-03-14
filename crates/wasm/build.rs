@@ -44,20 +44,6 @@ fn main() {
         if guest_path.file_name().unwrap_or_default() == "rust" {
             use wit_bindgen_core::{wit_parser::Resolve, Files};
 
-            fn find_file<'a>(files: &'a [File], name: &str) -> &'a File {
-                files
-                    .iter()
-                    .find(|f| {
-                        f.absolute_path
-                            .file_name()
-                            .and_then(|p| p.to_str())
-                            .unwrap_or_default()
-                            .starts_with(name)
-                    })
-                    .unwrap()
-            }
-            let interface_version = find_file(&files, "INTERFACE_VERSION");
-
             let mut generator = wit_bindgen_rust::Opts::default().build();
             let mut resolve = Resolve::new();
             let pkg = resolve.push_dir(Path::new("wit")).unwrap().0;
@@ -67,20 +53,6 @@ fn main() {
             generator.generate(&resolve, world, &mut files);
 
             for (filename, contents) in files.iter() {
-                let contents = std::str::from_utf8(contents).unwrap();
-                let version_line = format!(
-                    "#[allow(missing_docs)] pub const INTERFACE_VERSION: u32 = {};",
-                    interface_version.contents.trim()
-                );
-
-                // temp ugly hack: inject our custom definitions of wit-bindgen helpers in so that we don't have
-                // a Git dependency
-                let contents = contents
-                    .lines()
-                    .chain(std::iter::once(version_line.as_str()))
-                    .collect::<Vec<_>>()
-                    .join("\n");
-
                 std::fs::write(
                     guest_path
                         .join("api")

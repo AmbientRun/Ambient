@@ -35,7 +35,7 @@ fn can_parse_tictactoe_toml() {
                 authors: vec![],
                 organization: None
             },
-            build: Build { rust: BuildRust { feature_multibuild: vec!["server".to_string()] } },
+            build: Build { rust: BuildRust { feature_multibuild: vec!["client".to_string(), "server".to_string()] } },
             components: HashMap::from_iter([(
                 IdentifierPathBuf::new("cell").unwrap(),
                 Component {
@@ -69,7 +69,7 @@ fn can_parse_rust_build_settings() {
     version = "0.0.1"
 
     [build.rust]
-    feature-multibuild = ["client", "server"]
+    feature-multibuild = ["client"]
     "#;
 
     assert_eq!(
@@ -83,7 +83,7 @@ fn can_parse_rust_build_settings() {
                 authors: vec![],
                 organization: None
             },
-            build: Build { rust: BuildRust { feature_multibuild: vec!["client".to_string(), "server".to_string()] } },
+            build: Build { rust: BuildRust { feature_multibuild: vec!["client".to_string()] } },
             components: HashMap::new(),
             concepts: HashMap::new(),
         })
@@ -116,7 +116,7 @@ fn can_parse_manifest_with_namespaces() {
                 authors: vec![],
                 organization: None
             },
-            build: Build { rust: BuildRust { feature_multibuild: vec!["server".to_string()] } },
+            build: Build { rust: BuildRust { feature_multibuild: vec!["client".to_string(), "server".to_string()] } },
             components: HashMap::from_iter([
                 (IdentifierPathBuf::new("core").unwrap(), Namespace { name: "Core".to_string(), description: String::new() }.into()),
                 (IdentifierPathBuf::new("core::app").unwrap(), Namespace { name: "App".to_string(), description: String::new() }.into()),
@@ -168,7 +168,7 @@ fn can_parse_concepts_with_documented_namespace_from_manifest() {
                 authors: vec![],
                 organization: None
             },
-            build: Build { rust: BuildRust { feature_multibuild: vec!["server".to_string()] } },
+            build: Build { rust: BuildRust { feature_multibuild: vec!["client".to_string(), "server".to_string()] } },
             components: HashMap::from_iter([
                 (
                     IdentifierPathBuf::new("core::transform::rotation").unwrap(),

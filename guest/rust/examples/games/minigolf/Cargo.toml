@@ -1,14 +1,18 @@
 [package]
 name = "minigolf"
+
 edition = "2021"
-version = "0.0.1"
+publish = false
+rust-version = {workspace = true}
+version = {workspace = true}
 
 [dependencies]
-ambient_api = { path = "../../../api" }
+ambient_api = {path = "../../../api"}
 
-[lib]
-crate-type = ["cdylib"]
-required-features = []
+[[bin]]
+name = "minigolf_server"
+path = "src/server.rs"
+required-features = ["server"]
 
 [features]
 client = ["ambient_api/client"]

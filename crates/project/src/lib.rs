@@ -83,7 +83,7 @@ pub struct BuildRust {
 }
 impl Default for BuildRust {
     fn default() -> Self {
-        Self { feature_multibuild: vec!["server".to_string()] }
+        Self { feature_multibuild: vec!["client".to_string(), "server".to_string()] }
     }
 }
 

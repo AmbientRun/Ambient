@@ -1,4 +1,3 @@
-#![cfg(feature = "server")]
 use crate::{
     components::{
         ball, next_player_hue, origin, player_ball, player_camera_state, player_color,

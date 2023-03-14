@@ -1,6 +1,7 @@
 [package]
-edition = "2021"
 name = "asset_loading"
+
+edition = "2021"
 publish = false
 rust-version = {workspace = true}
 version = {workspace = true}
@@ -8,9 +9,10 @@ version = {workspace = true}
 [dependencies]
 ambient_api = {path = "../../../api"}
 
-[lib]
-crate-type = ["cdylib"]
-required-features = []
+[[bin]]
+name = "asset_loading_server"
+path = "src/server.rs"
+required-features = ["server"]
 
 [features]
 client = ["ambient_api/client"]

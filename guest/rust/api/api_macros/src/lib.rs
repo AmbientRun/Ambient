@@ -41,13 +41,11 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
         #[no_mangle]
         #[doc(hidden)]
-        pub extern "C" fn call_main(runtime_interface_version: u32) {
-            if INTERFACE_VERSION != runtime_interface_version {
-                panic!("This module was compiled with interface version {{INTERFACE_VERSION}}, but the host is running with version {{runtime_interface_version}}.");
-            }
+        pub fn main() {
             #path::global::run_async(#fn_name());
         }
-    }.into()
+    }
+    .into()
 }
 
 /// Generates global components and other boilerplate for the API crate.

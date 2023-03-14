@@ -1,23 +1,25 @@
 [package]
 name = "text"
+
 edition = "2021"
-version = { workspace = true }
-rust-version = { workspace = true }
 publish = false
+rust-version = {workspace = true}
+version = {workspace = true}
 
 [dependencies]
-ambient_api = { path = "../../../api" }
-ambient_element = { path = "../../../../../crates/element", default-features = false, features = [
-    "guest",
-] }
-ambient_ui_components = { path = "../../../../../crates/ui_components" }
-ambient_guest_bridge = { path = "../../../../../crates/guest_bridge", default-features = false, features = [
-    "guest",
-] }
+ambient_api = {path = "../../../api"}
+ambient_element = {path = "../../../../../crates/element", default-features = false, features = [
+  "guest",
+]}
+ambient_guest_bridge = {path = "../../../../../crates/guest_bridge", default-features = false, features = [
+  "guest",
+]}
+ambient_ui_components = {path = "../../../../../crates/ui_components"}
 
-[lib]
-crate-type = ["cdylib"]
-required-features = []
+[[bin]]
+name = "text_server"
+path = "src/server.rs"
+required-features = ["server"]
 
 [features]
 client = ["ambient_api/client"]

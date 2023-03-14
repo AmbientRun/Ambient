@@ -184,9 +184,7 @@ impl<Bindings: BindingsBound> ModuleStateInnerImpl<Bindings> {
             wit::Bindings::instantiate(&mut store, &component, &linker)?;
 
         // Initialise the runtime.
-        guest_bindings
-            .guest()
-            .call_init(&mut store, wit::shared::INTERFACE_VERSION)?;
+        guest_bindings.guest().call_init(&mut store)?;
 
         Ok(Self {
             _engine: engine,

@@ -1,4 +1,3 @@
-#![cfg(feature = "server")]
 use ambient_api::{
     components::core::app::ui_scene, concepts::make_orthographic_camera, prelude::*,
 };

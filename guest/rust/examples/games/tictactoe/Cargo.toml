@@ -1,17 +1,19 @@
 [package]
 name = "tictactoe"
+
 edition = "2021"
-version = { workspace = true }
-rust-version = { workspace = true }
 publish = false
+rust-version = {workspace = true}
+version = {workspace = true}
 
 [dependencies]
-ambient_api = { path = "../../../api" }
+ambient_api = {path = "../../../api"}
 palette = "0.6.1"
 
-[lib]
-crate-type = ["cdylib"]
-required-features = []
+[[bin]]
+name = "tictactoe_server"
+path = "src/server.rs"
+required-features = ["server"]
 
 [features]
 client = ["ambient_api/client"]

@@ -7,17 +7,16 @@ use crate::internal::{
     component::Entity,
     executor::{FrameState, EXECUTOR},
 };
-use once_cell::sync::Lazy;
 
-extern "C" {
-    fn call_main(interface_version: u32);
+extern "Rust" {
+    fn main();
 }
 
 struct Guest;
 impl wit::guest::Guest for Guest {
-    fn init(interface_version: u32) {
-        Lazy::force(&EXECUTOR);
-        unsafe { call_main(interface_version) }
+    fn init() {
+        once_cell::sync::Lazy::force(&EXECUTOR);
+        unsafe { main() };
     }
 
     fn exec(time: f32, event_name: String, components: guest::Entity) {
