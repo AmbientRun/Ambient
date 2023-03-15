@@ -77,8 +77,7 @@ impl GpuRun {
             .with_ident(ShaderModuleIdentifier::raw("WGSL_BODY", body.clone()))
             .with_dependencies(modules.iter().cloned());
 
-        let shader = Shader::from_modules(assets, format!("GpuRun.{}", self.label), &module);
-        shader
+        Shader::from_modules(assets, format!("GpuRun.{}", self.label), &module)
     }
 
     pub async fn run<In: WgslType, Out: WgslType>(self, assets: &AssetCache, input: In) -> Out {

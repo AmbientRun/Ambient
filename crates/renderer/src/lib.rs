@@ -12,7 +12,7 @@ use ambient_ecs::{
     components, query_mut, Debuggable, Description, Entity, EntityId, MakeDefault, Name, Networked, Resource, Store, SystemGroup, World,
 };
 use ambient_gpu::{
-    mesh_buffer::{get_mesh_buffer_types, GpuMesh},
+    mesh_buffer::GpuMesh,
     shader_module::{BindGroupDesc, Shader, ShaderModule, ShaderModuleIdentifier},
     wgsl_utils::wgsl_interpolate,
 };
@@ -376,20 +376,18 @@ pub fn get_globals_module(_assets: &AssetCache, shadow_cascades: u32) -> Arc<Sha
     )
 }
 
-pub fn get_forward_modules(assets: &AssetCache, shadow_cascades: u32) -> [Arc<ShaderModule>; 7] {
-    [
-        get_mesh_buffer_types(),
+pub fn get_forward_modules(assets: &AssetCache, shadow_cascades: u32) -> Vec<Arc<ShaderModule>> {
+    vec![
         get_defs_module(),
         get_mesh_data_module(),
-        get_mesh_buffer_types(),
         get_globals_module(assets, shadow_cascades),
         GpuWorldShaderModuleKey { read_only: true }.get(assets),
         get_common_module(assets),
     ]
 }
 
-pub fn get_overlay_modules(assets: &AssetCache, shadow_cascades: u32) -> [Arc<ShaderModule>; 3] {
-    [get_mesh_buffer_types(), get_defs_module(), get_globals_module(assets, shadow_cascades)]
+pub fn get_overlay_modules(assets: &AssetCache, shadow_cascades: u32) -> Vec<Arc<ShaderModule>> {
+    vec![get_defs_module(), get_globals_module(assets, shadow_cascades)]
 }
 
 pub struct MaterialShader {

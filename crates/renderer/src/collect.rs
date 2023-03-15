@@ -4,7 +4,6 @@ use ambient_core::gpu_ecs::{GpuWorldShaderModuleKey, ENTITIES_BIND_GROUP};
 use ambient_ecs::{EntityId, World};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
-    mesh_buffer::get_mesh_buffer_types,
     multi_buffer::TypedMultiBuffer,
     shader_module::{BindGroupDesc, ComputePipeline, Shader, ShaderModule, ShaderModuleIdentifier},
     typed_buffer::TypedBuffer,

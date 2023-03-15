@@ -21,13 +21,8 @@ use wgpu::RenderPass;
 
 use crate::{
     gpu::{Gpu, GpuKey},
-    shader_module::ShaderModule,
     typed_buffer::TypedBuffer,
 };
-
-pub fn get_mesh_buffer_types() -> Arc<ShaderModule> {
-    Arc::new(ShaderModule::new("MeshBufferTypes", include_str!("mesh_buffer.wgsl")))
-}
 
 static MESHES_TOTAL_SIZE: AtomicUsize = AtomicUsize::new(0);
 
@@ -41,6 +36,7 @@ pub struct GpuMesh {
     // Notify parent to remove self on drop
     to_remove: Arc<Mutex<Vec<u64>>>,
 }
+
 impl GpuMesh {
     pub fn from_mesh(assets: AssetCache, mesh: &Mesh) -> Arc<GpuMesh> {
         MeshBufferKey.get(&assets).lock().insert(mesh)

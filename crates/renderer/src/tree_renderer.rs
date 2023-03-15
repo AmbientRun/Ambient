@@ -140,10 +140,12 @@ impl TreeRenderer {
                 }
             }
         }
+
         self.config.gpu.queue.submit(Some(encoder.finish()));
         for (subbuffer, primitives) in primitives_to_write.into_iter() {
             self.primitives.write(subbuffer, 0, &primitives).unwrap();
         }
+
         for node in self.tree.values_mut() {
             for mat in node.tree.values_mut() {
                 // TODO: Materials can be shared between many renderers, so this should be moved
@@ -151,6 +153,7 @@ impl TreeRenderer {
                 mat.material.update(world);
             }
         }
+
         self.primitives_bind_group = if self.primitives.total_len() > 0 {
             Some(Self::create_primitives_bind_group(
                 &self.config.gpu,
@@ -177,7 +180,6 @@ impl TreeRenderer {
             }
         }
 
-        tracing::info!("Running collect");
         self.config.renderer_resources.collect.run(
             encoder,
             post_submit,
