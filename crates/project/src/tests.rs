@@ -1,9 +1,10 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, num::NonZeroUsize};
 
 use ambient_ecs::primitive_component_definitions;
 
 use crate::{
-    Build, BuildRust, Component, ComponentType, Concept, Identifier, IdentifierPathBuf, Manifest, Namespace, Project, Version, VersionError,
+    Build, BuildRust, Component, ComponentType, Concept, Identifier, IdentifierPathBuf, Manifest, Namespace, Project, Version,
+    VersionError, VersionSuffix,
 };
 
 #[test]
@@ -30,7 +31,7 @@ fn can_parse_tictactoe_toml() {
             project: Project {
                 id: Identifier::new("tictactoe").unwrap(),
                 name: Some("Tic Tac Toe".to_string()),
-                version: Version::new(0, 0, 1, None),
+                version: Version::new(0, 0, 1, VersionSuffix::Final),
                 description: None,
                 authors: vec![],
                 organization: None
@@ -78,7 +79,7 @@ fn can_parse_rust_build_settings() {
             project: Project {
                 id: Identifier::new("tictactoe").unwrap(),
                 name: Some("Tic Tac Toe".to_string()),
-                version: Version::new(0, 0, 1, None),
+                version: Version::new(0, 0, 1, VersionSuffix::Final),
                 description: None,
                 authors: vec![],
                 organization: None
@@ -111,7 +112,7 @@ fn can_parse_manifest_with_namespaces() {
             project: Project {
                 id: Identifier::new("tictactoe").unwrap(),
                 name: Some("Tic Tac Toe".to_string()),
-                version: Version::new(0, 0, 1, None),
+                version: Version::new(0, 0, 1, VersionSuffix::Final),
                 description: None,
                 authors: vec![],
                 organization: None
@@ -163,7 +164,7 @@ fn can_parse_concepts_with_documented_namespace_from_manifest() {
             project: Project {
                 id: Identifier::new("my_project").unwrap(),
                 name: Some("My Project".to_string()),
-                version: Version::new(0, 0, 1, None),
+                version: Version::new(0, 0, 1, VersionSuffix::Final),
                 description: None,
                 authors: vec![],
                 organization: None
@@ -265,12 +266,13 @@ fn can_validate_identifiers() {
 #[test]
 fn can_parse_versions() {
     use Version as V;
+    use VersionSuffix as VS;
 
-    assert_eq!(V::new_from_str("1"), Ok(V::new(1, 0, 0, None)));
-    assert_eq!(V::new_from_str("1.0"), Ok(V::new(1, 0, 0, None)));
-    assert_eq!(V::new_from_str("1.0.0"), Ok(V::new(1, 0, 0, None)));
-    assert_eq!(V::new_from_str("1.2.3"), Ok(V::new(1, 2, 3, None)));
-    assert_eq!(V::new_from_str("1.2.3-rc1"), Ok(V::new(1, 2, 3, Some("rc1".to_string()))));
+    assert_eq!(V::new_from_str("1"), Ok(V::new(1, 0, 0, VS::Final)));
+    assert_eq!(V::new_from_str("1.0"), Ok(V::new(1, 0, 0, VS::Final)));
+    assert_eq!(V::new_from_str("1.0.0"), Ok(V::new(1, 0, 0, VS::Final)));
+    assert_eq!(V::new_from_str("1.2.3"), Ok(V::new(1, 2, 3, VS::Final)));
+    assert_eq!(V::new_from_str("1.2.3-rc1"), Ok(V::new(1, 2, 3, VS::ReleaseCandidate(NonZeroUsize::new(1)))));
 
     assert_eq!(V::new_from_str(""), Err(VersionError::TooFewComponents));
     assert_eq!(V::new_from_str("0.0.0"), Err(VersionError::AllZero));
@@ -320,15 +322,48 @@ fn can_convert_component_types() {
 
 #[test]
 fn can_roundtrip_serialize_versions() {
+    use Version as V;
+    use VersionSuffix as VS;
+
     let versions = [
-        Version::new(1, 0, 0, None),
-        Version::new(1, 0, 0, Some("dev".to_string())),
-        Version::new(1, 0, 0, Some("rc1".to_string())),
-        Version::new(123, 456, 789, Some("rc1".to_string())),
-        Version::new(123, 456, 789, None),
+        V::new(1, 0, 0, VS::Final),
+        V::new(1, 0, 0, VS::Dev),
+        V::new(1, 0, 0, VS::ReleaseCandidate(NonZeroUsize::new(1))),
+        V::new(123, 456, 789, VS::ReleaseCandidate(NonZeroUsize::new(1))),
+        V::new(123, 456, 789, VS::Final),
     ];
 
     for version in versions {
         assert_eq!(version, serde_json::from_str(&serde_json::to_string(&version).unwrap()).unwrap());
+    }
+}
+
+#[test]
+fn can_sort_versions() {
+    use Version as V;
+    use VersionSuffix as VS;
+
+    let versions = [
+        V::new(0, 0, 1, VS::Final),
+        V::new(0, 1, 0, VS::Dev),
+        V::new(0, 1, 0, VS::Final),
+        V::new(0, 1, 1, VS::Final),
+        V::new(0, 1, 12, VS::Final),
+        V::new(1, 0, 0, VS::Other("pancakes".to_string())),
+        V::new(1, 0, 0, VS::Dev),
+        V::new(1, 0, 0, VS::Alpha(None)),
+        V::new(1, 0, 0, VS::Alpha(NonZeroUsize::new(1))),
+        V::new(1, 0, 0, VS::Beta(NonZeroUsize::new(1))),
+        V::new(1, 0, 0, VS::ReleaseCandidate(None)),
+        V::new(1, 0, 0, VS::ReleaseCandidate(NonZeroUsize::new(1))),
+        V::new(1, 0, 0, VS::Final),
+        V::new(123, 456, 789, VS::ReleaseCandidate(NonZeroUsize::new(1))),
+        V::new(123, 456, 789, VS::Final),
+    ];
+
+    for [v1, v2] in versions.windows(2).map(|w| [&w[0], &w[1]]) {
+        if !(*v1 < *v2) {
+            panic!("failed comparison: {v1} is not less than {v2}");
+        }
     }
 }
