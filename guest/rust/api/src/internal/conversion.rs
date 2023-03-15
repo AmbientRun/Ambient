@@ -1,6 +1,6 @@
 use crate::{
     global::{EntityId, Mat4, Quat, Vec2, Vec3, Vec4},
-    internal::host,
+    internal::wit,
 };
 use glam::{UVec2, UVec3, UVec4};
 
@@ -19,15 +19,15 @@ pub trait FromBindgen {
 }
 
 impl IntoBindgen for EntityId {
-    type Item = host::EntityId;
+    type Item = wit::types::EntityId;
     fn into_bindgen(self) -> Self::Item {
-        host::EntityId {
+        wit::types::EntityId {
             id0: self.id0,
             id1: self.id1,
         }
     }
 }
-impl FromBindgen for host::EntityId {
+impl FromBindgen for wit::types::EntityId {
     type Item = EntityId;
     fn from_bindgen(self) -> Self::Item {
         EntityId {
@@ -38,15 +38,15 @@ impl FromBindgen for host::EntityId {
 }
 
 impl IntoBindgen for Vec2 {
-    type Item = host::Vec2;
+    type Item = wit::types::Vec2;
     fn into_bindgen(self) -> Self::Item {
-        host::Vec2 {
+        wit::types::Vec2 {
             x: self.x,
             y: self.y,
         }
     }
 }
-impl FromBindgen for host::Vec2 {
+impl FromBindgen for wit::types::Vec2 {
     type Item = Vec2;
     fn from_bindgen(self) -> Self::Item {
         Vec2::new(self.x, self.y)
@@ -54,16 +54,16 @@ impl FromBindgen for host::Vec2 {
 }
 
 impl IntoBindgen for Vec3 {
-    type Item = host::Vec3;
+    type Item = wit::types::Vec3;
     fn into_bindgen(self) -> Self::Item {
-        host::Vec3 {
+        wit::types::Vec3 {
             x: self.x,
             y: self.y,
             z: self.z,
         }
     }
 }
-impl FromBindgen for host::Vec3 {
+impl FromBindgen for wit::types::Vec3 {
     type Item = Vec3;
     fn from_bindgen(self) -> Self::Item {
         Vec3::new(self.x, self.y, self.z)
@@ -71,9 +71,9 @@ impl FromBindgen for host::Vec3 {
 }
 
 impl IntoBindgen for Vec4 {
-    type Item = host::Vec4;
+    type Item = wit::types::Vec4;
     fn into_bindgen(self) -> Self::Item {
-        host::Vec4 {
+        wit::types::Vec4 {
             x: self.x,
             y: self.y,
             z: self.z,
@@ -81,7 +81,7 @@ impl IntoBindgen for Vec4 {
         }
     }
 }
-impl FromBindgen for host::Vec4 {
+impl FromBindgen for wit::types::Vec4 {
     type Item = Vec4;
     fn from_bindgen(self) -> Self::Item {
         Vec4::new(self.x, self.y, self.z, self.w)
@@ -89,15 +89,15 @@ impl FromBindgen for host::Vec4 {
 }
 
 impl IntoBindgen for UVec2 {
-    type Item = host::Uvec2;
+    type Item = wit::types::Uvec2;
     fn into_bindgen(self) -> Self::Item {
-        host::Uvec2 {
+        wit::types::Uvec2 {
             x: self.x,
             y: self.y,
         }
     }
 }
-impl FromBindgen for host::Uvec2 {
+impl FromBindgen for wit::types::Uvec2 {
     type Item = UVec2;
     fn from_bindgen(self) -> Self::Item {
         UVec2::new(self.x, self.y)
@@ -105,16 +105,16 @@ impl FromBindgen for host::Uvec2 {
 }
 
 impl IntoBindgen for UVec3 {
-    type Item = host::Uvec3;
+    type Item = wit::types::Uvec3;
     fn into_bindgen(self) -> Self::Item {
-        host::Uvec3 {
+        wit::types::Uvec3 {
             x: self.x,
             y: self.y,
             z: self.z,
         }
     }
 }
-impl FromBindgen for host::Uvec3 {
+impl FromBindgen for wit::types::Uvec3 {
     type Item = UVec3;
     fn from_bindgen(self) -> Self::Item {
         UVec3::new(self.x, self.y, self.z)
@@ -122,9 +122,9 @@ impl FromBindgen for host::Uvec3 {
 }
 
 impl IntoBindgen for UVec4 {
-    type Item = host::Uvec4;
+    type Item = wit::types::Uvec4;
     fn into_bindgen(self) -> Self::Item {
-        host::Uvec4 {
+        wit::types::Uvec4 {
             x: self.x,
             y: self.y,
             z: self.z,
@@ -132,7 +132,7 @@ impl IntoBindgen for UVec4 {
         }
     }
 }
-impl FromBindgen for host::Uvec4 {
+impl FromBindgen for wit::types::Uvec4 {
     type Item = UVec4;
     fn from_bindgen(self) -> Self::Item {
         UVec4::new(self.x, self.y, self.z, self.w)
@@ -140,9 +140,9 @@ impl FromBindgen for host::Uvec4 {
 }
 
 impl IntoBindgen for Quat {
-    type Item = host::Quat;
+    type Item = wit::types::Quat;
     fn into_bindgen(self) -> Self::Item {
-        host::Quat {
+        wit::types::Quat {
             x: self.x,
             y: self.y,
             z: self.z,
@@ -150,7 +150,7 @@ impl IntoBindgen for Quat {
         }
     }
 }
-impl FromBindgen for host::Quat {
+impl FromBindgen for wit::types::Quat {
     type Item = Quat;
     fn from_bindgen(self) -> Self::Item {
         Quat::from_array([self.x, self.y, self.z, self.w])
@@ -158,9 +158,9 @@ impl FromBindgen for host::Quat {
 }
 
 impl IntoBindgen for Mat4 {
-    type Item = host::Mat4;
+    type Item = wit::types::Mat4;
     fn into_bindgen(self) -> Self::Item {
-        host::Mat4 {
+        wit::types::Mat4 {
             x: self.x_axis.into_bindgen(),
             y: self.y_axis.into_bindgen(),
             z: self.z_axis.into_bindgen(),
@@ -168,7 +168,7 @@ impl IntoBindgen for Mat4 {
         }
     }
 }
-impl FromBindgen for host::Mat4 {
+impl FromBindgen for wit::types::Mat4 {
     type Item = Mat4;
     fn from_bindgen(self) -> Self::Item {
         Mat4::from_cols(

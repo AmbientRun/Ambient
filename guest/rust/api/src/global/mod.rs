@@ -19,8 +19,3 @@ pub use glam::{f32::*, u32::*, Vec2Swizzles, Vec3Swizzles, Vec4Swizzles};
 pub fn default<T: Default>() -> T {
     std::default::Default::default()
 }
-
-/// The version of this WASM interface. If this version is different to that of the running
-/// host version, the module will panic and refuse to run.
-#[doc(hidden)]
-pub use crate::internal::INTERFACE_VERSION;

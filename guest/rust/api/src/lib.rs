@@ -1,12 +1,15 @@
 //! # The Ambient Rust API
 //!
-//! Welcome to the Ambient Rust API! This API allows you to write logic for the Ambient Runtime in Rust.
+//! Welcome to the Ambient Rust API! This API allows you to write logic for Ambient, the multiplayer game engine, in Rust.
 //!
-//! You can find the Ambient Book at: <https://ambientrun.github.io/Ambient/>
+//! The Ambient Book can be found [here](https://ambientrun.github.io/Ambient/).
 //!
 //! Ambient has first-class support for Rust. Please report any issues you encounter to the repository.
 #![deny(missing_docs)]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
+/// Asset-related functionality, including retrieval of assets and where to find them.
+pub mod asset;
 /// ECS-related functionality not directly related to entities.
 pub mod ecs;
 /// Entity-related functionality, including manipulation, creation, removal, and search.
@@ -15,10 +18,12 @@ pub mod entity;
 pub mod event;
 /// Global functions and types for your convenience.
 pub mod global;
-/// Physics-related functionality, including applying forces, changing physical properties, and more.
-pub mod physics;
 /// Player-related functionality.
 pub mod player;
+
+/// Physics-related functionality, including applying forces, changing physical properties, and more.
+#[cfg(feature = "server")]
+pub mod physics;
 
 /// Helpful imports that almost all Ambient projects will use.
 pub mod prelude;

@@ -1,0 +1,35 @@
+default interface entity {
+    use pkg.types.{entity-id, vec3, quat}
+    use pkg.component.{entity as entity-data}
+
+    /// An action in an animation.
+    record animation-action {
+        // we assume only URLs for now
+        /// The animation clip URL to play.
+        clip-url: string,
+        // no time: we assume this is being played at the time of playback
+        // will be relaxed later
+        /// Whether or not this action should loop
+        looping: bool,
+        /// How strongly this action applies to the final blend [0-1]
+        weight: float32,
+    }
+
+    /// Controls the animations for an entity.
+    record animation-controller {
+        /// All of the actions that contribute to this animation.
+        /// Will be blended together.
+        actions: list<animation-action>,
+        /// Whether or not the first action's pose should be used as a base pose.
+        apply-base-pose: bool,
+    }
+
+    spawn: func(data: entity-data) -> entity-id
+    despawn: func(entity: entity-id) -> bool
+    set-animation-controller: func(entity: entity-id, animation-controller: animation-controller)
+    in-area: func(position: vec3, radius: float32) -> list<entity-id>
+
+    exists: func(entity: entity-id) -> bool
+    get-all: func(index: u32) -> list<entity-id>
+    resources: func() -> entity-id
+}

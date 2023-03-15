@@ -3,7 +3,7 @@ use std::{cell::RefCell, future::Future, rc::Rc, task::Poll};
 use crate::{
     components, entity,
     global::EventResult,
-    internal::{component::Entity, executor::EXECUTOR, host},
+    internal::{component::Entity, executor::EXECUTOR, wit},
 };
 
 /// The time, relative to when the application started, in seconds.
@@ -53,7 +53,7 @@ pub fn on_async<R: Future<Output = EventResult> + 'static>(
     event: &str,
     mut callback: impl FnMut(&Entity) -> R + 'static,
 ) -> OnHandle {
-    host::event_subscribe(event);
+    wit::event::subscribe(event);
     OnHandle(
         event.to_string(),
         EXECUTOR.register_callback(
@@ -81,7 +81,7 @@ pub fn once_async<R: Future<Output = EventResult> + 'static>(
     event: &str,
     callback: impl FnOnce(&Entity) -> R + 'static,
 ) -> OnceHandle {
-    host::event_subscribe(event);
+    wit::event::subscribe(event);
     OnceHandle(event.to_string(), EXECUTOR.register_callback_once(
         event.to_string(),
         Box::new(move |args| Box::pin(callback(args))),
@@ -166,7 +166,9 @@ pub async fn until_this(event: &str, condition: impl Fn(&Entity) -> bool + 'stat
     .await
 }
 
-/// This method resolves a relative path to an asset in a Ambient module, to an absolute url
+#[deprecated = "Please use `asset::url` instead."]
+#[doc(hidden)]
+#[cfg(feature = "server")]
 pub fn asset_url(path: impl AsRef<str>) -> Option<String> {
-    host::asset_url(path.as_ref())
+    crate::asset::url(path)
 }

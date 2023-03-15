@@ -10,9 +10,9 @@ pub fn run_async(_world: &ecs::World, future: impl Future<Output = ()> + Send + 
 }
 
 pub mod ecs {
-    use ambient_api::ecs::SupportedComponentTypeGet;
+    use ambient_api::ecs::SupportedValueGet;
     pub use ambient_api::{
-        ecs::{Component, SupportedComponentTypeSet as ComponentValue, UntypedComponent},
+        ecs::{Component, SupportedValueSet as ComponentValue, UntypedComponent},
         prelude::{Entity, EntityId},
     };
 
@@ -40,25 +40,17 @@ pub mod ecs {
             ambient_api::entity::add_components(entity_id, components);
             Ok(())
         }
-        pub fn get<T: ComponentValue + SupportedComponentTypeGet>(
-            &self,
-            entity_id: EntityId,
-            component: Component<T>,
-        ) -> Result<T, ECSError> {
+        pub fn get<T: ComponentValue + SupportedValueGet>(&self, entity_id: EntityId, component: Component<T>) -> Result<T, ECSError> {
             ambient_api::entity::get_component(entity_id, component).ok_or_else(|| ECSError::EntityDoesntHaveComponent)
         }
         // TODO: This should actually return &T
-        pub fn get_ref<T: ComponentValue + SupportedComponentTypeGet>(
-            &self,
-            entity_id: EntityId,
-            component: Component<T>,
-        ) -> Result<T, ECSError> {
+        pub fn get_ref<T: ComponentValue + SupportedValueGet>(&self, entity_id: EntityId, component: Component<T>) -> Result<T, ECSError> {
             self.get(entity_id, component)
         }
-        pub fn has_component<T: SupportedComponentTypeGet>(&self, entity_id: EntityId, component: Component<T>) -> bool {
+        pub fn has_component<T: SupportedValueGet>(&self, entity_id: EntityId, component: Component<T>) -> bool {
             ambient_api::entity::has_component(entity_id, component)
         }
-        pub fn resource<T: ComponentValue + SupportedComponentTypeGet>(&self, component: Component<T>) -> T {
+        pub fn resource<T: ComponentValue + SupportedValueGet>(&self, component: Component<T>) -> T {
             ambient_api::entity::get_component(ambient_api::entity::resources(), component).unwrap()
         }
     }

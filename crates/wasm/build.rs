@@ -42,48 +42,17 @@ fn main() {
     {
         // HACK: Build wit files ahead of time so that we don't need to use a macro in the guest code.
         if guest_path.file_name().unwrap_or_default() == "rust" {
-            use wit_bindgen_core::{wit_parser, Files, Generator};
-            use wit_parser::Interface;
+            use wit_bindgen_core::{wit_parser::Resolve, Files};
 
-            let mut generator = wit_bindgen_gen_guest_rust::RustWasm::new();
-
-            fn find_file<'a>(files: &'a [File], name: &str) -> &'a File {
-                files
-                    .iter()
-                    .find(|f| {
-                        f.absolute_path
-                            .file_name()
-                            .and_then(|p| p.to_str())
-                            .unwrap_or_default()
-                            .starts_with(name)
-                    })
-                    .unwrap()
-            }
-            let host_file = find_file(&files, "host.wit");
-            let guest_file = find_file(&files, "guest.wit");
-            let interface_version = find_file(&files, "INTERFACE_VERSION");
-
-            let imports = Interface::parse_file(host_file.absolute_path.as_path()).unwrap();
-            let exports = Interface::parse_file(guest_file.absolute_path.as_path()).unwrap();
+            let mut generator = wit_bindgen_rust::Opts::default().build();
+            let mut resolve = Resolve::new();
+            let pkg = resolve.push_dir(Path::new("wit")).unwrap().0;
 
             let mut files = Files::default();
-            generator.generate_all(&[imports], &[exports], &mut files);
+            let world = resolve.select_world(pkg, Some("main.bindings")).unwrap();
+            generator.generate(&resolve, world, &mut files);
 
-            if let Some((filename, contents)) = files.iter().next() {
-                let mut contents = std::str::from_utf8(contents)
-                    .unwrap()
-                    // temp ugly hack as our version of wit-bindgen does not expose these
-                    .replace(
-                        "mod host {",
-                        "#[allow(missing_docs)] pub mod host { use super::wit_bindgen_guest_rust;",
-                    )
-                    .replace("mod guest {", "#[allow(missing_docs)] pub mod guest {");
-
-                contents += &format!(
-                    "#[allow(missing_docs)] pub const INTERFACE_VERSION: u32 = {};",
-                    interface_version.contents.trim()
-                );
-
+            for (filename, contents) in files.iter() {
                 std::fs::write(
                     guest_path
                         .join("api")
@@ -93,7 +62,7 @@ fn main() {
                     contents,
                 )
                 .unwrap();
-            };
+            }
         } else {
             copy_files(&guest_path, &files, &working_dir);
         }

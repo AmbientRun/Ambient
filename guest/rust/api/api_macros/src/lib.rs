@@ -14,8 +14,9 @@ const MANIFEST: &str = include_str!("../ambient.toml");
 /// If you do not add this attribute to your `main()` function, your module will not run.
 #[proc_macro_attribute]
 pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    let item = syn::parse_macro_input!(item as syn::ItemFn);
-    let fn_name = item.sig.ident.clone();
+    let mut item = syn::parse_macro_input!(item as syn::ItemFn);
+    let fn_name = quote::format_ident!("async_{}", item.sig.ident);
+    item.sig.ident = fn_name.clone();
     if item.sig.asyncness.is_none() {
         panic!("the `{fn_name}` function must be async");
     }
@@ -40,13 +41,11 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
         #[no_mangle]
         #[doc(hidden)]
-        pub extern "C" fn call_main(runtime_interface_version: u32) {
-            if INTERFACE_VERSION != runtime_interface_version {
-                panic!("This module was compiled with interface version {{INTERFACE_VERSION}}, but the host is running with version {{runtime_interface_version}}.");
-            }
+        pub fn main() {
             #path::global::run_async(#fn_name());
         }
-    }.into()
+    }
+    .into()
 }
 
 /// Generates global components and other boilerplate for the API crate.

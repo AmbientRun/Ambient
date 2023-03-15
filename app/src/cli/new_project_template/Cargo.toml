@@ -1,10 +1,23 @@
 [package]
 name = "{{id}}"
+
 edition = "2021"
+publish = false
 version = "0.0.1"
 
 [dependencies]
 ambient_api = { path = "../../../../guest/rust/api" }
 
-[lib]
-crate-type = ["cdylib"]
+[[bin]]
+name = "{{id}}_client"
+path = "src/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "{{id}}_server"
+path = "src/server.rs"
+required-features = ["server"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]

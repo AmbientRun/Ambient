@@ -1,215 +1,238 @@
+use crate::shared::{self, wit};
+use ambient_ecs::{query, EntityId, FnSystem, SystemGroup, World};
+use ambient_network::server::{ForkingEvent, ShutdownEvent};
 use std::sync::Arc;
 
-use ambient_ecs::{
-    query, Component, ComponentEntry, Entity, EntityId, FnSystem, SystemGroup, World,
-};
-use ambient_network::server::{ForkingEvent, ShutdownEvent};
-use ambient_physics::{collider_loads, collisions, PxShapeUserData};
-use itertools::Itertools;
-use parking_lot::RwLock;
-use physxx::{PxRigidActor, PxRigidActorRef, PxUserData};
-use wasi_common::WasiCtx;
-use wasmtime::Linker;
+mod conversion;
+mod implementation;
 
-use crate::shared::{
-    host_guest_state::GetBaseHostGuestState, interface::host::Host, module, module_bytecode,
-    module_enabled, reload, reload_all, run_all, unload, update_errors, MessageType, ModuleState,
-    RunContext, WasmContext,
-};
-use ambient_ecs::{world_events, WorldEventReader};
+pub fn initialize(
+    world: &mut World,
+    messenger: Arc<dyn Fn(&World, EntityId, shared::MessageType, &str) + Send + Sync>,
+) -> anyhow::Result<()> {
+    shared::initialize(
+        world,
+        messenger,
+        Bindings {
+            base: Default::default(),
+            world_ref: Default::default(),
+        },
+    )?;
 
-pub mod bindings;
-pub(crate) mod implementation;
-
-pub const MAXIMUM_ERROR_COUNT: usize = 5;
-
-pub fn systems<
-    Bindings: Send + Sync + Host + 'static,
-    Context: WasmContext<Bindings> + Send + Sync + 'static,
-    HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
->(
-    state_component: Component<ModuleState<Bindings, Context, HostGuestState>>,
-    make_wasm_context_component: Component<
-        Arc<dyn Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context + Send + Sync>,
-    >,
-    add_to_linker_component: Component<
-        Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
-    >,
-) -> SystemGroup {
-    let make_wasm_context = move |w: &World| w.resource(make_wasm_context_component).clone();
-    let add_to_linker = move |w: &World| w.resource(add_to_linker_component).clone();
-    let mut app_events_reader = WorldEventReader::new();
-
-    SystemGroup::new(
-        "core/wasm/server",
-        vec![
-            query((module_bytecode(), module_enabled().changed())).to_system(
-                move |q, world, qs, _| {
-                    profiling::scope!("WASM module reloads");
-                    let modules = q
-                        .iter(world, qs)
-                        .filter(|(id, (_, enabled))| {
-                            let has_state = world.has_component(*id, state_component);
-                            **enabled != has_state
-                        })
-                        .map(|(id, (bytecode, enabled))| (id, (bytecode.clone(), *enabled)))
-                        .collect_vec();
-
-                    for (id, (bytecode, enabled)) in modules {
-                        reload(
-                            world,
-                            state_component,
-                            make_wasm_context(world),
-                            add_to_linker(world),
-                            id,
-                            enabled.then_some(bytecode),
-                        );
-                    }
-                },
-            ),
-            Box::new(FnSystem::new(move |world, _| {
-                profiling::scope!("WASM module app events");
-                let events = app_events_reader
-                    .iter(world.resource(world_events()))
-                    .map(|(_, event)| event.clone())
-                    .collect_vec();
-
-                for event in events {
-                    run_all(
-                        world,
-                        state_component,
-                        &RunContext::new(world, "core/world_event", event),
-                    );
-                }
-            })),
-            Box::new(FnSystem::new(move |world, _| {
-                profiling::scope!("WASM module frame event");
-                // trigger frame event
-                run_all(
-                    world,
-                    state_component,
-                    &RunContext::new(world, "core/frame", Entity::new()),
-                );
-            })),
-            Box::new(FnSystem::new(move |world, _| {
-                profiling::scope!("WASM module collision event");
-                // trigger collision event
-                let collisions = match world.resource_opt(collisions()) {
-                    Some(collisions) => collisions.lock().clone(),
-                    None => return,
-                };
-                for (a, b) in collisions.into_iter() {
-                    let select_entity = |px: PxRigidActorRef| {
-                        px.get_shapes()
-                            .into_iter()
-                            .next()
-                            .and_then(|shape| shape.get_user_data::<PxShapeUserData>())
-                            .map(|ud| ud.entity)
-                    };
-                    let ids = [select_entity(a), select_entity(b)]
-                        .into_iter()
-                        .flatten()
-                        .collect_vec();
-                    run_all(
-                        world,
-                        state_component,
-                        &RunContext::new(
-                            world,
-                            "core/collision",
-                            vec![ComponentEntry::new(ambient_ecs::ids(), ids)].into(),
-                        ),
-                    );
-                }
-            })),
-            Box::new(FnSystem::new(move |world, _| {
-                profiling::scope!("WASM module collider loads");
-                // trigger collider loads
-                let collider_loads = match world.resource_opt(collider_loads()) {
-                    Some(collider_loads) => collider_loads.clone(),
-                    None => return,
-                };
-                for id in collider_loads {
-                    run_all(
-                        world,
-                        state_component,
-                        &RunContext::new(
-                            world,
-                            "core/collider_load",
-                            vec![ComponentEntry::new(ambient_ecs::id(), id)].into(),
-                        ),
-                    );
-                }
-            })),
-        ],
-    )
+    Ok(())
 }
 
-pub fn on_forking_systems<
-    Bindings: Send + Sync + Host + 'static,
-    Context: WasmContext<Bindings> + Send + Sync + 'static,
-    HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
->(
-    state_component: Component<ModuleState<Bindings, Context, HostGuestState>>,
-    make_wasm_context_component: Component<
-        Arc<dyn Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context + Send + Sync>,
-    >,
-    add_to_linker_component: Component<
-        Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
-    >,
-) -> SystemGroup<ForkingEvent> {
+pub fn systems() -> SystemGroup {
+    shared::systems()
+}
+
+pub fn on_forking_systems() -> SystemGroup<ForkingEvent> {
     SystemGroup::new(
         "core/wasm/server/on_forking_systems",
         vec![Box::new(FnSystem::new(move |world, _| {
-            let make_wasm_context = world.resource(make_wasm_context_component).clone();
-            let add_to_linker = world.resource(add_to_linker_component).clone();
-
             // Reset the states of all the modules when we fork.
-            reload_all(world, state_component, make_wasm_context, add_to_linker);
+            shared::reload_all(world);
         }))],
     )
 }
 
-pub fn on_shutdown_systems<
-    Bindings: Send + Sync + Host + 'static,
-    Context: WasmContext<Bindings> + Send + Sync + 'static,
-    HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
->(
-    state_component: Component<ModuleState<Bindings, Context, HostGuestState>>,
-) -> SystemGroup<ShutdownEvent> {
+pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
     SystemGroup::new(
         "core/wasm/server/on_shutdown_systems",
         vec![Box::new(FnSystem::new(move |world, _| {
-            let modules = query(()).incl(module()).collect_ids(world, None);
+            let modules = query(()).incl(shared::module()).collect_ids(world, None);
             for module_id in modules {
-                let errors = unload(world, state_component, module_id, "shutting down");
-                update_errors(world, state_component, &errors, true);
+                let errors = shared::unload(world, module_id, "shutting down");
+                shared::update_errors(world, &errors);
             }
         }))],
     )
 }
 
-#[allow(clippy::too_many_arguments)]
-pub async fn initialize<
-    Bindings: Send + Sync + Host + 'static,
-    Context: WasmContext<Bindings> + Send + Sync + 'static,
-    HostGuestState: Default + GetBaseHostGuestState + Send + Sync + 'static,
->(
-    world: &mut World,
+#[derive(Clone)]
+struct Bindings {
+    base: shared::bindings::BindingsBase,
+    world_ref: shared::bindings::WorldRef,
+}
+impl Bindings {
+    pub fn world(&self) -> &World {
+        unsafe { self.world_ref.world() }
+    }
+    pub fn world_mut(&mut self) -> &mut World {
+        unsafe { self.world_ref.world_mut() }
+    }
+}
 
-    messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
+impl shared::bindings::BindingsBound for Bindings {
+    fn base(&self) -> &shared::bindings::BindingsBase {
+        &self.base
+    }
 
-    (make_wasm_context_component, make_wasm_context): (
-        Component<Arc<dyn Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context + Send + Sync>>,
-        Arc<dyn Fn(WasiCtx, Arc<RwLock<HostGuestState>>) -> Context + Send + Sync>,
-    ),
-    (add_to_linker_component, add_to_linker): (
-        Component<Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>>,
-        Arc<dyn Fn(&mut Linker<Context>) -> anyhow::Result<()> + Send + Sync>,
-    ),
-) -> anyhow::Result<()> {
-    super::shared::initialize(world, messenger).await?;
-    world.add_resource(make_wasm_context_component, make_wasm_context);
-    world.add_resource(add_to_linker_component, add_to_linker);
+    fn base_mut(&mut self) -> &mut shared::bindings::BindingsBase {
+        &mut self.base
+    }
+    fn set_world(&mut self, world: &mut World) {
+        unsafe {
+            self.world_ref.set_world(world);
+        }
+    }
+    fn clear_world(&mut self) {
+        unsafe {
+            self.world_ref.clear_world();
+        }
+    }
+}
 
-    Ok(())
+impl wit::types::Host for Bindings {}
+impl wit::entity::Host for Bindings {
+    fn spawn(&mut self, data: wit::entity::EntityData) -> anyhow::Result<wit::types::EntityId> {
+        shared::implementation::entity::spawn(
+            unsafe { self.world_ref.world_mut() },
+            &mut self.base.spawned_entities,
+            data,
+        )
+    }
+
+    fn despawn(&mut self, entity: wit::types::EntityId) -> anyhow::Result<bool> {
+        shared::implementation::entity::despawn(
+            unsafe { self.world_ref.world_mut() },
+            &mut self.base.spawned_entities,
+            entity,
+        )
+    }
+
+    fn set_animation_controller(
+        &mut self,
+        entity: wit::types::EntityId,
+        animation_controller: wit::entity::AnimationController,
+    ) -> anyhow::Result<()> {
+        shared::implementation::entity::set_animation_controller(
+            self.world_mut(),
+            entity,
+            animation_controller,
+        )
+    }
+
+    fn exists(&mut self, entity: wit::types::EntityId) -> anyhow::Result<bool> {
+        shared::implementation::entity::exists(self.world(), entity)
+    }
+
+    fn resources(&mut self) -> anyhow::Result<wit::types::EntityId> {
+        shared::implementation::entity::resources(self.world())
+    }
+
+    fn in_area(
+        &mut self,
+        position: wit::types::Vec3,
+        radius: f32,
+    ) -> anyhow::Result<Vec<wit::types::EntityId>> {
+        shared::implementation::entity::in_area(self.world_mut(), position, radius)
+    }
+
+    fn get_all(&mut self, index: u32) -> anyhow::Result<Vec<wit::types::EntityId>> {
+        shared::implementation::entity::get_all(self.world_mut(), index)
+    }
+}
+impl wit::component::Host for Bindings {
+    fn get_index(&mut self, id: String) -> anyhow::Result<Option<u32>> {
+        shared::implementation::component::get_index(id)
+    }
+
+    fn get_component(
+        &mut self,
+        entity: wit::types::EntityId,
+        index: u32,
+    ) -> anyhow::Result<Option<wit::component::ValueResult>> {
+        shared::implementation::component::get_component(self.world(), entity, index)
+    }
+
+    fn add_component(
+        &mut self,
+        entity: wit::types::EntityId,
+        index: u32,
+        value: wit::component::ValueResult,
+    ) -> anyhow::Result<()> {
+        shared::implementation::component::add_component(self.world_mut(), entity, index, value)
+    }
+
+    fn add_components(
+        &mut self,
+        entity: wit::types::EntityId,
+        data: wit::entity::EntityData,
+    ) -> anyhow::Result<()> {
+        shared::implementation::component::add_components(self.world_mut(), entity, data)
+    }
+
+    fn set_component(
+        &mut self,
+        entity: wit::types::EntityId,
+        index: u32,
+        value: wit::component::ValueResult,
+    ) -> anyhow::Result<()> {
+        shared::implementation::component::set_component(self.world_mut(), entity, index, value)
+    }
+
+    fn set_components(
+        &mut self,
+        entity: wit::types::EntityId,
+        data: wit::entity::EntityData,
+    ) -> anyhow::Result<()> {
+        shared::implementation::component::set_components(self.world_mut(), entity, data)
+    }
+
+    fn has_component(&mut self, entity: wit::types::EntityId, index: u32) -> anyhow::Result<bool> {
+        shared::implementation::component::has_component(self.world(), entity, index)
+    }
+
+    fn has_components(
+        &mut self,
+        entity: wit::types::EntityId,
+        components: Vec<u32>,
+    ) -> anyhow::Result<bool> {
+        shared::implementation::component::has_components(self.world(), entity, components)
+    }
+
+    fn remove_component(&mut self, entity: wit::types::EntityId, index: u32) -> anyhow::Result<()> {
+        shared::implementation::component::remove_component(self.world_mut(), entity, index)
+    }
+
+    fn remove_components(
+        &mut self,
+        entity: wit::types::EntityId,
+        components: Vec<u32>,
+    ) -> anyhow::Result<()> {
+        shared::implementation::component::remove_components(self.world_mut(), entity, components)
+    }
+
+    fn query(
+        &mut self,
+        query: wit::component::QueryBuild,
+        query_event: wit::component::QueryEvent,
+    ) -> anyhow::Result<u64> {
+        shared::implementation::component::query(&mut self.base.query_states, query, query_event)
+    }
+
+    fn query_eval(
+        &mut self,
+        query_index: u64,
+    ) -> anyhow::Result<Vec<(wit::types::EntityId, Vec<wit::component::ValueResult>)>> {
+        shared::implementation::component::query_eval(
+            unsafe { self.world_ref.world() },
+            &mut self.base.query_states,
+            query_index,
+        )
+    }
+}
+impl wit::event::Host for Bindings {
+    fn subscribe(&mut self, name: String) -> anyhow::Result<()> {
+        shared::implementation::event::subscribe(&mut self.base.subscribed_events, name)
+    }
+
+    fn send(&mut self, name: String, data: wit::entity::EntityData) -> anyhow::Result<()> {
+        shared::implementation::event::send(
+            self.world_mut(),
+            name,
+            shared::implementation::component::convert_components_to_entity_data(data),
+        )
+    }
 }
