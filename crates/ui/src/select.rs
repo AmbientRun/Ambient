@@ -8,6 +8,7 @@ use crate::{
     layout::{margin, Borders},
     padding, tooltip_background_color, Corners, Dropdown, SMALL_ROUNDING, STREET,
 };
+use ambient_event_types::WINDOW_MOUSE_INPUT;
 use ambient_input::event_mouse_input;
 use ambient_ui_components::UIExt;
 
@@ -22,7 +23,7 @@ impl ElementComponent for DropdownSelect {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { content, on_select, items, inline } = *self;
         let (show, set_show) = hooks.use_state(false);
-        hooks.use_world_event({
+        hooks.use_world_event(WINDOW_MOUSE_INPUT, {
             let set_show = set_show.clone();
             move |_world, event| {
                 if let Some(pressed) = event.get(event_mouse_input()) {

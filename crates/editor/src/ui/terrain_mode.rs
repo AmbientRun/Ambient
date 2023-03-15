@@ -38,6 +38,7 @@ use glam::{vec3, Vec3, Vec3Swizzles, Vec4};
 use wgpu::{util::DeviceExt, BindGroup};
 
 use super::EditorPlayerInputHandler;
+use ambient_event_types::WINDOW_MOUSE_INPUT;
 
 #[derive(Clone, Debug)]
 pub struct TerrainRaycastPicker {
@@ -89,7 +90,7 @@ impl ElementComponent for TerrainRaycastPicker {
                 game_state.lock().world.despawn(new_vis_brush_id);
             })
         });
-        hooks.use_world_event({
+        hooks.use_world_event(WINDOW_MOUSE_INPUT, {
             let set_mousedown = set_mousedown.clone();
             move |_world, event| {
                 if let Some(pressed) = event.get(event_mouse_input()) {

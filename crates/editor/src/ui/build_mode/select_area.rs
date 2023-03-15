@@ -18,6 +18,7 @@ use crate::{
     intents::SelectMode,
     rpc::{rpc_select, SelectMethod},
 };
+use ambient_event_types::{WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION};
 
 #[derive(Debug, Clone)]
 /// Handles the server communication for selecting objects
@@ -39,7 +40,7 @@ impl ElementComponent for SelectArea {
                 });
             })
         });
-        hooks.use_world_event({
+        hooks.use_multi_world_event(&[WINDOW_MOUSE_MOTION, WINDOW_MOUSE_INPUT], {
             let set_dragging = set_dragging.clone();
             let is_clicking = is_clicking.clone();
             move |world, event| {

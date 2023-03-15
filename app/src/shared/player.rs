@@ -7,6 +7,7 @@ use ambient_core::{
 };
 use ambient_ecs::{query, query_mut, world_events, Entity, SystemGroup, WorldDiff};
 use ambient_element::{element_component, Element, Hooks};
+use ambient_event_types::{WINDOW_FOCUSED, WINDOW_KEYBOARD_INPUT, WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION, WINDOW_MOUSE_WHEEL};
 use ambient_input::{
     event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels, keycode,
     mouse_button, player_prev_raw_input, player_raw_input, PlayerRawInput,
@@ -30,12 +31,13 @@ pub fn register_datagram_handler(handlers: &mut DatagramHandlers) {
                     let prev_play_input = world.get_ref(player_id, player_raw_input()).unwrap().clone();
                     world.set(player_id, player_raw_input(), input.clone()).ok();
                     let mut fire_mouse_input = |down: bool, button: MouseButton| {
-                        world.resource_mut(world_events()).add_event(
+                        world.resource_mut(world_events()).add_event((
+                            WINDOW_MOUSE_INPUT.to_string(),
                             Entity::new()
                                 .with(event_mouse_input(), down)
                                 .with(mouse_button(), button.into())
                                 .with(ambient_core::player::user_id(), user_id.clone()),
-                        );
+                        ));
                     };
                     for next_button in &input.mouse_buttons {
                         if !prev_play_input.mouse_buttons.contains(next_button) {
@@ -110,7 +112,7 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
     let input = hooks.use_ref_with(|_| PlayerRawInput::default());
     let (has_focus, set_has_focus) = hooks.use_state(false);
 
-    hooks.use_world_event({
+    hooks.use_multi_world_event(&[WINDOW_KEYBOARD_INPUT, WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION, WINDOW_MOUSE_WHEEL, WINDOW_FOCUSED], {
         let input = input.clone();
         move |_world, event| {
             if let Some(pressed) = event.get(event_keyboard_input()) {

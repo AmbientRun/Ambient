@@ -1,5 +1,6 @@
 use ambient_cb::{cb, Cb};
 use ambient_element::{Element, ElementComponent, Hooks};
+use ambient_event_types::{WINDOW_MOUSE_INPUT, WINDOW_MOUSE_WHEEL};
 use ambient_guest_bridge::{
     components::input::{
         event_mouse_input, event_mouse_wheel, event_mouse_wheel_pixels, mouse_button, mouse_over, mouse_pickable_max, mouse_pickable_min,
@@ -111,7 +112,7 @@ impl ElementComponent for ClickArea {
                 }
             }
         });
-        hooks.use_world_event({
+        hooks.use_multi_world_event(&[WINDOW_MOUSE_INPUT, WINDOW_MOUSE_WHEEL], {
             let id = id.clone();
             let mouse_over_count = mouse_over_count;
             move |world, event| {

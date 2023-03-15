@@ -220,7 +220,7 @@ pub fn Button(
         }
         Box::new(|_| {})
     });
-    hooks.use_world_event({
+    hooks.use_world_event(ambient_event_types::WINDOW_MOUSE_INPUT, {
         let set_is_pressed = set_is_pressed.clone();
         let on_invoked = on_invoked.clone();
         let set_is_working = set_is_working.clone();
@@ -399,8 +399,8 @@ impl ElementComponent for Hotkey {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { on_is_pressed_changed, content, hotkey, hotkey_modifier, on_invoke } = *self;
         let (is_pressed, _) = hooks.use_state_with(|_| Arc::new(AtomicBool::new(false)));
-        hooks.use_world_event({
-            let is_pressed = is_pressed;
+        hooks.use_world_event(ambient_event_types::WINDOW_KEYBOARD_INPUT, {
+            let is_pressed = is_pressed.clone();
             move |world, event| {
                 if let Some(pressed) = event.get(event_keyboard_input()) {
                     let modifiers = ModifiersState::from_bits(event.get(keyboard_modifiers()).unwrap()).unwrap();
@@ -421,7 +421,12 @@ impl ElementComponent for Hotkey {
                             }
                         }
                     }
-                } else if let Some(_event) = event.get(event_focus_change()) {
+                }
+            }
+        });
+        hooks.use_world_event(ambient_event_types::WINDOW_FOCUSED, {
+            move |_world, event| {
+                if let Some(_event) = event.get(event_focus_change()) {
                     is_pressed.store(false, Ordering::Relaxed);
                 }
             }

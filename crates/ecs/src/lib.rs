@@ -799,8 +799,8 @@ impl<'de> Deserialize<'de> for ComponentSet {
     }
 }
 
-pub type WorldEvents = FramedEvents<Entity>;
-pub type WorldEventReader = FramedEventsReader<Entity>;
+pub type WorldEvents = FramedEvents<(String, Entity)>;
+pub type WorldEventReader = FramedEventsReader<(String, Entity)>;
 
 #[derive(Debug)]
 pub struct WorldEventsSystem;

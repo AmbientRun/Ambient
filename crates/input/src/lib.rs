@@ -74,15 +74,23 @@ impl System<Event<'static, ()>> for InputSystem {
             Event::WindowEvent { event, .. } => match event {
                 &WindowEvent::Focused(focused) => {
                     self.is_focused = focused;
-                    world.resource_mut(world_events()).add_event(Entity::new().with(event_focus_change(), focused));
+                    world
+                        .resource_mut(world_events())
+                        .add_event((ambient_event_types::WINDOW_FOCUSED.to_string(), Entity::new().with(event_focus_change(), focused)));
                 }
                 WindowEvent::ReceivedCharacter(c) => {
-                    world.resource_mut(world_events()).add_event(Entity::new().with(event_received_character(), *c));
+                    world.resource_mut(world_events()).add_event((
+                        ambient_event_types::WINDOW_RECEIVED_CHARACTER.to_string(),
+                        Entity::new().with(event_received_character(), *c),
+                    ));
                 }
 
                 WindowEvent::ModifiersChanged(mods) => {
                     self.modifiers = *mods;
-                    world.resource_mut(world_events()).add_event(Entity::new().with(event_modifiers_change(), *mods));
+                    world.resource_mut(world_events()).add_event((
+                        ambient_event_types::WINDOW_MODIFIERS_CHANGED.to_string(),
+                        Entity::new().with(event_modifiers_change(), *mods),
+                    ));
                 }
 
                 WindowEvent::KeyboardInput { input, .. } => {
@@ -98,11 +106,12 @@ impl System<Event<'static, ()>> for InputSystem {
                     if let Some(key) = input.virtual_keycode {
                         data.set(keycode(), ambient_window_types::VirtualKeyCode::from(key).to_string());
                     }
-                    world.resource_mut(world_events()).add_event(data);
+                    world.resource_mut(world_events()).add_event((ambient_event_types::WINDOW_KEYBOARD_INPUT.to_string(), data));
                 }
 
                 WindowEvent::MouseInput { state, button, .. } => {
-                    world.resource_mut(world_events()).add_event(
+                    world.resource_mut(world_events()).add_event((
+                        ambient_event_types::WINDOW_MOUSE_INPUT.to_string(),
                         Entity::new()
                             .with(
                                 event_mouse_input(),
@@ -112,11 +121,12 @@ impl System<Event<'static, ()>> for InputSystem {
                                 },
                             )
                             .with(mouse_button(), ambient_window_types::MouseButton::from(*button).into()),
-                    );
+                    ));
                 }
 
                 WindowEvent::MouseWheel { delta, .. } => {
-                    world.resource_mut(world_events()).add_event(
+                    world.resource_mut(world_events()).add_event((
+                        ambient_event_types::WINDOW_MOUSE_WHEEL.to_string(),
                         Entity::new()
                             .with(
                                 event_mouse_wheel(),
@@ -126,16 +136,17 @@ impl System<Event<'static, ()>> for InputSystem {
                                 },
                             )
                             .with(event_mouse_wheel_pixels(), matches!(delta, MouseScrollDelta::PixelDelta(..))),
-                    );
+                    ));
                 }
 
                 _ => {}
             },
 
             Event::DeviceEvent { event: DeviceEvent::MouseMotion { delta }, .. } => {
-                world
-                    .resource_mut(world_events())
-                    .add_event(Entity::new().with(event_mouse_motion(), vec2(delta.0 as f32, delta.1 as f32)));
+                world.resource_mut(world_events()).add_event((
+                    ambient_event_types::WINDOW_MOUSE_MOTION.to_string(),
+                    Entity::new().with(event_mouse_motion(), vec2(delta.0 as f32, delta.1 as f32)),
+                ));
             }
             _ => {}
         }

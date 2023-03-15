@@ -10,5 +10,17 @@ pub const COLLIDER_LOAD: &str = "core/collider_load";
 pub const MODULE_LOAD: &str = "core/module_load";
 /// Fired when the module is unloaded.
 pub const MODULE_UNLOAD: &str = "core/module_unload";
-/// A world event was fired.
-pub const WORLD_EVENT: &str = "core/world_event";
+/// The window gained or lost focus
+pub const WINDOW_FOCUSED: &str = "core/window_focused";
+/// The window received a character input
+pub const WINDOW_RECEIVED_CHARACTER: &str = "core/window_received_character";
+/// The window received a character input
+pub const WINDOW_MODIFIERS_CHANGED: &str = "core/window_modifiers_changed";
+/// The window received a keyboard input
+pub const WINDOW_KEYBOARD_INPUT: &str = "core/window_keyboard_input";
+/// The window received a mouse button press or release
+pub const WINDOW_MOUSE_INPUT: &str = "core/window_mouse_input";
+/// The window received a mouse wheel change
+pub const WINDOW_MOUSE_WHEEL: &str = "core/window_mouse_wheel";
+/// The mouse cursor was moved
+pub const WINDOW_MOUSE_MOTION: &str = "core/window_mouse_motion";

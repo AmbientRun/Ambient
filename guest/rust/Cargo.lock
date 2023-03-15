@@ -93,6 +93,7 @@ dependencies = [
  "ambient_cb",
  "ambient_color",
  "ambient_element",
+ "ambient_event_types",
  "ambient_guest_bridge",
  "ambient_window_types",
  "futures",
