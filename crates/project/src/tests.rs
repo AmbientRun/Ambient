@@ -78,7 +78,7 @@ fn can_parse_rust_build_settings() {
             project: Project {
                 id: Identifier::new("tictactoe").unwrap(),
                 name: Some("Tic Tac Toe".to_string()),
-                version: Version::new(0, 0, 1),
+                version: Version::new(0, 0, 1, None),
                 description: None,
                 authors: vec![],
                 organization: None
@@ -163,7 +163,7 @@ fn can_parse_concepts_with_documented_namespace_from_manifest() {
             project: Project {
                 id: Identifier::new("my_project").unwrap(),
                 name: Some("My Project".to_string()),
-                version: Version::new(0, 0, 1),
+                version: Version::new(0, 0, 1, None),
                 description: None,
                 authors: vec![],
                 organization: None
