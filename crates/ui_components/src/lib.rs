@@ -15,6 +15,7 @@ pub mod clickarea;
 pub mod default_theme;
 pub mod dropdown;
 pub mod layout;
+pub mod tabs;
 pub mod text;
 
 #[element_component]

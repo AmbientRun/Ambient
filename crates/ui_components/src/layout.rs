@@ -1,4 +1,5 @@
 use crate::{use_window_logical_resolution, UIBase};
+use ambient_cb::Cb;
 use ambient_element::{
     define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent, ElementComponentExt, Hooks,
 };
@@ -11,7 +12,6 @@ use ambient_guest_bridge::components::{
         orientation_horizontal, orientation_vertical, width,
     },
 };
-use cb::Cb;
 use glam::{vec2, vec3, Vec2};
 use itertools::Itertools;
 

@@ -107,6 +107,7 @@ dependencies = [
  "ambient_ecs",
  "ambient_editor_derive",
  "ambient_element",
+ "ambient_event_types",
  "ambient_gizmos",
  "ambient_gpu",
  "ambient_input",
@@ -190,6 +191,7 @@ name = "ambient_api"
 version = "0.1.1"
 dependencies = [
  "ambient_api_macros",
+ "ambient_event_types",
  "anyhow",
  "data-encoding",
  "glam 0.22.0",
@@ -383,6 +385,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_cb"
+version = "0.1.0"
+
+[[package]]
 name = "ambient_color"
 version = "0.1.0"
 dependencies = [
@@ -536,6 +542,7 @@ dependencies = [
  "ambient_ecs",
  "ambient_ecs_editor",
  "ambient_element",
+ "ambient_event_types",
  "ambient_gpu",
  "ambient_input",
  "ambient_intent",
@@ -602,13 +609,13 @@ dependencies = [
 name = "ambient_element"
 version = "0.1.1"
 dependencies = [
+ "ambient_cb",
  "ambient_core",
  "ambient_element_component",
  "ambient_guest_bridge",
  "ambient_sys",
  "as-any",
  "atomic_refcell",
- "cb",
  "derivative",
  "dyn-clonable",
  "friendly_id",
@@ -630,6 +637,10 @@ dependencies = [
  "quote",
  "syn",
 ]
+
+[[package]]
+name = "ambient_event_types"
+version = "0.1.0"
 
 [[package]]
 name = "ambient_gizmos"
@@ -700,6 +711,7 @@ version = "0.1.1"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
+ "ambient_event_types",
  "ambient_std",
  "ambient_window_types",
  "glam 0.22.0",
@@ -1078,6 +1090,7 @@ name = "ambient_std"
 version = "0.1.1"
 dependencies = [
  "ambient_asset_cache",
+ "ambient_cb",
  "ambient_color",
  "ambient_sys",
  "anyhow",
@@ -1085,7 +1098,6 @@ dependencies = [
  "async-trait",
  "bincode",
  "bytemuck",
- "cb",
  "chrono",
  "convert_case 0.6.0",
  "data-encoding",
@@ -1214,6 +1226,7 @@ dependencies = [
  "ambient_ecs",
  "ambient_editor_derive",
  "ambient_element",
+ "ambient_event_types",
  "ambient_gpu",
  "ambient_input",
  "ambient_layout",
@@ -1255,11 +1268,12 @@ dependencies = [
 name = "ambient_ui_components"
 version = "0.1.0"
 dependencies = [
+ "ambient_cb",
  "ambient_color",
  "ambient_element",
+ "ambient_event_types",
  "ambient_guest_bridge",
  "ambient_window_types",
- "cb",
  "futures",
  "glam 0.22.0",
  "itertools",
@@ -1934,10 +1948,6 @@ dependencies = [
  "serde",
  "toml 0.7.2",
 ]
-
-[[package]]
-name = "cb"
-version = "0.1.0"
 
 [[package]]
 name = "cc"

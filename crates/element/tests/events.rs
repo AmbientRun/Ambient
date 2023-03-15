@@ -1,7 +1,7 @@
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_guest_bridge::ecs::query_mut;
 mod common;
-use cb::cb;
+use ambient_cb::cb;
 use common::*;
 
 #[test]

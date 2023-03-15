@@ -7,6 +7,7 @@ name = "ambient_api"
 version = "0.1.1"
 dependencies = [
  "ambient_api_macros",
+ "ambient_event_types",
  "anyhow",
  "data-encoding",
  "glam",
@@ -30,6 +31,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_cb"
+version = "0.1.0"
+
+[[package]]
 name = "ambient_color"
 version = "0.1.0"
 dependencies = [
@@ -43,11 +48,11 @@ dependencies = [
 name = "ambient_element"
 version = "0.1.1"
 dependencies = [
+ "ambient_cb",
  "ambient_element_component",
  "ambient_guest_bridge",
  "as-any",
  "atomic_refcell",
- "cb",
  "derivative",
  "dyn-clonable",
  "friendly_id",
@@ -70,6 +75,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_event_types"
+version = "0.1.0"
+
+[[package]]
 name = "ambient_guest_bridge"
 version = "0.1.0"
 dependencies = [
@@ -81,11 +90,12 @@ dependencies = [
 name = "ambient_ui_components"
 version = "0.1.0"
 dependencies = [
+ "ambient_cb",
  "ambient_color",
  "ambient_element",
+ "ambient_event_types",
  "ambient_guest_bridge",
  "ambient_window_types",
- "cb",
  "futures",
  "glam",
  "itertools",
@@ -177,10 +187,6 @@ name = "byteorder"
 version = "1.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "14c189c53d098945499cdfa7ecc63567cf3886b3332b312a5b4585d8d3a6a610"
-
-[[package]]
-name = "cb"
-version = "0.1.0"
 
 [[package]]
 name = "cfg-if"

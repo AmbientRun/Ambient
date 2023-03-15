@@ -9,7 +9,8 @@ edition = "2021"
 ambient_element = { path = "../element", default-features = false }
 ambient_guest_bridge = { path = "../guest_bridge", default-features = false }
 ambient_window_types = { path = "../window_types" }
-cb = { path = "../../libs/cb" }
+ambient_event_types = { path = "../event_types" }
+ambient_cb = { path = "../../libs/cb" }
 ambient_color = { path = "../../libs/color" }
 glam = { workspace = true }
 itertools = { workspace = true }

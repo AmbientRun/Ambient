@@ -33,6 +33,7 @@ ambient_world_audio = { path = "../world_audio" }
 ambient_terrain = { path = "../terrain" }
 ambient_naturals = { path = "../naturals" }
 ambient_window_types = { path = "../window_types" }
+ambient_event_types = { path = "../event_types" }
 physxx = { path = "../../libs/physxx" }
 glam = { workspace = true }
 itertools = { workspace = true }

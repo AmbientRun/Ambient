@@ -97,8 +97,8 @@ pub fn systems() -> SystemGroup {
                     .map(|(_, event)| event.clone())
                     .collect_vec();
 
-                for event in events {
-                    run_all(world, &RunContext::new(world, "core/world_event", event));
+                for (name, data) in events {
+                    run_all(world, &RunContext::new(world, &name, data));
                 }
             })),
             Box::new(FnSystem::new(move |world, _| {

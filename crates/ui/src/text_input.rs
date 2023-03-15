@@ -12,6 +12,7 @@ use winit::{event::VirtualKeyCode, window::CursorIcon};
 
 use super::{Editor, EditorOpts, Focus, Text, UIExt};
 use crate::{layout::*, text, use_interval_deps, Rectangle, UIBase};
+use ambient_event_types::{WINDOW_KEYBOARD_INPUT, WINDOW_RECEIVED_CHARACTER};
 
 #[element_component]
 pub fn TextInput(
@@ -33,7 +34,7 @@ pub fn TextInput(
             }
         })
     }));
-    hooks.use_world_event({
+    hooks.use_multi_event(&[WINDOW_RECEIVED_CHARACTER, WINDOW_KEYBOARD_INPUT], {
         let value = value.clone();
         let on_change = on_change.clone();
         move |_world, event| {

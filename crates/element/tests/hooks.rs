@@ -5,7 +5,7 @@ use std::sync::{
 
 use ambient_element::{Element, ElementComponent, ElementComponentExt, ElementTree, Hooks};
 mod common;
-use cb::cb;
+use ambient_cb::cb;
 use common::*;
 
 #[test]

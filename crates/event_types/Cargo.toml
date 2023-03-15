@@ -1,5 +1,5 @@
 [package]
-name = "ambient_cb"
+name = "ambient_event_types"
 version = "0.1.0"
 edition = "2021"
 

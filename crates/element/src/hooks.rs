@@ -7,6 +7,7 @@ use std::{
     sync::Arc,
 };
 
+use ambient_cb::{cb, Cb};
 #[cfg(feature = "native")]
 use ambient_core::runtime;
 #[cfg(feature = "native")]
@@ -17,7 +18,6 @@ use ambient_sys::task;
 use as_any::Downcast;
 #[cfg(feature = "native")]
 use atomic_refcell::AtomicRefCell;
-use cb::{cb, Cb};
 #[cfg(feature = "native")]
 use itertools::Itertools;
 use parking_lot::Mutex;
@@ -148,15 +148,18 @@ impl<'a> Hooks<'a> {
         }
     }
 
-    pub fn use_world_event(&mut self, func: impl Fn(&mut World, &Entity) + Sync + Send + 'static) {
+    pub fn use_event(&mut self, event_name: &str, func: impl Fn(&mut World, &Entity) + Sync + Send + 'static) {
         #[cfg(feature = "native")]
         {
             let reader = self.use_ref_with(|world| world.resource(world_events()).reader());
+            let event_name = event_name.to_string();
             self.use_frame(move |world| {
                 let mut reader = reader.lock();
                 let events = reader.iter(world.resource(world_events())).map(|(_, event)| event.clone()).collect_vec();
-                for event in events {
-                    func(world, &event);
+                for (name, event) in events {
+                    if name == event_name {
+                        func(world, &event);
+                    }
                 }
             })
         }
@@ -165,13 +168,20 @@ impl<'a> Hooks<'a> {
             use ambient_guest_bridge::api::global::*;
             let handler = self.use_ref_with(|_| None);
             *handler.lock() = Some(cb(func));
-            self.use_spawn(move |_| {
-                let listener = on(ambient_guest_bridge::api::event::WORLD_EVENT, move |data| {
+            self.use_effect(event_name.to_string(), move |_, _| {
+                let listener = on(event_name, move |data| {
                     (handler.lock().as_ref().unwrap())(&mut World, data);
                     ambient_guest_bridge::api::prelude::EventOk
                 });
                 Box::new(|_| listener.stop())
             });
+        }
+    }
+    pub fn use_multi_event(&mut self, event_names: &[&str], func: impl Fn(&mut World, &Entity) + Sync + Send + 'static) {
+        let func = Arc::new(func);
+        for event_name in event_names {
+            let func = func.clone();
+            self.use_event(event_name, move |w, d| func(w, d));
         }
     }
 

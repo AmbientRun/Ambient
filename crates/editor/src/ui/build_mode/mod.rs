@@ -45,6 +45,7 @@ use selection_panel::*;
 use transform::*;
 
 use self::entity_browser::EntityBrowserScreen;
+use ambient_event_types::WINDOW_KEYBOARD_INPUT;
 
 /// An editor can only be in one action at a time.
 /// They can be confirmed or aborted.
@@ -155,7 +156,7 @@ impl ElementComponent for EditorBuildMode {
 
             use_interval_deps(hooks, Duration::from_millis(2000), true, selection.clone(), update_targets);
         }
-        hooks.use_world_event(move |_world, event| {
+        hooks.use_event(WINDOW_KEYBOARD_INPUT, move |_world, event| {
             if let Some(pressed) = event.get(event_keyboard_input()) {
                 if let Some(keycode) = event.get_ref(keycode()) {
                     let keycode = VirtualKeyCode::from_str(keycode).unwrap();
