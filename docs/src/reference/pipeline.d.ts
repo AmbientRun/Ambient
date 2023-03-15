@@ -5,7 +5,7 @@ export type f32 = number;
 export type Vec2 = [number, number];
 export type Vec3 = [number, number, number];
 export type Vec4 = [number, number, number, number];
-export type EntityData = {[component_id: string]: any};
+export type Entity = {[component_id: string]: any};
 export type AssetUrl = string;
 
 export type Pipeline = {
@@ -88,7 +88,7 @@ export type Pipeline = {
     /// This is a great way to specify additional information about your prefab that can be used by gameplay logic.
     /// Note that these components should have static data (i.e. statistics), not dynamic state, as any such state could be
     /// replaced by this prefab being reloaded.
-    prefab_components?: EntityData,
+    prefab_components?: Entity,
     /// If specified, a list of overrides to use for the materials for the mesh.
     material_overrides?: {
       /// The filter for this override (i.e. what it should apply to).

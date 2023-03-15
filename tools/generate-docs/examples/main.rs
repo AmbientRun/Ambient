@@ -56,7 +56,7 @@ fn generate_pipeline() -> anyhow::Result<()> {
         ("Vec2", "[number, number]"),
         ("Vec3", "[number, number, number]"),
         ("Vec4", "[number, number, number, number]"),
-        ("EntityData", "{[component_id: string]: any}"),
+        ("Entity", "{[component_id: string]: any}"),
         ("AssetUrl", "string"),
     ] {
         writeln!(file, "export type {alias} = {ts_type};")?;
@@ -131,7 +131,7 @@ impl GenerateDTS for parser::Type {
             parser::Type::Vec2 => write!(file, "Vec2")?,
             parser::Type::Vec3 => write!(file, "Vec3")?,
             parser::Type::Vec4 => write!(file, "Vec4")?,
-            parser::Type::EntityData => write!(file, "EntityData")?,
+            parser::Type::Entity => write!(file, "Entity")?,
         }
         Ok(())
     }
@@ -372,7 +372,7 @@ mod parser {
         Vec2,
         Vec3,
         Vec4,
-        EntityData,
+        Entity,
     }
     impl Type {
         pub fn convert_item(krate: &Crate, item: &Item) -> Type {
@@ -400,8 +400,8 @@ mod parser {
                         Type::Vec3
                     } else if p.name == "Vec4" {
                         Type::Vec4
-                    } else if p.name == "EntityData" {
-                        Type::EntityData
+                    } else if p.name == "Entity" {
+                        Type::Entity
                     } else if p.name == "Box" {
                         Self::get_first_type_from_generic(krate, p)
                     } else {
