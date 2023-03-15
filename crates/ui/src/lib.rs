@@ -90,7 +90,7 @@ pub struct ScrollArea(pub Element);
 impl ElementComponent for ScrollArea {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (scroll, set_scroll) = hooks.use_state(0.);
-        hooks.use_world_event(WINDOW_MOUSE_WHEEL, move |_world, event| {
+        hooks.use_event(WINDOW_MOUSE_WHEEL, move |_world, event| {
             if let Some(delta) = event.get(event_mouse_wheel()) {
                 set_scroll(scroll + if event.get(event_mouse_wheel_pixels()).unwrap() { delta.y } else { delta.y * 20. });
             }
@@ -125,7 +125,7 @@ define_el_function_for_vec_element_newtype!(FocusRoot);
 impl ElementComponent for FocusRoot {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let set_focus = hooks.provide_context(|| Focus(None));
-        hooks.use_world_event(WINDOW_MOUSE_INPUT, move |_world, event| {
+        hooks.use_event(WINDOW_MOUSE_INPUT, move |_world, event| {
             if let Some(_event) = event.get_ref(event_mouse_input()) {
                 set_focus(Focus(None));
             }
@@ -165,7 +165,7 @@ pub fn HighjackMouse(
             }
         })
     });
-    hooks.use_multi_world_event(&[WINDOW_MOUSE_MOTION, WINDOW_FOCUSED], {
+    hooks.use_multi_event(&[WINDOW_MOUSE_MOTION, WINDOW_FOCUSED], {
         let focused = focused;
         move |world, event| {
             if let Some(delta) = event.get_ref(event_mouse_motion()) {

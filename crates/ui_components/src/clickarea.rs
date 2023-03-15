@@ -112,7 +112,7 @@ impl ElementComponent for ClickArea {
                 }
             }
         });
-        hooks.use_multi_world_event(&[WINDOW_MOUSE_INPUT, WINDOW_MOUSE_WHEEL], {
+        hooks.use_multi_event(&[WINDOW_MOUSE_INPUT, WINDOW_MOUSE_WHEEL], {
             let id = id.clone();
             let mouse_over_count = mouse_over_count;
             move |world, event| {

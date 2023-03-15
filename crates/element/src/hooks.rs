@@ -148,7 +148,7 @@ impl<'a> Hooks<'a> {
         }
     }
 
-    pub fn use_world_event(&mut self, event_name: &str, func: impl Fn(&mut World, &Entity) + Sync + Send + 'static) {
+    pub fn use_event(&mut self, event_name: &str, func: impl Fn(&mut World, &Entity) + Sync + Send + 'static) {
         #[cfg(feature = "native")]
         {
             let reader = self.use_ref_with(|world| world.resource(world_events()).reader());
@@ -177,11 +177,11 @@ impl<'a> Hooks<'a> {
             });
         }
     }
-    pub fn use_multi_world_event(&mut self, event_names: &[&str], func: impl Fn(&mut World, &Entity) + Sync + Send + 'static) {
+    pub fn use_multi_event(&mut self, event_names: &[&str], func: impl Fn(&mut World, &Entity) + Sync + Send + 'static) {
         let func = Arc::new(func);
         for event_name in event_names {
             let func = func.clone();
-            self.use_world_event(event_name, move |w, d| func(w, d));
+            self.use_event(event_name, move |w, d| func(w, d));
         }
     }
 

@@ -263,7 +263,7 @@ impl ElementComponent for Slider {
         let block_left_offset = if block_left_offset.is_nan() || block_left_offset.is_infinite() { 0. } else { block_left_offset };
 
         let dragging = hooks.use_ref_with(|_| false);
-        hooks.use_multi_world_event(&[WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION], {
+        hooks.use_multi_event(&[WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION], {
             let dragging = dragging.clone();
             let block_id = block_id.clone();
             move |world, event| {

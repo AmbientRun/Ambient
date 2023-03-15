@@ -112,7 +112,7 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
     let input = hooks.use_ref_with(|_| PlayerRawInput::default());
     let (has_focus, set_has_focus) = hooks.use_state(false);
 
-    hooks.use_multi_world_event(&[WINDOW_KEYBOARD_INPUT, WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION, WINDOW_MOUSE_WHEEL, WINDOW_FOCUSED], {
+    hooks.use_multi_event(&[WINDOW_KEYBOARD_INPUT, WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION, WINDOW_MOUSE_WHEEL, WINDOW_FOCUSED], {
         let input = input.clone();
         move |_world, event| {
             if let Some(pressed) = event.get(event_keyboard_input()) {

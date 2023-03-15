@@ -34,7 +34,7 @@ pub fn TextInput(
             }
         })
     }));
-    hooks.use_multi_world_event(&[WINDOW_RECEIVED_CHARACTER, WINDOW_KEYBOARD_INPUT], {
+    hooks.use_multi_event(&[WINDOW_RECEIVED_CHARACTER, WINDOW_KEYBOARD_INPUT], {
         let value = value.clone();
         let on_change = on_change.clone();
         move |_world, event| {

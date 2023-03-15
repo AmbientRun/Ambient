@@ -40,7 +40,7 @@ impl ElementComponent for SelectArea {
                 });
             })
         });
-        hooks.use_multi_world_event(&[WINDOW_MOUSE_MOTION, WINDOW_MOUSE_INPUT], {
+        hooks.use_multi_event(&[WINDOW_MOUSE_MOTION, WINDOW_MOUSE_INPUT], {
             let set_dragging = set_dragging.clone();
             let is_clicking = is_clicking.clone();
             move |world, event| {

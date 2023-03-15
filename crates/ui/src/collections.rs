@@ -147,7 +147,7 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
         let Self { value, on_change, item_opts, add_presets, add_title, item_editor } = *self;
         let (add_action, set_add_action) = hooks.use_state(false);
         let has_on_change = on_change.is_some();
-        hooks.use_world_event(WINDOW_MOUSE_INPUT, {
+        hooks.use_event(WINDOW_MOUSE_INPUT, {
             let set_add_action = set_add_action.clone();
             move |_world, event| {
                 if let Some(pressed) = event.get(event_mouse_input()) {
@@ -257,7 +257,7 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
         let (self_id, set_self_id) = hooks.use_state(EntityId::null());
         let (focus, set_focus) = hooks.consume_context::<Focus>().expect("No FocusRoot found");
         let focused = focus == Focus(Some(self_id));
-        hooks.use_world_event(WINDOW_KEYBOARD_INPUT, move |_world, event| {
+        hooks.use_event(WINDOW_KEYBOARD_INPUT, move |_world, event| {
             if let Some(pressed) = event.get(event_keyboard_input()) {
                 if !focused || !pressed {
                     return;

@@ -64,7 +64,7 @@ impl ElementComponent for B {
         let (shared, _) = hooks.use_state(self.shared.clone());
         let keepalive = DroppedClosure;
 
-        hooks.use_world_event(WINDOW_MOUSE_MOTION, move |_world, event| {
+        hooks.use_event(WINDOW_MOUSE_MOTION, move |_world, event| {
             if let Some(_event) = event.get_ref(event_mouse_motion()) {
                 let _val = &keepalive;
             }
