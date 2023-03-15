@@ -984,6 +984,7 @@ dependencies = [
  "ambient_ecs",
  "paste",
  "serde",
+ "serde_json",
  "thiserror",
  "toml 0.7.2",
 ]
