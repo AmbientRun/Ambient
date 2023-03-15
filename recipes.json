@@ -3,10 +3,13 @@
         "cmd": "cargo run -p ambient"
     },
     "third-person-camera-release": {
-        "cmd": "cargo run --release -- run guest/rust/examples/basics/third_person_camera"
+        "cmd": "cargo run --release -- run ./guest/rust/examples/basics/third_person_camera"
     },
     "third-person-camera": {
-        "cmd": "cargo run -- run guest/rust/examples/basics/third_person_camera"
+        "cmd": "cargo run -- run ./guest/rust/examples/basics/third_person_camera"
+    },
+    "minigolf": {
+        "cmd": "cargo run -- run ./guest/rust/examples/games/minigolf"
     },
     "debug-third-person-camera": {
         "cmd": "cargo build -p ambient",
@@ -18,6 +21,28 @@
                     "run",
                     "./guest/rust/examples/basics/third_person_camera"
                 ]
+            }
+        }
+    },
+    "debug-minigolf": {
+        "cmd": "cargo build -p ambient",
+        "components": {
+            "dap": {
+                "program": "./target/debug/ambient",
+                "adapter": "rust",
+                "args": [
+                    "run",
+                    "./guest/rust/examples/basics/minigolf"
+                ]
+            }
+        }
+    },
+    "debug-pbr": {
+        "cmd": "cargo build -p ambient_renderer --example pbr",
+        "components": {
+            "dap": {
+                "program": "./target/debug/examples/pbr",
+                "adapter": "rust"
             }
         }
     },
