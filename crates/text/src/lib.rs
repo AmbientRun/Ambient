@@ -1,4 +1,4 @@
-use std::{num::NonZeroU32, ops::Deref, sync::Arc};
+use std::{num::NonZeroU32, ops::Deref, str::FromStr, sync::Arc};
 
 use ambient_core::{asset_cache, async_ecs::async_run, gpu, mesh, runtime, transform::*, window::window_scale_factor};
 use ambient_ecs::{components, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
@@ -6,18 +6,26 @@ use ambient_gpu::{mesh_buffer::GpuMesh, texture::Texture};
 use ambient_layout::{height, min_height, min_width, width};
 use ambient_renderer::{gpu_primitives, material, primitives, renderer_shader, SharedMaterial};
 use ambient_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt}, asset_url::AbsAssetUrl, cb, download_asset::{AssetResult, BytesFromUrl}, mesh::*, shapes::AABB
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt},
+    asset_url::AbsAssetUrl,
+    cb,
+    download_asset::{AssetResult, BytesFromUrl},
+    mesh::*,
+    shapes::AABB,
+    unwrap_log_warn,
 };
 use anyhow::Context;
 use async_trait::async_trait;
 use glam::*;
 use glyph_brush::{
-    ab_glyph::{Font, FontArc, PxScale, Rect}, BrushAction, BrushError, GlyphBrush, GlyphBrushBuilder, Section
+    ab_glyph::{Font, FontArc, PxScale, Rect},
+    BrushAction, BrushError, GlyphBrush, GlyphBrushBuilder, Section,
 };
 use log::info;
 use parking_lot::Mutex;
 
 use crate::text_material::{get_text_shader, TextMaterial};
+use strum::EnumString;
 
 mod text_material;
 
@@ -28,8 +36,8 @@ components!("ui", {
     text_case: TextCase,
     @[Debuggable, Networked, Store, Name["Font size"], Description["Size of the font."]]
     font_size: f32,
-    @[Debuggable]
-    font_style: FontStyle,
+    @[Debuggable, Networked, Store, Name["Font style"], Description["One of Bold, BoldItalic, Medium, MediumItalic, Regular, Italic, Light or LightItalic."]]
+    font_style: String,
     @[Debuggable]
     font_family: FontFamily,
     font_arc: Arc<FontArc>,
@@ -60,7 +68,7 @@ impl TextCase {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, EnumString)]
 pub enum FontStyle {
     Bold,
     BoldItalic,
@@ -161,7 +169,7 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
             }),
             query(text()).excl(font_style()).to_system(|q, world, qs, _| {
                 for (id, _) in q.collect_cloned(world, qs) {
-                    world.add_component(id, font_style(), FontStyle::Regular).unwrap();
+                    world.add_component(id, font_style(), format!("{:?}", FontStyle::Regular)).unwrap();
                 }
             }),
             query(text()).excl(font_size()).to_system(|q, world, qs, _| {
@@ -207,7 +215,7 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                     let async_run = world.resource(async_run()).clone();
                     let assets = world.resource(asset_cache()).clone();
                     world.resource(runtime()).spawn(async move {
-                        let font = FontDef(font_family, font_style).get(&assets).await;
+                        let font = FontDef(font_family, unwrap_log_warn!(FontStyle::from_str(&font_style))).get(&assets).await;
                         async_run.run(move |world| {
                             world.add_component(id, font_arc(), font).ok();
                         });

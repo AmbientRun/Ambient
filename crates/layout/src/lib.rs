@@ -15,7 +15,7 @@ pub mod guest_api;
 components!("ui", {
     @[Debuggable, Networked, Store, Name["Layout"], Description["The layout to apply to this entity's children."]]
     layout: Layout,
-    @[Debuggable, Networked, Store, Name["Mest to local from size"], Description["Update the mesh_to_local based on the width and height of this entity."]]
+    @[Debuggable, Networked, Store, Name["Mest to local from size"], Description["Update the `mesh_to_local` based on the width and height of this entity."]]
     mesh_to_local_from_size: (),
     @[Debuggable, Networked, Store, Name["Width"], Description["The width of a UI element."]]
     width: f32,
@@ -35,9 +35,9 @@ components!("ui", {
     align_vertical: Align,
     @[Debuggable, Networked, Store, Name["Space between items"], Description["Space between items in a layout."]]
     space_between_items: f32,
-    @[Debuggable, Networked, Store, Name["Is book file"], Description["This is a file in a layout_bookcase."]]
+    @[Debuggable, Networked, Store, Name["Is book file"], Description["This is a file in a `layout_bookcase`."]]
     is_book_file: (),
-    @[Debuggable, Networked, Store, Name["Gpu ui size"], Description["Upload the width and height of this to the gpu."]]
+    @[Debuggable, Networked, Store, Name["GPU UI size"], Description["Upload the width and height of this UI element to the GPU."]]
     gpu_ui_size: Vec4,
 });
 gpu_components! {

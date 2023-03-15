@@ -1,13 +1,19 @@
 [package]
 name = "asset_loading"
+
 edition = "2021"
-version = { workspace = true }
-rust-version = { workspace = true }
 publish = false
+rust-version = {workspace = true}
+version = {workspace = true}
 
 [dependencies]
-ambient_api = { path = "../../../api" }
+ambient_api = {path = "../../../api"}
 
-[lib]
-crate-type = ["cdylib"]
-required-features = []
+[[bin]]
+name = "asset_loading_server"
+path = "src/server.rs"
+required-features = ["server"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]

@@ -634,7 +634,7 @@ impl<'a, R: ComponentQuery<'a> + Clone + 'static> TypedReadQuery<R> {
         state: Option<&'a mut QueryState>,
     ) -> impl Iterator<Item = (EntityId, <R as ComponentQuery<'a>>::Data)> + 'a {
         let r = self.read_components.clone();
-        self.query.iter(world, state).into_iter().map(move |acc| (acc.id(), r.get_data(world, &acc)))
+        self.query.iter(world, state).map(move |acc| (acc.id(), r.get_data(world, &acc)))
     }
     pub fn iter_cloned(
         &self,
@@ -642,10 +642,10 @@ impl<'a, R: ComponentQuery<'a> + Clone + 'static> TypedReadQuery<R> {
         state: Option<&'a mut QueryState>,
     ) -> impl Iterator<Item = (EntityId, <R as ComponentQuery<'a>>::DataCloned)> + 'a {
         let r = self.read_components.clone();
-        self.query.iter(world, state).into_iter().map(move |acc| (acc.id(), r.get_data_cloned(world, &acc)))
+        self.query.iter(world, state).map(move |acc| (acc.id(), r.get_data_cloned(world, &acc)))
     }
     pub fn collect_ids(&self, world: &'a World, state: Option<&'a mut QueryState>) -> Vec<EntityId> {
-        self.query.iter(world, state).into_iter().map(move |acc| acc.id()).collect_vec()
+        self.query.iter(world, state).map(move |acc| acc.id()).collect_vec()
     }
     pub fn collect_cloned(
         &self,
@@ -772,7 +772,7 @@ impl<'a, RW: ComponentQuery<'a> + Clone + 'static, R: ComponentQuery<'a> + Clone
         let rw = self.read_write_components.clone();
         let r = self.read_components.clone();
         let world = &*world;
-        self.query.iter(world, state).into_iter().map(move |acc| (acc.id(), rw.get_data_mut(world, &acc), r.get_data(world, &acc)))
+        self.query.iter(world, state).map(move |acc| (acc.id(), rw.get_data_mut(world, &acc), r.get_data(world, &acc)))
     }
     pub fn to_system<F: Fn(&Self, &mut World, Option<&mut QueryState>, &E) + Send + Sync + 'static, E: 'static>(
         self,
@@ -872,10 +872,13 @@ impl<E> System<E> for SystemGroup<E> {
         match &self.0 {
             Label::Static(s) => {
                 profiling::scope!(s);
+                let _span = tracing::debug_span!("SystemGroup::run", label = s).entered();
                 execute();
             }
             Label::Dynamic(s) => {
                 profiling::scope!("Dynamic", &s);
+                let _span = tracing::debug_span!("SystemGroup::run", label = s).entered();
+
                 execute();
             }
         }

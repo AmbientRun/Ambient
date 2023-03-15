@@ -2,7 +2,10 @@ use std::sync::Arc;
 
 use ambient_animation::{animation_bind_id_from_name, AnimationClip, AnimationOutputs, AnimationTarget, AnimationTrack};
 use ambient_core::{
-    bounding::local_bounding_aabb, hierarchy::{children, parent}, name, transform::{local_to_parent, local_to_world, rotation, scale, translation}
+    bounding::local_bounding_aabb,
+    hierarchy::{children, parent},
+    name,
+    transform::{local_to_parent, local_to_world, rotation, scale, translation},
 };
 use ambient_ecs::{Entity, World};
 use ambient_model::{model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, ModelSkin, PbrRenderPrimitiveFromUrl};
@@ -71,7 +74,7 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
         }
     }
 
-    for (index, animation) in import.document.animations().into_iter().enumerate() {
+    for (index, animation) in import.document.animations().enumerate() {
         let tracks = animation
             .channels()
             .map(|channel| {
@@ -100,7 +103,7 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
                         inputs,
                         outputs: AnimationOutputs::Quat {
                             component: rotation(),
-                            data: data.into_f32().into_iter().map(|v| Quat::from_slice(&v)).collect(),
+                            data: data.into_f32().map(|v| Quat::from_slice(&v)).collect(),
                         },
                     },
                     _ => unimplemented!(),

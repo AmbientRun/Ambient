@@ -42,7 +42,7 @@ components!("primitives", {
     @[
         Networked, Store, Debuggable,
         Name["Sphere"],
-        Description["If attached to an entity, the entity will be converted to a unit-diameter sphere primitive.\nThe sphere can be customized using the `sphere_radius`, `sphere_sectors` and `sphere_stacks` components."]
+        Description["If attached to an entity alongside the other `sphere_*` components, the entity will be converted to a sphere primitive.\nTo easily instantiate a unit-diameter `sphere`, consider using the `sphere` concept (e.g. `make_sphere`)."]
     ]
     sphere: (),
     @[

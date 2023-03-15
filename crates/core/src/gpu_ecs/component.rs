@@ -127,43 +127,62 @@ fn set_entity_data_{format_name}(component_index: u32, entity_loc: vec2<u32>, va
                 .components
                 .iter()
                 .enumerate()
-                .map(|(i, comp)| format!(
-                    "
+                .map(
+                    |(i, comp)| {
+                        let offset = i;
+                        let ident = &comp.name;
+                        let format = comp.format;
+                        let ty = comp.format.wgsl();
 
-fn get_entity_{comp}(entity_loc: vec2<u32>) -> {wgsl_format} {{
-    return get_entity_data_{name}({offset}u, entity_loc);
-}}
-fn get_entity_{comp}_or(entity_loc: vec2<u32>, default_value: {wgsl_format}) -> {wgsl_format} {{
-    return get_entity_data_or_{name}({offset}u, entity_loc, default_value);
-}}
-fn has_entity_{comp}(entity_loc: vec2<u32>) -> bool {{
-    return get_entity_component_offset_{name}({offset}u, entity_loc) >= 0;
-}}
-
-{set_entity}
-",
-                    comp = comp.name,
-                    offset = i,
-                    name = self.format,
-                    wgsl_format = self.format.wgsl(),
-                    set_entity = if writeable {
-                        format!(
+                        let getters = format!(
                             "
-
-fn set_entity_{comp}(entity_loc: vec2<u32>, value: {wgsl_format}) {{
-    set_entity_data_{name}({offset}u, entity_loc, value);
+fn get_entity_{ident}(entity_loc: vec2<u32>) -> {ty} {{
+    return get_entity_data_{format}({offset}u, entity_loc);
 }}
 
-                    ",
-                            comp = comp.name,
-                            offset = i,
-                            name = self.format,
-                            wgsl_format = self.format.wgsl(),
-                        )
-                    } else {
-                        String::new()
-                    }
-                ))
+fn get_entity_{ident}_or(entity_loc: vec2<u32>, default_value: {ty}) -> {ty} {{
+    return get_entity_data_or_{format}({offset}u, entity_loc, default_value);
+}}
+
+fn has_entity_{ident}(entity_loc: vec2<u32>) -> bool {{
+    return get_entity_component_offset_{format}({offset}u, entity_loc) >= 0;
+}}
+"
+                        );
+                        let setters = if writeable {
+                            format!(
+                                "
+fn set_entity_{ident}(entity_loc: vec2<u32>, value: {ty}) {{
+set_entity_data_{format}({offset}u, entity_loc, value);
+}}
+"
+                            )
+                        } else {
+                            String::new()
+                        };
+
+                        [getters, setters].join("\n")
+                    } //                     // comp = comp.name,
+                      //                     // offset = i,
+                      //                     // name = self.format,
+                      //                     // wgsl_format = self.format.wgsl(),
+                      //                     set_entity = if writeable {
+                      //                         format!(
+                      //                             "
+
+                      // fn set_entity_{comp}(entity_loc: vec2<u32>, value: {wgsl_format}) {{
+                      //     set_entity_data_{name}({offset}u, entity_loc, value);
+                      // }}
+
+                      //                     ",
+                      //                             offset = i,
+                      //                             name = self.format,
+                      //                             wgsl_format = self.format.wgsl(),
+                      //                         )
+                      //                     } else {
+                      //                         String::new()
+                      //                     }
+                )
                 .join("")
         )
     }
@@ -185,18 +204,16 @@ impl GpuWorldConfig {
         Self { buffers }
     }
     pub fn wgsl(&self, writeable: bool) -> String {
+        let buffers = self.buffers.iter().enumerate().map(|(i, buf)| buf.wgsl(ENTITIES_BIND_GROUP, i as u32, writeable)).join("\n");
         format!(
             "
-
 struct EntityLayoutBuffer {{ data: array<i32>, }};
-@group(#{bind_group})
+@group(#{ENTITIES_BIND_GROUP})
 @binding(0)
 var<storage> entity_layout: EntityLayoutBuffer;
 
 {buffers}
 ",
-            bind_group = ENTITIES_BIND_GROUP,
-            buffers = self.buffers.iter().enumerate().map(|(i, buf)| buf.wgsl(ENTITIES_BIND_GROUP, i as u32, writeable)).join("\n")
         )
     }
 }

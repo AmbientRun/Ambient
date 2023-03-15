@@ -3,46 +3,41 @@ use std::collections::HashSet;
 use ambient_ecs::{components, world_events, Debuggable, Description, Entity, Name, Networked, Store, System, SystemGroup};
 use glam::{vec2, Vec2};
 use serde::{Deserialize, Serialize};
+use winit::event::ModifiersState;
 pub use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, MouseButton, MouseScrollDelta, VirtualKeyCode, WindowEvent};
-use winit::event::{ModifiersState, ScanCode};
 
 pub mod picking;
 
-#[derive(Debug, Clone)]
-/// Represents a keyboard event with attached modifiers
-pub struct KeyboardEvent {
-    pub scancode: ScanCode,
-    pub state: ElementState,
-    pub keycode: Option<VirtualKeyCode>,
-    pub modifiers: ModifiersState,
-    pub is_focused: bool,
-}
-
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct PlayerRawInput {
-    pub keys: HashSet<VirtualKeyCode>,
+    pub keys: HashSet<ambient_window_types::VirtualKeyCode>,
     pub mouse_position: Vec2,
     /// cursor position is _not_ the sum of mouse_deltas; mouse_delta is
     pub cursor_position: Vec2,
     pub mouse_wheel: f32,
-    pub mouse_buttons: HashSet<MouseButton>,
+    pub mouse_buttons: HashSet<ambient_window_types::MouseButton>,
 }
 
 components!("input", {
     event_received_character: char,
-    event_keyboard_input: KeyboardEvent,
+    @[Debuggable, Networked, Store, Name["Event keyboard input"], Description["A keyboard key was pressed (true) or released (false). Will also contain a `keycode` component."]]
+    event_keyboard_input: bool,
     @[Debuggable, Networked, Store, Name["Event mouse input"], Description["A mouse button was pressed (true) or released (false). Will also contain a `mouse_button` component."]]
     event_mouse_input: bool,
-    @[Debuggable, Networked, Store, Name["Event mouse motion"], Description["The mouse was moved. The value represents the delta. Use mouse_position to get the current position."]]
+    @[Debuggable, Networked, Store, Name["Event mouse motion"], Description["The mouse was moved. The value represents the delta.\nUse `mouse_position` or `current_position` from `RawInput` to get the current position."]]
     event_mouse_motion: Vec2,
     @[Debuggable, Networked, Store, Name["Event mouse wheel"], Description["The mouse wheel moved. The value represents the delta."]]
     event_mouse_wheel: Vec2,
-    @[Debuggable, Networked, Store, Name["Event mouse wheel"], Description["If true, the mouse_wheel_event should be interpreted as pixels, if false it should be interpreted as lines."]]
+    @[Debuggable, Networked, Store, Name["Event mouse wheel"], Description["If true, the `mouse_wheel_event`'s value should be interpreted as pixels. If false, it should be interpreted as lines."]]
     event_mouse_wheel_pixels: bool,
     event_modifiers_change: ModifiersState,
+    @[Debuggable, Networked, Store, Name["Event focus change"], Description["The window was focused or list its focus."]]
     event_focus_change: bool,
 
-
+    @[Debuggable, Networked, Store, Name["Keycode"], Description["Keycode when a keyboard key was pressed."]]
+    keycode: String,
+    @[Debuggable, Networked, Store, Name["Keyboard modifiers"], Description["Modifiers active."]]
+    keyboard_modifiers: u32,
     @[Debuggable, Networked, Store, Name["Mouse button"], Description["The mouse button. 0=left, 1=right, 2=middle."]]
     mouse_button: u32,
 
@@ -85,15 +80,25 @@ impl System<Event<'static, ()>> for InputSystem {
                     world.resource_mut(world_events()).add_event(Entity::new().with(event_received_character(), *c));
                 }
 
+                WindowEvent::ModifiersChanged(mods) => {
+                    self.modifiers = *mods;
+                    world.resource_mut(world_events()).add_event(Entity::new().with(event_modifiers_change(), *mods));
+                }
+
                 WindowEvent::KeyboardInput { input, .. } => {
-                    let event = KeyboardEvent {
-                        scancode: input.scancode,
-                        state: input.state,
-                        keycode: input.virtual_keycode,
-                        modifiers: self.modifiers,
-                        is_focused: self.is_focused,
-                    };
-                    world.resource_mut(world_events()).add_event(Entity::new().with(event_keyboard_input(), event));
+                    let mut data = Entity::new()
+                        .with(
+                            event_keyboard_input(),
+                            match input.state {
+                                ElementState::Pressed => true,
+                                ElementState::Released => false,
+                            },
+                        )
+                        .with(keyboard_modifiers(), self.modifiers.bits());
+                    if let Some(key) = input.virtual_keycode {
+                        data.set(keycode(), ambient_window_types::VirtualKeyCode::from(key).to_string());
+                    }
+                    world.resource_mut(world_events()).add_event(data);
                 }
 
                 WindowEvent::MouseInput { state, button, .. } => {
@@ -106,15 +111,7 @@ impl System<Event<'static, ()>> for InputSystem {
                                     ElementState::Released => false,
                                 },
                             )
-                            .with(
-                                mouse_button(),
-                                match button {
-                                    MouseButton::Left => 0,
-                                    MouseButton::Right => 1,
-                                    MouseButton::Middle => 2,
-                                    MouseButton::Other(v) => *v as u32,
-                                },
-                            ),
+                            .with(mouse_button(), ambient_window_types::MouseButton::from(*button).into()),
                     );
                 }
 
@@ -130,9 +127,6 @@ impl System<Event<'static, ()>> for InputSystem {
                             )
                             .with(event_mouse_wheel_pixels(), matches!(delta, MouseScrollDelta::PixelDelta(..))),
                     );
-                }
-                WindowEvent::ModifiersChanged(mods) => {
-                    world.resource_mut(world_events()).add_event(Entity::new().with(event_modifiers_change(), *mods));
                 }
 
                 _ => {}
@@ -152,13 +146,4 @@ impl System<Event<'static, ()>> for InputSystem {
 pub struct MouseInput {
     pub state: ElementState,
     pub button: MouseButton,
-}
-
-pub fn mouse_button_from_u32(button: u32) -> MouseButton {
-    match button {
-        0 => MouseButton::Left,
-        1 => MouseButton::Right,
-        2 => MouseButton::Middle,
-        x => MouseButton::Other(x as u16),
-    }
 }

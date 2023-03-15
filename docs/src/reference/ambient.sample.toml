@@ -13,6 +13,20 @@ description = "A sample project that's the coolest thing ever."
 version = "0.0.1"
 
 #
+# Build settings.
+#
+[build]
+# Rust-specific settings.
+[build.rust]
+# `cargo build` will be run with each of these features to produce a separate WASM binary,
+# which is then compoonentized and copied into a folder of the corresponding name in `build/`.
+# This is used to build the same code for both client and server.
+# Client and server are built by default; this is exposed so that you can disable building one
+# side entirely if required.
+# You will normally not need to touch this.
+feature-multibuild = ["client", "server"]
+
+#
 # Custom components defined by this project.
 #
 [components]
@@ -21,7 +35,7 @@ cool_component = { type = "I32", name = "Cool Component", description = "A cool 
 # Explicit tables can also be used.
 [components.cool_component2]
 # At time of writing, supported component types are:
-#   Empty, Bool, EntityId, F32, F64, Mat4, I32, Quat, String, U32, U64, Vec2, Vec3, Vec4, Vec4
+#   Empty, Bool, EntityId, F32, F64, Mat4, I32, Quat, String, U32, U64, Vec2, Vec3, Vec4, Uvec2, Uvec3, Uvec4
 # or
 #   { type = "Vec", element_type = "TypeFromAbove" }
 #   { type = "Option", element_type = "TypeFromAbove" }

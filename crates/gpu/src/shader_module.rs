@@ -142,6 +142,10 @@ impl ShaderModule {
             ShaderModuleIdentifier::Constant { name: n, .. } => n == name,
         })
     }
+
+    fn sanitized_label(&self) -> String {
+        self.label.replace(|v: char| !v.is_ascii_alphanumeric() && !"_-.".contains(v), "?")
+    }
 }
 
 #[derive(Clone, PartialEq, Eq, Debug)]
@@ -190,6 +194,7 @@ impl Shader {
         let mut module_names = Vec::new();
 
         let mut modules = modules.into_iter();
+
         #[allow(unstable_name_collisions)]
         let mut source: String = modules
             .by_ref()
@@ -216,7 +221,10 @@ impl Shader {
                 }
                 module_names.push(&module.label);
 
-                &module.source
+                let div = "--------------------------------";
+                let label = module.sanitized_label();
+                let source = &module.source;
+                format!("// {div}\n// @module: {label}\n// {div}\n{source}")
             })
             .join("\n\n");
 

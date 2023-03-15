@@ -1,19 +1,19 @@
-use std::{io::Write, sync::Arc};
+use std::{io::Write, str::FromStr, sync::Arc};
 
 use ambient_core::{
     player::{get_player_by_user_id, player},
     runtime,
     window::{cursor_position, window_logical_size, window_physical_size},
 };
-use ambient_ecs::{query, query_mut, Entity, SystemGroup, WorldDiff};
+use ambient_ecs::{query, query_mut, world_events, Entity, SystemGroup, WorldDiff};
 use ambient_element::{element_component, Element, Hooks};
 use ambient_input::{
-    event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels,
-    mouse_button, mouse_button_from_u32, player_prev_raw_input, player_raw_input, ElementState, PlayerRawInput,
+    event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels, keycode,
+    mouse_button, player_prev_raw_input, player_raw_input, PlayerRawInput,
 };
 use ambient_network::{client::game_client, log_network_result, rpc::rpc_world_diff, DatagramHandlers};
 use ambient_std::unwrap_log_err;
-
+use ambient_window_types::{MouseButton, VirtualKeyCode};
 use byteorder::{BigEndian, WriteBytesExt};
 
 const PLAYER_INPUT_DATAGRAM_ID: u32 = 5;
@@ -27,7 +27,26 @@ pub fn register_datagram_handler(handlers: &mut DatagramHandlers) {
             if let Some(world) = state.get_player_world_mut(user_id) {
                 if let Some(player_id) = get_player_by_user_id(world, user_id) {
                     world.add_component(player_id, cursor_position(), input.cursor_position).unwrap();
-                    world.set(player_id, player_raw_input(), input).ok();
+                    let prev_play_input = world.get_ref(player_id, player_raw_input()).unwrap().clone();
+                    world.set(player_id, player_raw_input(), input.clone()).ok();
+                    let mut fire_mouse_input = |down: bool, button: MouseButton| {
+                        world.resource_mut(world_events()).add_event(
+                            Entity::new()
+                                .with(event_mouse_input(), down)
+                                .with(mouse_button(), button.into())
+                                .with(ambient_core::player::user_id(), user_id.clone()),
+                        );
+                    };
+                    for next_button in &input.mouse_buttons {
+                        if !prev_play_input.mouse_buttons.contains(next_button) {
+                            fire_mouse_input(true, *next_button);
+                        }
+                    }
+                    for prev_button in &prev_play_input.mouse_buttons {
+                        if !input.mouse_buttons.contains(prev_button) {
+                            fire_mouse_input(false, *prev_button);
+                        }
+                    }
                 }
             }
         }),
@@ -94,24 +113,22 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
     hooks.use_world_event({
         let input = input.clone();
         move |_world, event| {
-            if let Some(event) = event.get_ref(event_keyboard_input()) {
-                if let Some(keycode) = event.keycode {
+            if let Some(pressed) = event.get(event_keyboard_input()) {
+                if let Some(keycode) = event.get_ref(keycode()) {
+                    let keycode = VirtualKeyCode::from_str(keycode).unwrap();
                     let mut lock = input.lock();
-                    match event.state {
-                        ElementState::Pressed => {
-                            lock.keys.insert(keycode);
-                        }
-                        ElementState::Released => {
-                            lock.keys.remove(&keycode);
-                        }
+                    if pressed {
+                        lock.keys.insert(keycode);
+                    } else {
+                        lock.keys.remove(&keycode);
                     }
                 }
             } else if let Some(pressed) = event.get(event_mouse_input()) {
                 let mut lock = input.lock();
                 if pressed {
-                    lock.mouse_buttons.insert(mouse_button_from_u32(event.get(mouse_button()).unwrap()));
+                    lock.mouse_buttons.insert(event.get(mouse_button()).unwrap().into());
                 } else {
-                    lock.mouse_buttons.remove(&mouse_button_from_u32(event.get(mouse_button()).unwrap()));
+                    lock.mouse_buttons.remove(&event.get(mouse_button()).unwrap().into());
                 }
             } else if let Some(delta) = event.get(event_mouse_motion()) {
                 input.lock().mouse_position += delta;

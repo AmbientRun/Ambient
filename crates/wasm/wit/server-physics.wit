@@ -1,0 +1,20 @@
+default interface server-physics {
+    use pkg.types.{entity-id, vec3}
+
+    record character-collision {
+        side: bool,
+        up: bool,
+        down: bool,
+    }
+
+    apply-force: func(entities: list<entity-id>, force: vec3)
+    explode-bomb: func(position: vec3, force: float32, radius: float32, falloff-radius: option<float32>)
+    set-gravity: func(gravity: vec3)
+    unfreeze: func(entity: entity-id)
+    freeze: func(entity: entity-id)
+    start-motor: func(entity: entity-id, velocity: float32)
+    stop-motor: func(entity: entity-id)
+    raycast-first: func(origin: vec3, direction: vec3) -> option<tuple<entity-id, float32>>
+    raycast: func(origin: vec3, direction: vec3) -> list<tuple<entity-id, float32>>
+    move-character: func(entity: entity-id, displacement: vec3, min-dist: float32, elapsed-time: float32) -> character-collision
+}

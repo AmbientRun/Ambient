@@ -12,10 +12,7 @@ use ambient_core::{
     hierarchy::dump_world_hierarchy_to_tmp_file,
     remove_at_time_system, runtime, time,
     transform::TransformSystem,
-    window::cursor_position,
-    window::get_window_sizes,
-    window::WindowCtl,
-    window::{window_logical_size, window_physical_size, window_scale_factor},
+    window::{cursor_position, get_window_sizes, window_logical_size, window_physical_size, window_scale_factor, WindowCtl},
     RuntimeKey, TimeResourcesSystem,
 };
 use ambient_ecs::{
@@ -65,8 +62,8 @@ pub fn init_all_components() {
     ambient_gizmos::init_components();
     ambient_cameras::init_all_components();
     init_components();
-    ambient_renderer::init_all_componets();
-    ambient_ui::init_all_componets();
+    ambient_renderer::init_all_components();
+    ambient_ui::init_all_components();
     ambient_input::init_all_components();
     ambient_model::init_components();
     ambient_cameras::init_all_components();

@@ -8,8 +8,8 @@ use self::{identifier::IdentifierPathBuf, tree::Tree};
 #[cfg(test)]
 mod tests;
 
-mod components;
-mod concepts;
+mod component;
+mod concept;
 mod identifier;
 mod manifest;
 mod tree;
@@ -41,8 +41,8 @@ pub fn implementation(
     let concept_tree = Tree::new(&manifest.concepts, validate_namespaces_documented)?;
 
     let components_tokens =
-        components::tree_to_token_stream(&component_tree, &api_name, project_path.as_path())?;
-    let concept_tokens = concepts::tree_to_token_stream(&concept_tree, &component_tree, &api_name)?;
+        component::tree_to_token_stream(&component_tree, &api_name, project_path.as_path())?;
+    let concept_tokens = concept::tree_to_token_stream(&concept_tree, &component_tree, &api_name)?;
 
     let manifest = file_path.map(
         |file_path| quote! { const _PROJECT_MANIFEST: &'static str = include_str!(#file_path); },
@@ -54,6 +54,8 @@ pub fn implementation(
             #components_tokens
         }
         /// Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept.
+        ///
+        /// They do not have any runtime representation outside of the components that compose them.
         pub mod concepts {
             #concept_tokens
         }

@@ -26,6 +26,7 @@ pub struct CollectPrimitive {
     primitive_index: u32,
     material_index: u32,
 }
+
 impl CollectPrimitive {
     pub fn from_primitive(world: &World, id: EntityId, primitive_index: PrimitiveIndex, material_index: u32) -> Self {
         let loc = world.entity_loc(id).unwrap();

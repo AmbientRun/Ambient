@@ -8,10 +8,15 @@ edition = "2021"
 [dependencies]
 ambient_element = { path = "../element", default-features = false }
 ambient_guest_bridge = { path = "../guest_bridge", default-features = false }
+ambient_window_types = { path = "../window_types" }
 cb = { path = "../../libs/cb" }
+ambient_color = { path = "../../libs/color" }
 glam = { workspace = true }
 itertools = { workspace = true }
-winit = { workspace = true, optional = true }
+futures = { workspace = true }
+parking_lot = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
 
 [features]
-native = ["winit"]
+native = ["ambient_window_types/native"]

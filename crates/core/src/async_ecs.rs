@@ -36,7 +36,7 @@ pub fn async_ecs_systems() -> SystemGroup {
                 if Instant::now().duration_since(start).as_millis() > 50 {
                     let remaining = rx.len();
                     if remaining > 0 {
-                        log::warn!("async ecs timeout. Remaining actions: {remaining}");
+                        tracing::warn!("async ecs timeout. Remaining actions: {remaining}");
                     }
                     break;
                 }
@@ -45,7 +45,7 @@ pub fn async_ecs_systems() -> SystemGroup {
 
             let dur = Instant::now().duration_since(start).as_millis();
             if dur > 100 {
-                log::warn!("Async run ran for {dur}ms");
+                tracing::warn!("Async run ran for {dur}ms");
             }
         }))],
     )

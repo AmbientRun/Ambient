@@ -19,10 +19,9 @@ use ambient_rpc::RpcRegistry;
 use ambient_std::{asset_cache::SyncAssetKeyExt, cb, color::Color, download_asset::AssetsCacheDir, line_hash, Cb};
 use ambient_ui::{
     fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit, FlowColumn, FlowRow, Image, UIExt,
-    VirtualKeyCode,
 };
+use ambient_window_types::{ModifiersState, VirtualKeyCode};
 use glam::Vec3;
-use winit::event::ModifiersState;
 
 type GetDebuggerState = Cb<dyn Fn(&mut dyn FnMut(&mut Renderer, &RenderTarget, &mut World)) + Sync + Send>;
 
@@ -55,6 +54,15 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
             .hotkey(VirtualKeyCode::F1)
             .style(ButtonStyle::Flat)
             .el(),
+            Button::new("Dump UI World", {
+                move |world| {
+                    dump_world_hierarchy_to_tmp_file(world);
+                }
+            })
+            .hotkey_modifier(ModifiersState::SHIFT)
+            .hotkey(VirtualKeyCode::F2)
+            .style(ButtonStyle::Flat)
+            .el(),
             Button::new("Dump Client World", {
                 let get_state = get_state.clone();
                 move |_world| {
@@ -62,7 +70,7 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
                 }
             })
             .hotkey_modifier(ModifiersState::SHIFT)
-            .hotkey(VirtualKeyCode::F1)
+            .hotkey(VirtualKeyCode::F3)
             .style(ButtonStyle::Flat)
             .el(),
             Button::new("Dump Server World", {
@@ -81,7 +89,7 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
                 }
             })
             .hotkey_modifier(ModifiersState::SHIFT)
-            .hotkey(VirtualKeyCode::F6)
+            .hotkey(VirtualKeyCode::F4)
             .style(ButtonStyle::Flat)
             .el(),
             Button::new("Dump Client Renderer", {
@@ -96,7 +104,7 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
                 }
             })
             .hotkey_modifier(ModifiersState::SHIFT)
-            .hotkey(VirtualKeyCode::F3)
+            .hotkey(VirtualKeyCode::F5)
             .style(ButtonStyle::Flat)
             .el(),
             Button::new("Show Shadow Frustums", {
@@ -128,7 +136,7 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
                 }
             })
             .hotkey_modifier(ModifiersState::SHIFT)
-            .hotkey(VirtualKeyCode::F4)
+            .hotkey(VirtualKeyCode::F6)
             .style(ButtonStyle::Flat)
             .el(),
             Button::new("Show World Boundings", {
@@ -144,17 +152,19 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
                 }
             })
             .hotkey_modifier(ModifiersState::SHIFT)
-            .hotkey(VirtualKeyCode::F5)
+            .hotkey(VirtualKeyCode::F7)
             .style(ButtonStyle::Flat)
             .el(),
-            ShaderDebug { get_state: get_state.clone() }.el(),
             Button::new("Show Shadow Maps", {
                 move |_| {
                     set_show_shadows(!show_shadows);
                 }
             })
+            .hotkey_modifier(ModifiersState::SHIFT)
+            .hotkey(VirtualKeyCode::F8)
             .style(ButtonStyle::Flat)
             .el(),
+            ShaderDebug { get_state: get_state.clone() }.el(),
         ])
         .el()
         .set(space_between_items(), 5.),
@@ -219,11 +229,7 @@ fn ShaderDebug(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
     let shading = params.shading;
 
     Dropdown {
-        content: Button::new("Shader Debug", move |_| set_show(!show))
-            .toggled(show)
-            .hotkey(VirtualKeyCode::F7)
-            .hotkey_modifier(ModifiersState::SHIFT)
-            .el(),
+        content: Button::new("Shader Debug", move |_| set_show(!show)).toggled(show).el(),
         dropdown: FlowColumn::el([
             Button::new("Show metallic roughness", {
                 let get_state = get_state.clone();

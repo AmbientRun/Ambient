@@ -124,8 +124,7 @@ components!("camera", {
     @[
         Networked, Store, Debuggable,
         Name["Active camera"],
-        Description["The camera with the highest `active_camera` value will be used for rendering. Cameras are also filtered by the `user_id`.
-        If there's no `user_id`, the camera is considered global and potentially applies to all users (if its active_camera value is high enough)"]
+        Description["The camera with the highest `active_camera` value will be used for rendering. Cameras are also filtered by the `user_id`.\nIf there's no `user_id`, the camera is considered global and potentially applies to all users (if its `active_camera` value is high enough)."]
     ]
     active_camera: f32,
     @[
@@ -208,10 +207,14 @@ pub fn camera_systems() -> SystemGroup {
         "camera_systems",
         vec![
             query((aspect_ratio_from_window(), aspect_ratio())).to_system(|q, world, qs, _| {
-                for (id, (window, ratio)) in q.collect_cloned(world, qs) {
+                for (id, (window, old_ratio)) in q.collect_cloned(world, qs) {
                     let window_size = world.get(window, window_physical_size()).unwrap_or_default();
+                    if window_size.x == 0 || window_size.y == 0 {
+                        continue;
+                    }
+
                     let aspect_ratio = window_size.x as f32 / window_size.y as f32;
-                    if aspect_ratio != ratio {
+                    if aspect_ratio != old_ratio {
                         world.set(id, self::aspect_ratio(), aspect_ratio).unwrap();
                     }
                 }
@@ -220,6 +223,9 @@ pub fn camera_systems() -> SystemGroup {
                 |q, world, qs, _| {
                     for (_, (projection,), (&near, &fovy, &aspect_ratio)) in q.iter(world, qs) {
                         *projection = glam::Mat4::perspective_infinite_reverse_lh(fovy, aspect_ratio, near);
+                        if projection.is_nan() {
+                            tracing::error!(near, fovy, aspect_ratio, "Perspective projection is NaN");
+                        }
                     }
                 },
             ),
@@ -237,6 +243,11 @@ pub fn camera_systems() -> SystemGroup {
                 .to_system(|q, world, qs, _| {
                     for (id, window) in q.collect_cloned(world, qs) {
                         let window_size = world.get(window, window_logical_size()).unwrap_or_default().as_vec2();
+
+                        if window_size.x <= 0.0 || window_size.y <= 0.0 {
+                            continue;
+                        }
+
                         world.set_if_changed(id, local_to_world(), Mat4::from_translation((window_size / 2.).extend(0.))).unwrap();
                         world.set_if_changed(id, orthographic_left(), -window_size.x / 2.).unwrap();
                         world.set_if_changed(id, orthographic_right(), window_size.x / 2.).unwrap();
@@ -261,11 +272,18 @@ pub fn camera_systems() -> SystemGroup {
                     *projection = orthographic_reverse(orth.left, orth.right, orth.bottom, orth.top, near, far);
                 }
             }),
-            query_mut((projection_view(),), (projection().changed(), inv_local_to_world().changed())).to_system(|q, world, qs, _| {
-                for (_, (projection_view,), (projection, view)) in q.iter(world, qs) {
-                    *projection_view = *projection * *view;
-                }
-            }),
+            query_mut((projection_view(),), (projection().changed(), inv_local_to_world().changed())).to_system_with_name(
+                "update_projection_view",
+                |q, world, qs, _| {
+                    for (id, (projection_view,), (projection, view)) in q.iter(world, qs) {
+                        *projection_view = *projection * *view;
+
+                        if projection_view.is_nan() {
+                            tracing::error!("Projection view for {id} is nan.\nproj: {projection},\nview: {view:}")
+                        }
+                    }
+                },
+            ),
         ],
     )
 }
@@ -299,7 +317,7 @@ pub fn get_active_camera(world: &World, scene: Component<()>, user_id: Option<&S
                 if let Ok(cam_user_id) = world.get_ref(*id, crate::player::user_id()) {
                     cam_user_id == *user_id
                 } else {
-                    // The camera is considered global, as it doens't have a user_id attached
+                    // The camera is considered global, as it doesn't have a user_id attached
                     true
                 }
             } else {

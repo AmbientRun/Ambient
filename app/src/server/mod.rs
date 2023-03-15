@@ -1,36 +1,28 @@
 use std::{
-    collections::HashMap,
-    net::SocketAddr,
-    path::{Path, PathBuf},
-    sync::Arc,
+    collections::HashMap, net::SocketAddr, path::{Path, PathBuf}, sync::Arc
 };
 
 use ambient_core::{app_start_time, asset_cache, dtime, no_sync, project_name, time};
 use ambient_ecs::{
-    world_events, ComponentDesc, ComponentRegistry, Entity, Networked, SystemGroup, World, WorldEventsSystem, WorldStreamCompEvent,
+    world_events, ComponentDesc, ComponentRegistry, Entity, Networked, SystemGroup, World, WorldEventsSystem, WorldStreamCompEvent
 };
 use ambient_network::{
-    bi_stream_handlers, datagram_handlers,
-    server::{ForkingEvent, GameServer, ShutdownEvent},
+    bi_stream_handlers, datagram_handlers, server::{ForkingEvent, GameServer, ShutdownEvent}
 };
 use ambient_prefab::PrefabFromUrl;
 use ambient_std::{
-    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
-    asset_url::{AbsAssetUrl, ServerBaseUrlKey},
+    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, ServerBaseUrlKey}
 };
 use ambient_sys::{task::RuntimeHandle, time::SystemTime};
 use anyhow::Context;
 use axum::{
-    http::{Method, StatusCode},
-    response::IntoResponse,
-    routing::{get, get_service},
-    Router,
+    http::{Method, StatusCode}, response::IntoResponse, routing::{get, get_service}, Router
 };
 use tower_http::{cors::CorsLayer, services::ServeDir};
 
 use crate::{cli::Cli, shared};
 
-mod wasm;
+pub mod wasm;
 
 pub fn start(
     runtime: &tokio::runtime::Runtime,
@@ -48,7 +40,6 @@ pub fn start(
     });
     let port = server.port;
 
-    wasm::init_all_components();
     let public_host = cli
         .host()
         .and_then(|h| h.public_host.clone())
@@ -72,7 +63,7 @@ pub fn start(
         let name = manifest.project.name.clone().unwrap_or_else(|| "Ambient".into());
         server_world.add_components(server_world.resource_entity(), Entity::new().with(project_name(), name)).unwrap();
 
-        wasm::initialize(&mut server_world, project_path.clone(), &manifest).await.unwrap();
+        wasm::initialize(&mut server_world, project_path.clone(), &manifest).unwrap();
 
         if let Cli::View { asset_path, .. } = cli.clone() {
             let asset_path = AbsAssetUrl::from_file_path(project_path.join("build").join(asset_path).join("prefabs/main.json"));

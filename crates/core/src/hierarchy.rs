@@ -85,7 +85,7 @@ pub fn dump_world_hierarchy_to_tmp_file(world: &World) {
     let mut f = File::create(&path).expect("Unable to create file");
     dump_world_hierarchy(world, &mut f);
 
-    log::info!("Wrote hierarchy to {path:?}");
+    tracing::info!("Wrote hierarchy to {path:?}");
 }
 pub fn dump_world_hierarchy(world: &World, f: &mut dyn std::io::Write) {
     use yaml_rust::yaml::Yaml;

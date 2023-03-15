@@ -11,6 +11,8 @@ tracing = { workspace = true }
 ambient_std = { path = "../std" }
 ambient_ecs = { path = "../ecs" }
 ambient_core = { path = "../core" }
+ambient_window_types = { path = "../window_types" }
 winit = { workspace = true }
 glam = { workspace = true }
 serde = { workspace = true }
+serde_json = { workspace = true }

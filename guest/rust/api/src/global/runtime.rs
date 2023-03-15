@@ -3,7 +3,7 @@ use std::{cell::RefCell, future::Future, rc::Rc, task::Poll};
 use crate::{
     components, entity,
     global::EventResult,
-    internal::{component::Entity, executor::EXECUTOR, host},
+    internal::{component::Entity, executor::EXECUTOR, wit},
 };
 
 /// The time, relative to when the application started, in seconds.
@@ -17,12 +17,30 @@ pub fn frametime() -> f32 {
     entity::get_component(entity::resources(), components::core::app::dtime()).unwrap()
 }
 
+/// Handle to a "on" listener, which can be canceled by calling `.stop`
+pub struct OnHandle(String, u128);
+impl OnHandle {
+    /// Stops listening
+    pub fn stop(self) {
+        EXECUTOR.unregister_callback(&self.0, self.1);
+    }
+}
+
+/// Handle to a "once" listener, which can be canceled by calling `.stop`
+pub struct OnceHandle(String, u128);
+impl OnceHandle {
+    /// Stops listening
+    pub fn stop(self) {
+        EXECUTOR.unregister_callback_once(&self.0, self.1);
+    }
+}
+
 /// `on` calls `callback` every time `event` occurs.
 ///
 /// If you only want to be notified once, use [once].
 ///
 /// The `callback` is a `fn`. This can be a closure (e.g. `|args| { ... }`).
-pub fn on(event: &str, mut callback: impl FnMut(&Entity) -> EventResult + 'static) {
+pub fn on(event: &str, mut callback: impl FnMut(&Entity) -> EventResult + 'static) -> OnHandle {
     on_async(event, move |args| std::future::ready(callback(args)))
 }
 
@@ -34,12 +52,15 @@ pub fn on(event: &str, mut callback: impl FnMut(&Entity) -> EventResult + 'stati
 pub fn on_async<R: Future<Output = EventResult> + 'static>(
     event: &str,
     mut callback: impl FnMut(&Entity) -> R + 'static,
-) {
-    host::event_subscribe(event);
-    EXECUTOR.register_callback(
+) -> OnHandle {
+    wit::event::subscribe(event);
+    OnHandle(
         event.to_string(),
-        Box::new(move |args| Box::pin(callback(args))),
-    );
+        EXECUTOR.register_callback(
+            event.to_string(),
+            Box::new(move |args| Box::pin(callback(args))),
+        ),
+    )
 }
 
 /// `once` calls `callback` when `event` occurs, but only once.
@@ -47,7 +68,7 @@ pub fn on_async<R: Future<Output = EventResult> + 'static>(
 /// If you want to be notified every time the `event` occurs, use [on].
 ///
 /// The `callback` is a `fn`. This can be a closure (e.g. `|args| { ... }`).
-pub fn once(event: &str, callback: impl FnOnce(&Entity) -> EventResult + 'static) {
+pub fn once(event: &str, callback: impl FnOnce(&Entity) -> EventResult + 'static) -> OnceHandle {
     once_async(event, |args| std::future::ready(callback(args)))
 }
 
@@ -59,12 +80,12 @@ pub fn once(event: &str, callback: impl FnOnce(&Entity) -> EventResult + 'static
 pub fn once_async<R: Future<Output = EventResult> + 'static>(
     event: &str,
     callback: impl FnOnce(&Entity) -> R + 'static,
-) {
-    host::event_subscribe(event);
-    EXECUTOR.register_callback_once(
+) -> OnceHandle {
+    wit::event::subscribe(event);
+    OnceHandle(event.to_string(), EXECUTOR.register_callback_once(
         event.to_string(),
         Box::new(move |args| Box::pin(callback(args))),
-    );
+    ))
 }
 
 /// Runs the given async block (`future`). This lets your module set up behaviour
@@ -145,7 +166,9 @@ pub async fn until_this(event: &str, condition: impl Fn(&Entity) -> bool + 'stat
     .await
 }
 
-/// This method resolves a relative path to an asset in a Ambient module, to an absolute url
+#[deprecated = "Please use `asset::url` instead."]
+#[doc(hidden)]
+#[cfg(feature = "server")]
 pub fn asset_url(path: impl AsRef<str>) -> Option<String> {
-    host::asset_url(path.as_ref())
+    crate::asset::url(path)
 }

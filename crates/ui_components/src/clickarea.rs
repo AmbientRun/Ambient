@@ -5,6 +5,7 @@ use ambient_guest_bridge::{
     },
     ecs::{EntityId, World},
 };
+use ambient_window_types::MouseButton;
 use cb::{cb, Cb};
 use glam::{Vec2, Vec3};
 
@@ -19,45 +20,6 @@ impl From<bool> for MouseInput {
             Self::Pressed
         } else {
             Self::Released
-        }
-    }
-}
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum MouseButton {
-    Left,
-    Right,
-    Middle,
-    Other(u32),
-}
-impl From<u32> for MouseButton {
-    fn from(value: u32) -> Self {
-        match value {
-            0 => Self::Left,
-            1 => Self::Right,
-            2 => Self::Middle,
-            x => Self::Other(x),
-        }
-    }
-}
-#[cfg(feature = "native")]
-impl From<winit::event::MouseButton> for MouseButton {
-    fn from(value: winit::event::MouseButton) -> Self {
-        match value {
-            winit::event::MouseButton::Left => Self::Left,
-            winit::event::MouseButton::Right => Self::Right,
-            winit::event::MouseButton::Middle => Self::Middle,
-            winit::event::MouseButton::Other(x) => Self::Other(x as _),
-        }
-    }
-}
-#[cfg(feature = "native")]
-impl From<MouseButton> for winit::event::MouseButton {
-    fn from(value: MouseButton) -> Self {
-        match value {
-            MouseButton::Left => Self::Left,
-            MouseButton::Right => Self::Right,
-            MouseButton::Middle => Self::Middle,
-            MouseButton::Other(x) => Self::Other(x as _),
         }
     }
 }

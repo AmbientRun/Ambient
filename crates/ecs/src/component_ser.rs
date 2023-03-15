@@ -43,8 +43,7 @@ impl<'de> Deserialize<'de> for ComponentEntry {
 
                 let ser = *desc.attribute::<Serializable>().expect("Component is not serializable");
 
-                let value = seq.next_element_seed(ser.deserializer(desc))?.ok_or_else(|| de::Error::invalid_length(0, &self));
-                value
+                seq.next_element_seed(ser.deserializer(desc))?.ok_or_else(|| de::Error::invalid_length(0, &self))
             }
         }
 

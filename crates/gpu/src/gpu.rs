@@ -30,6 +30,7 @@ impl Gpu {
     pub async fn new(window: Option<&Window>) -> Self {
         Self::with_config(window, false).await
     }
+    #[tracing::instrument(level = "info")]
     pub async fn with_config(window: Option<&Window>, will_be_polled: bool) -> Self {
         // From: https://github.com/KhronosGroup/Vulkan-Loader/issues/552
         #[cfg(not(target_os = "unknown"))]
@@ -51,13 +52,13 @@ impl Gpu {
         let surface = window.map(|window| unsafe { instance.create_surface(window) });
         #[cfg(not(target_os = "unknown"))]
         {
-            log::debug!("Available adapters:");
+            tracing::debug!("Available adapters:");
             for adapter in instance.enumerate_adapters(wgpu::Backends::PRIMARY) {
-                log::debug!("Adapter: {:?}", adapter.get_info());
+                tracing::debug!("Adapter: {:?}", adapter.get_info());
             }
         }
 
-        log::debug!("Requesting adapter");
+        tracing::debug!("Requesting adapter");
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
                 power_preference: wgpu::PowerPreference::HighPerformance,
@@ -67,10 +68,10 @@ impl Gpu {
             .await
             .expect("Failed to find an appropriate adapter");
 
-        log::debug!("Using gpu adapter: {:?}", adapter.get_info());
-        log::debug!("Adapter features:\n{:#?}", adapter.features());
+        tracing::debug!("Using gpu adapter: {:?}", adapter.get_info());
+        tracing::debug!("Adapter features:\n{:#?}", adapter.features());
         let adapter_limits = adapter.limits();
-        log::debug!("Adapter limits:\n{:#?}", adapter_limits);
+        tracing::debug!("Adapter limits:\n{:#?}", adapter_limits);
 
         #[cfg(target_os = "macos")]
         let features = wgpu::Features::empty();
@@ -96,29 +97,33 @@ impl Gpu {
             .await
             .expect("Failed to create device");
 
-        log::info!("Device limits:\n{:#?}", device.limits());
+        tracing::info!("Device limits:\n{:#?}", device.limits());
 
         let swapchain_format = surface.as_ref().map(|surface| surface.get_supported_formats(&adapter)[0]);
-        log::debug!("Swapchain format: {swapchain_format:?}");
+        tracing::debug!("Swapchain format: {swapchain_format:?}");
         let swapchain_mode = surface.as_ref().map(|surface| surface.get_supported_present_modes(&adapter)).as_ref().map(|modes| {
             [PresentMode::Immediate, PresentMode::Fifo, PresentMode::Mailbox]
                 .into_iter()
                 .find(|pm| modes.contains(pm))
                 .expect("unable to find compatible swapchain mode")
         });
-        log::debug!("Swapchain present mode: {swapchain_mode:?}");
+        tracing::debug!("Swapchain present mode: {swapchain_mode:?}");
 
-        if let (Some(surface), Some(mode), Some(format)) = (&surface, swapchain_mode, swapchain_format) {
-            let size = window.as_ref().unwrap().inner_size();
+        if let (Some(window), Some(surface), Some(mode), Some(format)) = (window, &surface, swapchain_mode, swapchain_format) {
+            let size = window.inner_size();
             surface.configure(&device, &Self::create_sc_desc(format, mode, uvec2(size.width, size.height)));
         }
-        log::debug!("Created gpu");
+        tracing::debug!("Created gpu");
 
         Self { device, surface, queue, swapchain_format, swapchain_mode, adapter, will_be_polled }
     }
+
     pub fn resize(&self, size: winit::dpi::PhysicalSize<u32>) {
         if let Some(surface) = &self.surface {
-            surface.configure(&self.device, &self.sc_desc(uvec2(size.width, size.height)));
+            if size.width > 0 && size.height > 0 {
+                tracing::info!("Resizing to {size:?}");
+                surface.configure(&self.device, &self.sc_desc(uvec2(size.width, size.height)));
+            }
         }
     }
     pub fn swapchain_format(&self) -> TextureFormat {

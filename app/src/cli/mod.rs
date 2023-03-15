@@ -77,6 +77,10 @@ pub struct RunCli {
 pub struct ProjectCli {
     /// The path of the project to run; if not specified, this will default to the current directory
     pub path: Option<PathBuf>,
+
+    /// Build all the assets with full optimization; this will make debugging more difficult
+    #[arg(short, long)]
+    pub release: bool,
 }
 #[derive(Args, Clone)]
 pub struct HostCli {

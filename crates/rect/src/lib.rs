@@ -24,15 +24,15 @@ use glam::{vec4, UVec3, Vec4};
 use wgpu::BindGroup;
 
 components!("ui", {
-    @[Debuggable, Networked, Store, Name["Background color"], Description["Background color of a rect() entity."]]
+    @[Debuggable, Networked, Store, Name["Background color"], Description["Background color of an entity with a `rect` component."]]
     background_color: Vec4,
-    @[Debuggable, Networked, Store, Name["Border color"], Description["Border color of a rect() entity."]]
+    @[Debuggable, Networked, Store, Name["Border color"], Description["Border color of an entity with a `rect` component."]]
     border_color: Vec4,
-    @[Debuggable, Networked, Store, Name["Border radius"], Description["x = top left, y = top right, z = bottom left, w = bottom right."]]
+    @[Debuggable, Networked, Store, Name["Border radius"], Description["Radius for each corner of an entity with a `rect` component.\n`x` = top-left, `y` = top-right, `z` = bottom-left, `w` = bottom-right."]]
     border_radius: Vec4,
-    @[Debuggable, Networked, Store, Name["Border thickness"], Description["Border thickness of a rect() entity."]]
+    @[Debuggable, Networked, Store, Name["Border thickness"], Description["Border thickness of an entity with a `rect` component."]]
     border_thickness: f32,
-    @[Debuggable, Networked, Store, Name["Rect"], Description["Make this into a rectangle, with optionally rounded corners and borders."]]
+    @[Debuggable, Networked, Store, Name["Rect"], Description["If attached to an entity, the entity will be converted to a UI rectangle, with optionally rounded corners and borders."]]
     rect: (),
 });
 

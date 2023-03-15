@@ -21,7 +21,7 @@ pub mod pipelines;
 /// src/**  This is where you store Rust source files
 /// build  This is the output directory, and is created when building
 /// ambient.toml  This is a metadata file to describe the project
-pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, manifest: &ProjectManifest) {
+pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, manifest: &ProjectManifest, optimize: bool) {
     log::info!(
         "Building project `{}` ({})",
         manifest.project.id,
@@ -35,7 +35,7 @@ pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, manife
 
     std::fs::create_dir_all(&build_path).unwrap();
     build_assets(physics, &assets_path, &build_path).await;
-    build_scripts(&path, manifest, &build_path).await.unwrap();
+    build_rust_if_available(&path, manifest, &build_path, optimize).await.unwrap();
 }
 
 async fn build_assets(physics: Physics, assets_path: &Path, build_path: &Path) {
@@ -79,8 +79,8 @@ async fn build_assets(physics: Physics, assets_path: &Path, build_path: &Path) {
     pipelines::process_pipelines(&ctx).await;
 }
 
-async fn build_scripts(path: &Path, manifest: &ProjectManifest, build_path: &Path) -> anyhow::Result<()> {
-    let cargo_toml_path = path.join("Cargo.toml");
+async fn build_rust_if_available(project_path: &Path, manifest: &ProjectManifest, build_path: &Path, optimize: bool) -> anyhow::Result<()> {
+    let cargo_toml_path = project_path.join("Cargo.toml");
     if !cargo_toml_path.exists() {
         return Ok(());
     }
@@ -99,9 +99,15 @@ async fn build_scripts(path: &Path, manifest: &ProjectManifest, build_path: &Pat
     }
 
     let rustc = ambient_rustc::Rust::get_system_installation().await?;
-    let bytecode = rustc.build(path, manifest.project.id.as_ref())?;
 
-    tokio::fs::write(build_path.join(format!("{}.wasm", manifest.project.id)), bytecode).await?;
+    for feature in &manifest.build.rust.feature_multibuild {
+        let Some(wasm_bytecode) = rustc.build(project_path, manifest.project.id.as_ref(), optimize, &[feature])? else { continue; };
+        let component_bytecode = ambient_wasm::shared::build::componentize(&wasm_bytecode)?;
+
+        let output_path = build_path.join(feature);
+        std::fs::create_dir_all(&output_path)?;
+        tokio::fs::write(output_path.join(format!("{}.wasm", manifest.project.id)), component_bytecode).await?;
+    }
 
     Ok(())
 }
