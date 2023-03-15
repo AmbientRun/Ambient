@@ -1,5 +1,5 @@
 use std::{
-    ops::{IndexMut, Range},
+    ops::Range,
     sync::{
         atomic::{AtomicUsize, Ordering},
         Arc,
@@ -25,8 +25,8 @@ use crate::{
     typed_buffer::TypedBuffer,
 };
 
-pub fn get_mesh_buffer_types() -> ShaderModule {
-    ShaderModule::from_str("MeshBufferTypes", include_str!("mesh_buffer.wgsl"))
+pub fn get_mesh_buffer_types() -> Arc<ShaderModule> {
+    Arc::new(ShaderModule::new("MeshBufferTypes", include_str!("mesh_buffer.wgsl")))
 }
 
 static MESHES_TOTAL_SIZE: AtomicUsize = AtomicUsize::new(0);

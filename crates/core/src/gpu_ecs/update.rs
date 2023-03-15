@@ -8,6 +8,7 @@ use ambient_gpu::{
 };
 use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use glam::{uvec4, UVec4};
+use wgpu::BindGroupLayoutEntry;
 
 use super::{gpu_world, GpuWorldShaderModuleKey, ENTITIES_BIND_GROUP};
 
@@ -26,40 +27,35 @@ impl GpuWorldUpdater {
         assets: AssetCache,
         label: String,
         filter: ArchetypeFilter,
-        mut modules: Vec<ShaderModule>,
+        mut modules: Vec<Arc<ShaderModule>>,
         body: impl Into<String>,
     ) -> Self {
-        let module = ShaderModule::new(
-            "GpuWorldUpdate",
-            include_str!("update.wgsl"),
-            vec![
-                ShaderModuleIdentifier::bind_group(BindGroupDesc {
-                    entries: vec![wgpu::BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: wgpu::ShaderStages::COMPUTE,
-                        ty: wgpu::BindingType::Buffer {
-                            ty: wgpu::BufferBindingType::Storage { read_only: true },
-                            has_dynamic_offset: false,
-                            min_binding_size: None,
-                        },
-                        count: None,
-                    }],
-                    label: GPU_ECS_UPDATE_BIND_GROUP.into(),
-                }),
-                ShaderModuleIdentifier::raw("UPDATE_BODY", body.into()),
-                ShaderModuleIdentifier::constant("GPU_WORLD_UPDATE_CHUNK_SIZE", GPU_WORLD_UPDATE_CHUNK_SIZE),
-                ShaderModuleIdentifier::constant("GPU_ECS_WORKGROUP_SIZE", GPU_ECS_WORKGROUP_SIZE),
-            ],
-        );
+        modules.insert(0, GpuWorldShaderModuleKey { read_only: false }.get(&assets));
+
+        let module = ShaderModule::new("GpuWorldUpdate", include_str!("update.wgsl"))
+            .with_binding(
+                GPU_ECS_UPDATE_BIND_GROUP,
+                BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: wgpu::ShaderStages::COMPUTE,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Storage { read_only: true },
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                },
+            )
+            .with_ident(ShaderModuleIdentifier::raw("UPDATE_BODY", body.into()))
+            .with_ident(ShaderModuleIdentifier::constant("GPU_WORLD_UPDATE_CHUNK_SIZE", GPU_WORLD_UPDATE_CHUNK_SIZE))
+            .with_ident(ShaderModuleIdentifier::constant("GPU_ECS_WORKGROUP_SIZE", GPU_ECS_WORKGROUP_SIZE))
+            .with_dependencies(modules);
 
         let gpu = GpuKey.get(&assets);
 
-        let gpu_world_module = GpuWorldShaderModuleKey { read_only: false }.get(&assets);
-        modules.insert(0, gpu_world_module);
-        modules.push(module);
-
-        let shader = Shader::from_modules(&assets, format!("GpuWorldUpdate.{label}"), &modules);
+        let shader = Shader::from_modules(&assets, format!("GpuWorldUpdate.{label}"), &module);
         let pipeline = shader.to_compute_pipeline(&gpu, "main");
+
         Self {
             pipeline,
             filter,
@@ -73,11 +69,13 @@ impl GpuWorldUpdater {
             gpu,
         }
     }
+
     pub fn run(&mut self, world: &World, binding_context: HashMap<String, &wgpu::BindGroup>) {
         let mut encoder = self.gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         self.run_with_encoder(&mut encoder, world, binding_context);
         self.gpu.queue.submit(Some(encoder.finish()));
     }
+
     pub fn run_with_encoder(
         &mut self,
         encoder: &mut wgpu::CommandEncoder,

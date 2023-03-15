@@ -19,16 +19,16 @@ use ambient_std::{
     color::Color,
 };
 use glam::uvec2;
-use wgpu::{BindGroupLayout, TextureView};
+use wgpu::{BindGroupEntry, BindGroupLayout, BindGroupLayoutEntry, TextureView};
 
 use super::{
-    get_common_module, get_globals_module, get_resources_module,
+    get_common_module, get_globals_module,
     overlay_renderer::{OverlayConfig, OverlayRenderer},
     shadow_renderer::ShadowsRenderer,
     Culling, FSMain, ForwardGlobals, Outlines, OutlinesConfig, RenderTarget, RendererCollect, RendererCollectState, TransparentRenderer,
     TransparentRendererConfig, TreeRenderer, TreeRendererConfig,
 };
-use crate::{skinning::SkinsBufferKey, to_linear_format, ShaderDebugParams};
+use crate::{get_common_layout, get_mesh_data_module, globals_layout, skinning::SkinsBufferKey, to_linear_format, ShaderDebugParams};
 pub const GLOBALS_BIND_GROUP: &str = "GLOBALS_BIND_GROUP";
 pub const MATERIAL_BIND_GROUP: &str = "MATERIAL_BIND_GROUP";
 pub const RESOURCES_BIND_GROUP: &str = "RESOURCES_BIND_GROUP";
@@ -55,9 +55,15 @@ struct RendererResourcesKey {
 }
 impl SyncAssetKey<RendererResources> for RendererResourcesKey {
     fn load(&self, assets: AssetCache) -> RendererResources {
-        let primitives = get_common_module(&assets).get_layout(PRIMITIVES_BIND_GROUP).unwrap().get(&assets);
-        let resources_layout = get_resources_module().get_layout(RESOURCES_BIND_GROUP).unwrap().get(&assets);
-        let globals_layout = get_globals_module(&assets, self.shadow_cascades).get_layout(GLOBALS_BIND_GROUP).unwrap().get(&assets);
+        let primitives = get_common_layout().get(&assets);
+
+        let resources_layout = BindGroupDesc {
+            entries: [get_mesh_meta_layout().entries, get_mesh_data_layout().entries].concat(),
+            label: RESOURCES_BIND_GROUP.into(),
+        }
+        .get(&assets);
+
+        let globals_layout = globals_layout().get(&assets);
 
         RendererResources {
             collect: Arc::new(RendererCollect::new(&assets)),
@@ -87,6 +93,7 @@ pub enum RendererTarget<'a> {
     Target(&'a RenderTarget),
     Direct { color: &'a TextureView, depth: &'a TextureView, normals: &'a TextureView, size: wgpu::Extent3d },
 }
+
 impl<'a> RendererTarget<'a> {
     pub fn color(&self) -> &'a TextureView {
         match self {
@@ -405,9 +412,11 @@ impl Renderer {
         let res = true;
         res
     }
+
     pub fn n_entities(&self) -> usize {
         self.forward.n_entities()
     }
+
     pub fn stats(&self) -> String {
         format!(
             "{} forward: {}/{} transparent: {}",
@@ -417,6 +426,7 @@ impl Renderer {
             self.transparent.n_entities()
         )
     }
+
     pub fn dump(&self, f: &mut dyn std::io::Write) {
         if let Some(shadows) = &self.shadows {
             shadows.dump(f);
@@ -436,23 +446,23 @@ impl std::fmt::Debug for Renderer {
     }
 }
 
-pub(crate) fn get_resources_layout() -> BindGroupDesc {
-    fn resource_storage_entry(binding: u32) -> wgpu::BindGroupLayoutEntry {
-        wgpu::BindGroupLayoutEntry {
-            binding,
-            visibility: wgpu::ShaderStages::VERTEX | wgpu::ShaderStages::COMPUTE,
-            ty: wgpu::BindingType::Buffer {
-                ty: wgpu::BufferBindingType::Storage { read_only: true },
-                has_dynamic_offset: false,
-                min_binding_size: None,
-            },
-            count: None,
-        }
+fn resource_storage_entry(binding: u32) -> BindGroupLayoutEntry {
+    BindGroupLayoutEntry {
+        binding,
+        visibility: wgpu::ShaderStages::VERTEX | wgpu::ShaderStages::COMPUTE,
+        ty: wgpu::BindingType::Buffer {
+            ty: wgpu::BufferBindingType::Storage { read_only: true },
+            has_dynamic_offset: false,
+            min_binding_size: None,
+        },
+        count: None,
     }
+}
 
+pub(crate) fn get_mesh_data_layout() -> BindGroupDesc {
     BindGroupDesc {
         entries: vec![
-            resource_storage_entry(MESH_METADATA_BINDING),
+            // resource_storage_entry(MESH_METADATA_BINDING),
             resource_storage_entry(MESH_BASE_BINDING),
             resource_storage_entry(MESH_JOINT_BINDING),
             resource_storage_entry(MESH_WEIGHT_BINDING),
@@ -460,6 +470,10 @@ pub(crate) fn get_resources_layout() -> BindGroupDesc {
         ],
         label: RESOURCES_BIND_GROUP.into(),
     }
+}
+
+pub(crate) fn get_mesh_meta_layout() -> BindGroupDesc {
+    BindGroupDesc { entries: vec![resource_storage_entry(MESH_METADATA_BINDING)], label: RESOURCES_BIND_GROUP.into() }
 }
 
 fn create_resources_bind_group(world: &World, layout: &BindGroupLayout, mesh_buffer: &MeshBuffer) -> wgpu::BindGroup {

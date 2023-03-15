@@ -13,20 +13,22 @@ pub struct StandardShaderKey {
     pub lit: bool,
     pub shadow_cascades: u32,
 }
+
 impl std::fmt::Debug for StandardShaderKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("StandardShaderKey").field("material_shader", &self.material_shader.id).field("lit", &self.lit).finish()
     }
 }
+
 impl SyncAssetKey<Arc<RendererShader>> for StandardShaderKey {
     fn load(&self, assets: AssetCache) -> Arc<RendererShader> {
         let id = format!("standard_shader_{}_{}", self.material_shader.id, self.lit);
         let shader = Shader::from_modules(
             &assets,
             id.clone(),
-            get_forward_modules(&assets, self.shadow_cascades)
-                .iter()
-                .chain([&self.material_shader.shader, &ShaderModule::new("StandardMaterial", include_file!("standard.wgsl"), vec![])]),
+            &ShaderModule::new("standard_material", include_file!("standard.wgsl"))
+                .with_dependencies(get_forward_modules(&assets, self.shadow_cascades))
+                .with_dependency(self.material_shader.shader.clone()),
         );
 
         Arc::new(RendererShader {

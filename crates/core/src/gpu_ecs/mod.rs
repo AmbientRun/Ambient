@@ -18,6 +18,7 @@ use ambient_std::asset_cache::SyncAssetKeyExt;
 pub use component::*;
 pub use sync::*;
 pub use update::*;
+use wgpu::BindGroupLayout;
 
 components!("rendering", {
     @[Resource]
@@ -31,32 +32,32 @@ pub struct GpuWorldShaderModuleKey {
     pub read_only: bool,
 }
 
-impl SyncAssetKey<ShaderModule> for GpuWorldShaderModuleKey {
-    fn load(&self, assets: AssetCache) -> ShaderModule {
+impl SyncAssetKey<Arc<ShaderModule>> for GpuWorldShaderModuleKey {
+    fn load(&self, assets: AssetCache) -> Arc<ShaderModule> {
         let config = GpuWorldConfigKey.get(&assets);
         let source = config.wgsl(!self.read_only);
-        fn entity_component_storage_entry(binding: u32, writeable: bool) -> wgpu::BindGroupLayoutEntry {
-            wgpu::BindGroupLayoutEntry {
-                binding,
-                visibility: if writeable {
-                    wgpu::ShaderStages::COMPUTE
-                } else {
-                    wgpu::ShaderStages::VERTEX_FRAGMENT | wgpu::ShaderStages::COMPUTE
-                },
-                ty: wgpu::BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Storage { read_only: !(writeable && binding != 0) },
-                    has_dynamic_offset: false,
-                    min_binding_size: None,
-                },
-                count: None,
-            }
-        }
-        let desc = BindGroupDesc {
-            entries: (0..(config.buffers.len() + 1)).map(|i| entity_component_storage_entry(i as u32, !self.read_only)).collect_vec(),
-            label: ENTITIES_BIND_GROUP.into(),
-        };
 
-        ShaderModule::new("GpuWorld", source, vec![desc.into()])
+        Arc::new(
+            ShaderModule::new("GpuWorld", source)
+                .with_bindings((config.layout_entries(self.read_only)).map(|v| (ENTITIES_BIND_GROUP.into(), v))),
+        )
+    }
+}
+
+#[derive(Debug)]
+pub struct GpuWorldBindingGroupLayoutKey {
+    pub read_only: bool,
+}
+
+impl SyncAssetKey<Arc<BindGroupLayout>> for GpuWorldBindingGroupLayoutKey {
+    fn load(&self, assets: AssetCache) -> Arc<BindGroupLayout> {
+        let config = GpuWorldConfigKey.get(&assets);
+        let gpu = GpuKey.get(&assets);
+
+        Arc::new(gpu.device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            label: Some("GpuWorld"),
+            entries: &config.layout_entries(self.read_only).collect_vec(),
+        }))
     }
 }
 
@@ -97,17 +98,21 @@ impl GpuWorld {
         }
     }
     pub fn create_bind_group(&self, read_only: bool) -> wgpu::BindGroup {
-        let layout = GpuWorldShaderModuleKey { read_only }.get(&self.assets).idents[0].as_bind_group().unwrap().get(&self.assets);
+        let layout = GpuWorldBindingGroupLayoutKey { read_only }.get(&self.assets);
+
         let mut buffers = vec![wgpu::BindGroupEntry { binding: 0, resource: self.layout_buffer.buffer().as_entire_binding() }];
+
         for (i, buf) in self.buffers.iter().enumerate() {
             buffers.push(wgpu::BindGroupEntry { binding: i as u32 + 1, resource: buf.data.buffer.as_entire_binding() });
         }
+
         self.gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &layout,
             entries: &buffers,
             label: Some("EntityBuffers.bind_group"),
         })
     }
+
     pub fn get_buffer(&self, format: GpuComponentFormat, component: &str, archetype: ArchetypeId) -> Option<(&wgpu::Buffer, u64, u64)> {
         let buff = self.buffers.iter().find(|buff| buff.config.format == format)?;
         let comp = buff.layout.get(component)?;

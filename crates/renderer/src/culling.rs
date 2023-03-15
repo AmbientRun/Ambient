@@ -1,4 +1,4 @@
-use std::{collections::HashMap, f32::INFINITY};
+use std::{collections::HashMap, f32::INFINITY, sync::Arc};
 
 use ambient_core::{
     bounding::world_bounding_sphere,
@@ -75,33 +75,32 @@ pub struct Culling {
     params: TypedBuffer<CullingParams>,
 }
 
+fn get_culling_layout() -> BindGroupDesc {
+    BindGroupDesc {
+        label: CULLING_BIND_GROUP.into(),
+        entries: vec![BindGroupLayoutEntry {
+            binding: 0,
+            visibility: ShaderStages::COMPUTE,
+            ty: BindingType::Buffer { ty: BufferBindingType::Uniform, has_dynamic_offset: false, min_binding_size: None },
+            count: None,
+        }],
+    }
+}
+
 impl Culling {
     pub fn new(assets: &AssetCache, config: RendererConfig) -> Self {
         log::debug!("Setting up culling");
-        let module = ShaderModule::new(
-            "CullingParams",
-            include_file!("culling.wgsl"),
-            vec![
-                ShaderModuleIdentifier::bind_group(BindGroupDesc {
-                    label: CULLING_BIND_GROUP.into(),
-                    entries: vec![BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: ShaderStages::COMPUTE,
-                        ty: BindingType::Buffer { ty: BufferBindingType::Uniform, has_dynamic_offset: false, min_binding_size: None },
-                        count: None,
-                    }],
-                }),
-                ShaderModuleIdentifier::constant("SHADOW_CASCADES", config.shadow_cascades),
-                ShaderModuleIdentifier::constant("MAX_SHADOW_CASCADES", MAX_SHADOW_CASCADES),
-            ],
-        );
+        let module = ShaderModule::new("CullingParams", include_file!("culling.wgsl"))
+            .with_ident(ShaderModuleIdentifier::constant("SHADOW_CASCADES", config.shadow_cascades))
+            .with_ident(ShaderModuleIdentifier::constant("MAX_SHADOW_CASCADES", MAX_SHADOW_CASCADES))
+            .with_binding_desc(get_culling_layout());
 
         Self {
             updater: GpuWorldUpdater::new(
                 assets.clone(),
                 "Culling".to_string(),
                 ArchetypeFilter::new().incl(world_bounding_sphere()).incl(config.scene),
-                vec![module],
+                vec![Arc::new(module)],
                 "update(entity_loc);",
             ),
             params: TypedBuffer::new(

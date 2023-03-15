@@ -9,7 +9,7 @@ use ambient_gpu::{
     typed_buffer::TypedBuffer,
 };
 use ambient_meshes::QuadMeshKey;
-use ambient_renderer::{get_overlay_modules, get_resources_module, RendererTarget, SubRenderer};
+use ambient_renderer::{get_overlay_modules, RendererTarget, SubRenderer};
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     include_file,
@@ -92,9 +92,7 @@ impl SubRenderer for GizmoRenderer {
             let shader = Shader::from_modules(
                 assets,
                 "Gizmo Shader",
-                get_overlay_modules(assets, 1)
-                    .iter()
-                    .chain([&get_resources_module(), &ShaderModule::new("Gizmo", source, vec![layout.into()])]),
+                &ShaderModule::new("Gizmo", source).with_binding_desc(layout).with_dependencies(get_overlay_modules(assets, 1)),
             );
 
             shader.to_pipeline(

@@ -17,7 +17,7 @@ use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
 use wgpu::BindGroup;
 
 use super::{fog_color, get_active_sun, light_ambient, light_diffuse, RenderTarget, ShadowCameraData};
-use crate::{fog_density, fog_height_falloff};
+use crate::{fog_density, fog_height_falloff, GLOBALS_BIND_GROUP};
 
 #[repr(C)]
 #[derive(Default, Debug, Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
@@ -147,7 +147,7 @@ pub fn globals_layout() -> BindGroupDesc {
                 count: None,
             },
         ],
-        label: "GLOBALS_BIND_GROUP".into(),
+        label: GLOBALS_BIND_GROUP.into(),
     }
 }
 

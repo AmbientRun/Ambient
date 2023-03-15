@@ -50,6 +50,7 @@ pub use shadow_renderer::*;
 pub use target::*;
 pub use transparent_renderer::*;
 pub use tree_renderer::*;
+use wgpu::BindGroupLayoutEntry;
 
 pub const MAX_PRIMITIVE_COUNT: usize = 16;
 
@@ -293,7 +294,7 @@ where
 }
 
 /// No bind groups
-pub fn get_defs_module(_: &AssetCache) -> ShaderModule {
+pub fn get_defs_module() -> Arc<ShaderModule> {
     let iter = [("PI", PI)].iter();
     #[cfg(not(target_os = "unknown"))]
     let iter = iter.map(|(k, v)| format!("let {k}: f32 = {v};\n"));
@@ -302,20 +303,27 @@ pub fn get_defs_module(_: &AssetCache) -> ShaderModule {
 
     let iter = iter.chain([wgsl_interpolate(), include_file!("polyfill.wgsl")]).collect::<String>();
 
-    ShaderModule::from_str("Definitions", iter)
+    Arc::new(ShaderModule::new("defs", iter))
 }
 
-pub fn get_resources_module() -> ShaderModule {
-    let idents = vec![
-        ShaderModuleIdentifier::constant("MESH_METADATA_BINDING", MESH_METADATA_BINDING),
-        ShaderModuleIdentifier::constant("MESH_BASE_BINDING", MESH_BASE_BINDING),
-        ShaderModuleIdentifier::constant("MESH_JOINT_BINDING", MESH_JOINT_BINDING),
-        ShaderModuleIdentifier::constant("MESH_WEIGHT_BINDING", MESH_WEIGHT_BINDING),
-        ShaderModuleIdentifier::constant("SKINS_BINDING", SKINS_BINDING),
-        ShaderModuleIdentifier::bind_group(get_resources_layout()),
-    ];
+pub fn get_mesh_meta_module() -> Arc<ShaderModule> {
+    Arc::new(
+        ShaderModule::new("mesh_meta", include_file!("mesh_meta.wgsl"))
+            .with_ident(ShaderModuleIdentifier::constant("MESH_METADATA_BINDING", MESH_METADATA_BINDING))
+            .with_binding_desc(get_mesh_meta_layout()),
+    )
+}
 
-    ShaderModule::new("Resources", include_file!("resources.wgsl"), idents)
+pub fn get_mesh_data_module() -> Arc<ShaderModule> {
+    Arc::new(
+        ShaderModule::new("mesh_data", include_file!("mesh_data.wgsl"))
+            .with_ident(ShaderModuleIdentifier::constant("MESH_BASE_BINDING", MESH_BASE_BINDING))
+            .with_ident(ShaderModuleIdentifier::constant("MESH_JOINT_BINDING", MESH_JOINT_BINDING))
+            .with_ident(ShaderModuleIdentifier::constant("MESH_WEIGHT_BINDING", MESH_WEIGHT_BINDING))
+            .with_ident(ShaderModuleIdentifier::constant("SKINS_BINDING", SKINS_BINDING))
+            .with_binding_desc(get_mesh_data_layout())
+            .with_dependency(get_mesh_meta_module()),
+    )
 }
 
 pub fn primitives_layout() -> BindGroupDesc {
@@ -334,40 +342,59 @@ pub fn primitives_layout() -> BindGroupDesc {
     }
 }
 
-/// Includes entity locs
-pub fn get_common_module(_: &AssetCache) -> ShaderModule {
-    // let primtives_layout = ;
-    ShaderModule::new("Common", include_file!("renderer_common.wgsl"), vec![primitives_layout().into()])
+pub fn get_common_layout() -> BindGroupDesc {
+    BindGroupDesc {
+        entries: vec![wgpu::BindGroupLayoutEntry {
+            binding: 0,
+            visibility: wgpu::ShaderStages::VERTEX_FRAGMENT,
+            ty: wgpu::BindingType::Buffer {
+                ty: wgpu::BufferBindingType::Storage { read_only: true },
+                has_dynamic_offset: false,
+                min_binding_size: None,
+            },
+            count: None,
+        }],
+        label: PRIMITIVES_BIND_GROUP.into(),
+    }
 }
 
-/// Contains scene globals and shadow maps
-pub fn get_globals_module(_assets: &AssetCache, shadow_cascades: u32) -> ShaderModule {
-    ShaderModule::new(
-        "Globals",
-        include_file!("globals.wgsl"),
-        vec![ShaderModuleIdentifier::constant("SHADOW_CASCADES", shadow_cascades), globals_layout().into()],
+/// Includes entity locs
+pub fn get_common_module(_: &AssetCache) -> Arc<ShaderModule> {
+    Arc::new(
+        ShaderModule::new("renderer_common", include_file!("renderer_common.wgsl"))
+            .with_binding_desc(get_common_layout())
+            .with_dependency(get_mesh_data_module()),
     )
 }
 
-pub fn get_forward_modules(assets: &AssetCache, shadow_cascades: u32) -> [ShaderModule; 7] {
+/// Contains scene globals and shadow maps
+pub fn get_globals_module(_assets: &AssetCache, shadow_cascades: u32) -> Arc<ShaderModule> {
+    Arc::new(
+        ShaderModule::new("globals", include_file!("globals.wgsl"))
+            .with_ident(ShaderModuleIdentifier::constant("SHADOW_CASCADES", shadow_cascades))
+            .with_binding_desc(globals_layout()),
+    )
+}
+
+pub fn get_forward_modules(assets: &AssetCache, shadow_cascades: u32) -> [Arc<ShaderModule>; 7] {
     [
         get_mesh_buffer_types(),
-        get_defs_module(assets),
-        get_resources_module(),
+        get_defs_module(),
+        get_mesh_data_module(),
+        get_mesh_buffer_types(),
         get_globals_module(assets, shadow_cascades),
         GpuWorldShaderModuleKey { read_only: true }.get(assets),
         get_common_module(assets),
-        get_mesh_buffer_types(),
     ]
 }
 
-pub fn get_overlay_modules(assets: &AssetCache, shadow_cascades: u32) -> [ShaderModule; 3] {
-    [get_mesh_buffer_types(), get_defs_module(assets), get_globals_module(assets, shadow_cascades)]
+pub fn get_overlay_modules(assets: &AssetCache, shadow_cascades: u32) -> [Arc<ShaderModule>; 3] {
+    [get_mesh_buffer_types(), get_defs_module(), get_globals_module(assets, shadow_cascades)]
 }
 
 pub struct MaterialShader {
     pub id: String,
-    pub shader: ShaderModule,
+    pub shader: Arc<ShaderModule>,
 }
 
 pub trait Material: Debug + Sync + Send + DowncastSync {
@@ -428,7 +455,7 @@ pub struct RendererShader {
     pub transparency_group: i32,
 }
 impl RendererShader {
-    pub fn material_layout(&self) -> &Arc<wgpu::BindGroupLayout> {
+    pub fn material_layout(&self) -> &wgpu::BindGroupLayout {
         self.shader.get_bind_group_layout_by_name(MATERIAL_BIND_GROUP).unwrap()
     }
     fn get_fs_main_name(&self, main: FSMain) -> &str {

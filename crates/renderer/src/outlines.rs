@@ -53,6 +53,23 @@ pub struct Outlines {
     _config: OutlinesConfig,
     gpu: Arc<Gpu>,
 }
+
+fn get_outlines_layout() -> BindGroupDesc {
+    BindGroupDesc {
+        entries: vec![BindGroupLayoutEntry {
+            binding: 0,
+            visibility: ShaderStages::FRAGMENT,
+            ty: BindingType::Texture {
+                sample_type: wgpu::TextureSampleType::Float { filterable: false },
+                view_dimension: wgpu::TextureViewDimension::D2,
+                multisampled: false,
+            },
+            count: None,
+        }],
+        label: "OUTLINES_BIND_GROUP".into(),
+    }
+}
+
 impl Outlines {
     pub fn new(assets: &AssetCache, config: OutlinesConfig, renderer_config: RendererConfig) -> Self {
         let gpu = GpuKey.get(assets);
@@ -60,24 +77,7 @@ impl Outlines {
         let shader = Shader::from_modules(
             assets,
             "Outlines",
-            &[ShaderModule::new(
-                "Outlines",
-                include_file!("outlines.wgsl"),
-                vec![BindGroupDesc {
-                    entries: vec![BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: ShaderStages::FRAGMENT,
-                        ty: BindingType::Texture {
-                            sample_type: wgpu::TextureSampleType::Float { filterable: false },
-                            view_dimension: wgpu::TextureViewDimension::D2,
-                            multisampled: false,
-                        },
-                        count: None,
-                    }],
-                    label: "OUTLINES_BIND_GROUP".into(),
-                }
-                .into()], // vec![BindGroupDesc { entries: vec![BindGroupEntry { binding: 0, resource: ) }], label: todo!() }],
-            )],
+            &ShaderModule::new("outlines", include_file!("outlines.wgsl")).with_binding_desc(get_outlines_layout()),
         );
 
         let pipeline = shader.to_pipeline(

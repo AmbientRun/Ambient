@@ -22,6 +22,7 @@ use ambient_std::{
     shapes::AABB,
     unwrap_log_warn,
 };
+use ambient_ui::Editable;
 use glam::{Vec3, Vec4};
 
 components!("decals", {
@@ -34,20 +35,22 @@ pub struct DecalShaderKey {
     pub lit: bool,
     pub shadow_cascades: u32,
 }
+
 impl std::fmt::Debug for DecalShaderKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("DecalShaderKey").field("material_shader", &self.material_shader.id).field("lit", &self.lit).finish()
     }
 }
+
 impl SyncAssetKey<Arc<RendererShader>> for DecalShaderKey {
     fn load(&self, assets: AssetCache) -> Arc<RendererShader> {
         let id = format!("decal_shader_{}_{}", self.material_shader.id, self.lit);
         let shader = Shader::from_modules(
             &assets,
             id.clone(),
-            get_forward_modules(&assets, self.shadow_cascades)
-                .iter()
-                .chain([&self.material_shader.shader, &ShaderModule::new("DecalMaterial", include_file!("decal.wgsl"), vec![])]),
+            &ShaderModule::new("DecalMaterial", include_file!("decal.wgsl"))
+                .with_dependencies(get_forward_modules(&assets, self.shadow_cascades))
+                .with_dependency(self.material_shader.shader.clone()),
         );
 
         Arc::new(RendererShader {

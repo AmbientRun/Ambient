@@ -73,29 +73,34 @@ pub fn systems() -> SystemGroup {
     )
 }
 
+fn get_water_layout() -> BindGroupDesc {
+    BindGroupDesc {
+        entries: vec![wgpu::BindGroupLayoutEntry {
+            binding: 0,
+            visibility: wgpu::ShaderStages::FRAGMENT,
+            ty: wgpu::BindingType::Texture {
+                sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                view_dimension: wgpu::TextureViewDimension::D2,
+                multisampled: false,
+            },
+            count: None,
+        }],
+        label: MATERIAL_BIND_GROUP.into(),
+    }
+}
+
 #[derive(Debug)]
 pub struct WaterMaterialShaderKey;
 impl SyncAssetKey<Arc<MaterialShader>> for WaterMaterialShaderKey {
     fn load(&self, _assets: AssetCache) -> Arc<MaterialShader> {
         Arc::new(MaterialShader {
             id: "water_shader".to_string(),
-            shader: ShaderModule::new(
-                "Scattering",
-                [include_str!("../../sky/src/atmospheric_scattering.wgsl"), include_str!("water.wgsl")].concat(),
-                vec![BindGroupDesc {
-                    entries: vec![wgpu::BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Texture {
-                            sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                            view_dimension: wgpu::TextureViewDimension::D2,
-                            multisampled: false,
-                        },
-                        count: None,
-                    }],
-                    label: MATERIAL_BIND_GROUP.into(),
-                }
-                .into()],
+            shader: Arc::new(
+                ShaderModule::new(
+                    "water_scattering",
+                    [include_str!("../../sky/src/atmospheric_scattering.wgsl"), include_str!("water.wgsl")].concat(),
+                )
+                .with_binding_desc(get_water_layout()),
             ),
         })
     }
@@ -130,7 +135,7 @@ pub struct WaterMaterial {
 impl WaterMaterial {
     pub fn new(assets: AssetCache, normals: Arc<Texture>) -> Self {
         let gpu = GpuKey.get(&assets);
-        let layout = WaterMaterialShaderKey.get(&assets).shader.first_layout(&assets);
+        let layout = get_water_layout().get(&assets);
 
         Self {
             id: friendly_id(),

@@ -26,7 +26,7 @@ use ambient_std::{
     friendly_id, include_file,
 };
 use glam::{vec4, Quat, UVec3, Vec3, Vec4};
-use wgpu::BindGroup;
+use wgpu::{BindGroup, BindGroupLayoutEntry};
 
 components!("rect", {
     @[Debuggable, Networked, Store, Name["Background color"], Description["Background color of an entity with a `rect` component."]]
@@ -157,27 +157,22 @@ pub struct RectMaterialShaderKey;
 impl SyncAssetKey<Arc<MaterialShader>> for RectMaterialShaderKey {
     fn load(&self, _assets: AssetCache) -> Arc<MaterialShader> {
         Arc::new(MaterialShader {
-            shader: ShaderModule::new(
-                "RectMaterial",
-                include_file!("rect.wgsl"),
-                vec![BindGroupDesc {
-                    entries: vec![wgpu::BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Buffer {
-                            ty: wgpu::BufferBindingType::Uniform,
-                            has_dynamic_offset: false,
-                            min_binding_size: None,
-                        },
-                        count: None,
-                    }],
-                    label: MATERIAL_BIND_GROUP.into(),
-                }
-                .into()],
-            ),
+            shader: Arc::new(ShaderModule::new("RectMaterial", include_file!("rect.wgsl")).with_binding_desc(get_rect_layout())),
 
             id: "rect_material_shader".to_string(),
         })
+    }
+}
+
+fn get_rect_layout() -> BindGroupDesc {
+    BindGroupDesc {
+        entries: vec![BindGroupLayoutEntry {
+            binding: 0,
+            visibility: wgpu::ShaderStages::FRAGMENT,
+            ty: wgpu::BindingType::Buffer { ty: wgpu::BufferBindingType::Uniform, has_dynamic_offset: false, min_binding_size: None },
+            count: None,
+        }],
+        label: MATERIAL_BIND_GROUP.into(),
     }
 }
 
@@ -214,13 +209,15 @@ pub struct RectMaterial {
 impl RectMaterial {
     pub fn new(assets: AssetCache, params: RectMaterialParams) -> Self {
         let gpu = GpuKey.get(&assets);
-        let layout = RectMaterialShaderKey.get(&assets).shader.first_layout(&assets);
+        let layout = get_rect_layout().get(&assets);
+
         let buffer = TypedBuffer::new_init(
             gpu.clone(),
             "RectMaterial.buffer",
             wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             &[params],
         );
+
         Self {
             id: friendly_id(),
             bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
@@ -235,11 +232,13 @@ impl RectMaterial {
         }
     }
 }
+
 impl std::fmt::Debug for RectMaterial {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("RectMaterial").field("id", &self.id).finish()
     }
 }
+
 impl Material for RectMaterial {
     fn bind(&self) -> &BindGroup {
         &self.bind_group

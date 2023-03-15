@@ -9,6 +9,7 @@ use derive_more::Display;
 use glam::{Mat4, Vec4};
 use itertools::Itertools;
 use parking_lot::Mutex;
+use wgpu::BindGroupLayoutEntry;
 
 use super::ENTITIES_BIND_GROUP;
 
@@ -231,6 +232,27 @@ var<storage> entity_layout: EntityLayoutBuffer;
 {utils}
 ",
         )
+    }
+
+    pub fn layout_entries(&self, read_only: bool) -> impl Iterator<Item = BindGroupLayoutEntry> {
+        fn entity_component_storage_entry(binding: u32, writeable: bool) -> BindGroupLayoutEntry {
+            wgpu::BindGroupLayoutEntry {
+                binding,
+                visibility: if writeable {
+                    wgpu::ShaderStages::COMPUTE
+                } else {
+                    wgpu::ShaderStages::VERTEX_FRAGMENT | wgpu::ShaderStages::COMPUTE
+                },
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Storage { read_only: !(writeable && binding != 0) },
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            }
+        }
+
+        (0..self.buffers.len() + 1).map(move |i| entity_component_storage_entry(i as u32, !read_only))
     }
 }
 

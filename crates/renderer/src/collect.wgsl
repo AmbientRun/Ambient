@@ -93,7 +93,7 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     if (is_visible(primitive.entity_loc, primitive_lod)) {
         let out_offset = atomicAdd(&output_counts.data[primitive.material_index], 1u);
         let out_index = material_layout.x + out_offset;
-        let mesh = mesh_metadatas.data[mesh_index];
+        let mesh = mesh_metadatas[mesh_index];
         output_commands.data[out_index].vertex_count = mesh.index_count;
         output_commands.data[out_index].instance_count = 1u;
         output_commands.data[out_index].base_index = mesh.index_offset;

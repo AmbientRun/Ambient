@@ -14,7 +14,7 @@ use crate::{
 
 pub struct GpuRun {
     label: CowStr,
-    modules: Vec<ShaderModule>,
+    modules: Vec<Arc<ShaderModule>>,
     body: CowStr,
     bind_groups: HashMap<CowStr, BindGroup>,
 }
@@ -24,7 +24,7 @@ impl GpuRun {
         Self { body: body.into(), modules: Default::default(), bind_groups: Default::default(), label: label.into() }
     }
 
-    pub fn add_module(mut self, module: ShaderModule) -> Self {
+    pub fn add_module(mut self, module: Arc<ShaderModule>) -> Self {
         self.modules.push(module);
         self
     }
@@ -43,44 +43,41 @@ impl GpuRun {
         let in_type = In::wgsl_type();
         let out_type = Out::wgsl_type();
 
-        let module = ShaderModule::new(
-            "GpuRun",
-            include_str!("gpu_run.wgsl"),
-            vec![
-                ShaderModuleIdentifier::bind_group(crate::shader_module::BindGroupDesc {
-                    entries: vec![
-                        BindGroupLayoutEntry {
-                            binding: 0,
-                            visibility: ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::Buffer {
-                                ty: wgpu::BufferBindingType::Storage { read_only: true },
-                                has_dynamic_offset: false,
-                                min_binding_size: None,
-                            },
-                            count: None,
-                        },
-                        BindGroupLayoutEntry {
-                            binding: 1,
-                            visibility: ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::Buffer {
-                                ty: wgpu::BufferBindingType::Storage { read_only: false },
-                                has_dynamic_offset: false,
-                                min_binding_size: None,
-                            },
-                            count: None,
-                        },
-                    ],
-                    label: "GPURUN_BIND_GROUP".into(),
-                }),
-                ShaderModuleIdentifier::constant("IN_SIZE", in_size),
-                ShaderModuleIdentifier::constant("OUT_SIZE", out_size),
-                ShaderModuleIdentifier::raw("WGSL_IN", in_type),
-                ShaderModuleIdentifier::raw("WGSL_OUT", out_type),
-                ShaderModuleIdentifier::raw("WGSL_BODY", body.clone()),
-            ],
-        );
+        let module = ShaderModule::new("GpuRun", include_str!("gpu_run.wgsl"))
+            .with_binding(
+                "GPURUN_BIND_GROUP",
+                BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: ShaderStages::COMPUTE,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Storage { read_only: true },
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                },
+            )
+            .with_binding(
+                "GPURUN_BIND_GROUP",
+                BindGroupLayoutEntry {
+                    binding: 1,
+                    visibility: ShaderStages::COMPUTE,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Storage { read_only: false },
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                },
+            )
+            .with_ident(ShaderModuleIdentifier::constant("IN_SIZE", in_size))
+            .with_ident(ShaderModuleIdentifier::constant("OUT_SIZE", out_size))
+            .with_ident(ShaderModuleIdentifier::raw("WGSL_IN", in_type))
+            .with_ident(ShaderModuleIdentifier::raw("WGSL_OUT", out_type))
+            .with_ident(ShaderModuleIdentifier::raw("WGSL_BODY", body.clone()))
+            .with_dependencies(modules.iter().cloned());
 
-        let shader = Shader::from_modules(assets, format!("GpuRun.{}", self.label), modules.iter().chain([&module]));
+        let shader = Shader::from_modules(assets, format!("GpuRun.{}", self.label), &module);
         shader
     }
 

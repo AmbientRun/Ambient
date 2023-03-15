@@ -162,8 +162,8 @@ impl Material for CloudMaterial {
     }
 }
 
-pub fn get_scatter_module() -> ShaderModule {
-    ShaderModule::from_str("Scatter", include_file!("atmospheric_scattering.wgsl"))
+pub fn get_scatter_module() -> Arc<ShaderModule> {
+    Arc::new(ShaderModule::new("Scatter", include_file!("atmospheric_scattering.wgsl")))
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -194,9 +194,10 @@ impl SyncAssetKey<Arc<RendererShader>> for CloudShaderKey {
             shader: Shader::from_modules(
                 &assets,
                 id.clone(),
-                get_overlay_modules(&assets, self.shadow_cascades)
-                    .iter()
-                    .chain([&get_scatter_module(), &ShaderModule::new("Clouds", shader, vec![layout.into()])]),
+                &ShaderModule::new("clouds", shader)
+                    .with_binding_desc(layout)
+                    .with_dependencies(get_overlay_modules(&assets, self.shadow_cascades))
+                    .with_dependency(get_scatter_module()),
             ),
             id,
             vs_main: "vs_main".to_string(),

@@ -676,6 +676,7 @@ dependencies = [
 name = "ambient_gpu"
 version = "0.2.0-dev"
 dependencies = [
+ "aho-corasick",
  "ambient_std",
  "ambient_sys",
  "anyhow",

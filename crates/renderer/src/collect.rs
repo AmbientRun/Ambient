@@ -17,7 +17,9 @@ use glam::{uvec2, UVec2, UVec3};
 use parking_lot::Mutex;
 use wgpu::{BindGroupLayout, BindGroupLayoutEntry, BindingType, BufferBindingType, ShaderStages};
 
-use super::{get_defs_module, get_resources_module, DrawIndexedIndirect, PrimitiveIndex, RESOURCES_BIND_GROUP};
+use crate::get_mesh_meta_module;
+
+use super::{get_defs_module, DrawIndexedIndirect, PrimitiveIndex, RESOURCES_BIND_GROUP};
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, Default, bytemuck::Pod, bytemuck::Zeroable)]
@@ -164,21 +166,13 @@ impl RendererCollect {
         let shader = Shader::from_modules(
             assets,
             "collect",
-            &[
-                get_defs_module(assets),
-                get_mesh_buffer_types(),
-                get_resources_module(),
-                GpuWorldShaderModuleKey { read_only: true }.get(assets),
-                ShaderModule::new(
-                    "RendererCollect",
-                    include_file!("collect.wgsl"),
-                    vec![
-                        layout_desc.into(),
-                        ShaderModuleIdentifier::constant("COLLECT_WORKGROUP_SIZE", COLLECT_WORKGROUP_SIZE),
-                        ShaderModuleIdentifier::constant("COLLECT_CHUNK_SIZE", COLLECT_CHUNK_SIZE),
-                    ],
-                ),
-            ],
+            &ShaderModule::new("RendererCollect", include_file!("collect.wgsl"))
+                .with_ident(ShaderModuleIdentifier::constant("COLLECT_WORKGROUP_SIZE", COLLECT_WORKGROUP_SIZE))
+                .with_ident(ShaderModuleIdentifier::constant("COLLECT_CHUNK_SIZE", COLLECT_CHUNK_SIZE))
+                .with_binding_desc(layout_desc)
+                .with_dependency(get_defs_module())
+                .with_dependency(get_mesh_meta_module())
+                .with_dependency(GpuWorldShaderModuleKey { read_only: true }.get(assets)),
         );
 
         let pipeline = shader.to_compute_pipeline(&gpu, "main");
