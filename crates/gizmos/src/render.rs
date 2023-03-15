@@ -9,7 +9,7 @@ use ambient_gpu::{
     typed_buffer::TypedBuffer,
 };
 use ambient_meshes::QuadMeshKey;
-use ambient_renderer::{get_overlay_modules, RendererTarget, SubRenderer};
+use ambient_renderer::{get_mesh_data_module, get_overlay_modules, RendererTarget, SubRenderer};
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     include_file,
@@ -43,6 +43,7 @@ impl GizmoRenderer {
         Self { gpu, quad: QuadMeshKey.get(assets), pipeline: OnceCell::new(), buffer, primitives: Vec::new() }
     }
 }
+
 impl SubRenderer for GizmoRenderer {
     #[profiling::function]
     fn render<'a>(
@@ -91,8 +92,11 @@ impl SubRenderer for GizmoRenderer {
             let source = include_file!("gizmos.wgsl");
             let shader = Shader::from_modules(
                 assets,
-                "Gizmo Shader",
-                &ShaderModule::new("Gizmo", source).with_binding_desc(layout).with_dependencies(get_overlay_modules(assets, 1)),
+                "gizmos",
+                &ShaderModule::new("Gizmo", source)
+                    .with_binding_desc(layout)
+                    .with_dependencies(get_overlay_modules(assets, 1))
+                    .with_dependency(get_mesh_data_module()),
             );
 
             shader.to_pipeline(

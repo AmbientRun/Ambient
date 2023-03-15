@@ -186,7 +186,7 @@ impl RendererCollect {
         &self,
         encoder: &mut wgpu::CommandEncoder,
         _post_submit: &mut Vec<Box<dyn FnOnce() + Send + Send>>,
-        resources_bind_group: &wgpu::BindGroup,
+        mesh_meta_bind_group: &wgpu::BindGroup,
         entities_bind_group: &wgpu::BindGroup,
         input_primitives: &TypedMultiBuffer<CollectPrimitive>,
         output: &mut RendererCollectState,
@@ -217,7 +217,7 @@ impl RendererCollect {
             let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: Some("Collect") });
             cpass.set_pipeline(self.pipeline.pipeline());
 
-            for (name, group) in [(RESOURCES_BIND_GROUP, resources_bind_group), (ENTITIES_BIND_GROUP, entities_bind_group)] {
+            for (name, group) in [(RESOURCES_BIND_GROUP, mesh_meta_bind_group), (ENTITIES_BIND_GROUP, entities_bind_group)] {
                 let id = self.pipeline.get_bind_group_index_by_name(name).unwrap();
                 cpass.set_bind_group(id, group, &[]);
             }

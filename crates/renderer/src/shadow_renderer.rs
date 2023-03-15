@@ -12,7 +12,7 @@ use bytemuck::{Pod, Zeroable};
 use glam::{Mat4, Vec3};
 use itertools::Itertools;
 use smallvec::SmallVec;
-use wgpu::DepthBiasState;
+use wgpu::{BindGroup, DepthBiasState};
 
 use super::{
     cast_shadows, get_active_sun, FSMain, RendererCollectState, RendererResources, ShadowAndUIGlobals, TreeRenderer, TreeRendererConfig,
@@ -101,8 +101,9 @@ impl ShadowsRenderer {
         world: &mut World,
         encoder: &mut wgpu::CommandEncoder,
         post_submit: &mut Vec<Box<dyn FnOnce() + Send + Send>>,
-        resources_bind_group: &wgpu::BindGroup,
-        entities_bind_group: &wgpu::BindGroup,
+        mesh_meta_bind_group: &BindGroup,
+        resources_bind_group: &BindGroup,
+        entities_bind_group: &BindGroup,
         mesh_buffer: &MeshBuffer,
     ) {
         let main_camera = Camera::get_active(world, main_scene(), world.resource_opt(local_user_id())).unwrap_or_default();
@@ -130,7 +131,7 @@ impl ShadowsRenderer {
 
         for (i, cascade) in self.cascades.iter_mut().enumerate() {
             profiling::scope!("Shadow dynamic render");
-            self.renderer.run_collect(encoder, post_submit, resources_bind_group, entities_bind_group, &mut cascade.collect_state);
+            self.renderer.run_collect(encoder, post_submit, mesh_meta_bind_group, entities_bind_group, &mut cascade.collect_state);
             let label = format!("Shadow cascade {i}");
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some(&label),

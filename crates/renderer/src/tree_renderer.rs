@@ -176,6 +176,8 @@ impl TreeRenderer {
                 material_layouts[mat.material_index as usize] = uvec2(offset as u32, mat.primitives.len() as u32);
             }
         }
+
+        tracing::info!("Running collect");
         self.config.renderer_resources.collect.run(
             encoder,
             post_submit,
