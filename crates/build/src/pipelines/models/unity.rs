@@ -28,6 +28,7 @@ use image::ImageOutputFormat;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
+use ambient_unity_parser as unity_parser;
 use unity_parser::{parse_unity_yaml, prefab::PrefabObject, UnityRef};
 use yaml_rust::Yaml;
 

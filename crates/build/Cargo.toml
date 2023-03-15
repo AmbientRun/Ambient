@@ -20,7 +20,7 @@ ambient_project = { path = "../project" }
 ambient_rustc = { path = "../rustc" }
 ambient_decals = { path = "../decals" }
 ambient_wasm = { path = "../wasm" }
-unity_parser = { path = "../../libs/unity_parser" }
+ambient_unity_parser = { path = "../../libs/unity_parser" }
 walkdir = { workspace = true }
 futures = { workspace = true }
 tokio = { workspace = true }

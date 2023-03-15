@@ -13,8 +13,8 @@ pub mod shapes;
 pub mod sparse_vec;
 pub mod time;
 
+pub use ambient_friendly_id::friendly_id;
 pub use encode::sha256_digest;
-pub use friendly_id::friendly_id;
 pub use time::{pretty_duration, FromDuration, IntoDuration};
 
 #[cfg(not(target_os = "unknown"))]

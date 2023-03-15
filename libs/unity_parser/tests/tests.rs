@@ -1,4 +1,4 @@
-use unity_parser::{asset::Asset, mat::Material, prefab::PrefabFile};
+use ambient_unity_parser::{asset::Asset, mat::Material, prefab::PrefabFile};
 
 #[test]
 pub fn test_prefab() {

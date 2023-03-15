@@ -11,7 +11,7 @@ edition = "2021"
 ambient_guest_bridge = { path = "../guest_bridge" }
 ambient_element_component = { path = "../element_component" }
 ambient_cb = { path = "../../libs/cb" }
-friendly_id = { path = "../../libs/friendly_id" }
+ambient_friendly_id = { path = "../../libs/friendly_id" }
 
 ambient_sys = { path = "../sys", optional = true }
 ambient_core = { path = "../core", optional = true }

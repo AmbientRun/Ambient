@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "ambient_api"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_api_macros",
  "ambient_event_types",
@@ -19,7 +19,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_api_macros"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "anyhow",
  "indoc",
@@ -32,11 +32,11 @@ dependencies = [
 
 [[package]]
 name = "ambient_cb"
-version = "0.1.0"
+version = "0.2.0-dev"
 
 [[package]]
 name = "ambient_color"
-version = "0.1.0"
+version = "0.2.0-dev"
 dependencies = [
  "glam",
  "hex",
@@ -46,16 +46,16 @@ dependencies = [
 
 [[package]]
 name = "ambient_element"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_cb",
  "ambient_element_component",
+ "ambient_friendly_id",
  "ambient_guest_bridge",
  "as-any",
  "atomic_refcell",
  "derivative",
  "dyn-clonable",
- "friendly_id",
  "futures",
  "itertools",
  "parking_lot",
@@ -65,7 +65,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_element_component"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "itertools",
  "proc-macro-crate",
@@ -76,11 +76,18 @@ dependencies = [
 
 [[package]]
 name = "ambient_event_types"
-version = "0.1.0"
+version = "0.2.0-dev"
+
+[[package]]
+name = "ambient_friendly_id"
+version = "0.2.0-dev"
+dependencies = [
+ "rand",
+]
 
 [[package]]
 name = "ambient_guest_bridge"
-version = "0.1.0"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
  "ambient_window_types",
@@ -88,7 +95,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_ui_components"
-version = "0.1.0"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_cb",
  "ambient_color",
@@ -106,7 +113,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_window_types"
-version = "0.1.0"
+version = "0.2.0-dev"
 dependencies = [
  "bitflags",
  "serde",
@@ -136,14 +143,14 @@ checksum = "088ccb346677e658e7ccd9627c62576fba881f4db7fab71fa9e21bf31c0aa4cb"
 
 [[package]]
 name = "asset_loading"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "async"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -168,7 +175,7 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
 name = "button"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
  "ambient_element",
@@ -196,7 +203,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "clientside"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -220,7 +227,7 @@ dependencies = [
 
 [[package]]
 name = "dock_layout"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
  "ambient_element",
@@ -272,7 +279,7 @@ dependencies = [
 
 [[package]]
 name = "flow_layout"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
  "ambient_element",
@@ -287,13 +294,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a9c384f161156f5260c24a097c56119f9be8c798586aecc13afbcbe7b7e26bf8"
 dependencies = [
  "percent-encoding",
-]
-
-[[package]]
-name = "friendly_id"
-version = "0.1.0"
-dependencies = [
- "rand",
 ]
 
 [[package]]
@@ -422,7 +422,7 @@ dependencies = [
 
 [[package]]
 name = "image_quad"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -446,7 +446,7 @@ checksum = "9f2cb48b81b1dc9f39676bf99f5499babfec7cd8fe14307f7b3d747208fb5690"
 
 [[package]]
 name = "input"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -515,14 +515,14 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
 name = "minigolf"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "multiplayer"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
  "rand",
@@ -646,7 +646,7 @@ dependencies = [
 
 [[package]]
 name = "physics"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -671,7 +671,7 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 
 [[package]]
 name = "primitives"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -776,14 +776,14 @@ dependencies = [
 
 [[package]]
 name = "raw_text"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "rect"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
  "ambient_element",
@@ -866,7 +866,7 @@ checksum = "7bd3e3206899af3f8b12af284fafc038cc1dc2b41d1b89dd17297221c5d225de"
 
 [[package]]
 name = "skinmesh"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -910,7 +910,7 @@ dependencies = [
 
 [[package]]
 name = "sun"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -928,7 +928,7 @@ dependencies = [
 
 [[package]]
 name = "text"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
  "ambient_element",
@@ -938,7 +938,7 @@ dependencies = [
 
 [[package]]
 name = "third_person_camera"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -965,7 +965,7 @@ dependencies = [
 
 [[package]]
 name = "tictactoe"
-version = "0.1.1"
+version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
  "palette",

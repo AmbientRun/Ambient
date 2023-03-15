@@ -11,12 +11,12 @@ use crate::element_unmanaged_children;
 use crate::{AnyCloneable, ContextUpdate, DespawnFn, Element, ElementConfig, Hooks, HooksEnvironment, InstanceId, StateUpdate};
 #[cfg(feature = "native")]
 use ambient_core::hierarchy::{children, parent};
+use ambient_friendly_id::friendly_id;
 #[cfg(feature = "guest")]
 use ambient_guest_bridge::api::components::core::ecs::{children, parent};
 #[cfg(feature = "native")]
 use ambient_guest_bridge::ecs::{query, Component, SystemGroup};
 use ambient_guest_bridge::ecs::{Entity, EntityId, World};
-use friendly_id::friendly_id;
 use itertools::Itertools;
 use parking_lot::Mutex;
 use tracing::debug_span;
