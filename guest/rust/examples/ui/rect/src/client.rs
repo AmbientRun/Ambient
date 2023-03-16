@@ -6,27 +6,29 @@ use ambient_guest_bridge::{
     components::{
         camera::orthographic_from_window,
         player::{player, user_id},
+        ui::{
+            background_color, border_color, border_radius, border_thickness, height,
+            space_between_items, width,
+        },
     },
     ecs::World,
 };
-use ambient_ui_components::text::Text;
+use ambient_ui_components::{layout::FlowColumn, Rectangle};
 
 #[element_component]
-fn App(hooks: &mut Hooks) -> Element {
-    let (count, set_count) = hooks.use_state(0);
-    hooks.use_spawn(move |_| {
-        run_async(async move {
-            let mut count = 0;
-            loop {
-                sleep(0.5).await;
-                count += 1;
-                set_count(count);
-            }
-        });
-        Box::new(|_| {})
-    });
-    println!("{count}");
-    Text::el(format!("Hello world: {count}"))
+fn App(_hooks: &mut Hooks) -> Element {
+    FlowColumn::el([
+        Rectangle.el(),
+        Rectangle
+            .el()
+            .set(width(), 150.)
+            .set(height(), 50.)
+            .set(background_color(), vec4(1., 0., 0., 1.))
+            .set(border_color(), vec4(0., 1., 0., 1.))
+            .set(border_thickness(), 10.)
+            .set(border_radius(), vec4(20., 10., 5., 0.)),
+    ])
+    .set(space_between_items(), 10.)
 }
 
 #[main]
@@ -37,7 +39,7 @@ pub async fn main() -> EventResult {
                 id,
                 Entity::new()
                     .with_merge(make_orthographic_camera())
-                    .with(orthographic_from_window(), id)
+                    .with(orthographic_from_window(), EntityId::resources())
                     .with_default(ui_scene()),
             );
         }

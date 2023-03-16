@@ -59,7 +59,7 @@ pub async fn main() -> EventResult {
                 id,
                 Entity::new()
                     .with_merge(make_orthographic_camera())
-                    .with(orthographic_from_window(), id)
+                    .with(orthographic_from_window(), EntityId::resources())
                     .with_default(ui_scene()),
             );
         }
