@@ -60,6 +60,7 @@ pub mod window {
         world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(cursor.into())).ok();
     }
     pub fn get_clipboard() -> Option<String> {
+        #[cfg(not(target_os = "unknown"))]
         arboard::Clipboard::new().ok().and_then(|mut x| x.get_text().ok())
     }
 }

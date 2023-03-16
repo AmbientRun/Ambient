@@ -7,12 +7,13 @@ use std::{
 
 use ambient_core::{app_start_time, asset_cache, dtime, no_sync, project_name, time};
 use ambient_ecs::{
-    world_events, ComponentDesc, ComponentRegistry, Entity, Networked, SystemGroup, World, WorldEventsSystem, WorldStreamCompEvent,
+    dont_store, world_events, ComponentDesc, ComponentRegistry, Entity, Networked, SystemGroup, World, WorldEventsSystem,
+    WorldStreamCompEvent,
 };
 use ambient_network::{
-    bi_stream_handlers, datagram_handlers,
+    bi_stream_handlers, datagram_handlers, persistent_resources,
     server::{ForkingEvent, GameServer, ShutdownEvent},
-    uni_stream_handlers,
+    synced_resources, uni_stream_handlers,
 };
 use ambient_prefab::PrefabFromUrl;
 use ambient_std::{

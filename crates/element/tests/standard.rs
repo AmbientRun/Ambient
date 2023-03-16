@@ -41,7 +41,7 @@ fn memo_hook_state_update() {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
             *hooks.world.resource_mut(n_renders()) += 1;
             let (state, set_state) = hooks.use_state(0);
-            Element::new().on_spawned(move |_, _| set_state(state + 1))
+            Element::new().on_spawned(move |_, _, _| set_state(state + 1))
         }
     }
 
