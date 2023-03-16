@@ -17,9 +17,9 @@ pub(crate) struct ElementConfig {
     #[derivative(Debug = "ignore")]
     pub despawner: Arc<dyn Fn(&mut World, EntityId) + Sync + Send>,
     #[derivative(Debug = "ignore")]
-    pub on_spawned: Option<Arc<dyn Fn(&mut World, EntityId) + Sync + Send>>,
+    pub on_spawned: Option<Arc<dyn Fn(&mut World, EntityId, &str) + Sync + Send>>,
     #[derivative(Debug = "ignore")]
-    pub on_despawn: Option<Arc<dyn Fn(&mut World, EntityId) + Sync + Send>>,
+    pub on_despawn: Option<Arc<dyn Fn(&mut World, EntityId, &str) + Sync + Send>>,
     pub key: String,
     pub memo_key: Option<String>,
 }

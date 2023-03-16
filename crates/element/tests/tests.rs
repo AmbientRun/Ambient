@@ -131,7 +131,7 @@ async fn async_task() {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
             let (state, set_state) = hooks.use_state(0);
             *hooks.world.resource_mut(n_renders()) += 1;
-            Element::new().on_spawned(move |_, _| {
+            Element::new().on_spawned(move |_, _, _| {
                 let set_state = set_state.clone();
                 tokio::task::spawn(async move {
                     tokio::time::sleep(Duration::from_millis(10)).await;
@@ -167,7 +167,7 @@ fn on_spawned() {
     pub struct Root;
     impl ElementComponent for Root {
         fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-            Element::new().init_default(prop_a()).on_spawned(|world, ent| {
+            Element::new().init_default(prop_a()).on_spawned(|world, ent, _| {
                 // Should be possible to access components in on_spawned
                 world.get(ent, prop_a()).unwrap();
             })

@@ -1,6 +1,5 @@
 use std::{collections::HashMap, fmt::Debug, hash::Hash, ops::Deref, sync::Arc};
 
-use ambient_ecs::EntityId;
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_input::{event_keyboard_input, event_mouse_input, keycode};
 use ambient_std::{cb, color::Color, Cb};
@@ -9,10 +8,10 @@ use indexmap::IndexMap;
 use itertools::Itertools;
 use winit::event::VirtualKeyCode;
 
-use super::{Button, ButtonStyle, Dropdown, Editor, EditorOpts, FlowColumn, FlowRow, Focus, UIBase};
+use super::{Button, ButtonStyle, Dropdown, Editor, EditorOpts, FlowColumn, FlowRow, UIBase};
 use crate::{layout::*, StylesExt, COLLECTION_ADD_ICON, COLLECTION_DELETE_ICON, MOVE_DOWN_ICON, MOVE_UP_ICON, STREET};
 use ambient_event_types::{WINDOW_KEYBOARD_INPUT, WINDOW_MOUSE_INPUT};
-use ambient_ui_components::UIExt;
+use ambient_ui_components::{use_focus, UIExt};
 
 #[element_component]
 pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static>(
@@ -254,9 +253,7 @@ pub struct MinimalListEditorItem<T: std::fmt::Debug + Clone + Default + Sync + S
 impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementComponent for MinimalListEditorItem<T> {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { value, on_change, on_delete, item_opts, item_editor } = *self;
-        let (self_id, set_self_id) = hooks.use_state(EntityId::null());
-        let (focus, set_focus) = hooks.consume_context::<Focus>().expect("No FocusRoot found");
-        let focused = focus == Focus(Some(self_id));
+        let (focused, set_focused) = use_focus(hooks);
         hooks.use_event(WINDOW_KEYBOARD_INPUT, move |_world, event| {
             if let Some(pressed) = event.get(event_keyboard_input()) {
                 if !focused || !pressed {
@@ -282,10 +279,9 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
             item_editor.0(value, on_change, item_opts).set(fit_horizontal(), Fit::Parent),
         ])
         .el()
-        .on_spawned(move |_, id| set_self_id(id))
         .with_clickarea()
-        .on_mouse_down(move |_, id, _| {
-            set_focus(Focus(Some(id)));
+        .on_mouse_down(move |_, _, _| {
+            set_focused(true);
         })
         .el()
         .set(padding(), Borders::vertical(STREET))

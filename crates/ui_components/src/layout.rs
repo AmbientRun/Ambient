@@ -161,5 +161,5 @@ pub fn MeasureSize(hooks: &mut Hooks, inner: Element, on_change: Cb<dyn Fn(Vec2)
             }
         }
     });
-    inner.on_spawned(move |_, id| set_id(Some(id)))
+    inner.on_spawned(move |_, id, _| set_id(Some(id)))
 }

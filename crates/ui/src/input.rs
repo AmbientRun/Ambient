@@ -15,13 +15,13 @@ use ambient_std::{
     math::{interpolate, interpolate_clamped},
     Cb,
 };
-use ambient_ui_components::UIExt;
+use ambient_ui_components::{use_focus_for_instance_id, UIExt};
 use convert_case::{Case, Casing};
 use glam::*;
 use itertools::Itertools;
 use winit::window::CursorIcon;
 
-use super::{Editor, EditorOpts, FlowColumn, FlowRow, Focus, Text, UIBase};
+use super::{Editor, EditorOpts, FlowColumn, FlowRow, Text, UIBase};
 use crate::{
     background_color, border_radius, layout::*, primary_color, text_input::TextInput, Button, ButtonStyle, ChangeCb, Corners,
     FontAwesomeIcon, Rectangle, STREET,
@@ -40,9 +40,8 @@ impl<T: FromStr + Debug + std::fmt::Display + Clone + Sync + Send + 'static> Par
 impl<T: FromStr + Debug + std::fmt::Display + Clone + Sync + Send + 'static> ElementComponent for ParseableInput<T> {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { value, on_change } = *self;
-        let (self_id, set_self_id) = hooks.use_state(EntityId::null());
-        let (focus, _) = hooks.consume_context::<Focus>().expect("No FocusRoot found");
-        let focused = focus == Focus(Some(self_id));
+        let (text_id, set_text_id) = hooks.use_state(String::new());
+        let (focused, _) = use_focus_for_instance_id(hooks, text_id);
         let (text, set_text) = hooks.use_state(None);
         if focused && text.is_none() {
             set_text(Some(value.to_string()));
@@ -59,7 +58,7 @@ impl<T: FromStr + Debug + std::fmt::Display + Clone + Sync + Send + 'static> Ele
             }),
         )
         .el()
-        .on_spawned(move |_, id| set_self_id(id))
+        .on_spawned(move |_, _, id| set_text_id(id.to_string()))
     }
 }
 
@@ -75,9 +74,8 @@ impl<T: Debug + ComponentValue> ElementComponent for CustomParseInput<T> {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { value, on_change, parse, to_string } = *self;
 
-        let (self_id, set_self_id) = hooks.use_state(EntityId::null());
-        let (focus, _) = hooks.consume_context::<Focus>().expect("No FocusRoot found");
-        let focused = focus == Focus(Some(self_id));
+        let (text_id, set_text_id) = hooks.use_state(String::new());
+        let (focused, _) = use_focus_for_instance_id(hooks, text_id);
         let (text, set_text) = hooks.use_state(None);
         if focused && text.is_none() {
             set_text(Some(to_string(&value)));
@@ -94,7 +92,7 @@ impl<T: Debug + ComponentValue> ElementComponent for CustomParseInput<T> {
             }),
         )
         .el()
-        .on_spawned(move |_, id| set_self_id(id))
+        .on_spawned(move |_, _, id| set_text_id(id.to_string()))
     }
 }
 
@@ -290,7 +288,7 @@ impl ElementComponent for Slider {
             .set(height(), 2.)
             .set(translation(), vec3(0., (SLIDER_HEIGHT - 2.) / 2., 0.))
             .set(background_color(), primary_color().into())
-            .on_spawned(move |_, id| *block_id.lock() = id);
+            .on_spawned(move |_, id, _| *block_id.lock() = id);
 
         let thumb = {
             let thumb = UIBase

@@ -16,7 +16,7 @@ fn use_state() {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
             *hooks.world.resource_mut(n_renders()) += 1;
             let (state, set_state) = hooks.use_state(0);
-            Element::new().on_spawned(move |_, _| set_state(state + 1))
+            Element::new().on_spawned(move |_, _, _| set_state(state + 1))
         }
     }
 
@@ -90,7 +90,7 @@ fn use_state_ensure_dropped() {
     impl ElementComponent for Inner {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
             let (_state, set_state) = hooks.use_state(None);
-            Element::new().on_spawned(move |_, _| set_state(Some(Arc::new(Droppable))))
+            Element::new().on_spawned(move |_, _, _| set_state(Some(Arc::new(Droppable))))
         }
     }
     let mut world = initialize();

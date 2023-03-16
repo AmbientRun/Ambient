@@ -253,7 +253,7 @@ impl ElementTree {
         world.add_components(instance.entity, components).unwrap();
         if spawn {
             if let Some(on_spawned) = &instance.config.on_spawned {
-                on_spawned(world, entity);
+                on_spawned(world, entity, instance_id);
             }
         }
         instance.entity
@@ -347,7 +347,7 @@ impl ElementTree {
         let mut instance = self.instances.remove(instance_id).unwrap();
 
         if let Some(on_despawn) = &instance.config.on_despawn {
-            on_despawn(world, instance.entity);
+            on_despawn(world, instance.entity, instance_id);
         }
         for on_despawn in std::mem::take(&mut instance.hooks_on_despawn) {
             on_despawn(world);

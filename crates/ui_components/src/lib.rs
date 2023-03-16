@@ -1,18 +1,16 @@
+use ambient_cb::{cb, Cb};
 use ambient_element::{
     define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent, ElementComponentExt, Hooks,
 };
 use ambient_event_types::WINDOW_MOUSE_INPUT;
-use ambient_guest_bridge::{
-    components::{
-        app::{ui_scene, window_logical_size, window_physical_size},
-        input::event_mouse_input,
-        transform::{local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation},
-        ui::{
-            background_color, gpu_ui_size, height, margin_bottom, margin_left, margin_right, margin_top, mesh_to_local_from_size,
-            padding_bottom, padding_left, padding_right, padding_top, rect, width,
-        },
+use ambient_guest_bridge::components::{
+    app::{ui_scene, window_logical_size, window_physical_size},
+    input::event_mouse_input,
+    transform::{local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation},
+    ui::{
+        background_color, gpu_ui_size, height, margin_bottom, margin_left, margin_right, margin_top, mesh_to_local_from_size,
+        padding_bottom, padding_left, padding_right, padding_top, rect, width,
     },
-    ecs::{EntityId, World},
 };
 use clickarea::ClickArea;
 use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
@@ -89,10 +87,24 @@ pub fn with_rect(element: Element) -> Element {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Focus(pub Option<EntityId>);
-
-pub fn use_has_focus(_: &World, hooks: &mut Hooks) -> bool {
-    hooks.consume_context::<Focus>().is_some()
+pub struct Focus(Option<(String, u128)>);
+impl Focus {
+    pub fn new(focus: Option<String>) -> Self {
+        Self(focus.map(|x| (x, rand::random())))
+    }
+}
+pub fn use_focus(hooks: &mut Hooks) -> (bool, Cb<dyn Fn(bool) + Sync + Send>) {
+    use_focus_for_instance_id(hooks, hooks.instance_id.clone())
+}
+pub fn use_focus_for_instance_id(hooks: &mut Hooks, instance_id: String) -> (bool, Cb<dyn Fn(bool) + Sync + Send>) {
+    let (focus, set_focus) = hooks.consume_context::<Focus>().expect("No FocusRoot available");
+    let focused = if let Focus(Some((focused, _))) = &focus { focused == &instance_id } else { false };
+    (
+        focused,
+        cb(move |new_focus| {
+            set_focus(Focus::new(if new_focus { Some(instance_id.clone()) } else { None }));
+        }),
+    )
 }
 
 #[derive(Debug, Clone)]
@@ -101,14 +113,30 @@ pub struct FocusRoot(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(FocusRoot);
 impl ElementComponent for FocusRoot {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let set_focus = hooks.provide_context(|| Focus(None));
-        hooks.use_event(WINDOW_MOUSE_INPUT, move |_world, event| {
-            if let Some(_event) = event.get_ref(event_mouse_input()) {
-                set_focus(Focus(None));
-            }
-        });
-        Element::new().children(self.0)
+        hooks.provide_context(|| Focus::new(None));
+        let mut children = self.0;
+        children.push(FocusResetter.el());
+        Element::new().children(children)
     }
+}
+#[element_component]
+fn FocusResetter(hooks: &mut Hooks) -> Element {
+    let (focused, set_focus) = hooks.consume_context::<Focus>().unwrap();
+    let (reset_focus, set_reset_focus) = hooks.use_state(Focus(None));
+    hooks.use_event(WINDOW_MOUSE_INPUT, {
+        let focused = focused.clone();
+        let set_reset_focus = set_reset_focus.clone();
+        move |_world, event| {
+            if let Some(_event) = event.get_ref(event_mouse_input()) {
+                set_reset_focus(focused.clone());
+            }
+        }
+    });
+    if focused == reset_focus && focused.0.is_some() {
+        set_focus(Focus(None));
+        set_reset_focus(Focus(None));
+    }
+    Element::new()
 }
 
 pub trait UIExt {

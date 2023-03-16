@@ -4,7 +4,7 @@ use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 
 use glam::*;
 
-use crate::{text::Text, Focus, Rectangle, UIBase, UIExt};
+use crate::{text::Text, use_focus, Rectangle, UIBase, UIExt};
 use ambient_cb::{cb, Cb};
 use ambient_event_types::{WINDOW_KEYBOARD_INPUT, WINDOW_RECEIVED_CHARACTER};
 use ambient_guest_bridge::{
@@ -14,7 +14,6 @@ use ambient_guest_bridge::{
         transform::translation,
         ui::{align_horizontal_end, fit_horizontal_none, fit_vertical_none, height, layout_flow, min_height, min_width, text, width},
     },
-    ecs::EntityId,
     window::{get_clipboard, set_cursor},
 };
 use ambient_window_types::{CursorIcon, VirtualKeyCode};
@@ -28,16 +27,14 @@ pub fn TextInput(
     password: bool,
     placeholder: Option<String>,
 ) -> Element {
-    let (self_id, set_self_id) = hooks.use_state(EntityId::null());
-    let (focus, set_focus) = hooks.consume_context::<Focus>().expect("No FocusRoot available");
-    let focused = focus == Focus(Some(self_id));
+    let (focused, set_focused) = use_focus(hooks);
     let (command, set_command) = hooks.use_state(false);
     hooks.use_spawn({
-        let set_focus = set_focus.clone();
+        let set_focused = set_focused.clone();
         move |_| {
             Box::new(move |_| {
                 if focused {
-                    set_focus(Focus(None));
+                    set_focused(false);
                 }
             })
         }
@@ -101,10 +98,9 @@ pub fn TextInput(
     .set_default(fit_vertical_none())
     .set(min_width(), 3.)
     .set(min_height(), 13.)
-    .on_spawned(move |_, id| set_self_id(id))
     .with_clickarea()
-    .on_mouse_up(move |_, id, _| {
-        set_focus(Focus(Some(id)));
+    .on_mouse_up(move |_, _, _| {
+        set_focused(true);
     })
     .on_mouse_enter(|world, _| {
         set_cursor(world, CursorIcon::Text);

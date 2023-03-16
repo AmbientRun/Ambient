@@ -165,11 +165,11 @@ impl Element {
         self.config.despawner = Arc::new(handler);
         self
     }
-    pub fn on_spawned<F: Fn(&mut World, EntityId) + Sync + Send + 'static>(mut self, handler: F) -> Self {
+    pub fn on_spawned<F: Fn(&mut World, EntityId, &str) + Sync + Send + 'static>(mut self, handler: F) -> Self {
         self.config.on_spawned = Some(Arc::new(handler));
         self
     }
-    pub fn on_despawn<F: Fn(&mut World, EntityId) + Sync + Send + 'static>(mut self, handler: F) -> Self {
+    pub fn on_despawn<F: Fn(&mut World, EntityId, &str) + Sync + Send + 'static>(mut self, handler: F) -> Self {
         self.config.on_despawn = Some(Arc::new(handler));
         self
     }

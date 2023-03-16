@@ -42,7 +42,7 @@ pub struct Hooks<'a> {
 }
 
 impl<'a> Hooks<'a> {
-    pub fn use_state<T: Clone + Debug + ComponentValue + Send + 'static>(&mut self, init: T) -> (T, Setter<T>) {
+    pub fn use_state<T: Clone + Debug + Send + 'static>(&mut self, init: T) -> (T, Setter<T>) {
         self.use_state_with(|_| init)
     }
 

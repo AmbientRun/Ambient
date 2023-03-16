@@ -133,7 +133,7 @@ impl ElementComponent for ClickArea {
                 }
             }
         });
-        inner.init(mouse_pickable_min(), Vec3::ZERO).init(mouse_pickable_max(), Vec3::ZERO).on_spawned(move |_, new_id| {
+        inner.init(mouse_pickable_min(), Vec3::ZERO).init(mouse_pickable_max(), Vec3::ZERO).on_spawned(move |_, new_id, _| {
             *id.lock() = Some(new_id);
         })
     }
