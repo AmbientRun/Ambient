@@ -12,7 +12,7 @@ use ambient_core::{
     runtime,
     window::mirror_window_components,
 };
-use ambient_ecs::{components, query, Entity, EntityId, Resource, SystemGroup, World, WorldDiff};
+use ambient_ecs::{components, query, world_events, Entity, EntityId, Resource, SystemGroup, World, WorldDiff, WorldEventReader};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
@@ -221,10 +221,15 @@ impl ElementComponent for GameClientView {
         {
             let game_state = game_state.clone();
             let render_target = render_target.clone();
+            let world_event_reader = Mutex::new(WorldEventReader::new());
             hooks.use_frame(move |app_world| {
                 let mut game_state = game_state.lock();
 
                 mirror_window_components(app_world, &mut game_state.world);
+                // Pipe events from app world to game world
+                for (_, event) in world_event_reader.lock().iter(app_world.resource(world_events())) {
+                    game_state.world.resource_mut(world_events()).add_event(event.clone());
+                }
 
                 game_state.on_frame(&render_target);
             });

@@ -57,7 +57,6 @@ fn MainApp(
     FocusRoot::el([
         UICamera.el().set(active_camera(), 0.),
         shared::player::PlayerRawInputHandler.el(),
-        shared::player::PlayerDataUpload.el(),
         WindowSized::el([GameClientView {
             server_addr,
             user_id,

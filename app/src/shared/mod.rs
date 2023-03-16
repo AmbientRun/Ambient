@@ -8,6 +8,5 @@ pub fn create_rpc_registry() -> RpcRegistry<GameRpcArgs> {
     let mut reg = RpcRegistry::new();
     ambient_network::rpc::register_rpcs(&mut reg);
     ambient_debugger::register_rpcs(&mut reg);
-    player::register_rpcs(&mut reg);
     reg
 }

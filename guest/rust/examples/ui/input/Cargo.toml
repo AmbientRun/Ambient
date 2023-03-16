@@ -17,9 +17,9 @@ ambient_guest_bridge = { path = "../../../../../crates/guest_bridge", default-fe
 ambient_ui_components = { path = "../../../../../crates/ui_components" }
 
 [[bin]]
-name = "ui_input_server"
-path = "src/server.rs"
-required-features = ["server"]
+name = "ui_input_client"
+path = "src/client.rs"
+required-features = ["client"]
 
 [features]
 client = ["ambient_api/client"]

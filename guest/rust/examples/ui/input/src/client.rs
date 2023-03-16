@@ -12,7 +12,6 @@ use ambient_guest_bridge::{
     ecs::World,
 };
 use ambient_ui_components::{
-    button::{Button, ButtonStyle},
     default_theme::STREET,
     layout::{FlowColumn, FlowRow},
     text::Text,
@@ -73,7 +72,7 @@ pub async fn main() -> EventResult {
                 id,
                 Entity::new()
                     .with_merge(make_orthographic_camera())
-                    .with(orthographic_from_window(), id)
+                    .with(orthographic_from_window(), EntityId::resources())
                     .with_default(ui_scene()),
             );
         }
