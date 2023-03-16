@@ -27,7 +27,6 @@ pub mod graph;
 mod hooks;
 mod image;
 mod input;
-mod loadable;
 mod prompt;
 
 mod screens;
@@ -54,7 +53,6 @@ pub use editor::*;
 pub use hooks::*;
 pub use input::*;
 pub use layout::*;
-pub use loadable::*;
 pub use prompt::*;
 pub use screens::*;
 pub use select::*;
