@@ -30,8 +30,8 @@ use ambient_terrain::{
     intent_terrain_stroke, terrain_world_cell,
 };
 use ambient_ui::{
-    margin, space_between_items, use_interval, Borders, Button, FlowColumn, FlowRow, FontAwesomeIcon, Separator, Slider, StylesExt, Text,
-    UIBase, UIExt, WindowSized, STREET,
+    margin, space_between_items, Borders, Button, FlowColumn, FlowRow, FontAwesomeIcon, Separator, Slider, StylesExt, Text, UIBase, UIExt,
+    WindowSized, STREET,
 };
 use ambient_window_types::{MouseButton, VirtualKeyCode};
 use glam::{vec3, Vec3, Vec3Swizzles, Vec4};
@@ -433,7 +433,7 @@ impl ElementComponent for GenerateTerrainButton {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
         let (has_terrain, set_has_terrain) = hooks.use_state(true);
-        use_interval(hooks, 1., {
+        hooks.use_interval(1., {
             let game_client = game_client.clone();
             move || {
                 let state = game_client.game_state.lock();

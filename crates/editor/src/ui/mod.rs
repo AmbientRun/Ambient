@@ -26,8 +26,8 @@ use ambient_terrain::{
 use ambient_ui::{
     command_modifier, height,
     layout::{docking, space_between_items, width, Borders, Docking},
-    margin, use_interval, use_window_logical_resolution, Button, Editor, FlowColumn, FlowRow, FontAwesomeIcon, Hotkey, Rectangle,
-    ScreenContainer, ScrollArea, Separator, StylesExt, Text, UIExt, WindowSized, STREET,
+    margin, use_window_logical_resolution, Button, Editor, FlowColumn, FlowRow, FontAwesomeIcon, Hotkey, Rectangle, ScreenContainer,
+    ScrollArea, Separator, StylesExt, Text, UIExt, WindowSized, STREET,
 };
 use ambient_window_types::{ModifiersState, VirtualKeyCode};
 use build_mode::*;
@@ -243,7 +243,7 @@ fn ServerInstancesInfo(hooks: &mut Hooks) -> Element {
     let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
     let runtime = hooks.world.resource(runtime()).clone();
     let (instances, set_instances) = hooks.use_state(HashMap::new());
-    use_interval(hooks, 1., move || {
+    hooks.use_interval(1., move || {
         let game_client = game_client.clone();
         let set_instances = set_instances.clone();
         runtime.spawn(async move {

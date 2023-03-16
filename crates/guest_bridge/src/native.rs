@@ -1,5 +1,5 @@
 pub use ambient_ecs as ecs;
-use std::future::Future;
+use std::{future::Future, time::Duration};
 
 pub mod components {
     pub mod app {
@@ -35,7 +35,7 @@ pub mod components {
     pub mod input {
         pub use ambient_input::{
             event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels,
-            keyboard_modifiers, keycode, mouse_button,
+            event_received_character, keyboard_modifiers, keycode, mouse_button,
             picking::{mouse_over, mouse_pickable_max, mouse_pickable_min},
         };
     }
@@ -47,6 +47,9 @@ pub mod components {
 pub fn run_async(world: &ecs::World, future: impl Future<Output = ()> + Send + 'static) {
     world.resource(ambient_core::runtime()).spawn(future);
 }
+pub async fn sleep(seconds: f32) {
+    ambient_sys::time::sleep(Duration::from_secs_f32(seconds)).await;
+}
 
 pub mod window {
     use ambient_core::window::{window_ctl, WindowCtl};
@@ -55,5 +58,8 @@ pub mod window {
 
     pub fn set_cursor(world: &World, cursor: CursorIcon) {
         world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(cursor.into())).ok();
+    }
+    pub fn get_clipboard() -> Option<String> {
+        arboard::Clipboard::new().ok().and_then(|mut x| x.get_text().ok())
     }
 }

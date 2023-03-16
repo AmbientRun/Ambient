@@ -358,6 +358,12 @@ name = "Event mouse wheel"
 description = "If true, the `mouse_wheel_event`'s value should be interpreted as pixels. If false, it should be interpreted as lines."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::input::event_received_character"]
+type = "String"
+name = "Event received character"
+description = "The window received a character."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::input::keyboard_modifiers"]
 type = "U32"
 name = "Keyboard modifiers"

@@ -13,11 +13,15 @@ ambient_renderer = { path = "../renderer", optional = true }
 ambient_text = { path = "../text", optional = true }
 ambient_rect = { path = "../rect", optional = true }
 ambient_input = { path = "../input", optional = true }
+ambient_sys = { path = "../sys", optional = true }
 
 ambient_api = { path = "../../guest/rust/api", optional = true }
 
 ambient_window_types = { path = "../window_types" }
 
+[target.'cfg(not(target_os = "unknown"))'.dependencies]
+arboard = { workspace = true, optional = true}
+
 [features]
-native = ["ambient_ecs", "ambient_core", "ambient_layout", "ambient_renderer", "ambient_text", "ambient_rect", "ambient_input", "ambient_window_types/native"]
+native = ["ambient_ecs", "ambient_core", "ambient_layout", "ambient_renderer", "ambient_text", "ambient_rect", "ambient_input", "ambient_window_types/native", "ambient_sys", "arboard"]
 guest = ["ambient_api"]

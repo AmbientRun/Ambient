@@ -19,8 +19,8 @@ use ambient_std::{
 use ambient_ui::{
     command_modifier,
     layout::{docking, width, Docking},
-    margin, padding, space_between_items, use_interval_deps, Borders, Button, ButtonStyle, Dock, FlowRow, Hotkey, ScreenContainer,
-    Separator, StylesExt, STREET,
+    margin, padding, space_between_items, Borders, Button, ButtonStyle, Dock, FlowRow, Hotkey, ScreenContainer, Separator, StylesExt,
+    STREET,
 };
 use ambient_window_types::VirtualKeyCode;
 use tokio::time::sleep;
@@ -154,7 +154,7 @@ impl ElementComponent for EditorBuildMode {
                 }
             };
 
-            use_interval_deps(hooks, Duration::from_millis(2000), true, selection.clone(), update_targets);
+            hooks.use_interval_deps(Duration::from_millis(2000), true, selection.clone(), update_targets);
         }
         hooks.use_event(WINDOW_KEYBOARD_INPUT, move |_world, event| {
             if let Some(pressed) = event.get(event_keyboard_input()) {

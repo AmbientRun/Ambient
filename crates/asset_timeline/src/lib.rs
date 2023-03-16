@@ -9,8 +9,8 @@ use ambient_std::{
     pretty_duration, to_byte_unit,
 };
 use ambient_ui::{
-    docking, fit_horizontal, height, margin, use_interval, width, Borders, Button, ButtonStyle, Dock, Docking, Editor, Fit, FlowColumn,
-    FlowRow, Rectangle, StylesExt, Text, Tooltip, UIBase, UIExt, STREET,
+    docking, fit_horizontal, height, margin, width, Borders, Button, ButtonStyle, Dock, Docking, Editor, Fit, FlowColumn, FlowRow,
+    Rectangle, StylesExt, Text, Tooltip, UIBase, UIExt, STREET,
 };
 use glam::{vec3, vec4, Vec4};
 use itertools::Itertools;
@@ -363,7 +363,7 @@ impl ElementComponent for LocalAssetTimelineVisualizer {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (timeline, set_timeline) = hooks.use_state(AssetsTimeline::new());
         let assets = hooks.world.resource(asset_cache()).clone();
-        use_interval(hooks, 1., move || {
+        hooks.use_interval(1., move || {
             let timeline = assets.timeline.lock().clone();
             set_timeline(timeline);
         });

@@ -15,6 +15,8 @@ use crate::{
     align_vertical, space_between_items, Button, ButtonStyle, DialogScreen, DurationEditor, EditableDuration, FlowColumn, FlowRow,
     ScreenContainer, ScrollArea, StylesExt, Text, STREET,
 };
+use ambient_text::text;
+use ambient_ui_components::text_input::TextInput;
 
 #[derive(Clone, Debug)]
 pub struct EditorOpts {
@@ -92,6 +94,16 @@ where
 impl Editor for () {
     fn editor(self, _on_change: ChangeCb<Self>, _opts: EditorOpts) -> Element {
         Element::new()
+    }
+}
+
+impl Editor for String {
+    fn editor(self, on_change: Cb<dyn Fn(Self) + Sync + Send>, _: EditorOpts) -> Element {
+        TextInput::new(self, on_change).placeholder(Some("Empty")).el()
+    }
+
+    fn view(self, _opts: EditorOpts) -> Element {
+        Text.el().set(text(), self)
     }
 }
 

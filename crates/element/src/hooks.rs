@@ -5,6 +5,7 @@ use std::{
     collections::{HashMap, HashSet},
     fmt::Debug,
     sync::Arc,
+    time::Duration,
 };
 
 use ambient_cb::{cb, Cb};
@@ -87,10 +88,7 @@ impl<'a> Hooks<'a> {
     ///
     /// **Note**: Does not rely on order, and is therefore safe to use inside
     /// conditionals.
-    pub fn provide_context<T: Clone + Debug + ComponentValue + Send + Sync + 'static>(
-        &mut self,
-        default_value: impl FnOnce() -> T,
-    ) -> Setter<T> {
+    pub fn provide_context<T: Clone + Debug + Send + Sync + 'static>(&mut self, default_value: impl FnOnce() -> T) -> Setter<T> {
         let instance = self.tree.instances.get_mut(&self.element).unwrap();
         let type_id = TypeId::of::<T>();
         instance
@@ -109,7 +107,7 @@ impl<'a> Hooks<'a> {
         })
     }
     #[allow(clippy::type_complexity)]
-    pub fn consume_context<T: Clone + Debug + ComponentValue + Sync + Send + 'static>(&mut self) -> Option<(T, Setter<T>)> {
+    pub fn consume_context<T: Clone + Debug + Sync + Send + 'static>(&mut self) -> Option<(T, Setter<T>)> {
         let type_id = TypeId::of::<T>();
         if let Some(provider) = self.tree.get_context_provider(&self.element, type_id) {
             let value = {
@@ -325,7 +323,7 @@ impl<'a> Hooks<'a> {
     /// The provided functions returns a function which is run when the part is
     /// removed or `use_effect` is run again.
     ///
-    pub fn use_effect<D: PartialEq + ComponentValue + Debug + Sync + Send + 'static>(
+    pub fn use_effect<D: PartialEq + Debug + Sync + Send + 'static>(
         &mut self,
         dependencies: D,
         run: impl FnOnce(&mut World, &D) -> Box<dyn FnOnce(&mut World) + Sync + Send> + Sync + Send,
@@ -377,6 +375,93 @@ impl<'a> Hooks<'a> {
         self.use_frame(move |world| {
             let mut qs = query_state.lock();
             run(&query, world, Some(&mut qs), &FrameEvent);
+        });
+    }
+
+    pub fn use_interval<F: Fn() + Sync + Send + 'static>(&mut self, seconds: f32, cb: F) {
+        #[cfg(feature = "native")]
+        self.use_spawn(move |world| {
+            let thread = world.resource(runtime()).spawn(async move {
+                let mut interval = ambient_sys::time::interval(Duration::from_secs_f32(seconds));
+                interval.tick().await;
+                loop {
+                    interval.tick().await;
+                    cb();
+                }
+            });
+            Box::new(move |_| {
+                thread.abort();
+            })
+        });
+        #[cfg(feature = "guest")]
+        self.use_spawn(move |world| {
+            use std::sync::atomic::AtomicBool;
+            let exit = Arc::new(AtomicBool::new(false));
+            {
+                let exit = exit.clone();
+                ambient_guest_bridge::run_async(world, async move {
+                    // TODO: This isn't a "true" interval, since it depends on how long cb takes, but the API doesn't support interavls yet
+                    while !exit.load(std::sync::atomic::Ordering::SeqCst) {
+                        ambient_guest_bridge::sleep(seconds).await;
+                        cb();
+                    }
+                });
+            }
+            Box::new(move |_| {
+                exit.store(true, std::sync::atomic::Ordering::SeqCst);
+            })
+        });
+    }
+
+    pub fn use_interval_deps<D>(
+        &mut self,
+        duration: Duration,
+        run_immediately: bool,
+        dependencies: D,
+        mut func: impl 'static + Send + Sync + FnMut(&D),
+    ) where
+        D: 'static + Send + Sync + Clone + Debug + PartialEq,
+    {
+        #[cfg(feature = "native")]
+        self.use_effect(dependencies.clone(), move |world, _| {
+            if run_immediately {
+                func(&dependencies);
+            }
+
+            let task = world.resource(runtime()).spawn(async move {
+                let mut interval = ambient_sys::time::interval(duration);
+                interval.tick().await;
+                loop {
+                    interval.tick().await;
+                    func(&dependencies);
+                }
+            });
+
+            Box::new(move |_| {
+                task.abort();
+            })
+        });
+        #[cfg(feature = "guest")]
+        self.use_effect(dependencies.clone(), move |world, _| {
+            use std::sync::atomic::AtomicBool;
+            if run_immediately {
+                func(&dependencies);
+            }
+
+            let exit = Arc::new(AtomicBool::new(false));
+            {
+                let exit = exit.clone();
+                ambient_guest_bridge::run_async(world, async move {
+                    // TODO: This isn't a "true" interval, since it depends on how long cb takes, but the API doesn't support interavls yet
+                    while !exit.load(std::sync::atomic::Ordering::SeqCst) {
+                        ambient_guest_bridge::sleep(duration.as_secs_f32()).await;
+                        func(&dependencies);
+                    }
+                });
+            }
+            Box::new(move |_| {
+                exit.store(true, std::sync::atomic::Ordering::SeqCst);
+            })
         });
     }
 }

@@ -17,8 +17,8 @@ use ambient_std::{cb, Cb};
 use ambient_ui::{
     align_horizontal, align_vertical,
     layout::{fit_horizontal, margin, Borders, Fit},
-    space_between_items, use_interval_deps, Align, Button, ButtonStyle, DropdownSelect, Editor, EditorPrompt, FlowColumn, FlowRow,
-    ScreenContainer, StylesExt, Text, STREET,
+    space_between_items, Align, Button, ButtonStyle, DropdownSelect, Editor, EditorPrompt, FlowColumn, FlowRow, ScreenContainer, StylesExt,
+    Text, STREET,
 };
 use glam::{Vec2, Vec3, Vec4};
 use itertools::Itertools;
@@ -35,8 +35,7 @@ pub fn EntityEditor(hooks: &mut Hooks, entity_id: EntityId) -> Element {
     hooks.provide_context(|| EditingEntityContext(entity_id));
     let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
 
-    use_interval_deps(
-        hooks,
+    hooks.use_interval_deps(
         Duration::from_millis(100),
         false,
         entity_id,

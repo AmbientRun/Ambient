@@ -19,7 +19,8 @@ pub struct PlayerRawInput {
 }
 
 components!("input", {
-    event_received_character: char,
+    @[Debuggable, Networked, Store, Name["Event received character"], Description["The window received a character."]]
+    event_received_character: String,
     @[Debuggable, Networked, Store, Name["Event keyboard input"], Description["A keyboard key was pressed (true) or released (false). Will also contain a `keycode` component."]]
     event_keyboard_input: bool,
     @[Debuggable, Networked, Store, Name["Event mouse input"], Description["A mouse button was pressed (true) or released (false). Will also contain a `mouse_button` component."]]
@@ -81,7 +82,7 @@ impl System<Event<'static, ()>> for InputSystem {
                 WindowEvent::ReceivedCharacter(c) => {
                     world.resource_mut(world_events()).add_event((
                         ambient_event_types::WINDOW_RECEIVED_CHARACTER.to_string(),
-                        Entity::new().with(event_received_character(), *c),
+                        Entity::new().with(event_received_character(), c.to_string()),
                     ));
                 }
 

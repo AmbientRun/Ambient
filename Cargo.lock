@@ -708,8 +708,10 @@ dependencies = [
  "ambient_layout",
  "ambient_rect",
  "ambient_renderer",
+ "ambient_sys",
  "ambient_text",
  "ambient_window_types",
+ "arboard",
 ]
 
 [[package]]

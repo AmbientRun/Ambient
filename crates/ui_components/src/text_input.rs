@@ -1,18 +1,23 @@
-use std::{self, time::Duration};
+use std::{self, str::FromStr, time::Duration};
 
-use ambient_core::{transform::translation, window::window_ctl, window::WindowCtl};
-use ambient_ecs::EntityId;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_input::{event_keyboard_input, event_received_character, keycode};
-use ambient_renderer::color;
-use ambient_std::{cb, Cb};
-use closure::closure;
-use glam::*;
-use winit::{event::VirtualKeyCode, window::CursorIcon};
 
-use super::{Editor, EditorOpts, Focus, Text, UIExt};
-use crate::{layout::*, text, use_interval_deps, Rectangle, UIBase};
+use glam::*;
+
+use crate::{text::Text, Focus, Rectangle, UIBase, UIExt};
+use ambient_cb::{cb, Cb};
 use ambient_event_types::{WINDOW_KEYBOARD_INPUT, WINDOW_RECEIVED_CHARACTER};
+use ambient_guest_bridge::{
+    components::{
+        input::{event_keyboard_input, event_received_character, keycode},
+        rendering::color,
+        transform::translation,
+        ui::{align_horizontal_end, fit_horizontal_none, fit_vertical_none, height, layout_flow, min_height, min_width, text, width},
+    },
+    ecs::EntityId,
+    window::{get_clipboard, set_cursor},
+};
+use ambient_window_types::{CursorIcon, VirtualKeyCode};
 
 #[element_component]
 pub fn TextInput(
@@ -27,18 +32,22 @@ pub fn TextInput(
     let (focus, set_focus) = hooks.consume_context::<Focus>().expect("No FocusRoot available");
     let focused = focus == Focus(Some(self_id));
     let (command, set_command) = hooks.use_state(false);
-    hooks.use_spawn(closure!(clone set_focus, |_| {
-        Box::new(move |_| {
-            if focused {
-                set_focus(Focus(None));
-            }
-        })
-    }));
+    hooks.use_spawn({
+        let set_focus = set_focus.clone();
+        move |_| {
+            Box::new(move |_| {
+                if focused {
+                    set_focus(Focus(None));
+                }
+            })
+        }
+    });
     hooks.use_multi_event(&[WINDOW_RECEIVED_CHARACTER, WINDOW_KEYBOARD_INPUT], {
         let value = value.clone();
         let on_change = on_change.clone();
         move |_world, event| {
-            if let Some(c) = event.get(event_received_character()) {
+            if let Some(c) = event.get_ref(event_received_character()).clone() {
+                let c = c.chars().next().unwrap();
                 if command || !focused {
                     return;
                 }
@@ -57,8 +66,8 @@ pub fn TextInput(
                 if !focused {
                     return;
                 }
-                if let Some(kc) = event.get_ref(keycode()) {
-                    let kc: VirtualKeyCode = serde_json::from_str(kc).unwrap();
+                if let Some(kc) = event.get_ref(keycode()).clone() {
+                    let kc = VirtualKeyCode::from_str(&kc).unwrap();
                     match kc {
                         VirtualKeyCode::LWin => {
                             #[cfg(target_os = "macos")]
@@ -71,7 +80,7 @@ pub fn TextInput(
                         VirtualKeyCode::V => {
                             if command && pressed {
                                 #[cfg(not(target_os = "unknown"))]
-                                if let Ok(paste) = arboard::Clipboard::new().unwrap().get_text() {
+                                if let Some(paste) = get_clipboard() {
                                     on_change.0(format!("{value}{paste}"));
                                 }
                             }
@@ -87,9 +96,9 @@ pub fn TextInput(
     } else {
         Text.el().set(text(), if password { value.chars().map(|_| '*').collect() } else { value }).set(color(), vec4(0.9, 0.9, 0.9, 1.))
     }
-    .init(layout(), Layout::Flow)
-    .set(fit_horizontal(), Fit::None)
-    .set(fit_vertical(), Fit::None)
+    .init_default(layout_flow())
+    .set_default(fit_horizontal_none())
+    .set_default(fit_vertical_none())
     .set(min_width(), 3.)
     .set(min_height(), 13.)
     .on_spawned(move |_, id| set_self_id(id))
@@ -98,15 +107,15 @@ pub fn TextInput(
         set_focus(Focus(Some(id)));
     })
     .on_mouse_enter(|world, _| {
-        world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Text)).ok();
+        set_cursor(world, CursorIcon::Text);
     })
     .on_mouse_leave(|world, _| {
-        world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Default)).ok();
+        set_cursor(world, CursorIcon::Default);
     })
     .el();
 
     if focused {
-        el.set(align_horizontal(), Align::End).children(vec![Cursor.el()])
+        el.set_default(align_horizontal_end()).children(vec![Cursor.el()])
     } else {
         el
     }
@@ -130,20 +139,10 @@ impl TextInput {
     }
 }
 
-impl Editor for String {
-    fn editor(self, on_change: Cb<dyn Fn(Self) + Sync + Send>, _: EditorOpts) -> Element {
-        TextInput::new(self, on_change).placeholder(Some("Empty")).el()
-    }
-
-    fn view(self, _opts: EditorOpts) -> Element {
-        Text.el().set(text(), self)
-    }
-}
-
 #[element_component]
 pub fn Cursor(hooks: &mut Hooks) -> Element {
     let (show, set_show) = hooks.use_state(true);
-    use_interval_deps(hooks, Duration::from_millis(500), false, show, move |show| set_show(!show));
+    hooks.use_interval_deps(Duration::from_millis(500), false, show, move |show| set_show(!show));
     if show {
         UIBase.el().children(vec![Rectangle.el().set(width(), 2.).set(height(), 13.).set(translation(), vec3(1., 0., 0.))])
     } else {

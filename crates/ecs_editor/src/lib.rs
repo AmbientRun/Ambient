@@ -4,9 +4,7 @@ use ambient_ecs::{with_component_registry, ComponentDesc, Entity, EntityId, Quer
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::color;
 use ambient_std::{cb, Cb};
-use ambient_ui::{
-    fit_horizontal, space_between_items, use_interval_deps, Button, ButtonStyle, Fit, FlowColumn, FlowRow, Text, UIExt, STREET,
-};
+use ambient_ui::{fit_horizontal, space_between_items, Button, ButtonStyle, Fit, FlowColumn, FlowRow, Text, UIExt, STREET};
 use glam::{vec4, Vec4};
 use itertools::Itertools;
 
@@ -22,7 +20,7 @@ impl ElementComponent for ECSEditor {
         let (entity_datas, set_entity_datas) = hooks.use_state(Vec::new());
         let (entities, set_entities) = hooks.use_state(Vec::new());
         let (edit_filter, set_edit_filter) = hooks.use_state(false);
-        use_interval_deps(hooks, Duration::from_millis(500), false, components.clone(), {
+        hooks.use_interval_deps(Duration::from_millis(500), false, components.clone(), {
             let get_world = get_world.clone();
             move |components| {
                 let mut query = Query::all();

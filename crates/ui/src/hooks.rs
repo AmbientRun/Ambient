@@ -1,53 +1,6 @@
-use std::{fmt::Debug, time::Duration};
-
 use ambient_core::{asset_cache, runtime};
 use ambient_element::Hooks;
 use ambient_std::asset_cache::{Asset, AsyncAssetKeyExt};
-
-pub fn use_interval<F: Fn() + Sync + Send + 'static>(hooks: &mut Hooks, seconds: f32, cb: F) {
-    hooks.use_spawn(move |world| {
-        let thread = world.resource(runtime()).spawn(async move {
-            let mut interval = ambient_sys::time::interval(Duration::from_secs_f32(seconds));
-            interval.tick().await;
-            loop {
-                interval.tick().await;
-                cb();
-            }
-        });
-        Box::new(move |_| {
-            thread.abort();
-        })
-    });
-}
-
-pub fn use_interval_deps<D>(
-    hooks: &mut Hooks,
-    duration: Duration,
-    run_immediately: bool,
-    dependencies: D,
-    mut func: impl 'static + Send + Sync + FnMut(&D),
-) where
-    D: 'static + Send + Sync + Clone + Debug + PartialEq,
-{
-    hooks.use_effect(dependencies.clone(), move |world, _| {
-        if run_immediately {
-            func(&dependencies);
-        }
-
-        let task = world.resource(runtime()).spawn(async move {
-            let mut interval = ambient_sys::time::interval(duration);
-            interval.tick().await;
-            loop {
-                interval.tick().await;
-                func(&dependencies);
-            }
-        });
-
-        Box::new(move |_| {
-            task.abort();
-        })
-    });
-}
 
 pub fn use_async_asset<T: Asset + Clone + Sync + Send + std::fmt::Debug + 'static>(
     hooks: &mut Hooks,

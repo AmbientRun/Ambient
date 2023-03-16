@@ -10,10 +10,8 @@ use ambient_core::{hierarchy::children, transform::*, window::window_ctl, window
 pub use ambient_ecs::{EntityId, SystemGroup, World};
 pub use ambient_editor_derive::ElementEditor;
 pub use ambient_element as element;
-use ambient_element::{
-    define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent, ElementComponentExt, Hooks,
-};
-use ambient_input::{event_focus_change, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels};
+use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_input::{event_focus_change, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels};
 use ambient_std::color::Color;
 pub use ambient_std::{cb, Cb};
 use ambient_window_types::ModifiersState;
@@ -35,7 +33,6 @@ mod prompt;
 mod screens;
 mod select;
 
-mod text_input;
 mod throbber;
 
 pub use ambient_layout as layout;
@@ -48,7 +45,7 @@ pub use ambient_ui_components::default_theme as style_constants;
 pub use ambient_ui_components::layout::*;
 pub use ambient_ui_components::text::*;
 pub use ambient_ui_components::*;
-pub use ambient_ui_components::{button, dropdown, tabs};
+pub use ambient_ui_components::{button, dropdown, tabs, text_input};
 pub use asset_url::*;
 pub use button::*;
 pub use collections::*;
@@ -67,7 +64,7 @@ pub use text_input::*;
 pub use throbber::*;
 
 pub use self::image::*;
-use ambient_event_types::{WINDOW_FOCUSED, WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION, WINDOW_MOUSE_WHEEL};
+use ambient_event_types::{WINDOW_FOCUSED, WINDOW_MOUSE_MOTION, WINDOW_MOUSE_WHEEL};
 use ambient_window_types::MouseButton;
 
 pub fn init_all_components() {
@@ -108,29 +105,6 @@ impl ElementComponent for ScrollArea {
 impl ScrollArea {
     pub fn el(element: Element) -> Element {
         Self(element).el()
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Focus(Option<EntityId>);
-
-pub fn use_has_focus(_: &World, hooks: &mut Hooks) -> bool {
-    hooks.consume_context::<Focus>().is_some()
-}
-
-#[derive(Debug, Clone)]
-/// Provides a context for focusable UI elements
-pub struct FocusRoot(pub Vec<Element>);
-define_el_function_for_vec_element_newtype!(FocusRoot);
-impl ElementComponent for FocusRoot {
-    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let set_focus = hooks.provide_context(|| Focus(None));
-        hooks.use_event(WINDOW_MOUSE_INPUT, move |_world, event| {
-            if let Some(_event) = event.get_ref(event_mouse_input()) {
-                set_focus(Focus(None));
-            }
-        });
-        Element::new().children(self.0)
     }
 }
 

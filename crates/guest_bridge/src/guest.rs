@@ -8,6 +8,9 @@ pub fn run_async(_world: &ecs::World, future: impl Future<Output = ()> + Send + 
         api::prelude::EventOk
     });
 }
+pub async fn sleep(seconds: f32) {
+    ambient_api::prelude::sleep(seconds).await;
+}
 
 pub mod ecs {
     use ambient_api::ecs::SupportedValueGet;
@@ -78,5 +81,8 @@ pub mod window {
 
     pub fn set_cursor(_world: &crate::ecs::World, _cursor: CursorIcon) {
         // TODO: Once we have client side scripting this needs to be hooked up to that
+    }
+    pub fn get_clipboard() -> Option<String> {
+        None
     }
 }
