@@ -39,6 +39,8 @@ components!("network", {
     @[Resource]
     bi_stream_handlers: BiStreamHandlers,
     @[Resource]
+    uni_stream_handlers: UniStreamHandlers,
+    @[Resource]
     datagram_handlers: DatagramHandlers,
 
     /// Works like `world.resource_entity` for server worlds, except it's also persisted to disk, and synchronized to clients
@@ -124,6 +126,7 @@ fn assert_persisted(desc: ambient_ecs::ComponentDesc) {
 }
 
 pub type BiStreamHandlers = HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, SendStream, RecvStream) + Sync + Send>>;
+pub type UniStreamHandlers = HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, RecvStream) + Sync + Send>>;
 pub type DatagramHandlers = HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, Bytes) + Sync + Send>>;
 
 pub const RPC_STREAM_ID: u32 = 1;

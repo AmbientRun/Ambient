@@ -1062,6 +1062,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "ui_input"
+version = "0.2.0-dev"
+dependencies = [
+ "ambient_api",
+ "ambient_element",
+ "ambient_guest_bridge",
+ "ambient_ui_components",
+]
+
+[[package]]
 name = "unicase"
 version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

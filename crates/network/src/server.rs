@@ -38,7 +38,7 @@ use tracing::{debug_span, Instrument};
 use crate::{
     bi_stream_handlers, create_server, datagram_handlers,
     protocol::{ClientInfo, ServerProtocol},
-    NetworkError,
+    uni_stream_handlers, NetworkError,
 };
 
 components!("network", {
@@ -407,8 +407,8 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
                     }
                 };
 
-                let on_rpc = |user_id: &String, stream_id, tx, rx| {
-                    let _span = debug_span!("on_rpc").entered();
+                let on_bi_stream = |user_id: &String, handler_id, tx, rx| {
+                    let _span = debug_span!("on_bi_stream").entered();
                     let handler = {
                         let state = state.lock();
                         let world = match state.get_player_world(user_id) {
@@ -419,12 +419,33 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
                             }
                         };
 
-                        world.resource(bi_stream_handlers()).get(&stream_id).cloned()
+                        world.resource(bi_stream_handlers()).get(&handler_id).cloned()
                     };
                     if let Some(handler) = handler {
                         handler(state.clone(), assets.clone(), user_id, tx, rx);
                     } else {
-                        log::error!("Unrecognized stream type: {}", stream_id);
+                        log::error!("Unrecognized stream handler id: {}", handler_id);
+                    }
+                };
+
+                let on_uni_stream = |user_id: &String, handler_id, rx| {
+                    let _span = debug_span!("on_uni_stream").entered();
+                    let handler = {
+                        let state = state.lock();
+                        let world = match state.get_player_world(user_id) {
+                            Some(world) => world,
+                            None => {
+                                log::error!("Player missing for rpc."); // Probably disconnected
+                                return;
+                            }
+                        };
+
+                        world.resource(uni_stream_handlers()).get(&handler_id).cloned()
+                    };
+                    if let Some(handler) = handler {
+                        handler(state.clone(), assets.clone(), user_id, rx);
+                    } else {
+                        log::error!("Unrecognized stream handler id: {}", handler_id);
                     }
                 };
 
@@ -458,7 +479,8 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
                     stats_rx,
                     events_rx,
                     on_init: &on_init,
-                    on_rpc: &on_rpc,
+                    on_bi_stream: &on_bi_stream,
+                    on_uni_stream: &on_uni_stream,
                     on_datagram: &on_datagram,
                     on_disconnect: &on_disconnect,
                     user_id: None,
@@ -499,7 +521,8 @@ struct ClientInstance<'a> {
 
     on_init: &'a (dyn Fn(ClientInfo) + Send + Sync),
     on_datagram: &'a (dyn Fn(&String, Bytes) + Send + Sync),
-    on_rpc: &'a (dyn Fn(&String, u32, SendStream, RecvStream) + Send + Sync),
+    on_bi_stream: &'a (dyn Fn(&String, u32, SendStream, RecvStream) + Send + Sync),
+    on_uni_stream: &'a (dyn Fn(&String, u32, RecvStream) + Send + Sync),
     on_disconnect: &'a (dyn Fn(&Option<String>) + Send + Sync),
     user_id: Option<String>,
 }
@@ -552,11 +575,19 @@ impl<'a> ClientInstance<'a> {
                     tokio::task::block_in_place(|| (self.on_datagram)(&user_id, datagram))
                 }
                 Some(Ok((tx, mut rx))) = proto.conn.bi_streams.next() => {
-                    let span = tracing::debug_span!("rpc");
+                    let span = tracing::debug_span!("bistream");
                     let stream_id = rx.read_u32().instrument(span).await;
                     if let Ok(stream_id) = stream_id {
                         // tracing::debug!("Read stream id: {stream_id}");
-                        tokio::task::block_in_place(|| { (self.on_rpc)(&user_id, stream_id, tx, rx); })
+                        tokio::task::block_in_place(|| { (self.on_bi_stream)(&user_id, stream_id, tx, rx); })
+                    }
+                }
+                Some(Ok(mut rx)) = proto.conn.uni_streams.next() => {
+                    let span = tracing::debug_span!("unistream");
+                    let stream_id = rx.read_u32().instrument(span).await;
+                    if let Ok(stream_id) = stream_id {
+                        // tracing::debug!("Read stream id: {stream_id}");
+                        tokio::task::block_in_place(|| { (self.on_uni_stream)(&user_id, stream_id,  rx); })
                     }
                 }
             }

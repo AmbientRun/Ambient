@@ -95,10 +95,6 @@ fn App(_hooks: &mut Hooks) -> Element {
     .el()
     .set(space_between_items(), STREET)
     .set(translation(), vec3(100., 100., 0.))
-
-    // Button::new("Click me", |_| println!("Clicked"))
-    //     .el()
-    //     .set(translation(), vec3(100., 100., 0.))
 }
 
 #[main]
