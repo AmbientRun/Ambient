@@ -1,6 +1,6 @@
 [hooks]
 # Pre-push settings are currently disabled while we agree on what settings to use
-pre-push = "cargo clippy --workspace -- -Adeprecated"
+# pre-push = "cargo clippy --workspace -- -Adeprecated"
 
 [logging]
 verbose = true
