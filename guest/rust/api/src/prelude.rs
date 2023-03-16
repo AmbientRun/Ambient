@@ -6,6 +6,7 @@ pub use crate::{
     main, player,
 };
 pub use anyhow::{anyhow, Context as AnyhowContext};
+pub use glam;
 pub use rand::prelude::*;
 
 #[cfg(feature = "server")]

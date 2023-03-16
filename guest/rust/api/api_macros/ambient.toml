@@ -432,7 +432,7 @@ attributes = ["Debuggable", "Networked"]
 
 [components."core::network::synced_resources"]
 type = "Empty"
-name = "Synced resources"
+name = "Synchronized resources"
 description = "If attached, this entity contains global resources that are synchronized to clients, but not persisted."
 attributes = ["Debuggable", "Networked"]
 

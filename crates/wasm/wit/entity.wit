@@ -32,4 +32,6 @@ default interface entity {
     exists: func(entity: entity-id) -> bool
     get-all: func(index: u32) -> list<entity-id>
     resources: func() -> entity-id
+    synchronized-resources: func() -> entity-id
+    persisted-resources: func() -> entity-id
 }

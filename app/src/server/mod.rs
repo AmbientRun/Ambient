@@ -1,22 +1,32 @@
 use std::{
-    collections::HashMap, net::SocketAddr, path::{Path, PathBuf}, sync::Arc
+    collections::HashMap,
+    net::SocketAddr,
+    path::{Path, PathBuf},
+    sync::Arc,
 };
 
 use ambient_core::{app_start_time, asset_cache, dtime, no_sync, project_name, time};
 use ambient_ecs::{
-    world_events, ComponentDesc, ComponentRegistry, Entity, Networked, SystemGroup, World, WorldEventsSystem, WorldStreamCompEvent
+    dont_store, world_events, ComponentDesc, ComponentRegistry, Entity, Networked, SystemGroup, World, WorldEventsSystem,
+    WorldStreamCompEvent,
 };
 use ambient_network::{
-    bi_stream_handlers, datagram_handlers, server::{ForkingEvent, GameServer, ShutdownEvent}
+    bi_stream_handlers, datagram_handlers, persistent_resources,
+    server::{ForkingEvent, GameServer, ShutdownEvent},
+    synced_resources,
 };
 use ambient_prefab::PrefabFromUrl;
 use ambient_std::{
-    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, ServerBaseUrlKey}
+    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
+    asset_url::{AbsAssetUrl, ServerBaseUrlKey},
 };
 use ambient_sys::{task::RuntimeHandle, time::SystemTime};
 use anyhow::Context;
 use axum::{
-    http::{Method, StatusCode}, response::IntoResponse, routing::{get, get_service}, Router
+    http::{Method, StatusCode},
+    response::IntoResponse,
+    routing::{get, get_service},
+    Router,
 };
 use tower_http::{cors::CorsLayer, services::ServeDir};
 
@@ -62,6 +72,10 @@ pub fn start(
         // Keep track of the project name
         let name = manifest.project.name.clone().unwrap_or_else(|| "Ambient".into());
         server_world.add_components(server_world.resource_entity(), Entity::new().with(project_name(), name)).unwrap();
+
+        Entity::new().with(synced_resources(), ()).with(dont_store(), ()).spawn(&mut server_world);
+        // Note: this should not be reset every time the server is created. Remove this when it becomes possible to load/save worlds.
+        Entity::new().with(persistent_resources(), ()).spawn(&mut server_world);
 
         wasm::initialize(&mut server_world, project_path.clone(), &manifest).unwrap();
 

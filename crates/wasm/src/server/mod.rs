@@ -121,6 +121,14 @@ impl wit::entity::Host for Bindings {
         shared::implementation::entity::resources(self.world())
     }
 
+    fn synchronized_resources(&mut self) -> anyhow::Result<wit::types::EntityId> {
+        shared::implementation::entity::synchronized_resources(self.world())
+    }
+
+    fn persisted_resources(&mut self) -> anyhow::Result<wit::types::EntityId> {
+        shared::implementation::entity::persisted_resources(self.world())
+    }
+
     fn in_area(
         &mut self,
         position: wit::types::Vec3,

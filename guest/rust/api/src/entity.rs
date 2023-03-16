@@ -165,9 +165,19 @@ pub fn mutate_component_with_default<
     }
 }
 
-/// Gets the resource entity which contains global state in its components.
+/// Gets the resource entity. The components of this entity contain global state for this ECS world.
 ///
 /// Components with the `Resource` attribute can be found here.
 pub fn resources() -> EntityId {
     wit::entity::resources().from_bindgen()
+}
+
+/// Gets the synchronized resource entity. The components of this entity contain global state that should be networked, but not persisted.
+pub fn synchronized_resources() -> EntityId {
+    wit::entity::synchronized_resources().from_bindgen()
+}
+
+/// Gets the persisted resource entity. The components of this entity contain global state that should be networked and persisted.
+pub fn persisted_resources() -> EntityId {
+    wit::entity::persisted_resources().from_bindgen()
 }

@@ -9,10 +9,13 @@ use ambient_api::{
     concepts::make_perspective_infinite_reverse_camera,
     prelude::*,
 };
-use components::{grid_x, grid_y};
+use components::{grid_side_length, grid_x, grid_y};
 
 #[main]
 pub async fn main() -> EventResult {
+    let side_length = entity::get_component(entity::synchronized_resources(), grid_side_length())
+        .context("no side length on synchronized resources")?;
+
     let id = Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
@@ -32,10 +35,11 @@ pub async fn main() -> EventResult {
 
     query((cube(), grid_x(), grid_y()))
         .build()
-        .each_frame(|entities| {
+        .each_frame(move |entities| {
             for (id, (_, x, y)) in entities {
+                let grid_cell = glam::ivec2(x - side_length, y - side_length);
                 entity::mutate_component(id, translation(), |v| {
-                    v.z = (x as f32 + y as f32 + time()).sin();
+                    v.z = (x as f32 + y as f32 + time()).sin() - 0.5 * grid_cell.as_vec2().length();
                 });
 
                 let s = (time().sin() + 1.0) / 2.0;

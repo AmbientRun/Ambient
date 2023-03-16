@@ -4,14 +4,19 @@ use ambient_api::{
     prelude::*,
 };
 
-use crate::components::{grid_x, grid_y};
+use crate::components::{grid_side_length, grid_x, grid_y};
 
 #[main]
 pub async fn main() -> EventResult {
-    const GRID_SIDE_LENGTH: i32 = 10;
+    let side_length = 10;
+    entity::add_component(
+        entity::synchronized_resources(),
+        grid_side_length(),
+        side_length,
+    );
 
-    for y in 0..2 * GRID_SIDE_LENGTH + 1 {
-        for x in 0..2 * GRID_SIDE_LENGTH + 1 {
+    for y in 0..2 * side_length + 1 {
+        for x in 0..2 * side_length + 1 {
             Entity::new()
                 .with_merge(make_transformable())
                 .with_default(cube())
@@ -20,11 +25,7 @@ pub async fn main() -> EventResult {
                 .with(color(), Vec4::ONE)
                 .with(
                     translation(),
-                    vec3(
-                        (x - GRID_SIDE_LENGTH) as f32,
-                        (y - GRID_SIDE_LENGTH) as f32,
-                        0.0,
-                    ),
+                    vec3((x - side_length) as f32, (y - side_length) as f32, 0.0),
                 )
                 .spawn();
         }

@@ -3,6 +3,8 @@ use std::collections::HashSet;
 use ambient_animation::animation_controller;
 use ambient_core::transform::translation;
 use ambient_ecs::{query as ecs_query, with_component_registry, EntityId, World};
+use ambient_network::ServerWorldExt;
+use anyhow::Context;
 
 use super::{
     super::{
@@ -50,6 +52,20 @@ pub fn exists(world: &World, entity: wit::types::EntityId) -> anyhow::Result<boo
 
 pub fn resources(world: &World) -> anyhow::Result<wit::types::EntityId> {
     Ok(world.resource_entity().into_bindgen())
+}
+
+pub fn synchronized_resources(world: &World) -> anyhow::Result<wit::types::EntityId> {
+    Ok(world
+        .synced_resource_entity()
+        .context("no entity")?
+        .into_bindgen())
+}
+
+pub fn persisted_resources(world: &World) -> anyhow::Result<wit::types::EntityId> {
+    Ok(world
+        .persisted_resource_entity()
+        .context("no entity")?
+        .into_bindgen())
 }
 
 pub fn in_area(

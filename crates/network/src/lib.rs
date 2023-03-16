@@ -51,7 +51,7 @@ components!("network", {
     /// Works like `world.resource_entity` for server worlds, except it's synchronized to clients. State is not persisted to disk.
     @[
         Debuggable, Networked,
-        Name["Synced resources"],
+        Name["Synchronized resources"],
         Description["If attached, this entity contains global resources that are synchronized to clients, but not persisted."]
     ]
     synced_resources: (),
