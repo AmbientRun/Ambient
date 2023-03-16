@@ -62,5 +62,7 @@ pub mod window {
     pub fn get_clipboard() -> Option<String> {
         #[cfg(not(target_os = "unknown"))]
         arboard::Clipboard::new().ok().and_then(|mut x| x.get_text().ok())
+        #[cfg(target_os = "unknown")]
+        None
     }
 }
