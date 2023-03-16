@@ -199,7 +199,7 @@ impl TerrainMaterial {
     ) -> Self {
         let gpu = GpuKey.get(&assets);
         let shader = TerrainShaderKey { shadow_cascades: 1 }.get(&assets);
-        let layout = shader.material_layout().clone();
+        let layout = shader.material_layout();
 
         let params_buffer = gpu.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("TerrainMaterial.params_buffer"),
