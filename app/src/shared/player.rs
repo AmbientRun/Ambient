@@ -3,16 +3,16 @@ use std::{io::Write, str::FromStr, sync::Arc};
 use ambient_core::{
     player::{get_player_by_user_id, player},
     runtime,
-    window::cursor_position,
+    window::{cursor_position, window_logical_size, window_physical_size},
 };
-use ambient_ecs::{query, query_mut, Entity, SystemGroup};
+use ambient_ecs::{query, query_mut, Entity, SystemGroup, WorldDiff};
 use ambient_element::{element_component, Element, Hooks};
 use ambient_event_types::{WINDOW_FOCUSED, WINDOW_KEYBOARD_INPUT, WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION, WINDOW_MOUSE_WHEEL};
 use ambient_input::{
     event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels, keycode,
     mouse_button, player_prev_raw_input, player_raw_input, PlayerRawInput,
 };
-use ambient_network::{client::game_client, DatagramHandlers};
+use ambient_network::{client::game_client, log_network_result, rpc::rpc_world_diff, DatagramHandlers};
 use ambient_std::unwrap_log_err;
 use ambient_window_types::VirtualKeyCode;
 use byteorder::{BigEndian, WriteBytesExt};
@@ -55,6 +55,33 @@ pub fn server_systems_final() -> SystemGroup {
             }
         })],
     )
+}
+
+#[element_component]
+pub fn PlayerDataUpload(hooks: &mut Hooks) -> Element {
+    hooks.use_frame(move |world| {
+        if let Some(Some(gc)) = world.resource_opt(game_client()).cloned() {
+            let state = gc.game_state.lock();
+            if let Some(player_id) = get_player_by_user_id(&state.world, &gc.user_id) {
+                let physical_size = *world.resource(window_physical_size());
+                let logical_size = *world.resource(window_logical_size());
+                let mut diff = WorldDiff::new();
+                if state.world.get(player_id, window_physical_size()) != Ok(physical_size) {
+                    diff = diff.add_component(player_id, window_physical_size(), physical_size);
+                }
+                if state.world.get(player_id, window_logical_size()) != Ok(logical_size) {
+                    diff = diff.add_component(player_id, window_logical_size(), logical_size);
+                }
+                if !diff.is_empty() {
+                    drop(state);
+                    world.resource(runtime()).spawn(async move {
+                        log_network_result!(gc.rpc(rpc_world_diff, diff).await);
+                    });
+                }
+            }
+        }
+    });
+    Element::new()
 }
 
 #[element_component]
