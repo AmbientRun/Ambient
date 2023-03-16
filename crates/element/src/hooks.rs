@@ -34,8 +34,8 @@ pub type DespawnFn = Box<dyn FnOnce(&mut World) + Sync + Send>;
 
 pub struct Hooks<'a> {
     pub world: &'a mut World,
+    pub instance_id: InstanceId,
     pub(crate) tree: &'a mut ElementTree,
-    pub(crate) element: InstanceId,
     pub(crate) state_index: usize,
     pub(crate) on_spawn: Option<Vec<SpawnFn>>,
     pub(crate) environment: Arc<Mutex<HooksEnvironment>>,
@@ -50,7 +50,7 @@ impl<'a> Hooks<'a> {
         let index = self.state_index;
         self.state_index += 1;
         let value = {
-            let instance = self.tree.instances.get_mut(&self.element).unwrap();
+            let instance = self.tree.instances.get_mut(&self.instance_id).unwrap();
             if let Some(value) = instance.hooks_state.get(index) {
                 value
             } else {
@@ -62,7 +62,7 @@ impl<'a> Hooks<'a> {
             .clone()
         };
         let environment = self.environment.clone();
-        let element = self.element.clone();
+        let element = self.instance_id.clone();
         (
             value,
             cb(move |new_value| {
@@ -89,14 +89,14 @@ impl<'a> Hooks<'a> {
     /// **Note**: Does not rely on order, and is therefore safe to use inside
     /// conditionals.
     pub fn provide_context<T: Clone + Debug + Send + Sync + 'static>(&mut self, default_value: impl FnOnce() -> T) -> Setter<T> {
-        let instance = self.tree.instances.get_mut(&self.element).unwrap();
+        let instance = self.tree.instances.get_mut(&self.instance_id).unwrap();
         let type_id = TypeId::of::<T>();
         instance
             .hooks_context_state
             .entry(type_id)
             .or_insert_with(|| HookContext { value: Box::new(default_value()), listeners: HashSet::new() });
         let environment = self.environment.clone();
-        let element = self.element.clone();
+        let element = self.instance_id.clone();
         cb(move |new_value| {
             environment.lock().set_contexts.push(ContextUpdate {
                 instance_id: element.clone(),
@@ -109,15 +109,15 @@ impl<'a> Hooks<'a> {
     #[allow(clippy::type_complexity)]
     pub fn consume_context<T: Clone + Debug + Sync + Send + 'static>(&mut self) -> Option<(T, Setter<T>)> {
         let type_id = TypeId::of::<T>();
-        if let Some(provider) = self.tree.get_context_provider(&self.element, type_id) {
+        if let Some(provider) = self.tree.get_context_provider(&self.instance_id, type_id) {
             let value = {
                 let instance = self.tree.instances.get_mut(&provider).unwrap();
                 let ctx = instance.hooks_context_state.get_mut(&type_id).unwrap();
-                ctx.listeners.insert(self.element.clone());
+                ctx.listeners.insert(self.instance_id.clone());
                 ctx.value.downcast_ref::<T>().unwrap().clone()
             };
             {
-                let instance = self.tree.instances.get_mut(&self.element).unwrap();
+                let instance = self.tree.instances.get_mut(&self.instance_id).unwrap();
                 instance.hooks_context_listening.insert((provider.clone(), type_id));
             }
             let environment = self.environment.clone();
@@ -284,7 +284,7 @@ impl<'a> Hooks<'a> {
     #[profiling::function]
     pub fn use_frame<F: Fn(&mut World) + Sync + Send + 'static>(&mut self, on_frame: F) {
         let mut env = self.environment.lock();
-        let listeners = env.frame_listeners.entry(self.element.clone()).or_insert_with(Vec::new);
+        let listeners = env.frame_listeners.entry(self.instance_id.clone()).or_insert_with(Vec::new);
         listeners.push(FrameListener(Arc::new(on_frame)));
     }
 

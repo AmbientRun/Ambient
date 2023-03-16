@@ -201,7 +201,7 @@ impl ElementTree {
                     world,
                     environment: self.hooks_env.clone(),
                     tree: self,
-                    element: instance_id.to_string(),
+                    instance_id: instance_id.to_string(),
                     state_index: 0,
                     on_spawn: if creating { Some(Vec::new()) } else { None },
                 };
