@@ -7,7 +7,9 @@ use std::{
 use aho_corasick::AhoCorasick;
 use ambient_std::{asset_cache::*, CowStr};
 use itertools::Itertools;
-use wgpu::{BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType, ComputePipelineDescriptor, DepthBiasState, ShaderStages};
+use wgpu::{
+    BindGroupLayout, BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType, ComputePipelineDescriptor, DepthBiasState, ShaderStages,
+};
 
 use super::gpu::{Gpu, GpuKey, DEFAULT_SAMPLE_COUNT};
 
@@ -86,11 +88,7 @@ impl ShaderModuleIdentifier {
     }
 }
 
-#[derive(Clone, Debug)]
-struct BindingEntry {
-    pub group: CowStr,
-    pub entry: BindGroupLayoutEntry,
-}
+type BindingEntry = (CowStr, BindGroupLayoutEntry);
 
 /// Defines a part of a shader, with preprocessing.
 ///
@@ -134,18 +132,18 @@ impl ShaderModule {
     }
 
     pub fn with_binding(mut self, group: impl Into<CowStr>, entry: BindGroupLayoutEntry) -> Self {
-        self.bindings.push(BindingEntry { group: group.into(), entry });
+        self.bindings.push((group.into(), entry));
         self
     }
 
     pub fn with_bindings(mut self, bindings: impl IntoIterator<Item = (CowStr, BindGroupLayoutEntry)>) -> Self {
-        self.bindings.extend(bindings.into_iter().map(|(group, entry)| BindingEntry { group, entry }));
+        self.bindings.extend(bindings.into_iter());
         self
     }
 
     pub fn with_binding_desc(mut self, desc: BindGroupDesc) -> Self {
         let group = desc.label.clone();
-        self.bindings.extend(desc.entries.iter().map(|&entry| BindingEntry { group: group.clone(), entry }));
+        self.bindings.extend(desc.entries.iter().map(|&entry| (group.clone(), entry)));
         self
     }
 
@@ -235,9 +233,8 @@ fn resolve_module_graph<'a>(roots: impl IntoIterator<Item = &'a ShaderModule>) -
 /// Represents a shader and its layout
 pub struct Shader {
     module: wgpu::ShaderModule,
-    source: Option<String>,
     // Ordered sets
-    bind_group_layouts: Vec<wgpu::BindGroupLayout>,
+    bind_group_layouts: Vec<Arc<wgpu::BindGroupLayout>>,
     bind_group_index: BTreeMap<String, usize>,
     label: CowStr,
 }
@@ -259,28 +256,23 @@ impl Shader {
         let mut bind_groups = Vec::new();
         for module in &modules {
             for binding in &module.bindings {
-                let index = *bind_group_index.entry(binding.group.as_ref().to_owned()).or_insert_with(|| {
-                    let group = &*binding.group;
+                let index = *bind_group_index.entry(binding.0.as_ref().to_owned()).or_insert_with(|| {
+                    let group = binding.0.clone();
                     let index = bind_groups.len();
+
                     tracing::info!("Resolved bind group: {group}:{index}");
-                    bind_groups.push((group, Vec::new()));
+
+                    bind_groups.push(BindGroupDesc { label: group, entries: Default::default() });
                     index
                 });
 
-                let (_, entries) = &mut bind_groups[index];
-                entries.push(binding.entry);
+                let desc = &mut bind_groups[index];
+                desc.entries.push(binding.1);
             }
         }
 
         // Now for the fun part: constructing the binding group layout descriptors
-        let bind_group_layouts = bind_groups
-            .iter()
-            .map(|(group, entries)| {
-                let desc = BindGroupLayoutDescriptor { label: Some(group), entries };
-
-                gpu.device.create_bind_group_layout(&desc)
-            })
-            .collect_vec();
+        let bind_group_layouts = bind_groups.iter().map(|desc| desc.get(assets)).collect_vec();
 
         // Efficiently replace all identifiers
         let (patterns, replace_with): (Vec<_>, Vec<_>) = modules
@@ -350,45 +342,31 @@ impl Shader {
             std::fs::write(format!("tmp/{label}.wgsl"), source.as_bytes()).unwrap();
         }
 
-        #[cfg(debug_assertions)]
-        let src = Some(source.to_string());
-        #[cfg(not(debug_assertions))]
-        let src = None;
-
         let module = gpu
             .device
             .create_shader_module(wgpu::ShaderModuleDescriptor { label: Some(&label), source: wgpu::ShaderSource::Wgsl(source.into()) });
 
-        Arc::new(Self { module, bind_group_layouts, bind_group_index, source: src, label })
+        Arc::new(Self { module, bind_group_layouts, bind_group_index, label })
     }
 
-    pub fn ref_layouts(&self) -> Vec<&wgpu::BindGroupLayout> {
-        self.bind_group_layouts.iter().collect_vec()
+    pub fn ref_layouts(&self) -> Vec<&BindGroupLayout> {
+        self.bind_group_layouts.iter().map(|v| &**v).collect_vec()
     }
-    pub fn layouts(&self) -> &[wgpu::BindGroupLayout] {
+    pub fn layouts(&self) -> &[Arc<BindGroupLayout>] {
         &self.bind_group_layouts
     }
 
-    pub fn get_bind_group_layout_by_name(&self, name: &str) -> Option<&wgpu::BindGroupLayout> {
-        self.bind_group_index.get(name).map(|&v| &self.bind_group_layouts[v])
+    pub fn get_bind_group_layout_by_name(&self, name: &str) -> Option<&BindGroupLayout> {
+        self.bind_group_index.get(name).map(|&v| &*self.bind_group_layouts[v])
     }
 
     pub fn get_bind_group_index_by_name(&self, name: &str) -> Option<u32> {
         self.bind_group_index.get(name).map(|&v| v as _)
     }
 
+    /// The wgpu shader module
     pub fn module(&self) -> &wgpu::ShaderModule {
         &self.module
-    }
-
-    pub fn source(&self) -> Option<&String> {
-        self.source.as_ref()
-    }
-
-    pub fn bind_all<'a>(&self, computepass: &mut wgpu::ComputePass<'a>, binding_context: &HashMap<String, &'a wgpu::BindGroup>) {
-        for (group, &index) in self.bind_group_index.iter() {
-            computepass.set_bind_group(index as u32, binding_context.get(group).unwrap(), &[]);
-        }
     }
 
     pub fn to_pipeline(self: &Arc<Self>, gpu: &Gpu, info: GraphicsPipelineInfo) -> GraphicsPipeline {

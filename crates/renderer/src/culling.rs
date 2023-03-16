@@ -1,4 +1,4 @@
-use std::{collections::HashMap, f32::INFINITY, sync::Arc};
+use std::{f32::INFINITY, sync::Arc};
 
 use ambient_core::{
     bounding::world_bounding_sphere,
@@ -42,9 +42,11 @@ struct CullCamera {
     pub cot_fov_2: f32,
     pub _padding: UVec3,
 }
+
 impl From<Camera> for CullCamera {
     fn from(camera: Camera) -> Self {
         let frustum = camera.projection.view_space_frustum();
+
         Self {
             view: camera.view,
             position: camera.position().extend(1.),
@@ -60,6 +62,7 @@ impl From<Camera> for CullCamera {
 }
 
 pub const MAX_SHADOW_CASCADES: u32 = 6;
+
 #[repr(C)]
 #[derive(Debug, Clone, Default, Copy, bytemuck::Pod, bytemuck::Zeroable)]
 struct CullingParams {
@@ -115,12 +118,7 @@ impl Culling {
     }
 
     #[profiling::function]
-    pub fn run<'a>(
-        &mut self,
-        encoder: &'a mut wgpu::CommandEncoder,
-        world: &World,
-        binding_context: &HashMap<String, &'a wgpu::BindGroup>,
-    ) {
+    pub fn run<'a>(&mut self, encoder: &'a mut wgpu::CommandEncoder, world: &World) {
         let main_camera = if let Some(camera) = Camera::get_active(world, self.config.scene, world.resource_opt(local_user_id())) {
             camera
         } else {
@@ -152,8 +150,7 @@ impl Culling {
             layout: self.updater.pipeline.shader().get_bind_group_layout_by_name(CULLING_BIND_GROUP).unwrap(),
             entries: &[wgpu::BindGroupEntry { binding: 0, resource: self.params.buffer().as_entire_binding() }],
         });
-        let mut binding_context = binding_context.clone();
-        binding_context.insert(CULLING_BIND_GROUP.to_string(), &bind_group);
-        self.updater.run_with_encoder(encoder, world, binding_context);
+
+        self.updater.run_with_encoder(encoder, world, &[(CULLING_BIND_GROUP, &bind_group)]);
     }
 }

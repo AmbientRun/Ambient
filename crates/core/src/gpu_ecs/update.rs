@@ -70,18 +70,13 @@ impl GpuWorldUpdater {
         }
     }
 
-    pub fn run(&mut self, world: &World, binding_context: HashMap<String, &wgpu::BindGroup>) {
+    pub fn run(&mut self, world: &World, binding_context: &[(&str, &wgpu::BindGroup)]) {
         let mut encoder = self.gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         self.run_with_encoder(&mut encoder, world, binding_context);
         self.gpu.queue.submit(Some(encoder.finish()));
     }
 
-    pub fn run_with_encoder(
-        &mut self,
-        encoder: &mut wgpu::CommandEncoder,
-        world: &World,
-        binding_context: HashMap<String, &wgpu::BindGroup>,
-    ) {
+    pub fn run_with_encoder(&mut self, encoder: &mut wgpu::CommandEncoder, world: &World, binding_context: &[(&str, &wgpu::BindGroup)]) {
         let mut chunks = Vec::new();
         for arch in self.filter.iter_archetypes(world) {
             if arch.entity_count() == 0 {
@@ -113,10 +108,14 @@ impl GpuWorldUpdater {
         let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: Some("GpuWorldUpdate") });
         cpass.set_pipeline(self.pipeline.pipeline());
 
-        let mut binding_context = binding_context.clone();
-        binding_context.insert(ENTITIES_BIND_GROUP.to_string(), &gpu_world_bind_group);
-        binding_context.insert(GPU_ECS_UPDATE_BIND_GROUP.to_string(), &bind_group);
-        self.pipeline.shader().bind_all(&mut cpass, &binding_context);
+        for (name, bind_group) in
+            binding_context.iter().chain([&(ENTITIES_BIND_GROUP, &gpu_world_bind_group), &(GPU_ECS_UPDATE_BIND_GROUP, &bind_group)])
+        {
+            let index = self.pipeline.get_bind_group_index_by_name(name).unwrap();
+
+            cpass.set_bind_group(index, bind_group, &[]);
+        }
+
         debug_assert_eq!(GPU_WORLD_UPDATE_CHUNK_SIZE % GPU_ECS_WORKGROUP_SIZE, 0);
         cpass.dispatch_workgroups(GPU_WORLD_UPDATE_CHUNK_SIZE / GPU_ECS_WORKGROUP_SIZE, chunks.len() as u32, 1);
     }

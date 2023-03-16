@@ -268,7 +268,7 @@ impl Renderer {
         let main_camera = Camera::get_active(world, self.config.scene, world.resource_opt(local_user_id())).unwrap_or_default();
         {
             profiling::scope!("Update");
-            self.culling.run(encoder, world, &Default::default());
+            self.culling.run(encoder, world);
 
             self.forward_collect_state.set_camera(0);
             self.forward.update(world);
