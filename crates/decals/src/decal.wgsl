@@ -10,6 +10,14 @@ struct VertexOutput {
     @location(6) inv_local_to_world_3: vec4<f32>,
 };
 
+fn get_entity_primitive_mesh(loc: vec2<u32>, index: u32) -> u32 {
+    let i = index >> 2u;
+    let j = index & 3u;
+
+    var meshes = get_entity_gpu_primitives_mesh(loc);
+    return bitcast<u32>(meshes[i][j]);
+}
+
 @vertex
 fn vs_main(@builtin(instance_index) instance_index: u32, @builtin(vertex_index) vertex_index: u32) -> VertexOutput {
     var out: VertexOutput;
@@ -21,7 +29,7 @@ fn vs_main(@builtin(instance_index) instance_index: u32, @builtin(vertex_index) 
     out.instance_index = instance_index;
     out.texcoord = get_mesh_texcoord0(mesh_index, vertex_index);
 
-    let local_to_world =  get_entity_mesh_to_world(entity_loc);
+    let local_to_world = get_entity_mesh_to_world(entity_loc);
 
     out.world_position = local_to_world * vec4<f32>(get_mesh_position(mesh_index, vertex_index), 1.);
     let vertex_transformed = global_params.projection_view * out.world_position;
@@ -58,7 +66,7 @@ fn get_decal(in: VertexOutput) -> Decal {
         in.inv_local_to_world_3,
     );
     let local_pos = project_point(inv_local_to_world, world_position);
-    if (local_pos.x < -1. || local_pos.x > 1. || local_pos.y < -1. || local_pos.y > 1.) {
+    if local_pos.x < -1. || local_pos.x > 1. || local_pos.y < -1. || local_pos.y > 1. {
         discard;
     }
 
@@ -82,7 +90,7 @@ fn fs_shadow_main(in: VertexOutput, @builtin(front_facing) is_front: bool) -> @b
     let decal = get_decal(in);
     var material = get_material(decal.material_in);
 
-    if (material.opacity < material.alpha_cutoff) {
+    if material.opacity < material.alpha_cutoff {
         discard;
     }
     return decal.depth;
@@ -103,7 +111,7 @@ fn fs_forward_lit_main(in: VertexOutput, @builtin(front_facing) is_front: bool) 
     let decal = get_decal(in);
     var material = get_material(decal.material_in);
 
-    if (material.opacity < material.alpha_cutoff) {
+    if material.opacity < material.alpha_cutoff {
         discard;
     }
     var res: FsOutputs;
@@ -117,7 +125,7 @@ fn fs_forward_unlit_main(in: VertexOutput, @builtin(front_facing) is_front: bool
     let decal = get_decal(in);
     var material = get_material(decal.material_in);
 
-    if (material.opacity < material.alpha_cutoff) {
+    if material.opacity < material.alpha_cutoff {
         discard;
     }
     var res: FsOutputs;
@@ -131,7 +139,7 @@ fn fs_outlines_main(in: VertexOutput, @builtin(front_facing) is_front: bool) -> 
     let decal = get_decal(in);
     var material = get_material(decal.material_in);
 
-    if (material.opacity < material.alpha_cutoff) {
+    if material.opacity < material.alpha_cutoff {
         discard;
     }
     return get_outline(in.instance_index);

@@ -6,8 +6,6 @@ use ambient_std::{
     include_file,
 };
 
-use crate::get_utils_module;
-
 use super::{get_forward_modules, MaterialShader, RendererShader};
 
 pub struct StandardShaderKey {
@@ -30,7 +28,6 @@ impl SyncAssetKey<Arc<RendererShader>> for StandardShaderKey {
             id.clone(),
             &ShaderModule::new("standard_material", include_file!("standard.wgsl"))
                 .with_dependencies(get_forward_modules(&assets, self.shadow_cascades))
-                .with_dependency(get_utils_module())
                 .with_dependency(self.material_shader.shader.clone()),
         );
 

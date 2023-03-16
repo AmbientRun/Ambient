@@ -12,7 +12,7 @@ use ambient_ecs::{components, query, Entity, MakeDefault, Networked, Store, Syst
 use ambient_gpu::shader_module::{Shader, ShaderModule};
 use ambient_meshes::CubeMeshKey;
 use ambient_renderer::{
-    color, get_forward_modules, get_utils_module, gpu_primitives_lod, gpu_primitives_mesh, material,
+    color, get_forward_modules, gpu_primitives_lod, gpu_primitives_mesh, material,
     pbr_material::{PbrMaterialFromUrl, PbrMaterialShaderKey},
     primitives, renderer_shader, MaterialShader, RendererShader,
 };
@@ -48,9 +48,8 @@ impl SyncAssetKey<Arc<RendererShader>> for DecalShaderKey {
         let shader = Shader::from_modules(
             &assets,
             id.clone(),
-            &ShaderModule::new("DecalMaterial", include_file!("decal.wgsl"))
+            &ShaderModule::new("decal_material", include_file!("decal.wgsl"))
                 .with_dependencies(get_forward_modules(&assets, self.shadow_cascades))
-                .with_dependency(get_utils_module())
                 .with_dependency(self.material_shader.shader.clone()),
         );
 

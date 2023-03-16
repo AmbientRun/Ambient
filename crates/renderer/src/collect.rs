@@ -16,7 +16,7 @@ use glam::{uvec2, UVec2, UVec3};
 use parking_lot::Mutex;
 use wgpu::{BindGroupEntry, BindGroupLayout, BindGroupLayoutEntry, BindingType, BufferBindingType, ShaderStages};
 
-use crate::{get_mesh_meta_module, get_utils_module};
+use crate::get_mesh_meta_module;
 
 use super::{get_defs_module, DrawIndexedIndirect, PrimitiveIndex, RESOURCES_BIND_GROUP};
 
@@ -171,7 +171,6 @@ impl RendererCollect {
                 .with_binding_desc(layout_desc)
                 .with_dependency(get_defs_module())
                 .with_dependency(get_mesh_meta_module())
-                .with_dependency(get_utils_module())
                 .with_dependency(GpuWorldShaderModuleKey { read_only: true }.get(assets)),
         );
 

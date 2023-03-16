@@ -10,6 +10,14 @@ struct VertexOutput {
     @location(6) local_position: vec3<f32>,
 };
 
+fn get_entity_primitive_mesh(loc: vec2<u32>, index: u32) -> u32 {
+    let i = index >> 2u;
+    let j = index & 3u;
+
+    var meshes = get_entity_gpu_primitives_mesh(loc);
+    return bitcast<u32>(meshes[i][j]);
+}
+
 @vertex
 fn vs_main(@builtin(instance_index) instance_index: u32, @builtin(vertex_index) vertex_index: u32) -> VertexOutput {
     var out: VertexOutput;
@@ -56,7 +64,7 @@ fn get_material_in(in: VertexOutput, is_front: bool) -> MaterialInput {
 fn fs_shadow_main(in: VertexOutput, @builtin(front_facing) is_front: bool) {
     var material = get_material(get_material_in(in, is_front));
 
-    if (material.opacity < material.alpha_cutoff) {
+    if material.opacity < material.alpha_cutoff {
         discard;
     }
 }
@@ -71,11 +79,11 @@ fn fs_forward_lit_main(in: VertexOutput, @builtin(front_facing) is_front: bool) 
     let material_in = get_material_in(in, is_front);
     var material = get_material(material_in);
 
-    if (material.opacity < material.alpha_cutoff) {
+    if material.opacity < material.alpha_cutoff {
         discard;
     }
 
-    if (!is_front) {
+    if !is_front {
         material.normal = -material.normal;
     }
 
@@ -92,7 +100,7 @@ fn fs_forward_unlit_main(in: VertexOutput, @builtin(front_facing) is_front: bool
     let material_in = get_material_in(in, is_front);
     var material = get_material(material_in);
 
-    if (material.opacity < material.alpha_cutoff) {
+    if material.opacity < material.alpha_cutoff {
         discard;
     }
 
@@ -106,7 +114,7 @@ fn fs_forward_unlit_main(in: VertexOutput, @builtin(front_facing) is_front: bool
 fn fs_outlines_main(in: VertexOutput, @builtin(front_facing) is_front: bool) -> @location(0) vec4<f32> {
     var material = get_material(get_material_in(in, is_front));
 
-    if (material.opacity < material.alpha_cutoff) {
+    if material.opacity < material.alpha_cutoff {
         discard;
     }
     return get_outline(in.instance_index);
