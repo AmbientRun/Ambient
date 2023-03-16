@@ -293,6 +293,10 @@ where
     }
 }
 
+pub fn get_utils_module() -> Arc<ShaderModule> {
+    Arc::new(ShaderModule::new("utils", include_str!("utils.wgsl")))
+}
+
 /// No bind groups
 pub fn get_defs_module() -> Arc<ShaderModule> {
     let iter = [("PI", PI)].iter();

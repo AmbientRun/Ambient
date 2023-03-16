@@ -218,8 +218,6 @@ impl GpuWorldConfig {
     pub fn wgsl(&self, writeable: bool) -> String {
         let buffers = self.buffers.iter().enumerate().map(|(i, buf)| buf.wgsl(ENTITIES_BIND_GROUP, i as u32, writeable)).join("\n");
 
-        let utils = include_file!("utils.wgsl");
-
         format!(
             "
 struct EntityLayoutBuffer {{ data: array<i32>, }};
@@ -228,8 +226,6 @@ struct EntityLayoutBuffer {{ data: array<i32>, }};
 var<storage> entity_layout: EntityLayoutBuffer;
 
 {buffers}
-
-{utils}
 ",
         )
     }

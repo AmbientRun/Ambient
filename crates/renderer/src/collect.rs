@@ -14,9 +14,9 @@ use ambient_std::{
 };
 use glam::{uvec2, UVec2, UVec3};
 use parking_lot::Mutex;
-use wgpu::{BindGroupLayout, BindGroupLayoutEntry, BindingType, BufferBindingType, ShaderStages};
+use wgpu::{BindGroupEntry, BindGroupLayout, BindGroupLayoutEntry, BindingType, BufferBindingType, ShaderStages};
 
-use crate::get_mesh_meta_module;
+use crate::{get_mesh_meta_module, get_utils_module};
 
 use super::{get_defs_module, DrawIndexedIndirect, PrimitiveIndex, RESOURCES_BIND_GROUP};
 
@@ -171,6 +171,7 @@ impl RendererCollect {
                 .with_binding_desc(layout_desc)
                 .with_dependency(get_defs_module())
                 .with_dependency(get_mesh_meta_module())
+                .with_dependency(get_utils_module())
                 .with_dependency(GpuWorldShaderModuleKey { read_only: true }.get(assets)),
         );
 
@@ -205,11 +206,11 @@ impl RendererCollect {
             label: None,
             layout: &self.layout,
             entries: &[
-                wgpu::BindGroupEntry { binding: 0, resource: output.params.buffer().as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 1, resource: input_primitives.buffer().as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 2, resource: output.commands.buffer().as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 3, resource: output.counts.buffer().as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 4, resource: output.material_layouts.buffer().as_entire_binding() },
+                BindGroupEntry { binding: 0, resource: output.params.buffer().as_entire_binding() },
+                BindGroupEntry { binding: 1, resource: input_primitives.buffer().as_entire_binding() },
+                BindGroupEntry { binding: 2, resource: output.commands.buffer().as_entire_binding() },
+                BindGroupEntry { binding: 3, resource: output.counts.buffer().as_entire_binding() },
+                BindGroupEntry { binding: 4, resource: output.material_layouts.buffer().as_entire_binding() },
             ],
         });
 

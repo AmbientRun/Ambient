@@ -37,6 +37,7 @@ impl TestCommon {
         ambient_core::init_all_components();
         init_components();
         init_gpu_components();
+
         let gpu = Arc::new(Gpu::new(None).await);
         let mut world = World::new("TestCommon");
 
@@ -64,6 +65,7 @@ impl TestCommon {
         let loc = vec4(loc.archetype as f32, loc.index as f32, 0., 0.);
 
         let module = GpuWorldShaderModuleKey { read_only: true }.get(&self.assets);
+        eprintln!("Adding gpu module: {module:#?}");
         let bind_group = self.gpu_world.lock().create_bind_group(true);
         GpuRun::new("gpu_ecs", format!("return get_entity_{}(vec2<u32>(u32(input.x), u32(input.y)));", component.path_last()))
             .add_module(module)

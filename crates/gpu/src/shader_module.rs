@@ -338,8 +338,10 @@ impl Shader {
 
         #[cfg(all(not(target_os = "unknown"), debug_assertions))]
         {
+            let path = format!("tmp/{label}.wgsl");
+            eprintln!("Writing shader to {path}");
             std::fs::create_dir_all("tmp/").unwrap();
-            std::fs::write(format!("tmp/{label}.wgsl"), source.as_bytes()).unwrap();
+            std::fs::write(path, source.as_bytes()).unwrap();
         }
 
         let module = gpu
