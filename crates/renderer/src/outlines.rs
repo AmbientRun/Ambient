@@ -54,7 +54,7 @@ pub struct Outlines {
     gpu: Arc<Gpu>,
 }
 
-fn get_outlines_layout() -> BindGroupDesc {
+fn get_outlines_layout() -> BindGroupDesc<'static> {
     BindGroupDesc {
         entries: vec![BindGroupLayoutEntry {
             binding: 0,
@@ -74,11 +74,13 @@ impl Outlines {
     pub fn new(assets: &AssetCache, config: OutlinesConfig, renderer_config: RendererConfig) -> Self {
         let gpu = GpuKey.get(assets);
 
-        let shader = Shader::from_modules(
+        let shader = Shader::new(
             assets,
             "Outlines",
+            &["OUTLINES_BIND_GROUP"],
             &ShaderModule::new("outlines", include_file!("outlines.wgsl")).with_binding_desc(get_outlines_layout()),
-        );
+        )
+        .unwrap();
 
         let pipeline = shader.to_pipeline(
             &gpu,
@@ -138,7 +140,7 @@ impl Outlines {
         encoder: &mut wgpu::CommandEncoder,
         post_submit: &mut Vec<Box<dyn FnOnce() + Send + Send>>,
         target: &RendererTarget,
-        binds: &[(&str, &BindGroup)],
+        bind_groups: &[&BindGroup],
         mesh_buffer: &MeshBuffer,
     ) {
         let bind_group_layout = self.pipeline.pipeline().get_bind_group_layout(0);
@@ -150,7 +152,7 @@ impl Outlines {
 
         self.collect_state.set_camera(0);
         self.renderer.update(world);
-        self.renderer.run_collect(encoder, post_submit, binds[0].1, binds[1].1, &mut self.collect_state);
+        self.renderer.run_collect(encoder, post_submit, bind_groups[0], bind_groups[1], &mut self.collect_state);
 
         {
             profiling::scope!("Outlines stencil");
@@ -170,7 +172,7 @@ impl Outlines {
             //     self.pipeline.bind(&mut render_pass, name, *group);
             // }
 
-            self.renderer.render(&mut render_pass, &self.collect_state, binds);
+            self.renderer.render(&mut render_pass, &self.collect_state, bind_groups);
             {
                 profiling::scope!("Drop render pass");
                 drop(render_pass);

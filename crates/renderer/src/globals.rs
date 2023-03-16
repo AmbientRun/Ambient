@@ -75,7 +75,7 @@ pub fn default_sun_direction() -> Vec3 {
     vec3(-0.2, 1., 1.).normalize()
 }
 
-pub fn globals_layout() -> BindGroupDesc {
+pub fn globals_layout() -> BindGroupDesc<'static> {
     BindGroupDesc {
         entries: vec![
             wgpu::BindGroupLayoutEntry {

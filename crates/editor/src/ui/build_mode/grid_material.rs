@@ -87,7 +87,7 @@ impl GridMaterial {
 }
 
 impl Material for GridMaterial {
-    fn bind(&self) -> &BindGroup {
+    fn bind_group(&self) -> &BindGroup {
         &self.bind_group
     }
     fn id(&self) -> &str {

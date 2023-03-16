@@ -130,7 +130,6 @@ pub struct CloudMaterial {
 impl CloudMaterial {
     pub fn new(assets: AssetCache, state: &CloudState) -> Self {
         let gpu = GpuKey.get(&assets);
-        let shader = CloudShaderKey { shadow_cascades: 1 }.get(&assets);
 
         let cloud_buffer = TypedBuffer::new(
             gpu.clone(),
@@ -143,7 +142,7 @@ impl CloudMaterial {
         Self {
             id: friendly_id(),
             bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
-                layout: shader.material_layout(),
+                layout: &get_cloud_shader_layout().get(&assets),
                 entries: &[wgpu::BindGroupEntry { binding: 0, resource: cloud_buffer.buffer().as_entire_binding() }],
                 label: Some("CloudMaterial.bind_group"),
             }),
@@ -153,7 +152,7 @@ impl CloudMaterial {
 }
 
 impl Material for CloudMaterial {
-    fn bind(&self) -> &BindGroup {
+    fn bind_group(&self) -> &BindGroup {
         &self.bind_group
     }
 
@@ -166,6 +165,22 @@ pub fn get_scatter_module() -> Arc<ShaderModule> {
     Arc::new(ShaderModule::new("Scatter", include_file!("atmospheric_scattering.wgsl")))
 }
 
+fn get_cloud_shader_layout() -> BindGroupDesc<'static> {
+    BindGroupDesc {
+        entries: vec![wgpu::BindGroupLayoutEntry {
+            binding: 0,
+            visibility: wgpu::ShaderStages::FRAGMENT,
+            ty: wgpu::BindingType::Buffer {
+                ty: wgpu::BufferBindingType::Storage { read_only: true },
+                has_dynamic_offset: false,
+                min_binding_size: None,
+            },
+            count: None,
+        }],
+        label: MATERIAL_BIND_GROUP.into(),
+    }
+}
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct CloudShaderKey {
     shadow_cascades: u32,
@@ -173,32 +188,22 @@ pub struct CloudShaderKey {
 
 impl SyncAssetKey<Arc<RendererShader>> for CloudShaderKey {
     fn load(&self, assets: AssetCache) -> Arc<RendererShader> {
-        let layout = BindGroupDesc {
-            entries: vec![wgpu::BindGroupLayoutEntry {
-                binding: 0,
-                visibility: wgpu::ShaderStages::FRAGMENT,
-                ty: wgpu::BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Storage { read_only: true },
-                    has_dynamic_offset: false,
-                    min_binding_size: None,
-                },
-                count: None,
-            }],
-            label: MATERIAL_BIND_GROUP.into(),
-        };
+        let layout = get_cloud_shader_layout();
 
         let shader = include_file!("clouds.wgsl");
 
         let id = "cloud shader".to_string();
         Arc::new(RendererShader {
-            shader: Shader::from_modules(
+            shader: Shader::new(
                 &assets,
                 id.clone(),
+                &[],
                 &ShaderModule::new("clouds", shader)
                     .with_binding_desc(layout)
                     .with_dependencies(get_overlay_modules(&assets, self.shadow_cascades))
                     .with_dependency(get_scatter_module()),
-            ),
+            )
+            .unwrap(),
             id,
             vs_main: "vs_main".to_string(),
             fs_forward_main: "fs_forward_main".to_string(),

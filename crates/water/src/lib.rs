@@ -73,7 +73,7 @@ pub fn systems() -> SystemGroup {
     )
 }
 
-fn get_water_layout() -> BindGroupDesc {
+fn get_water_layout() -> BindGroupDesc<'static> {
     BindGroupDesc {
         entries: vec![wgpu::BindGroupLayoutEntry {
             binding: 0,
@@ -152,7 +152,7 @@ impl WaterMaterial {
     }
 }
 impl Material for WaterMaterial {
-    fn bind(&self) -> &BindGroup {
+    fn bind_group(&self) -> &BindGroup {
         &self.bind_group
     }
 

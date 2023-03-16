@@ -21,7 +21,7 @@ use wgpu::{util::DeviceExt, BindGroup, BindGroupLayoutEntry};
 use super::super::{Material, MaterialShader, RendererShader, MATERIAL_BIND_GROUP};
 use crate::{RendererConfig, StandardShaderKey};
 
-fn get_material_layout() -> BindGroupDesc {
+fn get_material_layout() -> BindGroupDesc<'static> {
     BindGroupDesc {
         label: MATERIAL_BIND_GROUP.into(),
         entries: vec![
@@ -201,7 +201,7 @@ impl std::fmt::Debug for PbrMaterial {
     }
 }
 impl Material for PbrMaterial {
-    fn bind(&self) -> &BindGroup {
+    fn bind_group(&self) -> &BindGroup {
         &self.bind_group
     }
 

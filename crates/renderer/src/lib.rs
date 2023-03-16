@@ -326,7 +326,7 @@ pub fn get_mesh_data_module() -> Arc<ShaderModule> {
     )
 }
 
-pub fn primitives_layout() -> BindGroupDesc {
+pub fn primitives_layout() -> BindGroupDesc<'static> {
     BindGroupDesc {
         entries: vec![wgpu::BindGroupLayoutEntry {
             binding: 0,
@@ -342,7 +342,7 @@ pub fn primitives_layout() -> BindGroupDesc {
     }
 }
 
-pub fn get_common_layout() -> BindGroupDesc {
+pub fn get_common_layout() -> BindGroupDesc<'static> {
     BindGroupDesc {
         entries: vec![wgpu::BindGroupLayoutEntry {
             binding: 0,
@@ -397,14 +397,19 @@ pub struct MaterialShader {
 
 pub trait Material: Debug + Sync + Send + DowncastSync {
     fn id(&self) -> &str;
+
     fn name(&self) -> &str {
         self.id()
     }
+
     fn update(&self, _: &World) {}
-    fn bind(&self) -> &wgpu::BindGroup;
+
+    fn bind_group(&self) -> &wgpu::BindGroup;
+
     fn transparent(&self) -> Option<bool> {
         None
     }
+
     fn double_sided(&self) -> Option<bool> {
         None
     }
@@ -453,9 +458,6 @@ pub struct RendererShader {
     pub transparency_group: i32,
 }
 impl RendererShader {
-    pub fn material_layout(&self) -> &wgpu::BindGroupLayout {
-        self.shader.get_bind_group_layout_by_name(MATERIAL_BIND_GROUP).unwrap()
-    }
     fn get_fs_main_name(&self, main: FSMain) -> &str {
         match main {
             FSMain::Forward => &self.fs_forward_main,

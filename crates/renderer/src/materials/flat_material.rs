@@ -14,7 +14,7 @@ use wgpu::{util::DeviceExt, BindGroup};
 use super::super::{Material, MaterialShader, RendererShader, MATERIAL_BIND_GROUP};
 use crate::{RendererConfig, SharedMaterial, StandardShaderKey};
 
-fn get_material_layout() -> BindGroupDesc {
+fn get_material_layout() -> BindGroupDesc<'static> {
     BindGroupDesc {
         entries: vec![wgpu::BindGroupLayoutEntry {
             binding: 0,
@@ -129,7 +129,7 @@ impl std::fmt::Debug for FlatMaterial {
 }
 
 impl Material for FlatMaterial {
-    fn bind(&self) -> &BindGroup {
+    fn bind_group(&self) -> &BindGroup {
         &self.bind_group
     }
     fn id(&self) -> &str {

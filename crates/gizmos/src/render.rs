@@ -1,6 +1,6 @@
 use std::{fmt::Debug, sync::Arc};
 
-use ambient_core::{asset_cache, camera::Camera, main_scene, player::local_user_id};
+use ambient_core::{asset_cache, camera::Camera, gpu_ecs::ENTITIES_BIND_GROUP, main_scene, player::local_user_id};
 use ambient_ecs::World;
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
@@ -9,7 +9,7 @@ use ambient_gpu::{
     typed_buffer::TypedBuffer,
 };
 use ambient_meshes::QuadMeshKey;
-use ambient_renderer::{get_mesh_data_module, get_overlay_modules, RendererTarget, SubRenderer};
+use ambient_renderer::{get_mesh_data_module, get_overlay_modules, RendererTarget, SubRenderer, GLOBALS_BIND_GROUP, RESOURCES_BIND_GROUP};
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     include_file,
@@ -90,14 +90,16 @@ impl SubRenderer for GizmoRenderer {
             };
 
             let source = include_file!("gizmos.wgsl");
-            let shader = Shader::from_modules(
+            let shader = Shader::new(
                 assets,
                 "gizmos",
+                &[GLOBALS_BIND_GROUP, ENTITIES_BIND_GROUP, RESOURCES_BIND_GROUP, "GIZMOS_BIND_GROUP"],
                 &ShaderModule::new("Gizmo", source)
                     .with_binding_desc(layout)
                     .with_dependencies(get_overlay_modules(assets, 1))
                     .with_dependency(get_mesh_data_module()),
-            );
+            )
+            .unwrap();
 
             shader.to_pipeline(
                 gpu,
@@ -127,7 +129,7 @@ impl SubRenderer for GizmoRenderer {
 
         let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: Some("Gizmo bind group"),
-            layout: pipeline.shader().get_bind_group_layout_by_name("GIZMOS_BIND_GROUP").unwrap(),
+            layout: todo!(),
             entries: &[
                 BindGroupEntry { binding: 0, resource: wgpu::BindingResource::Buffer(self.buffer.buffer().as_entire_buffer_binding()) },
                 BindGroupEntry { binding: 1, resource: wgpu::BindingResource::TextureView(target.depth()) },
@@ -149,9 +151,10 @@ impl SubRenderer for GizmoRenderer {
         let indices = mesh_buffer.indices_of(&self.quad);
         render_pass.set_pipeline(pipeline.pipeline());
 
-        for (name, group) in binds.iter().chain([("GIZMOS_BIND_GROUP", &bind_group)].iter()) {
-            pipeline.bind(&mut render_pass, name, group);
-        }
+        todo!();
+        // for (name, group) in binds.iter().chain([("GIZMOS_BIND_GROUP", &bind_group)].iter()) {
+        //     pipeline.bind(&mut render_pass, name, group);
+        // }
 
         render_pass.draw_indexed(indices, 0, 0..primitives.len() as _);
     }

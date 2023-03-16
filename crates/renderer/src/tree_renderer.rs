@@ -256,13 +256,14 @@ impl TreeRenderer {
         &'a self,
         render_pass: &mut wgpu::RenderPass<'a>,
         collect_state: &'a RendererCollectState,
-        binds: &[(&str, &'a wgpu::BindGroup)],
+        bind_groups: &[&'a wgpu::BindGroup],
     ) {
         let primitives_bind_group = if let Some(primitives_bind_group) = &self.primitives_bind_group {
             primitives_bind_group
         } else {
             return; // Nothing to render
         };
+
         #[cfg(target_os = "macos")]
         let counts = collect_state.counts_cpu.lock().clone();
 
@@ -272,15 +273,16 @@ impl TreeRenderer {
             render_pass.set_pipeline(node.pipeline.pipeline());
             // Bind on first invocation
             if !is_bound {
-                for (name, group) in binds.iter().chain([(PRIMITIVES_BIND_GROUP, primitives_bind_group)].iter()) {
-                    node.pipeline.bind(render_pass, name, group);
+                for (i, bind_group) in bind_groups.iter().chain(&[primitives_bind_group]).enumerate() {
+                    render_pass.set_bind_group(i as _, bind_group, &[]);
                     is_bound = true
                 }
             }
 
             for mat in node.tree.values() {
                 let material = &mat.material;
-                node.pipeline.bind(render_pass, MATERIAL_BIND_GROUP, material.bind());
+
+                render_pass.set_bind_group(bind_groups.len() as u32 + 1, material.bind_group(), &[]);
 
                 let offset = self.primitives.buffer_offset(mat.primitives_subbuffer).unwrap();
                 #[cfg(not(target_os = "macos"))]

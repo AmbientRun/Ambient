@@ -11,7 +11,7 @@ use ambient_std::{
 };
 use wgpu::{util::DeviceExt, BindGroup};
 
-fn get_loading_layout() -> BindGroupDesc {
+fn get_loading_layout() -> BindGroupDesc<'static> {
     BindGroupDesc {
         entries: vec![wgpu::BindGroupLayoutEntry {
             binding: 0,
@@ -85,7 +85,7 @@ impl LoadingMaterial {
 }
 
 impl Material for LoadingMaterial {
-    fn bind(&self) -> &BindGroup {
+    fn bind_group(&self) -> &BindGroup {
         &self.bind_group
     }
     fn id(&self) -> &str {

@@ -164,7 +164,7 @@ impl SyncAssetKey<Arc<MaterialShader>> for RectMaterialShaderKey {
     }
 }
 
-fn get_rect_layout() -> BindGroupDesc {
+fn get_rect_layout() -> BindGroupDesc<'static> {
     BindGroupDesc {
         entries: vec![BindGroupLayoutEntry {
             binding: 0,
@@ -240,7 +240,7 @@ impl std::fmt::Debug for RectMaterial {
 }
 
 impl Material for RectMaterial {
-    fn bind(&self) -> &BindGroup {
+    fn bind_group(&self) -> &BindGroup {
         &self.bind_group
     }
     fn id(&self) -> &str {

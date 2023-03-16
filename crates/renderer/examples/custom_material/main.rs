@@ -65,7 +65,7 @@ impl std::fmt::Debug for CustomMaterial {
     }
 }
 impl Material for CustomMaterial {
-    fn bind(&self) -> &BindGroup {
+    fn bind_group(&self) -> &BindGroup {
         &self.bind_group
     }
     fn id(&self) -> &str {

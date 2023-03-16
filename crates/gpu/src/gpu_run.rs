@@ -1,9 +1,10 @@
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     CowStr,
 };
+use itertools::Itertools;
 use wgpu::{BindGroup, BindGroupLayoutEntry, BufferUsages, ShaderStages};
 
 use crate::{
@@ -16,7 +17,7 @@ pub struct GpuRun {
     label: CowStr,
     modules: Vec<Arc<ShaderModule>>,
     body: CowStr,
-    bind_groups: HashMap<CowStr, BindGroup>,
+    bind_groups: Vec<(CowStr, BindGroup)>,
 }
 
 impl GpuRun {
@@ -30,7 +31,7 @@ impl GpuRun {
     }
 
     pub fn add_bind_group(mut self, name: impl Into<CowStr>, bind_group: wgpu::BindGroup) -> Self {
-        self.bind_groups.insert(name.into(), bind_group);
+        self.bind_groups.push((name.into(), bind_group));
         self
     }
 
@@ -77,7 +78,13 @@ impl GpuRun {
             .with_ident(ShaderIdent::raw("WGSL_BODY", body.clone()))
             .with_dependencies(modules.iter().cloned());
 
-        Shader::from_modules(assets, format!("GpuRun.{}", self.label), &module)
+        Shader::new(
+            assets,
+            format!("GpuRun.{}", self.label),
+            &["GPURUN_BIND_GROUP"].into_iter().chain(self.bind_groups.iter().map(|v| &*v.0)).collect_vec(),
+            &module,
+        )
+        .unwrap()
     }
 
     pub async fn run<In: WgslType, Out: WgslType>(self, assets: &AssetCache, input: In) -> Out {
@@ -93,7 +100,7 @@ impl GpuRun {
 
         let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: Some("GpuRun"),
-            layout: shader.get_bind_group_layout_by_name("GPURUN_BIND_GROUP").unwrap(),
+            layout: shader.layout(0).unwrap(),
             entries: &[
                 wgpu::BindGroupEntry { binding: 0, resource: in_buffer.buffer().as_entire_binding() },
                 wgpu::BindGroupEntry { binding: 1, resource: out_buffer.buffer().as_entire_binding() },
@@ -104,10 +111,10 @@ impl GpuRun {
         {
             let mut pass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: None });
             pass.set_pipeline(pipeline.pipeline());
-            pipeline.bind(&mut pass, "GPURUN_BIND_GROUP", &bind_group);
+            pass.set_bind_group(0, &bind_group, &[]);
 
-            for (k, v) in &self.bind_groups {
-                pipeline.bind(&mut pass, k, v);
+            for (i, (_, v)) in self.bind_groups.iter().enumerate() {
+                pass.set_bind_group(i as _, v, &[]);
             }
 
             pass.dispatch_workgroups(1, 1, 1);

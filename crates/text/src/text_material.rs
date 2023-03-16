@@ -24,7 +24,7 @@ impl SyncAssetKey<Arc<MaterialShader>> for TextMaterialShaderKey {
     }
 }
 
-fn get_text_layout() -> BindGroupDesc {
+fn get_text_layout() -> BindGroupDesc<'static> {
     BindGroupDesc {
         entries: vec![
             wgpu::BindGroupLayoutEntry {
@@ -84,7 +84,7 @@ impl std::fmt::Debug for TextMaterial {
 }
 
 impl Material for TextMaterial {
-    fn bind(&self) -> &BindGroup {
+    fn bind_group(&self) -> &BindGroup {
         &self.bind_group
     }
     fn id(&self) -> &str {

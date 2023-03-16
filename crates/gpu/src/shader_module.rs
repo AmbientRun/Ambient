@@ -1,15 +1,14 @@
 use std::{
-    char::ParseCharError,
-    collections::{btree_map, BTreeMap, BTreeSet, HashMap},
+    borrow::Cow,
+    collections::{btree_map, BTreeMap},
     sync::Arc,
 };
 
 use aho_corasick::AhoCorasick;
 use ambient_std::{asset_cache::*, CowStr};
+use anyhow::Context;
 use itertools::Itertools;
-use wgpu::{
-    BindGroupLayout, BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType, ComputePipelineDescriptor, DepthBiasState, ShaderStages,
-};
+use wgpu::{BindGroupLayout, BindGroupLayoutEntry, ComputePipelineDescriptor, DepthBiasState};
 
 use super::gpu::{Gpu, GpuKey, DEFAULT_SAMPLE_COUNT};
 
@@ -141,7 +140,7 @@ impl ShaderModule {
         self
     }
 
-    pub fn with_binding_desc(mut self, desc: BindGroupDesc) -> Self {
+    pub fn with_binding_desc(mut self, desc: BindGroupDesc<'static>) -> Self {
         let group = desc.label.clone();
         self.bindings.extend(desc.entries.iter().map(|&entry| (group.clone(), entry)));
         self
@@ -163,13 +162,13 @@ impl ShaderModule {
 }
 
 #[derive(Clone, PartialEq, Eq, Debug)]
-pub struct BindGroupDesc {
+pub struct BindGroupDesc<'a> {
     pub entries: Vec<wgpu::BindGroupLayoutEntry>,
     // Name for group preprocessor
-    pub label: CowStr,
+    pub label: Cow<'a, str>,
 }
 
-impl SyncAssetKey<Arc<wgpu::BindGroupLayout>> for BindGroupDesc {
+impl<'a> SyncAssetKey<Arc<wgpu::BindGroupLayout>> for BindGroupDesc<'a> {
     fn load(&self, assets: AssetCache) -> Arc<wgpu::BindGroupLayout> {
         let gpu = GpuKey.get(&assets);
 
@@ -234,12 +233,11 @@ pub struct Shader {
     module: wgpu::ShaderModule,
     // Ordered sets
     bind_group_layouts: Vec<Arc<wgpu::BindGroupLayout>>,
-    bind_group_index: BTreeMap<String, usize>,
     label: CowStr,
 }
 
 impl Shader {
-    pub fn from_modules(assets: &AssetCache, label: impl Into<CowStr>, module: &ShaderModule) -> Arc<Self> {
+    pub fn new(assets: &AssetCache, label: impl Into<CowStr>, bind_groups: &[&str], module: &ShaderModule) -> anyhow::Result<Arc<Self>> {
         let label = label.into();
         let gpu = GpuKey.get(assets);
 
@@ -251,22 +249,17 @@ impl Shader {
         tracing::info!("Compiling shader from modules: {:#?}", modules.iter().map(|v| &v.name).collect_vec());
 
         // Resolve all bind groups, resolving the names to an index
-        let mut bind_group_index = BTreeMap::new();
-        let mut bind_groups = Vec::new();
+        let bind_group_index: BTreeMap<_, _> = bind_groups.iter().enumerate().map(|(a, &b)| (b, a)).collect();
+        let mut bind_groups =
+            bind_groups.iter().map(|group| BindGroupDesc { label: Cow::Borrowed(*group), entries: Default::default() }).collect_vec();
+
         for module in &modules {
-            for binding in &module.bindings {
-                let index = *bind_group_index.entry(binding.0.as_ref().to_owned()).or_insert_with(|| {
-                    let group = binding.0.clone();
-                    let index = bind_groups.len();
-
-                    tracing::info!("Resolved bind group: {group}:{index}");
-
-                    bind_groups.push(BindGroupDesc { label: group, entries: Default::default() });
-                    index
-                });
+            for (group, binding) in &module.bindings {
+                let index =
+                    *bind_group_index.get(&**group).with_context(|| format!("Failed to resolve bind group: {group} in {}", module.name))?;
 
                 let desc = &mut bind_groups[index];
-                desc.entries.push(binding.1);
+                desc.entries.push(*binding);
             }
         }
 
@@ -280,7 +273,10 @@ impl Shader {
             .chain(bind_group_index.iter().map(|(name, &index)| (format!("#{name}"), (index as u32).to_string())))
             .unzip();
 
-        tracing::info!("Preprocessing shader using {patterns:?} => {replace_with:?}");
+        tracing::info!(
+            "Preprocessing shader using {}",
+            patterns.iter().zip_eq(&replace_with).map(|(a, b)| { format!("{a} => {b}") }).format("\n")
+        );
 
         // Collect the raw source code
         let source = {
@@ -297,44 +293,6 @@ impl Shader {
             AhoCorasick::new(patterns).replace_all(&source, &replace_with)
         };
 
-        // let mut source: String = modules
-        //     .by_ref()
-        //     .map(|module| {
-        //         for ident in module.idents.iter() {
-        //             match ident {
-        //                 ShaderModuleIdentifier::BindGroup(desc) => {
-        //                     // Allocate group
-        //                     let layout = desc.load(assets.clone());
-
-        //                     if idents.insert(desc.label.clone(), WgslValue::Int32(bind_group_layouts.len() as u32)).is_some() {
-        //                         panic!("Duplicate bind group {}", desc.label);
-        //                     }
-
-        //                     bind_group_layouts.push(layout);
-        //                     bind_group_labels.push(desc.label.to_string());
-        //                 }
-        //                 ShaderModuleIdentifier::Constant { name, value } => {
-        //                     if idents.insert(name.clone(), value.clone()).is_some() {
-        //                         panic!("Redefined constant {name}={value:?} in {}", module.label);
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //         module_names.push(&module.label);
-
-        //         let div = "--------------------------------";
-        //         let label = module.sanitized_label();
-        //         let source = &module.source;
-        //         format!("// {div}\n// @module: {label}\n// {div}\n{source}")
-        //     })
-        //     .join("\n\n");
-
-        // tracing::info!("Using modules: {module_names:#?}");
-
-        // for (key, value) in idents.iter() {
-        //     source = source.replace(&format!("#{key}"), &value.to_wgsl());
-        // }
-
         #[cfg(all(not(target_os = "unknown"), debug_assertions))]
         {
             let path = format!("tmp/{label}.wgsl");
@@ -346,22 +304,16 @@ impl Shader {
             .device
             .create_shader_module(wgpu::ShaderModuleDescriptor { label: Some(&label), source: wgpu::ShaderSource::Wgsl(source.into()) });
 
-        Arc::new(Self { module, bind_group_layouts, bind_group_index, label })
+        Ok(Arc::new(Self { module, bind_group_layouts, label }))
     }
 
-    pub fn ref_layouts(&self) -> Vec<&BindGroupLayout> {
-        self.bind_group_layouts.iter().map(|v| &**v).collect_vec()
-    }
+    #[inline]
     pub fn layouts(&self) -> &[Arc<BindGroupLayout>] {
         &self.bind_group_layouts
     }
 
-    pub fn get_bind_group_layout_by_name(&self, name: &str) -> Option<&BindGroupLayout> {
-        self.bind_group_index.get(name).map(|&v| &*self.bind_group_layouts[v])
-    }
-
-    pub fn get_bind_group_index_by_name(&self, name: &str) -> Option<u32> {
-        self.bind_group_index.get(name).map(|&v| v as _)
+    pub fn layout(&self, index: u32) -> Option<&BindGroupLayout> {
+        self.bind_group_layouts.get(index as usize).map(|v| &**v)
     }
 
     /// The wgpu shader module
@@ -371,13 +323,13 @@ impl Shader {
 
     pub fn to_pipeline(self: &Arc<Self>, gpu: &Gpu, info: GraphicsPipelineInfo) -> GraphicsPipeline {
         let layout = gpu.device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some(&format!("{}.layout", self.label)),
-            bind_group_layouts: &self.ref_layouts(),
+            label: Some(&self.label),
+            bind_group_layouts: &self.layouts().iter().map(|v| &**v).collect_vec(),
             push_constant_ranges: &[],
         });
 
         let pipeline = gpu.device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: Some(&format!("{}.pipeline", self.label)),
+            label: Some(&self.label),
             layout: Some(&layout),
             vertex: wgpu::VertexState { module: self.module(), entry_point: info.vs_main, buffers: &[] },
             primitive: wgpu::PrimitiveState {
@@ -397,13 +349,13 @@ impl Shader {
 
     pub fn to_compute_pipeline(self: &Arc<Self>, gpu: &Gpu, entry_point: &str) -> ComputePipeline {
         let layout = gpu.device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some(&format!("{}.compute_layout", self.label)),
-            bind_group_layouts: &self.ref_layouts(),
+            label: Some(&self.label),
+            bind_group_layouts: &self.layouts().iter().map(|v| &**v).collect_vec(),
             push_constant_ranges: &[],
         });
 
         let pipeline = gpu.device.create_compute_pipeline(&ComputePipelineDescriptor {
-            label: Some(&format!("{}.compute_pipeline", self.label)),
+            label: Some(&self.label),
             layout: Some(&layout),
             module: self.module(),
             entry_point,
@@ -440,6 +392,7 @@ impl<'a> Default for GraphicsPipelineInfo<'a> {
 
 pub type GraphicsPipeline = Pipeline<wgpu::RenderPipeline>;
 pub type ComputePipeline = Pipeline<wgpu::ComputePipeline>;
+
 pub struct Pipeline<P> {
     pipeline: P,
     shader: Arc<Shader>,
@@ -455,32 +408,6 @@ impl<P> Pipeline<P> {
     #[must_use]
     pub fn shader(&self) -> &Shader {
         self.shader.as_ref()
-    }
-}
-
-impl ComputePipeline {
-    /// Panics if a bind group does not exist
-    pub fn bind<'a>(&'a self, renderpass: &mut wgpu::ComputePass<'a>, name: &str, bind_group: &'a wgpu::BindGroup) {
-        let id = match self.shader.get_bind_group_index_by_name(name) {
-            Some(v) => v,
-            None => {
-                panic!("Missing bind group {name:?}");
-            }
-        };
-        renderpass.set_bind_group(id, bind_group, &[]);
-    }
-}
-
-impl GraphicsPipeline {
-    /// Panics if a bind group does not exist
-    pub fn bind<'a>(&'a self, renderpass: &mut wgpu::RenderPass<'a>, name: &str, bind_group: &'a wgpu::BindGroup) {
-        let id = match self.shader.get_bind_group_index_by_name(name) {
-            Some(v) => v,
-            None => {
-                panic!("Missing bind group {name:?}");
-            }
-        };
-        renderpass.set_bind_group(id, bind_group, &[]);
     }
 }
 

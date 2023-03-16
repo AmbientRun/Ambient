@@ -45,13 +45,15 @@ impl std::fmt::Debug for DecalShaderKey {
 impl SyncAssetKey<Arc<RendererShader>> for DecalShaderKey {
     fn load(&self, assets: AssetCache) -> Arc<RendererShader> {
         let id = format!("decal_shader_{}_{}", self.material_shader.id, self.lit);
-        let shader = Shader::from_modules(
+        let shader = Shader::new(
             &assets,
             id.clone(),
+            &[],
             &ShaderModule::new("decal_material", include_file!("decal.wgsl"))
                 .with_dependencies(get_forward_modules(&assets, self.shadow_cascades))
                 .with_dependency(self.material_shader.shader.clone()),
-        );
+        )
+        .unwrap();
 
         Arc::new(RendererShader {
             shader,

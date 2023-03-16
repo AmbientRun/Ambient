@@ -1,10 +1,13 @@
 use std::sync::Arc;
 
+use ambient_core::gpu_ecs::ENTITIES_BIND_GROUP;
 use ambient_gpu::shader_module::{Shader, ShaderModule};
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey},
     include_file,
 };
+
+use crate::{GLOBALS_BIND_GROUP, MATERIAL_BIND_GROUP, PRIMITIVES_BIND_GROUP, RESOURCES_BIND_GROUP};
 
 use super::{get_forward_modules, MaterialShader, RendererShader};
 
@@ -23,13 +26,15 @@ impl std::fmt::Debug for StandardShaderKey {
 impl SyncAssetKey<Arc<RendererShader>> for StandardShaderKey {
     fn load(&self, assets: AssetCache) -> Arc<RendererShader> {
         let id = format!("standard_shader_{}_{}", self.material_shader.id, self.lit);
-        let shader = Shader::from_modules(
+        let shader = Shader::new(
             &assets,
             id.clone(),
+            &[GLOBALS_BIND_GROUP, ENTITIES_BIND_GROUP, RESOURCES_BIND_GROUP, PRIMITIVES_BIND_GROUP, MATERIAL_BIND_GROUP],
             &ShaderModule::new("standard_material", include_file!("standard.wgsl"))
                 .with_dependencies(get_forward_modules(&assets, self.shadow_cascades))
                 .with_dependency(self.material_shader.shader.clone()),
-        );
+        )
+        .unwrap();
 
         Arc::new(RendererShader {
             shader,

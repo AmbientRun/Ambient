@@ -266,7 +266,7 @@ impl BrushCursorMaterial {
     }
 }
 impl Material for BrushCursorMaterial {
-    fn bind(&self) -> &BindGroup {
+    fn bind_group(&self) -> &BindGroup {
         &self.bind_group
     }
 

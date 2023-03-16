@@ -145,20 +145,24 @@ impl TransparentRenderer {
     }
 
     #[profiling::function]
-    pub fn render<'a>(&'a self, render_pass: &mut wgpu::RenderPass<'a>, binds: &[(&str, &'a BindGroup)]) {
+    pub fn render<'a>(&'a self, render_pass: &mut wgpu::RenderPass<'a>, bind_groups: &[&'a BindGroup]) {
         let mut is_bound = false;
         // TODO: keep track of the state to avoid state switches (same pipeline multiple times etc.)
         for (i, entry) in self.primitives.iter().enumerate() {
             if !is_bound {
-                for (name, group) in binds.iter().chain([(PRIMITIVES_BIND_GROUP, &self.primitives_bind_group)].iter()) {
-                    entry.shader.pipeline.bind(render_pass, name, group);
+                // for (i, bind_group) in [&self.primitives_bind_group].iter().chain(bind_groups).enumerate() {
+                for (i, bind_group) in bind_groups.iter().chain(&[&self.primitives_bind_group]).enumerate() {
+                    // for (name, group) in binds.iter().chain([(PRIMITIVES_BIND_GROUP, &self.primitives_bind_group)].iter()) {
+                    // entry.shader.pipeline.bind(render_pass, name, group);
+                    render_pass.set_bind_group(i as _, bind_group, &[]);
                     is_bound = true
                 }
             }
             let metadata = &entry.mesh_metadata;
             if metadata.index_count > 0 {
                 render_pass.set_pipeline(entry.shader.pipeline.pipeline());
-                entry.shader.pipeline.bind(render_pass, MATERIAL_BIND_GROUP, entry.material.bind());
+                render_pass.set_bind_group(bind_groups.len() as u32 + 1, entry.material.bind_group(), &[]);
+                // entry.shader.pipeline.bind(render_pass, MATERIAL_BIND_GROUP, entry.material.bind());
 
                 render_pass.draw_indexed(
                     metadata.index_offset..(metadata.index_offset + metadata.index_count),
@@ -168,6 +172,7 @@ impl TransparentRenderer {
             }
         }
     }
+
     fn create_primitives_bind_group(gpu: &Gpu, layout: &wgpu::BindGroupLayout, buffer: &wgpu::Buffer) -> wgpu::BindGroup {
         gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout,

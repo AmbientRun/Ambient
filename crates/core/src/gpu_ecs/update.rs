@@ -8,6 +8,7 @@ use ambient_gpu::{
 };
 use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use glam::{uvec4, UVec4};
+use itertools::Itertools;
 use wgpu::BindGroupLayoutEntry;
 
 use super::{gpu_world, GpuWorldShaderModuleKey, ENTITIES_BIND_GROUP};
@@ -28,6 +29,7 @@ impl GpuWorldUpdater {
         label: String,
         filter: ArchetypeFilter,
         mut modules: Vec<Arc<ShaderModule>>,
+        bind_groups: &[&str],
         body: impl Into<String>,
     ) -> Self {
         modules.insert(0, GpuWorldShaderModuleKey { read_only: false }.get(&assets));
@@ -53,7 +55,13 @@ impl GpuWorldUpdater {
 
         let gpu = GpuKey.get(&assets);
 
-        let shader = Shader::from_modules(&assets, format!("GpuWorldUpdate.{label}"), &module);
+        let shader = Shader::new(
+            &assets,
+            format!("GpuWorldUpdate.{label}"),
+            &[GPU_ECS_UPDATE_BIND_GROUP, ENTITIES_BIND_GROUP].into_iter().chain(bind_groups.iter().copied()).collect_vec(),
+            &module,
+        )
+        .unwrap();
         let pipeline = shader.to_compute_pipeline(&gpu, "main");
 
         Self {
@@ -70,13 +78,13 @@ impl GpuWorldUpdater {
         }
     }
 
-    pub fn run(&mut self, world: &World, binding_context: &[(&str, &wgpu::BindGroup)]) {
+    pub fn run(&mut self, world: &World, bind_groups: &[&wgpu::BindGroup]) {
         let mut encoder = self.gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-        self.run_with_encoder(&mut encoder, world, binding_context);
+        self.run_with_encoder(&mut encoder, world, bind_groups);
         self.gpu.queue.submit(Some(encoder.finish()));
     }
 
-    pub fn run_with_encoder(&mut self, encoder: &mut wgpu::CommandEncoder, world: &World, binding_context: &[(&str, &wgpu::BindGroup)]) {
+    pub fn run_with_encoder(&mut self, encoder: &mut wgpu::CommandEncoder, world: &World, bind_groups: &[&wgpu::BindGroup]) {
         let mut chunks = Vec::new();
         for arch in self.filter.iter_archetypes(world) {
             if arch.entity_count() == 0 {
@@ -87,6 +95,7 @@ impl GpuWorldUpdater {
                 chunks.push(uvec4(arch.id as u32, i as u32 * GPU_WORLD_UPDATE_CHUNK_SIZE, arch.entity_count() as u32, 0));
             }
         }
+
         if chunks.is_empty() {
             return;
         }
@@ -95,12 +104,12 @@ impl GpuWorldUpdater {
 
         let bind_group = self.gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: None,
-            layout: self.pipeline.shader().get_bind_group_layout_by_name(GPU_ECS_UPDATE_BIND_GROUP).unwrap(),
+            layout: self.pipeline.shader().layout(0).unwrap(),
             entries: &[wgpu::BindGroupEntry { binding: 0, resource: self.chunks.buffer().as_entire_binding() }],
         });
 
         let gpu_world = world.resource(gpu_world());
-        let gpu_world_bind_group = {
+        let entities_bind_group = {
             let gpu_world = gpu_world.lock();
             gpu_world.create_bind_group(false)
         };
@@ -108,12 +117,8 @@ impl GpuWorldUpdater {
         let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: Some("GpuWorldUpdate") });
         cpass.set_pipeline(self.pipeline.pipeline());
 
-        for (name, bind_group) in
-            binding_context.iter().chain([&(ENTITIES_BIND_GROUP, &gpu_world_bind_group), &(GPU_ECS_UPDATE_BIND_GROUP, &bind_group)])
-        {
-            let index = self.pipeline.get_bind_group_index_by_name(name).unwrap();
-
-            cpass.set_bind_group(index, bind_group, &[]);
+        for (i, bind_group) in [&bind_group, &entities_bind_group].iter().chain(bind_groups).enumerate() {
+            cpass.set_bind_group(i as _, bind_group, &[]);
         }
 
         debug_assert_eq!(GPU_WORLD_UPDATE_CHUNK_SIZE % GPU_ECS_WORKGROUP_SIZE, 0);

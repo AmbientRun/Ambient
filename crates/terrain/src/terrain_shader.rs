@@ -131,7 +131,7 @@ impl SyncAssetKey<Arc<RendererShader>> for TerrainShaderKey {
             label: MATERIAL_BIND_GROUP.into(),
         };
 
-        let shader = Shader::from_modules(
+        let shader = Shader::new(
             &assets,
             "terrrain shader",
             &ShaderModule::new("Terrain", include_file!("./terrain.wgsl"))
@@ -252,7 +252,7 @@ impl Material for TerrainMaterial {
         let params = self.params;
         self.gpu.queue.write_buffer(&self.buffer, 0, bytemuck::cast_slice(&[params]));
     }
-    fn bind(&self) -> &BindGroup {
+    fn bind_group(&self) -> &BindGroup {
         &self.bind_group
     }
 

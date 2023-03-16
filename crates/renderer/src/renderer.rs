@@ -290,11 +290,7 @@ impl Renderer {
             &self.solids_frame,
         );
 
-        let binds = [
-            (RESOURCES_BIND_GROUP, &mesh_data_bind_group),
-            (ENTITIES_BIND_GROUP, &entities_bind_group),
-            (GLOBALS_BIND_GROUP, &forward_globals_bind_group),
-        ];
+        let bind_groups = [&forward_globals_bind_group, &entities_bind_group, &mesh_data_bind_group];
 
         {
             profiling::scope!("Forward");
@@ -330,7 +326,7 @@ impl Renderer {
             });
             render_pass.set_index_buffer(mesh_buffer.index_buffer.buffer().slice(..), wgpu::IndexFormat::Uint32);
 
-            self.forward.render(&mut render_pass, &self.forward_collect_state, &binds);
+            self.forward.render(&mut render_pass, &self.forward_collect_state, &bind_groups);
             {
                 profiling::scope!("Drop render pass");
                 drop(render_pass);
@@ -348,7 +344,7 @@ impl Renderer {
         }
 
         {
-            let binds = [(GLOBALS_BIND_GROUP, &forward_globals_bind_group)];
+            let binds = [&forward_globals_bind_group];
 
             self.overlays.render(encoder, &target, &binds, &mesh_buffer);
         }
@@ -389,7 +385,7 @@ impl Renderer {
 
             render_pass.set_index_buffer(mesh_buffer.index_buffer.buffer().slice(..), wgpu::IndexFormat::Uint32);
 
-            self.transparent.render(&mut render_pass, &binds);
+            self.transparent.render(&mut render_pass, &bind_groups);
 
             {
                 profiling::scope!("Drop render pass");
@@ -407,7 +403,7 @@ impl Renderer {
             );
         }
 
-        self.outlines.render(world, encoder, post_submit, &target, &binds, &mesh_buffer);
+        self.outlines.render(world, encoder, post_submit, &target, &bind_groups, &mesh_buffer);
     }
 
     pub fn dump_to_tmp_file(&self) {
@@ -471,7 +467,7 @@ fn resource_storage_entry(binding: u32) -> BindGroupLayoutEntry {
     }
 }
 
-pub(crate) fn get_mesh_data_layout() -> BindGroupDesc {
+pub(crate) fn get_mesh_data_layout() -> BindGroupDesc<'static> {
     BindGroupDesc {
         entries: vec![
             // resource_storage_entry(MESH_METADATA_BINDING),
@@ -484,7 +480,7 @@ pub(crate) fn get_mesh_data_layout() -> BindGroupDesc {
     }
 }
 
-pub(crate) fn get_mesh_meta_layout() -> BindGroupDesc {
+pub(crate) fn get_mesh_meta_layout() -> BindGroupDesc<'static> {
     BindGroupDesc { entries: vec![resource_storage_entry(MESH_METADATA_BINDING)], label: RESOURCES_BIND_GROUP.into() }
 }
 

@@ -19,7 +19,7 @@ use ambient_std::{
     shapes::Plane,
 };
 use glam::{Mat4, UVec3, Vec2, Vec3, Vec3Swizzles, Vec4};
-use wgpu::{BindGroupLayoutEntry, BindingType, BufferBindingType, ShaderStages};
+use wgpu::{BindGroupLayout, BindGroupLayoutEntry, BindingType, BufferBindingType, ShaderStages};
 
 use crate::{get_sun_light_direction, RendererConfig};
 
@@ -76,9 +76,10 @@ pub struct Culling {
     config: RendererConfig,
     updater: GpuWorldUpdater,
     params: TypedBuffer<CullingParams>,
+    layout: Arc<BindGroupLayout>,
 }
 
-fn get_culling_layout() -> BindGroupDesc {
+fn get_culling_layout() -> BindGroupDesc<'static> {
     BindGroupDesc {
         label: CULLING_BIND_GROUP.into(),
         entries: vec![BindGroupLayoutEntry {
@@ -104,6 +105,7 @@ impl Culling {
                 "Culling".to_string(),
                 ArchetypeFilter::new().incl(world_bounding_sphere()).incl(config.scene),
                 vec![Arc::new(module)],
+                &[CULLING_BIND_GROUP],
                 "update(entity_loc);",
             ),
             params: TypedBuffer::new(
@@ -114,6 +116,7 @@ impl Culling {
                 wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::UNIFORM,
             ),
             config,
+            layout: get_culling_layout().get(assets),
         }
     }
 
@@ -147,10 +150,10 @@ impl Culling {
 
         let bind_group = self.updater.gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: None,
-            layout: self.updater.pipeline.shader().get_bind_group_layout_by_name(CULLING_BIND_GROUP).unwrap(),
+            layout: &self.layout,
             entries: &[wgpu::BindGroupEntry { binding: 0, resource: self.params.buffer().as_entire_binding() }],
         });
 
-        self.updater.run_with_encoder(encoder, world, &[(CULLING_BIND_GROUP, &bind_group)]);
+        self.updater.run_with_encoder(encoder, world, &[&bind_group]);
     }
 }

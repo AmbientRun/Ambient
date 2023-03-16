@@ -162,9 +162,10 @@ impl RendererCollect {
         };
 
         let layout = layout_desc.load(assets.clone());
-        let shader = Shader::from_modules(
+        let shader = Shader::new(
             assets,
             "collect",
+            &[ENTITIES_BIND_GROUP, RESOURCES_BIND_GROUP, "RendererCollect.layout"],
             &ShaderModule::new("RendererCollect", include_file!("collect.wgsl"))
                 .with_ident(ShaderIdent::constant("COLLECT_WORKGROUP_SIZE", COLLECT_WORKGROUP_SIZE))
                 .with_ident(ShaderIdent::constant("COLLECT_CHUNK_SIZE", COLLECT_CHUNK_SIZE))
@@ -172,9 +173,11 @@ impl RendererCollect {
                 .with_dependency(get_defs_module())
                 .with_dependency(get_mesh_meta_module())
                 .with_dependency(GpuWorldShaderModuleKey { read_only: true }.get(assets)),
-        );
+        )
+        .unwrap();
 
         let pipeline = shader.to_compute_pipeline(&gpu, "main");
+
         Self { gpu, pipeline, layout, assets: assets.clone() }
     }
 
@@ -217,11 +220,10 @@ impl RendererCollect {
             let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: Some("Collect") });
             cpass.set_pipeline(self.pipeline.pipeline());
 
-            for (name, group) in [(RESOURCES_BIND_GROUP, mesh_meta_bind_group), (ENTITIES_BIND_GROUP, entities_bind_group)] {
-                let id = self.pipeline.get_bind_group_index_by_name(name).unwrap();
-                cpass.set_bind_group(id, group, &[]);
+            for (i, bind_group) in [entities_bind_group, mesh_meta_bind_group, &bind_group].iter().enumerate() {
+                cpass.set_bind_group(i as _, bind_group, &[]);
             }
-            cpass.set_bind_group(2, &bind_group, &[]);
+
             let count = (primitives_count as f32 / COLLECT_WORKGROUP_SIZE as f32).ceil() as u32;
             let width = if count < COLLECT_CHUNK_SIZE { count } else { COLLECT_CHUNK_SIZE };
             let height = (count as f32 / COLLECT_CHUNK_SIZE as f32).ceil() as u32;
