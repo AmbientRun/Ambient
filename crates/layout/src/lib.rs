@@ -2,7 +2,7 @@ use ambient_core::{
     gpu_components,
     gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent},
     hierarchy::{children, parent},
-    transform::{local_to_parent, mesh_to_local, translation},
+    transform::{local_to_parent, local_to_world, mesh_to_local, translation},
 };
 use ambient_ecs::{components, query, query_mut, Debuggable, Description, DynSystem, EntityId, Name, Networked, Store, SystemGroup, World};
 use ambient_input::picking::mouse_pickable;
@@ -37,6 +37,8 @@ components!("ui", {
     space_between_items: f32,
     @[Debuggable, Networked, Store, Name["Is book file"], Description["This is a file in a `layout_bookcase`."]]
     is_book_file: (),
+    @[Debuggable, Networked, Store, Name["Screen"], Description["This entity will be treated as a screen. Used by the Screen ui component."]]
+    screen: (),
     @[Debuggable, Networked, Store, Name["GPU UI size"], Description["Upload the width and height of this UI element to the GPU."]]
     gpu_ui_size: Vec4,
 });
@@ -212,6 +214,7 @@ pub fn layout_systems() -> SystemGroup {
                     }
                 },
             ),
+            Box::new(screens_systems()),
             node_clickable_system(),
             query_mut((gpu_ui_size(),), (width().changed(), height().changed())).to_system(|q, world, qs, _| {
                 for (_, (size,), (width, height)) in q.iter(world, qs) {
@@ -537,4 +540,21 @@ fn node_clickable_system() -> DynSystem {
             pickable.max = vec3(width, height, 0.0001);
         }
     })
+}
+
+fn screens_systems() -> SystemGroup {
+    SystemGroup::new(
+        "ui/screens",
+        vec![query((local_to_world().changed(), children().changed())).incl(screen()).to_system(|q, world, qs, _| {
+            for (_, (ltw, children)) in q.collect_cloned(world, qs) {
+                let (_, _, pos) = ltw.to_scale_rotation_translation();
+                for c in children {
+                    if let Ok(p) = world.get_mut(c, translation()) {
+                        p.x = -pos.x;
+                        p.y = -pos.y;
+                    }
+                }
+            }
+        })],
+    )
 }

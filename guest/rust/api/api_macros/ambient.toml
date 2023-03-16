@@ -1137,6 +1137,12 @@ name = "Rect"
 description = "If attached to an entity, the entity will be converted to a UI rectangle, with optionally rounded corners and borders."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::ui::screen"]
+type = "Empty"
+name = "Screen"
+description = "This entity will be treated as a screen. Used by the Screen ui component."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::ui::space_between_items"]
 type = "F32"
 name = "Space between items"

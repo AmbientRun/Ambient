@@ -20,6 +20,7 @@ pub mod clickarea;
 pub mod default_theme;
 pub mod dropdown;
 pub mod layout;
+pub mod screens;
 pub mod tabs;
 pub mod text;
 pub mod text_input;

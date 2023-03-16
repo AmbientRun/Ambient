@@ -29,7 +29,6 @@ mod image;
 mod input;
 mod prompt;
 
-mod screens;
 mod select;
 
 mod throbber;
@@ -70,14 +69,10 @@ pub fn init_all_components() {
     layout::init_gpu_components();
     rect::init_components();
     text::init_components();
-    screens::init_components();
 }
 
 pub fn systems() -> SystemGroup {
-    SystemGroup::new(
-        "ui",
-        vec![Box::new(rect::systems()), Box::new(text::systems(true)), Box::new(layout::layout_systems()), Box::new(screens::systems())],
-    )
+    SystemGroup::new("ui", vec![Box::new(rect::systems()), Box::new(text::systems(true)), Box::new(layout::layout_systems())])
 }
 
 #[derive(Debug, Clone)]

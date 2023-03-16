@@ -820,6 +820,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
+name = "screens"
+version = "0.2.0-dev"
+dependencies = [
+ "ambient_api",
+ "ambient_cb",
+ "ambient_element",
+ "ambient_friendly_id",
+ "ambient_guest_bridge",
+ "ambient_ui_components",
+]
+
+[[package]]
 name = "serde"
 version = "1.0.152"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -21,7 +21,7 @@
             },
             "args": [
                 "run",
-                "guest/rust/examples/ui/input",
+                "guest/rust/examples/ui/screens",
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [
