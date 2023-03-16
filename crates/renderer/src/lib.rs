@@ -13,7 +13,7 @@ use ambient_ecs::{
 };
 use ambient_gpu::{
     mesh_buffer::GpuMesh,
-    shader_module::{BindGroupDesc, Shader, ShaderModule, ShaderModuleIdentifier},
+    shader_module::{BindGroupDesc, Shader, ShaderIdent, ShaderModule},
     wgsl_utils::wgsl_interpolate,
 };
 use ambient_std::{asset_cache::*, asset_url::AbsAssetUrl, cb, include_file, Cb};
@@ -309,7 +309,7 @@ pub fn get_defs_module() -> Arc<ShaderModule> {
 pub fn get_mesh_meta_module() -> Arc<ShaderModule> {
     Arc::new(
         ShaderModule::new("mesh_meta", include_file!("mesh_meta.wgsl"))
-            .with_ident(ShaderModuleIdentifier::constant("MESH_METADATA_BINDING", MESH_METADATA_BINDING))
+            .with_ident(ShaderIdent::constant("MESH_METADATA_BINDING", MESH_METADATA_BINDING))
             .with_binding_desc(get_mesh_meta_layout()),
     )
 }
@@ -317,10 +317,10 @@ pub fn get_mesh_meta_module() -> Arc<ShaderModule> {
 pub fn get_mesh_data_module() -> Arc<ShaderModule> {
     Arc::new(
         ShaderModule::new("mesh_data", include_file!("mesh_data.wgsl"))
-            .with_ident(ShaderModuleIdentifier::constant("MESH_BASE_BINDING", MESH_BASE_BINDING))
-            .with_ident(ShaderModuleIdentifier::constant("MESH_JOINT_BINDING", MESH_JOINT_BINDING))
-            .with_ident(ShaderModuleIdentifier::constant("MESH_WEIGHT_BINDING", MESH_WEIGHT_BINDING))
-            .with_ident(ShaderModuleIdentifier::constant("SKINS_BINDING", SKINS_BINDING))
+            .with_ident(ShaderIdent::constant("MESH_BASE_BINDING", MESH_BASE_BINDING))
+            .with_ident(ShaderIdent::constant("MESH_JOINT_BINDING", MESH_JOINT_BINDING))
+            .with_ident(ShaderIdent::constant("MESH_WEIGHT_BINDING", MESH_WEIGHT_BINDING))
+            .with_ident(ShaderIdent::constant("SKINS_BINDING", SKINS_BINDING))
             .with_binding_desc(get_mesh_data_layout())
             .with_dependency(get_mesh_meta_module()),
     )
@@ -371,7 +371,7 @@ pub fn get_common_module(_: &AssetCache) -> Arc<ShaderModule> {
 pub fn get_globals_module(_assets: &AssetCache, shadow_cascades: u32) -> Arc<ShaderModule> {
     Arc::new(
         ShaderModule::new("globals", include_file!("globals.wgsl"))
-            .with_ident(ShaderModuleIdentifier::constant("SHADOW_CASCADES", shadow_cascades))
+            .with_ident(ShaderIdent::constant("SHADOW_CASCADES", shadow_cascades))
             .with_binding_desc(globals_layout()),
     )
 }

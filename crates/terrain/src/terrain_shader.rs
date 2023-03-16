@@ -7,7 +7,7 @@ use ambient_ecs::World;
 use ambient_editor_derive::ElementEditor;
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
-    shader_module::{BindGroupDesc, Shader, ShaderModule},
+    shader_module::{BindGroupDesc, Shader, ShaderIdent, ShaderModule, WgslValue},
     std_assets::DefaultSamplerKey,
     texture::{Texture, TextureView},
     texture_loaders::TextureArrayFromUrls,
@@ -23,6 +23,8 @@ use futures::future::join_all;
 use glam::{UVec2, Vec3};
 use serde::{Deserialize, Serialize};
 use wgpu::{util::DeviceExt, BindGroup};
+
+use crate::{wgsl_terrain_consts, TerrainLayers, TERRAIN_BASE};
 
 use super::wgsl_terrain_preprocess;
 
@@ -132,11 +134,24 @@ impl SyncAssetKey<Arc<RendererShader>> for TerrainShaderKey {
         let shader = Shader::from_modules(
             &assets,
             "terrrain shader",
-            get_forward_modules(&assets, self.shadow_cascades).iter().chain([&ShaderModule::new(
-                "Terrain",
-                wgsl_terrain_preprocess(include_file!("terrain.wgsl")),
-                vec![layout.into()],
-            )]),
+            &ShaderModule::new("Terrain", include_file!("./terrain.wgsl"))
+                .with_binding_desc(layout)
+                .with_ident(ShaderIdent::constant("TERRAIN_FUNCS", WgslValue::Raw(include_str!("terrain_funcs.wgsl").into())))
+                .with_ident(ShaderIdent::constant("GET_HARDNESS", WgslValue::Raw(include_str!("brushes/get_hardness.wgsl").into())))
+                .with_ident(ShaderIdent::constant("ROCK_LAYER", TerrainLayers::Rock as u32))
+                .with_ident(ShaderIdent::constant("SOIL_LAYER", TerrainLayers::Soil as u32))
+                .with_ident(ShaderIdent::constant("SEDIMENT_LAYER", TerrainLayers::Sediment as u32))
+                .with_ident(ShaderIdent::constant("WATER_LAYER", TerrainLayers::Water as u32))
+                .with_ident(ShaderIdent::constant("WATER_OUTFLOW_L_LAYER", TerrainLayers::WaterOutflowL as u32))
+                .with_ident(ShaderIdent::constant("WATER_OUTFLOW_R_LAYER", TerrainLayers::WaterOutflowR as u32))
+                .with_ident(ShaderIdent::constant("WATER_OUTFLOW_T_LAYER", TerrainLayers::WaterOutflowT as u32))
+                .with_ident(ShaderIdent::constant("WATER_OUTFLOW_B_LAYER", TerrainLayers::WaterOutflowB as u32))
+                .with_ident(ShaderIdent::constant("WATER_VELOCITY_X_LAYER", TerrainLayers::WaterVelocityX as u32))
+                .with_ident(ShaderIdent::constant("WATER_VELOCITY_Y_LAYER", TerrainLayers::WaterVelocityY as u32))
+                .with_ident(ShaderIdent::constant("HARDNESS_LAYER", TerrainLayers::Hardness as u32))
+                .with_ident(ShaderIdent::constant("HARDNESS_STRATA_AMOUNT_LAYER", TerrainLayers::HardnessStrataAmount as u32))
+                .with_ident(ShaderIdent::constant("#HARDNESS_STRATA_WAVELENGTH_LAYER", TerrainLayers::HardnessStrataWavelength as u32))
+                .with_ident(ShaderIdent::constant("#TERRAIN_BASE", TERRAIN_BASE)),
         );
 
         Arc::new(RendererShader {
@@ -183,7 +198,9 @@ impl TerrainMaterial {
         material_def: TerrainMaterialDef,
     ) -> Self {
         let gpu = GpuKey.get(&assets);
-        let layout = TerrainShaderKey { shadow_cascades: 1 }.get(&assets).material_layout().clone();
+        let shader = TerrainShaderKey { shadow_cascades: 1 }.get(&assets);
+        let layout = shader.material_layout().clone();
+
         let params_buffer = gpu.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("TerrainMaterial.params_buffer"),
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,

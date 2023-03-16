@@ -5,7 +5,7 @@ use ambient_ecs::{EntityId, World};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     multi_buffer::TypedMultiBuffer,
-    shader_module::{BindGroupDesc, ComputePipeline, Shader, ShaderModule, ShaderModuleIdentifier},
+    shader_module::{BindGroupDesc, ComputePipeline, Shader, ShaderIdent, ShaderModule},
     typed_buffer::TypedBuffer,
 };
 use ambient_std::{
@@ -166,8 +166,8 @@ impl RendererCollect {
             assets,
             "collect",
             &ShaderModule::new("RendererCollect", include_file!("collect.wgsl"))
-                .with_ident(ShaderModuleIdentifier::constant("COLLECT_WORKGROUP_SIZE", COLLECT_WORKGROUP_SIZE))
-                .with_ident(ShaderModuleIdentifier::constant("COLLECT_CHUNK_SIZE", COLLECT_CHUNK_SIZE))
+                .with_ident(ShaderIdent::constant("COLLECT_WORKGROUP_SIZE", COLLECT_WORKGROUP_SIZE))
+                .with_ident(ShaderIdent::constant("COLLECT_CHUNK_SIZE", COLLECT_CHUNK_SIZE))
                 .with_binding_desc(layout_desc)
                 .with_dependency(get_defs_module())
                 .with_dependency(get_mesh_meta_module())
@@ -195,6 +195,7 @@ impl RendererCollect {
         if primitives_count == 0 {
             return;
         }
+
         output.commands.resize(primitives_count as u64, true);
         let counts = vec![0; material_layouts.len()];
         output.counts.fill(&counts, |_| {});

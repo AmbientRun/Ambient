@@ -418,6 +418,7 @@ pub fn wgsl_terrain_preprocess(source: impl Into<String>) -> String {
         .replace("#TERRAIN_FUNCS", &wgsl_terrain_consts(include_str!("terrain_funcs.wgsl")))
         .replace("#GET_HARDNESS", &wgsl_terrain_consts(include_str!("brushes/get_hardness.wgsl")))
 }
+
 fn wgsl_terrain_consts(source: impl Into<String>) -> String {
     let source: String = source.into();
     source

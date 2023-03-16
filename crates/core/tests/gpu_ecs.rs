@@ -11,7 +11,6 @@ use ambient_gpu::{
 };
 use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use glam::{vec4, Vec4};
-use maplit::hashmap;
 use parking_lot::Mutex;
 use tokio::runtime::Runtime;
 
@@ -20,6 +19,7 @@ components!("gpu", {
     carrot: Vec4,
     tomato: Vec4,
 });
+
 gpu_components! {
     carrot() => carrot: GpuComponentFormat::Vec4,
     tomato() => tomato: GpuComponentFormat::Vec4,
@@ -31,6 +31,7 @@ struct TestCommon {
     gpu_world: Arc<Mutex<GpuWorld>>,
     sync: SystemGroup<GpuWorldSyncEvent>,
 }
+
 impl TestCommon {
     async fn new() -> Self {
         ambient_core::init_all_components();
@@ -167,6 +168,6 @@ async fn gpu_update_with_gpu_ecs_update() {
         vec![],
         "set_entity_carrot(entity_loc, vec4<f32>(1.));".to_string(),
     );
-    update.run(&test.world, hashmap! {});
+    update.run(&test.world, &[]);
     assert_eq!(test.get_gpu_component(a, carrot()).await, vec4(1., 1., 1., 1.));
 }

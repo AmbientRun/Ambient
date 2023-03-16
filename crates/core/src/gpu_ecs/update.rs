@@ -3,7 +3,7 @@ use std::{collections::HashMap, sync::Arc};
 use ambient_ecs::{ArchetypeFilter, World};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
-    shader_module::{BindGroupDesc, ComputePipeline, Shader, ShaderModule, ShaderModuleIdentifier},
+    shader_module::{BindGroupDesc, ComputePipeline, Shader, ShaderIdent, ShaderModule},
     typed_buffer::TypedBuffer,
 };
 use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
@@ -46,9 +46,9 @@ impl GpuWorldUpdater {
                     count: None,
                 },
             )
-            .with_ident(ShaderModuleIdentifier::raw("UPDATE_BODY", body.into()))
-            .with_ident(ShaderModuleIdentifier::constant("GPU_WORLD_UPDATE_CHUNK_SIZE", GPU_WORLD_UPDATE_CHUNK_SIZE))
-            .with_ident(ShaderModuleIdentifier::constant("GPU_ECS_WORKGROUP_SIZE", GPU_ECS_WORKGROUP_SIZE))
+            .with_ident(ShaderIdent::raw("UPDATE_BODY", body.into()))
+            .with_ident(ShaderIdent::constant("GPU_WORLD_UPDATE_CHUNK_SIZE", GPU_WORLD_UPDATE_CHUNK_SIZE))
+            .with_ident(ShaderIdent::constant("GPU_ECS_WORKGROUP_SIZE", GPU_ECS_WORKGROUP_SIZE))
             .with_dependencies(modules);
 
         let gpu = GpuKey.get(&assets);

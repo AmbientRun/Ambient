@@ -142,6 +142,7 @@ pub struct Renderer {
     pub shader_debug_params: ShaderDebugParams,
     resources_layout: Arc<BindGroupLayout>,
     mesh_meta_layout: Arc<BindGroupLayout>,
+
     culling: Culling,
     pub shadows: Option<ShadowsRenderer>,
     forward_globals: ForwardGlobals,

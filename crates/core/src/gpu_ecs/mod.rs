@@ -13,7 +13,7 @@ use parking_lot::Mutex;
 mod component;
 mod sync;
 mod update;
-use ambient_gpu::{gpu::GpuKey, shader_module::BindGroupDesc};
+use ambient_gpu::gpu::GpuKey;
 use ambient_std::asset_cache::SyncAssetKeyExt;
 pub use component::*;
 pub use sync::*;

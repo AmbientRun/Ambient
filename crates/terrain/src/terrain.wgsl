@@ -116,7 +116,7 @@ fn vs_main(@builtin(instance_index) instance_index: u32, @builtin(vertex_index) 
     // This is only "exact" (texel -> vertex) on lod0, on higher lods it samples between texels
     out.texcoord = (blended_xy - terrain_params.heightmap_position.xy + 0.5) / heightmap_size;
     var height = 0.;
-    for (var i=0; i < 2; i = i + 1) {
+    for (var i = 0; i < 2; i = i + 1) {
         height = height + textureSampleLevel(heightmap, heightmap_sampler, out.texcoord, i, 0.).r;
     }
 
@@ -133,7 +133,7 @@ fn fs_shadow_main(in: VertexOutput) {
 }
 
 fn maybe_rot_45deg(v: vec2<f32>, rot: bool) -> vec2<f32> {
-    if (rot) {
+    if rot {
         return vec2<f32>(
             // (v.x - v.y) / sqrt(2.),
             // (v.y + v.x) / sqrt(2.)
@@ -190,9 +190,9 @@ fn triplanar_sample(p: vec3<f32>, normal: vec3<f32>, terrain_sample: TerrainTrip
 #TERRAIN_FUNCS
 
 fn get_hardness_sampled(tc: vec2<f32>, height: f32) -> f32 {
-    let hardness = textureSampleLevel(heightmap, heightmap_sampler, tc, #HARDNESS_LAYER, 0.).r;
-    let amount = textureSampleLevel(heightmap, heightmap_sampler, tc, #HARDNESS_STRATA_AMOUNT_LAYER, 0.).r;
-    let wavelength = textureSampleLevel(heightmap, heightmap_sampler, tc, #HARDNESS_STRATA_WAVELENGTH_LAYER, 0.).r;
+    let hardness = textureSampleLevel(heightmap, heightmap_sampler, tc, # HARDNESS_LAYER, 0.).r;
+    let amount = textureSampleLevel(heightmap, heightmap_sampler, tc, # HARDNESS_STRATA_AMOUNT_LAYER, 0.).r;
+    let wavelength = textureSampleLevel(heightmap, heightmap_sampler, tc, # HARDNESS_STRATA_WAVELENGTH_LAYER, 0.).r;
     return hardness_calc(hardness, amount, wavelength, height);
 }
 
@@ -213,13 +213,10 @@ fn fs_forward_main(in: VertexOutput) -> MainFsOut {
     let bitangent = cross(normal, tangent);
     let normal_mat = mat3x3<f32>(tangent, bitangent, normal);
 
-    let soil_amount = textureSampleLevel(heightmap, heightmap_sampler, in.texcoord, #SOIL_LAYER, 0.).r;
+    let soil_amount = textureSampleLevel(heightmap, heightmap_sampler, in.texcoord, # SOIL_LAYER, 0.).r;
     let texture_variation = textureSample(noise_texture, texture_sampler, in.world_position.xy / terrain_mat_def.settings.variation_texture_scale).r;
     let hardness = get_hardness_sampled(in.texcoord, in.world_position.z);
-    let texture_variation = interpolate_clamped_1_1(texture_variation,
-        0.5 - terrain_mat_def.settings.variation_gradient / 2.,
-        0.5 + terrain_mat_def.settings.variation_gradient / 2.,
-        0., 1.);
+    let texture_variation = interpolate_clamped_1_1(texture_variation, 0.5 - terrain_mat_def.settings.variation_gradient / 2., 0.5 + terrain_mat_def.settings.variation_gradient / 2., 0., 1.);
 
     let height_over_ocean = in.world_position.z;
     let beach_amount = smoothstep(5., 1., height_over_ocean);
@@ -245,17 +242,13 @@ fn fs_forward_main(in: VertexOutput) -> MainFsOut {
     let rock = mix_sample(soft_rock, hard_rock, hardness);
     var forest_floor = mix_sample(forest_floor1, forest_floor2, texture_variation);
     var grass = mix_sample(grass1, grass2, texture_variation);
-    var soil = mix_sample(grass, forest_floor, interpolate_clamped_1_1(soil_amount,
-        terrain_mat_def.settings.grass_depth - terrain_mat_def.settings.grass_gradient,
-        terrain_mat_def.settings.grass_depth + terrain_mat_def.settings.grass_gradient,
-        0., 1.));
+    var soil = mix_sample(grass, forest_floor, interpolate_clamped_1_1(soil_amount, terrain_mat_def.settings.grass_depth - terrain_mat_def.settings.grass_gradient, terrain_mat_def.settings.grass_depth + terrain_mat_def.settings.grass_gradient, 0., 1.));
 
     let rock_soil = mix_sample(rock, soil, interpolate_clamped_1_1(soil_amount, 0., terrain_mat_def.settings.rock_soil_gradient, 0., 1.));
 
 
     let beach_noise = textureSample(noise_texture, texture_sampler, in.world_position.xy / terrain_mat_def.settings.beach_noise_scale).r;
-    let rock_soil_sand = mix_sample(sand, rock_soil, smoothstep(beach_amount - terrain_mat_def.settings.beach_gradient, beach_amount,
-        pow(beach_noise, terrain_mat_def.settings.beach_noise_steepness)));
+    let rock_soil_sand = mix_sample(sand, rock_soil, smoothstep(beach_amount - terrain_mat_def.settings.beach_gradient, beach_amount, pow(beach_noise, terrain_mat_def.settings.beach_noise_steepness)));
     material.base_color = rock_soil_sand.color;
 
     // let z_color = textureSample(surface_color_2k, texture_sampler, in.world_position.xy / 2., 0).rgb;

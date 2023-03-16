@@ -71,12 +71,12 @@ impl From<u64> for WgslValue {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ShaderModuleIdentifier {
+pub struct ShaderIdent {
     name: CowStr,
     value: WgslValue,
 }
 
-impl ShaderModuleIdentifier {
+impl ShaderIdent {
     /// Shortcut for unescaped text replacement
     pub fn raw(name: impl Into<CowStr>, value: impl Into<CowStr>) -> Self {
         Self { name: name.into(), value: WgslValue::Raw(value.into()) }
@@ -111,7 +111,7 @@ pub struct ShaderModule {
     pub dependencies: Vec<Arc<ShaderModule>>,
 
     // Use the label to preprocess constants
-    pub idents: Vec<ShaderModuleIdentifier>,
+    pub idents: Vec<ShaderIdent>,
     bindings: Vec<BindingEntry>,
 }
 
@@ -126,7 +126,7 @@ impl ShaderModule {
         }
     }
 
-    pub fn with_ident(mut self, ident: ShaderModuleIdentifier) -> Self {
+    pub fn with_ident(mut self, ident: ShaderIdent) -> Self {
         self.idents.push(ident);
         self
     }
@@ -277,7 +277,7 @@ impl Shader {
         // Efficiently replace all identifiers
         let (patterns, replace_with): (Vec<_>, Vec<_>) = modules
             .iter()
-            .flat_map(|v| v.idents.iter().map(|ShaderModuleIdentifier { name, value }| (format!("#{name}"), value.to_wgsl())))
+            .flat_map(|v| v.idents.iter().map(|ShaderIdent { name, value }| (format!("#{name}"), value.to_wgsl())))
             .chain(bind_group_index.iter().map(|(name, &index)| (format!("#{name}"), (index as u32).to_string())))
             .unzip();
 

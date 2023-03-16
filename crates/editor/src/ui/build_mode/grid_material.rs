@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
-    shader_module::ShaderModule,
+    shader_module::{BindGroupDesc, ShaderModule},
 };
 use ambient_renderer::{Material, MaterialShader, SharedMaterial, MATERIAL_BIND_GROUP};
 use ambient_std::{
@@ -10,32 +10,32 @@ use ambient_std::{
     friendly_id, include_file,
 };
 use glam::Vec2;
-use wgpu::{util::DeviceExt, BindGroup};
+use wgpu::{
+    util::{BufferInitDescriptor, DeviceExt},
+    BindGroup, BufferUsages,
+};
 
 #[derive(Debug, Clone)]
 pub struct GridShaderKey;
+
+fn grid_shader_layout() -> BindGroupDesc {
+    BindGroupDesc {
+        entries: vec![wgpu::BindGroupLayoutEntry {
+            binding: 0,
+            visibility: wgpu::ShaderStages::FRAGMENT,
+            ty: wgpu::BindingType::Buffer { ty: wgpu::BufferBindingType::Uniform, has_dynamic_offset: false, min_binding_size: None },
+            count: None,
+        }],
+        label: MATERIAL_BIND_GROUP.into(),
+    }
+}
 
 impl SyncAssetKey<Arc<MaterialShader>> for GridShaderKey {
     fn load(&self, _assets: AssetCache) -> Arc<MaterialShader> {
         Arc::new(MaterialShader {
             id: "grid_material_shader".to_string(),
-            shader: ShaderModule::new(
-                "GridMaterial",
-                include_file!("grid_material.wgsl"),
-                vec![ambient_gpu::shader_module::BindGroupDesc {
-                    entries: vec![wgpu::BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Buffer {
-                            ty: wgpu::BufferBindingType::Uniform,
-                            has_dynamic_offset: false,
-                            min_binding_size: None,
-                        },
-                        count: None,
-                    }],
-                    label: MATERIAL_BIND_GROUP.into(),
-                }
-                .into()],
+            shader: Arc::new(
+                ShaderModule::new("GridMaterial", include_file!("grid_material.wgsl")).with_binding_desc(grid_shader_layout()),
             ),
         })
     }
@@ -67,10 +67,10 @@ impl SyncAssetKey<SharedMaterial> for GridMaterialKey {
 impl GridMaterial {
     pub fn new(assets: AssetCache, params: GridMaterialKey) -> Self {
         let gpu = GpuKey.get(&assets);
-        let layout = GridShaderKey.get(&assets).shader.first_layout(&assets);
-        let buffer = gpu.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+        let layout = grid_shader_layout().get(&assets);
+        let buffer = gpu.device.create_buffer_init(&BufferInitDescriptor {
             label: Some("FlatMaterial.buffer"),
-            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+            usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
             contents: bytemuck::cast_slice(&[params]),
         });
         Self {

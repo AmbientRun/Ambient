@@ -8,7 +8,7 @@ use wgpu::{BindGroup, BindGroupLayoutEntry, BufferUsages, ShaderStages};
 
 use crate::{
     gpu::{GpuKey, WgslType},
-    shader_module::{Shader, ShaderModule, ShaderModuleIdentifier},
+    shader_module::{Shader, ShaderIdent, ShaderModule},
     typed_buffer::TypedBuffer,
 };
 
@@ -70,11 +70,11 @@ impl GpuRun {
                     count: None,
                 },
             )
-            .with_ident(ShaderModuleIdentifier::constant("IN_SIZE", in_size))
-            .with_ident(ShaderModuleIdentifier::constant("OUT_SIZE", out_size))
-            .with_ident(ShaderModuleIdentifier::raw("WGSL_IN", in_type))
-            .with_ident(ShaderModuleIdentifier::raw("WGSL_OUT", out_type))
-            .with_ident(ShaderModuleIdentifier::raw("WGSL_BODY", body.clone()))
+            .with_ident(ShaderIdent::constant("IN_SIZE", in_size))
+            .with_ident(ShaderIdent::constant("OUT_SIZE", out_size))
+            .with_ident(ShaderIdent::raw("WGSL_IN", in_type))
+            .with_ident(ShaderIdent::raw("WGSL_OUT", out_type))
+            .with_ident(ShaderIdent::raw("WGSL_BODY", body.clone()))
             .with_dependencies(modules.iter().cloned());
 
         Shader::from_modules(assets, format!("GpuRun.{}", self.label), &module)

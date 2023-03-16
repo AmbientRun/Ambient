@@ -10,7 +10,7 @@ use ambient_core::{
 use ambient_ecs::{ArchetypeFilter, World};
 use ambient_gpu::{
     gpu::GpuKey,
-    shader_module::{BindGroupDesc, ShaderModule, ShaderModuleIdentifier},
+    shader_module::{BindGroupDesc, ShaderIdent, ShaderModule},
     typed_buffer::TypedBuffer,
 };
 use ambient_std::{
@@ -94,8 +94,8 @@ impl Culling {
     pub fn new(assets: &AssetCache, config: RendererConfig) -> Self {
         log::debug!("Setting up culling");
         let module = ShaderModule::new("CullingParams", include_file!("culling.wgsl"))
-            .with_ident(ShaderModuleIdentifier::constant("SHADOW_CASCADES", config.shadow_cascades))
-            .with_ident(ShaderModuleIdentifier::constant("MAX_SHADOW_CASCADES", MAX_SHADOW_CASCADES))
+            .with_ident(ShaderIdent::constant("SHADOW_CASCADES", config.shadow_cascades))
+            .with_ident(ShaderIdent::constant("MAX_SHADOW_CASCADES", MAX_SHADOW_CASCADES))
             .with_binding_desc(get_culling_layout());
 
         Self {
