@@ -19,11 +19,11 @@ pub mod button;
 pub mod clickarea;
 pub mod default_theme;
 pub mod dropdown;
+pub mod editor;
 pub mod layout;
 pub mod screens;
 pub mod tabs;
 pub mod text;
-pub mod text_editor;
 
 #[element_component]
 pub fn UIBase(_: &mut Hooks) -> Element {

@@ -13,9 +13,9 @@ use ambient_guest_bridge::{
 };
 use ambient_ui_components::{
     default_theme::STREET,
+    editor::TextEditor,
     layout::{FlowColumn, FlowRow},
     text::Text,
-    text_editor::TextEditor,
     FocusRoot, UIExt,
 };
 

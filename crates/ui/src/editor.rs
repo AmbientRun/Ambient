@@ -16,7 +16,7 @@ use crate::{
     ScreenContainer, ScrollArea, StylesExt, Text, STREET,
 };
 use ambient_text::text;
-use ambient_ui_components::text_editor::TextEditor;
+use ambient_ui_components::editor::TextEditor;
 
 #[derive(Clone, Debug)]
 pub struct EditorOpts {

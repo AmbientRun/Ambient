@@ -23,9 +23,9 @@ use winit::window::CursorIcon;
 
 use super::{Editor, EditorOpts, FlowColumn, FlowRow, Text, UIBase};
 use crate::{
-    background_color, border_radius, layout::*, primary_color, text_editor::TextEditor, Button, ButtonStyle, ChangeCb, Corners,
-    FontAwesomeIcon, Rectangle, STREET,
+    background_color, border_radius, layout::*, primary_color, Button, ButtonStyle, ChangeCb, Corners, FontAwesomeIcon, Rectangle, STREET,
 };
+use ambient_ui_components::editor::TextEditor;
 
 #[derive(Debug, Clone)]
 pub struct ParseableInput<T: FromStr + Debug + std::fmt::Display + Clone + Sync + Send + 'static> {
