@@ -12,7 +12,6 @@ pub use ambient_editor_derive::ElementEditor;
 pub use ambient_element as element;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_input::{event_focus_change, event_mouse_motion};
-use ambient_std::color::Color;
 pub use ambient_std::{cb, Cb};
 use ambient_window_types::ModifiersState;
 use glam::*;
@@ -25,7 +24,6 @@ mod component_editor;
 pub mod graph;
 mod hooks;
 mod image;
-mod prompt;
 
 mod throbber;
 
@@ -37,7 +35,7 @@ pub use ambient_text::*;
 pub use ambient_ui_components::clickarea::*;
 pub use ambient_ui_components::default_theme as style_constants;
 pub use ambient_ui_components::*;
-pub use ambient_ui_components::{button, dropdown, select, tabs};
+pub use ambient_ui_components::{button, dropdown, prompt, select, tabs};
 pub use ambient_ui_components::{editor::*, layout::*, scroll_area::*, text::*};
 // pub use asset_url::*;
 pub use button::*;

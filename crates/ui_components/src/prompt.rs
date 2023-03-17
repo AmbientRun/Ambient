@@ -1,10 +1,18 @@
-use ambient_ecs::{ComponentValue, World};
+use ambient_cb::{cb, Cb};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_std::{cb, Cb};
+use ambient_guest_bridge::{
+    components::layout::{align_vertical_center, space_between_items},
+    ecs::World,
+};
 
 use crate::{
-    align_vertical, space_between_items, Button, ButtonStyle, DialogScreen, Editor, FlowColumn, FlowRow, ScrollArea, StylesExt, Text,
-    TextEditor, STREET,
+    button::{Button, ButtonStyle},
+    default_theme::{StylesExt, STREET},
+    editor::{Editor, TextEditor},
+    layout::{FlowColumn, FlowRow},
+    screens::DialogScreen,
+    scroll_area::ScrollArea,
+    text::Text,
 };
 
 #[element_component]
@@ -93,7 +101,7 @@ pub fn Prompt(
                 },
             ])
             .set(space_between_items(), STREET)
-            .set(align_vertical(), crate::Align::Center),
+            .set_default(align_vertical_center()),
         ])
         .set(space_between_items(), STREET),
     )
@@ -142,7 +150,7 @@ impl Prompt {
 }
 
 #[element_component]
-pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + ComponentValue>(
+pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + Sync + Send + 'static>(
     hooks: &mut Hooks,
     title: String,
     value: T,
@@ -182,7 +190,7 @@ pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + ComponentValue>(
                 ])
                 .el()
                 .set(space_between_items(), STREET)
-                .set(align_vertical(), crate::Align::Center),
+                .set_default(align_vertical_center()),
             ])
             .set(space_between_items(), STREET),
         )
@@ -191,7 +199,7 @@ pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + ComponentValue>(
     .el()
 }
 
-impl<T: Editor + std::fmt::Debug + Clone + ComponentValue> EditorPrompt<T> {
+impl<T: Editor + std::fmt::Debug + Clone + Sync + Send + 'static> EditorPrompt<T> {
     pub fn new(
         title: impl Into<String>,
         value: T,
