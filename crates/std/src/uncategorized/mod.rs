@@ -1,12 +1,13 @@
 pub use ambient_asset_cache as asset_cache;
 pub use ambient_color as color;
+pub use ambient_math as math;
 pub mod asset_url;
 pub mod barc;
 pub mod disk_cache;
 pub mod download_asset;
 pub mod encode;
 pub mod fps_counter;
-pub mod math;
+
 pub mod mesh;
 pub mod ordered_glam;
 pub mod shapes;

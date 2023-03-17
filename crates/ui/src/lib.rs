@@ -19,14 +19,12 @@ use glam::*;
 use parking_lot::Mutex;
 use winit::window::CursorGrabMode;
 
-mod asset_url;
+// mod asset_url;
 
-mod collections;
-mod editor;
+mod component_editor;
 pub mod graph;
 mod hooks;
 mod image;
-mod input;
 mod prompt;
 
 mod throbber;
@@ -40,14 +38,13 @@ pub use ambient_ui_components::clickarea::*;
 pub use ambient_ui_components::default_theme as style_constants;
 pub use ambient_ui_components::*;
 pub use ambient_ui_components::{button, dropdown, select, tabs};
-pub use ambient_ui_components::{editor::*, layout::*, text::*};
-pub use asset_url::*;
+pub use ambient_ui_components::{editor::*, layout::*, scroll_area::*, text::*};
+// pub use asset_url::*;
 pub use button::*;
-pub use collections::*;
+pub use component_editor::*;
 pub use dropdown::*;
 pub use editor::*;
 pub use hooks::*;
-pub use input::*;
 pub use layout::*;
 pub use prompt::*;
 pub use screens::*;
@@ -69,32 +66,6 @@ pub fn init_all_components() {
 
 pub fn systems() -> SystemGroup {
     SystemGroup::new("ui", vec![Box::new(rect::systems()), Box::new(text::systems(true)), Box::new(layout::layout_systems())])
-}
-
-#[derive(Debug, Clone)]
-pub struct ScrollArea(pub Element);
-impl ElementComponent for ScrollArea {
-    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let (scroll, set_scroll) = hooks.use_state(0.);
-        hooks.use_event(WINDOW_MOUSE_WHEEL, move |_world, event| {
-            if let Some(delta) = event.get(event_mouse_wheel()) {
-                set_scroll(scroll + if event.get(event_mouse_wheel_pixels()).unwrap() { delta.y } else { delta.y * 20. });
-            }
-        });
-        UIBase
-            .el()
-            .init_default(children())
-            .children(vec![
-                // TODO: For some reason it didn't work to set the translation on self.0 directly, so had to introduce a Flow in between
-                Flow(vec![self.0]).el().set(fit_horizontal(), Fit::Parent).set(translation(), vec3(0., scroll, 0.)),
-            ])
-            .set(layout(), Layout::WidthToChildren)
-    }
-}
-impl ScrollArea {
-    pub fn el(element: Element) -> Element {
-        Self(element).el()
-    }
 }
 
 impl Default for HighjackMouse {

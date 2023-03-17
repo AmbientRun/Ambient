@@ -1,31 +1,21 @@
-use std::{self, f32::consts::E, fmt::Debug, hash::Hash, str::FromStr, time::Duration};
+use std::str::FromStr;
+use std::{fmt::Debug, time::Duration};
 
-use ambient_core::{
-    transform::{get_world_position, translation},
-    window::WindowCtl,
-    window::{cursor_position, window_ctl},
-};
-use ambient_ecs::{ComponentValue, EntityId};
+use ambient_cb::{cb, Cb};
 use ambient_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_input::{event_mouse_input, event_mouse_motion};
-use ambient_renderer::color;
-use ambient_std::time::parse_duration;
-use ambient_std::{
-    cb,
-    math::{interpolate, interpolate_clamped},
-    Cb,
-};
-use ambient_ui_components::{use_focus_for_instance_id, UIExt};
+use ambient_guest_bridge::components::layout::margin_right;
+use ambient_guest_bridge::ecs::ComponentValue;
 use convert_case::{Case, Casing};
-use glam::*;
+use glam::{Vec2, Vec3, Vec4};
 use itertools::Itertools;
-use winit::window::CursorIcon;
 
-use super::{Editor, EditorOpts, FlowColumn, FlowRow, Text, UIBase};
-use crate::{
-    background_color, border_radius, layout::*, primary_color, Button, ButtonStyle, ChangeCb, Corners, FontAwesomeIcon, Rectangle, STREET,
-};
-use ambient_ui_components::editor::TextEditor;
+use crate::button::{Button, ButtonStyle};
+use crate::default_theme::STREET;
+use crate::layout::{FlowColumn, FlowRow};
+use crate::text::{FontAwesomeIcon, Text};
+use crate::use_focus_for_instance_id;
+
+use super::{ChangeCb, Editor, EditorOpts, TextEditor};
 
 #[derive(Debug, Clone)]
 pub struct ParseableInput<T: FromStr + Debug + std::fmt::Display + Clone + Sync + Send + 'static> {
@@ -200,247 +190,6 @@ impl Editor for bool {
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct Slider {
-    pub value: f32,
-    pub on_change: Option<Cb<dyn Fn(f32) + Sync + Send>>,
-    pub min: f32,
-    pub max: f32,
-    pub width: f32,
-    pub logarithmic: bool,
-    pub round: Option<u32>,
-    pub suffix: Option<&'static str>,
-}
-
-impl ElementComponent for Slider {
-    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let Slider { value, min, max, width: slider_width, logarithmic, round, suffix, .. } = *self;
-        const THUMB_WIDTH: f32 = 12.;
-        const SLIDER_HEIGHT: f32 = 12.;
-
-        fn cleanup_value(value: f32, min: f32, max: f32, round: Option<u32>) -> f32 {
-            let mut processed = value.clamp(min, max);
-
-            if let Some(decimal_precision) = round {
-                let exponent = 10.0f32.powi(decimal_precision as i32);
-                processed = (processed * exponent).round() / exponent;
-            }
-
-            processed
-        }
-
-        let value = cleanup_value(value, min, max, round);
-        hooks.use_spawn({
-            let on_change = self.on_change.clone();
-            let old_value = self.value;
-            move |_| {
-                if old_value != value {
-                    if let Some(on_change) = on_change {
-                        on_change(value);
-                    }
-                }
-
-                Box::new(|_| {})
-            }
-        });
-        let block_id = hooks.use_ref_with(|_| EntityId::null());
-        let is_moveable = self.on_change.is_some();
-        // Sets the value with some sanitization
-        let on_change_raw =
-            self.on_change.map(|f| -> Cb<dyn Fn(f32) + Sync + Send> { cb(move |value: f32| f(cleanup_value(value, min, max, round))) });
-        // Sets the value after converting from [0-1] to the value range
-        let on_change_factor =
-            on_change_raw.clone().map(|f| cb(move |p: f32| f(if logarithmic { p.powf(E) } else { p } * (max - min) + min)));
-
-        // f(x) = p ^ e
-        // f'(f(x)) = x
-        // f'(y) = y ^ (1/e)
-        // (p ^ e) ^ (1/e) = p ^ (e / e) = p ^ 1 = p
-        let p = interpolate(value, min, max, 0., 1.);
-        let block_left_offset = if logarithmic { p.powf(1. / E) } else { p } * (slider_width - THUMB_WIDTH);
-        let block_left_offset = if block_left_offset.is_nan() || block_left_offset.is_infinite() { 0. } else { block_left_offset };
-
-        let dragging = hooks.use_ref_with(|_| false);
-        hooks.use_multi_event(&[WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION], {
-            let dragging = dragging.clone();
-            let block_id = block_id.clone();
-            move |world, event| {
-                if let Some(on_change_factor) = &on_change_factor {
-                    if let Some(pressed) = event.get(event_mouse_input()) {
-                        if !pressed {
-                            *dragging.lock() = false;
-                        }
-                    }
-                    if *dragging.lock() && event.get_ref(event_mouse_motion()).is_some() {
-                        let block_id = *block_id.lock();
-                        let block_position = get_world_position(world, block_id).unwrap_or_default();
-                        let block_width = world.get(block_id, width()).unwrap_or_default();
-                        let position = world.resource(cursor_position());
-                        on_change_factor(interpolate_clamped(position.x, block_position.x, block_width, 0., 1.));
-                    }
-                }
-            }
-        });
-
-        let rectangle = Rectangle
-            .el()
-            .set(width(), slider_width)
-            .set(height(), 2.)
-            .set(translation(), vec3(0., (SLIDER_HEIGHT - 2.) / 2., 0.))
-            .set(background_color(), primary_color().into())
-            .on_spawned(move |_, id, _| *block_id.lock() = id);
-
-        let thumb = {
-            let thumb = UIBase
-                .el()
-                .set(width(), THUMB_WIDTH)
-                .set(height(), SLIDER_HEIGHT)
-                .with_background(primary_color().into())
-                .set(border_radius(), Corners::even(THUMB_WIDTH / 2.).into())
-                .set(translation(), vec3(block_left_offset, 0., -0.01))
-                .with_clickarea()
-                .on_mouse_enter(|world, _| {
-                    world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Hand)).ok();
-                })
-                .on_mouse_leave(|world, _| {
-                    world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(CursorIcon::Default)).ok();
-                });
-
-            if is_moveable {
-                thumb
-                    .on_mouse_down(move |_world, _id, _| {
-                        *dragging.lock() = true;
-                    })
-                    .el()
-            } else {
-                thumb.el()
-            }
-        };
-
-        FlowRow::el([
-            UIBase.el().set(width(), slider_width).set(height(), SLIDER_HEIGHT).children(vec![rectangle, thumb]),
-            FlowRow::el([f32::edit_or_view(value, on_change_raw, EditorOpts::default()), suffix.map(Text::el).unwrap_or_default()]),
-        ])
-        .set(space_between_items(), STREET)
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct IntegerSlider {
-    pub value: i32,
-    pub on_change: Option<Cb<dyn Fn(i32) + Sync + Send>>,
-    pub min: i32,
-    pub max: i32,
-    pub width: f32,
-    pub logarithmic: bool,
-    pub suffix: Option<&'static str>,
-}
-impl ElementComponent for IntegerSlider {
-    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        let Self { value, on_change, min, max, width, logarithmic, suffix } = *self;
-        Slider {
-            value: value as f32,
-            on_change: on_change.map(|on_change| -> Cb<dyn Fn(f32) + Sync + Send> { cb(move |value: f32| on_change(value as i32)) }),
-            min: min as f32,
-            max: max as f32,
-            width,
-            logarithmic,
-            round: None,
-            suffix,
-        }
-        .el()
-    }
-}
-
-#[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize)]
-pub struct EditableDuration {
-    dur: Duration,
-    valid: bool,
-    input: String,
-}
-
-impl EditableDuration {
-    pub fn new(dur: Duration, valid: bool, input: String) -> Self {
-        Self { dur, valid, input }
-    }
-
-    pub fn dur(&self) -> Duration {
-        self.dur
-    }
-}
-
-impl From<Duration> for EditableDuration {
-    fn from(v: Duration) -> Self {
-        Self { dur: v, input: format!("{}s", v.as_secs()), valid: true }
-    }
-}
-
-impl From<EditableDuration> for Duration {
-    fn from(v: EditableDuration) -> Self {
-        v.dur
-    }
-}
-
-impl From<&EditableDuration> for Duration {
-    fn from(v: &EditableDuration) -> Self {
-        v.dur
-    }
-}
-
-impl From<String> for EditableDuration {
-    fn from(s: String) -> Self {
-        let dur = parse_duration(&s);
-        let valid = dur.is_ok();
-        Self { dur: dur.unwrap_or_default(), valid, input: s }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct DurationEditor {
-    pub value: EditableDuration,
-    pub on_change: Cb<dyn Fn(EditableDuration) + Sync + Send>,
-}
-
-impl DurationEditor {
-    pub fn new(value: EditableDuration, on_change: Cb<dyn Fn(EditableDuration) + Sync + Send>) -> Self {
-        Self { value, on_change }
-    }
-}
-
-impl ElementComponent for DurationEditor {
-    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        let Self { value: EditableDuration { input, dur, valid }, on_change } = *self;
-        let input = TextEditor::new(input, cb(move |upd: String| on_change(EditableDuration::from(upd)))).el();
-        let value = Text::el(format!("{dur:#?}"));
-
-        if valid {
-            FlowRow(vec![input, value]).el().set(space_between_items(), 10.0)
-        } else {
-            FlowRow(vec![input, Text::el("invalid duration").set(color(), vec4(1.0, 0.0, 0.0, 1.0))]).el().set(space_between_items(), 10.0)
-        }
-    }
-}
-
-use ambient_event_types::{WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION};
-use ambient_sys::time::SystemTime;
-
-#[derive(Debug, Clone)]
-pub struct SystemTimeEditor {
-    pub value: SystemTime,
-    pub on_change: Option<Cb<dyn Fn(SystemTime) + Sync + Send>>,
-}
-
-impl ElementComponent for SystemTimeEditor {
-    fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        Text::el(format!("{:?}", self.value))
-    }
-}
-impl Editor for SystemTime {
-    fn editor(self, _: ChangeCb<Self>, _: EditorOpts) -> Element {
-        SystemTimeEditor { value: self, on_change: None }.el()
-    }
-}
-
 #[derive(Debug, Clone)]
 pub struct EditorRow {
     title: String,
@@ -455,7 +204,7 @@ impl EditorRow {
 impl ElementComponent for EditorRow {
     fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
         let Self { title, editor } = *self;
-        FlowRow(vec![Text::el(title).set(margin(), Borders::right(STREET)), editor]).el()
+        FlowRow(vec![Text::el(title).set(margin_right(), STREET), editor]).el()
     }
 }
 

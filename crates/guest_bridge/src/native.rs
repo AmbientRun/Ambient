@@ -5,7 +5,7 @@ pub mod components {
     pub mod app {
         pub use ambient_core::{
             name, ui_scene,
-            window::{window_logical_size, window_physical_size, window_scale_factor},
+            window::{cursor_position, window_logical_size, window_physical_size, window_scale_factor},
         };
     }
     pub mod ecs {

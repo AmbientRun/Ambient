@@ -67,7 +67,7 @@ components!("physics", {
     ]
     collider_from_url: String,
 
-    @[MakeDefault, Editable, Networked, Store, Debuggable]
+    @[MakeDefault, Networked, Store, Debuggable]
     collider: ColliderDef,
     @[MakeDefault, Editable, Networked, Store, Debuggable]
     collider_type: ColliderType,
@@ -380,8 +380,8 @@ fn vec3_zero_value() -> Vec3 {
     Vec3::ZERO
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, ElementEditor)]
-#[editor(prompt = "Collider Definition")]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+
 pub enum ColliderDef {
     Asset {
         collider: TypedAssetUrl<ColliderAssetType>,

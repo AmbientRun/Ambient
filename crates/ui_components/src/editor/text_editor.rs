@@ -19,6 +19,8 @@ use ambient_guest_bridge::{
 };
 use ambient_window_types::{CursorIcon, VirtualKeyCode};
 
+use super::{Editor, EditorOpts};
+
 #[element_component]
 pub fn TextEditor(
     hooks: &mut Hooks,
@@ -144,5 +146,15 @@ pub fn Cursor(hooks: &mut Hooks) -> Element {
         UIBase.el().children(vec![Rectangle.el().set(width(), 2.).set(height(), 13.).set(translation(), vec3(1., 0., 0.))])
     } else {
         Element::new()
+    }
+}
+
+impl Editor for String {
+    fn editor(self, on_change: Cb<dyn Fn(Self) + Sync + Send>, _: EditorOpts) -> Element {
+        TextEditor::new(self, on_change).placeholder(Some("Empty")).el()
+    }
+
+    fn view(self, _opts: EditorOpts) -> Element {
+        Text.el().set(text(), self)
     }
 }

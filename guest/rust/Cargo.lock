@@ -94,6 +94,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_math"
+version = "0.1.0"
+dependencies = [
+ "glam",
+ "rand",
+ "serde",
+]
+
+[[package]]
+name = "ambient_time"
+version = "0.1.0"
+dependencies = [
+ "itertools",
+ "thiserror",
+]
+
+[[package]]
 name = "ambient_ui_components"
 version = "0.2.0-dev"
 dependencies = [
@@ -102,9 +119,14 @@ dependencies = [
  "ambient_element",
  "ambient_event_types",
  "ambient_guest_bridge",
+ "ambient_math",
+ "ambient_time",
  "ambient_window_types",
+ "closure",
+ "convert_case",
  "futures",
  "glam",
+ "indexmap",
  "itertools",
  "parking_lot",
  "rand",
@@ -207,6 +229,21 @@ name = "clientside"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
+]
+
+[[package]]
+name = "closure"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d6173fd61b610d15a7566dd7b7620775627441c4ab9dac8906e17cb93a24b782"
+
+[[package]]
+name = "convert_case"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec182b0ca2f35d8fc196cf3404988fd8b8c739a4d270ff118a398feb0cbec1ca"
+dependencies = [
+ "unicode-segmentation",
 ]
 
 [[package]]
