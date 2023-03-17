@@ -1116,9 +1116,11 @@ name = "ui_input"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
+ "ambient_cb",
  "ambient_element",
  "ambient_guest_bridge",
  "ambient_ui_components",
+ "indexmap",
 ]
 
 [[package]]
