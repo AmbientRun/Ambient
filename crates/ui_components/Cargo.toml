@@ -14,6 +14,7 @@ ambient_cb = { path = "../../libs/cb" }
 ambient_color = { path = "../../libs/color" }
 ambient_math = { path = "../../libs/math" }
 ambient_time = { path = "../../libs/time" }
+ambient_sys = { path = "../sys", optional = true }
 glam = { workspace = true }
 itertools = { workspace = true }
 futures = { workspace = true }
@@ -26,5 +27,5 @@ indexmap = { workspace = true }
 convert_case = { workspace = true }
 
 [features]
-native = ["ambient_window_types/native"]
+native = ["ambient_window_types/native", "ambient_sys"]
 guest = ["ambient_guest_bridge/guest"]

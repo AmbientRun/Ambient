@@ -1,4 +1,8 @@
-use std::time::{Duration, SystemTime};
+#[cfg(feature = "native")]
+use ambient_sys::time::SystemTime;
+use std::time::Duration;
+#[cfg(feature = "guest")]
+use std::time::SystemTime;
 
 use ambient_cb::{cb, Cb};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
@@ -90,7 +94,6 @@ pub struct SystemTimeEditor {
     pub value: SystemTime,
     pub on_change: Option<Cb<dyn Fn(SystemTime) + Sync + Send>>,
 }
-
 impl ElementComponent for SystemTimeEditor {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         Text::el(format!("{:?}", self.value))
