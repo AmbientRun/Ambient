@@ -28,6 +28,7 @@ pub mod scroll_area;
 pub mod select;
 pub mod tabs;
 pub mod text;
+pub mod throbber;
 
 #[element_component]
 pub fn UIBase(_: &mut Hooks) -> Element {

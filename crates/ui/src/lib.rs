@@ -25,8 +25,6 @@ pub mod graph;
 mod hooks;
 mod image;
 
-mod throbber;
-
 pub use ambient_layout as layout;
 pub use ambient_rect as rect;
 pub use ambient_rect::{background_color, border_color, border_radius, border_thickness, Corners};
@@ -35,7 +33,7 @@ pub use ambient_text::*;
 pub use ambient_ui_components::clickarea::*;
 pub use ambient_ui_components::default_theme as style_constants;
 pub use ambient_ui_components::*;
-pub use ambient_ui_components::{button, dropdown, prompt, select, tabs};
+pub use ambient_ui_components::{button, dropdown, prompt, select, tabs, throbber};
 pub use ambient_ui_components::{editor::*, layout::*, scroll_area::*, text::*};
 // pub use asset_url::*;
 pub use button::*;
