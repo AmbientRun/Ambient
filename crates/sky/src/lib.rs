@@ -4,7 +4,7 @@
 
 use std::sync::Arc;
 
-use ambient_core::{asset_cache, mesh, transform::translation};
+use ambient_core::{asset_cache, gpu_ecs::ENTITIES_BIND_GROUP, mesh, transform::translation};
 use ambient_ecs::{components, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
 use ambient_gpu::{
     gpu::GpuKey,
@@ -196,8 +196,8 @@ impl SyncAssetKey<Arc<RendererShader>> for CloudShaderKey {
         Arc::new(RendererShader {
             shader: Shader::new(
                 &assets,
-                id.clone(),
-                &[],
+                "clouds",
+                &[GLOBALS_BIND_GROUP, MATERIAL_BIND_GROUP],
                 &ShaderModule::new("clouds", shader)
                     .with_binding_desc(layout)
                     .with_dependencies(get_overlay_modules(&assets, self.shadow_cascades))
