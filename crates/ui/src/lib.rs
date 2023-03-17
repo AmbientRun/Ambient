@@ -139,16 +139,6 @@ pub fn command_modifier() -> ModifiersState {
     return ModifiersState::CTRL;
 }
 
-#[element_component]
-pub fn Separator(_hooks: &mut Hooks, vertical: bool) -> Element {
-    let el = Flow(vec![]).el().with_background(Color::rgba(0., 0., 0., 0.8).into());
-    if vertical {
-        el.set(width(), 1.).set(fit_horizontal(), Fit::None).set(fit_vertical(), Fit::Parent)
-    } else {
-        el.set(height(), 1.).set(fit_horizontal(), Fit::Parent).set(fit_vertical(), Fit::None)
-    }
-}
-
 #[derive(Clone)]
 /// Helper for mutating UI state in multiple places.
 pub struct WithChange<T: Clone>(Arc<Mutex<T>>, Cb<dyn Fn(T) + Sync + Send>);

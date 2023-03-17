@@ -1,23 +1,31 @@
 use ambient_api::prelude::*;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_ui_components::{setup_ui_camera, text::Text};
+use ambient_guest_bridge::components::{
+    layout::space_between_items, rendering::color, text::font_size,
+};
+use ambient_ui_components::{
+    default_theme::StylesExt,
+    layout::{FlowColumn, Separator},
+    setup_ui_camera,
+    text::Text,
+    UIExt,
+};
 
 #[element_component]
-fn App(hooks: &mut Hooks) -> Element {
-    let (count, set_count) = hooks.use_state(0);
-    hooks.use_spawn(move |_| {
-        run_async(async move {
-            let mut count = 0;
-            loop {
-                sleep(0.5).await;
-                count += 1;
-                set_count(count);
-            }
-        });
-        Box::new(|_| {})
-    });
-    println!("{count}");
-    Text::el(format!("Hello world: {count}"))
+fn App(_hooks: &mut Hooks) -> Element {
+    FlowColumn(vec![
+        Text::el("Header").header_style(),
+        Text::el("Section").section_style(),
+        Text::el("Default text \u{f1e2} \u{fb8f}"),
+        Text::el("Small").small_style(),
+        Separator { vertical: false }.el(),
+        Text::el("Custom size").set(font_size(), 40.),
+        Text::el("Custom color").set(color(), vec4(1., 0., 0., 1.)),
+        Text::el("Multi\n\nLine"),
+    ])
+    .el()
+    .with_padding_even(10.)
+    .set(space_between_items(), 10.)
 }
 
 #[main]
