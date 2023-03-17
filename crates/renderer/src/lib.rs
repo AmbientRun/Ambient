@@ -22,6 +22,7 @@ use downcast_rs::{impl_downcast, DowncastSync};
 use glam::{uvec4, UVec2, UVec4, Vec3, Vec4};
 use serde::{Deserialize, Serialize};
 
+pub mod bind_groups;
 mod collect;
 mod culling;
 mod globals;

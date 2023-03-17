@@ -17,7 +17,10 @@ use super::{
     double_sided, get_gpu_primitive_id, primitives, FSMain, RendererResources, RendererShader, SharedMaterial, MATERIAL_BIND_GROUP,
     PRIMITIVES_BIND_GROUP,
 };
-use crate::{transparency_group, RendererConfig};
+use crate::{
+    bind_groups::{self, BindGroups},
+    transparency_group, RendererConfig,
+};
 use ambient_std::asset_cache::AssetCache;
 
 pub struct TransparentRendererConfig {
@@ -145,15 +148,13 @@ impl TransparentRenderer {
     }
 
     #[profiling::function]
-    pub fn render<'a>(&'a self, render_pass: &mut wgpu::RenderPass<'a>, bind_groups: &[&'a BindGroup]) {
+    pub fn render<'a>(&'a self, render_pass: &mut wgpu::RenderPass<'a>, bind_groups: &BindGroups<'a>) {
         let mut is_bound = false;
         // TODO: keep track of the state to avoid state switches (same pipeline multiple times etc.)
         for (i, entry) in self.primitives.iter().enumerate() {
+            let bind_groups = [bind_groups.globals, bind_groups.entities, bind_groups.mesh_data, &self.primitives_bind_group];
             if !is_bound {
-                // for (i, bind_group) in [&self.primitives_bind_group].iter().chain(bind_groups).enumerate() {
-                for (i, bind_group) in bind_groups.iter().chain(&[&self.primitives_bind_group]).enumerate() {
-                    // for (name, group) in binds.iter().chain([(PRIMITIVES_BIND_GROUP, &self.primitives_bind_group)].iter()) {
-                    // entry.shader.pipeline.bind(render_pass, name, group);
+                for (i, bind_group) in bind_groups.iter().enumerate() {
                     render_pass.set_bind_group(i as _, bind_group, &[]);
                     is_bound = true
                 }
@@ -161,7 +162,7 @@ impl TransparentRenderer {
             let metadata = &entry.mesh_metadata;
             if metadata.index_count > 0 {
                 render_pass.set_pipeline(entry.shader.pipeline.pipeline());
-                render_pass.set_bind_group(bind_groups.len() as u32 + 1, entry.material.bind_group(), &[]);
+                render_pass.set_bind_group(bind_groups.len() as _, entry.material.bind_group(), &[]);
                 // entry.shader.pipeline.bind(render_pass, MATERIAL_BIND_GROUP, entry.material.bind());
 
                 render_pass.draw_indexed(

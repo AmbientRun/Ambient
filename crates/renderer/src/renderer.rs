@@ -1,13 +1,6 @@
 use std::sync::Arc;
 
-use ambient_core::{
-    asset_cache,
-    camera::*,
-    gpu,
-    gpu_ecs::{gpu_world, ENTITIES_BIND_GROUP},
-    player::local_user_id,
-    ui_scene,
-};
+use ambient_core::{asset_cache, camera::*, gpu, gpu_ecs::gpu_world, player::local_user_id, ui_scene};
 use ambient_ecs::{ArchetypeFilter, Component, World};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
@@ -22,13 +15,12 @@ use glam::uvec2;
 use wgpu::{BindGroupLayout, BindGroupLayoutEntry, TextureView};
 
 use super::{
-    get_common_module,
     overlay_renderer::{OverlayConfig, OverlayRenderer},
     shadow_renderer::ShadowsRenderer,
     Culling, FSMain, ForwardGlobals, Outlines, OutlinesConfig, RenderTarget, RendererCollect, RendererCollectState, TransparentRenderer,
     TransparentRendererConfig, TreeRenderer, TreeRendererConfig,
 };
-use crate::{get_common_layout, globals_layout, skinning::SkinsBufferKey, to_linear_format, ShaderDebugParams};
+use crate::{bind_groups::BindGroups, get_common_layout, globals_layout, skinning::SkinsBufferKey, to_linear_format, ShaderDebugParams};
 pub const GLOBALS_BIND_GROUP: &str = "GLOBALS_BIND_GROUP";
 pub const MATERIAL_BIND_GROUP: &str = "MATERIAL_BIND_GROUP";
 pub const RESOURCES_BIND_GROUP: &str = "RESOURCES_BIND_GROUP";
@@ -125,6 +117,7 @@ impl<'a> RendererTarget<'a> {
     }
 }
 
+pub type PostSubmitFunc = Box<dyn FnOnce() + Send + Send>;
 pub trait SubRenderer: std::fmt::Debug + Send + Sync {
     fn render<'a>(
         &'a mut self,
@@ -132,7 +125,8 @@ pub trait SubRenderer: std::fmt::Debug + Send + Sync {
         mesh_buffer: &MeshBuffer,
         encoder: &mut wgpu::CommandEncoder,
         target: &RendererTarget,
-        binds: &[(&str, &'a wgpu::BindGroup)],
+        bind_groups: &BindGroups<'a>,
+        post_submit: &mut Vec<PostSubmitFunc>,
     );
 }
 
@@ -279,7 +273,7 @@ impl Renderer {
         }
 
         if let Some(shadows) = &mut self.shadows {
-            shadows.run(world, encoder, post_submit, &mesh_meta_bind_group, &mesh_data_bind_group, &entities_bind_group, &mesh_buffer);
+            shadows.update(world);
         }
 
         self.forward_globals.params.debug_params = self.shader_debug_params;
@@ -290,7 +284,16 @@ impl Renderer {
             &self.solids_frame,
         );
 
-        let bind_groups = [&forward_globals_bind_group, &entities_bind_group, &mesh_data_bind_group];
+        let bind_groups = BindGroups {
+            globals: &forward_globals_bind_group,
+            entities: &entities_bind_group,
+            mesh_data: &mesh_data_bind_group,
+            mesh_meta: &mesh_meta_bind_group,
+        };
+
+        if let Some(shadows) = &mut self.shadows {
+            shadows.render(world, &mesh_buffer, encoder, &bind_groups, post_submit);
+        }
 
         {
             profiling::scope!("Forward");
@@ -334,20 +337,10 @@ impl Renderer {
         }
 
         if let Some(post_forward) = &mut self.post_forward {
-            post_forward.render(
-                world,
-                &mesh_buffer,
-                encoder,
-                &target,
-                &[(RESOURCES_BIND_GROUP, &mesh_data_bind_group), (GLOBALS_BIND_GROUP, &forward_globals_bind_group)],
-            );
+            post_forward.render(world, &mesh_buffer, encoder, &target, &bind_groups, post_submit);
         }
 
-        {
-            let binds = [&forward_globals_bind_group];
-
-            self.overlays.render(encoder, &target, &binds, &mesh_buffer);
-        }
+        self.overlays.render(encoder, &target, &[&forward_globals_bind_group], &mesh_buffer);
 
         if let RendererTarget::Target(target) = &target {
             encoder.copy_texture_to_texture(
@@ -394,13 +387,7 @@ impl Renderer {
         }
 
         if let Some(post_transparent) = &mut self.post_transparent {
-            post_transparent.render(
-                world,
-                &mesh_buffer,
-                encoder,
-                &target,
-                &[(RESOURCES_BIND_GROUP, &mesh_data_bind_group), (GLOBALS_BIND_GROUP, &forward_globals_bind_group)],
-            );
+            post_transparent.render(world, &mesh_buffer, encoder, &target, &bind_groups, post_submit);
         }
 
         self.outlines.render(world, encoder, post_submit, &target, &bind_groups, &mesh_buffer);

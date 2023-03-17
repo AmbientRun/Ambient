@@ -17,7 +17,7 @@ use super::{
     double_sided, lod::cpu_lod_visible, primitives, CollectPrimitive, DrawIndexedIndirect, FSMain, PrimitiveIndex, RendererCollectState,
     RendererResources, RendererShader, SharedMaterial, MATERIAL_BIND_GROUP, PRIMITIVES_BIND_GROUP,
 };
-use crate::RendererConfig;
+use crate::{bind_groups::BindGroups, RendererConfig};
 use ambient_std::asset_cache::AssetCache;
 
 pub struct TreeRendererConfig {
@@ -256,7 +256,7 @@ impl TreeRenderer {
         &'a self,
         render_pass: &mut wgpu::RenderPass<'a>,
         collect_state: &'a RendererCollectState,
-        bind_groups: &[&'a wgpu::BindGroup],
+        bind_groups: &BindGroups<'a>,
     ) {
         let primitives_bind_group = if let Some(primitives_bind_group) = &self.primitives_bind_group {
             primitives_bind_group
@@ -272,8 +272,9 @@ impl TreeRenderer {
         for node in self.tree.values() {
             render_pass.set_pipeline(node.pipeline.pipeline());
             // Bind on first invocation
+            let bind_groups = [bind_groups.globals, bind_groups.entities, bind_groups.mesh_data, primitives_bind_group];
             if !is_bound {
-                for (i, bind_group) in bind_groups.iter().chain(&[primitives_bind_group]).enumerate() {
+                for (i, bind_group) in bind_groups.iter().enumerate() {
                     render_pass.set_bind_group(i as _, bind_group, &[]);
                     is_bound = true
                 }
@@ -282,7 +283,7 @@ impl TreeRenderer {
             for mat in node.tree.values() {
                 let material = &mat.material;
 
-                render_pass.set_bind_group(bind_groups.len() as u32 + 1, material.bind_group(), &[]);
+                render_pass.set_bind_group(bind_groups.len() as _, material.bind_group(), &[]);
 
                 let offset = self.primitives.buffer_offset(mat.primitives_subbuffer).unwrap();
                 #[cfg(not(target_os = "macos"))]

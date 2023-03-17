@@ -17,10 +17,10 @@ use ambient_std::{
     include_file,
 };
 use glam::Vec4;
-use wgpu::{BindGroup, BindGroupLayoutEntry, BindingType, PrimitiveTopology, ShaderStages};
+use wgpu::{BindGroupLayoutEntry, BindingType, PrimitiveTopology, ShaderStages};
 
 use super::{FSMain, RendererCollectState, RendererResources, RendererTarget, ShaderModule, TreeRenderer, TreeRendererConfig};
-use crate::RendererConfig;
+use crate::{bind_groups::BindGroups, RendererConfig};
 
 components!("rendering", {
     @[
@@ -140,7 +140,7 @@ impl Outlines {
         encoder: &mut wgpu::CommandEncoder,
         post_submit: &mut Vec<Box<dyn FnOnce() + Send + Send>>,
         target: &RendererTarget,
-        bind_groups: &[&BindGroup],
+        bind_groups: &BindGroups,
         mesh_buffer: &MeshBuffer,
     ) {
         let bind_group_layout = self.pipeline.pipeline().get_bind_group_layout(0);
@@ -152,7 +152,7 @@ impl Outlines {
 
         self.collect_state.set_camera(0);
         self.renderer.update(world);
-        self.renderer.run_collect(encoder, post_submit, bind_groups[0], bind_groups[1], &mut self.collect_state);
+        self.renderer.run_collect(encoder, post_submit, bind_groups.globals, bind_groups.entities, &mut self.collect_state);
 
         {
             profiling::scope!("Outlines stencil");
