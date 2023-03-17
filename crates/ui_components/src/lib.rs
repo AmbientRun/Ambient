@@ -22,6 +22,7 @@ pub mod dropdown;
 pub mod editor;
 pub mod layout;
 pub mod screens;
+pub mod select;
 pub mod tabs;
 pub mod text;
 

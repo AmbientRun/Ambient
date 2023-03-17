@@ -1,16 +1,20 @@
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_std::Cb;
-use closure::closure;
 
-use super::{Button, ButtonStyle, FlowColumn, FlowRow, Text};
 use crate::{
-    border_radius,
-    layout::{margin, Borders},
-    padding, tooltip_background_color, Corners, Dropdown, SMALL_ROUNDING, STREET,
+    button::{Button, ButtonStyle},
+    default_theme::{tooltip_background_color, SMALL_ROUNDING, STREET},
+    dropdown::Dropdown,
+    layout::{FlowColumn, FlowRow},
+    text::Text,
+    UIExt,
 };
+use ambient_cb::Cb;
 use ambient_event_types::WINDOW_MOUSE_INPUT;
-use ambient_input::event_mouse_input;
-use ambient_ui_components::UIExt;
+use ambient_guest_bridge::components::{
+    input::event_mouse_input,
+    ui::{border_radius, margin_left, margin_top},
+};
+use glam::Vec4;
 
 #[derive(Debug, Clone)]
 pub struct DropdownSelect {
@@ -34,10 +38,10 @@ impl ElementComponent for DropdownSelect {
             }
         });
         Dropdown {
-            content: Button::new(
-                FlowRow(vec![content, Text::el("\u{f078}").set(margin(), Borders::left(5.))]).el(),
-                closure!(clone set_show, |_| set_show(!show)),
-            )
+            content: Button::new(FlowRow(vec![content, Text::el("\u{f078}").set(margin_left(), 5.)]).el(), {
+                let set_show = set_show.clone();
+                move |_| set_show(!show)
+            })
             .style(if inline { ButtonStyle::Inline } else { ButtonStyle::Regular })
             .el(),
             dropdown: FlowColumn(
@@ -45,10 +49,15 @@ impl ElementComponent for DropdownSelect {
                     .into_iter()
                     .enumerate()
                     .map(move |(i, item)| {
-                        Button::new(item, closure!(clone on_select, |_| { on_select.0(i); }))
-                            .style(ButtonStyle::Card)
-                            .el()
-                            .set(margin(), Borders::top(if i != 0 { STREET } else { 0. }))
+                        Button::new(item, {
+                            let on_select = on_select.clone();
+                            move |_| {
+                                on_select.0(i);
+                            }
+                        })
+                        .style(ButtonStyle::Card)
+                        .el()
+                        .set(margin_top(), if i != 0 { STREET } else { 0. })
                     })
                     .collect(), //     vec![Bookcase(
                                 //     items
@@ -67,8 +76,8 @@ impl ElementComponent for DropdownSelect {
                                 // .set(orientation(), Orientation::Vertical)]
             )
             .el()
-            .set(padding(), Borders::even(STREET))
-            .set(border_radius(), Corners::even(SMALL_ROUNDING).into())
+            .with_padding_even(STREET)
+            .set(border_radius(), Vec4::ONE * SMALL_ROUNDING)
             .with_background(tooltip_background_color().into()),
             show,
         }
