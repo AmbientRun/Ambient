@@ -9,9 +9,37 @@ use wgpu::{BindGroup, BindGroupLayoutEntry, BufferUsages, ShaderStages};
 
 use crate::{
     gpu::{GpuKey, WgslType},
-    shader_module::{Shader, ShaderIdent, ShaderModule},
+    shader_module::{BindGroupDesc, Shader, ShaderIdent, ShaderModule},
     typed_buffer::TypedBuffer,
 };
+
+fn get_gpu_run_layout() -> BindGroupDesc<'static> {
+    BindGroupDesc {
+        entries: vec![
+            BindGroupLayoutEntry {
+                binding: 0,
+                visibility: ShaderStages::COMPUTE,
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Storage { read_only: true },
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            },
+            BindGroupLayoutEntry {
+                binding: 1,
+                visibility: ShaderStages::COMPUTE,
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Storage { read_only: false },
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            },
+        ],
+        label: "GPURUN_BIND_GROUP".into(),
+    }
+}
 
 pub struct GpuRun {
     label: CowStr,
@@ -45,32 +73,7 @@ impl GpuRun {
         let out_type = Out::wgsl_type();
 
         let module = ShaderModule::new("GpuRun", include_str!("gpu_run.wgsl"))
-            .with_binding(
-                "GPURUN_BIND_GROUP",
-                BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: ShaderStages::COMPUTE,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Storage { read_only: true },
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
-                },
-            )
-            .with_binding(
-                "GPURUN_BIND_GROUP",
-                BindGroupLayoutEntry {
-                    binding: 1,
-                    visibility: ShaderStages::COMPUTE,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Storage { read_only: false },
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
-                },
-            )
+            .with_binding_desc(get_gpu_run_layout())
             .with_ident(ShaderIdent::constant("IN_SIZE", in_size))
             .with_ident(ShaderIdent::constant("OUT_SIZE", out_size))
             .with_ident(ShaderIdent::raw("WGSL_IN", in_type))
@@ -111,9 +114,8 @@ impl GpuRun {
         {
             let mut pass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: None });
             pass.set_pipeline(pipeline.pipeline());
-            pass.set_bind_group(0, &bind_group, &[]);
 
-            for (i, (_, v)) in self.bind_groups.iter().enumerate() {
+            for (i, v) in [&bind_group].into_iter().chain(self.bind_groups.iter().map(|v| &v.1)).enumerate() {
                 pass.set_bind_group(i as _, v, &[]);
             }
 

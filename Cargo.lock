@@ -422,6 +422,7 @@ dependencies = [
  "serde",
  "tokio",
  "tracing",
+ "tracing-subscriber",
  "wgpu 0.14.2",
  "winit",
  "yaml-rust-davvid",

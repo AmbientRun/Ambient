@@ -199,7 +199,7 @@ impl Default for BrushCursorMaterialParams {
     }
 }
 
-fn get_brush_cursor_layout() -> BindGroupDesc {
+fn get_brush_cursor_layout() -> BindGroupDesc<'static> {
     BindGroupDesc {
         entries: vec![wgpu::BindGroupLayoutEntry {
             binding: 0,

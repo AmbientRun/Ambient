@@ -2,7 +2,10 @@ use std::sync::Arc;
 
 use ambient_core::{
     gpu_components,
-    gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorld, GpuWorldShaderModuleKey, GpuWorldSyncEvent, GpuWorldUpdater},
+    gpu_ecs::{
+        ComponentToGpuSystem, GpuComponentFormat, GpuWorld, GpuWorldShaderModuleKey, GpuWorldSyncEvent, GpuWorldUpdater,
+        ENTITIES_BIND_GROUP,
+    },
 };
 use ambient_ecs::{components, ArchetypeFilter, Component, Entity, EntityId, System, SystemGroup, World};
 use ambient_gpu::{
@@ -65,11 +68,10 @@ impl TestCommon {
         let loc = vec4(loc.archetype as f32, loc.index as f32, 0., 0.);
 
         let module = GpuWorldShaderModuleKey { read_only: true }.get(&self.assets);
-        eprintln!("Adding gpu module: {module:#?}");
         let bind_group = self.gpu_world.lock().create_bind_group(true);
         GpuRun::new("gpu_ecs", format!("return get_entity_{}(vec2<u32>(u32(input.x), u32(input.y)));", component.path_last()))
             .add_module(module)
-            .add_bind_group("ENTITIES_BIND_GROUP", bind_group)
+            .add_bind_group(ENTITIES_BIND_GROUP, bind_group)
             .run(&self.assets, loc)
             .await
     }
@@ -87,7 +89,7 @@ impl TestCommon {
             ),
         )
         .add_module(module)
-        .add_bind_group("ENTITIES_BIND_GROUP", bind_group)
+        .add_bind_group(ENTITIES_BIND_GROUP, bind_group)
         .run(&self.assets, input)
         .await;
     }
@@ -102,6 +104,7 @@ impl TestCommon {
 
 #[test]
 fn two_entities() {
+    tracing_subscriber::fmt::init();
     let rt = Runtime::new().unwrap();
     rt.block_on(async {
         let mut test = TestCommon::new().await;
@@ -118,6 +121,7 @@ fn two_entities() {
 
 #[tokio::test]
 async fn gpu_ecs() {
+    tracing_subscriber::fmt::init();
     let mut test = TestCommon::new().await;
 
     let _ignored = Entity::new().with(cpu_banana(), vec4(7., 7., 3., 7.)).spawn(&mut test.world);
@@ -147,6 +151,7 @@ async fn gpu_ecs() {
 
 #[tokio::test]
 async fn gpu_update_with_gpu_run() {
+    tracing_subscriber::fmt::init();
     let mut test = TestCommon::new().await;
 
     let a = Entity::new().with(carrot(), vec4(7., 7., 3., 7.)).spawn(&mut test.world);
@@ -158,6 +163,7 @@ async fn gpu_update_with_gpu_run() {
 
 #[tokio::test]
 async fn gpu_update_with_gpu_ecs_update() {
+    tracing_subscriber::fmt::init();
     let mut test = TestCommon::new().await;
 
     let a = Entity::new().with(carrot(), vec4(7., 7., 3., 7.)).spawn(&mut test.world);
@@ -168,6 +174,7 @@ async fn gpu_update_with_gpu_ecs_update() {
         "test".to_string(),
         ArchetypeFilter::new().incl(carrot()),
         vec![],
+        &[],
         "set_entity_carrot(entity_loc, vec4<f32>(1.));".to_string(),
     );
     update.run(&test.world, &[]);

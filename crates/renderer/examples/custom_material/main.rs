@@ -23,7 +23,7 @@ use ambient_std::{
 use glam::*;
 use wgpu::BindGroup;
 
-fn get_custom_material_layout() -> BindGroupDesc {
+fn get_custom_material_layout() -> BindGroupDesc<'static> {
     BindGroupDesc { entries: vec![], label: MATERIAL_BIND_GROUP.into() }
 }
 

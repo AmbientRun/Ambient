@@ -18,7 +18,7 @@ use wgpu::{
 #[derive(Debug, Clone)]
 pub struct GridShaderKey;
 
-fn grid_shader_layout() -> BindGroupDesc {
+fn grid_shader_layout() -> BindGroupDesc<'static> {
     BindGroupDesc {
         entries: vec![wgpu::BindGroupLayoutEntry {
             binding: 0,

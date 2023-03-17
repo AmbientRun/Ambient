@@ -290,6 +290,7 @@ impl Shader {
                 })
                 .join("\n\n");
 
+            tracing::info!("Raw source: \n{}", source);
             AhoCorasick::new(patterns).replace_all(&source, &replace_with)
         };
 
