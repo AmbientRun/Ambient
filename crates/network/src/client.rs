@@ -221,7 +221,7 @@ impl ElementComponent for GameClientView {
         {
             let game_state = game_state.clone();
             let render_target = render_target.clone();
-            let world_event_reader = Mutex::new(WorldEventReader::new());
+            let world_event_reader = Mutex::new(hooks.world.resource(world_events()).reader());
             hooks.use_frame(move |app_world| {
                 let mut game_state = game_state.lock();
 
