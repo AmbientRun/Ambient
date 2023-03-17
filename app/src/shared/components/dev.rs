@@ -48,7 +48,8 @@ fn make_components() -> toml_edit::Table {
             "Transform",
             "Entity transform state (including translation, rotation and scale), as well as other transformations for this entity.",
         ),
-        ("core::ui", "UI", "Anything related to UI and text."),
+        ("core::ui", "UI", "Anything related to UI."),
+        ("core::text", "Text", "Text rendering."),
     ];
 
     for (path, name, description) in namespaces {

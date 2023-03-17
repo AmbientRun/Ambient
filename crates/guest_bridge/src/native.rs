@@ -27,6 +27,8 @@ pub mod components {
             height, is_book_file, mesh_to_local_from_size, min_height, min_width, screen, space_between_items, width,
         };
         pub use ambient_rect::{background_color, border_color, border_radius, border_thickness, rect};
+    }
+    pub mod text {
         pub use ambient_text::{font_family, font_size, font_style, text};
     }
     pub mod rendering {

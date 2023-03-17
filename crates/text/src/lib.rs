@@ -29,7 +29,7 @@ use strum::EnumString;
 
 mod text_material;
 
-components!("ui", {
+components!("text", {
     @[Debuggable, Networked, Store, Name["Text"], Description["Create a text mesh on this entity."]]
     text: String,
     @[Debuggable]

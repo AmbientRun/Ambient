@@ -62,7 +62,11 @@ description = "Entity transform state (including translation, rotation and scale
 
 [components."core::ui"]
 name = "UI"
-description = "Anything related to UI and text."
+description = "Anything related to UI."
+
+[components."core::text"]
+name = "Text"
+description = "Text rendering."
 
 [components."core::app::cursor_position"]
 type = "Vec2"
@@ -781,6 +785,30 @@ name = "Water"
 description = "Add a realistic water plane to this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::text::font_family"]
+type = "String"
+name = "Font family"
+description = "Font family to be used. Can either be 'Default', 'FontAwesome', 'FontAwesomeSolid', 'Code' or a url to a font."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::text::font_size"]
+type = "F32"
+name = "Font size"
+description = "Size of the font."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::text::font_style"]
+type = "String"
+name = "Font style"
+description = "One of Bold, BoldItalic, Medium, MediumItalic, Regular, Italic, Light or LightItalic."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::text::text"]
+type = "String"
+name = "Text"
+description = "Create a text mesh on this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::transform::cylindrical_billboard_z"]
 type = "Empty"
 name = "Cylindrical billboard Z"
@@ -999,18 +1027,6 @@ name = "Fit vertical parent"
 description = "Layout fit: vertical parent."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::ui::font_size"]
-type = "F32"
-name = "Font size"
-description = "Size of the font."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::font_style"]
-type = "String"
-name = "Font style"
-description = "One of Bold, BoldItalic, Medium, MediumItalic, Regular, Italic, Light or LightItalic."
-attributes = ["Debuggable", "Networked", "Store"]
-
 [components."core::ui::gpu_ui_size"]
 type = "Vec4"
 name = "GPU UI size"
@@ -1147,12 +1163,6 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "F32"
 name = "Space between items"
 description = "Space between items in a layout."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::text"]
-type = "String"
-name = "Text"
-description = "Create a text mesh on this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::ui::width"]

@@ -5,7 +5,8 @@ use ambient_color::Color;
 use ambient_element::Element;
 use ambient_guest_bridge::components::{
     rendering::color,
-    ui::{align_vertical_center, border_radius, font_size, space_between_items},
+    text::font_size,
+    ui::{align_vertical_center, border_radius, space_between_items},
 };
 
 pub fn primary_color() -> Color {
