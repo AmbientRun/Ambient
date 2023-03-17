@@ -103,7 +103,7 @@ impl GpuRun {
 
         let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: Some("GpuRun"),
-            layout: shader.layout(0).unwrap(),
+            layout: &get_gpu_run_layout().get(assets),
             entries: &[
                 wgpu::BindGroupEntry { binding: 0, resource: in_buffer.buffer().as_entire_binding() },
                 wgpu::BindGroupEntry { binding: 1, resource: out_buffer.buffer().as_entire_binding() },

@@ -313,11 +313,8 @@ impl Shader {
         &self.bind_group_layouts
     }
 
-    pub fn layout(&self, index: u32) -> Option<&BindGroupLayout> {
-        self.bind_group_layouts.get(index as usize).map(|v| &**v)
-    }
-
     /// The wgpu shader module
+    #[inline]
     pub fn module(&self) -> &wgpu::ShaderModule {
         &self.module
     }
