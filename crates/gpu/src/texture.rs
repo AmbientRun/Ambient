@@ -479,7 +479,7 @@ impl TextureReader {
                         let as_u8s = data.iter().map(|v| (255. * (v - min) / (max - min)) as u8).collect_vec();
                         // println!("min={min} max={max}");
                         match self.format {
-                            wgpu::TextureFormat::Depth32Float => {
+                            DEPTH_FORMAT => {
                                 DynamicImage::ImageLuma8(image::GrayImage::from_raw(self.size.width, self.size.height, as_u8s).unwrap())
                             }
                             _ => panic!("Unsupported depth texture format"),
@@ -601,6 +601,7 @@ impl NTextureChannels for wgpu::TextureFormat {
             wgpu::TextureFormat::Rgba32Sint => 4,
             wgpu::TextureFormat::Rgba32Float => 4,
             wgpu::TextureFormat::Depth32Float => 1,
+            wgpu::TextureFormat::Depth24PlusStencil8 => 1,
             _ => panic!("Unsupported texture format"),
         }
     }

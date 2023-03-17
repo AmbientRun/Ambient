@@ -8,7 +8,7 @@ use aho_corasick::AhoCorasick;
 use ambient_std::{asset_cache::*, CowStr};
 use anyhow::Context;
 use itertools::Itertools;
-use wgpu::{BindGroupLayout, BindGroupLayoutEntry, ComputePipelineDescriptor, DepthBiasState};
+use wgpu::{BindGroupLayout, BindGroupLayoutEntry, ComputePipelineDescriptor, DepthBiasState, Texture, TextureFormat};
 
 use super::gpu::{Gpu, GpuKey, DEFAULT_SAMPLE_COUNT};
 
@@ -417,11 +417,22 @@ impl<P> std::ops::Deref for Pipeline<P> {
     }
 }
 
+#[cfg(not(target_os = "unknown"))]
+pub const DEPTH_FORMAT: TextureFormat = TextureFormat::Depth32Float;
+#[cfg(target_os = "unknown")]
+// HACK: float depth are broken on wgpu:
+// stencilLoadOp is (LoadOp::Load) and stencilStoreOp is (StoreOp::Store) when stencilReadOnly (0) or the attachment ([TextureView "Renderer.shadow_target_views" of Texture "Renderer.shadow_texture"]) has no stencil aspect.
+// - While validating depthStencilAttachment.
+// - While encoding [CommandEncoder].BeginRenderPass([RenderPassDescriptor "Shadow cascade 0"]).
+
+// Adding a stencil part crashes the gpu
+pub const DEPTH_FORMAT: TextureFormat = TextureFormat::Depth24PlusStencil8;
+
 impl<'a> GraphicsPipelineInfo<'a> {
     pub fn with_depth(self) -> GraphicsPipelineInfo<'a> {
         Self {
             depth: Some(wgpu::DepthStencilState {
-                format: wgpu::TextureFormat::Depth32Float,
+                format: DEPTH_FORMAT,
                 depth_write_enabled: true,
                 // This is Greater because we're using reverse-z NDC
                 depth_compare: wgpu::CompareFunction::Greater,

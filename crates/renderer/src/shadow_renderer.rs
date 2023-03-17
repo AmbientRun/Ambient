@@ -5,6 +5,7 @@ use ambient_ecs::{ArchetypeFilter, World};
 use ambient_gpu::{
     gpu::GpuKey,
     mesh_buffer::MeshBuffer,
+    shader_module::DEPTH_FORMAT,
     texture::{Texture, TextureView},
 };
 use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
@@ -50,14 +51,16 @@ impl ShadowsRenderer {
                 mip_level_count: 1,
                 sample_count: 1,
                 dimension: wgpu::TextureDimension::D2,
-                format: wgpu::TextureFormat::Depth32Float,
+                format: DEPTH_FORMAT,
                 usage: wgpu::TextureUsages::RENDER_ATTACHMENT
                     | wgpu::TextureUsages::TEXTURE_BINDING
                     | wgpu::TextureUsages::COPY_SRC
                     | wgpu::TextureUsages::COPY_DST,
             },
         ));
-        let shadow_view = shadow_texture.create_view(&wgpu::TextureViewDescriptor::default());
+
+        let shadow_view =
+            shadow_texture.create_view(&wgpu::TextureViewDescriptor { aspect: wgpu::TextureAspect::DepthOnly, ..Default::default() });
 
         Self {
             renderer: TreeRenderer::new(TreeRendererConfig {
@@ -160,7 +163,7 @@ impl ShadowsRenderer {
                 depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
                     view: &cascade.dynamic_target,
                     depth_ops: Some(wgpu::Operations { load: wgpu::LoadOp::Clear(0.0), store: true }),
-                    stencil_ops: None,
+                    stencil_ops: Some(wgpu::Operations { load: wgpu::LoadOp::Load, store: true }),
                 }),
             });
             let globals = &cascade.globals.bind_group;

@@ -6,6 +6,7 @@ use ambient_gizmos::render::GizmoRenderer;
 use ambient_gpu::{
     blit::{Blitter, BlitterKey},
     gpu::Gpu,
+    shader_module::DEPTH_FORMAT,
     texture::{Texture, TextureView},
 };
 use ambient_renderer::{renderer_stats, RenderTarget, Renderer, RendererConfig, RendererTarget};
@@ -279,7 +280,7 @@ impl UIRender {
                 mip_level_count: 1,
                 sample_count: 1,
                 dimension: wgpu::TextureDimension::D2,
-                format: wgpu::TextureFormat::Depth32Float,
+                format: DEPTH_FORMAT,
                 usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_SRC,
             },
         )

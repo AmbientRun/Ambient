@@ -8,7 +8,7 @@ use ambient_core::{
 use ambient_ecs::{Component, ECSError, World};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
-    shader_module::BindGroupDesc,
+    shader_module::{BindGroupDesc, DEPTH_FORMAT},
     std_assets::DefaultSamplerKey,
     texture::{Texture, TextureView},
 };
@@ -268,7 +268,7 @@ fn create_dummy_shadow_texture(gpu: Arc<Gpu>) -> Arc<Texture> {
             mip_level_count: 1,
             sample_count: 1,
             dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Depth32Float,
+            format: DEPTH_FORMAT,
             usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
         },
     ))
@@ -307,7 +307,8 @@ impl ShadowAndUIGlobals {
         });
         let shadow_texture = create_dummy_shadow_texture(gpu.clone());
         let dummy_prev_frame = RenderTarget::new(gpu.clone(), UVec2::ONE, None);
-        let shadow_view = shadow_texture.create_view(&wgpu::TextureViewDescriptor::default());
+        let shadow_view =
+            shadow_texture.create_view(&wgpu::TextureViewDescriptor { aspect: wgpu::TextureAspect::DepthOnly, ..Default::default() });
         Self {
             bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
                 layout: &layout,

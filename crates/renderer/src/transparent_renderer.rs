@@ -5,7 +5,7 @@ use ambient_ecs::{query, ArchetypeFilter, EntityId, QueryState, World};
 use ambient_gpu::{
     gpu::Gpu,
     mesh_buffer::{MeshBuffer, MeshMetadata},
-    shader_module::{GraphicsPipeline, GraphicsPipelineInfo},
+    shader_module::{GraphicsPipeline, GraphicsPipelineInfo, DEPTH_FORMAT},
     typed_buffer::TypedBuffer,
 };
 use glam::{Mat4, UVec4, Vec3};
@@ -202,7 +202,7 @@ impl ShaderNode {
                 vs_main: &shader.vs_main,
                 fs_main: shader.get_fs_main_name(config.fs_main),
                 depth: Some(wgpu::DepthStencilState {
-                    format: wgpu::TextureFormat::Depth32Float,
+                    format: DEPTH_FORMAT,
                     depth_write_enabled,
                     depth_compare: wgpu::CompareFunction::Greater,
                     stencil: wgpu::StencilState::default(),
