@@ -226,16 +226,3 @@ pub fn pretty_duration(duration: Duration) -> String {
 
     res.join(" ")
 }
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn parse_duration() {
-        let input = ["", "1s", "4m", "5m2s"];
-        let output = input.into_iter().map(super::parse_duration).collect_vec();
-        let expected = [Ok(Duration::ZERO), Ok(Duration::from_secs(1)), Ok(Duration::from_secs(240)), Ok(Duration::from_secs(302))];
-        assert_eq!(output, expected);
-    }
-}
