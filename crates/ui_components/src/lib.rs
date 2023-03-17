@@ -163,3 +163,27 @@ impl UIExt for Element {
         self.set(margin_left(), margin).set(margin_right(), margin).set(margin_top(), margin).set(margin_bottom(), margin)
     }
 }
+
+#[cfg(feature = "guest")]
+pub fn setup_ui_camera() {
+    use ambient_guest_bridge::{
+        api::{concepts::make_orthographic_camera, entity, prelude::spawn_query},
+        components::{
+            camera::orthographic_from_window,
+            player::{player, user_id},
+        },
+        ecs::{Entity, EntityId},
+    };
+
+    spawn_query((player(), user_id())).bind(move |players| {
+        for (id, _) in players {
+            entity::add_components(
+                id,
+                Entity::new()
+                    .with_merge(make_orthographic_camera())
+                    .with(orthographic_from_window(), EntityId::resources())
+                    .with_default(ui_scene()),
+            );
+        }
+    });
+}

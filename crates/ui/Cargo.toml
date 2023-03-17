@@ -19,7 +19,7 @@ ambient_renderer = { path = "../renderer" }
 ambient_layout = { path = "../layout" }
 ambient_text = { path = "../text" }
 ambient_rect = { path = "../rect" }
-ambient_ui_components = { path = "../ui_components", features = ["native"] }
+ambient_ui_components = { path = "../ui_components", default-features = false, features = ["native"] }
 ambient_editor_derive = { path = "../editor_derive" }
 ambient_window_types = { path = "../window_types", features = ["native"] }
 ambient_event_types = { path = "../event_types" }
