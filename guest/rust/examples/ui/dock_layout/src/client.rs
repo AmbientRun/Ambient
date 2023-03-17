@@ -5,9 +5,11 @@ use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
     components::{
         camera::orthographic_from_window,
+        layout::{
+            docking_bottom, docking_left, fit_horizontal_none, fit_vertical_none, height, width,
+        },
         player::{player, user_id},
         transform::translation,
-        ui::{docking_bottom, docking_left, fit_horizontal_none, fit_vertical_none, height, width},
     },
     ecs::World,
 };

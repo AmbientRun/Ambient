@@ -19,11 +19,11 @@ use ambient_api::{
         player::{player, user_id},
         prefab::prefab_from_url,
         rendering::{color, fog_density, light_diffuse, sky, sun, water},
+        text::{font_size, text},
         transform::{
             inv_local_to_world, local_to_parent, local_to_world, mesh_to_local, mesh_to_world,
             rotation, scale, spherical_billboard, translation,
         },
-        ui::{font_size, text},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     entity::resources,

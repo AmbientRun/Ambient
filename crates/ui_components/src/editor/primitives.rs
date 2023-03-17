@@ -60,7 +60,7 @@ pub struct CustomParseInput<T> {
     pub on_change: Cb<dyn Fn(T) + Sync + Send>,
 }
 
-impl<T: Debug + ComponentValue> ElementComponent for CustomParseInput<T> {
+impl<T: Debug + Clone + Sync + Send + 'static> ElementComponent for CustomParseInput<T> {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { value, on_change, parse, to_string } = *self;
 

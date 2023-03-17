@@ -27,7 +27,7 @@ pub struct OffscreenEditor<T> {
     pub title: String,
 }
 
-impl<T: Debug + ComponentValue + Editor> ElementComponent for OffscreenEditor<T> {
+impl<T: Debug + Clone + Sync + Send + 'static + Editor> ElementComponent for OffscreenEditor<T> {
     fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> Element {
         let Self { title, value, on_confirm, editor, opts } = *self;
 
@@ -64,7 +64,7 @@ impl<T: Debug + ComponentValue + Editor> ElementComponent for OffscreenEditor<T>
 }
 
 #[element_component]
-fn EditorScreen<T: Debug + ComponentValue + Editor>(
+fn EditorScreen<T: Debug + Clone + Sync + Send + 'static + Editor>(
     hooks: &mut Hooks,
     value: T,
     title: String,

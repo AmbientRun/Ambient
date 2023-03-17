@@ -274,8 +274,8 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                     return;
                 }
                 if let Some(on_delete) = &on_delete {
-                    if let Some(keycode) = event.get_ref(keycode()) {
-                        let keycode = VirtualKeyCode::from_str(keycode).unwrap();
+                    if let Some(keycode) = event.get_ref(keycode()).clone() {
+                        let keycode = VirtualKeyCode::from_str(&keycode).unwrap();
                         if keycode == VirtualKeyCode::Back || keycode == VirtualKeyCode::Delete {
                             on_delete.0();
                         }
