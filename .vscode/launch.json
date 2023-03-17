@@ -21,7 +21,7 @@
             },
             "args": [
                 "run",
-                "guest/rust/examples/ui/text",
+                "guest/rust/examples/ui/slider",
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [

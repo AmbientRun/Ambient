@@ -1,4 +1,4 @@
 [project]
-id = "coungter"
+id = "counter"
 name = "Counter"
 version = "0.0.1"
