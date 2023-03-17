@@ -1,5 +1,5 @@
 [package]
-name = "ui_input"
+name = "editors"
 
 edition = "2021"
 publish = false

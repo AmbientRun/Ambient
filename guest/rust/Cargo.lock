@@ -301,6 +301,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68b0cf012f1230e43cd00ebb729c6bb58707ecfa8ad08b52ef3a4ccd2697fc30"
 
 [[package]]
+name = "editors"
+version = "0.2.0-dev"
+dependencies = [
+ "ambient_api",
+ "ambient_cb",
+ "ambient_element",
+ "ambient_guest_bridge",
+ "ambient_ui_components",
+ "indexmap",
+]
+
+[[package]]
 name = "either"
 version = "1.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1109,18 +1121,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "24eb03ba0eab1fd845050058ce5e616558e8f8d8fca633e6b163fe25c797213a"
 dependencies = [
  "once_cell",
-]
-
-[[package]]
-name = "ui_input"
-version = "0.2.0-dev"
-dependencies = [
- "ambient_api",
- "ambient_cb",
- "ambient_element",
- "ambient_guest_bridge",
- "ambient_ui_components",
- "indexmap",
 ]
 
 [[package]]
