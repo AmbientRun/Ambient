@@ -5,6 +5,7 @@ use ambient_core::{
     asset_cache,
     async_ecs::async_run,
     bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere},
+    gpu_ecs::ENTITIES_BIND_GROUP,
     main_scene, mesh, runtime,
     transform::{local_to_world, mesh_to_world},
 };
@@ -14,7 +15,8 @@ use ambient_meshes::CubeMeshKey;
 use ambient_renderer::{
     color, get_forward_modules, gpu_primitives_lod, gpu_primitives_mesh, material,
     pbr_material::{PbrMaterialFromUrl, PbrMaterialShaderKey},
-    primitives, renderer_shader, MaterialShader, RendererShader,
+    primitives, renderer_shader, MaterialShader, RendererShader, GLOBALS_BIND_GROUP, MATERIAL_BIND_GROUP, PRIMITIVES_BIND_GROUP,
+    RESOURCES_BIND_GROUP,
 };
 use ambient_std::{
     asset_url::{MaterialAssetType, TypedAssetUrl},
@@ -48,7 +50,7 @@ impl SyncAssetKey<Arc<RendererShader>> for DecalShaderKey {
         let shader = Shader::new(
             &assets,
             id.clone(),
-            &[],
+            &[GLOBALS_BIND_GROUP, ENTITIES_BIND_GROUP, RESOURCES_BIND_GROUP, PRIMITIVES_BIND_GROUP, MATERIAL_BIND_GROUP],
             &ShaderModule::new("decal_material", include_file!("decal.wgsl"))
                 .with_dependencies(get_forward_modules(&assets, self.shadow_cascades))
                 .with_dependency(self.material_shader.shader.clone()),
