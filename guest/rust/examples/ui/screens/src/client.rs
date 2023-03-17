@@ -2,7 +2,6 @@ use ambient_api::prelude::*;
 use ambient_cb::{cb, Cb};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_friendly_id::friendly_id;
-use ambient_guest_bridge::ecs::World;
 use ambient_ui_components::{
     button::Button,
     screens::{PageScreen, ScreenContainer},
@@ -89,12 +88,7 @@ fn SubScreen(hooks: &mut Hooks, on_back: Cb<dyn Fn() + Sync + Send>) -> Element 
 #[main]
 pub async fn main() -> EventResult {
     setup_ui_camera();
-
-    let mut tree = App.el().spawn_tree();
-    on(ambient_api::event::FRAME, move |_| {
-        tree.update(&mut World);
-        EventOk
-    });
+    App.el().spawn_interactive();
 
     EventOk
 }

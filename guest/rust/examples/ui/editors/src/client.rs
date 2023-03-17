@@ -1,12 +1,9 @@
 use ambient_api::prelude::*;
 use ambient_cb::cb;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::{
-    components::{
-        layout::{min_width, space_between_items, width},
-        transform::translation,
-    },
-    ecs::World,
+use ambient_guest_bridge::components::{
+    layout::{min_width, space_between_items, width},
+    transform::translation,
 };
 use ambient_ui_components::{
     default_theme::STREET,
@@ -92,12 +89,7 @@ fn App(hooks: &mut Hooks) -> Element {
 #[main]
 pub async fn main() -> EventResult {
     setup_ui_camera();
-
-    let mut tree = App.el().spawn_tree();
-    on(ambient_api::event::FRAME, move |_| {
-        tree.update(&mut World);
-        EventOk
-    });
+    App.el().spawn_interactive();
 
     EventOk
 }

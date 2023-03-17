@@ -1,6 +1,5 @@
 use ambient_api::prelude::*;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::ecs::World;
 use ambient_ui_components::{setup_ui_camera, text::Text};
 
 #[element_component]
@@ -24,12 +23,7 @@ fn App(hooks: &mut Hooks) -> Element {
 #[main]
 pub async fn main() -> EventResult {
     setup_ui_camera();
-
-    let mut tree = App.el().spawn_tree();
-    on(ambient_api::event::FRAME, move |_| {
-        tree.update(&mut World);
-        EventOk
-    });
+    App.el().spawn_interactive();
 
     EventOk
 }

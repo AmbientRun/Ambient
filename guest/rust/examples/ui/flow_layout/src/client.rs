@@ -1,15 +1,12 @@
 use ambient_api::prelude::*;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::{
-    components::{
-        layout::{
-            align_horizontal_center, align_horizontal_end, align_vertical_center,
-            align_vertical_end, fit_horizontal_children, fit_horizontal_none,
-            fit_vertical_children, fit_vertical_none, height, space_between_items, width,
-        },
-        text::font_size,
+use ambient_guest_bridge::components::{
+    layout::{
+        align_horizontal_center, align_horizontal_end, align_vertical_center, align_vertical_end,
+        fit_horizontal_children, fit_horizontal_none, fit_vertical_children, fit_vertical_none,
+        height, space_between_items, width,
     },
-    ecs::World,
+    text::font_size,
 };
 use ambient_ui_components::{
     layout::{FlowColumn, FlowRow},
@@ -87,12 +84,7 @@ fn App(_hooks: &mut Hooks) -> Element {
 #[main]
 pub async fn main() -> EventResult {
     setup_ui_camera();
-
-    let mut tree = App.el().spawn_tree();
-    on(ambient_api::event::FRAME, move |_| {
-        tree.update(&mut World);
-        EventOk
-    });
+    App.el().spawn_interactive();
 
     EventOk
 }

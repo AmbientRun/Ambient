@@ -211,6 +211,20 @@ impl Element {
     pub fn spawn_tree(self) -> ElementTree {
         ElementTree::new(&mut World, self)
     }
+    /// This spawns the elemet tree and sets up listeners to automatically update it.
+    #[cfg(feature = "guest")]
+    pub fn spawn_interactive(self) {
+        use ambient_guest_bridge::api::{
+            event,
+            prelude::{on, EventOk},
+        };
+
+        let mut tree = self.spawn_tree();
+        on(event::FRAME, move |_| {
+            tree.update(&mut World);
+            EventOk
+        });
+    }
 }
 
 impl Default for Element {
