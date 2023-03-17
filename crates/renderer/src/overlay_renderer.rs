@@ -15,9 +15,7 @@ use wgpu::{
     RenderPassDescriptor, RenderPipeline,
 };
 
-use super::{
-    material, overlay, renderer_shader, FSMain, RendererResources, RendererShader, RendererTarget, SharedMaterial, MATERIAL_BIND_GROUP,
-};
+use super::{material, overlay, renderer_shader, FSMain, RendererResources, RendererShader, RendererTarget, SharedMaterial};
 use crate::RendererConfig;
 
 struct OverlayEntity {

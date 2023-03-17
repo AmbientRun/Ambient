@@ -1,9 +1,9 @@
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 use ambient_ecs::{ArchetypeFilter, World};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
-    shader_module::{BindGroupDesc, ComputePipeline, Shader, ShaderIdent, ShaderModule},
+    shader_module::{ComputePipeline, Shader, ShaderIdent, ShaderModule},
     typed_buffer::TypedBuffer,
 };
 use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};

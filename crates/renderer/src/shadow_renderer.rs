@@ -12,13 +12,13 @@ use bytemuck::{Pod, Zeroable};
 use glam::{Mat4, Vec3};
 use itertools::Itertools;
 use smallvec::SmallVec;
-use wgpu::{BindGroup, DepthBiasState};
+use wgpu::DepthBiasState;
 
 use super::{
     cast_shadows, get_active_sun, FSMain, RendererCollectState, RendererResources, ShadowAndUIGlobals, TreeRenderer, TreeRendererConfig,
-    GLOBALS_BIND_GROUP, MAX_SHADOW_CASCADES, RESOURCES_BIND_GROUP,
+    MAX_SHADOW_CASCADES,
 };
-use crate::{bind_groups::BindGroups, default_sun_direction, PostSubmitFunc, RendererConfig, SubRenderer};
+use crate::{bind_groups::BindGroups, default_sun_direction, PostSubmitFunc, RendererConfig};
 
 pub struct ShadowsRenderer {
     renderer: TreeRenderer,

@@ -51,7 +51,6 @@ pub use shadow_renderer::*;
 pub use target::*;
 pub use transparent_renderer::*;
 pub use tree_renderer::*;
-use wgpu::BindGroupLayoutEntry;
 
 pub const MAX_PRIMITIVE_COUNT: usize = 16;
 

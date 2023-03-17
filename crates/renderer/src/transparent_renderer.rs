@@ -11,16 +11,9 @@ use ambient_gpu::{
 use glam::{Mat4, UVec4, Vec3};
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
-use wgpu::BindGroup;
 
-use super::{
-    double_sided, get_gpu_primitive_id, primitives, FSMain, RendererResources, RendererShader, SharedMaterial, MATERIAL_BIND_GROUP,
-    PRIMITIVES_BIND_GROUP,
-};
-use crate::{
-    bind_groups::{self, BindGroups},
-    transparency_group, RendererConfig,
-};
+use super::{double_sided, get_gpu_primitive_id, primitives, FSMain, RendererResources, RendererShader, SharedMaterial};
+use crate::{bind_groups::BindGroups, transparency_group, RendererConfig};
 use ambient_std::asset_cache::AssetCache;
 
 pub struct TransparentRendererConfig {

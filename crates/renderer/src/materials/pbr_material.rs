@@ -16,7 +16,7 @@ use ambient_std::{
 use async_trait::async_trait;
 use glam::Vec4;
 use serde::{Deserialize, Serialize};
-use wgpu::{util::DeviceExt, BindGroup, BindGroupLayoutEntry};
+use wgpu::{util::DeviceExt, BindGroup};
 
 use super::super::{Material, MaterialShader, RendererShader, MATERIAL_BIND_GROUP};
 use crate::{RendererConfig, StandardShaderKey};

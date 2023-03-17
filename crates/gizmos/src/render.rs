@@ -1,6 +1,6 @@
 use std::{fmt::Debug, sync::Arc};
 
-use ambient_core::{asset_cache, camera::Camera, gpu_ecs::ENTITIES_BIND_GROUP, main_scene, player::local_user_id};
+use ambient_core::{asset_cache, camera::Camera, main_scene, player::local_user_id};
 use ambient_ecs::World;
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
@@ -20,9 +20,7 @@ use ambient_std::{
 use bytemuck::{Pod, Zeroable};
 use glam::{vec2, Mat4, Quat, Vec2, Vec3};
 use once_cell::sync::OnceCell;
-use wgpu::{
-    BindGroup, BindGroupEntry, BindGroupLayout, BindGroupLayoutEntry, BlendState, BufferUsages, ColorTargetState, ColorWrites, ShaderStages,
-};
+use wgpu::{BindGroupEntry, BindGroupLayout, BindGroupLayoutEntry, BlendState, BufferUsages, ColorTargetState, ColorWrites, ShaderStages};
 
 use super::{gizmos, GizmoPrimitive};
 
@@ -89,7 +87,7 @@ impl SubRenderer for GizmoRenderer {
         encoder: &mut wgpu::CommandEncoder,
         target: &RendererTarget,
         bind_groups: &BindGroups<'a>,
-        post_submit: &mut Vec<PostSubmitFunc>,
+        _: &mut Vec<PostSubmitFunc>,
     ) {
         let gizmos = world.resource(gizmos());
         let camera = Camera::get_active(world, main_scene(), world.resource_opt(local_user_id())).unwrap_or_default();

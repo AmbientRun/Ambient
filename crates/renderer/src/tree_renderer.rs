@@ -15,7 +15,7 @@ use wgpu::DepthBiasState;
 
 use super::{
     double_sided, lod::cpu_lod_visible, primitives, CollectPrimitive, DrawIndexedIndirect, FSMain, PrimitiveIndex, RendererCollectState,
-    RendererResources, RendererShader, SharedMaterial, MATERIAL_BIND_GROUP, PRIMITIVES_BIND_GROUP,
+    RendererResources, RendererShader, SharedMaterial,
 };
 use crate::{bind_groups::BindGroups, RendererConfig};
 use ambient_std::asset_cache::AssetCache;

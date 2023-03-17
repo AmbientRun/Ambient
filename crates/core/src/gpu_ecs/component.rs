@@ -1,10 +1,7 @@
 use std::collections::HashMap;
 
 use ambient_ecs::ArchetypeFilter;
-use ambient_std::{
-    asset_cache::{AssetCache, SyncAssetKey},
-    include_file,
-};
+use ambient_std::asset_cache::{AssetCache, SyncAssetKey};
 use derive_more::Display;
 use glam::{Mat4, Vec4};
 use itertools::Itertools;

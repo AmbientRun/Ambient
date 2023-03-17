@@ -1,7 +1,13 @@
-use std::sync::Arc;
-
+use super::{
+    overlay_renderer::{OverlayConfig, OverlayRenderer},
+    shadow_renderer::ShadowsRenderer,
+    Culling, FSMain, ForwardGlobals, Outlines, OutlinesConfig, RenderTarget, RendererCollect, RendererCollectState, TransparentRenderer,
+    TransparentRendererConfig, TreeRenderer, TreeRendererConfig,
+};
+use crate::{bind_groups::BindGroups, get_common_layout, globals_layout, skinning::SkinsBufferKey, to_linear_format, ShaderDebugParams};
 use ambient_core::{asset_cache, camera::*, gpu, gpu_ecs::gpu_world, player::local_user_id, ui_scene};
 use ambient_ecs::{ArchetypeFilter, Component, World};
+use ambient_gpu::mesh_buffer::MeshBufferKey;
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     mesh_buffer::MeshBuffer,
@@ -12,20 +18,13 @@ use ambient_std::{
     color::Color,
 };
 use glam::uvec2;
+use std::sync::Arc;
 use wgpu::{BindGroupLayout, BindGroupLayoutEntry, TextureView};
 
-use super::{
-    overlay_renderer::{OverlayConfig, OverlayRenderer},
-    shadow_renderer::ShadowsRenderer,
-    Culling, FSMain, ForwardGlobals, Outlines, OutlinesConfig, RenderTarget, RendererCollect, RendererCollectState, TransparentRenderer,
-    TransparentRendererConfig, TreeRenderer, TreeRendererConfig,
-};
-use crate::{bind_groups::BindGroups, get_common_layout, globals_layout, skinning::SkinsBufferKey, to_linear_format, ShaderDebugParams};
 pub const GLOBALS_BIND_GROUP: &str = "GLOBALS_BIND_GROUP";
 pub const MATERIAL_BIND_GROUP: &str = "MATERIAL_BIND_GROUP";
 pub const RESOURCES_BIND_GROUP: &str = "RESOURCES_BIND_GROUP";
 pub const PRIMITIVES_BIND_GROUP: &str = "PRIMITIVES_BIND_GROUP";
-use ambient_gpu::mesh_buffer::MeshBufferKey;
 
 pub const MESH_METADATA_BINDING: u32 = 0;
 pub const MESH_BASE_BINDING: u32 = 1;
@@ -43,9 +42,8 @@ pub struct RendererResources {
 }
 
 #[derive(Debug)]
-struct RendererResourcesKey {
-    pub shadow_cascades: u32,
-}
+struct RendererResourcesKey;
+
 impl SyncAssetKey<RendererResources> for RendererResourcesKey {
     fn load(&self, assets: AssetCache) -> RendererResources {
         let primitives = get_common_layout().get(&assets);
@@ -154,7 +152,7 @@ impl Renderer {
     pub fn new(_: &mut World, assets: AssetCache, config: RendererConfig) -> Self {
         let gpu = GpuKey.get(&assets);
 
-        let renderer_resources = RendererResourcesKey { shadow_cascades: config.shadow_cascades }.get(&assets);
+        let renderer_resources = RendererResourcesKey.get(&assets);
 
         // Need atleast one for array<Camera, SIZE> to be valid
         let shadow_cascades = config.shadow_cascades;
