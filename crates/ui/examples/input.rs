@@ -27,7 +27,7 @@ impl ElementComponent for Example {
         let row = |name, editor| FlowRow(vec![Text::el(name).set(min_width(), 110.), editor]).el();
         FocusRoot(vec![FlowColumn(vec![
             FocusViz.el(),
-            row("TextInput", TextInput::new(text, set_text).el()),
+            row("TextInput", TextEditor::new(text, set_text).el()),
             row("F32Input", F32Input { value: float, on_change: set_float }.el()),
             // Button::new("Focus test", |_| {}).hotkey(winit::event::VirtualKeyCode::Back).el(),
             row(

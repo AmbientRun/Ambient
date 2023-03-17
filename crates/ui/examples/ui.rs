@@ -54,7 +54,7 @@ struct InputTest;
 impl ElementComponent for InputTest {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (value, set_value) = hooks.use_state("".to_string());
-        FlowColumn::el([Throbber.el(), TextInput::new(value, set_value).el()])
+        FlowColumn::el([Throbber.el(), TextEditor::new(value, set_value).el()])
     }
 }
 

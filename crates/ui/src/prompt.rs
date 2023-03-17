@@ -4,7 +4,7 @@ use ambient_std::{cb, Cb};
 
 use crate::{
     align_vertical, space_between_items, Button, ButtonStyle, DialogScreen, Editor, FlowColumn, FlowRow, ScrollArea, StylesExt, Text,
-    TextInput, STREET,
+    TextEditor, STREET,
 };
 
 #[element_component]
@@ -75,7 +75,7 @@ pub fn Prompt(
     DialogScreen(
         FlowColumn::el([
             Text::el(title).header_style(),
-            TextInput::new(value.clone(), set_value).placeholder(placeholder.or(Some("Enter value".to_string()))).el(),
+            TextEditor::new(value.clone(), set_value).placeholder(placeholder.or(Some("Enter value".to_string()))).el(),
             FlowRow::el([
                 Button::new("Ok", move |world| {
                     on_ok(world, value.clone());

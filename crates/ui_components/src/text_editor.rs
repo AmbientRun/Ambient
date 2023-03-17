@@ -19,7 +19,7 @@ use ambient_guest_bridge::{
 use ambient_window_types::{CursorIcon, VirtualKeyCode};
 
 #[element_component]
-pub fn TextInput(
+pub fn TextEditor(
     hooks: &mut Hooks,
     value: String,
     on_change: Cb<dyn Fn(String) + Sync + Send>,
@@ -117,7 +117,7 @@ pub fn TextInput(
     }
 }
 
-impl TextInput {
+impl TextEditor {
     pub fn new(value: String, on_change: Cb<dyn Fn(String) + Sync + Send>) -> Self {
         Self { value, on_change, on_submit: None, password: false, placeholder: None }
     }

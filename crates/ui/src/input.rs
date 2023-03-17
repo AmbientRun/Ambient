@@ -23,7 +23,7 @@ use winit::window::CursorIcon;
 
 use super::{Editor, EditorOpts, FlowColumn, FlowRow, Text, UIBase};
 use crate::{
-    background_color, border_radius, layout::*, primary_color, text_input::TextInput, Button, ButtonStyle, ChangeCb, Corners,
+    background_color, border_radius, layout::*, primary_color, text_editor::TextEditor, Button, ButtonStyle, ChangeCb, Corners,
     FontAwesomeIcon, Rectangle, STREET,
 };
 
@@ -48,7 +48,7 @@ impl<T: FromStr + Debug + std::fmt::Display + Clone + Sync + Send + 'static> Ele
         } else if !focused && text.is_some() {
             set_text(None);
         }
-        TextInput::new(
+        TextEditor::new(
             text.unwrap_or_else(|| value.to_string()),
             cb(move |text| {
                 if let Ok(value) = text.parse::<T>() {
@@ -82,7 +82,7 @@ impl<T: Debug + ComponentValue> ElementComponent for CustomParseInput<T> {
         } else if !focused && text.is_some() {
             set_text(None);
         }
-        TextInput::new(
+        TextEditor::new(
             text.unwrap_or_else(|| to_string(&value)),
             cb(move |text| {
                 if let Some(value) = parse(&text) {
@@ -410,7 +410,7 @@ impl DurationEditor {
 impl ElementComponent for DurationEditor {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         let Self { value: EditableDuration { input, dur, valid }, on_change } = *self;
-        let input = TextInput::new(input, cb(move |upd: String| on_change(EditableDuration::from(upd)))).el();
+        let input = TextEditor::new(input, cb(move |upd: String| on_change(EditableDuration::from(upd)))).el();
         let value = Text::el(format!("{dur:#?}"));
 
         if valid {

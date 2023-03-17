@@ -43,7 +43,7 @@ pub use ambient_ui_components::default_theme as style_constants;
 pub use ambient_ui_components::layout::*;
 pub use ambient_ui_components::text::*;
 pub use ambient_ui_components::*;
-pub use ambient_ui_components::{button, dropdown, tabs, text_input};
+pub use ambient_ui_components::{button, dropdown, tabs, text_editor};
 pub use asset_url::*;
 pub use button::*;
 pub use collections::*;
@@ -57,7 +57,7 @@ pub use screens::*;
 pub use select::*;
 pub use style_constants::*;
 pub use tabs::*;
-pub use text_input::*;
+pub use text_editor::*;
 pub use throbber::*;
 
 pub use self::image::*;

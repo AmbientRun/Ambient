@@ -16,7 +16,7 @@ use crate::{
     ScreenContainer, ScrollArea, StylesExt, Text, STREET,
 };
 use ambient_text::text;
-use ambient_ui_components::text_input::TextInput;
+use ambient_ui_components::text_editor::TextEditor;
 
 #[derive(Clone, Debug)]
 pub struct EditorOpts {
@@ -99,7 +99,7 @@ impl Editor for () {
 
 impl Editor for String {
     fn editor(self, on_change: Cb<dyn Fn(Self) + Sync + Send>, _: EditorOpts) -> Element {
-        TextInput::new(self, on_change).placeholder(Some("Empty")).el()
+        TextEditor::new(self, on_change).placeholder(Some("Empty")).el()
     }
 
     fn view(self, _opts: EditorOpts) -> Element {

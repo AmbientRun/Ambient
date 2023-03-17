@@ -15,7 +15,7 @@ use ambient_ui_components::{
     default_theme::STREET,
     layout::{FlowColumn, FlowRow},
     text::Text,
-    text_input::TextInput,
+    text_editor::TextEditor,
     FocusRoot, UIExt,
 };
 
@@ -29,7 +29,7 @@ fn App(hooks: &mut Hooks) -> Element {
     // let (minimal_list, set_minimal_list) = hooks.use_state(vec!["First".to_string(), "Second".to_string()]);
     let row = |name, editor| FlowRow(vec![Text::el(name).set(min_width(), 110.), editor]).el();
     FocusRoot(vec![FlowColumn(vec![
-        row("TextInput", TextInput::new(text, set_text).el()),
+        row("TextEditor", TextEditor::new(text, set_text).el()),
         // Button::new("Focus test", |_| {}).hotkey(winit::event::VirtualKeyCode::Back).el(),
         // row(
         //     "DropDownSelect",
