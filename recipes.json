@@ -32,7 +32,7 @@
                 "adapter": "rust",
                 "args": [
                     "run",
-                    "./guest/rust/examples/basics/minigolf"
+                    "./guest/rust/examples/games/minigolf"
                 ]
             }
         }
