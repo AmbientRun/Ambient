@@ -292,7 +292,7 @@ impl Renderer {
         };
 
         if let Some(shadows) = &mut self.shadows {
-            shadows.render(world, &mesh_buffer, encoder, &bind_groups, post_submit);
+            shadows.render(&mesh_buffer, encoder, &bind_groups, post_submit);
         }
 
         {

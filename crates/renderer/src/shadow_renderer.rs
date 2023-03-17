@@ -145,7 +145,6 @@ impl ShadowsRenderer {
 impl ShadowsRenderer {
     pub fn render<'a>(
         &'a mut self,
-        world: &World,
         mesh_buffer: &MeshBuffer,
         encoder: &mut wgpu::CommandEncoder,
         bind_groups: &BindGroups<'a>,
@@ -166,7 +165,7 @@ impl ShadowsRenderer {
             });
             let globals = &cascade.globals.bind_group;
             render_pass.set_index_buffer(mesh_buffer.index_buffer.buffer().slice(..), wgpu::IndexFormat::Uint32);
-            self.renderer.render(&mut render_pass, &cascade.collect_state, &bind_groups);
+            self.renderer.render(&mut render_pass, &cascade.collect_state, &BindGroups { globals, ..*bind_groups });
             {
                 profiling::scope!("Drop render pass");
                 drop(render_pass);

@@ -110,6 +110,7 @@ pub fn client_systems() -> SystemGroup {
                             .with(local_bounding_aabb(), aabb)
                             .with(world_bounding_sphere(), aabb.to_sphere())
                             .with(world_bounding_aabb(), aabb);
+
                         if !world.has_component(id, local_to_world()) {
                             data.set(local_to_world(), Default::default());
                         }
