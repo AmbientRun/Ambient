@@ -38,8 +38,8 @@ components!("ui", {
     font_size: f32,
     @[Debuggable, Networked, Store, Name["Font style"], Description["One of Bold, BoldItalic, Medium, MediumItalic, Regular, Italic, Light or LightItalic."]]
     font_style: String,
-    @[Debuggable]
-    font_family: FontFamily,
+    @[Debuggable, Networked, Store, Name["Font family"], Description["Font family to be used. Can either be 'Default', 'FontAwesome', 'FontAwesomeSolid', 'Code' or a url to a font."]]
+    font_family: String,
     font_arc: Arc<FontArc>,
 
     glyph_brush: Arc<Mutex<GlyphBrush<GlyphVertex>>>,
@@ -91,6 +91,26 @@ pub enum FontFamily {
     Custom(AbsAssetUrl),
     FontAwesome { solid: bool },
     SourceSansPro,
+}
+impl FontFamily {
+    pub fn from_str(value: &str) -> anyhow::Result<Self> {
+        match value {
+            "Default" => Ok(Self::Default),
+            "FontAwesome" => Ok(Self::FontAwesome { solid: false }),
+            "FontAwesomeSolid" => Ok(Self::FontAwesome { solid: true }),
+            "Code" => Ok(Self::SourceSansPro),
+            url => Ok(Self::Custom(AbsAssetUrl::parse(url)?)),
+        }
+    }
+    pub fn to_string(&self) -> String {
+        match self {
+            FontFamily::Default => "Default".to_string(),
+            FontFamily::Custom(url) => url.to_string(),
+            FontFamily::FontAwesome { solid: false } => "FontAwesome".to_string(),
+            FontFamily::FontAwesome { solid: true } => "FontAwesomeSolid".to_string(),
+            FontFamily::SourceSansPro => "Code".to_string(),
+        }
+    }
 }
 impl Default for FontFamily {
     fn default() -> Self {
@@ -164,7 +184,7 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
         vec![
             query(text()).excl(font_family()).to_system(|q, world, qs, _| {
                 for (id, _) in q.collect_cloned(world, qs) {
-                    world.add_component(id, font_family(), FontFamily::Default).unwrap();
+                    world.add_component(id, font_family(), FontFamily::Default.to_string()).unwrap();
                 }
             }),
             query(text()).excl(font_style()).to_system(|q, world, qs, _| {
@@ -215,7 +235,12 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                     let async_run = world.resource(async_run()).clone();
                     let assets = world.resource(asset_cache()).clone();
                     world.resource(runtime()).spawn(async move {
-                        let font = FontDef(font_family, unwrap_log_warn!(FontStyle::from_str(&font_style))).get(&assets).await;
+                        let font = FontDef(
+                            unwrap_log_warn!(FontFamily::from_str(&font_family)),
+                            unwrap_log_warn!(FontStyle::from_str(&font_style)),
+                        )
+                        .get(&assets)
+                        .await;
                         async_run.run(move |world| {
                             world.add_component(id, font_arc(), font).ok();
                         });

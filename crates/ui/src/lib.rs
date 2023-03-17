@@ -169,11 +169,6 @@ pub fn command_modifier() -> ModifiersState {
 }
 
 #[element_component]
-pub fn FontAwesomeIcon(_hooks: &mut Hooks, icon: u32, solid: bool) -> Element {
-    Text::el(char::from_u32(icon).unwrap().to_string()).set(font_family(), FontFamily::FontAwesome { solid })
-}
-
-#[element_component]
 pub fn Separator(_hooks: &mut Hooks, vertical: bool) -> Element {
     let el = Flow(vec![]).el().with_background(Color::rgba(0., 0., 0., 0.8).into());
     if vertical {
