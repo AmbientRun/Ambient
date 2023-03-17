@@ -33,7 +33,7 @@ use ambient_physics::{
 };
 use ambient_renderer::{cast_shadows, color, gpu_primitives, lod::cpu_lod, material, primitives, renderer_shader, SharedMaterial};
 use ambient_std::{
-    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
+    asset_cache::{Asset, AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
     cb, friendly_id, log_result,
     shapes::{Sphere, AABB},
