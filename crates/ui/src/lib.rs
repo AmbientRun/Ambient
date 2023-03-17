@@ -6,12 +6,12 @@ use std::{
     },
 };
 
-use ambient_core::{hierarchy::children, transform::*, window::window_ctl, window::WindowCtl};
+use ambient_core::{transform::*, window::window_ctl, window::WindowCtl};
 pub use ambient_ecs::{EntityId, SystemGroup, World};
 pub use ambient_editor_derive::ElementEditor;
 pub use ambient_element as element;
-use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_input::{event_focus_change, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels};
+use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_input::{event_focus_change, event_mouse_motion};
 use ambient_std::color::Color;
 pub use ambient_std::{cb, Cb};
 use ambient_window_types::ModifiersState;
@@ -54,7 +54,7 @@ pub use tabs::*;
 pub use throbber::*;
 
 pub use self::image::*;
-use ambient_event_types::{WINDOW_FOCUSED, WINDOW_MOUSE_MOTION, WINDOW_MOUSE_WHEEL};
+use ambient_event_types::{WINDOW_FOCUSED, WINDOW_MOUSE_MOTION};
 use ambient_window_types::MouseButton;
 
 pub fn init_all_components() {

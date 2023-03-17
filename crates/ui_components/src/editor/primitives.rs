@@ -4,7 +4,6 @@ use std::{fmt::Debug, time::Duration};
 use ambient_cb::{cb, Cb};
 use ambient_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_guest_bridge::components::layout::margin_right;
-use ambient_guest_bridge::ecs::ComponentValue;
 use convert_case::{Case, Casing};
 use glam::{Vec2, Vec3, Vec4};
 use itertools::Itertools;

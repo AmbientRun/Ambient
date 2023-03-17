@@ -14,7 +14,7 @@ use ambient_guest_bridge::{
 };
 use ambient_ui_components::{
     default_theme::STREET,
-    editor::{Editor, ListEditor, MinimalListEditor, TextEditor},
+    editor::{Editor, F32Input, ListEditor, MinimalListEditor, TextEditor},
     layout::{FlowColumn, FlowRow},
     select::DropdownSelect,
     text::Text,
@@ -25,6 +25,7 @@ use indexmap::IndexMap;
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
     let (text, set_text) = hooks.use_state("Enter some text".to_string());
+    let (float, set_float) = hooks.use_state(0.0);
     let (vector3, set_vector3) = hooks.use_state(Vec3::ZERO);
     let (index_map, set_index_map) = hooks.use_state(
         vec![("First".to_string(), "Second".to_string())]
@@ -37,7 +38,14 @@ fn App(hooks: &mut Hooks) -> Element {
     let row = |name, editor| FlowRow(vec![Text::el(name).set(min_width(), 110.), editor]).el();
     FocusRoot(vec![FlowColumn(vec![
         row("TextEditor", TextEditor::new(text, set_text).el()),
-        // Button::new("Focus test", |_| {}).hotkey(winit::event::VirtualKeyCode::Back).el(),
+        row(
+            "F32Input",
+            F32Input {
+                value: float,
+                on_change: set_float,
+            }
+            .el(),
+        ),
         row(
             "DropDownSelect",
             DropdownSelect {

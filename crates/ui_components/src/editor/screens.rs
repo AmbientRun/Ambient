@@ -10,10 +10,7 @@ use crate::{
 use super::{ChangeCb, Editor, EditorOpts};
 use ambient_cb::{cb, Cb};
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_guest_bridge::{
-    components::layout::{align_vertical_center, space_between_items},
-    ecs::ComponentValue,
-};
+use ambient_guest_bridge::components::layout::{align_vertical_center, space_between_items};
 use closure::closure;
 use std::fmt::Debug;
 
