@@ -4,7 +4,7 @@ use crate::{
     UIBase, UIExt,
 };
 use ambient_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::{transform::translation, ui::screen};
+use ambient_guest_bridge::components::{layout::screen, transform::translation};
 use glam::vec3;
 
 #[derive(Clone, Debug)]

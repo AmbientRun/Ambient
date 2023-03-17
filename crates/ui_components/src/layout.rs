@@ -5,12 +5,12 @@ use ambient_element::{
 };
 use ambient_guest_bridge::components::{
     ecs::children,
-    transform::{local_to_parent, translation},
-    ui::{
+    layout::{
         align_horizontal_begin, align_horizontal_center, align_vertical_begin, align_vertical_center, fit_horizontal_children,
         fit_horizontal_none, fit_vertical_children, fit_vertical_none, height, is_book_file, layout_bookcase, layout_dock, layout_flow,
         orientation_horizontal, orientation_vertical, width,
     },
+    transform::{local_to_parent, translation},
 };
 use glam::{vec2, vec3, Vec2};
 use itertools::Itertools;

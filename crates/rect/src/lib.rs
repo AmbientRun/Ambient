@@ -23,7 +23,7 @@ use ambient_std::{
 use glam::{vec4, UVec3, Vec4};
 use wgpu::BindGroup;
 
-components!("ui", {
+components!("rect", {
     @[Debuggable, Networked, Store, Name["Background color"], Description["Background color of an entity with a `rect` component."]]
     background_color: Vec4,
     @[Debuggable, Networked, Store, Name["Border color"], Description["Border color of an entity with a `rect` component."]]

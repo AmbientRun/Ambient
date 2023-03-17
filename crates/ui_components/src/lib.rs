@@ -6,11 +6,12 @@ use ambient_event_types::WINDOW_MOUSE_INPUT;
 use ambient_guest_bridge::components::{
     app::{ui_scene, window_logical_size, window_physical_size},
     input::event_mouse_input,
-    transform::{local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation},
-    ui::{
-        background_color, gpu_ui_size, height, margin_bottom, margin_left, margin_right, margin_top, mesh_to_local_from_size,
-        padding_bottom, padding_left, padding_right, padding_top, rect, width,
+    layout::{
+        gpu_ui_size, height, margin_bottom, margin_left, margin_right, margin_top, mesh_to_local_from_size, padding_bottom, padding_left,
+        padding_right, padding_top, width,
     },
+    rect::{background_color, rect},
+    transform::{local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation},
 };
 use clickarea::ClickArea;
 use glam::{vec3, Mat4, UVec2, Vec3, Vec4};

@@ -10,10 +10,10 @@ use ambient_event_types::{WINDOW_KEYBOARD_INPUT, WINDOW_RECEIVED_CHARACTER};
 use ambient_guest_bridge::{
     components::{
         input::{event_keyboard_input, event_received_character, keycode},
+        layout::{align_horizontal_end, fit_horizontal_none, fit_vertical_none, height, layout_flow, min_height, min_width, width},
         rendering::color,
         text::text,
         transform::translation,
-        ui::{align_horizontal_end, fit_horizontal_none, fit_vertical_none, height, layout_flow, min_height, min_width, width},
     },
     window::{get_clipboard, set_cursor},
 };

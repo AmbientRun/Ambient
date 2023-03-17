@@ -7,7 +7,7 @@ use ambient_guest_bridge::{
         camera::orthographic_from_window,
         player::{player, user_id},
         transform::translation,
-        ui::{min_width, space_between_items, width},
+        layout::{min_width, space_between_items, width},
     },
     ecs::World,
 };

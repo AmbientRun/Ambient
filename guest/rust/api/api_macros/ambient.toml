@@ -60,9 +60,13 @@ description = "Rendering-related state, including global rendering parameters an
 name = "Transform"
 description = "Entity transform state (including translation, rotation and scale), as well as other transformations for this entity."
 
-[components."core::ui"]
-name = "UI"
-description = "Anything related to UI."
+[components."core::layout"]
+name = "Layout"
+description = "Layout components such as flow, margins etc."
+
+[components."core::rect"]
+name = "Rect"
+description = "Rounded corners rectangle rendering components, with an optional border."
 
 [components."core::text"]
 name = "Text"
@@ -404,6 +408,246 @@ name = "Mouse pickable min"
 description = "This entity can be clicked by the mouse, and this component defines the min AABB bound of the click area."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::layout::align_horizontal_begin"]
+type = "Empty"
+name = "Align horizontal begin"
+description = "Layout alignment: horizontal begin."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::align_horizontal_center"]
+type = "Empty"
+name = "Align horizontal center"
+description = "Layout alignment: horizontal center."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::align_horizontal_end"]
+type = "Empty"
+name = "Align horizontal end"
+description = "Layout alignment: horizontal end."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::align_vertical_begin"]
+type = "Empty"
+name = "Align vertical begin"
+description = "Layout alignment: vertical begin."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::align_vertical_center"]
+type = "Empty"
+name = "Align vertical center"
+description = "Layout alignment: vertical center."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::align_vertical_end"]
+type = "Empty"
+name = "Align vertical end"
+description = "Layout alignment: vertical end."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::docking_bottom"]
+type = "Empty"
+name = "Docking bottom"
+description = "Layout docking: bottom."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::docking_fill"]
+type = "Empty"
+name = "Docking fill"
+description = "Layout docking: fill."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::docking_left"]
+type = "Empty"
+name = "Docking left"
+description = "Layout docking: left."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::docking_right"]
+type = "Empty"
+name = "Docking right"
+description = "Layout docking: right."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::docking_top"]
+type = "Empty"
+name = "Docking top"
+description = "Layout docking: top."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::fit_horizontal_children"]
+type = "Empty"
+name = "Fit horizontal children"
+description = "Layout fit: horizontal children."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::fit_horizontal_none"]
+type = "Empty"
+name = "Fit horizontal none"
+description = "Layout fit: horizontal none."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::fit_horizontal_parent"]
+type = "Empty"
+name = "Fit horizontal parent"
+description = "Layout fit: horizontal parent."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::fit_vertical_children"]
+type = "Empty"
+name = "Fit vertical children"
+description = "Layout fit: vertical children."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::fit_vertical_none"]
+type = "Empty"
+name = "Fit vertical none"
+description = "Layout fit: vertical none."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::fit_vertical_parent"]
+type = "Empty"
+name = "Fit vertical parent"
+description = "Layout fit: vertical parent."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::gpu_ui_size"]
+type = "Vec4"
+name = "GPU UI size"
+description = "Upload the width and height of this UI element to the GPU."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::height"]
+type = "F32"
+name = "Height"
+description = "The height of a UI element."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::is_book_file"]
+type = "Empty"
+name = "Is book file"
+description = "This is a file in a `layout_bookcase`."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::layout_bookcase"]
+type = "Empty"
+name = "Bookcase layout"
+description = "Min-max bookcase layout."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::layout_dock"]
+type = "Empty"
+name = "Dock layout"
+description = "Top-down dock layout."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::layout_flow"]
+type = "Empty"
+name = "Flow layout"
+description = "Bottom-up flow layout."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::layout_width_to_children"]
+type = "Empty"
+name = "Layout width to children"
+description = "Width to children."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::margin_bottom"]
+type = "F32"
+name = "Margin bottom"
+description = "Layout margin: bottom."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::margin_left"]
+type = "F32"
+name = "Margin left"
+description = "Layout margin: left."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::margin_right"]
+type = "F32"
+name = "Margin right"
+description = "Layout margin: right."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::margin_top"]
+type = "F32"
+name = "Margin top"
+description = "Layout margin: top."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::mesh_to_local_from_size"]
+type = "Empty"
+name = "Mest to local from size"
+description = "Update the `mesh_to_local` based on the width and height of this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::min_height"]
+type = "F32"
+name = "Minimum height"
+description = "The minimum height of a UI element."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::min_width"]
+type = "F32"
+name = "Minimum width"
+description = "The minimum width of a UI element."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::orientation_horizontal"]
+type = "Empty"
+name = "Orientation horizontal"
+description = "Layout orientation: horizontal."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::orientation_vertical"]
+type = "Empty"
+name = "Orientation vertical"
+description = "Layout orientation: vertical."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::padding_bottom"]
+type = "F32"
+name = "Padding bottom"
+description = "Layout padding: bottom."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::padding_left"]
+type = "F32"
+name = "Padding left"
+description = "Layout padding: left."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::padding_right"]
+type = "F32"
+name = "Padding right"
+description = "Layout padding: right."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::padding_top"]
+type = "F32"
+name = "Padding top"
+description = "Layout padding: top."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::screen"]
+type = "Empty"
+name = "Screen"
+description = "This entity will be treated as a screen. Used by the Screen ui component."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::space_between_items"]
+type = "F32"
+name = "Space between items"
+description = "Space between items in a layout."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::width"]
+type = "F32"
+name = "Width"
+description = "The width of a UI element."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::model::model_animatable"]
 type = "Bool"
 name = "Model animatable"
@@ -671,6 +915,38 @@ description = "Set the latitudinal stacks of a `sphere` entity."
 default = 18
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::rect::background_color"]
+type = "Vec4"
+name = "Background color"
+description = "Background color of an entity with a `rect` component."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rect::border_color"]
+type = "Vec4"
+name = "Border color"
+description = "Border color of an entity with a `rect` component."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rect::border_radius"]
+type = "Vec4"
+name = "Border radius"
+description = """
+Radius for each corner of an entity with a `rect` component.
+`x` = top-left, `y` = top-right, `z` = bottom-left, `w` = bottom-right."""
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rect::border_thickness"]
+type = "F32"
+name = "Border thickness"
+description = "Border thickness of an entity with a `rect` component."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rect::rect"]
+type = "Empty"
+name = "Rect"
+description = "If attached to an entity, the entity will be converted to a UI rectangle, with optionally rounded corners and borders."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::rendering::cast_shadows"]
 type = "Empty"
 name = "Cast shadows"
@@ -897,278 +1173,6 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "Vec3"
 name = "Translation"
 description = "The translation/position of this entity."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::align_horizontal_begin"]
-type = "Empty"
-name = "Align horizontal begin"
-description = "Layout alignment: horizontal begin."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::align_horizontal_center"]
-type = "Empty"
-name = "Align horizontal center"
-description = "Layout alignment: horizontal center."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::align_horizontal_end"]
-type = "Empty"
-name = "Align horizontal end"
-description = "Layout alignment: horizontal end."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::align_vertical_begin"]
-type = "Empty"
-name = "Align vertical begin"
-description = "Layout alignment: vertical begin."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::align_vertical_center"]
-type = "Empty"
-name = "Align vertical center"
-description = "Layout alignment: vertical center."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::align_vertical_end"]
-type = "Empty"
-name = "Align vertical end"
-description = "Layout alignment: vertical end."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::background_color"]
-type = "Vec4"
-name = "Background color"
-description = "Background color of an entity with a `rect` component."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::border_color"]
-type = "Vec4"
-name = "Border color"
-description = "Border color of an entity with a `rect` component."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::border_radius"]
-type = "Vec4"
-name = "Border radius"
-description = """
-Radius for each corner of an entity with a `rect` component.
-`x` = top-left, `y` = top-right, `z` = bottom-left, `w` = bottom-right."""
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::border_thickness"]
-type = "F32"
-name = "Border thickness"
-description = "Border thickness of an entity with a `rect` component."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::docking_bottom"]
-type = "Empty"
-name = "Docking bottom"
-description = "Layout docking: bottom."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::docking_fill"]
-type = "Empty"
-name = "Docking fill"
-description = "Layout docking: fill."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::docking_left"]
-type = "Empty"
-name = "Docking left"
-description = "Layout docking: left."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::docking_right"]
-type = "Empty"
-name = "Docking right"
-description = "Layout docking: right."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::docking_top"]
-type = "Empty"
-name = "Docking top"
-description = "Layout docking: top."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::fit_horizontal_children"]
-type = "Empty"
-name = "Fit horizontal children"
-description = "Layout fit: horizontal children."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::fit_horizontal_none"]
-type = "Empty"
-name = "Fit horizontal none"
-description = "Layout fit: horizontal none."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::fit_horizontal_parent"]
-type = "Empty"
-name = "Fit horizontal parent"
-description = "Layout fit: horizontal parent."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::fit_vertical_children"]
-type = "Empty"
-name = "Fit vertical children"
-description = "Layout fit: vertical children."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::fit_vertical_none"]
-type = "Empty"
-name = "Fit vertical none"
-description = "Layout fit: vertical none."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::fit_vertical_parent"]
-type = "Empty"
-name = "Fit vertical parent"
-description = "Layout fit: vertical parent."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::gpu_ui_size"]
-type = "Vec4"
-name = "GPU UI size"
-description = "Upload the width and height of this UI element to the GPU."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::height"]
-type = "F32"
-name = "Height"
-description = "The height of a UI element."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::is_book_file"]
-type = "Empty"
-name = "Is book file"
-description = "This is a file in a `layout_bookcase`."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::layout_bookcase"]
-type = "Empty"
-name = "Bookcase layout"
-description = "Min-max bookcase layout."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::layout_dock"]
-type = "Empty"
-name = "Dock layout"
-description = "Top-down dock layout."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::layout_flow"]
-type = "Empty"
-name = "Flow layout"
-description = "Bottom-up flow layout."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::layout_width_to_children"]
-type = "Empty"
-name = "Layout width to children"
-description = "Width to children."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::margin_bottom"]
-type = "F32"
-name = "Margin bottom"
-description = "Layout margin: bottom."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::margin_left"]
-type = "F32"
-name = "Margin left"
-description = "Layout margin: left."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::margin_right"]
-type = "F32"
-name = "Margin right"
-description = "Layout margin: right."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::margin_top"]
-type = "F32"
-name = "Margin top"
-description = "Layout margin: top."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::mesh_to_local_from_size"]
-type = "Empty"
-name = "Mest to local from size"
-description = "Update the `mesh_to_local` based on the width and height of this entity."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::min_height"]
-type = "F32"
-name = "Minimum height"
-description = "The minimum height of a UI element."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::min_width"]
-type = "F32"
-name = "Minimum width"
-description = "The minimum width of a UI element."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::orientation_horizontal"]
-type = "Empty"
-name = "Orientation horizontal"
-description = "Layout orientation: horizontal."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::orientation_vertical"]
-type = "Empty"
-name = "Orientation vertical"
-description = "Layout orientation: vertical."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::padding_bottom"]
-type = "F32"
-name = "Padding bottom"
-description = "Layout padding: bottom."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::padding_left"]
-type = "F32"
-name = "Padding left"
-description = "Layout padding: left."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::padding_right"]
-type = "F32"
-name = "Padding right"
-description = "Layout padding: right."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::padding_top"]
-type = "F32"
-name = "Padding top"
-description = "Layout padding: top."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::rect"]
-type = "Empty"
-name = "Rect"
-description = "If attached to an entity, the entity will be converted to a UI rectangle, with optionally rounded corners and borders."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::screen"]
-type = "Empty"
-name = "Screen"
-description = "This entity will be treated as a screen. Used by the Screen ui component."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::space_between_items"]
-type = "F32"
-name = "Space between items"
-description = "Space between items in a layout."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::ui::width"]
-type = "F32"
-name = "Width"
-description = "The width of a UI element."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [concepts.transformable]

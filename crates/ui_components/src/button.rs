@@ -23,12 +23,13 @@ use ambient_color::Color;
 use ambient_guest_bridge::{
     components::{
         input::{event_focus_change, event_keyboard_input, event_mouse_input, keyboard_modifiers, keycode},
+        layout::{
+            align_vertical_center, fit_horizontal_parent, height, margin_top, min_height, padding_bottom, padding_left, padding_right,
+            padding_top, space_between_items,
+        },
+        rect::{border_color, border_radius, border_thickness},
         rendering::color,
         text::font_style,
-        ui::{
-            align_vertical_center, border_color, border_radius, border_thickness, fit_horizontal_parent, height, margin_top, min_height,
-            padding_bottom, padding_left, padding_right, padding_top, space_between_items,
-        },
     },
     ecs::World,
     run_async,
