@@ -6,7 +6,7 @@ use ambient_ecs::{
 };
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
 use ambient_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
-use collider::collider_shapes;
+use collider::{collider_shapes, collider_shapes_convex};
 use glam::{vec3, Mat4, Vec3};
 use helpers::release_px_scene;
 use parking_lot::Mutex;
@@ -301,6 +301,9 @@ pub fn on_forking_systems() -> SystemGroup<ForkingEvent> {
             }
             for (id, _) in query(()).incl(collider_shapes()).collect_cloned(world, None) {
                 world.remove_component(id, collider_shapes()).unwrap();
+            }
+            for (id, _) in query(()).incl(collider_shapes_convex()).collect_cloned(world, None) {
+                world.remove_component(id, collider_shapes_convex()).unwrap();
             }
         }))],
     )
