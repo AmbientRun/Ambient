@@ -34,7 +34,7 @@ components!("animation", {
     animation_errors: String,
 
     /// This is a shorthand for working directly with the animation_controller
-    @[MakeDefault, Editable, Debuggable, Networked, Store]
+    @[MakeDefault,  Debuggable, Networked, Store]
     loop_animation: TypedAssetUrl<AnimationAssetType>,
 });
 

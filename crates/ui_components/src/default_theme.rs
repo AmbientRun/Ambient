@@ -4,8 +4,10 @@ use crate::UIExt;
 use ambient_color::Color;
 use ambient_element::Element;
 use ambient_guest_bridge::components::{
+    layout::{align_vertical_center, space_between_items},
+    rect::border_radius,
     rendering::color,
-    ui::{align_vertical_center, border_radius, font_size, space_between_items},
+    text::font_size,
 };
 
 pub fn primary_color() -> Color {

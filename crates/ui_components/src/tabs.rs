@@ -7,7 +7,7 @@ use crate::{
 };
 use ambient_cb::{cb, Cb};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_guest_bridge::{components::ui::space_between_items, ecs::ComponentValue};
+use ambient_guest_bridge::{components::layout::space_between_items, ecs::ComponentValue};
 
 #[derive(Clone, Debug)]
 pub struct TabBar<T: ToString + PartialEq + Clone + Debug + Sync + Send + 'static> {

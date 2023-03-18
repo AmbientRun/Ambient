@@ -7,10 +7,10 @@ pub async fn main() -> EventResult {
             app::main_scene,
             camera::aspect_ratio_from_window,
             rendering::color,
+            text::text,
             transform::{
                 local_to_world, lookat_center, mesh_to_local, mesh_to_world, scale, translation,
             },
-            ui::text,
         },
         concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     };

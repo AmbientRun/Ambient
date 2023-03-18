@@ -6,30 +6,23 @@ use std::{
     },
 };
 
-use ambient_core::{hierarchy::children, transform::*, window::window_ctl, window::WindowCtl};
+use ambient_core::{transform::*, window::window_ctl, window::WindowCtl};
 pub use ambient_ecs::{EntityId, SystemGroup, World};
 pub use ambient_editor_derive::ElementEditor;
 pub use ambient_element as element;
-use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_input::{event_focus_change, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels};
-use ambient_std::color::Color;
+use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_input::{event_focus_change, event_mouse_motion};
 pub use ambient_std::{cb, Cb};
 use ambient_window_types::ModifiersState;
 use glam::*;
 use parking_lot::Mutex;
 use winit::window::CursorGrabMode;
 
-mod asset_url;
+// mod asset_url;
 
-mod collections;
-mod editor;
+mod component_editor;
 pub mod graph;
-mod hooks;
 mod image;
-mod input;
-mod prompt;
-
-mod throbber;
 
 pub use ambient_layout as layout;
 pub use ambient_rect as rect;
@@ -39,15 +32,13 @@ pub use ambient_text::*;
 pub use ambient_ui_components::clickarea::*;
 pub use ambient_ui_components::default_theme as style_constants;
 pub use ambient_ui_components::*;
-pub use ambient_ui_components::{button, dropdown, select, tabs};
-pub use ambient_ui_components::{editor::*, layout::*, text::*};
-pub use asset_url::*;
+pub use ambient_ui_components::{button, dropdown, prompt, select, tabs, throbber};
+pub use ambient_ui_components::{editor::*, layout::*, scroll_area::*, text::*};
+// pub use asset_url::*;
 pub use button::*;
-pub use collections::*;
+pub use component_editor::*;
 pub use dropdown::*;
 pub use editor::*;
-pub use hooks::*;
-pub use input::*;
 pub use layout::*;
 pub use prompt::*;
 pub use screens::*;
@@ -57,7 +48,7 @@ pub use tabs::*;
 pub use throbber::*;
 
 pub use self::image::*;
-use ambient_event_types::{WINDOW_FOCUSED, WINDOW_MOUSE_MOTION, WINDOW_MOUSE_WHEEL};
+use ambient_event_types::{WINDOW_FOCUSED, WINDOW_MOUSE_MOTION};
 use ambient_window_types::MouseButton;
 
 pub fn init_all_components() {
@@ -69,32 +60,6 @@ pub fn init_all_components() {
 
 pub fn systems() -> SystemGroup {
     SystemGroup::new("ui", vec![Box::new(rect::systems()), Box::new(text::systems(true)), Box::new(layout::layout_systems())])
-}
-
-#[derive(Debug, Clone)]
-pub struct ScrollArea(pub Element);
-impl ElementComponent for ScrollArea {
-    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let (scroll, set_scroll) = hooks.use_state(0.);
-        hooks.use_event(WINDOW_MOUSE_WHEEL, move |_world, event| {
-            if let Some(delta) = event.get(event_mouse_wheel()) {
-                set_scroll(scroll + if event.get(event_mouse_wheel_pixels()).unwrap() { delta.y } else { delta.y * 20. });
-            }
-        });
-        UIBase
-            .el()
-            .init_default(children())
-            .children(vec![
-                // TODO: For some reason it didn't work to set the translation on self.0 directly, so had to introduce a Flow in between
-                Flow(vec![self.0]).el().set(fit_horizontal(), Fit::Parent).set(translation(), vec3(0., scroll, 0.)),
-            ])
-            .set(layout(), Layout::WidthToChildren)
-    }
-}
-impl ScrollArea {
-    pub fn el(element: Element) -> Element {
-        Self(element).el()
-    }
 }
 
 impl Default for HighjackMouse {
@@ -166,21 +131,6 @@ pub fn command_modifier() -> ModifiersState {
     return ModifiersState::LOGO;
     #[cfg(not(target_os = "macos"))]
     return ModifiersState::CTRL;
-}
-
-#[element_component]
-pub fn FontAwesomeIcon(_hooks: &mut Hooks, icon: u32, solid: bool) -> Element {
-    Text::el(char::from_u32(icon).unwrap().to_string()).set(font_family(), FontFamily::FontAwesome { solid })
-}
-
-#[element_component]
-pub fn Separator(_hooks: &mut Hooks, vertical: bool) -> Element {
-    let el = Flow(vec![]).el().with_background(Color::rgba(0., 0., 0., 0.8).into());
-    if vertical {
-        el.set(width(), 1.).set(fit_horizontal(), Fit::None).set(fit_vertical(), Fit::Parent)
-    } else {
-        el.set(height(), 1.).set(fit_horizontal(), Fit::Parent).set(fit_vertical(), Fit::None)
-    }
 }
 
 #[derive(Clone)]

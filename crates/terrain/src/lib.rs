@@ -33,7 +33,7 @@ use ambient_physics::{
 };
 use ambient_renderer::{cast_shadows, color, gpu_primitives, lod::cpu_lod, material, primitives, renderer_shader, SharedMaterial};
 use ambient_std::{
-    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
+    asset_cache::{Asset, AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
     cb, friendly_id, log_result,
     shapes::{Sphere, AABB},
@@ -57,7 +57,6 @@ pub mod intents;
 mod terrain_shader;
 use ambient_network::ServerWorldExt;
 use ambient_sys::time::Instant;
-use ambient_ui::use_async_asset;
 pub use gather_spread::*;
 pub use intents::*;
 
@@ -644,6 +643,21 @@ impl TerrainStateCpu {
 //             .finish()
 //     }
 // }
+
+pub fn use_async_asset<T: Asset + Clone + Sync + Send + std::fmt::Debug + 'static>(
+    hooks: &mut Hooks,
+    asset_key: impl AsyncAssetKeyExt<T> + 'static,
+) -> Option<T> {
+    let (value, set_value) = hooks.use_state(None);
+    hooks.use_effect(asset_key.key(), |world, _| {
+        let assets = world.resource(asset_cache()).clone();
+        world.resource(runtime()).spawn(async move {
+            set_value(Some(asset_key.get(&assets).await));
+        });
+        Box::new(|_| {})
+    });
+    value
+}
 
 #[derive(Debug, Clone)]
 pub struct Terrain {

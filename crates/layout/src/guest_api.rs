@@ -4,7 +4,7 @@ use crate::{
 use ambient_ecs::{components, ensure_has_component, query, Debuggable, Description, Name, Networked, Store, SystemGroup};
 
 // This file only exists because Enums aren't available in the wasm layer yet; once that exists this can be removed
-components!("ui", {
+components!("layout", {
     @[Debuggable, Networked, Store, Name["Flow layout"], Description["Bottom-up flow layout."]]
     layout_flow: (),
     @[Debuggable, Networked, Store, Name["Dock layout"], Description["Top-down dock layout."]]

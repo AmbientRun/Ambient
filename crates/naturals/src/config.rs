@@ -38,13 +38,13 @@ impl From<RGB> for Vec4 {
     }
 }
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize, ElementEditor)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct NaturalLayer {
-    #[editor(slider, min = 0.05, max = 5.)]
+    // #[editor(slider, min = 0.05, max = 5.)]
     pub grid_size: f32,
     pub elements: Vec<NaturalElement>,
 }
-#[derive(Clone, Debug, Serialize, Deserialize, ElementEditor)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct NaturalElement {
     #[serde(default = "true_value")]
     pub enabled: bool,
@@ -53,41 +53,41 @@ pub struct NaturalElement {
     #[serde(default = "white_value")]
     pub color: RGB,
 
-    #[editor(slider, min = 0.1, max = 10., logarithmic)]
+    // #[editor(slider, min = 0.1, max = 10., logarithmic)]
     pub scale_min: f32,
-    #[editor(slider, min = 0.1, max = 30., logarithmic)]
+    // #[editor(slider, min = 0.1, max = 30., logarithmic)]
     pub scale_max: f32,
-    #[editor(slider, min = 0.1, max = 10.)]
+    // #[editor(slider, min = 0.1, max = 10.)]
     pub scale_power: f32,
     #[serde(default)]
-    #[editor(slider, min = -3.15169, max = 3.15169)]
+    // #[editor(slider, min = -3.15169, max = 3.15169)]
     pub rotation_x: f32,
     #[serde(default)]
-    #[editor(slider, min = -3.15169, max = 3.15169)]
+    // #[editor(slider, min = -3.15169, max = 3.15169)]
     pub rotation_y: f32,
     #[serde(default)]
-    #[editor(slider, min = -3.15169, max = 3.15169)]
+    // #[editor(slider, min = -3.15169, max = 3.15169)]
     pub rotation_z: f32,
     #[serde(default)]
-    #[editor(slider, min = 0., max = 1.)]
+    // #[editor(slider, min = 0., max = 1.)]
     pub rotation_z_jitter: f32,
     #[serde(default)]
-    #[editor(slider, min = 0., max = 1.)]
+    // #[editor(slider, min = 0., max = 1.)]
     pub rotation_xy_jitter: f32,
     #[serde(default)]
-    #[editor(slider, min = 0., max = 1.)]
+    // #[editor(slider, min = 0., max = 1.)]
     pub rotation_straightness: f32,
     #[serde(default)]
-    #[editor(slider, min = -20., max = 5.)]
+    // #[editor(slider, min = -20., max = 5.)]
     pub position_normal_offset: f32,
     #[serde(default)]
-    #[editor(slider, min = -20., max = 5.)]
+    // #[editor(slider, min = -20., max = 5.)]
     pub position_z_offset: f32,
     #[serde(default)]
-    #[editor(slider, min = 0., max = 6.)]
+    // #[editor(slider, min = 0., max = 6.)]
     pub normal_miplevel: f32,
     #[serde(default = "cluster_noise_scale_default")]
-    #[editor(slider, min = 0.01, max = 10., logarithmic)]
+    // #[editor(slider, min = 0.01, max = 10., logarithmic)]
     pub cluster_noise_scale: f32,
     pub soil_depth: NaturalCurve,
     pub elevation: NaturalCurve,

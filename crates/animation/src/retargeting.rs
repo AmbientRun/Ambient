@@ -34,7 +34,7 @@ impl Default for AnimationRetargeting {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ElementEditor)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AnimationClipRetargetedFromModel {
     pub clip: TypedAssetUrl<AnimationAssetType>,
     pub translation_retargeting: AnimationRetargeting,

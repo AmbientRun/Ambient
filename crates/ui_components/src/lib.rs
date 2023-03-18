@@ -6,11 +6,12 @@ use ambient_event_types::WINDOW_MOUSE_INPUT;
 use ambient_guest_bridge::components::{
     app::{ui_scene, window_logical_size, window_physical_size},
     input::event_mouse_input,
-    transform::{local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation},
-    ui::{
-        background_color, gpu_ui_size, height, margin_bottom, margin_left, margin_right, margin_top, mesh_to_local_from_size,
-        padding_bottom, padding_left, padding_right, padding_top, rect, width,
+    layout::{
+        gpu_ui_size, height, margin_bottom, margin_left, margin_right, margin_top, mesh_to_local_from_size, padding_bottom, padding_left,
+        padding_right, padding_top, width,
     },
+    rect::{background_color, rect},
+    transform::{local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation},
 };
 use clickarea::ClickArea;
 use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
@@ -21,10 +22,13 @@ pub mod default_theme;
 pub mod dropdown;
 pub mod editor;
 pub mod layout;
+pub mod prompt;
 pub mod screens;
+pub mod scroll_area;
 pub mod select;
 pub mod tabs;
 pub mod text;
+pub mod throbber;
 
 #[element_component]
 pub fn UIBase(_: &mut Hooks) -> Element {
@@ -160,4 +164,28 @@ impl UIExt for Element {
     fn with_margin_even(self, margin: f32) -> Self {
         self.set(margin_left(), margin).set(margin_right(), margin).set(margin_top(), margin).set(margin_bottom(), margin)
     }
+}
+
+#[cfg(feature = "guest")]
+pub fn setup_ui_camera() {
+    use ambient_guest_bridge::{
+        api::{concepts::make_orthographic_camera, entity, prelude::spawn_query},
+        components::{
+            camera::orthographic_from_window,
+            player::{player, user_id},
+        },
+        ecs::{Entity, EntityId},
+    };
+
+    spawn_query((player(), user_id())).bind(move |players| {
+        for (id, _) in players {
+            entity::add_components(
+                id,
+                Entity::new()
+                    .with_merge(make_orthographic_camera())
+                    .with(orthographic_from_window(), EntityId::resources())
+                    .with_default(ui_scene()),
+            );
+        }
+    });
 }

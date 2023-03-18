@@ -1,0 +1,30 @@
+[package]
+name = "editors"
+
+edition = "2021"
+publish = false
+rust-version = { workspace = true }
+version = { workspace = true }
+
+[dependencies]
+ambient_api = { path = "../../../api" }
+ambient_element = { path = "../../../../../crates/element", default-features = false, features = [
+  "guest",
+] }
+ambient_guest_bridge = { path = "../../../../../crates/guest_bridge", default-features = false, features = [
+  "guest",
+] }
+ambient_ui_components = { path = "../../../../../crates/ui_components", features = [
+  "guest",
+] }
+ambient_cb = { path = "../../../../../libs/cb" }
+indexmap = { version = "1", features = ["serde"] }
+
+[[bin]]
+name = "ui_input_client"
+path = "src/client.rs"
+required-features = ["client"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]

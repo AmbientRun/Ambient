@@ -767,6 +767,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_math"
+version = "0.1.0"
+dependencies = [
+ "glam 0.22.0",
+ "rand 0.8.5",
+ "serde",
+]
+
+[[package]]
 name = "ambient_meshes"
 version = "0.2.0-dev"
 dependencies = [
@@ -1102,6 +1111,7 @@ dependencies = [
  "ambient_cb",
  "ambient_color",
  "ambient_friendly_id",
+ "ambient_math",
  "ambient_sys",
  "anyhow",
  "as-any",
@@ -1226,6 +1236,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_time"
+version = "0.1.0"
+dependencies = [
+ "itertools",
+ "thiserror",
+]
+
+[[package]]
 name = "ambient_ui"
 version = "0.2.0-dev"
 dependencies = [
@@ -1282,9 +1300,15 @@ dependencies = [
  "ambient_element",
  "ambient_event_types",
  "ambient_guest_bridge",
+ "ambient_math",
+ "ambient_sys",
+ "ambient_time",
  "ambient_window_types",
+ "closure",
+ "convert_case 0.6.0",
  "futures",
  "glam 0.22.0",
+ "indexmap",
  "itertools",
  "parking_lot",
  "rand 0.8.5",

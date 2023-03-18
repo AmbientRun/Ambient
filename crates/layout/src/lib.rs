@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod guest_api;
 
-components!("ui", {
+components!("layout", {
     @[Debuggable, Networked, Store, Name["Layout"], Description["The layout to apply to this entity's children."]]
     layout: Layout,
     @[Debuggable, Networked, Store, Name["Mest to local from size"], Description["Update the `mesh_to_local` based on the width and height of this entity."]]

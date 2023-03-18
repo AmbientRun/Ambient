@@ -5,7 +5,7 @@ pub mod components {
     pub mod app {
         pub use ambient_core::{
             name, ui_scene,
-            window::{window_logical_size, window_physical_size, window_scale_factor},
+            window::{cursor_position, window_logical_size, window_physical_size, window_scale_factor},
         };
     }
     pub mod ecs {
@@ -14,7 +14,10 @@ pub mod components {
     pub mod transform {
         pub use ambient_core::transform::{local_to_parent, local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation};
     }
-    pub mod ui {
+    pub mod rect {
+        pub use ambient_rect::{background_color, border_color, border_radius, border_thickness, rect};
+    }
+    pub mod layout {
         pub use ambient_layout::{
             gpu_ui_size,
             guest_api::{
@@ -26,8 +29,9 @@ pub mod components {
             },
             height, is_book_file, mesh_to_local_from_size, min_height, min_width, screen, space_between_items, width,
         };
-        pub use ambient_rect::{background_color, border_color, border_radius, border_thickness, rect};
-        pub use ambient_text::{font_size, font_style, text};
+    }
+    pub mod text {
+        pub use ambient_text::{font_family, font_size, font_style, text};
     }
     pub mod rendering {
         pub use ambient_renderer::color;

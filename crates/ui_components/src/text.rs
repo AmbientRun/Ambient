@@ -1,15 +1,11 @@
 use crate::{UIBase, UIElement};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::{
-    components::{
-        app::{name, ui_scene},
-        rendering::color,
-        ui::{font_size, text},
-    },
-    components::{
-        transform::mesh_to_local,
-        ui::{height, width},
-    },
+use ambient_guest_bridge::components::{
+    app::{name, ui_scene},
+    layout::{height, width},
+    rendering::color,
+    text::{font_family, font_size, text},
+    transform::mesh_to_local,
 };
 use glam::{vec4, Mat4};
 
@@ -48,4 +44,10 @@ impl From<&String> for UIElement {
     fn from(value: &String) -> Self {
         UIElement(Text.el().set(text(), value.to_string()))
     }
+}
+
+#[element_component]
+pub fn FontAwesomeIcon(_hooks: &mut Hooks, icon: u32, solid: bool) -> Element {
+    Text::el(char::from_u32(icon).unwrap().to_string())
+        .set(font_family(), if solid { "FontAwesomeSolid" } else { "FontAwesome" }.to_string())
 }

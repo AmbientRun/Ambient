@@ -6,7 +6,7 @@ use crate::{layout::FlowColumn, UIBase};
 use crate::default_theme::{tooltip_background_color, SMALL_ROUNDING, STREET};
 use crate::UIExt;
 use ambient_guest_bridge::components::transform::translation;
-use ambient_guest_bridge::components::ui::{border_radius, margin_top};
+use ambient_guest_bridge::components::{layout::margin_top, rect::border_radius};
 
 #[element_component]
 pub fn Dropdown(_: &mut Hooks, content: Element, dropdown: Element, show: bool) -> Element {

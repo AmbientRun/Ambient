@@ -1,16 +1,17 @@
-use crate::{use_window_logical_resolution, UIBase};
+use crate::{use_window_logical_resolution, UIBase, UIExt};
 use ambient_cb::Cb;
+use ambient_color::Color;
 use ambient_element::{
     define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent, ElementComponentExt, Hooks,
 };
 use ambient_guest_bridge::components::{
     ecs::children,
-    transform::{local_to_parent, translation},
-    ui::{
+    layout::{
         align_horizontal_begin, align_horizontal_center, align_vertical_begin, align_vertical_center, fit_horizontal_children,
-        fit_horizontal_none, fit_vertical_children, fit_vertical_none, height, is_book_file, layout_bookcase, layout_dock, layout_flow,
-        orientation_horizontal, orientation_vertical, width,
+        fit_horizontal_none, fit_horizontal_parent, fit_vertical_children, fit_vertical_none, fit_vertical_parent, height, is_book_file,
+        layout_bookcase, layout_dock, layout_flow, orientation_horizontal, orientation_vertical, width,
     },
+    transform::{local_to_parent, translation},
 };
 use glam::{vec2, vec3, Vec2};
 use itertools::Itertools;
@@ -162,4 +163,14 @@ pub fn MeasureSize(hooks: &mut Hooks, inner: Element, on_change: Cb<dyn Fn(Vec2)
         }
     });
     inner.on_spawned(move |_, id, _| set_id(Some(id)))
+}
+
+#[element_component]
+pub fn Separator(_hooks: &mut Hooks, vertical: bool) -> Element {
+    let el = Flow(vec![]).el().with_background(Color::rgba(0., 0., 0., 0.8).into());
+    if vertical {
+        el.set(width(), 1.).set_default(fit_horizontal_none()).set_default(fit_vertical_parent())
+    } else {
+        el.set(height(), 1.).set_default(fit_horizontal_parent()).set_default(fit_vertical_none())
+    }
 }

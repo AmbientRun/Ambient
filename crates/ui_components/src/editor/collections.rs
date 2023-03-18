@@ -1,17 +1,31 @@
-use std::{collections::HashMap, fmt::Debug, hash::Hash, ops::Deref, sync::Arc};
+use std::{collections::HashMap, fmt::Debug, hash::Hash, ops::Deref, str::FromStr, sync::Arc};
 
+use ambient_cb::{cb, Cb};
+use ambient_color::Color;
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_input::{event_keyboard_input, event_mouse_input, keycode};
-use ambient_std::{cb, color::Color, Cb};
+use ambient_guest_bridge::components::{
+    input::{event_keyboard_input, event_mouse_input, keycode},
+    layout::{
+        fit_horizontal_none, fit_horizontal_parent, fit_vertical_parent, height, margin_right, margin_top, min_width, padding_bottom,
+        padding_top, space_between_items, width,
+    },
+};
+use ambient_window_types::VirtualKeyCode;
 use closure::closure;
 use indexmap::IndexMap;
 use itertools::Itertools;
-use winit::event::VirtualKeyCode;
 
-use super::{Button, ButtonStyle, Dropdown, Editor, EditorOpts, FlowColumn, FlowRow, UIBase};
-use crate::{layout::*, StylesExt, COLLECTION_ADD_ICON, COLLECTION_DELETE_ICON, MOVE_DOWN_ICON, MOVE_UP_ICON, STREET};
 use ambient_event_types::{WINDOW_KEYBOARD_INPUT, WINDOW_MOUSE_INPUT};
-use ambient_ui_components::{use_focus, UIExt};
+
+use crate::{
+    button::{Button, ButtonStyle},
+    default_theme::{StylesExt, COLLECTION_ADD_ICON, COLLECTION_DELETE_ICON, MOVE_DOWN_ICON, MOVE_UP_ICON, STREET},
+    dropdown::Dropdown,
+    layout::{FlowColumn, FlowRow},
+    use_focus, UIBase, UIExt,
+};
+
+use super::{Editor, EditorOpts};
 
 #[element_component]
 pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static>(
@@ -186,7 +200,7 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                     .collect(),
             )
             .el()
-            .set(fit_horizontal(), Fit::Parent),
+            .set_default(fit_horizontal_parent()),
             if let Some(on_change) = on_change {
                 if let Some(add_presets) = add_presets {
                     Dropdown {
@@ -210,18 +224,18 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                                             on_change.0(value);
                                         }))
                                         .el()
-                                        .set(margin(), Borders::even(STREET))
+                                        .with_margin_even(STREET)
                                 })
                                 .collect(),
                         )
                         .el()
                         .with_background(Color::rgba(0.05, 0.05, 0.05, 1.).into())
-                        .set(fit_horizontal(), Fit::None)
+                        .set_default(fit_horizontal_none())
                         .set(width(), 400.),
                         show: add_action,
                     }
                     .el()
-                    .set(margin(), Borders::top(STREET))
+                    .set(margin_top(), STREET)
                 } else {
                     Button::new(
                         add_title,
@@ -260,8 +274,8 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                     return;
                 }
                 if let Some(on_delete) = &on_delete {
-                    if let Some(keycode) = event.get_ref(keycode()) {
-                        let keycode: VirtualKeyCode = serde_json::from_str(keycode).unwrap();
+                    if let Some(keycode) = event.get_ref(keycode()).clone() {
+                        let keycode = VirtualKeyCode::from_str(&keycode).unwrap();
                         if keycode == VirtualKeyCode::Back || keycode == VirtualKeyCode::Delete {
                             on_delete.0();
                         }
@@ -273,10 +287,10 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
             UIBase
                 .el()
                 .set(width(), 5.)
-                .set(fit_vertical(), Fit::Parent)
+                .set_default(fit_vertical_parent())
                 .with_background(if focused { Color::rgba(0.0, 1., 0., 1.) } else { Color::rgba(0.5, 0.5, 0.5, 1.) }.into())
-                .set(margin(), Borders::right(5.)),
-            item_editor.0(value, on_change, item_opts).set(fit_horizontal(), Fit::Parent),
+                .set(margin_right(), 5.),
+            item_editor.0(value, on_change, item_opts).set_default(fit_horizontal_parent()),
         ])
         .el()
         .with_clickarea()
@@ -284,8 +298,9 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
             set_focused(true);
         })
         .el()
-        .set(padding(), Borders::vertical(STREET))
-        .set(fit_horizontal(), Fit::Parent)
+        .set(padding_top(), STREET)
+        .set(padding_bottom(), STREET)
+        .set_default(fit_horizontal_parent())
     }
 }
 
@@ -489,6 +504,6 @@ where
             .el()
             .panel()
             .set(space_between_items(), STREET)
-            .set(padding(), Borders::even(STREET))
+            .with_padding_even(STREET)
     }
 }

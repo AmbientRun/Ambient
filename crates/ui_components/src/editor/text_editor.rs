@@ -10,13 +10,16 @@ use ambient_event_types::{WINDOW_KEYBOARD_INPUT, WINDOW_RECEIVED_CHARACTER};
 use ambient_guest_bridge::{
     components::{
         input::{event_keyboard_input, event_received_character, keycode},
+        layout::{align_horizontal_end, fit_horizontal_none, fit_vertical_none, height, layout_flow, min_height, min_width, width},
         rendering::color,
+        text::text,
         transform::translation,
-        ui::{align_horizontal_end, fit_horizontal_none, fit_vertical_none, height, layout_flow, min_height, min_width, text, width},
     },
     window::{get_clipboard, set_cursor},
 };
 use ambient_window_types::{CursorIcon, VirtualKeyCode};
+
+use super::{Editor, EditorOpts};
 
 #[element_component]
 pub fn TextEditor(
@@ -143,5 +146,15 @@ pub fn Cursor(hooks: &mut Hooks) -> Element {
         UIBase.el().children(vec![Rectangle.el().set(width(), 2.).set(height(), 13.).set(translation(), vec3(1., 0., 0.))])
     } else {
         Element::new()
+    }
+}
+
+impl Editor for String {
+    fn editor(self, on_change: Cb<dyn Fn(Self) + Sync + Send>, _: EditorOpts) -> Element {
+        TextEditor::new(self, on_change).placeholder(Some("Empty")).el()
+    }
+
+    fn view(self, _opts: EditorOpts) -> Element {
+        Text.el().set(text(), self)
     }
 }

@@ -1,19 +1,11 @@
-use ambient_api::{
-    components::core::app::ui_scene, concepts::make_orthographic_camera, prelude::*,
-};
+use ambient_api::prelude::*;
 use ambient_cb::{cb, Cb};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_friendly_id::friendly_id;
-use ambient_guest_bridge::{
-    components::{
-        camera::orthographic_from_window,
-        player::{player, user_id},
-    },
-    ecs::World,
-};
 use ambient_ui_components::{
     button::Button,
     screens::{PageScreen, ScreenContainer},
+    setup_ui_camera,
     text::Text,
     FocusRoot,
 };
@@ -95,23 +87,8 @@ fn SubScreen(hooks: &mut Hooks, on_back: Cb<dyn Fn() + Sync + Send>) -> Element 
 
 #[main]
 pub async fn main() -> EventResult {
-    spawn_query((player(), user_id())).bind(move |players| {
-        for (id, _) in players {
-            entity::add_components(
-                id,
-                Entity::new()
-                    .with_merge(make_orthographic_camera())
-                    .with(orthographic_from_window(), EntityId::resources())
-                    .with_default(ui_scene()),
-            );
-        }
-    });
-
-    let mut tree = App.el().spawn_tree();
-    on(ambient_api::event::FRAME, move |_| {
-        tree.update(&mut World);
-        EventOk
-    });
+    setup_ui_camera();
+    App.el().spawn_interactive();
 
     EventOk
 }

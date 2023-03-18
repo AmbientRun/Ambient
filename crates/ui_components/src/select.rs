@@ -12,7 +12,8 @@ use ambient_cb::Cb;
 use ambient_event_types::WINDOW_MOUSE_INPUT;
 use ambient_guest_bridge::components::{
     input::event_mouse_input,
-    ui::{border_radius, margin_left, margin_top},
+    layout::{margin_left, margin_top},
+    rect::border_radius,
 };
 use glam::Vec4;
 

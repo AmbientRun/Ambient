@@ -1,20 +1,11 @@
-use ambient_api::{
-    components::core::app::ui_scene, concepts::make_orthographic_camera, prelude::*,
-};
+use ambient_api::prelude::*;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::{
-    components::{
-        camera::orthographic_from_window,
-        player::{player, user_id},
-        transform::translation,
-        ui::space_between_items,
-    },
-    ecs::World,
-};
+use ambient_guest_bridge::components::{layout::space_between_items, transform::translation};
 use ambient_ui_components::{
     button::{Button, ButtonStyle},
     default_theme::STREET,
     layout::{FlowColumn, FlowRow},
+    setup_ui_camera,
     text::Text,
     UIExt,
 };
@@ -99,23 +90,8 @@ fn App(_hooks: &mut Hooks) -> Element {
 
 #[main]
 pub async fn main() -> EventResult {
-    spawn_query((player(), user_id())).bind(move |players| {
-        for (id, _) in players {
-            entity::add_components(
-                id,
-                Entity::new()
-                    .with_merge(make_orthographic_camera())
-                    .with(orthographic_from_window(), EntityId::resources())
-                    .with_default(ui_scene()),
-            );
-        }
-    });
-
-    let mut tree = App.el().spawn_tree();
-    on(ambient_api::event::FRAME, move |_| {
-        tree.update(&mut World);
-        EventOk
-    });
+    setup_ui_camera();
+    App.el().spawn_interactive();
 
     EventOk
 }

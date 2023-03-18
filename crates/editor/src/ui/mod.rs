@@ -286,7 +286,7 @@ fn TerrainMaterialEditor(hooks: &mut Hooks) -> Element {
                     // .el(),
                 ])
                 .keyboard(),
-                TerrainMaterialDef::editor(value, set_value, Default::default()),
+                // TerrainMaterialDef::editor(value, set_value, Default::default()),
             ])
             .floating_panel(),
         ),
@@ -369,7 +369,7 @@ fn NaturalLayersEditor(hooks: &mut Hooks) -> Element {
                     // .el(),
                 ])
                 .keyboard(),
-                Vec::<NaturalLayer>::editor(value, set_value, Default::default()),
+                // Vec::<NaturalLayer>::editor(value, set_value, Default::default()),
             ])
             .floating_panel(),
         )

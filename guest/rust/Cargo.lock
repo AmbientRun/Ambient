@@ -94,6 +94,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_math"
+version = "0.1.0"
+dependencies = [
+ "glam",
+ "rand",
+ "serde",
+]
+
+[[package]]
+name = "ambient_time"
+version = "0.1.0"
+dependencies = [
+ "itertools",
+ "thiserror",
+]
+
+[[package]]
 name = "ambient_ui_components"
 version = "0.2.0-dev"
 dependencies = [
@@ -102,9 +119,14 @@ dependencies = [
  "ambient_element",
  "ambient_event_types",
  "ambient_guest_bridge",
+ "ambient_math",
+ "ambient_time",
  "ambient_window_types",
+ "closure",
+ "convert_case",
  "futures",
  "glam",
+ "indexmap",
  "itertools",
  "parking_lot",
  "rand",
@@ -210,6 +232,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "closure"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d6173fd61b610d15a7566dd7b7620775627441c4ab9dac8906e17cb93a24b782"
+
+[[package]]
+name = "convert_case"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec182b0ca2f35d8fc196cf3404988fd8b8c739a4d270ff118a398feb0cbec1ca"
+dependencies = [
+ "unicode-segmentation",
+]
+
+[[package]]
+name = "counter"
+version = "0.2.0-dev"
+dependencies = [
+ "ambient_api",
+ "ambient_element",
+ "ambient_guest_bridge",
+ "ambient_ui_components",
+]
+
+[[package]]
 name = "data-encoding"
 version = "2.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -262,6 +309,18 @@ name = "dyn-clone"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68b0cf012f1230e43cd00ebb729c6bb58707ecfa8ad08b52ef3a4ccd2697fc30"
+
+[[package]]
+name = "editors"
+version = "0.2.0-dev"
+dependencies = [
+ "ambient_api",
+ "ambient_cb",
+ "ambient_element",
+ "ambient_guest_bridge",
+ "ambient_ui_components",
+ "indexmap",
+]
 
 [[package]]
 name = "either"
@@ -894,6 +953,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "slider"
+version = "0.2.0-dev"
+dependencies = [
+ "ambient_api",
+ "ambient_element",
+ "ambient_guest_bridge",
+ "ambient_ui_components",
+]
+
+[[package]]
 name = "smallvec"
 version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1072,16 +1141,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "24eb03ba0eab1fd845050058ce5e616558e8f8d8fca633e6b163fe25c797213a"
 dependencies = [
  "once_cell",
-]
-
-[[package]]
-name = "ui_input"
-version = "0.2.0-dev"
-dependencies = [
- "ambient_api",
- "ambient_element",
- "ambient_guest_bridge",
- "ambient_ui_components",
 ]
 
 [[package]]

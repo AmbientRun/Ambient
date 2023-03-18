@@ -302,7 +302,7 @@ pub enum TerrainPreset {
     LowPerformanceMode,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, ElementEditor)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct TerrainMaterialDef {
     #[serde(default)]
     pub settings: TerrainWGSLMatSettings,
@@ -365,7 +365,7 @@ impl TerrainMaterialBuild {
     }
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, ElementEditor)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct TerrainSurface {
     top_texture: TypedAssetUrl<MaterialAssetType>,
     side_texture: TypedAssetUrl<MaterialAssetType>,

@@ -1,5 +1,5 @@
 [package]
-name = "ui_input"
+name = "slider"
 
 edition = "2021"
 publish = false
@@ -14,10 +14,12 @@ ambient_element = { path = "../../../../../crates/element", default-features = f
 ambient_guest_bridge = { path = "../../../../../crates/guest_bridge", default-features = false, features = [
   "guest",
 ] }
-ambient_ui_components = { path = "../../../../../crates/ui_components" }
+ambient_ui_components = { path = "../../../../../crates/ui_components", features = [
+  "guest",
+] }
 
 [[bin]]
-name = "ui_input_client"
+name = "slider_client"
 path = "src/client.rs"
 required-features = ["client"]
 

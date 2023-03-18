@@ -12,6 +12,7 @@ ambient_sys = { path = "../sys" }
 ambient_cb = { path = "../../libs/cb" }
 ambient_color = { path = "../../libs/color" }
 ambient_friendly_id = { path = "../../libs/friendly_id" }
+ambient_math = { path = "../../libs/math" }
 anyhow = { workspace = true }
 tracing = { workspace = true }
 
