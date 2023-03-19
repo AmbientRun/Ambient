@@ -280,8 +280,19 @@ impl wit::server_player::Host for Bindings {
 impl wit::server_physics::Host for Bindings {
     fn apply_force(
         &mut self,
-        _entities: Vec<wit::types::EntityId>,
+        _entity: wit::types::EntityId,
         _force: wit::types::Vec3,
+        _mode: Option<wit::server_physics::ForceMode>,
+    ) -> anyhow::Result<()> {
+        unsupported()
+    }
+
+    fn apply_force_at_position(
+        &mut self,
+        _entity: wit::types::EntityId,
+        _force: wit::types::Vec3,
+        _position: wit::types::Vec3,
+        _mode: Option<wit::server_physics::ForceMode>,
     ) -> anyhow::Result<()> {
         unsupported()
     }

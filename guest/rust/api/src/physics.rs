@@ -3,20 +3,45 @@ use crate::{
     internal::{
         conversion::{FromBindgen, IntoBindgen},
         wit,
+        wit::server_physics::ForceMode,
     },
 };
 
-/// Applies a `force` (a [Vec3]) to all of the `entities` specified.
+/// Applies a `force` (a [Vec3]) with a given `mode` (a [ForceMode]) to the `entity` (an [EntityId]) specified.
 ///
-/// `entities` can be anything that can be converted to an iterator, including a [Vec]
-/// and a normal array. You may want to use a function from [entity](crate::entity) to find entities.
-///
-/// `force` is a vector, which means it has both direction and magnitude. To push objects upwards
+/// `force` is a vector in world space, which means it has both direction and magnitude. To push objects upwards
 /// (positive Z) with strength 3,000, you would supply a force of `vec3(0.0, 0.0, 3_000.0)` or
 /// `Vec3::Z * 3_000.0` (either are equivalent.)
-pub fn apply_force(entities: impl IntoIterator<Item = EntityId>, force: Vec3) {
-    let entities: Vec<_> = entities.into_iter().map(|ent| ent.into_bindgen()).collect();
-    wit::server_physics::apply_force(&entities, force.into_bindgen())
+///
+/// `mode` is an enum, which determines how a given force should be applied. See the associated documentation
+/// for more information. Defaults to `ForceMode::Force`.
+pub fn apply_force(entity: EntityId, force: Vec3, mode: Option<ForceMode>) {
+    wit::server_physics::apply_force(entity.into_bindgen(), force.into_bindgen(), mode)
+}
+
+/// Applies a `force` (a [Vec3]) with a given `mode` (a [ForceMode]) and `position` (a [Vec3]) to the `entity` (an [EntityId]) specified.
+///
+/// `force` is a vector in world space, which means it has both direction and magnitude. To push objects upwards
+/// (positive Z) with strength 3,000, you would supply a force of `vec3(0.0, 0.0, 3_000.0)` or
+/// `Vec3::Z * 3_000.0` (either are equivalent.)
+///
+/// `position` is a position in world space, it typically should fall on the surface or interior of an object for
+/// realistic results.
+///
+/// `mode` is an enum, which determines how a given force should be applied. See the associated documentation
+/// for more information. Defaults to `ForceMode::Force`.
+pub fn apply_force_at_position(
+    entity: EntityId,
+    force: Vec3,
+    position: Vec3,
+    mode: Option<ForceMode>,
+) {
+    wit::server_physics::apply_force_at_position(
+        entity.into_bindgen(),
+        force.into_bindgen(),
+        position.into_bindgen(),
+        mode,
+    )
 }
 
 /// Applies a `force` (a [f32]) outwards to all entitities within `radius` of the `position`, with

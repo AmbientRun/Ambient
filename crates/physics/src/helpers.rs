@@ -6,7 +6,7 @@ use anyhow::{bail, Context};
 use glam::{vec3, Vec3};
 use itertools::Itertools;
 use physxx::{
-    AsPxActor, AsPxRigidActor, PxActor, PxActorTypeFlag, PxBase, PxBoxGeometry, PxConvexMeshGeometry, PxJoint, PxMeshScale, PxOverlapCallback, PxQueryFilterData, PxQueryFlag, PxRevoluteJointRef, PxRigidActor, PxRigidActorRef, PxRigidBody, PxRigidBodyFlag, PxRigidDynamicRef, PxRigidStaticRef, PxSceneRef, PxShape, PxSphereGeometry, PxTransform, PxTriangleMeshGeometry, PxUserData
+    AsPxActor, AsPxRigidActor, PxActor, PxActorTypeFlag, PxBase, PxBoxGeometry, PxConvexMeshGeometry, PxJoint, PxMeshScale, PxOverlapCallback, PxQueryFilterData, PxQueryFlag, PxRevoluteJointRef, PxRigidActor, PxRigidActorRef, PxRigidBody, PxRigidBodyFlag, PxRigidDynamicRef, PxRigidStaticRef, PxSceneRef, PxShape, PxSphereGeometry, PxTransform, PxTriangleMeshGeometry, PxUserData, PxForceMode
 };
 
 use crate::{
@@ -439,7 +439,7 @@ impl PhysicsObjectCollection {
     }
 }
 
-pub fn apply_force(world: &World, id: EntityId, force: Vec3) -> anyhow::Result<()> {
+pub fn apply_force(world: &World, id: EntityId, force: Vec3, mode: Option<PxForceMode>) -> anyhow::Result<()> {
     let shape = world.get_ref(id, physics_shape())?;
     let actor = shape.get_actor().context("No actor for shape")?;
     let actor = actor.to_rigid_dynamic().context("Not a rigid dynamic")?;
@@ -447,7 +447,19 @@ pub fn apply_force(world: &World, id: EntityId, force: Vec3) -> anyhow::Result<(
     if actor.get_rigid_body_flags().contains(PxRigidBodyFlag::KINEMATIC) {
         bail!("Can't apply force to kinematic actor");
     }
-    actor.add_force(force, None, Some(true));
+    actor.add_force(force, mode, Some(true));
+    Ok(())
+}
+
+pub fn apply_force_at_position(world: &World, id: EntityId, force: Vec3, position: Vec3, mode: Option<PxForceMode>) -> anyhow::Result<()> {
+    let shape = world.get_ref(id, physics_shape())?;
+    let actor = shape.get_actor().context("No actor for shape")?;
+    let actor = actor.to_rigid_dynamic().context("Not a rigid dynamic")?;
+    // Kinematic actors can't have force applied to them: https://github.com/OurMachinery/themachinery-public/issues/494
+    if actor.get_rigid_body_flags().contains(PxRigidBodyFlag::KINEMATIC) {
+        bail!("Can't apply force to kinematic actor");
+    }
+    actor.add_force_at_pos(force, position, mode, Some(true));
     Ok(())
 }
 

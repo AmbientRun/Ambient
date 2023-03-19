@@ -1,13 +1,12 @@
 use ambient_core::asset_cache;
 use ambient_input::{player_prev_raw_input, player_raw_input};
-use ambient_physics::{helpers::PhysicsObjectCollection, physx::character_controller};
+use ambient_physics::physx::character_controller;
 use ambient_std::{
     asset_cache::SyncAssetKeyExt,
     asset_url::{AssetUrl, ServerBaseUrlKey},
     shapes::Ray,
 };
 use anyhow::Context;
-use itertools::Itertools;
 use physxx::{PxControllerCollisionFlag, PxControllerFilters};
 
 use super::Bindings;
@@ -43,14 +42,33 @@ impl wit::server_player::Host for Bindings {
 impl wit::server_physics::Host for Bindings {
     fn apply_force(
         &mut self,
-        entities: Vec<wit::types::EntityId>,
+        entity: wit::types::EntityId,
         force: wit::types::Vec3,
+        mode: Option<wit::server_physics::ForceMode>,
     ) -> anyhow::Result<()> {
-        let collection = PhysicsObjectCollection::from_entities(
+        let _ = ambient_physics::helpers::apply_force(
             self.world_mut(),
-            &entities.iter().map(|id| id.from_bindgen()).collect_vec(),
+            entity.from_bindgen(),
+            force.from_bindgen(),
+            mode.from_bindgen(),
         );
-        collection.apply_force(self.world_mut(), |_| force.from_bindgen());
+        Ok(())
+    }
+
+    fn apply_force_at_position(
+        &mut self,
+        entity: wit::types::EntityId,
+        force: wit::types::Vec3,
+        position: wit::types::Vec3,
+        mode: Option<wit::server_physics::ForceMode>,
+    ) -> anyhow::Result<()> {
+        let _ = ambient_physics::helpers::apply_force_at_position(
+            self.world_mut(),
+            entity.from_bindgen(),
+            force.from_bindgen(),
+            position.from_bindgen(),
+            mode.from_bindgen(),
+        );
         Ok(())
     }
 

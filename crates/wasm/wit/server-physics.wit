@@ -7,7 +7,28 @@ default interface server-physics {
         down: bool,
     }
 
-    apply-force: func(entities: list<entity-id>, force: vec3)
+    /// Force mode is used when applying torque or force to a body.
+    enum force-mode {
+        /// A continuous force applied to a body, using its mass.
+        ///
+        /// mass * distance / time^2
+        force,
+        /// An instantaneous force applied to a body, using its mass.
+        ///
+        /// mass * distance / time
+        impulse,
+        /// An instantaneous velicty change applied to a body, ignoring its mass.
+        ///
+        /// distance / time
+        velocity-change,
+        /// A continuous acceleration applied to a body, ignoring its mass.
+        ///
+        /// distance / time^2
+        acceleration
+    }
+
+    apply-force: func(entity: entity-id, force: vec3, mode: option<force-mode>)
+    apply-force-at-position: func(entity: entity-id, force: vec3, position: vec3, mode: option<force-mode>)
     explode-bomb: func(position: vec3, force: float32, radius: float32, falloff-radius: option<float32>)
     set-gravity: func(gravity: vec3)
     unfreeze: func(entity: entity-id)

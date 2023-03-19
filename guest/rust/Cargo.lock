@@ -805,6 +805,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "racing"
+version = "0.2.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "rand"
 version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"

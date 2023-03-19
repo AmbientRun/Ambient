@@ -1,4 +1,7 @@
-use crate::shared::{conversion::IntoBindgen, wit};
+use crate::shared::{
+    conversion::{FromBindgen, IntoBindgen},
+    wit,
+};
 
 impl IntoBindgen for ambient_input::PlayerRawInput {
     type Item = wit::server_player::RawInput;
@@ -384,6 +387,32 @@ impl IntoBindgen for ambient_window_types::MouseButton {
             Self::Right => Self::Item::Right,
             Self::Middle => Self::Item::Middle,
             Self::Other(id) => Self::Item::Other(id),
+        }
+    }
+}
+
+impl IntoBindgen for physxx::PxForceMode {
+    type Item = wit::server_physics::ForceMode;
+
+    fn into_bindgen(self) -> Self::Item {
+        match self {
+            Self::Force => Self::Item::Force,
+            Self::Impulse => Self::Item::Impulse,
+            Self::VelocityChange => Self::Item::VelocityChange,
+            Self::Acceleration => Self::Item::Acceleration,
+        }
+    }
+}
+
+impl FromBindgen for wit::server_physics::ForceMode {
+    type Item = physxx::PxForceMode;
+
+    fn from_bindgen(self) -> Self::Item {
+        match self {
+            Self::Force => Self::Item::Force,
+            Self::Impulse => Self::Item::Impulse,
+            Self::VelocityChange => Self::Item::VelocityChange,
+            Self::Acceleration => Self::Item::Acceleration,
         }
     }
 }

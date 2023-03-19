@@ -363,10 +363,10 @@ pub async fn main() -> EventResult {
             }
 
             // HACK: Artificially slow down ball until https://github.com/AmbientRun/Ambient/issues/182 is available
-            physics::apply_force([player_ball], {
+            physics::apply_force(player_ball, {
                 let lv = entity::get_component(player_ball, linear_velocity()).unwrap_or_default();
                 -2.0 * frametime() * lv.xy().extend(0.0)
-            });
+            }, None);
         }
     });
 
