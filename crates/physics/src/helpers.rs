@@ -463,6 +463,13 @@ pub fn apply_force_at_position(world: &World, id: EntityId, force: Vec3, positio
     Ok(())
 }
 
+pub fn get_velocity_at_position(world: &World, id: EntityId, position: Vec3) -> anyhow::Result<Vec3> {
+    let shape = world.get_ref(id, physics_shape())?;
+    let actor = shape.get_actor().context("No actor for shape")?;
+    let actor = actor.to_rigid_dynamic().context("Not a rigid dynamic")?;
+    Ok(actor.get_velocity_at_pos(position))
+}
+
 pub fn random_position_in_actor(world: &World, id: EntityId) -> Option<Vec3> {
     if world.get_ref(id, physics_shape()).is_ok() {
         // TODO: Do this for real

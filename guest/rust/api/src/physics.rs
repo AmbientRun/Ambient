@@ -44,6 +44,15 @@ pub fn apply_force_at_position(
     )
 }
 
+/// Gets the velocity (a [Vec3]) at a given `position` (a [Vec3]) of an `entity` (an [EntityId]) taking its
+/// angular velocity into account.
+///
+/// `position` is a position in world space, it typically should fall on the surface or interior of an object.
+pub fn get_velocity_at_position(entity: EntityId, position: Vec3) -> Vec3 {
+    wit::server_physics::get_velocity_at_position(entity.into_bindgen(), position.into_bindgen())
+        .from_bindgen()
+}
+
 /// Applies a `force` (a [f32]) outwards to all entitities within `radius` of the `position`, with
 /// an optional `falloff_radius`.
 ///

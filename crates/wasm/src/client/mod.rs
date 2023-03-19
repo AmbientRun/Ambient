@@ -297,6 +297,14 @@ impl wit::server_physics::Host for Bindings {
         unsupported()
     }
 
+    fn get_velocity_at_position(
+        &mut self,
+        _entity: wit::types::EntityId,
+        _position: wit::types::Vec3,
+    ) -> anyhow::Result<wit::types::Vec3> {
+        unsupported()
+    }
+
     fn explode_bomb(
         &mut self,
         _position: wit::types::Vec3,

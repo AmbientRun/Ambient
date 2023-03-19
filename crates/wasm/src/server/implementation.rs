@@ -72,6 +72,22 @@ impl wit::server_physics::Host for Bindings {
         Ok(())
     }
 
+    fn get_velocity_at_position(
+        &mut self,
+        entity: wit::types::EntityId,
+        position: wit::types::Vec3,
+    ) -> anyhow::Result<wit::types::Vec3> {
+        let mut result = glam::Vec3::default();
+        if let Ok(velocity) = ambient_physics::helpers::get_velocity_at_position(
+            self.world_mut(),
+            entity.from_bindgen(),
+            position.from_bindgen(),
+        ) {
+            result = velocity;
+        }
+        Ok(result.into_bindgen())
+    }
+
     fn explode_bomb(
         &mut self,
         position: wit::types::Vec3,
