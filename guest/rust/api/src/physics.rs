@@ -3,9 +3,10 @@ use crate::{
     internal::{
         conversion::{FromBindgen, IntoBindgen},
         wit,
-        wit::server_physics::ForceMode,
     },
 };
+
+pub use crate::internal::wit::server_physics::ForceMode;
 
 /// Applies a `force` (a [Vec3]) with a given `mode` (a [ForceMode]) to the `entity` (an [EntityId]) specified.
 ///
