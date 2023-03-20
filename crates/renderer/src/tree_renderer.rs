@@ -81,6 +81,7 @@ impl TreeRenderer {
         let mut to_update = HashSet::new();
         let mut spawn_qs = std::mem::replace(&mut self.spawn_qs, QueryState::new());
         let mut despawn_qs = std::mem::replace(&mut self.despawn_qs, QueryState::new());
+
         for (id, (primitives,)) in query((primitives().changed(),))
             .optional_changed(cpu_lod_visible())
             .filter(&self.config.filter)
@@ -101,6 +102,7 @@ impl TreeRenderer {
             }
             self.entity_primitive_count.insert(id, primitives.len());
         }
+
         for (id, _) in query(()).incl(primitives()).filter(&self.config.filter).despawned().iter(world, Some(&mut despawn_qs)) {
             if let Some(primitive_count) = self.entity_primitive_count.get(&id) {
                 for primitive_index in 0..*primitive_count {
@@ -111,6 +113,7 @@ impl TreeRenderer {
             }
             self.entity_primitive_count.remove(&id);
         }
+
         self.spawn_qs = spawn_qs;
         self.despawn_qs = despawn_qs;
         self.clean_empty();
@@ -281,6 +284,7 @@ impl TreeRenderer {
             }
 
             for mat in node.tree.values() {
+                tracing::info!("Drawing material: {}", mat.material.name());
                 let material = &mat.material;
 
                 render_pass.set_bind_group(bind_groups.len() as _, material.bind_group(), &[]);

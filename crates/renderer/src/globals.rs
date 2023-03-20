@@ -197,7 +197,8 @@ impl ForwardGlobals {
             buffer,
             shadow_cameras_buffer,
             shadow_sampler,
-            dummy_shadow_texture: create_dummy_shadow_texture(gpu.clone()).create_view(&Default::default()),
+            dummy_shadow_texture: create_dummy_shadow_texture(gpu.clone())
+                .create_view(&wgpu::TextureViewDescriptor { aspect: wgpu::TextureAspect::DepthOnly, ..Default::default() }),
             params,
             gpu,
             scene,
@@ -207,6 +208,8 @@ impl ForwardGlobals {
     }
 
     pub fn create_bind_group(&self, assets: AssetCache, shadow_texture: Option<&TextureView>, solids_frame: &RenderTarget) -> BindGroup {
+        // tracing::info!("shadow_texture: {}", shadow_texture.is_some());
+
         self.gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &self.layout,
             entries: &[

@@ -321,7 +321,11 @@ impl Renderer {
                         resolve_target: None,
                         ops: wgpu::Operations {
                             /// clear color is ignored as the normal buffer should always be initialized with black
-                            load: if clear.is_some() { wgpu::LoadOp::Clear(Color::BLACK.into()) } else { wgpu::LoadOp::Load },
+                            load: if clear.is_some() {
+                                wgpu::LoadOp::Clear(Color::rgba(0.5, 0.0, 0.5, 1.0).into())
+                            } else {
+                                wgpu::LoadOp::Load
+                            },
                             store: true,
                         },
                     }),

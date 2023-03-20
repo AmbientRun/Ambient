@@ -154,6 +154,7 @@ impl std::fmt::Debug for ExamplesRender {
 
 impl System for ExamplesRender {
     fn run(&mut self, world: &mut World, _: &FrameEvent) {
+        tracing::info!("ExamplesRenderer");
         profiling::scope!("Renderers.run");
         let mut encoder = self.gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         let mut post_submit = Vec::new();
@@ -165,10 +166,12 @@ impl System for ExamplesRender {
                 &mut encoder,
                 &mut post_submit,
                 RendererTarget::Target(&self.render_target),
-                Some(Color::rgba(0., 0., 0., 1.)),
+                Some(Color::rgba(0.5, 0., 0.5, 1.)),
             );
         }
+
         if let Some(ui) = &mut self.ui {
+            tracing::info!("Drawing UI");
             profiling::scope!("UI");
             ui.render(
                 world,
@@ -302,6 +305,8 @@ impl UIRender {
         let window_size = world.resource(window_physical_size());
         let frame_view = frame.texture.create_view(&wgpu::TextureViewDescriptor::default());
         let mut post_submit = Vec::new();
+
+        tracing::info!("Drawing UI");
 
         self.ui_renderer.render(
             world,
