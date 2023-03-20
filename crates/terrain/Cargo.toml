@@ -15,13 +15,13 @@ ambient_ecs = { path = "../ecs" }
 ambient_gpu = { path = "../gpu" }
 ambient_core = { path = "../core" }
 ambient_meshes = { path = "../meshes" }
-ambient_element = { path = "../element" }
+ambient_element = { path = "../../shared_crates/element" }
 ambient_renderer = { path = "../renderer" }
 ambient_ui = { path = "../ui" }
 ambient_network = { path = "../network" }
 ambient_intent = { path = "../intent" }
 ambient_physics = { path = "../physics" }
-ambient_editor_derive = { path = "../editor_derive" }
+ambient_editor_derive = { path = "../../shared_crates/editor_derive" }
 physxx = { path = "../../libs/physxx" }
 wgpu = { workspace = true }
 serde = { workspace = true }

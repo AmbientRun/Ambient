@@ -1,7 +1,7 @@
 [workspace]
 default-members = ["app"]
 exclude = ["guest", "tmp"]
-members = ["crates/*", "libs/*", "tools/*", "app", "web"]
+members = ["crates/*", "libs/*", "shared_crates/*", "tools/*", "app", "web"]
 resolver = "2"
 
 [workspace.package]

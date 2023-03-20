@@ -32,7 +32,7 @@ tracing = { workspace = true }
 
 [dev-dependencies]
 ambient_app = { path = "../app" }
-ambient_element = { path = "../element" }
+ambient_element = { path = "../../shared_crates/element" }
 ambient_gizmos = { path = "../gizmos" }
 ambient_model_import = { path = "../model_import" }
 ambient_cameras = { path = "../cameras" }

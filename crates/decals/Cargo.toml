@@ -20,7 +20,7 @@ glam = { workspace = true }
 
 [dev-dependencies]
 ambient_app = { path = "../app" }
-ambient_element = { path = "../element" }
+ambient_element = { path = "../../shared_crates/element" }
 ambient_primitives = { path = "../primitives" }
 ambient_cameras = { path = "../cameras" }
 env_logger = { workspace = true }

@@ -13,16 +13,16 @@ ambient_ecs = { path = "../ecs" }
 ambient_gpu = { path = "../gpu" }
 ambient_core = { path = "../core" }
 ambient_meshes = { path = "../meshes" }
-ambient_element = { path = "../element" }
 ambient_input = { path = "../input" }
 ambient_renderer = { path = "../renderer" }
 ambient_layout = { path = "../layout" }
 ambient_text = { path = "../text" }
 ambient_rect = { path = "../rect" }
-ambient_ui_components = { path = "../ui_components", default-features = false, features = ["native"] }
-ambient_editor_derive = { path = "../editor_derive" }
-ambient_window_types = { path = "../window_types", features = ["native"] }
-ambient_event_types = { path = "../event_types" }
+ambient_element = { path = "../../shared_crates/element" }
+ambient_ui_components = { path = "../../shared_crates/ui_components", default-features = false, features = ["native"] }
+ambient_editor_derive = { path = "../../shared_crates/editor_derive" }
+ambient_window_types = { path = "../../shared_crates/window_types", features = ["native"] }
+ambient_event_types = { path = "../../shared_crates/event_types" }
 glam = { workspace = true }
 winit = { workspace = true }
 itertools = { workspace = true }
