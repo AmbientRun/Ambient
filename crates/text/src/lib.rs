@@ -212,8 +212,6 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                     let gpu = world.resource(gpu()).clone();
 
                     for (id, _) in q.collect_cloned(world, qs) {
-                        panic!("at the disco");
-                        log::info!("Found text: {id}");
                         let texture = Arc::new(Texture::new(
                             gpu.clone(),
                             &wgpu::TextureDescriptor {

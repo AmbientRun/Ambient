@@ -40,7 +40,7 @@ async fn run() -> anyhow::Result<()> {
     let mut app = App::builder().ui_renderer(true).build().await.context("Failed to build app")?;
     tracing::info!("Finished building app");
 
-    init(&mut app);
+    init(&mut app).await;
 
     /// Spawn the event loop
     app.spawn();
@@ -50,7 +50,6 @@ async fn run() -> anyhow::Result<()> {
 async fn init(app: &mut App) {
     let world = &mut app.world;
     // FocusRoot(vec![FlowRow(vec![Text::el("Hello, Wasm!")]).el()]).el().spawn_interactive(world);
-
     Group(vec![
         UICamera.el().set(active_camera(), 0.),
         FlowColumn(vec![
