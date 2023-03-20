@@ -12,7 +12,7 @@ use ambient_core::{
     runtime,
     window::mirror_window_components,
 };
-use ambient_ecs::{components, query, world_events, Entity, EntityId, Resource, SystemGroup, World, WorldDiff, WorldEventReader};
+use ambient_ecs::{components, query, world_events, Entity, EntityId, Resource, SystemGroup, World, WorldDiff};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;

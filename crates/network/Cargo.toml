@@ -16,7 +16,7 @@ ambient_gizmos = { path = "../gizmos" }
 ambient_gpu = { path = "../gpu" }
 ambient_ui = { path = "../ui" }
 ambient_renderer = { path = "../renderer" }
-ambient_element = { path = "../element" }
+ambient_element = { path = "../../shared_crates/element" }
 ambient_app = { path = "../app" }
 itertools = { workspace = true }
 dashmap = { workspace = true }
