@@ -1,18 +1,17 @@
-use ambient_api::prelude::*;
+use ambient_api::{
+    components::core::{
+        app::main_scene,
+        camera::aspect_ratio_from_window,
+        primitives::quad,
+        rendering::pbr_material_from_url,
+        transform::{lookat_center, scale, translation},
+    },
+    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
+    prelude::*,
+};
 
 #[main]
 pub async fn main() -> EventResult {
-    use ambient_api::{
-        components::core::{
-            app::main_scene,
-            camera::aspect_ratio_from_window,
-            primitives::quad,
-            rendering::pbr_material_from_url,
-            transform::{lookat_center, scale, translation},
-        },
-        concepts::{make_perspective_infinite_reverse_camera, make_transformable},
-    };
-
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
