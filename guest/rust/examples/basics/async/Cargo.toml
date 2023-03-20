@@ -7,7 +7,7 @@ rust-version = {workspace = true}
 version = {workspace = true}
 
 [dependencies]
-ambient_api = {path = "../../../api"}
+ambient_api = {workspace = true}
 
 [[bin]]
 name = "async_client"

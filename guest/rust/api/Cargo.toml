@@ -15,8 +15,8 @@ all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
-ambient_api_macros = { path = "api_macros", version = "0.2.0-dev" }
-ambient_event_types = { path = "../../../crates/event_types" }
+ambient_api_macros = { workspace = true }
+ambient_event_types = { workspace = true }
 anyhow = "1.0"
 data-encoding = "2.3.3"
 glam = { version = "0.22.0", features = ["rand"] }

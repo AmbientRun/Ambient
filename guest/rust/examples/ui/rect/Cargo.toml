@@ -7,16 +7,10 @@ rust-version = { workspace = true }
 version = { workspace = true }
 
 [dependencies]
-ambient_api = { path = "../../../api" }
-ambient_element = { path = "../../../../../crates/element", default-features = false, features = [
-  "guest",
-] }
-ambient_guest_bridge = { path = "../../../../../crates/guest_bridge", default-features = false, features = [
-  "guest",
-] }
-ambient_ui_components = { path = "../../../../../crates/ui_components", features = [
-  "guest",
-] }
+ambient_api = {workspace = true}
+ambient_element = {workspace = true}
+ambient_guest_bridge = {workspace = true}
+ambient_ui_components = {workspace = true}
 
 [[bin]]
 name = "rect_client"
