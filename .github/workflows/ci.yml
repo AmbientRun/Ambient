@@ -81,6 +81,8 @@ jobs:
         with:
           command: nextest
           args: run --workspace
+      - name: Run guest/rust/api/api_macros tests
+        run: cd guest/rust/api/api_macros && cargo nextest run
 
       # - name: Run screenshot tests
       #   run: node scripts/update_screenshots.js
