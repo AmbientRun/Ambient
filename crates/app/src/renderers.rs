@@ -166,7 +166,7 @@ impl System for ExamplesRender {
                 &mut encoder,
                 &mut post_submit,
                 RendererTarget::Target(&self.render_target),
-                Some(Color::rgba(0.5, 0., 0.5, 1.)),
+                Some(Color::rgba(0.0, 0., 0.0, 1.)),
             );
         }
 
