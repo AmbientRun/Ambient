@@ -38,12 +38,12 @@ async fn run() -> anyhow::Result<()> {
 
     use anyhow::Context;
     let mut app = App::builder().ui_renderer(true).build().await.context("Failed to build app")?;
+    tracing::info!("Finished building app");
 
     init(&mut app);
 
     /// Spawn the event loop
     app.spawn();
-
     Ok(())
 }
 

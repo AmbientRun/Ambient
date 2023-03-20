@@ -444,7 +444,7 @@ impl App {
 
         tracing::debug!("Spawning event loop");
         event_loop.spawn(move |event, _, control_flow| {
-            tracing::info!("Event: {event:?}");
+            tracing::debug!("Event: {event:?}");
             // HACK(philpax): treat dpi changes as resize events. Ideally we'd handle this in handle_event proper,
             // but https://github.com/rust-windowing/winit/issues/1968 restricts us
             if let Event::WindowEvent { window_id, event: WindowEvent::ScaleFactorChanged { new_inner_size, scale_factor } } = &event {

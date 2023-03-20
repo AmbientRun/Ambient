@@ -197,40 +197,50 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                     world.add_component(id, font_size(), 12.).unwrap();
                 }
             }),
-            query(()).incl(text()).excl(renderer_shader()).spawned().to_system(move |q, world, qs, _| {
-                if !use_gpu {
-                    return;
-                }
-                let assets = world.resource(asset_cache()).clone();
-                let gpu = world.resource(gpu()).clone();
-                for (id, _) in q.collect_cloned(world, qs) {
-                    let texture = Arc::new(Texture::new(
-                        gpu.clone(),
-                        &wgpu::TextureDescriptor {
-                            size: wgpu::Extent3d { width: 256, height: 256, depth_or_array_layers: 1 },
-                            mip_level_count: 1,
-                            sample_count: 1,
-                            dimension: wgpu::TextureDimension::D2,
-                            format: wgpu::TextureFormat::R8Unorm,
-                            usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
-                            label: Some("Text.texture"),
-                        },
-                    ));
-                    let texture_view = Arc::new(texture.create_view(&wgpu::TextureViewDescriptor::default()));
-                    world
-                        .add_components(
-                            id,
-                            Entity::new()
-                                .with(text_texture(), texture)
-                                .with(renderer_shader(), cb(get_text_shader))
-                                .with(material(), SharedMaterial::new(TextMaterial::new(assets.clone(), texture_view)))
-                                .with(primitives(), vec![])
-                                .with_default(gpu_primitives_mesh())
-                                .with_default(gpu_primitives_lod()),
-                        )
-                        .unwrap();
-                }
-            }),
+            query(())
+                .incl(text())
+                // .excl(renderer_shader())
+                // .spawned()
+                .to_system(move |q, world, qs, _| {
+                    // log::info!("Running text system: {use_gpu}");
+
+                    if !use_gpu {
+                        return;
+                    }
+
+                    let assets = world.resource(asset_cache()).clone();
+                    let gpu = world.resource(gpu()).clone();
+
+                    for (id, _) in q.collect_cloned(world, qs) {
+                        panic!("at the disco");
+                        log::info!("Found text: {id}");
+                        let texture = Arc::new(Texture::new(
+                            gpu.clone(),
+                            &wgpu::TextureDescriptor {
+                                size: wgpu::Extent3d { width: 256, height: 256, depth_or_array_layers: 1 },
+                                mip_level_count: 1,
+                                sample_count: 1,
+                                dimension: wgpu::TextureDimension::D2,
+                                format: wgpu::TextureFormat::R8Unorm,
+                                usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
+                                label: Some("Text.texture"),
+                            },
+                        ));
+                        let texture_view = Arc::new(texture.create_view(&wgpu::TextureViewDescriptor::default()));
+                        world
+                            .add_components(
+                                id,
+                                Entity::new()
+                                    .with(text_texture(), texture)
+                                    .with(renderer_shader(), cb(get_text_shader))
+                                    .with(material(), SharedMaterial::new(TextMaterial::new(assets.clone(), texture_view)))
+                                    .with(primitives(), vec![])
+                                    .with_default(gpu_primitives_mesh())
+                                    .with_default(gpu_primitives_lod()),
+                            )
+                            .unwrap();
+                    }
+                }),
             query((font_family().changed(), font_style().changed())).to_system(|q, world, qs, _| {
                 for (id, (font_family, font_style)) in q.collect_cloned(world, qs) {
                     let async_run = world.resource(async_run()).clone();
