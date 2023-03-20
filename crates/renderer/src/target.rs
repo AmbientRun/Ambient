@@ -28,6 +28,7 @@ pub(crate) fn to_linear_format(format: TextureFormat) -> TextureFormat {
 pub struct RenderTarget {
     pub depth_buffer: Arc<Texture>,
     pub depth_buffer_view: TextureView,
+    pub depth_stencil_view: TextureView,
     pub color_buffer: Arc<Texture>,
     pub color_buffer_view: TextureView,
     pub normals_quat_buffer: Arc<Texture>,
@@ -77,6 +78,7 @@ impl RenderTarget {
         Self {
             depth_buffer_view: depth_buffer
                 .create_view(&TextureViewDescriptor { aspect: wgpu::TextureAspect::DepthOnly, ..Default::default() }),
+            depth_stencil_view: depth_buffer.create_view(&TextureViewDescriptor { ..Default::default() }),
             depth_buffer,
             color_buffer_view: color_buffer.create_view(&Default::default()),
             color_buffer,

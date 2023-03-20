@@ -133,7 +133,7 @@ impl OverlayRenderer {
                 ops: wgpu::Operations { load: wgpu::LoadOp::Load, store: true },
             })],
             depth_stencil_attachment: Some(RenderPassDepthStencilAttachment {
-                view: target.depth(),
+                view: target.depth_stencil(),
                 depth_ops: Some(wgpu::Operations { load: wgpu::LoadOp::Load, store: true }),
                 stencil_ops: None,
             }),

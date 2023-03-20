@@ -95,18 +95,28 @@ impl<'a> RendererTarget<'a> {
             RendererTarget::Direct { color, .. } => color,
         }
     }
+
     pub fn depth(&self) -> &'a TextureView {
         match self {
             RendererTarget::Target(target) => &target.depth_buffer_view,
             RendererTarget::Direct { depth, .. } => depth,
         }
     }
+
+    pub fn depth_stencil(&self) -> &'a TextureView {
+        match self {
+            RendererTarget::Target(target) => &target.depth_stencil_view,
+            RendererTarget::Direct { depth, .. } => depth,
+        }
+    }
+
     pub fn normals(&self) -> &'a TextureView {
         match self {
             RendererTarget::Target(target) => &target.normals_quat_buffer_view,
             RendererTarget::Direct { normals, .. } => normals,
         }
     }
+
     pub fn size(&self) -> wgpu::Extent3d {
         match self {
             RendererTarget::Target(target) => target.color_buffer.size,
@@ -317,7 +327,7 @@ impl Renderer {
                     }),
                 ],
                 depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
-                    view: target.depth(),
+                    view: target.depth_stencil(),
                     depth_ops: Some(wgpu::Operations {
                         load: if clear.is_some() { wgpu::LoadOp::Clear(0.0) } else { wgpu::LoadOp::Load },
                         store: true,
@@ -368,7 +378,7 @@ impl Renderer {
                     ops: wgpu::Operations { load: wgpu::LoadOp::Load, store: true },
                 })],
                 depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
-                    view: target.depth(),
+                    view: target.depth_stencil(),
                     depth_ops: Some(wgpu::Operations { load: wgpu::LoadOp::Load, store: true }),
                     stencil_ops: None,
                 }),
