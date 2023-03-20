@@ -404,14 +404,14 @@ impl PhysicsObjectCollection {
             .collect();
         res
     }
-    pub fn apply_force(&self, world: &mut World, get_force: impl Fn(Vec3) -> Vec3) {
+    pub fn add_force(&self, world: &mut World, get_force: impl Fn(Vec3) -> Vec3) {
         for actor in &self.actors {
             if let Some(actor) = actor.to_rigid_dynamic() {
                 let pose = actor.get_global_pose();
                 let force = get_force(pose.translation());
                 // Kinematic actors can't have force applied to them: https://github.com/OurMachinery/themachinery-public/issues/494
                 if !actor.get_rigid_body_flags().contains(PxRigidBodyFlag::KINEMATIC) {
-                    actor.add_force(force, None, Some(true));
+                    actor.add_force(force, Some(PxForceMode::Force), Some(true));
                 }
             }
         }
@@ -423,7 +423,7 @@ impl PhysicsObjectCollection {
             *world.get_mut(id, unit_velocity()).unwrap() += a * (1. / 60.);
         }
     }
-    pub fn apply_force_explosion(&self, world: &mut World, center: Vec3, force: f32, falloff_radius: Option<f32>) {
+    pub fn add_radial_impulse(&self, world: &mut World, center: Vec3, force: f32, falloff_radius: Option<f32>) {
         let get_force = |pos: Vec3| {
             let mut delta = pos - center;
             if delta.length() == 0. {
@@ -435,11 +435,11 @@ impl PhysicsObjectCollection {
             }
             force
         };
-        self.apply_force(world, get_force)
+        self.add_force(world, get_force)
     }
 }
 
-pub fn apply_force(world: &World, id: EntityId, force: Vec3, mode: Option<PxForceMode>) -> anyhow::Result<()> {
+pub fn add_force(world: &World, id: EntityId, force: Vec3, mode: Option<PxForceMode>) -> anyhow::Result<()> {
     let shape = world.get_ref(id, physics_shape())?;
     let actor = shape.get_actor().context("No actor for shape")?;
     let actor = actor.to_rigid_dynamic().context("Not a rigid dynamic")?;
@@ -451,7 +451,7 @@ pub fn apply_force(world: &World, id: EntityId, force: Vec3, mode: Option<PxForc
     Ok(())
 }
 
-pub fn apply_force_at_position(world: &World, id: EntityId, force: Vec3, position: Vec3, mode: Option<PxForceMode>) -> anyhow::Result<()> {
+pub fn add_force_at_position(world: &World, id: EntityId, force: Vec3, position: Vec3, mode: Option<PxForceMode>) -> anyhow::Result<()> {
     let shape = world.get_ref(id, physics_shape())?;
     let actor = shape.get_actor().context("No actor for shape")?;
     let actor = actor.to_rigid_dynamic().context("Not a rigid dynamic")?;

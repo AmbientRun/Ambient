@@ -40,34 +40,79 @@ impl wit::server_player::Host for Bindings {
 }
 
 impl wit::server_physics::Host for Bindings {
-    fn apply_force(
+    fn add_force(
         &mut self,
         entity: wit::types::EntityId,
         force: wit::types::Vec3,
-        mode: Option<wit::server_physics::ForceMode>,
     ) -> anyhow::Result<()> {
-        let _ = ambient_physics::helpers::apply_force(
+        let _ = ambient_physics::helpers::add_force(
             self.world_mut(),
             entity.from_bindgen(),
             force.from_bindgen(),
-            mode.from_bindgen(),
+            Some(physxx::PxForceMode::Force),
         );
         Ok(())
     }
 
-    fn apply_force_at_position(
+    fn add_impulse(
+        &mut self,
+        entity: wit::types::EntityId,
+        force: wit::types::Vec3,
+    ) -> anyhow::Result<()> {
+        let _ = ambient_physics::helpers::add_force(
+            self.world_mut(),
+            entity.from_bindgen(),
+            force.from_bindgen(),
+            Some(physxx::PxForceMode::Impulse),
+        );
+        Ok(())
+    }
+
+    fn add_radial_impulse(
+        &mut self,
+        position: wit::types::Vec3,
+        impulse: f32,
+        radius: f32,
+        falloff_radius: Option<f32>,
+    ) -> anyhow::Result<()> {
+        let position = position.from_bindgen();
+        ambient_physics::helpers::PhysicsObjectCollection::from_radius(
+            self.world_mut(),
+            position,
+            radius,
+        )
+        .add_radial_impulse(self.world_mut(), position, impulse, falloff_radius);
+        Ok(())
+    }
+
+    fn add_force_at_position(
         &mut self,
         entity: wit::types::EntityId,
         force: wit::types::Vec3,
         position: wit::types::Vec3,
-        mode: Option<wit::server_physics::ForceMode>,
     ) -> anyhow::Result<()> {
-        let _ = ambient_physics::helpers::apply_force_at_position(
+        let _ = ambient_physics::helpers::add_force_at_position(
             self.world_mut(),
             entity.from_bindgen(),
             force.from_bindgen(),
             position.from_bindgen(),
-            mode.from_bindgen(),
+            Some(physxx::PxForceMode::Force),
+        );
+        Ok(())
+    }
+
+    fn add_impulse_at_position(
+        &mut self,
+        entity: wit::types::EntityId,
+        force: wit::types::Vec3,
+        position: wit::types::Vec3,
+    ) -> anyhow::Result<()> {
+        let _ = ambient_physics::helpers::add_force_at_position(
+            self.world_mut(),
+            entity.from_bindgen(),
+            force.from_bindgen(),
+            position.from_bindgen(),
+            Some(physxx::PxForceMode::Impulse),
         );
         Ok(())
     }
@@ -86,23 +131,6 @@ impl wit::server_physics::Host for Bindings {
             result = velocity;
         }
         Ok(result.into_bindgen())
-    }
-
-    fn explode_bomb(
-        &mut self,
-        position: wit::types::Vec3,
-        force: f32,
-        radius: f32,
-        falloff_radius: Option<f32>,
-    ) -> anyhow::Result<()> {
-        let position = position.from_bindgen();
-        ambient_physics::helpers::PhysicsObjectCollection::from_radius(
-            self.world_mut(),
-            position,
-            radius,
-        )
-        .apply_force_explosion(self.world_mut(), position, force, falloff_radius);
-        Ok(())
     }
 
     fn set_gravity(&mut self, gravity: wit::types::Vec3) -> anyhow::Result<()> {

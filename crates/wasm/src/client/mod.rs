@@ -278,21 +278,46 @@ impl wit::server_player::Host for Bindings {
 }
 
 impl wit::server_physics::Host for Bindings {
-    fn apply_force(
+    fn add_force(
         &mut self,
         _entity: wit::types::EntityId,
         _force: wit::types::Vec3,
-        _mode: Option<wit::server_physics::ForceMode>,
     ) -> anyhow::Result<()> {
         unsupported()
     }
 
-    fn apply_force_at_position(
+    fn add_impulse(
+        &mut self,
+        _entity: wit::types::EntityId,
+        _force: wit::types::Vec3,
+    ) -> anyhow::Result<()> {
+        unsupported()
+    }
+
+    fn add_radial_impulse(
+        &mut self,
+        _position: wit::types::Vec3,
+        _impulse: f32,
+        _radius: f32,
+        _falloff_radius: Option<f32>,
+    ) -> anyhow::Result<()> {
+        unsupported()
+    }
+
+    fn add_force_at_position(
         &mut self,
         _entity: wit::types::EntityId,
         _force: wit::types::Vec3,
         _position: wit::types::Vec3,
-        _mode: Option<wit::server_physics::ForceMode>,
+    ) -> anyhow::Result<()> {
+        unsupported()
+    }
+
+    fn add_impulse_at_position(
+        &mut self,
+        _entity: wit::types::EntityId,
+        _force: wit::types::Vec3,
+        _position: wit::types::Vec3,
     ) -> anyhow::Result<()> {
         unsupported()
     }
@@ -302,16 +327,6 @@ impl wit::server_physics::Host for Bindings {
         _entity: wit::types::EntityId,
         _position: wit::types::Vec3,
     ) -> anyhow::Result<wit::types::Vec3> {
-        unsupported()
-    }
-
-    fn explode_bomb(
-        &mut self,
-        _position: wit::types::Vec3,
-        _force: f32,
-        _radius: f32,
-        _falloff_radius: Option<f32>,
-    ) -> anyhow::Result<()> {
         unsupported()
     }
 

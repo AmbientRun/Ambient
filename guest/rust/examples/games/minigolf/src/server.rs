@@ -292,10 +292,11 @@ pub async fn main() -> EventResult {
                 player_camera_state.rotate(delta.mouse_position / 250.);
             }
 
-            let can_shoot = entity::get_component(player_ball, linear_velocity())
-                .unwrap_or_default()
-                .length_squared()
-                < 4.0;
+            let can_shoot = {
+                let lv = entity::get_component(player_ball, linear_velocity())
+                .unwrap_or_default();
+                lv.xy().length_squared() < 1.0 && lv.z.abs() < f32::EPSILON * 100.0
+            };
 
             let force_multiplier = {
                 let mut mul = time() % 2.0;
@@ -363,10 +364,15 @@ pub async fn main() -> EventResult {
             }
 
             // HACK: Artificially slow down ball until https://github.com/AmbientRun/Ambient/issues/182 is available
-            physics::apply_force(player_ball, {
+            physics::add_force(player_ball, {
                 let lv = entity::get_component(player_ball, linear_velocity()).unwrap_or_default();
-                -2.0 * frametime() * lv.xy().extend(0.0)
-            }, None);
+                let lvl = lv.length();
+                if lvl > 0.0 {
+                    -65.0 * frametime() * lv.xy().extend(0.0) * (1.0 / lvl)
+                } else {
+                    Vec3::ZERO
+                }
+            });
         }
     });
 
