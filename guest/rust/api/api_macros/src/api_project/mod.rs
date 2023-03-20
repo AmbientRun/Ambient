@@ -1,17 +1,16 @@
 use std::path::PathBuf;
 
+use ambient_project::{IdentifierPathBuf, Manifest};
 use anyhow::Context;
 use quote::quote;
 
-use self::{identifier::IdentifierPathBuf, tree::Tree};
+use tree::Tree;
 
 #[cfg(test)]
 mod tests;
 
 mod component;
 mod concept;
-mod identifier;
-mod manifest;
 mod tree;
 
 pub fn read_file(file_path: String) -> anyhow::Result<(Option<String>, String)> {
@@ -30,7 +29,7 @@ pub fn implementation(
     global_namespace: bool,
     validate_namespaces_documented: bool,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    let manifest: manifest::Manifest = toml::from_str(&contents)?;
+    let manifest: Manifest = toml::from_str(&contents)?;
     let project_path = if !global_namespace {
         manifest.project_path()
     } else {

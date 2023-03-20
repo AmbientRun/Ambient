@@ -26,7 +26,6 @@ ambient_network = { path = "../crates/network" }
 ambient_prefab = { path = "../crates/prefab" }
 ambient_physics = { path = "../crates/physics" }
 ambient_primitives = { path = "../crates/primitives" }
-ambient_project = { path = "../crates/project" }
 ambient_renderer = { path = "../crates/renderer" }
 ambient_rpc = { path = "../crates/rpc" }
 ambient_layout = { path = "../crates/layout" }
@@ -40,6 +39,7 @@ ambient_water = { path = "../crates/water" }
 
 ambient_editor_derive = { path = "../shared_crates/editor_derive" }
 ambient_element = { path = "../shared_crates/element" }
+ambient_project = { path = "../shared_crates/project" }
 ambient_window_types = { path = "../shared_crates/window_types" }
 ambient_event_types = { path = "../shared_crates/event_types" }
 
