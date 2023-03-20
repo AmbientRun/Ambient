@@ -16,10 +16,12 @@ ambient_input = { path = "../input" }
 ambient_network = { path = "../network" }
 ambient_prefab = { path = "../prefab" }
 ambient_physics = { path = "../physics" }
-ambient_project = { path = "../project" }
 ambient_std = { path = "../std" }
 ambient_wasmtime_wasi = { path = "../wasmtime_wasi" }
+
+ambient_project = { path = "../../shared_crates/project" }
 ambient_window_types = { path = "../../shared_crates/window_types" }
+
 physxx = { path = "../../libs/physxx" }
 
 anyhow = { workspace = true }

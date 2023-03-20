@@ -5,7 +5,7 @@ use proc_macro::TokenStream;
 use proc_macro2::Span;
 use quote::quote;
 
-mod ambient_project;
+mod api_project;
 
 const MANIFEST: &str = include_str!("../ambient.toml");
 
@@ -24,8 +24,8 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let spans = Span::call_site();
     let mut path = syn::Path::from(syn::Ident::new("ambient_api", spans));
     path.leading_colon = Some(syn::Token![::](spans));
-    let project_boilerplate = ambient_project::implementation(
-        ambient_project::read_file("ambient.toml".to_string())
+    let project_boilerplate = api_project::implementation(
+        api_project::read_file("ambient.toml".to_string())
             .context("Failed to load ambient.toml")
             .unwrap(),
         path.clone(),
@@ -52,7 +52,7 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro]
 pub fn api_project(_input: TokenStream) -> TokenStream {
     TokenStream::from(
-        ambient_project::implementation(
+        api_project::implementation(
             (None, MANIFEST.to_string()),
             syn::Path::from(syn::Ident::new("crate", Span::call_site())),
             true,

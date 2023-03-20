@@ -1,6 +1,6 @@
-use quote::{ToTokens, TokenStreamExt};
-use serde::Deserialize;
 use std::{fmt::Display, ops::Deref};
+
+use serde::{Deserialize, Serialize};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct IdentifierPath<'a>(pub &'a [Identifier]);
@@ -27,22 +27,16 @@ impl<'a> Deref for IdentifierPath<'a> {
         self.0
     }
 }
-impl<'a> ToTokens for IdentifierPath<'a> {
-    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        tokens.append_separated(self.0.iter(), quote::quote! {::})
-    }
-}
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct IdentifierPathBuf(Vec<Identifier>);
+pub struct IdentifierPathBuf(pub(super) Vec<Identifier>);
 impl IdentifierPathBuf {
     pub fn empty() -> Self {
         Self(vec![])
     }
 
-    #[cfg(test)]
-    pub fn new(id: impl Into<String>) -> Result<Self, &'static str> {
-        Self::new_impl(id.into())
+    pub fn new(path: impl Into<String>) -> Result<Self, &'static str> {
+        Self::new_impl(path.into())
     }
 
     fn new_impl(path: String) -> Result<Self, &'static str> {
@@ -75,11 +69,6 @@ impl<'de> Deserialize<'de> for IdentifierPathBuf {
             .map_err(serde::de::Error::custom)
     }
 }
-impl FromIterator<Identifier> for IdentifierPathBuf {
-    fn from_iter<T: IntoIterator<Item = Identifier>>(iter: T) -> Self {
-        Self(iter.into_iter().collect())
-    }
-}
 impl Deref for IdentifierPathBuf {
     type Target = [Identifier];
 
@@ -87,14 +76,14 @@ impl Deref for IdentifierPathBuf {
         &self.0
     }
 }
-impl ToTokens for IdentifierPathBuf {
-    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        self.as_path().to_tokens(tokens)
+impl FromIterator<Identifier> for IdentifierPathBuf {
+    fn from_iter<T: IntoIterator<Item = Identifier>>(iter: T) -> Self {
+        Self(iter.into_iter().collect())
     }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Identifier(String);
+pub struct Identifier(pub(super) String);
 impl Identifier {
     pub fn new(id: impl Into<String>) -> Result<Self, &'static str> {
         Self::new_impl(id.into())
@@ -124,6 +113,14 @@ impl Identifier {
         Ok(id)
     }
 }
+impl Serialize for Identifier {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        String::serialize(&self.0, serializer)
+    }
+}
 impl<'de> Deserialize<'de> for Identifier {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -142,11 +139,53 @@ impl Display for Identifier {
         f.write_str(&self.0)
     }
 }
-impl ToTokens for Identifier {
-    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        tokens.append(proc_macro2::Ident::new(
-            self.as_ref(),
-            proc_macro2::Span::call_site(),
-        ))
+
+#[cfg(test)]
+mod tests {
+    use crate::{Identifier, IdentifierPathBuf};
+
+    #[test]
+    fn can_validate_identifiers() {
+        use Identifier as I;
+        use IdentifierPathBuf as IP;
+
+        assert_eq!(I::new(""), Err("identifier must not be empty"));
+        assert_eq!(
+            I::new("5asd"),
+            Err("identifier must start with a lowercase ASCII character")
+        );
+        assert_eq!(
+            I::new("_asd"),
+            Err("identifier must start with a lowercase ASCII character")
+        );
+        assert_eq!(
+            I::new("mY_COOL_COMPONENT"),
+            Err("identifier must be snake-case ASCII")
+        );
+        assert_eq!(
+            I::new("cool_component!"),
+            Err("identifier must be snake-case ASCII")
+        );
+        assert_eq!(
+            I::new("cool-component"),
+            Err("identifier must be snake-case ASCII")
+        );
+
+        assert_eq!(
+            I::new("cool_component"),
+            Ok(I("cool_component".to_string()))
+        );
+        assert_eq!(
+            I::new("cool_component_00"),
+            Ok(I("cool_component_00".to_string()))
+        );
+
+        assert_eq!(
+            IP::new("my::cool_component_00"),
+            Ok(IP(vec![
+                I("my".to_string()),
+                I("cool_component_00".to_string())
+            ]))
+        );
     }
 }

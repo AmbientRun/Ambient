@@ -60,7 +60,7 @@ pub fn start(
 
     start_http_interface(runtime, &project_path);
 
-    ComponentRegistry::get_mut().add_external(manifest.all_defined_components(false).unwrap());
+    ComponentRegistry::get_mut().add_external(ambient_project::all_defined_components(manifest, false).unwrap());
 
     let manifest = manifest.clone();
     runtime.spawn(async move {

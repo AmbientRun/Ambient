@@ -1,7 +1,4 @@
-use super::{
-    identifier::{Identifier, IdentifierPath, IdentifierPathBuf},
-    manifest::{Namespace, NamespaceOr},
-};
+use ambient_project::{Identifier, IdentifierPath, IdentifierPathBuf, Namespace, NamespaceOr};
 use anyhow::Context;
 use std::{collections::BTreeMap, fmt::Debug};
 

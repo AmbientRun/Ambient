@@ -1,22 +1,10 @@
-use super::{
-    component::{Component, ComponentType},
-    identifier::{Identifier, IdentifierPath, IdentifierPathBuf},
-    tree::{Tree, TreeNode, TreeNodeInner},
+use super::tree::{Tree, TreeNode, TreeNodeInner};
+use ambient_project::{
+    Component, ComponentType, Concept, Identifier, IdentifierPath, IdentifierPathBuf,
 };
 use anyhow::Context;
 use proc_macro2::TokenStream;
 use quote::quote;
-use serde::Deserialize;
-use std::collections::BTreeMap;
-
-#[derive(Deserialize, Debug, Clone)]
-pub struct Concept {
-    pub name: String,
-    pub description: String,
-    #[serde(default)]
-    pub extends: Vec<IdentifierPathBuf>,
-    pub components: BTreeMap<IdentifierPathBuf, toml::Value>,
-}
 
 pub fn tree_to_token_stream(
     concept_tree: &Tree<Concept>,
