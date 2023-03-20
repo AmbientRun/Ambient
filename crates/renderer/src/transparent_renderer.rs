@@ -145,7 +145,7 @@ impl TransparentRenderer {
         let mut is_bound = false;
         // TODO: keep track of the state to avoid state switches (same pipeline multiple times etc.)
         for (i, entry) in self.primitives.iter().enumerate() {
-            let bind_groups = [bind_groups.globals, bind_groups.entities, bind_groups.mesh_data, &self.primitives_bind_group];
+            let bind_groups = [bind_groups.globals, bind_groups.entities, &self.primitives_bind_group];
             if !is_bound {
                 for (i, bind_group) in bind_groups.iter().enumerate() {
                     render_pass.set_bind_group(i as _, bind_group, &[]);

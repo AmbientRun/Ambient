@@ -7,7 +7,7 @@ use ambient_std::{
     include_file,
 };
 
-use crate::{GLOBALS_BIND_GROUP, MATERIAL_BIND_GROUP, PRIMITIVES_BIND_GROUP, RESOURCES_BIND_GROUP};
+use crate::{GLOBALS_BIND_GROUP, MATERIAL_BIND_GROUP, PRIMITIVES_BIND_GROUP};
 
 use super::{get_forward_modules, MaterialShader, RendererShader};
 
@@ -29,7 +29,7 @@ impl SyncAssetKey<Arc<RendererShader>> for StandardShaderKey {
         let shader = Shader::new(
             &assets,
             id.clone(),
-            &[GLOBALS_BIND_GROUP, ENTITIES_BIND_GROUP, RESOURCES_BIND_GROUP, PRIMITIVES_BIND_GROUP, MATERIAL_BIND_GROUP],
+            &[GLOBALS_BIND_GROUP, ENTITIES_BIND_GROUP, PRIMITIVES_BIND_GROUP, MATERIAL_BIND_GROUP],
             &ShaderModule::new("standard_material", include_file!("standard.wgsl"))
                 .with_dependencies(get_forward_modules(&assets, self.shadow_cascades))
                 .with_dependency(self.material_shader.shader.clone()),

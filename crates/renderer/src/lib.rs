@@ -306,23 +306,23 @@ pub fn get_defs_module() -> Arc<ShaderModule> {
     Arc::new(ShaderModule::new("defs", iter))
 }
 
-pub fn get_mesh_meta_module() -> Arc<ShaderModule> {
+pub fn get_mesh_meta_module(bind_group_offset: u32) -> Arc<ShaderModule> {
     Arc::new(
         ShaderModule::new("mesh_meta", include_file!("mesh_meta.wgsl"))
-            .with_ident(ShaderIdent::constant("MESH_METADATA_BINDING", MESH_METADATA_BINDING))
-            .with_binding_desc(get_mesh_meta_layout()),
+            .with_ident(ShaderIdent::constant("MESH_METADATA_BINDING", bind_group_offset + MESH_METADATA_BINDING))
+            .with_binding_desc(get_mesh_meta_layout(bind_group_offset)),
     )
 }
 
-pub fn get_mesh_data_module() -> Arc<ShaderModule> {
+pub fn get_mesh_data_module(bind_group_offset: u32) -> Arc<ShaderModule> {
     Arc::new(
         ShaderModule::new("mesh_data", include_file!("mesh_data.wgsl"))
-            .with_ident(ShaderIdent::constant("MESH_BASE_BINDING", MESH_BASE_BINDING))
-            .with_ident(ShaderIdent::constant("MESH_JOINT_BINDING", MESH_JOINT_BINDING))
-            .with_ident(ShaderIdent::constant("MESH_WEIGHT_BINDING", MESH_WEIGHT_BINDING))
-            .with_ident(ShaderIdent::constant("SKINS_BINDING", SKINS_BINDING))
-            .with_binding_desc(get_mesh_data_layout())
-            .with_dependency(get_mesh_meta_module()),
+            .with_ident(ShaderIdent::constant("MESH_BASE_BINDING", bind_group_offset + MESH_BASE_BINDING))
+            .with_ident(ShaderIdent::constant("MESH_JOINT_BINDING", bind_group_offset + MESH_JOINT_BINDING))
+            .with_ident(ShaderIdent::constant("MESH_WEIGHT_BINDING", bind_group_offset + MESH_WEIGHT_BINDING))
+            .with_ident(ShaderIdent::constant("SKINS_BINDING", bind_group_offset + SKINS_BINDING))
+            .with_binding_desc(get_mesh_data_layout(bind_group_offset))
+            .with_dependency(get_mesh_meta_module(bind_group_offset)),
     )
 }
 
@@ -363,7 +363,7 @@ pub fn get_common_module(_: &AssetCache) -> Arc<ShaderModule> {
     Arc::new(
         ShaderModule::new("renderer_common", include_file!("renderer_common.wgsl"))
             .with_binding_desc(get_common_layout())
-            .with_dependency(get_mesh_data_module()),
+            .with_dependency(get_mesh_data_module(GLOBALS_BIND_GROUP_SIZE)),
     )
 }
 
@@ -379,7 +379,7 @@ pub fn get_globals_module(_assets: &AssetCache, shadow_cascades: u32) -> Arc<Sha
 pub fn get_forward_modules(assets: &AssetCache, shadow_cascades: u32) -> Vec<Arc<ShaderModule>> {
     vec![
         get_defs_module(),
-        get_mesh_data_module(),
+        get_mesh_data_module(GLOBALS_BIND_GROUP_SIZE),
         get_globals_module(assets, shadow_cascades),
         GpuWorldShaderModuleKey { read_only: true }.get(assets),
         get_common_module(assets),

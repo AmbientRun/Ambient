@@ -4,7 +4,7 @@ use super::{
     Culling, FSMain, ForwardGlobals, Outlines, OutlinesConfig, RenderTarget, RendererCollect, RendererCollectState, TransparentRenderer,
     TransparentRendererConfig, TreeRenderer, TreeRendererConfig,
 };
-use crate::{bind_groups::BindGroups, get_common_layout, globals_layout, skinning::SkinsBufferKey, to_linear_format, ShaderDebugParams};
+use crate::{bind_groups::BindGroups, get_common_layout, globals_layout, to_linear_format, ShaderDebugParams};
 use ambient_core::{asset_cache, camera::*, gpu, gpu_ecs::gpu_world, player::local_user_id, ui_scene};
 use ambient_ecs::{ArchetypeFilter, Component, World};
 use ambient_gpu::mesh_buffer::MeshBufferKey;
@@ -23,8 +23,8 @@ use wgpu::{BindGroupLayout, BindGroupLayoutEntry, TextureView};
 
 pub const GLOBALS_BIND_GROUP: &str = "GLOBALS_BIND_GROUP";
 pub const MATERIAL_BIND_GROUP: &str = "MATERIAL_BIND_GROUP";
-pub const RESOURCES_BIND_GROUP: &str = "RESOURCES_BIND_GROUP";
 pub const PRIMITIVES_BIND_GROUP: &str = "PRIMITIVES_BIND_GROUP";
+pub const GLOBALS_BIND_GROUP_SIZE: u32 = 8;
 
 pub const MESH_METADATA_BINDING: u32 = 0;
 pub const MESH_BASE_BINDING: u32 = 1;
@@ -34,7 +34,6 @@ pub const SKINS_BINDING: u32 = 4;
 
 #[derive(Clone)]
 pub struct RendererResources {
-    pub resources_layout: Arc<BindGroupLayout>,
     pub mesh_meta_layout: Arc<BindGroupLayout>,
     pub globals_layout: Arc<BindGroupLayout>,
     pub primitives_layout: Arc<BindGroupLayout>,
@@ -48,18 +47,21 @@ impl SyncAssetKey<RendererResources> for RendererResourcesKey {
     fn load(&self, assets: AssetCache) -> RendererResources {
         let primitives = get_common_layout().get(&assets);
 
-        let resources_layout = BindGroupDesc {
-            entries: [get_mesh_meta_layout().entries, get_mesh_data_layout().entries].concat(),
-            label: RESOURCES_BIND_GROUP.into(),
-        }
-        .get(&assets);
+        let globals_layout = BindGroupDesc {
+            entries: [
+                globals_layout().entries,
+                get_mesh_meta_layout(GLOBALS_BIND_GROUP_SIZE).entries,
+                get_mesh_data_layout(GLOBALS_BIND_GROUP_SIZE).entries,
+            ]
+            .concat(),
+            label: GLOBALS_BIND_GROUP.into(),
+        };
+        log::info!("RendererResources global layout: {globals_layout:#?}");
+        let globals_layout = globals_layout.get(&assets);
 
-        let mesh_meta_layout = BindGroupDesc { entries: get_mesh_meta_layout().entries, label: RESOURCES_BIND_GROUP.into() }.get(&assets);
-
-        let globals_layout = globals_layout().get(&assets);
+        let mesh_meta_layout = BindGroupDesc { entries: get_mesh_meta_layout(0).entries, label: GLOBALS_BIND_GROUP.into() }.get(&assets);
 
         RendererResources {
-            resources_layout,
             mesh_meta_layout,
             globals_layout,
             primitives_layout: primitives,
@@ -142,7 +144,6 @@ pub struct Renderer {
     gpu: Arc<Gpu>,
     pub config: RendererConfig,
     pub shader_debug_params: ShaderDebugParams,
-    resources_layout: Arc<BindGroupLayout>,
     mesh_meta_layout: Arc<BindGroupLayout>,
 
     culling: Culling,
@@ -224,7 +225,6 @@ impl Renderer {
                 OutlinesConfig { scene: config.scene, renderer_resources: renderer_resources.clone() },
                 config.clone(),
             ),
-            resources_layout: renderer_resources.resources_layout,
             mesh_meta_layout: renderer_resources.mesh_meta_layout,
             config,
             shader_debug_params: Default::default(),
@@ -257,9 +257,9 @@ impl Renderer {
         let mesh_buffer_h = MeshBufferKey.get(world.resource(asset_cache()));
         let mesh_buffer = mesh_buffer_h.lock();
 
-        let mesh_data_bind_group = create_mesh_data_bind_group(world, &self.resources_layout, &mesh_buffer);
+        // let mesh_data_bind_group = create_mesh_data_bind_group(world, &self.resources_layout, &mesh_buffer);
 
-        // A subset used for the collect state
+        // // A subset used for the collect state
         let mesh_meta_bind_group = create_mesh_meta_bind_group(world, &self.mesh_meta_layout, &mesh_buffer);
 
         let entities_bind_group = {
@@ -286,18 +286,17 @@ impl Renderer {
 
         self.forward_globals.params.debug_params = self.shader_debug_params;
         self.forward_globals.update(world, &self.shadows.as_ref().map(|x| x.get_cameras()).unwrap_or_default());
+        let assets = world.resource(asset_cache()).clone();
+
         let forward_globals_bind_group = self.forward_globals.create_bind_group(
-            world.resource(asset_cache()).clone(),
+            &assets,
             self.shadows.as_ref().map(|x| &x.shadow_view),
             &self.solids_frame,
+            &mesh_buffer,
         );
 
-        let bind_groups = BindGroups {
-            globals: &forward_globals_bind_group,
-            entities: &entities_bind_group,
-            mesh_data: &mesh_data_bind_group,
-            mesh_meta: &mesh_meta_bind_group,
-        };
+        let bind_groups =
+            BindGroups { globals: &forward_globals_bind_group, entities: &entities_bind_group, mesh_meta: &mesh_meta_bind_group };
 
         if let Some(shadows) = &mut self.shadows {
             shadows.render(&mesh_buffer, encoder, &bind_groups, post_submit);
@@ -466,49 +465,46 @@ fn resource_storage_entry(binding: u32) -> BindGroupLayoutEntry {
     }
 }
 
-pub(crate) fn get_mesh_data_layout() -> BindGroupDesc<'static> {
+pub(crate) fn get_mesh_data_layout(bind_group_offset: u32) -> BindGroupDesc<'static> {
     BindGroupDesc {
         entries: vec![
             // resource_storage_entry(MESH_METADATA_BINDING),
-            resource_storage_entry(MESH_BASE_BINDING),
-            resource_storage_entry(MESH_JOINT_BINDING),
-            resource_storage_entry(MESH_WEIGHT_BINDING),
-            resource_storage_entry(SKINS_BINDING),
+            resource_storage_entry(bind_group_offset + MESH_BASE_BINDING),
+            resource_storage_entry(bind_group_offset + MESH_JOINT_BINDING),
+            resource_storage_entry(bind_group_offset + MESH_WEIGHT_BINDING),
+            resource_storage_entry(bind_group_offset + SKINS_BINDING),
         ],
-        label: RESOURCES_BIND_GROUP.into(),
+        label: GLOBALS_BIND_GROUP.into(),
     }
 }
 
-pub(crate) fn get_mesh_meta_layout() -> BindGroupDesc<'static> {
-    BindGroupDesc { entries: vec![resource_storage_entry(MESH_METADATA_BINDING)], label: RESOURCES_BIND_GROUP.into() }
+pub(crate) fn get_mesh_meta_layout(bind_group_offset: u32) -> BindGroupDesc<'static> {
+    BindGroupDesc { entries: vec![resource_storage_entry(bind_group_offset + MESH_METADATA_BINDING)], label: GLOBALS_BIND_GROUP.into() }
 }
 
-fn create_mesh_data_bind_group(world: &World, layout: &BindGroupLayout, mesh_buffer: &MeshBuffer) -> wgpu::BindGroup {
-    let gpu = world.resource(gpu()).clone();
-    let skins_h = SkinsBufferKey.get(world.resource(asset_cache()));
-    let skins = skins_h.lock();
-    gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
-        layout,
-        entries: &[
-            wgpu::BindGroupEntry { binding: MESH_METADATA_BINDING, resource: mesh_buffer.metadata_buffer.buffer().as_entire_binding() },
-            wgpu::BindGroupEntry { binding: MESH_BASE_BINDING, resource: mesh_buffer.base_buffer.buffer().as_entire_binding() },
-            wgpu::BindGroupEntry { binding: MESH_JOINT_BINDING, resource: mesh_buffer.joint_buffer.buffer().as_entire_binding() },
-            wgpu::BindGroupEntry { binding: MESH_WEIGHT_BINDING, resource: mesh_buffer.weight_buffer.buffer().as_entire_binding() },
-            wgpu::BindGroupEntry { binding: SKINS_BINDING, resource: skins.buffer.buffer().as_entire_binding() },
-        ],
-        label: Some("mesh_data"),
-    })
-}
+// fn create_mesh_data_bind_group(world: &World, layout: &BindGroupLayout, mesh_buffer: &MeshBuffer) -> wgpu::BindGroup {
+//     let gpu = world.resource(gpu()).clone();
+//     let skins_h = SkinsBufferKey.get(world.resource(asset_cache()));
+//     let skins = skins_h.lock();
+//     gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
+//         layout,
+//         entries: &[
+//             wgpu::BindGroupEntry { binding: MESH_METADATA_BINDING, resource: mesh_buffer.metadata_buffer.buffer().as_entire_binding() },
+//             wgpu::BindGroupEntry { binding: MESH_BASE_BINDING, resource: mesh_buffer.base_buffer.buffer().as_entire_binding() },
+//             wgpu::BindGroupEntry { binding: MESH_JOINT_BINDING, resource: mesh_buffer.joint_buffer.buffer().as_entire_binding() },
+//             wgpu::BindGroupEntry { binding: MESH_WEIGHT_BINDING, resource: mesh_buffer.weight_buffer.buffer().as_entire_binding() },
+//             wgpu::BindGroupEntry { binding: SKINS_BINDING, resource: skins.buffer.buffer().as_entire_binding() },
+//         ],
+//         label: Some("mesh_data"),
+//     })
+// }
 
 fn create_mesh_meta_bind_group(world: &World, layout: &BindGroupLayout, mesh_buffer: &MeshBuffer) -> wgpu::BindGroup {
     let gpu = world.resource(gpu()).clone();
 
     gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
         layout,
-        entries: &[wgpu::BindGroupEntry {
-            binding: MESH_METADATA_BINDING,
-            resource: mesh_buffer.metadata_buffer.buffer().as_entire_binding(),
-        }],
+        entries: &[wgpu::BindGroupEntry { binding: 0, resource: mesh_buffer.metadata_buffer.buffer().as_entire_binding() }],
         label: Some("mesh_meta"),
     })
 }

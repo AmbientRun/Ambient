@@ -3,7 +3,7 @@ struct VertexOutput {
     @builtin(position) position: vec4<f32>,
     @location(0) texcoord: vec2<f32>,
     @location(1) world_position: vec4<f32>,
-    @location(2) instance_index: u32,
+    @location(2) @interpolate(flat) instance_index: u32,
     @location(3) inv_local_to_world_0: vec4<f32>,
     @location(4) inv_local_to_world_1: vec4<f32>,
     @location(5) inv_local_to_world_2: vec4<f32>,

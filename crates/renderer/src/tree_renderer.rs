@@ -275,7 +275,7 @@ impl TreeRenderer {
         for node in self.tree.values() {
             render_pass.set_pipeline(node.pipeline.pipeline());
             // Bind on first invocation
-            let bind_groups = [bind_groups.globals, bind_groups.entities, bind_groups.mesh_data, primitives_bind_group];
+            let bind_groups = [bind_groups.globals, bind_groups.entities, primitives_bind_group];
             if !is_bound {
                 for (i, bind_group) in bind_groups.iter().enumerate() {
                     render_pass.set_bind_group(i as _, bind_group, &[]);
@@ -284,7 +284,6 @@ impl TreeRenderer {
             }
 
             for mat in node.tree.values() {
-                tracing::info!("Drawing material: {}", mat.material.name());
                 let material = &mat.material;
 
                 render_pass.set_bind_group(bind_groups.len() as _, material.bind_group(), &[]);

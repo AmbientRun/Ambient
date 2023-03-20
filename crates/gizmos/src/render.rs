@@ -11,7 +11,7 @@ use ambient_gpu::{
 use ambient_meshes::QuadMeshKey;
 use ambient_renderer::{
     bind_groups::BindGroups, get_mesh_data_module, get_overlay_modules, PostSubmitFunc, RendererTarget, SubRenderer, GLOBALS_BIND_GROUP,
-    RESOURCES_BIND_GROUP,
+    GLOBALS_BIND_GROUP_SIZE,
 };
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
@@ -112,11 +112,11 @@ impl SubRenderer for GizmoRenderer {
             let shader = Shader::new(
                 assets,
                 "gizmos",
-                &[GLOBALS_BIND_GROUP, RESOURCES_BIND_GROUP, "GIZMOS_BIND_GROUP"],
+                &[GLOBALS_BIND_GROUP, "GIZMOS_BIND_GROUP"],
                 &ShaderModule::new("Gizmo", source)
                     .with_binding_desc(layout)
                     .with_dependencies(get_overlay_modules(assets, 1))
-                    .with_dependency(get_mesh_data_module()),
+                    .with_dependency(get_mesh_data_module(GLOBALS_BIND_GROUP_SIZE)),
             )
             .unwrap();
 
@@ -162,7 +162,7 @@ impl SubRenderer for GizmoRenderer {
         let indices = mesh_buffer.indices_of(&self.quad);
         render_pass.set_pipeline(pipeline.pipeline());
 
-        let bind_groups = [bind_groups.globals, bind_groups.mesh_data, &bind_group];
+        let bind_groups = [bind_groups.globals, &bind_group];
         for (index, bind_group) in bind_groups.iter().enumerate() {
             render_pass.set_bind_group(index as _, bind_group, &[])
         }

@@ -16,9 +16,9 @@ use glam::{uvec2, UVec2, UVec3};
 use parking_lot::Mutex;
 use wgpu::{BindGroupEntry, BindGroupLayout, BindGroupLayoutEntry, BindingType, BufferBindingType, ShaderStages};
 
-use crate::get_mesh_meta_module;
+use crate::{get_mesh_meta_module, GLOBALS_BIND_GROUP};
 
-use super::{get_defs_module, DrawIndexedIndirect, PrimitiveIndex, RESOURCES_BIND_GROUP};
+use super::{get_defs_module, DrawIndexedIndirect, PrimitiveIndex};
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, Default, bytemuck::Pod, bytemuck::Zeroable)]
@@ -165,13 +165,13 @@ impl RendererCollect {
         let shader = Shader::new(
             assets,
             "collect",
-            &[ENTITIES_BIND_GROUP, RESOURCES_BIND_GROUP, "RendererCollect.layout"],
+            &[GLOBALS_BIND_GROUP, ENTITIES_BIND_GROUP, "RendererCollect.layout"],
             &ShaderModule::new("RendererCollect", include_file!("collect.wgsl"))
                 .with_ident(ShaderIdent::constant("COLLECT_WORKGROUP_SIZE", COLLECT_WORKGROUP_SIZE))
                 .with_ident(ShaderIdent::constant("COLLECT_CHUNK_SIZE", COLLECT_CHUNK_SIZE))
                 .with_binding_desc(layout_desc)
                 .with_dependency(get_defs_module())
-                .with_dependency(get_mesh_meta_module())
+                .with_dependency(get_mesh_meta_module(0))
                 .with_dependency(GpuWorldShaderModuleKey { read_only: true }.get(assets)),
         )
         .unwrap();
@@ -220,7 +220,7 @@ impl RendererCollect {
             let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: Some("Collect") });
             cpass.set_pipeline(self.pipeline.pipeline());
 
-            for (i, bind_group) in [entities_bind_group, mesh_meta_bind_group, &bind_group].iter().enumerate() {
+            for (i, bind_group) in [mesh_meta_bind_group, entities_bind_group, &bind_group].iter().enumerate() {
                 cpass.set_bind_group(i as _, bind_group, &[]);
             }
 

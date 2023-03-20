@@ -19,6 +19,8 @@ use ndarray::{s, Array, Array2, Array4, Dimension};
 use ordered_float::OrderedFloat;
 use wgpu::util::DeviceExt;
 
+use crate::shader_module::DEPTH_FORMAT;
+
 use super::{
     fill::FillerKey,
     gpu::{Gpu, GpuKey},
@@ -479,7 +481,7 @@ impl TextureReader {
                         let as_u8s = data.iter().map(|v| (255. * (v - min) / (max - min)) as u8).collect_vec();
                         // println!("min={min} max={max}");
                         match self.format {
-                            DEPTH_FORMAT => {
+                            v if v == DEPTH_FORMAT => {
                                 DynamicImage::ImageLuma8(image::GrayImage::from_raw(self.size.width, self.size.height, as_u8s).unwrap())
                             }
                             _ => panic!("Unsupported depth texture format"),

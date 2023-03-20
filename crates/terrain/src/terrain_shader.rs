@@ -15,7 +15,6 @@ use ambient_gpu::{
 };
 use ambient_renderer::{
     materials::pbr_material::PbrMaterialDesc, Material, RendererShader, GLOBALS_BIND_GROUP, MATERIAL_BIND_GROUP, PRIMITIVES_BIND_GROUP,
-    RESOURCES_BIND_GROUP,
 };
 use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
@@ -130,7 +129,7 @@ impl SyncAssetKey<Arc<RendererShader>> for TerrainShaderKey {
         let shader = Shader::new(
             &assets,
             "terrrain shader",
-            &[GLOBALS_BIND_GROUP, ENTITIES_BIND_GROUP, RESOURCES_BIND_GROUP, PRIMITIVES_BIND_GROUP, MATERIAL_BIND_GROUP],
+            &[GLOBALS_BIND_GROUP, ENTITIES_BIND_GROUP, PRIMITIVES_BIND_GROUP, MATERIAL_BIND_GROUP],
             &ShaderModule::new("Terrain", include_file!("./terrain.wgsl"))
                 .with_binding_desc(get_terrain_layout())
                 .with_ident(ShaderIdent::constant("TERRAIN_FUNCS", WgslValue::Raw(include_str!("terrain_funcs.wgsl").into())))

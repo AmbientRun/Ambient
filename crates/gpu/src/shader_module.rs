@@ -8,7 +8,9 @@ use aho_corasick::AhoCorasick;
 use ambient_std::{asset_cache::*, CowStr};
 use anyhow::Context;
 use itertools::Itertools;
-use wgpu::{BindGroupLayout, BindGroupLayoutEntry, ComputePipelineDescriptor, DepthBiasState, Texture, TextureFormat};
+use wgpu::{
+    BindGroupLayout, BindGroupLayoutEntry, BindingType, ComputePipelineDescriptor, DepthBiasState, ShaderStages, Texture, TextureFormat,
+};
 
 use super::gpu::{Gpu, GpuKey, DEFAULT_SAMPLE_COUNT};
 
@@ -171,6 +173,7 @@ pub struct BindGroupDesc<'a> {
 impl<'a> SyncAssetKey<Arc<wgpu::BindGroupLayout>> for BindGroupDesc<'a> {
     fn load(&self, assets: AssetCache) -> Arc<wgpu::BindGroupLayout> {
         let gpu = GpuKey.get(&assets);
+        tracing::info!("Creating bind group: {self:#?}");
 
         let layout =
             gpu.device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor { label: Some(&*self.label), entries: &self.entries });
@@ -237,7 +240,12 @@ pub struct Shader {
 }
 
 impl Shader {
-    pub fn new(assets: &AssetCache, label: impl Into<CowStr>, bind_groups: &[&str], module: &ShaderModule) -> anyhow::Result<Arc<Self>> {
+    pub fn new(
+        assets: &AssetCache,
+        label: impl Into<CowStr>,
+        bind_group_names: &[&str],
+        module: &ShaderModule,
+    ) -> anyhow::Result<Arc<Self>> {
         let label = label.into();
         let gpu = GpuKey.get(assets);
 
@@ -249,9 +257,9 @@ impl Shader {
         tracing::info!("Compiling shader from modules: {:#?}", modules.iter().map(|v| &v.name).collect_vec());
 
         // Resolve all bind groups, resolving the names to an index
-        let bind_group_index: BTreeMap<_, _> = bind_groups.iter().enumerate().map(|(a, &b)| (b, a)).collect();
+        let bind_group_index: BTreeMap<_, _> = bind_group_names.iter().enumerate().map(|(a, &b)| (b, a)).collect();
         let mut bind_groups =
-            bind_groups.iter().map(|group| BindGroupDesc { label: Cow::Borrowed(*group), entries: Default::default() }).collect_vec();
+            bind_group_names.iter().map(|group| BindGroupDesc { label: Cow::Borrowed(*group), entries: Default::default() }).collect_vec();
 
         for module in &modules {
             for (group, binding) in &module.bindings {
@@ -264,7 +272,14 @@ impl Shader {
         }
 
         // Now for the fun part: constructing the binding group layout descriptors
+        tracing::info!("Found bind groups in shader: {bind_groups:#?}");
         let bind_group_layouts = bind_groups.iter().map(|desc| desc.get(assets)).collect_vec();
+        if bind_group_layouts.len() > 4 {
+            anyhow::bail!(
+                "Maximum bind group layout count exceeded. Expected a maximum of 4, found {}: {bind_group_names:?}",
+                bind_group_layouts.len()
+            );
+        }
 
         // Efficiently replace all identifiers
         let (patterns, replace_with): (Vec<_>, Vec<_>) = modules

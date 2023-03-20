@@ -166,7 +166,9 @@ impl ShadowsRenderer {
                     stencil_ops: Some(wgpu::Operations { load: wgpu::LoadOp::Load, store: true }),
                 }),
             });
-            let globals = &cascade.globals.bind_group;
+
+            let globals = cascade.globals.create_bind_group(mesh_buffer);
+
             render_pass.set_index_buffer(mesh_buffer.index_buffer.buffer().slice(..), wgpu::IndexFormat::Uint32);
             self.renderer.render(&mut render_pass, &cascade.collect_state, &BindGroups { globals, ..*bind_groups });
             {

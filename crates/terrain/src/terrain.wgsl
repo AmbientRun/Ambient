@@ -84,7 +84,7 @@ var noise_texture: texture_2d<f32>;
 struct VertexOutput {
     @location(0) texcoord: vec2<f32>,
     @location(1) world_position: vec4<f32>,
-    @location(2) instance_index: u32,
+    @location(2) @interpolate(flat) instance_index: u32,
     @builtin(position) position: vec4<f32>,
 };
 
