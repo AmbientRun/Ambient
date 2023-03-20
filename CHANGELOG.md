@@ -32,6 +32,7 @@ This changelog is manually updated. While an effort will be made to keep the [Un
 - **Client**: `--debug` is now `--debugger`, but it can also be accessed through `AMBIENT_DEBUGGER`.
 - **API**: `player_camera` has been removed, and the components it instantiated are now directly exposed. See the `multiplayer` example to see what's changed.
 - **API**: The `Cargo.toml` has changed to enable clientside builds. Please look at the examples to see how to update your `Cargo.toml` appropriately.
+- **API**: `ChangeQuery` has been split into `UntrackedChangeQuery` and `ChangeQuery` to ensure that `track_change` is called before the query is built.
 
 #### Non-breaking
 
