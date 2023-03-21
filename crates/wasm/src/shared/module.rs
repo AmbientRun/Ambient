@@ -84,6 +84,7 @@ pub struct ModuleStateArgs<'a> {
     pub component_bytecode: &'a [u8],
     pub stdout_output: Messenger,
     pub stderr_output: Messenger,
+    pub id: EntityId,
 }
 
 #[derive(Clone)]
@@ -95,12 +96,13 @@ pub struct ModuleState {
 impl ModuleState {
     fn new<Bindings: BindingsBound + 'static>(
         args: ModuleStateArgs<'_>,
-        bindings: Bindings,
+        bindings: fn(EntityId) -> Bindings,
     ) -> anyhow::Result<Self> {
         let ModuleStateArgs {
             component_bytecode,
             stdout_output,
             stderr_output,
+            id,
         } = args;
 
         Ok(Self {
@@ -108,15 +110,15 @@ impl ModuleState {
                 component_bytecode,
                 stdout_output,
                 stderr_output,
-                bindings,
+                bindings(id),
             )?)),
         })
     }
 
     pub fn create_state_maker<Bindings: BindingsBound + 'static>(
-        bindings: Bindings,
+        bindings: fn(EntityId) -> Bindings,
     ) -> Arc<dyn Fn(ModuleStateArgs<'_>) -> anyhow::Result<Self> + Sync + Send> {
-        Arc::new(move |args: ModuleStateArgs<'_>| Self::new(args, bindings.clone()))
+        Arc::new(move |args: ModuleStateArgs<'_>| Self::new(args, bindings))
     }
 }
 impl ModuleStateBehavior for ModuleState {

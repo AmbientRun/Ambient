@@ -10,14 +10,11 @@ pub fn initialize(
     world: &mut World,
     messenger: Arc<dyn Fn(&World, EntityId, shared::MessageType, &str) + Send + Sync>,
 ) -> anyhow::Result<()> {
-    shared::initialize(
-        world,
-        messenger,
-        Bindings {
+    shared::initialize(world, messenger, |id| Bindings {
             base: Default::default(),
             world_ref: Default::default(),
-        },
-    )?;
+        id,
+    })?;
 
     Ok(())
 }
@@ -53,6 +50,7 @@ pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
 struct Bindings {
     base: shared::bindings::BindingsBase,
     world_ref: shared::bindings::WorldRef,
+    id: EntityId,
 }
 impl Bindings {
     pub fn world(&self) -> &World {

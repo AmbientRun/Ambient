@@ -1,4 +1,4 @@
-use std::{path::PathBuf, sync::Arc};
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 use ambient_core::asset_cache;
 use ambient_ecs::{EntityId, SystemGroup, World};
@@ -8,7 +8,9 @@ use ambient_std::{
     asset_url::{AssetUrl, ServerBaseUrlKey},
 };
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
-use ambient_wasm::shared::{client_bytecode_from_url, get_module_name, module_bytecode, spawn_module, MessageType, ModuleBytecode};
+use ambient_wasm::shared::{
+    client_bytecode_from_url, get_module_name, module_bytecode, remote_paired_id, spawn_module, MessageType, ModuleBytecode,
+};
 use anyhow::Context;
 
 pub fn systems() -> SystemGroup {
@@ -31,6 +33,8 @@ pub fn initialize(world: &mut World, project_path: PathBuf, manifest: &ambient_p
     ambient_wasm::server::initialize(world, messenger)?;
 
     let build_dir = project_path.join("build");
+
+    let mut modules_to_entity_ids = HashMap::new();
     for target in ["client", "server"] {
         let wasm_component_paths: Vec<PathBuf> = std::fs::read_dir(build_dir.join(target))
             .ok()
@@ -52,6 +56,7 @@ pub fn initialize(world: &mut World, project_path: PathBuf, manifest: &ambient_p
             let description = if is_sole_module { description } else { format!("{description} ({filename_identifier})") };
 
             let id = spawn_module(world, &name, description, true)?;
+            modules_to_entity_ids.insert((target, name.clone()), id);
 
             if target == "client" {
                 let relative_path = path.strip_prefix(&build_dir)?;
@@ -64,6 +69,17 @@ pub fn initialize(world: &mut World, project_path: PathBuf, manifest: &ambient_p
                 let bytecode = std::fs::read(path)?;
                 world.add_component(id, module_bytecode(), ModuleBytecode(bytecode))?;
             }
+        }
+    }
+
+    for ((target, name), id) in modules_to_entity_ids.iter() {
+        let corresponding = match *target {
+            "client" => "server",
+            "server" => "client",
+            _ => unreachable!(),
+        };
+        if let Some(other_id) = modules_to_entity_ids.get(&(corresponding, name.clone())) {
+            world.add_component(*id, remote_paired_id(), *other_id)?;
         }
     }
 

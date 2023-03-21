@@ -32,6 +32,8 @@ components!("wasm::shared", {
     module_enabled: bool,
     @[Networked, Store, Debuggable]
     module_errors: ModuleErrors,
+    @[Networked, Debuggable, Description["The ID of the module on the \"other side\" of this module, if available. (e.g. serverside module to clientside module)."]]
+    remote_paired_id: EntityId,
 
     @[Resource, Description["Used to signal messages from the WASM host/runtime."]]
     messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
@@ -162,7 +164,7 @@ pub fn systems() -> SystemGroup {
 pub fn initialize<Bindings: bindings::BindingsBound + 'static>(
     world: &mut World,
     messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
-    bindings: Bindings,
+    bindings: fn(EntityId) -> Bindings,
 ) -> anyhow::Result<()> {
     world.add_resource(self::messenger(), messenger);
     world.add_resource(
@@ -227,6 +229,7 @@ fn load(
             stderr_output: Box::new(move |world, msg| {
                 messenger(world, module_id, MessageType::Stderr, msg);
             }),
+            id: module_id,
         })
     });
 
