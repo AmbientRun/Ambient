@@ -162,9 +162,18 @@ fn start_http_interface(runtime: &tokio::runtime::Runtime, project_path: &Path) 
         .nest_service("/content", get_service(ServeDir::new(project_path.join("build"))).handle_error(handle_error))
         .layer(CorsLayer::new().allow_origin(tower_http::cors::Any).allow_methods(vec![Method::GET]).allow_headers(tower_http::cors::Any));
 
+    let serve = |addr| async move {
+        axum::Server::try_bind(&addr)?.serve(router.into_make_service()).await?;
+
+        Ok::<_, anyhow::Error>(())
+    };
+
     runtime.spawn(async move {
         let addr = SocketAddr::from(([0, 0, 0, 0], HTTP_INTERFACE_PORT));
-        axum::Server::bind(&addr).serve(router.into_make_service()).await.unwrap();
+
+        if let Err(err) = serve(addr).await {
+            tracing::error!("Failed to start server on: {addr}\n\n{err:?}");
+        }
     });
 }
 
