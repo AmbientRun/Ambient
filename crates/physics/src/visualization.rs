@@ -4,15 +4,22 @@ use crate::{
     physx::{physics_shape, rigid_actor},
     picking_scene, trigger_areas_scene,
 };
-use ambient_core::transform::get_world_transform;
+use ambient_core::{
+    camera::Camera,
+    main_scene,
+    transform::{get_world_transform, local_to_world},
+    ui_scene,
+};
 use ambient_ecs::{
     components, dont_store, query, Debuggable, Description, Entity, EntityId, FnSystem, Name, Networked, SystemGroup, World,
 };
-use ambient_element::{ElementComponentExt, ElementTree};
 use ambient_gizmos::{gizmos, GizmoPrimitive};
-use ambient_primitives::BoxLine;
 use ambient_std::line_hash;
-use glam::Vec3;
+use ambient_ui::{
+    background_color,
+    rect::{line_from, line_to, line_width},
+};
+use glam::{ vec4, Vec3};
 use itertools::Itertools;
 use physxx::{PxActor, PxDebugLine, PxRenderBuffer, PxRigidActor, PxSceneRef, PxShape, PxShapeFlag, PxVisualizationParameter};
 
@@ -150,8 +157,27 @@ pub fn client_systems() -> SystemGroup {
         "visualization/client",
         vec![
             query((physx_viz_line().changed(),)).to_system(|q, world, qs, _| {
-                for (id, (line,)) in q.collect_cloned(world, qs) {
-                    ElementTree::render(world, id, BoxLine { from: line.pos0, to: line.pos1, thickness: 0.01 }.el());
+                if let Some(world_cam) = Camera::get_active(world, main_scene(), None) {
+                    if let Some(ui_cam) = Camera::get_active(world, ui_scene(), None) {
+                        let mat = ui_cam.projection_view().inverse() * world_cam.projection_view();
+
+                        for (id, (line,)) in q.collect_cloned(world, qs) {
+                            let from = mat.project_point3(line.pos0);
+                            let to = mat.project_point3(line.pos1);
+                            world
+                                .add_components(
+                                    id,
+                                    Entity::new()
+                                        .with(line_from(), from)
+                                        .with(line_to(), to)
+                                        .with(line_width(), 1.)
+                                        .with(background_color(), vec4(1., 0., 0., 1.))
+                                        .with_default(ui_scene())
+                                        .with_default(local_to_world()),
+                                )
+                                .unwrap();
+                        }
+                    }
                 }
             }),
             query((shape_primitives(),)).to_system(|q, world, qs, _| {

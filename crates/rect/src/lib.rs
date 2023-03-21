@@ -2,17 +2,18 @@ use std::sync::Arc;
 
 use ambient_core::{
     asset_cache, mesh,
-    transform::{rotation, translation},
+    transform::{local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation},
 };
 use ambient_ecs::{
-    components, ensure_has_component_with_default, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup,
+    components, ensure_has_component, ensure_has_component_with_default, query, Debuggable, Description, Entity, Name, Networked, Store,
+    SystemGroup,
 };
 use ambient_gpu::{
     gpu::GpuKey,
     shader_module::{BindGroupDesc, ShaderModule},
     typed_buffer::TypedBuffer,
 };
-use ambient_layout::{height, width};
+use ambient_layout::{gpu_ui_size, height, mesh_to_local_from_size, width};
 use ambient_meshes::{UIRectMeshKey, UnitQuadMeshKey};
 use ambient_renderer::{
     gpu_primitives, material, primitives, renderer_shader, Material, MaterialShader, RendererConfig, RendererShader, SharedMaterial,
@@ -23,7 +24,6 @@ use ambient_std::{
     cb,
     color::Color,
     friendly_id, include_file,
-    mesh::Mesh,
 };
 use glam::{vec4, Quat, UVec3, Vec3, Vec4};
 use wgpu::BindGroup;
@@ -94,6 +94,12 @@ pub fn systems() -> SystemGroup {
             }),
             ensure_has_component_with_default(rect(), primitives()),
             ensure_has_component_with_default(rect(), gpu_primitives()),
+            ensure_has_component_with_default(rect(), gpu_ui_size()),
+            ensure_has_component_with_default(rect(), mesh_to_local()),
+            ensure_has_component_with_default(rect(), mesh_to_world()),
+            ensure_has_component_with_default(rect(), local_to_world()),
+            ensure_has_component(rect(), scale(), Vec3::ONE),
+            ensure_has_component_with_default(rect(), mesh_to_local_from_size()),
             query(()).incl(rect()).excl(mesh()).to_system(|q, world, qs, _| {
                 let assets = world.resource(asset_cache()).clone();
                 for (id, _) in q.collect_cloned(world, qs) {
