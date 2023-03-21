@@ -5,7 +5,6 @@ use ambient_friendly_id::friendly_id;
 use ambient_ui_components::{
     button::Button,
     screens::{PageScreen, ScreenContainer},
-    setup_ui_camera,
     text::Text,
     FocusRoot,
 };
@@ -87,7 +86,6 @@ fn SubScreen(hooks: &mut Hooks, on_back: Cb<dyn Fn() + Sync + Send>) -> Element 
 
 #[main]
 pub async fn main() -> EventResult {
-    setup_ui_camera();
     App.el().spawn_interactive();
 
     EventOk

@@ -5,7 +5,7 @@ use ambient_ui_components::{
     default_theme::STREET,
     editor::{IntegerSlider, Slider},
     layout::FlowColumn,
-    setup_ui_camera, FocusRoot, UIExt,
+    FocusRoot, UIExt,
 };
 
 #[element_component]
@@ -54,7 +54,6 @@ fn App(hooks: &mut Hooks) -> Element {
 
 #[main]
 pub async fn main() -> EventResult {
-    setup_ui_camera();
     App.el().spawn_interactive();
 
     EventOk

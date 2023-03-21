@@ -6,7 +6,6 @@ use ambient_guest_bridge::components::{
 use ambient_ui_components::{
     default_theme::StylesExt,
     layout::{FlowColumn, Separator},
-    setup_ui_camera,
     text::Text,
     UIExt,
 };
@@ -30,7 +29,6 @@ fn App(_hooks: &mut Hooks) -> Element {
 
 #[main]
 pub async fn main() -> EventResult {
-    setup_ui_camera();
     App.el().spawn_interactive();
 
     EventOk

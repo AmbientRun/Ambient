@@ -7,7 +7,7 @@ use ambient_guest_bridge::components::{
         line_width,
     },
 };
-use ambient_ui_components::{layout::FlowColumn, setup_ui_camera, Line, Rectangle};
+use ambient_ui_components::{layout::FlowColumn, Line, Rectangle};
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
@@ -45,7 +45,6 @@ fn App(_hooks: &mut Hooks) -> Element {
 
 #[main]
 pub async fn main() -> EventResult {
-    setup_ui_camera();
     App.el().spawn_interactive();
 
     EventOk

@@ -3,7 +3,6 @@ use std::{net::SocketAddr, path::PathBuf, process::exit, sync::Arc, time::Durati
 use ambient_app::{fps_stats, window_title, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_core::{
-    camera::active_camera,
     runtime,
     window::{window_ctl, WindowCtl},
 };
@@ -77,7 +76,7 @@ fn MainApp(
     let update_server_stats = hooks.provide_context(GameClientServerStats::default);
 
     FocusRoot::el([
-        UICamera.el().set(active_camera(), 0.),
+        UICamera.el(),
         shared::player::PlayerRawInputHandler.el(),
         shared::player::PlayerDataUpload.el(),
         TitleUpdater.el(),
@@ -90,6 +89,7 @@ fn MainApp(
                 wasm::initialize(world).unwrap();
 
                 world.add_resource(ambient_network::events::event_registry(), Arc::new(ServerEventRegistry::new()));
+                UICamera.el().spawn_static(world);
                 if let Some(seconds) = screenshot_test {
                     run_screenshot_test(world, render_target, project_path, seconds);
                 }

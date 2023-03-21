@@ -44,6 +44,7 @@ pub fn UICamera(_: &mut Hooks) -> Element {
         .init_default(rotation())
         .init(orthographic_from_window(), EntityId::resources())
         .init_default(ui_scene())
+        .init(active_camera(), 0.)
 }
 
 #[element_component]

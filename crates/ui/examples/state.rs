@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use ambient_app::{App, AppBuilder};
 use ambient_cameras::UICamera;
-use ambient_core::camera::active_camera;
 use ambient_element::{ElementComponent, ElementComponentExt};
 use ambient_event_types::WINDOW_MOUSE_MOTION;
 use ambient_input::event_mouse_motion;
@@ -106,7 +105,7 @@ impl ElementComponent for Main {
 async fn init(app: &mut App) {
     let world = &mut app.world;
     Main.el().spawn_interactive(world);
-    UICamera.el().set(active_camera(), 0.).spawn_interactive(world);
+    UICamera.el().spawn_interactive(world);
 }
 
 fn main() {

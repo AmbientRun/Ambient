@@ -1,6 +1,6 @@
 use ambient_api::prelude::*;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_ui_components::{setup_ui_camera, text::Text};
+use ambient_ui_components::text::Text;
 
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
@@ -22,7 +22,6 @@ fn App(hooks: &mut Hooks) -> Element {
 
 #[main]
 pub async fn main() -> EventResult {
-    setup_ui_camera();
     App.el().spawn_interactive();
 
     EventOk

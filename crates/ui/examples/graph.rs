@@ -2,7 +2,7 @@ use std::f32::consts::TAU;
 
 use ambient_app::{App, AppBuilder};
 use ambient_cameras::UICamera;
-use ambient_core::{camera::active_camera, runtime};
+use ambient_core::runtime;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_std::{time::Clock, IntoDuration};
 use ambient_ui::{
@@ -123,7 +123,7 @@ impl ElementComponent for Example {
 async fn init(app: &mut App) {
     let world = &mut app.world;
     Example.el().spawn_interactive(world);
-    UICamera.el().set(active_camera(), 0.).spawn_interactive(world);
+    UICamera.el().spawn_interactive(world);
 }
 
 fn main() {

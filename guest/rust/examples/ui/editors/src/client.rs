@@ -10,7 +10,6 @@ use ambient_ui_components::{
     editor::{Editor, F32Input, ListEditor, MinimalListEditor, TextEditor},
     layout::{FlowColumn, FlowRow},
     select::DropdownSelect,
-    setup_ui_camera,
     text::Text,
     FocusRoot, UIExt,
 };
@@ -88,7 +87,6 @@ fn App(hooks: &mut Hooks) -> Element {
 
 #[main]
 pub async fn main() -> EventResult {
-    setup_ui_camera();
     App.el().spawn_interactive();
 
     EventOk
