@@ -4,7 +4,7 @@
 
 use std::sync::Arc;
 
-use ambient_core::{asset_cache, gpu_ecs::ENTITIES_BIND_GROUP, mesh, transform::translation};
+use ambient_core::{asset_cache, mesh, transform::translation};
 use ambient_ecs::{components, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
 use ambient_gpu::{
     gpu::GpuKey,
