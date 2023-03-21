@@ -22,7 +22,6 @@ ambient_ecs = { path = "../crates/ecs" }
 ambient_app = { path = "../crates/app" }
 ambient_ui = { path = "../crates/ui" }
 ambient_cameras = { path = "../crates/cameras/" }
-ambient_ui_components = { path = "../crates/ui_components/" }
 ambient_renderer = { path = "../crates/renderer/" }
 
 anyhow = { workspace = true }
