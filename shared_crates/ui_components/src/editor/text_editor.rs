@@ -46,7 +46,7 @@ pub fn TextEditor(
         let value = value.clone();
         let on_change = on_change.clone();
         move |_world, event| {
-            if let Some(c) = event.get_ref(event_received_character()).clone() {
+            if let Some(c) = event.get_ref(event_received_character()) {
                 let c = c.chars().next().unwrap();
                 if command || !focused {
                     return;
@@ -66,8 +66,8 @@ pub fn TextEditor(
                 if !focused {
                     return;
                 }
-                if let Some(kc) = event.get_ref(keycode()).clone() {
-                    let kc = VirtualKeyCode::from_str(&kc).unwrap();
+                if let Some(kc) = event.get_ref(keycode()) {
+                    let kc = VirtualKeyCode::from_str(kc).unwrap();
                     match kc {
                         VirtualKeyCode::LWin => {
                             #[cfg(target_os = "macos")]

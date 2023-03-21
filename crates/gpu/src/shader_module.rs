@@ -270,7 +270,6 @@ impl Shader {
         }
 
         // Now for the fun part: constructing the binding group layout descriptors
-        tracing::info!("Found bind groups in shader: {bind_groups:#?}");
         let bind_group_layouts = bind_groups.iter().map(|desc| desc.get(assets)).collect_vec();
         if bind_group_layouts.len() > 4 {
             anyhow::bail!(
