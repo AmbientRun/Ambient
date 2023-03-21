@@ -12,6 +12,7 @@ ambient_gpu = { path = "../gpu" }
 ambient_meshes = { path = "../meshes" }
 ambient_renderer = { path = "../renderer" }
 ambient_std = { path = "../std" }
+ambient_layout = { path = "../layout" }
 glam = { workspace = true }
 wgpu = { workspace = true }
 bytemuck = { workspace = true }

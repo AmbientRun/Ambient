@@ -92,6 +92,13 @@ pub fn with_rect(element: Element) -> Element {
         .init(ui_scene(), ())
 }
 
+/// A simple UI line. Use components such as `line_from`, `line_to`, `line_width`, `background_color`, `border_color`, `border_radius` and `border_thickness`
+/// to control its appearance
+#[element_component]
+pub fn Line(_hooks: &mut Hooks) -> Element {
+    with_rect(UIBase.el()).set(background_color(), Vec4::ONE)
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Focus(Option<(String, u128)>);
 impl Focus {

@@ -941,6 +941,24 @@ name = "Border thickness"
 description = "Border thickness of an entity with a `rect` component."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::rect::line_from"]
+type = "Vec3"
+name = "Line from"
+description = "Start point of a line."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rect::line_to"]
+type = "Vec3"
+name = "Line to"
+description = "End point of a line."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rect::line_width"]
+type = "F32"
+name = "Line width"
+description = "Width of line."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::rect::rect"]
 type = "Empty"
 name = "Rect"

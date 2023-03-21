@@ -1,6 +1,9 @@
 use std::sync::Arc;
 
-use ambient_core::{asset_cache, mesh};
+use ambient_core::{
+    asset_cache, mesh,
+    transform::{rotation, translation},
+};
 use ambient_ecs::{
     components, ensure_has_component_with_default, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup,
 };
@@ -9,7 +12,8 @@ use ambient_gpu::{
     shader_module::{BindGroupDesc, ShaderModule},
     typed_buffer::TypedBuffer,
 };
-use ambient_meshes::UIRectMeshKey;
+use ambient_layout::{height, width};
+use ambient_meshes::{UIRectMeshKey, UnitQuadMeshKey};
 use ambient_renderer::{
     gpu_primitives, material, primitives, renderer_shader, Material, MaterialShader, RendererConfig, RendererShader, SharedMaterial,
     StandardShaderKey, MATERIAL_BIND_GROUP,
@@ -19,8 +23,9 @@ use ambient_std::{
     cb,
     color::Color,
     friendly_id, include_file,
+    mesh::Mesh,
 };
-use glam::{vec4, UVec3, Vec4};
+use glam::{vec4, Quat, UVec3, Vec3, Vec4};
 use wgpu::BindGroup;
 
 components!("rect", {
@@ -34,6 +39,13 @@ components!("rect", {
     border_thickness: f32,
     @[Debuggable, Networked, Store, Name["Rect"], Description["If attached to an entity, the entity will be converted to a UI rectangle, with optionally rounded corners and borders."]]
     rect: (),
+
+    @[Debuggable, Networked, Store, Name["Line from"], Description["Start point of a line."]]
+    line_from: Vec3,
+    @[Debuggable, Networked, Store, Name["Line to"], Description["End point of a line."]]
+    line_to: Vec3,
+    @[Debuggable, Networked, Store, Name["Line width"], Description["Width of line."]]
+    line_width: f32,
 });
 
 #[repr(C)]
@@ -64,6 +76,22 @@ pub fn systems() -> SystemGroup {
     SystemGroup::new(
         "ui/rect",
         vec![
+            query((line_from().changed(), line_to().changed(), line_width().changed())).to_system(|q, world, qs, _| {
+                for (id, (from, to, line_width)) in q.collect_cloned(world, qs) {
+                    let dir = (to - from).normalize();
+                    world
+                        .add_components(
+                            id,
+                            Entity::new()
+                                .with(translation(), (from + to) / 2.)
+                                .with(rotation(), Quat::from_rotation_arc(Vec3::X, dir))
+                                .with_default(rect())
+                                .with(width(), (from - to).length())
+                                .with(height(), line_width),
+                        )
+                        .unwrap();
+                }
+            }),
             ensure_has_component_with_default(rect(), primitives()),
             ensure_has_component_with_default(rect(), gpu_primitives()),
             query(()).incl(rect()).excl(mesh()).to_system(|q, world, qs, _| {
@@ -72,7 +100,16 @@ pub fn systems() -> SystemGroup {
                     world
                         .add_components(
                             id,
-                            Entity::new().with(mesh(), UIRectMeshKey.get(&assets)).with(renderer_shader(), cb(get_rect_shader)),
+                            Entity::new()
+                                .with(
+                                    mesh(),
+                                    if world.has_component(id, line_from()) {
+                                        UnitQuadMeshKey.get(&assets)
+                                    } else {
+                                        UIRectMeshKey.get(&assets)
+                                    },
+                                )
+                                .with(renderer_shader(), cb(get_rect_shader)),
                         )
                         .unwrap();
                 }

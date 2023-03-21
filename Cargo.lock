@@ -1018,6 +1018,7 @@ dependencies = [
  "ambient_core",
  "ambient_ecs",
  "ambient_gpu",
+ "ambient_layout",
  "ambient_meshes",
  "ambient_renderer",
  "ambient_std",
