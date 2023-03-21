@@ -9,10 +9,7 @@ use ambient_core::{
 use ambient_debugger::Debugger;
 use ambient_ecs::{Entity, SystemGroup, World};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_network::{
-    client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce},
-    events::ServerEventRegistry,
-};
+use ambient_network::client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce};
 use ambient_renderer::RenderTarget;
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
@@ -88,7 +85,6 @@ fn MainApp(
             init_world: cb(UseOnce::new(Box::new(move |world, render_target| {
                 wasm::initialize(world).unwrap();
 
-                world.add_resource(ambient_network::events::event_registry(), Arc::new(ServerEventRegistry::new()));
                 UICamera.el().spawn_static(world);
                 if let Some(seconds) = screenshot_test {
                     run_screenshot_test(world, render_target, project_path, seconds);

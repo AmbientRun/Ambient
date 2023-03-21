@@ -1,5 +1,6 @@
 use std::{
     fmt::{Debug, Display},
+    future::Future,
     net::SocketAddr,
     sync::Arc,
     time::Duration,
@@ -16,10 +17,9 @@ use ambient_ecs::{components, query, world_events, Entity, EntityId, Resource, S
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
-use ambient_std::{cb, fps_counter::FpsSample, log_result, to_byte_unit, CallbackFn, Cb};
+use ambient_std::{cb, fps_counter::FpsSample, to_byte_unit, CallbackFn, Cb};
 use ambient_ui::{Button, Centered, FlowColumn, FlowRow, Image, Text, Throbber};
 use anyhow::Context;
-use futures::{io::BufReader, AsyncBufReadExt, AsyncReadExt, Future, StreamExt};
 use glam::UVec2;
 use parking_lot::Mutex;
 use quinn::{Connection, NewConnection};
@@ -27,9 +27,7 @@ use serde::{de::DeserializeOwned, Serialize};
 
 use crate::{
     client_game_state::ClientGameState,
-    create_client_endpoint_random_port,
-    events::event_registry,
-    is_remote_entity, log_network_result,
+    create_client_endpoint_random_port, is_remote_entity, log_network_result,
     protocol::{ClientInfo, ClientProtocol},
     rpc_request,
     server::{ServerInfo, SharedServerState},
@@ -241,24 +239,11 @@ impl ElementComponent for GameClientView {
 
         let (error, set_error) = hooks.use_state(None);
 
-        let reg = game_state.lock().world.resource(event_registry()).clone();
-
         let task = {
             let runtime = hooks.world.resource(runtime()).clone();
 
             hooks.use_memo_with((), move |_, ()| {
                 let task = runtime.spawn(async move {
-                    // These are the callbacks for everything that can happen
-                    let mut on_event = {
-                        let game_state = game_state.clone();
-                        let reg = reg.clone();
-                        move |event_name: String, event_data| {
-                            let event_name = event_name.trim();
-                            let res = reg.handle_event(&game_state, event_name, event_data);
-                            log_result!(res);
-                        }
-                    };
-
                     let mut on_init = {
                         let game_state = game_state.clone();
                         move |conn, client_info: ClientInfo, server_info: ServerInfo| {
@@ -299,7 +284,6 @@ impl ElementComponent for GameClientView {
                         on_diff: &mut on_diff,
                         on_server_stats: &mut on_server_stats,
                         on_client_stats: &mut on_network_stats,
-                        on_event: &mut on_event,
                         on_disconnect,
                         init_destructor: None,
                     };
@@ -364,7 +348,6 @@ struct ClientInstance<'a> {
 
     on_server_stats: &'a mut (dyn FnMut(GameClientServerStats) + Send + Sync),
     on_client_stats: &'a mut (dyn FnMut(GameClientNetworkStats) + Send + Sync),
-    on_event: &'a mut (dyn FnMut(String, Box<[u8]>) + Send + Sync),
     on_disconnect: Cb<dyn Fn() + Sync + Send + 'static>,
     init_destructor: Option<Box<dyn FnOnce() + Sync + Send>>,
 }
@@ -425,18 +408,6 @@ impl<'a> ClientInstance<'a> {
                 }
                 Ok(stats) = protocol.stat_stream.next() => {
                     (self.on_server_stats)(GameClientServerStats(stats));
-                }
-                Some(Ok(msg)) = protocol.conn.uni_streams.next() => {
-                    let mut reader = BufReader::new(msg);
-
-                    let mut event_name = String::new();
-                    reader.read_line(&mut event_name).await.context("Event did not contain valid UTF-8")?;
-
-                    let mut event_data = Vec::new();
-
-                    reader.read_to_end(&mut event_data).await?;
-
-                    (self.on_event)(event_name, event_data.into_boxed_slice());
                 }
             }
         }

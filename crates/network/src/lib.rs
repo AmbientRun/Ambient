@@ -29,7 +29,6 @@ use tokio_util::codec::{FramedRead, FramedWrite, LengthDelimitedCodec};
 pub type AsyncMutex<T> = tokio::sync::Mutex<T>;
 pub mod client;
 pub mod client_game_state;
-pub mod events;
 pub mod hooks;
 pub mod protocol;
 pub mod rpc;
@@ -69,7 +68,6 @@ components!("network", {
 pub fn init_all_components() {
     init_components();
     client::init_components();
-    events::init_components();
     server::init_components();
     client_game_state::init_components();
 }
@@ -306,14 +304,6 @@ pub async fn next_bincode_bi_stream(conn: &mut NewConnection) -> Result<(Outgoin
         }
         None => Err(NetworkError::EndOfStream),
     }
-}
-
-pub async fn send_single_bincode_uni_msg<T: Serialize>(conn: &Connection, msg: &T) -> Result<(), NetworkError> {
-    let mut stream = conn.open_uni().await?;
-    let msg = bincode::serialize(msg)?;
-    stream.write_all(&msg).await?;
-    stream.finish().await?;
-    Ok(())
 }
 
 pub fn create_client_endpoint_random_port() -> Option<Endpoint> {

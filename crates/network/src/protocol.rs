@@ -106,10 +106,6 @@ impl ServerProtocol {
     pub fn client_info(&self) -> &ClientInfo {
         &self.client_info
     }
-
-    pub(crate) fn connection(&self) -> quinn::Connection {
-        self.conn.connection.clone()
-    }
 }
 
 /// Contains things such as username (TODO) and user_id

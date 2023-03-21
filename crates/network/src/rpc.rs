@@ -7,10 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     client::GameRpcArgs,
-    server::{
-        create_player_entity_data, player_entity_stream, player_event_stream, player_stats_stream, ForkingEvent, WorldInstance,
-        MAIN_INSTANCE_ID,
-    },
+    server::{create_player_entity_data, player_entity_stream, player_stats_stream, ForkingEvent, WorldInstance, MAIN_INSTANCE_ID},
     ServerWorldExt,
 };
 use ambient_core::player::user_id;
@@ -82,22 +79,13 @@ pub async fn rpc_join_instance(args: GameRpcArgs, new_instance_id: String) {
     };
 
     // Borrow the old world mutably to remove the player and their streams.
-    let (entities_tx, events_tx, stats_tx) = {
+    let (entities_tx, stats_tx) = {
         let mut ed = instances.get_mut(&old_instance_id).unwrap().despawn_player(&args.user_id).unwrap();
-        (
-            ed.remove_self(player_entity_stream()).unwrap(),
-            ed.remove_self(player_event_stream()).unwrap(),
-            ed.remove_self(player_stats_stream()).unwrap(),
-        )
+        (ed.remove_self(player_entity_stream()).unwrap(), ed.remove_self(player_stats_stream()).unwrap())
     };
 
     // Borrow the new world mutably to spawn the player in with their old streams.
-    instances.get_mut(&new_instance_id).unwrap().spawn_player(create_player_entity_data(
-        &args.user_id,
-        entities_tx.clone(),
-        events_tx,
-        stats_tx,
-    ));
+    instances.get_mut(&new_instance_id).unwrap().spawn_player(create_player_entity_data(&args.user_id, entities_tx.clone(), stats_tx));
     state.players.get_mut(&args.user_id).unwrap().instance = new_instance_id.to_string();
 
     let msg = bincode::serialize(&diff).unwrap();

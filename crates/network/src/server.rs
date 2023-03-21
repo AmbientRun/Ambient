@@ -43,7 +43,6 @@ use crate::{
 
 components!("network", {
     player_entity_stream: Sender<Vec<u8>>,
-    player_event_stream: Sender<Vec<u8>>,
     player_stats_stream: Sender<FpsSample>,
 });
 
@@ -62,18 +61,12 @@ pub struct WorldInstance {
     pub systems: SystemGroup,
 }
 
-pub fn create_player_entity_data(
-    user_id: &str,
-    entities_tx: Sender<Vec<u8>>,
-    events_tx: Sender<Vec<u8>>,
-    stats_tx: Sender<FpsSample>,
-) -> Entity {
+pub fn create_player_entity_data(user_id: &str, entities_tx: Sender<Vec<u8>>, stats_tx: Sender<FpsSample>) -> Entity {
     Entity::new()
         .with(ambient_core::player::player(), ())
         .with(ambient_core::player::user_id(), user_id.to_string())
         .with(player_entity_stream(), entities_tx)
         .with(player_stats_stream(), stats_tx)
-        .with(player_event_stream(), events_tx)
         .with_default(dont_store())
 }
 
@@ -339,7 +332,6 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
             tokio::spawn(async move {
                 let (diffs_tx, diffs_rx) = flume::unbounded();
                 let (stats_tx, stats_rx) = flume::unbounded();
-                let (events_tx, events_rx) = flume::unbounded();
 
                 let on_init = |client: ClientInfo| {
                     let user_id = &client.user_id;
@@ -380,13 +372,12 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
                     log::debug!("[{}] Init diff sent", user_id);
 
                     if !reconnecting {
-                        instance.spawn_player(create_player_entity_data(user_id, diffs_tx.clone(), events_tx.clone(), stats_tx.clone()));
+                        instance.spawn_player(create_player_entity_data(user_id, diffs_tx.clone(), stats_tx.clone()));
                         log::info!("[{}] Player spawned", user_id);
                     } else {
                         let entity = get_player_by_user_id(&instance.world, user_id).unwrap();
                         instance.world.set(entity, player_entity_stream(), diffs_tx.clone()).unwrap();
                         instance.world.set(entity, player_stats_stream(), stats_tx.clone()).unwrap();
-                        instance.world.set(entity, player_event_stream(), events_tx.clone()).unwrap();
                         log::info!("[{}] Player reconnected", user_id);
                     }
                 };
@@ -477,7 +468,6 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
                 let client = ClientInstance {
                     diffs_rx,
                     stats_rx,
-                    events_rx,
                     on_init: &on_init,
                     on_bi_stream: &on_bi_stream,
                     on_uni_stream: &on_uni_stream,
@@ -517,7 +507,6 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
 struct ClientInstance<'a> {
     diffs_rx: flume::Receiver<Vec<u8>>,
     stats_rx: flume::Receiver<FpsSample>,
-    events_rx: flume::Receiver<Vec<u8>>,
 
     on_init: &'a (dyn Fn(ClientInfo) + Send + Sync),
     on_datagram: &'a (dyn Fn(&String, Bytes) + Send + Sync),
@@ -545,7 +534,6 @@ impl<'a> ClientInstance<'a> {
         log::debug!("Client loop starting");
         let mut entities_rx = self.diffs_rx.stream();
         let mut stats_rx = self.stats_rx.stream();
-        let mut events_rx = self.events_rx.stream();
 
         tokio::task::block_in_place(|| {
             (self.on_init)(proto.client_info().clone());
@@ -564,12 +552,6 @@ impl<'a> ClientInstance<'a> {
                     proto.stat_stream.send(&msg).instrument(span).await?;
                 }
 
-                Some(msg) = events_rx.next() => {
-                    let span =tracing::debug_span!("server_event");
-                    let mut stream = proto.connection().open_uni().instrument(span).await?;
-
-                    stream.write(&msg).await?;
-                }
                 Some(Ok(datagram)) = proto.conn.datagrams.next() => {
                     let _span =tracing::debug_span!("datagram").entered();
                     tokio::task::block_in_place(|| (self.on_datagram)(&user_id, datagram))
