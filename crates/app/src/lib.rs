@@ -168,6 +168,7 @@ pub struct AppBuilder {
     pub main_renderer: bool,
     pub examples_systems: bool,
     pub headless: Option<UVec2>,
+    pub update_title_with_fps_stats: bool,
 }
 
 pub trait AsyncInit<'a> {
@@ -197,6 +198,7 @@ impl AppBuilder {
             main_renderer: true,
             examples_systems: false,
             headless: None,
+            update_title_with_fps_stats: true,
         }
     }
     pub fn simple() -> Self {
@@ -240,6 +242,11 @@ impl AppBuilder {
 
     pub fn headless(mut self, value: Option<UVec2>) -> Self {
         self.headless = value;
+        self
+    }
+
+    pub fn update_title_with_fps_stats(mut self, value: bool) -> Self {
+        self.update_title_with_fps_stats = value;
         self
     }
 
@@ -354,6 +361,7 @@ impl AppBuilder {
             _puffin: puffin_server,
             modifiers: Default::default(),
             ctl_rx,
+            update_title_with_fps_stats: self.update_title_with_fps_stats,
         })
     }
 
@@ -400,6 +408,7 @@ pub struct App {
     modifiers: ModifiersState,
 
     window_focused: bool,
+    update_title_with_fps_stats: bool,
 }
 
 impl std::fmt::Debug for App {
@@ -514,6 +523,11 @@ impl App {
                                 window.set_cursor_icon(icon);
                             }
                         }
+                        WindowCtl::SetTitle(title) => {
+                            if let Some(window) = &self.window {
+                                window.set_title(&title);
+                            }
+                        }
                     }
                 }
 
@@ -528,8 +542,10 @@ impl App {
 
                 if let Some(fps) = self.fps.frame_next() {
                     world.set(world.resource_entity(), self::fps_stats(), fps.clone()).unwrap();
-                    if let Some(window) = &self.window {
-                        window.set_title(&format!("{} [{}, {} entities]", world.resource(window_title()), fps.dump_both(), world.len()));
+                    if self.update_title_with_fps_stats {
+                        if let Some(window) = &self.window {
+                            window.set_title(&format!("{} [{}, {} entities]", world.resource(window_title()), fps.dump_both(), world.len()));
+                        }
                     }
                 }
 

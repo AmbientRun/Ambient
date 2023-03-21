@@ -53,4 +53,5 @@ pub enum WindowCtl {
     GrabCursor(CursorGrabMode),
     SetCursorIcon(CursorIcon),
     ShowCursor(bool),
+    SetTitle(String),
 }

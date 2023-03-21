@@ -1,8 +1,12 @@
 use std::{net::SocketAddr, path::PathBuf, process::exit, sync::Arc, time::Duration};
 
-use ambient_app::{window_title, AppBuilder};
+use ambient_app::{fps_stats, window_title, AppBuilder};
 use ambient_cameras::UICamera;
-use ambient_core::{camera::active_camera, runtime};
+use ambient_core::{
+    camera::active_camera,
+    runtime,
+    window::{window_ctl, WindowCtl},
+};
 use ambient_debugger::Debugger;
 use ambient_ecs::{Entity, SystemGroup, World};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
@@ -30,12 +34,32 @@ pub async fn run(assets: AssetCache, server_addr: SocketAddr, run: &RunCli, proj
         .ui_renderer(true)
         .with_asset_cache(assets)
         .headless(headless)
+        .update_title_with_fps_stats(false)
         .run(move |app, _runtime| {
+            *app.world.resource_mut(window_title()) = "Ambient".to_string();
             MainApp { server_addr, user_id, show_debug: is_debug, screenshot_test: run.screenshot_test, project_path }
                 .el()
                 .spawn_interactive(&mut app.world);
         })
         .await;
+}
+
+#[element_component]
+fn TitleUpdater(hooks: &mut Hooks) -> Element {
+    let net = hooks.consume_context::<GameClientNetworkStats>().map(|stats| stats.0);
+    let world = &hooks.world;
+    let title = world.resource(window_title());
+    let fps = world.get_cloned(hooks.world.resource_entity(), fps_stats()).ok().filter(|f| !f.fps().is_nan());
+
+    let title = match (fps, net) {
+        (None, None) => title.clone(),
+        (Some(fps), None) => format!("{} [{}]", title, fps.dump_both()),
+        (None, Some(net)) => format!("{} [{}]", title, net),
+        (Some(fps), Some(net)) => format!("{} [{}, {}]", title, fps.dump_both(), net),
+    };
+    world.resource(window_ctl()).send(WindowCtl::SetTitle(title)).ok();
+
+    Element::new()
 }
 
 #[element_component]
@@ -52,12 +76,11 @@ fn MainApp(
     let update_network_stats = hooks.provide_context(GameClientNetworkStats::default);
     let update_server_stats = hooks.provide_context(GameClientServerStats::default);
 
-    *hooks.world.resource_mut(window_title()) = "Ambient".to_string();
-
     FocusRoot::el([
         UICamera.el().set(active_camera(), 0.),
         shared::player::PlayerRawInputHandler.el(),
         shared::player::PlayerDataUpload.el(),
+        TitleUpdater.el(),
         WindowSized::el([GameClientView {
             server_addr,
             user_id,

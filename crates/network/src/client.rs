@@ -453,7 +453,7 @@ pub struct GameClientNetworkStats {
 
 impl Display for GameClientNetworkStats {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}ms, {}/s out, {}/s in", self.latency_ms, to_byte_unit(self.bytes_sent), to_byte_unit(self.bytes_received))
+        write!(f, "{:?} ms rtt, {}/s out, {}/s in", self.latency_ms, to_byte_unit(self.bytes_sent), to_byte_unit(self.bytes_received))
     }
 }
 
