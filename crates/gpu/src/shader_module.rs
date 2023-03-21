@@ -8,9 +8,7 @@ use aho_corasick::AhoCorasick;
 use ambient_std::{asset_cache::*, CowStr};
 use anyhow::Context;
 use itertools::Itertools;
-use wgpu::{
-    BindGroupLayout, BindGroupLayoutEntry, BindingType, ComputePipelineDescriptor, DepthBiasState, ShaderStages, Texture, TextureFormat,
-};
+use wgpu::{BindGroupLayout, BindGroupLayoutEntry, ComputePipelineDescriptor, DepthBiasState, TextureFormat};
 
 use super::gpu::{Gpu, GpuKey, DEFAULT_SAMPLE_COUNT};
 
@@ -284,8 +282,8 @@ impl Shader {
         // Efficiently replace all identifiers
         let (patterns, replace_with): (Vec<_>, Vec<_>) = modules
             .iter()
-            .flat_map(|v| v.idents.iter().map(|ShaderIdent { name, value }| (format!("#{name}"), value.to_wgsl())))
-            .chain(bind_group_index.iter().map(|(name, &index)| (format!("#{name}"), (index as u32).to_string())))
+            .flat_map(|v| v.idents.iter().map(|ShaderIdent { name, value }| (format!("{name}"), value.to_wgsl())))
+            .chain(bind_group_index.iter().map(|(name, &index)| (name.to_string(), (index as u32).to_string())))
             .unzip();
 
         tracing::info!(

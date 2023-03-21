@@ -82,9 +82,9 @@ fn is_visible(entity_loc: vec2<u32>, primitive_lod: u32) -> bool {
 }
 
 @compute
-@workgroup_size(#COLLECT_WORKGROUP_SIZE)
+@workgroup_size(COLLECT_WORKGROUP_SIZE)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
-    let chunk = #COLLECT_CHUNK_SIZEu * #COLLECT_WORKGROUP_SIZEu;
+    let chunk = COLLECT_CHUNK_SIZEu * COLLECT_WORKGROUP_SIZEu;
     let index = global_id.y * chunk + global_id.x;
 
     if index >= arrayLength(&input_primitives.data) {

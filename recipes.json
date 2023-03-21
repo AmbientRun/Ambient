@@ -11,6 +11,9 @@
     "minigolf": {
         "cmd": "cargo run -- run ./guest/rust/examples/games/minigolf"
     },
+    "skinmesh": {
+        "cmd": "cargo run -- run ./guest/rust/examples/basics/skinmesh"
+    },
     "debug-third-person-camera": {
         "cmd": "cargo build -p ambient",
         "components": {
@@ -63,5 +66,8 @@
         "env": {
             "RUST_LOG": "info"
         }
+    },
+    "test": {
+        "cmd": "cargo nextest run --workspace"
     }
 }

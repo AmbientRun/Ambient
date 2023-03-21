@@ -1,6 +1,6 @@
 
 
-@group(#PRIMITIVES_BIND_GROUP)
+@group(PRIMITIVES_BIND_GROUP)
 @binding(0)
 var<storage> primitives: UVec4Buffer;
 

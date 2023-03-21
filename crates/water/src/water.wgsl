@@ -1,6 +1,6 @@
 
 
-@group(#MATERIAL_BIND_GROUP)
+@group(MATERIAL_BIND_GROUP)
 @binding(0)
 var normals_texture: texture_2d<f32>;
 
@@ -29,11 +29,11 @@ fn screen_space_reflections(world_position: vec3<f32>, screen_ray_dir: vec3<f32>
     for (var i = 0; i < 5; i = i + 1) {
         let pos_ndc = project_point(global_params.projection_view, pos);
         let screen_tc = screen_ndc_to_uv(pos_ndc);
-        if (screen_tc.x < 0. || screen_tc.x >= 1. || screen_tc.y < 0. || screen_tc.y >= 1.) {
+        if screen_tc.x < 0. || screen_tc.x >= 1. || screen_tc.y < 0. || screen_tc.y >= 1. {
             continue;
         }
         let screen_depth = textureSampleLevel(solids_screen_depth, default_sampler, screen_tc, 0.);
-        if (pos_ndc.z >= screen_depth && pos_ndc.z < screen_depth * 1.001 && screen_depth < 0.9999) {
+        if pos_ndc.z >= screen_depth && pos_ndc.z < screen_depth * 1.001 && screen_depth < 0.9999 {
             return textureSampleLevel(solids_screen_color, default_sampler, screen_tc, 0.).rgb;
         }
         step = step * 2.;

@@ -10,16 +10,16 @@ struct MeshSkinned {
     weights: vec4<f32>,
 }
 
-@group(#GLOBALS_BIND_GROUP)
-@binding(#MESH_BASE_BINDING)
+@group(GLOBALS_BIND_GROUP)
+@binding(MESH_BASE_BINDING)
 var<storage> mesh_base: array<MeshBase>;
 
-@group(#GLOBALS_BIND_GROUP)
-@binding(#MESH_SKIN_BINDING)
+@group(GLOBALS_BIND_GROUP)
+@binding(MESH_SKIN_BINDING)
 var<storage> mesh_skinned: array<MeshSkinned>;
 
-@group(#GLOBALS_BIND_GROUP)
-@binding(#SKINS_BINDING)
+@group(GLOBALS_BIND_GROUP)
+@binding(SKINS_BINDING)
 var<storage> skins: Mat4x4Buffer;
 
 

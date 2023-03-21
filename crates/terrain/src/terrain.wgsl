@@ -5,31 +5,31 @@ struct TerrainMaterialParams {
     lod_factor: f32,
     cell_diagonal: f32,
 };
-@group(#MATERIAL_BIND_GROUP)
+@group(MATERIAL_BIND_GROUP)
 @binding(0)
 var<uniform> terrain_params: TerrainMaterialParams;
 
-@group(#MATERIAL_BIND_GROUP)
+@group(MATERIAL_BIND_GROUP)
 @binding(1)
 var heightmap_sampler: sampler;
 
-@group(#MATERIAL_BIND_GROUP)
+@group(MATERIAL_BIND_GROUP)
 @binding(2)
 var heightmap: texture_2d_array<f32>;
 
-@group(#MATERIAL_BIND_GROUP)
+@group(MATERIAL_BIND_GROUP)
 @binding(3)
 var normalmap: texture_2d<f32>;
 
-@group(#MATERIAL_BIND_GROUP)
+@group(MATERIAL_BIND_GROUP)
 @binding(4)
 var surface_color_2k: texture_2d_array<f32>;
 
-@group(#MATERIAL_BIND_GROUP)
+@group(MATERIAL_BIND_GROUP)
 @binding(5)
 var surface_normals_2k: texture_2d_array<f32>;
 
-@group(#MATERIAL_BIND_GROUP)
+@group(MATERIAL_BIND_GROUP)
 @binding(6)
 var texture_sampler: sampler;
 
@@ -72,11 +72,11 @@ struct TerrainMaterialDef {
 
     settings: TerrainMaterialSettings,
 };
-@group(#MATERIAL_BIND_GROUP)
+@group(MATERIAL_BIND_GROUP)
 @binding(7)
 var<uniform> terrain_mat_def: TerrainMaterialDef;
 
-@group(#MATERIAL_BIND_GROUP)
+@group(MATERIAL_BIND_GROUP)
 @binding(8)
 var noise_texture: texture_2d<f32>;
 
@@ -128,7 +128,7 @@ fn vs_main(@builtin(instance_index) instance_index: u32, @builtin(vertex_index) 
         height = height + textureSampleLevel(heightmap, heightmap_sampler, out.texcoord, i, 0.).r;
     }
 
-    out.world_position = vec4<f32>(blended_xy, height + f32(#TERRAIN_BASE), 1.);
+    out.world_position = vec4<f32>(blended_xy, height + f32(TERRAIN_BASE), 1.);
     out.position = global_params.projection_view * out.world_position;
     out.instance_index = instance_index;
 
@@ -195,12 +195,12 @@ fn triplanar_sample(p: vec3<f32>, normal: vec3<f32>, terrain_sample: TerrainTrip
     return res;
 }
 
-#TERRAIN_FUNCS
+TERRAIN_FUNCS
 
 fn get_hardness_sampled(tc: vec2<f32>, height: f32) -> f32 {
-    let hardness = textureSampleLevel(heightmap, heightmap_sampler, tc, # HARDNESS_LAYER, 0.).r;
-    let amount = textureSampleLevel(heightmap, heightmap_sampler, tc, # HARDNESS_STRATA_AMOUNT_LAYER, 0.).r;
-    let wavelength = textureSampleLevel(heightmap, heightmap_sampler, tc, # HARDNESS_STRATA_WAVELENGTH_LAYER, 0.).r;
+    let hardness = textureSampleLevel(heightmap, heightmap_sampler, tc, HARDNESS_LAYER, 0.).r;
+    let amount = textureSampleLevel(heightmap, heightmap_sampler, tc, HARDNESS_STRATA_AMOUNT_LAYER, 0.).r;
+    let wavelength = textureSampleLevel(heightmap, heightmap_sampler, tc, HARDNESS_STRATA_WAVELENGTH_LAYER, 0.).r;
     return hardness_calc(hardness, amount, wavelength, height);
 }
 
@@ -221,7 +221,7 @@ fn fs_forward_main(in: VertexOutput) -> MainFsOut {
     let bitangent = cross(normal, tangent);
     let normal_mat = mat3x3<f32>(tangent, bitangent, normal);
 
-    let soil_amount = textureSampleLevel(heightmap, heightmap_sampler, in.texcoord, # SOIL_LAYER, 0.).r;
+    let soil_amount = textureSampleLevel(heightmap, heightmap_sampler, in.texcoord, SOIL_LAYER, 0.).r;
     let texture_variation = textureSample(noise_texture, texture_sampler, in.world_position.xy / terrain_mat_def.settings.variation_texture_scale).r;
     let hardness = get_hardness_sampled(in.texcoord, in.world_position.z);
     let texture_variation = interpolate_clamped_1_1(texture_variation, 0.5 - terrain_mat_def.settings.variation_gradient / 2., 0.5 + terrain_mat_def.settings.variation_gradient / 2., 0., 1.);

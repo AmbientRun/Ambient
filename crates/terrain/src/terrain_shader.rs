@@ -146,8 +146,8 @@ impl SyncAssetKey<Arc<RendererShader>> for TerrainShaderKey {
                 .with_ident(ShaderIdent::constant("WATER_VELOCITY_Y_LAYER", TerrainLayers::WaterVelocityY as u32))
                 .with_ident(ShaderIdent::constant("HARDNESS_LAYER", TerrainLayers::Hardness as u32))
                 .with_ident(ShaderIdent::constant("HARDNESS_STRATA_AMOUNT_LAYER", TerrainLayers::HardnessStrataAmount as u32))
-                .with_ident(ShaderIdent::constant("#HARDNESS_STRATA_WAVELENGTH_LAYER", TerrainLayers::HardnessStrataWavelength as u32))
-                .with_ident(ShaderIdent::constant("#TERRAIN_BASE", TERRAIN_BASE)),
+                .with_ident(ShaderIdent::constant("HARDNESS_STRATA_WAVELENGTH_LAYER", TerrainLayers::HardnessStrataWavelength as u32))
+                .with_ident(ShaderIdent::constant("TERRAIN_BASE", TERRAIN_BASE)),
         )
         .unwrap();
 

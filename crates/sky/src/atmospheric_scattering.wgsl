@@ -12,7 +12,7 @@ struct CloudBuffer {
     clouds: array<Node>,
 };
 
-@group(#MATERIAL_BIND_GROUP)
+@group(MATERIAL_BIND_GROUP)
 @binding(0)
 var<storage> cloud_buffer: CloudBuffer;
 
@@ -26,7 +26,7 @@ fn sphere_intersect(pos: vec3<f32>, dir: vec3<f32>, r: f32) -> vec2<f32> {
     let c = dot(pos, pos) - (r * r);
     let d = (b * b) - 4.0 * a * c;
 
-    if (d < 0.) {
+    if d < 0. {
         return vec2<f32>(1e5, -1e5);
     }
 
@@ -38,8 +38,7 @@ fn sphere_intersect(pos: vec3<f32>, dir: vec3<f32>, r: f32) -> vec2<f32> {
 
 let DISTANCE_THRESHOLD: f32 = 0.1;
 
-fn cube_intersect(origin: f32, size: f32, ray_o: vec3<f32>, dir: vec3<f32>) ->
-f32 {
+fn cube_intersect(origin: f32, size: f32, ray_o: vec3<f32>, dir: vec3<f32>) -> f32 {
     let origin = ray_o - origin;
     let inv_dir = vec3<f32>(1. / dir.x, 1. / dir.y, 1. / dir.z);
     let t1 = (-size - origin) * inv_dir;
@@ -64,7 +63,7 @@ fn scattering(depth: f32, pos: vec3<f32>, dir: vec3<f32>) -> vec3<f32> {
     // Get atmosphere intersection
     let ray_l = sphere_intersect(orig, dir, atmo_radius);
 
-    let dist =  ray_l.y - ray_l.x;
+    let dist = ray_l.y - ray_l.x;
 
     let dir = normalize(dir);
 
@@ -74,8 +73,8 @@ fn scattering(depth: f32, pos: vec3<f32>, dir: vec3<f32>) -> vec3<f32> {
     let light_dir = global_params.sun_direction.xyz;
     let u = dot(dir, light_dir);
     let g = 0.76;
-    let uu = u*u;
-    let gg = g*g;
+    let uu = u * u;
+    let gg = g * g;
 
     let beta_ray = vec3<f32>(5.5e-6, 13.0e-6, 22.4e-6);
     // let beta_ray = vec3<f32>(3.8e-6, 5.5e-7, 16.1e-6);
@@ -83,10 +82,9 @@ fn scattering(depth: f32, pos: vec3<f32>, dir: vec3<f32>) -> vec3<f32> {
 
     let allow_mie = depth >= ray_l.y || depth > global_params.camera_far * 0.9;
     // How likely is light from the sun to scatter to us
-    let phase_ray = max(3.0 / (16.0*PI) * (1.0 + uu), 0.);
+    let phase_ray = max(3.0 / (16.0 * PI) * (1.0 + uu), 0.);
     // 3 / (16pi) * cos2()
-    let phase_mie = max((3.0 / (8.0 * PI)) * ((1.0 - gg) * (1.0 + uu)) / ((2.0 +
-    gg) * pow(1.0 + gg - 2.0*g*u, 1.5)), 0.);
+    let phase_mie = max((3.0 / (8.0 * PI)) * ((1.0 - gg) * (1.0 + uu)) / ((2.0 + gg) * pow(1.0 + gg - 2.0 * g * u, 1.5)), 0.);
 
     let phase_mie = phase_mie * f32(allow_mie);
 
@@ -145,9 +143,7 @@ fn scattering(depth: f32, pos: vec3<f32>, dir: vec3<f32>) -> vec3<f32> {
 
         // Add the results of light integration by using the accumulated density
         // and beta coeff
-        let tau =
-            beta_ray * (rayleigh + l_r)
-            + beta_mie * (mie + l_m);
+        let tau = beta_ray * (rayleigh + l_r) + beta_mie * (mie + l_m);
 
         let attn = exp(-tau);
 
@@ -158,11 +154,7 @@ fn scattering(depth: f32, pos: vec3<f32>, dir: vec3<f32>) -> vec3<f32> {
         pos_i = pos_i + step_len;
     }
 
-    let result =
-    (
-          total_ray * beta_ray * phase_ray
-        + total_mie * beta_mie * phase_mie
-    ) * 20.0;
+    let result = (total_ray * beta_ray * phase_ray + total_mie * beta_mie * phase_mie) * 20.0;
 
     return result;
 }
@@ -178,6 +170,5 @@ fn get_sky_color(
     let spot = exp(-pow(d * spot_rad, g));
 
 
-    return scattering(depth, origin, forward)
-    + global_params.sun_diffuse.rgb * spot;
+    return scattering(depth, origin, forward) + global_params.sun_diffuse.rgb * spot;
 }

@@ -86,7 +86,7 @@ impl GpuComponentsConfig {
             "
 struct Entity{format_name}Buffer {{ data: array<{wgsl_format}> }};
 
-@group(#{bind_group})
+@group({bind_group})
 @binding({data_binding})
 var<storage{storage_attr}> entity_{format_name}_data: Entity{format_name}Buffer;
 
@@ -218,7 +218,7 @@ impl GpuWorldConfig {
         format!(
             "
 struct EntityLayoutBuffer {{ data: array<i32>, }};
-@group(#{ENTITIES_BIND_GROUP})
+@group({ENTITIES_BIND_GROUP})
 @binding(0)
 var<storage> entity_layout: EntityLayoutBuffer;
 
