@@ -23,6 +23,7 @@ ambient_app = { path = "../crates/app" }
 ambient_ui = { path = "../crates/ui" }
 ambient_cameras = { path = "../crates/cameras/" }
 ambient_renderer = { path = "../crates/renderer/" }
+ambient_element = { path = "../shared_crates/element/" }
 
 anyhow = { workspace = true }
 glam = { workspace = true }

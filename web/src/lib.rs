@@ -1,10 +1,15 @@
+use std::time::Duration;
+
 use ambient_app::App;
 use ambient_cameras::UICamera;
 use ambient_core::camera::active_camera;
+use ambient_ecs::World;
 use ambient_renderer::color;
+use ambient_sys::time::Instant;
 use ambient_ui::{
-    element::{ElementComponentExt, Group},
-    font_size, padding, space_between_items, Borders, FlowColumn, FlowRow, FocusRoot, Separator, StylesExt, Text,
+    element::{element_component, Element, ElementComponentExt, Group, Hooks},
+    font_size, padding, space_between_items, Borders, Button, FlowColumn, FlowRow, FocusRoot, Separator, StylesExt, Text, TextEditor,
+    UIExt,
 };
 use glam::vec4;
 use tracing_subscriber::{filter::LevelFilter, fmt::time::UtcTime, prelude::*, registry};
@@ -42,32 +47,45 @@ async fn run() -> anyhow::Result<()> {
 
     init(&mut app).await;
 
-    /// Spawn the event loop
+    // Spawn the event loop
     app.spawn();
+
     Ok(())
+}
+
+#[element_component]
+pub fn View(hooks: &mut Hooks) -> Element {
+    let (count, set_count) = hooks.use_state(0);
+    let (text, set_text) = hooks.use_state(Default::default());
+
+    let now = Instant::now();
+    let (elapsed, set_elapsed) = hooks.use_state(Duration::ZERO);
+    hooks.use_interval(0.5, move || set_elapsed(now.elapsed()));
+
+    FlowColumn(vec![
+        Text::el(format!("Hello from the browser! {elapsed:?}")).header_style(),
+        Text::el("Section").section_style(),
+        Text::el("Default text \u{f1e2} \u{fb8f}"),
+        Text::el("Small").small_style(),
+        Button::new(format!("You have clicked the button {count} times"), move |_| set_count(count + 1))
+            .el()
+            .with_background(vec4(0.0, 0.8, 0.8, 1.0)),
+        TextEditor::new(text, set_text).placeholder(Some("Go ahead, type something clever")).el(),
+        Separator { vertical: false }.el(),
+        Text::el("Custom size").set(font_size(), 20.),
+        Text::el("Custom color").set(color(), vec4(1., 0., 0., 1.)),
+        Text::el("Multi\n\nLine"),
+    ])
+    .el()
+    .set(space_between_items(), 10.)
 }
 
 async fn init(app: &mut App) {
     let world = &mut app.world;
-    // FocusRoot(vec![FlowRow(vec![Text::el("Hello, Wasm!")]).el()]).el().spawn_interactive(world);
-    Group(vec![
-        UICamera.el().set(active_camera(), 0.),
-        FlowColumn(vec![
-            Text::el("Header").header_style(),
-            Text::el("Section").section_style(),
-            Text::el("Default text \u{f1e2} \u{fb8f}"),
-            Text::el("Small").small_style(),
-            Separator { vertical: false }.el(),
-            Text::el("Custom size").set(font_size(), 40.),
-            Text::el("Custom color").set(color(), vec4(1., 0., 0., 1.)),
-            Text::el("Multi\n\nLine"),
-        ])
+
+    Group(vec![UICamera.el().set(active_camera(), 0.), FocusRoot(vec![View::el().set(padding(), Borders::even(10.))]).el()])
         .el()
-        .set(padding(), Borders::even(10.))
-        .set(space_between_items(), 10.),
-    ])
-    .el()
-    .spawn_interactive(world);
+        .spawn_interactive(world);
 }
 
 #[cfg(not(target_os = "unknown"))]
