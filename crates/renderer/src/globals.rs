@@ -19,8 +19,8 @@ use wgpu::{BindGroup, BindGroupLayout, Buffer, Sampler};
 
 use super::{fog_color, get_active_sun, light_ambient, light_diffuse, RenderTarget, ShadowCameraData};
 use crate::{
-    fog_density, fog_height_falloff, skinning::SkinsBufferKey, GLOBALS_BIND_GROUP, MESH_BASE_BINDING, MESH_JOINT_BINDING,
-    MESH_METADATA_BINDING, MESH_WEIGHT_BINDING, SKINS_BINDING,
+    fog_density, fog_height_falloff, skinning::SkinsBufferKey, GLOBALS_BIND_GROUP, MESH_BASE_BINDING, MESH_METADATA_BINDING,
+    MESH_SKIN_BINDING, SKINS_BINDING,
 };
 
 #[repr(C)]
@@ -244,8 +244,7 @@ impl ForwardGlobals {
                     resource: mesh_buffer.metadata_buffer.buffer().as_entire_binding(),
                 },
                 wgpu::BindGroupEntry { binding: 8 + MESH_BASE_BINDING, resource: mesh_buffer.base_buffer.buffer().as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 8 + MESH_JOINT_BINDING, resource: mesh_buffer.joint_buffer.buffer().as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 8 + MESH_WEIGHT_BINDING, resource: mesh_buffer.weight_buffer.buffer().as_entire_binding() },
+                wgpu::BindGroupEntry { binding: 8 + MESH_SKIN_BINDING, resource: mesh_buffer.skinned_buffer.buffer().as_entire_binding() },
                 wgpu::BindGroupEntry { binding: 8 + SKINS_BINDING, resource: skins.buffer.buffer().as_entire_binding() },
             ],
             label: Some("ForwardGlobals"),
@@ -373,8 +372,7 @@ impl ShadowAndUIGlobals {
                     resource: mesh_buffer.metadata_buffer.buffer().as_entire_binding(),
                 },
                 wgpu::BindGroupEntry { binding: 8 + MESH_BASE_BINDING, resource: mesh_buffer.base_buffer.buffer().as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 8 + MESH_JOINT_BINDING, resource: mesh_buffer.joint_buffer.buffer().as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 8 + MESH_WEIGHT_BINDING, resource: mesh_buffer.weight_buffer.buffer().as_entire_binding() },
+                wgpu::BindGroupEntry { binding: 8 + MESH_SKIN_BINDING, resource: mesh_buffer.skinned_buffer.buffer().as_entire_binding() },
                 wgpu::BindGroupEntry { binding: 8 + SKINS_BINDING, resource: skins.buffer.buffer().as_entire_binding() },
             ],
             label: Some("ShadowGlobals.bind_group"),

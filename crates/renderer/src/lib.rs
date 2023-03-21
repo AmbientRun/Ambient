@@ -318,8 +318,7 @@ pub fn get_mesh_data_module(bind_group_offset: u32) -> Arc<ShaderModule> {
     Arc::new(
         ShaderModule::new("mesh_data", include_file!("mesh_data.wgsl"))
             .with_ident(ShaderIdent::constant("MESH_BASE_BINDING", bind_group_offset + MESH_BASE_BINDING))
-            .with_ident(ShaderIdent::constant("MESH_JOINT_BINDING", bind_group_offset + MESH_JOINT_BINDING))
-            .with_ident(ShaderIdent::constant("MESH_WEIGHT_BINDING", bind_group_offset + MESH_WEIGHT_BINDING))
+            .with_ident(ShaderIdent::constant("MESH_SKIN_BINDING", bind_group_offset + MESH_SKIN_BINDING))
             .with_ident(ShaderIdent::constant("SKINS_BINDING", bind_group_offset + SKINS_BINDING))
             .with_binding_desc(get_mesh_data_layout(bind_group_offset))
             .with_dependency(get_mesh_meta_module(bind_group_offset)),
@@ -387,7 +386,7 @@ pub fn get_forward_modules(assets: &AssetCache, shadow_cascades: u32) -> Vec<Arc
 }
 
 pub fn get_overlay_modules(assets: &AssetCache, shadow_cascades: u32) -> Vec<Arc<ShaderModule>> {
-    vec![get_defs_module(), get_globals_module(assets, shadow_cascades)]
+    vec![get_defs_module(), get_globals_module(assets, shadow_cascades), get_mesh_data_module(GLOBALS_BIND_GROUP_SIZE)]
 }
 
 pub struct MaterialShader {

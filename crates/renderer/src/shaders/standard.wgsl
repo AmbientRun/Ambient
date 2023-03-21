@@ -26,10 +26,9 @@ fn vs_main(@builtin(instance_index) instance_index: u32, @builtin(vertex_index) 
     let entity_loc = primitive.xy;
     let mesh_index = get_entity_primitive_mesh(entity_loc, primitive.z);
 
-    out.instance_index = instance_index;
-    out.texcoord = get_mesh_texcoord0(mesh_index, vertex_index);
-
     let world = model_to_world(entity_loc, mesh_index, vertex_index);
+    out.instance_index = instance_index;
+    out.texcoord = world.texcoord;
 
     out.world_normal = world.normal;
     out.world_tangent = world.tangent;

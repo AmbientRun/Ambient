@@ -28,9 +28,8 @@ pub const GLOBALS_BIND_GROUP_SIZE: u32 = 8;
 
 pub const MESH_METADATA_BINDING: u32 = 0;
 pub const MESH_BASE_BINDING: u32 = 1;
-pub const MESH_JOINT_BINDING: u32 = 2;
-pub const MESH_WEIGHT_BINDING: u32 = 3;
-pub const SKINS_BINDING: u32 = 4;
+pub const MESH_SKIN_BINDING: u32 = 2;
+pub const SKINS_BINDING: u32 = 3;
 
 #[derive(Clone)]
 pub struct RendererResources {
@@ -466,8 +465,7 @@ pub(crate) fn get_mesh_data_layout(bind_group_offset: u32) -> BindGroupDesc<'sta
         entries: vec![
             // resource_storage_entry(MESH_METADATA_BINDING),
             resource_storage_entry(bind_group_offset + MESH_BASE_BINDING),
-            resource_storage_entry(bind_group_offset + MESH_JOINT_BINDING),
-            resource_storage_entry(bind_group_offset + MESH_WEIGHT_BINDING),
+            resource_storage_entry(bind_group_offset + MESH_SKIN_BINDING),
             resource_storage_entry(bind_group_offset + SKINS_BINDING),
         ],
         label: GLOBALS_BIND_GROUP.into(),

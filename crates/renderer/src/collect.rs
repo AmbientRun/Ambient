@@ -236,7 +236,7 @@ impl RendererCollect {
 
             let buffs = CollectCountStagingBuffersKey.get(&self.assets);
             let staging = buffs.take_buffer(output.counts.len());
-            encoder.copy_buffer_to_buffer(output.counts.buffer(), 0, staging.buffer(), 0, output.counts.size());
+            encoder.copy_buffer_to_buffer(output.counts.buffer(), 0, staging.buffer(), 0, output.counts.byte_size());
             let counts_res = output.counts_cpu.clone();
             let runtime = RuntimeKey.get(&self.assets);
             _post_submit.push(Box::new(move || {

@@ -1,4 +1,5 @@
 use std::{
+    iter::repeat,
     ops::Range,
     sync::{
         atomic::{AtomicUsize, Ordering},
@@ -15,7 +16,7 @@ use ambient_std::{
 use async_trait::async_trait;
 use bytemuck::{Pod, Zeroable};
 use glam::{UVec4, Vec2, Vec4};
-use itertools::Itertools;
+use itertools::{izip, Itertools};
 use parking_lot::Mutex;
 use wgpu::RenderPass;
 
@@ -51,6 +52,7 @@ impl GpuMesh {
         self.size_in_bytes
     }
 }
+
 impl Drop for GpuMesh {
     fn drop(&mut self) {
         self.to_remove.lock().push(self.index);
@@ -72,11 +74,13 @@ pub struct GpuMeshFromUrl {
     pub url: AbsAssetUrl,
     pub cache_on_disk: bool,
 }
+
 impl GpuMeshFromUrl {
     pub fn new(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
         Ok(Self { url: AbsAssetUrl::parse(url)?, cache_on_disk })
     }
 }
+
 #[async_trait]
 impl AsyncAssetKey<AssetResult<Arc<GpuMesh>>> for GpuMeshFromUrl {
     async fn load(self, assets: AssetCache) -> AssetResult<Arc<GpuMesh>> {
@@ -88,12 +92,19 @@ impl AsyncAssetKey<AssetResult<Arc<GpuMesh>>> for GpuMeshFromUrl {
 /// Groups all *common* mesh attributes into a single struct to reduce the number of bound slots.
 #[repr(C)]
 #[derive(Default, Clone, Copy, Pod, Zeroable)]
-pub struct MeshBase {
+pub struct BaseMesh {
     position: Vec4,
     normal: Vec4,
     tangent: Vec4,
     texcoord0: Vec2,
     _padding: Vec2,
+}
+
+#[repr(C)]
+#[derive(Default, Clone, Copy, Pod, Zeroable)]
+pub struct SkinnedMesh {
+    joint: UVec4,
+    weights: Vec4,
 }
 
 /// Gpu mesh buffer which holds all meshes in an Elements application.
@@ -106,50 +117,44 @@ pub struct MeshBase {
 pub struct MeshBuffer {
     gpu: Arc<Gpu>,
     pub metadata_buffer: TypedBuffer<MeshMetadata>,
-    pub base_buffer: AttributeBuffer<MeshBase>,
-    pub joint_buffer: AttributeBuffer<UVec4>,
-    pub weight_buffer: AttributeBuffer<Vec4>,
+    pub base_buffer: AttributeBuffer<BaseMesh>,
+    pub skinned_buffer: AttributeBuffer<SkinnedMesh>,
+
     pub index_buffer: AttributeBuffer<u32>,
     meshes: Vec<Option<InternalMesh>>,
     to_remove: Arc<Mutex<Vec<GpuMeshIndex>>>,
     free_indices: Vec<GpuMeshIndex>,
 }
+
 impl MeshBuffer {
     pub fn new(gpu: Arc<Gpu>) -> Self {
         Self {
             metadata_buffer: TypedBuffer::new(
                 gpu.clone(),
                 "MeshBuffer.metadata_buffer",
-                1,
+                4,
                 0,
                 wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::COPY_SRC,
             ),
             index_buffer: AttributeBuffer::new(
                 gpu.clone(),
                 "MeshBuffer.index_buffer",
-                1,
+                4,
                 0,
                 wgpu::BufferUsages::INDEX | wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::COPY_SRC,
             ),
             base_buffer: AttributeBuffer::new(
                 gpu.clone(),
                 "MeshBuffer.base_buffer",
-                1,
+                4,
                 0,
                 wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::COPY_SRC,
             ),
 
-            joint_buffer: AttributeBuffer::new(
+            skinned_buffer: AttributeBuffer::new(
                 gpu.clone(),
-                "MeshBuffer.joint_buffer",
-                1,
-                0,
-                wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::COPY_SRC,
-            ),
-            weight_buffer: AttributeBuffer::new(
-                gpu.clone(),
-                "MeshBuffer.weight_buffer",
-                1,
+                "MeshBuffer.skinned_buffer",
+                4,
                 0,
                 wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::COPY_SRC,
             ),
@@ -159,11 +164,11 @@ impl MeshBuffer {
             gpu,
         }
     }
+
     pub fn insert(&mut self, mesh: &Mesh) -> Arc<GpuMesh> {
         let metadata = MeshMetadata {
             base_offset: self.base_buffer.front.len() as u32,
-            joint_offset: self.joint_buffer.front.len() as u32,
-            weight_offset: self.weight_buffer.front.len() as u32,
+            skinned_offset: self.skinned_buffer.front.len() as u32,
             index_offset: self.index_buffer.front.len() as u32,
             index_count: mesh.indices.as_ref().map(|x| x.len()).unwrap_or_default() as u32,
         };
@@ -185,7 +190,7 @@ impl MeshBuffer {
                 let len = ([pos.len(), norm.len(), tan.len(), uv.len()]).into_iter().max().unwrap_or(0);
 
                 tracing::info!("Adding mesh with base count of {len}");
-                let mut data = vec![MeshBase::default(); len];
+                let mut data = vec![BaseMesh::default(); len];
 
                 pos.iter().zip(&mut data).for_each(|(src, dst)| dst.position = src.extend(0.0));
                 norm.iter().zip(&mut data).for_each(|(src, dst)| dst.normal = src.extend(0.0));
@@ -198,16 +203,16 @@ impl MeshBuffer {
             }
         };
 
-        if let Some(joints) = &mesh.joint_indices {
-            self.joint_buffer.front.resize(self.joint_buffer.front.len() + joints.len() as u64, true);
-            self.joint_buffer.front.write(metadata.joint_offset as u64, joints);
-            internal_mesh.joint_count = joints.len() as u64;
-        }
+        if let (Some(joints), Some(weights)) = (&mesh.joint_indices, &mesh.joint_weights) {
+            let len = joints.len().max(weights.len());
 
-        if let Some(weights) = &mesh.joint_weights {
-            self.weight_buffer.front.resize(self.weight_buffer.front.len() + weights.len() as u64, true);
-            self.weight_buffer.front.write(metadata.weight_offset as u64, weights);
-            internal_mesh.weight_count = weights.len() as u64;
+            let iter =
+                izip!(joints.iter().copied().chain(repeat(Default::default())), weights.iter().copied().chain(repeat(Default::default())))
+                    .map(|(joint, weights)| SkinnedMesh { joint, weights })
+                    .take(len);
+
+            self.skinned_buffer.front.resize(self.skinned_buffer.front.len() + len as u64, true);
+            self.skinned_buffer.front.write(metadata.skinned_offset as u64, &iter.collect_vec());
         }
 
         if let Some(indices) = &mesh.indices {
@@ -272,11 +277,7 @@ impl MeshBuffer {
         let mut sizes = MeshMetadata::default();
         for (_, mesh) in &update_meshes_sorted {
             sizes.base_offset += mesh.base_count as u32;
-            // sizes.normal_offset += mesh.normal_count as u32;
-            // sizes.tangent_offset += mesh.tangent_count as u32;
-            // sizes.texcoord0_offset += mesh.texcoord0_count as u32;
-            sizes.joint_offset += mesh.joint_count as u32;
-            sizes.weight_offset += mesh.weight_count as u32;
+            sizes.skinned_offset += mesh.skinned_count as u32;
             sizes.index_offset += mesh.index_count as u32;
         }
 
@@ -284,8 +285,7 @@ impl MeshBuffer {
         // self.normal_buffer.tmp.resize(sizes.normal_offset as u64, true);
         // self.tangent_buffer.tmp.resize(sizes.tangent_offset as u64, true);
         // self.texcoord0_buffer.tmp.resize(sizes.texcoord0_offset as u64, true);
-        self.joint_buffer.tmp.resize(sizes.joint_offset as u64, true);
-        self.weight_buffer.tmp.resize(sizes.weight_offset as u64, true);
+        self.skinned_buffer.tmp.resize(sizes.skinned_offset as u64, true);
         self.index_buffer.tmp.resize(sizes.index_offset as u64, true);
 
         let mut cursor = MeshMetadata::default();
@@ -296,8 +296,7 @@ impl MeshBuffer {
                 // normal_offset: base_offset.normal_offset + cursor.normal_offset,
                 // tangent_offset: base_offset.tangent_offset + cursor.tangent_offset,
                 // texcoord0_offset: base_offset.texcoord0_offset + cursor.texcoord0_offset,
-                joint_offset: base_metadata.joint_offset + cursor.joint_offset,
-                weight_offset: base_metadata.weight_offset + cursor.weight_offset,
+                skinned_offset: base_metadata.skinned_offset + cursor.skinned_offset,
                 index_offset: base_metadata.index_offset + cursor.index_offset,
             };
 
@@ -317,11 +316,7 @@ impl MeshBuffer {
             }
 
             copy_buff!(encoder, mesh, cursor, base_buffer, base_offset, base_count);
-            // copy_buff!(encoder, mesh, cursor, normal_buffer, normal_offset, normal_count);
-            // copy_buff!(encoder, mesh, cursor, tangent_buffer, tangent_offset, tangent_count);
-            // copy_buff!(encoder, mesh, cursor, texcoord0_buffer, texcoord0_offset, texcoord0_count);
-            copy_buff!(encoder, mesh, cursor, joint_buffer, joint_offset, joint_count);
-            copy_buff!(encoder, mesh, cursor, weight_buffer, weight_offset, weight_count);
+            copy_buff!(encoder, mesh, cursor, skinned_buffer, skinned_offset, skinned_count);
             copy_buff!(encoder, mesh, cursor, index_buffer, index_offset, index_count);
         }
 
@@ -339,11 +334,7 @@ impl MeshBuffer {
         }
 
         copy_back_buff!(encoder, base_metadata, base_buffer, base_offset);
-        // copy_back_buff!(encoder, base_metadata, normal_buffer, normal_offset);
-        // copy_back_buff!(encoder, base_metadata, tangent_buffer, tangent_offset);
-        // copy_back_buff!(encoder, base_metadata, texcoord0_buffer, texcoord0_offset);
-        copy_back_buff!(encoder, base_metadata, joint_buffer, joint_offset);
-        copy_back_buff!(encoder, base_metadata, weight_buffer, weight_offset);
+        copy_back_buff!(encoder, base_metadata, skinned_buffer, skinned_offset);
         copy_back_buff!(encoder, base_metadata, index_buffer, index_offset);
 
         let metadata = self.meshes.iter().map(|mesh| mesh.as_ref().map(|x| x.metadata).unwrap_or_default()).collect_vec();
@@ -352,20 +343,22 @@ impl MeshBuffer {
         self.gpu.queue.submit(Some(encoder.finish()));
         MESHES_TOTAL_SIZE.store(self.size() as usize, Ordering::SeqCst);
     }
+
     pub fn get_mesh_metadata(&self, mesh: &GpuMesh) -> &MeshMetadata {
         &self.meshes[mesh.index as usize].as_ref().unwrap().metadata
     }
 
     pub fn size(&self) -> u64 {
-        self.metadata_buffer.size()
-            + self.base_buffer.front.size()
-            + self.joint_buffer.front.size()
-            + self.weight_buffer.front.size()
-            + self.index_buffer.front.size()
+        self.metadata_buffer.byte_size()
+            + self.base_buffer.front.byte_size()
+            + self.skinned_buffer.front.byte_size()
+            + self.index_buffer.front.byte_size()
     }
+
     pub fn n_meshes(&self) -> usize {
         self.meshes.len() - self.free_indices.len()
     }
+
     pub fn total_bytes_used() -> usize {
         MESHES_TOTAL_SIZE.load(Ordering::SeqCst)
     }
@@ -385,8 +378,7 @@ impl MeshBuffer {
 pub struct MeshMetadata {
     /// position, normal, tangent, texcoord0 are grouped
     pub base_offset: u32,
-    pub joint_offset: u32,
-    pub weight_offset: u32,
+    pub skinned_offset: u32,
     pub index_offset: u32,
 
     pub index_count: u32,
@@ -396,8 +388,7 @@ pub struct MeshMetadata {
 struct InternalMesh {
     metadata: MeshMetadata,
     base_count: u64,
-    joint_count: u64,
-    weight_count: u64,
+    skinned_count: u64,
     index_count: u64,
 }
 
@@ -405,6 +396,7 @@ pub struct AttributeBuffer<T: bytemuck::Pod> {
     pub front: TypedBuffer<T>,
     pub tmp: TypedBuffer<T>,
 }
+
 impl<T: bytemuck::Pod> AttributeBuffer<T> {
     pub fn new(gpu: Arc<Gpu>, label: &str, capacity: u64, length: u64, usage: wgpu::BufferUsages) -> Self {
         Self {
@@ -412,6 +404,7 @@ impl<T: bytemuck::Pod> AttributeBuffer<T> {
             tmp: TypedBuffer::new(gpu, label, capacity, length, usage),
         }
     }
+
     pub fn buffer(&self) -> &wgpu::Buffer {
         self.front.buffer()
     }

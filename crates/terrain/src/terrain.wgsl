@@ -109,7 +109,7 @@ fn vs_main(@builtin(instance_index) instance_index: u32, @builtin(vertex_index) 
 
     let local_to_world = get_entity_mesh_to_world(entity_loc);
 
-    let world_position = local_to_world * vec4<f32>(get_mesh_position(mesh_index, vertex_index), 1.);
+    let world_position = local_to_world * vec4<f32>(get_mesh_base(mesh_index, vertex_index).position, 1.);
     let world_position_norm = world_position / world_position.w;
 
     let dist_from_camera = length(world_position_norm.xyz - global_params.forward_camera_position.xyz);

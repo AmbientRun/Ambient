@@ -26,12 +26,14 @@ fn vs_main(@builtin(instance_index) instance_index: u32, @builtin(vertex_index) 
     let entity_loc = primitive.xy;
     var mesh_index = get_entity_primitive_mesh(entity_loc, primitive.z);
 
+    let mesh = get_mesh_base(mesh_index, vertex_index);
+
     out.instance_index = instance_index;
-    out.texcoord = get_mesh_texcoord0(mesh_index, vertex_index);
+    out.texcoord = mesh.texcoord0;
 
     let local_to_world = get_entity_mesh_to_world(entity_loc);
 
-    out.world_position = local_to_world * vec4<f32>(get_mesh_position(mesh_index, vertex_index), 1.);
+    out.world_position = local_to_world * vec4<f32>(mesh.position, 1.);
     let vertex_transformed = global_params.projection_view * out.world_position;
 
     out.position = vertex_transformed;
