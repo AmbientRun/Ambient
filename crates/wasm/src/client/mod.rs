@@ -247,14 +247,6 @@ impl wit::event::Host for Bindings {
     fn subscribe(&mut self, name: String) -> anyhow::Result<()> {
         shared::implementation::event::subscribe(&mut self.base.subscribed_events, name)
     }
-
-    fn send(&mut self, name: String, data: wit::entity::EntityData) -> anyhow::Result<()> {
-        shared::implementation::event::send(
-            self.world_mut(),
-            name,
-            shared::implementation::component::convert_components_to_entity_data(data),
-        )
-    }
 }
 
 fn unsupported<T>() -> anyhow::Result<T> {
