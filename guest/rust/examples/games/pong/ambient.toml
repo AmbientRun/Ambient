@@ -1,0 +1,7 @@
+[project]
+id = "pong"
+name = "Pong"
+version = "0.0.1"
+
+[components]
+player_camera_id = { type = "EntityId", name = "Player Camera Id", description = "EntityId of a player's camera" }
