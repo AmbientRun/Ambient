@@ -60,10 +60,10 @@ pub fn View(hooks: &mut Hooks) -> Element {
 
     let now = Instant::now();
     let (elapsed, set_elapsed) = hooks.use_state(Duration::ZERO);
-    hooks.use_interval(0.5, move || set_elapsed(now.elapsed()));
+    hooks.use_interval(0.2, move || set_elapsed(now.elapsed()));
 
     FlowColumn(vec![
-        Text::el(format!("Hello from the browser! {elapsed:?}")).header_style(),
+        Text::el(format!("Hello from the browser! {:.2}", elapsed.as_secs_f32())).header_style(),
         Text::el("Section").section_style(),
         Text::el("Default text \u{f1e2} \u{fb8f}"),
         Text::el("Small").small_style(),

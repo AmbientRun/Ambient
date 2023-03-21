@@ -67,7 +67,8 @@ pub fn TextEditor(
                     return;
                 }
                 if let Some(kc) = event.get_ref(keycode()) {
-                    let kc = VirtualKeyCode::from_str(kc).unwrap();
+                    // FIXME: get_ref returns `&T` on native, but `T` on guest
+                    let kc = VirtualKeyCode::from_str(&kc).unwrap();
                     match kc {
                         VirtualKeyCode::LWin => {
                             #[cfg(target_os = "macos")]
