@@ -12,11 +12,9 @@ use ambient_input::{
     event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels, keycode,
     mouse_button, player_prev_raw_input, player_raw_input, PlayerRawInput,
 };
-use ambient_network::{client::game_client, log_network_result, rpc::rpc_world_diff};
+use ambient_network::{client::game_client, log_network_result, rpc::rpc_world_diff, PLAYER_INPUT_DATAGRAM_ID};
 use ambient_std::unwrap_log_err;
 use ambient_window_types::VirtualKeyCode;
-
-const PLAYER_INPUT_DATAGRAM_ID: u32 = 5;
 
 pub fn register_server_datagram_handler(handlers: &mut ambient_network::server::DatagramHandlers) {
     handlers.insert(

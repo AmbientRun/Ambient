@@ -38,7 +38,7 @@ use tracing::{debug_span, Instrument};
 use crate::{
     create_server,
     protocol::{ClientInfo, ServerInfo, ServerProtocol},
-    NetworkError, RPC_STREAM_ID,
+    NetworkError, RPC_BISTREAM_ID,
 };
 
 components!("network::server", {
@@ -98,7 +98,7 @@ pub fn create_player_entity_data(user_id: &str, entities_tx: Sender<Vec<u8>>, st
 
 pub fn register_rpc_bi_stream_handler(handlers: &mut BiStreamHandlers, rpc_registry: RpcRegistry<RpcArgs>) {
     handlers.insert(
-        RPC_STREAM_ID,
+        RPC_BISTREAM_ID,
         Arc::new(move |state, _assets, user_id, mut send, recv| {
             let state = state;
             let user_id = user_id.to_string();

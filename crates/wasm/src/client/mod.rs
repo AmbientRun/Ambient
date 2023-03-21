@@ -6,13 +6,16 @@ use ambient_std::{
 };
 use std::sync::Arc;
 
+mod implementation;
+mod unused;
+
 pub fn initialize(
     world: &mut World,
     messenger: Arc<dyn Fn(&World, EntityId, shared::MessageType, &str) + Send + Sync>,
 ) -> anyhow::Result<()> {
     shared::initialize(world, messenger, |id| Bindings {
-            base: Default::default(),
-            world_ref: Default::default(),
+        base: Default::default(),
+        world_ref: Default::default(),
         id,
     })?;
 
@@ -246,95 +249,8 @@ impl wit::event::Host for Bindings {
         shared::implementation::event::subscribe(&mut self.base.subscribed_events, name)
     }
 }
-
-fn unsupported<T>() -> anyhow::Result<T> {
-    anyhow::bail!("This function is not supported on this side of the API. Please report this if you were able to access this function.")
-}
-
-impl wit::server_player::Host for Bindings {
-    fn get_raw_input(
-        &mut self,
-        _player: wit::types::EntityId,
-    ) -> anyhow::Result<Option<wit::server_player::RawInput>> {
-        unsupported()
-    }
-
-    fn get_prev_raw_input(
-        &mut self,
-        _player: wit::types::EntityId,
-    ) -> anyhow::Result<Option<wit::server_player::RawInput>> {
-        unsupported()
-    }
-}
-
-impl wit::server_physics::Host for Bindings {
-    fn apply_force(
-        &mut self,
-        _entities: Vec<wit::types::EntityId>,
-        _force: wit::types::Vec3,
-    ) -> anyhow::Result<()> {
-        unsupported()
-    }
-
-    fn explode_bomb(
-        &mut self,
-        _position: wit::types::Vec3,
-        _force: f32,
-        _radius: f32,
-        _falloff_radius: Option<f32>,
-    ) -> anyhow::Result<()> {
-        unsupported()
-    }
-
-    fn set_gravity(&mut self, _gravity: wit::types::Vec3) -> anyhow::Result<()> {
-        unsupported()
-    }
-
-    fn unfreeze(&mut self, _entity: wit::types::EntityId) -> anyhow::Result<()> {
-        unsupported()
-    }
-
-    fn freeze(&mut self, _entity: wit::types::EntityId) -> anyhow::Result<()> {
-        unsupported()
-    }
-
-    fn start_motor(&mut self, _entity: wit::types::EntityId, _velocity: f32) -> anyhow::Result<()> {
-        unsupported()
-    }
-
-    fn stop_motor(&mut self, _entity: wit::types::EntityId) -> anyhow::Result<()> {
-        unsupported()
-    }
-
-    fn raycast_first(
-        &mut self,
-        _origin: wit::types::Vec3,
-        _direction: wit::types::Vec3,
-    ) -> anyhow::Result<Option<(wit::types::EntityId, f32)>> {
-        unsupported()
-    }
-
-    fn raycast(
-        &mut self,
-        _origin: wit::types::Vec3,
-        _direction: wit::types::Vec3,
-    ) -> anyhow::Result<Vec<(wit::types::EntityId, f32)>> {
-        unsupported()
-    }
-
-    fn move_character(
-        &mut self,
-        _entity: wit::types::EntityId,
-        _displacement: wit::types::Vec3,
-        _min_dist: f32,
-        _elapsed_time: f32,
-    ) -> anyhow::Result<wit::server_physics::CharacterCollision> {
-        unsupported()
-    }
-}
-
-impl wit::server_asset::Host for Bindings {
-    fn url(&mut self, _path: String) -> anyhow::Result<Option<String>> {
-        unsupported()
+impl wit::message::Host for Bindings {
+    fn subscribe(&mut self, name: String) -> anyhow::Result<()> {
+        shared::implementation::message::subscribe(&mut self.base.subscribed_messages, name)
     }
 }

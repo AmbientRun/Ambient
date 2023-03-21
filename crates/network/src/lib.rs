@@ -31,6 +31,14 @@ pub mod protocol;
 pub mod rpc;
 pub mod server;
 
+pub const RPC_BISTREAM_ID: u32 = 1;
+pub const WASM_BISTREAM_ID: u32 = 2;
+
+pub const WASM_UNISTREAM_ID: u32 = 1;
+
+pub const PLAYER_INPUT_DATAGRAM_ID: u32 = 5;
+pub const WASM_DATAGRAM_ID: u32 = 6;
+
 components!("network", {
     /// Works like `world.resource_entity` for server worlds, except it's also persisted to disk, and synchronized to clients
     @[
@@ -113,7 +121,6 @@ fn assert_persisted(desc: ambient_ecs::ComponentDesc) {
     }
 }
 
-pub const RPC_STREAM_ID: u32 = 1;
 pub async fn rpc_request<
     Args: Send + 'static,
     Req: Serialize + DeserializeOwned + Send + 'static,
@@ -129,7 +136,7 @@ pub async fn rpc_request<
 ) -> Result<Resp, NetworkError> {
     let stream = conn.open_bi();
     let (mut send, recv) = stream.await.map_err(NetworkError::ConnectionError)?;
-    send.write_u32(RPC_STREAM_ID).await?;
+    send.write_u32(RPC_BISTREAM_ID).await?;
     let req = reg.serialize_req(func, req);
     send.write_all(&req).await.map_err(NetworkError::from)?;
     send.finish().await.map_err(NetworkError::from)?;
@@ -249,6 +256,7 @@ impl OutgoingStream {
     }
 }
 
+/// Are you sure you don't want [open_bincode_bi_stream_with_id] instead?
 pub async fn open_bincode_bi_stream(conn: &Connection) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
     let (send, recv) = conn.open_bi().await?;
     Ok((OutgoingStream::new(send), IncomingStream::new(recv)))
@@ -272,7 +280,7 @@ pub async fn next_bincode_bi_stream(conn: &mut NewConnection) -> Result<(Outgoin
     }
 }
 
-pub fn send_datagram(conn: &Connection, id: u32, make_payload: impl Fn(&mut Vec<u8>)) -> Result<(), NetworkError> {
+pub fn send_datagram(conn: &Connection, id: u32, mut make_payload: impl FnMut(&mut Vec<u8>)) -> Result<(), NetworkError> {
     let mut bytes = Vec::new();
     byteorder::WriteBytesExt::write_u32::<byteorder::BigEndian>(&mut bytes, id)?;
     make_payload(&mut bytes);

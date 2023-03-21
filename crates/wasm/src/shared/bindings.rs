@@ -11,6 +11,7 @@ pub type QueryStateMap =
 pub struct BindingsBase {
     pub spawned_entities: HashSet<EntityId>,
     pub subscribed_events: HashSet<String>,
+    pub subscribed_messages: HashSet<String>,
     pub query_states: QueryStateMap,
 }
 
@@ -19,6 +20,9 @@ pub trait BindingsBound:
     + wit::component::Host
     + wit::entity::Host
     + wit::event::Host
+    + wit::message::Host
+    + wit::client_message::Host
+    + wit::server_message::Host
     + wit::server_player::Host
     + wit::server_physics::Host
     + wit::server_asset::Host

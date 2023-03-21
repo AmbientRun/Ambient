@@ -5,14 +5,15 @@ use std::sync::Arc;
 
 mod conversion;
 mod implementation;
+mod unused;
 
 pub fn initialize(
     world: &mut World,
     messenger: Arc<dyn Fn(&World, EntityId, shared::MessageType, &str) + Send + Sync>,
 ) -> anyhow::Result<()> {
     shared::initialize(world, messenger, |id| Bindings {
-            base: Default::default(),
-            world_ref: Default::default(),
+        base: Default::default(),
+        world_ref: Default::default(),
         id,
     })?;
 
@@ -233,4 +234,9 @@ impl wit::event::Host for Bindings {
     fn subscribe(&mut self, name: String) -> anyhow::Result<()> {
         shared::implementation::event::subscribe(&mut self.base.subscribed_events, name)
     }
+}
+impl wit::message::Host for Bindings {
+    fn subscribe(&mut self, name: String) -> anyhow::Result<()> {
+        shared::implementation::message::subscribe(&mut self.base.subscribed_messages, name)
     }
+}

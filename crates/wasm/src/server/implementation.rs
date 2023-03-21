@@ -39,7 +39,6 @@ impl wit::server_player::Host for Bindings {
             .into_bindgen())
     }
 }
-
 impl wit::server_physics::Host for Bindings {
     fn apply_force(
         &mut self,
@@ -180,10 +179,19 @@ impl wit::server_physics::Host for Bindings {
         }
     }
 }
-
 impl wit::server_asset::Host for Bindings {
     fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
         let base_url = ServerBaseUrlKey.get(self.world().resource(asset_cache()));
         Ok(Some(AssetUrl::parse(path)?.resolve(&base_url)?.to_string()))
+    }
+}
+impl wit::server_message::Host for Bindings {
+    fn send(
+        &mut self,
+        target: wit::server_message::Target,
+        name: String,
+        data: Vec<u8>,
+    ) -> anyhow::Result<()> {
+        todo!()
     }
 }
