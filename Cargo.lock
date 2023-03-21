@@ -901,6 +901,7 @@ dependencies = [
  "ambient_ui",
  "anyhow",
  "bincode",
+ "byteorder",
  "bytes",
  "dashmap",
  "flume",

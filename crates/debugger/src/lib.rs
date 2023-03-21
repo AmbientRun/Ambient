@@ -13,7 +13,7 @@ use ambient_ecs::{query, World};
 use ambient_ecs_editor::ECSEditor;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_gizmos::{gizmos, GizmoPrimitive};
-use ambient_network::client::{GameClient, GameRpcArgs};
+use ambient_network::{client::GameClient, server::RpcArgs as ServerRpcArgs};
 use ambient_renderer::{RenderTarget, Renderer};
 use ambient_rpc::RpcRegistry;
 use ambient_std::{asset_cache::SyncAssetKeyExt, cb, color::Color, download_asset::AssetsCacheDir, line_hash, Cb};
@@ -25,7 +25,7 @@ use glam::Vec3;
 
 type GetDebuggerState = Cb<dyn Fn(&mut dyn FnMut(&mut Renderer, &RenderTarget, &mut World)) + Sync + Send>;
 
-pub async fn rpc_dump_world_hierarchy(args: GameRpcArgs, _: ()) -> Option<String> {
+pub async fn rpc_dump_world_hierarchy(args: ServerRpcArgs, _: ()) -> Option<String> {
     let mut res = Vec::new();
     let mut state = args.state.lock();
     let world = state.get_player_world_mut(&args.user_id)?;
@@ -33,7 +33,7 @@ pub async fn rpc_dump_world_hierarchy(args: GameRpcArgs, _: ()) -> Option<String
     Some(String::from_utf8(res).unwrap())
 }
 
-pub fn register_rpcs(reg: &mut RpcRegistry<GameRpcArgs>) {
+pub fn register_server_rpcs(reg: &mut RpcRegistry<ServerRpcArgs>) {
     reg.register(rpc_dump_world_hierarchy);
 }
 

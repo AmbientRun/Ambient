@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     io::ErrorKind,
     net::{IpAddr, Ipv4Addr, SocketAddr},
     sync::Arc,
@@ -7,21 +6,19 @@ use std::{
 };
 
 use ambient_ecs::{
-    components, query, Component, ComponentValue, Debuggable, Description, EntityId, Name, Networked, Resource, Serializable, Store, World,
+    components, query, Component, ComponentValue, Debuggable, Description, EntityId, Name, Networked, Serializable, Store, World,
 };
 use ambient_rpc::{RpcError, RpcRegistry};
-use ambient_std::{asset_cache::AssetCache, log_error, log_result};
+use ambient_std::log_error;
 use bytes::Bytes;
-use client::GameRpcArgs;
 use futures::{Future, SinkExt, StreamExt};
 use quinn::{
-    ClientConfig, Connection, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, Incoming, NewConnection, RecvStream,
-    SendStream, ServerConfig, TransportConfig,
+    ClientConfig, Connection, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, Incoming, NewConnection, ServerConfig,
+    TransportConfig,
 };
 use rand::Rng;
 use rustls::{Certificate, PrivateKey, RootCertStore};
 use serde::{de::DeserializeOwned, Serialize};
-use server::SharedServerState;
 use thiserror::Error;
 use tokio::io::AsyncWriteExt;
 use tokio_util::codec::{FramedRead, FramedWrite, LengthDelimitedCodec};
@@ -35,13 +32,6 @@ pub mod rpc;
 pub mod server;
 
 components!("network", {
-    @[Resource]
-    bi_stream_handlers: BiStreamHandlers,
-    @[Resource]
-    uni_stream_handlers: UniStreamHandlers,
-    @[Resource]
-    datagram_handlers: DatagramHandlers,
-
     /// Works like `world.resource_entity` for server worlds, except it's also persisted to disk, and synchronized to clients
     @[
         Debuggable, Networked,
@@ -123,10 +113,6 @@ fn assert_persisted(desc: ambient_ecs::ComponentDesc) {
     }
 }
 
-pub type BiStreamHandlers = HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, SendStream, RecvStream) + Sync + Send>>;
-pub type UniStreamHandlers = HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, RecvStream) + Sync + Send>>;
-pub type DatagramHandlers = HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, Bytes) + Sync + Send>>;
-
 pub const RPC_STREAM_ID: u32 = 1;
 pub async fn rpc_request<
     Args: Send + 'static,
@@ -153,28 +139,6 @@ pub async fn rpc_request<
     Ok(resp)
 }
 
-pub fn register_rpc_bi_stream_handler(handlers: &mut BiStreamHandlers, rpc_registry: RpcRegistry<GameRpcArgs>) {
-    handlers.insert(
-        RPC_STREAM_ID,
-        Arc::new(move |state, _assets, user_id, mut send, recv| {
-            let state = state;
-            let user_id = user_id.to_string();
-            let rpc_registry = rpc_registry.clone();
-            tokio::spawn(async move {
-                let try_block = || async {
-                    let req = recv.read_to_end(100_000_000).await?;
-                    let args = GameRpcArgs { state, user_id: user_id.to_string() };
-                    let resp = rpc_registry.run_req(args, &req).await?;
-                    send.write_all(&resp).await?;
-                    send.finish().await?;
-                    Ok(()) as Result<(), NetworkError>
-                };
-                log_result!(try_block().await);
-            });
-        }),
-    );
-}
-
 #[derive(Debug, Error)]
 pub enum NetworkError {
     #[error("No more data to be read from stream")]
@@ -191,6 +155,8 @@ pub enum NetworkError {
     ReadToEndError(#[from] quinn::ReadToEndError),
     #[error(transparent)]
     WriteError(#[from] quinn::WriteError),
+    #[error(transparent)]
+    SendDatagramError(#[from] quinn::SendDatagramError),
     #[error(transparent)]
     RpcError(#[from] RpcError),
 }
@@ -304,6 +270,15 @@ pub async fn next_bincode_bi_stream(conn: &mut NewConnection) -> Result<(Outgoin
         }
         None => Err(NetworkError::EndOfStream),
     }
+}
+
+pub fn send_datagram(conn: &Connection, id: u32, make_payload: impl Fn(&mut Vec<u8>)) -> Result<(), NetworkError> {
+    let mut bytes = Vec::new();
+    byteorder::WriteBytesExt::write_u32::<byteorder::BigEndian>(&mut bytes, id)?;
+    make_payload(&mut bytes);
+    conn.send_datagram(Bytes::from(bytes))?;
+
+    Ok(())
 }
 
 pub fn create_client_endpoint_random_port() -> Option<Endpoint> {

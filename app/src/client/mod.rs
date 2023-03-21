@@ -1,4 +1,4 @@
-use std::{net::SocketAddr, path::PathBuf, process::exit, sync::Arc, time::Duration};
+use std::{collections::HashMap, net::SocketAddr, path::PathBuf, process::exit, sync::Arc, time::Duration};
 
 use ambient_app::{fps_stats, window_title, AppBuilder};
 use ambient_cameras::UICamera;
@@ -94,8 +94,21 @@ fn MainApp(
             error_view: cb(move |error| Dock(vec![Text::el("Error").header_style(), Text::el(error)]).el()),
             on_network_stats: cb(move |stats| update_network_stats(stats)),
             on_server_stats: cb(move |stats| update_server_stats(stats)),
-            systems_and_resources: cb(|| (systems(), Entity::new())),
-            create_rpc_registry: cb(shared::create_rpc_registry),
+            systems_and_resources: cb(|| {
+                let mut resources = Entity::new();
+
+                let bistream_handlers = HashMap::new();
+                resources.set(ambient_network::client::bi_stream_handlers(), bistream_handlers);
+
+                let unistream_handlers = HashMap::new();
+                resources.set(ambient_network::client::uni_stream_handlers(), unistream_handlers);
+
+                let dgram_handlers = HashMap::new();
+                resources.set(ambient_network::client::datagram_handlers(), dgram_handlers);
+
+                (systems(), resources)
+            }),
+            create_rpc_registry: cb(shared::create_server_rpc_registry),
             on_in_entities: None,
             ui: GameView { show_debug }.el(),
         }

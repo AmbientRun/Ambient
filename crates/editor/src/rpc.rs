@@ -1,6 +1,6 @@
 use ambient_ecs::{ArchetypeFilter, Entity, EntityId};
 use ambient_intent::server_push_intent;
-use ambient_network::client::GameRpcArgs;
+use ambient_network::server::RpcArgs as ServerRpcArgs;
 use ambient_physics::visualization::{visualize_collider, visualizing};
 use ambient_physics::{
     helpers::{convert_rigid_dynamic_to_static, convert_rigid_static_to_dynamic, unweld_multi, weld_multi},
@@ -36,12 +36,11 @@ impl AxisFlags {
     }
 }
 
-pub fn register_rpcs(reg: &mut RpcRegistry<GameRpcArgs>) {
+pub fn register_server_rpcs(reg: &mut RpcRegistry<ServerRpcArgs>) {
     reg.register(rpc_pick);
     reg.register(rpc_select);
     reg.register(rpc_weld);
     reg.register(rpc_unweld);
-    // reg.register(rpc_scan);
     reg.register(rpc_freeze);
     reg.register(rpc_unfreeze);
     reg.register(rpc_toggle_visualize_colliders);
@@ -50,7 +49,7 @@ pub fn register_rpcs(reg: &mut RpcRegistry<GameRpcArgs>) {
     // reg.register(rpc_teleport_player);
 }
 
-pub async fn rpc_select(args: GameRpcArgs, (method, mode): (SelectMethod, SelectMode)) {
+pub async fn rpc_select(args: ServerRpcArgs, (method, mode): (SelectMethod, SelectMode)) {
     let entities = {
         let mut state = args.state.lock();
         let world = unwrap_log_err!(state.get_player_world_mut(&args.user_id).context("No player world"));
@@ -77,60 +76,33 @@ pub async fn rpc_select(args: GameRpcArgs, (method, mode): (SelectMethod, Select
     server_push_intent(args.state, intent_select(), (entities, mode), args.user_id.clone(), Some(collapse_id)).await;
 }
 
-pub async fn rpc_weld(args: GameRpcArgs, entities: Vec<EntityId>) {
+pub async fn rpc_weld(args: ServerRpcArgs, entities: Vec<EntityId>) {
     let mut state = args.state.lock();
     let world = unwrap_log_err!(state.get_player_world_mut(&args.user_id).context("No player world"));
     weld_multi(world, entities);
 }
 
-pub async fn rpc_unweld(args: GameRpcArgs, entities: Vec<EntityId>) {
+pub async fn rpc_unweld(args: ServerRpcArgs, entities: Vec<EntityId>) {
     let mut state = args.state.lock();
     let world = unwrap_log_err!(state.get_player_world_mut(&args.user_id).context("No player world"));
     unweld_multi(world, entities);
 }
-// pub async fn rpc_scan(args: WorldInstanceRpcArgs, entities: Vec<EntityId>) -> Result<(), String> {
-//     let (db_client, entities) = {
-//         let mut state = args.state.lock();
-//         let db_client = DbClientKey.get(world.resource(asset_cache()).clone());
-//         (db_client, EntityStorage::from_entities(world, &entities, true))
-//     };
-//     let user_id = args.user_id.to_string();
-//     let scan_id = friendly_id::create();
-//     let path = format!("assets/assemblies/{}.json", scan_id);
-//     server_store_content(&path, &versioned_json::to_vec(&entities).unwrap()).await;
-//     db_client
-//         .create(
-//             scan_id,
-//             DbDocument::Asset(DbAsset {
-//                 user_id: user_id,
-//                 content: Asset::AssemblyPath(path),
-//                 created_timestamp: SystemTime::now(),
-//                 name: Default::default(),
-//                 user_generated: true,
-//                 category: "".to_string(),
-//                 public: false,
-//                 deleted: false,
-//             }),
-//         )
-//         .await
-//         .map_err(|err| err.to_string())?;
-//     Ok(())
-// }
-pub async fn rpc_freeze(args: GameRpcArgs, entities: Vec<EntityId>) {
+
+pub async fn rpc_freeze(args: ServerRpcArgs, entities: Vec<EntityId>) {
     let mut state = args.state.lock();
     let world = unwrap_log_err!(state.get_player_world_mut(&args.user_id).context("No player world"));
     for entity in entities {
         convert_rigid_dynamic_to_static(world, entity);
     }
 }
-pub async fn rpc_unfreeze(args: GameRpcArgs, entities: Vec<EntityId>) {
+pub async fn rpc_unfreeze(args: ServerRpcArgs, entities: Vec<EntityId>) {
     let mut state = args.state.lock();
     let world = unwrap_log_err!(state.get_player_world_mut(&args.user_id).context("No player world"));
     for entity in entities {
         convert_rigid_static_to_dynamic(world, entity);
     }
 }
-pub async fn rpc_toggle_visualize_colliders(args: GameRpcArgs, entities: Vec<EntityId>) {
+pub async fn rpc_toggle_visualize_colliders(args: ServerRpcArgs, entities: Vec<EntityId>) {
     let mut state = args.state.lock();
     let world = unwrap_log_err!(state.get_player_world_mut(&args.user_id).context("No player world"));
 
@@ -142,7 +114,7 @@ pub async fn rpc_toggle_visualize_colliders(args: GameRpcArgs, entities: Vec<Ent
         }
     }
 }
-// pub async fn rpc_save(args: GameRpcArgs, _: ()) {
+// pub async fn rpc_save(args: ServerRpcArgs, _: ()) {
 //     let (stored_map, map_path) = {
 //         let state = args.state.lock();
 //         let instance = state.instances.get(MAIN_INSTANCE_ID).unwrap();
@@ -152,13 +124,13 @@ pub async fn rpc_toggle_visualize_colliders(args: GameRpcArgs, entities: Vec<Ent
 //     };
 //     log_warning!(save_world(stored_map, map_path).await);
 // }
-pub async fn rpc_spawn(args: GameRpcArgs, entity_data: Entity) -> Option<EntityId> {
+pub async fn rpc_spawn(args: ServerRpcArgs, entity_data: Entity) -> Option<EntityId> {
     let mut state = args.state.lock();
     let world = state.get_player_world_mut(&args.user_id)?;
     Some(entity_data.spawn(world))
 }
 
-// pub async fn rpc_teleport_player(args: GameRpcArgs, position: Vec3) -> Result<(), ECSError> {
+// pub async fn rpc_teleport_player(args: ServerRpcArgs, position: Vec3) -> Result<(), ECSError> {
 //     let mut state = args.state.lock();
 //     let world = state.get_player_world_mut(&args.user_id).ok_or_else(|| ECSError::NoSuchEntity { entity_id: EntityId::null() })?;
 //     if let Some(player_id) = args.get_player(world) {

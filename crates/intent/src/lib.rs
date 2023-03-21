@@ -9,9 +9,9 @@ use ambient_ecs::{
 };
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_network::{
-    client::{GameClient, GameRpcArgs},
+    client::GameClient,
     hooks::{use_remote_component, use_remote_world_system},
-    server::SharedServerState,
+    server::{RpcArgs as ServerRpcArgs, SharedServerState},
     unwrap_log_network_err,
 };
 use ambient_rpc::RpcRegistry;
@@ -97,29 +97,29 @@ pub async fn server_push_intent<T: ComponentValue>(
     push_intent(state, user_id, create_intent(intent_arg, arg, collapse_id));
 }
 
-pub async fn rpc_push_intent(args: GameRpcArgs, intent: Entity) -> Option<EntityId> {
+pub async fn rpc_push_intent(args: ServerRpcArgs, intent: Entity) -> Option<EntityId> {
     Some(push_intent(args.state, args.user_id, intent))
 }
 
-pub async fn rpc_undo_head(args: GameRpcArgs, _: ()) -> Option<()> {
+pub async fn rpc_undo_head(args: ServerRpcArgs, _: ()) -> Option<()> {
     undo_head(args.state, &args.user_id)?;
     Some(())
 }
 
 /// Reverts the head intent iff it is the specified intent
-pub async fn rpc_undo_head_exact(args: GameRpcArgs, id: String) -> Option<()> {
+pub async fn rpc_undo_head_exact(args: ServerRpcArgs, id: String) -> Option<()> {
     undo_head_exact(args.state, &args.user_id, &id)?;
 
     Some(())
 }
 
-pub async fn rpc_redo(args: GameRpcArgs, _: ()) -> Option<()> {
+pub async fn rpc_redo(args: ServerRpcArgs, _: ()) -> Option<()> {
     let state = args.state;
     redo_intent(state, &args.user_id).await?;
     Some(())
 }
 
-pub fn register_rpcs(reg: &mut RpcRegistry<GameRpcArgs>) {
+pub fn register_server_rpcs(reg: &mut RpcRegistry<ServerRpcArgs>) {
     reg.register(rpc_push_intent);
     reg.register(rpc_undo_head);
     reg.register(rpc_undo_head_exact);

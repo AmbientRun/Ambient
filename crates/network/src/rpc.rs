@@ -6,20 +6,22 @@ use ambient_std::friendly_id;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    client::GameRpcArgs,
-    server::{create_player_entity_data, player_entity_stream, player_stats_stream, ForkingEvent, WorldInstance, MAIN_INSTANCE_ID},
+    server::{
+        create_player_entity_data, player_entity_stream, player_stats_stream, ForkingEvent, RpcArgs as ServerRpcArgs, WorldInstance,
+        MAIN_INSTANCE_ID,
+    },
     ServerWorldExt,
 };
 use ambient_core::player::user_id;
 
-pub fn register_rpcs(reg: &mut RpcRegistry<GameRpcArgs>) {
+pub fn register_server_rpcs(reg: &mut RpcRegistry<ServerRpcArgs>) {
     reg.register(rpc_world_diff);
     reg.register(rpc_fork_instance);
     reg.register(rpc_join_instance);
     reg.register(rpc_get_instances_info);
 }
 
-pub async fn rpc_world_diff(args: GameRpcArgs, diff: WorldDiff) {
+pub async fn rpc_world_diff(args: ServerRpcArgs, diff: WorldDiff) {
     diff.apply(&mut args.state.lock().get_player_world_instance_mut(&args.user_id).unwrap().world, Entity::new(), false);
 }
 
@@ -31,7 +33,7 @@ pub struct RpcForkInstance {
 }
 
 /// This clones the current world instance of the player, and returns the id to the new instance.
-pub async fn rpc_fork_instance(args: GameRpcArgs, RpcForkInstance { resources, synced_res, id }: RpcForkInstance) -> String {
+pub async fn rpc_fork_instance(args: ServerRpcArgs, RpcForkInstance { resources, synced_res, id }: RpcForkInstance) -> String {
     let mut state = args.state.lock();
     let id = id.unwrap_or(friendly_id());
     if !state.instances.contains_key(&id) {
@@ -56,7 +58,7 @@ pub async fn rpc_fork_instance(args: GameRpcArgs, RpcForkInstance { resources, s
     }
     id
 }
-pub async fn rpc_join_instance(args: GameRpcArgs, new_instance_id: String) {
+pub async fn rpc_join_instance(args: ServerRpcArgs, new_instance_id: String) {
     let mut state = args.state.lock();
     let old_instance_id = state.players.get(&args.user_id).unwrap().instance.clone();
     if old_instance_id == new_instance_id {
@@ -106,7 +108,7 @@ pub struct InstanceInfo {
     pub n_players: u32,
 }
 
-pub async fn rpc_get_instances_info(args: GameRpcArgs, _: ()) -> InstancesInfo {
+pub async fn rpc_get_instances_info(args: ServerRpcArgs, _: ()) -> InstancesInfo {
     let state = args.state.lock();
     InstancesInfo {
         instances: state
