@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
-    shader_module::BindGroupDesc,
+    shader_module::{BindGroupDesc, ShaderModule},
     std_assets::DefaultSamplerKey,
     texture::TextureView,
 };
@@ -19,33 +19,32 @@ impl SyncAssetKey<Arc<MaterialShader>> for TextMaterialShaderKey {
     fn load(&self, _: AssetCache) -> Arc<MaterialShader> {
         Arc::new(MaterialShader {
             id: "text_material_shader".to_string(),
-            shader: ambient_gpu::shader_module::ShaderModule::new(
-                "TextMaterial",
-                include_file!("text_material.wgsl"),
-                vec![BindGroupDesc {
-                    entries: vec![
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 0,
-                            visibility: wgpu::ShaderStages::FRAGMENT,
-                            ty: wgpu::BindingType::Texture {
-                                sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                                view_dimension: wgpu::TextureViewDimension::D2,
-                                multisampled: false,
-                            },
-                            count: None,
-                        },
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 1,
-                            visibility: wgpu::ShaderStages::FRAGMENT,
-                            ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
-                            count: None,
-                        },
-                    ],
-                    label: MATERIAL_BIND_GROUP.into(),
-                }
-                .into()],
-            ),
+            shader: Arc::new(ShaderModule::new("TextMaterial", include_file!("text_material.wgsl")).with_binding_desc(get_text_layout())),
         })
+    }
+}
+
+fn get_text_layout() -> BindGroupDesc<'static> {
+    BindGroupDesc {
+        entries: vec![
+            wgpu::BindGroupLayoutEntry {
+                binding: 0,
+                visibility: wgpu::ShaderStages::FRAGMENT,
+                ty: wgpu::BindingType::Texture {
+                    sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                    view_dimension: wgpu::TextureViewDimension::D2,
+                    multisampled: false,
+                },
+                count: None,
+            },
+            wgpu::BindGroupLayoutEntry {
+                binding: 1,
+                visibility: wgpu::ShaderStages::FRAGMENT,
+                ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+                count: None,
+            },
+        ],
+        label: MATERIAL_BIND_GROUP.into(),
     }
 }
 
@@ -62,11 +61,11 @@ pub struct TextMaterial {
 impl TextMaterial {
     pub fn new(assets: AssetCache, font_atlas: Arc<TextureView>) -> Self {
         let gpu = GpuKey.get(&assets);
-        let material = TextMaterialShaderKey.get(&assets);
+
         Self {
             id: friendly_id(),
             bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
-                layout: &material.shader.first_layout(&assets),
+                layout: &get_text_layout().get(&assets),
                 entries: &[
                     wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::TextureView(&font_atlas) },
                     wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(&DefaultSamplerKey.get(&assets)) },
@@ -77,13 +76,15 @@ impl TextMaterial {
         }
     }
 }
+
 impl std::fmt::Debug for TextMaterial {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("TextMaterial").field("id", &self.id).finish()
     }
 }
+
 impl Material for TextMaterial {
-    fn bind(&self) -> &BindGroup {
+    fn bind_group(&self) -> &BindGroup {
         &self.bind_group
     }
     fn id(&self) -> &str {

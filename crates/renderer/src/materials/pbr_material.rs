@@ -21,68 +21,63 @@ use wgpu::{util::DeviceExt, BindGroup};
 use super::super::{Material, MaterialShader, RendererShader, MATERIAL_BIND_GROUP};
 use crate::{RendererConfig, StandardShaderKey};
 
+fn get_material_layout() -> BindGroupDesc<'static> {
+    BindGroupDesc {
+        label: MATERIAL_BIND_GROUP.into(),
+        entries: vec![
+            wgpu::BindGroupLayoutEntry {
+                binding: 0,
+                visibility: wgpu::ShaderStages::FRAGMENT,
+                ty: wgpu::BindingType::Buffer { ty: wgpu::BufferBindingType::Uniform, has_dynamic_offset: false, min_binding_size: None },
+                count: None,
+            },
+            wgpu::BindGroupLayoutEntry {
+                binding: 1,
+                visibility: wgpu::ShaderStages::FRAGMENT,
+                ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+                count: None,
+            },
+            wgpu::BindGroupLayoutEntry {
+                binding: 2,
+                visibility: wgpu::ShaderStages::FRAGMENT,
+                ty: wgpu::BindingType::Texture {
+                    sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                    view_dimension: wgpu::TextureViewDimension::D2,
+                    multisampled: false,
+                },
+                count: None,
+            },
+            wgpu::BindGroupLayoutEntry {
+                binding: 3,
+                visibility: wgpu::ShaderStages::FRAGMENT,
+                ty: wgpu::BindingType::Texture {
+                    sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                    view_dimension: wgpu::TextureViewDimension::D2,
+                    multisampled: false,
+                },
+                count: None,
+            },
+            wgpu::BindGroupLayoutEntry {
+                binding: 4,
+                visibility: wgpu::ShaderStages::FRAGMENT,
+                ty: wgpu::BindingType::Texture {
+                    sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                    view_dimension: wgpu::TextureViewDimension::D2,
+                    multisampled: false,
+                },
+                count: None,
+            },
+        ],
+    }
+}
+
 #[derive(Debug)]
 pub struct PbrMaterialShaderKey;
 impl SyncAssetKey<Arc<MaterialShader>> for PbrMaterialShaderKey {
     fn load(&self, _assets: AssetCache) -> Arc<MaterialShader> {
         Arc::new(MaterialShader {
             id: "pbr_material_shader".to_string(),
-            shader: ShaderModule::new(
-                "PbrMaterial",
-                include_file!("pbr_material.wgsl"),
-                vec![BindGroupDesc {
-                    entries: vec![
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 0,
-                            visibility: wgpu::ShaderStages::FRAGMENT,
-                            ty: wgpu::BindingType::Buffer {
-                                ty: wgpu::BufferBindingType::Uniform,
-                                has_dynamic_offset: false,
-                                min_binding_size: None,
-                            },
-                            count: None,
-                        },
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 1,
-                            visibility: wgpu::ShaderStages::FRAGMENT,
-                            ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
-                            count: None,
-                        },
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 2,
-                            visibility: wgpu::ShaderStages::FRAGMENT,
-                            ty: wgpu::BindingType::Texture {
-                                sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                                view_dimension: wgpu::TextureViewDimension::D2,
-                                multisampled: false,
-                            },
-                            count: None,
-                        },
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 3,
-                            visibility: wgpu::ShaderStages::FRAGMENT,
-                            ty: wgpu::BindingType::Texture {
-                                sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                                view_dimension: wgpu::TextureViewDimension::D2,
-                                multisampled: false,
-                            },
-                            count: None,
-                        },
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 4,
-                            visibility: wgpu::ShaderStages::FRAGMENT,
-                            ty: wgpu::BindingType::Texture {
-                                sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                                view_dimension: wgpu::TextureViewDimension::D2,
-                                multisampled: false,
-                            },
-                            count: None,
-                        },
-                    ],
-                    label: MATERIAL_BIND_GROUP.into(),
-                }
-                .into()],
-            ),
+            shader: Arc::new(ShaderModule::new("PbrMaterial", include_file!("pbr_material.wgsl")).with_binding_desc(get_material_layout())),
         })
     }
 }
@@ -131,6 +126,7 @@ pub struct PbrMaterialConfig {
     pub double_sided: Option<bool>,
     pub depth_write_enabled: Option<bool>,
 }
+
 pub struct PbrMaterial {
     gpu: Arc<Gpu>,
     id: String,
@@ -138,17 +134,20 @@ pub struct PbrMaterial {
     buffer: wgpu::Buffer,
     bind_group: wgpu::BindGroup,
 }
+
 impl PbrMaterial {
     pub fn new(assets: AssetCache, config: PbrMaterialConfig) -> Self {
         let gpu = GpuKey.get(&assets);
-        let layout = PbrMaterialShaderKey.get(&assets).shader.first_layout(&assets);
+        let layout = get_material_layout().get(&assets);
 
         let buffer = gpu.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("PbrMaterial.buffer"),
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             contents: bytemuck::cast_slice(&[config.params]),
         });
+
         let sampler = DefaultSamplerKey.get(&assets);
+
         Self {
             id: friendly_id(),
             bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
@@ -202,7 +201,7 @@ impl std::fmt::Debug for PbrMaterial {
     }
 }
 impl Material for PbrMaterial {
-    fn bind(&self) -> &BindGroup {
+    fn bind_group(&self) -> &BindGroup {
         &self.bind_group
     }
 

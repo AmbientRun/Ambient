@@ -5,19 +5,15 @@ use ambient_ecs::{query, ArchetypeFilter, EntityId, QueryState, World};
 use ambient_gpu::{
     gpu::Gpu,
     mesh_buffer::{MeshBuffer, MeshMetadata},
-    shader_module::{GraphicsPipeline, GraphicsPipelineInfo},
+    shader_module::{GraphicsPipeline, GraphicsPipelineInfo, DEPTH_FORMAT},
     typed_buffer::TypedBuffer,
 };
 use glam::{Mat4, UVec4, Vec3};
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
-use wgpu::BindGroup;
 
-use super::{
-    double_sided, get_gpu_primitive_id, primitives, FSMain, RendererResources, RendererShader, SharedMaterial, MATERIAL_BIND_GROUP,
-    PRIMITIVES_BIND_GROUP,
-};
-use crate::{transparency_group, RendererConfig};
+use super::{double_sided, get_gpu_primitive_id, primitives, FSMain, RendererResources, RendererShader, SharedMaterial};
+use crate::{bind_groups::BindGroups, transparency_group, RendererConfig};
 use ambient_std::asset_cache::AssetCache;
 
 pub struct TransparentRendererConfig {
@@ -145,20 +141,22 @@ impl TransparentRenderer {
     }
 
     #[profiling::function]
-    pub fn render<'a>(&'a self, render_pass: &mut wgpu::RenderPass<'a>, binds: &[(&str, &'a BindGroup)]) {
+    pub fn render<'a>(&'a self, render_pass: &mut wgpu::RenderPass<'a>, bind_groups: &BindGroups<'a>) {
         let mut is_bound = false;
         // TODO: keep track of the state to avoid state switches (same pipeline multiple times etc.)
         for (i, entry) in self.primitives.iter().enumerate() {
+            let bind_groups = [bind_groups.globals, bind_groups.entities, &self.primitives_bind_group];
             if !is_bound {
-                for (name, group) in binds.iter().chain([(PRIMITIVES_BIND_GROUP, &self.primitives_bind_group)].iter()) {
-                    entry.shader.pipeline.bind(render_pass, name, group);
+                for (i, bind_group) in bind_groups.iter().enumerate() {
+                    render_pass.set_bind_group(i as _, bind_group, &[]);
                     is_bound = true
                 }
             }
             let metadata = &entry.mesh_metadata;
             if metadata.index_count > 0 {
                 render_pass.set_pipeline(entry.shader.pipeline.pipeline());
-                entry.shader.pipeline.bind(render_pass, MATERIAL_BIND_GROUP, entry.material.bind());
+                render_pass.set_bind_group(bind_groups.len() as _, entry.material.bind_group(), &[]);
+                // entry.shader.pipeline.bind(render_pass, MATERIAL_BIND_GROUP, entry.material.bind());
 
                 render_pass.draw_indexed(
                     metadata.index_offset..(metadata.index_offset + metadata.index_count),
@@ -168,6 +166,7 @@ impl TransparentRenderer {
             }
         }
     }
+
     fn create_primitives_bind_group(gpu: &Gpu, layout: &wgpu::BindGroupLayout, buffer: &wgpu::Buffer) -> wgpu::BindGroup {
         gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout,
@@ -203,7 +202,7 @@ impl ShaderNode {
                 vs_main: &shader.vs_main,
                 fs_main: shader.get_fs_main_name(config.fs_main),
                 depth: Some(wgpu::DepthStencilState {
-                    format: wgpu::TextureFormat::Depth32Float,
+                    format: DEPTH_FORMAT,
                     depth_write_enabled,
                     depth_compare: wgpu::CompareFunction::Greater,
                     stencil: wgpu::StencilState::default(),

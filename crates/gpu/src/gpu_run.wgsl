@@ -1,20 +1,20 @@
 struct GpuIn {
-    data: array<#WGSL_IN>,
+    data: array<WGSL_IN>,
 };
 
 struct GpuOut {
-    data: array<#WGSL_OUT>,
+    data: array<WGSL_OUT>,
 };
 
-@group(#GPURUN_BIND_GROUP)
+@group(GPURUN_BIND_GROUP)
 @binding(0)
 var<storage, read>  gpu_in_buffer: GpuIn;
-@group(#GPURUN_BIND_GROUP)
+@group(GPURUN_BIND_GROUP)
 @binding(1)
 var<storage, read_write> gpu_out_buffer: GpuOut;
 
-fn run(input: #WGSL_IN) -> #WGSL_OUT {
-    #WGSL_BODY
+fn run(input: WGSL_IN) -> WGSL_OUT {
+    WGSL_BODY
 }
 
 @compute

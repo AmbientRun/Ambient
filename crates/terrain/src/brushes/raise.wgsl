@@ -44,12 +44,11 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     textureStore(heightmap, vec2<i32>(global_id.xy), params.layer, vec4<f32>(height, 0., 0., 0.));
 
     let hardness = pow(textureSampleLevel(noise_texture, noise_sampler, offsets.data[1] + p * 0.02, 0.).r, 1.);
-    textureStore(heightmap, vec2<i32>(global_id.xy), #HARDNESS_LAYER, vec4<f32>(hardness, 0., 0., 0.));
+    textureStore(heightmap, vec2<i32>(global_id.xy), HARDNESS_LAYER, vec4<f32>(hardness, 0., 0., 0.));
 
     let strata_amplitude = smoothstep(0.4, 0.7, textureSampleLevel(noise_texture, noise_sampler, offsets.data[2] + p * 0.01, 0.).r);
-    textureStore(heightmap, vec2<i32>(global_id.xy), #HARDNESS_STRATA_AMOUNT_LAYER, vec4<f32>(strata_amplitude, 0., 0., 0.));
+    textureStore(heightmap, vec2<i32>(global_id.xy), HARDNESS_STRATA_AMOUNT_LAYER, vec4<f32>(strata_amplitude, 0., 0., 0.));
 
     let strata_wavelength = mix(60., 200., textureSampleLevel(noise_texture, noise_sampler, offsets.data[3] + p * 0.05, 0.).r);
-    textureStore(heightmap, vec2<i32>(global_id.xy), #HARDNESS_STRATA_WAVELENGTH_LAYER, vec4<f32>(strata_wavelength, 0., 0., 0.));
-
+    textureStore(heightmap, vec2<i32>(global_id.xy), HARDNESS_STRATA_WAVELENGTH_LAYER, vec4<f32>(strata_wavelength, 0., 0., 0.));
 }

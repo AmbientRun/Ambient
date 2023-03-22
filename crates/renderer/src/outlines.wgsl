@@ -15,13 +15,14 @@ fn vs_main(@builtin(vertex_index) vertex_index: u32) -> VertexOutput {
     out.position = vec4<f32>(
         tc.x * 2.0 - 1.0,
         1.0 - tc.y * 2.0,
-        0.0, 1.0
+        0.0,
+        1.0
     );
     out.tex_coords = tc;
     return out;
 }
 
-@group(#OUTLINES_BIND_GROUP)
+@group(OUTLINES_BIND_GROUP)
 @binding(0)
 var r_color: texture_2d<f32>;
 
@@ -35,7 +36,7 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let bottom = textureLoad(r_color, p + vec2<i32>(0, size), 0).a > 0.5;
     let left = textureLoad(r_color, p + vec2<i32>(-size, 0), 0).a > 0.5;
     let right = textureLoad(r_color, p + vec2<i32>(size, 0), 0).a > 0.5;
-    if (!(center && (!top || !bottom || !left || !right))) {
+    if !(center && (!top || !bottom || !left || !right)) {
         discard;
     }
 

@@ -5,7 +5,7 @@ struct GridMaterialParams {
   size: f32,
 };
 
-@group(#MATERIAL_BIND_GROUP)
+@group(MATERIAL_BIND_GROUP)
 @binding(0)
 var<uniform> params: GridMaterialParams;
 
@@ -14,7 +14,7 @@ fn get_material(in: MaterialInput) -> MaterialOutput {
 
     let period = 2.0 * PI * params.major;
 
-    let pos = in.local_position.xy * params.size; 
+    let pos = in.local_position.xy * params.size;
 
     let major = cos(pos * period);
     let amp_offset = cos(params.line_width * 0.5 * period);

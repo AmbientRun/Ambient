@@ -10,6 +10,8 @@ edition = "2021"
 [dependencies]
 ambient_sys = { path = "../sys" }
 ambient_std = { path = "../std" }
+
+aho-corasick = { workspace = true }
 bytemuck = { workspace = true }
 winit = { workspace = true }
 wgpu = { workspace = true }

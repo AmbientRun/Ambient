@@ -1,10 +1,10 @@
 
 
-@group(#MATERIAL_BIND_GROUP)
+@group(MATERIAL_BIND_GROUP)
 @binding(0)
 var font_atlas: texture_2d<f32>;
 
-@group(#MATERIAL_BIND_GROUP)
+@group(MATERIAL_BIND_GROUP)
 @binding(1)
 var font_sampler: sampler;
 

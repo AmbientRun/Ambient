@@ -1,8 +1,3 @@
-// [[group(#MATERIAL_BIND_GROUP), binding(1)]]
-// var<uniform> params: CloudParams;
-// [[group(#MATERIAL_BIND_GROUP), binding(2)]]
-// var texture: texture_2d<f32>;
-
 struct VertexOutput {
     @builtin(position) position: vec4<f32>,
     @location(0) world_position: vec4<f32>,
@@ -26,7 +21,7 @@ struct Planet {
 
 };
 
-fn camera_ray(res: vec3<f32>, coord: vec2<f32> ) -> vec3<f32> {
+fn camera_ray(res: vec3<f32>, coord: vec2<f32>) -> vec3<f32> {
     let uv = coord.xy - vec2<f32>(0.5);
     return normalize(vec3<f32>(uv.x, uv.y, -1.0));
 }
@@ -42,16 +37,16 @@ struct Sample {
 };
 
 let air_volume   = Volume(vec3<f32>(1e-6, 1e-6, 1e-6));
-let cloud_volume = Volume(vec3<f32>(0.1,  0.1,  0.1));
+let cloud_volume = Volume(vec3<f32>(0.1, 0.1, 0.1));
 
 fn smooth_min(a: Sample, b: Sample, t: f32) -> Sample {
     let h = max(t - abs(a.dist - b.dist), 0.0);
     var vol = a.vol;
-    if (b.dist < 0.0) {
+    if b.dist < 0.0 {
         vol = b.vol;
     }
 
-    return Sample(min(a.dist, b.dist) - h*h*h/(6.0*t*t), vol);
+    return Sample(min(a.dist, b.dist) - h * h * h / (6.0 * t * t), vol);
 }
 
 fn sdf(p: vec3<f32>) -> Sample {
@@ -127,7 +122,8 @@ fn vs_main(@builtin(instance_index) instance_index: u32, @builtin(vertex_index) 
     out.position = vec4<f32>(
         tc.x * 2.0 - 1.0,
         1.0 - tc.y * 2.0,
-        0.000001, 1.0
+        0.000001,
+        1.0
     );
     out.world_position = global_params.inv_projection_view * out.position;
     out.world_position = out.world_position / out.world_position.w;

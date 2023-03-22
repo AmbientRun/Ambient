@@ -454,7 +454,10 @@ impl App {
                     control_flow,
                 );
             } else if let Some(event) = event.to_static() {
+                // tracing::info!("Handling event: {event:?}");
                 self.handle_static_event(&event, control_flow);
+            } else {
+                tracing::error!("Failed to convert event to static")
             }
         });
     }

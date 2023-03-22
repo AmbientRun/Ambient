@@ -15,9 +15,9 @@ use wgpu::DepthBiasState;
 
 use super::{
     double_sided, lod::cpu_lod_visible, primitives, CollectPrimitive, DrawIndexedIndirect, FSMain, PrimitiveIndex, RendererCollectState,
-    RendererResources, RendererShader, SharedMaterial, MATERIAL_BIND_GROUP, PRIMITIVES_BIND_GROUP,
+    RendererResources, RendererShader, SharedMaterial,
 };
-use crate::RendererConfig;
+use crate::{bind_groups::BindGroups, RendererConfig};
 use ambient_std::asset_cache::AssetCache;
 
 pub struct TreeRendererConfig {
@@ -81,6 +81,7 @@ impl TreeRenderer {
         let mut to_update = HashSet::new();
         let mut spawn_qs = std::mem::replace(&mut self.spawn_qs, QueryState::new());
         let mut despawn_qs = std::mem::replace(&mut self.despawn_qs, QueryState::new());
+
         for (id, (primitives,)) in query((primitives().changed(),))
             .optional_changed(cpu_lod_visible())
             .filter(&self.config.filter)
@@ -101,6 +102,7 @@ impl TreeRenderer {
             }
             self.entity_primitive_count.insert(id, primitives.len());
         }
+
         for (id, _) in query(()).incl(primitives()).filter(&self.config.filter).despawned().iter(world, Some(&mut despawn_qs)) {
             if let Some(primitive_count) = self.entity_primitive_count.get(&id) {
                 for primitive_index in 0..*primitive_count {
@@ -111,6 +113,7 @@ impl TreeRenderer {
             }
             self.entity_primitive_count.remove(&id);
         }
+
         self.spawn_qs = spawn_qs;
         self.despawn_qs = despawn_qs;
         self.clean_empty();
@@ -140,10 +143,12 @@ impl TreeRenderer {
                 }
             }
         }
+
         self.config.gpu.queue.submit(Some(encoder.finish()));
         for (subbuffer, primitives) in primitives_to_write.into_iter() {
             self.primitives.write(subbuffer, 0, &primitives).unwrap();
         }
+
         for node in self.tree.values_mut() {
             for mat in node.tree.values_mut() {
                 // TODO: Materials can be shared between many renderers, so this should be moved
@@ -151,6 +156,7 @@ impl TreeRenderer {
                 mat.material.update(world);
             }
         }
+
         self.primitives_bind_group = if self.primitives.total_len() > 0 {
             Some(Self::create_primitives_bind_group(
                 &self.config.gpu,
@@ -176,6 +182,7 @@ impl TreeRenderer {
                 material_layouts[mat.material_index as usize] = uvec2(offset as u32, mat.primitives.len() as u32);
             }
         }
+
         self.config.renderer_resources.collect.run(
             encoder,
             post_submit,
@@ -252,13 +259,14 @@ impl TreeRenderer {
         &'a self,
         render_pass: &mut wgpu::RenderPass<'a>,
         collect_state: &'a RendererCollectState,
-        binds: &[(&str, &'a wgpu::BindGroup)],
+        bind_groups: &BindGroups<'a>,
     ) {
         let primitives_bind_group = if let Some(primitives_bind_group) = &self.primitives_bind_group {
             primitives_bind_group
         } else {
             return; // Nothing to render
         };
+
         #[cfg(target_os = "macos")]
         let counts = collect_state.counts_cpu.lock().clone();
 
@@ -267,16 +275,18 @@ impl TreeRenderer {
         for node in self.tree.values() {
             render_pass.set_pipeline(node.pipeline.pipeline());
             // Bind on first invocation
+            let bind_groups = [bind_groups.globals, bind_groups.entities, primitives_bind_group];
             if !is_bound {
-                for (name, group) in binds.iter().chain([(PRIMITIVES_BIND_GROUP, primitives_bind_group)].iter()) {
-                    node.pipeline.bind(render_pass, name, group);
+                for (i, bind_group) in bind_groups.iter().enumerate() {
+                    render_pass.set_bind_group(i as _, bind_group, &[]);
                     is_bound = true
                 }
             }
 
             for mat in node.tree.values() {
                 let material = &mat.material;
-                node.pipeline.bind(render_pass, MATERIAL_BIND_GROUP, material.bind());
+
+                render_pass.set_bind_group(bind_groups.len() as _, material.bind_group(), &[]);
 
                 let offset = self.primitives.buffer_offset(mat.primitives_subbuffer).unwrap();
                 #[cfg(not(target_os = "macos"))]

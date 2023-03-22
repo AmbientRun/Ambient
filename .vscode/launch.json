@@ -80,6 +80,32 @@
             ]
         },
         {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/ambient_renderer/lod'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "-p",
+                    "ambient_renderer",
+                    "--example",
+                    "lod"
+                ],
+                "filter": {
+                    "name": "lod",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info,wgpu=warn,naga=warn,quinn=warn,sentry=debug,sentry-anyhow=debug,sentry-core=debug,fbxcel=error",
+                "AMBIENT_DISABLE_TIMEOUT": "true"
+            },
+            "args": [],
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
             "name": "ambient (Windows, Internal server) [debug]",
             "type": "cppvsdbg",
             "request": "launch",

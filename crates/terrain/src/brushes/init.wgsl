@@ -26,7 +26,7 @@ fn generate_level(cell: vec2<i32>, p: vec2<f32>, layer: i32, base: f32, amount: 
     var max_height: f32 = 0.;
     var amplitude: f32 = 1.;
     var scale: f32 = 5. / 256.;
-    for(var i: i32 = 0; i < i32(arrayLength(&offsets.data)); i = i + 1) {
+    for (var i: i32 = 0; i < i32(arrayLength(&offsets.data)); i = i + 1) {
         let r = p * scale + offsets.data[i];
         height = height + amplitude * snoise2d(r);
         max_height = max_height + amplitude;
@@ -45,6 +45,6 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let size = vec2<f32>(textureDimensions(heightmap));
 
     let p = vec2<f32>(global_id.xy) * params.heightmap_world_size / (size - 1.) + params.heightmap_world_position;
-    generate_level(vec2<i32>(global_id.xy), p, #ROCK_LAYER, 20., 1.);
-    generate_level(vec2<i32>(global_id.xy), p + vec2<f32>(2000., 2000.), #SOIL_LAYER, 20., 1.);
+    generate_level(vec2<i32>(global_id.xy), p, ROCK_LAYER, 20., 1.);
+    generate_level(vec2<i32>(global_id.xy), p + vec2<f32>(2000., 2000.), SOIL_LAYER, 20., 1.);
 }
