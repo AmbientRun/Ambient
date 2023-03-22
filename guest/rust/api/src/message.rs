@@ -173,3 +173,233 @@ pub mod server {
         wit::server_message::send(target.into_bindgen(), name.as_ref(), &data.into())
     }
 }
+
+mod message_serde {
+    use std::io::Read;
+
+    use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
+    use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
+    use thiserror::Error;
+
+    use crate::global::EntityId;
+
+    #[derive(Error, Debug)]
+    enum MessageSerdeError {
+        #[error("arbitrary I/O error")]
+        IO(#[from] std::io::Error),
+        #[error("invalid value")]
+        InvalidValue,
+    }
+
+    trait MessageSerde
+    where
+        Self: Sized,
+    {
+        fn message_serialize(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError>;
+        fn message_deserialize(input: &mut dyn Read) -> Result<Self, MessageSerdeError>;
+    }
+    impl MessageSerde for () {
+        fn message_serialize(&self, _output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+            Ok(())
+        }
+        fn message_deserialize(_input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+            Ok(())
+        }
+    }
+    impl MessageSerde for bool {
+        fn message_serialize(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+            Ok(output.write_u8(if *self { 1 } else { 0 })?)
+        }
+        fn message_deserialize(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+            match input.read_u8()? {
+                0 => Ok(false),
+                1 => Ok(true),
+                _ => Err(MessageSerdeError::InvalidValue),
+            }
+        }
+    }
+    impl MessageSerde for EntityId {
+        fn message_serialize(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+            output.write_u64::<BigEndian>(self.id0)?;
+            output.write_u64::<BigEndian>(self.id1)?;
+            Ok(())
+        }
+
+        fn message_deserialize(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+            Ok(Self {
+                id0: input.read_u64::<BigEndian>()?,
+                id1: input.read_u64::<BigEndian>()?,
+            })
+        }
+    }
+    impl MessageSerde for f32 {
+        fn message_serialize(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+            Ok(output.write_f32::<BigEndian>(*self)?)
+        }
+
+        fn message_deserialize(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+            Ok(input.read_f32::<BigEndian>()?)
+        }
+    }
+    impl MessageSerde for f64 {
+        fn message_serialize(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+            Ok(output.write_f64::<BigEndian>(*self)?)
+        }
+        fn message_deserialize(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+            Ok(input.read_f64::<BigEndian>()?)
+        }
+    }
+    impl MessageSerde for Mat4 {
+        fn message_serialize(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+            for value in self.to_cols_array() {
+                output.write_f32::<BigEndian>(value)?;
+            }
+            Ok(())
+        }
+        fn message_deserialize(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+            let mut values = [0f32; 16];
+            for value in &mut values {
+                *value = input.read_f32::<BigEndian>()?;
+            }
+            Ok(Self::from_cols_array(&values))
+        }
+    }
+    impl MessageSerde for i32 {
+        fn message_serialize(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+            Ok(output.write_i32::<BigEndian>(*self)?)
+        }
+        fn message_deserialize(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+            Ok(input.read_i32::<BigEndian>()?)
+        }
+    }
+    impl MessageSerde for Quat {
+        fn message_serialize(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+            for value in self.to_array() {
+                output.write_f32::<BigEndian>(value)?;
+            }
+            Ok(())
+        }
+        fn message_deserialize(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+            let mut values = [0f32; 4];
+            for value in &mut values {
+                *value = input.read_f32::<BigEndian>()?;
+            }
+            Ok(Self::from_array(values))
+        }
+    }
+    impl MessageSerde for u8 {
+        fn message_serialize(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+            Ok(output.write_u8(*self)?)
+        }
+        fn message_deserialize(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+            Ok(input.read_u8()?)
+        }
+    }
+    impl MessageSerde for u32 {
+        fn message_serialize(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+            Ok(output.write_u32::<BigEndian>(*self)?)
+        }
+        fn message_deserialize(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+            Ok(input.read_u32::<BigEndian>()?)
+        }
+    }
+    impl MessageSerde for u64 {
+        fn message_serialize(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+            Ok(output.write_u64::<BigEndian>(*self)?)
+        }
+        fn message_deserialize(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+            Ok(input.read_u64::<BigEndian>()?)
+        }
+    }
+    impl MessageSerde for Vec2 {
+        fn message_serialize(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+            for value in self.to_array() {
+                output.write_f32::<BigEndian>(value)?;
+            }
+            Ok(())
+        }
+        fn message_deserialize(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+            let mut values = [0f32; 2];
+            for value in &mut values {
+                *value = input.read_f32::<BigEndian>()?;
+            }
+            Ok(Self::from_array(values))
+        }
+    }
+    impl MessageSerde for Vec3 {
+        fn message_serialize(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+            for value in self.to_array() {
+                output.write_f32::<BigEndian>(value)?;
+            }
+            Ok(())
+        }
+        fn message_deserialize(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+            let mut values = [0f32; 3];
+            for value in &mut values {
+                *value = input.read_f32::<BigEndian>()?;
+            }
+            Ok(Self::from_array(values))
+        }
+    }
+    impl MessageSerde for Vec4 {
+        fn message_serialize(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+            for value in self.to_array() {
+                output.write_f32::<BigEndian>(value)?;
+            }
+            Ok(())
+        }
+        fn message_deserialize(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+            let mut values = [0f32; 4];
+            for value in &mut values {
+                *value = input.read_f32::<BigEndian>()?;
+            }
+            Ok(Self::from_array(values))
+        }
+    }
+    impl MessageSerde for UVec2 {
+        fn message_serialize(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+            for value in self.to_array() {
+                output.write_u32::<BigEndian>(value)?;
+            }
+            Ok(())
+        }
+        fn message_deserialize(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+            let mut values = [0u32; 2];
+            for value in &mut values {
+                *value = input.read_u32::<BigEndian>()?;
+            }
+            Ok(Self::from_array(values))
+        }
+    }
+    impl MessageSerde for UVec3 {
+        fn message_serialize(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+            for value in self.to_array() {
+                output.write_u32::<BigEndian>(value)?;
+            }
+            Ok(())
+        }
+        fn message_deserialize(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+            let mut values = [0u32; 3];
+            for value in &mut values {
+                *value = input.read_u32::<BigEndian>()?;
+            }
+            Ok(Self::from_array(values))
+        }
+    }
+    impl MessageSerde for UVec4 {
+        fn message_serialize(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+            for value in self.to_array() {
+                output.write_u32::<BigEndian>(value)?;
+            }
+            Ok(())
+        }
+        fn message_deserialize(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+            let mut values = [0u32; 4];
+            for value in &mut values {
+                *value = input.read_u32::<BigEndian>()?;
+            }
+            Ok(Self::from_array(values))
+        }
+    }
+}
+pub use message_serde::*;

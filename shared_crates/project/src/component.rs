@@ -12,7 +12,7 @@ pub struct Component {
     pub default: Option<toml::Value>,
 }
 
-#[derive(Deserialize, Clone, Debug, PartialEq)]
+#[derive(Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(untagged)]
 pub enum ComponentType {
     String(String),

@@ -1,5 +1,7 @@
 use ambient_api::{message::server as message, prelude::*};
 
+mod common;
+
 #[main]
 pub async fn main() -> EventResult {
     message::subscribe_bytes("hello", |source, data| {

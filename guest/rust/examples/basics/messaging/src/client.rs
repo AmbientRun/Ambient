@@ -1,5 +1,7 @@
 use ambient_api::{message::client as message, prelude::*};
 
+mod common;
+
 #[main]
 pub async fn main() -> EventResult {
     message::send(
