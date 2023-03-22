@@ -42,3 +42,11 @@ This will launch `webpack dev server` on port `:8080`
 Open chrome (or another browser which supports webgpu)
 
 [localhost:8080](https://localhost:8080)
+
+## Known Issues
+
+Bad CPU type in executable:
+
+  Occurs on Mac M1 and M2 as the `wasm-pack` installer attempts to download `wasm-bindgen`.
+
+  This is fixed by doing `cargo install -f wasm-bindgen` manually
