@@ -9,7 +9,7 @@ struct ModelToWorld {
     pos: vec4<f32>,
     normal: vec3<f32>,
     tangent: vec3<f32>,
-     texcoord: vec2<f32>,
+    texcoord: vec2<f32>,
 }
 
 
@@ -23,7 +23,7 @@ fn model_to_world(loc: vec2<u32>, mesh_index: u32, vertex_index: u32) -> ModelTo
     let pos = vec4<f32>(mesh.position.xyz, 1.0);
     let normal = vec4<f32>(mesh.normal.xyz, 0.0);
     let tangent = vec4<f32>(mesh.tangent.xyz, 0.0);
-    // let texcoord: vec2<f32>= mesh.texcoord0;
+    let texcoord: vec2<f32> = mesh.texcoord0;
 
     var result: ModelToWorld;
 
@@ -69,13 +69,13 @@ fn model_to_world(loc: vec2<u32>, mesh_index: u32, vertex_index: u32) -> ModelTo
         result.pos = model * total_pos;
         result.normal = normalize((model * total_norm).xyz);
         result.tangent = normalize((model * total_tangent).xyz);
-        result.texcoord = mesh.texcoord0;
+        result.texcoord = texcoord;
     } else {
         result.local = pos;
         result.pos = model * pos;
         result.normal = normalize((model * normal).xyz);
         result.tangent = normalize((model * tangent).xyz);
-        result.texcoord = mesh.texcoord0;
+        result.texcoord = texcoord;
     }
 
     return result;

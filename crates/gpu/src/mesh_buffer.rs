@@ -1,5 +1,4 @@
 use std::{
-    iter::repeat,
     ops::Range,
     sync::{
         atomic::{AtomicUsize, Ordering},
@@ -16,7 +15,7 @@ use ambient_std::{
 use async_trait::async_trait;
 use bytemuck::{Pod, Zeroable};
 use glam::{UVec4, Vec2, Vec4};
-use itertools::{izip, Itertools};
+use itertools::Itertools;
 use parking_lot::Mutex;
 use wgpu::RenderPass;
 
@@ -279,9 +278,6 @@ impl MeshBuffer {
         }
 
         self.base_buffer.tmp.resize(sizes.base_offset as u64, true);
-        // self.normal_buffer.tmp.resize(sizes.normal_offset as u64, true);
-        // self.tangent_buffer.tmp.resize(sizes.tangent_offset as u64, true);
-        // self.texcoord0_buffer.tmp.resize(sizes.texcoord0_offset as u64, true);
         self.skinned_buffer.tmp.resize(sizes.skinned_offset as u64, true);
         self.index_buffer.tmp.resize(sizes.index_offset as u64, true);
 
@@ -290,9 +286,6 @@ impl MeshBuffer {
             self.meshes[index].as_mut().unwrap().metadata = MeshMetadata {
                 index_count: mesh.index_count as u32,
                 base_offset: base_metadata.base_offset + cursor.base_offset,
-                // normal_offset: base_offset.normal_offset + cursor.normal_offset,
-                // tangent_offset: base_offset.tangent_offset + cursor.tangent_offset,
-                // texcoord0_offset: base_offset.texcoord0_offset + cursor.texcoord0_offset,
                 skinned_offset: base_metadata.skinned_offset + cursor.skinned_offset,
                 index_offset: base_metadata.index_offset + cursor.index_offset,
             };

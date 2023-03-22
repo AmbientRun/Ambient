@@ -100,7 +100,7 @@ impl SubRenderer for GizmoRenderer {
         });
 
         if primitives.is_empty() {
-            // return;
+            return;
         }
 
         let assets = world.resource(asset_cache());

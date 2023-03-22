@@ -31,33 +31,18 @@ pub struct GpuComponent {
 pub enum GpuComponentFormat {
     Mat4,
     Vec4,
-    // UVec4,
-    // U32,
-    // UVec4Array20,
-    // F32Array20,
-    // U32Array20,
 }
 impl GpuComponentFormat {
     pub fn size(&self) -> u64 {
         match self {
             GpuComponentFormat::Mat4 => std::mem::size_of::<Mat4>() as u64,
             GpuComponentFormat::Vec4 => std::mem::size_of::<Vec4>() as u64,
-            //GpuComponentFormat::UVec4 => std::mem::size_of::<UVec4>() as u64,
-            // GpuComponentFormat::U32 => std::mem::size_of::<u32>() as u64,
-            // GpuComponentFormat::UVec4Array20 => std::mem::size_of::<UVec4>() as u64 * 20,
-            //GpuComponentFormat::F32Array20 => std::mem::size_of::<f32>() as u64 * 20,
-            //GpuComponentFormat::U32Array20 => std::mem::size_of::<u32>() as u64 * 20,
         }
     }
     pub fn wgsl(&self) -> &'static str {
         match self {
             GpuComponentFormat::Mat4 => "mat4x4<f32>",
             GpuComponentFormat::Vec4 => "vec4<f32>",
-            // GpuComponentFormat::UVec4 => "vec4<u32>",
-            // GpuComponentFormat::U32 => "u32",
-            // GpuComponentFormat::UVec4Array20 => "array<vec4<u32>, 20>",
-            // GpuComponentFormat::F32Array20 => "array<f32, 20>",
-            // GpuComponentFormat::U32Array20 => "array<u32, 20>",
         }
     }
 }
@@ -136,15 +121,14 @@ fn set_entity_data_{format_name}(component_index: u32, entity_loc: vec2<u32>, va
                 .components
                 .iter()
                 .enumerate()
-                .map(
-                    |(i, comp)| {
-                        let offset = i;
-                        let ident = &comp.name;
-                        let format = comp.format;
-                        let ty = comp.format.wgsl();
+                .map(|(i, comp)| {
+                    let offset = i;
+                    let ident = &comp.name;
+                    let format = comp.format;
+                    let ty = comp.format.wgsl();
 
-                        let getters = format!(
-                            "
+                    let getters = format!(
+                        "
 fn get_entity_{ident}(entity_loc: vec2<u32>) -> {ty} {{
     return get_entity_data_{format}({offset}u, entity_loc);
 }}
@@ -157,41 +141,21 @@ fn has_entity_{ident}(entity_loc: vec2<u32>) -> bool {{
     return get_entity_component_offset_{format}({offset}u, entity_loc) >= 0;
 }}
 "
-                        );
-                        let setters = if writeable {
-                            format!(
-                                "
+                    );
+                    let setters = if writeable {
+                        format!(
+                            "
 fn set_entity_{ident}(entity_loc: vec2<u32>, value: {ty}) {{
 set_entity_data_{format}({offset}u, entity_loc, value);
 }}
 "
-                            )
-                        } else {
-                            String::new()
-                        };
+                        )
+                    } else {
+                        String::new()
+                    };
 
-                        [getters, setters].join("\n")
-                    } //                     // comp = comp.name,
-                      //                     // offset = i,
-                      //                     // name = self.format,
-                      //                     // wgsl_format = self.format.wgsl(),
-                      //                     set_entity = if writeable {
-                      //                         format!(
-                      //                             "
-
-                      // fn set_entity_{comp}(entity_loc: vec2<u32>, value: {wgsl_format}) {{
-                      //     set_entity_data_{name}({offset}u, entity_loc, value);
-                      // }}
-
-                      //                     ",
-                      //                             offset = i,
-                      //                             name = self.format,
-                      //                             wgsl_format = self.format.wgsl(),
-                      //                         )
-                      //                     } else {
-                      //                         String::new()
-                      //                     }
-                )
+                    [getters, setters].join("\n")
+                })
                 .join("")
         )
     }
