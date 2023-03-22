@@ -15,7 +15,7 @@ use ambient_guest_bridge::{
         text::text,
         transform::translation,
     },
-    window::{get_clipboard, set_cursor},
+    window::set_cursor,
 };
 use ambient_window_types::{CursorIcon, VirtualKeyCode};
 
@@ -81,7 +81,7 @@ pub fn TextEditor(
                         VirtualKeyCode::V => {
                             if command && pressed {
                                 #[cfg(not(target_os = "unknown"))]
-                                if let Some(paste) = get_clipboard() {
+                                if let Some(paste) = ambient_guest_bridge::window::get_clipboard() {
                                     on_change.0(format!("{value}{paste}"));
                                 }
                             }

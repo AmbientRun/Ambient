@@ -49,23 +49,8 @@
             }
         }
     },
-    "build-web": {
-        "cmd": "wasm-pack build web --dev",
-        "components": {
-            "qf": {
-                "compiler": "cargo"
-            }
-        }
-    },
     "check-tests": {
         "cmd": "cargo check --workspace --tests --examples"
-    },
-    "run-web": {
-        "cmd": "npm run start",
-        "cwd": "www",
-        "env": {
-            "RUST_LOG": "info"
-        }
     },
     "test": {
         "cmd": "cargo nextest run --workspace"

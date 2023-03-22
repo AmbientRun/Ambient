@@ -11,7 +11,6 @@ use ambient_gpu::{gpu::Gpu, mesh_buffer::GpuMesh};
 use ambient_std::asset_cache::{AssetCache, SyncAssetKey};
 pub use paste;
 use serde::{Deserialize, Serialize};
-use winit::window::Window;
 
 pub mod async_ecs;
 pub mod bounding;
@@ -122,8 +121,9 @@ impl SyncAssetKey<RuntimeHandle> for RuntimeKey {}
 
 #[derive(Debug, Clone)]
 pub struct WindowKey;
+
 #[cfg(not(target_os = "unknown"))]
-impl SyncAssetKey<Arc<Window>> for WindowKey {}
+impl SyncAssetKey<Arc<winit::window::Window>> for WindowKey {}
 
 pub fn remove_at_time_system() -> DynSystem {
     query((remove_at_time(),)).to_system(|q, world, qs, _| {
