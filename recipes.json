@@ -61,7 +61,7 @@
         "cmd": "cargo check --workspace --tests --examples"
     },
     "run-web": {
-        "cmd": "npm run start --open",
+        "cmd": "npm run start",
         "cwd": "www",
         "env": {
             "RUST_LOG": "info"
