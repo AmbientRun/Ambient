@@ -310,8 +310,8 @@ pub struct ShadowAndUIGlobals {
 }
 impl ShadowAndUIGlobals {
     pub fn new(assets: AssetCache, layout: Arc<wgpu::BindGroupLayout>) -> Self {
-        log::info!("Creating shadow globals using {layout:#?}");
         let gpu = GpuKey.get(&assets);
+
         let buffer = gpu.device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("ShadowGlobals.buffer"),
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,

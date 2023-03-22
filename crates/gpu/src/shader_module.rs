@@ -171,7 +171,6 @@ pub struct BindGroupDesc<'a> {
 impl<'a> SyncAssetKey<Arc<wgpu::BindGroupLayout>> for BindGroupDesc<'a> {
     fn load(&self, assets: AssetCache) -> Arc<wgpu::BindGroupLayout> {
         let gpu = GpuKey.get(&assets);
-        tracing::info!("Creating bind group: {self:#?}");
 
         let layout =
             gpu.device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor { label: Some(&*self.label), entries: &self.entries });
@@ -260,8 +259,6 @@ impl Shader {
         // The complete dependency graph, in the correct order
         let modules = resolve_module_graph([module]);
 
-        tracing::info!("Compiling shader from modules: {:#?}", modules.iter().map(|v| &v.name).collect_vec());
-
         // Resolve all bind groups, resolving the names to an index
         let bind_group_index: BTreeMap<_, _> = bind_group_names.iter().enumerate().map(|(a, &b)| (b, a)).collect();
         let mut bind_groups =
@@ -293,7 +290,7 @@ impl Shader {
             .chain(bind_group_index.iter().map(|(name, &index)| (name.to_string(), (index as u32).to_string())))
             .unzip();
 
-        tracing::info!(
+        tracing::debug!(
             "Preprocessing shader using {}",
             patterns.iter().zip_eq(&replace_with).map(|(a, b)| { format!("{a} => {b}") }).format("\n")
         );

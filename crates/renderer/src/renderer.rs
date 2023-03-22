@@ -55,7 +55,7 @@ impl SyncAssetKey<RendererResources> for RendererResourcesKey {
             .concat(),
             label: GLOBALS_BIND_GROUP.into(),
         };
-        log::info!("RendererResources global layout: {globals_layout:#?}");
+
         let globals_layout = globals_layout.get(&assets);
 
         let mesh_meta_layout = BindGroupDesc { entries: get_mesh_meta_layout(0).entries, label: GLOBALS_BIND_GROUP.into() }.get(&assets);
