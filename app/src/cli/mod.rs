@@ -89,6 +89,14 @@ pub struct HostCli {
     /// Defaults to localhost
     #[arg(long)]
     pub public_host: Option<String>,
+
+    /// Defaults to 8889
+    #[arg(long)]
+    pub http_interface_port: Option<u16>,
+
+    /// Defaults to 9000
+    #[arg(long)]
+    pub quic_interface_port: Option<u16>,
 }
 
 impl Cli {
