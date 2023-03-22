@@ -4,9 +4,13 @@ use ambient_network::{
     log_network_result, WASM_BISTREAM_ID, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID,
 };
 use ambient_std::asset_cache::AssetCache;
+
 use bytes::Bytes;
 use quinn::{RecvStream, SendStream};
+
 use std::sync::Arc;
+
+use crate::shared::implementation::message;
 
 pub fn initialize(world: &mut World) {
     world
@@ -23,7 +27,7 @@ pub fn initialize(world: &mut World) {
 }
 
 fn on_datagram(world: &mut World, _asset_cache: AssetCache, bytes: Bytes) {
-    log_network_result!(crate::shared::network::on_datagram(world, None, bytes));
+    log_network_result!(message::on_datagram(world, None, bytes));
 }
 
 fn on_bistream(
@@ -32,10 +36,9 @@ fn on_bistream(
     _send_stream: SendStream,
     _recv_stream: RecvStream,
 ) {
-    // use tokio::io::AsyncReadExt;
-    unimplemented!();
+    unimplemented!("Bistreams are not supported");
 }
 
 fn on_unistream(world: &mut World, _asset_cache: AssetCache, recv_stream: RecvStream) {
-    crate::shared::network::on_unistream(world, None, recv_stream)
+    message::on_unistream(world, None, recv_stream)
 }

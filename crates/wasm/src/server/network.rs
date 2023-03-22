@@ -5,9 +5,13 @@ use ambient_network::{
     WASM_BISTREAM_ID, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID,
 };
 use ambient_std::asset_cache::AssetCache;
+
 use bytes::Bytes;
 use quinn::{RecvStream, SendStream};
+
 use std::sync::Arc;
+
+use crate::shared::implementation::message;
 
 pub fn initialize(world: &mut World) {
     world
@@ -30,11 +34,7 @@ fn on_datagram(state: SharedServerState, _asset_cache: AssetCache, user_id: &Str
         return;
     };
 
-    log_network_result!(crate::shared::network::on_datagram(
-        world,
-        Some(user_id.clone()),
-        bytes
-    ));
+    log_network_result!(message::on_datagram(world, Some(user_id.clone()), bytes));
 }
 
 fn on_bistream(
@@ -44,7 +44,7 @@ fn on_bistream(
     _send_stream: SendStream,
     _recv_stream: RecvStream,
 ) {
-    unimplemented!();
+    unimplemented!("Bistreams are not supported");
 }
 
 fn on_unistream(
@@ -59,5 +59,5 @@ fn on_unistream(
         return;
     };
 
-    crate::shared::network::on_unistream(world, Some(user_id.clone()), recv_stream)
+    message::on_unistream(world, Some(user_id.clone()), recv_stream)
 }

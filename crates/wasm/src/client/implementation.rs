@@ -2,7 +2,7 @@ use ambient_network::client::game_client;
 use anyhow::Context;
 
 use super::Bindings;
-use crate::shared::{conversion::FromBindgen, implementation::message::send, wit};
+use crate::shared::{conversion::FromBindgen, implementation::message::send_networked, wit};
 
 impl wit::client_message::Host for Bindings {
     fn send(
@@ -24,7 +24,7 @@ impl wit::client_message::Host for Bindings {
                     .connection
                     .clone();
 
-                send(
+                send_networked(
                     world,
                     connection,
                     module_id,

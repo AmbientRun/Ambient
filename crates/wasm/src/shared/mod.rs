@@ -1,11 +1,12 @@
 pub(crate) mod bindings;
+pub(crate) mod implementation;
+
 mod borrowed_types;
+mod module;
+
 pub mod build;
 pub mod conversion;
 pub mod host_guest_state;
-pub(crate) mod implementation;
-mod module;
-pub mod network;
 pub mod wit;
 
 use std::sync::Arc;

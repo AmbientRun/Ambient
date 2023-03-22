@@ -243,7 +243,7 @@ fn send(
         .collect();
 
     for connection in connections {
-        message::send(world, connection, module_id, &name, &data, reliable)?;
+        message::send_networked(world, connection, module_id, &name, &data, reliable)?;
     }
 
     Ok(())
