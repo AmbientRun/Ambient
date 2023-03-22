@@ -7,7 +7,6 @@ use ambient_api::{
         transform::{lookat_center, translation},
     },
     concepts::make_perspective_infinite_reverse_camera,
-    message::client as message,
     prelude::*,
 };
 use components::{grid_side_length, grid_x, grid_y};
@@ -24,18 +23,6 @@ pub async fn main() -> EventResult {
         .with(translation(), Vec3::ONE * 5.)
         .with(lookat_center(), vec3(0., 0., 0.))
         .spawn();
-
-    message::send(
-        message::Target::NetworkUnreliable,
-        "test",
-        "Hello, world from the client (datagram)!".as_bytes(),
-    );
-
-    message::send(
-        message::Target::NetworkReliable,
-        "test",
-        "Hello, world from the client (unistream)!".as_bytes(),
-    );
 
     on(event::FRAME, move |_| {
         entity::set_component(
@@ -60,13 +47,6 @@ pub async fn main() -> EventResult {
                 entity::set_component(id, color(), vec3(s, 1.0 - s, t).extend(1.0));
             }
         });
-
-    message::subscribe_bytes("test", |source, data| {
-        println!("{source:?}");
-        println!("{:?}", String::from_utf8(data));
-
-        EventOk
-    });
 
     EventOk
 }

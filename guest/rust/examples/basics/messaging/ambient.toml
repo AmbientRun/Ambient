@@ -1,0 +1,4 @@
+[project]
+id = "messaging"
+name = "Messaging"
+version = "0.0.1"
