@@ -41,8 +41,8 @@ jobs:
         with:
           target: wasm32-unknown-unknown
       - name: Run clippy
+        working-directory: web
         uses: actions-rs/cargo@v1
-        working-directory: "web"
         with:
           command: clippy
 
