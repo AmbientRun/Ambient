@@ -41,4 +41,4 @@ This will launch `webpack dev server` on port `:8080`
 
 Open chrome (or another browser which supports webgpu)
 
-[https://localhost:8080]
+[localhost:8080](https://localhost:8080)
