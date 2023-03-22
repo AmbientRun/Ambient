@@ -107,7 +107,10 @@ pub fn systems() -> SystemGroup {
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("WASM module frame event");
                 // trigger frame event
-                run_all(world, &RunContext::new(world, "core/frame", Entity::new()));
+                run_all(
+                    world,
+                    &RunContext::new(world, ambient_event_types::FRAME, Entity::new()),
+                );
             })),
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("WASM module collision event");
@@ -134,7 +137,7 @@ pub fn systems() -> SystemGroup {
                         world,
                         &RunContext::new(
                             world,
-                            "core/collision",
+                            ambient_event_types::COLLISION,
                             vec![ComponentEntry::new(ambient_ecs::ids(), ids)].into(),
                         ),
                     );
@@ -152,7 +155,7 @@ pub fn systems() -> SystemGroup {
                         world,
                         &RunContext::new(
                             world,
-                            "core/collider_load",
+                            ambient_event_types::COLLIDER_LOAD,
                             vec![ComponentEntry::new(ambient_ecs::id(), id)].into(),
                         ),
                     );
@@ -241,7 +244,7 @@ fn load(
                 world,
                 module_id,
                 sms.clone(),
-                &RunContext::new(world, "core/module_load", Entity::new()),
+                &RunContext::new(world, ambient_event_types::MODULE_LOAD, Entity::new()),
             ));
 
             world.add_component(module_id, module_state(), sms).unwrap();
@@ -261,7 +264,7 @@ pub(crate) fn unload(
         world,
         module_id,
         sms,
-        &RunContext::new(world, "core/module_unload", Entity::new()),
+        &RunContext::new(world, ambient_event_types::MODULE_UNLOAD, Entity::new()),
     )
     .into_iter()
     .collect_vec();
