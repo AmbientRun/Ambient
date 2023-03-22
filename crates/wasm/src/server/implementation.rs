@@ -188,9 +188,9 @@ impl wit::server_asset::Host for Bindings {
 impl wit::server_message::Host for Bindings {
     fn send(
         &mut self,
-        target: wit::server_message::Target,
-        name: String,
-        data: Vec<u8>,
+        _target: wit::server_message::Target,
+        _name: String,
+        _data: Vec<u8>,
     ) -> anyhow::Result<()> {
         todo!()
     }

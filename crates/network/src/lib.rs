@@ -233,8 +233,14 @@ pub struct OutgoingStream {
     pub stream: FramedWrite<quinn::SendStream, LengthDelimitedCodec>,
 }
 impl OutgoingStream {
+    /// Are you sure you don't want [open_uni_with_id] instead?
     pub async fn open_uni(conn: &Connection) -> Result<Self, NetworkError> {
         Ok(OutgoingStream::new(conn.open_uni().await?))
+    }
+    pub async fn open_uni_with_id(conn: &Connection, id: u32) -> Result<Self, NetworkError> {
+        let mut stream = Self::open_uni(conn).await?;
+        stream.stream.get_mut().write_u32(id).await?;
+        Ok(stream)
     }
 
     pub fn new(stream: quinn::SendStream) -> Self {
@@ -280,10 +286,10 @@ pub async fn next_bincode_bi_stream(conn: &mut NewConnection) -> Result<(Outgoin
     }
 }
 
-pub fn send_datagram(conn: &Connection, id: u32, mut make_payload: impl FnMut(&mut Vec<u8>)) -> Result<(), NetworkError> {
+pub fn send_datagram(conn: &Connection, id: u32, mut payload: Vec<u8>) -> Result<(), NetworkError> {
     let mut bytes = Vec::new();
     byteorder::WriteBytesExt::write_u32::<byteorder::BigEndian>(&mut bytes, id)?;
-    make_payload(&mut bytes);
+    bytes.append(&mut payload);
     conn.send_datagram(Bytes::from(bytes))?;
 
     Ok(())

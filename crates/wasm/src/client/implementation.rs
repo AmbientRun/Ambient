@@ -1,7 +1,6 @@
 use ambient_core::runtime;
 use ambient_network::{client::game_client, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID};
 use anyhow::Context;
-use tokio::io::AsyncWriteExt;
 
 use super::Bindings;
 use crate::shared::{conversion::FromBindgen, wit};
@@ -27,26 +26,37 @@ impl wit::client_message::Host for Bindings {
                     .clone();
 
                 if matches!(target, Target::NetworkUnreliable) {
-                    ambient_network::send_datagram(&connection, WASM_DATAGRAM_ID, move |bytes| {
-                        byteorder::WriteBytesExt::write_u128::<byteorder::BigEndian>(
-                            bytes,
-                            module_id.0,
-                        )
-                        .unwrap();
-                        bytes.append(&mut data)
-                    })?;
+                    use byteorder::WriteBytesExt;
+                    let mut payload = vec![];
+
+                    payload.write_u128::<byteorder::BigEndian>(module_id.0)?;
+
+                    payload.write_u32::<byteorder::BigEndian>(name.len().try_into()?)?;
+                    payload.append(&mut name.into_bytes());
+
+                    payload.append(&mut data);
+
+                    ambient_network::send_datagram(&connection, WASM_DATAGRAM_ID, payload)?;
                 } else {
+                    use tokio::io::AsyncWriteExt;
+
                     world.resource(runtime()).spawn(async move {
                         let mut outgoing_stream =
-                            ambient_network::OutgoingStream::open_uni(&connection).await?;
+                            ambient_network::OutgoingStream::open_uni_with_id(
+                                &connection,
+                                WASM_UNISTREAM_ID,
+                            )
+                            .await?;
 
                         {
                             let stream = outgoing_stream.stream.get_mut();
-                            stream.write_u32(WASM_UNISTREAM_ID).await?;
                             stream.write_u128(module_id.0).await?;
-                        }
 
-                        outgoing_stream.send_bytes(data).await?;
+                            stream.write_u32(name.len().try_into()?).await?;
+                            stream.write_all(name.as_bytes()).await?;
+
+                            stream.write_all(&data).await?;
+                        }
 
                         anyhow::Ok(())
                     });

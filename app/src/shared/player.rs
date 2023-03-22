@@ -1,4 +1,4 @@
-use std::{io::Write, str::FromStr, sync::Arc};
+use std::{str::FromStr, sync::Arc};
 
 use ambient_core::{
     player::{get_player_by_user_id, player},
@@ -131,15 +131,12 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
             let cursor_position = *world.resource(cursor_position());
 
             runtime.spawn(async move {
-                ambient_network::send_datagram(&gc.connection, PLAYER_INPUT_DATAGRAM_ID, |data| {
-                    let msg = {
-                        let mut input = input.lock();
-                        input.cursor_position = cursor_position;
-                        bincode::serialize(&*input).unwrap()
-                    };
-                    data.write_all(&msg).unwrap();
-                })
-                .ok();
+                let msg = {
+                    let mut input = input.lock();
+                    input.cursor_position = cursor_position;
+                    bincode::serialize(&*input).unwrap()
+                };
+                ambient_network::send_datagram(&gc.connection, PLAYER_INPUT_DATAGRAM_ID, msg).ok();
             });
         }
     });

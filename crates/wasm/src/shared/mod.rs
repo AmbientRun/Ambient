@@ -42,6 +42,7 @@ components!("wasm::shared", {
 });
 
 pub const MAXIMUM_ERROR_COUNT: usize = 5;
+pub const NETWORK_MAX_STREAM_LENGTH: usize = 10 * 1024 * 1024;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum MessageType {

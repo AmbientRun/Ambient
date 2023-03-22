@@ -24,6 +24,18 @@ pub async fn main() -> EventResult {
         .with(lookat_center(), vec3(0., 0., 0.))
         .spawn();
 
+    message::send(
+        message::Target::NetworkUnreliable,
+        "test",
+        "Hello, world (datagram)!".as_bytes(),
+    );
+
+    message::send(
+        message::Target::NetworkReliable,
+        "test",
+        "Hello, world (unistream)!".as_bytes(),
+    );
+
     on(event::FRAME, move |_| {
         entity::set_component(
             id,

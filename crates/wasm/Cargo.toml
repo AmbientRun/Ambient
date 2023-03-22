@@ -27,6 +27,7 @@ physxx = { path = "../../libs/physxx" }
 anyhow = { workspace = true }
 async-trait = { workspace = true }
 byteorder = { workspace = true }
+bytes = { workspace = true }
 data-encoding = { workspace = true }
 chrono = { workspace = true }
 flume = { workspace = true }
@@ -39,6 +40,7 @@ log = { workspace = true }
 parking_lot = { workspace = true }
 paste = { workspace = true }
 profiling = { workspace = true }
+quinn = { workspace = true }
 reqwest = { workspace = true }
 serde_bytes = { workspace = true }
 serde_json = { workspace = true }
