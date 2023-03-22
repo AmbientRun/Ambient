@@ -1,6 +1,7 @@
 use ambient_api::{
     components::core::{primitives::cube, rendering::color, transform::translation},
     concepts::make_transformable,
+    message::server as message,
     prelude::*,
 };
 
@@ -34,6 +35,24 @@ pub async fn main() -> EventResult {
     message::subscribe_bytes("test", |source, data| {
         println!("{source:?}");
         println!("{:?}", String::from_utf8(data));
+
+        if let message::Source::Network { user_id } = source {
+            message::send(
+                message::Target::NetworkTargetedReliable {
+                    user_id: user_id.clone(),
+                },
+                "test",
+                String::from("Hello, world from the server (unistream)!").into_bytes(),
+            );
+
+            message::send(
+                message::Target::NetworkTargetedUnreliable {
+                    user_id: user_id.clone(),
+                },
+                "test",
+                String::from("Hello, world from the server (datagram)!").into_bytes(),
+            );
+        }
 
         EventOk
     });

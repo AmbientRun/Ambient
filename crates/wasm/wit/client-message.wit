@@ -1,6 +1,11 @@
 default interface client-message {
     use pkg.types.{entity-id}
 
+    variant source {
+        network,
+        module(entity-id),
+    }
+
     variant target {
         network-unreliable,
         network-reliable,

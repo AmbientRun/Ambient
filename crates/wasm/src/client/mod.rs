@@ -7,6 +7,7 @@ use ambient_std::{
 use std::sync::Arc;
 
 mod implementation;
+mod network;
 mod unused;
 
 pub fn initialize(
@@ -18,6 +19,8 @@ pub fn initialize(
         world_ref: Default::default(),
         id,
     })?;
+
+    network::initialize(world);
 
     Ok(())
 }

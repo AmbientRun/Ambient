@@ -1213,6 +1213,12 @@ name = "Source: Module"
 description = "This message came from this module on this side."
 attributes = ["Debuggable"]
 
+[components."core::wasm::message::source_network"]
+type = "Empty"
+name = "Source: Network"
+description = "This message came from the network with no specific source (likely the server)."
+attributes = ["Debuggable"]
+
 [components."core::wasm::message::source_network_user_id"]
 type = "String"
 name = "Source: Network (User ID)"

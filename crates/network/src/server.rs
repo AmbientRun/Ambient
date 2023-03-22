@@ -51,6 +51,7 @@ components!("network::server", {
 
     player_entity_stream: Sender<Vec<u8>>,
     player_stats_stream: Sender<FpsSample>,
+    player_connection: quinn::Connection,
 });
 
 pub type BiStreamHandlers = HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, SendStream, RecvStream) + Sync + Send>>;
@@ -381,6 +382,8 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
                 let (diffs_tx, diffs_rx) = flume::unbounded();
                 let (stats_tx, stats_rx) = flume::unbounded();
 
+                let new_player_connection = connection.connection.clone();
+
                 let on_init = |client: ClientInfo| {
                     let user_id = &client.user_id;
                     log::debug!("[{}] Locking world", user_id);
@@ -420,12 +423,16 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
                     log::debug!("[{}] Init diff sent", user_id);
 
                     if !reconnecting {
-                        instance.spawn_player(create_player_entity_data(user_id, diffs_tx.clone(), stats_tx.clone()));
+                        instance.spawn_player(
+                            create_player_entity_data(user_id, diffs_tx.clone(), stats_tx.clone())
+                                .with(player_connection(), new_player_connection.clone()),
+                        );
                         log::info!("[{}] Player spawned", user_id);
                     } else {
                         let entity = get_player_by_user_id(&instance.world, user_id).unwrap();
                         instance.world.set(entity, player_entity_stream(), diffs_tx.clone()).unwrap();
                         instance.world.set(entity, player_stats_stream(), stats_tx.clone()).unwrap();
+                        instance.world.set(entity, player_connection(), new_player_connection.clone()).unwrap();
                         log::info!("[{}] Player reconnected", user_id);
                     }
                 };

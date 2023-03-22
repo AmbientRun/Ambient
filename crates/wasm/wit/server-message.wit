@@ -7,10 +7,10 @@ default interface server-message {
     }
 
     variant target {
-        player-broadcast-unreliable,
-        player-broadcast-reliable,
-        player-targeted-unreliable(string),
-        player-targeted-reliable(string),
+        network-broadcast-unreliable,
+        network-broadcast-reliable,
+        network-targeted-unreliable(string),
+        network-targeted-reliable(string),
         module-broadcast,
         module(entity-id),
     }

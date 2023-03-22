@@ -5,6 +5,7 @@ pub mod conversion;
 pub mod host_guest_state;
 pub(crate) mod implementation;
 mod module;
+pub mod network;
 pub mod wit;
 
 use std::sync::Arc;
@@ -57,6 +58,9 @@ pub mod message {
     use ambient_ecs::{components, Debuggable, Description, EntityId, Name};
 
     components!("wasm::message", {
+        @[Debuggable, Name["Source: Network"], Description["This message came from the network with no specific source (likely the server)."]]
+        source_network: (),
+
         @[Debuggable, Name["Source: Network (User ID)"], Description["This message came from this user."]]
         source_network_user_id: String,
 
@@ -74,7 +78,6 @@ pub fn init_all_components() {
 }
 
 pub const MAXIMUM_ERROR_COUNT: usize = 5;
-pub const NETWORK_MAX_STREAM_LENGTH: usize = 10 * 1024 * 1024;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum MessageType {

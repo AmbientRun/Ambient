@@ -1,23 +1,11 @@
-use crate::shared::{self, module_state, remote_paired_id, wit, NETWORK_MAX_STREAM_LENGTH};
-use ambient_core::{async_ecs::async_run, runtime};
-use ambient_ecs::{query, Entity, EntityId, FnSystem, SystemGroup, World};
-use ambient_network::{
-    server::{
-        bi_stream_handlers, datagram_handlers, uni_stream_handlers, ForkingEvent,
-        SharedServerState, ShutdownEvent,
-    },
-    WASM_BISTREAM_ID, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID,
-};
-use ambient_std::asset_cache::AssetCache;
-use bytes::Bytes;
-use quinn::{RecvStream, SendStream};
-use std::{
-    io::{Cursor, Read},
-    sync::Arc,
-};
+use crate::shared::{self, wit};
+use ambient_ecs::{query, EntityId, FnSystem, SystemGroup, World};
+use ambient_network::server::{ForkingEvent, ShutdownEvent};
+use std::sync::Arc;
 
 mod conversion;
 mod implementation;
+mod network;
 mod unused;
 
 pub fn initialize(
@@ -30,17 +18,7 @@ pub fn initialize(
         id,
     })?;
 
-    world
-        .resource_mut(datagram_handlers())
-        .insert(WASM_DATAGRAM_ID, Arc::new(on_datagram));
-
-    world
-        .resource_mut(bi_stream_handlers())
-        .insert(WASM_BISTREAM_ID, Arc::new(on_bistream));
-
-    world
-        .resource_mut(uni_stream_handlers())
-        .insert(WASM_UNISTREAM_ID, Arc::new(on_unistream));
+    network::initialize(world);
 
     Ok(())
 }
@@ -70,104 +48,6 @@ pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
             }
         }))],
     )
-}
-
-fn on_datagram(state: SharedServerState, _asset_cache: AssetCache, user_id: &String, bytes: Bytes) {
-    use byteorder::ReadBytesExt;
-
-    let mut state = state.lock();
-    let Some(world) = state.get_player_world_mut(&user_id) else {
-        log::warn!("Failed to find player world for {user_id} when processing datagram");
-        return;
-    };
-
-    let mut cursor = Cursor::new(&bytes);
-    let client_module_id = cursor.read_u128::<byteorder::BigEndian>().unwrap();
-    let client_module_id = EntityId(client_module_id);
-    let Ok(module_id) = world.get(client_module_id, remote_paired_id()) else {
-        log::warn!("Failed to get remote paired ID for datagram for client module {client_module_id}");
-        return;
-    };
-
-    let name_len = usize::try_from(cursor.read_u32::<byteorder::BigEndian>().unwrap()).unwrap();
-    let mut name = vec![0u8; name_len];
-    cursor.read_exact(&mut name).unwrap();
-    let name = String::from_utf8(name).unwrap();
-
-    let position = cursor.position();
-    let data = &bytes[usize::try_from(position).unwrap()..];
-
-    shared::run(
-        world,
-        module_id,
-        world.get_cloned(module_id, module_state()).unwrap(),
-        &shared::RunContext::new(
-            world,
-            format!("{}/{}", ambient_event_types::MODULE_MESSAGE, name),
-            Entity::new()
-                .with(shared::message::source_network_user_id(), user_id.clone())
-                .with(shared::message::data(), data.to_vec()),
-        ),
-    );
-}
-
-fn on_bistream(
-    _state: SharedServerState,
-    _asset_cache: AssetCache,
-    _user_id: &String,
-    _send_stream: SendStream,
-    _recv_stream: RecvStream,
-) {
-    // use tokio::io::AsyncReadExt;
-    unimplemented!();
-}
-
-fn on_unistream(
-    state: SharedServerState,
-    _asset_cache: AssetCache,
-    user_id: &String,
-    mut recv_stream: RecvStream,
-) {
-    use tokio::io::AsyncReadExt;
-    let mut state = state.lock();
-    let Some(world) = state.get_player_world_mut(&user_id) else {
-        log::warn!("Failed to find player world for {user_id} when processing unistream");
-        return;
-    };
-
-    let async_run = world.resource(async_run()).clone();
-    let user_id = user_id.clone();
-    world.resource(runtime()).spawn(async move {
-        let client_module_id = recv_stream.read_u128().await.unwrap();
-        let client_module_id = EntityId(client_module_id);
-
-        let name_len = usize::try_from(recv_stream.read_u32().await.unwrap()).unwrap();
-        let mut name = vec![0u8; name_len];
-        recv_stream.read_exact(&mut name).await.unwrap();
-        let name = String::from_utf8(name).unwrap();
-
-        let data = recv_stream.read_to_end(NETWORK_MAX_STREAM_LENGTH).await.unwrap();
-
-        async_run.run(move |world| {
-            let Ok(module_id) = world.get(client_module_id, remote_paired_id()) else {
-                log::warn!("Failed to get remote paired ID for unistream for client module {client_module_id}");
-                return;
-            };
-
-            shared::run(
-                world,
-                module_id,
-                world.get_cloned(module_id, module_state()).unwrap(),
-                &shared::RunContext::new(
-                    world,
-                    format!("{}/{}", ambient_event_types::MODULE_MESSAGE, name),
-                    Entity::new()
-                        .with(shared::message::source_network_user_id(), user_id)
-                        .with(shared::message::data(), data.to_vec()),
-                ),
-            );
-        });
-    });
 }
 
 #[derive(Clone)]
