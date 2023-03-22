@@ -41,10 +41,8 @@ jobs:
         with:
           target: wasm32-unknown-unknown
       - name: Run clippy
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          working-directory: web
+        working-directory: web
+        run: cargo clippy --workspace
 
   test-linux:
     runs-on: ubuntu-20.04
