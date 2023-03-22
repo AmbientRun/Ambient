@@ -69,7 +69,7 @@ pub fn View(hooks: &mut Hooks) -> Element {
         Text::el("Small").small_style(),
         Button::new(format!("You have clicked the button {count} times"), move |_| set_count(count + 1))
             .el()
-            .with_background(vec4(0.0, 0.8, 0.8, 1.0)),
+            .with_background(vec4(0.0, 0.5, 0.5, 1.0)),
         TextEditor::new(text, set_text).placeholder(Some("Go ahead, type something clever")).el(),
         Separator { vertical: false }.el(),
         Text::el("Custom size").set(font_size(), 20.),

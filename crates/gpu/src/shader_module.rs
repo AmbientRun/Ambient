@@ -237,6 +237,14 @@ pub struct Shader {
     label: CowStr,
 }
 
+impl std::ops::Deref for Shader {
+    type Target = wgpu::ShaderModule;
+
+    fn deref(&self) -> &Self::Target {
+        &self.module
+    }
+}
+
 impl Shader {
     pub fn new(
         assets: &AssetCache,

@@ -173,8 +173,6 @@ impl MeshBuffer {
             index_count: mesh.indices.as_ref().map(|x| x.len()).unwrap_or_default() as u32,
         };
 
-        tracing::info!("Inserting new mesh {metadata:#?}");
-
         let mut internal_mesh = InternalMesh { metadata, ..Default::default() };
 
         match (&mesh.positions, &mesh.normals, &mesh.tangents, mesh.texcoords.first()) {
@@ -189,7 +187,6 @@ impl MeshBuffer {
 
                 let len = ([pos.len(), norm.len(), tan.len(), uv.len()]).into_iter().max().unwrap_or(0);
 
-                tracing::info!("Adding mesh with base count of {len}");
                 let mut data = vec![BaseMesh::default(); len];
 
                 pos.iter().zip(&mut data).for_each(|(src, dst)| dst.position = src.extend(0.0));
@@ -206,13 +203,13 @@ impl MeshBuffer {
         if let (Some(joints), Some(weights)) = (&mesh.joint_indices, &mesh.joint_weights) {
             let len = joints.len().max(weights.len());
 
-            let iter =
-                izip!(joints.iter().copied().chain(repeat(Default::default())), weights.iter().copied().chain(repeat(Default::default())))
-                    .map(|(joint, weights)| SkinnedMesh { joint, weights })
-                    .take(len);
+            let mut data = vec![SkinnedMesh::default(); len];
+
+            joints.iter().zip(&mut data).for_each(|(src, dst)| dst.joint = *src);
+            weights.iter().zip(&mut data).for_each(|(src, dst)| dst.weights = *src);
 
             self.skinned_buffer.front.resize(self.skinned_buffer.front.len() + len as u64, true);
-            self.skinned_buffer.front.write(metadata.skinned_offset as u64, &iter.collect_vec());
+            self.skinned_buffer.front.write(metadata.skinned_offset as u64, &data);
         }
 
         if let Some(indices) = &mesh.indices {

@@ -14,6 +14,7 @@ use ambient_std::{asset_cache::SyncAssetKeyExt, color::Color};
 use ambient_ui::app_background_color;
 use glam::{uvec2, UVec2};
 use parking_lot::Mutex;
+use wgpu::FilterMode;
 use winit::{
     dpi::PhysicalSize,
     event::{Event, WindowEvent},
@@ -80,6 +81,15 @@ impl ExamplesRender {
         let render_target = RenderTarget::new(gpu.clone(), wind_size, None);
 
         tracing::debug!("Creating self");
+
+        let is_srgb = gpu.swapchain_format().describe().srgb;
+        let gamma_correction = if !is_srgb {
+            tracing::info!("Output format is not in srgb colorspace. Applying manual gamma correction");
+            Some(2.2)
+        } else {
+            None
+        };
+
         Self {
             main: if main {
                 tracing::debug!("Creating renderer");
@@ -88,6 +98,7 @@ impl ExamplesRender {
                     world.resource(asset_cache()).clone(),
                     RendererConfig { scene: main_scene(), shadows: true, ..Default::default() },
                 );
+
                 tracing::debug!("Creating gizmo renderer");
                 renderer.post_transparent = Some(Box::new(GizmoRenderer::new(&assets)));
                 Some(renderer)
@@ -103,7 +114,8 @@ impl ExamplesRender {
             } else {
                 None
             },
-            blit: BlitterKey { format: gpu.swapchain_format().into(), linear: false }.get(&world.resource(asset_cache()).clone()),
+            blit: BlitterKey { format: gpu.swapchain_format().into(), min_filter: FilterMode::Nearest, gamma_correction }
+                .get(&world.resource(asset_cache()).clone()),
             render_target,
             gpu,
             size: wind_size,
@@ -181,6 +193,7 @@ impl System for ExamplesRender {
                 if self.main.is_some() { None } else { Some(app_background_color()) },
             );
         }
+
         if let Some(surface) = &self.gpu.surface {
             if self.size.x > 0 && self.size.y > 0 {
                 let frame = {
