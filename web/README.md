@@ -45,7 +45,7 @@ Open chrome (or another browser which supports webgpu)
 
 ## Known Issues
 
-Bad CPU type in executable:
+- Bad CPU type in executable:
 
   Occurs on Mac M1 and M2 as the `wasm-pack` installer attempts to download `wasm-bindgen`.
 
