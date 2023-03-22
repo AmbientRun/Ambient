@@ -415,7 +415,6 @@ dependencies = [
  "glam 0.22.0",
  "itertools",
  "lazy_static",
- "maplit",
  "ordered-float",
  "parking_lot",
  "paste",
@@ -423,6 +422,7 @@ dependencies = [
  "serde",
  "tokio",
  "tracing",
+ "tracing-subscriber",
  "wgpu 0.14.2",
  "winit",
  "yaml-rust-davvid",
@@ -676,6 +676,7 @@ dependencies = [
 name = "ambient_gpu"
 version = "0.2.0-dev"
 dependencies = [
+ "aho-corasick",
  "ambient_std",
  "ambient_sys",
  "anyhow",
@@ -1060,6 +1061,7 @@ dependencies = [
  "serde",
  "smallvec",
  "tracing",
+ "tracing-subscriber",
  "wgpu 0.14.2",
  "winit",
 ]
@@ -1417,13 +1419,19 @@ name = "ambient_web"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_app",
+ "ambient_cameras",
  "ambient_core",
  "ambient_ecs",
+ "ambient_element",
+ "ambient_renderer",
+ "ambient_std",
  "ambient_sys",
+ "ambient_ui",
  "anyhow",
  "chrono",
  "futures",
  "getrandom 0.2.8",
+ "glam 0.22.0",
  "time",
  "tracing",
  "tracing-subscriber",
@@ -4238,12 +4246,6 @@ checksum = "943968aefb9b0fdf36cccc03f6cd9d6698b23574ab49eccc185ae6c5cb6ad43e"
 dependencies = [
  "futures",
 ]
-
-[[package]]
-name = "maplit"
-version = "1.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e2e65a1a2e43cfcb47a895c4c8b10d1f4a61097f9f254f183aee60cad9c651d"
 
 [[package]]
 name = "matchers"

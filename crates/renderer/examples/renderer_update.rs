@@ -3,7 +3,7 @@ use ambient_core::{asset_cache, camera::active_camera, main_scene, transform::*}
 use ambient_ecs::{Entity, EntityId, FnSystem, World};
 use ambient_meshes::{CubeMeshKey, QuadMeshKey};
 use ambient_renderer::{
-    gpu_primitives,
+    gpu_primitives_lod, gpu_primitives_mesh,
     materials::flat_material::{get_flat_shader, FlatMaterial},
     primitives, RenderPrimitive, SharedMaterial,
 };
@@ -23,7 +23,8 @@ fn init(world: &mut World) -> (EntityId, EntityId, SharedMaterial, SharedMateria
             primitives(),
             vec![RenderPrimitive { shader: cb(get_flat_shader), material: red.clone(), mesh: CubeMeshKey.get(&assets), lod: 0 }],
         )
-        .with_default(gpu_primitives())
+        .with_default(gpu_primitives_mesh())
+        .with_default(gpu_primitives_lod())
         .with_default(local_to_world())
         .with_default(mesh_to_world())
         .with(translation(), vec3(-2.5, 0., 0.))
@@ -35,7 +36,8 @@ fn init(world: &mut World) -> (EntityId, EntityId, SharedMaterial, SharedMateria
             primitives(),
             vec![RenderPrimitive { shader: cb(get_flat_shader), material: green.clone(), mesh: CubeMeshKey.get(&assets), lod: 0 }],
         )
-        .with_default(gpu_primitives())
+        .with_default(gpu_primitives_mesh())
+        .with_default(gpu_primitives_lod())
         .with_default(local_to_world())
         .with_default(mesh_to_world())
         .with(translation(), vec3(2.5, 0., 0.))
@@ -50,7 +52,8 @@ fn init(world: &mut World) -> (EntityId, EntityId, SharedMaterial, SharedMateria
 }
 
 fn main() {
-    env_logger::init();
+    tracing_subscriber::fmt::init();
+
     AppBuilder::simple().block_on(|app: &mut App| {
         let assets = app.world.resource(asset_cache()).clone();
         let (entity1, entity2, material1, material2) = init(&mut app.world);

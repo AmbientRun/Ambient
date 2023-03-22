@@ -1,5 +1,5 @@
 
-@group(#GLOBALS_BIND_GROUP)
+@group(GLOBALS_BIND_GROUP)
 @binding(0)
 var default_sampler: sampler;
 
@@ -30,7 +30,7 @@ struct ShadowCamera {
     near: f32,
 };
 
-@group(#GLOBALS_BIND_GROUP)
+@group(GLOBALS_BIND_GROUP)
 @binding(1)
 var<uniform> global_params: ForwardGlobalParams;
 
@@ -38,26 +38,26 @@ struct ShadowCameras {
     cameras: array<ShadowCamera>,
 };
 
-@group(#GLOBALS_BIND_GROUP)
+@group(GLOBALS_BIND_GROUP)
 @binding(2)
 var<storage> shadow_cameras: ShadowCameras;
 
-@group(#GLOBALS_BIND_GROUP)
+@group(GLOBALS_BIND_GROUP)
 @binding(3)
 var shadow_sampler: sampler_comparison;
-@group(#GLOBALS_BIND_GROUP)
+@group(GLOBALS_BIND_GROUP)
 @binding(4)
 var shadow_texture: texture_depth_2d_array;
 
-@group(#GLOBALS_BIND_GROUP)
+@group(GLOBALS_BIND_GROUP)
 @binding(5)
 var solids_screen_color: texture_2d<f32>;
 
-@group(#GLOBALS_BIND_GROUP)
+@group(GLOBALS_BIND_GROUP)
 @binding(6)
 var solids_screen_depth: texture_depth_2d;
 
-@group(#GLOBALS_BIND_GROUP)
+@group(GLOBALS_BIND_GROUP)
 @binding(7)
 var solids_screen_normal_quat: texture_2d<f32>;
 
@@ -71,10 +71,10 @@ fn fetch_shadow_cascade(cascade: i32, homogeneous_coords: vec3<f32>) -> f32 {
 }
 
 fn get_shadow_cascade(world_position: vec4<f32>) -> i32 {
-    for (var i: i32=0; i < #SHADOW_CASCADES; i = i + 1) {
+    for (var i: i32 = 0; i < SHADOW_CASCADES; i = i + 1) {
         let cam = shadow_cameras.cameras[i];
         let p = cam.viewproj * world_position;
-        if (inside(p.xyz / p.w)) {
+        if inside(p.xyz / p.w) {
             return i;
         }
     }
@@ -82,12 +82,12 @@ fn get_shadow_cascade(world_position: vec4<f32>) -> i32 {
 }
 
 fn fetch_shadow(light_angle: f32, world_position: vec4<f32>) -> f32 {
-    for (var i: i32=0; i < #SHADOW_CASCADES; i = i + 1) {
+    for (var i: i32 = 0; i < SHADOW_CASCADES; i = i + 1) {
         // The texel size is in world coordinates, transform to depth buffer by
         // dividing by the depth of the camera
         let cam = shadow_cameras.cameras[i].viewproj * world_position;
         let p = cam.xyz / cam.w;
-        if (inside(p)) {
+        if inside(p) {
             return fetch_shadow_cascade(i, p);
         }
     }
@@ -140,44 +140,44 @@ fn get_solids_screen_normal_quat(screen_ndc: vec3<f32>) -> vec4<f32> {
 }
 
 struct MaterialInput {
-    position: vec4<f32>,
-    texcoord: vec2<f32>,
-    world_position: vec3<f32>,
-    normal: vec3<f32>,
-    normal_matrix: mat3x3<f32>,
-    instance_index: u32,
-    entity_loc: vec2<u32>,
-    local_position: vec3<f32>,
-};
+            position: vec4<f32>,
+            texcoord: vec2<f32>,
+            world_position: vec3<f32>,
+            normal: vec3<f32>,
+            normal_matrix: mat3x3<f32>,
+            instance_index: u32,
+            entity_loc: vec2<u32>,
+            local_position: vec3<f32>,
+        };
 
 struct MaterialOutput {
-    base_color: vec3<f32>,
-    emissive_factor: vec3<f32>,
-    opacity: f32,
-    alpha_cutoff: f32,
-    shading: f32,
-    normal: vec3<f32>,
-    metallic: f32,
-    roughness: f32,
-};
+            base_color: vec3<f32>,
+            emissive_factor: vec3<f32>,
+            opacity: f32,
+            alpha_cutoff: f32,
+            shading: f32,
+            normal: vec3<f32>,
+            metallic: f32,
+            roughness: f32,
+        };
 
 struct MainFsOut {
-    @location(0) color: vec4<f32>,
-    @location(1) normal: vec4<f32>,
-}
+            @location(0) color: vec4<f32>,
+            @location(1) normal: vec4<f32>,
+        }
 
 fn apply_fog(color: vec3<f32>, camera_pos: vec3<f32>, world_pos: vec3<f32>) -> vec3<f32> {
     // From https://developer.amd.com/wordpress/media/2012/10/Wenzel-Real-time_Atmospheric_Effects_in_Games.pdf
     let camera_to_world_pos = world_pos - camera_pos;
-    let vol_fog_height_density_at_viewer = exp( -global_params.fog_height_falloff * camera_pos.z );
+    let vol_fog_height_density_at_viewer = exp(-global_params.fog_height_falloff * camera_pos.z);
 
     var fog_int = length(camera_to_world_pos) * vol_fog_height_density_at_viewer;
     let slope_threashold = 0.01;
-    if (abs(camera_to_world_pos.z) > slope_threashold) {
+    if abs(camera_to_world_pos.z) > slope_threashold {
         let t = global_params.fog_height_falloff * camera_to_world_pos.z;
-        fog_int = fog_int * ( 1.0 - exp( -t ) ) / t;
+        fog_int = fog_int * (1.0 - exp(-t)) / t;
     }
-    let fog_amount = 1. - exp( -global_params.fog_density * fog_int );
+    let fog_amount = 1. - exp(-global_params.fog_density * fog_int);
     return mix(color, global_params.fog_color.rgb, clamp(fog_amount, 0., 1.));
 }
 
@@ -197,7 +197,7 @@ fn distribution_ggx(normal: vec3<f32>, h: vec3<f32>, roughness: f32) -> f32 {
     let ndoth = max(dot(normal, h), 0.0);
     let ndoth2 = ndoth * ndoth;
 
-    let numerator =a2;
+    let numerator = a2;
     let denom = ndoth2 * (a2 - 1.0) + 1.0;
 
     let denom2 = PI * denom * denom;
@@ -211,8 +211,7 @@ fn geometry_schlick_ggx(ndotv: f32, k: f32) -> f32 {
     return numerator / denom;
 }
 
-fn geometry_smith(normal: vec3<f32>, v: vec3<f32>, l: vec3<f32>, roughness: f32)
--> f32 {
+fn geometry_smith(normal: vec3<f32>, v: vec3<f32>, l: vec3<f32>, roughness: f32) -> f32 {
     // See prior comment about roughness squaring
     let a = (roughness * roughness) + 1.0;
 
@@ -224,13 +223,12 @@ fn geometry_smith(normal: vec3<f32>, v: vec3<f32>, l: vec3<f32>, roughness: f32)
     let ndotl = max(dot(normal, l), 0.0);
 
     return
-          geometry_schlick_ggx(ndotv, k)
-        * geometry_schlick_ggx(ndotl, k);
+          geometry_schlick_ggx(ndotv, k) * geometry_schlick_ggx(ndotl, k);
 }
 
 fn shading(material: MaterialOutput, world_position: vec4<f32>) -> vec4<f32> {
-    if (global_params.debug_shading > 0.0) {
-      return vec4(material.base_color.rgb, material.opacity);
+    if global_params.debug_shading > 0.0 {
+        return vec4(material.base_color.rgb, material.opacity);
     }
 
     let v = normalize(global_params.camera_position.xyz - world_position.xyz);
@@ -260,7 +258,7 @@ fn shading(material: MaterialOutput, world_position: vec4<f32>) -> vec4<f32> {
     //
     // This tint is approximated to the albedo when the metallic factor is high
     let f0 = mix(vec3<f32>(0.04), albedo, metallic);
-    let f = fresnel(max(dot(h,v), 0.0), f0);
+    let f = fresnel(max(dot(h, v), 0.0), f0);
 
     // Approximate microfacet alignment againt the halfway view direction
     let ndf = distribution_ggx(normal, h, roughness);
@@ -273,10 +271,7 @@ fn shading(material: MaterialOutput, world_position: vec4<f32>) -> vec4<f32> {
 
     /// dgf / (4 n*v n*l)
     let numerator = ndf * g * f;
-    let denom =
-        max(4.0
-        * ndotv
-        * ndotl, 0.001);
+    let denom = max(4.0 * ndotv * ndotl, 0.001);
 
 
     // Use fresnell scattering as a reflection coefficient
@@ -310,7 +305,7 @@ fn shading(material: MaterialOutput, world_position: vec4<f32>) -> vec4<f32> {
     color = mix(color, vec3(metallic, roughness, 0.0), global_params.debug_metallic_roughness);
     color = mix(color, normal, global_params.debug_normals);
 
-    if (global_params.fog != 0) {
+    if global_params.fog != 0 {
         color = apply_fog(color, global_params.camera_position.xyz, world_position.xyz);
     }
 
@@ -319,11 +314,10 @@ fn shading(material: MaterialOutput, world_position: vec4<f32>) -> vec4<f32> {
 
     // let color = vec3<f32>(max(dot(material.normal, l), 0.0), 0.0, 0.0);
 
-    return vec4<f32>(color,  material.opacity);
-
+    return vec4<f32>(color, material.opacity);
 }
 
 struct FSOutput {
-    @location(0) color: vec4<f32>,
-    @location(1) outline: vec4<f32>,
-};
+            @location(0) color: vec4<f32>,
+            @location(1) outline: vec4<f32>,
+        };

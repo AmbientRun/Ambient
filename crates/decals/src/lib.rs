@@ -5,6 +5,7 @@ use ambient_core::{
     asset_cache,
     async_ecs::async_run,
     bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere},
+    gpu_ecs::ENTITIES_BIND_GROUP,
     main_scene, mesh, runtime,
     transform::{local_to_world, mesh_to_world},
 };
@@ -12,9 +13,9 @@ use ambient_ecs::{components, query, Entity, MakeDefault, Networked, Store, Syst
 use ambient_gpu::shader_module::{Shader, ShaderModule};
 use ambient_meshes::CubeMeshKey;
 use ambient_renderer::{
-    color, get_forward_modules, gpu_primitives, material,
+    color, get_forward_modules, gpu_primitives_lod, gpu_primitives_mesh, material,
     pbr_material::{PbrMaterialFromUrl, PbrMaterialShaderKey},
-    primitives, renderer_shader, MaterialShader, RendererShader,
+    primitives, renderer_shader, MaterialShader, RendererShader, GLOBALS_BIND_GROUP, MATERIAL_BIND_GROUP, PRIMITIVES_BIND_GROUP,
 };
 use ambient_std::{
     asset_url::{MaterialAssetType, TypedAssetUrl},
@@ -22,6 +23,7 @@ use ambient_std::{
     shapes::AABB,
     unwrap_log_warn,
 };
+use ambient_ui::Editable;
 use glam::{Vec3, Vec4};
 
 components!("decals", {
@@ -34,21 +36,25 @@ pub struct DecalShaderKey {
     pub lit: bool,
     pub shadow_cascades: u32,
 }
+
 impl std::fmt::Debug for DecalShaderKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("DecalShaderKey").field("material_shader", &self.material_shader.id).field("lit", &self.lit).finish()
     }
 }
+
 impl SyncAssetKey<Arc<RendererShader>> for DecalShaderKey {
     fn load(&self, assets: AssetCache) -> Arc<RendererShader> {
         let id = format!("decal_shader_{}_{}", self.material_shader.id, self.lit);
-        let shader = Shader::from_modules(
+        let shader = Shader::new(
             &assets,
             id.clone(),
-            get_forward_modules(&assets, self.shadow_cascades)
-                .iter()
-                .chain([&self.material_shader.shader, &ShaderModule::new("DecalMaterial", include_file!("decal.wgsl"), vec![])]),
-        );
+            &[GLOBALS_BIND_GROUP, ENTITIES_BIND_GROUP, PRIMITIVES_BIND_GROUP, MATERIAL_BIND_GROUP],
+            &ShaderModule::new("decal_material", include_file!("decal.wgsl"))
+                .with_dependencies(get_forward_modules(&assets, self.shadow_cascades))
+                .with_dependency(self.material_shader.shader.clone()),
+        )
+        .unwrap();
 
         Arc::new(RendererShader {
             shader,
@@ -97,11 +103,13 @@ pub fn client_systems() -> SystemGroup {
                             )
                             .with(mesh(), CubeMeshKey.get(&assets))
                             .with(primitives(), vec![])
-                            .with_default(gpu_primitives())
+                            .with_default(gpu_primitives_mesh())
+                            .with_default(gpu_primitives_lod())
                             .with(main_scene(), ())
                             .with(local_bounding_aabb(), aabb)
                             .with(world_bounding_sphere(), aabb.to_sphere())
                             .with(world_bounding_aabb(), aabb);
+
                         if !world.has_component(id, local_to_world()) {
                             data.set(local_to_world(), Default::default());
                         }

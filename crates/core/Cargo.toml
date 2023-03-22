@@ -11,6 +11,7 @@ ambient_ecs = { path = "../ecs" }
 ambient_sys = { path = "../sys" }
 ambient_std = { path = "../std" }
 ambient_gpu = { path = "../gpu" }
+
 itertools = { workspace = true }
 yaml-rust = { workspace = true }
 tracing = { workspace = true }
@@ -30,4 +31,4 @@ serde = { workspace = true }
 chrono = { workspace = true }
 
 [dev-dependencies]
-maplit = { workspace = true }
+tracing-subscriber = { workspace = true }

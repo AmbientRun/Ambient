@@ -39,6 +39,7 @@ ambient_cameras = { path = "../cameras" }
 ambient_primitives = { path = "../primitives" }
 env_logger = { workspace = true }
 winit = { workspace = true }
+tracing-subscriber = { workspace = true }
 
 [features]
 hotload-includes = ['ambient_std/hotload-includes']

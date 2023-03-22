@@ -1,10 +1,11 @@
+use core::fmt;
 use std::{num::NonZeroU32, ops::Deref, str::FromStr, sync::Arc};
 
 use ambient_core::{asset_cache, async_ecs::async_run, gpu, mesh, runtime, transform::*, window::window_scale_factor};
 use ambient_ecs::{components, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
 use ambient_gpu::{mesh_buffer::GpuMesh, texture::Texture};
 use ambient_layout::{height, min_height, min_width, width};
-use ambient_renderer::{gpu_primitives, material, primitives, renderer_shader, SharedMaterial};
+use ambient_renderer::{gpu_primitives_lod, gpu_primitives_mesh, material, primitives, renderer_shader, SharedMaterial};
 use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt},
     asset_url::AbsAssetUrl,
@@ -92,9 +93,24 @@ pub enum FontFamily {
     FontAwesome { solid: bool },
     SourceSansPro,
 }
-impl FontFamily {
-    pub fn from_str(value: &str) -> anyhow::Result<Self> {
-        match value {
+
+impl fmt::Display for FontFamily {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            FontFamily::Default => write!(f, "Default"),
+            FontFamily::Custom(url) => write!(f, "{url}"),
+            FontFamily::FontAwesome { solid: false } => write!(f, "FontAwesome"),
+            FontFamily::FontAwesome { solid: true } => write!(f, "FontAwesomeSolid"),
+            FontFamily::SourceSansPro => write!(f, "Code"),
+        }
+    }
+}
+
+impl FromStr for FontFamily {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
             "Default" => Ok(Self::Default),
             "FontAwesome" => Ok(Self::FontAwesome { solid: false }),
             "FontAwesomeSolid" => Ok(Self::FontAwesome { solid: true }),
@@ -102,23 +118,17 @@ impl FontFamily {
             url => Ok(Self::Custom(AbsAssetUrl::parse(url)?)),
         }
     }
-    pub fn to_string(&self) -> String {
-        match self {
-            FontFamily::Default => "Default".to_string(),
-            FontFamily::Custom(url) => url.to_string(),
-            FontFamily::FontAwesome { solid: false } => "FontAwesome".to_string(),
-            FontFamily::FontAwesome { solid: true } => "FontAwesomeSolid".to_string(),
-            FontFamily::SourceSansPro => "Code".to_string(),
-        }
-    }
 }
+
 impl Default for FontFamily {
     fn default() -> Self {
         Self::Default
     }
 }
+
 #[derive(Debug, Clone)]
 struct FontDef(FontFamily, FontStyle);
+
 #[async_trait]
 impl AsyncAssetKey<Arc<FontArc>> for FontDef {
     async fn load(self, assets: AssetCache) -> Arc<FontArc> {
@@ -201,8 +211,10 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                 if !use_gpu {
                     return;
                 }
+
                 let assets = world.resource(asset_cache()).clone();
                 let gpu = world.resource(gpu()).clone();
+
                 for (id, _) in q.collect_cloned(world, qs) {
                     let texture = Arc::new(Texture::new(
                         gpu.clone(),
@@ -225,7 +237,8 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                                 .with(renderer_shader(), cb(get_text_shader))
                                 .with(material(), SharedMaterial::new(TextMaterial::new(assets.clone(), texture_view)))
                                 .with(primitives(), vec![])
-                                .with_default(gpu_primitives()),
+                                .with_default(gpu_primitives_mesh())
+                                .with_default(gpu_primitives_lod()),
                         )
                         .unwrap();
                 }

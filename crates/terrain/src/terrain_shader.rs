@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use ambient_core::gpu_ecs::ENTITIES_BIND_GROUP;
 use anyhow::Context;
 use async_trait::async_trait;
 
@@ -7,12 +8,14 @@ use ambient_ecs::World;
 use ambient_editor_derive::ElementEditor;
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
-    shader_module::{BindGroupDesc, Shader, ShaderModule},
+    shader_module::{BindGroupDesc, Shader, ShaderIdent, ShaderModule, WgslValue},
     std_assets::DefaultSamplerKey,
     texture::{Texture, TextureView},
     texture_loaders::TextureArrayFromUrls,
 };
-use ambient_renderer::{get_forward_modules, materials::pbr_material::PbrMaterialDesc, Material, RendererShader, MATERIAL_BIND_GROUP};
+use ambient_renderer::{
+    materials::pbr_material::PbrMaterialDesc, Material, RendererShader, GLOBALS_BIND_GROUP, MATERIAL_BIND_GROUP, PRIMITIVES_BIND_GROUP,
+};
 use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, MaterialAssetType, TypedAssetUrl},
@@ -24,7 +27,98 @@ use glam::{UVec2, Vec3};
 use serde::{Deserialize, Serialize};
 use wgpu::{util::DeviceExt, BindGroup};
 
-use super::wgsl_terrain_preprocess;
+use crate::{TerrainLayers, TERRAIN_BASE};
+
+fn get_terrain_layout() -> BindGroupDesc<'static> {
+    BindGroupDesc {
+        entries: vec![
+            // terrain_params
+            wgpu::BindGroupLayoutEntry {
+                binding: 0,
+                visibility: wgpu::ShaderStages::VERTEX_FRAGMENT,
+                ty: wgpu::BindingType::Buffer { ty: wgpu::BufferBindingType::Uniform, has_dynamic_offset: false, min_binding_size: None },
+                count: None,
+            },
+            // heightmap_sampler
+            wgpu::BindGroupLayoutEntry {
+                binding: 1,
+                visibility: wgpu::ShaderStages::VERTEX_FRAGMENT,
+                ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+                count: None,
+            },
+            // heightmap
+            wgpu::BindGroupLayoutEntry {
+                binding: 2,
+                visibility: wgpu::ShaderStages::VERTEX_FRAGMENT,
+                ty: wgpu::BindingType::Texture {
+                    sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                    view_dimension: wgpu::TextureViewDimension::D2Array,
+                    multisampled: false,
+                },
+                count: None,
+            },
+            // normalmap
+            wgpu::BindGroupLayoutEntry {
+                binding: 3,
+                visibility: wgpu::ShaderStages::FRAGMENT,
+                ty: wgpu::BindingType::Texture {
+                    sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                    view_dimension: wgpu::TextureViewDimension::D2,
+                    multisampled: false,
+                },
+                count: None,
+            },
+            // base_colors
+            wgpu::BindGroupLayoutEntry {
+                binding: 4,
+                visibility: wgpu::ShaderStages::FRAGMENT,
+                ty: wgpu::BindingType::Texture {
+                    sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                    view_dimension: wgpu::TextureViewDimension::D2Array,
+                    multisampled: false,
+                },
+                count: None,
+            },
+            // texture_normals
+            wgpu::BindGroupLayoutEntry {
+                binding: 5,
+                visibility: wgpu::ShaderStages::FRAGMENT,
+                ty: wgpu::BindingType::Texture {
+                    sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                    view_dimension: wgpu::TextureViewDimension::D2Array,
+                    multisampled: false,
+                },
+                count: None,
+            },
+            // texture_sampler
+            wgpu::BindGroupLayoutEntry {
+                binding: 6,
+                visibility: wgpu::ShaderStages::FRAGMENT,
+                ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+                count: None,
+            },
+            // terrain_mat_def
+            wgpu::BindGroupLayoutEntry {
+                binding: 7,
+                visibility: wgpu::ShaderStages::FRAGMENT,
+                ty: wgpu::BindingType::Buffer { ty: wgpu::BufferBindingType::Uniform, has_dynamic_offset: false, min_binding_size: None },
+                count: None,
+            },
+            // noise_texture
+            wgpu::BindGroupLayoutEntry {
+                binding: 8,
+                visibility: wgpu::ShaderStages::FRAGMENT,
+                ty: wgpu::BindingType::Texture {
+                    sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                    view_dimension: wgpu::TextureViewDimension::D2,
+                    multisampled: false,
+                },
+                count: None,
+            },
+        ],
+        label: MATERIAL_BIND_GROUP.into(),
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct TerrainShaderKey {
@@ -32,112 +126,30 @@ pub struct TerrainShaderKey {
 }
 impl SyncAssetKey<Arc<RendererShader>> for TerrainShaderKey {
     fn load(&self, assets: AssetCache) -> Arc<RendererShader> {
-        let layout = BindGroupDesc {
-            entries: vec![
-                // terrain_params
-                wgpu::BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: wgpu::ShaderStages::VERTEX_FRAGMENT,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
-                },
-                // heightmap_sampler
-                wgpu::BindGroupLayoutEntry {
-                    binding: 1,
-                    visibility: wgpu::ShaderStages::VERTEX_FRAGMENT,
-                    ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
-                    count: None,
-                },
-                // heightmap
-                wgpu::BindGroupLayoutEntry {
-                    binding: 2,
-                    visibility: wgpu::ShaderStages::VERTEX_FRAGMENT,
-                    ty: wgpu::BindingType::Texture {
-                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                        view_dimension: wgpu::TextureViewDimension::D2Array,
-                        multisampled: false,
-                    },
-                    count: None,
-                },
-                // normalmap
-                wgpu::BindGroupLayoutEntry {
-                    binding: 3,
-                    visibility: wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Texture {
-                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                        view_dimension: wgpu::TextureViewDimension::D2,
-                        multisampled: false,
-                    },
-                    count: None,
-                },
-                // base_colors
-                wgpu::BindGroupLayoutEntry {
-                    binding: 4,
-                    visibility: wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Texture {
-                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                        view_dimension: wgpu::TextureViewDimension::D2Array,
-                        multisampled: false,
-                    },
-                    count: None,
-                },
-                // texture_normals
-                wgpu::BindGroupLayoutEntry {
-                    binding: 5,
-                    visibility: wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Texture {
-                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                        view_dimension: wgpu::TextureViewDimension::D2Array,
-                        multisampled: false,
-                    },
-                    count: None,
-                },
-                // texture_sampler
-                wgpu::BindGroupLayoutEntry {
-                    binding: 6,
-                    visibility: wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
-                    count: None,
-                },
-                // terrain_mat_def
-                wgpu::BindGroupLayoutEntry {
-                    binding: 7,
-                    visibility: wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
-                },
-                // noise_texture
-                wgpu::BindGroupLayoutEntry {
-                    binding: 8,
-                    visibility: wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Texture {
-                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                        view_dimension: wgpu::TextureViewDimension::D2,
-                        multisampled: false,
-                    },
-                    count: None,
-                },
-            ],
-            label: MATERIAL_BIND_GROUP.into(),
-        };
-
-        let shader = Shader::from_modules(
+        let shader = Shader::new(
             &assets,
             "terrrain shader",
-            get_forward_modules(&assets, self.shadow_cascades).iter().chain([&ShaderModule::new(
-                "Terrain",
-                wgsl_terrain_preprocess(include_file!("terrain.wgsl")),
-                vec![layout.into()],
-            )]),
-        );
+            &[GLOBALS_BIND_GROUP, ENTITIES_BIND_GROUP, PRIMITIVES_BIND_GROUP, MATERIAL_BIND_GROUP],
+            &ShaderModule::new("Terrain", include_file!("./terrain.wgsl"))
+                .with_binding_desc(get_terrain_layout())
+                .with_ident(ShaderIdent::constant("TERRAIN_FUNCS", WgslValue::Raw(include_str!("terrain_funcs.wgsl").into())))
+                .with_ident(ShaderIdent::constant("GET_HARDNESS", WgslValue::Raw(include_str!("brushes/get_hardness.wgsl").into())))
+                .with_ident(ShaderIdent::constant("ROCK_LAYER", TerrainLayers::Rock as u32))
+                .with_ident(ShaderIdent::constant("SOIL_LAYER", TerrainLayers::Soil as u32))
+                .with_ident(ShaderIdent::constant("SEDIMENT_LAYER", TerrainLayers::Sediment as u32))
+                .with_ident(ShaderIdent::constant("WATER_LAYER", TerrainLayers::Water as u32))
+                .with_ident(ShaderIdent::constant("WATER_OUTFLOW_L_LAYER", TerrainLayers::WaterOutflowL as u32))
+                .with_ident(ShaderIdent::constant("WATER_OUTFLOW_R_LAYER", TerrainLayers::WaterOutflowR as u32))
+                .with_ident(ShaderIdent::constant("WATER_OUTFLOW_T_LAYER", TerrainLayers::WaterOutflowT as u32))
+                .with_ident(ShaderIdent::constant("WATER_OUTFLOW_B_LAYER", TerrainLayers::WaterOutflowB as u32))
+                .with_ident(ShaderIdent::constant("WATER_VELOCITY_X_LAYER", TerrainLayers::WaterVelocityX as u32))
+                .with_ident(ShaderIdent::constant("WATER_VELOCITY_Y_LAYER", TerrainLayers::WaterVelocityY as u32))
+                .with_ident(ShaderIdent::constant("HARDNESS_LAYER", TerrainLayers::Hardness as u32))
+                .with_ident(ShaderIdent::constant("HARDNESS_STRATA_AMOUNT_LAYER", TerrainLayers::HardnessStrataAmount as u32))
+                .with_ident(ShaderIdent::constant("HARDNESS_STRATA_WAVELENGTH_LAYER", TerrainLayers::HardnessStrataWavelength as u32))
+                .with_ident(ShaderIdent::constant("TERRAIN_BASE", TERRAIN_BASE)),
+        )
+        .unwrap();
 
         Arc::new(RendererShader {
             shader,
@@ -183,7 +195,8 @@ impl TerrainMaterial {
         material_def: TerrainMaterialDef,
     ) -> Self {
         let gpu = GpuKey.get(&assets);
-        let layout = TerrainShaderKey { shadow_cascades: 1 }.get(&assets).material_layout().clone();
+        let layout = get_terrain_layout().get(&assets);
+
         let params_buffer = gpu.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("TerrainMaterial.params_buffer"),
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
@@ -235,7 +248,7 @@ impl Material for TerrainMaterial {
         let params = self.params;
         self.gpu.queue.write_buffer(&self.buffer, 0, bytemuck::cast_slice(&[params]));
     }
-    fn bind(&self) -> &BindGroup {
+    fn bind_group(&self) -> &BindGroup {
         &self.bind_group
     }
 

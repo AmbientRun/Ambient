@@ -199,29 +199,26 @@ impl Default for BrushCursorMaterialParams {
     }
 }
 
+fn get_brush_cursor_layout() -> BindGroupDesc<'static> {
+    BindGroupDesc {
+        entries: vec![wgpu::BindGroupLayoutEntry {
+            binding: 0,
+            visibility: wgpu::ShaderStages::FRAGMENT,
+            ty: wgpu::BindingType::Buffer { ty: wgpu::BufferBindingType::Uniform, has_dynamic_offset: false, min_binding_size: None },
+            count: None,
+        }],
+        label: MATERIAL_BIND_GROUP.into(),
+    }
+}
+
 #[derive(Debug)]
 pub struct BrushCursorShaderMaterialKey;
 impl SyncAssetKey<Arc<MaterialShader>> for BrushCursorShaderMaterialKey {
     fn load(&self, _assets: AssetCache) -> Arc<MaterialShader> {
         Arc::new(MaterialShader {
             id: "BrushCursorShaderMaterial".to_string(),
-            shader: ShaderModule::new(
-                "BrushCursor",
-                [include_str!("brush_cursor.wgsl")].concat(),
-                vec![BindGroupDesc {
-                    entries: vec![wgpu::BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Buffer {
-                            ty: wgpu::BufferBindingType::Uniform,
-                            has_dynamic_offset: false,
-                            min_binding_size: None,
-                        },
-                        count: None,
-                    }],
-                    label: MATERIAL_BIND_GROUP.into(),
-                }
-                .into()],
+            shader: Arc::new(
+                ShaderModule::new("BrushCursor", [include_str!("brush_cursor.wgsl")].concat()).with_binding_desc(get_brush_cursor_layout()),
             ),
         })
     }
@@ -237,7 +234,8 @@ pub struct BrushCursorMaterial {
 impl BrushCursorMaterial {
     pub fn new(assets: &AssetCache) -> Self {
         let gpu = GpuKey.get(assets);
-        let layout = BrushCursorShaderMaterialKey.get(assets).shader.first_layout(assets);
+        let layout = get_brush_cursor_layout().get(assets);
+
         let buffer = gpu.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("BrushCursorMaterial.buffer"),
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
@@ -268,7 +266,7 @@ impl BrushCursorMaterial {
     }
 }
 impl Material for BrushCursorMaterial {
-    fn bind(&self) -> &BindGroup {
+    fn bind_group(&self) -> &BindGroup {
         &self.bind_group
     }
 

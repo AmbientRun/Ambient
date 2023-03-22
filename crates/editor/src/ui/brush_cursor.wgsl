@@ -5,19 +5,19 @@ struct PickerMaterialParams {
     brush_remapped_strength: f32,
     shape: i32,
 };
-@group(#MATERIAL_BIND_GROUP)
+@group(MATERIAL_BIND_GROUP)
 @binding(0)
 var<uniform> params: PickerMaterialParams;
 
 fn get_material(in: MaterialInput) -> MaterialOutput {
 
     var distance_factor = 0.0;
-    if (params.shape == 0) {
+    if params.shape == 0 {
         let d = length(in.world_position - params.brush_position);
         distance_factor = smoothstep(1.0, 0.0, min(1.0, d / params.brush_radius));
     } else {
         let d = abs(in.world_position - params.brush_position);
-        if (d.x < params.brush_radius && d.y < params.brush_radius) {
+        if d.x < params.brush_radius && d.y < params.brush_radius {
             distance_factor = 1.0;
         }
     }
@@ -27,22 +27,22 @@ fn get_material(in: MaterialInput) -> MaterialOutput {
         case 0 { // Raise
             target_color = vec3<f32>(0.0, 1.0, 0.0);
         }
-        case 1 { // Lower
-            target_color = vec3<f32>(1.0, 0.0, 0.0);
+    case 1 { // Lower
+        target_color = vec3<f32>(1.0, 0.0, 0.0);
         }
-        case 2 { // Flatten
-            target_color = vec3<f32>(1.0, 1.0, 0.0);
+    case 2 { // Flatten
+        target_color = vec3<f32>(1.0, 1.0, 0.0);
         }
-        case 3 { // Erode
-            target_color = vec3<f32>(0.0, 0.6, 0.54);
+    case 3 { // Erode
+        target_color = vec3<f32>(0.0, 0.6, 0.54);
         }
-        case 5 { // Thermal
-            target_color = vec3<f32>(1.0, 0.4, 0.0);
+    case 5 { // Thermal
+        target_color = vec3<f32>(1.0, 0.4, 0.0);
         }
-        default {
+    default {
             // Erode2
-        }
     }
+}
 
     // The alpha consists of three components:
     //  - the grid falloff, which controls the appearance of a grid (lines centered around -0.1 to 0.1)

@@ -1,7 +1,10 @@
 use std::{
-    marker::PhantomData, ops::{DerefMut, RangeBounds}, sync::{
-        atomic::{AtomicUsize, Ordering}, Arc
-    }
+    marker::PhantomData,
+    ops::{DerefMut, RangeBounds},
+    sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc,
+    },
 };
 
 use wgpu::{util::DeviceExt, BufferAddress, BufferAsyncError};
@@ -200,7 +203,7 @@ impl<T: bytemuck::Pod> TypedBuffer<T> {
     }
 
     /// Size in bytes
-    pub fn size(&self) -> u64 {
+    pub fn byte_size(&self) -> u64 {
         self.buffer.size()
     }
 

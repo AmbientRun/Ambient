@@ -17,14 +17,21 @@ ambient_sys = { path = "../crates/sys", features = [
     "console_error_panic_hook",
 ] }
 ambient_core = { path = "../crates/core" }
+ambient_std = { path = "../crates/std" }
 ambient_ecs = { path = "../crates/ecs" }
 ambient_app = { path = "../crates/app" }
+ambient_ui = { path = "../crates/ui" }
+ambient_cameras = { path = "../crates/cameras/" }
+ambient_renderer = { path = "../crates/renderer/" }
+ambient_element = { path = "../shared_crates/element/" }
 
 anyhow = { workspace = true }
+glam = { workspace = true }
 
+# Web specific stuff
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
-tracing-subscriber = { version = "0.3", features = ["time"] }
+tracing-subscriber = { workspace = true, features = ["time"] }
 tracing-web = "0.1"
 time = { version = "0.3", features = ["wasm-bindgen"] }
 chrono = { workspace = true, features = ["wasmbind"] }

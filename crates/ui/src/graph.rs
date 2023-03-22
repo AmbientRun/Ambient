@@ -8,8 +8,8 @@ use ambient_core::{
 use ambient_element::{Element, ElementComponent, ElementComponentExt};
 use ambient_gpu::{self, mesh_buffer::MeshBufferKey};
 use ambient_renderer::{
-    color, flat_material::get_flat_shader_unlit, gpu_primitives, material, materials::flat_material::FlatMaterial, primitives,
-    renderer_shader, SharedMaterial,
+    color, flat_material::get_flat_shader_unlit, gpu_primitives_lod, gpu_primitives_mesh, material, materials::flat_material::FlatMaterial,
+    primitives, renderer_shader, SharedMaterial,
 };
 use ambient_std::{asset_cache::SyncAssetKeyExt, cb, mesh::Mesh};
 use glam::{vec2, vec3, Quat, Vec2, Vec3, Vec4};
@@ -220,7 +220,8 @@ impl ElementComponent for Graph {
         Element::from(UIBase)
             .init_default(mesh_to_local())
             .init_default(primitives())
-            .init_default(gpu_primitives())
+            .init_default(gpu_primitives_mesh())
+            .init_default(gpu_primitives_lod())
             .children(guides)
             .init_default(mesh_to_local_from_size())
             .init(crate::width(), width)

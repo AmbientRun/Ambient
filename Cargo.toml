@@ -9,6 +9,7 @@ version = "0.2.0-dev"
 rust-version = "1.67"
 
 [workspace.dependencies]
+aho-corasick = "0.7.20"
 # TEMP: https://github.com/aclysma/profiling/pull/45
 profiling = { git = "https://github.com/philpax/profiling.git", features = [
     "profile-with-puffin",

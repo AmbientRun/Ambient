@@ -24,7 +24,7 @@ pub fn register_server_datagram_handler(handlers: &mut ambient_network::server::
             let mut state = state.lock();
             if let Some(world) = state.get_player_world_mut(user_id) {
                 if let Some(player_id) = get_player_by_user_id(world, user_id) {
-                    world.set(player_id, player_raw_input(), input.clone()).ok();
+                    world.set(player_id, player_raw_input(), input).ok();
                 }
             }
         }),

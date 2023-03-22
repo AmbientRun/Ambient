@@ -406,6 +406,8 @@ impl ElementComponent for Hotkey {
             move |world, event| {
                 if let Some(pressed) = event.get(event_keyboard_input()) {
                     let modifiers = ModifiersState::from_bits(event.get(keyboard_modifiers()).unwrap()).unwrap();
+
+                    // FIXME: get_ref returns `&T` on native, but `T` on guest
                     if let Some(virtual_keycode) = event.get_ref(keycode()).and_then(|x| VirtualKeyCode::from_str(&x).ok()) {
                         let shortcut_pressed = modifiers == hotkey_modifier && virtual_keycode == hotkey;
                         if shortcut_pressed {

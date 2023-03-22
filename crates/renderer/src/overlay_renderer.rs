@@ -15,9 +15,7 @@ use wgpu::{
     RenderPassDescriptor, RenderPipeline,
 };
 
-use super::{
-    material, overlay, renderer_shader, FSMain, RendererResources, RendererShader, RendererTarget, SharedMaterial, MATERIAL_BIND_GROUP,
-};
+use super::{material, overlay, renderer_shader, FSMain, RendererResources, RendererShader, RendererTarget, SharedMaterial};
 use crate::RendererConfig;
 
 struct OverlayEntity {
@@ -126,7 +124,7 @@ impl OverlayRenderer {
         }
     }
 
-    pub fn render(&self, cmds: &mut CommandEncoder, target: &RendererTarget, binds: &[(&str, &BindGroup)], mesh_buffer: &MeshBuffer) {
+    pub fn render(&self, cmds: &mut CommandEncoder, target: &RendererTarget, bind_groups: &[&BindGroup], mesh_buffer: &MeshBuffer) {
         let mut renderpass = cmds.begin_render_pass(&RenderPassDescriptor {
             label: Some("Overlay"),
             color_attachments: &[Some(RenderPassColorAttachment {
@@ -135,7 +133,7 @@ impl OverlayRenderer {
                 ops: wgpu::Operations { load: wgpu::LoadOp::Load, store: true },
             })],
             depth_stencil_attachment: Some(RenderPassDepthStencilAttachment {
-                view: target.depth(),
+                view: target.depth_stencil(),
                 depth_ops: Some(wgpu::Operations { load: wgpu::LoadOp::Load, store: true }),
                 stencil_ops: None,
             }),
@@ -149,15 +147,18 @@ impl OverlayRenderer {
             let indices = mesh_buffer.indices_of(&self.mesh);
 
             let pipeline = &self.pipelines[e.shader];
+
             if !is_bound {
-                for (name, group) in binds {
-                    pipeline.bind(&mut renderpass, name, group);
+                for (i, bind_group) in bind_groups.iter().enumerate() {
+                    renderpass.set_bind_group(i as _, bind_group, &[]);
                     is_bound = true
                 }
             }
+
             renderpass.set_pipeline(pipeline.pipeline());
             let material = &e.material;
-            pipeline.bind(&mut renderpass, MATERIAL_BIND_GROUP, material.bind());
+
+            renderpass.set_bind_group(bind_groups.len() as _, material.bind_group(), &[]);
 
             renderpass.draw_indexed(indices, 0, 0..1);
         }

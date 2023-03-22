@@ -41,6 +41,7 @@ pub struct Two {
     first: Element,
     second: Element,
 }
+
 impl ElementComponent for Two {
     fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
         Element::from(UIBase)
