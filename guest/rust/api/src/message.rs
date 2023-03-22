@@ -41,3 +41,52 @@ mod client {
 
 #[cfg(feature = "client")]
 pub use client::*;
+
+#[cfg(feature = "server")]
+mod server {
+
+    use crate::{
+        components::core::wasm::message::{data, source_module, source_network_user_id},
+        event,
+        global::{on, EntityId, EventResult},
+    };
+
+    #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug)]
+    /// Where a message came from.
+    pub enum Source {
+        /// This message came from the corresponding clientside module and was sent from `user_id`.
+        Network {
+            /// The user that sent this message.
+            user_id: String,
+        },
+        /// This message came from another serverside module.
+        Module(EntityId),
+    }
+
+    /// Subscribe to a network message and receive the payload as raw bytes.
+    pub fn subscribe_bytes(
+        name: impl AsRef<str>,
+        callback: impl FnMut(Source, Vec<u8>) -> EventResult + 'static,
+    ) {
+        let mut callback = Box::new(callback);
+        on(
+            &format!("{}/{}", event::MODULE_MESSAGE, name.as_ref()),
+            move |e| {
+                let source = if let Some(user_id) = e.get(source_network_user_id()) {
+                    Source::Network { user_id }
+                } else if let Some(module) = e.get(source_module()) {
+                    Source::Module(module)
+                } else {
+                    panic!("No source available for incoming message");
+                };
+
+                let data = e.get(data()).expect("No data for incoming message");
+
+                callback(source, data)
+            },
+        );
+    }
+}
+
+#[cfg(feature = "server")]
+pub use server::*;

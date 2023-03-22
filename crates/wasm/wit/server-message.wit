@@ -1,11 +1,16 @@
 default interface server-message {
     use pkg.types.{entity-id}
 
+    variant source {
+        network(string),
+        module(entity-id),
+    }
+
     variant target {
         player-broadcast-unreliable,
         player-broadcast-reliable,
-        player-targeted-unreliable(entity-id),
-        player-targeted-reliable(entity-id),
+        player-targeted-unreliable(string),
+        player-targeted-reliable(string),
         module-broadcast,
         module(entity-id),
     }

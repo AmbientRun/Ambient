@@ -31,5 +31,12 @@ pub async fn main() -> EventResult {
         }
     }
 
+    message::subscribe_bytes("test", |source, data| {
+        println!("{source:?}");
+        println!("{:?}", String::from_utf8(data));
+
+        EventOk
+    });
+
     EventOk
 }

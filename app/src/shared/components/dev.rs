@@ -51,6 +51,8 @@ fn make_components() -> toml_edit::Table {
         ("core::layout", "Layout", "Layout components such as flow, margins etc."),
         ("core::rect", "Rect", "Rounded corners rectangle rendering components, with an optional border."),
         ("core::text", "Text", "Text rendering."),
+        ("core::wasm", "WASM", "Internal implementation details of WASM integration."),
+        ("core::wasm::message", "WASM messaging", "Information attached to a message sent across WASM boundaries."),
     ];
 
     for (path, name, description) in namespaces {

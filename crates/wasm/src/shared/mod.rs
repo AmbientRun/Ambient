@@ -10,9 +10,8 @@ pub mod wit;
 use std::sync::Arc;
 
 use ambient_ecs::{
-    components, dont_despawn_on_unload, query, world_events, ComponentEntry, Debuggable,
-    Description, Entity, EntityId, FnSystem, Networked, Resource, Store, SystemGroup, World,
-    WorldEventReader,
+    dont_despawn_on_unload, query, world_events, ComponentEntry, Entity, EntityId, FnSystem,
+    SystemGroup, World, WorldEventReader,
 };
 use ambient_physics::{collider_loads, collisions, PxShapeUserData};
 use ambient_project::Identifier;
@@ -20,26 +19,59 @@ use itertools::Itertools;
 pub use module::*;
 use physxx::{PxRigidActor, PxRigidActorRef, PxUserData};
 
-components!("wasm::shared", {
-    @[Networked, Store, Debuggable]
-    module: (),
-    module_state: ModuleState,
-    @[Store, Description["Bytecode of a WASM component; if attached, will be run."]]
-    module_bytecode: ModuleBytecode,
-    @[Networked, Store, Debuggable, Description["Asset URL for the bytecode of a clientside WASM component."]]
-    client_bytecode_from_url: String,
-    @[Networked, Store, Debuggable]
-    module_enabled: bool,
-    @[Networked, Store, Debuggable]
-    module_errors: ModuleErrors,
-    @[Networked, Debuggable, Description["The ID of the module on the \"other side\" of this module, if available. (e.g. serverside module to clientside module)."]]
-    remote_paired_id: EntityId,
+mod internal {
+    use ambient_ecs::{
+        components, Debuggable, Description, EntityId, Networked, Resource, Store, World,
+    };
+    use std::sync::Arc;
 
-    @[Resource, Description["Used to signal messages from the WASM host/runtime."]]
-    messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
-    @[Resource]
-    module_state_maker: Arc<dyn Fn(ModuleStateArgs<'_>) -> anyhow::Result<ModuleState> + Sync + Send>,
-});
+    use super::{MessageType, ModuleBytecode, ModuleErrors, ModuleState, ModuleStateArgs};
+
+    components!("wasm::shared", {
+        @[Networked, Store, Debuggable]
+        module: (),
+        module_state: ModuleState,
+        @[Store, Description["Bytecode of a WASM component; if attached, will be run."]]
+        module_bytecode: ModuleBytecode,
+        @[Networked, Store, Debuggable, Description["Asset URL for the bytecode of a clientside WASM component."]]
+        client_bytecode_from_url: String,
+        @[Networked, Store, Debuggable]
+        module_enabled: bool,
+        @[Networked, Store, Debuggable]
+        module_errors: ModuleErrors,
+        @[Networked, Debuggable, Description["The ID of the module on the \"other side\" of this module, if available. (e.g. serverside module to clientside module)."]]
+        remote_paired_id: EntityId,
+
+        @[Resource, Description["Used to signal messages from the WASM host/runtime."]]
+        messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
+        @[Resource]
+        module_state_maker: Arc<dyn Fn(ModuleStateArgs<'_>) -> anyhow::Result<ModuleState> + Sync + Send>,
+    });
+}
+pub use internal::{
+    client_bytecode_from_url, messenger, module, module_bytecode, module_enabled, module_errors,
+    module_state, module_state_maker, remote_paired_id,
+};
+
+pub mod message {
+    use ambient_ecs::{components, Debuggable, Description, EntityId, Name};
+
+    components!("wasm::message", {
+        @[Debuggable, Name["Source: Network (User ID)"], Description["This message came from this user."]]
+        source_network_user_id: String,
+
+        @[Debuggable, Name["Source: Module"], Description["This message came from this module on this side."]]
+        source_module: EntityId,
+
+        @[Debuggable, Name["Data"], Description["The data payload of a message."]]
+        data: Vec<u8>,
+    });
+}
+
+pub fn init_all_components() {
+    internal::init_components();
+    message::init_components();
+}
 
 pub const MAXIMUM_ERROR_COUNT: usize = 5;
 pub const NETWORK_MAX_STREAM_LENGTH: usize = 10 * 1024 * 1024;
@@ -59,11 +91,11 @@ pub struct RunContext {
     pub time: f32,
 }
 impl RunContext {
-    pub fn new(world: &World, event_name: &str, event_data: Entity) -> Self {
+    pub fn new(world: &World, event_name: impl Into<String>, event_data: Entity) -> Self {
         let time = ambient_app::get_time_since_app_start(world).as_secs_f32();
 
         Self {
-            event_name: event_name.to_string(),
+            event_name: event_name.into(),
             event_data,
             time,
         }
@@ -194,7 +226,7 @@ pub fn run_all(world: &mut World, context: &RunContext) {
     let errors: Vec<(EntityId, String)> = query(module_state())
         .collect_cloned(world, None)
         .into_iter()
-        .flat_map(|(id, sms)| run(world, id, sms, context))
+        .flat_map(|(id, sms)| run_without_error_update(world, id, sms, context))
         .collect();
 
     update_errors(world, &errors);
@@ -240,7 +272,7 @@ fn load(
     match result {
         Ok(sms) => {
             // Run the initial startup event.
-            errors.extend(run(
+            errors.extend(run_without_error_update(
                 world,
                 module_id,
                 sms.clone(),
@@ -260,7 +292,7 @@ pub(crate) fn unload(
 ) -> Vec<(EntityId, String)> {
     let Ok(sms) = world.get_cloned(module_id, module_state()) else { return vec![]; };
 
-    let errors = run(
+    let errors = run_without_error_update(
         world,
         module_id,
         sms,
@@ -318,7 +350,13 @@ pub(crate) fn update_errors(world: &mut World, errors: &[(EntityId, String)]) {
     }
 }
 
-fn run(
+pub fn run(world: &mut World, id: EntityId, state: ModuleState, context: &RunContext) {
+    if let Some((id, message)) = run_without_error_update(world, id, state, context) {
+        update_errors(world, &[(id, message)]);
+    }
+}
+
+pub fn run_without_error_update(
     world: &mut World,
     id: EntityId,
     mut state: ModuleState,

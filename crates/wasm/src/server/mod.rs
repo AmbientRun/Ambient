@@ -1,6 +1,6 @@
-use crate::shared::{self, remote_paired_id, wit, NETWORK_MAX_STREAM_LENGTH};
+use crate::shared::{self, module_state, remote_paired_id, wit, NETWORK_MAX_STREAM_LENGTH};
 use ambient_core::{async_ecs::async_run, runtime};
-use ambient_ecs::{query, EntityId, FnSystem, SystemGroup, World};
+use ambient_ecs::{query, Entity, EntityId, FnSystem, SystemGroup, World};
 use ambient_network::{
     server::{
         bi_stream_handlers, datagram_handlers, uni_stream_handlers, ForkingEvent,
@@ -97,9 +97,18 @@ fn on_datagram(state: SharedServerState, _asset_cache: AssetCache, user_id: &Str
     let position = cursor.position();
     let data = &bytes[usize::try_from(position).unwrap()..];
 
-    dbg!(name);
-    dbg!(module_id);
-    dbg!(std::str::from_utf8(&data));
+    shared::run(
+        world,
+        module_id,
+        world.get_cloned(module_id, module_state()).unwrap(),
+        &shared::RunContext::new(
+            world,
+            format!("{}/{}", ambient_event_types::MODULE_MESSAGE, name),
+            Entity::new()
+                .with(shared::message::source_network_user_id(), user_id.clone())
+                .with(shared::message::data(), data.to_vec()),
+        ),
+    );
 }
 
 fn on_bistream(
@@ -127,6 +136,7 @@ fn on_unistream(
     };
 
     let async_run = world.resource(async_run()).clone();
+    let user_id = user_id.clone();
     world.resource(runtime()).spawn(async move {
         let client_module_id = recv_stream.read_u128().await.unwrap();
         let client_module_id = EntityId(client_module_id);
@@ -144,9 +154,18 @@ fn on_unistream(
                 return;
             };
 
-            dbg!(name);
-            dbg!(module_id);
-            dbg!(std::str::from_utf8(&data));
+            shared::run(
+                world,
+                module_id,
+                world.get_cloned(module_id, module_state()).unwrap(),
+                &shared::RunContext::new(
+                    world,
+                    format!("{}/{}", ambient_event_types::MODULE_MESSAGE, name),
+                    Entity::new()
+                        .with(shared::message::source_network_user_id(), user_id)
+                        .with(shared::message::data(), data.to_vec()),
+                ),
+            );
         });
     });
 }

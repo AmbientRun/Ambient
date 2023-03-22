@@ -1341,6 +1341,7 @@ dependencies = [
  "ambient_app",
  "ambient_core",
  "ambient_ecs",
+ "ambient_event_types",
  "ambient_input",
  "ambient_network",
  "ambient_physics",
