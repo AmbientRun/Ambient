@@ -1,0 +1,26 @@
+{
+    "check": {
+        "cmd": "cargo check"
+    },
+    "test": {
+        "cmd": "cargo nextest run --workspace"
+    },
+    "build": {
+        "cmd": "wasm-pack build client --dev",
+        "components": {
+            "qf": {
+                "compiler": "cargo"
+            }
+        }
+    },
+    "check-tests": {
+        "cmd": "cargo check --workspace --tests --examples"
+    },
+    "run": {
+        "cmd": "npm run start",
+        "cwd": "www",
+        "env": {
+            "RUST_LOG": "info"
+        }
+    }
+}

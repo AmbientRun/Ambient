@@ -1,7 +1,7 @@
 [workspace]
 default-members = ["app"]
-exclude = ["guest", "tmp"]
-members = ["crates/*", "libs/*", "shared_crates/*", "tools/*", "app", "web"]
+exclude = ["guest", "tmp", "web"]
+members = ["crates/*", "libs/*", "shared_crates/*", "tools/*", "app"]
 resolver = "2"
 
 [workspace.package]
@@ -16,7 +16,7 @@ profiling = { git = "https://github.com/philpax/profiling.git", features = [
 ] }
 tracing = "0.1.35"
 tracing-tree = { version = "0.2" }
-tracing-subscriber = { version = "0.3.16", features = [ "env-filter" ] }
+tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
 tracing-log = { version = "0.1" }
 wgpu = "0.14.2"
 winit = { version = "0.28.1", features = ["serde"] }
@@ -142,7 +142,9 @@ russimp = { version = "1.0.6", features = ['prebuilt'] }
 #
 
 # Switch to 7.0.0 when released
-wasmtime = { git = "https://github.com/bytecodealliance/wasmtime.git", rev = "d3fdb5fc2c02c043e716f4aedf4854bb92705c7c", features = ["component-model"] }
+wasmtime = { git = "https://github.com/bytecodealliance/wasmtime.git", rev = "d3fdb5fc2c02c043e716f4aedf4854bb92705c7c", features = [
+    "component-model",
+] }
 # Use published versions of these crates when available, or pull them in ourselves
 wasi-common = { git = "https://github.com/bytecodealliance/preview2-prototyping.git", rev = "5836a6b0028f6fbdd094fbdd87df1ff4ca535168" }
 wasi-cap-std-sync = { git = "https://github.com/bytecodealliance/preview2-prototyping.git", rev = "5836a6b0028f6fbdd094fbdd87df1ff4ca535168" }

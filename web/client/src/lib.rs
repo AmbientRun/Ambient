@@ -3,13 +3,11 @@ use std::time::Duration;
 use ambient_app::App;
 use ambient_cameras::UICamera;
 use ambient_core::camera::active_camera;
-use ambient_ecs::World;
 use ambient_renderer::color;
 use ambient_sys::time::Instant;
 use ambient_ui::{
     element::{element_component, Element, ElementComponentExt, Group, Hooks},
-    font_size, padding, space_between_items, Borders, Button, FlowColumn, FlowRow, FocusRoot, Separator, StylesExt, Text, TextEditor,
-    UIExt,
+    font_size, padding, space_between_items, Borders, Button, FlowColumn, FocusRoot, Separator, StylesExt, Text, TextEditor, UIExt,
 };
 use glam::vec4;
 use tracing_subscriber::{filter::LevelFilter, fmt::time::UtcTime, prelude::*, registry};
@@ -36,7 +34,6 @@ async fn start() {
     }
 }
 
-#[cfg(target_os = "unknown")]
 async fn run() -> anyhow::Result<()> {
     use ambient_sys::timer::TimerWheel;
     ambient_sys::task::spawn(TimerWheel::new().start());
@@ -86,9 +83,4 @@ async fn init(app: &mut App) {
     Group(vec![UICamera.el().set(active_camera(), 0.), FocusRoot(vec![View::el().set(padding(), Borders::even(10.))]).el()])
         .el()
         .spawn_interactive(world);
-}
-
-#[cfg(not(target_os = "unknown"))]
-async fn run() -> anyhow::Result<()> {
-    unimplemented!("This only builds on the web")
 }

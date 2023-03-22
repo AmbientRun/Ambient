@@ -23,7 +23,6 @@ use ambient_std::{
     shapes::AABB,
     unwrap_log_warn,
 };
-use ambient_ui::Editable;
 use glam::{Vec3, Vec4};
 
 components!("decals", {
