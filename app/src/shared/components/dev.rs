@@ -220,6 +220,11 @@ impl ToToml for String {
         Some(self.as_str().into())
     }
 }
+impl ToToml for u8 {
+    fn to_toml(&self) -> Option<toml_edit::Value> {
+        Some((*self as i64).into())
+    }
+}
 impl ToToml for u32 {
     fn to_toml(&self) -> Option<toml_edit::Value> {
         Some((*self as i64).into())

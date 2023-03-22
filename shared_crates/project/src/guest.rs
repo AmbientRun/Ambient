@@ -89,6 +89,7 @@ fn convert_primitive_type_to_rust_type(
         "I32" => Some(quote! {i32}),
         "Quat" => Some(quote! {#fully_qualified_prefix Quat}),
         "String" => Some(quote! {String}),
+        "U8" => Some(quote! {u8}),
         "U32" => Some(quote! {u32}),
         "U64" => Some(quote! {u64}),
         "Vec2" => Some(quote! {#fully_qualified_prefix Vec2}),

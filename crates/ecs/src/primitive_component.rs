@@ -23,6 +23,7 @@ macro_rules! primitive_component_definitions {
             (I32, i32),
             (Quat, Quat),
             (String, String),
+            (U8, u8),
             (U32, u32),
             (U64, u64),
             (Vec2, Vec2),

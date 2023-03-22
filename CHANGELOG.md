@@ -20,7 +20,7 @@ This changelog is manually updated. While an effort will be made to keep the [Un
 
 - **API**: Kinematic bodies are now exposed. This is used by the minigolf example to provide its moving obstacles.
 - **API**: Added `physics::move_character` function to correctly move character controllers. This is used by the third-person camera example.
-- **API**: `UVec2`/`UVec3`/`UVec4` can now be used for component values.
+- **API**: `Uvec2`/`Uvec3`/`Uvec4`/`U8` can now be used for component values.
 - **Client**: The client's window title is now automatically changed to the name of the project running on the server. Thanks to [@MavethGH](https://github.com/MavethGH) for implementing this in [#178](https://github.com/AmbientRun/Ambient/pull/178).
 - **Client**: Added a basic headless mode to enable automatic CI testing of projects.
 - **Client**: Added `Dump UI World` button to inspect the state of the UI. Thanks to [@owenpalmer](https://github.com/owenpalmer) for implementing this in [#216](https://github.com/AmbientRun/Ambient/pull/216).
