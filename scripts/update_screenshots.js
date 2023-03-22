@@ -9,7 +9,7 @@ const samples = [
     ["guest/rust/examples/basics/image", 3],
     ["guest/rust/examples/basics/primitives", 1],
     ["guest/rust/examples/basics/raw_text", 1],
-    ["guest/rust/examples/games/tictactoe", 1],
+    // ["guest/rust/examples/games/tictactoe", 1],
     ["guest/rust/examples/ui/button", 60],
     ["guest/rust/examples/ui/dock_layout", 60],
     ["guest/rust/examples/ui/editors", 60],
