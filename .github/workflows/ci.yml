@@ -42,9 +42,9 @@ jobs:
           target: wasm32-unknown-unknown
       - name: Run clippy
         uses: actions-rs/cargo@v1
+        working-directory: "web"
         with:
           command: clippy
-          args: --target wasm32-unknown-unknown -p ambient_web
 
   test-linux:
     runs-on: ubuntu-20.04
