@@ -1,3 +1,0 @@
-default interface message {
-    subscribe: func(name: string)
-}
