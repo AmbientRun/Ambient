@@ -7,13 +7,12 @@ use ambient_core::{
     window::{window_ctl, WindowCtl},
 };
 use ambient_debugger::Debugger;
-use ambient_ecs::{Entity, SystemGroup, World};
+use ambient_ecs::{Entity, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_network::{
     client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce},
     events::ServerEventRegistry,
 };
-use ambient_renderer::RenderTarget;
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
 use glam::uvec2;
@@ -85,14 +84,11 @@ fn MainApp(
             user_id,
             resolution,
             on_disconnect: cb(move || {}),
-            init_world: cb(UseOnce::new(Box::new(move |world, render_target| {
+            init_world: cb(UseOnce::new(Box::new(move |world, _render_target| {
                 wasm::initialize(world).unwrap();
 
                 world.add_resource(ambient_network::events::event_registry(), Arc::new(ServerEventRegistry::new()));
                 UICamera.el().spawn_static(world);
-                if let Some(seconds) = screenshot_test {
-                    run_screenshot_test(world, render_target, project_path, seconds);
-                }
             }))),
             on_loaded: cb(move |_game_state, _game_client| Ok(Box::new(|| {}))),
             error_view: cb(move |error| Dock(vec![Text::el("Error").header_style(), Text::el(error)]).el()),
@@ -101,43 +97,51 @@ fn MainApp(
             systems_and_resources: cb(|| (systems(), Entity::new())),
             create_rpc_registry: cb(shared::create_rpc_registry),
             on_in_entities: None,
-            ui: GameView { show_debug }.el(),
+            ui: Dock::el(vec![ScreenshotTest::el(project_path, screenshot_test), GameView { show_debug }.el()]),
         }
         .el()]),
     ])
 }
 
-fn run_screenshot_test(world: &World, render_target: Arc<RenderTarget>, project_path: Option<PathBuf>, seconds: f32) {
-    world.resource(runtime()).spawn(async move {
-        tokio::time::sleep(Duration::from_secs_f32(seconds)).await;
-        let screenshot = project_path.unwrap_or(PathBuf::new()).join("screenshot.png");
-        log::info!("Loading screenshot from {:?}", screenshot);
-        let old = image::open(&screenshot);
-        log::info!("Saving screenshot to {:?}", screenshot);
-        let new = render_target.color_buffer.reader().read_image().await.unwrap().into_rgba8();
-        log::info!("Screenshot saved");
-        new.save(screenshot).unwrap();
-        let epsilon = 3;
-        if let Ok(old) = old {
-            log::info!("Comparing screenshots");
-            let old = old.into_rgba8();
-            for (a, b) in old.pixels().zip(new.pixels()) {
-                if (a[0]).abs_diff(b[0]) > epsilon
-                    || (a[1]).abs_diff(b[1]) > epsilon
-                    || (a[2]).abs_diff(b[2]) > epsilon
-                    || (a[3]).abs_diff(b[3]) > epsilon
-                {
-                    log::info!("Screenshots differ");
+#[element_component]
+fn ScreenshotTest(hooks: &mut Hooks, project_path: Option<PathBuf>, screenshot_test: Option<f32>) -> Element {
+    let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
+    hooks.use_spawn(move |world| {
+        if let Some(seconds) = screenshot_test {
+            world.resource(runtime()).spawn(async move {
+                tokio::time::sleep(Duration::from_secs_f32(seconds)).await;
+                let screenshot = project_path.unwrap_or(PathBuf::new()).join("screenshot.png");
+                log::info!("Loading screenshot from {:?}", screenshot);
+                let old = image::open(&screenshot);
+                log::info!("Saving screenshot to {:?}", screenshot);
+                let new = render_target.0.color_buffer.reader().read_image().await.unwrap().into_rgba8();
+                log::info!("Screenshot saved");
+                new.save(screenshot).unwrap();
+                let epsilon = 3;
+                if let Ok(old) = old {
+                    log::info!("Comparing screenshots");
+                    let old = old.into_rgba8();
+                    for (a, b) in old.pixels().zip(new.pixels()) {
+                        if (a[0]).abs_diff(b[0]) > epsilon
+                            || (a[1]).abs_diff(b[1]) > epsilon
+                            || (a[2]).abs_diff(b[2]) > epsilon
+                            || (a[3]).abs_diff(b[3]) > epsilon
+                        {
+                            log::info!("Screenshots differ");
+                            exit(1);
+                        }
+                    }
+                    log::info!("Screenshots are identical");
+                    exit(0);
+                } else {
+                    log::info!("No old screenshot to compare to");
                     exit(1);
                 }
-            }
-            log::info!("Screenshots are identical");
-            exit(0);
-        } else {
-            log::info!("No old screenshot to compare to");
-            exit(1);
+            });
         }
+        Box::new(|_| {})
     });
+    Element::new()
 }
 
 #[element_component]
