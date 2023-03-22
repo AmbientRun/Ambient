@@ -8,7 +8,7 @@ The client is compiled using the `wasm32-unknown-unknown` toolchain into a `.was
 
   - [wasm-pack](https://rustwasm.github.io/wasm-pack/)
   - [wasm-bindgen](https://github.com/rustwasm/wasm-bindgen)
-  - Node `>=v.19`
+  - Node `>= v.19`
   - WebGPU supported web browser (Chrome Canary)
 
 ## Setup
@@ -37,7 +37,7 @@ cd www
 npm run start
 ```
 
-This will launch *webpack dev server* on port `:8080`
+This will launch `webpack dev server` on port `:8080`
 
 Open chrome (or another browser which supports webgpu)
 
