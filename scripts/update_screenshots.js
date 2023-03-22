@@ -10,25 +10,31 @@ const samples = [
     ["guest/rust/examples/basics/primitives", 1],
     ["guest/rust/examples/basics/raw_text", 1],
     ["guest/rust/examples/games/tictactoe", 1],
-    ["guest/rust/examples/ui/text", 1],
-    ["guest/rust/examples/ui/flow_layout", 1],
-    ["guest/rust/examples/ui/dock_layout", 1],
-    ["guest/rust/examples/ui/rect", 1],
+    ["guest/rust/examples/ui/button", 60],
+    ["guest/rust/examples/ui/dock_layout", 60],
+    ["guest/rust/examples/ui/editors", 60],
+    ["guest/rust/examples/ui/flow_layout", 60],
+    ["guest/rust/examples/ui/rect", 60],
+    ["guest/rust/examples/ui/screens", 60],
+    ["guest/rust/examples/ui/slider", 60],
+    ["guest/rust/examples/ui/text", 60],
 ]
 
 async function run() {
-    let ok = true;
-    for (const [path, seconds] of samples) {
+    let errors = (await Promise.all(samples.map(async ([path, seconds], index) => {
         console.log(path, "running..");
         try {
-            let res = await exec(`cargo run -- run ${path} --headless --screenshot-test ${seconds}`);
+            let res = await exec(`cargo run -- run ${path} --headless --screenshot-test ${seconds} --quic-interface-port ${9000 + index} --http-interface-port ${8999 + index}`);
             console.log(path, "was ok");
         } catch (err) {
-            console.log(path, 'Error:', err);
-            ok = false;
+            console.log(path, "failed");
+            return { path, err };
         }
+    }))).filter(x => x);
+    for (const { path, err } of errors) {
+        console.log(path, 'Error:', err);
     }
-    if (!ok) {
+    if (errors.length > 0) {
         console.log("Exiting with status code 1");
         exit(1);
     }
