@@ -50,7 +50,7 @@ fn to_token_stream(
                 .iter()
                 .map(|f| {
                     let name = f.0;
-                    f.1.to_token_stream(api_path, true).map(|ty| {
+                    f.1.to_token_stream(api_path, true, false).map(|ty| {
                         quote! { pub #name: #ty }
                     })
                 })
@@ -66,7 +66,7 @@ fn to_token_stream(
                 .iter()
                 .map(|f| {
                     let name = f.0;
-                    f.1.to_token_stream(api_path, true).map(|ty| {
+                    f.1.to_token_stream(api_path, true, true).map(|ty| {
                         quote! { #name: #ty ::deserialize_message_part(&mut input)? }
                     })
                 })

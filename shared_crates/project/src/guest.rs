@@ -35,6 +35,7 @@ impl ComponentType {
         &self,
         api_name: &syn::Path,
         fully_qualified: bool,
+        with_turbofish: bool,
     ) -> Result<proc_macro2::TokenStream, TypeTokenStreamError> {
         match self {
             ComponentType::String(ty) => {
@@ -56,7 +57,11 @@ impl ComponentType {
                     )
                     .ok_or(TypeTokenStreamError::InvalidElementType)?;
 
-                    Ok(quote! { #container_ty < #element_ty > })
+                    if with_turbofish {
+                        Ok(quote! { #container_ty :: < #element_ty > })
+                    } else {
+                        Ok(quote! { #container_ty < #element_ty > })
+                    }
                 } else {
                     Ok(
                         convert_primitive_type_to_rust_type(type_, api_name, fully_qualified)

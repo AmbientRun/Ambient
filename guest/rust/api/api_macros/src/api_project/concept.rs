@@ -309,7 +309,7 @@ pub fn generate_component_list_doc_comment(
             writeln!(
                 output,
                 "{padding}\"{component_path}\": {} = {},",
-                SemiprettyTokenStream(ty.to_token_stream(api_name, false)?),
+                SemiprettyTokenStream(ty.to_token_stream(api_name, false, false)?),
                 SemiprettyTokenStream(toml_value_to_tokens(component_path.as_path(), &ty, value)?)
             )?;
         }

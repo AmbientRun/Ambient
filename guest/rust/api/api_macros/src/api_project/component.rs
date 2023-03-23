@@ -35,7 +35,7 @@ fn to_token_stream(
         |name, component, api_path| {
             let name_ident: syn::Path = syn::parse_str(name)?;
             let name_uppercase_ident: syn::Path = syn::parse_str(&name.to_ascii_uppercase())?;
-            let component_ty = component.type_.to_token_stream(api_path, true)?;
+            let component_ty = component.type_.to_token_stream(api_path, true, false)?;
 
             let mut doc_comment = format!("**{}**", component.name);
 
