@@ -1,28 +1,26 @@
-use ambient_api::{message::client as message, prelude::*};
+use ambient_api::{
+    message::client::{MessageExt, Target},
+    prelude::*,
+};
 
-mod common;
+mod messages;
 
 #[main]
 pub async fn main() -> EventResult {
-    message::send(
-        message::Target::NetworkUnreliable,
-        "hello",
-        "Hello, world from the client (datagram)!".as_bytes(),
-    );
+    messages::Hello {
+        text: "Hello, world from the client!".into(),
+        source_reliable: false,
+    }
+    .send(Target::NetworkUnreliable);
 
-    message::send(
-        message::Target::NetworkReliable,
-        "hello",
-        "Hello, world from the client (unistream)!".as_bytes(),
-    );
+    messages::Hello {
+        text: "Hello, world from the client!".into(),
+        source_reliable: true,
+    }
+    .send(Target::NetworkUnreliable);
 
-    message::subscribe_bytes("hello", |source, data| {
-        println!("{source:?}: {:?}", String::from_utf8(data));
-        EventOk
-    });
-
-    message::subscribe_bytes("broadcast", |source, data| {
-        println!("{source:?}: {:?}", String::from_utf8(data));
+    messages::Hello::subscribe(|source, data| {
+        println!("{source:?}: {:?}", data);
         EventOk
     });
 

@@ -193,11 +193,13 @@ dependencies = [
  "ambient_api_macros",
  "ambient_event_types",
  "anyhow",
+ "byteorder",
  "data-encoding",
  "glam 0.22.0",
  "once_cell",
  "paste",
  "rand 0.8.5",
+ "thiserror",
  "wit-bindgen",
 ]
 
