@@ -106,9 +106,20 @@ jobs:
           sudo apt-get update
           sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers
 
-      - uses: Leafwing-Studios/cargo-cache@v1
+      - name: Cargo cache
+        uses: actions/cache@v3
         with:
-          cache-group: "golden-image"
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+            guest/rust/target/
+          key: ${{ runner.os }}-golden-image-${{ hashFiles('**/Cargo.toml') }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-golden-image-${{ hashFiles('**/Cargo.toml') }}-
+            ${{ runner.os }}-golden-image-
       - name: Build
         run: cargo run --release -- --help
       - name: Run golden image tests
