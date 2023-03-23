@@ -32,7 +32,7 @@ pub async fn main() -> EventResult {
         .with_default(cube())
         .with(translation(), vec3(0., 0., 1.))
         .with(scale(), Vec3::ONE * 2.)
-        .with(color(), vec4(0., 1., 0., 1.))
+        .with(color(), vec4(0., 1., 1., 1.))
         .spawn();
 
     Entity::new()
