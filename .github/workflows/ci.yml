@@ -47,11 +47,11 @@ jobs:
   test-linux:
     runs-on: ubuntu-20.04
     steps:
-      - run: bash scripts/ci/linux_free_up_disk_space.sh
+      - run: bash ./scripts/ci/linux_free_up_disk_space.sh
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-      - run: bash scripts/ci/linux_install_build_dependencies.sh
-      - run: bash scripts/ci/linux_install_headless_dependencies.sh
+      - run: bash ./scripts/ci/linux_install_build_dependencies.sh
+      - run: bash ./scripts/ci/linux_install_headless_dependencies.sh
 
       - uses: Leafwing-Studios/cargo-cache@v1
         with:
@@ -73,12 +73,12 @@ jobs:
   golden-image-tests:
     runs-on: ubuntu-20.04
     steps:
-      - run: bash scripts/ci/linux_free_up_disk_space.sh
+      - run: bash ./scripts/ci/linux_free_up_disk_space.sh
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
       - run: rustup target add --toolchain stable wasm32-wasi
-      - run: bash scripts/ci/linux_install_build_dependencies.sh
-      - run: bash scripts/ci/linux_install_headless_dependencies.sh
+      - run: bash ./scripts/ci/linux_install_build_dependencies.sh
+      - run: bash ./scripts/ci/linux_install_headless_dependencies.sh
 
       - uses: Leafwing-Studios/cargo-cache@v1
         with:
