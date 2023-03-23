@@ -32,7 +32,8 @@ async function run() {
         }
     }))).filter(x => x);
     for (const { path, err } of errors) {
-        console.log(path, 'Error:', err);
+        console.log(`===================================== ERRORS FOR ${path} =====================================`);
+        console.log(err);
     }
     if (errors.length > 0) {
         console.log("Exiting with status code 1");

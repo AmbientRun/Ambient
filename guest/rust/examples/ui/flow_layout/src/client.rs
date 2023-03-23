@@ -9,6 +9,7 @@ use ambient_guest_bridge::components::{
     text::font_size,
 };
 use ambient_ui_components::{
+    default_theme::STREET,
     layout::{FlowColumn, FlowRow},
     text::Text,
     UIExt,
@@ -77,7 +78,7 @@ fn App(_hooks: &mut Hooks) -> Element {
     ])
     .el()
     .set(space_between_items(), 5.)
-    .with_padding_even(5.)
+    .with_padding_even(STREET)
 }
 
 #[main]
