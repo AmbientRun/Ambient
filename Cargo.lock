@@ -192,7 +192,7 @@ version = "0.2.0-dev"
 dependencies = [
  "ambient_api_macros",
  "ambient_event_types",
- "ambient_message",
+ "ambient_project",
  "anyhow",
  "byteorder",
  "data-encoding",
@@ -791,16 +791,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_message"
-version = "0.2.0-dev"
-dependencies = [
- "ambient_ecs",
- "byteorder",
- "glam 0.22.0",
- "thiserror",
-]
-
-[[package]]
 name = "ambient_model"
 version = "0.2.0-dev"
 dependencies = [
@@ -1016,6 +1006,8 @@ name = "ambient_project"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_ecs",
+ "byteorder",
+ "glam 0.22.0",
  "paste",
  "proc-macro2",
  "quote",
