@@ -1,3 +1,5 @@
+use crate::internal::{conversion::FromBindgen, wit};
+
 /// An identifier for an entity in the world.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
 pub struct EntityId {
@@ -27,12 +29,12 @@ impl EntityId {
             id1: u64::from_le_bytes(bytes[8..].try_into().unwrap()),
         }
     }
-    /// Return a null EntityId
-    pub fn null() -> Self {
+    /// Return a null [EntityId]
+    pub const fn null() -> Self {
         Self { id0: 0, id1: 0 }
     }
-    /// Returns true if this is a null EntityId
-    pub fn is_null(&self) -> bool {
+    /// Returns true if this is a null [EntityId]
+    pub const fn is_null(&self) -> bool {
         self.id0 == 0 && self.id1 == 0
     }
     /// Return an [EntityId] pointing to the resources entity
@@ -43,6 +45,10 @@ impl EntityId {
     pub fn is_resources(&self) -> bool {
         *self == Self::resources()
     }
+}
+impl Default for EntityId {
+    fn default() -> Self {
+        Self::null()
     }
 }
 impl std::fmt::Display for EntityId {
