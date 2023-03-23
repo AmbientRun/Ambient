@@ -1,18 +1,12 @@
-[package]
-name = "ambient_web"
-version = { workspace = true }
-rust-version = { workspace = true }
-edition = "2021"
-description = "Web client for ambient"
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/AmbientRun/Ambient"
+[workspace]
+members = ["client"]
+default-members = ["client"]
+resolver = "2"
 
-[lib]
-crate-type = ["cdylib", "rlib"]
+[workspace.package]
+version = "0.2.0-dev"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
+[workspace.dependencies]
 ambient_sys = { path = "../crates/sys", features = [
     "console_error_panic_hook",
 ] }
@@ -25,16 +19,19 @@ ambient_cameras = { path = "../crates/cameras/" }
 ambient_renderer = { path = "../crates/renderer/" }
 ambient_element = { path = "../shared_crates/element/" }
 
-anyhow = { workspace = true }
-glam = { workspace = true }
 
-# Web specific stuff
+anyhow = "1.0"
+glam = { version = "0.22", features = ["rand", "bytemuck"] }
+futures = "0.3"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["time"] }
+
+# Web specific
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
-tracing-subscriber = { workspace = true, features = ["time"] }
 tracing-web = "0.1"
 time = { version = "0.3", features = ["wasm-bindgen"] }
-chrono = { workspace = true, features = ["wasmbind"] }
+chrono = { version = "0.4", features = ["wasmbind"] }
 
 getrandom = { version = "0.2.8", features = ["js"] }
 web-sys = { version = "0.3.61", features = [
@@ -46,6 +43,3 @@ web-sys = { version = "0.3.61", features = [
     "Performance",
     "Window",
 ] }
-
-futures = { workspace = true }
-tracing = { workspace = true }

@@ -42,11 +42,16 @@ pub fn start(
     manifest: &ambient_project::Manifest,
 ) -> u16 {
     log::info!("Creating server");
+    let quic_interface_port = cli.host().unwrap().quic_interface_port;
     let server = runtime.block_on(async move {
-        GameServer::new_with_port_in_range(QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10), false)
-            .await
-            .context("failed to create game server with port in range")
-            .unwrap()
+        if let Some(port) = quic_interface_port {
+            return GameServer::new_with_port(port, false).await.context("failed to create game server with port").unwrap();
+        } else {
+            GameServer::new_with_port_in_range(QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10), false)
+                .await
+                .context("failed to create game server with port in range")
+                .unwrap()
+        }
     });
     let port = server.port;
 
@@ -56,9 +61,10 @@ pub fn start(
         .or_else(|| local_ip_address::local_ip().ok().map(|x| x.to_string()))
         .unwrap_or("localhost".to_string());
     log::info!("Created server, running at {public_host}:{port}");
-    ServerBaseUrlKey.insert(&assets, AbsAssetUrl::parse(format!("http://{public_host}:{HTTP_INTERFACE_PORT}/content/")).unwrap());
+    let http_interface_port = cli.host().unwrap().http_interface_port.unwrap_or(HTTP_INTERFACE_PORT);
+    ServerBaseUrlKey.insert(&assets, AbsAssetUrl::parse(format!("http://{public_host}:{http_interface_port}/content/")).unwrap());
 
-    start_http_interface(runtime, &project_path);
+    start_http_interface(runtime, &project_path, http_interface_port);
 
     ComponentRegistry::get_mut().add_external(ambient_project::all_defined_components(manifest, false).unwrap());
 
@@ -155,8 +161,7 @@ fn create_resources(assets: AssetCache) -> Entity {
 
 pub const HTTP_INTERFACE_PORT: u16 = 8999;
 pub const QUIC_INTERFACE_PORT: u16 = 9000;
-
-fn start_http_interface(runtime: &tokio::runtime::Runtime, project_path: &Path) {
+fn start_http_interface(runtime: &tokio::runtime::Runtime, project_path: &Path, http_interface_port: u16) {
     let router = Router::new()
         .route("/ping", get(|| async move { "ok" }))
         .nest_service("/content", get_service(ServeDir::new(project_path.join("build"))).handle_error(handle_error))
@@ -169,7 +174,7 @@ fn start_http_interface(runtime: &tokio::runtime::Runtime, project_path: &Path) 
     };
 
     runtime.spawn(async move {
-        let addr = SocketAddr::from(([0, 0, 0, 0], HTTP_INTERFACE_PORT));
+        let addr = SocketAddr::from(([0, 0, 0, 0], http_interface_port));
 
         if let Err(err) = serve(addr).await {
             tracing::error!("Failed to start server on: {addr}\n\n{err:?}");

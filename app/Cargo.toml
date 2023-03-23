@@ -65,6 +65,7 @@ tower-http = { workspace = true }
 walkdir = { workspace = true }
 image = { workspace = true }
 tracing = { workspace = true }
+image_hasher = { workspace = true }
 
 toml_edit = { workspace = true }
 paste = { workspace = true }

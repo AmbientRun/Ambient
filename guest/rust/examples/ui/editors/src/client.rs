@@ -1,10 +1,7 @@
 use ambient_api::prelude::*;
 use ambient_cb::cb;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::{
-    layout::{min_width, space_between_items, width},
-    transform::translation,
-};
+use ambient_guest_bridge::components::layout::{min_width, space_between_items, width};
 use ambient_ui_components::{
     default_theme::STREET,
     editor::{Editor, F32Input, ListEditor, MinimalListEditor, TextEditor},
@@ -78,7 +75,6 @@ fn App(hooks: &mut Hooks) -> Element {
         ),
     ])
     .el()
-    .set(translation(), vec3(200., 200., 0.))
     .set(width(), 200.)
     .set(space_between_items(), STREET)
     .with_padding_even(STREET)])

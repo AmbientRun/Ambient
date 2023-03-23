@@ -1,0 +1,20 @@
+[build]
+target = "wasm32-unknown-unknown"
+
+[target.wasm32-unknown-unknown]
+runner = 'wasm-bindgen-test-runner'
+
+[target.'cfg(all())']
+rustflags = [
+    # Global lints/warnings.
+    # See https://github.com/EmbarkStudios/rust-ecosystem/issues/22 for why they need to be specified here
+    #
+    # We don't need a default implementation for every type that implements a new function
+    "-Aclippy::new_without_default",
+    # We have a lot of complex types
+    "-Aclippy::type_complexity",
+    "-Dclippy::dbg_macro",
+    "-Dclippy::disallowed_types",
+
+    "--cfg=web_sys_unstable_apis",
+]

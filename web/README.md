@@ -1,6 +1,6 @@
 # Ambient Web
 
-This crate provides the web client for Ambient.
+This crate provides a workspace for the web client for Ambient.
 
 The client is compiled using the `wasm32-unknown-unknown` toolchain into a `.wasm` file, which is then imported as an ECMAScript module.
 
@@ -27,7 +27,7 @@ rustup target add wasm32-unknown-unknown
 From the root run:
 
 ```
-wasm-pack build web
+wasm-pack build client
 ```
 
 ## Running
@@ -37,11 +37,11 @@ cd www
 npm run start
 ```
 
-This will launch `webpack dev server` on port `:8080`
+This will launch `webpack dev server` on port `8080`
 
 Open chrome (or another browser which supports webgpu)
 
-[localhost:8080](https://localhost:8080)
+[localhost:8080](http://localhost:8080)
 
 ## Known Issues
 

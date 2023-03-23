@@ -141,6 +141,7 @@ dependencies = [
  "futures",
  "glam 0.22.0",
  "image",
+ "image_hasher",
  "local-ip-address",
  "log",
  "parking_lot",
@@ -1420,33 +1421,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_web"
-version = "0.2.0-dev"
-dependencies = [
- "ambient_app",
- "ambient_cameras",
- "ambient_core",
- "ambient_ecs",
- "ambient_element",
- "ambient_renderer",
- "ambient_std",
- "ambient_sys",
- "ambient_ui",
- "anyhow",
- "chrono",
- "futures",
- "getrandom 0.2.8",
- "glam 0.22.0",
- "time",
- "tracing",
- "tracing-subscriber",
- "tracing-web",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
-]
-
-[[package]]
 name = "ambient_window_types"
 version = "0.2.0-dev"
 dependencies = [
@@ -2061,11 +2035,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "16b0a3d9ed01224b22057780a37bb8c5dbfe1be8ba48678e7bf57ec4b385411f"
 dependencies = [
  "iana-time-zone",
- "js-sys",
  "num-integer",
  "num-traits",
  "serde",
- "wasm-bindgen",
  "winapi",
 ]
 
@@ -3845,6 +3817,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "image_hasher"
+version = "1.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a465709ca502270eba7ae8129c6a680f5668748d7edafa85da0f8ceae596bb2b"
+dependencies = [
+ "base64 0.13.1",
+ "image",
+ "rustdct",
+ "serde",
+ "transpose",
+]
+
+[[package]]
 name = "indenter"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5591,6 +5576,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustdct"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8b61555105d6a9bf98797c063c362a1d24ed8ab0431655e38f1cf51e52089551"
+dependencies = [
+ "rustfft",
+]
+
+[[package]]
 name = "rustdoc-json"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6688,7 +6682,6 @@ dependencies = [
  "sharded-slab",
  "smallvec",
  "thread_local",
- "time",
  "tracing",
  "tracing-core",
  "tracing-log",
@@ -6705,19 +6698,6 @@ dependencies = [
  "tracing-core",
  "tracing-log",
  "tracing-subscriber",
-]
-
-[[package]]
-name = "tracing-web"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ff5efc53ed5a7c4b99b3dd24fd10f41e7aa1b284a4e64ae9167d97e31afe124"
-dependencies = [
- "js-sys",
- "tracing-core",
- "tracing-subscriber",
- "wasm-bindgen",
- "web-sys",
 ]
 
 [[package]]

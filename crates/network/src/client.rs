@@ -18,7 +18,7 @@ use ambient_ui::{Button, Centered, FlowColumn, FlowRow, Image, Text, Throbber};
 use anyhow::Context;
 use bytes::Bytes;
 use futures::StreamExt;
-use glam::UVec2;
+use glam::{uvec2, UVec2};
 use parking_lot::Mutex;
 use quinn::{Connection, NewConnection, RecvStream, SendStream};
 use serde::{de::DeserializeOwned, Serialize};
@@ -184,15 +184,8 @@ impl ElementComponent for GameClientView {
 
         let gpu = hooks.world.resource(gpu()).clone();
 
-        let (render_target, set_render_target) = hooks.use_state_with(|_| Arc::new(RenderTarget::new(gpu.clone(), resolution, None)));
-
-        hooks.use_effect(resolution, |_, &resolution| {
-            if resolution.x > 0 && resolution.y > 0 {
-                set_render_target(Arc::new(RenderTarget::new(gpu.clone(), resolution, None)));
-            }
-
-            Box::new(|_| {})
-        });
+        let render_target =
+            hooks.use_memo_with(resolution, |_, &resolution| Arc::new(RenderTarget::new(gpu.clone(), resolution.max(uvec2(1, 1)), None)));
 
         let (connection_status, set_connection_status) = hooks.use_state("Connecting".to_string());
 

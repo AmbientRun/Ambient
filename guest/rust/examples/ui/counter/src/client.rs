@@ -1,6 +1,6 @@
 use ambient_api::prelude::*;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_ui_components::text::Text;
+use ambient_ui_components::{default_theme::STREET, text::Text, UIExt};
 
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
@@ -17,7 +17,7 @@ fn App(hooks: &mut Hooks) -> Element {
         Box::new(|_| {})
     });
     println!("{count}");
-    Text::el(format!("We've counted to {count} now"))
+    Text::el(format!("We've counted to {count} now")).with_padding_even(STREET)
 }
 
 #[main]

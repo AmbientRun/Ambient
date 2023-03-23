@@ -10,6 +10,7 @@
 - [Running](user/running.md)
 - [API](user/api.md)
 - [Debugging](user/debugging.md)
+- [Profiling](user/profiling.md)
 
 # Reference Guide
 
