@@ -12,6 +12,7 @@ mod tests;
 mod component;
 mod concept;
 mod tree;
+mod util;
 
 pub fn read_file(file_path: String) -> anyhow::Result<(Option<String>, String)> {
     let file_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").context("no manifest dir")?)

@@ -1,4 +1,7 @@
-use super::tree::{Tree, TreeNode, TreeNodeInner};
+use super::{
+    tree::{Tree, TreeNode},
+    util,
+};
 use ambient_project::{
     Component, ComponentType, Concept, Identifier, IdentifierPath, IdentifierPathBuf,
 };
@@ -9,67 +12,44 @@ use quote::quote;
 pub fn tree_to_token_stream(
     concept_tree: &Tree<Concept>,
     components_tree: &Tree<Component>,
-    api_name: &syn::Path,
+    api_path: &syn::Path,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    to_token_stream(concept_tree, components_tree, api_name, concept_tree.root())
+    to_token_stream(
+        concept_tree.root(),
+        api_path,
+        &quote! {
+            use super::components;
+            use #api_path::prelude::*;
+        },
+        concept_tree,
+        components_tree,
+    )
 }
 
 fn to_token_stream(
+    node: &TreeNode<Concept>,
+    api_path: &syn::Path,
+    prelude: &TokenStream,
     concept_tree: &Tree<Concept>,
     components_tree: &Tree<Component>,
-    api_name: &syn::Path,
-    node: &TreeNode<Concept>,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    let name = node.path.last().map(|s| s.as_ref()).unwrap_or_default();
-    match &node.inner {
-        TreeNodeInner::Namespace(ns) => {
-            let children = ns
-                .children
-                .values()
-                .map(|child| to_token_stream(concept_tree, components_tree, api_name, child))
-                .collect::<Result<Vec<_>, _>>()?;
-
-            let prelude = quote! {
-                use super::components;
-                use #api_name::prelude::*;
-            };
-
-            Ok(if name.is_empty() {
-                quote! {
-                    #prelude
-                    #(#children)*
-                }
-            } else {
-                let name_ident: syn::Path = syn::parse_str(name)?;
-                let doc_comment_fragment = ns.namespace.as_ref().map(|n| {
-                    let mut doc_comment = format!("**{}**", n.name);
-                    if !n.description.is_empty() {
-                        doc_comment += &format!(": {}", n.description.replace('\n', "\n\n"));
-                    }
-
-                    quote! {
-                        #[doc = #doc_comment]
-                    }
-                });
-                quote! {
-                    #doc_comment_fragment
-                    pub mod #name_ident {
-                        #prelude
-                        #(#children)*
-                    }
-                }
-            })
-        }
-        TreeNodeInner::Other(concept) => {
+    util::tree_to_token_stream(
+        node,
+        api_path,
+        prelude,
+        |node, api_path, prelude| {
+            to_token_stream(node, api_path, prelude, concept_tree, components_tree)
+        },
+        |name, concept, api_path| {
             let make_concept =
-                generate_make(concept_tree, components_tree, api_name, name, concept)?;
-            let is_concept = generate_is(concept_tree, components_tree, api_name, name, concept)?;
+                generate_make(concept_tree, components_tree, api_path, name, concept)?;
+            let is_concept = generate_is(concept_tree, components_tree, api_path, name, concept)?;
             Ok(quote! {
                 #make_concept
                 #is_concept
             })
-        }
-    }
+        },
+    )
 }
 
 fn generate_make(
