@@ -35,13 +35,14 @@ impl EntityId {
     pub fn is_null(&self) -> bool {
         self.id0 == 0 && self.id1 == 0
     }
-    /// Return an EntityId pointing to the resources entity
+    /// Return an [EntityId] pointing to the resources entity
     pub fn resources() -> Self {
-        Self { id0: 1, id1: 0 }
+        wit::entity::resources().from_bindgen()
     }
     /// Returns true if this is pointing to a resources entity
     pub fn is_resources(&self) -> bool {
-        self.id0 == 1 && self.id1 == 0
+        *self == Self::resources()
+    }
     }
 }
 impl std::fmt::Display for EntityId {

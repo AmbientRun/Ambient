@@ -169,7 +169,7 @@ pub fn mutate_component_with_default<
 ///
 /// Components with the `Resource` attribute can be found here.
 pub fn resources() -> EntityId {
-    wit::entity::resources().from_bindgen()
+    EntityId::resources()
 }
 
 /// Gets the synchronized resource entity. The components of this entity contain global state that should be networked, but not persisted.
