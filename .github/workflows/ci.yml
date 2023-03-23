@@ -114,6 +114,7 @@ jobs:
       - name: Run golden image tests
         run: node scripts/golden_image_tests.js
       - uses: actions/upload-artifact@v3
+        if: always()
         with:
           name: screenshots
           path: guest/rust/examples/*/*/screenshot.png
