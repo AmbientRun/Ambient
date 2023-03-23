@@ -11,6 +11,7 @@ ambient_api = { path = "api", version = "0.2.0-dev" }
 
 ambient_event_types = { path = "../../shared_crates/event_types", version = "0.2.0-dev" }
 
+ambient_message = { path = "../../shared_crates/message", default-features = false, features = ["guest"], version = "0.2.0-dev" }
 ambient_project = { path = "../../shared_crates/project", default-features = false, features = ["guest"], version = "0.2.0-dev" }
 ambient_element = { path = "../../shared_crates/element", default-features = false, features = ["guest"], version = "0.2.0-dev" }
 ambient_guest_bridge = { path = "../../shared_crates/guest_bridge", default-features = false, features = ["guest"], version = "0.2.0-dev" }

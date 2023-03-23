@@ -1,0 +1,18 @@
+[package]
+name = "ambient_message"
+version = { workspace = true }
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+byteorder = { workspace = true }
+glam = { workspace = true }
+thiserror = { workspace = true }
+
+ambient_ecs = { path = "../../crates/ecs", optional = true }
+
+[features]
+default = ["native"]
+native = ["dep:ambient_ecs"]
+guest = []

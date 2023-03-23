@@ -18,11 +18,9 @@ impl Message for Hello {
     }
 
     fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
-        let text = String::deserialize_message_part(&mut input)?;
-        let reliable = bool::deserialize_message_part(&mut input)?;
         Ok(Hello {
-            text,
-            source_reliable: reliable,
+            text: String::deserialize_message_part(&mut input)?,
+            source_reliable: bool::deserialize_message_part(&mut input)?,
         })
     }
 }

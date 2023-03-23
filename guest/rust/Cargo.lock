@@ -8,6 +8,7 @@ version = "0.2.0-dev"
 dependencies = [
  "ambient_api_macros",
  "ambient_event_types",
+ "ambient_message",
  "anyhow",
  "byteorder",
  "data-encoding",
@@ -103,6 +104,15 @@ dependencies = [
  "glam",
  "rand",
  "serde",
+]
+
+[[package]]
+name = "ambient_message"
+version = "0.2.0-dev"
+dependencies = [
+ "byteorder",
+ "glam",
+ "thiserror",
 ]
 
 [[package]]

@@ -17,6 +17,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 [dependencies]
 ambient_api_macros = { workspace = true }
 ambient_event_types = { workspace = true }
+ambient_message = { workspace = true }
 anyhow = "1.0"
 byteorder = "1.4"
 data-encoding = "2.3.3"
