@@ -1,6 +1,6 @@
 use ambient_api::prelude::*;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::{layout::space_between_items, transform::translation};
+use ambient_guest_bridge::components::layout::space_between_items;
 use ambient_ui_components::{
     button::{Button, ButtonStyle},
     default_theme::STREET,
@@ -84,7 +84,7 @@ fn App(_hooks: &mut Hooks) -> Element {
     ])
     .el()
     .set(space_between_items(), STREET)
-    .set(translation(), vec3(100., 100., 0.))
+    .with_padding_even(STREET)
 }
 
 #[main]

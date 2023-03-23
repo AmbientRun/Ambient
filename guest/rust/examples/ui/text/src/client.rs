@@ -4,7 +4,7 @@ use ambient_guest_bridge::components::{
     layout::space_between_items, rendering::color, text::font_size,
 };
 use ambient_ui_components::{
-    default_theme::StylesExt,
+    default_theme::{StylesExt, STREET},
     layout::{FlowColumn, Separator},
     text::Text,
     UIExt,
@@ -23,7 +23,7 @@ fn App(_hooks: &mut Hooks) -> Element {
         Text::el("Multi\n\nLine"),
     ])
     .el()
-    .with_padding_even(10.)
+    .with_padding_even(STREET)
     .set(space_between_items(), 10.)
 }
 

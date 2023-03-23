@@ -1,10 +1,10 @@
 use ambient_api::prelude::*;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::{
-    layout::{docking_bottom, docking_left, fit_horizontal_none, fit_vertical_none, height, width},
-    transform::translation,
+use ambient_guest_bridge::components::layout::{
+    docking_bottom, docking_left, fit_horizontal_none, fit_vertical_none, height, width,
 };
 use ambient_ui_components::{
+    default_theme::STREET,
     layout::{Dock, FlowRow},
     text::Text,
     UIExt,
@@ -39,7 +39,7 @@ fn App(_hooks: &mut Hooks) -> Element {
     ])
     .el()
     .with_background(vec4(1., 1., 1., 0.02))
-    .set(translation(), vec3(10., 10., 0.))
+    .with_padding_even(STREET)
     .set(width(), 500.)
     .set(height(), 500.)
 }

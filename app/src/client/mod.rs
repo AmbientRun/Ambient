@@ -24,7 +24,7 @@ mod wasm;
 /// Construct an app and enter the main client view
 pub async fn run(assets: AssetCache, server_addr: SocketAddr, run: &RunCli, project_path: Option<PathBuf>) {
     let user_id = run.user_id.clone().unwrap_or_else(|| format!("user_{}", friendly_id()));
-    let headless = if run.headless { Some(uvec2(400, 400)) } else { None };
+    let headless = if run.headless { Some(uvec2(600, 600)) } else { None };
 
     let is_debug = std::env::var("AMBIENT_DEBUGGER").is_ok() || run.debugger;
 
@@ -35,7 +35,7 @@ pub async fn run(assets: AssetCache, server_addr: SocketAddr, run: &RunCli, proj
         .update_title_with_fps_stats(false)
         .run(move |app, _runtime| {
             *app.world.resource_mut(window_title()) = "Ambient".to_string();
-            MainApp { server_addr, user_id, show_debug: is_debug, screenshot_test: run.screenshot_test, project_path }
+            MainApp { server_addr, user_id, show_debug: is_debug, golden_image_test: run.golden_image_test, project_path }
                 .el()
                 .spawn_interactive(&mut app.world);
         })
@@ -67,7 +67,7 @@ fn MainApp(
     project_path: Option<PathBuf>,
     user_id: String,
     show_debug: bool,
-    screenshot_test: Option<f32>,
+    golden_image_test: Option<f32>,
 ) -> Element {
     let resolution = use_window_physical_resolution(hooks);
 
@@ -97,17 +97,17 @@ fn MainApp(
             systems_and_resources: cb(|| (systems(), Entity::new())),
             create_rpc_registry: cb(shared::create_rpc_registry),
             on_in_entities: None,
-            ui: Dock::el(vec![ScreenshotTest::el(project_path, screenshot_test), GameView { show_debug }.el()]),
+            ui: Dock::el(vec![GoldenImageTest::el(project_path, golden_image_test), GameView { show_debug }.el()]),
         }
         .el()]),
     ])
 }
 
 #[element_component]
-fn ScreenshotTest(hooks: &mut Hooks, project_path: Option<PathBuf>, screenshot_test: Option<f32>) -> Element {
+fn GoldenImageTest(hooks: &mut Hooks, project_path: Option<PathBuf>, golden_image_test: Option<f32>) -> Element {
     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
     hooks.use_spawn(move |world| {
-        if let Some(seconds) = screenshot_test {
+        if let Some(seconds) = golden_image_test {
             world.resource(runtime()).spawn(async move {
                 tokio::time::sleep(Duration::from_secs_f32(seconds)).await;
                 let screenshot = project_path.unwrap_or(PathBuf::new()).join("screenshot.png");
@@ -117,22 +117,22 @@ fn ScreenshotTest(hooks: &mut Hooks, project_path: Option<PathBuf>, screenshot_t
                 let new = render_target.0.color_buffer.reader().read_image().await.unwrap().into_rgba8();
                 log::info!("Screenshot saved");
                 new.save(screenshot).unwrap();
-                let epsilon = 3;
+
                 if let Ok(old) = old {
                     log::info!("Comparing screenshots");
-                    let old = old.into_rgba8();
-                    for (a, b) in old.pixels().zip(new.pixels()) {
-                        if (a[0]).abs_diff(b[0]) > epsilon
-                            || (a[1]).abs_diff(b[1]) > epsilon
-                            || (a[2]).abs_diff(b[2]) > epsilon
-                            || (a[3]).abs_diff(b[3]) > epsilon
-                        {
-                            log::info!("Screenshots differ");
-                            exit(1);
-                        }
+
+                    let hasher = image_hasher::HasherConfig::new().to_hasher();
+
+                    let hash1 = hasher.hash_image(&new);
+                    let hash2 = hasher.hash_image(&old);
+                    let dist = hash1.dist(&hash2);
+                    if dist > 0 {
+                        log::info!("Screenshots differ, distance={}", dist);
+                        exit(1);
+                    } else {
+                        log::info!("Screenshots are identical");
+                        exit(0);
                     }
-                    log::info!("Screenshots are identical");
-                    exit(0);
                 } else {
                     log::info!("No old screenshot to compare to");
                     exit(1);

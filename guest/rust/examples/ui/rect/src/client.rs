@@ -7,7 +7,7 @@ use ambient_guest_bridge::components::{
         line_width,
     },
 };
-use ambient_ui_components::{layout::FlowColumn, Line, Rectangle};
+use ambient_ui_components::{default_theme::STREET, layout::FlowColumn, Line, Rectangle, UIExt};
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
@@ -23,7 +23,8 @@ fn App(_hooks: &mut Hooks) -> Element {
                 .set(border_thickness(), 10.)
                 .set(border_radius(), vec4(20., 10., 5., 0.)),
         ])
-        .set(space_between_items(), 10.),
+        .set(space_between_items(), 10.)
+        .with_padding_even(STREET),
         Line.el()
             .set(line_from(), vec3(200., 200., 0.))
             .set(line_to(), vec3(300., 200., 0.))
