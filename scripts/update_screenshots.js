@@ -24,7 +24,7 @@ async function run() {
     let errors = (await Promise.all(samples.map(async ([path, seconds], index) => {
         console.log(path, "running..");
         try {
-            let res = await exec(`cargo run -- run ${path} --headless --screenshot-test ${seconds} --quic-interface-port ${9000 + index} --http-interface-port ${8999 + index}`);
+            let res = await exec(`cargo run --release -- run ${path} --headless --screenshot-test ${seconds} --quic-interface-port ${9000 + index} --http-interface-port ${10000 + index}`);
             console.log(path, "was ok");
         } catch (err) {
             console.log(path, "failed");
