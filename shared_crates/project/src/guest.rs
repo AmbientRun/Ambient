@@ -1,4 +1,4 @@
-use crate::{CamelCaseIdentifier, ComponentType, Identifier, IdentifierPath, IdentifierPathBuf};
+use crate::{ComponentType, Identifier, IdentifierPath, IdentifierPathBuf};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{quote, ToTokens, TokenStreamExt};
 use thiserror::Error;
@@ -15,11 +15,6 @@ impl ToTokens for IdentifierPathBuf {
     }
 }
 impl ToTokens for Identifier {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
-        tokens.append(Ident::new(self.as_ref(), Span::call_site()))
-    }
-}
-impl ToTokens for CamelCaseIdentifier {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         tokens.append(Ident::new(self.as_ref(), Span::call_site()))
     }

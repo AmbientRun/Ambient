@@ -3,7 +3,7 @@ use super::{
     util,
 };
 use ambient_project::Message;
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::quote;
 
 pub fn tree_to_token_stream(
@@ -30,7 +30,18 @@ fn to_token_stream(
         prelude,
         |node, api_path, prelude| to_token_stream(node, api_path, prelude),
         |id, message, api_path| {
-            let name = &message.name;
+            let struct_name = syn::Ident::new(
+                &id.split('_')
+                    .map(|segment| {
+                        let mut c = segment.chars();
+                        match c.next() {
+                            None => String::new(),
+                            Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+                        }
+                    })
+                    .collect::<String>(),
+                Span::call_site(),
+            );
 
             let fields = message
                 .fields
@@ -61,10 +72,10 @@ fn to_token_stream(
 
             Ok(quote! {
                 #[derive(Clone, Debug, PartialEq, Eq)]
-                pub struct #name {
+                pub struct #struct_name {
                     #(#fields,)*
                 }
-                impl Message for #name {
+                impl Message for #struct_name {
                     fn id() -> &'static str {
                         #id
                     }
