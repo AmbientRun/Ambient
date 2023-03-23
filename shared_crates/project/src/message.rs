@@ -2,13 +2,13 @@ use std::collections::BTreeMap;
 
 use serde::Deserialize;
 
-use crate::{ComponentType, Identifier};
+use crate::{CamelCaseIdentifier, ComponentType, Identifier};
 
 #[derive(Clone, PartialEq, Eq, Debug, Deserialize)]
 pub struct Message {
-    pub name: String,
+    pub name: CamelCaseIdentifier,
     pub description: String,
-    pub values: BTreeMap<Identifier, ComponentType>,
+    pub fields: BTreeMap<Identifier, ComponentType>,
 }
 
 pub mod message_serde {

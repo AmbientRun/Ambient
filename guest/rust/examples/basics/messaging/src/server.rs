@@ -3,8 +3,6 @@ use ambient_api::{
     prelude::*,
 };
 
-mod messages;
-
 #[main]
 pub async fn main() -> EventResult {
     messages::Hello::subscribe(|source, data| {

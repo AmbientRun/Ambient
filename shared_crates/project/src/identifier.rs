@@ -105,7 +105,7 @@ impl Identifier {
 
         if !id
             .chars()
-            .all(|c| c.is_ascii_lowercase() || c.is_numeric() || c == '_')
+            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_')
         {
             return Err("identifier must be snake-case ASCII");
         }
@@ -140,14 +140,69 @@ impl Display for Identifier {
     }
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct CamelCaseIdentifier(pub(super) String);
+impl CamelCaseIdentifier {
+    pub fn new(id: impl Into<String>) -> Result<Self, &'static str> {
+        Self::new_impl(id.into())
+    }
+
+    fn new_impl(id: String) -> Result<Self, &'static str> {
+        Self::validate(&id)?;
+        Ok(Self(id))
+    }
+
+    pub fn validate(id: &str) -> Result<&str, &'static str> {
+        if id.is_empty() {
+            return Err("camel-case identifier must not be empty");
+        }
+
+        if !id.starts_with(|c: char| c.is_ascii_uppercase()) {
+            return Err("camel-case identifier must start with an uppercase ASCII character");
+        }
+
+        if !id.chars().all(|c| c.is_ascii_alphanumeric()) {
+            return Err("camel-case identifier must be camel-case ASCII");
+        }
+
+        Ok(id)
+    }
+}
+impl Serialize for CamelCaseIdentifier {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        String::serialize(&self.0, serializer)
+    }
+}
+impl<'de> Deserialize<'de> for CamelCaseIdentifier {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        CamelCaseIdentifier::new_impl(String::deserialize(deserializer)?)
+            .map_err(serde::de::Error::custom)
+    }
+}
+impl AsRef<str> for CamelCaseIdentifier {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+impl Display for CamelCaseIdentifier {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::{Identifier, IdentifierPathBuf};
+    use crate::{CamelCaseIdentifier, Identifier, IdentifierPathBuf};
 
     #[test]
     fn can_validate_identifiers() {
         use Identifier as I;
-        use IdentifierPathBuf as IP;
 
         assert_eq!(I::new(""), Err("identifier must not be empty"));
         assert_eq!(
@@ -179,6 +234,12 @@ mod tests {
             I::new("cool_component_00"),
             Ok(I("cool_component_00".to_string()))
         );
+    }
+
+    #[test]
+    fn can_validate_identifier_paths() {
+        use Identifier as I;
+        use IdentifierPathBuf as IP;
 
         assert_eq!(
             IP::new("my::cool_component_00"),
@@ -186,6 +247,42 @@ mod tests {
                 I("my".to_string()),
                 I("cool_component_00".to_string())
             ]))
+        );
+    }
+
+    #[test]
+    fn can_validate_camelcase_identifiers() {
+        use CamelCaseIdentifier as CCI;
+
+        assert_eq!(CCI::new(""), Err("camel-case identifier must not be empty"));
+        assert_eq!(
+            CCI::new("5asd"),
+            Err("camel-case identifier must start with an uppercase ASCII character")
+        );
+        assert_eq!(
+            CCI::new("_asd"),
+            Err("camel-case identifier must start with an uppercase ASCII character")
+        );
+        assert_eq!(
+            CCI::new("My_cool_component"),
+            Err("camel-case identifier must be camel-case ASCII")
+        );
+        assert_eq!(
+            CCI::new("CoolComponent!"),
+            Err("camel-case identifier must be camel-case ASCII")
+        );
+        assert_eq!(
+            CCI::new("Cool-Component"),
+            Err("camel-case identifier must be camel-case ASCII")
+        );
+
+        assert_eq!(
+            CCI::new("CoolComponent"),
+            Ok(CCI("CoolComponent".to_string()))
+        );
+        assert_eq!(
+            CCI::new("CoolComponent00"),
+            Ok(CCI("CoolComponent00".to_string()))
         );
     }
 }
