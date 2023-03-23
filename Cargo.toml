@@ -28,6 +28,7 @@ gltf = "1.1.0"
 ordered-float = { version = "3.4.0", features = ["serde"] }
 derive_more = "0.99.11"
 image = "0.24.5"
+image_hasher = "1.1.2"
 itertools = "0.10.3"
 ndarray = { version = "0.15.3", features = ["serde"] }
 rand = "0.8.0"

@@ -117,22 +117,21 @@ fn ScreenshotTest(hooks: &mut Hooks, project_path: Option<PathBuf>, screenshot_t
                 let new = render_target.0.color_buffer.reader().read_image().await.unwrap().into_rgba8();
                 log::info!("Screenshot saved");
                 new.save(screenshot).unwrap();
-                let epsilon = 3;
+
                 if let Ok(old) = old {
                     log::info!("Comparing screenshots");
-                    let old = old.into_rgba8();
-                    for (a, b) in old.pixels().zip(new.pixels()) {
-                        if (a[0]).abs_diff(b[0]) > epsilon
-                            || (a[1]).abs_diff(b[1]) > epsilon
-                            || (a[2]).abs_diff(b[2]) > epsilon
-                            || (a[3]).abs_diff(b[3]) > epsilon
-                        {
-                            log::info!("Screenshots differ");
-                            exit(1);
-                        }
+
+                    let hasher = image_hasher::HasherConfig::new().to_hasher();
+
+                    let hash1 = hasher.hash_image(&new);
+                    let hash2 = hasher.hash_image(&old);
+                    if hash1.dist(&hash2) > 0 {
+                        log::info!("Screenshots differ");
+                        exit(1);
+                    } else {
+                        log::info!("Screenshots are identical");
+                        exit(0);
                     }
-                    log::info!("Screenshots are identical");
-                    exit(0);
                 } else {
                     log::info!("No old screenshot to compare to");
                     exit(1);
