@@ -30,6 +30,8 @@ fn to_token_stream(
         prelude,
         |node, api_path, prelude| to_token_stream(node, api_path, prelude),
         |id, message, api_path| {
+            let doc_comment = format!("**{}**: {}", message.name, message.description);
+
             let struct_name = syn::Ident::new(
                 &id.split('_')
                     .map(|segment| {
@@ -72,6 +74,7 @@ fn to_token_stream(
 
             Ok(quote! {
                 #[derive(Clone, Debug, PartialEq, Eq)]
+                #[doc = #doc_comment]
                 pub struct #struct_name {
                     #(#fields,)*
                 }
