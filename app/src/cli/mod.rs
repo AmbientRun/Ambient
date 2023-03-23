@@ -67,7 +67,7 @@ pub struct RunCli {
 
     /// Take a screenshot after N seconds, compare it to the existing one and then exit with an exit code of 1 if they are different
     #[arg(long)]
-    pub screenshot_test: Option<f32>,
+    pub golden_image_test: Option<f32>,
 
     /// The user ID to join this server with
     #[clap(short, long)]

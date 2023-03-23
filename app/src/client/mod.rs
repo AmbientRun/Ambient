@@ -35,7 +35,7 @@ pub async fn run(assets: AssetCache, server_addr: SocketAddr, run: &RunCli, proj
         .update_title_with_fps_stats(false)
         .run(move |app, _runtime| {
             *app.world.resource_mut(window_title()) = "Ambient".to_string();
-            MainApp { server_addr, user_id, show_debug: is_debug, screenshot_test: run.screenshot_test, project_path }
+            MainApp { server_addr, user_id, show_debug: is_debug, golden_image_test: run.golden_image_test, project_path }
                 .el()
                 .spawn_interactive(&mut app.world);
         })
@@ -67,7 +67,7 @@ fn MainApp(
     project_path: Option<PathBuf>,
     user_id: String,
     show_debug: bool,
-    screenshot_test: Option<f32>,
+    golden_image_test: Option<f32>,
 ) -> Element {
     let resolution = use_window_physical_resolution(hooks);
 
@@ -97,17 +97,17 @@ fn MainApp(
             systems_and_resources: cb(|| (systems(), Entity::new())),
             create_rpc_registry: cb(shared::create_rpc_registry),
             on_in_entities: None,
-            ui: Dock::el(vec![ScreenshotTest::el(project_path, screenshot_test), GameView { show_debug }.el()]),
+            ui: Dock::el(vec![GoldenImageTest::el(project_path, golden_image_test), GameView { show_debug }.el()]),
         }
         .el()]),
     ])
 }
 
 #[element_component]
-fn ScreenshotTest(hooks: &mut Hooks, project_path: Option<PathBuf>, screenshot_test: Option<f32>) -> Element {
+fn GoldenImageTest(hooks: &mut Hooks, project_path: Option<PathBuf>, golden_image_test: Option<f32>) -> Element {
     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
     hooks.use_spawn(move |world| {
-        if let Some(seconds) = screenshot_test {
+        if let Some(seconds) = golden_image_test {
             world.resource(runtime()).spawn(async move {
                 tokio::time::sleep(Duration::from_secs_f32(seconds)).await;
                 let screenshot = project_path.unwrap_or(PathBuf::new()).join("screenshot.png");

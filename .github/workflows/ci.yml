@@ -109,7 +109,10 @@ jobs:
       - uses: Leafwing-Studios/cargo-cache@v1
         with:
           cache-group: "golden-image"
-      - run: node scripts/update_screenshots.js
+      - name: Build
+        run: cargo run --release -- --help
+      - name: Run golden image tests
+        run: node scripts/golden_image_tests.js
       - uses: actions/upload-artifact@v3
         with:
           name: screenshots
