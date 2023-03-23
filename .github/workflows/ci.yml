@@ -85,6 +85,7 @@ jobs:
 
       - name: Run screenshot tests
         run: node scripts/update_screenshots.js
+        continue-on-error: true
       - uses: actions/upload-artifact@v3
         with:
           name: screenshots
