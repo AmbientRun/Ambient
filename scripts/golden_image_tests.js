@@ -2,13 +2,15 @@
 const util = require('node:util');
 const exec = util.promisify(require('node:child_process').exec);
 const { exit } = require("process");
+const { argv } = require('node:process');
 
-const samples = [
+let samples = [
     ["guest/rust/examples/basics/async", 1],
     ["guest/rust/examples/basics/input", 1],
     ["guest/rust/examples/basics/image", 3],
     ["guest/rust/examples/basics/primitives", 1],
     ["guest/rust/examples/basics/raw_text", 1],
+    ["guest/rust/examples/basics/fog", 1],
     // ["guest/rust/examples/games/tictactoe", 1],
     ["guest/rust/examples/ui/button", 60],
     ["guest/rust/examples/ui/dock_layout", 60],
@@ -19,6 +21,10 @@ const samples = [
     ["guest/rust/examples/ui/slider", 60],
     ["guest/rust/examples/ui/text", 60],
 ]
+
+if (argv.length > 2) {
+    samples = samples.filter(([path]) => path.includes(argv[2]));
+}
 
 async function run() {
     let errors = (await Promise.all(samples.map(async ([path, seconds], index) => {
