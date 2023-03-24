@@ -1364,6 +1364,7 @@ dependencies = [
  "indoc",
  "itertools",
  "log",
+ "once_cell",
  "parking_lot",
  "paste",
  "physxx",
