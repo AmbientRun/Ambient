@@ -56,6 +56,22 @@ fn to_token_stream(
                 })
                 .collect::<Result<Vec<_>, _>>()?;
 
+            let new_parameters = message
+                .fields
+                .iter()
+                .map(|f| {
+                    let name = f.0;
+                    f.1.to_token_stream(api_path, true, false).map(|ty| {
+                        quote! { #name: impl Into<#ty> }
+                    })
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+
+            let new_fields = message.fields.iter().map(|f| {
+                let name = f.0;
+                quote! { #name: #name.into() }
+            });
+
             let serialize_fields = message.fields.iter().map(|f| {
                 let name = f.0;
                 quote! { self.#name.serialize_message_part(&mut output)? }
@@ -77,6 +93,13 @@ fn to_token_stream(
                 #[doc = #doc_comment]
                 pub struct #struct_name {
                     #(#fields,)*
+                }
+                impl #struct_name {
+                    pub fn new(#(#new_parameters,)*) -> Self {
+                        Self {
+                            #(#new_fields,)*
+                        }
+                    }
                 }
                 impl Message for #struct_name {
                     fn id() -> &'static str {

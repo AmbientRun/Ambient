@@ -5,17 +5,8 @@ use ambient_api::{
 
 #[main]
 pub async fn main() -> EventResult {
-    messages::Hello {
-        text: "Hello, world from the client!".into(),
-        source_reliable: false,
-    }
-    .send(Target::NetworkUnreliable);
-
-    messages::Hello {
-        text: "Hello, world from the client!".into(),
-        source_reliable: true,
-    }
-    .send(Target::NetworkUnreliable);
+    messages::Hello::new(false, "Hello, world from the client!").send(Target::NetworkUnreliable);
+    messages::Hello::new(true, "Hello, world from the client!").send(Target::NetworkUnreliable);
 
     messages::Hello::subscribe(|source, data| {
         println!("{source:?}: {:?}", data);
@@ -39,10 +30,7 @@ pub async fn main() -> EventResult {
             }
 
             sleep(1.0).await;
-            messages::Local {
-                text: "Hello!".into(),
-            }
-            .send(Target::ModuleBroadcast);
+            messages::Local::new("Hello!").send(Target::ModuleBroadcast);
         }
         EventOk
     });

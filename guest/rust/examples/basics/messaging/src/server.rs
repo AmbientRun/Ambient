@@ -11,22 +11,22 @@ pub async fn main() -> EventResult {
 
         let source_reliable = data.source_reliable;
 
-        messages::Hello {
-            text: format!("{source_reliable}: Hello, world from the server!"),
-            source_reliable: true,
-        }
+        messages::Hello::new(
+            true,
+            format!("{source_reliable}: Hello, world from the server!"),
+        )
         .send(Target::NetworkTargetedReliable(user_id.clone()));
 
-        messages::Hello {
-            text: format!("{source_reliable}: Hello, world from the server!"),
-            source_reliable: false,
-        }
+        messages::Hello::new(
+            false,
+            format!("{source_reliable}: Hello, world from the server!"),
+        )
         .send(Target::NetworkTargetedUnreliable(user_id.clone()));
 
-        messages::Hello {
-            text: format!("{source_reliable}: Hello, world (everyone) from the server!"),
-            source_reliable: true,
-        }
+        messages::Hello::new(
+            true,
+            format!("{source_reliable}: Hello, world (everyone) from the server!"),
+        )
         .send(Target::NetworkBroadcastReliable);
 
         EventOk
@@ -49,10 +49,7 @@ pub async fn main() -> EventResult {
             }
 
             sleep(1.0).await;
-            messages::Local {
-                text: "Hello!".into(),
-            }
-            .send(Target::ModuleBroadcast);
+            messages::Local::new("Hello!").send(Target::ModuleBroadcast);
         }
         EventOk
     });

@@ -1123,7 +1123,17 @@ fn can_generate_message() {
                 pub test1: ambient_api2::global::Vec3,
                 pub test2: Vec<ambient_api2::global::EntityId>,
             }
-
+            impl MyCoolMessage {
+                pub fn new(
+                    test1: impl Into<ambient_api2::global::Vec3>,
+                    test2: impl Into< Vec<ambient_api2::global::EntityId> >,
+                ) -> Self {
+                    Self {
+                        test1: test1.into(),
+                        test2: test2.into(),
+                    }
+                }
+            }
             impl Message for MyCoolMessage {
                 fn id() -> &'static str {
                     "my_cool_message"
