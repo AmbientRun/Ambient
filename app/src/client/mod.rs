@@ -73,6 +73,7 @@ fn MainApp(
 
     let update_network_stats = hooks.provide_context(GameClientNetworkStats::default);
     let update_server_stats = hooks.provide_context(GameClientServerStats::default);
+    let (loaded, set_loaded) = hooks.use_state(false);
 
     FocusRoot::el([
         UICamera.el(),
@@ -90,14 +91,20 @@ fn MainApp(
                 world.add_resource(ambient_network::events::event_registry(), Arc::new(ServerEventRegistry::new()));
                 UICamera.el().spawn_static(world);
             }))),
-            on_loaded: cb(move |_game_state, _game_client| Ok(Box::new(|| {}))),
+            on_loaded: cb(move |_game_state, _game_client| {
+                set_loaded(true);
+                Ok(Box::new(|| {}))
+            }),
             error_view: cb(move |error| Dock(vec![Text::el("Error").header_style(), Text::el(error)]).el()),
             on_network_stats: cb(move |stats| update_network_stats(stats)),
             on_server_stats: cb(move |stats| update_server_stats(stats)),
             systems_and_resources: cb(|| (systems(), Entity::new())),
             create_rpc_registry: cb(shared::create_rpc_registry),
             on_in_entities: None,
-            ui: Dock::el(vec![GoldenImageTest::el(project_path, golden_image_test), GameView { show_debug }.el()]),
+            ui: Dock::el(vec![
+                if loaded { GoldenImageTest::el(project_path, golden_image_test) } else { Element::new() },
+                GameView { show_debug }.el(),
+            ]),
         }
         .el()]),
     ])
