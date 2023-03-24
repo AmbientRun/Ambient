@@ -17,10 +17,9 @@ use ambient_std::{asset_cache::AssetCache, cb, fps_counter::FpsSample, to_byte_u
 use ambient_ui::{Button, Centered, FlowColumn, FlowRow, Image, Text, Throbber};
 use anyhow::Context;
 use bytes::Bytes;
-use futures::StreamExt;
 use glam::{uvec2, UVec2};
 use parking_lot::Mutex;
-use quinn::{Connection, NewConnection, RecvStream, SendStream};
+use quinn::{Connection, RecvStream, SendStream};
 use serde::{de::DeserializeOwned, Serialize};
 use tokio::io::AsyncReadExt;
 use tracing::{debug_span, Instrument};
@@ -437,20 +436,20 @@ impl<'a> ClientInstance<'a> {
                     (self.on_server_stats)(GameClientServerStats(stats));
                 }
 
-                Some(Ok(mut datagram)) = protocol.conn.datagrams.next() => {
+                Ok(mut datagram) = protocol.conn.read_datagram() => {
                     let _span = tracing::debug_span!("datagram").entered();
                     let data = datagram.split_off(4);
                     let handler_id = u32::from_be_bytes(datagram[0..4].try_into().unwrap());
                     tokio::task::block_in_place(|| (self.on_datagram)(handler_id, data))
                 }
-                Some(Ok((tx, mut rx))) = protocol.conn.bi_streams.next() => {
+                Ok((tx, mut rx)) = protocol.conn.accept_bi() => {
                     let span = tracing::debug_span!("bistream");
                     let stream_id = rx.read_u32().instrument(span).await;
                     if let Ok(stream_id) = stream_id {
                         tokio::task::block_in_place(|| { (self.on_bi_stream)(stream_id, tx, rx); })
                     }
                 }
-                Some(Ok(mut rx)) = protocol.conn.uni_streams.next() => {
+                Ok(mut rx) = protocol.conn.accept_uni() => {
                     let span = tracing::debug_span!("unistream");
                     let stream_id = rx.read_u32().instrument(span).await;
                     if let Ok(stream_id) = stream_id {
@@ -482,7 +481,7 @@ pub struct GameClientServerStats(pub FpsSample);
 /// Connnect to the server endpoint.
 /// Does not handle a protocol.
 #[tracing::instrument(level = "debug")]
-pub async fn open_connection(server_addr: SocketAddr) -> anyhow::Result<NewConnection> {
+pub async fn open_connection(server_addr: SocketAddr) -> anyhow::Result<Connection> {
     log::debug!("Connecting to world instance: {server_addr:?}");
 
     let endpoint = create_client_endpoint_random_port().context("Failed to create client endpoint")?;
