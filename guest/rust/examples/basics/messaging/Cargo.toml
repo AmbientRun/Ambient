@@ -10,13 +10,23 @@ version = {workspace = true}
 ambient_api = { path = "../../../api" }
 
 [[bin]]
-name = "messaging_client"
+name = "client"
 path = "src/client.rs"
 required-features = ["client"]
 
 [[bin]]
-name = "messaging_server"
+name = "client_two"
+path = "src/client_two.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "server"
 path = "src/server.rs"
+required-features = ["server"]
+
+[[bin]]
+name = "server_two"
+path = "src/server_two.rs"
 required-features = ["server"]
 
 [features]

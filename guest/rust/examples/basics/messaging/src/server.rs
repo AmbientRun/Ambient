@@ -32,5 +32,30 @@ pub async fn main() -> EventResult {
         EventOk
     });
 
+    let handled = State::new(false);
+    messages::Local::subscribe({
+        let handled = handled.clone();
+        move |source, data| {
+            println!("{source:?}: {data:?}");
+            *handled.write() = true;
+
+            EventOk
+        }
+    });
+    run_async(async move {
+        loop {
+            if *handled.read() {
+                break;
+            }
+
+            sleep(1.0).await;
+            messages::Local {
+                text: "Hello!".into(),
+            }
+            .send(Target::ModuleBroadcast);
+        }
+        EventOk
+    });
+
     EventOk
 }

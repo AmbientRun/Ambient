@@ -2,7 +2,7 @@ use ambient_core::{
     async_ecs::{async_run, AsyncRun},
     runtime,
 };
-use ambient_ecs::{Entity, EntityId, World};
+use ambient_ecs::{EntityId, World};
 use ambient_network::{log_network_result, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID};
 
 use anyhow::Context;
@@ -11,7 +11,7 @@ use quinn::{Connection, RecvStream};
 
 use std::io::{Cursor, Read};
 
-use crate::shared::{message, module_state, remote_paired_id, run, RunContext};
+use crate::shared::remote_paired_id;
 
 pub const MAX_STREAM_LENGTH: usize = 10 * 1024 * 1024;
 
@@ -22,10 +22,6 @@ pub fn on_datagram(world: &mut World, user_id: Option<String>, bytes: Bytes) -> 
     let mut cursor = Cursor::new(&bytes);
     let remote_module_id = cursor.read_u128::<byteorder::BigEndian>()?;
     let remote_module_id = EntityId(remote_module_id);
-    let Ok(module_id) = world.get(remote_module_id, remote_paired_id()) else {
-        log::warn!("Failed to get remote paired ID for datagram for remote module {remote_module_id}");
-        return Ok(());
-    };
 
     let name_len = usize::try_from(cursor.read_u32::<byteorder::BigEndian>()?)?;
     let mut name = vec![0u8; name_len];
@@ -35,24 +31,7 @@ pub fn on_datagram(world: &mut World, user_id: Option<String>, bytes: Bytes) -> 
     let position = cursor.position();
     let data = &bytes[usize::try_from(position)?..];
 
-    let mut entity = Entity::new().with(message::data(), data.to_vec());
-
-    if let Some(user_id) = user_id {
-        entity.set(message::source_network_user_id(), user_id.to_owned());
-    } else {
-        entity.set(message::source_network(), ());
-    }
-
-    run(
-        world,
-        module_id,
-        world.get_cloned(module_id, module_state())?,
-        &RunContext::new(
-            world,
-            format!("{}/{}", ambient_event_types::MODULE_MESSAGE, name),
-            entity,
-        ),
-    );
+    process_network_message(world, user_id, remote_module_id, name, data.to_vec())?;
 
     Ok(())
 }
@@ -82,7 +61,7 @@ pub fn on_unistream(world: &mut World, user_id: Option<String>, recv_stream: Rec
         let data = recv_stream.read_to_end(MAX_STREAM_LENGTH).await?;
 
         async_run.run(move |world| {
-            log_network_result!(async_run_handler(
+            log_network_result!(process_network_message(
                 world,
                 user_id,
                 remote_module_id,
@@ -93,40 +72,58 @@ pub fn on_unistream(world: &mut World, user_id: Option<String>, recv_stream: Rec
 
         Ok(())
     }
+}
 
-    fn async_run_handler(
-        world: &mut World,
-        user_id: Option<String>,
-        remote_module_id: EntityId,
-        name: String,
-        data: Vec<u8>,
-    ) -> anyhow::Result<()> {
-        let module_id = world.get(remote_module_id, remote_paired_id()).with_context(
-            || format!("Failed to get remote paired ID for unistream for remote module {remote_module_id}")
-        )?;
+pub fn process_network_message(
+    world: &mut World,
+    user_id: Option<String>,
+    remote_module_id: EntityId,
+    name: String,
+    data: Vec<u8>,
+) -> anyhow::Result<()> {
+    use crate::shared::message;
 
-        let mut entity = Entity::new().with(message::data(), data.to_vec());
+    let module_id = world
+        .get(remote_module_id, remote_paired_id())
+        .with_context(|| {
+            format!(
+                "Failed to get remote paired ID for unistream for remote module {remote_module_id}"
+            )
+        })?;
 
-        if let Some(user_id) = user_id {
-            entity.set(message::source_network_user_id(), user_id.to_owned());
-        } else {
-            entity.set(message::source_network(), ());
-        }
+    message::send(
+        world,
+        Some(module_id),
+        match user_id {
+            Some(user_id) => message::Source::NetworkUserId(user_id),
+            None => message::Source::Network,
+        },
+        name,
+        data,
+    );
 
-        let state = world.get_cloned(module_id, module_state())?;
-        run(
-            world,
-            module_id,
-            state,
-            &RunContext::new(
-                world,
-                format!("{}/{}", ambient_event_types::MODULE_MESSAGE, name),
-                entity,
-            ),
-        );
+    Ok(())
+}
 
-        Ok(())
-    }
+/// Sends a message to another module on this side
+pub fn send_local(
+    world: &mut World,
+    source_module_id: EntityId,
+    module_id: Option<EntityId>,
+    name: String,
+    data: Vec<u8>,
+) -> anyhow::Result<()> {
+    use crate::shared::message;
+
+    message::send(
+        world,
+        module_id,
+        message::Source::Module(source_module_id),
+        name,
+        data,
+    );
+
+    Ok(())
 }
 
 /// Sends a message over the network for the specified module

@@ -203,26 +203,27 @@ impl wit::server_message::Host for Bindings {
         let world = self.world_mut();
 
         match target {
-            Target::NetworkBroadcastUnreliable => send(world, None, module_id, name, data, false),
-            Target::NetworkBroadcastReliable => send(world, None, module_id, name, data, true),
+            Target::NetworkBroadcastUnreliable => {
+                send_networked(world, None, module_id, name, data, false)
+            }
+            Target::NetworkBroadcastReliable => {
+                send_networked(world, None, module_id, name, data, true)
+            }
             Target::NetworkTargetedUnreliable(user_id) => {
-                send(world, Some(user_id), module_id, name, data, false)
+                send_networked(world, Some(user_id), module_id, name, data, false)
             }
             Target::NetworkTargetedReliable(user_id) => {
-                send(world, Some(user_id), module_id, name, data, true)
+                send_networked(world, Some(user_id), module_id, name, data, true)
             }
-            Target::ModuleBroadcast => {
-                unimplemented!();
-            }
+            Target::ModuleBroadcast => message::send_local(world, module_id, None, name, data),
             Target::Module(id) => {
-                let _id = id.from_bindgen();
-                unimplemented!();
+                message::send_local(world, module_id, Some(id.from_bindgen()), name, data)
             }
         }
     }
 }
 
-fn send(
+fn send_networked(
     world: &World,
     target_user_id: Option<String>,
     module_id: EntityId,

@@ -56,7 +56,38 @@ pub use internal::{
 };
 
 pub mod message {
-    use ambient_ecs::{components, Debuggable, Description, EntityId, Name};
+    use ambient_ecs::{components, Debuggable, Description, EntityId, Name, Resource, World};
+
+    #[derive(Clone, PartialEq, Debug)]
+    pub enum Source {
+        Network,
+        NetworkUserId(String),
+        Module(EntityId),
+    }
+
+    #[derive(Clone, PartialEq, Debug)]
+    pub struct PendingMessage {
+        /// If unspecified, this will broadcast to all modules
+        pub(super) module_id: Option<EntityId>,
+        pub(super) source: Source,
+        pub(super) name: String,
+        pub(super) data: Vec<u8>,
+    }
+
+    pub fn send(
+        world: &mut World,
+        module_id: Option<EntityId>,
+        source: Source,
+        name: String,
+        data: Vec<u8>,
+    ) {
+        world.resource_mut(pending_messages()).push(PendingMessage {
+            module_id,
+            source,
+            name,
+            data,
+        });
+    }
 
     components!("wasm::message", {
         @[Debuggable, Name["Source: Network"], Description["This message came from the network with no specific source (likely the server)."]]
@@ -70,6 +101,9 @@ pub mod message {
 
         @[Debuggable, Name["Data"], Description["The data payload of a message."]]
         data: Vec<u8>,
+
+        @[Debuggable, Resource]
+        pending_messages: Vec<PendingMessage>,
     });
 }
 
@@ -197,6 +231,59 @@ pub fn systems() -> SystemGroup {
                     );
                 }
             })),
+            Box::new(FnSystem::new(move |world, _| {
+                use message::{PendingMessage, Source};
+
+                profiling::scope!("WASM module pending messages");
+
+                let pending_messages =
+                    std::mem::take(world.resource_mut(message::pending_messages()));
+
+                for PendingMessage {
+                    module_id,
+                    source,
+                    name,
+                    data,
+                } in pending_messages
+                {
+                    let mut entity = Entity::new().with(message::data(), data.to_vec());
+
+                    let mut source_id = None;
+                    match source {
+                        Source::Network => entity.set(message::source_network(), ()),
+                        Source::NetworkUserId(user_id) => {
+                            entity.set(message::source_network_user_id(), user_id.to_owned())
+                        }
+                        Source::Module(id) => {
+                            source_id = Some(id);
+                            entity.set(message::source_module(), id);
+                        }
+                    };
+
+                    let run_context = RunContext::new(
+                        world,
+                        format!("{}/{}", ambient_event_types::MODULE_MESSAGE, name),
+                        entity,
+                    );
+
+                    if let Some(module_id) = module_id {
+                        match world.get_cloned(module_id, module_state()) {
+                            Ok(state) => run(world, module_id, state, &run_context),
+                            Err(err) => {
+                                update_errors(world, &[(module_id, err.to_string())]);
+                            }
+                        }
+                    } else {
+                        for (id, sms) in query(module_state()).collect_cloned(world, None) {
+                            if Some(id) == source_id {
+                                continue;
+                            }
+
+                            run(world, id, sms, &run_context)
+                        }
+                    }
+                }
+            })),
         ],
     )
 }
@@ -211,6 +298,7 @@ pub fn initialize<Bindings: bindings::BindingsBound + 'static>(
         self::module_state_maker(),
         ModuleState::create_state_maker(bindings),
     );
+    world.add_resource(message::pending_messages(), vec![]);
 
     Ok(())
 }
@@ -226,7 +314,7 @@ pub(crate) fn reload_all(world: &mut World) {
     }
 }
 
-pub fn run_all(world: &mut World, context: &RunContext) {
+fn run_all(world: &mut World, context: &RunContext) {
     for (id, sms) in query(module_state()).collect_cloned(world, None) {
         run(world, id, sms, context)
     }
@@ -298,7 +386,7 @@ fn update_errors(world: &mut World, errors: &[(EntityId, String)]) {
     }
 }
 
-pub fn run(world: &mut World, id: EntityId, mut state: ModuleState, context: &RunContext) {
+fn run(world: &mut World, id: EntityId, mut state: ModuleState, context: &RunContext) {
     profiling::scope!(
         "run",
         format!("{} - {}", get_module_name(world, id), context.event_name)
