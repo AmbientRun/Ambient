@@ -203,7 +203,7 @@ impl EditorRow {
 impl ElementComponent for EditorRow {
     fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
         let Self { title, editor } = *self;
-        FlowRow(vec![Text::el(title).set(margin_right(), STREET), editor]).el()
+        FlowRow(vec![Text::el(title).with(margin_right(), STREET), editor]).el()
     }
 }
 

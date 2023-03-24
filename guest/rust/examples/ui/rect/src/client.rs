@@ -16,30 +16,30 @@ fn App(_hooks: &mut Hooks) -> Element {
             Rectangle.el(),
             Rectangle
                 .el()
-                .set(width(), 150.)
-                .set(height(), 50.)
-                .set(background_color(), vec4(1., 0., 0., 1.))
-                .set(border_color(), vec4(0., 1., 0., 1.))
-                .set(border_thickness(), 10.)
-                .set(border_radius(), vec4(20., 10., 5., 0.)),
+                .with(width(), 150.)
+                .with(height(), 50.)
+                .with(background_color(), vec4(1., 0., 0., 1.))
+                .with(border_color(), vec4(0., 1., 0., 1.))
+                .with(border_thickness(), 10.)
+                .with(border_radius(), vec4(20., 10., 5., 0.)),
         ])
-        .set(space_between_items(), 10.)
+        .with(space_between_items(), 10.)
         .with_padding_even(STREET),
         Line.el()
-            .set(line_from(), vec3(200., 200., 0.))
-            .set(line_to(), vec3(300., 200., 0.))
-            .set(line_width(), 1.)
-            .set(background_color(), vec4(1., 0., 0., 1.)),
+            .with(line_from(), vec3(200., 200., 0.))
+            .with(line_to(), vec3(300., 200., 0.))
+            .with(line_width(), 1.)
+            .with(background_color(), vec4(1., 0., 0., 1.)),
         Line.el()
-            .set(line_from(), vec3(200., 200., 0.))
-            .set(line_to(), vec3(200., 300., 0.))
-            .set(line_width(), 1.)
-            .set(background_color(), vec4(0., 1., 0., 1.)),
+            .with(line_from(), vec3(200., 200., 0.))
+            .with(line_to(), vec3(200., 300., 0.))
+            .with(line_width(), 1.)
+            .with(background_color(), vec4(0., 1., 0., 1.)),
         Line.el()
-            .set(line_from(), vec3(200., 200., 0.))
-            .set(line_to(), vec3(500., 300., 0.))
-            .set(line_width(), 10.)
-            .set(background_color(), vec4(0., 0., 1., 1.)),
+            .with(line_from(), vec3(200., 200., 0.))
+            .with(line_to(), vec3(500., 300., 0.))
+            .with(line_width(), 10.)
+            .with(background_color(), vec4(0., 0., 1., 1.)),
     ])
     .el()
 }

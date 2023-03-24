@@ -23,17 +23,17 @@ async fn init(app: &mut App) {
 
     let size = 2000.;
 
-    Cube.el().set(scale(), vec3(size, size, 1.)).set_default(cast_shadows()).spawn_static(world);
+    Cube.el().with(scale(), vec3(size, size, 1.)).with_default(cast_shadows()).spawn_static(world);
 
     for s in 1..5 {
         let scale_ = (2f32).powi(s);
         for y in 0..5 {
             for x in 0..5 {
                 Cube.el()
-                    .set(translation(), (scale_ * 20. * (-1. + 2. * vec2(x as f32, y as f32) / 5.)).extend(0.))
-                    .set(scale(), vec3(1., 1., 10.))
-                    .set(color(), vec4(0.7, 0.7, 0.7, 1.))
-                    .set_default(cast_shadows())
+                    .with(translation(), (scale_ * 20. * (-1. + 2. * vec2(x as f32, y as f32) / 5.)).extend(0.))
+                    .with(scale(), vec3(1., 1., 10.))
+                    .with(color(), vec4(0.7, 0.7, 0.7, 1.))
+                    .with_default(cast_shadows())
                     .spawn_static(world);
             }
         }
@@ -42,10 +42,10 @@ async fn init(app: &mut App) {
     for x in 0..5 {
         let p = (2f32).powi(x);
         Cube.el()
-            .set(translation(), 100. + 10. * vec3(p, 0., 0.))
-            .set(scale(), Vec3::ONE * p)
-            .set(color(), vec4(0.7, 0.7, 0.7, 1.))
-            .set_default(cast_shadows())
+            .with(translation(), 100. + 10. * vec3(p, 0., 0.))
+            .with(scale(), Vec3::ONE * p)
+            .with(color(), vec4(0.7, 0.7, 0.7, 1.))
+            .with_default(cast_shadows())
             .spawn_static(world);
     }
 
@@ -58,10 +58,10 @@ async fn init(app: &mut App) {
         .remove(translation())
         .remove(scale())
         .remove(rotation())
-        .set(local_to_world(), demo_cam.projection_view().inverse())
-        .set(mesh_to_local(), Mat4::from_scale_rotation_translation(vec3(1., 1., 0.5), Quat::IDENTITY, vec3(0., 0., 0.5)))
-        .set(color(), vec4(1., 0., 0., 0.5))
-        .set_default(cast_shadows())
+        .with(local_to_world(), demo_cam.projection_view().inverse())
+        .with(mesh_to_local(), Mat4::from_scale_rotation_translation(vec3(1., 1., 0.5), Quat::IDENTITY, vec3(0., 0., 0.5)))
+        .with(color(), vec4(1., 0., 0., 0.5))
+        .with_default(cast_shadows())
         .spawn_static(world);
 
     for i in 0..5 {
@@ -71,14 +71,14 @@ async fn init(app: &mut App) {
             .remove(translation())
             .remove(scale())
             .remove(rotation())
-            .set(local_to_world(), shadow_cam.projection_view().inverse())
-            .set(mesh_to_local(), Mat4::from_scale_rotation_translation(vec3(1., 1., 0.5), Quat::IDENTITY, vec3(0., 0., 0.5)))
-            .set(color(), vec4(0.7, 0.7, 0.7, 1.))
-            .set_default(cast_shadows())
+            .with(local_to_world(), shadow_cam.projection_view().inverse())
+            .with(mesh_to_local(), Mat4::from_scale_rotation_translation(vec3(1., 1., 0.5), Quat::IDENTITY, vec3(0., 0., 0.5)))
+            .with(color(), vec4(0.7, 0.7, 0.7, 1.))
+            .with_default(cast_shadows())
             .spawn_static(world);
 
         for point in &demo_cam.to_shadows_far_bound().world_space_frustum_points_for_shadow_cascade(i, 5) {
-            Cube.el().set(translation(), *point).set(color(), vec4(0., 0., 0., 1.)).set_default(cast_shadows()).spawn_static(world);
+            Cube.el().with(translation(), *point).with(color(), vec4(0., 0., 0., 1.)).with_default(cast_shadows()).spawn_static(world);
         }
     }
 

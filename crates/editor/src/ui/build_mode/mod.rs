@@ -190,11 +190,11 @@ impl ElementComponent for EditorBuildMode {
             if !selection.is_empty() {
                 SelectionPanel { selection: selection.clone(), set_selection: set_selection.clone() }
                     .el()
-                    .set(width(), 300.)
-                    .set(docking(), Docking::Right)
+                    .with(width(), 300.)
+                    .with(docking(), Docking::Right)
                     .floating_panel()
-                    .set(margin(), Borders::even(STREET))
-                    .set(padding(), Borders::even(STREET))
+                    .with(margin(), Borders::even(STREET))
+                    .with(padding(), Borders::even(STREET))
             } else {
                 Element::new()
             },
@@ -309,12 +309,12 @@ impl ElementComponent for EditorBuildMode {
             })
                 .el()
                 .floating_panel()
-                .set(docking(), Docking::Top)
-                .set(space_between_items(), STREET)
-                .set(margin(), Borders::even(STREET))
-                .set(padding(), Borders::even(STREET)),
+                .with(docking(), Docking::Top)
+                .with(space_between_items(), STREET)
+                .with(margin(), Borders::even(STREET))
+                .with(padding(), Borders::even(STREET)),
             GenerateTerrainButton.el()
-                .set(margin(), Borders::even(STREET)),
+                .with(margin(), Borders::even(STREET)),
             SelectArea.el(),
         ])
             .el()
@@ -417,6 +417,6 @@ impl ElementComponent for TransformControls {
                 .el(),
             ]);
         }
-        FlowRow(items).el().set(space_between_items(), STREET)
+        FlowRow(items).el().with(space_between_items(), STREET)
     }
 }

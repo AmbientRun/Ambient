@@ -12,7 +12,7 @@ fn single_root_element() {
     impl ElementComponent for Root {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
             *hooks.world.resource_mut(n_renders()) += 1;
-            Element::new().init_default(prop_a()).set(prop_b(), 3)
+            Element::new().init_default(prop_a()).with(prop_b(), 3)
         }
     }
 
@@ -99,7 +99,7 @@ fn parent_components_should_stay_after_child_rerenders() {
     pub struct Root;
     impl ElementComponent for Root {
         fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-            Child.el().set(prop_b(), 1).set(prop_a(), ())
+            Child.el().with(prop_b(), 1).with(prop_a(), ())
         }
     }
 
@@ -109,7 +109,7 @@ fn parent_components_should_stay_after_child_rerenders() {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
             let (state, set_state) = hooks.use_state(9);
             hooks.world.add_component(hooks.world.resource_entity(), element_cb(), Arc::new(move || set_state(10))).unwrap();
-            Element::new().set(prop_b(), state as u32)
+            Element::new().with(prop_b(), state as u32)
         }
     }
 

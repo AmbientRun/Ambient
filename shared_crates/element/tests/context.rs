@@ -37,7 +37,7 @@ fn update_context_on_removed_element() {
             let (state, set_state) = hooks.use_state::<u32>(0);
             hooks.provide_context(|| state);
             if state < 3 {
-                Element::new().children(vec![Child.into()]).set(
+                Element::new().children(vec![Child.into()]).with(
                     trigger(),
                     cb(move |_| {
                         set_state(state + 1);

@@ -112,7 +112,7 @@ impl ButtonStyle {
             ButtonStyle::Flat | ButtonStyle::Inline => Color::rgba(1., 1., 1., 0.0),
         };
         let content = match self {
-            Self::Regular | Self::Flat | ButtonStyle::Inline => content.set(
+            Self::Regular | Self::Flat | ButtonStyle::Inline => content.with(
                 color(),
                 if is_pressed {
                     Color::rgba(1., 1., 1., 1.)
@@ -131,7 +131,7 @@ impl ButtonStyle {
                 }
                 .into(),
             ),
-            Self::Primary => content.set(
+            Self::Primary => content.with(
                 color(),
                 if is_pressed {
                     Color::BLACK
@@ -149,19 +149,19 @@ impl ButtonStyle {
                 content,
                 UIBase
                     .el()
-                    .set_default(fit_horizontal_parent())
-                    .set(height(), 2.)
+                    .with_default(fit_horizontal_parent())
+                    .with(height(), 2.)
                     .with_background(Color::WHITE.into())
-                    .set(margin_top(), 2.),
+                    .with(margin_top(), 2.),
             ])
             .with_background(background.into())
         } else {
-            let content = content.set(font_style(), "Bold".to_string());
+            let content = content.with(font_style(), "Bold".to_string());
             let tooltip = if let Some(hotkey) = hotkey {
                 let modifier = if hotkey_modifier != ModifiersState::empty() { format!("{hotkey_modifier:?} + ") } else { String::new() };
                 let hotkey = Text::el(format!("[{modifier}{hotkey:?}]"));
                 if let Some(tooltip) = tooltip {
-                    Some(FlowColumn::el([tooltip, hotkey]).set(space_between_items(), 10.))
+                    Some(FlowColumn::el([tooltip, hotkey]).with(space_between_items(), 10.))
                 } else {
                     Some(hotkey)
                 }
@@ -170,13 +170,13 @@ impl ButtonStyle {
             };
             let mut el = FlowRow(vec![content])
                 .el()
-                .set(padding_top(), 3.)
-                .set(padding_bottom(), 3.)
-                .set(padding_left(), if matches!(self, Self::Card) || matches!(self, Self::Flat) { 3. } else { 16. })
-                .set(padding_right(), if matches!(self, Self::Card) || matches!(self, Self::Flat) { 3. } else { 16. })
-                .set_default(align_vertical_center())
+                .with(padding_top(), 3.)
+                .with(padding_bottom(), 3.)
+                .with(padding_left(), if matches!(self, Self::Card) || matches!(self, Self::Flat) { 3. } else { 16. })
+                .with(padding_right(), if matches!(self, Self::Card) || matches!(self, Self::Flat) { 3. } else { 16. })
+                .with_default(align_vertical_center())
                 .with_background(background.into())
-                .set(
+                .with(
                     border_radius(),
                     match self {
                         Self::Card => Vec4::ONE * 3.,
@@ -184,10 +184,10 @@ impl ButtonStyle {
                         _ => Vec4::ONE * 26. / 2.,
                     },
                 )
-                .set(border_thickness(), 0.)
-                .set(border_color(), Color::WHITE.into());
+                .with(border_thickness(), 0.)
+                .with(border_color(), Color::WHITE.into());
             if *self != Self::Flat {
-                el = el.set(min_height(), 26.);
+                el = el.with(min_height(), 26.);
             }
             if let Some(tooltip) = tooltip {
                 Tooltip { inner: el, tooltip }.el()

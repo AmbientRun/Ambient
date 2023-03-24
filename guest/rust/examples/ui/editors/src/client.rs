@@ -25,7 +25,7 @@ fn App(hooks: &mut Hooks) -> Element {
     let (list, set_list) = hooks.use_state(vec!["First".to_string(), "Second".to_string()]);
     let (minimal_list, set_minimal_list) =
         hooks.use_state(vec!["First".to_string(), "Second".to_string()]);
-    let row = |name, editor| FlowRow(vec![Text::el(name).set(min_width(), 110.), editor]).el();
+    let row = |name, editor| FlowRow(vec![Text::el(name).with(min_width(), 110.), editor]).el();
     FocusRoot(vec![FlowColumn(vec![
         row("TextEditor", TextEditor::new(text, set_text).el()),
         row(
@@ -75,8 +75,8 @@ fn App(hooks: &mut Hooks) -> Element {
         ),
     ])
     .el()
-    .set(width(), 200.)
-    .set(space_between_items(), STREET)
+    .with(width(), 200.)
+    .with(space_between_items(), STREET)
     .with_padding_even(STREET)])
     .el()
 }

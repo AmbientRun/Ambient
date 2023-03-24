@@ -63,7 +63,7 @@ impl ElementComponent for ECSEditor {
                 .tooltip("Delete component from all selected entities")
                 .el(),
                 Text::el(id)
-                    .set(
+                    .with(
                         color(),
                         match toggled {
                             Some(true) => vec4(0., 1., 0., 1.),
@@ -87,7 +87,7 @@ impl ElementComponent for ECSEditor {
                     })
                     .el(),
             ])
-            .set(space_between_items(), 5.)
+            .with(space_between_items(), 5.)
         };
         FlowColumn::el([
             Button::new("Filter", move |_| set_edit_filter(!edit_filter)).toggled(edit_filter).el(),
@@ -99,8 +99,8 @@ impl ElementComponent for ECSEditor {
                         .map(|(path, comp)| render_component(&path, comp))
                         .collect_vec()
                 }))
-                .set(fit_horizontal(), Fit::Parent)
-                .set(space_between_items(), STREET)
+                .with(fit_horizontal(), Fit::Parent)
+                .with(space_between_items(), STREET)
             } else {
                 Element::new()
             },
@@ -111,7 +111,7 @@ impl ElementComponent for ECSEditor {
                 ),
             ]),
         ])
-        .set(fit_horizontal(), Fit::Parent)
+        .with(fit_horizontal(), Fit::Parent)
     }
 }
 
@@ -135,15 +135,15 @@ impl ElementComponent for EntityEditor {
                 data.iter()
                     .map(|entry| {
                         FlowRow::el([
-                            Text::el(format!("{}:", entry.desc().path())).set(color(), vec4(1., 1., 0., 1.)),
+                            Text::el(format!("{}:", entry.desc().path())).with(color(), vec4(1., 1., 0., 1.)),
                             Text::el(ellipsis_text(format!("{:?}", entry.as_debug()))),
                         ])
-                        .set(space_between_items(), STREET)
+                        .with(space_between_items(), STREET)
                     })
                     .collect_vec(),
             ),
         ])
-        .set(space_between_items(), STREET)
+        .with(space_between_items(), STREET)
     }
 }
 

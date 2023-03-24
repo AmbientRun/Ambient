@@ -15,7 +15,7 @@ async fn init(app: &mut App) {
     let world = &mut app.world;
     let assets = world.resource(asset_cache()).clone();
 
-    Quad.el().set(scale(), Vec3::ONE * 30.).spawn_static(world);
+    Quad.el().with(scale(), Vec3::ONE * 30.).spawn_static(world);
 
     let model = ModelCrate::local_import(
         &assets,

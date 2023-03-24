@@ -27,7 +27,7 @@ fn init(world: &mut World) -> PxSceneRef {
     let physics_material = PxMaterial::new(physics.physics, 0.5, 0.5, 0.6);
     let ground_static = PxRigidStaticRef::new_plane(physics.physics, vec3(0., 0., 1.), 0., &physics_material);
     scene.add_actor(&ground_static);
-    Quad.el().set(scale(), Vec3::ONE * 40.).set(color(), vec4(0.5, 0.5, 0.5, 1.)).set(rigid_static(), ground_static).spawn_static(world);
+    Quad.el().with(scale(), Vec3::ONE * 40.).with(color(), vec4(0.5, 0.5, 0.5, 1.)).with(rigid_static(), ground_static).spawn_static(world);
 
     // Boxes
     for _ in 0..10 {
@@ -40,7 +40,7 @@ fn init(world: &mut World) -> PxSceneRef {
             &PxTransform::identity(),
         );
         scene.add_actor(&actor);
-        Cube.el().set(rigid_dynamic(), actor).set_default(physics_controlled()).spawn_static(world);
+        Cube.el().with(rigid_dynamic(), actor).with_default(physics_controlled()).spawn_static(world);
     }
 
     ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))

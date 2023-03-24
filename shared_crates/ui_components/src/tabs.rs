@@ -32,7 +32,7 @@ impl<T: ToString + PartialEq + Clone + Debug + Sync + Send + 'static> ElementCom
                 .collect(),
         )
         .el()
-        .set(space_between_items(), STREET)
+        .with(space_between_items(), STREET)
     }
 }
 
@@ -60,6 +60,6 @@ impl<T: ToString + PartialEq + Default + ComponentValue + Clone + Debug + Sync +
             TabBar { tabs: self.tabs.iter().map(|it| it.0.clone()).collect(), value, on_change: cb(move |value| set_value(value)) }.el(),
             selected_tab().key(key),
         ])
-        .set(space_between_items(), STREET)
+        .with(space_between_items(), STREET)
     }
 }

@@ -21,6 +21,6 @@ impl ElementComponent for Throbber {
             3 => "/",
             _ => "*",
         };
-        Text::el(s).set(font_family(), "Code".to_string())
+        Text::el(s).with(font_family(), "Code".to_string())
     }
 }

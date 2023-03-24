@@ -113,8 +113,8 @@ impl ElementComponent for Example {
                 .el(),
             ])
             .el()
-            .set(padding(), Borders::even(32.0))
-            .set(space_between_items(), 128.0),
+            .with(padding(), Borders::even(32.0))
+            .with(space_between_items(), 128.0),
         )
         .el()
     }

@@ -13,7 +13,7 @@ pub fn Dropdown(_: &mut Hooks, content: Element, dropdown: Element, show: bool) 
     FlowColumn::el([
         content,
         if show {
-            UIBase.el().children(vec![FlowColumn(vec![dropdown]).el().set(translation(), vec3(0., 0., -0.05))])
+            UIBase.el().children(vec![FlowColumn(vec![dropdown]).el().with(translation(), vec3(0., 0., -0.05))])
         } else {
             Element::new()
         },
@@ -29,8 +29,8 @@ pub fn Tooltip(hooks: &mut Hooks, inner: Element, tooltip: Element) -> Element {
             .el()
             .with_padding_even(STREET)
             .with_background(tooltip_background_color().into())
-            .set(border_radius(), Vec4::ONE * SMALL_ROUNDING)
-            .set(margin_top(), STREET),
+            .with(border_radius(), Vec4::ONE * SMALL_ROUNDING)
+            .with(margin_top(), STREET),
         show: hover,
     }
     .el()

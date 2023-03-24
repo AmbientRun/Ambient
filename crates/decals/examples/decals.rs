@@ -23,14 +23,14 @@ use glam::*;
 
 async fn init(app: &mut App) {
     let world = &mut app.world;
-    Cube.el().set(color(), vec4(0.5, 0.5, 0.5, 1.)).set(translation(), Vec3::Z).set_default(cast_shadows()).spawn_static(world);
-    Quad.el().set(scale(), Vec3::ONE * 10.).spawn_static(world);
+    Cube.el().with(color(), vec4(0.5, 0.5, 0.5, 1.)).with(translation(), Vec3::Z).with_default(cast_shadows()).spawn_static(world);
+    Quad.el().with(scale(), Vec3::ONE * 10.).spawn_static(world);
 
     let assets = world.resource(asset_cache()).clone();
 
     Cube.el()
-        .set(scale(), vec3(2., 2., 4.))
-        .set(rotation(), Quat::from_rotation_y(PI / 4.) * Quat::from_rotation_z(PI / 4.))
+        .with(scale(), vec3(2., 2., 4.))
+        .with(rotation(), Quat::from_rotation_y(PI / 4.) * Quat::from_rotation_z(PI / 4.))
         .init(
             renderer_shader(),
             cb(move |assets, config| {
@@ -43,9 +43,9 @@ async fn init(app: &mut App) {
 
     let transparent = SharedMaterial::new(FlatMaterial::new(assets, vec4(0., 1., 0., 0.5), Some(true)));
     Cube.el()
-        .set(scale(), vec3(2., 2., 4.))
-        .set(rotation(), Quat::from_rotation_y(PI / 4.) * Quat::from_rotation_z(PI / 4.))
-        .set(material(), transparent)
+        .with(scale(), vec3(2., 2., 4.))
+        .with(rotation(), Quat::from_rotation_y(PI / 4.) * Quat::from_rotation_z(PI / 4.))
+        .with(material(), transparent)
         .spawn_static(world);
 
     ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
