@@ -50,9 +50,9 @@ pub fn Alert(
                     Element::new()
                 },
             ])
-            .set(space_between_items(), STREET),
+            .with(space_between_items(), STREET),
         ])
-        .set(space_between_items(), STREET),
+        .with(space_between_items(), STREET),
     )
     .el()
 }
@@ -100,10 +100,10 @@ pub fn Prompt(
                     Element::new()
                 },
             ])
-            .set(space_between_items(), STREET)
-            .set_default(align_vertical_center()),
+            .with(space_between_items(), STREET)
+            .with_default(align_vertical_center()),
         ])
-        .set(space_between_items(), STREET),
+        .with(space_between_items(), STREET),
     )
     .el()
 }
@@ -189,10 +189,10 @@ pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + Sync + Send + 'static>
                     },
                 ])
                 .el()
-                .set(space_between_items(), STREET)
-                .set_default(align_vertical_center()),
+                .with(space_between_items(), STREET)
+                .with_default(align_vertical_center()),
             ])
-            .set(space_between_items(), STREET),
+            .with(space_between_items(), STREET),
         )
         .el(),
     )

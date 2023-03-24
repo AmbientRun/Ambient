@@ -21,8 +21,8 @@ async fn init(app: &mut App) {
             )),
         }
         .el()
-        .set(width(), 200.)
-        .set(height(), 200.),
+        .with(width(), 200.)
+        .with(height(), 200.),
     );
 
     UICamera.el().spawn_interactive(world);

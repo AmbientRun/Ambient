@@ -111,20 +111,20 @@ impl ElementComponent for Slider {
 
         let rectangle = Rectangle
             .el()
-            .set(width(), slider_width)
-            .set(height(), 2.)
-            .set(translation(), vec3(0., (SLIDER_HEIGHT - 2.) / 2., 0.))
-            .set(background_color(), primary_color().into())
+            .with(width(), slider_width)
+            .with(height(), 2.)
+            .with(translation(), vec3(0., (SLIDER_HEIGHT - 2.) / 2., 0.))
+            .with(background_color(), primary_color().into())
             .on_spawned(move |_, id, _| *block_id.lock() = id);
 
         let thumb = {
             let thumb = UIBase
                 .el()
-                .set(width(), THUMB_WIDTH)
-                .set(height(), SLIDER_HEIGHT)
+                .with(width(), THUMB_WIDTH)
+                .with(height(), SLIDER_HEIGHT)
                 .with_background(primary_color().into())
-                .set(border_radius(), Vec4::ONE * THUMB_WIDTH / 2.)
-                .set(translation(), vec3(block_left_offset, 0., -0.01))
+                .with(border_radius(), Vec4::ONE * THUMB_WIDTH / 2.)
+                .with(translation(), vec3(block_left_offset, 0., -0.01))
                 .with_clickarea()
                 .on_mouse_enter(|world, _| {
                     set_cursor(world, CursorIcon::Hand);
@@ -145,10 +145,10 @@ impl ElementComponent for Slider {
         };
 
         FlowRow::el([
-            UIBase.el().set(width(), slider_width).set(height(), SLIDER_HEIGHT).children(vec![rectangle, thumb]),
+            UIBase.el().with(width(), slider_width).with(height(), SLIDER_HEIGHT).children(vec![rectangle, thumb]),
             FlowRow::el([f32::edit_or_view(value, on_change_raw, EditorOpts::default()), suffix.map(Text::el).unwrap_or_default()]),
         ])
-        .set(space_between_items(), STREET)
+        .with(space_between_items(), STREET)
     }
 }
 

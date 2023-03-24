@@ -94,34 +94,17 @@ impl Element {
     pub fn vec_of(self) -> Vec<Self> {
         vec![self]
     }
-    pub fn set<T: ComponentValue + Sync + Send + Clone + 'static>(mut self, component: Component<T>, value: T) -> Self {
+    pub fn with<T: ComponentValue + Sync + Send + Clone + 'static>(mut self, component: Component<T>, value: T) -> Self {
         self.config.components.set(component, value);
         self
     }
-    pub fn set_with<T: ComponentValue + Sync + Send + 'static, F: Fn(&World) -> T + ComponentValue + Sync + Send + 'static>(
-        mut self,
-        component: Component<T>,
-        value: F,
-    ) -> Self {
-        self.config.components.set_writer(component, Arc::new(move |world, ed| ed.set(component, value(world))));
-        self
-    }
-    pub fn set_default<T: ComponentValue + Sync + Send + Clone + Default + 'static>(mut self, component: Component<T>) -> Self {
+    pub fn with_default<T: ComponentValue + Sync + Send + Clone + Default + 'static>(mut self, component: Component<T>) -> Self {
         self.config.components.set(component, T::default());
         self
     }
     /// Sets the component of the element component instantiation
     pub fn init<T: ComponentValue + Sync + Send + Clone + 'static>(mut self, component: Component<T>, value: T) -> Self {
         self.config.init_components.set(component, value);
-        self
-    }
-    /// See [`Element::init`]
-    pub fn init_with<T: ComponentValue + Sync + Send + 'static, F: Fn(&World) -> T + ComponentValue + Sync + Send + 'static>(
-        mut self,
-        component: Component<T>,
-        value: F,
-    ) -> Self {
-        self.config.init_components.set_writer(component, Arc::new(move |world, ed| ed.set(component, value(world))));
         self
     }
     /// See [`Element::init`]
@@ -255,7 +238,7 @@ pub fn render_parented_with_component(world: &mut World, id: EntityId, handle: C
         hierarchy::{children, parent},
         transform::{local_to_parent, local_to_world},
     };
-    element = element.set(parent(), id);
+    element = element.with(parent(), id);
     if !element.has_component(local_to_parent()) {
         element = element.init_default(local_to_parent());
     }

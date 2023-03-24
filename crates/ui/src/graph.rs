@@ -231,7 +231,7 @@ impl ElementComponent for Graph {
             .init(material(), SharedMaterial::new(FlatMaterial::new(assets, style.color, None)))
             .init(color(), Vec4::ONE)
             .init(ui_scene(), ())
-            .set(ambient_core::mesh(), mesh)
+            .with(ambient_core::mesh(), mesh)
     }
 }
 
@@ -274,11 +274,11 @@ impl ElementComponent for Guide {
         Rectangle
             .el()
             .children(ticks)
-            .set(width(), len)
-            .set(height(), style.width)
-            .set(color(), style.color)
-            .set(rotation(), rot)
-            .set(translation(), pos)
+            .with(width(), len)
+            .with(height(), style.width)
+            .with(color(), style.color)
+            .with(rotation(), rot)
+            .with(translation(), pos)
     }
 }
 
@@ -297,13 +297,13 @@ impl ElementComponent for Tick {
         let Self { style, height, pos, text_rot, val } = *self;
         Rectangle
             .el()
-            .set(width(), self.style.width)
-            .set(super::layout::height(), height)
+            .with(width(), self.style.width)
+            .with(super::layout::height(), height)
             .children(vec![Text::el(format!("{val:?}"))
-                .set(color(), self.style.color)
-                .set(translation(), Vec3::Y * height)
-                .set(rotation(), text_rot)])
-            .set(color(), style.color)
-            .set(translation(), pos.extend(0.0))
+                .with(color(), self.style.color)
+                .with(translation(), Vec3::Y * height)
+                .with(rotation(), text_rot)])
+            .with(color(), style.color)
+            .with(translation(), pos.extend(0.0))
     }
 }

@@ -59,7 +59,7 @@ impl ElementComponent for Example {
         FocusRoot(vec![ScrollArea(
             FlowColumn(vec![MyStruct::editor(state.clone(), set_state, Default::default()), Text::el(format!("{state:#?}"))])
                 .el()
-                .set(space_between_items(), STREET),
+                .with(space_between_items(), STREET),
         )
         .el()])
         .el()

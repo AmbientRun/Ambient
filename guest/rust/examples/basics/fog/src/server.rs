@@ -3,14 +3,14 @@ use ambient_api::{
         app::main_scene,
         camera::{aspect_ratio_from_window, fog},
         player::player,
-        primitives::{cube, quad, sphere_radius, sphere_sectors, sphere_stacks},
+        primitives::{cube, quad},
         rendering::{
             cast_shadows, color, fog_color, fog_density, fog_height_falloff, light_diffuse, sky,
             sun,
         },
         transform::{lookat_center, rotation, scale, translation},
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
+    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     prelude::*,
 };
 

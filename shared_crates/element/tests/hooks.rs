@@ -38,7 +38,7 @@ fn use_state_inc_should_work() {
             let (state, set_state) = hooks.use_state(10);
             *hooks.world.resource_mut(n_renders()) += 1;
             *hooks.world.resource_mut(counter()) = state;
-            Element::new().set(trigger(), cb(move |_| set_state(state + 1)))
+            Element::new().with(trigger(), cb(move |_| set_state(state + 1)))
         }
     }
 
@@ -62,7 +62,7 @@ fn use_state_on_removed_element_should_be_ignored() {
     impl ElementComponent for Inner {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
             let (state, set_state) = hooks.use_state(0);
-            Element::new().set(trigger(), cb(move |_| set_state(state + 1)))
+            Element::new().with(trigger(), cb(move |_| set_state(state + 1)))
         }
     }
 
@@ -111,7 +111,7 @@ fn use_state_shouldnt_survive_between_instances() {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
             let (state, set_state) = hooks.use_state(0);
             STATE.store(state, Ordering::Relaxed);
-            Element::new().set(trigger(), cb(move |_| set_state(state + 1)))
+            Element::new().with(trigger(), cb(move |_| set_state(state + 1)))
         }
     }
     let mut world = initialize();

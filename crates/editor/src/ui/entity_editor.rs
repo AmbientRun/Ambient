@@ -65,7 +65,7 @@ pub fn EntityEditor(hooks: &mut Hooks, entity_id: EntityId) -> Element {
                 }),
             }
             .el()
-            .set(fit_horizontal(), Fit::Parent),
+            .with(fit_horizontal(), Fit::Parent),
             // if let Some(translation) = translation {
             //     Button::new("Teleport to entity", {
             //         move |_| {
@@ -82,7 +82,7 @@ pub fn EntityEditor(hooks: &mut Hooks, entity_id: EntityId) -> Element {
             // },
         ])
         .el()
-        .set(space_between_items(), STREET)
+        .with(space_between_items(), STREET)
     } else {
         Text::el("No such entity")
     }
@@ -264,7 +264,7 @@ fn EntityComponentsEditor(_hooks: &mut Hooks, value: Entity, on_change: Cb<dyn F
             ])
             .collect_vec(),
     )
-    .set(space_between_items(), STREET)
+    .with(space_between_items(), STREET)
 }
 
 #[profiling::function]
@@ -285,12 +285,12 @@ fn ComponentEditor<T: ComponentValue + Editor + std::fmt::Debug + Clone + Sync +
     .style(ButtonStyle::Flat)
     .tooltip("Delete")
     .el()
-    .set(margin(), Borders::right(STREET));
+    .with(margin(), Borders::right(STREET));
 
     FlowRow(vec![
         ScreenContainer(screen).el(),
         remove,
-        Text::el(&display_name).set(margin(), Borders::right(STREET)),
+        Text::el(&display_name).with(margin(), Borders::right(STREET)),
         FlowRow(vec![if inline {
             T::editor(
                 value,
@@ -322,10 +322,10 @@ fn ComponentEditor<T: ComponentValue + Editor + std::fmt::Debug + Clone + Sync +
             .el()
         }])
         .el()
-        .set(align_horizontal(), Align::End)
-        .set(fit_horizontal(), Fit::Parent),
+        .with(align_horizontal(), Align::End)
+        .with(fit_horizontal(), Fit::Parent),
     ])
     .el()
-    .set(align_vertical(), Align::Center)
-    .set(fit_horizontal(), Fit::Parent)
+    .with(align_vertical(), Align::Center)
+    .with(fit_horizontal(), Fit::Parent)
 }

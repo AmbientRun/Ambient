@@ -34,7 +34,7 @@ fn App(_hooks: &mut Hooks) -> Element {
                 .el(),
         ])
         .el()
-        .set(space_between_items(), STREET)
+        .with(space_between_items(), STREET)
         .with_padding_even(STREET),
         FlowColumn(vec![
             Button::new("Regular toggled", |_| {}).toggled(true).el(),
@@ -56,7 +56,7 @@ fn App(_hooks: &mut Hooks) -> Element {
                 .el(),
         ])
         .el()
-        .set(space_between_items(), STREET)
+        .with(space_between_items(), STREET)
         .with_padding_even(STREET),
         FlowColumn(vec![
             Button::new("Regular disabled", |_| {}).disabled(true).el(),
@@ -78,12 +78,12 @@ fn App(_hooks: &mut Hooks) -> Element {
                 .el(),
         ])
         .el()
-        .set(space_between_items(), STREET)
+        .with(space_between_items(), STREET)
         .with_padding_even(STREET),
         Button::new("\u{f1e2}", |_| {}).el(),
     ])
     .el()
-    .set(space_between_items(), STREET)
+    .with(space_between_items(), STREET)
     .with_padding_even(STREET)
 }
 

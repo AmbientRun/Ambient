@@ -122,7 +122,7 @@ pub fn HighjackMouse(
             }
         }
     });
-    WindowSized(vec![]).el().with_clickarea().on_mouse_down(move |_, _, button| on_click(button)).el().set(translation(), -Vec3::Z * 0.99)
+    WindowSized(vec![]).el().with_clickarea().on_mouse_down(move |_, _, button| on_click(button)).el().with(translation(), -Vec3::Z * 0.99)
 }
 
 /// Ctrl on windows, Command on osx

@@ -22,7 +22,7 @@ define_el_function_for_vec_element_newtype!(WindowSized);
 impl ElementComponent for WindowSized {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let res = use_window_logical_resolution(hooks);
-        Dock(self.0).el().set(width(), res.x as _).set(height(), res.y as _).remove(local_to_parent())
+        Dock(self.0).el().with(width(), res.x as _).with(height(), res.y as _).remove(local_to_parent())
     }
 }
 
@@ -78,11 +78,11 @@ impl ElementComponent for FlowColumn {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         Flow(self.0)
             .el()
-            .set_default(orientation_vertical())
-            .set_default(align_horizontal_begin())
-            .set_default(align_vertical_begin())
-            .set_default(fit_horizontal_children())
-            .set_default(fit_vertical_children())
+            .with_default(orientation_vertical())
+            .with_default(align_horizontal_begin())
+            .with_default(align_vertical_begin())
+            .with_default(fit_horizontal_children())
+            .with_default(fit_vertical_children())
         // .set(orientation(), Orientation::Vertical)
         // .set(align_horizontal(), Align::Begin)
         // .set(align_vertical(), Align::Begin)
@@ -99,11 +99,11 @@ impl ElementComponent for FlowRow {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         Flow(self.0)
             .el()
-            .set_default(orientation_horizontal())
-            .set_default(align_horizontal_begin())
-            .set_default(align_vertical_begin())
-            .set_default(fit_horizontal_children())
-            .set_default(fit_vertical_children())
+            .with_default(orientation_horizontal())
+            .with_default(align_horizontal_begin())
+            .with_default(align_vertical_begin())
+            .with_default(fit_horizontal_children())
+            .with_default(fit_vertical_children())
         // .set(orientation(), Orientation::Horizontal)
         // .set(align_horizontal(), Align::Begin)
         // .set(align_vertical(), Align::Begin)
@@ -119,11 +119,11 @@ impl ElementComponent for Centered {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         Flow(self.0)
             .el()
-            .set_default(orientation_vertical())
-            .set_default(align_horizontal_center())
-            .set_default(align_vertical_center())
-            .set_default(fit_horizontal_none())
-            .set_default(fit_vertical_none())
+            .with_default(orientation_vertical())
+            .with_default(align_horizontal_center())
+            .with_default(align_vertical_center())
+            .with_default(fit_horizontal_none())
+            .with_default(fit_vertical_none())
         // .set(orientation(), Orientation::Vertical)
         // .set(align_horizontal(), Align::Center)
         // .set(align_vertical(), Align::Center)
@@ -141,7 +141,7 @@ pub fn FixedGrid(_: &mut Hooks, items: Vec<Element>, item_stride: Vec2, items_ho
             .map(|(i, item)| {
                 let x = i % items_horizontal;
                 let y = i / items_horizontal;
-                item.set(translation(), vec3(x as f32 * item_stride.x, y as f32 * item_stride.y, 0.))
+                item.with(translation(), vec3(x as f32 * item_stride.x, y as f32 * item_stride.y, 0.))
             })
             .collect_vec(),
     )
@@ -169,8 +169,8 @@ pub fn MeasureSize(hooks: &mut Hooks, inner: Element, on_change: Cb<dyn Fn(Vec2)
 pub fn Separator(_hooks: &mut Hooks, vertical: bool) -> Element {
     let el = Flow(vec![]).el().with_background(Color::rgba(0., 0., 0., 0.8).into());
     if vertical {
-        el.set(width(), 1.).set_default(fit_horizontal_none()).set_default(fit_vertical_parent())
+        el.with(width(), 1.).with_default(fit_horizontal_none()).with_default(fit_vertical_parent())
     } else {
-        el.set(height(), 1.).set_default(fit_horizontal_parent()).set_default(fit_vertical_none())
+        el.with(height(), 1.).with_default(fit_horizontal_parent()).with_default(fit_vertical_none())
     }
 }

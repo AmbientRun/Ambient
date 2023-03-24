@@ -68,10 +68,10 @@ impl ElementComponent for TerrainRaycastPicker {
             let assets = ui_world.resource(asset_cache());
             let new_vis_brush_id = Cube
                 .el()
-                .set(color(), Vec4::ONE)
-                .set(translation(), Vec3::Z)
-                .set(scale(), Vec3::ONE)
-                .set(
+                .with(color(), Vec4::ONE)
+                .with(translation(), Vec3::Z)
+                .with(scale(), Vec3::ONE)
+                .with(
                     renderer_shader(),
                     cb(|assets, config| {
                         DecalShaderKey {
@@ -82,7 +82,7 @@ impl ElementComponent for TerrainRaycastPicker {
                         .get(assets)
                     }),
                 )
-                .set(material(), SharedMaterial::new(BrushCursorMaterial::new(assets)))
+                .with(material(), SharedMaterial::new(BrushCursorMaterial::new(assets)))
                 .spawn_static(&mut game_state.lock().world);
 
             set_vis_brush_id(Some(new_vis_brush_id));
@@ -329,7 +329,7 @@ impl ElementComponent for EditorTerrainMode {
                 .el(),
             ])
             .el()
-            .set(space_between_items(), STREET),
+            .with(space_between_items(), STREET),
         ];
         if let Brush::Raise | Brush::Lower | Brush::Flatten = brush {
             items.push(
@@ -348,7 +348,7 @@ impl ElementComponent for EditorTerrainMode {
                     .el(),
                 ])
                 .el()
-                .set(space_between_items(), STREET),
+                .with(space_between_items(), STREET),
             );
             items.push(
                 FlowRow(vec![
@@ -366,7 +366,7 @@ impl ElementComponent for EditorTerrainMode {
                     .el(),
                 ])
                 .el()
-                .set(space_between_items(), STREET),
+                .with(space_between_items(), STREET),
             );
             items.push(Separator { vertical: true }.el());
             items.push(
@@ -399,7 +399,7 @@ impl ElementComponent for EditorTerrainMode {
         }
 
         WindowSized(vec![
-            FlowColumn::el([FlowRow(items).el().floating_panel().keyboard().set(margin(), Borders::even(STREET))]),
+            FlowColumn::el([FlowRow(items).el().floating_panel().keyboard().with(margin(), Borders::even(STREET))]),
             Group(vec![WindowSized(
                 TerrainRaycastPicker {
                     filter: RaycastFilter {
@@ -419,7 +419,7 @@ impl ElementComponent for EditorTerrainMode {
             )
             .el()])
             .el()
-            .set(translation(), vec3(0., 0., -10.0)),
+            .with(translation(), vec3(0., 0., -10.0)),
         ])
         .el()
     }

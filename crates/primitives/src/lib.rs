@@ -214,9 +214,9 @@ impl ElementComponent for BoxLine {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         let d = self.to - self.from;
         Cube.el()
-            .set(translation(), self.from)
-            .set(rotation(), Quat::from_rotation_arc(Vec3::X, d.normalize()))
-            .set(scale(), vec3(d.length(), self.thickness, self.thickness))
+            .with(translation(), self.from)
+            .with(rotation(), Quat::from_rotation_arc(Vec3::X, d.normalize()))
+            .with(scale(), vec3(d.length(), self.thickness, self.thickness))
             .init(mesh_to_local(), Mat4::from_scale_rotation_translation(Vec3::ONE * 0.5, Quat::IDENTITY, vec3(0.5, 0., 0.)))
     }
 }

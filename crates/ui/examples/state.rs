@@ -18,7 +18,7 @@ impl ElementComponent for A {
     fn render(self: Box<Self>, _: &mut ambient_element::Hooks) -> ambient_element::Element {
         let Self { value, set_value } = *self;
         FlowRow::el([
-            Text::el(value.to_string()).set(padding(), Borders::even(STREET)),
+            Text::el(value.to_string()).with(padding(), Borders::even(STREET)),
             Button::new("+1", {
                 let set_value = set_value.clone();
                 move |_| set_value(value + 1.0)
@@ -26,7 +26,7 @@ impl ElementComponent for A {
             .el(),
             Button::new("-1", move |_| set_value(value - 1.0)).el(),
         ])
-        .set(space_between_items(), STREET)
+        .with(space_between_items(), STREET)
     }
 }
 
@@ -98,7 +98,7 @@ impl ElementComponent for Main {
                 // B { shared }.el(),
             ])
         }
-        .set(space_between_items(), STREET)
+        .with(space_between_items(), STREET)
     }
 }
 

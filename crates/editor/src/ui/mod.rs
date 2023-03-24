@@ -218,9 +218,9 @@ pub fn EditorUI(hooks: &mut Hooks) -> Element {
             ])
             .floating_panel()
             .keyboard()
-            .set(margin(), Borders::even(STREET).set_bottom(0.))]),
+            .with(margin(), Borders::even(STREET).set_bottom(0.))]),
             if user_settings.debug_intents {
-                IntentHistoryVisualizer.el().set(margin(), Borders::even(STREET)).set(docking(), Docking::Top)
+                IntentHistoryVisualizer.el().with(margin(), Borders::even(STREET)).with(docking(), Docking::Top)
             } else {
                 Element::new()
             },
@@ -229,8 +229,8 @@ pub fn EditorUI(hooks: &mut Hooks) -> Element {
                 EditorMode::Terrain => EditorTerrainMode.el(),
                 EditorMode::Build => EditorBuildMode.el(),
                 EditorMode::Atmosphere => EditorAtmosphereMode.el(),
-                EditorMode::NaturalLayers => NaturalLayersEditor.el().set(docking(), Docking::Left).set(width(), 500.),
-                EditorMode::TerrainMaterial => TerrainMaterialEditor.el().set(docking(), Docking::Left).set(width(), 500.),
+                EditorMode::NaturalLayers => NaturalLayersEditor.el().with(docking(), Docking::Left).with(width(), 500.),
+                EditorMode::TerrainMaterial => TerrainMaterialEditor.el().with(docking(), Docking::Left).with(width(), 500.),
             },
         ])
         .el(),
@@ -273,7 +273,7 @@ fn TerrainMaterialEditor(hooks: &mut Hooks) -> Element {
         ScrollArea::el(
             FlowColumn::el([
                 FlowRow::el([
-                    CopyPasteButtons { value: value.clone(), on_change: set_value.clone() }.el().set(margin(), Borders::bottom(STREET)),
+                    CopyPasteButtons { value: value.clone(), on_change: set_value.clone() }.el().with(margin(), Borders::bottom(STREET)),
                     // SelectAndDownloadJsonAssetButton2::<TerrainMaterialDef> {
                     //     asset_type: AssetType::TerrainMaterial,
                     //     on_select_file: Cb::new({
@@ -291,7 +291,7 @@ fn TerrainMaterialEditor(hooks: &mut Hooks) -> Element {
             .floating_panel(),
         ),
     ])
-    .set(margin(), Borders::even(STREET))
+    .with(margin(), Borders::even(STREET))
 }
 
 #[element_component]
@@ -356,7 +356,7 @@ fn NaturalLayersEditor(hooks: &mut Hooks) -> Element {
         ScrollArea::el(
             FlowColumn::el([
                 FlowRow::el([
-                    CopyPasteButtons { value: value.clone(), on_change: set_value.clone() }.el().set(margin(), Borders::bottom(STREET)),
+                    CopyPasteButtons { value: value.clone(), on_change: set_value.clone() }.el().with(margin(), Borders::bottom(STREET)),
                     // SelectAndDownloadJsonAssetButton2::<Vec<NaturalLayer>> {
                     //     asset_type: AssetType::Biomes,
                     //     on_select_file: Cb::new({
@@ -373,7 +373,7 @@ fn NaturalLayersEditor(hooks: &mut Hooks) -> Element {
             ])
             .floating_panel(),
         )
-        .set(margin(), Borders::even(STREET)),
+        .with(margin(), Borders::even(STREET)),
     ])
 }
 
@@ -385,7 +385,7 @@ fn EditorExperienceMode(_hooks: &mut Hooks) -> Element {
 
 #[element_component]
 pub fn UploadingThumbnailDialog(_: &mut Hooks) -> Element {
-    WindowSized(vec![Text::el("Uploading thumbnail...").set(translation(), vec3(300., 300., -0.6))]).el()
+    WindowSized(vec![Text::el("Uploading thumbnail...").with(translation(), vec3(300., 300., -0.6))]).el()
 }
 
 #[element_component]
@@ -534,10 +534,10 @@ pub fn Crosshair(hooks: &mut Hooks) -> Element {
     let window_size = use_window_logical_resolution(hooks).as_vec2();
     Rectangle
         .el()
-        .set(width(), 2.)
-        .set(height(), 2.)
+        .with(width(), 2.)
+        .with(height(), 2.)
         .with_background(Color::WHITE.into())
-        .set(translation(), vec3(window_size.x / 2. - 1., window_size.y / 2. - 1., -0.01))
+        .with(translation(), vec3(window_size.x / 2. - 1., window_size.y / 2. - 1., -0.01))
 }
 
 #[derive(Debug, Clone)]
@@ -561,6 +561,6 @@ impl<T: Serialize + DeserializeOwned + Send + Sync + std::fmt::Debug + Clone + '
             .el(),
         ])
         .el()
-        .set(space_between_items(), STREET)
+        .with(space_between_items(), STREET)
     }
 }

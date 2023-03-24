@@ -133,9 +133,9 @@ impl ElementComponent for SelectArea {
                 UIBase
                     .el()
                     .with_background(Color::rgba(0., 0., 1., 0.3).into())
-                    .set(translation(), vec3(min_x, min_y, -0.05) - area_offset.extend(0.))
-                    .set(width(), max_x - min_x)
-                    .set(height(), max_y - min_y)
+                    .with(translation(), vec3(min_x, min_y, -0.05) - area_offset.extend(0.))
+                    .with(width(), max_x - min_x)
+                    .with(height(), max_y - min_y)
             } else {
                 Element::new()
             }])
