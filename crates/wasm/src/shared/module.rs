@@ -136,7 +136,6 @@ impl ModuleStateBehavior for ModuleState {
 }
 
 struct ModuleStateInnerImpl<Bindings: BindingsBound> {
-    _engine: wasmtime::Engine,
     store: wasmtime::Store<WasmContext<Bindings>>,
 
     guest_bindings: wit::Bindings,
@@ -158,10 +157,7 @@ impl<Bindings: BindingsBound> ModuleStateInnerImpl<Bindings> {
         stderr_output: Box<dyn Fn(&World, &str) + Sync + Send>,
         bindings: Bindings,
     ) -> anyhow::Result<Self> {
-        let mut config = wasmtime::Config::new();
-        config.wasm_backtrace_details(wasmtime::WasmBacktraceDetails::Enable);
-        config.wasm_component_model(true);
-        let engine = wasmtime::Engine::new(&config)?;
+        let engine = &*crate::WASMTIME_ENGINE;
 
         let (stdout_output, stdout_consumer) = WasiOutputStream::make(stdout_output);
         let (stderr_output, stderr_consumer) = WasiOutputStream::make(stderr_output);
@@ -189,7 +185,6 @@ impl<Bindings: BindingsBound> ModuleStateInnerImpl<Bindings> {
         guest_bindings.guest().call_init(&mut store)?;
 
         Ok(Self {
-            _engine: engine,
             store,
             guest_bindings,
             _guest_instance: guest_instance,
