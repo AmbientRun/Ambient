@@ -43,20 +43,14 @@ pub fn initialize(world: &mut World, project_path: PathBuf, manifest: &ambient_p
 
         let is_sole_module = wasm_component_paths.len() == 1;
         for path in wasm_component_paths {
-            let filename_identifier =
+            let name =
                 Identifier::new(&*path.file_stem().context("no file stem for {path:?}")?.to_string_lossy()).map_err(anyhow::Error::msg)?;
 
-            let name = if is_sole_module {
-                manifest.project.id.clone()
-            } else {
-                Identifier::new(format!("{}_{}", manifest.project.id, filename_identifier)).map_err(anyhow::Error::msg)?
-            };
-
             let description = manifest.project.description.clone().unwrap_or_default();
-            let description = if is_sole_module { description } else { format!("{description} ({filename_identifier})") };
+            let description = if is_sole_module { description } else { format!("{description} ({name})") };
 
             let id = spawn_module(world, &name, description, true);
-            modules_to_entity_ids.insert((target, name.clone()), id);
+            modules_to_entity_ids.insert((target, name.as_ref().strip_prefix(target).unwrap_or(name.as_ref()).to_string()), id);
 
             if target == "client" {
                 let relative_path = path.strip_prefix(&build_dir)?;
