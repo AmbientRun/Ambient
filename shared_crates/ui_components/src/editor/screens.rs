@@ -82,10 +82,10 @@ fn EditorScreen<T: Debug + Clone + Sync + Send + 'static + Editor>(
                     Button::new_once("Cancel", move |_| on_cancel()).style(ButtonStyle::Flat).el(),
                 ])
                 .el()
-                .set(space_between_items(), STREET)
-                .set_default(align_vertical_center()),
+                .with(space_between_items(), STREET)
+                .with_default(align_vertical_center()),
             ])
-            .set(space_between_items(), STREET),
+            .with(space_between_items(), STREET),
         )
         .el(),
     )

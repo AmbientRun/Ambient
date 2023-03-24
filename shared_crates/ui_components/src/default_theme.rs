@@ -47,28 +47,28 @@ pub trait StylesExt {
 }
 impl StylesExt for Element {
     fn section_style(self) -> Self {
-        self.set(font_size(), 16.).set(color(), vec4(0.9, 0.9, 0.9, 1.))
+        self.with(font_size(), 16.).with(color(), vec4(0.9, 0.9, 0.9, 1.))
     }
     fn header_style(self) -> Self {
-        self.set(font_size(), 25.).set(color(), vec4(0.9, 0.9, 0.9, 1.))
+        self.with(font_size(), 25.).with(color(), vec4(0.9, 0.9, 0.9, 1.))
     }
     fn small_style(self) -> Self {
-        self.set(font_size(), 10.).set(color(), vec4(0.5, 0.5, 0.5, 1.))
+        self.with(font_size(), 10.).with(color(), vec4(0.5, 0.5, 0.5, 1.))
     }
     fn error_text_style(self) -> Self {
-        self.set(color(), vec4(1., 0.5, 0.5, 1.))
+        self.with(color(), vec4(1., 0.5, 0.5, 1.))
     }
     #[allow(clippy::clone_on_copy)]
     fn floating_panel(self) -> Self {
         self.with_background(Color::hex("1D1C22").unwrap().set_a(0.9).clone().into())
-            .set(border_radius(), Vec4::ONE * 5.)
+            .with(border_radius(), Vec4::ONE * 5.)
             .with_padding_even(STREET)
     }
     fn panel(self) -> Self {
-        self.with_background(Color::rgba(1., 1., 1., 0.01).into()).set(border_radius(), Vec4::ONE * 5.)
+        self.with_background(Color::rgba(1., 1., 1., 0.01).into()).with(border_radius(), Vec4::ONE * 5.)
     }
     fn keyboard(self) -> Self {
-        self.set(space_between_items(), STREET).with_padding_even(STREET).set_default(align_vertical_center())
+        self.with(space_between_items(), STREET).with_padding_even(STREET).with_default(align_vertical_center())
     }
 }
 

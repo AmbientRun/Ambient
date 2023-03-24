@@ -13,11 +13,13 @@ impl ElementComponent for ScreenContainer {
     #[allow(clippy::clone_on_copy)]
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         if let Some(content) = self.0 {
-            UIBase.el().set(screen(), ()).children(vec![WindowSized(vec![Dock(vec![content]).el().set(translation(), vec3(0., 0., 0.1))])
+            UIBase.el().with(screen(), ()).children(vec![WindowSized(vec![Dock(vec![content])
                 .el()
-                .with_background(app_background_color().set_a(0.99).clone().into())
-                .with_clickarea()
-                .el()])
+                .with(translation(), vec3(0., 0., 0.1))])
+            .el()
+            .with_background(app_background_color().set_a(0.99).clone().into())
+            .with_clickarea()
+            .el()])
         } else {
             Element::new()
         }

@@ -11,6 +11,12 @@
     "minigolf": {
         "cmd": "cargo run -- run ./guest/rust/examples/games/minigolf"
     },
+    "tictactoe": {
+        "cmd": "cargo run -- run ./guest/rust/examples/games/tictactoe"
+    },
+    "fog": {
+        "cmd": "cargo run -- run ./guest/rust/examples/basics/fog/"
+    },
     "skinmesh": {
         "cmd": "cargo run -- run ./guest/rust/examples/basics/skinmesh"
     },

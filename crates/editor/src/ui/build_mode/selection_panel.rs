@@ -27,7 +27,7 @@ impl ElementComponent for SelectionPanel {
             if selection.len() == 1 {
                 let _state = game_client.game_state.lock();
 
-                EntityEditor { entity_id: selection.entities[0] }.el().set(fit_horizontal(), Fit::Parent)
+                EntityEditor { entity_id: selection.entities[0] }.el().with(fit_horizontal(), Fit::Parent)
             } else {
                 Text::el(format!("{} entities", selection.len()))
             },
@@ -48,9 +48,9 @@ impl ElementComponent for SelectionPanel {
             },
         ])
         .el()
-        .set(space_between_items(), STREET)
-        .set(fit_horizontal(), Fit::None)
-        .set(fit_vertical(), Fit::None)
+        .with(space_between_items(), STREET)
+        .with(fit_horizontal(), Fit::None)
+        .with(fit_vertical(), Fit::None)
         .with_clickarea()
         .el()
     }

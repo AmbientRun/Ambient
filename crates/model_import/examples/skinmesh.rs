@@ -23,9 +23,9 @@ async fn init(app: &mut App) {
 
     let assets = world.resource(asset_cache()).clone();
 
-    Cube.el().set(translation(), vec3(8., 0., 0.)).set(color(), vec4(1., 0., 0., 1.)).spawn_static(world);
-    Cube.el().set(translation(), vec3(0., 8., 0.)).set(color(), vec4(0., 1., 0., 1.)).spawn_static(world);
-    Quad.el().set(scale(), Vec3::ONE * 10.).spawn_static(world);
+    Cube.el().with(translation(), vec3(8., 0., 0.)).with(color(), vec4(1., 0., 0., 1.)).spawn_static(world);
+    Cube.el().with(translation(), vec3(0., 8., 0.)).with(color(), vec4(0., 1., 0., 1.)).spawn_static(world);
+    Quad.el().with(scale(), Vec3::ONE * 10.).spawn_static(world);
 
     let model = ModelCrate::local_import(
         &assets,

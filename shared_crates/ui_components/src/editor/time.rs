@@ -76,9 +76,11 @@ impl ElementComponent for DurationEditor {
         let value = Text::el(format!("{dur:#?}"));
 
         if valid {
-            FlowRow(vec![input, value]).el().set(space_between_items(), 10.0)
+            FlowRow(vec![input, value]).el().with(space_between_items(), 10.0)
         } else {
-            FlowRow(vec![input, Text::el("invalid duration").set(color(), vec4(1.0, 0.0, 0.0, 1.0))]).el().set(space_between_items(), 10.0)
+            FlowRow(vec![input, Text::el("invalid duration").with(color(), vec4(1.0, 0.0, 0.0, 1.0))])
+                .el()
+                .with(space_between_items(), 10.0)
         }
     }
 }

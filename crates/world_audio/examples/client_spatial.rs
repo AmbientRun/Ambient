@@ -33,11 +33,11 @@ fn spawn_emitters(world: &mut World) {
 
         let id = Cube
             .el()
-            .set(color(), vec4(0.7, 0.0, 0.7, 1.))
-            .set(translation(), pos)
-            .set(scale(), Vec3::splat(0.5))
-            .set(cast_shadows(), ())
-            .set(audio_emitter(), emitter)
+            .with(color(), vec4(0.7, 0.0, 0.7, 1.))
+            .with(translation(), pos)
+            .with(scale(), Vec3::splat(0.5))
+            .with(cast_shadows(), ())
+            .with(audio_emitter(), emitter)
             .spawn_static(world);
 
         play_sound_on_entity(world, id, track.decode().repeat()).expect("Failed to play sound");
@@ -52,7 +52,7 @@ fn init(app: &mut App) {
 
     // Floor
     let size = 128.0;
-    Cube.el().set(scale(), vec3(size, size, 1.)).set_default(cast_shadows()).spawn_static(world);
+    Cube.el().with(scale(), vec3(size, size, 1.)).with_default(cast_shadows()).spawn_static(world);
 
     ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
         .with(active_camera(), 0.)

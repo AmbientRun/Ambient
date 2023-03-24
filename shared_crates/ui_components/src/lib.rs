@@ -79,7 +79,7 @@ pub fn use_window_logical_resolution(hooks: &mut Hooks) -> UVec2 {
 /// to control its appearance
 #[element_component]
 pub fn Rectangle(_hooks: &mut Hooks) -> Element {
-    with_rect(UIBase.el()).set(width(), 100.).set(height(), 100.).set(background_color(), Vec4::ONE)
+    with_rect(UIBase.el()).with(width(), 100.).with(height(), 100.).with(background_color(), Vec4::ONE)
 }
 
 pub fn with_rect(element: Element) -> Element {
@@ -96,7 +96,7 @@ pub fn with_rect(element: Element) -> Element {
 /// to control its appearance
 #[element_component]
 pub fn Line(_hooks: &mut Hooks) -> Element {
-    with_rect(UIBase.el()).set(background_color(), Vec4::ONE)
+    with_rect(UIBase.el()).with(background_color(), Vec4::ONE)
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -163,12 +163,12 @@ impl UIExt for Element {
         ClickArea::new(self)
     }
     fn with_background(self, background: Vec4) -> Self {
-        with_rect(self).set(background_color(), background)
+        with_rect(self).with(background_color(), background)
     }
     fn with_padding_even(self, padding: f32) -> Self {
-        self.set(padding_left(), padding).set(padding_right(), padding).set(padding_top(), padding).set(padding_bottom(), padding)
+        self.with(padding_left(), padding).with(padding_right(), padding).with(padding_top(), padding).with(padding_bottom(), padding)
     }
     fn with_margin_even(self, margin: f32) -> Self {
-        self.set(margin_left(), margin).set(margin_right(), margin).set(margin_top(), margin).set(margin_bottom(), margin)
+        self.with(margin_left(), margin).with(margin_right(), margin).with(margin_top(), margin).with(margin_bottom(), margin)
     }
 }

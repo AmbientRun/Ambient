@@ -28,7 +28,7 @@ fn test_outer_init() {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
             let (count, set_count) = hooks.use_state(0);
             if count < 2 {
-                Element::new().set(trigger(), cb(move |_| set_count(count + 1)))
+                Element::new().with(trigger(), cb(move |_| set_count(count + 1)))
             } else {
                 Dummy.into()
             }
@@ -54,7 +54,7 @@ fn update_state_on_replaced_element() {
     impl ElementComponent for Root {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
             let (state, set_state) = hooks.use_state(0);
-            Element::new().set(
+            Element::new().with(
                 trigger(),
                 cb(move |_| {
                     set_state(state + 1);
@@ -83,7 +83,7 @@ fn update_state_on_root_and_child_simultaneously() {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
             let (state, set_state) = hooks.use_state(0);
             Element::new()
-                .set(
+                .with(
                     trigger(),
                     cb(move |_| {
                         set_state(state + 1);
@@ -99,7 +99,7 @@ fn update_state_on_root_and_child_simultaneously() {
         fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
             let (state, set_state) = hooks.use_state(0);
             *hooks.world.resource_mut(counter()) = state;
-            Element::new().set(
+            Element::new().with(
                 trigger(),
                 cb(move |_| {
                     set_state(state + 1);

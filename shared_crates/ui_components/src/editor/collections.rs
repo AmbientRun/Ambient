@@ -52,7 +52,7 @@ pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 
                             )
                             .style(ButtonStyle::Flat)
                             .el()
-                            .set(min_width(), button_size),
+                            .with(min_width(), button_size),
                             if i > 0 {
                                 Button::new(
                                     MOVE_UP_ICON,
@@ -64,9 +64,9 @@ pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 
                                 )
                                 .style(ButtonStyle::Flat)
                                 .el()
-                                .set(min_width(), button_size)
+                                .with(min_width(), button_size)
                             } else {
-                                UIBase.el().set(width(), button_size).set(height(), 1.)
+                                UIBase.el().with(width(), button_size).with(height(), 1.)
                             },
                             if i < value.len() - 1 {
                                 Button::new(
@@ -79,9 +79,9 @@ pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 
                                 )
                                 .style(ButtonStyle::Flat)
                                 .el()
-                                .set(min_width(), button_size)
+                                .with(min_width(), button_size)
                             } else {
-                                UIBase.el().set(width(), button_size).set(height(), 1.)
+                                UIBase.el().with(width(), button_size).with(height(), 1.)
                             },
                             T::edit_or_view(
                                 item.clone(),
@@ -200,7 +200,7 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                     .collect(),
             )
             .el()
-            .set_default(fit_horizontal_parent()),
+            .with_default(fit_horizontal_parent()),
             if let Some(on_change) = on_change {
                 if let Some(add_presets) = add_presets {
                     Dropdown {
@@ -230,12 +230,12 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                         )
                         .el()
                         .with_background(Color::rgba(0.05, 0.05, 0.05, 1.).into())
-                        .set_default(fit_horizontal_none())
-                        .set(width(), 400.),
+                        .with_default(fit_horizontal_none())
+                        .with(width(), 400.),
                         show: add_action,
                     }
                     .el()
-                    .set(margin_top(), STREET)
+                    .with(margin_top(), STREET)
                 } else {
                     Button::new(
                         add_title,
@@ -286,11 +286,11 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
         FlowRow(vec![
             UIBase
                 .el()
-                .set(width(), 5.)
-                .set_default(fit_vertical_parent())
+                .with(width(), 5.)
+                .with_default(fit_vertical_parent())
                 .with_background(if focused { Color::rgba(0.0, 1., 0., 1.) } else { Color::rgba(0.5, 0.5, 0.5, 1.) }.into())
-                .set(margin_right(), 5.),
-            item_editor.0(value, on_change, item_opts).set_default(fit_horizontal_parent()),
+                .with(margin_right(), 5.),
+            item_editor.0(value, on_change, item_opts).with_default(fit_horizontal_parent()),
         ])
         .el()
         .with_clickarea()
@@ -298,9 +298,9 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
             set_focused(true);
         })
         .el()
-        .set(padding_top(), STREET)
-        .set(padding_bottom(), STREET)
-        .set_default(fit_horizontal_parent())
+        .with(padding_top(), STREET)
+        .with(padding_bottom(), STREET)
+        .with_default(fit_horizontal_parent())
     }
 }
 
@@ -420,7 +420,7 @@ where
         .el();
 
         let fields = fields.chain([add]).collect_vec();
-        if self.use_row_instead_of_column { FlowRow(fields).el() } else { FlowColumn(fields).el() }.set(space_between_items(), STREET)
+        if self.use_row_instead_of_column { FlowRow(fields).el() } else { FlowColumn(fields).el() }.with(space_between_items(), STREET)
     }
 }
 
@@ -437,7 +437,7 @@ where
 
     fn view(self, opts: EditorOpts) -> Element {
         let fields = self.into_iter().map(|(k, v)| FlowColumn(vec![K::view(k, opts.clone()), V::view(v, opts.clone())]).el()).collect_vec();
-        FlowColumn(fields).el().set(space_between_items(), STREET)
+        FlowColumn(fields).el().with(space_between_items(), STREET)
     }
 }
 
@@ -500,10 +500,10 @@ where
             .el()
         };
 
-        FlowColumn(vec![FlowRow(vec![discard, key_editor]).el().set(space_between_items(), STREET), value_editor])
+        FlowColumn(vec![FlowRow(vec![discard, key_editor]).el().with(space_between_items(), STREET), value_editor])
             .el()
             .panel()
-            .set(space_between_items(), STREET)
+            .with(space_between_items(), STREET)
             .with_padding_even(STREET)
     }
 }

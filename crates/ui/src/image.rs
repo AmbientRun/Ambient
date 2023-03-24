@@ -66,7 +66,7 @@ impl ElementComponent for Image {
             .init(color(), Vec4::ONE);
 
         if let Some(mat) = mat {
-            el.set(material(), mat)
+            el.with(material(), mat)
         } else {
             el
         }

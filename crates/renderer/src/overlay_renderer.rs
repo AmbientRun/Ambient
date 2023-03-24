@@ -11,12 +11,12 @@ use ambient_meshes::QuadMeshKey;
 use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use ordered_float::OrderedFloat;
 use wgpu::{
-    BindGroup, ColorTargetState, CommandEncoder, IndexFormat, RenderPassColorAttachment, RenderPassDepthStencilAttachment,
-    RenderPassDescriptor, RenderPipeline,
+    ColorTargetState, CommandEncoder, IndexFormat, RenderPassColorAttachment, RenderPassDepthStencilAttachment, RenderPassDescriptor,
+    RenderPipeline,
 };
 
 use super::{material, overlay, renderer_shader, FSMain, RendererResources, RendererShader, RendererTarget, SharedMaterial};
-use crate::RendererConfig;
+use crate::{bind_groups::BindGroups, RendererConfig};
 
 struct OverlayEntity {
     id: EntityId,
@@ -82,6 +82,7 @@ impl OverlayRenderer {
         if removed > 0 {
             self.entities.sort_by_key(|v| v.depth)
         };
+
         self.spawn_qs = spawn_qs;
         self.despawn_qs = despawn_qs;
     }
@@ -124,7 +125,7 @@ impl OverlayRenderer {
         }
     }
 
-    pub fn render(&self, cmds: &mut CommandEncoder, target: &RendererTarget, bind_groups: &[&BindGroup], mesh_buffer: &MeshBuffer) {
+    pub fn render(&self, cmds: &mut CommandEncoder, target: &RendererTarget, bind_groups: &BindGroups, mesh_buffer: &MeshBuffer) {
         let mut renderpass = cmds.begin_render_pass(&RenderPassDescriptor {
             label: Some("Overlay"),
             color_attachments: &[Some(RenderPassColorAttachment {
@@ -148,6 +149,7 @@ impl OverlayRenderer {
 
             let pipeline = &self.pipelines[e.shader];
 
+            let bind_groups = [bind_groups.globals];
             if !is_bound {
                 for (i, bind_group) in bind_groups.iter().enumerate() {
                     renderpass.set_bind_group(i as _, bind_group, &[]);

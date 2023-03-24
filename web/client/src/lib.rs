@@ -69,18 +69,18 @@ pub fn View(hooks: &mut Hooks) -> Element {
             .with_background(vec4(0.0, 0.5, 0.5, 1.0)),
         TextEditor::new(text, set_text).placeholder(Some("Go ahead, type something clever")).el(),
         Separator { vertical: false }.el(),
-        Text::el("Custom size").set(font_size(), 20.),
-        Text::el("Custom color").set(color(), vec4(1., 0., 0., 1.)),
+        Text::el("Custom size").with(font_size(), 20.),
+        Text::el("Custom color").with(color(), vec4(1., 0., 0., 1.)),
         Text::el("Multi\n\nLine"),
     ])
     .el()
-    .set(space_between_items(), 10.)
+    .with(space_between_items(), 10.)
 }
 
 async fn init(app: &mut App) {
     let world = &mut app.world;
 
-    Group(vec![UICamera.el().set(active_camera(), 0.), FocusRoot(vec![View::el().set(padding(), Borders::even(10.))]).el()])
+    Group(vec![UICamera.el().with(active_camera(), 0.), FocusRoot(vec![View::el().with(padding(), Borders::even(10.))]).el()])
         .el()
         .spawn_interactive(world);
 }

@@ -167,18 +167,18 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
             ShaderDebug { get_state: get_state.clone() }.el(),
         ])
         .el()
-        .set(space_between_items(), 5.),
+        .with(space_between_items(), 5.),
         if show_shadows { ShadowMapsViz { get_state: get_state.clone() }.el() } else { Element::new() },
         if show_ecs {
             ECSEditor { get_world: cb(move |res| get_state(&mut move |_, _, world| res(world))), on_change: cb(|_, _| {}) }
                 .el()
-                .set(height(), 200.)
+                .with(height(), 200.)
         } else {
             Element::new()
         },
     ])
     .with_background(Color::rgba(0., 0., 0., 1.).into())
-    .set(fit_horizontal(), Fit::Parent)
+    .with(fit_horizontal(), Fit::Parent)
 }
 
 #[element_component]
@@ -191,7 +191,7 @@ fn ShadowMapsViz(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
         n_cascades
     });
     FlowRow::el((0..shadow_cascades).map(|i| ShadowMapViz { get_state: get_state.clone(), cascade: i }.el()).collect::<Vec<_>>())
-        .set(space_between_items(), 5.)
+        .with(space_between_items(), 5.)
         .with_background(Color::rgb(0.0, 0., 0.3).into())
 }
 
@@ -211,7 +211,7 @@ fn ShadowMapViz(hooks: &mut Hooks, get_state: GetDebuggerState, cascade: u32) ->
         });
         tex.unwrap()
     });
-    Image { texture }.el().set(width(), 200.).set(height(), 200.)
+    Image { texture }.el().with(width(), 200.).with(height(), 200.)
 }
 
 #[element_component]

@@ -23,7 +23,7 @@
             },
             "args": [
                 "run",
-                "guest/rust/examples/ui/flow_layout",
+                "guest/rust/examples/basics/fog",
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [

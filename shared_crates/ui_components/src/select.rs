@@ -39,7 +39,7 @@ impl ElementComponent for DropdownSelect {
             }
         });
         Dropdown {
-            content: Button::new(FlowRow(vec![content, Text::el("\u{f078}").set(margin_left(), 5.)]).el(), {
+            content: Button::new(FlowRow(vec![content, Text::el("\u{f078}").with(margin_left(), 5.)]).el(), {
                 let set_show = set_show.clone();
                 move |_| set_show(!show)
             })
@@ -58,7 +58,7 @@ impl ElementComponent for DropdownSelect {
                         })
                         .style(ButtonStyle::Card)
                         .el()
-                        .set(margin_top(), if i != 0 { STREET } else { 0. })
+                        .with(margin_top(), if i != 0 { STREET } else { 0. })
                     })
                     .collect(), //     vec![Bookcase(
                                 //     items
@@ -78,7 +78,7 @@ impl ElementComponent for DropdownSelect {
             )
             .el()
             .with_padding_even(STREET)
-            .set(border_radius(), Vec4::ONE * SMALL_ROUNDING)
+            .with(border_radius(), Vec4::ONE * SMALL_ROUNDING)
             .with_background(tooltip_background_color().into()),
             show,
         }

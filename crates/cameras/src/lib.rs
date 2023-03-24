@@ -59,9 +59,9 @@ pub fn LookatCamera(_: &mut Hooks, eye: Vec3, lookat: Vec3, up: Vec3) -> Element
         .init(aspect_ratio_from_window(), EntityId::resources())
         .init_default(projection())
         .init_default(projection_view())
-        .set(translation(), eye)
-        .set(lookat_center(), lookat)
-        .set(lookat_up(), up)
+        .with(translation(), eye)
+        .with(lookat_center(), lookat)
+        .with(lookat_up(), up)
 }
 
 #[element_component]
@@ -76,8 +76,8 @@ pub fn FreeCamera(_: &mut Hooks, position: Vec3, rotation: Quat) -> Element {
         .init(aspect_ratio_from_window(), EntityId::resources())
         .init_default(projection())
         .init_default(projection_view())
-        .set(ambient_core::transform::translation(), position)
-        .set(ambient_core::transform::rotation(), rotation)
+        .with(ambient_core::transform::translation(), position)
+        .with(ambient_core::transform::rotation(), rotation)
 }
 
 #[element_component]

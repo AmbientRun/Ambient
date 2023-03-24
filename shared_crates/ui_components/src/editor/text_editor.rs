@@ -93,15 +93,15 @@ pub fn TextEditor(
         }
     });
     let el = if value.is_empty() && !focused && placeholder.is_some() {
-        Text.el().set(text(), placeholder.unwrap()).set(color(), vec4(1., 1., 1., 0.2))
+        Text.el().with(text(), placeholder.unwrap()).with(color(), vec4(1., 1., 1., 0.2))
     } else {
-        Text.el().set(text(), if password { value.chars().map(|_| '*').collect() } else { value }).set(color(), vec4(0.9, 0.9, 0.9, 1.))
+        Text.el().with(text(), if password { value.chars().map(|_| '*').collect() } else { value }).with(color(), vec4(0.9, 0.9, 0.9, 1.))
     }
     .init_default(layout_flow())
-    .set_default(fit_horizontal_none())
-    .set_default(fit_vertical_none())
-    .set(min_width(), 3.)
-    .set(min_height(), 13.)
+    .with_default(fit_horizontal_none())
+    .with_default(fit_vertical_none())
+    .with(min_width(), 3.)
+    .with(min_height(), 13.)
     .with_clickarea()
     .on_mouse_up(move |_, _, _| {
         set_focused(true);
@@ -115,7 +115,7 @@ pub fn TextEditor(
     .el();
 
     if focused {
-        el.set_default(align_horizontal_end()).children(vec![Cursor.el()])
+        el.with_default(align_horizontal_end()).children(vec![Cursor.el()])
     } else {
         el
     }
@@ -144,7 +144,7 @@ pub fn Cursor(hooks: &mut Hooks) -> Element {
     let (show, set_show) = hooks.use_state(true);
     hooks.use_interval_deps(Duration::from_millis(500), false, show, move |show| set_show(!show));
     if show {
-        UIBase.el().children(vec![Rectangle.el().set(width(), 2.).set(height(), 13.).set(translation(), vec3(1., 0., 0.))])
+        UIBase.el().children(vec![Rectangle.el().with(width(), 2.).with(height(), 13.).with(translation(), vec3(1., 0., 0.))])
     } else {
         Element::new()
     }
@@ -156,6 +156,6 @@ impl Editor for String {
     }
 
     fn view(self, _opts: EditorOpts) -> Element {
-        Text.el().set(text(), self)
+        Text.el().with(text(), self)
     }
 }

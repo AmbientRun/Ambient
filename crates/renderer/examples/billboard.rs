@@ -9,18 +9,18 @@ use glam::*;
 async fn init(app: &mut App) {
     let world = &mut app.world;
     let _assets = world.resource(asset_cache()).clone();
-    Quad.el().set(color(), vec4(0.5, 0.5, 0.5, 1.)).set(scale(), vec3(2., 2., 1.)).spawn_static(world);
+    Quad.el().with(color(), vec4(0.5, 0.5, 0.5, 1.)).with(scale(), vec3(2., 2., 1.)).spawn_static(world);
     Quad.el()
-        .set(color(), vec4(1., 0., 0., 1.))
-        .set_default(spherical_billboard())
-        .set(translation(), vec3(-1., 0., 1.))
-        .set(scale(), vec3(0.5, 0.5, 0.5))
+        .with(color(), vec4(1., 0., 0., 1.))
+        .with_default(spherical_billboard())
+        .with(translation(), vec3(-1., 0., 1.))
+        .with(scale(), vec3(0.5, 0.5, 0.5))
         .spawn_static(world);
     Quad.el()
-        .set(color(), vec4(1., 0., 0., 1.))
-        .set_default(cylindrical_billboard_z())
-        .set(translation(), vec3(1., 0., 1.))
-        .set(scale(), vec3(0.5, 0.5, 0.5))
+        .with(color(), vec4(1., 0., 0., 1.))
+        .with_default(cylindrical_billboard_z())
+        .with(translation(), vec3(1., 0., 1.))
+        .with(scale(), vec3(0.5, 0.5, 0.5))
         .spawn_static(world);
 
     ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))

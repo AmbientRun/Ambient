@@ -18,13 +18,13 @@ fn App(_hooks: &mut Hooks) -> Element {
         Text::el("Default text \u{f1e2} \u{fb8f}"),
         Text::el("Small").small_style(),
         Separator { vertical: false }.el(),
-        Text::el("Custom size").set(font_size(), 40.),
-        Text::el("Custom color").set(color(), vec4(1., 0., 0., 1.)),
+        Text::el("Custom size").with(font_size(), 40.),
+        Text::el("Custom color").with(color(), vec4(1., 0., 0., 1.)),
         Text::el("Multi\n\nLine"),
     ])
     .el()
     .with_padding_even(STREET)
-    .set(space_between_items(), 10.)
+    .with(space_between_items(), 10.)
 }
 
 #[main]

@@ -260,7 +260,7 @@ pub fn client_systems() -> SystemGroup {
                         world,
                         id,
                         element_tree(),
-                        Group(vec![Terrain { state: state.clone(), heightmap_position: pos.xy() }.el().set_default(local_to_parent())])
+                        Group(vec![Terrain { state: state.clone(), heightmap_position: pos.xy() }.el().with_default(local_to_parent())])
                             .el(),
                     );
                 }
@@ -761,27 +761,27 @@ impl ElementComponent for Terrain {
         let aabb = AABB { min: vec3(0., 0., height_min), max: vec3(size_in_meters, size_in_meters, height_max) };
         let bound_sphere = aabb.to_sphere();
         Element::new()
-            .set(terrain(), ())
+            .with(terrain(), ())
             .init_default(terrain_cell())
-            .set(renderer_shader(), cb(|assets, config| TerrainShaderKey { shadow_cascades: config.shadow_cascades }.get(assets)))
-            .set(material(), terrain_material)
-            .set(primitives(), vec![])
-            .set_default(gpu_primitives_mesh())
-            .set_default(gpu_primitives_lod())
-            .set(main_scene(), ())
-            .set(mesh(), lod_meshes[0].clone())
-            .set(terrain_lods(), lod_meshes.clone())
-            .set(terrain_lod_factor(), lod_factor)
-            .set(terrain_cell_diagonal(), cell_diagonal)
-            .set(cpu_lod(), 0_usize)
-            .set(terrain_cell_bounding(), bound_sphere)
-            .set(local_bounding_aabb(), aabb)
-            .set(world_bounding_aabb(), aabb)
-            .set(world_bounding_sphere(), bound_sphere)
-            .set(color(), Vec4::ONE)
-            .set_default(cast_shadows())
-            .set_default(local_to_parent())
-            .set_default(local_to_world())
+            .with(renderer_shader(), cb(|assets, config| TerrainShaderKey { shadow_cascades: config.shadow_cascades }.get(assets)))
+            .with(material(), terrain_material)
+            .with(primitives(), vec![])
+            .with_default(gpu_primitives_mesh())
+            .with_default(gpu_primitives_lod())
+            .with(main_scene(), ())
+            .with(mesh(), lod_meshes[0].clone())
+            .with(terrain_lods(), lod_meshes.clone())
+            .with(terrain_lod_factor(), lod_factor)
+            .with(terrain_cell_diagonal(), cell_diagonal)
+            .with(cpu_lod(), 0_usize)
+            .with(terrain_cell_bounding(), bound_sphere)
+            .with(local_bounding_aabb(), aabb)
+            .with(world_bounding_aabb(), aabb)
+            .with(world_bounding_sphere(), bound_sphere)
+            .with(color(), Vec4::ONE)
+            .with_default(cast_shadows())
+            .with_default(local_to_parent())
+            .with_default(local_to_world())
             .init_default(mesh_to_world())
     }
 }
