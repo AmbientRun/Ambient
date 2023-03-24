@@ -105,7 +105,7 @@ impl Identifier {
 
         if !id
             .chars()
-            .all(|c| c.is_ascii_lowercase() || c.is_numeric() || c == '_')
+            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_')
         {
             return Err("identifier must be snake-case ASCII");
         }
@@ -147,7 +147,6 @@ mod tests {
     #[test]
     fn can_validate_identifiers() {
         use Identifier as I;
-        use IdentifierPathBuf as IP;
 
         assert_eq!(I::new(""), Err("identifier must not be empty"));
         assert_eq!(
@@ -179,6 +178,12 @@ mod tests {
             I::new("cool_component_00"),
             Ok(I("cool_component_00".to_string()))
         );
+    }
+
+    #[test]
+    fn can_validate_identifier_paths() {
+        use Identifier as I;
+        use IdentifierPathBuf as IP;
 
         assert_eq!(
             IP::new("my::cool_component_00"),

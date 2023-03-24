@@ -35,7 +35,7 @@ cool_component = { type = "I32", name = "Cool Component", description = "A cool 
 # Explicit tables can also be used.
 [components.cool_component2]
 # At time of writing, supported component types are:
-#   Empty, Bool, EntityId, F32, F64, Mat4, I32, Quat, String, U32, U64, Vec2, Vec3, Vec4, Uvec2, Uvec3, Uvec4
+#   Empty, Bool, EntityId, F32, F64, Mat4, I32, Quat, String, U32, U64, Vec2, Vec3, Vec4, Uvec2, Uvec3, Uvec4, U8
 # or
 #   { type = "Vec", element_type = "TypeFromAbove" }
 #   { type = "Option", element_type = "TypeFromAbove" }

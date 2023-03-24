@@ -18,3 +18,5 @@ mod manifest;
 pub use manifest::*;
 mod version;
 pub use version::*;
+mod message;
+pub use message::*;

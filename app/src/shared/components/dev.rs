@@ -51,6 +51,8 @@ fn make_components() -> toml_edit::Table {
         ("core::layout", "Layout", "Layout components such as flow, margins etc."),
         ("core::rect", "Rect", "Rounded corners rectangle rendering components, with an optional border."),
         ("core::text", "Text", "Text rendering."),
+        ("core::wasm", "WASM", "Internal implementation details of WASM integration."),
+        ("core::wasm::message", "WASM messaging", "Information attached to a message sent across WASM boundaries."),
     ];
 
     for (path, name, description) in namespaces {
@@ -218,6 +220,11 @@ impl ToToml for Quat {
 impl ToToml for String {
     fn to_toml(&self) -> Option<toml_edit::Value> {
         Some(self.as_str().into())
+    }
+}
+impl ToToml for u8 {
+    fn to_toml(&self) -> Option<toml_edit::Value> {
+        Some((*self as i64).into())
     }
 }
 impl ToToml for u32 {

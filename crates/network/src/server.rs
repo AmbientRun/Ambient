@@ -8,13 +8,14 @@ use std::{
 
 use ambient_core::{
     asset_cache, no_sync,
-    player::{get_player_by_user_id, player},
+    player::{get_player_by_user_id, player, user_id},
     project_name,
 };
 use ambient_ecs::{
-    components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent, System, SystemGroup, World, WorldStream,
-    WorldStreamCompEvent, WorldStreamFilter,
+    components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent, Resource, System, SystemGroup, World,
+    WorldStream, WorldStreamCompEvent, WorldStreamFilter,
 };
+use ambient_rpc::RpcRegistry;
 use ambient_std::{
     asset_cache::AssetCache,
     fps_counter::{FpsCounter, FpsSample},
@@ -28,7 +29,6 @@ use futures::StreamExt;
 use once_cell::sync::OnceCell;
 use parking_lot::Mutex;
 use quinn::{Endpoint, Incoming, NewConnection, RecvStream, SendStream};
-use serde::{Deserialize, Serialize};
 use tokio::{
     io::AsyncReadExt,
     time::{interval, MissedTickBehavior},
@@ -36,16 +36,27 @@ use tokio::{
 use tracing::{debug_span, Instrument};
 
 use crate::{
-    bi_stream_handlers, create_server, datagram_handlers,
-    protocol::{ClientInfo, ServerProtocol},
-    uni_stream_handlers, NetworkError,
+    create_server,
+    protocol::{ClientInfo, ServerInfo, ServerProtocol},
+    NetworkError, RPC_BISTREAM_ID,
 };
 
-components!("network", {
+components!("network::server", {
+    @[Resource]
+    bi_stream_handlers: BiStreamHandlers,
+    @[Resource]
+    uni_stream_handlers: UniStreamHandlers,
+    @[Resource]
+    datagram_handlers: DatagramHandlers,
+
     player_entity_stream: Sender<Vec<u8>>,
-    player_event_stream: Sender<Vec<u8>>,
     player_stats_stream: Sender<FpsSample>,
+    player_connection: quinn::Connection,
 });
+
+pub type BiStreamHandlers = HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, SendStream, RecvStream) + Sync + Send>>;
+pub type UniStreamHandlers = HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, RecvStream) + Sync + Send>>;
+pub type DatagramHandlers = HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, Bytes) + Sync + Send>>;
 
 #[derive(Debug, Clone, Copy)]
 pub struct ForkingEvent;
@@ -62,19 +73,50 @@ pub struct WorldInstance {
     pub systems: SystemGroup,
 }
 
-pub fn create_player_entity_data(
-    user_id: &str,
-    entities_tx: Sender<Vec<u8>>,
-    events_tx: Sender<Vec<u8>>,
-    stats_tx: Sender<FpsSample>,
-) -> Entity {
+#[derive(Clone)]
+pub struct RpcArgs {
+    pub state: SharedServerState,
+    pub user_id: String,
+}
+impl RpcArgs {
+    pub fn get_player(&self, world: &World) -> Option<EntityId> {
+        get_player_entity(world, &self.user_id)
+    }
+}
+
+pub fn get_player_entity(world: &World, target_user_id: &str) -> Option<EntityId> {
+    query((user_id(), player())).iter(world, None).find(|(_, (uid, _))| uid.as_str() == target_user_id).map(|kv| kv.0)
+}
+
+pub fn create_player_entity_data(user_id: &str, entities_tx: Sender<Vec<u8>>, stats_tx: Sender<FpsSample>) -> Entity {
     Entity::new()
         .with(ambient_core::player::player(), ())
         .with(ambient_core::player::user_id(), user_id.to_string())
         .with(player_entity_stream(), entities_tx)
         .with(player_stats_stream(), stats_tx)
-        .with(player_event_stream(), events_tx)
         .with_default(dont_store())
+}
+
+pub fn register_rpc_bi_stream_handler(handlers: &mut BiStreamHandlers, rpc_registry: RpcRegistry<RpcArgs>) {
+    handlers.insert(
+        RPC_BISTREAM_ID,
+        Arc::new(move |state, _assets, user_id, mut send, recv| {
+            let state = state;
+            let user_id = user_id.to_string();
+            let rpc_registry = rpc_registry.clone();
+            tokio::spawn(async move {
+                let try_block = || async {
+                    let req = recv.read_to_end(100_000_000).await?;
+                    let args = RpcArgs { state, user_id: user_id.to_string() };
+                    let resp = rpc_registry.run_req(args, &req).await?;
+                    send.write_all(&resp).await?;
+                    send.finish().await?;
+                    Ok(()) as Result<(), NetworkError>
+                };
+                log_result!(try_block().await);
+            });
+        }),
+    );
 }
 
 impl WorldInstance {
@@ -339,7 +381,8 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
             tokio::spawn(async move {
                 let (diffs_tx, diffs_rx) = flume::unbounded();
                 let (stats_tx, stats_rx) = flume::unbounded();
-                let (events_tx, events_rx) = flume::unbounded();
+
+                let new_player_connection = connection.connection.clone();
 
                 let on_init = |client: ClientInfo| {
                     let user_id = &client.user_id;
@@ -380,13 +423,16 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
                     log::debug!("[{}] Init diff sent", user_id);
 
                     if !reconnecting {
-                        instance.spawn_player(create_player_entity_data(user_id, diffs_tx.clone(), events_tx.clone(), stats_tx.clone()));
+                        instance.spawn_player(
+                            create_player_entity_data(user_id, diffs_tx.clone(), stats_tx.clone())
+                                .with(player_connection(), new_player_connection.clone()),
+                        );
                         log::info!("[{}] Player spawned", user_id);
                     } else {
                         let entity = get_player_by_user_id(&instance.world, user_id).unwrap();
                         instance.world.set(entity, player_entity_stream(), diffs_tx.clone()).unwrap();
                         instance.world.set(entity, player_stats_stream(), stats_tx.clone()).unwrap();
-                        instance.world.set(entity, player_event_stream(), events_tx.clone()).unwrap();
+                        instance.world.set(entity, player_connection(), new_player_connection.clone()).unwrap();
                         log::info!("[{}] Player reconnected", user_id);
                     }
                 };
@@ -449,9 +495,7 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
                     }
                 };
 
-                let on_datagram = |user_id: &String, mut bytes: Bytes| {
-                    let data = bytes.split_off(4);
-                    let handler_id = u32::from_be_bytes(bytes[0..4].try_into().unwrap());
+                let on_datagram = |user_id: &String, handler_id: u32, bytes: Bytes| {
                     let state = state.clone();
                     let handler = {
                         let state = state.lock();
@@ -466,7 +510,7 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
                     };
                     match handler {
                         Some(handler) => {
-                            handler(state, assets.clone(), user_id, data);
+                            handler(state, assets.clone(), user_id, bytes);
                         }
                         None => {
                             log::error!("No such datagram handler: {:?}", handler_id);
@@ -477,7 +521,6 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
                 let client = ClientInstance {
                     diffs_rx,
                     stats_rx,
-                    events_rx,
                     on_init: &on_init,
                     on_bi_stream: &on_bi_stream,
                     on_uni_stream: &on_uni_stream,
@@ -517,10 +560,9 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
 struct ClientInstance<'a> {
     diffs_rx: flume::Receiver<Vec<u8>>,
     stats_rx: flume::Receiver<FpsSample>,
-    events_rx: flume::Receiver<Vec<u8>>,
 
     on_init: &'a (dyn Fn(ClientInfo) + Send + Sync),
-    on_datagram: &'a (dyn Fn(&String, Bytes) + Send + Sync),
+    on_datagram: &'a (dyn Fn(&String, u32, Bytes) + Send + Sync),
     on_bi_stream: &'a (dyn Fn(&String, u32, SendStream, RecvStream) + Send + Sync),
     on_uni_stream: &'a (dyn Fn(&String, u32, RecvStream) + Send + Sync),
     on_disconnect: &'a (dyn Fn(&Option<String>) + Send + Sync),
@@ -545,7 +587,6 @@ impl<'a> ClientInstance<'a> {
         log::debug!("Client loop starting");
         let mut entities_rx = self.diffs_rx.stream();
         let mut stats_rx = self.stats_rx.stream();
-        let mut events_rx = self.events_rx.stream();
 
         tokio::task::block_in_place(|| {
             (self.on_init)(proto.client_info().clone());
@@ -560,25 +601,20 @@ impl<'a> ClientInstance<'a> {
                     proto.diff_stream.send_bytes(msg).instrument(span).await?;
                 }
                 Some(msg) = stats_rx.next() => {
-                    let span =tracing::debug_span!("stats");
+                    let span = tracing::debug_span!("stats");
                     proto.stat_stream.send(&msg).instrument(span).await?;
                 }
 
-                Some(msg) = events_rx.next() => {
-                    let span =tracing::debug_span!("server_event");
-                    let mut stream = proto.connection().open_uni().instrument(span).await?;
-
-                    stream.write(&msg).await?;
-                }
-                Some(Ok(datagram)) = proto.conn.datagrams.next() => {
-                    let _span =tracing::debug_span!("datagram").entered();
-                    tokio::task::block_in_place(|| (self.on_datagram)(&user_id, datagram))
+                Some(Ok(mut datagram)) = proto.conn.datagrams.next() => {
+                    let _span = tracing::debug_span!("datagram").entered();
+                    let data = datagram.split_off(4);
+                    let handler_id = u32::from_be_bytes(datagram[0..4].try_into().unwrap());
+                    tokio::task::block_in_place(|| (self.on_datagram)(&user_id, handler_id, data))
                 }
                 Some(Ok((tx, mut rx))) = proto.conn.bi_streams.next() => {
                     let span = tracing::debug_span!("bistream");
                     let stream_id = rx.read_u32().instrument(span).await;
                     if let Ok(stream_id) = stream_id {
-                        // tracing::debug!("Read stream id: {stream_id}");
                         tokio::task::block_in_place(|| { (self.on_bi_stream)(&user_id, stream_id, tx, rx); })
                     }
                 }
@@ -586,24 +622,10 @@ impl<'a> ClientInstance<'a> {
                     let span = tracing::debug_span!("unistream");
                     let stream_id = rx.read_u32().instrument(span).await;
                     if let Ok(stream_id) = stream_id {
-                        // tracing::debug!("Read stream id: {stream_id}");
                         tokio::task::block_in_place(|| { (self.on_uni_stream)(&user_id, stream_id,  rx); })
                     }
                 }
             }
         }
-    }
-}
-
-/// Miscellaneous information about the server that needs to be sent to the client during the handshake.
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ServerInfo {
-    /// The name of the project. Used by the client to figure out what to title its window. Defaults to "Ambient".
-    pub project_name: String,
-}
-
-impl Default for ServerInfo {
-    fn default() -> Self {
-        Self { project_name: "Ambient".into() }
     }
 }

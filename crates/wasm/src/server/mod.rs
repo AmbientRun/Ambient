@@ -5,19 +5,20 @@ use std::sync::Arc;
 
 mod conversion;
 mod implementation;
+mod network;
+mod unused;
 
 pub fn initialize(
     world: &mut World,
     messenger: Arc<dyn Fn(&World, EntityId, shared::MessageType, &str) + Send + Sync>,
 ) -> anyhow::Result<()> {
-    shared::initialize(
-        world,
-        messenger,
-        Bindings {
-            base: Default::default(),
-            world_ref: Default::default(),
-        },
-    )?;
+    shared::initialize(world, messenger, |id| Bindings {
+        base: Default::default(),
+        world_ref: Default::default(),
+        id,
+    })?;
+
+    network::initialize(world);
 
     Ok(())
 }
@@ -42,8 +43,7 @@ pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
         vec![Box::new(FnSystem::new(move |world, _| {
             let modules = query(()).incl(shared::module()).collect_ids(world, None);
             for module_id in modules {
-                let errors = shared::unload(world, module_id, "shutting down");
-                shared::update_errors(world, &errors);
+                shared::unload(world, module_id, "shutting down");
             }
         }))],
     )
@@ -53,6 +53,7 @@ pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
 struct Bindings {
     base: shared::bindings::BindingsBase,
     world_ref: shared::bindings::WorldRef,
+    id: EntityId,
 }
 impl Bindings {
     pub fn world(&self) -> &World {
@@ -234,13 +235,5 @@ impl wit::component::Host for Bindings {
 impl wit::event::Host for Bindings {
     fn subscribe(&mut self, name: String) -> anyhow::Result<()> {
         shared::implementation::event::subscribe(&mut self.base.subscribed_events, name)
-    }
-
-    fn send(&mut self, name: String, data: wit::entity::EntityData) -> anyhow::Result<()> {
-        shared::implementation::event::send(
-            self.world_mut(),
-            name,
-            shared::implementation::component::convert_components_to_entity_data(data),
-        )
     }
 }

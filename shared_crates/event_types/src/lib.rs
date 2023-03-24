@@ -24,3 +24,5 @@ pub const WINDOW_MOUSE_INPUT: &str = "core/window_mouse_input";
 pub const WINDOW_MOUSE_WHEEL: &str = "core/window_mouse_wheel";
 /// The mouse cursor was moved
 pub const WINDOW_MOUSE_MOTION: &str = "core/window_mouse_motion";
+/// A module message was received (prefix)
+pub const MODULE_MESSAGE: &str = "core/module_message";

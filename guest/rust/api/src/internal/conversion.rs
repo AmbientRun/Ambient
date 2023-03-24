@@ -203,6 +203,7 @@ bindgen_passthrough!(f32);
 bindgen_passthrough!(f64);
 bindgen_passthrough!(i32);
 bindgen_passthrough!(String);
+bindgen_passthrough!(u8);
 bindgen_passthrough!(u32);
 bindgen_passthrough!(u64);
 

@@ -45,14 +45,14 @@ impl Rust {
         package_name: &str,
         optimize: bool,
         features: &[&str],
-    ) -> anyhow::Result<Option<Vec<u8>>> {
+    ) -> anyhow::Result<Vec<(PathBuf, Vec<u8>)>> {
         let features = if features.is_empty() {
             vec![]
         } else {
             vec!["--features".to_string(), features.iter().join(",")]
         };
 
-        let path = parse_command_result_for_filenames(
+        parse_command_result_for_filenames(
             self.0.run(
                 "cargo",
                 [
@@ -72,13 +72,9 @@ impl Rust {
             ),
         )?
         .into_iter()
-        .find(|p| p.extension().unwrap_or_default() == "wasm");
-
-        if let Some(path) = path {
-            Ok(Some(std::fs::read(path)?))
-        } else {
-            Ok(None)
-        }
+        .filter(|p| p.extension().unwrap_or_default() == "wasm")
+        .map(|p| anyhow::Ok((p.clone(), std::fs::read(&p)?)))
+        .collect()
     }
 }
 
@@ -163,14 +159,18 @@ fn parse_command_result_for_filenames(
         .collect();
 
     if success {
-        let Some(last_compiler_artifact) = messages
+        let compiler_artifacts = messages
             .iter()
-            .rfind(|v| v.get("reason").and_then(|v| v.as_str()) == Some("compiler-artifact")) else { return Ok(vec![]) };
+            .filter(|v| v.get("reason").and_then(|v| v.as_str()) == Some("compiler-artifact"));
 
-        let filenames = last_compiler_artifact
-            .get("filenames")
-            .and_then(|f| f.as_array())
-            .context("no filenames")?;
+        let filenames = compiler_artifacts
+            .flat_map(|a| {
+                a.get("filenames")
+                    .and_then(|f| f.as_array())
+                    .cloned()
+                    .unwrap_or_default()
+            })
+            .collect::<Vec<_>>();
 
         Ok(filenames
             .iter()

@@ -18,6 +18,8 @@ pub mod entity;
 pub mod event;
 /// Global functions and types for your convenience.
 pub mod global;
+/// Messaging to other modules and to the other side of the networking.
+pub mod message;
 /// Player-related functionality.
 pub mod player;
 

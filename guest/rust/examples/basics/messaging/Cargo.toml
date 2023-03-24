@@ -1,0 +1,34 @@
+[package]
+name = "messaging"
+
+edition = "2021"
+publish = false
+rust-version = {workspace = true}
+version = {workspace = true}
+
+[dependencies]
+ambient_api = { path = "../../../api" }
+
+[[bin]]
+name = "client"
+path = "src/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "client_two"
+path = "src/client_two.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "server"
+path = "src/server.rs"
+required-features = ["server"]
+
+[[bin]]
+name = "server_two"
+path = "src/server_two.rs"
+required-features = ["server"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]

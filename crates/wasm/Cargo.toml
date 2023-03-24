@@ -20,12 +20,15 @@ ambient_std = { path = "../std" }
 ambient_wasmtime_wasi = { path = "../wasmtime_wasi" }
 
 ambient_project = { path = "../../shared_crates/project" }
+ambient_event_types = { path = "../../shared_crates/event_types" }
 ambient_window_types = { path = "../../shared_crates/window_types" }
 
 physxx = { path = "../../libs/physxx" }
 
 anyhow = { workspace = true }
 async-trait = { workspace = true }
+byteorder = { workspace = true }
+bytes = { workspace = true }
 data-encoding = { workspace = true }
 chrono = { workspace = true }
 flume = { workspace = true }
@@ -39,11 +42,13 @@ once_cell = { workspace = true }
 parking_lot = { workspace = true }
 paste = { workspace = true }
 profiling = { workspace = true }
+quinn = { workspace = true }
 reqwest = { workspace = true }
 serde_bytes = { workspace = true }
 serde_json = { workspace = true }
 serde = { workspace = true }
 slotmap = { workspace = true }
+tokio = { workspace = true }
 
 wasmtime = { workspace = true }
 wasi-common = { workspace = true }

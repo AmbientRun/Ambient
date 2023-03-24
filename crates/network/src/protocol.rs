@@ -3,7 +3,7 @@ use anyhow::{Context, Result};
 use futures::{io::BufReader, StreamExt};
 use quinn::{NewConnection, RecvStream};
 
-use crate::{next_bincode_bi_stream, open_bincode_bi_stream, server::ServerInfo, IncomingStream, NetworkError, OutgoingStream};
+use crate::{next_bincode_bi_stream, open_bincode_bi_stream, IncomingStream, NetworkError, OutgoingStream};
 
 #[derive(Debug)]
 pub struct ClientProtocol {
@@ -106,10 +106,6 @@ impl ServerProtocol {
     pub fn client_info(&self) -> &ClientInfo {
         &self.client_info
     }
-
-    pub(crate) fn connection(&self) -> quinn::Connection {
-        self.conn.connection.clone()
-    }
 }
 
 /// Contains things such as username (TODO) and user_id
@@ -122,5 +118,18 @@ pub struct ClientInfo {
 impl std::fmt::Debug for ClientInfo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ClientInfo").field("user_id", &self.user_id).finish_non_exhaustive()
+    }
+}
+
+/// Miscellaneous information about the server that needs to be sent to the client during the handshake.
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+pub struct ServerInfo {
+    /// The name of the project. Used by the client to figure out what to title its window. Defaults to "Ambient".
+    pub project_name: String,
+}
+
+impl Default for ServerInfo {
+    fn default() -> Self {
+        Self { project_name: "Ambient".into() }
     }
 }
