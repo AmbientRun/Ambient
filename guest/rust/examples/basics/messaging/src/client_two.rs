@@ -7,8 +7,8 @@ use ambient_api::{
 pub async fn main() -> EventResult {
     messages::Local::subscribe(move |source, data| {
         println!("{source:?}: {data:?}");
-        if let Source::Module(id) = source {
-            messages::Local::new("Hi, back!").send(Target::Module(id));
+        if let Source::Local(id) = source {
+            messages::Local::new("Hi, back!").send(Target::Local(id));
         }
 
         EventOk

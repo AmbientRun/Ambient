@@ -90,14 +90,14 @@ pub mod message {
     }
 
     components!("wasm::message", {
-        @[Debuggable, Name["Source: Network"], Description["This message came from the network with no specific source (likely the server)."]]
-        source_network: (),
+        @[Debuggable, Name["Source: Remote"], Description["This message came from the network with no specific source (likely the server)."]]
+        source_remote: (),
 
-        @[Debuggable, Name["Source: Network (User ID)"], Description["This message came from this user."]]
-        source_network_user_id: String,
+        @[Debuggable, Name["Source: Remote (User ID)"], Description["This message came from this user."]]
+        source_remote_user_id: String,
 
-        @[Debuggable, Name["Source: Module"], Description["This message came from this module on this side."]]
-        source_module: EntityId,
+        @[Debuggable, Name["Source: Local"], Description["This message came from the specified module on this side."]]
+        source_local: EntityId,
 
         @[Debuggable, Name["Data"], Description["The data payload of a message."]]
         data: Vec<u8>,
@@ -250,13 +250,13 @@ pub fn systems() -> SystemGroup {
 
                     let mut source_id = None;
                     match source {
-                        Source::Network => entity.set(message::source_network(), ()),
+                        Source::Network => entity.set(message::source_remote(), ()),
                         Source::NetworkUserId(user_id) => {
-                            entity.set(message::source_network_user_id(), user_id.to_owned())
+                            entity.set(message::source_remote_user_id(), user_id.to_owned())
                         }
                         Source::Module(id) => {
                             source_id = Some(id);
-                            entity.set(message::source_module(), id);
+                            entity.set(message::source_local(), id);
                         }
                     };
 

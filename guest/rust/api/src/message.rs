@@ -2,7 +2,7 @@
 /// Client-specific message functionality.
 pub mod client {
     use crate::{
-        components::core::wasm::message::{data, source_module, source_network},
+        components::core::wasm::message::{data, source_local, source_remote},
         event,
         global::{on, EntityId},
         internal::{conversion::IntoBindgen, wit},
@@ -15,24 +15,24 @@ pub mod client {
     /// Where a message came from.
     pub enum Source {
         /// This message came from the corresponding serverside module.
-        Network,
-        /// This message came from another serverside module.
-        Module(EntityId),
+        Remote,
+        /// This message came from another clientside module.
+        Local(EntityId),
     }
 
     #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug)]
-    /// The target for a message.
+    /// The target for a clientside-originating message.
     pub enum Target {
         /// An unreliable transmission to the server.
         ///
         /// Not guaranteed to be received, and must be below one kilobyte.
-        NetworkUnreliable,
+        RemoteUnreliable,
         /// A reliable transmission to the server (guaranteed to be received).
-        NetworkReliable,
+        RemoteReliable,
         /// A message to all other modules running on this client.
-        ModuleBroadcast,
+        LocalBroadcast,
         /// A message to a specific module running on this client.
-        Module(EntityId),
+        Local(EntityId),
     }
 
     impl IntoBindgen for Target {
@@ -40,10 +40,10 @@ pub mod client {
 
         fn into_bindgen(self) -> Self::Item {
             match self {
-                Target::NetworkUnreliable => Self::Item::NetworkUnreliable,
-                Target::NetworkReliable => Self::Item::NetworkReliable,
-                Target::ModuleBroadcast => Self::Item::ModuleBroadcast,
-                Target::Module(id) => Self::Item::Module(id.into_bindgen()),
+                Target::RemoteUnreliable => Self::Item::RemoteUnreliable,
+                Target::RemoteReliable => Self::Item::RemoteReliable,
+                Target::LocalBroadcast => Self::Item::LocalBroadcast,
+                Target::Local(id) => Self::Item::Local(id.into_bindgen()),
             }
         }
     }
@@ -63,10 +63,10 @@ pub mod client {
         on(
             &format!("{}/{}", event::MODULE_MESSAGE, T::id()),
             move |e| {
-                let source = if e.get(source_network()).is_some() {
-                    Source::Network
-                } else if let Some(module) = e.get(source_module()) {
-                    Source::Module(module)
+                let source = if e.get(source_remote()).is_some() {
+                    Source::Remote
+                } else if let Some(module) = e.get(source_local()) {
+                    Source::Local(module)
                 } else {
                     panic!("No source available for incoming message");
                 };
@@ -97,7 +97,7 @@ pub mod client {
 /// Server-specific message functionality.
 pub mod server {
     use crate::{
-        components::core::wasm::message::{data, source_module, source_network_user_id},
+        components::core::wasm::message::{data, source_local, source_remote_user_id},
         event,
         global::{on, EntityId, EventResult},
         internal::{conversion::IntoBindgen, wit},
@@ -109,39 +109,39 @@ pub mod server {
     /// Where a message came from.
     pub enum Source {
         /// This message came from the corresponding clientside module and was sent from `user_id`.
-        Network {
+        Remote {
             /// The user that sent this message.
             user_id: String,
         },
         /// This message came from another serverside module.
-        Module(EntityId),
+        Local(EntityId),
     }
 
     #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug)]
-    /// The target for a message.
+    /// The target for a serverside-originating message.
     pub enum Target {
         /// An unreliable transmission to all clients.
         ///
         /// Not guaranteed to be received, and must be below one kilobyte.
-        NetworkBroadcastUnreliable,
+        RemoteBroadcastUnreliable,
         /// A reliable transmission to all clients (guaranteed to be received).
-        NetworkBroadcastReliable,
+        RemoteBroadcastReliable,
         /// An unreliable transmission to a specific client.
         ///
         /// Not guaranteed to be received, and must be below one kilobyte.
-        NetworkTargetedUnreliable(
+        RemoteTargetedUnreliable(
             /// The user to send to.
             String,
         ),
         /// A reliable transmission to a specific client (guaranteed to be received).
-        NetworkTargetedReliable(
+        RemoteTargetedReliable(
             /// The user to send to.
             String,
         ),
         /// A message to all other modules running on this server.
-        ModuleBroadcast,
+        LocalBroadcast,
         /// A message to a specific module running on this server.
-        Module(EntityId),
+        Local(EntityId),
     }
 
     impl<'a> IntoBindgen for &'a Target {
@@ -149,16 +149,16 @@ pub mod server {
 
         fn into_bindgen(self) -> Self::Item {
             match self {
-                Target::NetworkBroadcastUnreliable => Self::Item::NetworkBroadcastUnreliable,
-                Target::NetworkBroadcastReliable => Self::Item::NetworkBroadcastReliable,
-                Target::NetworkTargetedUnreliable(user_id) => {
-                    Self::Item::NetworkTargetedUnreliable(user_id.as_str())
+                Target::RemoteBroadcastUnreliable => Self::Item::RemoteBroadcastUnreliable,
+                Target::RemoteBroadcastReliable => Self::Item::RemoteBroadcastReliable,
+                Target::RemoteTargetedUnreliable(user_id) => {
+                    Self::Item::RemoteTargetedUnreliable(user_id.as_str())
                 }
-                Target::NetworkTargetedReliable(user_id) => {
-                    Self::Item::NetworkTargetedReliable(user_id.as_str())
+                Target::RemoteTargetedReliable(user_id) => {
+                    Self::Item::RemoteTargetedReliable(user_id.as_str())
                 }
-                Target::ModuleBroadcast => Self::Item::ModuleBroadcast,
-                Target::Module(id) => Self::Item::Module(id.into_bindgen()),
+                Target::LocalBroadcast => Self::Item::LocalBroadcast,
+                Target::Local(id) => Self::Item::Local(id.into_bindgen()),
             }
         }
     }
@@ -178,10 +178,10 @@ pub mod server {
         on(
             &format!("{}/{}", event::MODULE_MESSAGE, T::id()),
             move |e| {
-                let source = if let Some(user_id) = e.get(source_network_user_id()) {
-                    Source::Network { user_id }
-                } else if let Some(module) = e.get(source_module()) {
-                    Source::Module(module)
+                let source = if let Some(user_id) = e.get(source_remote_user_id()) {
+                    Source::Remote { user_id }
+                } else if let Some(module) = e.get(source_local()) {
+                    Source::Local(module)
                 } else {
                     panic!("No source available for incoming message");
                 };

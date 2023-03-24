@@ -1207,21 +1207,21 @@ name = "Data"
 description = "The data payload of a message."
 attributes = ["Debuggable"]
 
-[components."core::wasm::message::source_module"]
+[components."core::wasm::message::source_local"]
 type = "EntityId"
-name = "Source: Module"
-description = "This message came from this module on this side."
+name = "Source: Local"
+description = "This message came from the specified module on this side."
 attributes = ["Debuggable"]
 
-[components."core::wasm::message::source_network"]
+[components."core::wasm::message::source_remote"]
 type = "Empty"
-name = "Source: Network"
+name = "Source: Remote"
 description = "This message came from the network with no specific source (likely the server)."
 attributes = ["Debuggable"]
 
-[components."core::wasm::message::source_network_user_id"]
+[components."core::wasm::message::source_remote_user_id"]
 type = "String"
-name = "Source: Network (User ID)"
+name = "Source: Remote (User ID)"
 description = "This message came from this user."
 attributes = ["Debuggable"]
 
