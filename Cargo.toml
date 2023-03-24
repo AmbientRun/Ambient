@@ -142,10 +142,7 @@ russimp = { version = "1.0.6", features = ['prebuilt'] }
 # WASM dependencies. Should be able to move off these once this all begins to stabilise a little.
 #
 
-# Switch to 7.0.0 when released
-wasmtime = { git = "https://github.com/bytecodealliance/wasmtime.git", rev = "d3fdb5fc2c02c043e716f4aedf4854bb92705c7c", features = [
-    "component-model",
-] }
+wasmtime = { version = "7.0.0", features = ["component-model"] }
 # Use published versions of these crates when available, or pull them in ourselves
 wasi-common = { git = "https://github.com/bytecodealliance/preview2-prototyping.git", rev = "5836a6b0028f6fbdd094fbdd87df1ff4ca535168" }
 wasi-cap-std-sync = { git = "https://github.com/bytecodealliance/preview2-prototyping.git", rev = "5836a6b0028f6fbdd094fbdd87df1ff4ca535168" }
