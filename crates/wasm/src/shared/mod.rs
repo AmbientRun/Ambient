@@ -227,34 +227,23 @@ pub(crate) fn reload_all(world: &mut World) {
 }
 
 pub fn run_all(world: &mut World, context: &RunContext) {
-    let errors: Vec<(EntityId, String)> = query(module_state())
-        .collect_cloned(world, None)
-        .into_iter()
-        .flat_map(|(id, sms)| run_without_error_update(world, id, sms, context))
-        .collect();
-
-    update_errors(world, &errors);
+    for (id, sms) in query(module_state()).collect_cloned(world, None) {
+        run(world, id, sms, context)
+    }
 }
 
 fn reload(world: &mut World, module_id: EntityId, bytecode: Option<ModuleBytecode>) {
-    let mut errors = unload(world, module_id, "reloading");
+    unload(world, module_id, "reloading");
 
     if let Some(bytecode) = bytecode {
         if !bytecode.0.is_empty() {
-            load(world, module_id, &bytecode.0, &mut errors);
+            load(world, module_id, &bytecode.0);
         }
     }
-
-    update_errors(world, &errors);
 }
 
 #[allow(clippy::too_many_arguments)]
-fn load(
-    world: &mut World,
-    module_id: EntityId,
-    component_bytecode: &[u8],
-    errors: &mut Vec<(EntityId, String)>,
-) {
+fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
     let messenger = world.resource(messenger()).clone();
     let module_state_maker = world.resource(module_state_maker()).clone();
     let result = run_and_catch_panics(|| {
@@ -276,34 +265,69 @@ fn load(
     match result {
         Ok(sms) => {
             // Run the initial startup event.
-            errors.extend(run_without_error_update(
+            run(
                 world,
                 module_id,
                 sms.clone(),
                 &RunContext::new(world, ambient_event_types::MODULE_LOAD, Entity::new()),
-            ));
-
+            );
             world.add_component(module_id, module_state(), sms).unwrap();
         }
-        Err(err) => errors.push((module_id, err)),
+        Err(err) => update_errors(world, &[(module_id, err)]),
     }
 }
 
-pub(crate) fn unload(
-    world: &mut World,
-    module_id: EntityId,
-    reason: &str,
-) -> Vec<(EntityId, String)> {
-    let Ok(sms) = world.get_cloned(module_id, module_state()) else { return vec![]; };
+fn update_errors(world: &mut World, errors: &[(EntityId, String)]) {
+    let messenger = world.resource(messenger()).clone();
+    for (id, err) in errors {
+        messenger(
+            world,
+            *id,
+            MessageType::Error,
+            &format!("Runtime error: {}", err),
+        );
 
-    let errors = run_without_error_update(
+        if let Ok(module_errors) = world.get_mut(*id, module_errors()) {
+            let error_stream = &mut module_errors.0;
+
+            error_stream.push(err.clone());
+            if error_stream.len() > MAXIMUM_ERROR_COUNT {
+                unload(world, *id, "too many errors");
+            }
+        }
+    }
+}
+
+pub fn run(world: &mut World, id: EntityId, mut state: ModuleState, context: &RunContext) {
+    profiling::scope!(
+        "run",
+        format!("{} - {}", get_module_name(world, id), context.event_name)
+    );
+
+    // If this is not a whitelisted event and it's not in the subscribed events,
+    // skip over it
+    if !["core/module_load", "core/frame"].contains(&context.event_name.as_str())
+        && !state.supports_event(&context.event_name)
+    {
+        return;
+    }
+
+    let result = run_and_catch_panics(|| state.run(world, context));
+
+    if let Err(message) = result {
+        update_errors(world, &[(id, message)]);
+    }
+}
+
+pub(crate) fn unload(world: &mut World, module_id: EntityId, reason: &str) {
+    let Ok(sms) = world.get_cloned(module_id, module_state()) else { return; };
+
+    run(
         world,
         module_id,
         sms,
         &RunContext::new(world, ambient_event_types::MODULE_UNLOAD, Entity::new()),
-    )
-    .into_iter()
-    .collect_vec();
+    );
 
     let spawned_entities = world
         .get_mut(module_id, module_state())
@@ -329,60 +353,6 @@ pub(crate) fn unload(
         MessageType::Info,
         &format!("Unloaded (reason: {reason})"),
     );
-
-    errors
-}
-
-pub(crate) fn update_errors(world: &mut World, errors: &[(EntityId, String)]) {
-    let messenger = world.resource(messenger()).clone();
-    for (id, err) in errors {
-        messenger(
-            world,
-            *id,
-            MessageType::Error,
-            &format!("Runtime error: {}", err),
-        );
-
-        if let Ok(module_errors) = world.get_mut(*id, module_errors()) {
-            let error_stream = &mut module_errors.0;
-
-            error_stream.push(err.clone());
-            if error_stream.len() > MAXIMUM_ERROR_COUNT {
-                unload(world, *id, "too many errors");
-            }
-        }
-    }
-}
-
-pub fn run(world: &mut World, id: EntityId, state: ModuleState, context: &RunContext) {
-    if let Some((id, message)) = run_without_error_update(world, id, state, context) {
-        update_errors(world, &[(id, message)]);
-    }
-}
-
-pub fn run_without_error_update(
-    world: &mut World,
-    id: EntityId,
-    mut state: ModuleState,
-    context: &RunContext,
-) -> Option<(EntityId, String)> {
-    profiling::scope!(
-        "run",
-        format!("{} - {}", get_module_name(world, id), context.event_name)
-    );
-
-    // If this is not a whitelisted event and it's not in the subscribed events,
-    // skip over it
-    if !["core/module_load", "core/frame"].contains(&context.event_name.as_str())
-        && !state.supports_event(&context.event_name)
-    {
-        return None;
-    }
-
-    let result = run_and_catch_panics(|| state.run(world, context));
-    world.set(id, module_state(), state).ok();
-
-    result.err().map(|err| (id, err))
 }
 
 pub fn spawn_module(
@@ -390,15 +360,14 @@ pub fn spawn_module(
     name: &Identifier,
     description: String,
     enabled: bool,
-) -> anyhow::Result<EntityId> {
-    let ed = Entity::new()
+) -> EntityId {
+    Entity::new()
         .with(ambient_core::name(), name.to_string())
         .with_default(module())
         .with(module_enabled(), enabled)
         .with_default(module_errors())
-        .with(ambient_project::description(), description);
-
-    Ok(ed.spawn(world))
+        .with(ambient_project::description(), description)
+        .spawn(world)
 }
 
 pub fn get_module_name(world: &World, id: EntityId) -> Identifier {

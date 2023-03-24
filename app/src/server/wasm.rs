@@ -55,7 +55,7 @@ pub fn initialize(world: &mut World, project_path: PathBuf, manifest: &ambient_p
             let description = manifest.project.description.clone().unwrap_or_default();
             let description = if is_sole_module { description } else { format!("{description} ({filename_identifier})") };
 
-            let id = spawn_module(world, &name, description, true)?;
+            let id = spawn_module(world, &name, description, true);
             modules_to_entity_ids.insert((target, name.clone()), id);
 
             if target == "client" {
