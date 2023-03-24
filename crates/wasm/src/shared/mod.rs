@@ -11,6 +11,7 @@ pub mod wit;
 
 use std::sync::Arc;
 
+use ambient_core::async_ecs::async_run;
 use ambient_ecs::{
     dont_despawn_on_unload, query, world_events, ComponentEntry, Entity, EntityId, FnSystem,
     SystemGroup, World, WorldEventReader,
@@ -334,35 +335,44 @@ fn reload(world: &mut World, module_id: EntityId, bytecode: Option<ModuleBytecod
 fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
     let messenger = world.resource(messenger()).clone();
     let module_state_maker = world.resource(module_state_maker()).clone();
-    let result = run_and_catch_panics(|| {
-        module_state_maker(module::ModuleStateArgs {
-            component_bytecode,
-            stdout_output: Box::new({
-                let messenger = messenger.clone();
-                move |world, msg| {
-                    messenger(world, module_id, MessageType::Stdout, msg);
-                }
-            }),
-            stderr_output: Box::new(move |world, msg| {
-                messenger(world, module_id, MessageType::Stderr, msg);
-            }),
-            id: module_id,
-        })
-    });
 
-    match result {
-        Ok(sms) => {
-            // Run the initial startup event.
-            run(
-                world,
-                module_id,
-                sms.clone(),
-                &RunContext::new(world, ambient_event_types::MODULE_LOAD, Entity::new()),
-            );
-            world.add_component(module_id, module_state(), sms).unwrap();
-        }
-        Err(err) => update_errors(world, &[(module_id, err)]),
-    }
+    let async_run = world.resource(async_run()).clone();
+    let component_bytecode = component_bytecode.to_vec();
+
+    // Spawn the module on another thread to ensure that it does not block the main thread during compilation.
+    std::thread::spawn(move || {
+        let result = run_and_catch_panics(|| {
+            module_state_maker(module::ModuleStateArgs {
+                component_bytecode: &component_bytecode,
+                stdout_output: Box::new({
+                    let messenger = messenger.clone();
+                    move |world, msg| {
+                        messenger(world, module_id, MessageType::Stdout, msg);
+                    }
+                }),
+                stderr_output: Box::new(move |world, msg| {
+                    messenger(world, module_id, MessageType::Stderr, msg);
+                }),
+                id: module_id,
+            })
+        });
+
+        async_run.run(move |world| {
+            match result {
+                Ok(sms) => {
+                    // Run the initial startup event.
+                    run(
+                        world,
+                        module_id,
+                        sms.clone(),
+                        &RunContext::new(world, ambient_event_types::MODULE_LOAD, Entity::new()),
+                    );
+                    world.add_component(module_id, module_state(), sms).unwrap();
+                }
+                Err(err) => update_errors(world, &[(module_id, err)]),
+            }
+        });
+    });
 }
 
 fn update_errors(world: &mut World, errors: &[(EntityId, String)]) {
