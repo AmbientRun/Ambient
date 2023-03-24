@@ -38,7 +38,7 @@ use tracing::{debug_span, Instrument};
 use crate::{
     bi_stream_handlers, create_server, datagram_handlers,
     protocol::{ClientInfo, ServerProtocol},
-    uni_stream_handlers, NetworkError,
+    uni_stream_handlers, NetworkError, client_connection::ClientConnection,
 };
 
 components!("network", {
@@ -279,7 +279,7 @@ impl GameServer {
 
 
                     log::debug!("Accepted connection");
-                    run_connection(conn, state.clone(), world_stream_filter.clone(), assets.clone());
+                    run_connection(conn.into(), state.clone(), world_stream_filter.clone(), assets.clone());
                 }
                 _ = sim_interval.tick() => {
                     fps_counter.frame_start();
@@ -330,7 +330,7 @@ impl GameServer {
 
 /// Setup the protocol and enter the update loop for a new connected client
 #[tracing::instrument(skip_all)]
-fn run_connection(connection: NewConnection, state: SharedServerState, world_stream_filter: WorldStreamFilter, assets: AssetCache) {
+fn run_connection(connection: ClientConnection, state: SharedServerState, world_stream_filter: WorldStreamFilter, assets: AssetCache) {
     let connection_id = friendly_id();
     let handle = Arc::new(OnceCell::new());
     handle
@@ -538,7 +538,7 @@ impl<'a> Drop for ClientInstance<'a> {
 
 impl<'a> ClientInstance<'a> {
     #[tracing::instrument(skip_all)]
-    pub async fn run(mut self, conn: NewConnection, server_info: ServerInfo) -> Result<(), NetworkError> {
+    pub async fn run(mut self, conn: ClientConnection, server_info: ServerInfo) -> Result<(), NetworkError> {
         log::debug!("Connecting to client");
         let mut proto = ServerProtocol::new(conn, server_info).await?;
 
@@ -566,15 +566,15 @@ impl<'a> ClientInstance<'a> {
 
                 Some(msg) = events_rx.next() => {
                     let span =tracing::debug_span!("server_event");
-                    let mut stream = proto.connection().open_uni().instrument(span).await?;
+                    let mut stream = proto.conn.open_uni().instrument(span).await?;
 
                     stream.write(&msg).await?;
                 }
-                Some(Ok(datagram)) = proto.conn.datagrams.next() => {
+                Some(Ok(datagram)) = proto.conn.read_datagram() => {
                     let _span =tracing::debug_span!("datagram").entered();
                     tokio::task::block_in_place(|| (self.on_datagram)(&user_id, datagram))
                 }
-                Some(Ok((tx, mut rx))) = proto.conn.bi_streams.next() => {
+                Some(Ok((tx, mut rx))) = proto.conn.accept_bi() => {
                     let span = tracing::debug_span!("bistream");
                     let stream_id = rx.read_u32().instrument(span).await;
                     if let Ok(stream_id) = stream_id {
@@ -582,7 +582,7 @@ impl<'a> ClientInstance<'a> {
                         tokio::task::block_in_place(|| { (self.on_bi_stream)(&user_id, stream_id, tx, rx); })
                     }
                 }
-                Some(Ok(mut rx)) = proto.conn.uni_streams.next() => {
+                Some(Ok(mut rx)) = proto.conn.accept_uni() => {
                     let span = tracing::debug_span!("unistream");
                     let stream_id = rx.read_u32().instrument(span).await;
                     if let Ok(stream_id) = stream_id {

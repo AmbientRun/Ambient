@@ -3,7 +3,7 @@ use anyhow::{Context, Result};
 use futures::{io::BufReader, StreamExt};
 use quinn::{NewConnection, RecvStream};
 
-use crate::{next_bincode_bi_stream, open_bincode_bi_stream, server::ServerInfo, IncomingStream, NetworkError, OutgoingStream};
+use crate::{next_bincode_bi_stream, open_bincode_bi_stream, server::ServerInfo, IncomingStream, NetworkError, OutgoingStream, client_connection::ClientConnection};
 
 #[derive(Debug)]
 pub struct ClientProtocol {
@@ -67,7 +67,7 @@ impl ClientProtocol {
 
 /// The server side protocol instantiation of the client communication
 pub struct ServerProtocol {
-    pub(crate) conn: NewConnection,
+    pub(crate) conn: ClientConnection,
 
     pub(crate) diff_stream: OutgoingStream,
     pub(crate) stat_stream: OutgoingStream,
@@ -75,9 +75,9 @@ pub struct ServerProtocol {
 }
 
 impl ServerProtocol {
-    pub async fn new(mut conn: NewConnection, server_info: ServerInfo) -> Result<Self, NetworkError> {
+    pub async fn new(mut conn: ClientConnection, server_info: ServerInfo) -> Result<Self, NetworkError> {
         // The client now sends the player id
-        let (mut tx, mut rx) = next_bincode_bi_stream(&mut conn).await?;
+        let (mut tx, mut rx) = conn.accept_bincode_bi().await?;
 
         let user_id: String = rx.next().await?;
 
@@ -94,10 +94,10 @@ impl ServerProtocol {
         tx.send(&server_info).await?;
 
         // Great, now open all required streams
-        let mut diff_stream = OutgoingStream::open_uni(&conn.connection).await?;
+        let mut diff_stream = conn.open_bincode_uni().await?;
         // Send "something" to notify the client of the new stream
         diff_stream.send(&()).await?;
-        let mut stat_stream = OutgoingStream::open_uni(&conn.connection).await?;
+        let mut stat_stream = conn.open_bincode_uni().await?;
         stat_stream.send(&()).await?;
 
         Ok(Self { conn, diff_stream, stat_stream, client_info })
@@ -105,10 +105,6 @@ impl ServerProtocol {
 
     pub fn client_info(&self) -> &ClientInfo {
         &self.client_info
-    }
-
-    pub(crate) fn connection(&self) -> quinn::Connection {
-        self.conn.connection.clone()
     }
 }
 

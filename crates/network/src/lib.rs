@@ -28,6 +28,7 @@ use tokio_util::codec::{FramedRead, FramedWrite, LengthDelimitedCodec};
 
 pub type AsyncMutex<T> = tokio::sync::Mutex<T>;
 pub mod client;
+pub mod client_connection;
 pub mod client_game_state;
 pub mod events;
 pub mod hooks;
