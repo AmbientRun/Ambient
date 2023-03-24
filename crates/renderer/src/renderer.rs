@@ -346,7 +346,7 @@ impl Renderer {
             post_forward.render(world, &mesh_buffer, encoder, &target, &bind_groups, post_submit);
         }
 
-        self.overlays.render(encoder, &target, &[&forward_globals_bind_group], &mesh_buffer);
+        self.overlays.render(encoder, &target, &bind_groups, &mesh_buffer);
 
         if let RendererTarget::Target(target) = &target {
             encoder.copy_texture_to_texture(
