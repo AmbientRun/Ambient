@@ -67,7 +67,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       # We don't do caching here because we only have 10gb and they'll be occupied by normal builds all the time anyway
       - name: Build
-        run: cargo build --release -p ambient --target ${{ matrix.target }}
+        run: cargo build --release -p ambient --target ${{ matrix.target }} --features production
       - name: Install certificate (OSX)
         if: matrix.os == 'macos-latest'
         uses: apple-actions/import-codesign-certs@v1

@@ -57,7 +57,18 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
                 )
             }
             None => (
+                #[cfg(feature = "production")]
                 format!("ambient_api = \"{}\"", env!("CARGO_PKG_VERSION")),
+                #[cfg(not(feature = "production"))]
+                {
+                    let rev = git_version::git_version!()
+                        .split('-')
+                        .skip(3)
+                        .next()
+                        .unwrap_or_default()[1..]
+                        .to_string();
+                    format!("ambient_api = {{ git = \"https://github.com/AmbientRun/Ambient.git\", rev = \"{}\" }}", rev)
+                },
                 false,
             ),
         };
