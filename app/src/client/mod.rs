@@ -107,15 +107,17 @@ fn MainApp(
 fn GoldenImageTest(hooks: &mut Hooks, project_path: Option<PathBuf>, golden_image_test: Option<f32>) -> Element {
     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
     hooks.use_spawn(move |world| {
+        let _span = tracing::info_span!("golden_image_test").entered();
+
         if let Some(seconds) = golden_image_test {
             world.resource(runtime()).spawn(async move {
                 tokio::time::sleep(Duration::from_secs_f32(seconds)).await;
                 let screenshot = project_path.unwrap_or(PathBuf::new()).join("screenshot.png");
-                log::info!("Loading screenshot from {:?}", screenshot);
+                tracing::info!("Loading screenshot from {:?}", screenshot);
                 let old = image::open(&screenshot);
-                log::info!("Saving screenshot to {:?}", screenshot);
+                tracing::info!("Saving screenshot to {:?}", screenshot);
                 let new = render_target.0.color_buffer.reader().read_image().await.unwrap().into_rgba8();
-                log::info!("Screenshot saved");
+                tracing::info!("Screenshot saved");
                 new.save(screenshot).unwrap();
 
                 if let Ok(old) = old {
@@ -127,14 +129,14 @@ fn GoldenImageTest(hooks: &mut Hooks, project_path: Option<PathBuf>, golden_imag
                     let hash2 = hasher.hash_image(&old);
                     let dist = hash1.dist(&hash2);
                     if dist > 0 {
-                        log::info!("Screenshots differ, distance={}", dist);
+                        tracing::error!("Screenshots differ, distance={}", dist);
                         exit(1);
                     } else {
-                        log::info!("Screenshots are identical");
+                        tracing::info!("Screenshots are identical");
                         exit(0);
                     }
                 } else {
-                    log::info!("No old screenshot to compare to");
+                    tracing::info!("No old screenshot to compare to");
                     exit(1);
                 }
             });
