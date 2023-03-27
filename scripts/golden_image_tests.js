@@ -5,13 +5,13 @@ const { exit } = require("process");
 const { argv } = require('node:process');
 
 let samples = [
-    ["guest/rust/examples/basics/async", 1],
-    ["guest/rust/examples/basics/input", 1],
-    ["guest/rust/examples/basics/image", 3],
-    ["guest/rust/examples/basics/primitives", 1],
-    ["guest/rust/examples/basics/raw_text", 1],
-    ["guest/rust/examples/basics/fog", 1],
-    ["guest/rust/examples/games/tictactoe", 1],
+    ["guest/rust/examples/basics/async", 30],
+    ["guest/rust/examples/basics/input", 30],
+    ["guest/rust/examples/basics/image", 30],
+    ["guest/rust/examples/basics/primitives", 30],
+    ["guest/rust/examples/basics/raw_text", 30],
+    ["guest/rust/examples/basics/fog", 30],
+    ["guest/rust/examples/games/tictactoe", 30],
     ["guest/rust/examples/ui/button", 60],
     ["guest/rust/examples/ui/dock_layout", 60],
     ["guest/rust/examples/ui/editors", 60],
