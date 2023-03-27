@@ -12,10 +12,7 @@ use ambient_rpc::{RpcError, RpcRegistry};
 use ambient_std::log_error;
 use bytes::Bytes;
 use futures::{Future, SinkExt, StreamExt};
-use quinn::{
-    ClientConfig, Connection, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, ServerConfig,
-    TransportConfig,
-};
+use quinn::{ClientConfig, Connection, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, ServerConfig, TransportConfig};
 use rand::Rng;
 use rustls::{Certificate, PrivateKey, RootCertStore};
 use serde::{de::DeserializeOwned, Serialize};
@@ -167,6 +164,9 @@ pub enum NetworkError {
     SendDatagramError(#[from] quinn::SendDatagramError),
     #[error(transparent)]
     RpcError(#[from] RpcError),
+    // FIXME: change into a more specific ProxyError
+    #[error(transparent)]
+    Other(#[from] anyhow::Error),
 }
 
 impl NetworkError {

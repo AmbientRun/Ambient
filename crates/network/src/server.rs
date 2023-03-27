@@ -36,9 +36,10 @@ use tokio::{
 use tracing::{debug_span, Instrument};
 
 use crate::{
+    client_connection::ClientConnection,
     create_server,
     protocol::{ClientInfo, ServerInfo, ServerProtocol},
-    NetworkError, RPC_BISTREAM_ID, client_connection::ClientConnection,
+    NetworkError, RPC_BISTREAM_ID,
 };
 
 components!("network::server", {
@@ -246,19 +247,30 @@ pub struct GameServer {
     pub port: u16,
     /// Shuts down the server if there are no players
     pub use_inactivity_shutdown: bool,
+    proxy: Option<ambient_proxy::client::Client>,
 }
 impl GameServer {
-    pub async fn new_with_port(port: u16, use_inactivity_shutdown: bool) -> anyhow::Result<Self> {
+    pub async fn new_with_port(port: u16, use_inactivity_shutdown: bool, proxy_endpoint: Option<String>) -> anyhow::Result<Self> {
         let server_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port);
 
         let endpoint = create_server(server_addr)?;
 
+        let proxy = if let Some(proxy_endpoint) = proxy_endpoint {
+            Some(ambient_proxy::client::Client::connect(proxy_endpoint).await?)
+        } else {
+            None
+        };
+
         log::debug!("GameServer listening on port {}", port);
-        Ok(Self { endpoint, port, use_inactivity_shutdown })
+        Ok(Self { endpoint, port, use_inactivity_shutdown, proxy })
     }
-    pub async fn new_with_port_in_range(port_range: Range<u16>, use_inactivity_shutdown: bool) -> anyhow::Result<Self> {
+    pub async fn new_with_port_in_range(
+        port_range: Range<u16>,
+        use_inactivity_shutdown: bool,
+        proxy_endpoint: Option<String>,
+    ) -> anyhow::Result<Self> {
         for port in port_range {
-            match Self::new_with_port(port, use_inactivity_shutdown).await {
+            match Self::new_with_port(port, use_inactivity_shutdown, proxy_endpoint.clone()).await {
                 Ok(server) => {
                     return Ok(server);
                 }
@@ -278,7 +290,7 @@ impl GameServer {
         create_shutdown_systems: Arc<dyn Fn() -> SystemGroup<ShutdownEvent> + Sync + Send>,
         is_sync_component: Arc<dyn Fn(ComponentDesc, WorldStreamCompEvent) -> bool + Sync + Send>,
     ) -> SharedServerState {
-        let Self { endpoint, .. } = self;
+        let Self { endpoint, proxy, .. } = self;
         let assets = world.resource(asset_cache()).clone();
         let world_stream_filter = WorldStreamFilter::new(ArchetypeFilter::new().excl(no_sync()), is_sync_component);
         let state = Arc::new(Mutex::new(ServerState::new(
@@ -303,6 +315,15 @@ impl GameServer {
 
         let mut inactivity_interval = interval(Duration::from_secs_f32(5.));
         let mut last_active = ambient_sys::time::Instant::now();
+
+        if let Some(proxy) = proxy {
+            let state = state.clone();
+            let world_stream_filter = world_stream_filter.clone();
+            let assets = assets.clone();
+            tokio::spawn(proxy.run(Arc::new(move |_player_id, conn: ambient_proxy::client::ProxiedConnection| {
+                run_connection(conn.into(), state.clone(), world_stream_filter.clone(), assets.clone());
+            })));
+        }
 
         loop {
             tracing::debug_span!("Listening for incoming connections");

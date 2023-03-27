@@ -244,7 +244,14 @@ fn send_networked(
         .collect();
 
     for connection in connections {
-        message::send_networked(world, connection.fixme_unwrap(), module_id, &name, &data, reliable)?;
+        message::send_networked(
+            world,
+            connection.fixme_unwrap(),
+            module_id,
+            &name,
+            &data,
+            reliable,
+        )?;
     }
 
     Ok(())

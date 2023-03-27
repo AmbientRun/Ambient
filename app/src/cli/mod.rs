@@ -100,7 +100,7 @@ pub struct HostCli {
 
     /// AmbientProxy address to use for NAT traversal
     #[arg(long)]
-    proxy: Option<String>,
+    pub proxy: Option<String>,
 }
 
 impl Cli {

@@ -3,7 +3,7 @@ use anyhow::{Context, Result};
 use futures::io::BufReader;
 use quinn::{Connection, RecvStream};
 
-use crate::{open_bincode_bi_stream, IncomingStream, NetworkError, OutgoingStream, client_connection::ClientConnection};
+use crate::{client_connection::ClientConnection, open_bincode_bi_stream, IncomingStream, NetworkError, OutgoingStream};
 
 #[derive(Debug)]
 pub struct ClientProtocol {
