@@ -12,9 +12,9 @@ This changelog is manually updated. While an effort will be made to keep the [Un
 
 #### Headline features
 
-- **API**: Guest code can now **create and interact with UI**.
+- **API**: Guest code can now **create and interact with UI**. See [the UI examples](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui).
 - **API**: Guest code can now **run on the client**. See [the `clientside` example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/clientside).
-- **Client**: The client can now **run on the web**. <!-- Remove this if not done by release -->
+<!-- - **Client**: The client can now **run on the web**. -->
 
 #### Other
 
@@ -26,15 +26,24 @@ This changelog is manually updated. While an effort will be made to keep the [Un
 - **Client**: Added a basic headless mode to enable automatic CI testing of projects.
 - **Client**: Added `Dump UI World` button to inspect the state of the UI. Thanks to [@owenpalmer](https://github.com/owenpalmer) for implementing this in [#216](https://github.com/AmbientRun/Ambient/pull/216).
 
+#### Examples
+
+- A suite of UI examples have been added to demonstrate how to use the UI in guest code.
+- The `clientside` example shows how to use clientside WASM.
+- The `messaging` example shows how to message the server from the client and vice versa, and how to message another module with both broadcasts and directed messages.
+- A pong game example has been added.
+
 ### Changed
 
 #### Breaking
 
-- **Client**: `--debug` is now `--debugger`, but it can also be accessed through `AMBIENT_DEBUGGER`.
+- **Client**: `--debug` is now `--debugger`, but it can also be accessed through the `AMBIENT_DEBUGGER` env variable.
 - **API**: `player_camera` has been removed, and the components it instantiated are now directly exposed. See the `multiplayer` example to see what's changed.
 - **API**: The `Cargo.toml` has changed to enable clientside builds. Please look at the examples to see how to update your `Cargo.toml` appropriately.
 - **API**: `ChangeQuery` has been split into `UntrackedChangeQuery` and `ChangeQuery` to ensure that `track_change` is called before the query is built.
 - **API**: `event::send` has been removed and replaced with the more general-purpose `message` API.
+- **API**: `asset_url` has moved to `asset::url`.
+- **Physics**: Convex shapes are now used if a body is neither static or kinematic.
 
 #### Non-breaking
 
@@ -42,6 +51,7 @@ This changelog is manually updated. While an effort will be made to keep the [Un
 - **Ambient**: The default logging settings now better communicate what Ambient is doing at any given moment.
 - **Project**: Concept definitions in projects now support namespaces. Thanks to [@ArberSephirotheca](https://github.com/ArberSephirotheca) for implementing this in [#212](https://github.com/AmbientRun/Ambient/pull/212).
 - **API**: Concepts now include the components they use in their doc comments.
+- **API**: `on` and `once` now return handles that can be used to cancel their subscriptions.
 
 ### Fixed
 
