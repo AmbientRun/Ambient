@@ -1,13 +1,13 @@
 use ambient_ecs::{ComponentRegistry, ExternalComponentDesc, WorldDiff};
 use anyhow::{Context, Result};
-use futures::{io::BufReader, StreamExt};
-use quinn::{NewConnection, RecvStream};
+use futures::io::BufReader;
+use quinn::{Connection, RecvStream};
 
-use crate::{next_bincode_bi_stream, open_bincode_bi_stream, server::ServerInfo, IncomingStream, NetworkError, OutgoingStream, client_connection::ClientConnection};
+use crate::{open_bincode_bi_stream, IncomingStream, NetworkError, OutgoingStream, client_connection::ClientConnection};
 
 #[derive(Debug)]
 pub struct ClientProtocol {
-    pub(crate) conn: NewConnection,
+    pub(crate) conn: Connection,
     pub(crate) stat_stream: IncomingStream,
     client_info: ClientInfo,
     pub(crate) diff_stream: IncomingStream,
@@ -16,11 +16,11 @@ pub struct ClientProtocol {
 }
 
 impl ClientProtocol {
-    pub async fn new(mut conn: NewConnection, player_id: String) -> Result<Self> {
+    pub async fn new(mut conn: Connection, player_id: String) -> Result<Self> {
         // Say who we are
         // The server will respond appropriately and return things such as
         // username (TODO)
-        let (mut tx, mut rx) = open_bincode_bi_stream(&conn.connection).await?;
+        let (mut tx, mut rx) = open_bincode_bi_stream(&conn).await?;
         tx.send(&player_id).await?;
 
         // The server will acknowledge and send the credentials back
@@ -46,7 +46,7 @@ impl ClientProtocol {
     }
 
     pub async fn next_event(&mut self) -> anyhow::Result<BufReader<RecvStream>> {
-        let stream = self.conn.uni_streams.next().await.ok_or(NetworkError::EndOfStream).context("Event stream closed")??;
+        let stream = self.conn.accept_uni().await.map_err(NetworkError::from).context("Event stream closed")?;
 
         let stream = BufReader::new(stream);
         Ok(stream)
@@ -57,11 +57,7 @@ impl ClientProtocol {
     }
 
     pub(crate) fn connection(&self) -> quinn::Connection {
-        self.conn.connection.clone()
-    }
-
-    pub fn uni_streams(&self) -> &quinn::IncomingUniStreams {
-        &self.conn.uni_streams
+        self.conn.clone()
     }
 }
 
@@ -75,7 +71,7 @@ pub struct ServerProtocol {
 }
 
 impl ServerProtocol {
-    pub async fn new(mut conn: ClientConnection, server_info: ServerInfo) -> Result<Self, NetworkError> {
+    pub async fn new(conn: ClientConnection, server_info: ServerInfo) -> Result<Self, NetworkError> {
         // The client now sends the player id
         let (mut tx, mut rx) = conn.accept_bincode_bi().await?;
 
@@ -118,5 +114,18 @@ pub struct ClientInfo {
 impl std::fmt::Debug for ClientInfo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ClientInfo").field("user_id", &self.user_id).finish_non_exhaustive()
+    }
+}
+
+/// Miscellaneous information about the server that needs to be sent to the client during the handshake.
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+pub struct ServerInfo {
+    /// The name of the project. Used by the client to figure out what to title its window. Defaults to "Ambient".
+    pub project_name: String,
+}
+
+impl Default for ServerInfo {
+    fn default() -> Self {
+        Self { project_name: "Ambient".into() }
     }
 }

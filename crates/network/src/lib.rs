@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     io::ErrorKind,
     net::{IpAddr, Ipv4Addr, SocketAddr},
     sync::Arc,
@@ -7,21 +6,19 @@ use std::{
 };
 
 use ambient_ecs::{
-    components, query, Component, ComponentValue, Debuggable, Description, EntityId, Name, Networked, Resource, Serializable, Store, World,
+    components, query, Component, ComponentValue, Debuggable, Description, EntityId, Name, Networked, Serializable, Store, World,
 };
 use ambient_rpc::{RpcError, RpcRegistry};
-use ambient_std::{asset_cache::AssetCache, log_error, log_result};
+use ambient_std::log_error;
 use bytes::Bytes;
-use client::GameRpcArgs;
 use futures::{Future, SinkExt, StreamExt};
 use quinn::{
-    ClientConfig, Connection, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, Incoming, NewConnection, RecvStream,
-    SendStream, ServerConfig, TransportConfig,
+    ClientConfig, Connection, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, ServerConfig,
+    TransportConfig,
 };
 use rand::Rng;
 use rustls::{Certificate, PrivateKey, RootCertStore};
 use serde::{de::DeserializeOwned, Serialize};
-use server::SharedServerState;
 use thiserror::Error;
 use tokio::io::AsyncWriteExt;
 use tokio_util::codec::{FramedRead, FramedWrite, LengthDelimitedCodec};
@@ -30,20 +27,20 @@ pub type AsyncMutex<T> = tokio::sync::Mutex<T>;
 pub mod client;
 pub mod client_connection;
 pub mod client_game_state;
-pub mod events;
 pub mod hooks;
 pub mod protocol;
 pub mod rpc;
 pub mod server;
 
-components!("network", {
-    @[Resource]
-    bi_stream_handlers: BiStreamHandlers,
-    @[Resource]
-    uni_stream_handlers: UniStreamHandlers,
-    @[Resource]
-    datagram_handlers: DatagramHandlers,
+pub const RPC_BISTREAM_ID: u32 = 1;
+pub const WASM_BISTREAM_ID: u32 = 2;
 
+pub const WASM_UNISTREAM_ID: u32 = 1;
+
+pub const PLAYER_INPUT_DATAGRAM_ID: u32 = 5;
+pub const WASM_DATAGRAM_ID: u32 = 6;
+
+components!("network", {
     /// Works like `world.resource_entity` for server worlds, except it's also persisted to disk, and synchronized to clients
     @[
         Debuggable, Networked,
@@ -70,7 +67,6 @@ components!("network", {
 pub fn init_all_components() {
     init_components();
     client::init_components();
-    events::init_components();
     server::init_components();
     client_game_state::init_components();
 }
@@ -126,11 +122,6 @@ fn assert_persisted(desc: ambient_ecs::ComponentDesc) {
     }
 }
 
-pub type BiStreamHandlers = HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, SendStream, RecvStream) + Sync + Send>>;
-pub type UniStreamHandlers = HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, RecvStream) + Sync + Send>>;
-pub type DatagramHandlers = HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, Bytes) + Sync + Send>>;
-
-pub const RPC_STREAM_ID: u32 = 1;
 pub async fn rpc_request<
     Args: Send + 'static,
     Req: Serialize + DeserializeOwned + Send + 'static,
@@ -146,7 +137,7 @@ pub async fn rpc_request<
 ) -> Result<Resp, NetworkError> {
     let stream = conn.open_bi();
     let (mut send, recv) = stream.await.map_err(NetworkError::ConnectionError)?;
-    send.write_u32(RPC_STREAM_ID).await?;
+    send.write_u32(RPC_BISTREAM_ID).await?;
     let req = reg.serialize_req(func, req);
     send.write_all(&req).await.map_err(NetworkError::from)?;
     send.finish().await.map_err(NetworkError::from)?;
@@ -154,28 +145,6 @@ pub async fn rpc_request<
     let resp = recv.read_to_end(size_limit).await.map_err(NetworkError::from)?;
     let resp = reg.deserialize_resp(func, &resp)?;
     Ok(resp)
-}
-
-pub fn register_rpc_bi_stream_handler(handlers: &mut BiStreamHandlers, rpc_registry: RpcRegistry<GameRpcArgs>) {
-    handlers.insert(
-        RPC_STREAM_ID,
-        Arc::new(move |state, _assets, user_id, mut send, recv| {
-            let state = state;
-            let user_id = user_id.to_string();
-            let rpc_registry = rpc_registry.clone();
-            tokio::spawn(async move {
-                let try_block = || async {
-                    let req = recv.read_to_end(100_000_000).await?;
-                    let args = GameRpcArgs { state, user_id: user_id.to_string() };
-                    let resp = rpc_registry.run_req(args, &req).await?;
-                    send.write_all(&resp).await?;
-                    send.finish().await?;
-                    Ok(()) as Result<(), NetworkError>
-                };
-                log_result!(try_block().await);
-            });
-        }),
-    );
 }
 
 #[derive(Debug, Error)]
@@ -194,6 +163,8 @@ pub enum NetworkError {
     ReadToEndError(#[from] quinn::ReadToEndError),
     #[error(transparent)]
     WriteError(#[from] quinn::WriteError),
+    #[error(transparent)]
+    SendDatagramError(#[from] quinn::SendDatagramError),
     #[error(transparent)]
     RpcError(#[from] RpcError),
 }
@@ -231,8 +202,8 @@ pub struct IncomingStream {
 impl IncomingStream {
     /// Accept a new uni-directional peer stream. Waits for the server to open a
     /// stream.
-    pub async fn accept_incoming(conn: &mut NewConnection) -> Result<Self, NetworkError> {
-        let stream = conn.uni_streams.next().await.ok_or(NetworkError::ConnectionClosed)??;
+    pub async fn accept_incoming(conn: &Connection) -> Result<Self, NetworkError> {
+        let stream = conn.accept_uni().await.map_err(NetworkError::from)?;
         Ok(Self::new(stream))
     }
 
@@ -263,8 +234,14 @@ pub struct OutgoingStream {
     pub stream: FramedWrite<quinn::SendStream, LengthDelimitedCodec>,
 }
 impl OutgoingStream {
+    /// Are you sure you don't want [open_uni_with_id] instead?
     pub async fn open_uni(conn: &Connection) -> Result<Self, NetworkError> {
         Ok(OutgoingStream::new(conn.open_uni().await?))
+    }
+    pub async fn open_uni_with_id(conn: &Connection, id: u32) -> Result<Self, NetworkError> {
+        let mut stream = Self::open_uni(conn).await?;
+        stream.stream.get_mut().write_u32(id).await?;
+        Ok(stream)
     }
 
     pub fn new(stream: quinn::SendStream) -> Self {
@@ -286,6 +263,7 @@ impl OutgoingStream {
     }
 }
 
+/// Are you sure you don't want [open_bincode_bi_stream_with_id] instead?
 pub async fn open_bincode_bi_stream(conn: &Connection) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
     let (send, recv) = conn.open_bi().await?;
     Ok((OutgoingStream::new(send), IncomingStream::new(recv)))
@@ -297,23 +275,19 @@ pub async fn open_bincode_bi_stream_with_id(conn: &Connection, id: u32) -> Resul
     Ok((OutgoingStream::new(send), IncomingStream::new(recv)))
 }
 
-pub async fn next_bincode_bi_stream(conn: &mut NewConnection) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
-    match conn.bi_streams.next().await {
-        Some(res) => {
-            let (send, recv) = res?;
-            let send = OutgoingStream::new(send);
-            let recv = IncomingStream::new(recv);
-            Ok((send, recv))
-        }
-        None => Err(NetworkError::EndOfStream),
-    }
+pub async fn next_bincode_bi_stream(conn: &Connection) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
+    let (send, recv) = conn.accept_bi().await?;
+    let send = OutgoingStream::new(send);
+    let recv = IncomingStream::new(recv);
+    Ok((send, recv))
 }
 
-pub async fn send_single_bincode_uni_msg<T: Serialize>(conn: &Connection, msg: &T) -> Result<(), NetworkError> {
-    let mut stream = conn.open_uni().await?;
-    let msg = bincode::serialize(msg)?;
-    stream.write_all(&msg).await?;
-    stream.finish().await?;
+pub fn send_datagram(conn: &Connection, id: u32, mut payload: Vec<u8>) -> Result<(), NetworkError> {
+    let mut bytes = Vec::new();
+    byteorder::WriteBytesExt::write_u32::<byteorder::BigEndian>(&mut bytes, id)?;
+    bytes.append(&mut payload);
+    conn.send_datagram(Bytes::from(bytes))?;
+
     Ok(())
 }
 
@@ -338,7 +312,7 @@ pub fn create_client_endpoint_random_port() -> Option<Endpoint> {
                 transport.max_idle_timeout(Some(Duration::from_secs_f32(60.).try_into().unwrap()));
             }
             let mut client_config = ClientConfig::new(Arc::new(crypto));
-            client_config.transport = Arc::new(transport);
+            client_config.transport_config(Arc::new(transport));
 
             endpoint.set_default_client_config(client_config);
             return Some(endpoint);
@@ -347,7 +321,7 @@ pub fn create_client_endpoint_random_port() -> Option<Endpoint> {
     None
 }
 
-fn create_server(server_addr: SocketAddr) -> anyhow::Result<(Endpoint, Incoming)> {
+fn create_server(server_addr: SocketAddr) -> anyhow::Result<Endpoint> {
     let cert = Certificate(CERT.to_vec());
     let cert_key = PrivateKey(CERT_KEY.to_vec());
     let mut server_conf = ServerConfig::with_single_cert(vec![cert], cert_key)?;

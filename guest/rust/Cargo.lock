@@ -8,12 +8,15 @@ version = "0.2.0-dev"
 dependencies = [
  "ambient_api_macros",
  "ambient_event_types",
+ "ambient_project",
  "anyhow",
+ "byteorder",
  "data-encoding",
  "glam",
  "once_cell",
  "paste",
  "rand",
+ "thiserror",
  "wit-bindgen",
 ]
 
@@ -107,6 +110,8 @@ dependencies = [
 name = "ambient_project"
 version = "0.2.0-dev"
 dependencies = [
+ "byteorder",
+ "glam",
  "proc-macro2",
  "quote",
  "serde",
@@ -592,6 +597,13 @@ name = "memchr"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
+
+[[package]]
+name = "messaging"
+version = "0.2.0-dev"
+dependencies = [
+ "ambient_api",
+]
 
 [[package]]
 name = "minigolf"

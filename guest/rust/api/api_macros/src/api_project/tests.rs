@@ -84,6 +84,11 @@ fn can_generate_components_from_manifest_in_global_namespace() {
             use super :: components ;
             use ambient_api2::prelude::*;
         }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
+        #[doc = r" as well as to other modules."]
+        pub mod messages {
+            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
+        }
     };
 
     let result = implementation(
@@ -117,6 +122,11 @@ fn can_accept_no_components() {
         pub mod concepts {
             use super :: components ;
             use ambient_api2::prelude::*;
+        }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
+        #[doc = r" as well as to other modules."]
+        pub mod messages {
+            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
@@ -174,6 +184,11 @@ fn can_generate_components_from_manifest() {
             use super :: components ;
             use ambient_api2::prelude::*;
         }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
+        #[doc = r" as well as to other modules."]
+        pub mod messages {
+            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
+        }
     };
 
     let result = implementation(
@@ -216,6 +231,11 @@ fn can_generate_component_with_contained_type() {
         pub mod concepts {
             use super :: components ;
             use ambient_api2::prelude::*;
+        }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
+        #[doc = r" as well as to other modules."]
+        pub mod messages {
+            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
@@ -260,6 +280,11 @@ fn can_generate_components_from_manifest_with_org() {
         pub mod concepts {
             use super :: components ;
             use ambient_api2::prelude::*;
+        }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
+        #[doc = r" as well as to other modules."]
+        pub mod messages {
+            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
@@ -308,6 +333,11 @@ fn can_generate_components_with_documented_namespace_from_manifest() {
         pub mod concepts {
             use super :: components ;
             use ambient_api2::prelude::*;
+        }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
+        #[doc = r" as well as to other modules."]
+        pub mod messages {
+            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
@@ -528,6 +558,11 @@ fn can_generate_concepts_with_all_supported_types() {
                 )
             }
         }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
+        #[doc = r" as well as to other modules."]
+        pub mod messages {
+            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
+        }
     };
 
     let result = implementation(
@@ -628,6 +663,11 @@ fn can_extend_with_multiple_concepts() {
             pub fn is_concept3(id: EntityId) -> bool {
                 is_concept1(id) && is_concept2(id) && entity::has_components(id, &[&components::i32()])
             }
+        }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
+        #[doc = r" as well as to other modules."]
+        pub mod messages {
+            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
@@ -792,6 +832,11 @@ fn can_generate_concepts() {
                 ])
             }
         }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
+        #[doc = r" as well as to other modules."]
+        pub mod messages {
+            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
+        }
     };
 
     let result = implementation(
@@ -890,6 +935,11 @@ fn can_generate_concepts_with_documented_namespace_from_manifest() {
                     ])
                 }
             }
+        }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
+        #[doc = r" as well as to other modules."]
+        pub mod messages {
+            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
@@ -1031,4 +1081,86 @@ fn can_generate_nested_doc_comment_for_concepts() {
             ```
         "#}
     );
+}
+
+#[test]
+fn can_generate_message() {
+    let manifest = indoc::indoc! {r#"
+        [project]
+        id = "my_project"
+        name = "My Project"
+        version = "0.0.1"
+
+        [messages.my_cool_message]
+        name = "The Coolest Message Out There"
+        description = "Proof that cool messages do exist."
+        [messages.my_cool_message.fields]
+        test1 = "Vec3"
+        test2 = { container_type = "Vec", element_type = "EntityId" }
+    "#};
+
+    let expected_output = quote::quote! {
+        const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
+        #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
+        pub mod components {
+            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+        }
+        #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
+        #[doc = r""]
+        #[doc = r" They do not have any runtime representation outside of the components that compose them."]
+        pub mod concepts {
+            use super :: components ;
+            use ambient_api2::prelude::*;
+        }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
+        #[doc = r" as well as to other modules."]
+        pub mod messages {
+            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
+
+            #[derive(Clone, Debug, PartialEq, Eq)]
+            #[doc = "**The Coolest Message Out There**: Proof that cool messages do exist."]
+            pub struct MyCoolMessage {
+                pub test1: ambient_api2::global::Vec3,
+                pub test2: Vec<ambient_api2::global::EntityId>,
+            }
+            impl MyCoolMessage {
+                pub fn new(
+                    test1: impl Into<ambient_api2::global::Vec3>,
+                    test2: impl Into< Vec<ambient_api2::global::EntityId> >,
+                ) -> Self {
+                    Self {
+                        test1: test1.into(),
+                        test2: test2.into(),
+                    }
+                }
+            }
+            impl Message for MyCoolMessage {
+                fn id() -> &'static str {
+                    "my_cool_message"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    self.test1.serialize_message_part(&mut output)?;
+                    self.test2.serialize_message_part(&mut output)?;
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self {
+                        test1: ambient_api2::global::Vec3::deserialize_message_part(&mut input)?,
+                        test2: Vec :: < ambient_api2::global::EntityId > ::deserialize_message_part(&mut input)?,
+                    })
+                }
+            }
+        }
+    };
+
+    let result = implementation(
+        (Some("ambient.toml".to_string()), manifest.to_string()),
+        api_name(),
+        false,
+        true,
+    )
+    .unwrap();
+
+    assert_eq!(result.to_string(), expected_output.to_string());
 }

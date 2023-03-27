@@ -11,7 +11,9 @@ mod tests;
 
 mod component;
 mod concept;
+mod message;
 mod tree;
+mod util;
 
 pub fn read_file(file_path: String) -> anyhow::Result<(Option<String>, String)> {
     let file_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").context("no manifest dir")?)
@@ -37,11 +39,14 @@ pub fn implementation(
     };
 
     let component_tree = Tree::new(&manifest.components, validate_namespaces_documented)?;
-    let concept_tree = Tree::new(&manifest.concepts, validate_namespaces_documented)?;
-
     let components_tokens =
         component::tree_to_token_stream(&component_tree, &api_name, project_path.as_path())?;
+
+    let concept_tree = Tree::new(&manifest.concepts, validate_namespaces_documented)?;
     let concept_tokens = concept::tree_to_token_stream(&concept_tree, &component_tree, &api_name)?;
+
+    let message_tree = Tree::new(&manifest.messages, validate_namespaces_documented)?;
+    let message_tokens = message::tree_to_token_stream(&message_tree, &api_name)?;
 
     let manifest = file_path.map(
         |file_path| quote! { const _PROJECT_MANIFEST: &'static str = include_str!(#file_path); },
@@ -57,6 +62,11 @@ pub fn implementation(
         /// They do not have any runtime representation outside of the components that compose them.
         pub mod concepts {
             #concept_tokens
+        }
+        /// Auto-generated message definitions. Messages are used to communicate between the client and serverside,
+        /// as well as to other modules.
+        pub mod messages {
+            #message_tokens
         }
     ))
 }

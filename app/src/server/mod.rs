@@ -11,9 +11,9 @@ use ambient_ecs::{
     WorldStreamCompEvent,
 };
 use ambient_network::{
-    bi_stream_handlers, datagram_handlers, persistent_resources,
+    persistent_resources,
     server::{ForkingEvent, GameServer, ShutdownEvent},
-    synced_resources, uni_stream_handlers,
+    synced_resources,
 };
 use ambient_prefab::PrefabFromUrl;
 use ambient_std::{
@@ -146,15 +146,15 @@ fn create_resources(assets: AssetCache) -> Entity {
     server_resources.set(dtime(), 1. / 60.);
 
     let mut bistream_handlers = HashMap::new();
-    ambient_network::register_rpc_bi_stream_handler(&mut bistream_handlers, shared::create_rpc_registry());
-    server_resources.set(bi_stream_handlers(), bistream_handlers);
+    ambient_network::server::register_rpc_bi_stream_handler(&mut bistream_handlers, shared::create_server_rpc_registry());
+    server_resources.set(ambient_network::server::bi_stream_handlers(), bistream_handlers);
 
     let unistream_handlers = HashMap::new();
-    server_resources.set(uni_stream_handlers(), unistream_handlers);
+    server_resources.set(ambient_network::server::uni_stream_handlers(), unistream_handlers);
 
     let mut dgram_handlers = HashMap::new();
-    shared::player::register_datagram_handler(&mut dgram_handlers);
-    server_resources.set(datagram_handlers(), dgram_handlers);
+    shared::player::register_server_datagram_handler(&mut dgram_handlers);
+    server_resources.set(ambient_network::server::datagram_handlers(), dgram_handlers);
 
     server_resources
 }

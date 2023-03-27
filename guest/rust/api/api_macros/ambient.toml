@@ -72,6 +72,14 @@ description = "Rounded corners rectangle rendering components, with an optional 
 name = "Text"
 description = "Text rendering."
 
+[components."core::wasm"]
+name = "WASM"
+description = "Internal implementation details of WASM integration."
+
+[components."core::wasm::message"]
+name = "WASM messaging"
+description = "Information attached to a message sent across WASM boundaries."
+
 [components."core::app::cursor_position"]
 type = "Vec2"
 name = "Cursor position"
@@ -1192,6 +1200,30 @@ type = "Vec3"
 name = "Translation"
 description = "The translation/position of this entity."
 attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::wasm::message::data"]
+type = { type = "Vec", element_type = "U8" }
+name = "Data"
+description = "The data payload of a message."
+attributes = ["Debuggable"]
+
+[components."core::wasm::message::source_local"]
+type = "EntityId"
+name = "Source: Local"
+description = "This message came from the specified module on this side."
+attributes = ["Debuggable"]
+
+[components."core::wasm::message::source_remote"]
+type = "Empty"
+name = "Source: Remote"
+description = "This message came from the network with no specific source (likely the server)."
+attributes = ["Debuggable"]
+
+[components."core::wasm::message::source_remote_user_id"]
+type = "String"
+name = "Source: Remote (User ID)"
+description = "This message came from this user."
+attributes = ["Debuggable"]
 
 [concepts.transformable]
 name = "Transformable"

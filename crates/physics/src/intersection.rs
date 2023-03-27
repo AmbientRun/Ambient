@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use ambient_core::{asset_cache, transform::translation};
 use ambient_ecs::{query, ArchetypeFilter, EntityId, World};
 use ambient_meshes::cuboid::CuboidMesh;
-use ambient_network::client::GameRpcArgs;
+use ambient_network::server;
 use ambient_std::{asset_cache::SyncAssetKeyExt, mesh::Mesh, shapes::Ray};
 use glam::Vec3;
 use itertools::Itertools;
@@ -116,7 +116,7 @@ pub fn intersect_frustum(world: &World, frustum_corners: &[Vec3; 8]) -> Vec<Enti
     }
 }
 
-pub async fn rpc_pick(args: GameRpcArgs, (ray, filter): (Ray, RaycastFilter)) -> Option<(EntityId, f32)> {
+pub async fn rpc_pick(args: server::RpcArgs, (ray, filter): (Ray, RaycastFilter)) -> Option<(EntityId, f32)> {
     let state = args.state.lock();
     raycast_filtered(state.get_player_world(&args.user_id)?, filter, ray)
 }

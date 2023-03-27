@@ -1,4 +1,4 @@
-use std::{net::SocketAddr, path::PathBuf, process::exit, sync::Arc, time::Duration};
+use std::{collections::HashMap, net::SocketAddr, path::PathBuf, process::exit, time::Duration};
 
 use ambient_app::{fps_stats, window_title, AppBuilder};
 use ambient_cameras::UICamera;
@@ -9,10 +9,7 @@ use ambient_core::{
 use ambient_debugger::Debugger;
 use ambient_ecs::{Entity, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_network::{
-    client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce},
-    events::ServerEventRegistry,
-};
+use ambient_network::client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce};
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
 use glam::uvec2;
@@ -88,7 +85,6 @@ fn MainApp(
             init_world: cb(UseOnce::new(Box::new(move |world, _render_target| {
                 wasm::initialize(world).unwrap();
 
-                world.add_resource(ambient_network::events::event_registry(), Arc::new(ServerEventRegistry::new()));
                 UICamera.el().spawn_static(world);
             }))),
             on_loaded: cb(move |_game_state, _game_client| {
@@ -98,8 +94,21 @@ fn MainApp(
             error_view: cb(move |error| Dock(vec![Text::el("Error").header_style(), Text::el(error)]).el()),
             on_network_stats: cb(move |stats| update_network_stats(stats)),
             on_server_stats: cb(move |stats| update_server_stats(stats)),
-            systems_and_resources: cb(|| (systems(), Entity::new())),
-            create_rpc_registry: cb(shared::create_rpc_registry),
+            systems_and_resources: cb(|| {
+                let mut resources = Entity::new();
+
+                let bistream_handlers = HashMap::new();
+                resources.set(ambient_network::client::bi_stream_handlers(), bistream_handlers);
+
+                let unistream_handlers = HashMap::new();
+                resources.set(ambient_network::client::uni_stream_handlers(), unistream_handlers);
+
+                let dgram_handlers = HashMap::new();
+                resources.set(ambient_network::client::datagram_handlers(), dgram_handlers);
+
+                (systems(), resources)
+            }),
+            create_rpc_registry: cb(shared::create_server_rpc_registry),
             on_in_entities: None,
             ui: Dock::el(vec![
                 if loaded { GoldenImageTest::el(project_path, golden_image_test) } else { Element::new() },

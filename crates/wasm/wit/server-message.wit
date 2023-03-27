@@ -1,0 +1,19 @@
+default interface server-message {
+    use pkg.types.{entity-id}
+
+    variant source {
+        remote(string),
+        local(entity-id),
+    }
+
+    variant target {
+        remote-broadcast-unreliable,
+        remote-broadcast-reliable,
+        remote-targeted-unreliable(string),
+        remote-targeted-reliable(string),
+        local-broadcast,
+        local(entity-id),
+    }
+
+    send: func(target-id: target, name: string, data: list<u8>)
+}

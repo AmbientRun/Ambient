@@ -7,6 +7,7 @@ use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_physics::physx::{Physics, PhysicsKey};
 use ambient_project::Manifest as ProjectManifest;
 use ambient_std::asset_url::AbsAssetUrl;
+use anyhow::Context;
 use futures::FutureExt;
 use itertools::Itertools;
 use pipelines::{FileCollection, ProcessCtx, ProcessCtxKey};
@@ -101,12 +102,15 @@ async fn build_rust_if_available(project_path: &Path, manifest: &ProjectManifest
     let rustc = ambient_rustc::Rust::get_system_installation().await?;
 
     for feature in &manifest.build.rust.feature_multibuild {
-        let Some(wasm_bytecode) = rustc.build(project_path, manifest.project.id.as_ref(), optimize, &[feature])? else { continue; };
-        let component_bytecode = ambient_wasm::shared::build::componentize(&wasm_bytecode)?;
+        for (path, bytecode) in rustc.build(project_path, manifest.project.id.as_ref(), optimize, &[feature])? {
+            let component_bytecode = ambient_wasm::shared::build::componentize(&bytecode)?;
 
-        let output_path = build_path.join(feature);
-        std::fs::create_dir_all(&output_path)?;
-        tokio::fs::write(output_path.join(format!("{}.wasm", manifest.project.id)), component_bytecode).await?;
+            let output_path = build_path.join(feature);
+            std::fs::create_dir_all(&output_path)?;
+
+            let filename = path.file_name().context("no filename")?;
+            tokio::fs::write(output_path.join(filename), component_bytecode).await?;
+        }
     }
 
     Ok(())

@@ -13,6 +13,8 @@ use components::{grid_side_length, grid_x, grid_y};
 
 #[main]
 pub async fn main() -> EventResult {
+    entity::wait_for_component(entity::synchronized_resources(), grid_side_length()).await;
+
     let side_length = entity::get_component(entity::synchronized_resources(), grid_side_length())
         .context("no side length on synchronized resources")?;
 

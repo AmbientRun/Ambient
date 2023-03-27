@@ -1,5 +1,9 @@
-use super::tree::{Tree, TreeNode, TreeNodeInner};
+use super::{
+    tree::{Tree, TreeNode},
+    util,
+};
 use ambient_project::{Component, IdentifierPath, IdentifierPathBuf};
+use proc_macro2::TokenStream;
 use quote::quote;
 
 pub fn tree_to_token_stream(
@@ -7,57 +11,31 @@ pub fn tree_to_token_stream(
     api_name: &syn::Path,
     project_path: IdentifierPath,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    to_token_stream(tree.root(), api_name, project_path)
+    to_token_stream(
+        tree.root(),
+        api_name,
+        &quote! {
+            use #api_name::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+        },
+        project_path,
+    )
 }
 
 fn to_token_stream(
     node: &TreeNode<Component>,
-    api_name: &syn::Path,
+    api_path: &syn::Path,
+    prelude: &TokenStream,
     project_path: IdentifierPath,
-) -> anyhow::Result<proc_macro2::TokenStream> {
-    let name = node.path.last().map(|s| s.as_ref()).unwrap_or_default();
-    match &node.inner {
-        TreeNodeInner::Namespace(ns) => {
-            let children = ns
-                .children
-                .values()
-                .map(|child| to_token_stream(child, api_name, project_path))
-                .collect::<Result<Vec<_>, _>>()?;
-
-            let prelude = quote! {
-                use #api_name::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
-            };
-
-            Ok(if name.is_empty() {
-                quote! {
-                    #prelude
-                    #(#children)*
-                }
-            } else {
-                let name_ident: syn::Path = syn::parse_str(name)?;
-                let doc_comment_fragment = ns.namespace.as_ref().map(|n| {
-                    let mut doc_comment = format!("**{}**", n.name);
-                    if !n.description.is_empty() {
-                        doc_comment += &format!(": {}", n.description.replace('\n', "\n\n"));
-                    }
-
-                    quote! {
-                        #[doc = #doc_comment]
-                    }
-                });
-                quote! {
-                    #doc_comment_fragment
-                    pub mod #name_ident {
-                        #prelude
-                        #(#children)*
-                    }
-                }
-            })
-        }
-        TreeNodeInner::Other(component) => {
+) -> anyhow::Result<TokenStream> {
+    util::tree_to_token_stream(
+        node,
+        api_path,
+        prelude,
+        |node, api_path, prelude| to_token_stream(node, api_path, prelude, project_path),
+        |name, component, api_path| {
             let name_ident: syn::Path = syn::parse_str(name)?;
             let name_uppercase_ident: syn::Path = syn::parse_str(&name.to_ascii_uppercase())?;
-            let component_ty = component.type_.to_token_stream(api_name, true)?;
+            let component_ty = component.type_.to_token_stream(api_path, true, false)?;
 
             let mut doc_comment = format!("**{}**", component.name);
 
@@ -86,6 +64,6 @@ fn to_token_stream(
                 #[doc = #doc_comment]
                 pub fn #name_ident() -> Component< #component_ty > { *#name_uppercase_ident }
             })
-        }
-    }
+        },
+    )
 }

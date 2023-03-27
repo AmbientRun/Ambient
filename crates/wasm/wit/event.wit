@@ -2,5 +2,4 @@ default interface event {
     use pkg.component.{entity}
 
     subscribe: func(name: string)
-    send: func(name: string, data: entity)
 }

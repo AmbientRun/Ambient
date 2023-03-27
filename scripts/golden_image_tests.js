@@ -26,23 +26,52 @@ if (argv.length > 2) {
     samples = samples.filter(([path]) => path.includes(argv[2]));
 }
 
+function process(jobs, nParallel = 5) {
+    return new Promise((resolve, reject) => {
+        let running = 0;
+        let index = 0;
+        let results = [];
+        function run() {
+            if (index >= jobs.length) {
+                if (running === 0) {
+                    resolve(results);
+                }
+                return;
+            }
+            running++;
+            let job = jobs[index++];
+            job().then(result => {
+                results.push(result);
+                running--;
+                run();
+            }).catch(err => {
+                reject(err);
+            });
+        }
+        for (let i = 0; i < nParallel; i++) {
+            run();
+        }
+    });
+}
+
 async function run() {
-    let errors = (await Promise.all(samples.map(async ([path, seconds], index) => {
-        console.log(path, "running..");
+    console.time("time");
+    let errors = (await process(samples.map(([path, seconds], index) => async () => {
+        console.timeLog("time", path, "running..");
         try {
             let res = await exec(`cargo run --release -- run ${path} --headless --golden-image-test ${seconds} --quic-interface-port ${9000 + index} --http-interface-port ${10000 + index}`);
-            console.log(path, "was ok");
+            console.timeLog("time", path, "\x1b[32mwas ok\x1b[0m");
         } catch (err) {
-            console.log(path, "failed");
+            console.timeLog("time", path, "\x1b[31mfailed\x1b[0m");
             return { path, err };
         }
     }))).filter(x => x);
     for (const { path, err } of errors) {
-        console.log(`===================================== ERRORS FOR ${path} =====================================`);
-        console.log(err);
+        console.timeLog("time", `===================================== ERRORS FOR ${path} =====================================`);
+        console.timeLog("time", err);
     }
     if (errors.length > 0) {
-        console.log("Exiting with status code 1");
+        console.timeLog("time", "Exiting with status code 1");
         exit(1);
     }
 }

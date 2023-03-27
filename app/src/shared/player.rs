@@ -1,4 +1,4 @@
-use std::{io::Write, str::FromStr, sync::Arc};
+use std::{str::FromStr, sync::Arc};
 
 use ambient_core::{
     player::{get_player_by_user_id, player},
@@ -12,14 +12,11 @@ use ambient_input::{
     event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels, keycode,
     mouse_button, player_prev_raw_input, player_raw_input, PlayerRawInput,
 };
-use ambient_network::{client::game_client, log_network_result, rpc::rpc_world_diff, DatagramHandlers};
+use ambient_network::{client::game_client, log_network_result, rpc::rpc_world_diff, PLAYER_INPUT_DATAGRAM_ID};
 use ambient_std::unwrap_log_err;
 use ambient_window_types::VirtualKeyCode;
-use byteorder::{BigEndian, WriteBytesExt};
 
-const PLAYER_INPUT_DATAGRAM_ID: u32 = 5;
-
-pub fn register_datagram_handler(handlers: &mut DatagramHandlers) {
+pub fn register_server_datagram_handler(handlers: &mut ambient_network::server::DatagramHandlers) {
     handlers.insert(
         PLAYER_INPUT_DATAGRAM_ID,
         Arc::new(|state, _assets, user_id, data| {
@@ -134,16 +131,12 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
             let cursor_position = *world.resource(cursor_position());
 
             runtime.spawn(async move {
-                let mut data = Vec::new();
-                data.write_u32::<BigEndian>(PLAYER_INPUT_DATAGRAM_ID).unwrap();
-
                 let msg = {
                     let mut input = input.lock();
                     input.cursor_position = cursor_position;
                     bincode::serialize(&*input).unwrap()
                 };
-                data.write_all(&msg).unwrap();
-                gc.connection.send_datagram(data.into()).ok();
+                ambient_network::send_datagram(&gc.connection, PLAYER_INPUT_DATAGRAM_ID, msg).ok();
             });
         }
     });
