@@ -28,7 +28,7 @@ use flume::Sender;
 use futures::StreamExt;
 use once_cell::sync::OnceCell;
 use parking_lot::Mutex;
-use quinn::{Endpoint, Incoming, NewConnection, RecvStream, SendStream};
+use quinn::{Endpoint, RecvStream, SendStream, Connection};
 use tokio::{
     io::AsyncReadExt,
     time::{interval, MissedTickBehavior},
@@ -242,8 +242,7 @@ impl ServerState {
 }
 
 pub struct GameServer {
-    _endpoint: Endpoint,
-    incoming: Incoming,
+    endpoint: Endpoint,
     pub port: u16,
     /// Shuts down the server if there are no players
     pub use_inactivity_shutdown: bool,
@@ -252,10 +251,10 @@ impl GameServer {
     pub async fn new_with_port(port: u16, use_inactivity_shutdown: bool) -> anyhow::Result<Self> {
         let server_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port);
 
-        let (endpoint, incoming) = create_server(server_addr)?;
+        let endpoint = create_server(server_addr)?;
 
         log::debug!("GameServer listening on port {}", port);
-        Ok(Self { _endpoint: endpoint, incoming, port, use_inactivity_shutdown })
+        Ok(Self { endpoint, port, use_inactivity_shutdown })
     }
     pub async fn new_with_port_in_range(port_range: Range<u16>, use_inactivity_shutdown: bool) -> anyhow::Result<Self> {
         for port in port_range {
@@ -279,7 +278,7 @@ impl GameServer {
         create_shutdown_systems: Arc<dyn Fn() -> SystemGroup<ShutdownEvent> + Sync + Send>,
         is_sync_component: Arc<dyn Fn(ComponentDesc, WorldStreamCompEvent) -> bool + Sync + Send>,
     ) -> SharedServerState {
-        let Self { mut incoming, .. } = self;
+        let Self { endpoint, .. } = self;
         let assets = world.resource(asset_cache()).clone();
         let world_stream_filter = WorldStreamFilter::new(ArchetypeFilter::new().excl(no_sync()), is_sync_component);
         let state = Arc::new(Mutex::new(ServerState::new(
@@ -308,7 +307,7 @@ impl GameServer {
         loop {
             tracing::debug_span!("Listening for incoming connections");
             tokio::select! {
-                Some(conn) = incoming.next() => {
+                Some(conn) = endpoint.accept() => {
                     log::debug!("Received connection");
 
                     let conn = match conn.await {
@@ -372,7 +371,7 @@ impl GameServer {
 
 /// Setup the protocol and enter the update loop for a new connected client
 #[tracing::instrument(skip_all)]
-fn run_connection(connection: NewConnection, state: SharedServerState, world_stream_filter: WorldStreamFilter, assets: AssetCache) {
+fn run_connection(connection: Connection, state: SharedServerState, world_stream_filter: WorldStreamFilter, assets: AssetCache) {
     let connection_id = friendly_id();
     let handle = Arc::new(OnceCell::new());
     handle
@@ -382,7 +381,7 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
                 let (diffs_tx, diffs_rx) = flume::unbounded();
                 let (stats_tx, stats_rx) = flume::unbounded();
 
-                let new_player_connection = connection.connection.clone();
+                let new_player_connection = connection.clone();
 
                 let on_init = |client: ClientInfo| {
                     let user_id = &client.user_id;
@@ -580,7 +579,7 @@ impl<'a> Drop for ClientInstance<'a> {
 
 impl<'a> ClientInstance<'a> {
     #[tracing::instrument(skip_all)]
-    pub async fn run(mut self, conn: NewConnection, server_info: ServerInfo) -> Result<(), NetworkError> {
+    pub async fn run(mut self, conn: Connection, server_info: ServerInfo) -> Result<(), NetworkError> {
         log::debug!("Connecting to client");
         let mut proto = ServerProtocol::new(conn, server_info).await?;
 
@@ -605,20 +604,20 @@ impl<'a> ClientInstance<'a> {
                     proto.stat_stream.send(&msg).instrument(span).await?;
                 }
 
-                Some(Ok(mut datagram)) = proto.conn.datagrams.next() => {
+                Ok(mut datagram) = proto.conn.read_datagram() => {
                     let _span = tracing::debug_span!("datagram").entered();
                     let data = datagram.split_off(4);
                     let handler_id = u32::from_be_bytes(datagram[0..4].try_into().unwrap());
                     tokio::task::block_in_place(|| (self.on_datagram)(&user_id, handler_id, data))
                 }
-                Some(Ok((tx, mut rx))) = proto.conn.bi_streams.next() => {
+                Ok((tx, mut rx)) = proto.conn.accept_bi() => {
                     let span = tracing::debug_span!("bistream");
                     let stream_id = rx.read_u32().instrument(span).await;
                     if let Ok(stream_id) = stream_id {
                         tokio::task::block_in_place(|| { (self.on_bi_stream)(&user_id, stream_id, tx, rx); })
                     }
                 }
-                Some(Ok(mut rx)) = proto.conn.uni_streams.next() => {
+                Ok(mut rx) = proto.conn.accept_uni() => {
                     let span = tracing::debug_span!("unistream");
                     let stream_id = rx.read_u32().instrument(span).await;
                     if let Ok(stream_id) = stream_id {

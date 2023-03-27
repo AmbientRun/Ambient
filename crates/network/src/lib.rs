@@ -13,7 +13,7 @@ use ambient_std::log_error;
 use bytes::Bytes;
 use futures::{Future, SinkExt, StreamExt};
 use quinn::{
-    ClientConfig, Connection, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, Incoming, NewConnection, ServerConfig,
+    ClientConfig, Connection, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, ServerConfig,
     TransportConfig,
 };
 use rand::Rng;
@@ -201,8 +201,8 @@ pub struct IncomingStream {
 impl IncomingStream {
     /// Accept a new uni-directional peer stream. Waits for the server to open a
     /// stream.
-    pub async fn accept_incoming(conn: &mut NewConnection) -> Result<Self, NetworkError> {
-        let stream = conn.uni_streams.next().await.ok_or(NetworkError::ConnectionClosed)??;
+    pub async fn accept_incoming(conn: &Connection) -> Result<Self, NetworkError> {
+        let stream = conn.accept_uni().await.map_err(NetworkError::from)?;
         Ok(Self::new(stream))
     }
 
@@ -274,16 +274,11 @@ pub async fn open_bincode_bi_stream_with_id(conn: &Connection, id: u32) -> Resul
     Ok((OutgoingStream::new(send), IncomingStream::new(recv)))
 }
 
-pub async fn next_bincode_bi_stream(conn: &mut NewConnection) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
-    match conn.bi_streams.next().await {
-        Some(res) => {
-            let (send, recv) = res?;
-            let send = OutgoingStream::new(send);
-            let recv = IncomingStream::new(recv);
-            Ok((send, recv))
-        }
-        None => Err(NetworkError::EndOfStream),
-    }
+pub async fn next_bincode_bi_stream(conn: &Connection) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
+    let (send, recv) = conn.accept_bi().await?;
+    let send = OutgoingStream::new(send);
+    let recv = IncomingStream::new(recv);
+    Ok((send, recv))
 }
 
 pub fn send_datagram(conn: &Connection, id: u32, mut payload: Vec<u8>) -> Result<(), NetworkError> {
@@ -316,7 +311,7 @@ pub fn create_client_endpoint_random_port() -> Option<Endpoint> {
                 transport.max_idle_timeout(Some(Duration::from_secs_f32(60.).try_into().unwrap()));
             }
             let mut client_config = ClientConfig::new(Arc::new(crypto));
-            client_config.transport = Arc::new(transport);
+            client_config.transport_config(Arc::new(transport));
 
             endpoint.set_default_client_config(client_config);
             return Some(endpoint);
@@ -325,7 +320,7 @@ pub fn create_client_endpoint_random_port() -> Option<Endpoint> {
     None
 }
 
-fn create_server(server_addr: SocketAddr) -> anyhow::Result<(Endpoint, Incoming)> {
+fn create_server(server_addr: SocketAddr) -> anyhow::Result<Endpoint> {
     let cert = Certificate(CERT.to_vec());
     let cert_key = PrivateKey(CERT_KEY.to_vec());
     let mut server_conf = ServerConfig::with_single_cert(vec![cert], cert_key)?;
