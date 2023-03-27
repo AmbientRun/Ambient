@@ -17,6 +17,7 @@
 - [Runtime](reference/runtime.md)
 - [Project](reference/project.md)
 - [Asset pipeline](reference/asset_pipeline.md)
+- [Networking](reference/networking.md)
 - [Terminology](reference/terminology.md)
 - [Common pitfalls](reference/common_pitfalls.md)
 
