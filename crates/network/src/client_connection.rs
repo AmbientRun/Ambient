@@ -14,6 +14,11 @@ fn map_to_network_error<T>(val: Result<T, ConnectionError>) -> Result<T, Network
 }
 
 impl ClientConnection {
+    pub fn fixme_unwrap(&self) -> Connection {
+        let Self::Direct(conn) = self;
+        conn.clone()
+    }
+
     pub async fn open_uni(&self) -> Result<SendStream, NetworkError> {
         match self {
             Self::Direct(conn) => map_to_network_error(conn.open_uni().await),
