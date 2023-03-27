@@ -97,6 +97,10 @@ pub struct HostCli {
     /// Defaults to 9000
     #[arg(long)]
     pub quic_interface_port: Option<u16>,
+
+    /// AmbientProxy address to use for NAT traversal
+    #[arg(long)]
+    proxy: Option<String>,
 }
 
 impl Cli {
