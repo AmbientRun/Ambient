@@ -24,3 +24,12 @@ cargo doc -p ambient_api --open --no-deps
 8. Ensure that `README.md` and `docs/src/introduction.md` match.
 9. Make a commit with the above changes, and create a tag `v0.X.Y`.
 10. Push to origin.
+
+## Developing
+
+### Golden image tests
+
+The golden image tests run on the ci and produce a `screenshot.png`, which is compared to the one in the repository.
+To update the golden images, run `node scripts/golden_image_tests.js`.
+To debug why the CI fails; download the screenshots.zip file from the build artifacts, and look in the logs of the ci.
+The screenshots.zip will show what image the ci produced.
