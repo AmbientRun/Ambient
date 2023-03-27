@@ -33,14 +33,14 @@ impl ClientConnection {
     pub async fn accept_uni(&self) -> Result<RecvStream, NetworkError> {
         match self {
             ClientConnection::Direct(conn) => Ok(conn.accept_uni().await?),
-            ClientConnection::Proxied(conn) => Ok(conn.accept_uni().await?),
+            ClientConnection::Proxied(conn) => Ok(conn.accept_uni().await),
         }
     }
 
     pub async fn accept_bi(&self) -> Result<(SendStream, RecvStream), NetworkError> {
         match self {
             ClientConnection::Direct(conn) => Ok(conn.accept_bi().await?),
-            ClientConnection::Proxied(conn) => Ok(conn.accept_bi().await?),
+            ClientConnection::Proxied(conn) => Ok(conn.accept_bi().await),
         }
     }
 
@@ -48,7 +48,7 @@ impl ClientConnection {
         match self {
             ClientConnection::Direct(conn) => next_bincode_bi_stream(conn).await,
             ClientConnection::Proxied(conn) => {
-                let (tx, rx) = conn.accept_bi().await?;
+                let (tx, rx) = conn.accept_bi().await;
                 Ok((OutgoingStream::new(tx), IncomingStream::new(rx)))
             }
         }
@@ -57,7 +57,7 @@ impl ClientConnection {
     pub async fn read_datagram(&self) -> Result<Bytes, NetworkError> {
         match self {
             ClientConnection::Direct(conn) => Ok(conn.read_datagram().await?),
-            ClientConnection::Proxied(conn) => Ok(conn.read_datagram().await?),
+            ClientConnection::Proxied(conn) => Ok(conn.read_datagram().await),
         }
     }
 }
