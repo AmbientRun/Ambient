@@ -2,3 +2,7 @@
 id = "fog"
 name = "Fog"
 version = "0.0.1"
+
+[messages]
+set_fog_density = { name = "Set fog density", description = "Sets the fog density.", fields = { value = { type = "F32" } } }
+set_fog_height_falloff = { name = "Set fog height falloff", description = "Sets the fog height falloff.", fields = { value = { type = "F32" } } }
