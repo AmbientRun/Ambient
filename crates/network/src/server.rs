@@ -256,7 +256,13 @@ impl GameServer {
         let endpoint = create_server(server_addr)?;
 
         let proxy = if let Some(proxy_endpoint) = proxy_endpoint {
-            Some(ambient_proxy::client::Client::connect(proxy_endpoint).await?)
+            match ambient_proxy::client::Client::connect_using_endpoint(proxy_endpoint, endpoint.clone()).await {
+                Ok(proxy_client) => Some(proxy_client),
+                Err(err) => {
+                    log::warn!("Failed to connect to proxy: {}", err);
+                    None
+                }
+            }
         } else {
             None
         };
@@ -320,9 +326,22 @@ impl GameServer {
             let state = state.clone();
             let world_stream_filter = world_stream_filter.clone();
             let assets = assets.clone();
-            tokio::spawn(proxy.run(Arc::new(move |_player_id, conn: ambient_proxy::client::ProxiedConnection| {
+
+            let on_endpoint_allocated = Arc::new(move |allocated_endpoint| {
+                log::info!("Allocated proxy endpoint: {:?}", allocated_endpoint);
+            });
+            let on_player_connected = Arc::new(move |_player_id, conn: ambient_proxy::client::ProxiedConnection| {
                 run_connection(conn.into(), state.clone(), world_stream_filter.clone(), assets.clone());
-            })));
+            });
+            let on_asset_requested = Arc::new(move |asset_key| {
+                log::debug!("Asset requested: {:?}", asset_key);
+                // TODO: store asset using controller
+            });
+            let mut controller = proxy.start(on_endpoint_allocated, on_player_connected, on_asset_requested);
+            log::info!("Allocating proxy endpoint");
+            if let Err(err) = controller.allocate_endpoint().await {
+                log::warn!("Failed to allocate proxy endpoint: {}", err);
+            }
         }
 
         loop {

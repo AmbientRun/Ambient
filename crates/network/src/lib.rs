@@ -325,15 +325,28 @@ pub fn create_client_endpoint_random_port() -> Option<Endpoint> {
 fn create_server(server_addr: SocketAddr) -> anyhow::Result<Endpoint> {
     let cert = Certificate(CERT.to_vec());
     let cert_key = PrivateKey(CERT_KEY.to_vec());
-    let mut server_conf = ServerConfig::with_single_cert(vec![cert], cert_key)?;
+    let mut server_conf = ServerConfig::with_single_cert(vec![cert.clone()], cert_key)?;
     let mut transport = TransportConfig::default();
     if std::env::var("AMBIENT_DISABLE_TIMEOUT").is_ok() {
         transport.max_idle_timeout(None);
     } else {
         transport.max_idle_timeout(Some(Duration::from_secs_f32(60.).try_into()?));
     }
-    server_conf.transport = Arc::new(transport);
-    Ok(Endpoint::server(server_conf, server_addr)?)
+    transport.keep_alive_interval(Some(Duration::from_secs_f32(1.)));
+    let transport = Arc::new(transport);
+    server_conf.transport = transport.clone();
+
+    let mut endpoint = Endpoint::server(server_conf, server_addr)?;
+
+    // Create client config for the server endpoint for proxying and hole punching
+    let mut roots = RootCertStore::empty();
+    roots.add(&cert).unwrap();
+    let crypto = rustls::ClientConfig::builder().with_safe_defaults().with_root_certificates(roots).with_no_client_auth();
+    let mut client_config = ClientConfig::new(Arc::new(crypto));
+    client_config.transport_config(transport);
+    endpoint.set_default_client_config(client_config);
+
+    Ok(endpoint)
 }
 
 pub const CERT: &[u8] = include_bytes!("./cert.der");
