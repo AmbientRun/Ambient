@@ -8,7 +8,7 @@ pub fn main_impl(
     ambient_toml: (Option<String>, String),
 ) -> anyhow::Result<TokenStream> {
     let mut item: syn::ItemFn = syn::parse2(item)?;
-    let fn_name = quote::format_ident!("async_{}", item.sig.ident);
+    let fn_name = quote::format_ident!("{}_impl", item.sig.ident);
     item.sig.ident = fn_name.clone();
 
     let is_async = item.sig.asyncness.is_some();
@@ -84,14 +84,14 @@ mod tests {
         let output = quote! {
             #prelude
 
-            pub async fn async_main() -> ResultEmpty {
+            pub async fn main_impl() -> ResultEmpty {
                 OkEmpty
             }
 
             #[no_mangle]
             #[doc(hidden)]
             pub fn main() {
-                ::ambient_api::global::run_async(async_main());
+                ::ambient_api::global::run_async(main_impl());
             }
         };
 
@@ -116,14 +116,14 @@ mod tests {
         let output = quote! {
             #prelude
 
-            pub fn async_main() -> ResultEmpty {
+            pub fn main_impl() -> ResultEmpty {
                 OkEmpty
             }
 
             #[no_mangle]
             #[doc(hidden)]
             pub fn main() {
-                ::ambient_api::global::run_async(async { async_main() });
+                ::ambient_api::global::run_async(async { main_impl() });
             }
         };
 
