@@ -12,7 +12,7 @@ use ambient_api::{
 use components::{grid_side_length, grid_x, grid_y};
 
 #[main]
-pub async fn main() -> EventResult {
+pub async fn main() -> ResultEmpty {
     entity::wait_for_component(entity::synchronized_resources(), grid_side_length()).await;
 
     let side_length = entity::get_component(entity::synchronized_resources(), grid_side_length())
@@ -32,7 +32,7 @@ pub async fn main() -> EventResult {
             translation(),
             Quat::from_rotation_z(time() * 0.2) * Vec3::ONE * 10.,
         );
-        EventOk
+        OkEmpty
     });
 
     query((cube(), grid_x(), grid_y()))
@@ -50,5 +50,5 @@ pub async fn main() -> EventResult {
             }
         });
 
-    EventOk
+    OkEmpty
 }

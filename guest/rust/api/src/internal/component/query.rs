@@ -2,7 +2,7 @@ use std::{future::Future, marker::PhantomData};
 
 use crate::{
     event,
-    global::{on, on_async, EntityId, EventOk},
+    global::{on, on_async, EntityId, OkEmpty},
     internal::{component::ComponentsTuple, conversion::FromBindgen, wit},
     prelude::OnHandle,
 };
@@ -273,7 +273,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryImpl<Components>
             if !results.is_empty() {
                 callback(results);
             }
-            EventOk
+            OkEmpty
         })
     }
     fn bind_async<R: Future<Output = ()>>(
@@ -285,7 +285,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryImpl<Components>
             if !results.is_empty() {
                 callback(results).await;
             }
-            EventOk
+            OkEmpty
         })
     }
 }

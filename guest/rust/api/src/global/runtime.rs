@@ -2,7 +2,7 @@ use std::{cell::RefCell, future::Future, rc::Rc, task::Poll};
 
 use crate::{
     components, entity,
-    global::EventResult,
+    global::ResultEmpty,
     internal::{component::Entity, executor::EXECUTOR, wit},
 };
 
@@ -40,7 +40,7 @@ impl OnceHandle {
 /// If you only want to be notified once, use [once].
 ///
 /// The `callback` is a `fn`. This can be a closure (e.g. `|args| { ... }`).
-pub fn on(event: &str, mut callback: impl FnMut(&Entity) -> EventResult + 'static) -> OnHandle {
+pub fn on(event: &str, mut callback: impl FnMut(&Entity) -> ResultEmpty + 'static) -> OnHandle {
     on_async(event, move |args| std::future::ready(callback(args)))
 }
 
@@ -49,7 +49,7 @@ pub fn on(event: &str, mut callback: impl FnMut(&Entity) -> EventResult + 'stati
 /// If you only want to be notified once, use [once_async].
 ///
 /// The `callback` is a `async fn`. This can be a closure (e.g. `|args| async move { ... }`).
-pub fn on_async<R: Future<Output = EventResult> + 'static>(
+pub fn on_async<R: Future<Output = ResultEmpty> + 'static>(
     event: &str,
     mut callback: impl FnMut(&Entity) -> R + 'static,
 ) -> OnHandle {
@@ -68,7 +68,7 @@ pub fn on_async<R: Future<Output = EventResult> + 'static>(
 /// If you want to be notified every time the `event` occurs, use [on].
 ///
 /// The `callback` is a `fn`. This can be a closure (e.g. `|args| { ... }`).
-pub fn once(event: &str, callback: impl FnOnce(&Entity) -> EventResult + 'static) -> OnceHandle {
+pub fn once(event: &str, callback: impl FnOnce(&Entity) -> ResultEmpty + 'static) -> OnceHandle {
     once_async(event, |args| std::future::ready(callback(args)))
 }
 
@@ -77,15 +77,18 @@ pub fn once(event: &str, callback: impl FnOnce(&Entity) -> EventResult + 'static
 /// If you want to be notified every time the `event` occurs, use [on_async].
 ///
 /// The `callback` is a `async fn`. This can be a closure (e.g. `|args| async move { ... }`).
-pub fn once_async<R: Future<Output = EventResult> + 'static>(
+pub fn once_async<R: Future<Output = ResultEmpty> + 'static>(
     event: &str,
     callback: impl FnOnce(&Entity) -> R + 'static,
 ) -> OnceHandle {
     wit::event::subscribe(event);
-    OnceHandle(event.to_string(), EXECUTOR.register_callback_once(
+    OnceHandle(
         event.to_string(),
-        Box::new(move |args| Box::pin(callback(args))),
-    ))
+        EXECUTOR.register_callback_once(
+            event.to_string(),
+            Box::new(move |args| Box::pin(callback(args))),
+        ),
+    )
 }
 
 /// Runs the given async block (`future`). This lets your module set up behaviour
@@ -103,7 +106,7 @@ pub fn once_async<R: Future<Output = EventResult> + 'static>(
 ///     EventOk
 /// });
 /// ```
-pub fn run_async(future: impl Future<Output = EventResult> + 'static) {
+pub fn run_async(future: impl Future<Output = ResultEmpty> + 'static) {
     EXECUTOR.spawn(Box::pin(future));
 }
 

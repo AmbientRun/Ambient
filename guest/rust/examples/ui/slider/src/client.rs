@@ -53,8 +53,8 @@ fn App(hooks: &mut Hooks) -> Element {
 }
 
 #[main]
-pub async fn main() -> EventResult {
+pub async fn main() -> ResultEmpty {
     App.el().spawn_interactive();
 
-    EventOk
+    OkEmpty
 }

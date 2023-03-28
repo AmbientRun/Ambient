@@ -9,9 +9,9 @@ use ambient_api::{
 };
 
 #[main]
-pub async fn main() -> EventResult {
+pub async fn main() -> ResultEmpty {
     messages::Hello::subscribe(|source, data| {
-        let Source::Remote { user_id } = source else { return EventOk; };
+        let Source::Remote { user_id } = source else { return OkEmpty; };
         println!("{user_id}: {:?}", data);
 
         let source_reliable = data.source_reliable;
@@ -34,7 +34,7 @@ pub async fn main() -> EventResult {
         )
         .send(Target::RemoteBroadcastReliable);
 
-        EventOk
+        OkEmpty
     });
 
     let handled = Arc::new(AtomicBool::new(false));
@@ -43,7 +43,7 @@ pub async fn main() -> EventResult {
         move |source, data| {
             handled.store(true, Ordering::SeqCst);
             println!("{source:?}: {data:?}");
-            EventOk
+            OkEmpty
         }
     });
     run_async(async move {
@@ -51,8 +51,8 @@ pub async fn main() -> EventResult {
             sleep(1.0).await;
             messages::Local::new("Hello!").send(Target::LocalBroadcast);
         }
-        EventOk
+        OkEmpty
     });
 
-    EventOk
+    OkEmpty
 }

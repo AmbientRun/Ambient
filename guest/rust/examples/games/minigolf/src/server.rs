@@ -92,7 +92,7 @@ fn make_text() -> Entity {
 }
 
 #[main]
-pub async fn main() -> EventResult {
+pub async fn main() -> ResultEmpty {
     create_environment();
 
     // Set the initial next player hue.
@@ -370,5 +370,5 @@ pub async fn main() -> EventResult {
         }
     });
 
-    EventOk
+    OkEmpty
 }

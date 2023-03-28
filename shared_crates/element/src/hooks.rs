@@ -169,7 +169,7 @@ impl<'a> Hooks<'a> {
             self.use_effect(event_name.to_string(), move |_, _| {
                 let listener = on(event_name, move |data| {
                     (handler.lock().as_ref().unwrap())(&mut World, data);
-                    ambient_guest_bridge::api::prelude::EventOk
+                    ambient_guest_bridge::api::prelude::OkEmpty
                 });
                 Box::new(|_| listener.stop())
             });

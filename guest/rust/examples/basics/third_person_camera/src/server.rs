@@ -20,7 +20,7 @@ use ambient_api::{
 use components::player_camera_ref;
 
 #[main]
-pub async fn main() -> EventResult {
+pub async fn main() -> ResultEmpty {
     Entity::new()
         .with_merge(make_transformable())
         .with_default(quad())
@@ -99,5 +99,5 @@ pub async fn main() -> EventResult {
             }
         });
 
-    EventOk
+    OkEmpty
 }

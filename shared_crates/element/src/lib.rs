@@ -199,13 +199,13 @@ impl Element {
     pub fn spawn_interactive(self) {
         use ambient_guest_bridge::api::{
             event,
-            prelude::{on, EventOk},
+            prelude::{on, OkEmpty},
         };
 
         let mut tree = self.spawn_tree();
         on(event::FRAME, move |_| {
             tree.update(&mut World);
-            EventOk
+            OkEmpty
         });
     }
 }

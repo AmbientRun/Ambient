@@ -5,7 +5,7 @@ use std::future::Future;
 pub fn run_async(_world: &ecs::World, future: impl Future<Output = ()> + Send + 'static) {
     ambient_api::prelude::run_async(async {
         future.await;
-        api::prelude::EventOk
+        api::prelude::OkEmpty
     });
 }
 pub async fn sleep(seconds: f32) {

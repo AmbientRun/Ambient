@@ -8,10 +8,10 @@ use std::{
 
 use once_cell::sync::Lazy;
 
-use crate::{global::EventResult, internal::component::Entity};
+use crate::{global::ResultEmpty, internal::component::Entity};
 use rand::random;
 
-type EventFuture = Pin<Box<dyn Future<Output = EventResult>>>;
+type EventFuture = Pin<Box<dyn Future<Output = ResultEmpty>>>;
 type EventCallbackFn = Box<dyn FnMut(&Entity) -> EventFuture>;
 type EventCallbackFnOnce = Box<dyn FnOnce(&Entity) -> EventFuture>;
 
@@ -28,7 +28,7 @@ static RAW_WAKER: RawWakerVTable = RawWakerVTable::new(
 pub(crate) struct Executor {
     waker: Waker,
     current: RefCell<Vec<EventFuture>>,
-    incoming: RefCell<Vec<Pin<Box<dyn Future<Output = EventResult>>>>>,
+    incoming: RefCell<Vec<Pin<Box<dyn Future<Output = ResultEmpty>>>>>,
     current_callbacks: RefCell<Callbacks>,
     incoming_callbacks: RefCell<Callbacks>,
     frame_state: RefCell<FrameState>,

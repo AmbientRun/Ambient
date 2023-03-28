@@ -51,7 +51,7 @@ fn gen_ball_velocity() -> Vec3 {
 }
 
 #[main]
-pub async fn main() -> EventResult {
+pub async fn main() -> ResultEmpty {
     // Spawn field, paddles and ball
     make_transformable()
         .with_default(cube())
@@ -216,8 +216,8 @@ pub async fn main() -> EventResult {
             }
         }
 
-        EventOk
+        OkEmpty
     });
 
-    EventOk
+    OkEmpty
 }

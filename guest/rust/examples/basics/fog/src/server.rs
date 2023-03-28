@@ -15,7 +15,7 @@ use ambient_api::{
 };
 
 #[main]
-pub async fn main() -> EventResult {
+pub async fn main() -> ResultEmpty {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
@@ -100,5 +100,5 @@ pub async fn main() -> EventResult {
         }
     });
 
-    EventOk
+    OkEmpty
 }

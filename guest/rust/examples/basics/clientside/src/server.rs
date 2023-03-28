@@ -7,7 +7,7 @@ use ambient_api::{
 use crate::components::{grid_side_length, grid_x, grid_y};
 
 #[main]
-pub async fn main() -> EventResult {
+pub async fn main() -> ResultEmpty {
     let side_length = 10;
     entity::add_component(
         entity::synchronized_resources(),
@@ -31,5 +31,5 @@ pub async fn main() -> EventResult {
         }
     }
 
-    EventOk
+    OkEmpty
 }

@@ -6,7 +6,7 @@ pub mod client {
         event,
         global::{on, EntityId},
         internal::{conversion::IntoBindgen, wit},
-        prelude::EventResult,
+        prelude::ResultEmpty,
     };
 
     use super::Message;
@@ -58,7 +58,7 @@ pub mod client {
     }
 
     /// Subscribes to a message.
-    pub fn subscribe<T: Message>(callback: impl FnMut(Source, T) -> EventResult + 'static) {
+    pub fn subscribe<T: Message>(callback: impl FnMut(Source, T) -> ResultEmpty + 'static) {
         let mut callback = Box::new(callback);
         on(
             &format!("{}/{}", event::MODULE_MESSAGE, T::id()),
@@ -86,7 +86,7 @@ pub mod client {
         }
 
         /// Subscribes to this [Message]. Wrapper around [self::subscribe].
-        fn subscribe(callback: impl FnMut(Source, Self) -> EventResult + 'static) {
+        fn subscribe(callback: impl FnMut(Source, Self) -> ResultEmpty + 'static) {
             self::subscribe(callback)
         }
     }
@@ -99,7 +99,7 @@ pub mod server {
     use crate::{
         components::core::wasm::message::{data, source_local, source_remote_user_id},
         event,
-        global::{on, EntityId, EventResult},
+        global::{on, EntityId, ResultEmpty},
         internal::{conversion::IntoBindgen, wit},
     };
 
@@ -173,7 +173,7 @@ pub mod server {
     }
 
     /// Subscribes to a message.
-    pub fn subscribe<T: Message>(callback: impl FnMut(Source, T) -> EventResult + 'static) {
+    pub fn subscribe<T: Message>(callback: impl FnMut(Source, T) -> ResultEmpty + 'static) {
         let mut callback = Box::new(callback);
         on(
             &format!("{}/{}", event::MODULE_MESSAGE, T::id()),
@@ -201,7 +201,7 @@ pub mod server {
         }
 
         /// Subscribes to this [Message]. Wrapper around [self::subscribe].
-        fn subscribe(callback: impl FnMut(Source, Self) -> EventResult + 'static) {
+        fn subscribe(callback: impl FnMut(Source, Self) -> ResultEmpty + 'static) {
             self::subscribe(callback)
         }
     }

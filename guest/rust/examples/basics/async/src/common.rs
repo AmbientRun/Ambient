@@ -1,6 +1,6 @@
 use ambient_api::prelude::*;
 
-pub async fn main() -> EventResult {
+pub async fn main() -> ResultEmpty {
     loop {
         println!("Hello, world! {} seconds have passed.", time());
         run_async(async {
@@ -11,7 +11,7 @@ pub async fn main() -> EventResult {
                 frametime() * 1_000.
             );
 
-            EventOk
+            OkEmpty
         });
         sleep(0.5).await;
     }
