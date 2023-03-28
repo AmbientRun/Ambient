@@ -4,9 +4,8 @@ pub mod client {
     use crate::{
         components::core::wasm::message::{data, source_local, source_remote},
         event,
-        global::{on, EntityId},
+        global::{on, CallbackReturn, EntityId},
         internal::{conversion::IntoBindgen, wit},
-        prelude::ResultEmpty,
     };
 
     use super::Message;
@@ -58,7 +57,9 @@ pub mod client {
     }
 
     /// Subscribes to a message.
-    pub fn subscribe<T: Message>(callback: impl FnMut(Source, T) -> ResultEmpty + 'static) {
+    pub fn subscribe<R: CallbackReturn, T: Message>(
+        callback: impl FnMut(Source, T) -> R + 'static,
+    ) {
         let mut callback = Box::new(callback);
         on(
             &format!("{}/{}", event::MODULE_MESSAGE, T::id()),
@@ -73,7 +74,8 @@ pub mod client {
 
                 let data = e.get(data()).expect("No data for incoming message");
 
-                callback(source, T::deserialize_message(&data)?)
+                callback(source, T::deserialize_message(&data)?).into_result()?;
+                Ok(())
             },
         );
     }
@@ -86,7 +88,7 @@ pub mod client {
         }
 
         /// Subscribes to this [Message]. Wrapper around [self::subscribe].
-        fn subscribe(callback: impl FnMut(Source, Self) -> ResultEmpty + 'static) {
+        fn subscribe<R: CallbackReturn>(callback: impl FnMut(Source, Self) -> R + 'static) {
             self::subscribe(callback)
         }
     }
@@ -99,7 +101,7 @@ pub mod server {
     use crate::{
         components::core::wasm::message::{data, source_local, source_remote_user_id},
         event,
-        global::{on, EntityId, ResultEmpty},
+        global::{on, CallbackReturn, EntityId, ResultEmpty},
         internal::{conversion::IntoBindgen, wit},
     };
 
@@ -173,7 +175,9 @@ pub mod server {
     }
 
     /// Subscribes to a message.
-    pub fn subscribe<T: Message>(callback: impl FnMut(Source, T) -> ResultEmpty + 'static) {
+    pub fn subscribe<R: CallbackReturn, T: Message>(
+        callback: impl FnMut(Source, T) -> R + 'static,
+    ) {
         let mut callback = Box::new(callback);
         on(
             &format!("{}/{}", event::MODULE_MESSAGE, T::id()),
@@ -188,7 +192,8 @@ pub mod server {
 
                 let data = e.get(data()).expect("No data for incoming message");
 
-                callback(source, T::deserialize_message(&data)?)
+                callback(source, T::deserialize_message(&data)?).into_result()?;
+                Ok(())
             },
         );
     }
@@ -201,7 +206,7 @@ pub mod server {
         }
 
         /// Subscribes to this [Message]. Wrapper around [self::subscribe].
-        fn subscribe(callback: impl FnMut(Source, Self) -> ResultEmpty + 'static) {
+        fn subscribe<R: CallbackReturn>(callback: impl FnMut(Source, Self) -> R + 'static) {
             self::subscribe(callback)
         }
     }

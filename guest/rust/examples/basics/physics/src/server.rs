@@ -17,7 +17,7 @@ use ambient_api::{
 };
 
 #[main]
-pub async fn main() -> ResultEmpty {
+pub async fn main() {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
@@ -50,7 +50,6 @@ pub async fn main() -> ResultEmpty {
     on(event::COLLISION, |c| {
         // TODO: play a sound instead
         println!("Bonk! {:?} collided", c.get(ids()).unwrap());
-        OkEmpty
     });
 
     on(event::FRAME, move |_| {
@@ -59,7 +58,6 @@ pub async fn main() -> ResultEmpty {
                 println!("The raycast hit the cube: {hit:?}");
             }
         }
-        OkEmpty
     });
 
     loop {

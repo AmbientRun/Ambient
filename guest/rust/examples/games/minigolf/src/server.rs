@@ -92,7 +92,7 @@ fn make_text() -> Entity {
 }
 
 #[main]
-pub fn main() -> ResultEmpty {
+pub fn main() {
     create_environment();
 
     // Set the initial next player hue.
@@ -369,6 +369,4 @@ pub fn main() -> ResultEmpty {
             });
         }
     });
-
-    OkEmpty
 }

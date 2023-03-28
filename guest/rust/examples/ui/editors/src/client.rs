@@ -82,8 +82,6 @@ fn App(hooks: &mut Hooks) -> Element {
 }
 
 #[main]
-pub fn main() -> ResultEmpty {
+pub fn main() {
     App.el().spawn_interactive();
-
-    OkEmpty
 }

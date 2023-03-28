@@ -12,11 +12,11 @@ use ambient_api::{
 use components::{grid_side_length, grid_x, grid_y};
 
 #[main]
-pub async fn main() -> ResultEmpty {
+pub async fn main() {
     entity::wait_for_component(entity::synchronized_resources(), grid_side_length()).await;
 
-    let side_length = entity::get_component(entity::synchronized_resources(), grid_side_length())
-        .context("no side length on synchronized resources")?;
+    let side_length =
+        entity::get_component(entity::synchronized_resources(), grid_side_length()).unwrap();
 
     let id = Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
@@ -32,7 +32,6 @@ pub async fn main() -> ResultEmpty {
             translation(),
             Quat::from_rotation_z(time() * 0.2) * Vec3::ONE * 10.,
         );
-        OkEmpty
     });
 
     query((cube(), grid_x(), grid_y()))
@@ -49,6 +48,4 @@ pub async fn main() -> ResultEmpty {
                 entity::set_component(id, color(), vec3(s, 1.0 - s, t).extend(1.0));
             }
         });
-
-    OkEmpty
 }

@@ -16,7 +16,7 @@ use components::cell;
 use palette::{FromColor, Hsl, Srgb};
 
 #[main]
-pub fn main() -> ResultEmpty {
+pub fn main() {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
@@ -86,8 +86,5 @@ pub fn main() -> ResultEmpty {
                 entity::set_component(cells[cell as usize], color(), player_color);
             }
         }
-        OkEmpty
     });
-
-    OkEmpty
 }

@@ -198,6 +198,7 @@ dependencies = [
  "anyhow",
  "byteorder",
  "data-encoding",
+ "futures",
  "glam 0.22.0",
  "once_cell",
  "paste",

@@ -4,7 +4,7 @@ use ambient_api::{
 };
 
 #[main]
-pub fn main() -> ResultEmpty {
+pub fn main() {
     query(player()).build().each_frame(|ids| {
         for (id, _) in ids {
             let Some((delta, _)) = player::get_raw_input_delta(id) else { continue; };
@@ -33,6 +33,4 @@ pub fn main() -> ResultEmpty {
             }
         }
     });
-
-    OkEmpty
 }

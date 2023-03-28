@@ -37,6 +37,7 @@ pub use ambient_api_macros::main;
 
 /// Re-exports from other crates.
 pub use anyhow;
+pub use futures;
 pub use glam;
 pub use once_cell;
 pub use rand;

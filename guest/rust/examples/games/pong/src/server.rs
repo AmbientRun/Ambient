@@ -51,7 +51,7 @@ fn gen_ball_velocity() -> Vec3 {
 }
 
 #[main]
-pub fn main() -> ResultEmpty {
+pub fn main() {
     // Spawn field, paddles and ball
     make_transformable()
         .with_default(cube())
@@ -215,9 +215,5 @@ pub fn main() -> ResultEmpty {
                 }
             }
         }
-
-        OkEmpty
     });
-
-    OkEmpty
 }

@@ -9,13 +9,12 @@ use ambient_api::{
 };
 
 #[main]
-pub fn main() -> ResultEmpty {
+pub fn main() {
     messages::Hello::new(false, "Hello, world from the client!").send(Target::RemoteUnreliable);
     messages::Hello::new(true, "Hello, world from the client!").send(Target::RemoteUnreliable);
 
     messages::Hello::subscribe(|source, data| {
         println!("{source:?}: {:?}", data);
-        OkEmpty
     });
 
     let handled = Arc::new(AtomicBool::new(false));
@@ -24,7 +23,6 @@ pub fn main() -> ResultEmpty {
         move |source, data| {
             handled.store(true, Ordering::SeqCst);
             println!("{source:?}: {data:?}");
-            OkEmpty
         }
     });
     run_async(async move {
@@ -32,8 +30,5 @@ pub fn main() -> ResultEmpty {
             sleep(1.0).await;
             messages::Local::new("Hello!").send(Target::LocalBroadcast);
         }
-        OkEmpty
     });
-
-    OkEmpty
 }

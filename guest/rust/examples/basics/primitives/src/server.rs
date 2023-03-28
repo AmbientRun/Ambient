@@ -11,7 +11,7 @@ use ambient_api::{
 };
 
 #[main]
-pub fn main() -> ResultEmpty {
+pub fn main() {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
@@ -49,6 +49,4 @@ pub fn main() -> ResultEmpty {
         .with(translation(), vec3(0., 0., 4.5))
         .with(color(), vec4(1., 1., 0., 1.))
         .spawn();
-
-    OkEmpty
 }

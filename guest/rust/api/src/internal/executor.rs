@@ -11,7 +11,7 @@ use once_cell::sync::Lazy;
 use crate::{global::ResultEmpty, internal::component::Entity};
 use rand::random;
 
-type EventFuture = Pin<Box<dyn Future<Output = ResultEmpty>>>;
+pub type EventFuture = Pin<Box<dyn Future<Output = ResultEmpty>>>;
 type EventCallbackFn = Box<dyn FnMut(&Entity) -> EventFuture>;
 type EventCallbackFnOnce = Box<dyn FnOnce(&Entity) -> EventFuture>;
 

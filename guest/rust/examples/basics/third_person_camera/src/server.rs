@@ -20,7 +20,7 @@ use ambient_api::{
 use components::player_camera_ref;
 
 #[main]
-pub fn main() -> ResultEmpty {
+pub fn main() {
     Entity::new()
         .with_merge(make_transformable())
         .with_default(quad())
@@ -98,6 +98,4 @@ pub fn main() -> ResultEmpty {
                 entity::set_component(camera_id, translation(), pos - forward * 4. + Vec3::Z * 2.);
             }
         });
-
-    OkEmpty
 }

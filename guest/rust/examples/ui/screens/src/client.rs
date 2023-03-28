@@ -85,8 +85,6 @@ fn SubScreen(hooks: &mut Hooks, on_back: Cb<dyn Fn() + Sync + Send>) -> Element 
 }
 
 #[main]
-pub fn main() -> ResultEmpty {
+pub fn main() {
     App.el().spawn_interactive();
-
-    OkEmpty
 }
