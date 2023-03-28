@@ -31,7 +31,8 @@ This changelog is manually updated. While an effort will be made to keep the [Un
 - A suite of UI examples have been added to demonstrate how to use the UI in guest code.
 - The `clientside` example shows how to use clientside WASM.
 - The `messaging` example shows how to message the server from the client and vice versa, and how to message another module with both broadcasts and directed messages.
-- A pong game example has been added.
+- The `pong` example implements a basic version of Pong to demonstrate a basic multiplayer game.
+- The `fog` example shows how to configure fog in the renderer for more atmospheric scenes.
 
 ### Changed
 
