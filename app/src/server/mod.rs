@@ -115,9 +115,7 @@ fn systems(_world: &mut World) -> SystemGroup {
             Box::new(WorldEventsSystem),
             Box::new(ambient_core::camera::camera_systems()),
             Box::new(ambient_physics::server_systems()),
-            Box::new(shared::player::server_systems()),
             Box::new(wasm::systems()),
-            Box::new(shared::player::server_systems_final()),
         ],
     )
 }
@@ -152,8 +150,7 @@ fn create_resources(assets: AssetCache) -> Entity {
     let unistream_handlers = HashMap::new();
     server_resources.set(ambient_network::server::uni_stream_handlers(), unistream_handlers);
 
-    let mut dgram_handlers = HashMap::new();
-    shared::player::register_server_datagram_handler(&mut dgram_handlers);
+    let dgram_handlers = HashMap::new();
     server_resources.set(ambient_network::server::datagram_handlers(), dgram_handlers);
 
     server_resources

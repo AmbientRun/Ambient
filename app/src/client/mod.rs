@@ -16,6 +16,7 @@ use glam::uvec2;
 
 use crate::{cli::RunCli, shared};
 
+pub mod player;
 mod wasm;
 
 /// Construct an app and enter the main client view
@@ -74,8 +75,7 @@ fn MainApp(
 
     FocusRoot::el([
         UICamera.el(),
-        shared::player::PlayerRawInputHandler.el(),
-        shared::player::PlayerDataUpload.el(),
+        player::PlayerRawInputHandler.el(),
         TitleUpdater.el(),
         WindowSized::el([GameClientView {
             server_addr,
@@ -191,6 +191,7 @@ fn systems() -> SystemGroup {
             Box::new(ambient_water::systems()),
             Box::new(ambient_physics::client_systems()),
             Box::new(wasm::systems()),
+            Box::new(player::systems_final()),
         ],
     )
 }

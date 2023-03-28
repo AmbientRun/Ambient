@@ -21,8 +21,8 @@ pub trait BindingsBound:
     + wit::entity::Host
     + wit::event::Host
     + wit::client_message::Host
+    + wit::client_player::Host
     + wit::server_message::Host
-    + wit::server_player::Host
     + wit::server_physics::Host
     + wit::server_asset::Host
     + Clone

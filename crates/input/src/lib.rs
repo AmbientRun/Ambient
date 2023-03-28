@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use ambient_ecs::{components, world_events, Debuggable, Description, Entity, Name, Networked, Store, System, SystemGroup};
+use ambient_ecs::{components, world_events, Debuggable, Description, Entity, Name, Networked, Resource, Store, System, SystemGroup};
 use glam::{vec2, Vec2};
 use serde::{Deserialize, Serialize};
 use winit::event::ModifiersState;
@@ -42,9 +42,9 @@ components!("input", {
     @[Debuggable, Networked, Store, Name["Mouse button"], Description["The mouse button. 0=left, 1=right, 2=middle."]]
     mouse_button: u32,
 
-    @[Debuggable]
+    @[Debuggable, Resource]
     player_raw_input: PlayerRawInput,
-    @[Debuggable]
+    @[Debuggable, Resource]
     player_prev_raw_input: PlayerRawInput,
 });
 
@@ -55,6 +55,10 @@ pub fn init_all_components() {
 
 pub fn event_systems() -> SystemGroup<Event<'static, ()>> {
     SystemGroup::new("inputs", vec![Box::new(InputSystem::new())])
+}
+
+pub fn resources() -> Entity {
+    Entity::new().with_default(player_raw_input()).with_default(player_prev_raw_input())
 }
 
 #[derive(Debug)]
