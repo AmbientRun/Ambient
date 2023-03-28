@@ -1,4 +1,7 @@
 [project]
 id = "skinmesh"
-name = "Skinmesh"
+sname = "Skinmesh"
 version = "0.0.1"
+
+[messages]
+set_controller = { name = "Set controller", description = "Sets the animation controller.", fields = { value = { type = "U32" } } }
