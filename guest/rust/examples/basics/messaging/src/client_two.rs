@@ -4,7 +4,7 @@ use ambient_api::{
 };
 
 #[main]
-pub async fn main() -> ResultEmpty {
+pub fn main() -> ResultEmpty {
     messages::Local::subscribe(move |source, data| {
         println!("{source:?}: {data:?}");
         if let Source::Local(id) = source {

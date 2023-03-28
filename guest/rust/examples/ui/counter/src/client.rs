@@ -21,7 +21,7 @@ fn App(hooks: &mut Hooks) -> Element {
 }
 
 #[main]
-pub async fn main() -> ResultEmpty {
+pub fn main() -> ResultEmpty {
     App.el().spawn_interactive();
 
     OkEmpty

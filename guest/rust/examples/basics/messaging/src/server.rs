@@ -9,7 +9,7 @@ use ambient_api::{
 };
 
 #[main]
-pub async fn main() -> ResultEmpty {
+pub fn main() -> ResultEmpty {
     messages::Hello::subscribe(|source, data| {
         let Source::Remote { user_id } = source else { return OkEmpty; };
         println!("{user_id}: {:?}", data);

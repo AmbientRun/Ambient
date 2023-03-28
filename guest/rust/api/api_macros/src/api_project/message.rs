@@ -28,7 +28,7 @@ fn to_token_stream(
         node,
         api_path,
         prelude,
-        |node, api_path, prelude| to_token_stream(node, api_path, prelude),
+        to_token_stream,
         |id, message, api_path| {
             let doc_comment = format!("**{}**: {}", message.name, message.description);
 

@@ -79,7 +79,7 @@ impl Executor {
             let mut new_futures = vec![];
             let mut callbacks = self.current_callbacks.borrow_mut();
             if let Some(callbacks) = callbacks.on.get_mut(event_name) {
-                for (_, callback) in callbacks {
+                for callback in callbacks.values_mut() {
                     new_futures.push(callback(components));
                 }
             }

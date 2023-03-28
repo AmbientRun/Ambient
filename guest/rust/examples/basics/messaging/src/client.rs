@@ -9,7 +9,7 @@ use ambient_api::{
 };
 
 #[main]
-pub async fn main() -> ResultEmpty {
+pub fn main() -> ResultEmpty {
     messages::Hello::new(false, "Hello, world from the client!").send(Target::RemoteUnreliable);
     messages::Hello::new(true, "Hello, world from the client!").send(Target::RemoteUnreliable);
 

@@ -10,14 +10,19 @@ pub fn main_impl(
     let mut item: syn::ItemFn = syn::parse2(item)?;
     let fn_name = quote::format_ident!("async_{}", item.sig.ident);
     item.sig.ident = fn_name.clone();
-    if item.sig.asyncness.is_none() {
-        anyhow::bail!("the `{fn_name}` function must be async");
-    }
+
+    let is_async = item.sig.asyncness.is_some();
 
     let spans = Span::call_site();
     let mut path = syn::Path::from(syn::Ident::new("ambient_api", spans));
     path.leading_colon = Some(syn::Token![::](spans));
     let project_boilerplate = api_project::implementation(ambient_toml, path.clone(), false, true)?;
+
+    let call_expr = if is_async {
+        quote! { #fn_name() }
+    } else {
+        quote! { async { #fn_name() } }
+    };
 
     Ok(quote! {
         #project_boilerplate
@@ -27,7 +32,7 @@ pub fn main_impl(
         #[no_mangle]
         #[doc(hidden)]
         pub fn main() {
-            #path::global::run_async(#fn_name());
+            #path::global::run_async(#call_expr);
         }
     })
 }
@@ -87,6 +92,38 @@ mod tests {
             #[doc(hidden)]
             pub fn main() {
                 ::ambient_api::global::run_async(async_main());
+            }
+        };
+
+        assert_eq!(
+            main_impl(body, (None, AMBIENT_TOML.to_owned()))
+                .unwrap()
+                .to_string(),
+            output.to_string()
+        );
+    }
+
+    #[test]
+    fn can_generate_impl_for_sync_fn() {
+        let body = quote! {
+            pub fn main() -> ResultEmpty {
+                OkEmpty
+            }
+        };
+
+        let prelude = prelude();
+
+        let output = quote! {
+            #prelude
+
+            pub fn async_main() -> ResultEmpty {
+                OkEmpty
+            }
+
+            #[no_mangle]
+            #[doc(hidden)]
+            pub fn main() {
+                ::ambient_api::global::run_async(async { async_main() });
             }
         };
 
