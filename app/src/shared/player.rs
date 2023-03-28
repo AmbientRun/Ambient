@@ -136,7 +136,7 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
                     input.cursor_position = cursor_position;
                     bincode::serialize(&*input).unwrap()
                 };
-                ambient_network::send_datagram(&gc.connection, PLAYER_INPUT_DATAGRAM_ID, msg).ok();
+                ambient_network::send_datagram(&gc.connection, PLAYER_INPUT_DATAGRAM_ID, msg).await.ok();
             });
         }
     });

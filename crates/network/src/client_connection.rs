@@ -1,4 +1,5 @@
 use ambient_proxy::client::ProxiedConnection;
+use async_trait::async_trait;
 use bytes::Bytes;
 use quinn::{Connection, RecvStream, SendStream};
 
@@ -20,13 +21,6 @@ impl ClientConnection {
         match self {
             ClientConnection::Direct(conn) => Ok(conn.open_uni().await?),
             ClientConnection::Proxied(conn) => Ok(conn.open_uni().await?),
-        }
-    }
-
-    pub async fn open_bincode_uni(&self) -> Result<OutgoingStream, NetworkError> {
-        match self {
-            ClientConnection::Direct(conn) => OutgoingStream::open_uni(&conn).await,
-            ClientConnection::Proxied(conn) => Ok(OutgoingStream::new(conn.open_uni().await?)),
         }
     }
 
@@ -71,5 +65,29 @@ impl From<Connection> for ClientConnection {
 impl From<ProxiedConnection> for ClientConnection {
     fn from(value: ProxiedConnection) -> Self {
         Self::Proxied(value)
+    }
+}
+
+#[async_trait]
+impl crate::connection::Connection for ClientConnection {
+    async fn open_uni(&self) -> Result<SendStream, NetworkError> {
+        match self {
+            ClientConnection::Direct(conn) => Ok(conn.open_uni().await?),
+            ClientConnection::Proxied(conn) => Ok(conn.open_uni().await?),
+        }
+    }
+
+    async fn open_bi(&self) -> Result<(SendStream, RecvStream), NetworkError> {
+        match self {
+            ClientConnection::Direct(conn) => Ok(conn.open_bi().await?),
+            ClientConnection::Proxied(conn) => Ok(conn.open_bi().await?),
+        }
+    }
+
+    async fn send_datagram(&self, data: Bytes) -> Result<(), NetworkError> {
+        match self {
+            ClientConnection::Direct(conn) => Ok(conn.send_datagram(data)?),
+            ClientConnection::Proxied(conn) => Ok(conn.send_datagram(data).await?),
+        }
     }
 }

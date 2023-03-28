@@ -42,6 +42,7 @@ once_cell = { workspace = true }
 byteorder = { workspace = true }
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
+async-trait = { workspace = true }
 quinn = { workspace = true }
 rustls = { workspace = true }
 tokio-util = "0.7"

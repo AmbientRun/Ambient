@@ -90,10 +90,10 @@ impl ServerProtocol {
         tx.send(&server_info).await?;
 
         // Great, now open all required streams
-        let mut diff_stream = conn.open_bincode_uni().await?;
+        let mut diff_stream = OutgoingStream::open_uni(&conn).await?;
         // Send "something" to notify the client of the new stream
         diff_stream.send(&()).await?;
-        let mut stat_stream = conn.open_bincode_uni().await?;
+        let mut stat_stream = OutgoingStream::open_uni(&conn).await?;
         stat_stream.send(&()).await?;
 
         Ok(Self { conn, diff_stream, stat_stream, client_info })

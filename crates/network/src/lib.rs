@@ -11,8 +11,9 @@ use ambient_ecs::{
 use ambient_rpc::{RpcError, RpcRegistry};
 use ambient_std::log_error;
 use bytes::Bytes;
+use connection::Connection;
 use futures::{Future, SinkExt, StreamExt};
-use quinn::{ClientConfig, Connection, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, ServerConfig, TransportConfig};
+use quinn::{ClientConfig, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, ServerConfig, TransportConfig};
 use rand::Rng;
 use rustls::{Certificate, PrivateKey, RootCertStore};
 use serde::{de::DeserializeOwned, Serialize};
@@ -24,6 +25,7 @@ pub type AsyncMutex<T> = tokio::sync::Mutex<T>;
 pub mod client;
 pub mod client_connection;
 pub mod client_game_state;
+pub mod connection;
 pub mod hooks;
 pub mod protocol;
 pub mod rpc;
@@ -126,7 +128,7 @@ pub async fn rpc_request<
     F: Fn(Args, Req) -> L + Send + Sync + Copy + 'static,
     L: Future<Output = Resp> + Send,
 >(
-    conn: &Connection,
+    conn: &quinn::Connection,
     reg: Arc<RpcRegistry<Args>>,
     func: F,
     req: Req,
@@ -164,9 +166,8 @@ pub enum NetworkError {
     SendDatagramError(#[from] quinn::SendDatagramError),
     #[error(transparent)]
     RpcError(#[from] RpcError),
-    // FIXME: change into a more specific ProxyError
     #[error(transparent)]
-    Other(#[from] anyhow::Error),
+    ProxyError(#[from] ambient_proxy::Error),
 }
 
 impl NetworkError {
@@ -202,7 +203,7 @@ pub struct IncomingStream {
 impl IncomingStream {
     /// Accept a new uni-directional peer stream. Waits for the server to open a
     /// stream.
-    pub async fn accept_incoming(conn: &Connection) -> Result<Self, NetworkError> {
+    pub async fn accept_incoming(conn: &quinn::Connection) -> Result<Self, NetworkError> {
         let stream = conn.accept_uni().await.map_err(NetworkError::from)?;
         Ok(Self::new(stream))
     }
@@ -235,10 +236,10 @@ pub struct OutgoingStream {
 }
 impl OutgoingStream {
     /// Are you sure you don't want [open_uni_with_id] instead?
-    pub async fn open_uni(conn: &Connection) -> Result<Self, NetworkError> {
+    pub async fn open_uni<C: Connection>(conn: &C) -> Result<Self, NetworkError> {
         Ok(OutgoingStream::new(conn.open_uni().await?))
     }
-    pub async fn open_uni_with_id(conn: &Connection, id: u32) -> Result<Self, NetworkError> {
+    pub async fn open_uni_with_id<C: Connection>(conn: &C, id: u32) -> Result<Self, NetworkError> {
         let mut stream = Self::open_uni(conn).await?;
         stream.stream.get_mut().write_u32(id).await?;
         Ok(stream)
@@ -264,29 +265,29 @@ impl OutgoingStream {
 }
 
 /// Are you sure you don't want [open_bincode_bi_stream_with_id] instead?
-pub async fn open_bincode_bi_stream(conn: &Connection) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
+pub async fn open_bincode_bi_stream<C: Connection>(conn: &C) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
     let (send, recv) = conn.open_bi().await?;
     Ok((OutgoingStream::new(send), IncomingStream::new(recv)))
 }
 
-pub async fn open_bincode_bi_stream_with_id(conn: &Connection, id: u32) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
+pub async fn open_bincode_bi_stream_with_id<C: Connection>(conn: &C, id: u32) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
     let (mut send, recv) = conn.open_bi().await?;
     send.write_u32(id).await?;
     Ok((OutgoingStream::new(send), IncomingStream::new(recv)))
 }
 
-pub async fn next_bincode_bi_stream(conn: &Connection) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
+pub async fn next_bincode_bi_stream(conn: &quinn::Connection) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
     let (send, recv) = conn.accept_bi().await?;
     let send = OutgoingStream::new(send);
     let recv = IncomingStream::new(recv);
     Ok((send, recv))
 }
 
-pub fn send_datagram(conn: &Connection, id: u32, mut payload: Vec<u8>) -> Result<(), NetworkError> {
+pub async fn send_datagram<C: crate::connection::Connection>(conn: &C, id: u32, mut payload: Vec<u8>) -> Result<(), NetworkError> {
     let mut bytes = Vec::new();
     byteorder::WriteBytesExt::write_u32::<byteorder::BigEndian>(&mut bytes, id)?;
     bytes.append(&mut payload);
-    conn.send_datagram(Bytes::from(bytes))?;
+    conn.send_datagram(Bytes::from(bytes)).await?;
 
     Ok(())
 }
