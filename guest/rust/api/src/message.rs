@@ -101,7 +101,7 @@ pub mod server {
     use crate::{
         components::core::wasm::message::{data, source_local, source_remote_user_id},
         event,
-        global::{on, CallbackReturn, EntityId, ResultEmpty},
+        global::{on, CallbackReturn, EntityId},
         internal::{conversion::IntoBindgen, wit},
     };
 
