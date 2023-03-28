@@ -12,11 +12,6 @@ pub enum ClientConnection {
 }
 
 impl ClientConnection {
-    pub fn fixme_unwrap(&self) -> Connection {
-        let Self::Direct(conn) = self else { panic!("Not a direct connection") };
-        conn.clone()
-    }
-
     pub async fn open_uni(&self) -> Result<SendStream, NetworkError> {
         match self {
             ClientConnection::Direct(conn) => Ok(conn.open_uni().await?),

@@ -246,7 +246,7 @@ fn send_networked(
     for connection in connections {
         message::send_networked(
             world,
-            connection.fixme_unwrap(),
+            connection,
             module_id,
             &name,
             &data,
