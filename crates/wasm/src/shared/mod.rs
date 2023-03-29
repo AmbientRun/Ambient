@@ -118,6 +118,7 @@ pub const MAXIMUM_ERROR_COUNT: usize = 5;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum MessageType {
     Info,
+    Warn,
     Error,
     Stdout,
     Stderr,
@@ -250,14 +251,14 @@ pub fn systems() -> SystemGroup {
                     let mut entity = Entity::new().with(message::data(), data.to_vec());
 
                     let mut source_id = None;
-                    match source {
+                    match &source {
                         Source::Network => entity.set(message::source_remote(), ()),
                         Source::NetworkUserId(user_id) => {
                             entity.set(message::source_remote_user_id(), user_id.to_owned())
                         }
                         Source::Module(id) => {
-                            source_id = Some(id);
-                            entity.set(message::source_local(), id);
+                            source_id = Some(*id);
+                            entity.set(message::source_local(), *id);
                         }
                     };
 
@@ -270,8 +271,15 @@ pub fn systems() -> SystemGroup {
                     if let Some(module_id) = module_id {
                         match world.get_cloned(module_id, module_state()) {
                             Ok(state) => run(world, module_id, state, &run_context),
-                            Err(err) => {
-                                update_errors(world, &[(module_id, err.to_string())]);
+                            Err(_) => {
+                                let module_name = world
+                                    .get_cloned(module_id, ambient_core::name())
+                                    .unwrap_or_default();
+
+                                world.resource(messenger()).as_ref()(
+                                    world, module_id, MessageType::Warn,
+                                    &format!("Received message for unloaded module {module_id} ({module_name}); message {name:?} from {source:?}")
+                                );
                             }
                         }
                     } else {
@@ -331,7 +339,6 @@ fn reload(world: &mut World, module_id: EntityId, bytecode: Option<ModuleBytecod
     }
 }
 
-#[allow(clippy::too_many_arguments)]
 fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
     let messenger = world.resource(messenger()).clone();
     let module_state_maker = world.resource(module_state_maker()).clone();
