@@ -5,7 +5,7 @@ use ambient_ecs::{EntityId, SystemGroup, World};
 use ambient_project::Identifier;
 use ambient_std::{
     asset_cache::SyncAssetKeyExt,
-    asset_url::{AssetUrl, ServerBaseUrlKey},
+    asset_url::{AssetUrl, ServerBaseUrlKey, ProxyBaseUrlKey},
 };
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
 use ambient_wasm::shared::{
@@ -55,7 +55,8 @@ pub fn initialize(world: &mut World, project_path: PathBuf, manifest: &ambient_p
             if target == "client" {
                 let relative_path = path.strip_prefix(&build_dir)?;
 
-                let base_url = ServerBaseUrlKey.get(world.resource(asset_cache()));
+                let assets = world.resource(asset_cache());
+                let base_url = ProxyBaseUrlKey.try_get(assets).unwrap_or_else(|| ServerBaseUrlKey.get(assets));
                 let bytecode_url = AssetUrl::parse(&relative_path.to_string_lossy())?.resolve(&base_url)?.to_string();
 
                 world.add_component(id, client_bytecode_from_url(), bytecode_url)?;

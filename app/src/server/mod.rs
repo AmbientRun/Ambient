@@ -12,7 +12,7 @@ use ambient_ecs::{
 };
 use ambient_network::{
     persistent_resources,
-    server::{ForkingEvent, GameServer, ShutdownEvent},
+    server::{ForkingEvent, GameServer, ShutdownEvent, ProxySettings},
     synced_resources,
 };
 use ambient_prefab::PrefabFromUrl;
@@ -43,12 +43,19 @@ pub fn start(
 ) -> u16 {
     log::info!("Creating server");
     let quic_interface_port = cli.host().unwrap().quic_interface_port;
-    let proxy_endpoint = cli.host().unwrap().proxy.clone();
+    let proxy_settings = if let Some(endpoint) = &cli.host().unwrap().proxy {
+        Some(ProxySettings {
+            endpoint: endpoint.clone(),
+            project_path: project_path.clone(),
+        })
+    } else {
+        None
+    };
     let server = runtime.block_on(async move {
         if let Some(port) = quic_interface_port {
-            return GameServer::new_with_port(port, false, proxy_endpoint).await.context("failed to create game server with port").unwrap();
+            return GameServer::new_with_port(port, false, proxy_settings).await.context("failed to create game server with port").unwrap();
         } else {
-            GameServer::new_with_port_in_range(QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10), false, proxy_endpoint)
+            GameServer::new_with_port_in_range(QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10), false, proxy_settings)
                 .await
                 .context("failed to create game server with port in range")
                 .unwrap()

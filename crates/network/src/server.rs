@@ -4,6 +4,7 @@ use std::{
     ops::Range,
     sync::Arc,
     time::Duration,
+    path::PathBuf,
 };
 
 use ambient_core::{
@@ -15,11 +16,12 @@ use ambient_ecs::{
     components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent, Resource, System, SystemGroup, World,
     WorldStream, WorldStreamCompEvent, WorldStreamFilter,
 };
+use ambient_proxy::client::AllocatedEndpoint;
 use ambient_rpc::RpcRegistry;
 use ambient_std::{
-    asset_cache::AssetCache,
+    asset_cache::{AssetCache, SyncAssetKeyExt},
     fps_counter::{FpsCounter, FpsSample},
-    friendly_id, log_result,
+    friendly_id, log_result, asset_url::{AbsAssetUrl, ProxyBaseUrlKey},
 };
 use ambient_sys::time::{Instant, SystemTime};
 use anyhow::bail;
@@ -242,6 +244,12 @@ impl ServerState {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct ProxySettings {
+    pub endpoint: String,
+    pub project_path: PathBuf,
+}
+
 pub struct GameServer {
     endpoint: Endpoint,
     pub port: u16,
@@ -250,13 +258,14 @@ pub struct GameServer {
     proxy: Option<ambient_proxy::client::Client>,
 }
 impl GameServer {
-    pub async fn new_with_port(port: u16, use_inactivity_shutdown: bool, proxy_endpoint: Option<String>) -> anyhow::Result<Self> {
+    pub async fn new_with_port(port: u16, use_inactivity_shutdown: bool, proxy_settings: Option<ProxySettings>) -> anyhow::Result<Self> {
         let server_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port);
 
         let endpoint = create_server(server_addr)?;
 
-        let proxy = if let Some(proxy_endpoint) = proxy_endpoint {
-            match ambient_proxy::client::Client::connect_using_endpoint(proxy_endpoint, endpoint.clone()).await {
+        let proxy = if let Some(ProxySettings { endpoint: proxy_addr, project_path }) = proxy_settings {
+            let assets_path = project_path.join("build");
+            match ambient_proxy::client::Client::connect_using_endpoint(proxy_addr, assets_path, endpoint.clone()).await {
                 Ok(proxy_client) => Some(proxy_client),
                 Err(err) => {
                     log::warn!("Failed to connect to proxy: {}", err);
@@ -273,10 +282,10 @@ impl GameServer {
     pub async fn new_with_port_in_range(
         port_range: Range<u16>,
         use_inactivity_shutdown: bool,
-        proxy_endpoint: Option<String>,
+        proxy_settings: Option<ProxySettings>,
     ) -> anyhow::Result<Self> {
         for port in port_range {
-            match Self::new_with_port(port, use_inactivity_shutdown, proxy_endpoint.clone()).await {
+            match Self::new_with_port(port, use_inactivity_shutdown, proxy_settings.clone()).await {
                 Ok(server) => {
                     return Ok(server);
                 }
@@ -322,22 +331,36 @@ impl GameServer {
         let mut inactivity_interval = interval(Duration::from_secs_f32(5.));
         let mut last_active = ambient_sys::time::Instant::now();
 
+        // start proxy connection
         if let Some(proxy) = proxy {
             let state = state.clone();
             let world_stream_filter = world_stream_filter.clone();
-            let assets = assets.clone();
 
-            let on_endpoint_allocated = Arc::new(move |allocated_endpoint| {
-                log::info!("Allocated proxy endpoint: {:?}", allocated_endpoint);
-            });
-            let on_player_connected = Arc::new(move |_player_id, conn: ambient_proxy::client::ProxiedConnection| {
-                run_connection(conn.into(), state.clone(), world_stream_filter.clone(), assets.clone());
-            });
-            let on_asset_requested = Arc::new(move |asset_key| {
-                log::debug!("Asset requested: {:?}", asset_key);
-                // TODO: store asset using controller
-            });
-            let mut controller = proxy.start(on_endpoint_allocated, on_player_connected, on_asset_requested);
+            let on_endpoint_allocated = {
+                let assets = assets.clone();
+                Arc::new(move |allocated_endpoint: AllocatedEndpoint| {
+                    log::debug!("Allocated proxy endpoint: {:?}", allocated_endpoint);
+                    log::info!("Proxy endpoint allocated: {} Proxy sees this server as: {}", allocated_endpoint.allocated_endpoint, allocated_endpoint.external_endpoint);
+                    // override the assets root url to point to proxy
+                    // TODO: we might want to give different endpoints to different players (depending how they connect)
+                    match AbsAssetUrl::parse(&allocated_endpoint.assets_root) {
+                        Ok(url) => {
+                            log::info!("Assets root url overridden to: {}", url);
+                            ProxyBaseUrlKey.insert(&assets, url);
+                        },
+                        Err(err) => log::warn!("Failed to parse assets root url ({}): {}", allocated_endpoint.assets_root, err),
+                    }
+                })
+            };
+            let on_player_connected = {
+                let assets = assets.clone();
+                Arc::new(move |_player_id, conn: ambient_proxy::client::ProxiedConnection| {
+                    log::debug!("Accepted connection via proxy");
+                    run_connection(conn.into(), state.clone(), world_stream_filter.clone(), assets.clone());
+                })
+            };
+
+            let mut controller = proxy.start(on_endpoint_allocated, on_player_connected);
             log::info!("Allocating proxy endpoint");
             if let Err(err) = controller.allocate_endpoint().await {
                 log::warn!("Failed to allocate proxy endpoint: {}", err);
