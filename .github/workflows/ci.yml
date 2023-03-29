@@ -79,6 +79,8 @@ jobs:
           args: run --workspace
       - name: Run guest/rust/api/api_macros tests
         run: cd guest/rust/api/api_macros && cargo nextest run
+      - name: Check that new-project works
+        run: cargo run -- new guest/rust/examples/basics/ci_test_project && cd guest/rust/examples/basics/ci_test_project && cargo check
       # Provides a history of the cache content builds over build to make troubleshooting easier
       - name: Display target directory content
         run: tree --du -h target
