@@ -298,8 +298,12 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                                 scale_factor,
                             )));
                             if let Some(bounds) = brush.glyph_bounds(&section) {
-                                world.set_if_changed(id, width(), (bounds.max.x / scale_factor).max(min_width)).unwrap();
-                                world.set_if_changed(id, height(), (bounds.max.y / scale_factor).max(min_height)).unwrap();
+                                if world.has_component(id, width()) {
+                                    world.set_if_changed(id, width(), (bounds.max.x / scale_factor).max(min_width)).unwrap();
+                                }
+                                if world.has_component(id, height()) {
+                                    world.set_if_changed(id, height(), (bounds.max.y / scale_factor).max(min_height)).unwrap();
+                                }
                             }
                             brush.queue(section);
                             brush.process_queued(
