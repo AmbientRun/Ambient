@@ -239,11 +239,11 @@ impl<T: ComponentValue> ComponentsTupleAppend<T> for () {
 }
 
 #[derive(Debug, Clone)]
-struct FrameQueryState {
+struct ArchetypesQueryState {
     archetypes: Vec<usize>,
     archetype_index: usize,
 }
-impl FrameQueryState {
+impl ArchetypesQueryState {
     fn new() -> Self {
         Self { archetypes: Vec::new(), archetype_index: 0 }
     }
@@ -268,7 +268,7 @@ pub struct QueryState {
     world_version: u64,
     entities: Vec<EntityAccessor>,
 
-    frame_query: FrameQueryState,
+    archetypes: ArchetypesQueryState,
 }
 impl QueryState {
     pub fn new() -> Self {
@@ -281,7 +281,7 @@ impl QueryState {
             entered: Default::default(),
             world_version: 0,
             entities: Vec::new(),
-            frame_query: FrameQueryState::new(),
+            archetypes: ArchetypesQueryState::new(),
         }
     }
     pub(super) fn get_change_reader(&mut self, arch: usize, comp: usize) -> &mut FramedEventsReader<EntityId> {
@@ -407,7 +407,7 @@ impl Query {
     }
     fn get_changed(&self, world: &World, state: &mut QueryState, components: &Vec<ComponentDesc>) {
         if !state.inited && !world.ignore_query_inits {
-            for arch in self.filter.iter_by_archetypes(&world.archetypes) {
+            for arch in state.archetypes.archetypes.clone().iter().map(|i| &world.archetypes[*i]) {
                 for comp in components {
                     if let Some(arch_comp) = arch.components.get(comp.index() as _) {
                         let events = &*arch_comp.changes.borrow();
@@ -418,7 +418,7 @@ impl Query {
             }
             return;
         }
-        for arch in self.filter.iter_by_archetypes(&world.archetypes) {
+        for arch in state.archetypes.archetypes.clone().iter().map(|i| &world.archetypes[*i]) {
             for comp in components {
                 if let Some(arch_comp) = arch.components.get(comp.index() as _) {
                     let read = state.get_change_reader(arch.id, comp.index() as _);
@@ -447,7 +447,7 @@ impl Query {
             return;
         }
         state.entities.clear();
-        for arch in self.filter.iter_by_archetypes(&world.archetypes) {
+        for arch in state.archetypes.archetypes.clone().iter().map(|i| &world.archetypes[*i]) {
             let read = state.get_movein_reader(arch.id);
             for (_, id) in read.iter(&arch.movein_events) {
                 if let Some(loc) = world.locs.get(id) {
@@ -473,7 +473,7 @@ impl Query {
         }
 
         state.entities.clear();
-        for arch in self.filter.iter_by_archetypes(&world.archetypes) {
+        for arch in state.archetypes.archetypes.clone().iter().map(|i| &world.archetypes[*i]) {
             let read = state.get_moveout_reader(arch.id);
             for (event_id, (id, _)) in read.iter(&arch.moveout_events) {
                 let next_matched = if let Some(loc) = world.locs.get(id) {
@@ -492,7 +492,7 @@ impl Query {
         if state.inited || world.ignore_query_inits {
             return false;
         }
-        for arch in self.filter.iter_by_archetypes(&world.archetypes) {
+        for arch in state.archetypes.archetypes.clone().iter().map(|i| &world.archetypes[*i]) {
             let read_in = state.get_movein_reader(arch.id);
             read_in.move_to_end(&arch.movein_events);
             let read_out = state.get_moveout_reader(arch.id);
@@ -500,13 +500,15 @@ impl Query {
         }
         true
     }
-    pub fn iter<'a>(&self, world: &'a World, state: Option<&'a mut QueryState>) -> Box<dyn Iterator<Item = EntityAccessor> + 'a> {
+    pub fn iter<'a>(&self, world: &'a World, mut state: Option<&'a mut QueryState>) -> Box<dyn Iterator<Item = EntityAccessor> + 'a> {
+        if let Some(state) = &mut state {
+            state.archetypes.update_archetypes(world, &self.filter);
+        }
         if let QueryEvent::Frame = &self.event {
             if let Some(state) = state {
-                state.frame_query.update_archetypes(world, &self.filter);
                 return Box::new(
                     state
-                        .frame_query
+                        .archetypes
                         .archetypes
                         .iter()
                         .flat_map(|i| world.archetypes[*i].entity_indices_to_ids.iter().map(move |&id| EntityAccessor::World { id })),
