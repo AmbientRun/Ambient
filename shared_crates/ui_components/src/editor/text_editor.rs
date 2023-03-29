@@ -1,4 +1,4 @@
-use std::{self, str::FromStr, time::Duration};
+use std::{self, str::FromStr};
 
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 
@@ -20,7 +20,11 @@ use ambient_guest_bridge::{
 use ambient_window_types::{CursorIcon, VirtualKeyCode};
 
 use super::{Editor, EditorOpts};
+#[cfg(feature = "native")]
+use ambient_sys::time::Instant;
 use itertools::Itertools;
+#[cfg(feature = "guest")]
+use std::time::Instant;
 
 #[element_component]
 pub fn TextEditor(
@@ -172,10 +176,15 @@ impl TextEditor {
 }
 
 #[element_component]
-pub fn Cursor(hooks: &mut Hooks) -> Element {
-    let (show, set_show) = hooks.use_state(true);
-    hooks.use_interval_deps(Duration::from_millis(500), false, show, move |show| set_show(!show));
-    if show {
+fn Cursor(_hooks: &mut Hooks) -> Element {
+    CursorInner::el(Instant::now())
+}
+#[element_component]
+fn CursorInner(hooks: &mut Hooks, render_time: Instant) -> Element {
+    let rerender = hooks.use_rerender_signal();
+    hooks.use_frame(move |_| rerender());
+    let delta = (Instant::now().duration_since(render_time).as_secs_f32() * 2.) as u32;
+    if delta % 2 == 0 {
         UIBase.el().children(vec![Rectangle.el().with(width(), 2.).with(height(), 13.).with(translation(), vec3(1., 0., 0.))])
     } else {
         Element::new()
