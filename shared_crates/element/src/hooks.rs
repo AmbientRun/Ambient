@@ -42,10 +42,25 @@ pub struct Hooks<'a> {
 }
 
 impl<'a> Hooks<'a> {
+    /// Preserve state between rerenders.
+    ///
+    /// The state can be mutated by the setter, which will re-render the origin [Element].
+    ///
+    /// **Note**: The new value set by the returned setter won't be visible until the next
+    /// re-render.
+    ///
+    /// ```rust,ignore
+    /// let (value, setter) = hooks.use_state(5);
+    ///
+    /// setter(7);
+    ///
+    /// println!("{value}"); // Prints 5
+    /// ```
     pub fn use_state<T: Clone + Debug + Send + 'static>(&mut self, init: T) -> (T, Setter<T>) {
         self.use_state_with(|_| init)
     }
 
+    /// See [`Hooks::use_state`]
     pub fn use_state_with<T: Clone + Debug + Send + 'static, F: FnOnce(&mut World) -> T>(&mut self, init: F) -> (T, Setter<T>) {
         let index = self.state_index;
         self.state_index += 1;
@@ -107,6 +122,7 @@ impl<'a> Hooks<'a> {
         })
     }
     #[allow(clippy::type_complexity)]
+    /// Consume a context of type `T` provided further up the tree.
     pub fn consume_context<T: Clone + Debug + Sync + Send + 'static>(&mut self) -> Option<(T, Setter<T>)> {
         let type_id = TypeId::of::<T>();
         if let Some(provider) = self.tree.get_context_provider(&self.instance_id, type_id) {
@@ -175,6 +191,7 @@ impl<'a> Hooks<'a> {
             });
         }
     }
+
     pub fn use_multi_event(&mut self, event_names: &[&str], func: impl Fn(&mut World, &Entity) + Sync + Send + 'static) {
         let func = Arc::new(func);
         for event_name in event_names {
@@ -183,11 +200,12 @@ impl<'a> Hooks<'a> {
         }
     }
 
-    /// Spawns the provided future as a task, and aborts the task when the
-    /// entity is despawned.
+    /// Spawns the provided future as a task.
+    ///
+    /// The task is aborted when this [Element] is removed.
     #[cfg(feature = "native")]
     #[tracing::instrument(level = "debug", skip_all)]
-    pub fn use_task<T: Future<Output = ()> + Send + 'static>(&mut self, task: impl FnOnce(&mut World) -> T + Send + Sync + 'static) {
+    pub fn use_task<Fut: Future<Output = ()> + Send + 'static>(&mut self, task: impl FnOnce(&mut World) -> Fut + Send + Sync + 'static) {
         if let Some(ref mut on_spawn) = self.on_spawn {
             let spawn = Box::new(move |w: &mut World| {
                 let task = task(w);
@@ -199,7 +217,11 @@ impl<'a> Hooks<'a> {
         }
     }
 
-    /// Use state dependent on a future
+    /// Use a value provided by a future.
+    ///
+    /// Returns `None` until  the future completes.
+    ///
+    /// Automatically triggers a re-render on this when the future completes.
     #[cfg(feature = "native")]
     pub fn use_async<T, U>(&mut self, future: impl FnOnce(&mut World) -> T + Send + Sync + 'static) -> Option<U>
     where
@@ -282,25 +304,37 @@ impl<'a> Hooks<'a> {
     }
 
     #[profiling::function]
+    /// Executes a function each frame.
     pub fn use_frame<F: Fn(&mut World) + Sync + Send + 'static>(&mut self, on_frame: F) {
         let mut env = self.environment.lock();
         let listeners = env.frame_listeners.entry(self.instance_id.clone()).or_insert_with(Vec::new);
         listeners.push(FrameListener(Arc::new(on_frame)));
     }
 
-    // Helpers
+    /// Provides an internally mutable state which is preserved between re-renders.
+    ///
+    /// **Note**: Locking the mutex and modifying the value won't cause a re-render, use
+    /// [`Hooks::use_rerender_signal`].
     pub fn use_ref_with<T: Send + Debug + 'static>(&mut self, init: impl FnOnce(&mut World) -> T) -> Arc<Mutex<T>> {
         self.use_state_with(|world| Arc::new(Mutex::new(init(world)))).0
     }
 
     #[profiling::function]
+
+    /// Memoized computation derived from the provided `dependencies`.
+    ///
+    /// **Note**: using external captures for the `create` function will not cause the memoized
+    /// value to be recalculated when the captures change.
+    ///
+    /// Prefer to route as much as possible through the `dependencies` which will be made available
+    /// as arguments in `compute`.
     pub fn use_memo_with<
         T: Clone + ComponentValue + Debug + Sync + Send + 'static,
         D: PartialEq + Clone + Sync + Send + Debug + 'static,
     >(
         &mut self,
         dependencies: D,
-        create: impl FnOnce(&mut World, &D) -> T,
+        compute: impl FnOnce(&mut World, &D) -> T,
     ) -> T {
         let value = self.use_ref_with(|_| None);
         let prev_deps = self.use_ref_with(|_| None);
@@ -309,7 +343,7 @@ impl<'a> Hooks<'a> {
         let mut value = value.lock();
 
         if prev_deps.as_ref() != Some(&dependencies) {
-            let value = value.insert(create(self.world, &dependencies)).clone();
+            let value = value.insert(compute(self.world, &dependencies)).clone();
             *prev_deps = Some(dependencies);
             value
         } else {
@@ -322,7 +356,6 @@ impl<'a> Hooks<'a> {
     ///
     /// The provided functions returns a function which is run when the part is
     /// removed or `use_effect` is run again.
-    ///
     pub fn use_effect<D: PartialEq + Debug + Sync + Send + 'static>(
         &mut self,
         dependencies: D,
