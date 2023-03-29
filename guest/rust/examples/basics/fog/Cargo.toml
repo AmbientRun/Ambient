@@ -10,12 +10,12 @@ version = { workspace = true }
 ambient_api = { workspace = true }
 
 [[bin]]
-name = "client_pong"
+name = "client_fog"
 path = "src/client.rs"
 required-features = ["client"]
 
 [[bin]]
-name = "server_pong"
+name = "server_fog"
 path = "src/server.rs"
 required-features = ["server"]
 
