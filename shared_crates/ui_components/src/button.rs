@@ -237,8 +237,10 @@ pub fn Button(
                     if hover && !disabled && is_pressed {
                         on_invoked.invoke(world, set_is_working.clone());
                     }
-                    set_is_pressed(false);
-                    is_pressed_immediate.store(false, Ordering::SeqCst);
+                    if is_pressed {
+                        set_is_pressed(false);
+                        is_pressed_immediate.store(false, Ordering::SeqCst);
+                    }
                 }
             }
         }
