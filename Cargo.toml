@@ -10,10 +10,9 @@ rust-version = "1.67"
 
 [workspace.dependencies]
 aho-corasick = "0.7.20"
-# TEMP: https://github.com/aclysma/profiling/pull/45
-profiling = { git = "https://github.com/philpax/profiling.git", features = [
+profiling = { version = "1.0.7", features = [
     "profile-with-puffin",
-] }
+] } # TEMP: https://github.com/aclysma/profiling/pull/45
 tracing = "0.1.35"
 tracing-tree = { version = "0.2" }
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
@@ -150,3 +149,6 @@ wasi-cap-std-sync = { git = "https://github.com/bytecodealliance/preview2-protot
 wit-bindgen-core = "0.4.0"
 wit-bindgen-rust = "0.4.0"
 wit-component = "0.7.3"
+
+[patch.crates-io]
+profiling = { git = "https://github.com/philpax/profiling.git" }

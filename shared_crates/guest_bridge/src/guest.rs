@@ -28,6 +28,9 @@ pub mod ecs {
         pub fn despawn(&self, entity_id: EntityId) -> bool {
             ambient_api::entity::despawn(entity_id)
         }
+        pub fn exists(&self, entity_id: EntityId) -> bool {
+            ambient_api::entity::exists(entity_id)
+        }
         pub fn set<T: ComponentValue>(&self, entity_id: EntityId, component: Component<T>, value: T) -> Result<(), ECSError> {
             // TODO: set_component needs to return errors
             ambient_api::entity::set_component(entity_id, component, value);

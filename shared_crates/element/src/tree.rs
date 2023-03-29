@@ -298,8 +298,8 @@ impl ElementTree {
                 } else {
                     let new_key = new_node.config.get_element_key(false);
                     let res = if old_key == new_key {
-                        self.migrate_instance(world, &old_node_id, node_parent, new_node);
-                        (old_node_entity, old_node_id.clone())
+                        let new_entity = self.migrate_instance(world, &old_node_id, node_parent, new_node);
+                        (new_entity, old_node_id.clone())
                     } else {
                         self.remove(world, &old_node_id);
                         self.create(world, new_node, node_parent, element_parent)
@@ -319,7 +319,7 @@ impl ElementTree {
         }
         res
     }
-    fn migrate_instance(&mut self, world: &mut World, instance_id: &str, node_parent: Option<EntityId>, new_node: Element) {
+    fn migrate_instance(&mut self, world: &mut World, instance_id: &str, node_parent: Option<EntityId>, new_node: Element) -> EntityId {
         {
             let instance = self.instances.get_mut(instance_id).unwrap();
             instance.config = new_node.config;
@@ -342,6 +342,7 @@ impl ElementTree {
             }
         }
         self.instances.get_mut(instance_id).unwrap().children = new_children;
+        entity
     }
     fn remove(&mut self, world: &mut World, instance_id: &str) {
         let mut instance = self.instances.remove(instance_id).unwrap();

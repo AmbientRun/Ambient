@@ -1,19 +1,16 @@
 use std::{sync::Arc, time::Duration};
 
 use ambient_core::hierarchy::children;
-use ambient_element::{Element, ElementComponent, ElementComponentExt, ElementTree, Hooks};
+use ambient_element::{element_component, Element, ElementComponentExt, ElementTree, Hooks};
 mod common;
 use common::*;
 
 #[test]
 fn single_root_element() {
-    #[derive(Debug, Clone)]
-    pub struct Root;
-    impl ElementComponent for Root {
-        fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-            *hooks.world.resource_mut(n_renders()) += 1;
-            Element::new().init_default(prop_a()).with(prop_b(), 3)
-        }
+    #[element_component]
+    fn Root(hooks: &mut Hooks) -> Element {
+        *hooks.world.resource_mut(n_renders()) += 1;
+        Element::new().init_default(prop_a()).with(prop_b(), 3)
     }
 
     let mut world = initialize();
@@ -30,26 +27,18 @@ fn single_root_element() {
 
 #[test]
 fn remove_super() {
-    #[derive(Debug, Clone)]
-    pub struct Root {
-        with_super: bool,
-    }
-    impl ElementComponent for Root {
-        fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-            if self.with_super {
-                Child.into()
-            } else {
-                Element::new()
-            }
+    #[element_component]
+    fn Root(_: &mut Hooks, with_super: bool) -> Element {
+        if with_super {
+            Child.into()
+        } else {
+            Element::new()
         }
     }
 
-    #[derive(Debug, Clone)]
-    pub struct Child;
-    impl ElementComponent for Child {
-        fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-            Element::new()
-        }
+    #[element_component]
+    fn Child(_: &mut Hooks) -> Element {
+        Element::new()
     }
 
     let mut world = initialize();
@@ -61,24 +50,14 @@ fn remove_super() {
 
 #[test]
 fn rerender_child() {
-    #[derive(Debug, Clone)]
-    pub struct Root {
-        child_id: u32,
-    }
-    impl ElementComponent for Root {
-        fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
-            Element::new().children(vec![Child { _id: self.child_id }.into()])
-        }
+    #[element_component]
+    fn Root(_: &mut Hooks, child_id: u32) -> Element {
+        Element::new().children(vec![Child { _id: child_id }.into()])
     }
 
-    #[derive(Debug, Clone)]
-    pub struct Child {
-        _id: u32,
-    }
-    impl ElementComponent for Child {
-        fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-            Element::new()
-        }
+    #[element_component]
+    fn Child(_: &mut Hooks, _id: u32) -> Element {
+        Element::new()
     }
 
     let mut world = initialize();
@@ -95,22 +74,16 @@ fn rerender_child() {
 
 #[test]
 fn parent_components_should_stay_after_child_rerenders() {
-    #[derive(Debug, Clone)]
-    pub struct Root;
-    impl ElementComponent for Root {
-        fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-            Child.el().with(prop_b(), 1).with(prop_a(), ())
-        }
+    #[element_component]
+    fn Root(_: &mut Hooks) -> Element {
+        Child.el().with(prop_b(), 1).with(prop_a(), ())
     }
 
-    #[derive(Debug, Clone)]
-    pub struct Child;
-    impl ElementComponent for Child {
-        fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-            let (state, set_state) = hooks.use_state(9);
-            hooks.world.add_component(hooks.world.resource_entity(), element_cb(), Arc::new(move || set_state(10))).unwrap();
-            Element::new().with(prop_b(), state as u32)
-        }
+    #[element_component]
+    fn Child(hooks: &mut Hooks) -> Element {
+        let (state, set_state) = hooks.use_state(9);
+        hooks.world.add_component(hooks.world.resource_entity(), element_cb(), Arc::new(move || set_state(10))).unwrap();
+        Element::new().with(prop_b(), state as u32)
     }
 
     let mut world = initialize();
@@ -125,20 +98,17 @@ fn parent_components_should_stay_after_child_rerenders() {
 
 #[tokio::test]
 async fn async_task() {
-    #[derive(Debug, Clone)]
-    pub struct Root;
-    impl ElementComponent for Root {
-        fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-            let (state, set_state) = hooks.use_state(0);
-            *hooks.world.resource_mut(n_renders()) += 1;
-            Element::new().on_spawned(move |_, _, _| {
-                let set_state = set_state.clone();
-                tokio::task::spawn(async move {
-                    tokio::time::sleep(Duration::from_millis(10)).await;
-                    set_state(state + 1);
-                });
-            })
-        }
+    #[element_component]
+    fn Root(hooks: &mut Hooks) -> Element {
+        let (state, set_state) = hooks.use_state(0);
+        *hooks.world.resource_mut(n_renders()) += 1;
+        Element::new().on_spawned(move |_, _, _| {
+            let set_state = set_state.clone();
+            tokio::task::spawn(async move {
+                tokio::time::sleep(Duration::from_millis(10)).await;
+                set_state(state + 1);
+            });
+        })
     }
 
     let mut world = initialize();
@@ -163,15 +133,12 @@ fn remove_element_renderer() {
 
 #[test]
 fn on_spawned() {
-    #[derive(Debug, Clone)]
-    pub struct Root;
-    impl ElementComponent for Root {
-        fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-            Element::new().init_default(prop_a()).on_spawned(|world, ent, _| {
-                // Should be possible to access components in on_spawned
-                world.get(ent, prop_a()).unwrap();
-            })
-        }
+    #[element_component]
+    fn Root(_: &mut Hooks) -> Element {
+        Element::new().init_default(prop_a()).on_spawned(|world, ent, _| {
+            // Should be possible to access components in on_spawned
+            world.get(ent, prop_a()).unwrap();
+        })
     }
 
     let mut world = initialize();
@@ -181,19 +148,13 @@ fn on_spawned() {
 
 #[test]
 fn changing_roots() {
-    #[derive(Debug, Clone)]
-    pub struct Testy;
-    impl ElementComponent for Testy {
-        fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-            Element::new()
-        }
+    #[element_component]
+    fn Testy(_: &mut Hooks) -> Element {
+        Element::new()
     }
-    #[derive(Debug, Clone)]
-    pub struct Testy2;
-    impl ElementComponent for Testy2 {
-        fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-            Element::new()
-        }
+    #[element_component]
+    fn Testy2(_: &mut Hooks) -> Element {
+        Element::new()
     }
 
     let mut world = initialize();

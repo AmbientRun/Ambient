@@ -3,7 +3,7 @@
         "cmd": "cargo run -p ambient"
     },
     "third-person-camera-release": {
-        "cmd": "cargo run --release -- run ./guest/rust/examples/basics/third_person_camera"
+        "cmd": "cargo run --features profile --release -- run ./guest/rust/examples/basics/third_person_camera"
     },
     "third-person-camera": {
         "cmd": "cargo run -- run ./guest/rust/examples/basics/third_person_camera"
