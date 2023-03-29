@@ -9,12 +9,12 @@ version = "0.0.1"
 ambient_api = { path = "../../../../guest/rust/api" }
 
 [[bin]]
-name = "client"
+name = "client_{{id}}"
 path = "src/client.rs"
 required-features = ["client"]
 
 [[bin]]
-name = "server"
+name = "server_{{id}}"
 path = "src/server.rs"
 required-features = ["server"]
 
