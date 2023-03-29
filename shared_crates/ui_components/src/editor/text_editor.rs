@@ -4,13 +4,13 @@ use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 
 use glam::*;
 
-use crate::{text::Text, use_focus, Rectangle, UIBase, UIExt};
+use crate::{layout::FlowRow, text::Text, use_focus, Rectangle, UIBase, UIExt};
 use ambient_cb::{cb, Cb};
 use ambient_event_types::{WINDOW_KEYBOARD_INPUT, WINDOW_RECEIVED_CHARACTER};
 use ambient_guest_bridge::{
     components::{
         input::{event_keyboard_input, event_received_character, keycode},
-        layout::{align_horizontal_end, fit_horizontal_none, fit_vertical_none, height, layout_flow, min_height, min_width, width},
+        layout::{height, min_height, min_width, width},
         rendering::color,
         text::text,
         transform::translation,
@@ -20,6 +20,7 @@ use ambient_guest_bridge::{
 use ambient_window_types::{CursorIcon, VirtualKeyCode};
 
 use super::{Editor, EditorOpts};
+use itertools::Itertools;
 
 #[element_component]
 pub fn TextEditor(
@@ -33,6 +34,8 @@ pub fn TextEditor(
     let (focused, set_focused) = use_focus(hooks);
     let (command, set_command) = hooks.use_state(false);
     let intermediate_value = hooks.use_ref_with(|_| value.clone());
+    let cursor_position = hooks.use_ref_with(|_| value.len());
+    let rerender = hooks.use_rerender_signal();
     *intermediate_value.lock() = value.clone();
     hooks.use_spawn({
         let set_focused = set_focused.clone();
@@ -47,6 +50,7 @@ pub fn TextEditor(
     hooks.use_multi_event(&[WINDOW_RECEIVED_CHARACTER, WINDOW_KEYBOARD_INPUT], {
         let value = intermediate_value.clone();
         let on_change = on_change.clone();
+        let cursor_position = cursor_position.clone();
         move |_world, event| {
             if let Some(c) = event.get_ref(event_received_character()) {
                 let c = c.chars().next().unwrap();
@@ -54,16 +58,20 @@ pub fn TextEditor(
                     return;
                 }
                 if c == '\u{7f}' || c == '\u{8}' {
-                    let mut value = value.lock();
-                    value.pop();
-                    on_change.0(value.clone());
+                    if *cursor_position.lock() > 0 {
+                        let mut value = value.lock();
+                        value.remove(*cursor_position.lock() - 1);
+                        *cursor_position.lock() -= 1;
+                        on_change.0(value.clone());
+                    }
                 } else if c == '\r' {
                     if let Some(on_submit) = on_submit.clone() {
                         on_submit.0(value.lock().clone());
                     }
                 } else if c != '\t' && c != '\n' && c != '\r' {
                     let mut value = value.lock();
-                    *value = format!("{value}{c}");
+                    value.insert(*cursor_position.lock(), c);
+                    *cursor_position.lock() += 1;
                     on_change.0(value.clone());
                 }
             } else if let Some(pressed) = event.get(event_keyboard_input()) {
@@ -87,9 +95,22 @@ pub fn TextEditor(
                                 #[cfg(not(target_os = "unknown"))]
                                 if let Some(paste) = ambient_guest_bridge::window::get_clipboard() {
                                     let mut value = value.lock();
-                                    *value = format!("{value}{paste}");
+                                    value.insert_str(*cursor_position.lock(), &paste);
+                                    *cursor_position.lock() += paste.len();
                                     on_change.0(value.clone());
                                 }
+                            }
+                        }
+                        VirtualKeyCode::Left => {
+                            if pressed && *cursor_position.lock() > 0 {
+                                *cursor_position.lock() -= 1;
+                                rerender();
+                            }
+                        }
+                        VirtualKeyCode::Right => {
+                            if pressed && *cursor_position.lock() < value.lock().len() {
+                                *cursor_position.lock() += 1;
+                                rerender();
                             }
                         }
                         _ => {}
@@ -98,14 +119,25 @@ pub fn TextEditor(
             }
         }
     });
-    let el = if value.is_empty() && !focused && placeholder.is_some() {
-        Text.el().with(text(), placeholder.unwrap()).with(color(), vec4(1., 1., 1., 0.2))
+    let (a, b) = value.split_at(*cursor_position.lock());
+    let [a, b]: [Element; 2] = [a, b]
+        .iter()
+        .map(|value| {
+            Text.el()
+                .with(text(), if password { value.chars().map(|_| '*').collect() } else { value.to_string() })
+                .with(color(), vec4(0.9, 0.9, 0.9, 1.))
+        })
+        .collect_vec()
+        .try_into()
+        .unwrap();
+
+    if focused {
+        FlowRow::el([a, Cursor.el(), b])
+    } else if value.is_empty() && !focused && placeholder.is_some() {
+        Text.el().with(text(), placeholder.clone().unwrap()).with(color(), vec4(1., 1., 1., 0.2))
     } else {
-        Text.el().with(text(), if password { value.chars().map(|_| '*').collect() } else { value }).with(color(), vec4(0.9, 0.9, 0.9, 1.))
+        FlowRow::el([a, b])
     }
-    .init_default(layout_flow())
-    .with_default(fit_horizontal_none())
-    .with_default(fit_vertical_none())
     .with(min_width(), 3.)
     .with(min_height(), 13.)
     .with_clickarea()
@@ -118,13 +150,7 @@ pub fn TextEditor(
     .on_mouse_leave(|world, _| {
         set_cursor(world, CursorIcon::Default);
     })
-    .el();
-
-    if focused {
-        el.with_default(align_horizontal_end()).children(vec![Cursor.el()])
-    } else {
-        el
-    }
+    .el()
 }
 
 impl TextEditor {
