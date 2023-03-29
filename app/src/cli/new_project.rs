@@ -126,5 +126,10 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
 }
 
 fn git_revision() -> Option<String> {
-    Some(git_version::git_version!().split('-').skip(3).next()?[1..].to_string())
+    let s = git_version::git_version!().split('-').collect::<Vec<_>>();
+    if s.len() == 2 {
+        Some(s[0].to_string())
+    } else {
+        Some(s.iter().skip(3).next()?[1..].to_string())
+    }
 }
