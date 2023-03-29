@@ -32,6 +32,8 @@ pub fn TextEditor(
 ) -> Element {
     let (focused, set_focused) = use_focus(hooks);
     let (command, set_command) = hooks.use_state(false);
+    let intermediate_value = hooks.use_ref_with(|_| value.clone());
+    *intermediate_value.lock() = value.clone();
     hooks.use_spawn({
         let set_focused = set_focused.clone();
         move |_| {
@@ -43,7 +45,7 @@ pub fn TextEditor(
         }
     });
     hooks.use_multi_event(&[WINDOW_RECEIVED_CHARACTER, WINDOW_KEYBOARD_INPUT], {
-        let value = value.clone();
+        let value = intermediate_value.clone();
         let on_change = on_change.clone();
         move |_world, event| {
             if let Some(c) = event.get_ref(event_received_character()) {
@@ -52,15 +54,17 @@ pub fn TextEditor(
                     return;
                 }
                 if c == '\u{7f}' || c == '\u{8}' {
-                    let mut value = value.clone();
+                    let mut value = value.lock();
                     value.pop();
-                    on_change.0(value);
+                    on_change.0(value.clone());
                 } else if c == '\r' {
                     if let Some(on_submit) = on_submit.clone() {
-                        on_submit.0(value.clone());
+                        on_submit.0(value.lock().clone());
                     }
                 } else if c != '\t' && c != '\n' && c != '\r' {
-                    on_change.0(format!("{value}{c}"))
+                    let mut value = value.lock();
+                    *value = format!("{value}{c}");
+                    on_change.0(value.clone());
                 }
             } else if let Some(pressed) = event.get(event_keyboard_input()) {
                 if !focused {
@@ -82,7 +86,9 @@ pub fn TextEditor(
                             if command && pressed {
                                 #[cfg(not(target_os = "unknown"))]
                                 if let Some(paste) = ambient_guest_bridge::window::get_clipboard() {
-                                    on_change.0(format!("{value}{paste}"));
+                                    let mut value = value.lock();
+                                    *value = format!("{value}{paste}");
+                                    on_change.0(value.clone());
                                 }
                             }
                         }
