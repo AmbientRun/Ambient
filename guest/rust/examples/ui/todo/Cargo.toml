@@ -13,12 +13,12 @@ ambient_guest_bridge = { workspace = true }
 ambient_ui_components = { workspace = true }
 
 [[bin]]
-name = "client"
+name = "client_todo"
 path = "src/client.rs"
 required-features = ["client"]
 
 [[bin]]
-name = "server"
+name = "server_todo"
 path = "src/server.rs"
 required-features = ["server"]
 
