@@ -258,11 +258,34 @@ impl ArchetypesQueryState {
 }
 
 #[derive(Debug, Clone)]
+pub(super) struct ChangeReaders(SparseVec<SparseVec<FramedEventsReader<EntityId>>>);
+impl ChangeReaders {
+    pub(super) fn get(&mut self, arch: usize, comp: usize) -> &mut FramedEventsReader<EntityId> {
+        let a = self.0.get_mut_or_insert_with(arch, SparseVec::new);
+        a.get_mut_or_insert_with(comp, FramedEventsReader::new)
+    }
+}
+#[derive(Debug, Clone)]
+struct MoveinReaders(SparseVec<FramedEventsReader<EntityId>>);
+impl MoveinReaders {
+    pub(super) fn get(&mut self, arch: usize) -> &mut FramedEventsReader<EntityId> {
+        self.0.get_mut_or_insert_with(arch, FramedEventsReader::new)
+    }
+}
+#[derive(Debug, Clone)]
+struct MoveoutReaders(SparseVec<FramedEventsReader<(EntityId, Entity)>>);
+impl MoveoutReaders {
+    pub(super) fn get(&mut self, arch: usize) -> &mut FramedEventsReader<(EntityId, Entity)> {
+        self.0.get_mut_or_insert_with(arch, FramedEventsReader::new)
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct QueryState {
     inited: bool,
-    change_readers: SparseVec<SparseVec<FramedEventsReader<EntityId>>>,
-    movein_readers: SparseVec<FramedEventsReader<EntityId>>,
-    moveout_readers: SparseVec<FramedEventsReader<(EntityId, Entity)>>,
+    pub(super) change_readers: ChangeReaders,
+    movein_readers: MoveinReaders,
+    moveout_readers: MoveoutReaders,
     ticker: u64,
     entered: HashSet<EntityId>,
     world_version: u64,
@@ -274,25 +297,15 @@ impl QueryState {
     pub fn new() -> Self {
         Self {
             inited: false,
-            change_readers: SparseVec::new(),
-            movein_readers: SparseVec::new(),
-            moveout_readers: SparseVec::new(),
+            change_readers: ChangeReaders(SparseVec::new()),
+            movein_readers: MoveinReaders(SparseVec::new()),
+            moveout_readers: MoveoutReaders(SparseVec::new()),
             ticker: 0,
             entered: Default::default(),
             world_version: 0,
             entities: Vec::new(),
             archetypes: ArchetypesQueryState::new(),
         }
-    }
-    pub(super) fn get_change_reader(&mut self, arch: usize, comp: usize) -> &mut FramedEventsReader<EntityId> {
-        let a = self.change_readers.get_mut_or_insert_with(arch, SparseVec::new);
-        a.get_mut_or_insert_with(comp, FramedEventsReader::new)
-    }
-    pub(super) fn get_movein_reader(&mut self, arch: usize) -> &mut FramedEventsReader<EntityId> {
-        self.movein_readers.get_mut_or_insert_with(arch, FramedEventsReader::new)
-    }
-    pub(super) fn get_moveout_reader(&mut self, arch: usize) -> &mut FramedEventsReader<(EntityId, Entity)> {
-        self.moveout_readers.get_mut_or_insert_with(arch, FramedEventsReader::new)
     }
     pub(super) fn prepare_for_query(&mut self, world: &World) {
         self.ticker = world.query_ticker.0.fetch_add(1, Ordering::SeqCst) + 1;
@@ -407,21 +420,21 @@ impl Query {
     }
     fn get_changed(&self, world: &World, state: &mut QueryState, components: &Vec<ComponentDesc>) {
         if !state.inited && !world.ignore_query_inits {
-            for arch in state.archetypes.archetypes.clone().iter().map(|i| &world.archetypes[*i]) {
+            for arch in state.archetypes.archetypes.iter().map(|i| &world.archetypes[*i]) {
                 for comp in components {
                     if let Some(arch_comp) = arch.components.get(comp.index() as _) {
                         let events = &*arch_comp.changes.borrow();
-                        let read = state.get_change_reader(arch.id, comp.index() as _);
+                        let read = state.change_readers.get(arch.id, comp.index() as _);
                         read.move_to_end(events);
                     }
                 }
             }
             return;
         }
-        for arch in state.archetypes.archetypes.clone().iter().map(|i| &world.archetypes[*i]) {
+        for arch in state.archetypes.archetypes.iter().map(|i| &world.archetypes[*i]) {
             for comp in components {
                 if let Some(arch_comp) = arch.components.get(comp.index() as _) {
-                    let read = state.get_change_reader(arch.id, comp.index() as _);
+                    let read = state.change_readers.get(arch.id, comp.index() as _);
                     let events = &*arch_comp.changes.borrow();
                     for (_, &entity_id) in read.iter(events) {
                         if let Some(loc) = world.locs.get(&entity_id) {
@@ -447,8 +460,8 @@ impl Query {
             return;
         }
         state.entities.clear();
-        for arch in state.archetypes.archetypes.clone().iter().map(|i| &world.archetypes[*i]) {
-            let read = state.get_movein_reader(arch.id);
+        for arch in state.archetypes.archetypes.iter().map(|i| &world.archetypes[*i]) {
+            let read = state.movein_readers.get(arch.id);
             for (_, id) in read.iter(&arch.movein_events) {
                 if let Some(loc) = world.locs.get(id) {
                     if loc.archetype == arch.id && state.entered.insert(*id) {
@@ -459,7 +472,7 @@ impl Query {
                     }
                 }
             }
-            let read = state.get_moveout_reader(arch.id);
+            let read = state.moveout_readers.get(arch.id);
             for (_, (id, _)) in read.iter(&arch.moveout_events) {
                 if !self.filter.matches_entity(world, *id) {
                     state.entered.remove(id);
@@ -473,8 +486,8 @@ impl Query {
         }
 
         state.entities.clear();
-        for arch in state.archetypes.archetypes.clone().iter().map(|i| &world.archetypes[*i]) {
-            let read = state.get_moveout_reader(arch.id);
+        for arch in state.archetypes.archetypes.iter().map(|i| &world.archetypes[*i]) {
+            let read = state.moveout_readers.get(arch.id);
             for (event_id, (id, _)) in read.iter(&arch.moveout_events) {
                 let next_matched = if let Some(loc) = world.locs.get(id) {
                     self.filter.matches(&world.archetypes[loc.archetype].active_components)
@@ -492,10 +505,10 @@ impl Query {
         if state.inited || world.ignore_query_inits {
             return false;
         }
-        for arch in state.archetypes.archetypes.clone().iter().map(|i| &world.archetypes[*i]) {
-            let read_in = state.get_movein_reader(arch.id);
+        for arch in state.archetypes.archetypes.iter().map(|i| &world.archetypes[*i]) {
+            let read_in = state.movein_readers.get(arch.id);
             read_in.move_to_end(&arch.movein_events);
-            let read_out = state.get_moveout_reader(arch.id);
+            let read_out = state.moveout_readers.get(arch.id);
             read_out.move_to_end(&arch.moveout_events);
         }
         true
