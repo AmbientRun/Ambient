@@ -173,5 +173,7 @@ jobs:
         env:
           CARGO_INCREMENTAL: 0
           RUSTFLAGS: "-C debuginfo=0"
+      - name: Check that new-project works
+        run: cargo run -- new guest/rust/examples/basics/ci_test_project && cd guest/rust/examples/basics/ci_test_project && cargo check
       - name: Build guest/rust
         run: cd guest/rust && cargo build --workspace

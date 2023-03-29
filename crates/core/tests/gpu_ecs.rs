@@ -102,8 +102,11 @@ impl TestCommon {
     }
 }
 
+static SERIAL_TEST: Mutex<()> = Mutex::new(());
+
 #[test]
 fn two_entities() {
+    let _guard = SERIAL_TEST.lock();
     tracing_subscriber::fmt::init();
     let rt = Runtime::new().unwrap();
     rt.block_on(async {
@@ -121,6 +124,7 @@ fn two_entities() {
 
 #[tokio::test]
 async fn gpu_ecs() {
+    let _guard = SERIAL_TEST.lock();
     tracing_subscriber::fmt::init();
     let mut test = TestCommon::new().await;
 
@@ -151,6 +155,7 @@ async fn gpu_ecs() {
 
 #[tokio::test]
 async fn gpu_update_with_gpu_run() {
+    let _guard = SERIAL_TEST.lock();
     tracing_subscriber::fmt::init();
     let mut test = TestCommon::new().await;
 
@@ -163,6 +168,7 @@ async fn gpu_update_with_gpu_run() {
 
 #[tokio::test]
 async fn gpu_update_with_gpu_ecs_update() {
+    let _guard = SERIAL_TEST.lock();
     tracing_subscriber::fmt::init();
     let mut test = TestCommon::new().await;
 

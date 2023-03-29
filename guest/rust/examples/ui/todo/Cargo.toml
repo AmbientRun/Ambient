@@ -1,0 +1,27 @@
+[package]
+name = "todo"
+
+edition = "2021"
+publish = false
+rust-version = { workspace = true }
+version = { workspace = true }
+
+[dependencies]
+ambient_api = { workspace = true }
+ambient_element = { workspace = true }
+ambient_guest_bridge = { workspace = true }
+ambient_ui_components = { workspace = true }
+
+[[bin]]
+name = "client_todo"
+path = "src/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "server_todo"
+path = "src/server.rs"
+required-features = ["server"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]
