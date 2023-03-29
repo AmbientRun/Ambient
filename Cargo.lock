@@ -771,6 +771,7 @@ dependencies = [
  "glam 0.22.0",
  "itertools",
  "log",
+ "profiling",
  "serde",
 ]
 

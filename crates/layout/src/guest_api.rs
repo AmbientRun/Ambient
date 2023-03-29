@@ -77,7 +77,7 @@ components!("layout", {
 
 pub fn systems() -> SystemGroup {
     SystemGroup::new(
-        "layout",
+        "layout/guest_api",
         vec![
             ensure_has_component(layout_flow(), layout(), Layout::Flow),
             ensure_has_component(layout_dock(), layout(), Layout::Dock),
@@ -102,20 +102,18 @@ pub fn systems() -> SystemGroup {
             ensure_has_component(docking_left(), docking(), Docking::Left),
             ensure_has_component(docking_right(), docking(), Docking::Right),
             ensure_has_component(docking_fill(), docking(), Docking::Fill),
-            query((margin_left().changed(), margin_right().changed(), margin_top().changed(), margin_bottom().changed())).to_system(
-                |q, world, qs, _| {
+            query((margin_left().changed(), margin_right().changed(), margin_top().changed(), margin_bottom().changed()))
+                .to_system_with_name("layout/guest_api/margin", |q, world, qs, _| {
                     for (id, (left, right, top, bottom)) in q.collect_cloned(world, qs) {
                         world.add_component(id, margin(), Borders { left, right, top, bottom }).unwrap();
                     }
-                },
-            ),
-            query((padding_left().changed(), padding_right().changed(), padding_top().changed(), padding_bottom().changed())).to_system(
-                |q, world, qs, _| {
+                }),
+            query((padding_left().changed(), padding_right().changed(), padding_top().changed(), padding_bottom().changed()))
+                .to_system_with_name("layout/guest_api/padding", |q, world, qs, _| {
                     for (id, (left, right, top, bottom)) in q.collect_cloned(world, qs) {
                         world.add_component(id, padding(), Borders { left, right, top, bottom }).unwrap();
                     }
-                },
-            ),
+                }),
         ],
     )
 }
