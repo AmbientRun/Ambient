@@ -12,7 +12,6 @@ use ambient_std::{
     cb,
     download_asset::{AssetResult, BytesFromUrl},
     mesh::*,
-    shapes::AABB,
     unwrap_log_warn,
 };
 use anyhow::Context;
@@ -20,7 +19,7 @@ use async_trait::async_trait;
 use glam::*;
 use glyph_brush::{
     ab_glyph::{Font, FontArc, PxScale, Rect},
-    BrushAction, BrushError, GlyphBrush, GlyphBrushBuilder, Section,
+    BrushAction, BrushError, GlyphBrush, GlyphBrushBuilder, GlyphCruncher, Section,
 };
 use log::info;
 use parking_lot::Mutex;
@@ -293,11 +292,16 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                     loop {
                         let process_result = {
                             let mut brush = glyph_brush.lock();
-                            brush.queue(Section::default().add_text(glyph_brush::Text::new(&text).with_scale(pt_size_to_px_scale(
+                            let section = Section::default().add_text(glyph_brush::Text::new(&text).with_scale(pt_size_to_px_scale(
                                 &*font,
                                 font_size,
                                 scale_factor,
-                            ))));
+                            )));
+                            if let Some(bounds) = brush.glyph_bounds(&section) {
+                                world.set_if_changed(id, width(), (bounds.max.x / scale_factor).max(min_width)).unwrap();
+                                world.set_if_changed(id, height(), (bounds.max.y / scale_factor).max(min_height)).unwrap();
+                            }
+                            brush.queue(section);
                             brush.process_queued(
                                 |rect, tex_data| {
                                     if !use_gpu {
@@ -326,12 +330,8 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                         };
                         match process_result {
                             Ok(BrushAction::Draw(vertices)) => {
-                                let has_verts = !vertices.is_empty();
                                 let cpu_mesh = mesh_from_glyph_vertices(vertices);
-                                let bounding = if has_verts { cpu_mesh.aabb().unwrap() } else { AABB::new(Vec3::ZERO, Vec3::ZERO) };
-                                let mut data = Entity::new()
-                                    .with(width(), (bounding.max.x / scale_factor).max(min_width))
-                                    .with(height(), (bounding.max.y / scale_factor).max(min_height));
+                                let mut data = Entity::new();
                                 if use_gpu {
                                     data.set(mesh(), GpuMesh::from_mesh(assets.clone(), &cpu_mesh));
                                 }
