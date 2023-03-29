@@ -202,7 +202,6 @@ pub fn main() {
     // Update the flag every frame.
     query(translation())
         .requires(ball())
-        .build()
         .each_frame(move |balls| {
             let flag_origin = entity::get_component(flag, origin()).unwrap_or_default();
             let mut min_distance = std::f32::MAX;
@@ -226,19 +225,12 @@ pub fn main() {
     // Update player cameras every frame.
     query(player_camera_state())
         .requires(active_camera())
-        .build()
-        .each_frame({
-            move |cameras| {
-                for (id, camera_state) in cameras {
-                    let camera_state = CameraState(camera_state);
-                    let (camera_translation, camera_rotation) = camera_state.get_transform();
-                    entity::set_component(id, translation(), camera_translation);
-                    entity::set_component(
-                        id,
-                        rotation(),
-                        camera_rotation * Quat::from_rotation_x(90.),
-                    );
-                }
+        .each_frame(move |cameras| {
+            for (id, camera_state) in cameras {
+                let camera_state = CameraState(camera_state);
+                let (camera_translation, camera_rotation) = camera_state.get_transform();
+                entity::set_component(id, translation(), camera_translation);
+                entity::set_component(id, rotation(), camera_rotation * Quat::from_rotation_x(90.));
             }
         });
 
@@ -287,7 +279,6 @@ pub fn main() {
         player_shoot_requested(),
     ))
     .requires(player())
-    .build()
     .each_frame(move |players| {
         for (
             player,

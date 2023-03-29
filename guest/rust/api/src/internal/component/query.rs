@@ -104,6 +104,14 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> GeneralQueryBuilder<C
             self.0.build_impl(&[], wit::component::QueryEvent::Frame),
         ))
     }
+
+    /// Consume this query and call `callback` (`fn`) each frame with the result of the query.
+    pub fn each_frame<R: CallbackReturn>(
+        self,
+        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + 'static,
+    ) -> OnHandle {
+        self.build().each_frame(callback)
+    }
 }
 
 /// An ECS query that will call a callback when entities containing components

@@ -81,19 +81,17 @@ pub fn main() {
     });
 
     // Ball movement
-    query((linear_velocity(), translation()))
-        .build()
-        .each_frame(move |balls| {
-            for (id, (velocity, position)) in balls {
-                let new_position = position + velocity;
-                entity::set_component(id, translation(), new_position);
-                if new_position.y.abs() > Y_BOUNDARY - BALL_RADIUS / 2. {
-                    // bounce from top and bottom "walls"
-                    let new_velocity = vec3(velocity.x, -velocity.y, velocity.z);
-                    entity::set_component(id, linear_velocity(), new_velocity);
-                }
+    query((linear_velocity(), translation())).each_frame(move |balls| {
+        for (id, (velocity, position)) in balls {
+            let new_position = position + velocity;
+            entity::set_component(id, translation(), new_position);
+            if new_position.y.abs() > Y_BOUNDARY - BALL_RADIUS / 2. {
+                // bounce from top and bottom "walls"
+                let new_velocity = vec3(velocity.x, -velocity.y, velocity.z);
+                entity::set_component(id, linear_velocity(), new_velocity);
             }
-        });
+        }
+    });
 
     messages::Input::subscribe(|source, msg| {
         let Source::Remote { user_id } = source else { return; };

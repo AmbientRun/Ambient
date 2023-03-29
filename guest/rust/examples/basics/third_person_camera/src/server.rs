@@ -78,7 +78,6 @@ pub fn main() {
         player_mouse_delta_x(),
         rotation(),
     ))
-    .build()
     .each_frame(move |players| {
         for (player_id, (_, camera_id, direction, mouse_delta_x, rot)) in players {
             let speed = 0.1;
