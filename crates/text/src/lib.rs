@@ -2,7 +2,7 @@ use core::fmt;
 use std::{num::NonZeroU32, ops::Deref, str::FromStr, sync::Arc};
 
 use ambient_core::{asset_cache, async_ecs::async_run, gpu, mesh, runtime, transform::*, window::window_scale_factor};
-use ambient_ecs::{components, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
+use ambient_ecs::{components, ensure_has_component, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
 use ambient_gpu::{mesh_buffer::GpuMesh, texture::Texture};
 use ambient_layout::{height, min_height, min_width, width};
 use ambient_renderer::{gpu_primitives_lod, gpu_primitives_mesh, material, primitives, renderer_shader, SharedMaterial};
@@ -191,21 +191,9 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
     SystemGroup::new(
         "ui/text",
         vec![
-            query(text()).excl(font_family()).to_system(|q, world, qs, _| {
-                for (id, _) in q.collect_cloned(world, qs) {
-                    world.add_component(id, font_family(), FontFamily::Default.to_string()).unwrap();
-                }
-            }),
-            query(text()).excl(font_style()).to_system(|q, world, qs, _| {
-                for (id, _) in q.collect_cloned(world, qs) {
-                    world.add_component(id, font_style(), format!("{:?}", FontStyle::Regular)).unwrap();
-                }
-            }),
-            query(text()).excl(font_size()).to_system(|q, world, qs, _| {
-                for (id, _) in q.collect_cloned(world, qs) {
-                    world.add_component(id, font_size(), 12.).unwrap();
-                }
-            }),
+            ensure_has_component(text(), font_family(), FontFamily::Default.to_string()),
+            ensure_has_component(text(), font_style(), format!("{:?}", FontStyle::Regular)),
+            ensure_has_component(text(), font_size(), 12.),
             query(()).incl(text()).excl(renderer_shader()).spawned().to_system(move |q, world, qs, _| {
                 if !use_gpu {
                     return;
