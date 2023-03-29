@@ -40,7 +40,15 @@ pub fn TextEditor(
     let intermediate_value = hooks.use_ref_with(|_| value.clone());
     let cursor_position = hooks.use_ref_with(|_| value.len());
     let rerender = hooks.use_rerender_signal();
-    *intermediate_value.lock() = value.clone();
+    {
+        let mut inter = intermediate_value.lock();
+        if *inter != value {
+            let mut cp = cursor_position.lock();
+            *cp = cp.min(value.len());
+        }
+        *inter = value.clone();
+    }
+
     hooks.use_spawn({
         let set_focused = set_focused.clone();
         move |_| {
