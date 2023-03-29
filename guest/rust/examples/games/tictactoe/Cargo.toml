@@ -11,7 +11,12 @@ ambient_api = {workspace = true}
 palette = "0.6.1"
 
 [[bin]]
-name = "tictactoe_server"
+name = "client_tictactoe"
+path = "src/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "server_tictactoe"
 path = "src/server.rs"
 required-features = ["server"]
 
