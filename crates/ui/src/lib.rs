@@ -48,7 +48,7 @@ pub use tabs::*;
 pub use throbber::*;
 
 pub use self::image::*;
-use ambient_event_types::{WINDOW_FOCUSED, WINDOW_MOUSE_MOTION};
+use ambient_shared_types::events::{WINDOW_FOCUSED, WINDOW_MOUSE_MOTION};
 use ambient_window_types::MouseButton;
 
 pub fn init_all_components() {

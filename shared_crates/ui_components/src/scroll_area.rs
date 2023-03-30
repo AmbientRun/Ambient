@@ -1,11 +1,11 @@
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_event_types::WINDOW_MOUSE_WHEEL;
 use ambient_guest_bridge::components::{
     ecs::children,
     input::{event_mouse_wheel, event_mouse_wheel_pixels},
     layout::{fit_horizontal_parent, layout_width_to_children},
     transform::translation,
 };
+use ambient_shared_types::events::WINDOW_MOUSE_WHEEL;
 use glam::vec3;
 
 use crate::{layout::Flow, UIBase};

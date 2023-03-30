@@ -2,6 +2,11 @@
 
 #[allow(clippy::all)]
 pub mod types{
+  #[used]
+  #[doc(hidden)]
+  #[cfg(target_arch = "wasm32")]
+  static __FORCE_SECTION_REF: fn() = super::__link_section;
+  
   #[repr(C)]
   #[derive(Copy, Clone)]
   pub struct Vec4 {
@@ -117,6 +122,11 @@ pub mod types{
 
 #[allow(clippy::all)]
 pub mod component{
+  #[used]
+  #[doc(hidden)]
+  #[cfg(target_arch = "wasm32")]
+  static __FORCE_SECTION_REF: fn() = super::__link_section;
+  
   pub type EntityId = super::types::EntityId;
   pub type Mat4 = super::types::Mat4;
   pub type Quat = super::types::Quat;
@@ -161,7 +171,7 @@ pub mod component{
     }
   }
   #[derive(Clone)]
-  pub enum VecValueResult{
+  pub enum VecValue{
     TypeEmpty(wit_bindgen::rt::vec::Vec::<()>),
     TypeBool(wit_bindgen::rt::vec::Vec::<bool>),
     TypeEntityId(wit_bindgen::rt::vec::Vec::<EntityId>),
@@ -181,149 +191,68 @@ pub mod component{
     TypeUvec3(wit_bindgen::rt::vec::Vec::<Uvec3>),
     TypeUvec4(wit_bindgen::rt::vec::Vec::<Uvec4>),
   }
-  impl core::fmt::Debug for VecValueResult {
+  impl core::fmt::Debug for VecValue {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
       match self {
-        VecValueResult::TypeEmpty(e) => {
-          f.debug_tuple("VecValueResult::TypeEmpty").field(e).finish()
+        VecValue::TypeEmpty(e) => {
+          f.debug_tuple("VecValue::TypeEmpty").field(e).finish()
         }
-        VecValueResult::TypeBool(e) => {
-          f.debug_tuple("VecValueResult::TypeBool").field(e).finish()
+        VecValue::TypeBool(e) => {
+          f.debug_tuple("VecValue::TypeBool").field(e).finish()
         }
-        VecValueResult::TypeEntityId(e) => {
-          f.debug_tuple("VecValueResult::TypeEntityId").field(e).finish()
+        VecValue::TypeEntityId(e) => {
+          f.debug_tuple("VecValue::TypeEntityId").field(e).finish()
         }
-        VecValueResult::TypeF32(e) => {
-          f.debug_tuple("VecValueResult::TypeF32").field(e).finish()
+        VecValue::TypeF32(e) => {
+          f.debug_tuple("VecValue::TypeF32").field(e).finish()
         }
-        VecValueResult::TypeF64(e) => {
-          f.debug_tuple("VecValueResult::TypeF64").field(e).finish()
+        VecValue::TypeF64(e) => {
+          f.debug_tuple("VecValue::TypeF64").field(e).finish()
         }
-        VecValueResult::TypeMat4(e) => {
-          f.debug_tuple("VecValueResult::TypeMat4").field(e).finish()
+        VecValue::TypeMat4(e) => {
+          f.debug_tuple("VecValue::TypeMat4").field(e).finish()
         }
-        VecValueResult::TypeI32(e) => {
-          f.debug_tuple("VecValueResult::TypeI32").field(e).finish()
+        VecValue::TypeI32(e) => {
+          f.debug_tuple("VecValue::TypeI32").field(e).finish()
         }
-        VecValueResult::TypeQuat(e) => {
-          f.debug_tuple("VecValueResult::TypeQuat").field(e).finish()
+        VecValue::TypeQuat(e) => {
+          f.debug_tuple("VecValue::TypeQuat").field(e).finish()
         }
-        VecValueResult::TypeString(e) => {
-          f.debug_tuple("VecValueResult::TypeString").field(e).finish()
+        VecValue::TypeString(e) => {
+          f.debug_tuple("VecValue::TypeString").field(e).finish()
         }
-        VecValueResult::TypeU8(e) => {
-          f.debug_tuple("VecValueResult::TypeU8").field(e).finish()
+        VecValue::TypeU8(e) => {
+          f.debug_tuple("VecValue::TypeU8").field(e).finish()
         }
-        VecValueResult::TypeU32(e) => {
-          f.debug_tuple("VecValueResult::TypeU32").field(e).finish()
+        VecValue::TypeU32(e) => {
+          f.debug_tuple("VecValue::TypeU32").field(e).finish()
         }
-        VecValueResult::TypeU64(e) => {
-          f.debug_tuple("VecValueResult::TypeU64").field(e).finish()
+        VecValue::TypeU64(e) => {
+          f.debug_tuple("VecValue::TypeU64").field(e).finish()
         }
-        VecValueResult::TypeVec2(e) => {
-          f.debug_tuple("VecValueResult::TypeVec2").field(e).finish()
+        VecValue::TypeVec2(e) => {
+          f.debug_tuple("VecValue::TypeVec2").field(e).finish()
         }
-        VecValueResult::TypeVec3(e) => {
-          f.debug_tuple("VecValueResult::TypeVec3").field(e).finish()
+        VecValue::TypeVec3(e) => {
+          f.debug_tuple("VecValue::TypeVec3").field(e).finish()
         }
-        VecValueResult::TypeVec4(e) => {
-          f.debug_tuple("VecValueResult::TypeVec4").field(e).finish()
+        VecValue::TypeVec4(e) => {
+          f.debug_tuple("VecValue::TypeVec4").field(e).finish()
         }
-        VecValueResult::TypeUvec2(e) => {
-          f.debug_tuple("VecValueResult::TypeUvec2").field(e).finish()
+        VecValue::TypeUvec2(e) => {
+          f.debug_tuple("VecValue::TypeUvec2").field(e).finish()
         }
-        VecValueResult::TypeUvec3(e) => {
-          f.debug_tuple("VecValueResult::TypeUvec3").field(e).finish()
+        VecValue::TypeUvec3(e) => {
+          f.debug_tuple("VecValue::TypeUvec3").field(e).finish()
         }
-        VecValueResult::TypeUvec4(e) => {
-          f.debug_tuple("VecValueResult::TypeUvec4").field(e).finish()
+        VecValue::TypeUvec4(e) => {
+          f.debug_tuple("VecValue::TypeUvec4").field(e).finish()
         }
       }
     }
   }
   #[derive(Clone)]
-  pub enum VecValueParam<'a,>{
-    TypeEmpty(&'a [()]),
-    TypeBool(&'a [bool]),
-    TypeEntityId(&'a [EntityId]),
-    TypeF32(&'a [f32]),
-    TypeF64(&'a [f64]),
-    TypeMat4(&'a [Mat4]),
-    TypeI32(&'a [i32]),
-    TypeQuat(&'a [Quat]),
-    TypeString(&'a [&'a str]),
-    TypeU8(&'a [u8]),
-    TypeU32(&'a [u32]),
-    TypeU64(&'a [u64]),
-    TypeVec2(&'a [Vec2]),
-    TypeVec3(&'a [Vec3]),
-    TypeVec4(&'a [Vec4]),
-    TypeUvec2(&'a [Uvec2]),
-    TypeUvec3(&'a [Uvec3]),
-    TypeUvec4(&'a [Uvec4]),
-  }
-  impl<'a,> core::fmt::Debug for VecValueParam<'a,> {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-      match self {
-        VecValueParam::TypeEmpty(e) => {
-          f.debug_tuple("VecValueParam::TypeEmpty").field(e).finish()
-        }
-        VecValueParam::TypeBool(e) => {
-          f.debug_tuple("VecValueParam::TypeBool").field(e).finish()
-        }
-        VecValueParam::TypeEntityId(e) => {
-          f.debug_tuple("VecValueParam::TypeEntityId").field(e).finish()
-        }
-        VecValueParam::TypeF32(e) => {
-          f.debug_tuple("VecValueParam::TypeF32").field(e).finish()
-        }
-        VecValueParam::TypeF64(e) => {
-          f.debug_tuple("VecValueParam::TypeF64").field(e).finish()
-        }
-        VecValueParam::TypeMat4(e) => {
-          f.debug_tuple("VecValueParam::TypeMat4").field(e).finish()
-        }
-        VecValueParam::TypeI32(e) => {
-          f.debug_tuple("VecValueParam::TypeI32").field(e).finish()
-        }
-        VecValueParam::TypeQuat(e) => {
-          f.debug_tuple("VecValueParam::TypeQuat").field(e).finish()
-        }
-        VecValueParam::TypeString(e) => {
-          f.debug_tuple("VecValueParam::TypeString").field(e).finish()
-        }
-        VecValueParam::TypeU8(e) => {
-          f.debug_tuple("VecValueParam::TypeU8").field(e).finish()
-        }
-        VecValueParam::TypeU32(e) => {
-          f.debug_tuple("VecValueParam::TypeU32").field(e).finish()
-        }
-        VecValueParam::TypeU64(e) => {
-          f.debug_tuple("VecValueParam::TypeU64").field(e).finish()
-        }
-        VecValueParam::TypeVec2(e) => {
-          f.debug_tuple("VecValueParam::TypeVec2").field(e).finish()
-        }
-        VecValueParam::TypeVec3(e) => {
-          f.debug_tuple("VecValueParam::TypeVec3").field(e).finish()
-        }
-        VecValueParam::TypeVec4(e) => {
-          f.debug_tuple("VecValueParam::TypeVec4").field(e).finish()
-        }
-        VecValueParam::TypeUvec2(e) => {
-          f.debug_tuple("VecValueParam::TypeUvec2").field(e).finish()
-        }
-        VecValueParam::TypeUvec3(e) => {
-          f.debug_tuple("VecValueParam::TypeUvec3").field(e).finish()
-        }
-        VecValueParam::TypeUvec4(e) => {
-          f.debug_tuple("VecValueParam::TypeUvec4").field(e).finish()
-        }
-      }
-    }
-  }
-  #[derive(Clone)]
-  pub enum OptionValueResult{
+  pub enum OptionValue{
     TypeEmpty(Option<()>),
     TypeBool(Option<bool>),
     TypeEntityId(Option<EntityId>),
@@ -343,149 +272,68 @@ pub mod component{
     TypeUvec3(Option<Uvec3>),
     TypeUvec4(Option<Uvec4>),
   }
-  impl core::fmt::Debug for OptionValueResult {
+  impl core::fmt::Debug for OptionValue {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
       match self {
-        OptionValueResult::TypeEmpty(e) => {
-          f.debug_tuple("OptionValueResult::TypeEmpty").field(e).finish()
+        OptionValue::TypeEmpty(e) => {
+          f.debug_tuple("OptionValue::TypeEmpty").field(e).finish()
         }
-        OptionValueResult::TypeBool(e) => {
-          f.debug_tuple("OptionValueResult::TypeBool").field(e).finish()
+        OptionValue::TypeBool(e) => {
+          f.debug_tuple("OptionValue::TypeBool").field(e).finish()
         }
-        OptionValueResult::TypeEntityId(e) => {
-          f.debug_tuple("OptionValueResult::TypeEntityId").field(e).finish()
+        OptionValue::TypeEntityId(e) => {
+          f.debug_tuple("OptionValue::TypeEntityId").field(e).finish()
         }
-        OptionValueResult::TypeF32(e) => {
-          f.debug_tuple("OptionValueResult::TypeF32").field(e).finish()
+        OptionValue::TypeF32(e) => {
+          f.debug_tuple("OptionValue::TypeF32").field(e).finish()
         }
-        OptionValueResult::TypeF64(e) => {
-          f.debug_tuple("OptionValueResult::TypeF64").field(e).finish()
+        OptionValue::TypeF64(e) => {
+          f.debug_tuple("OptionValue::TypeF64").field(e).finish()
         }
-        OptionValueResult::TypeMat4(e) => {
-          f.debug_tuple("OptionValueResult::TypeMat4").field(e).finish()
+        OptionValue::TypeMat4(e) => {
+          f.debug_tuple("OptionValue::TypeMat4").field(e).finish()
         }
-        OptionValueResult::TypeI32(e) => {
-          f.debug_tuple("OptionValueResult::TypeI32").field(e).finish()
+        OptionValue::TypeI32(e) => {
+          f.debug_tuple("OptionValue::TypeI32").field(e).finish()
         }
-        OptionValueResult::TypeQuat(e) => {
-          f.debug_tuple("OptionValueResult::TypeQuat").field(e).finish()
+        OptionValue::TypeQuat(e) => {
+          f.debug_tuple("OptionValue::TypeQuat").field(e).finish()
         }
-        OptionValueResult::TypeString(e) => {
-          f.debug_tuple("OptionValueResult::TypeString").field(e).finish()
+        OptionValue::TypeString(e) => {
+          f.debug_tuple("OptionValue::TypeString").field(e).finish()
         }
-        OptionValueResult::TypeU8(e) => {
-          f.debug_tuple("OptionValueResult::TypeU8").field(e).finish()
+        OptionValue::TypeU8(e) => {
+          f.debug_tuple("OptionValue::TypeU8").field(e).finish()
         }
-        OptionValueResult::TypeU32(e) => {
-          f.debug_tuple("OptionValueResult::TypeU32").field(e).finish()
+        OptionValue::TypeU32(e) => {
+          f.debug_tuple("OptionValue::TypeU32").field(e).finish()
         }
-        OptionValueResult::TypeU64(e) => {
-          f.debug_tuple("OptionValueResult::TypeU64").field(e).finish()
+        OptionValue::TypeU64(e) => {
+          f.debug_tuple("OptionValue::TypeU64").field(e).finish()
         }
-        OptionValueResult::TypeVec2(e) => {
-          f.debug_tuple("OptionValueResult::TypeVec2").field(e).finish()
+        OptionValue::TypeVec2(e) => {
+          f.debug_tuple("OptionValue::TypeVec2").field(e).finish()
         }
-        OptionValueResult::TypeVec3(e) => {
-          f.debug_tuple("OptionValueResult::TypeVec3").field(e).finish()
+        OptionValue::TypeVec3(e) => {
+          f.debug_tuple("OptionValue::TypeVec3").field(e).finish()
         }
-        OptionValueResult::TypeVec4(e) => {
-          f.debug_tuple("OptionValueResult::TypeVec4").field(e).finish()
+        OptionValue::TypeVec4(e) => {
+          f.debug_tuple("OptionValue::TypeVec4").field(e).finish()
         }
-        OptionValueResult::TypeUvec2(e) => {
-          f.debug_tuple("OptionValueResult::TypeUvec2").field(e).finish()
+        OptionValue::TypeUvec2(e) => {
+          f.debug_tuple("OptionValue::TypeUvec2").field(e).finish()
         }
-        OptionValueResult::TypeUvec3(e) => {
-          f.debug_tuple("OptionValueResult::TypeUvec3").field(e).finish()
+        OptionValue::TypeUvec3(e) => {
+          f.debug_tuple("OptionValue::TypeUvec3").field(e).finish()
         }
-        OptionValueResult::TypeUvec4(e) => {
-          f.debug_tuple("OptionValueResult::TypeUvec4").field(e).finish()
+        OptionValue::TypeUvec4(e) => {
+          f.debug_tuple("OptionValue::TypeUvec4").field(e).finish()
         }
       }
     }
   }
   #[derive(Clone)]
-  pub enum OptionValueParam<'a,>{
-    TypeEmpty(Option<()>),
-    TypeBool(Option<bool>),
-    TypeEntityId(Option<EntityId>),
-    TypeF32(Option<f32>),
-    TypeF64(Option<f64>),
-    TypeMat4(Option<Mat4>),
-    TypeI32(Option<i32>),
-    TypeQuat(Option<Quat>),
-    TypeString(Option<&'a str>),
-    TypeU8(Option<u8>),
-    TypeU32(Option<u32>),
-    TypeU64(Option<u64>),
-    TypeVec2(Option<Vec2>),
-    TypeVec3(Option<Vec3>),
-    TypeVec4(Option<Vec4>),
-    TypeUvec2(Option<Uvec2>),
-    TypeUvec3(Option<Uvec3>),
-    TypeUvec4(Option<Uvec4>),
-  }
-  impl<'a,> core::fmt::Debug for OptionValueParam<'a,> {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-      match self {
-        OptionValueParam::TypeEmpty(e) => {
-          f.debug_tuple("OptionValueParam::TypeEmpty").field(e).finish()
-        }
-        OptionValueParam::TypeBool(e) => {
-          f.debug_tuple("OptionValueParam::TypeBool").field(e).finish()
-        }
-        OptionValueParam::TypeEntityId(e) => {
-          f.debug_tuple("OptionValueParam::TypeEntityId").field(e).finish()
-        }
-        OptionValueParam::TypeF32(e) => {
-          f.debug_tuple("OptionValueParam::TypeF32").field(e).finish()
-        }
-        OptionValueParam::TypeF64(e) => {
-          f.debug_tuple("OptionValueParam::TypeF64").field(e).finish()
-        }
-        OptionValueParam::TypeMat4(e) => {
-          f.debug_tuple("OptionValueParam::TypeMat4").field(e).finish()
-        }
-        OptionValueParam::TypeI32(e) => {
-          f.debug_tuple("OptionValueParam::TypeI32").field(e).finish()
-        }
-        OptionValueParam::TypeQuat(e) => {
-          f.debug_tuple("OptionValueParam::TypeQuat").field(e).finish()
-        }
-        OptionValueParam::TypeString(e) => {
-          f.debug_tuple("OptionValueParam::TypeString").field(e).finish()
-        }
-        OptionValueParam::TypeU8(e) => {
-          f.debug_tuple("OptionValueParam::TypeU8").field(e).finish()
-        }
-        OptionValueParam::TypeU32(e) => {
-          f.debug_tuple("OptionValueParam::TypeU32").field(e).finish()
-        }
-        OptionValueParam::TypeU64(e) => {
-          f.debug_tuple("OptionValueParam::TypeU64").field(e).finish()
-        }
-        OptionValueParam::TypeVec2(e) => {
-          f.debug_tuple("OptionValueParam::TypeVec2").field(e).finish()
-        }
-        OptionValueParam::TypeVec3(e) => {
-          f.debug_tuple("OptionValueParam::TypeVec3").field(e).finish()
-        }
-        OptionValueParam::TypeVec4(e) => {
-          f.debug_tuple("OptionValueParam::TypeVec4").field(e).finish()
-        }
-        OptionValueParam::TypeUvec2(e) => {
-          f.debug_tuple("OptionValueParam::TypeUvec2").field(e).finish()
-        }
-        OptionValueParam::TypeUvec3(e) => {
-          f.debug_tuple("OptionValueParam::TypeUvec3").field(e).finish()
-        }
-        OptionValueParam::TypeUvec4(e) => {
-          f.debug_tuple("OptionValueParam::TypeUvec4").field(e).finish()
-        }
-      }
-    }
-  }
-  #[derive(Clone)]
-  pub enum ValueResult{
+  pub enum Value{
     TypeEmpty(()),
     TypeBool(bool),
     TypeEntityId(EntityId),
@@ -504,171 +352,81 @@ pub mod component{
     TypeUvec2(Uvec2),
     TypeUvec3(Uvec3),
     TypeUvec4(Uvec4),
-    TypeVec(VecValueResult),
-    TypeOption(OptionValueResult),
+    TypeVec(VecValue),
+    TypeOption(OptionValue),
   }
-  impl core::fmt::Debug for ValueResult {
+  impl core::fmt::Debug for Value {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
       match self {
-        ValueResult::TypeEmpty(e) => {
-          f.debug_tuple("ValueResult::TypeEmpty").field(e).finish()
+        Value::TypeEmpty(e) => {
+          f.debug_tuple("Value::TypeEmpty").field(e).finish()
         }
-        ValueResult::TypeBool(e) => {
-          f.debug_tuple("ValueResult::TypeBool").field(e).finish()
+        Value::TypeBool(e) => {
+          f.debug_tuple("Value::TypeBool").field(e).finish()
         }
-        ValueResult::TypeEntityId(e) => {
-          f.debug_tuple("ValueResult::TypeEntityId").field(e).finish()
+        Value::TypeEntityId(e) => {
+          f.debug_tuple("Value::TypeEntityId").field(e).finish()
         }
-        ValueResult::TypeF32(e) => {
-          f.debug_tuple("ValueResult::TypeF32").field(e).finish()
+        Value::TypeF32(e) => {
+          f.debug_tuple("Value::TypeF32").field(e).finish()
         }
-        ValueResult::TypeF64(e) => {
-          f.debug_tuple("ValueResult::TypeF64").field(e).finish()
+        Value::TypeF64(e) => {
+          f.debug_tuple("Value::TypeF64").field(e).finish()
         }
-        ValueResult::TypeMat4(e) => {
-          f.debug_tuple("ValueResult::TypeMat4").field(e).finish()
+        Value::TypeMat4(e) => {
+          f.debug_tuple("Value::TypeMat4").field(e).finish()
         }
-        ValueResult::TypeI32(e) => {
-          f.debug_tuple("ValueResult::TypeI32").field(e).finish()
+        Value::TypeI32(e) => {
+          f.debug_tuple("Value::TypeI32").field(e).finish()
         }
-        ValueResult::TypeQuat(e) => {
-          f.debug_tuple("ValueResult::TypeQuat").field(e).finish()
+        Value::TypeQuat(e) => {
+          f.debug_tuple("Value::TypeQuat").field(e).finish()
         }
-        ValueResult::TypeString(e) => {
-          f.debug_tuple("ValueResult::TypeString").field(e).finish()
+        Value::TypeString(e) => {
+          f.debug_tuple("Value::TypeString").field(e).finish()
         }
-        ValueResult::TypeU8(e) => {
-          f.debug_tuple("ValueResult::TypeU8").field(e).finish()
+        Value::TypeU8(e) => {
+          f.debug_tuple("Value::TypeU8").field(e).finish()
         }
-        ValueResult::TypeU32(e) => {
-          f.debug_tuple("ValueResult::TypeU32").field(e).finish()
+        Value::TypeU32(e) => {
+          f.debug_tuple("Value::TypeU32").field(e).finish()
         }
-        ValueResult::TypeU64(e) => {
-          f.debug_tuple("ValueResult::TypeU64").field(e).finish()
+        Value::TypeU64(e) => {
+          f.debug_tuple("Value::TypeU64").field(e).finish()
         }
-        ValueResult::TypeVec2(e) => {
-          f.debug_tuple("ValueResult::TypeVec2").field(e).finish()
+        Value::TypeVec2(e) => {
+          f.debug_tuple("Value::TypeVec2").field(e).finish()
         }
-        ValueResult::TypeVec3(e) => {
-          f.debug_tuple("ValueResult::TypeVec3").field(e).finish()
+        Value::TypeVec3(e) => {
+          f.debug_tuple("Value::TypeVec3").field(e).finish()
         }
-        ValueResult::TypeVec4(e) => {
-          f.debug_tuple("ValueResult::TypeVec4").field(e).finish()
+        Value::TypeVec4(e) => {
+          f.debug_tuple("Value::TypeVec4").field(e).finish()
         }
-        ValueResult::TypeUvec2(e) => {
-          f.debug_tuple("ValueResult::TypeUvec2").field(e).finish()
+        Value::TypeUvec2(e) => {
+          f.debug_tuple("Value::TypeUvec2").field(e).finish()
         }
-        ValueResult::TypeUvec3(e) => {
-          f.debug_tuple("ValueResult::TypeUvec3").field(e).finish()
+        Value::TypeUvec3(e) => {
+          f.debug_tuple("Value::TypeUvec3").field(e).finish()
         }
-        ValueResult::TypeUvec4(e) => {
-          f.debug_tuple("ValueResult::TypeUvec4").field(e).finish()
+        Value::TypeUvec4(e) => {
+          f.debug_tuple("Value::TypeUvec4").field(e).finish()
         }
-        ValueResult::TypeVec(e) => {
-          f.debug_tuple("ValueResult::TypeVec").field(e).finish()
+        Value::TypeVec(e) => {
+          f.debug_tuple("Value::TypeVec").field(e).finish()
         }
-        ValueResult::TypeOption(e) => {
-          f.debug_tuple("ValueResult::TypeOption").field(e).finish()
+        Value::TypeOption(e) => {
+          f.debug_tuple("Value::TypeOption").field(e).finish()
         }
       }
     }
   }
-  #[derive(Clone)]
-  pub enum ValueParam<'a,>{
-    TypeEmpty(()),
-    TypeBool(bool),
-    TypeEntityId(EntityId),
-    TypeF32(f32),
-    TypeF64(f64),
-    TypeMat4(Mat4),
-    TypeI32(i32),
-    TypeQuat(Quat),
-    TypeString(&'a str),
-    TypeU8(u8),
-    TypeU32(u32),
-    TypeU64(u64),
-    TypeVec2(Vec2),
-    TypeVec3(Vec3),
-    TypeVec4(Vec4),
-    TypeUvec2(Uvec2),
-    TypeUvec3(Uvec3),
-    TypeUvec4(Uvec4),
-    TypeVec(VecValueParam<'a,>),
-    TypeOption(OptionValueParam<'a,>),
-  }
-  impl<'a,> core::fmt::Debug for ValueParam<'a,> {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-      match self {
-        ValueParam::TypeEmpty(e) => {
-          f.debug_tuple("ValueParam::TypeEmpty").field(e).finish()
-        }
-        ValueParam::TypeBool(e) => {
-          f.debug_tuple("ValueParam::TypeBool").field(e).finish()
-        }
-        ValueParam::TypeEntityId(e) => {
-          f.debug_tuple("ValueParam::TypeEntityId").field(e).finish()
-        }
-        ValueParam::TypeF32(e) => {
-          f.debug_tuple("ValueParam::TypeF32").field(e).finish()
-        }
-        ValueParam::TypeF64(e) => {
-          f.debug_tuple("ValueParam::TypeF64").field(e).finish()
-        }
-        ValueParam::TypeMat4(e) => {
-          f.debug_tuple("ValueParam::TypeMat4").field(e).finish()
-        }
-        ValueParam::TypeI32(e) => {
-          f.debug_tuple("ValueParam::TypeI32").field(e).finish()
-        }
-        ValueParam::TypeQuat(e) => {
-          f.debug_tuple("ValueParam::TypeQuat").field(e).finish()
-        }
-        ValueParam::TypeString(e) => {
-          f.debug_tuple("ValueParam::TypeString").field(e).finish()
-        }
-        ValueParam::TypeU8(e) => {
-          f.debug_tuple("ValueParam::TypeU8").field(e).finish()
-        }
-        ValueParam::TypeU32(e) => {
-          f.debug_tuple("ValueParam::TypeU32").field(e).finish()
-        }
-        ValueParam::TypeU64(e) => {
-          f.debug_tuple("ValueParam::TypeU64").field(e).finish()
-        }
-        ValueParam::TypeVec2(e) => {
-          f.debug_tuple("ValueParam::TypeVec2").field(e).finish()
-        }
-        ValueParam::TypeVec3(e) => {
-          f.debug_tuple("ValueParam::TypeVec3").field(e).finish()
-        }
-        ValueParam::TypeVec4(e) => {
-          f.debug_tuple("ValueParam::TypeVec4").field(e).finish()
-        }
-        ValueParam::TypeUvec2(e) => {
-          f.debug_tuple("ValueParam::TypeUvec2").field(e).finish()
-        }
-        ValueParam::TypeUvec3(e) => {
-          f.debug_tuple("ValueParam::TypeUvec3").field(e).finish()
-        }
-        ValueParam::TypeUvec4(e) => {
-          f.debug_tuple("ValueParam::TypeUvec4").field(e).finish()
-        }
-        ValueParam::TypeVec(e) => {
-          f.debug_tuple("ValueParam::TypeVec").field(e).finish()
-        }
-        ValueParam::TypeOption(e) => {
-          f.debug_tuple("ValueParam::TypeOption").field(e).finish()
-        }
-      }
-    }
-  }
-  pub type EntityResult = wit_bindgen::rt::vec::Vec::<(u32,ValueResult,)>;
-  pub type EntityParam<'a,> = &'a [(u32,ValueParam<'a,>,)];
+  pub type Entity = wit_bindgen::rt::vec::Vec::<(u32,Value,)>;
   #[allow(clippy::all)]
   pub fn get_index(id: &str,) -> Option<u32>{
     
     #[allow(unused_imports)]
-    use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+    use wit_bindgen::rt::{alloc, vec::Vec, string::String};
     unsafe {
       
       #[repr(align(4))]
@@ -697,10 +455,10 @@ pub mod component{
     }
   }
   #[allow(clippy::all)]
-  pub fn get_component(entity: EntityId,index: u32,) -> Option<ValueResult>{
+  pub fn get_component(entity: EntityId,index: u32,) -> Option<Value>{
     
     #[allow(unused_imports)]
-    use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+    use wit_bindgen::rt::{alloc, vec::Vec, string::String};
     unsafe {
       
       #[repr(align(8))]
@@ -719,8 +477,8 @@ pub mod component{
       match i32::from(*((ptr1 + 0) as *const u8)) {
         0 => None,
         1 => Some({{match i32::from(*((ptr1 + 8) as *const u8)) {
-          0 => ValueResult::TypeEmpty(()),
-          1 => ValueResult::TypeBool({
+          0 => Value::TypeEmpty(()),
+          1 => Value::TypeBool({
             #[cfg(not(debug_assertions))]
             { core::mem::transmute::<u8, bool>(i32::from(*((ptr1 + 16) as *const u8)) as u8) }
             #[cfg(debug_assertions)]
@@ -732,33 +490,33 @@ pub mod component{
               }
             }
           }),
-          2 => ValueResult::TypeEntityId(super::types::EntityId{id0:*((ptr1 + 16) as *const i64) as u64, id1:*((ptr1 + 24) as *const i64) as u64, }),
-          3 => ValueResult::TypeF32(*((ptr1 + 16) as *const f32)),
-          4 => ValueResult::TypeF64(*((ptr1 + 16) as *const f64)),
-          5 => ValueResult::TypeMat4(super::types::Mat4{x:super::types::Vec4{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), z:*((ptr1 + 24) as *const f32), w:*((ptr1 + 28) as *const f32), }, y:super::types::Vec4{x:*((ptr1 + 32) as *const f32), y:*((ptr1 + 36) as *const f32), z:*((ptr1 + 40) as *const f32), w:*((ptr1 + 44) as *const f32), }, z:super::types::Vec4{x:*((ptr1 + 48) as *const f32), y:*((ptr1 + 52) as *const f32), z:*((ptr1 + 56) as *const f32), w:*((ptr1 + 60) as *const f32), }, w:super::types::Vec4{x:*((ptr1 + 64) as *const f32), y:*((ptr1 + 68) as *const f32), z:*((ptr1 + 72) as *const f32), w:*((ptr1 + 76) as *const f32), }, }),
-          6 => ValueResult::TypeI32(*((ptr1 + 16) as *const i32)),
-          7 => ValueResult::TypeQuat(super::types::Quat{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), z:*((ptr1 + 24) as *const f32), w:*((ptr1 + 28) as *const f32), }),
-          8 => ValueResult::TypeString({
+          2 => Value::TypeEntityId(super::types::EntityId{id0:*((ptr1 + 16) as *const i64) as u64, id1:*((ptr1 + 24) as *const i64) as u64, }),
+          3 => Value::TypeF32(*((ptr1 + 16) as *const f32)),
+          4 => Value::TypeF64(*((ptr1 + 16) as *const f64)),
+          5 => Value::TypeMat4(super::types::Mat4{x:super::types::Vec4{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), z:*((ptr1 + 24) as *const f32), w:*((ptr1 + 28) as *const f32), }, y:super::types::Vec4{x:*((ptr1 + 32) as *const f32), y:*((ptr1 + 36) as *const f32), z:*((ptr1 + 40) as *const f32), w:*((ptr1 + 44) as *const f32), }, z:super::types::Vec4{x:*((ptr1 + 48) as *const f32), y:*((ptr1 + 52) as *const f32), z:*((ptr1 + 56) as *const f32), w:*((ptr1 + 60) as *const f32), }, w:super::types::Vec4{x:*((ptr1 + 64) as *const f32), y:*((ptr1 + 68) as *const f32), z:*((ptr1 + 72) as *const f32), w:*((ptr1 + 76) as *const f32), }, }),
+          6 => Value::TypeI32(*((ptr1 + 16) as *const i32)),
+          7 => Value::TypeQuat(super::types::Quat{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), z:*((ptr1 + 24) as *const f32), w:*((ptr1 + 28) as *const f32), }),
+          8 => Value::TypeString({
             let len2 = *((ptr1 + 20) as *const i32) as usize;
             
             {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((ptr1 + 16) as *const i32) as *mut _, len2, len2))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((ptr1 + 16) as *const i32) as *mut _, len2, len2)).unwrap()}}
           }),
-          9 => ValueResult::TypeU8(i32::from(*((ptr1 + 16) as *const u8)) as u8),
-          10 => ValueResult::TypeU32(*((ptr1 + 16) as *const i32) as u32),
-          11 => ValueResult::TypeU64(*((ptr1 + 16) as *const i64) as u64),
-          12 => ValueResult::TypeVec2(super::types::Vec2{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), }),
-          13 => ValueResult::TypeVec3(super::types::Vec3{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), z:*((ptr1 + 24) as *const f32), }),
-          14 => ValueResult::TypeVec4(super::types::Vec4{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), z:*((ptr1 + 24) as *const f32), w:*((ptr1 + 28) as *const f32), }),
-          15 => ValueResult::TypeUvec2(super::types::Uvec2{x:*((ptr1 + 16) as *const i32) as u32, y:*((ptr1 + 20) as *const i32) as u32, }),
-          16 => ValueResult::TypeUvec3(super::types::Uvec3{x:*((ptr1 + 16) as *const i32) as u32, y:*((ptr1 + 20) as *const i32) as u32, z:*((ptr1 + 24) as *const i32) as u32, }),
-          17 => ValueResult::TypeUvec4(super::types::Uvec4{x:*((ptr1 + 16) as *const i32) as u32, y:*((ptr1 + 20) as *const i32) as u32, z:*((ptr1 + 24) as *const i32) as u32, w:*((ptr1 + 28) as *const i32) as u32, }),
-          18 => ValueResult::TypeVec({{match i32::from(*((ptr1 + 16) as *const u8)) {
-            0 => VecValueResult::TypeEmpty({
+          9 => Value::TypeU8(i32::from(*((ptr1 + 16) as *const u8)) as u8),
+          10 => Value::TypeU32(*((ptr1 + 16) as *const i32) as u32),
+          11 => Value::TypeU64(*((ptr1 + 16) as *const i64) as u64),
+          12 => Value::TypeVec2(super::types::Vec2{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), }),
+          13 => Value::TypeVec3(super::types::Vec3{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), z:*((ptr1 + 24) as *const f32), }),
+          14 => Value::TypeVec4(super::types::Vec4{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), z:*((ptr1 + 24) as *const f32), w:*((ptr1 + 28) as *const f32), }),
+          15 => Value::TypeUvec2(super::types::Uvec2{x:*((ptr1 + 16) as *const i32) as u32, y:*((ptr1 + 20) as *const i32) as u32, }),
+          16 => Value::TypeUvec3(super::types::Uvec3{x:*((ptr1 + 16) as *const i32) as u32, y:*((ptr1 + 20) as *const i32) as u32, z:*((ptr1 + 24) as *const i32) as u32, }),
+          17 => Value::TypeUvec4(super::types::Uvec4{x:*((ptr1 + 16) as *const i32) as u32, y:*((ptr1 + 20) as *const i32) as u32, z:*((ptr1 + 24) as *const i32) as u32, w:*((ptr1 + 28) as *const i32) as u32, }),
+          18 => Value::TypeVec({{match i32::from(*((ptr1 + 16) as *const u8)) {
+            0 => VecValue::TypeEmpty({
               let len3 = *((ptr1 + 24) as *const i32) as usize;
               
               Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len3, len3)
             }),
-            1 => VecValueResult::TypeBool({
+            1 => VecValue::TypeBool({
               let base4 = *((ptr1 + 20) as *const i32);
               let len4 = *((ptr1 + 24) as *const i32);
               let mut result4 = Vec::with_capacity(len4 as usize);
@@ -781,37 +539,37 @@ pub mod component{
               
               result4
             }),
-            2 => VecValueResult::TypeEntityId({
+            2 => VecValue::TypeEntityId({
               let len5 = *((ptr1 + 24) as *const i32) as usize;
               
               Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len5, len5)
             }),
-            3 => VecValueResult::TypeF32({
+            3 => VecValue::TypeF32({
               let len6 = *((ptr1 + 24) as *const i32) as usize;
               
               Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len6, len6)
             }),
-            4 => VecValueResult::TypeF64({
+            4 => VecValue::TypeF64({
               let len7 = *((ptr1 + 24) as *const i32) as usize;
               
               Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len7, len7)
             }),
-            5 => VecValueResult::TypeMat4({
+            5 => VecValue::TypeMat4({
               let len8 = *((ptr1 + 24) as *const i32) as usize;
               
               Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len8, len8)
             }),
-            6 => VecValueResult::TypeI32({
+            6 => VecValue::TypeI32({
               let len9 = *((ptr1 + 24) as *const i32) as usize;
               
               Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len9, len9)
             }),
-            7 => VecValueResult::TypeQuat({
+            7 => VecValue::TypeQuat({
               let len10 = *((ptr1 + 24) as *const i32) as usize;
               
               Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len10, len10)
             }),
-            8 => VecValueResult::TypeString({
+            8 => VecValue::TypeString({
               let base12 = *((ptr1 + 20) as *const i32);
               let len12 = *((ptr1 + 24) as *const i32);
               let mut result12 = Vec::with_capacity(len12 as usize);
@@ -827,60 +585,60 @@ pub mod component{
               
               result12
             }),
-            9 => VecValueResult::TypeU8({
+            9 => VecValue::TypeU8({
               let len13 = *((ptr1 + 24) as *const i32) as usize;
               
               Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len13, len13)
             }),
-            10 => VecValueResult::TypeU32({
+            10 => VecValue::TypeU32({
               let len14 = *((ptr1 + 24) as *const i32) as usize;
               
               Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len14, len14)
             }),
-            11 => VecValueResult::TypeU64({
+            11 => VecValue::TypeU64({
               let len15 = *((ptr1 + 24) as *const i32) as usize;
               
               Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len15, len15)
             }),
-            12 => VecValueResult::TypeVec2({
+            12 => VecValue::TypeVec2({
               let len16 = *((ptr1 + 24) as *const i32) as usize;
               
               Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len16, len16)
             }),
-            13 => VecValueResult::TypeVec3({
+            13 => VecValue::TypeVec3({
               let len17 = *((ptr1 + 24) as *const i32) as usize;
               
               Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len17, len17)
             }),
-            14 => VecValueResult::TypeVec4({
+            14 => VecValue::TypeVec4({
               let len18 = *((ptr1 + 24) as *const i32) as usize;
               
               Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len18, len18)
             }),
-            15 => VecValueResult::TypeUvec2({
+            15 => VecValue::TypeUvec2({
               let len19 = *((ptr1 + 24) as *const i32) as usize;
               
               Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len19, len19)
             }),
-            16 => VecValueResult::TypeUvec3({
+            16 => VecValue::TypeUvec3({
               let len20 = *((ptr1 + 24) as *const i32) as usize;
               
               Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len20, len20)
             }),
-            #[cfg(debug_assertions)]17 => VecValueResult::TypeUvec4({
+            #[cfg(debug_assertions)]17 => VecValue::TypeUvec4({
               let len21 = *((ptr1 + 24) as *const i32) as usize;
               
               Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len21, len21)
             }),
-            #[cfg(not(debug_assertions))]_ => VecValueResult::TypeUvec4({
+            #[cfg(not(debug_assertions))]_ => VecValue::TypeUvec4({
               let len21 = *((ptr1 + 24) as *const i32) as usize;
               
               Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len21, len21)
             }),
             #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
           }}}),
-          #[cfg(debug_assertions)]19 => ValueResult::TypeOption({{match i32::from(*((ptr1 + 16) as *const u8)) {
-            0 => OptionValueResult::TypeEmpty(match i32::from(*((ptr1 + 24) as *const u8)) {
+          #[cfg(debug_assertions)]19 => Value::TypeOption({{match i32::from(*((ptr1 + 16) as *const u8)) {
+            0 => OptionValue::TypeEmpty(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(()),
               #[cfg(not(debug_assertions))]
@@ -888,7 +646,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            1 => OptionValueResult::TypeBool(match i32::from(*((ptr1 + 24) as *const u8)) {
+            1 => OptionValue::TypeBool(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some({
                 #[cfg(not(debug_assertions))]
@@ -907,7 +665,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            2 => OptionValueResult::TypeEntityId(match i32::from(*((ptr1 + 24) as *const u8)) {
+            2 => OptionValue::TypeEntityId(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(super::types::EntityId{id0:*((ptr1 + 32) as *const i64) as u64, id1:*((ptr1 + 40) as *const i64) as u64, }),
               #[cfg(not(debug_assertions))]
@@ -915,7 +673,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            3 => OptionValueResult::TypeF32(match i32::from(*((ptr1 + 24) as *const u8)) {
+            3 => OptionValue::TypeF32(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(*((ptr1 + 28) as *const f32)),
               #[cfg(not(debug_assertions))]
@@ -923,7 +681,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            4 => OptionValueResult::TypeF64(match i32::from(*((ptr1 + 24) as *const u8)) {
+            4 => OptionValue::TypeF64(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(*((ptr1 + 32) as *const f64)),
               #[cfg(not(debug_assertions))]
@@ -931,7 +689,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            5 => OptionValueResult::TypeMat4(match i32::from(*((ptr1 + 24) as *const u8)) {
+            5 => OptionValue::TypeMat4(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(super::types::Mat4{x:super::types::Vec4{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), w:*((ptr1 + 40) as *const f32), }, y:super::types::Vec4{x:*((ptr1 + 44) as *const f32), y:*((ptr1 + 48) as *const f32), z:*((ptr1 + 52) as *const f32), w:*((ptr1 + 56) as *const f32), }, z:super::types::Vec4{x:*((ptr1 + 60) as *const f32), y:*((ptr1 + 64) as *const f32), z:*((ptr1 + 68) as *const f32), w:*((ptr1 + 72) as *const f32), }, w:super::types::Vec4{x:*((ptr1 + 76) as *const f32), y:*((ptr1 + 80) as *const f32), z:*((ptr1 + 84) as *const f32), w:*((ptr1 + 88) as *const f32), }, }),
               #[cfg(not(debug_assertions))]
@@ -939,7 +697,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            6 => OptionValueResult::TypeI32(match i32::from(*((ptr1 + 24) as *const u8)) {
+            6 => OptionValue::TypeI32(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(*((ptr1 + 28) as *const i32)),
               #[cfg(not(debug_assertions))]
@@ -947,7 +705,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            7 => OptionValueResult::TypeQuat(match i32::from(*((ptr1 + 24) as *const u8)) {
+            7 => OptionValue::TypeQuat(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(super::types::Quat{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), w:*((ptr1 + 40) as *const f32), }),
               #[cfg(not(debug_assertions))]
@@ -955,7 +713,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            8 => OptionValueResult::TypeString(match i32::from(*((ptr1 + 24) as *const u8)) {
+            8 => OptionValue::TypeString(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some({
                 let len22 = *((ptr1 + 32) as *const i32) as usize;
@@ -967,7 +725,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            9 => OptionValueResult::TypeU8(match i32::from(*((ptr1 + 24) as *const u8)) {
+            9 => OptionValue::TypeU8(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(i32::from(*((ptr1 + 25) as *const u8)) as u8),
               #[cfg(not(debug_assertions))]
@@ -975,7 +733,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            10 => OptionValueResult::TypeU32(match i32::from(*((ptr1 + 24) as *const u8)) {
+            10 => OptionValue::TypeU32(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(*((ptr1 + 28) as *const i32) as u32),
               #[cfg(not(debug_assertions))]
@@ -983,7 +741,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            11 => OptionValueResult::TypeU64(match i32::from(*((ptr1 + 24) as *const u8)) {
+            11 => OptionValue::TypeU64(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(*((ptr1 + 32) as *const i64) as u64),
               #[cfg(not(debug_assertions))]
@@ -991,7 +749,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            12 => OptionValueResult::TypeVec2(match i32::from(*((ptr1 + 24) as *const u8)) {
+            12 => OptionValue::TypeVec2(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(super::types::Vec2{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), }),
               #[cfg(not(debug_assertions))]
@@ -999,7 +757,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            13 => OptionValueResult::TypeVec3(match i32::from(*((ptr1 + 24) as *const u8)) {
+            13 => OptionValue::TypeVec3(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(super::types::Vec3{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), }),
               #[cfg(not(debug_assertions))]
@@ -1007,7 +765,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            14 => OptionValueResult::TypeVec4(match i32::from(*((ptr1 + 24) as *const u8)) {
+            14 => OptionValue::TypeVec4(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(super::types::Vec4{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), w:*((ptr1 + 40) as *const f32), }),
               #[cfg(not(debug_assertions))]
@@ -1015,7 +773,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            15 => OptionValueResult::TypeUvec2(match i32::from(*((ptr1 + 24) as *const u8)) {
+            15 => OptionValue::TypeUvec2(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(super::types::Uvec2{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, }),
               #[cfg(not(debug_assertions))]
@@ -1023,7 +781,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            16 => OptionValueResult::TypeUvec3(match i32::from(*((ptr1 + 24) as *const u8)) {
+            16 => OptionValue::TypeUvec3(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(super::types::Uvec3{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, }),
               #[cfg(not(debug_assertions))]
@@ -1031,7 +789,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            #[cfg(debug_assertions)]17 => OptionValueResult::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
+            #[cfg(debug_assertions)]17 => OptionValue::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(super::types::Uvec4{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, w:*((ptr1 + 40) as *const i32) as u32, }),
               #[cfg(not(debug_assertions))]
@@ -1039,7 +797,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            #[cfg(not(debug_assertions))]_ => OptionValueResult::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
+            #[cfg(not(debug_assertions))]_ => OptionValue::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(super::types::Uvec4{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, w:*((ptr1 + 40) as *const i32) as u32, }),
               #[cfg(not(debug_assertions))]
@@ -1049,8 +807,8 @@ pub mod component{
             }),
             #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
           }}}),
-          #[cfg(not(debug_assertions))]_ => ValueResult::TypeOption({{match i32::from(*((ptr1 + 16) as *const u8)) {
-            0 => OptionValueResult::TypeEmpty(match i32::from(*((ptr1 + 24) as *const u8)) {
+          #[cfg(not(debug_assertions))]_ => Value::TypeOption({{match i32::from(*((ptr1 + 16) as *const u8)) {
+            0 => OptionValue::TypeEmpty(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(()),
               #[cfg(not(debug_assertions))]
@@ -1058,7 +816,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            1 => OptionValueResult::TypeBool(match i32::from(*((ptr1 + 24) as *const u8)) {
+            1 => OptionValue::TypeBool(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some({
                 #[cfg(not(debug_assertions))]
@@ -1077,7 +835,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            2 => OptionValueResult::TypeEntityId(match i32::from(*((ptr1 + 24) as *const u8)) {
+            2 => OptionValue::TypeEntityId(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(super::types::EntityId{id0:*((ptr1 + 32) as *const i64) as u64, id1:*((ptr1 + 40) as *const i64) as u64, }),
               #[cfg(not(debug_assertions))]
@@ -1085,7 +843,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            3 => OptionValueResult::TypeF32(match i32::from(*((ptr1 + 24) as *const u8)) {
+            3 => OptionValue::TypeF32(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(*((ptr1 + 28) as *const f32)),
               #[cfg(not(debug_assertions))]
@@ -1093,7 +851,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            4 => OptionValueResult::TypeF64(match i32::from(*((ptr1 + 24) as *const u8)) {
+            4 => OptionValue::TypeF64(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(*((ptr1 + 32) as *const f64)),
               #[cfg(not(debug_assertions))]
@@ -1101,7 +859,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            5 => OptionValueResult::TypeMat4(match i32::from(*((ptr1 + 24) as *const u8)) {
+            5 => OptionValue::TypeMat4(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(super::types::Mat4{x:super::types::Vec4{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), w:*((ptr1 + 40) as *const f32), }, y:super::types::Vec4{x:*((ptr1 + 44) as *const f32), y:*((ptr1 + 48) as *const f32), z:*((ptr1 + 52) as *const f32), w:*((ptr1 + 56) as *const f32), }, z:super::types::Vec4{x:*((ptr1 + 60) as *const f32), y:*((ptr1 + 64) as *const f32), z:*((ptr1 + 68) as *const f32), w:*((ptr1 + 72) as *const f32), }, w:super::types::Vec4{x:*((ptr1 + 76) as *const f32), y:*((ptr1 + 80) as *const f32), z:*((ptr1 + 84) as *const f32), w:*((ptr1 + 88) as *const f32), }, }),
               #[cfg(not(debug_assertions))]
@@ -1109,7 +867,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            6 => OptionValueResult::TypeI32(match i32::from(*((ptr1 + 24) as *const u8)) {
+            6 => OptionValue::TypeI32(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(*((ptr1 + 28) as *const i32)),
               #[cfg(not(debug_assertions))]
@@ -1117,7 +875,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            7 => OptionValueResult::TypeQuat(match i32::from(*((ptr1 + 24) as *const u8)) {
+            7 => OptionValue::TypeQuat(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(super::types::Quat{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), w:*((ptr1 + 40) as *const f32), }),
               #[cfg(not(debug_assertions))]
@@ -1125,7 +883,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            8 => OptionValueResult::TypeString(match i32::from(*((ptr1 + 24) as *const u8)) {
+            8 => OptionValue::TypeString(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some({
                 let len22 = *((ptr1 + 32) as *const i32) as usize;
@@ -1137,7 +895,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            9 => OptionValueResult::TypeU8(match i32::from(*((ptr1 + 24) as *const u8)) {
+            9 => OptionValue::TypeU8(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(i32::from(*((ptr1 + 25) as *const u8)) as u8),
               #[cfg(not(debug_assertions))]
@@ -1145,7 +903,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            10 => OptionValueResult::TypeU32(match i32::from(*((ptr1 + 24) as *const u8)) {
+            10 => OptionValue::TypeU32(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(*((ptr1 + 28) as *const i32) as u32),
               #[cfg(not(debug_assertions))]
@@ -1153,7 +911,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            11 => OptionValueResult::TypeU64(match i32::from(*((ptr1 + 24) as *const u8)) {
+            11 => OptionValue::TypeU64(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(*((ptr1 + 32) as *const i64) as u64),
               #[cfg(not(debug_assertions))]
@@ -1161,7 +919,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            12 => OptionValueResult::TypeVec2(match i32::from(*((ptr1 + 24) as *const u8)) {
+            12 => OptionValue::TypeVec2(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(super::types::Vec2{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), }),
               #[cfg(not(debug_assertions))]
@@ -1169,7 +927,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            13 => OptionValueResult::TypeVec3(match i32::from(*((ptr1 + 24) as *const u8)) {
+            13 => OptionValue::TypeVec3(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(super::types::Vec3{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), }),
               #[cfg(not(debug_assertions))]
@@ -1177,7 +935,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            14 => OptionValueResult::TypeVec4(match i32::from(*((ptr1 + 24) as *const u8)) {
+            14 => OptionValue::TypeVec4(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(super::types::Vec4{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), w:*((ptr1 + 40) as *const f32), }),
               #[cfg(not(debug_assertions))]
@@ -1185,7 +943,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            15 => OptionValueResult::TypeUvec2(match i32::from(*((ptr1 + 24) as *const u8)) {
+            15 => OptionValue::TypeUvec2(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(super::types::Uvec2{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, }),
               #[cfg(not(debug_assertions))]
@@ -1193,7 +951,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            16 => OptionValueResult::TypeUvec3(match i32::from(*((ptr1 + 24) as *const u8)) {
+            16 => OptionValue::TypeUvec3(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(super::types::Uvec3{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, }),
               #[cfg(not(debug_assertions))]
@@ -1201,7 +959,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            #[cfg(debug_assertions)]17 => OptionValueResult::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
+            #[cfg(debug_assertions)]17 => OptionValue::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(super::types::Uvec4{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, w:*((ptr1 + 40) as *const i32) as u32, }),
               #[cfg(not(debug_assertions))]
@@ -1209,7 +967,7 @@ pub mod component{
               #[cfg(debug_assertions)]
               _ => panic!("invalid enum discriminant"),
             }),
-            #[cfg(not(debug_assertions))]_ => OptionValueResult::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
+            #[cfg(not(debug_assertions))]_ => OptionValue::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
               0 => None,
               1 => Some(super::types::Uvec4{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, w:*((ptr1 + 40) as *const i32) as u32, }),
               #[cfg(not(debug_assertions))]
@@ -1229,10 +987,10 @@ pub mod component{
     }
   }
   #[allow(clippy::all)]
-  pub fn add_component(entity: EntityId,index: u32,value: ValueParam<'_,>,){
+  pub fn add_component(entity: EntityId,index: u32,value: &Value,){
     
     #[allow(unused_imports)]
-    use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+    use wit_bindgen::rt::{alloc, vec::Vec, string::String};
     unsafe {
       let mut cleanup_list = Vec::new();
       
@@ -1244,34 +1002,34 @@ pub mod component{
       *((ptr0 + 8) as *mut i64) = wit_bindgen::rt::as_i64(id11);
       *((ptr0 + 16) as *mut i32) = wit_bindgen::rt::as_i32(index);
       match value {
-        ValueParam::TypeEmpty(e) => {
+        Value::TypeEmpty(e) => {
           *((ptr0 + 24) as *mut u8) = (0i32) as u8;
           let () = e;
           
         },
-        ValueParam::TypeBool(e) => {
+        Value::TypeBool(e) => {
           *((ptr0 + 24) as *mut u8) = (1i32) as u8;
           *((ptr0 + 32) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
           
         },
-        ValueParam::TypeEntityId(e) => {
+        Value::TypeEntityId(e) => {
           *((ptr0 + 24) as *mut u8) = (2i32) as u8;
           let super::types::EntityId{ id0:id03, id1:id13, } = e;
           *((ptr0 + 32) as *mut i64) = wit_bindgen::rt::as_i64(id03);
           *((ptr0 + 40) as *mut i64) = wit_bindgen::rt::as_i64(id13);
           
         },
-        ValueParam::TypeF32(e) => {
+        Value::TypeF32(e) => {
           *((ptr0 + 24) as *mut u8) = (3i32) as u8;
           *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(e);
           
         },
-        ValueParam::TypeF64(e) => {
+        Value::TypeF64(e) => {
           *((ptr0 + 24) as *mut u8) = (4i32) as u8;
           *((ptr0 + 32) as *mut f64) = wit_bindgen::rt::as_f64(e);
           
         },
-        ValueParam::TypeMat4(e) => {
+        Value::TypeMat4(e) => {
           *((ptr0 + 24) as *mut u8) = (5i32) as u8;
           let super::types::Mat4{ x:x4, y:y4, z:z4, w:w4, } = e;
           let super::types::Vec4{ x:x5, y:y5, z:z5, w:w5, } = x4;
@@ -1296,12 +1054,12 @@ pub mod component{
           *((ptr0 + 92) as *mut f32) = wit_bindgen::rt::as_f32(w8);
           
         },
-        ValueParam::TypeI32(e) => {
+        Value::TypeI32(e) => {
           *((ptr0 + 24) as *mut u8) = (6i32) as u8;
           *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(e);
           
         },
-        ValueParam::TypeQuat(e) => {
+        Value::TypeQuat(e) => {
           *((ptr0 + 24) as *mut u8) = (7i32) as u8;
           let super::types::Quat{ x:x9, y:y9, z:z9, w:w9, } = e;
           *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x9);
@@ -1310,7 +1068,7 @@ pub mod component{
           *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(w9);
           
         },
-        ValueParam::TypeString(e) => {
+        Value::TypeString(e) => {
           *((ptr0 + 24) as *mut u8) = (8i32) as u8;
           let vec10 = e;
           let ptr10 = vec10.as_ptr() as i32;
@@ -1319,29 +1077,29 @@ pub mod component{
           *((ptr0 + 32) as *mut i32) = ptr10;
           
         },
-        ValueParam::TypeU8(e) => {
+        Value::TypeU8(e) => {
           *((ptr0 + 24) as *mut u8) = (9i32) as u8;
           *((ptr0 + 32) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
           
         },
-        ValueParam::TypeU32(e) => {
+        Value::TypeU32(e) => {
           *((ptr0 + 24) as *mut u8) = (10i32) as u8;
           *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(e);
           
         },
-        ValueParam::TypeU64(e) => {
+        Value::TypeU64(e) => {
           *((ptr0 + 24) as *mut u8) = (11i32) as u8;
           *((ptr0 + 32) as *mut i64) = wit_bindgen::rt::as_i64(e);
           
         },
-        ValueParam::TypeVec2(e) => {
+        Value::TypeVec2(e) => {
           *((ptr0 + 24) as *mut u8) = (12i32) as u8;
           let super::types::Vec2{ x:x11, y:y11, } = e;
           *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x11);
           *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y11);
           
         },
-        ValueParam::TypeVec3(e) => {
+        Value::TypeVec3(e) => {
           *((ptr0 + 24) as *mut u8) = (13i32) as u8;
           let super::types::Vec3{ x:x12, y:y12, z:z12, } = e;
           *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x12);
@@ -1349,7 +1107,7 @@ pub mod component{
           *((ptr0 + 40) as *mut f32) = wit_bindgen::rt::as_f32(z12);
           
         },
-        ValueParam::TypeVec4(e) => {
+        Value::TypeVec4(e) => {
           *((ptr0 + 24) as *mut u8) = (14i32) as u8;
           let super::types::Vec4{ x:x13, y:y13, z:z13, w:w13, } = e;
           *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x13);
@@ -1358,14 +1116,14 @@ pub mod component{
           *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(w13);
           
         },
-        ValueParam::TypeUvec2(e) => {
+        Value::TypeUvec2(e) => {
           *((ptr0 + 24) as *mut u8) = (15i32) as u8;
           let super::types::Uvec2{ x:x14, y:y14, } = e;
           *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(x14);
           *((ptr0 + 36) as *mut i32) = wit_bindgen::rt::as_i32(y14);
           
         },
-        ValueParam::TypeUvec3(e) => {
+        Value::TypeUvec3(e) => {
           *((ptr0 + 24) as *mut u8) = (16i32) as u8;
           let super::types::Uvec3{ x:x15, y:y15, z:z15, } = e;
           *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(x15);
@@ -1373,7 +1131,7 @@ pub mod component{
           *((ptr0 + 40) as *mut i32) = wit_bindgen::rt::as_i32(z15);
           
         },
-        ValueParam::TypeUvec4(e) => {
+        Value::TypeUvec4(e) => {
           *((ptr0 + 24) as *mut u8) = (17i32) as u8;
           let super::types::Uvec4{ x:x16, y:y16, z:z16, w:w16, } = e;
           *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(x16);
@@ -1382,10 +1140,10 @@ pub mod component{
           *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(w16);
           
         },
-        ValueParam::TypeVec(e) => {
+        Value::TypeVec(e) => {
           *((ptr0 + 24) as *mut u8) = (18i32) as u8;
           match e {
-            VecValueParam::TypeEmpty(e) => {
+            VecValue::TypeEmpty(e) => {
               *((ptr0 + 32) as *mut u8) = (0i32) as u8;
               let vec17 = e;
               let ptr17 = vec17.as_ptr() as i32;
@@ -1394,7 +1152,7 @@ pub mod component{
               *((ptr0 + 36) as *mut i32) = ptr17;
               
             },
-            VecValueParam::TypeBool(e) => {
+            VecValue::TypeBool(e) => {
               *((ptr0 + 32) as *mut u8) = (1i32) as u8;
               let vec18 = e;
               let len18 = vec18.len() as i32;
@@ -1421,7 +1179,7 @@ pub mod component{
                 cleanup_list.extend_from_slice(&[(result18, layout18),]);
                 
               },
-              VecValueParam::TypeEntityId(e) => {
+              VecValue::TypeEntityId(e) => {
                 *((ptr0 + 32) as *mut u8) = (2i32) as u8;
                 let vec19 = e;
                 let ptr19 = vec19.as_ptr() as i32;
@@ -1430,7 +1188,7 @@ pub mod component{
                 *((ptr0 + 36) as *mut i32) = ptr19;
                 
               },
-              VecValueParam::TypeF32(e) => {
+              VecValue::TypeF32(e) => {
                 *((ptr0 + 32) as *mut u8) = (3i32) as u8;
                 let vec20 = e;
                 let ptr20 = vec20.as_ptr() as i32;
@@ -1439,7 +1197,7 @@ pub mod component{
                 *((ptr0 + 36) as *mut i32) = ptr20;
                 
               },
-              VecValueParam::TypeF64(e) => {
+              VecValue::TypeF64(e) => {
                 *((ptr0 + 32) as *mut u8) = (4i32) as u8;
                 let vec21 = e;
                 let ptr21 = vec21.as_ptr() as i32;
@@ -1448,7 +1206,7 @@ pub mod component{
                 *((ptr0 + 36) as *mut i32) = ptr21;
                 
               },
-              VecValueParam::TypeMat4(e) => {
+              VecValue::TypeMat4(e) => {
                 *((ptr0 + 32) as *mut u8) = (5i32) as u8;
                 let vec22 = e;
                 let ptr22 = vec22.as_ptr() as i32;
@@ -1457,7 +1215,7 @@ pub mod component{
                 *((ptr0 + 36) as *mut i32) = ptr22;
                 
               },
-              VecValueParam::TypeI32(e) => {
+              VecValue::TypeI32(e) => {
                 *((ptr0 + 32) as *mut u8) = (6i32) as u8;
                 let vec23 = e;
                 let ptr23 = vec23.as_ptr() as i32;
@@ -1466,7 +1224,7 @@ pub mod component{
                 *((ptr0 + 36) as *mut i32) = ptr23;
                 
               },
-              VecValueParam::TypeQuat(e) => {
+              VecValue::TypeQuat(e) => {
                 *((ptr0 + 32) as *mut u8) = (7i32) as u8;
                 let vec24 = e;
                 let ptr24 = vec24.as_ptr() as i32;
@@ -1475,7 +1233,7 @@ pub mod component{
                 *((ptr0 + 36) as *mut i32) = ptr24;
                 
               },
-              VecValueParam::TypeString(e) => {
+              VecValue::TypeString(e) => {
                 *((ptr0 + 32) as *mut u8) = (8i32) as u8;
                 let vec26 = e;
                 let len26 = vec26.len() as i32;
@@ -1506,7 +1264,7 @@ pub mod component{
                   cleanup_list.extend_from_slice(&[(result26, layout26),]);
                   
                 },
-                VecValueParam::TypeU8(e) => {
+                VecValue::TypeU8(e) => {
                   *((ptr0 + 32) as *mut u8) = (9i32) as u8;
                   let vec27 = e;
                   let ptr27 = vec27.as_ptr() as i32;
@@ -1515,7 +1273,7 @@ pub mod component{
                   *((ptr0 + 36) as *mut i32) = ptr27;
                   
                 },
-                VecValueParam::TypeU32(e) => {
+                VecValue::TypeU32(e) => {
                   *((ptr0 + 32) as *mut u8) = (10i32) as u8;
                   let vec28 = e;
                   let ptr28 = vec28.as_ptr() as i32;
@@ -1524,7 +1282,7 @@ pub mod component{
                   *((ptr0 + 36) as *mut i32) = ptr28;
                   
                 },
-                VecValueParam::TypeU64(e) => {
+                VecValue::TypeU64(e) => {
                   *((ptr0 + 32) as *mut u8) = (11i32) as u8;
                   let vec29 = e;
                   let ptr29 = vec29.as_ptr() as i32;
@@ -1533,7 +1291,7 @@ pub mod component{
                   *((ptr0 + 36) as *mut i32) = ptr29;
                   
                 },
-                VecValueParam::TypeVec2(e) => {
+                VecValue::TypeVec2(e) => {
                   *((ptr0 + 32) as *mut u8) = (12i32) as u8;
                   let vec30 = e;
                   let ptr30 = vec30.as_ptr() as i32;
@@ -1542,7 +1300,7 @@ pub mod component{
                   *((ptr0 + 36) as *mut i32) = ptr30;
                   
                 },
-                VecValueParam::TypeVec3(e) => {
+                VecValue::TypeVec3(e) => {
                   *((ptr0 + 32) as *mut u8) = (13i32) as u8;
                   let vec31 = e;
                   let ptr31 = vec31.as_ptr() as i32;
@@ -1551,7 +1309,7 @@ pub mod component{
                   *((ptr0 + 36) as *mut i32) = ptr31;
                   
                 },
-                VecValueParam::TypeVec4(e) => {
+                VecValue::TypeVec4(e) => {
                   *((ptr0 + 32) as *mut u8) = (14i32) as u8;
                   let vec32 = e;
                   let ptr32 = vec32.as_ptr() as i32;
@@ -1560,7 +1318,7 @@ pub mod component{
                   *((ptr0 + 36) as *mut i32) = ptr32;
                   
                 },
-                VecValueParam::TypeUvec2(e) => {
+                VecValue::TypeUvec2(e) => {
                   *((ptr0 + 32) as *mut u8) = (15i32) as u8;
                   let vec33 = e;
                   let ptr33 = vec33.as_ptr() as i32;
@@ -1569,7 +1327,7 @@ pub mod component{
                   *((ptr0 + 36) as *mut i32) = ptr33;
                   
                 },
-                VecValueParam::TypeUvec3(e) => {
+                VecValue::TypeUvec3(e) => {
                   *((ptr0 + 32) as *mut u8) = (16i32) as u8;
                   let vec34 = e;
                   let ptr34 = vec34.as_ptr() as i32;
@@ -1578,7 +1336,7 @@ pub mod component{
                   *((ptr0 + 36) as *mut i32) = ptr34;
                   
                 },
-                VecValueParam::TypeUvec4(e) => {
+                VecValue::TypeUvec4(e) => {
                   *((ptr0 + 32) as *mut u8) = (17i32) as u8;
                   let vec35 = e;
                   let ptr35 = vec35.as_ptr() as i32;
@@ -1590,10 +1348,10 @@ pub mod component{
               };
               
             },
-            ValueParam::TypeOption(e) => {
+            Value::TypeOption(e) => {
               *((ptr0 + 24) as *mut u8) = (19i32) as u8;
               match e {
-                OptionValueParam::TypeEmpty(e) => {
+                OptionValue::TypeEmpty(e) => {
                   *((ptr0 + 32) as *mut u8) = (0i32) as u8;
                   match e {
                     Some(e) => {
@@ -1609,7 +1367,7 @@ pub mod component{
                     },
                   };
                 },
-                OptionValueParam::TypeBool(e) => {
+                OptionValue::TypeBool(e) => {
                   *((ptr0 + 32) as *mut u8) = (1i32) as u8;
                   match e {
                     Some(e) => {
@@ -1625,7 +1383,7 @@ pub mod component{
                     },
                   };
                 },
-                OptionValueParam::TypeEntityId(e) => {
+                OptionValue::TypeEntityId(e) => {
                   *((ptr0 + 32) as *mut u8) = (2i32) as u8;
                   match e {
                     Some(e) => {
@@ -1643,7 +1401,7 @@ pub mod component{
                     },
                   };
                 },
-                OptionValueParam::TypeF32(e) => {
+                OptionValue::TypeF32(e) => {
                   *((ptr0 + 32) as *mut u8) = (3i32) as u8;
                   match e {
                     Some(e) => {
@@ -1659,7 +1417,7 @@ pub mod component{
                     },
                   };
                 },
-                OptionValueParam::TypeF64(e) => {
+                OptionValue::TypeF64(e) => {
                   *((ptr0 + 32) as *mut u8) = (4i32) as u8;
                   match e {
                     Some(e) => {
@@ -1675,7 +1433,7 @@ pub mod component{
                     },
                   };
                 },
-                OptionValueParam::TypeMat4(e) => {
+                OptionValue::TypeMat4(e) => {
                   *((ptr0 + 32) as *mut u8) = (5i32) as u8;
                   match e {
                     Some(e) => {
@@ -1711,7 +1469,7 @@ pub mod component{
                     },
                   };
                 },
-                OptionValueParam::TypeI32(e) => {
+                OptionValue::TypeI32(e) => {
                   *((ptr0 + 32) as *mut u8) = (6i32) as u8;
                   match e {
                     Some(e) => {
@@ -1727,7 +1485,7 @@ pub mod component{
                     },
                   };
                 },
-                OptionValueParam::TypeQuat(e) => {
+                OptionValue::TypeQuat(e) => {
                   *((ptr0 + 32) as *mut u8) = (7i32) as u8;
                   match e {
                     Some(e) => {
@@ -1747,7 +1505,7 @@ pub mod component{
                     },
                   };
                 },
-                OptionValueParam::TypeString(e) => {
+                OptionValue::TypeString(e) => {
                   *((ptr0 + 32) as *mut u8) = (8i32) as u8;
                   match e {
                     Some(e) => {
@@ -1767,7 +1525,7 @@ pub mod component{
                     },
                   };
                 },
-                OptionValueParam::TypeU8(e) => {
+                OptionValue::TypeU8(e) => {
                   *((ptr0 + 32) as *mut u8) = (9i32) as u8;
                   match e {
                     Some(e) => {
@@ -1783,7 +1541,7 @@ pub mod component{
                     },
                   };
                 },
-                OptionValueParam::TypeU32(e) => {
+                OptionValue::TypeU32(e) => {
                   *((ptr0 + 32) as *mut u8) = (10i32) as u8;
                   match e {
                     Some(e) => {
@@ -1799,7 +1557,7 @@ pub mod component{
                     },
                   };
                 },
-                OptionValueParam::TypeU64(e) => {
+                OptionValue::TypeU64(e) => {
                   *((ptr0 + 32) as *mut u8) = (11i32) as u8;
                   match e {
                     Some(e) => {
@@ -1815,7 +1573,7 @@ pub mod component{
                     },
                   };
                 },
-                OptionValueParam::TypeVec2(e) => {
+                OptionValue::TypeVec2(e) => {
                   *((ptr0 + 32) as *mut u8) = (12i32) as u8;
                   match e {
                     Some(e) => {
@@ -1833,7 +1591,7 @@ pub mod component{
                     },
                   };
                 },
-                OptionValueParam::TypeVec3(e) => {
+                OptionValue::TypeVec3(e) => {
                   *((ptr0 + 32) as *mut u8) = (13i32) as u8;
                   match e {
                     Some(e) => {
@@ -1852,7 +1610,7 @@ pub mod component{
                     },
                   };
                 },
-                OptionValueParam::TypeVec4(e) => {
+                OptionValue::TypeVec4(e) => {
                   *((ptr0 + 32) as *mut u8) = (14i32) as u8;
                   match e {
                     Some(e) => {
@@ -1872,7 +1630,7 @@ pub mod component{
                     },
                   };
                 },
-                OptionValueParam::TypeUvec2(e) => {
+                OptionValue::TypeUvec2(e) => {
                   *((ptr0 + 32) as *mut u8) = (15i32) as u8;
                   match e {
                     Some(e) => {
@@ -1890,7 +1648,7 @@ pub mod component{
                     },
                   };
                 },
-                OptionValueParam::TypeUvec3(e) => {
+                OptionValue::TypeUvec3(e) => {
                   *((ptr0 + 32) as *mut u8) = (16i32) as u8;
                   match e {
                     Some(e) => {
@@ -1909,7 +1667,7 @@ pub mod component{
                     },
                   };
                 },
-                OptionValueParam::TypeUvec4(e) => {
+                OptionValue::TypeUvec4(e) => {
                   *((ptr0 + 32) as *mut u8) = (17i32) as u8;
                   match e {
                     Some(e) => {
@@ -1954,10 +1712,10 @@ pub mod component{
         }
       }
       #[allow(clippy::all)]
-      pub fn add_components(entity: EntityId,data: EntityParam<'_,>,){
+      pub fn add_components(entity: EntityId,data: &Entity,){
         
         #[allow(unused_imports)]
-        use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
         unsafe {
           let mut cleanup_list = Vec::new();
           let super::types::EntityId{ id0:id00, id1:id10, } = entity;
@@ -1981,34 +1739,34 @@ pub mod component{
               let (t1_0, t1_1, ) = e;
               *((base + 0) as *mut i32) = wit_bindgen::rt::as_i32(t1_0);
               match t1_1 {
-                ValueParam::TypeEmpty(e) => {
+                Value::TypeEmpty(e) => {
                   *((base + 8) as *mut u8) = (0i32) as u8;
                   let () = e;
                   
                 },
-                ValueParam::TypeBool(e) => {
+                Value::TypeBool(e) => {
                   *((base + 8) as *mut u8) = (1i32) as u8;
                   *((base + 16) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                   
                 },
-                ValueParam::TypeEntityId(e) => {
+                Value::TypeEntityId(e) => {
                   *((base + 8) as *mut u8) = (2i32) as u8;
                   let super::types::EntityId{ id0:id03, id1:id13, } = e;
                   *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(id03);
                   *((base + 24) as *mut i64) = wit_bindgen::rt::as_i64(id13);
                   
                 },
-                ValueParam::TypeF32(e) => {
+                Value::TypeF32(e) => {
                   *((base + 8) as *mut u8) = (3i32) as u8;
                   *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(e);
                   
                 },
-                ValueParam::TypeF64(e) => {
+                Value::TypeF64(e) => {
                   *((base + 8) as *mut u8) = (4i32) as u8;
                   *((base + 16) as *mut f64) = wit_bindgen::rt::as_f64(e);
                   
                 },
-                ValueParam::TypeMat4(e) => {
+                Value::TypeMat4(e) => {
                   *((base + 8) as *mut u8) = (5i32) as u8;
                   let super::types::Mat4{ x:x4, y:y4, z:z4, w:w4, } = e;
                   let super::types::Vec4{ x:x5, y:y5, z:z5, w:w5, } = x4;
@@ -2033,12 +1791,12 @@ pub mod component{
                   *((base + 76) as *mut f32) = wit_bindgen::rt::as_f32(w8);
                   
                 },
-                ValueParam::TypeI32(e) => {
+                Value::TypeI32(e) => {
                   *((base + 8) as *mut u8) = (6i32) as u8;
                   *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(e);
                   
                 },
-                ValueParam::TypeQuat(e) => {
+                Value::TypeQuat(e) => {
                   *((base + 8) as *mut u8) = (7i32) as u8;
                   let super::types::Quat{ x:x9, y:y9, z:z9, w:w9, } = e;
                   *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x9);
@@ -2047,7 +1805,7 @@ pub mod component{
                   *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w9);
                   
                 },
-                ValueParam::TypeString(e) => {
+                Value::TypeString(e) => {
                   *((base + 8) as *mut u8) = (8i32) as u8;
                   let vec10 = e;
                   let ptr10 = vec10.as_ptr() as i32;
@@ -2056,29 +1814,29 @@ pub mod component{
                   *((base + 16) as *mut i32) = ptr10;
                   
                 },
-                ValueParam::TypeU8(e) => {
+                Value::TypeU8(e) => {
                   *((base + 8) as *mut u8) = (9i32) as u8;
                   *((base + 16) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
                   
                 },
-                ValueParam::TypeU32(e) => {
+                Value::TypeU32(e) => {
                   *((base + 8) as *mut u8) = (10i32) as u8;
                   *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(e);
                   
                 },
-                ValueParam::TypeU64(e) => {
+                Value::TypeU64(e) => {
                   *((base + 8) as *mut u8) = (11i32) as u8;
                   *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(e);
                   
                 },
-                ValueParam::TypeVec2(e) => {
+                Value::TypeVec2(e) => {
                   *((base + 8) as *mut u8) = (12i32) as u8;
                   let super::types::Vec2{ x:x11, y:y11, } = e;
                   *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x11);
                   *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y11);
                   
                 },
-                ValueParam::TypeVec3(e) => {
+                Value::TypeVec3(e) => {
                   *((base + 8) as *mut u8) = (13i32) as u8;
                   let super::types::Vec3{ x:x12, y:y12, z:z12, } = e;
                   *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x12);
@@ -2086,7 +1844,7 @@ pub mod component{
                   *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z12);
                   
                 },
-                ValueParam::TypeVec4(e) => {
+                Value::TypeVec4(e) => {
                   *((base + 8) as *mut u8) = (14i32) as u8;
                   let super::types::Vec4{ x:x13, y:y13, z:z13, w:w13, } = e;
                   *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x13);
@@ -2095,14 +1853,14 @@ pub mod component{
                   *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w13);
                   
                 },
-                ValueParam::TypeUvec2(e) => {
+                Value::TypeUvec2(e) => {
                   *((base + 8) as *mut u8) = (15i32) as u8;
                   let super::types::Uvec2{ x:x14, y:y14, } = e;
                   *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x14);
                   *((base + 20) as *mut i32) = wit_bindgen::rt::as_i32(y14);
                   
                 },
-                ValueParam::TypeUvec3(e) => {
+                Value::TypeUvec3(e) => {
                   *((base + 8) as *mut u8) = (16i32) as u8;
                   let super::types::Uvec3{ x:x15, y:y15, z:z15, } = e;
                   *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x15);
@@ -2110,7 +1868,7 @@ pub mod component{
                   *((base + 24) as *mut i32) = wit_bindgen::rt::as_i32(z15);
                   
                 },
-                ValueParam::TypeUvec4(e) => {
+                Value::TypeUvec4(e) => {
                   *((base + 8) as *mut u8) = (17i32) as u8;
                   let super::types::Uvec4{ x:x16, y:y16, z:z16, w:w16, } = e;
                   *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x16);
@@ -2119,10 +1877,10 @@ pub mod component{
                   *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(w16);
                   
                 },
-                ValueParam::TypeVec(e) => {
+                Value::TypeVec(e) => {
                   *((base + 8) as *mut u8) = (18i32) as u8;
                   match e {
-                    VecValueParam::TypeEmpty(e) => {
+                    VecValue::TypeEmpty(e) => {
                       *((base + 16) as *mut u8) = (0i32) as u8;
                       let vec17 = e;
                       let ptr17 = vec17.as_ptr() as i32;
@@ -2131,7 +1889,7 @@ pub mod component{
                       *((base + 20) as *mut i32) = ptr17;
                       
                     },
-                    VecValueParam::TypeBool(e) => {
+                    VecValue::TypeBool(e) => {
                       *((base + 16) as *mut u8) = (1i32) as u8;
                       let vec18 = e;
                       let len18 = vec18.len() as i32;
@@ -2158,7 +1916,7 @@ pub mod component{
                         cleanup_list.extend_from_slice(&[(result18, layout18),]);
                         
                       },
-                      VecValueParam::TypeEntityId(e) => {
+                      VecValue::TypeEntityId(e) => {
                         *((base + 16) as *mut u8) = (2i32) as u8;
                         let vec19 = e;
                         let ptr19 = vec19.as_ptr() as i32;
@@ -2167,7 +1925,7 @@ pub mod component{
                         *((base + 20) as *mut i32) = ptr19;
                         
                       },
-                      VecValueParam::TypeF32(e) => {
+                      VecValue::TypeF32(e) => {
                         *((base + 16) as *mut u8) = (3i32) as u8;
                         let vec20 = e;
                         let ptr20 = vec20.as_ptr() as i32;
@@ -2176,7 +1934,7 @@ pub mod component{
                         *((base + 20) as *mut i32) = ptr20;
                         
                       },
-                      VecValueParam::TypeF64(e) => {
+                      VecValue::TypeF64(e) => {
                         *((base + 16) as *mut u8) = (4i32) as u8;
                         let vec21 = e;
                         let ptr21 = vec21.as_ptr() as i32;
@@ -2185,7 +1943,7 @@ pub mod component{
                         *((base + 20) as *mut i32) = ptr21;
                         
                       },
-                      VecValueParam::TypeMat4(e) => {
+                      VecValue::TypeMat4(e) => {
                         *((base + 16) as *mut u8) = (5i32) as u8;
                         let vec22 = e;
                         let ptr22 = vec22.as_ptr() as i32;
@@ -2194,7 +1952,7 @@ pub mod component{
                         *((base + 20) as *mut i32) = ptr22;
                         
                       },
-                      VecValueParam::TypeI32(e) => {
+                      VecValue::TypeI32(e) => {
                         *((base + 16) as *mut u8) = (6i32) as u8;
                         let vec23 = e;
                         let ptr23 = vec23.as_ptr() as i32;
@@ -2203,7 +1961,7 @@ pub mod component{
                         *((base + 20) as *mut i32) = ptr23;
                         
                       },
-                      VecValueParam::TypeQuat(e) => {
+                      VecValue::TypeQuat(e) => {
                         *((base + 16) as *mut u8) = (7i32) as u8;
                         let vec24 = e;
                         let ptr24 = vec24.as_ptr() as i32;
@@ -2212,7 +1970,7 @@ pub mod component{
                         *((base + 20) as *mut i32) = ptr24;
                         
                       },
-                      VecValueParam::TypeString(e) => {
+                      VecValue::TypeString(e) => {
                         *((base + 16) as *mut u8) = (8i32) as u8;
                         let vec26 = e;
                         let len26 = vec26.len() as i32;
@@ -2243,7 +2001,7 @@ pub mod component{
                           cleanup_list.extend_from_slice(&[(result26, layout26),]);
                           
                         },
-                        VecValueParam::TypeU8(e) => {
+                        VecValue::TypeU8(e) => {
                           *((base + 16) as *mut u8) = (9i32) as u8;
                           let vec27 = e;
                           let ptr27 = vec27.as_ptr() as i32;
@@ -2252,7 +2010,7 @@ pub mod component{
                           *((base + 20) as *mut i32) = ptr27;
                           
                         },
-                        VecValueParam::TypeU32(e) => {
+                        VecValue::TypeU32(e) => {
                           *((base + 16) as *mut u8) = (10i32) as u8;
                           let vec28 = e;
                           let ptr28 = vec28.as_ptr() as i32;
@@ -2261,7 +2019,7 @@ pub mod component{
                           *((base + 20) as *mut i32) = ptr28;
                           
                         },
-                        VecValueParam::TypeU64(e) => {
+                        VecValue::TypeU64(e) => {
                           *((base + 16) as *mut u8) = (11i32) as u8;
                           let vec29 = e;
                           let ptr29 = vec29.as_ptr() as i32;
@@ -2270,7 +2028,7 @@ pub mod component{
                           *((base + 20) as *mut i32) = ptr29;
                           
                         },
-                        VecValueParam::TypeVec2(e) => {
+                        VecValue::TypeVec2(e) => {
                           *((base + 16) as *mut u8) = (12i32) as u8;
                           let vec30 = e;
                           let ptr30 = vec30.as_ptr() as i32;
@@ -2279,7 +2037,7 @@ pub mod component{
                           *((base + 20) as *mut i32) = ptr30;
                           
                         },
-                        VecValueParam::TypeVec3(e) => {
+                        VecValue::TypeVec3(e) => {
                           *((base + 16) as *mut u8) = (13i32) as u8;
                           let vec31 = e;
                           let ptr31 = vec31.as_ptr() as i32;
@@ -2288,7 +2046,7 @@ pub mod component{
                           *((base + 20) as *mut i32) = ptr31;
                           
                         },
-                        VecValueParam::TypeVec4(e) => {
+                        VecValue::TypeVec4(e) => {
                           *((base + 16) as *mut u8) = (14i32) as u8;
                           let vec32 = e;
                           let ptr32 = vec32.as_ptr() as i32;
@@ -2297,7 +2055,7 @@ pub mod component{
                           *((base + 20) as *mut i32) = ptr32;
                           
                         },
-                        VecValueParam::TypeUvec2(e) => {
+                        VecValue::TypeUvec2(e) => {
                           *((base + 16) as *mut u8) = (15i32) as u8;
                           let vec33 = e;
                           let ptr33 = vec33.as_ptr() as i32;
@@ -2306,7 +2064,7 @@ pub mod component{
                           *((base + 20) as *mut i32) = ptr33;
                           
                         },
-                        VecValueParam::TypeUvec3(e) => {
+                        VecValue::TypeUvec3(e) => {
                           *((base + 16) as *mut u8) = (16i32) as u8;
                           let vec34 = e;
                           let ptr34 = vec34.as_ptr() as i32;
@@ -2315,7 +2073,7 @@ pub mod component{
                           *((base + 20) as *mut i32) = ptr34;
                           
                         },
-                        VecValueParam::TypeUvec4(e) => {
+                        VecValue::TypeUvec4(e) => {
                           *((base + 16) as *mut u8) = (17i32) as u8;
                           let vec35 = e;
                           let ptr35 = vec35.as_ptr() as i32;
@@ -2327,10 +2085,10 @@ pub mod component{
                       };
                       
                     },
-                    ValueParam::TypeOption(e) => {
+                    Value::TypeOption(e) => {
                       *((base + 8) as *mut u8) = (19i32) as u8;
                       match e {
-                        OptionValueParam::TypeEmpty(e) => {
+                        OptionValue::TypeEmpty(e) => {
                           *((base + 16) as *mut u8) = (0i32) as u8;
                           match e {
                             Some(e) => {
@@ -2346,7 +2104,7 @@ pub mod component{
                             },
                           };
                         },
-                        OptionValueParam::TypeBool(e) => {
+                        OptionValue::TypeBool(e) => {
                           *((base + 16) as *mut u8) = (1i32) as u8;
                           match e {
                             Some(e) => {
@@ -2362,7 +2120,7 @@ pub mod component{
                             },
                           };
                         },
-                        OptionValueParam::TypeEntityId(e) => {
+                        OptionValue::TypeEntityId(e) => {
                           *((base + 16) as *mut u8) = (2i32) as u8;
                           match e {
                             Some(e) => {
@@ -2380,7 +2138,7 @@ pub mod component{
                             },
                           };
                         },
-                        OptionValueParam::TypeF32(e) => {
+                        OptionValue::TypeF32(e) => {
                           *((base + 16) as *mut u8) = (3i32) as u8;
                           match e {
                             Some(e) => {
@@ -2396,7 +2154,7 @@ pub mod component{
                             },
                           };
                         },
-                        OptionValueParam::TypeF64(e) => {
+                        OptionValue::TypeF64(e) => {
                           *((base + 16) as *mut u8) = (4i32) as u8;
                           match e {
                             Some(e) => {
@@ -2412,7 +2170,7 @@ pub mod component{
                             },
                           };
                         },
-                        OptionValueParam::TypeMat4(e) => {
+                        OptionValue::TypeMat4(e) => {
                           *((base + 16) as *mut u8) = (5i32) as u8;
                           match e {
                             Some(e) => {
@@ -2448,7 +2206,7 @@ pub mod component{
                             },
                           };
                         },
-                        OptionValueParam::TypeI32(e) => {
+                        OptionValue::TypeI32(e) => {
                           *((base + 16) as *mut u8) = (6i32) as u8;
                           match e {
                             Some(e) => {
@@ -2464,7 +2222,7 @@ pub mod component{
                             },
                           };
                         },
-                        OptionValueParam::TypeQuat(e) => {
+                        OptionValue::TypeQuat(e) => {
                           *((base + 16) as *mut u8) = (7i32) as u8;
                           match e {
                             Some(e) => {
@@ -2484,7 +2242,7 @@ pub mod component{
                             },
                           };
                         },
-                        OptionValueParam::TypeString(e) => {
+                        OptionValue::TypeString(e) => {
                           *((base + 16) as *mut u8) = (8i32) as u8;
                           match e {
                             Some(e) => {
@@ -2504,7 +2262,7 @@ pub mod component{
                             },
                           };
                         },
-                        OptionValueParam::TypeU8(e) => {
+                        OptionValue::TypeU8(e) => {
                           *((base + 16) as *mut u8) = (9i32) as u8;
                           match e {
                             Some(e) => {
@@ -2520,7 +2278,7 @@ pub mod component{
                             },
                           };
                         },
-                        OptionValueParam::TypeU32(e) => {
+                        OptionValue::TypeU32(e) => {
                           *((base + 16) as *mut u8) = (10i32) as u8;
                           match e {
                             Some(e) => {
@@ -2536,7 +2294,7 @@ pub mod component{
                             },
                           };
                         },
-                        OptionValueParam::TypeU64(e) => {
+                        OptionValue::TypeU64(e) => {
                           *((base + 16) as *mut u8) = (11i32) as u8;
                           match e {
                             Some(e) => {
@@ -2552,7 +2310,7 @@ pub mod component{
                             },
                           };
                         },
-                        OptionValueParam::TypeVec2(e) => {
+                        OptionValue::TypeVec2(e) => {
                           *((base + 16) as *mut u8) = (12i32) as u8;
                           match e {
                             Some(e) => {
@@ -2570,7 +2328,7 @@ pub mod component{
                             },
                           };
                         },
-                        OptionValueParam::TypeVec3(e) => {
+                        OptionValue::TypeVec3(e) => {
                           *((base + 16) as *mut u8) = (13i32) as u8;
                           match e {
                             Some(e) => {
@@ -2589,7 +2347,7 @@ pub mod component{
                             },
                           };
                         },
-                        OptionValueParam::TypeVec4(e) => {
+                        OptionValue::TypeVec4(e) => {
                           *((base + 16) as *mut u8) = (14i32) as u8;
                           match e {
                             Some(e) => {
@@ -2609,7 +2367,7 @@ pub mod component{
                             },
                           };
                         },
-                        OptionValueParam::TypeUvec2(e) => {
+                        OptionValue::TypeUvec2(e) => {
                           *((base + 16) as *mut u8) = (15i32) as u8;
                           match e {
                             Some(e) => {
@@ -2627,7 +2385,7 @@ pub mod component{
                             },
                           };
                         },
-                        OptionValueParam::TypeUvec3(e) => {
+                        OptionValue::TypeUvec3(e) => {
                           *((base + 16) as *mut u8) = (16i32) as u8;
                           match e {
                             Some(e) => {
@@ -2646,7 +2404,7 @@ pub mod component{
                             },
                           };
                         },
-                        OptionValueParam::TypeUvec4(e) => {
+                        OptionValue::TypeUvec4(e) => {
                           *((base + 16) as *mut u8) = (17i32) as u8;
                           match e {
                             Some(e) => {
@@ -2696,10 +2454,10 @@ pub mod component{
               }
             }
             #[allow(clippy::all)]
-            pub fn set_component(entity: EntityId,index: u32,value: ValueParam<'_,>,){
+            pub fn set_component(entity: EntityId,index: u32,value: &Value,){
               
               #[allow(unused_imports)]
-              use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+              use wit_bindgen::rt::{alloc, vec::Vec, string::String};
               unsafe {
                 let mut cleanup_list = Vec::new();
                 
@@ -2711,34 +2469,34 @@ pub mod component{
                 *((ptr0 + 8) as *mut i64) = wit_bindgen::rt::as_i64(id11);
                 *((ptr0 + 16) as *mut i32) = wit_bindgen::rt::as_i32(index);
                 match value {
-                  ValueParam::TypeEmpty(e) => {
+                  Value::TypeEmpty(e) => {
                     *((ptr0 + 24) as *mut u8) = (0i32) as u8;
                     let () = e;
                     
                   },
-                  ValueParam::TypeBool(e) => {
+                  Value::TypeBool(e) => {
                     *((ptr0 + 24) as *mut u8) = (1i32) as u8;
                     *((ptr0 + 32) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                     
                   },
-                  ValueParam::TypeEntityId(e) => {
+                  Value::TypeEntityId(e) => {
                     *((ptr0 + 24) as *mut u8) = (2i32) as u8;
                     let super::types::EntityId{ id0:id03, id1:id13, } = e;
                     *((ptr0 + 32) as *mut i64) = wit_bindgen::rt::as_i64(id03);
                     *((ptr0 + 40) as *mut i64) = wit_bindgen::rt::as_i64(id13);
                     
                   },
-                  ValueParam::TypeF32(e) => {
+                  Value::TypeF32(e) => {
                     *((ptr0 + 24) as *mut u8) = (3i32) as u8;
                     *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(e);
                     
                   },
-                  ValueParam::TypeF64(e) => {
+                  Value::TypeF64(e) => {
                     *((ptr0 + 24) as *mut u8) = (4i32) as u8;
                     *((ptr0 + 32) as *mut f64) = wit_bindgen::rt::as_f64(e);
                     
                   },
-                  ValueParam::TypeMat4(e) => {
+                  Value::TypeMat4(e) => {
                     *((ptr0 + 24) as *mut u8) = (5i32) as u8;
                     let super::types::Mat4{ x:x4, y:y4, z:z4, w:w4, } = e;
                     let super::types::Vec4{ x:x5, y:y5, z:z5, w:w5, } = x4;
@@ -2763,12 +2521,12 @@ pub mod component{
                     *((ptr0 + 92) as *mut f32) = wit_bindgen::rt::as_f32(w8);
                     
                   },
-                  ValueParam::TypeI32(e) => {
+                  Value::TypeI32(e) => {
                     *((ptr0 + 24) as *mut u8) = (6i32) as u8;
                     *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(e);
                     
                   },
-                  ValueParam::TypeQuat(e) => {
+                  Value::TypeQuat(e) => {
                     *((ptr0 + 24) as *mut u8) = (7i32) as u8;
                     let super::types::Quat{ x:x9, y:y9, z:z9, w:w9, } = e;
                     *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x9);
@@ -2777,7 +2535,7 @@ pub mod component{
                     *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(w9);
                     
                   },
-                  ValueParam::TypeString(e) => {
+                  Value::TypeString(e) => {
                     *((ptr0 + 24) as *mut u8) = (8i32) as u8;
                     let vec10 = e;
                     let ptr10 = vec10.as_ptr() as i32;
@@ -2786,29 +2544,29 @@ pub mod component{
                     *((ptr0 + 32) as *mut i32) = ptr10;
                     
                   },
-                  ValueParam::TypeU8(e) => {
+                  Value::TypeU8(e) => {
                     *((ptr0 + 24) as *mut u8) = (9i32) as u8;
                     *((ptr0 + 32) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
                     
                   },
-                  ValueParam::TypeU32(e) => {
+                  Value::TypeU32(e) => {
                     *((ptr0 + 24) as *mut u8) = (10i32) as u8;
                     *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(e);
                     
                   },
-                  ValueParam::TypeU64(e) => {
+                  Value::TypeU64(e) => {
                     *((ptr0 + 24) as *mut u8) = (11i32) as u8;
                     *((ptr0 + 32) as *mut i64) = wit_bindgen::rt::as_i64(e);
                     
                   },
-                  ValueParam::TypeVec2(e) => {
+                  Value::TypeVec2(e) => {
                     *((ptr0 + 24) as *mut u8) = (12i32) as u8;
                     let super::types::Vec2{ x:x11, y:y11, } = e;
                     *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x11);
                     *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y11);
                     
                   },
-                  ValueParam::TypeVec3(e) => {
+                  Value::TypeVec3(e) => {
                     *((ptr0 + 24) as *mut u8) = (13i32) as u8;
                     let super::types::Vec3{ x:x12, y:y12, z:z12, } = e;
                     *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x12);
@@ -2816,7 +2574,7 @@ pub mod component{
                     *((ptr0 + 40) as *mut f32) = wit_bindgen::rt::as_f32(z12);
                     
                   },
-                  ValueParam::TypeVec4(e) => {
+                  Value::TypeVec4(e) => {
                     *((ptr0 + 24) as *mut u8) = (14i32) as u8;
                     let super::types::Vec4{ x:x13, y:y13, z:z13, w:w13, } = e;
                     *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x13);
@@ -2825,14 +2583,14 @@ pub mod component{
                     *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(w13);
                     
                   },
-                  ValueParam::TypeUvec2(e) => {
+                  Value::TypeUvec2(e) => {
                     *((ptr0 + 24) as *mut u8) = (15i32) as u8;
                     let super::types::Uvec2{ x:x14, y:y14, } = e;
                     *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(x14);
                     *((ptr0 + 36) as *mut i32) = wit_bindgen::rt::as_i32(y14);
                     
                   },
-                  ValueParam::TypeUvec3(e) => {
+                  Value::TypeUvec3(e) => {
                     *((ptr0 + 24) as *mut u8) = (16i32) as u8;
                     let super::types::Uvec3{ x:x15, y:y15, z:z15, } = e;
                     *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(x15);
@@ -2840,7 +2598,7 @@ pub mod component{
                     *((ptr0 + 40) as *mut i32) = wit_bindgen::rt::as_i32(z15);
                     
                   },
-                  ValueParam::TypeUvec4(e) => {
+                  Value::TypeUvec4(e) => {
                     *((ptr0 + 24) as *mut u8) = (17i32) as u8;
                     let super::types::Uvec4{ x:x16, y:y16, z:z16, w:w16, } = e;
                     *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(x16);
@@ -2849,10 +2607,10 @@ pub mod component{
                     *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(w16);
                     
                   },
-                  ValueParam::TypeVec(e) => {
+                  Value::TypeVec(e) => {
                     *((ptr0 + 24) as *mut u8) = (18i32) as u8;
                     match e {
-                      VecValueParam::TypeEmpty(e) => {
+                      VecValue::TypeEmpty(e) => {
                         *((ptr0 + 32) as *mut u8) = (0i32) as u8;
                         let vec17 = e;
                         let ptr17 = vec17.as_ptr() as i32;
@@ -2861,7 +2619,7 @@ pub mod component{
                         *((ptr0 + 36) as *mut i32) = ptr17;
                         
                       },
-                      VecValueParam::TypeBool(e) => {
+                      VecValue::TypeBool(e) => {
                         *((ptr0 + 32) as *mut u8) = (1i32) as u8;
                         let vec18 = e;
                         let len18 = vec18.len() as i32;
@@ -2888,7 +2646,7 @@ pub mod component{
                           cleanup_list.extend_from_slice(&[(result18, layout18),]);
                           
                         },
-                        VecValueParam::TypeEntityId(e) => {
+                        VecValue::TypeEntityId(e) => {
                           *((ptr0 + 32) as *mut u8) = (2i32) as u8;
                           let vec19 = e;
                           let ptr19 = vec19.as_ptr() as i32;
@@ -2897,7 +2655,7 @@ pub mod component{
                           *((ptr0 + 36) as *mut i32) = ptr19;
                           
                         },
-                        VecValueParam::TypeF32(e) => {
+                        VecValue::TypeF32(e) => {
                           *((ptr0 + 32) as *mut u8) = (3i32) as u8;
                           let vec20 = e;
                           let ptr20 = vec20.as_ptr() as i32;
@@ -2906,7 +2664,7 @@ pub mod component{
                           *((ptr0 + 36) as *mut i32) = ptr20;
                           
                         },
-                        VecValueParam::TypeF64(e) => {
+                        VecValue::TypeF64(e) => {
                           *((ptr0 + 32) as *mut u8) = (4i32) as u8;
                           let vec21 = e;
                           let ptr21 = vec21.as_ptr() as i32;
@@ -2915,7 +2673,7 @@ pub mod component{
                           *((ptr0 + 36) as *mut i32) = ptr21;
                           
                         },
-                        VecValueParam::TypeMat4(e) => {
+                        VecValue::TypeMat4(e) => {
                           *((ptr0 + 32) as *mut u8) = (5i32) as u8;
                           let vec22 = e;
                           let ptr22 = vec22.as_ptr() as i32;
@@ -2924,7 +2682,7 @@ pub mod component{
                           *((ptr0 + 36) as *mut i32) = ptr22;
                           
                         },
-                        VecValueParam::TypeI32(e) => {
+                        VecValue::TypeI32(e) => {
                           *((ptr0 + 32) as *mut u8) = (6i32) as u8;
                           let vec23 = e;
                           let ptr23 = vec23.as_ptr() as i32;
@@ -2933,7 +2691,7 @@ pub mod component{
                           *((ptr0 + 36) as *mut i32) = ptr23;
                           
                         },
-                        VecValueParam::TypeQuat(e) => {
+                        VecValue::TypeQuat(e) => {
                           *((ptr0 + 32) as *mut u8) = (7i32) as u8;
                           let vec24 = e;
                           let ptr24 = vec24.as_ptr() as i32;
@@ -2942,7 +2700,7 @@ pub mod component{
                           *((ptr0 + 36) as *mut i32) = ptr24;
                           
                         },
-                        VecValueParam::TypeString(e) => {
+                        VecValue::TypeString(e) => {
                           *((ptr0 + 32) as *mut u8) = (8i32) as u8;
                           let vec26 = e;
                           let len26 = vec26.len() as i32;
@@ -2973,7 +2731,7 @@ pub mod component{
                             cleanup_list.extend_from_slice(&[(result26, layout26),]);
                             
                           },
-                          VecValueParam::TypeU8(e) => {
+                          VecValue::TypeU8(e) => {
                             *((ptr0 + 32) as *mut u8) = (9i32) as u8;
                             let vec27 = e;
                             let ptr27 = vec27.as_ptr() as i32;
@@ -2982,7 +2740,7 @@ pub mod component{
                             *((ptr0 + 36) as *mut i32) = ptr27;
                             
                           },
-                          VecValueParam::TypeU32(e) => {
+                          VecValue::TypeU32(e) => {
                             *((ptr0 + 32) as *mut u8) = (10i32) as u8;
                             let vec28 = e;
                             let ptr28 = vec28.as_ptr() as i32;
@@ -2991,7 +2749,7 @@ pub mod component{
                             *((ptr0 + 36) as *mut i32) = ptr28;
                             
                           },
-                          VecValueParam::TypeU64(e) => {
+                          VecValue::TypeU64(e) => {
                             *((ptr0 + 32) as *mut u8) = (11i32) as u8;
                             let vec29 = e;
                             let ptr29 = vec29.as_ptr() as i32;
@@ -3000,7 +2758,7 @@ pub mod component{
                             *((ptr0 + 36) as *mut i32) = ptr29;
                             
                           },
-                          VecValueParam::TypeVec2(e) => {
+                          VecValue::TypeVec2(e) => {
                             *((ptr0 + 32) as *mut u8) = (12i32) as u8;
                             let vec30 = e;
                             let ptr30 = vec30.as_ptr() as i32;
@@ -3009,7 +2767,7 @@ pub mod component{
                             *((ptr0 + 36) as *mut i32) = ptr30;
                             
                           },
-                          VecValueParam::TypeVec3(e) => {
+                          VecValue::TypeVec3(e) => {
                             *((ptr0 + 32) as *mut u8) = (13i32) as u8;
                             let vec31 = e;
                             let ptr31 = vec31.as_ptr() as i32;
@@ -3018,7 +2776,7 @@ pub mod component{
                             *((ptr0 + 36) as *mut i32) = ptr31;
                             
                           },
-                          VecValueParam::TypeVec4(e) => {
+                          VecValue::TypeVec4(e) => {
                             *((ptr0 + 32) as *mut u8) = (14i32) as u8;
                             let vec32 = e;
                             let ptr32 = vec32.as_ptr() as i32;
@@ -3027,7 +2785,7 @@ pub mod component{
                             *((ptr0 + 36) as *mut i32) = ptr32;
                             
                           },
-                          VecValueParam::TypeUvec2(e) => {
+                          VecValue::TypeUvec2(e) => {
                             *((ptr0 + 32) as *mut u8) = (15i32) as u8;
                             let vec33 = e;
                             let ptr33 = vec33.as_ptr() as i32;
@@ -3036,7 +2794,7 @@ pub mod component{
                             *((ptr0 + 36) as *mut i32) = ptr33;
                             
                           },
-                          VecValueParam::TypeUvec3(e) => {
+                          VecValue::TypeUvec3(e) => {
                             *((ptr0 + 32) as *mut u8) = (16i32) as u8;
                             let vec34 = e;
                             let ptr34 = vec34.as_ptr() as i32;
@@ -3045,7 +2803,7 @@ pub mod component{
                             *((ptr0 + 36) as *mut i32) = ptr34;
                             
                           },
-                          VecValueParam::TypeUvec4(e) => {
+                          VecValue::TypeUvec4(e) => {
                             *((ptr0 + 32) as *mut u8) = (17i32) as u8;
                             let vec35 = e;
                             let ptr35 = vec35.as_ptr() as i32;
@@ -3057,10 +2815,10 @@ pub mod component{
                         };
                         
                       },
-                      ValueParam::TypeOption(e) => {
+                      Value::TypeOption(e) => {
                         *((ptr0 + 24) as *mut u8) = (19i32) as u8;
                         match e {
-                          OptionValueParam::TypeEmpty(e) => {
+                          OptionValue::TypeEmpty(e) => {
                             *((ptr0 + 32) as *mut u8) = (0i32) as u8;
                             match e {
                               Some(e) => {
@@ -3076,7 +2834,7 @@ pub mod component{
                               },
                             };
                           },
-                          OptionValueParam::TypeBool(e) => {
+                          OptionValue::TypeBool(e) => {
                             *((ptr0 + 32) as *mut u8) = (1i32) as u8;
                             match e {
                               Some(e) => {
@@ -3092,7 +2850,7 @@ pub mod component{
                               },
                             };
                           },
-                          OptionValueParam::TypeEntityId(e) => {
+                          OptionValue::TypeEntityId(e) => {
                             *((ptr0 + 32) as *mut u8) = (2i32) as u8;
                             match e {
                               Some(e) => {
@@ -3110,7 +2868,7 @@ pub mod component{
                               },
                             };
                           },
-                          OptionValueParam::TypeF32(e) => {
+                          OptionValue::TypeF32(e) => {
                             *((ptr0 + 32) as *mut u8) = (3i32) as u8;
                             match e {
                               Some(e) => {
@@ -3126,7 +2884,7 @@ pub mod component{
                               },
                             };
                           },
-                          OptionValueParam::TypeF64(e) => {
+                          OptionValue::TypeF64(e) => {
                             *((ptr0 + 32) as *mut u8) = (4i32) as u8;
                             match e {
                               Some(e) => {
@@ -3142,7 +2900,7 @@ pub mod component{
                               },
                             };
                           },
-                          OptionValueParam::TypeMat4(e) => {
+                          OptionValue::TypeMat4(e) => {
                             *((ptr0 + 32) as *mut u8) = (5i32) as u8;
                             match e {
                               Some(e) => {
@@ -3178,7 +2936,7 @@ pub mod component{
                               },
                             };
                           },
-                          OptionValueParam::TypeI32(e) => {
+                          OptionValue::TypeI32(e) => {
                             *((ptr0 + 32) as *mut u8) = (6i32) as u8;
                             match e {
                               Some(e) => {
@@ -3194,7 +2952,7 @@ pub mod component{
                               },
                             };
                           },
-                          OptionValueParam::TypeQuat(e) => {
+                          OptionValue::TypeQuat(e) => {
                             *((ptr0 + 32) as *mut u8) = (7i32) as u8;
                             match e {
                               Some(e) => {
@@ -3214,7 +2972,7 @@ pub mod component{
                               },
                             };
                           },
-                          OptionValueParam::TypeString(e) => {
+                          OptionValue::TypeString(e) => {
                             *((ptr0 + 32) as *mut u8) = (8i32) as u8;
                             match e {
                               Some(e) => {
@@ -3234,7 +2992,7 @@ pub mod component{
                               },
                             };
                           },
-                          OptionValueParam::TypeU8(e) => {
+                          OptionValue::TypeU8(e) => {
                             *((ptr0 + 32) as *mut u8) = (9i32) as u8;
                             match e {
                               Some(e) => {
@@ -3250,7 +3008,7 @@ pub mod component{
                               },
                             };
                           },
-                          OptionValueParam::TypeU32(e) => {
+                          OptionValue::TypeU32(e) => {
                             *((ptr0 + 32) as *mut u8) = (10i32) as u8;
                             match e {
                               Some(e) => {
@@ -3266,7 +3024,7 @@ pub mod component{
                               },
                             };
                           },
-                          OptionValueParam::TypeU64(e) => {
+                          OptionValue::TypeU64(e) => {
                             *((ptr0 + 32) as *mut u8) = (11i32) as u8;
                             match e {
                               Some(e) => {
@@ -3282,7 +3040,7 @@ pub mod component{
                               },
                             };
                           },
-                          OptionValueParam::TypeVec2(e) => {
+                          OptionValue::TypeVec2(e) => {
                             *((ptr0 + 32) as *mut u8) = (12i32) as u8;
                             match e {
                               Some(e) => {
@@ -3300,7 +3058,7 @@ pub mod component{
                               },
                             };
                           },
-                          OptionValueParam::TypeVec3(e) => {
+                          OptionValue::TypeVec3(e) => {
                             *((ptr0 + 32) as *mut u8) = (13i32) as u8;
                             match e {
                               Some(e) => {
@@ -3319,7 +3077,7 @@ pub mod component{
                               },
                             };
                           },
-                          OptionValueParam::TypeVec4(e) => {
+                          OptionValue::TypeVec4(e) => {
                             *((ptr0 + 32) as *mut u8) = (14i32) as u8;
                             match e {
                               Some(e) => {
@@ -3339,7 +3097,7 @@ pub mod component{
                               },
                             };
                           },
-                          OptionValueParam::TypeUvec2(e) => {
+                          OptionValue::TypeUvec2(e) => {
                             *((ptr0 + 32) as *mut u8) = (15i32) as u8;
                             match e {
                               Some(e) => {
@@ -3357,7 +3115,7 @@ pub mod component{
                               },
                             };
                           },
-                          OptionValueParam::TypeUvec3(e) => {
+                          OptionValue::TypeUvec3(e) => {
                             *((ptr0 + 32) as *mut u8) = (16i32) as u8;
                             match e {
                               Some(e) => {
@@ -3376,7 +3134,7 @@ pub mod component{
                               },
                             };
                           },
-                          OptionValueParam::TypeUvec4(e) => {
+                          OptionValue::TypeUvec4(e) => {
                             *((ptr0 + 32) as *mut u8) = (17i32) as u8;
                             match e {
                               Some(e) => {
@@ -3421,10 +3179,10 @@ pub mod component{
                   }
                 }
                 #[allow(clippy::all)]
-                pub fn set_components(entity: EntityId,data: EntityParam<'_,>,){
+                pub fn set_components(entity: EntityId,data: &Entity,){
                   
                   #[allow(unused_imports)]
-                  use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                   unsafe {
                     let mut cleanup_list = Vec::new();
                     let super::types::EntityId{ id0:id00, id1:id10, } = entity;
@@ -3448,34 +3206,34 @@ pub mod component{
                         let (t1_0, t1_1, ) = e;
                         *((base + 0) as *mut i32) = wit_bindgen::rt::as_i32(t1_0);
                         match t1_1 {
-                          ValueParam::TypeEmpty(e) => {
+                          Value::TypeEmpty(e) => {
                             *((base + 8) as *mut u8) = (0i32) as u8;
                             let () = e;
                             
                           },
-                          ValueParam::TypeBool(e) => {
+                          Value::TypeBool(e) => {
                             *((base + 8) as *mut u8) = (1i32) as u8;
                             *((base + 16) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                             
                           },
-                          ValueParam::TypeEntityId(e) => {
+                          Value::TypeEntityId(e) => {
                             *((base + 8) as *mut u8) = (2i32) as u8;
                             let super::types::EntityId{ id0:id03, id1:id13, } = e;
                             *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(id03);
                             *((base + 24) as *mut i64) = wit_bindgen::rt::as_i64(id13);
                             
                           },
-                          ValueParam::TypeF32(e) => {
+                          Value::TypeF32(e) => {
                             *((base + 8) as *mut u8) = (3i32) as u8;
                             *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(e);
                             
                           },
-                          ValueParam::TypeF64(e) => {
+                          Value::TypeF64(e) => {
                             *((base + 8) as *mut u8) = (4i32) as u8;
                             *((base + 16) as *mut f64) = wit_bindgen::rt::as_f64(e);
                             
                           },
-                          ValueParam::TypeMat4(e) => {
+                          Value::TypeMat4(e) => {
                             *((base + 8) as *mut u8) = (5i32) as u8;
                             let super::types::Mat4{ x:x4, y:y4, z:z4, w:w4, } = e;
                             let super::types::Vec4{ x:x5, y:y5, z:z5, w:w5, } = x4;
@@ -3500,12 +3258,12 @@ pub mod component{
                             *((base + 76) as *mut f32) = wit_bindgen::rt::as_f32(w8);
                             
                           },
-                          ValueParam::TypeI32(e) => {
+                          Value::TypeI32(e) => {
                             *((base + 8) as *mut u8) = (6i32) as u8;
                             *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(e);
                             
                           },
-                          ValueParam::TypeQuat(e) => {
+                          Value::TypeQuat(e) => {
                             *((base + 8) as *mut u8) = (7i32) as u8;
                             let super::types::Quat{ x:x9, y:y9, z:z9, w:w9, } = e;
                             *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x9);
@@ -3514,7 +3272,7 @@ pub mod component{
                             *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w9);
                             
                           },
-                          ValueParam::TypeString(e) => {
+                          Value::TypeString(e) => {
                             *((base + 8) as *mut u8) = (8i32) as u8;
                             let vec10 = e;
                             let ptr10 = vec10.as_ptr() as i32;
@@ -3523,29 +3281,29 @@ pub mod component{
                             *((base + 16) as *mut i32) = ptr10;
                             
                           },
-                          ValueParam::TypeU8(e) => {
+                          Value::TypeU8(e) => {
                             *((base + 8) as *mut u8) = (9i32) as u8;
                             *((base + 16) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
                             
                           },
-                          ValueParam::TypeU32(e) => {
+                          Value::TypeU32(e) => {
                             *((base + 8) as *mut u8) = (10i32) as u8;
                             *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(e);
                             
                           },
-                          ValueParam::TypeU64(e) => {
+                          Value::TypeU64(e) => {
                             *((base + 8) as *mut u8) = (11i32) as u8;
                             *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(e);
                             
                           },
-                          ValueParam::TypeVec2(e) => {
+                          Value::TypeVec2(e) => {
                             *((base + 8) as *mut u8) = (12i32) as u8;
                             let super::types::Vec2{ x:x11, y:y11, } = e;
                             *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x11);
                             *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y11);
                             
                           },
-                          ValueParam::TypeVec3(e) => {
+                          Value::TypeVec3(e) => {
                             *((base + 8) as *mut u8) = (13i32) as u8;
                             let super::types::Vec3{ x:x12, y:y12, z:z12, } = e;
                             *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x12);
@@ -3553,7 +3311,7 @@ pub mod component{
                             *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z12);
                             
                           },
-                          ValueParam::TypeVec4(e) => {
+                          Value::TypeVec4(e) => {
                             *((base + 8) as *mut u8) = (14i32) as u8;
                             let super::types::Vec4{ x:x13, y:y13, z:z13, w:w13, } = e;
                             *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x13);
@@ -3562,14 +3320,14 @@ pub mod component{
                             *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w13);
                             
                           },
-                          ValueParam::TypeUvec2(e) => {
+                          Value::TypeUvec2(e) => {
                             *((base + 8) as *mut u8) = (15i32) as u8;
                             let super::types::Uvec2{ x:x14, y:y14, } = e;
                             *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x14);
                             *((base + 20) as *mut i32) = wit_bindgen::rt::as_i32(y14);
                             
                           },
-                          ValueParam::TypeUvec3(e) => {
+                          Value::TypeUvec3(e) => {
                             *((base + 8) as *mut u8) = (16i32) as u8;
                             let super::types::Uvec3{ x:x15, y:y15, z:z15, } = e;
                             *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x15);
@@ -3577,7 +3335,7 @@ pub mod component{
                             *((base + 24) as *mut i32) = wit_bindgen::rt::as_i32(z15);
                             
                           },
-                          ValueParam::TypeUvec4(e) => {
+                          Value::TypeUvec4(e) => {
                             *((base + 8) as *mut u8) = (17i32) as u8;
                             let super::types::Uvec4{ x:x16, y:y16, z:z16, w:w16, } = e;
                             *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x16);
@@ -3586,10 +3344,10 @@ pub mod component{
                             *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(w16);
                             
                           },
-                          ValueParam::TypeVec(e) => {
+                          Value::TypeVec(e) => {
                             *((base + 8) as *mut u8) = (18i32) as u8;
                             match e {
-                              VecValueParam::TypeEmpty(e) => {
+                              VecValue::TypeEmpty(e) => {
                                 *((base + 16) as *mut u8) = (0i32) as u8;
                                 let vec17 = e;
                                 let ptr17 = vec17.as_ptr() as i32;
@@ -3598,7 +3356,7 @@ pub mod component{
                                 *((base + 20) as *mut i32) = ptr17;
                                 
                               },
-                              VecValueParam::TypeBool(e) => {
+                              VecValue::TypeBool(e) => {
                                 *((base + 16) as *mut u8) = (1i32) as u8;
                                 let vec18 = e;
                                 let len18 = vec18.len() as i32;
@@ -3625,7 +3383,7 @@ pub mod component{
                                   cleanup_list.extend_from_slice(&[(result18, layout18),]);
                                   
                                 },
-                                VecValueParam::TypeEntityId(e) => {
+                                VecValue::TypeEntityId(e) => {
                                   *((base + 16) as *mut u8) = (2i32) as u8;
                                   let vec19 = e;
                                   let ptr19 = vec19.as_ptr() as i32;
@@ -3634,7 +3392,7 @@ pub mod component{
                                   *((base + 20) as *mut i32) = ptr19;
                                   
                                 },
-                                VecValueParam::TypeF32(e) => {
+                                VecValue::TypeF32(e) => {
                                   *((base + 16) as *mut u8) = (3i32) as u8;
                                   let vec20 = e;
                                   let ptr20 = vec20.as_ptr() as i32;
@@ -3643,7 +3401,7 @@ pub mod component{
                                   *((base + 20) as *mut i32) = ptr20;
                                   
                                 },
-                                VecValueParam::TypeF64(e) => {
+                                VecValue::TypeF64(e) => {
                                   *((base + 16) as *mut u8) = (4i32) as u8;
                                   let vec21 = e;
                                   let ptr21 = vec21.as_ptr() as i32;
@@ -3652,7 +3410,7 @@ pub mod component{
                                   *((base + 20) as *mut i32) = ptr21;
                                   
                                 },
-                                VecValueParam::TypeMat4(e) => {
+                                VecValue::TypeMat4(e) => {
                                   *((base + 16) as *mut u8) = (5i32) as u8;
                                   let vec22 = e;
                                   let ptr22 = vec22.as_ptr() as i32;
@@ -3661,7 +3419,7 @@ pub mod component{
                                   *((base + 20) as *mut i32) = ptr22;
                                   
                                 },
-                                VecValueParam::TypeI32(e) => {
+                                VecValue::TypeI32(e) => {
                                   *((base + 16) as *mut u8) = (6i32) as u8;
                                   let vec23 = e;
                                   let ptr23 = vec23.as_ptr() as i32;
@@ -3670,7 +3428,7 @@ pub mod component{
                                   *((base + 20) as *mut i32) = ptr23;
                                   
                                 },
-                                VecValueParam::TypeQuat(e) => {
+                                VecValue::TypeQuat(e) => {
                                   *((base + 16) as *mut u8) = (7i32) as u8;
                                   let vec24 = e;
                                   let ptr24 = vec24.as_ptr() as i32;
@@ -3679,7 +3437,7 @@ pub mod component{
                                   *((base + 20) as *mut i32) = ptr24;
                                   
                                 },
-                                VecValueParam::TypeString(e) => {
+                                VecValue::TypeString(e) => {
                                   *((base + 16) as *mut u8) = (8i32) as u8;
                                   let vec26 = e;
                                   let len26 = vec26.len() as i32;
@@ -3710,7 +3468,7 @@ pub mod component{
                                     cleanup_list.extend_from_slice(&[(result26, layout26),]);
                                     
                                   },
-                                  VecValueParam::TypeU8(e) => {
+                                  VecValue::TypeU8(e) => {
                                     *((base + 16) as *mut u8) = (9i32) as u8;
                                     let vec27 = e;
                                     let ptr27 = vec27.as_ptr() as i32;
@@ -3719,7 +3477,7 @@ pub mod component{
                                     *((base + 20) as *mut i32) = ptr27;
                                     
                                   },
-                                  VecValueParam::TypeU32(e) => {
+                                  VecValue::TypeU32(e) => {
                                     *((base + 16) as *mut u8) = (10i32) as u8;
                                     let vec28 = e;
                                     let ptr28 = vec28.as_ptr() as i32;
@@ -3728,7 +3486,7 @@ pub mod component{
                                     *((base + 20) as *mut i32) = ptr28;
                                     
                                   },
-                                  VecValueParam::TypeU64(e) => {
+                                  VecValue::TypeU64(e) => {
                                     *((base + 16) as *mut u8) = (11i32) as u8;
                                     let vec29 = e;
                                     let ptr29 = vec29.as_ptr() as i32;
@@ -3737,7 +3495,7 @@ pub mod component{
                                     *((base + 20) as *mut i32) = ptr29;
                                     
                                   },
-                                  VecValueParam::TypeVec2(e) => {
+                                  VecValue::TypeVec2(e) => {
                                     *((base + 16) as *mut u8) = (12i32) as u8;
                                     let vec30 = e;
                                     let ptr30 = vec30.as_ptr() as i32;
@@ -3746,7 +3504,7 @@ pub mod component{
                                     *((base + 20) as *mut i32) = ptr30;
                                     
                                   },
-                                  VecValueParam::TypeVec3(e) => {
+                                  VecValue::TypeVec3(e) => {
                                     *((base + 16) as *mut u8) = (13i32) as u8;
                                     let vec31 = e;
                                     let ptr31 = vec31.as_ptr() as i32;
@@ -3755,7 +3513,7 @@ pub mod component{
                                     *((base + 20) as *mut i32) = ptr31;
                                     
                                   },
-                                  VecValueParam::TypeVec4(e) => {
+                                  VecValue::TypeVec4(e) => {
                                     *((base + 16) as *mut u8) = (14i32) as u8;
                                     let vec32 = e;
                                     let ptr32 = vec32.as_ptr() as i32;
@@ -3764,7 +3522,7 @@ pub mod component{
                                     *((base + 20) as *mut i32) = ptr32;
                                     
                                   },
-                                  VecValueParam::TypeUvec2(e) => {
+                                  VecValue::TypeUvec2(e) => {
                                     *((base + 16) as *mut u8) = (15i32) as u8;
                                     let vec33 = e;
                                     let ptr33 = vec33.as_ptr() as i32;
@@ -3773,7 +3531,7 @@ pub mod component{
                                     *((base + 20) as *mut i32) = ptr33;
                                     
                                   },
-                                  VecValueParam::TypeUvec3(e) => {
+                                  VecValue::TypeUvec3(e) => {
                                     *((base + 16) as *mut u8) = (16i32) as u8;
                                     let vec34 = e;
                                     let ptr34 = vec34.as_ptr() as i32;
@@ -3782,7 +3540,7 @@ pub mod component{
                                     *((base + 20) as *mut i32) = ptr34;
                                     
                                   },
-                                  VecValueParam::TypeUvec4(e) => {
+                                  VecValue::TypeUvec4(e) => {
                                     *((base + 16) as *mut u8) = (17i32) as u8;
                                     let vec35 = e;
                                     let ptr35 = vec35.as_ptr() as i32;
@@ -3794,10 +3552,10 @@ pub mod component{
                                 };
                                 
                               },
-                              ValueParam::TypeOption(e) => {
+                              Value::TypeOption(e) => {
                                 *((base + 8) as *mut u8) = (19i32) as u8;
                                 match e {
-                                  OptionValueParam::TypeEmpty(e) => {
+                                  OptionValue::TypeEmpty(e) => {
                                     *((base + 16) as *mut u8) = (0i32) as u8;
                                     match e {
                                       Some(e) => {
@@ -3813,7 +3571,7 @@ pub mod component{
                                       },
                                     };
                                   },
-                                  OptionValueParam::TypeBool(e) => {
+                                  OptionValue::TypeBool(e) => {
                                     *((base + 16) as *mut u8) = (1i32) as u8;
                                     match e {
                                       Some(e) => {
@@ -3829,7 +3587,7 @@ pub mod component{
                                       },
                                     };
                                   },
-                                  OptionValueParam::TypeEntityId(e) => {
+                                  OptionValue::TypeEntityId(e) => {
                                     *((base + 16) as *mut u8) = (2i32) as u8;
                                     match e {
                                       Some(e) => {
@@ -3847,7 +3605,7 @@ pub mod component{
                                       },
                                     };
                                   },
-                                  OptionValueParam::TypeF32(e) => {
+                                  OptionValue::TypeF32(e) => {
                                     *((base + 16) as *mut u8) = (3i32) as u8;
                                     match e {
                                       Some(e) => {
@@ -3863,7 +3621,7 @@ pub mod component{
                                       },
                                     };
                                   },
-                                  OptionValueParam::TypeF64(e) => {
+                                  OptionValue::TypeF64(e) => {
                                     *((base + 16) as *mut u8) = (4i32) as u8;
                                     match e {
                                       Some(e) => {
@@ -3879,7 +3637,7 @@ pub mod component{
                                       },
                                     };
                                   },
-                                  OptionValueParam::TypeMat4(e) => {
+                                  OptionValue::TypeMat4(e) => {
                                     *((base + 16) as *mut u8) = (5i32) as u8;
                                     match e {
                                       Some(e) => {
@@ -3915,7 +3673,7 @@ pub mod component{
                                       },
                                     };
                                   },
-                                  OptionValueParam::TypeI32(e) => {
+                                  OptionValue::TypeI32(e) => {
                                     *((base + 16) as *mut u8) = (6i32) as u8;
                                     match e {
                                       Some(e) => {
@@ -3931,7 +3689,7 @@ pub mod component{
                                       },
                                     };
                                   },
-                                  OptionValueParam::TypeQuat(e) => {
+                                  OptionValue::TypeQuat(e) => {
                                     *((base + 16) as *mut u8) = (7i32) as u8;
                                     match e {
                                       Some(e) => {
@@ -3951,7 +3709,7 @@ pub mod component{
                                       },
                                     };
                                   },
-                                  OptionValueParam::TypeString(e) => {
+                                  OptionValue::TypeString(e) => {
                                     *((base + 16) as *mut u8) = (8i32) as u8;
                                     match e {
                                       Some(e) => {
@@ -3971,7 +3729,7 @@ pub mod component{
                                       },
                                     };
                                   },
-                                  OptionValueParam::TypeU8(e) => {
+                                  OptionValue::TypeU8(e) => {
                                     *((base + 16) as *mut u8) = (9i32) as u8;
                                     match e {
                                       Some(e) => {
@@ -3987,7 +3745,7 @@ pub mod component{
                                       },
                                     };
                                   },
-                                  OptionValueParam::TypeU32(e) => {
+                                  OptionValue::TypeU32(e) => {
                                     *((base + 16) as *mut u8) = (10i32) as u8;
                                     match e {
                                       Some(e) => {
@@ -4003,7 +3761,7 @@ pub mod component{
                                       },
                                     };
                                   },
-                                  OptionValueParam::TypeU64(e) => {
+                                  OptionValue::TypeU64(e) => {
                                     *((base + 16) as *mut u8) = (11i32) as u8;
                                     match e {
                                       Some(e) => {
@@ -4019,7 +3777,7 @@ pub mod component{
                                       },
                                     };
                                   },
-                                  OptionValueParam::TypeVec2(e) => {
+                                  OptionValue::TypeVec2(e) => {
                                     *((base + 16) as *mut u8) = (12i32) as u8;
                                     match e {
                                       Some(e) => {
@@ -4037,7 +3795,7 @@ pub mod component{
                                       },
                                     };
                                   },
-                                  OptionValueParam::TypeVec3(e) => {
+                                  OptionValue::TypeVec3(e) => {
                                     *((base + 16) as *mut u8) = (13i32) as u8;
                                     match e {
                                       Some(e) => {
@@ -4056,7 +3814,7 @@ pub mod component{
                                       },
                                     };
                                   },
-                                  OptionValueParam::TypeVec4(e) => {
+                                  OptionValue::TypeVec4(e) => {
                                     *((base + 16) as *mut u8) = (14i32) as u8;
                                     match e {
                                       Some(e) => {
@@ -4076,7 +3834,7 @@ pub mod component{
                                       },
                                     };
                                   },
-                                  OptionValueParam::TypeUvec2(e) => {
+                                  OptionValue::TypeUvec2(e) => {
                                     *((base + 16) as *mut u8) = (15i32) as u8;
                                     match e {
                                       Some(e) => {
@@ -4094,7 +3852,7 @@ pub mod component{
                                       },
                                     };
                                   },
-                                  OptionValueParam::TypeUvec3(e) => {
+                                  OptionValue::TypeUvec3(e) => {
                                     *((base + 16) as *mut u8) = (16i32) as u8;
                                     match e {
                                       Some(e) => {
@@ -4113,7 +3871,7 @@ pub mod component{
                                       },
                                     };
                                   },
-                                  OptionValueParam::TypeUvec4(e) => {
+                                  OptionValue::TypeUvec4(e) => {
                                     *((base + 16) as *mut u8) = (17i32) as u8;
                                     match e {
                                       Some(e) => {
@@ -4166,7 +3924,7 @@ pub mod component{
                       pub fn has_component(entity: EntityId,index: u32,) -> bool{
                         
                         #[allow(unused_imports)]
-                        use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                         unsafe {
                           let super::types::EntityId{ id0:id00, id1:id10, } = entity;
                           
@@ -4196,7 +3954,7 @@ pub mod component{
                       pub fn has_components(entity: EntityId,indices: &[u32],) -> bool{
                         
                         #[allow(unused_imports)]
-                        use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                         unsafe {
                           let super::types::EntityId{ id0:id00, id1:id10, } = entity;
                           let vec1 = indices;
@@ -4229,7 +3987,7 @@ pub mod component{
                       pub fn remove_component(entity: EntityId,index: u32,){
                         
                         #[allow(unused_imports)]
-                        use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                         unsafe {
                           let super::types::EntityId{ id0:id00, id1:id10, } = entity;
                           
@@ -4247,7 +4005,7 @@ pub mod component{
                       pub fn remove_components(entity: EntityId,indices: &[u32],){
                         
                         #[allow(unused_imports)]
-                        use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                         unsafe {
                           let super::types::EntityId{ id0:id00, id1:id10, } = entity;
                           let vec1 = indices;
@@ -4268,7 +4026,7 @@ pub mod component{
                       pub fn query(q: QueryBuild<'_,>,t: QueryEvent,) -> u64{
                         
                         #[allow(unused_imports)]
-                        use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                         unsafe {
                           let QueryBuild{ components:components0, include:include0, exclude:exclude0, changed:changed0, } = q;
                           let vec1 = components0;
@@ -4300,10 +4058,10 @@ pub mod component{
                         }
                       }
                       #[allow(clippy::all)]
-                      pub fn query_eval(q: u64,) -> wit_bindgen::rt::vec::Vec::<(EntityId,wit_bindgen::rt::vec::Vec::<ValueResult>,)>{
+                      pub fn query_eval(q: u64,) -> wit_bindgen::rt::vec::Vec::<(EntityId,wit_bindgen::rt::vec::Vec::<Value>,)>{
                         
                         #[allow(unused_imports)]
-                        use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                         unsafe {
                           
                           #[repr(align(4))]
@@ -4330,8 +4088,8 @@ pub mod component{
                               for i in 0..len22 {
                                 let base = base22 + i *88;
                                 result22.push({{match i32::from(*((base + 0) as *const u8)) {
-                                  0 => ValueResult::TypeEmpty(()),
-                                  1 => ValueResult::TypeBool({
+                                  0 => Value::TypeEmpty(()),
+                                  1 => Value::TypeBool({
                                     #[cfg(not(debug_assertions))]
                                     { core::mem::transmute::<u8, bool>(i32::from(*((base + 8) as *const u8)) as u8) }
                                     #[cfg(debug_assertions)]
@@ -4343,33 +4101,33 @@ pub mod component{
                                       }
                                     }
                                   }),
-                                  2 => ValueResult::TypeEntityId(super::types::EntityId{id0:*((base + 8) as *const i64) as u64, id1:*((base + 16) as *const i64) as u64, }),
-                                  3 => ValueResult::TypeF32(*((base + 8) as *const f32)),
-                                  4 => ValueResult::TypeF64(*((base + 8) as *const f64)),
-                                  5 => ValueResult::TypeMat4(super::types::Mat4{x:super::types::Vec4{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), z:*((base + 16) as *const f32), w:*((base + 20) as *const f32), }, y:super::types::Vec4{x:*((base + 24) as *const f32), y:*((base + 28) as *const f32), z:*((base + 32) as *const f32), w:*((base + 36) as *const f32), }, z:super::types::Vec4{x:*((base + 40) as *const f32), y:*((base + 44) as *const f32), z:*((base + 48) as *const f32), w:*((base + 52) as *const f32), }, w:super::types::Vec4{x:*((base + 56) as *const f32), y:*((base + 60) as *const f32), z:*((base + 64) as *const f32), w:*((base + 68) as *const f32), }, }),
-                                  6 => ValueResult::TypeI32(*((base + 8) as *const i32)),
-                                  7 => ValueResult::TypeQuat(super::types::Quat{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), z:*((base + 16) as *const f32), w:*((base + 20) as *const f32), }),
-                                  8 => ValueResult::TypeString({
+                                  2 => Value::TypeEntityId(super::types::EntityId{id0:*((base + 8) as *const i64) as u64, id1:*((base + 16) as *const i64) as u64, }),
+                                  3 => Value::TypeF32(*((base + 8) as *const f32)),
+                                  4 => Value::TypeF64(*((base + 8) as *const f64)),
+                                  5 => Value::TypeMat4(super::types::Mat4{x:super::types::Vec4{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), z:*((base + 16) as *const f32), w:*((base + 20) as *const f32), }, y:super::types::Vec4{x:*((base + 24) as *const f32), y:*((base + 28) as *const f32), z:*((base + 32) as *const f32), w:*((base + 36) as *const f32), }, z:super::types::Vec4{x:*((base + 40) as *const f32), y:*((base + 44) as *const f32), z:*((base + 48) as *const f32), w:*((base + 52) as *const f32), }, w:super::types::Vec4{x:*((base + 56) as *const f32), y:*((base + 60) as *const f32), z:*((base + 64) as *const f32), w:*((base + 68) as *const f32), }, }),
+                                  6 => Value::TypeI32(*((base + 8) as *const i32)),
+                                  7 => Value::TypeQuat(super::types::Quat{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), z:*((base + 16) as *const f32), w:*((base + 20) as *const f32), }),
+                                  8 => Value::TypeString({
                                     let len1 = *((base + 12) as *const i32) as usize;
                                     
                                     {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 8) as *const i32) as *mut _, len1, len1))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 8) as *const i32) as *mut _, len1, len1)).unwrap()}}
                                   }),
-                                  9 => ValueResult::TypeU8(i32::from(*((base + 8) as *const u8)) as u8),
-                                  10 => ValueResult::TypeU32(*((base + 8) as *const i32) as u32),
-                                  11 => ValueResult::TypeU64(*((base + 8) as *const i64) as u64),
-                                  12 => ValueResult::TypeVec2(super::types::Vec2{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), }),
-                                  13 => ValueResult::TypeVec3(super::types::Vec3{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), z:*((base + 16) as *const f32), }),
-                                  14 => ValueResult::TypeVec4(super::types::Vec4{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), z:*((base + 16) as *const f32), w:*((base + 20) as *const f32), }),
-                                  15 => ValueResult::TypeUvec2(super::types::Uvec2{x:*((base + 8) as *const i32) as u32, y:*((base + 12) as *const i32) as u32, }),
-                                  16 => ValueResult::TypeUvec3(super::types::Uvec3{x:*((base + 8) as *const i32) as u32, y:*((base + 12) as *const i32) as u32, z:*((base + 16) as *const i32) as u32, }),
-                                  17 => ValueResult::TypeUvec4(super::types::Uvec4{x:*((base + 8) as *const i32) as u32, y:*((base + 12) as *const i32) as u32, z:*((base + 16) as *const i32) as u32, w:*((base + 20) as *const i32) as u32, }),
-                                  18 => ValueResult::TypeVec({{match i32::from(*((base + 8) as *const u8)) {
-                                    0 => VecValueResult::TypeEmpty({
+                                  9 => Value::TypeU8(i32::from(*((base + 8) as *const u8)) as u8),
+                                  10 => Value::TypeU32(*((base + 8) as *const i32) as u32),
+                                  11 => Value::TypeU64(*((base + 8) as *const i64) as u64),
+                                  12 => Value::TypeVec2(super::types::Vec2{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), }),
+                                  13 => Value::TypeVec3(super::types::Vec3{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), z:*((base + 16) as *const f32), }),
+                                  14 => Value::TypeVec4(super::types::Vec4{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), z:*((base + 16) as *const f32), w:*((base + 20) as *const f32), }),
+                                  15 => Value::TypeUvec2(super::types::Uvec2{x:*((base + 8) as *const i32) as u32, y:*((base + 12) as *const i32) as u32, }),
+                                  16 => Value::TypeUvec3(super::types::Uvec3{x:*((base + 8) as *const i32) as u32, y:*((base + 12) as *const i32) as u32, z:*((base + 16) as *const i32) as u32, }),
+                                  17 => Value::TypeUvec4(super::types::Uvec4{x:*((base + 8) as *const i32) as u32, y:*((base + 12) as *const i32) as u32, z:*((base + 16) as *const i32) as u32, w:*((base + 20) as *const i32) as u32, }),
+                                  18 => Value::TypeVec({{match i32::from(*((base + 8) as *const u8)) {
+                                    0 => VecValue::TypeEmpty({
                                       let len2 = *((base + 16) as *const i32) as usize;
                                       
                                       Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len2, len2)
                                     }),
-                                    1 => VecValueResult::TypeBool({
+                                    1 => VecValue::TypeBool({
                                       let base3 = *((base + 12) as *const i32);
                                       let len3 = *((base + 16) as *const i32);
                                       let mut result3 = Vec::with_capacity(len3 as usize);
@@ -4392,37 +4150,37 @@ pub mod component{
                                       
                                       result3
                                     }),
-                                    2 => VecValueResult::TypeEntityId({
+                                    2 => VecValue::TypeEntityId({
                                       let len4 = *((base + 16) as *const i32) as usize;
                                       
                                       Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len4, len4)
                                     }),
-                                    3 => VecValueResult::TypeF32({
+                                    3 => VecValue::TypeF32({
                                       let len5 = *((base + 16) as *const i32) as usize;
                                       
                                       Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len5, len5)
                                     }),
-                                    4 => VecValueResult::TypeF64({
+                                    4 => VecValue::TypeF64({
                                       let len6 = *((base + 16) as *const i32) as usize;
                                       
                                       Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len6, len6)
                                     }),
-                                    5 => VecValueResult::TypeMat4({
+                                    5 => VecValue::TypeMat4({
                                       let len7 = *((base + 16) as *const i32) as usize;
                                       
                                       Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len7, len7)
                                     }),
-                                    6 => VecValueResult::TypeI32({
+                                    6 => VecValue::TypeI32({
                                       let len8 = *((base + 16) as *const i32) as usize;
                                       
                                       Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len8, len8)
                                     }),
-                                    7 => VecValueResult::TypeQuat({
+                                    7 => VecValue::TypeQuat({
                                       let len9 = *((base + 16) as *const i32) as usize;
                                       
                                       Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len9, len9)
                                     }),
-                                    8 => VecValueResult::TypeString({
+                                    8 => VecValue::TypeString({
                                       let base11 = *((base + 12) as *const i32);
                                       let len11 = *((base + 16) as *const i32);
                                       let mut result11 = Vec::with_capacity(len11 as usize);
@@ -4438,60 +4196,60 @@ pub mod component{
                                       
                                       result11
                                     }),
-                                    9 => VecValueResult::TypeU8({
+                                    9 => VecValue::TypeU8({
                                       let len12 = *((base + 16) as *const i32) as usize;
                                       
                                       Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len12, len12)
                                     }),
-                                    10 => VecValueResult::TypeU32({
+                                    10 => VecValue::TypeU32({
                                       let len13 = *((base + 16) as *const i32) as usize;
                                       
                                       Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len13, len13)
                                     }),
-                                    11 => VecValueResult::TypeU64({
+                                    11 => VecValue::TypeU64({
                                       let len14 = *((base + 16) as *const i32) as usize;
                                       
                                       Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len14, len14)
                                     }),
-                                    12 => VecValueResult::TypeVec2({
+                                    12 => VecValue::TypeVec2({
                                       let len15 = *((base + 16) as *const i32) as usize;
                                       
                                       Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len15, len15)
                                     }),
-                                    13 => VecValueResult::TypeVec3({
+                                    13 => VecValue::TypeVec3({
                                       let len16 = *((base + 16) as *const i32) as usize;
                                       
                                       Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len16, len16)
                                     }),
-                                    14 => VecValueResult::TypeVec4({
+                                    14 => VecValue::TypeVec4({
                                       let len17 = *((base + 16) as *const i32) as usize;
                                       
                                       Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len17, len17)
                                     }),
-                                    15 => VecValueResult::TypeUvec2({
+                                    15 => VecValue::TypeUvec2({
                                       let len18 = *((base + 16) as *const i32) as usize;
                                       
                                       Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len18, len18)
                                     }),
-                                    16 => VecValueResult::TypeUvec3({
+                                    16 => VecValue::TypeUvec3({
                                       let len19 = *((base + 16) as *const i32) as usize;
                                       
                                       Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len19, len19)
                                     }),
-                                    #[cfg(debug_assertions)]17 => VecValueResult::TypeUvec4({
+                                    #[cfg(debug_assertions)]17 => VecValue::TypeUvec4({
                                       let len20 = *((base + 16) as *const i32) as usize;
                                       
                                       Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len20, len20)
                                     }),
-                                    #[cfg(not(debug_assertions))]_ => VecValueResult::TypeUvec4({
+                                    #[cfg(not(debug_assertions))]_ => VecValue::TypeUvec4({
                                       let len20 = *((base + 16) as *const i32) as usize;
                                       
                                       Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len20, len20)
                                     }),
                                     #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
                                   }}}),
-                                  #[cfg(debug_assertions)]19 => ValueResult::TypeOption({{match i32::from(*((base + 8) as *const u8)) {
-                                    0 => OptionValueResult::TypeEmpty(match i32::from(*((base + 16) as *const u8)) {
+                                  #[cfg(debug_assertions)]19 => Value::TypeOption({{match i32::from(*((base + 8) as *const u8)) {
+                                    0 => OptionValue::TypeEmpty(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(()),
                                       #[cfg(not(debug_assertions))]
@@ -4499,7 +4257,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    1 => OptionValueResult::TypeBool(match i32::from(*((base + 16) as *const u8)) {
+                                    1 => OptionValue::TypeBool(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some({
                                         #[cfg(not(debug_assertions))]
@@ -4518,7 +4276,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    2 => OptionValueResult::TypeEntityId(match i32::from(*((base + 16) as *const u8)) {
+                                    2 => OptionValue::TypeEntityId(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(super::types::EntityId{id0:*((base + 24) as *const i64) as u64, id1:*((base + 32) as *const i64) as u64, }),
                                       #[cfg(not(debug_assertions))]
@@ -4526,7 +4284,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    3 => OptionValueResult::TypeF32(match i32::from(*((base + 16) as *const u8)) {
+                                    3 => OptionValue::TypeF32(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(*((base + 20) as *const f32)),
                                       #[cfg(not(debug_assertions))]
@@ -4534,7 +4292,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    4 => OptionValueResult::TypeF64(match i32::from(*((base + 16) as *const u8)) {
+                                    4 => OptionValue::TypeF64(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(*((base + 24) as *const f64)),
                                       #[cfg(not(debug_assertions))]
@@ -4542,7 +4300,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    5 => OptionValueResult::TypeMat4(match i32::from(*((base + 16) as *const u8)) {
+                                    5 => OptionValue::TypeMat4(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(super::types::Mat4{x:super::types::Vec4{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), w:*((base + 32) as *const f32), }, y:super::types::Vec4{x:*((base + 36) as *const f32), y:*((base + 40) as *const f32), z:*((base + 44) as *const f32), w:*((base + 48) as *const f32), }, z:super::types::Vec4{x:*((base + 52) as *const f32), y:*((base + 56) as *const f32), z:*((base + 60) as *const f32), w:*((base + 64) as *const f32), }, w:super::types::Vec4{x:*((base + 68) as *const f32), y:*((base + 72) as *const f32), z:*((base + 76) as *const f32), w:*((base + 80) as *const f32), }, }),
                                       #[cfg(not(debug_assertions))]
@@ -4550,7 +4308,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    6 => OptionValueResult::TypeI32(match i32::from(*((base + 16) as *const u8)) {
+                                    6 => OptionValue::TypeI32(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(*((base + 20) as *const i32)),
                                       #[cfg(not(debug_assertions))]
@@ -4558,7 +4316,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    7 => OptionValueResult::TypeQuat(match i32::from(*((base + 16) as *const u8)) {
+                                    7 => OptionValue::TypeQuat(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(super::types::Quat{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), w:*((base + 32) as *const f32), }),
                                       #[cfg(not(debug_assertions))]
@@ -4566,7 +4324,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    8 => OptionValueResult::TypeString(match i32::from(*((base + 16) as *const u8)) {
+                                    8 => OptionValue::TypeString(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some({
                                         let len21 = *((base + 24) as *const i32) as usize;
@@ -4578,7 +4336,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    9 => OptionValueResult::TypeU8(match i32::from(*((base + 16) as *const u8)) {
+                                    9 => OptionValue::TypeU8(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(i32::from(*((base + 17) as *const u8)) as u8),
                                       #[cfg(not(debug_assertions))]
@@ -4586,7 +4344,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    10 => OptionValueResult::TypeU32(match i32::from(*((base + 16) as *const u8)) {
+                                    10 => OptionValue::TypeU32(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(*((base + 20) as *const i32) as u32),
                                       #[cfg(not(debug_assertions))]
@@ -4594,7 +4352,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    11 => OptionValueResult::TypeU64(match i32::from(*((base + 16) as *const u8)) {
+                                    11 => OptionValue::TypeU64(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(*((base + 24) as *const i64) as u64),
                                       #[cfg(not(debug_assertions))]
@@ -4602,7 +4360,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    12 => OptionValueResult::TypeVec2(match i32::from(*((base + 16) as *const u8)) {
+                                    12 => OptionValue::TypeVec2(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(super::types::Vec2{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), }),
                                       #[cfg(not(debug_assertions))]
@@ -4610,7 +4368,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    13 => OptionValueResult::TypeVec3(match i32::from(*((base + 16) as *const u8)) {
+                                    13 => OptionValue::TypeVec3(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(super::types::Vec3{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), }),
                                       #[cfg(not(debug_assertions))]
@@ -4618,7 +4376,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    14 => OptionValueResult::TypeVec4(match i32::from(*((base + 16) as *const u8)) {
+                                    14 => OptionValue::TypeVec4(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(super::types::Vec4{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), w:*((base + 32) as *const f32), }),
                                       #[cfg(not(debug_assertions))]
@@ -4626,7 +4384,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    15 => OptionValueResult::TypeUvec2(match i32::from(*((base + 16) as *const u8)) {
+                                    15 => OptionValue::TypeUvec2(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(super::types::Uvec2{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, }),
                                       #[cfg(not(debug_assertions))]
@@ -4634,7 +4392,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    16 => OptionValueResult::TypeUvec3(match i32::from(*((base + 16) as *const u8)) {
+                                    16 => OptionValue::TypeUvec3(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(super::types::Uvec3{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, }),
                                       #[cfg(not(debug_assertions))]
@@ -4642,7 +4400,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    #[cfg(debug_assertions)]17 => OptionValueResult::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
+                                    #[cfg(debug_assertions)]17 => OptionValue::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(super::types::Uvec4{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, w:*((base + 32) as *const i32) as u32, }),
                                       #[cfg(not(debug_assertions))]
@@ -4650,7 +4408,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    #[cfg(not(debug_assertions))]_ => OptionValueResult::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
+                                    #[cfg(not(debug_assertions))]_ => OptionValue::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(super::types::Uvec4{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, w:*((base + 32) as *const i32) as u32, }),
                                       #[cfg(not(debug_assertions))]
@@ -4660,8 +4418,8 @@ pub mod component{
                                     }),
                                     #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
                                   }}}),
-                                  #[cfg(not(debug_assertions))]_ => ValueResult::TypeOption({{match i32::from(*((base + 8) as *const u8)) {
-                                    0 => OptionValueResult::TypeEmpty(match i32::from(*((base + 16) as *const u8)) {
+                                  #[cfg(not(debug_assertions))]_ => Value::TypeOption({{match i32::from(*((base + 8) as *const u8)) {
+                                    0 => OptionValue::TypeEmpty(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(()),
                                       #[cfg(not(debug_assertions))]
@@ -4669,7 +4427,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    1 => OptionValueResult::TypeBool(match i32::from(*((base + 16) as *const u8)) {
+                                    1 => OptionValue::TypeBool(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some({
                                         #[cfg(not(debug_assertions))]
@@ -4688,7 +4446,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    2 => OptionValueResult::TypeEntityId(match i32::from(*((base + 16) as *const u8)) {
+                                    2 => OptionValue::TypeEntityId(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(super::types::EntityId{id0:*((base + 24) as *const i64) as u64, id1:*((base + 32) as *const i64) as u64, }),
                                       #[cfg(not(debug_assertions))]
@@ -4696,7 +4454,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    3 => OptionValueResult::TypeF32(match i32::from(*((base + 16) as *const u8)) {
+                                    3 => OptionValue::TypeF32(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(*((base + 20) as *const f32)),
                                       #[cfg(not(debug_assertions))]
@@ -4704,7 +4462,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    4 => OptionValueResult::TypeF64(match i32::from(*((base + 16) as *const u8)) {
+                                    4 => OptionValue::TypeF64(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(*((base + 24) as *const f64)),
                                       #[cfg(not(debug_assertions))]
@@ -4712,7 +4470,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    5 => OptionValueResult::TypeMat4(match i32::from(*((base + 16) as *const u8)) {
+                                    5 => OptionValue::TypeMat4(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(super::types::Mat4{x:super::types::Vec4{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), w:*((base + 32) as *const f32), }, y:super::types::Vec4{x:*((base + 36) as *const f32), y:*((base + 40) as *const f32), z:*((base + 44) as *const f32), w:*((base + 48) as *const f32), }, z:super::types::Vec4{x:*((base + 52) as *const f32), y:*((base + 56) as *const f32), z:*((base + 60) as *const f32), w:*((base + 64) as *const f32), }, w:super::types::Vec4{x:*((base + 68) as *const f32), y:*((base + 72) as *const f32), z:*((base + 76) as *const f32), w:*((base + 80) as *const f32), }, }),
                                       #[cfg(not(debug_assertions))]
@@ -4720,7 +4478,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    6 => OptionValueResult::TypeI32(match i32::from(*((base + 16) as *const u8)) {
+                                    6 => OptionValue::TypeI32(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(*((base + 20) as *const i32)),
                                       #[cfg(not(debug_assertions))]
@@ -4728,7 +4486,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    7 => OptionValueResult::TypeQuat(match i32::from(*((base + 16) as *const u8)) {
+                                    7 => OptionValue::TypeQuat(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(super::types::Quat{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), w:*((base + 32) as *const f32), }),
                                       #[cfg(not(debug_assertions))]
@@ -4736,7 +4494,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    8 => OptionValueResult::TypeString(match i32::from(*((base + 16) as *const u8)) {
+                                    8 => OptionValue::TypeString(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some({
                                         let len21 = *((base + 24) as *const i32) as usize;
@@ -4748,7 +4506,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    9 => OptionValueResult::TypeU8(match i32::from(*((base + 16) as *const u8)) {
+                                    9 => OptionValue::TypeU8(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(i32::from(*((base + 17) as *const u8)) as u8),
                                       #[cfg(not(debug_assertions))]
@@ -4756,7 +4514,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    10 => OptionValueResult::TypeU32(match i32::from(*((base + 16) as *const u8)) {
+                                    10 => OptionValue::TypeU32(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(*((base + 20) as *const i32) as u32),
                                       #[cfg(not(debug_assertions))]
@@ -4764,7 +4522,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    11 => OptionValueResult::TypeU64(match i32::from(*((base + 16) as *const u8)) {
+                                    11 => OptionValue::TypeU64(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(*((base + 24) as *const i64) as u64),
                                       #[cfg(not(debug_assertions))]
@@ -4772,7 +4530,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    12 => OptionValueResult::TypeVec2(match i32::from(*((base + 16) as *const u8)) {
+                                    12 => OptionValue::TypeVec2(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(super::types::Vec2{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), }),
                                       #[cfg(not(debug_assertions))]
@@ -4780,7 +4538,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    13 => OptionValueResult::TypeVec3(match i32::from(*((base + 16) as *const u8)) {
+                                    13 => OptionValue::TypeVec3(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(super::types::Vec3{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), }),
                                       #[cfg(not(debug_assertions))]
@@ -4788,7 +4546,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    14 => OptionValueResult::TypeVec4(match i32::from(*((base + 16) as *const u8)) {
+                                    14 => OptionValue::TypeVec4(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(super::types::Vec4{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), w:*((base + 32) as *const f32), }),
                                       #[cfg(not(debug_assertions))]
@@ -4796,7 +4554,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    15 => OptionValueResult::TypeUvec2(match i32::from(*((base + 16) as *const u8)) {
+                                    15 => OptionValue::TypeUvec2(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(super::types::Uvec2{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, }),
                                       #[cfg(not(debug_assertions))]
@@ -4804,7 +4562,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    16 => OptionValueResult::TypeUvec3(match i32::from(*((base + 16) as *const u8)) {
+                                    16 => OptionValue::TypeUvec3(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(super::types::Uvec3{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, }),
                                       #[cfg(not(debug_assertions))]
@@ -4812,7 +4570,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    #[cfg(debug_assertions)]17 => OptionValueResult::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
+                                    #[cfg(debug_assertions)]17 => OptionValue::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(super::types::Uvec4{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, w:*((base + 32) as *const i32) as u32, }),
                                       #[cfg(not(debug_assertions))]
@@ -4820,7 +4578,7 @@ pub mod component{
                                       #[cfg(debug_assertions)]
                                       _ => panic!("invalid enum discriminant"),
                                     }),
-                                    #[cfg(not(debug_assertions))]_ => OptionValueResult::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
+                                    #[cfg(not(debug_assertions))]_ => OptionValue::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
                                       0 => None,
                                       1 => Some(super::types::Uvec4{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, w:*((base + 32) as *const i32) as u32, }),
                                       #[cfg(not(debug_assertions))]
@@ -4848,9 +4606,14 @@ pub mod component{
                     
                     #[allow(clippy::all)]
                     pub mod entity{
+                      #[used]
+                      #[doc(hidden)]
+                      #[cfg(target_arch = "wasm32")]
+                      static __FORCE_SECTION_REF: fn() = super::__link_section;
+                      
                       pub type EntityId = super::types::EntityId;
                       pub type Vec3 = super::types::Vec3;
-                      pub type EntityData<'a,> = super::component::EntityParam<'a,>;
+                      pub type EntityData<'a,> = &'a super::component::Entity;
                       /// An action in an animation.
                       #[derive(Clone)]
                       pub struct AnimationAction<'a,> {
@@ -4884,7 +4647,7 @@ pub mod component{
                       pub fn spawn(data: EntityData<'_,>,) -> EntityId{
                         
                         #[allow(unused_imports)]
-                        use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                         unsafe {
                           let mut cleanup_list = Vec::new();
                           
@@ -4911,34 +4674,34 @@ pub mod component{
                               let (t0_0, t0_1, ) = e;
                               *((base + 0) as *mut i32) = wit_bindgen::rt::as_i32(t0_0);
                               match t0_1 {
-                                super::component::ValueParam::TypeEmpty(e) => {
+                                super::component::Value::TypeEmpty(e) => {
                                   *((base + 8) as *mut u8) = (0i32) as u8;
                                   let () = e;
                                   
                                 },
-                                super::component::ValueParam::TypeBool(e) => {
+                                super::component::Value::TypeBool(e) => {
                                   *((base + 8) as *mut u8) = (1i32) as u8;
                                   *((base + 16) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                                   
                                 },
-                                super::component::ValueParam::TypeEntityId(e) => {
+                                super::component::Value::TypeEntityId(e) => {
                                   *((base + 8) as *mut u8) = (2i32) as u8;
                                   let super::types::EntityId{ id0:id02, id1:id12, } = e;
                                   *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(id02);
                                   *((base + 24) as *mut i64) = wit_bindgen::rt::as_i64(id12);
                                   
                                 },
-                                super::component::ValueParam::TypeF32(e) => {
+                                super::component::Value::TypeF32(e) => {
                                   *((base + 8) as *mut u8) = (3i32) as u8;
                                   *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(e);
                                   
                                 },
-                                super::component::ValueParam::TypeF64(e) => {
+                                super::component::Value::TypeF64(e) => {
                                   *((base + 8) as *mut u8) = (4i32) as u8;
                                   *((base + 16) as *mut f64) = wit_bindgen::rt::as_f64(e);
                                   
                                 },
-                                super::component::ValueParam::TypeMat4(e) => {
+                                super::component::Value::TypeMat4(e) => {
                                   *((base + 8) as *mut u8) = (5i32) as u8;
                                   let super::types::Mat4{ x:x3, y:y3, z:z3, w:w3, } = e;
                                   let super::types::Vec4{ x:x4, y:y4, z:z4, w:w4, } = x3;
@@ -4963,12 +4726,12 @@ pub mod component{
                                   *((base + 76) as *mut f32) = wit_bindgen::rt::as_f32(w7);
                                   
                                 },
-                                super::component::ValueParam::TypeI32(e) => {
+                                super::component::Value::TypeI32(e) => {
                                   *((base + 8) as *mut u8) = (6i32) as u8;
                                   *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(e);
                                   
                                 },
-                                super::component::ValueParam::TypeQuat(e) => {
+                                super::component::Value::TypeQuat(e) => {
                                   *((base + 8) as *mut u8) = (7i32) as u8;
                                   let super::types::Quat{ x:x8, y:y8, z:z8, w:w8, } = e;
                                   *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x8);
@@ -4977,7 +4740,7 @@ pub mod component{
                                   *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w8);
                                   
                                 },
-                                super::component::ValueParam::TypeString(e) => {
+                                super::component::Value::TypeString(e) => {
                                   *((base + 8) as *mut u8) = (8i32) as u8;
                                   let vec9 = e;
                                   let ptr9 = vec9.as_ptr() as i32;
@@ -4986,29 +4749,29 @@ pub mod component{
                                   *((base + 16) as *mut i32) = ptr9;
                                   
                                 },
-                                super::component::ValueParam::TypeU8(e) => {
+                                super::component::Value::TypeU8(e) => {
                                   *((base + 8) as *mut u8) = (9i32) as u8;
                                   *((base + 16) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
                                   
                                 },
-                                super::component::ValueParam::TypeU32(e) => {
+                                super::component::Value::TypeU32(e) => {
                                   *((base + 8) as *mut u8) = (10i32) as u8;
                                   *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(e);
                                   
                                 },
-                                super::component::ValueParam::TypeU64(e) => {
+                                super::component::Value::TypeU64(e) => {
                                   *((base + 8) as *mut u8) = (11i32) as u8;
                                   *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(e);
                                   
                                 },
-                                super::component::ValueParam::TypeVec2(e) => {
+                                super::component::Value::TypeVec2(e) => {
                                   *((base + 8) as *mut u8) = (12i32) as u8;
                                   let super::types::Vec2{ x:x10, y:y10, } = e;
                                   *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x10);
                                   *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y10);
                                   
                                 },
-                                super::component::ValueParam::TypeVec3(e) => {
+                                super::component::Value::TypeVec3(e) => {
                                   *((base + 8) as *mut u8) = (13i32) as u8;
                                   let super::types::Vec3{ x:x11, y:y11, z:z11, } = e;
                                   *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x11);
@@ -5016,7 +4779,7 @@ pub mod component{
                                   *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z11);
                                   
                                 },
-                                super::component::ValueParam::TypeVec4(e) => {
+                                super::component::Value::TypeVec4(e) => {
                                   *((base + 8) as *mut u8) = (14i32) as u8;
                                   let super::types::Vec4{ x:x12, y:y12, z:z12, w:w12, } = e;
                                   *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x12);
@@ -5025,14 +4788,14 @@ pub mod component{
                                   *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w12);
                                   
                                 },
-                                super::component::ValueParam::TypeUvec2(e) => {
+                                super::component::Value::TypeUvec2(e) => {
                                   *((base + 8) as *mut u8) = (15i32) as u8;
                                   let super::types::Uvec2{ x:x13, y:y13, } = e;
                                   *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x13);
                                   *((base + 20) as *mut i32) = wit_bindgen::rt::as_i32(y13);
                                   
                                 },
-                                super::component::ValueParam::TypeUvec3(e) => {
+                                super::component::Value::TypeUvec3(e) => {
                                   *((base + 8) as *mut u8) = (16i32) as u8;
                                   let super::types::Uvec3{ x:x14, y:y14, z:z14, } = e;
                                   *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x14);
@@ -5040,7 +4803,7 @@ pub mod component{
                                   *((base + 24) as *mut i32) = wit_bindgen::rt::as_i32(z14);
                                   
                                 },
-                                super::component::ValueParam::TypeUvec4(e) => {
+                                super::component::Value::TypeUvec4(e) => {
                                   *((base + 8) as *mut u8) = (17i32) as u8;
                                   let super::types::Uvec4{ x:x15, y:y15, z:z15, w:w15, } = e;
                                   *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x15);
@@ -5049,10 +4812,10 @@ pub mod component{
                                   *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(w15);
                                   
                                 },
-                                super::component::ValueParam::TypeVec(e) => {
+                                super::component::Value::TypeVec(e) => {
                                   *((base + 8) as *mut u8) = (18i32) as u8;
                                   match e {
-                                    super::component::VecValueParam::TypeEmpty(e) => {
+                                    super::component::VecValue::TypeEmpty(e) => {
                                       *((base + 16) as *mut u8) = (0i32) as u8;
                                       let vec16 = e;
                                       let ptr16 = vec16.as_ptr() as i32;
@@ -5061,7 +4824,7 @@ pub mod component{
                                       *((base + 20) as *mut i32) = ptr16;
                                       
                                     },
-                                    super::component::VecValueParam::TypeBool(e) => {
+                                    super::component::VecValue::TypeBool(e) => {
                                       *((base + 16) as *mut u8) = (1i32) as u8;
                                       let vec17 = e;
                                       let len17 = vec17.len() as i32;
@@ -5088,7 +4851,7 @@ pub mod component{
                                         cleanup_list.extend_from_slice(&[(result17, layout17),]);
                                         
                                       },
-                                      super::component::VecValueParam::TypeEntityId(e) => {
+                                      super::component::VecValue::TypeEntityId(e) => {
                                         *((base + 16) as *mut u8) = (2i32) as u8;
                                         let vec18 = e;
                                         let ptr18 = vec18.as_ptr() as i32;
@@ -5097,7 +4860,7 @@ pub mod component{
                                         *((base + 20) as *mut i32) = ptr18;
                                         
                                       },
-                                      super::component::VecValueParam::TypeF32(e) => {
+                                      super::component::VecValue::TypeF32(e) => {
                                         *((base + 16) as *mut u8) = (3i32) as u8;
                                         let vec19 = e;
                                         let ptr19 = vec19.as_ptr() as i32;
@@ -5106,7 +4869,7 @@ pub mod component{
                                         *((base + 20) as *mut i32) = ptr19;
                                         
                                       },
-                                      super::component::VecValueParam::TypeF64(e) => {
+                                      super::component::VecValue::TypeF64(e) => {
                                         *((base + 16) as *mut u8) = (4i32) as u8;
                                         let vec20 = e;
                                         let ptr20 = vec20.as_ptr() as i32;
@@ -5115,7 +4878,7 @@ pub mod component{
                                         *((base + 20) as *mut i32) = ptr20;
                                         
                                       },
-                                      super::component::VecValueParam::TypeMat4(e) => {
+                                      super::component::VecValue::TypeMat4(e) => {
                                         *((base + 16) as *mut u8) = (5i32) as u8;
                                         let vec21 = e;
                                         let ptr21 = vec21.as_ptr() as i32;
@@ -5124,7 +4887,7 @@ pub mod component{
                                         *((base + 20) as *mut i32) = ptr21;
                                         
                                       },
-                                      super::component::VecValueParam::TypeI32(e) => {
+                                      super::component::VecValue::TypeI32(e) => {
                                         *((base + 16) as *mut u8) = (6i32) as u8;
                                         let vec22 = e;
                                         let ptr22 = vec22.as_ptr() as i32;
@@ -5133,7 +4896,7 @@ pub mod component{
                                         *((base + 20) as *mut i32) = ptr22;
                                         
                                       },
-                                      super::component::VecValueParam::TypeQuat(e) => {
+                                      super::component::VecValue::TypeQuat(e) => {
                                         *((base + 16) as *mut u8) = (7i32) as u8;
                                         let vec23 = e;
                                         let ptr23 = vec23.as_ptr() as i32;
@@ -5142,7 +4905,7 @@ pub mod component{
                                         *((base + 20) as *mut i32) = ptr23;
                                         
                                       },
-                                      super::component::VecValueParam::TypeString(e) => {
+                                      super::component::VecValue::TypeString(e) => {
                                         *((base + 16) as *mut u8) = (8i32) as u8;
                                         let vec25 = e;
                                         let len25 = vec25.len() as i32;
@@ -5173,7 +4936,7 @@ pub mod component{
                                           cleanup_list.extend_from_slice(&[(result25, layout25),]);
                                           
                                         },
-                                        super::component::VecValueParam::TypeU8(e) => {
+                                        super::component::VecValue::TypeU8(e) => {
                                           *((base + 16) as *mut u8) = (9i32) as u8;
                                           let vec26 = e;
                                           let ptr26 = vec26.as_ptr() as i32;
@@ -5182,7 +4945,7 @@ pub mod component{
                                           *((base + 20) as *mut i32) = ptr26;
                                           
                                         },
-                                        super::component::VecValueParam::TypeU32(e) => {
+                                        super::component::VecValue::TypeU32(e) => {
                                           *((base + 16) as *mut u8) = (10i32) as u8;
                                           let vec27 = e;
                                           let ptr27 = vec27.as_ptr() as i32;
@@ -5191,7 +4954,7 @@ pub mod component{
                                           *((base + 20) as *mut i32) = ptr27;
                                           
                                         },
-                                        super::component::VecValueParam::TypeU64(e) => {
+                                        super::component::VecValue::TypeU64(e) => {
                                           *((base + 16) as *mut u8) = (11i32) as u8;
                                           let vec28 = e;
                                           let ptr28 = vec28.as_ptr() as i32;
@@ -5200,7 +4963,7 @@ pub mod component{
                                           *((base + 20) as *mut i32) = ptr28;
                                           
                                         },
-                                        super::component::VecValueParam::TypeVec2(e) => {
+                                        super::component::VecValue::TypeVec2(e) => {
                                           *((base + 16) as *mut u8) = (12i32) as u8;
                                           let vec29 = e;
                                           let ptr29 = vec29.as_ptr() as i32;
@@ -5209,7 +4972,7 @@ pub mod component{
                                           *((base + 20) as *mut i32) = ptr29;
                                           
                                         },
-                                        super::component::VecValueParam::TypeVec3(e) => {
+                                        super::component::VecValue::TypeVec3(e) => {
                                           *((base + 16) as *mut u8) = (13i32) as u8;
                                           let vec30 = e;
                                           let ptr30 = vec30.as_ptr() as i32;
@@ -5218,7 +4981,7 @@ pub mod component{
                                           *((base + 20) as *mut i32) = ptr30;
                                           
                                         },
-                                        super::component::VecValueParam::TypeVec4(e) => {
+                                        super::component::VecValue::TypeVec4(e) => {
                                           *((base + 16) as *mut u8) = (14i32) as u8;
                                           let vec31 = e;
                                           let ptr31 = vec31.as_ptr() as i32;
@@ -5227,7 +4990,7 @@ pub mod component{
                                           *((base + 20) as *mut i32) = ptr31;
                                           
                                         },
-                                        super::component::VecValueParam::TypeUvec2(e) => {
+                                        super::component::VecValue::TypeUvec2(e) => {
                                           *((base + 16) as *mut u8) = (15i32) as u8;
                                           let vec32 = e;
                                           let ptr32 = vec32.as_ptr() as i32;
@@ -5236,7 +4999,7 @@ pub mod component{
                                           *((base + 20) as *mut i32) = ptr32;
                                           
                                         },
-                                        super::component::VecValueParam::TypeUvec3(e) => {
+                                        super::component::VecValue::TypeUvec3(e) => {
                                           *((base + 16) as *mut u8) = (16i32) as u8;
                                           let vec33 = e;
                                           let ptr33 = vec33.as_ptr() as i32;
@@ -5245,7 +5008,7 @@ pub mod component{
                                           *((base + 20) as *mut i32) = ptr33;
                                           
                                         },
-                                        super::component::VecValueParam::TypeUvec4(e) => {
+                                        super::component::VecValue::TypeUvec4(e) => {
                                           *((base + 16) as *mut u8) = (17i32) as u8;
                                           let vec34 = e;
                                           let ptr34 = vec34.as_ptr() as i32;
@@ -5257,10 +5020,10 @@ pub mod component{
                                       };
                                       
                                     },
-                                    super::component::ValueParam::TypeOption(e) => {
+                                    super::component::Value::TypeOption(e) => {
                                       *((base + 8) as *mut u8) = (19i32) as u8;
                                       match e {
-                                        super::component::OptionValueParam::TypeEmpty(e) => {
+                                        super::component::OptionValue::TypeEmpty(e) => {
                                           *((base + 16) as *mut u8) = (0i32) as u8;
                                           match e {
                                             Some(e) => {
@@ -5276,7 +5039,7 @@ pub mod component{
                                             },
                                           };
                                         },
-                                        super::component::OptionValueParam::TypeBool(e) => {
+                                        super::component::OptionValue::TypeBool(e) => {
                                           *((base + 16) as *mut u8) = (1i32) as u8;
                                           match e {
                                             Some(e) => {
@@ -5292,7 +5055,7 @@ pub mod component{
                                             },
                                           };
                                         },
-                                        super::component::OptionValueParam::TypeEntityId(e) => {
+                                        super::component::OptionValue::TypeEntityId(e) => {
                                           *((base + 16) as *mut u8) = (2i32) as u8;
                                           match e {
                                             Some(e) => {
@@ -5310,7 +5073,7 @@ pub mod component{
                                             },
                                           };
                                         },
-                                        super::component::OptionValueParam::TypeF32(e) => {
+                                        super::component::OptionValue::TypeF32(e) => {
                                           *((base + 16) as *mut u8) = (3i32) as u8;
                                           match e {
                                             Some(e) => {
@@ -5326,7 +5089,7 @@ pub mod component{
                                             },
                                           };
                                         },
-                                        super::component::OptionValueParam::TypeF64(e) => {
+                                        super::component::OptionValue::TypeF64(e) => {
                                           *((base + 16) as *mut u8) = (4i32) as u8;
                                           match e {
                                             Some(e) => {
@@ -5342,7 +5105,7 @@ pub mod component{
                                             },
                                           };
                                         },
-                                        super::component::OptionValueParam::TypeMat4(e) => {
+                                        super::component::OptionValue::TypeMat4(e) => {
                                           *((base + 16) as *mut u8) = (5i32) as u8;
                                           match e {
                                             Some(e) => {
@@ -5378,7 +5141,7 @@ pub mod component{
                                             },
                                           };
                                         },
-                                        super::component::OptionValueParam::TypeI32(e) => {
+                                        super::component::OptionValue::TypeI32(e) => {
                                           *((base + 16) as *mut u8) = (6i32) as u8;
                                           match e {
                                             Some(e) => {
@@ -5394,7 +5157,7 @@ pub mod component{
                                             },
                                           };
                                         },
-                                        super::component::OptionValueParam::TypeQuat(e) => {
+                                        super::component::OptionValue::TypeQuat(e) => {
                                           *((base + 16) as *mut u8) = (7i32) as u8;
                                           match e {
                                             Some(e) => {
@@ -5414,7 +5177,7 @@ pub mod component{
                                             },
                                           };
                                         },
-                                        super::component::OptionValueParam::TypeString(e) => {
+                                        super::component::OptionValue::TypeString(e) => {
                                           *((base + 16) as *mut u8) = (8i32) as u8;
                                           match e {
                                             Some(e) => {
@@ -5434,7 +5197,7 @@ pub mod component{
                                             },
                                           };
                                         },
-                                        super::component::OptionValueParam::TypeU8(e) => {
+                                        super::component::OptionValue::TypeU8(e) => {
                                           *((base + 16) as *mut u8) = (9i32) as u8;
                                           match e {
                                             Some(e) => {
@@ -5450,7 +5213,7 @@ pub mod component{
                                             },
                                           };
                                         },
-                                        super::component::OptionValueParam::TypeU32(e) => {
+                                        super::component::OptionValue::TypeU32(e) => {
                                           *((base + 16) as *mut u8) = (10i32) as u8;
                                           match e {
                                             Some(e) => {
@@ -5466,7 +5229,7 @@ pub mod component{
                                             },
                                           };
                                         },
-                                        super::component::OptionValueParam::TypeU64(e) => {
+                                        super::component::OptionValue::TypeU64(e) => {
                                           *((base + 16) as *mut u8) = (11i32) as u8;
                                           match e {
                                             Some(e) => {
@@ -5482,7 +5245,7 @@ pub mod component{
                                             },
                                           };
                                         },
-                                        super::component::OptionValueParam::TypeVec2(e) => {
+                                        super::component::OptionValue::TypeVec2(e) => {
                                           *((base + 16) as *mut u8) = (12i32) as u8;
                                           match e {
                                             Some(e) => {
@@ -5500,7 +5263,7 @@ pub mod component{
                                             },
                                           };
                                         },
-                                        super::component::OptionValueParam::TypeVec3(e) => {
+                                        super::component::OptionValue::TypeVec3(e) => {
                                           *((base + 16) as *mut u8) = (13i32) as u8;
                                           match e {
                                             Some(e) => {
@@ -5519,7 +5282,7 @@ pub mod component{
                                             },
                                           };
                                         },
-                                        super::component::OptionValueParam::TypeVec4(e) => {
+                                        super::component::OptionValue::TypeVec4(e) => {
                                           *((base + 16) as *mut u8) = (14i32) as u8;
                                           match e {
                                             Some(e) => {
@@ -5539,7 +5302,7 @@ pub mod component{
                                             },
                                           };
                                         },
-                                        super::component::OptionValueParam::TypeUvec2(e) => {
+                                        super::component::OptionValue::TypeUvec2(e) => {
                                           *((base + 16) as *mut u8) = (15i32) as u8;
                                           match e {
                                             Some(e) => {
@@ -5557,7 +5320,7 @@ pub mod component{
                                             },
                                           };
                                         },
-                                        super::component::OptionValueParam::TypeUvec3(e) => {
+                                        super::component::OptionValue::TypeUvec3(e) => {
                                           *((base + 16) as *mut u8) = (16i32) as u8;
                                           match e {
                                             Some(e) => {
@@ -5576,7 +5339,7 @@ pub mod component{
                                             },
                                           };
                                         },
-                                        super::component::OptionValueParam::TypeUvec4(e) => {
+                                        super::component::OptionValue::TypeUvec4(e) => {
                                           *((base + 16) as *mut u8) = (17i32) as u8;
                                           match e {
                                             Some(e) => {
@@ -5630,7 +5393,7 @@ pub mod component{
                             pub fn despawn(entity: EntityId,) -> bool{
                               
                               #[allow(unused_imports)]
-                              use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                              use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                               unsafe {
                                 let super::types::EntityId{ id0:id00, id1:id10, } = entity;
                                 
@@ -5660,7 +5423,7 @@ pub mod component{
                             pub fn set_animation_controller(entity: EntityId,animation_controller: AnimationController<'_,>,){
                               
                               #[allow(unused_imports)]
-                              use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                              use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                               unsafe {
                                 let super::types::EntityId{ id0:id00, id1:id10, } = entity;
                                 let AnimationController{ actions:actions1, apply_base_pose:apply_base_pose1, } = animation_controller;
@@ -5709,7 +5472,7 @@ pub mod component{
                               pub fn in_area(position: Vec3,radius: f32,) -> wit_bindgen::rt::vec::Vec::<EntityId>{
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   
                                   #[repr(align(4))]
@@ -5733,7 +5496,7 @@ pub mod component{
                               pub fn exists(entity: EntityId,) -> bool{
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   let super::types::EntityId{ id0:id00, id1:id10, } = entity;
                                   
@@ -5763,7 +5526,7 @@ pub mod component{
                               pub fn get_all(index: u32,) -> wit_bindgen::rt::vec::Vec::<EntityId>{
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   
                                   #[repr(align(4))]
@@ -5786,7 +5549,7 @@ pub mod component{
                               pub fn resources() -> EntityId{
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   
                                   #[repr(align(8))]
@@ -5808,7 +5571,7 @@ pub mod component{
                               pub fn synchronized_resources() -> EntityId{
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   
                                   #[repr(align(8))]
@@ -5830,7 +5593,7 @@ pub mod component{
                               pub fn persisted_resources() -> EntityId{
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   
                                   #[repr(align(8))]
@@ -5854,11 +5617,16 @@ pub mod component{
                             
                             #[allow(clippy::all)]
                             pub mod event{
+                              #[used]
+                              #[doc(hidden)]
+                              #[cfg(target_arch = "wasm32")]
+                              static __FORCE_SECTION_REF: fn() = super::__link_section;
+                              
                               #[allow(clippy::all)]
                               pub fn subscribe(name: &str,){
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   let vec0 = name;
                                   let ptr0 = vec0.as_ptr() as i32;
@@ -5880,6 +5648,11 @@ pub mod component{
                             
                             #[allow(clippy::all)]
                             pub mod client_message{
+                              #[used]
+                              #[doc(hidden)]
+                              #[cfg(target_arch = "wasm32")]
+                              static __FORCE_SECTION_REF: fn() = super::__link_section;
+                              
                               pub type EntityId = super::types::EntityId;
                               #[derive(Clone, Copy)]
                               pub enum Target{
@@ -5910,7 +5683,7 @@ pub mod component{
                               pub fn send(target_id: Target,name: &str,data: &[u8],){
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   let (result1_0,result1_1,result1_2,) = match target_id {
                                     Target::RemoteUnreliable=> {
@@ -5951,6 +5724,11 @@ pub mod component{
                             
                             #[allow(clippy::all)]
                             pub mod server_player{
+                              #[used]
+                              #[doc(hidden)]
+                              #[cfg(target_arch = "wasm32")]
+                              static __FORCE_SECTION_REF: fn() = super::__link_section;
+                              
                               pub type Vec2 = super::types::Vec2;
                               pub type EntityId = super::types::EntityId;
                               #[repr(u8)]
@@ -6676,7 +6454,7 @@ pub mod component{
                               pub fn get_raw_input(player: EntityId,) -> Option<RawInput>{
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   
                                   #[repr(align(4))]
@@ -6897,7 +6675,7 @@ pub mod component{
                               pub fn get_prev_raw_input(player: EntityId,) -> Option<RawInput>{
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   
                                   #[repr(align(4))]
@@ -7120,6 +6898,11 @@ pub mod component{
                             
                             #[allow(clippy::all)]
                             pub mod server_physics{
+                              #[used]
+                              #[doc(hidden)]
+                              #[cfg(target_arch = "wasm32")]
+                              static __FORCE_SECTION_REF: fn() = super::__link_section;
+                              
                               pub type EntityId = super::types::EntityId;
                               pub type Vec3 = super::types::Vec3;
                               #[repr(C)]
@@ -7138,7 +6921,7 @@ pub mod component{
                               pub fn apply_force(entities: &[EntityId],force: Vec3,){
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   let vec0 = entities;
                                   let ptr0 = vec0.as_ptr() as i32;
@@ -7159,7 +6942,7 @@ pub mod component{
                               pub fn explode_bomb(position: Vec3,force: f32,radius: f32,falloff_radius: Option<f32>,){
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   let super::types::Vec3{ x:x0, y:y0, z:z0, } = position;
                                   let (result1_0,result1_1,) = match falloff_radius {
@@ -7182,7 +6965,7 @@ pub mod component{
                               pub fn set_gravity(gravity: Vec3,){
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   let super::types::Vec3{ x:x0, y:y0, z:z0, } = gravity;
                                   
@@ -7200,7 +6983,7 @@ pub mod component{
                               pub fn unfreeze(entity: EntityId,){
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   let super::types::EntityId{ id0:id00, id1:id10, } = entity;
                                   
@@ -7218,7 +7001,7 @@ pub mod component{
                               pub fn freeze(entity: EntityId,){
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   let super::types::EntityId{ id0:id00, id1:id10, } = entity;
                                   
@@ -7236,7 +7019,7 @@ pub mod component{
                               pub fn start_motor(entity: EntityId,velocity: f32,){
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   let super::types::EntityId{ id0:id00, id1:id10, } = entity;
                                   
@@ -7254,7 +7037,7 @@ pub mod component{
                               pub fn stop_motor(entity: EntityId,){
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   let super::types::EntityId{ id0:id00, id1:id10, } = entity;
                                   
@@ -7272,7 +7055,7 @@ pub mod component{
                               pub fn raycast_first(origin: Vec3,direction: Vec3,) -> Option<(EntityId,f32,)>{
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   
                                   #[repr(align(8))]
@@ -7303,7 +7086,7 @@ pub mod component{
                               pub fn raycast(origin: Vec3,direction: Vec3,) -> wit_bindgen::rt::vec::Vec::<(EntityId,f32,)>{
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   
                                   #[repr(align(4))]
@@ -7328,7 +7111,7 @@ pub mod component{
                               pub fn move_character(entity: EntityId,displacement: Vec3,min_dist: f32,elapsed_time: f32,) -> CharacterCollision{
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   
                                   #[repr(align(1))]
@@ -7387,11 +7170,16 @@ pub mod component{
                             
                             #[allow(clippy::all)]
                             pub mod server_asset{
+                              #[used]
+                              #[doc(hidden)]
+                              #[cfg(target_arch = "wasm32")]
+                              static __FORCE_SECTION_REF: fn() = super::__link_section;
+                              
                               #[allow(clippy::all)]
                               pub fn url(path: &str,) -> Option<wit_bindgen::rt::string::String>{
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   
                                   #[repr(align(4))]
@@ -7429,6 +7217,11 @@ pub mod component{
                             
                             #[allow(clippy::all)]
                             pub mod server_message{
+                              #[used]
+                              #[doc(hidden)]
+                              #[cfg(target_arch = "wasm32")]
+                              static __FORCE_SECTION_REF: fn() = super::__link_section;
+                              
                               pub type EntityId = super::types::EntityId;
                               #[derive(Clone)]
                               pub enum Target<'a,>{
@@ -7467,7 +7260,7 @@ pub mod component{
                               pub fn send(target_id: Target<'_,>,name: &str,data: &[u8],){
                                 
                                 #[allow(unused_imports)]
-                                use wit_bindgen::rt::{{alloc, vec::Vec, string::String}};
+                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   let (result3_0,result3_1,result3_2,) = match target_id {
                                     Target::RemoteBroadcastUnreliable=> {
@@ -7522,7 +7315,12 @@ pub mod component{
                             
                             #[allow(clippy::all)]
                             pub mod guest{
-                              pub type Entity = super::component::EntityResult;
+                              #[used]
+                              #[doc(hidden)]
+                              #[cfg(target_arch = "wasm32")]
+                              static __FORCE_SECTION_REF: fn() = super::__link_section;
+                              
+                              pub type Entity = super::component::Entity;
                               pub trait Guest {
                                 fn init();
                                 fn exec(time: f32,event_name: wit_bindgen::rt::string::String,event_data: Entity,);
@@ -7578,8 +7376,8 @@ pub mod component{
                                 for i in 0..len22 {
                                   let base = base22 + i *96;
                                   result22.push((*((base + 0) as *const i32) as u32, {{match i32::from(*((base + 8) as *const u8)) {
-                                    0 => super::component::ValueResult::TypeEmpty(()),
-                                    1 => super::component::ValueResult::TypeBool({
+                                    0 => super::component::Value::TypeEmpty(()),
+                                    1 => super::component::Value::TypeBool({
                                       #[cfg(not(debug_assertions))]
                                       { core::mem::transmute::<u8, bool>(i32::from(*((base + 16) as *const u8)) as u8) }
                                       #[cfg(debug_assertions)]
@@ -7591,33 +7389,33 @@ pub mod component{
                                         }
                                       }
                                     }),
-                                    2 => super::component::ValueResult::TypeEntityId(super::types::EntityId{id0:*((base + 16) as *const i64) as u64, id1:*((base + 24) as *const i64) as u64, }),
-                                    3 => super::component::ValueResult::TypeF32(*((base + 16) as *const f32)),
-                                    4 => super::component::ValueResult::TypeF64(*((base + 16) as *const f64)),
-                                    5 => super::component::ValueResult::TypeMat4(super::types::Mat4{x:super::types::Vec4{x:*((base + 16) as *const f32), y:*((base + 20) as *const f32), z:*((base + 24) as *const f32), w:*((base + 28) as *const f32), }, y:super::types::Vec4{x:*((base + 32) as *const f32), y:*((base + 36) as *const f32), z:*((base + 40) as *const f32), w:*((base + 44) as *const f32), }, z:super::types::Vec4{x:*((base + 48) as *const f32), y:*((base + 52) as *const f32), z:*((base + 56) as *const f32), w:*((base + 60) as *const f32), }, w:super::types::Vec4{x:*((base + 64) as *const f32), y:*((base + 68) as *const f32), z:*((base + 72) as *const f32), w:*((base + 76) as *const f32), }, }),
-                                    6 => super::component::ValueResult::TypeI32(*((base + 16) as *const i32)),
-                                    7 => super::component::ValueResult::TypeQuat(super::types::Quat{x:*((base + 16) as *const f32), y:*((base + 20) as *const f32), z:*((base + 24) as *const f32), w:*((base + 28) as *const f32), }),
-                                    8 => super::component::ValueResult::TypeString({
+                                    2 => super::component::Value::TypeEntityId(super::types::EntityId{id0:*((base + 16) as *const i64) as u64, id1:*((base + 24) as *const i64) as u64, }),
+                                    3 => super::component::Value::TypeF32(*((base + 16) as *const f32)),
+                                    4 => super::component::Value::TypeF64(*((base + 16) as *const f64)),
+                                    5 => super::component::Value::TypeMat4(super::types::Mat4{x:super::types::Vec4{x:*((base + 16) as *const f32), y:*((base + 20) as *const f32), z:*((base + 24) as *const f32), w:*((base + 28) as *const f32), }, y:super::types::Vec4{x:*((base + 32) as *const f32), y:*((base + 36) as *const f32), z:*((base + 40) as *const f32), w:*((base + 44) as *const f32), }, z:super::types::Vec4{x:*((base + 48) as *const f32), y:*((base + 52) as *const f32), z:*((base + 56) as *const f32), w:*((base + 60) as *const f32), }, w:super::types::Vec4{x:*((base + 64) as *const f32), y:*((base + 68) as *const f32), z:*((base + 72) as *const f32), w:*((base + 76) as *const f32), }, }),
+                                    6 => super::component::Value::TypeI32(*((base + 16) as *const i32)),
+                                    7 => super::component::Value::TypeQuat(super::types::Quat{x:*((base + 16) as *const f32), y:*((base + 20) as *const f32), z:*((base + 24) as *const f32), w:*((base + 28) as *const f32), }),
+                                    8 => super::component::Value::TypeString({
                                       let len1 = *((base + 20) as *const i32) as usize;
                                       
                                       {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 16) as *const i32) as *mut _, len1, len1))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 16) as *const i32) as *mut _, len1, len1)).unwrap()}}
                                     }),
-                                    9 => super::component::ValueResult::TypeU8(i32::from(*((base + 16) as *const u8)) as u8),
-                                    10 => super::component::ValueResult::TypeU32(*((base + 16) as *const i32) as u32),
-                                    11 => super::component::ValueResult::TypeU64(*((base + 16) as *const i64) as u64),
-                                    12 => super::component::ValueResult::TypeVec2(super::types::Vec2{x:*((base + 16) as *const f32), y:*((base + 20) as *const f32), }),
-                                    13 => super::component::ValueResult::TypeVec3(super::types::Vec3{x:*((base + 16) as *const f32), y:*((base + 20) as *const f32), z:*((base + 24) as *const f32), }),
-                                    14 => super::component::ValueResult::TypeVec4(super::types::Vec4{x:*((base + 16) as *const f32), y:*((base + 20) as *const f32), z:*((base + 24) as *const f32), w:*((base + 28) as *const f32), }),
-                                    15 => super::component::ValueResult::TypeUvec2(super::types::Uvec2{x:*((base + 16) as *const i32) as u32, y:*((base + 20) as *const i32) as u32, }),
-                                    16 => super::component::ValueResult::TypeUvec3(super::types::Uvec3{x:*((base + 16) as *const i32) as u32, y:*((base + 20) as *const i32) as u32, z:*((base + 24) as *const i32) as u32, }),
-                                    17 => super::component::ValueResult::TypeUvec4(super::types::Uvec4{x:*((base + 16) as *const i32) as u32, y:*((base + 20) as *const i32) as u32, z:*((base + 24) as *const i32) as u32, w:*((base + 28) as *const i32) as u32, }),
-                                    18 => super::component::ValueResult::TypeVec({{match i32::from(*((base + 16) as *const u8)) {
-                                      0 => super::component::VecValueResult::TypeEmpty({
+                                    9 => super::component::Value::TypeU8(i32::from(*((base + 16) as *const u8)) as u8),
+                                    10 => super::component::Value::TypeU32(*((base + 16) as *const i32) as u32),
+                                    11 => super::component::Value::TypeU64(*((base + 16) as *const i64) as u64),
+                                    12 => super::component::Value::TypeVec2(super::types::Vec2{x:*((base + 16) as *const f32), y:*((base + 20) as *const f32), }),
+                                    13 => super::component::Value::TypeVec3(super::types::Vec3{x:*((base + 16) as *const f32), y:*((base + 20) as *const f32), z:*((base + 24) as *const f32), }),
+                                    14 => super::component::Value::TypeVec4(super::types::Vec4{x:*((base + 16) as *const f32), y:*((base + 20) as *const f32), z:*((base + 24) as *const f32), w:*((base + 28) as *const f32), }),
+                                    15 => super::component::Value::TypeUvec2(super::types::Uvec2{x:*((base + 16) as *const i32) as u32, y:*((base + 20) as *const i32) as u32, }),
+                                    16 => super::component::Value::TypeUvec3(super::types::Uvec3{x:*((base + 16) as *const i32) as u32, y:*((base + 20) as *const i32) as u32, z:*((base + 24) as *const i32) as u32, }),
+                                    17 => super::component::Value::TypeUvec4(super::types::Uvec4{x:*((base + 16) as *const i32) as u32, y:*((base + 20) as *const i32) as u32, z:*((base + 24) as *const i32) as u32, w:*((base + 28) as *const i32) as u32, }),
+                                    18 => super::component::Value::TypeVec({{match i32::from(*((base + 16) as *const u8)) {
+                                      0 => super::component::VecValue::TypeEmpty({
                                         let len2 = *((base + 24) as *const i32) as usize;
                                         
                                         Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len2, len2)
                                       }),
-                                      1 => super::component::VecValueResult::TypeBool({
+                                      1 => super::component::VecValue::TypeBool({
                                         let base3 = *((base + 20) as *const i32);
                                         let len3 = *((base + 24) as *const i32);
                                         let mut result3 = Vec::with_capacity(len3 as usize);
@@ -7640,37 +7438,37 @@ pub mod component{
                                         
                                         result3
                                       }),
-                                      2 => super::component::VecValueResult::TypeEntityId({
+                                      2 => super::component::VecValue::TypeEntityId({
                                         let len4 = *((base + 24) as *const i32) as usize;
                                         
                                         Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len4, len4)
                                       }),
-                                      3 => super::component::VecValueResult::TypeF32({
+                                      3 => super::component::VecValue::TypeF32({
                                         let len5 = *((base + 24) as *const i32) as usize;
                                         
                                         Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len5, len5)
                                       }),
-                                      4 => super::component::VecValueResult::TypeF64({
+                                      4 => super::component::VecValue::TypeF64({
                                         let len6 = *((base + 24) as *const i32) as usize;
                                         
                                         Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len6, len6)
                                       }),
-                                      5 => super::component::VecValueResult::TypeMat4({
+                                      5 => super::component::VecValue::TypeMat4({
                                         let len7 = *((base + 24) as *const i32) as usize;
                                         
                                         Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len7, len7)
                                       }),
-                                      6 => super::component::VecValueResult::TypeI32({
+                                      6 => super::component::VecValue::TypeI32({
                                         let len8 = *((base + 24) as *const i32) as usize;
                                         
                                         Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len8, len8)
                                       }),
-                                      7 => super::component::VecValueResult::TypeQuat({
+                                      7 => super::component::VecValue::TypeQuat({
                                         let len9 = *((base + 24) as *const i32) as usize;
                                         
                                         Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len9, len9)
                                       }),
-                                      8 => super::component::VecValueResult::TypeString({
+                                      8 => super::component::VecValue::TypeString({
                                         let base11 = *((base + 20) as *const i32);
                                         let len11 = *((base + 24) as *const i32);
                                         let mut result11 = Vec::with_capacity(len11 as usize);
@@ -7686,60 +7484,60 @@ pub mod component{
                                         
                                         result11
                                       }),
-                                      9 => super::component::VecValueResult::TypeU8({
+                                      9 => super::component::VecValue::TypeU8({
                                         let len12 = *((base + 24) as *const i32) as usize;
                                         
                                         Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len12, len12)
                                       }),
-                                      10 => super::component::VecValueResult::TypeU32({
+                                      10 => super::component::VecValue::TypeU32({
                                         let len13 = *((base + 24) as *const i32) as usize;
                                         
                                         Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len13, len13)
                                       }),
-                                      11 => super::component::VecValueResult::TypeU64({
+                                      11 => super::component::VecValue::TypeU64({
                                         let len14 = *((base + 24) as *const i32) as usize;
                                         
                                         Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len14, len14)
                                       }),
-                                      12 => super::component::VecValueResult::TypeVec2({
+                                      12 => super::component::VecValue::TypeVec2({
                                         let len15 = *((base + 24) as *const i32) as usize;
                                         
                                         Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len15, len15)
                                       }),
-                                      13 => super::component::VecValueResult::TypeVec3({
+                                      13 => super::component::VecValue::TypeVec3({
                                         let len16 = *((base + 24) as *const i32) as usize;
                                         
                                         Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len16, len16)
                                       }),
-                                      14 => super::component::VecValueResult::TypeVec4({
+                                      14 => super::component::VecValue::TypeVec4({
                                         let len17 = *((base + 24) as *const i32) as usize;
                                         
                                         Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len17, len17)
                                       }),
-                                      15 => super::component::VecValueResult::TypeUvec2({
+                                      15 => super::component::VecValue::TypeUvec2({
                                         let len18 = *((base + 24) as *const i32) as usize;
                                         
                                         Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len18, len18)
                                       }),
-                                      16 => super::component::VecValueResult::TypeUvec3({
+                                      16 => super::component::VecValue::TypeUvec3({
                                         let len19 = *((base + 24) as *const i32) as usize;
                                         
                                         Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len19, len19)
                                       }),
-                                      #[cfg(debug_assertions)]17 => super::component::VecValueResult::TypeUvec4({
+                                      #[cfg(debug_assertions)]17 => super::component::VecValue::TypeUvec4({
                                         let len20 = *((base + 24) as *const i32) as usize;
                                         
                                         Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len20, len20)
                                       }),
-                                      #[cfg(not(debug_assertions))]_ => super::component::VecValueResult::TypeUvec4({
+                                      #[cfg(not(debug_assertions))]_ => super::component::VecValue::TypeUvec4({
                                         let len20 = *((base + 24) as *const i32) as usize;
                                         
                                         Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len20, len20)
                                       }),
                                       #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
                                     }}}),
-                                    #[cfg(debug_assertions)]19 => super::component::ValueResult::TypeOption({{match i32::from(*((base + 16) as *const u8)) {
-                                      0 => super::component::OptionValueResult::TypeEmpty(match i32::from(*((base + 24) as *const u8)) {
+                                    #[cfg(debug_assertions)]19 => super::component::Value::TypeOption({{match i32::from(*((base + 16) as *const u8)) {
+                                      0 => super::component::OptionValue::TypeEmpty(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(()),
                                         #[cfg(not(debug_assertions))]
@@ -7747,7 +7545,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      1 => super::component::OptionValueResult::TypeBool(match i32::from(*((base + 24) as *const u8)) {
+                                      1 => super::component::OptionValue::TypeBool(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some({
                                           #[cfg(not(debug_assertions))]
@@ -7766,7 +7564,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      2 => super::component::OptionValueResult::TypeEntityId(match i32::from(*((base + 24) as *const u8)) {
+                                      2 => super::component::OptionValue::TypeEntityId(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(super::types::EntityId{id0:*((base + 32) as *const i64) as u64, id1:*((base + 40) as *const i64) as u64, }),
                                         #[cfg(not(debug_assertions))]
@@ -7774,7 +7572,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      3 => super::component::OptionValueResult::TypeF32(match i32::from(*((base + 24) as *const u8)) {
+                                      3 => super::component::OptionValue::TypeF32(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(*((base + 28) as *const f32)),
                                         #[cfg(not(debug_assertions))]
@@ -7782,7 +7580,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      4 => super::component::OptionValueResult::TypeF64(match i32::from(*((base + 24) as *const u8)) {
+                                      4 => super::component::OptionValue::TypeF64(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(*((base + 32) as *const f64)),
                                         #[cfg(not(debug_assertions))]
@@ -7790,7 +7588,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      5 => super::component::OptionValueResult::TypeMat4(match i32::from(*((base + 24) as *const u8)) {
+                                      5 => super::component::OptionValue::TypeMat4(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(super::types::Mat4{x:super::types::Vec4{x:*((base + 28) as *const f32), y:*((base + 32) as *const f32), z:*((base + 36) as *const f32), w:*((base + 40) as *const f32), }, y:super::types::Vec4{x:*((base + 44) as *const f32), y:*((base + 48) as *const f32), z:*((base + 52) as *const f32), w:*((base + 56) as *const f32), }, z:super::types::Vec4{x:*((base + 60) as *const f32), y:*((base + 64) as *const f32), z:*((base + 68) as *const f32), w:*((base + 72) as *const f32), }, w:super::types::Vec4{x:*((base + 76) as *const f32), y:*((base + 80) as *const f32), z:*((base + 84) as *const f32), w:*((base + 88) as *const f32), }, }),
                                         #[cfg(not(debug_assertions))]
@@ -7798,7 +7596,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      6 => super::component::OptionValueResult::TypeI32(match i32::from(*((base + 24) as *const u8)) {
+                                      6 => super::component::OptionValue::TypeI32(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(*((base + 28) as *const i32)),
                                         #[cfg(not(debug_assertions))]
@@ -7806,7 +7604,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      7 => super::component::OptionValueResult::TypeQuat(match i32::from(*((base + 24) as *const u8)) {
+                                      7 => super::component::OptionValue::TypeQuat(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(super::types::Quat{x:*((base + 28) as *const f32), y:*((base + 32) as *const f32), z:*((base + 36) as *const f32), w:*((base + 40) as *const f32), }),
                                         #[cfg(not(debug_assertions))]
@@ -7814,7 +7612,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      8 => super::component::OptionValueResult::TypeString(match i32::from(*((base + 24) as *const u8)) {
+                                      8 => super::component::OptionValue::TypeString(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some({
                                           let len21 = *((base + 32) as *const i32) as usize;
@@ -7826,7 +7624,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      9 => super::component::OptionValueResult::TypeU8(match i32::from(*((base + 24) as *const u8)) {
+                                      9 => super::component::OptionValue::TypeU8(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(i32::from(*((base + 25) as *const u8)) as u8),
                                         #[cfg(not(debug_assertions))]
@@ -7834,7 +7632,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      10 => super::component::OptionValueResult::TypeU32(match i32::from(*((base + 24) as *const u8)) {
+                                      10 => super::component::OptionValue::TypeU32(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(*((base + 28) as *const i32) as u32),
                                         #[cfg(not(debug_assertions))]
@@ -7842,7 +7640,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      11 => super::component::OptionValueResult::TypeU64(match i32::from(*((base + 24) as *const u8)) {
+                                      11 => super::component::OptionValue::TypeU64(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(*((base + 32) as *const i64) as u64),
                                         #[cfg(not(debug_assertions))]
@@ -7850,7 +7648,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      12 => super::component::OptionValueResult::TypeVec2(match i32::from(*((base + 24) as *const u8)) {
+                                      12 => super::component::OptionValue::TypeVec2(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(super::types::Vec2{x:*((base + 28) as *const f32), y:*((base + 32) as *const f32), }),
                                         #[cfg(not(debug_assertions))]
@@ -7858,7 +7656,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      13 => super::component::OptionValueResult::TypeVec3(match i32::from(*((base + 24) as *const u8)) {
+                                      13 => super::component::OptionValue::TypeVec3(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(super::types::Vec3{x:*((base + 28) as *const f32), y:*((base + 32) as *const f32), z:*((base + 36) as *const f32), }),
                                         #[cfg(not(debug_assertions))]
@@ -7866,7 +7664,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      14 => super::component::OptionValueResult::TypeVec4(match i32::from(*((base + 24) as *const u8)) {
+                                      14 => super::component::OptionValue::TypeVec4(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(super::types::Vec4{x:*((base + 28) as *const f32), y:*((base + 32) as *const f32), z:*((base + 36) as *const f32), w:*((base + 40) as *const f32), }),
                                         #[cfg(not(debug_assertions))]
@@ -7874,7 +7672,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      15 => super::component::OptionValueResult::TypeUvec2(match i32::from(*((base + 24) as *const u8)) {
+                                      15 => super::component::OptionValue::TypeUvec2(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(super::types::Uvec2{x:*((base + 28) as *const i32) as u32, y:*((base + 32) as *const i32) as u32, }),
                                         #[cfg(not(debug_assertions))]
@@ -7882,7 +7680,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      16 => super::component::OptionValueResult::TypeUvec3(match i32::from(*((base + 24) as *const u8)) {
+                                      16 => super::component::OptionValue::TypeUvec3(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(super::types::Uvec3{x:*((base + 28) as *const i32) as u32, y:*((base + 32) as *const i32) as u32, z:*((base + 36) as *const i32) as u32, }),
                                         #[cfg(not(debug_assertions))]
@@ -7890,7 +7688,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      #[cfg(debug_assertions)]17 => super::component::OptionValueResult::TypeUvec4(match i32::from(*((base + 24) as *const u8)) {
+                                      #[cfg(debug_assertions)]17 => super::component::OptionValue::TypeUvec4(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(super::types::Uvec4{x:*((base + 28) as *const i32) as u32, y:*((base + 32) as *const i32) as u32, z:*((base + 36) as *const i32) as u32, w:*((base + 40) as *const i32) as u32, }),
                                         #[cfg(not(debug_assertions))]
@@ -7898,7 +7696,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      #[cfg(not(debug_assertions))]_ => super::component::OptionValueResult::TypeUvec4(match i32::from(*((base + 24) as *const u8)) {
+                                      #[cfg(not(debug_assertions))]_ => super::component::OptionValue::TypeUvec4(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(super::types::Uvec4{x:*((base + 28) as *const i32) as u32, y:*((base + 32) as *const i32) as u32, z:*((base + 36) as *const i32) as u32, w:*((base + 40) as *const i32) as u32, }),
                                         #[cfg(not(debug_assertions))]
@@ -7908,8 +7706,8 @@ pub mod component{
                                       }),
                                       #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
                                     }}}),
-                                    #[cfg(not(debug_assertions))]_ => super::component::ValueResult::TypeOption({{match i32::from(*((base + 16) as *const u8)) {
-                                      0 => super::component::OptionValueResult::TypeEmpty(match i32::from(*((base + 24) as *const u8)) {
+                                    #[cfg(not(debug_assertions))]_ => super::component::Value::TypeOption({{match i32::from(*((base + 16) as *const u8)) {
+                                      0 => super::component::OptionValue::TypeEmpty(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(()),
                                         #[cfg(not(debug_assertions))]
@@ -7917,7 +7715,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      1 => super::component::OptionValueResult::TypeBool(match i32::from(*((base + 24) as *const u8)) {
+                                      1 => super::component::OptionValue::TypeBool(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some({
                                           #[cfg(not(debug_assertions))]
@@ -7936,7 +7734,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      2 => super::component::OptionValueResult::TypeEntityId(match i32::from(*((base + 24) as *const u8)) {
+                                      2 => super::component::OptionValue::TypeEntityId(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(super::types::EntityId{id0:*((base + 32) as *const i64) as u64, id1:*((base + 40) as *const i64) as u64, }),
                                         #[cfg(not(debug_assertions))]
@@ -7944,7 +7742,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      3 => super::component::OptionValueResult::TypeF32(match i32::from(*((base + 24) as *const u8)) {
+                                      3 => super::component::OptionValue::TypeF32(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(*((base + 28) as *const f32)),
                                         #[cfg(not(debug_assertions))]
@@ -7952,7 +7750,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      4 => super::component::OptionValueResult::TypeF64(match i32::from(*((base + 24) as *const u8)) {
+                                      4 => super::component::OptionValue::TypeF64(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(*((base + 32) as *const f64)),
                                         #[cfg(not(debug_assertions))]
@@ -7960,7 +7758,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      5 => super::component::OptionValueResult::TypeMat4(match i32::from(*((base + 24) as *const u8)) {
+                                      5 => super::component::OptionValue::TypeMat4(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(super::types::Mat4{x:super::types::Vec4{x:*((base + 28) as *const f32), y:*((base + 32) as *const f32), z:*((base + 36) as *const f32), w:*((base + 40) as *const f32), }, y:super::types::Vec4{x:*((base + 44) as *const f32), y:*((base + 48) as *const f32), z:*((base + 52) as *const f32), w:*((base + 56) as *const f32), }, z:super::types::Vec4{x:*((base + 60) as *const f32), y:*((base + 64) as *const f32), z:*((base + 68) as *const f32), w:*((base + 72) as *const f32), }, w:super::types::Vec4{x:*((base + 76) as *const f32), y:*((base + 80) as *const f32), z:*((base + 84) as *const f32), w:*((base + 88) as *const f32), }, }),
                                         #[cfg(not(debug_assertions))]
@@ -7968,7 +7766,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      6 => super::component::OptionValueResult::TypeI32(match i32::from(*((base + 24) as *const u8)) {
+                                      6 => super::component::OptionValue::TypeI32(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(*((base + 28) as *const i32)),
                                         #[cfg(not(debug_assertions))]
@@ -7976,7 +7774,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      7 => super::component::OptionValueResult::TypeQuat(match i32::from(*((base + 24) as *const u8)) {
+                                      7 => super::component::OptionValue::TypeQuat(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(super::types::Quat{x:*((base + 28) as *const f32), y:*((base + 32) as *const f32), z:*((base + 36) as *const f32), w:*((base + 40) as *const f32), }),
                                         #[cfg(not(debug_assertions))]
@@ -7984,7 +7782,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      8 => super::component::OptionValueResult::TypeString(match i32::from(*((base + 24) as *const u8)) {
+                                      8 => super::component::OptionValue::TypeString(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some({
                                           let len21 = *((base + 32) as *const i32) as usize;
@@ -7996,7 +7794,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      9 => super::component::OptionValueResult::TypeU8(match i32::from(*((base + 24) as *const u8)) {
+                                      9 => super::component::OptionValue::TypeU8(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(i32::from(*((base + 25) as *const u8)) as u8),
                                         #[cfg(not(debug_assertions))]
@@ -8004,7 +7802,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      10 => super::component::OptionValueResult::TypeU32(match i32::from(*((base + 24) as *const u8)) {
+                                      10 => super::component::OptionValue::TypeU32(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(*((base + 28) as *const i32) as u32),
                                         #[cfg(not(debug_assertions))]
@@ -8012,7 +7810,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      11 => super::component::OptionValueResult::TypeU64(match i32::from(*((base + 24) as *const u8)) {
+                                      11 => super::component::OptionValue::TypeU64(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(*((base + 32) as *const i64) as u64),
                                         #[cfg(not(debug_assertions))]
@@ -8020,7 +7818,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      12 => super::component::OptionValueResult::TypeVec2(match i32::from(*((base + 24) as *const u8)) {
+                                      12 => super::component::OptionValue::TypeVec2(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(super::types::Vec2{x:*((base + 28) as *const f32), y:*((base + 32) as *const f32), }),
                                         #[cfg(not(debug_assertions))]
@@ -8028,7 +7826,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      13 => super::component::OptionValueResult::TypeVec3(match i32::from(*((base + 24) as *const u8)) {
+                                      13 => super::component::OptionValue::TypeVec3(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(super::types::Vec3{x:*((base + 28) as *const f32), y:*((base + 32) as *const f32), z:*((base + 36) as *const f32), }),
                                         #[cfg(not(debug_assertions))]
@@ -8036,7 +7834,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      14 => super::component::OptionValueResult::TypeVec4(match i32::from(*((base + 24) as *const u8)) {
+                                      14 => super::component::OptionValue::TypeVec4(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(super::types::Vec4{x:*((base + 28) as *const f32), y:*((base + 32) as *const f32), z:*((base + 36) as *const f32), w:*((base + 40) as *const f32), }),
                                         #[cfg(not(debug_assertions))]
@@ -8044,7 +7842,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      15 => super::component::OptionValueResult::TypeUvec2(match i32::from(*((base + 24) as *const u8)) {
+                                      15 => super::component::OptionValue::TypeUvec2(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(super::types::Uvec2{x:*((base + 28) as *const i32) as u32, y:*((base + 32) as *const i32) as u32, }),
                                         #[cfg(not(debug_assertions))]
@@ -8052,7 +7850,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      16 => super::component::OptionValueResult::TypeUvec3(match i32::from(*((base + 24) as *const u8)) {
+                                      16 => super::component::OptionValue::TypeUvec3(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(super::types::Uvec3{x:*((base + 28) as *const i32) as u32, y:*((base + 32) as *const i32) as u32, z:*((base + 36) as *const i32) as u32, }),
                                         #[cfg(not(debug_assertions))]
@@ -8060,7 +7858,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      #[cfg(debug_assertions)]17 => super::component::OptionValueResult::TypeUvec4(match i32::from(*((base + 24) as *const u8)) {
+                                      #[cfg(debug_assertions)]17 => super::component::OptionValue::TypeUvec4(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(super::types::Uvec4{x:*((base + 28) as *const i32) as u32, y:*((base + 32) as *const i32) as u32, z:*((base + 36) as *const i32) as u32, w:*((base + 40) as *const i32) as u32, }),
                                         #[cfg(not(debug_assertions))]
@@ -8068,7 +7866,7 @@ pub mod component{
                                         #[cfg(debug_assertions)]
                                         _ => panic!("invalid enum discriminant"),
                                       }),
-                                      #[cfg(not(debug_assertions))]_ => super::component::OptionValueResult::TypeUvec4(match i32::from(*((base + 24) as *const u8)) {
+                                      #[cfg(not(debug_assertions))]_ => super::component::OptionValue::TypeUvec4(match i32::from(*((base + 24) as *const u8)) {
                                         0 => None,
                                         1 => Some(super::types::Uvec4{x:*((base + 28) as *const i32) as u32, y:*((base + 32) as *const i32) as u32, z:*((base + 36) as *const i32) as u32, w:*((base + 40) as *const i32) as u32, }),
                                         #[cfg(not(debug_assertions))]
@@ -8113,12 +7911,7 @@ pub mod component{
                               #[used]
                               #[doc(hidden)]
                               #[cfg(target_arch = "wasm32")]
-                              static __FORCE_SECTION_REF: fn() = __force_section_ref;
-                              #[doc(hidden)]
-                              #[cfg(target_arch = "wasm32")]
-                              fn __force_section_ref() {
-                                __link_section()
-                              }
+                              static __FORCE_SECTION_REF: fn() = __link_section;
                             });
                             
                             #[cfg(target_arch = "wasm32")]

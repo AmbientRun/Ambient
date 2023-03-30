@@ -7,8 +7,8 @@ name = "ambient_api"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api_macros",
- "ambient_event_types",
  "ambient_project",
+ "ambient_shared_types",
  "anyhow",
  "byteorder",
  "data-encoding",
@@ -80,10 +80,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_event_types"
-version = "0.2.0-dev"
-
-[[package]]
 name = "ambient_friendly_id"
 version = "0.2.0-dev"
 dependencies = [
@@ -122,6 +118,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_shared_types"
+version = "0.2.0-dev"
+
+[[package]]
 name = "ambient_time"
 version = "0.1.0"
 dependencies = [
@@ -136,9 +136,9 @@ dependencies = [
  "ambient_cb",
  "ambient_color",
  "ambient_element",
- "ambient_event_types",
  "ambient_guest_bridge",
  "ambient_math",
+ "ambient_shared_types",
  "ambient_time",
  "ambient_window_types",
  "closure",

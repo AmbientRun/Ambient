@@ -2,7 +2,6 @@ use ambient_cb::{cb, Cb};
 use ambient_element::{
     define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent, ElementComponentExt, Hooks,
 };
-use ambient_event_types::WINDOW_MOUSE_INPUT;
 use ambient_guest_bridge::components::{
     app::{ui_scene, window_logical_size, window_physical_size},
     input::event_mouse_input,
@@ -13,6 +12,7 @@ use ambient_guest_bridge::components::{
     rect::{background_color, rect},
     transform::{local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation},
 };
+use ambient_shared_types::events::WINDOW_MOUSE_INPUT;
 use clickarea::ClickArea;
 use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
 

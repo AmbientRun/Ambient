@@ -7,12 +7,12 @@ use ambient_core::{
 };
 use ambient_ecs::{query, query_mut, Entity, SystemGroup, WorldDiff};
 use ambient_element::{element_component, Element, Hooks};
-use ambient_event_types::{WINDOW_FOCUSED, WINDOW_KEYBOARD_INPUT, WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION, WINDOW_MOUSE_WHEEL};
 use ambient_input::{
     event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels, keycode,
     mouse_button, player_prev_raw_input, player_raw_input, PlayerRawInput,
 };
 use ambient_network::{client::game_client, log_network_result, rpc::rpc_world_diff, PLAYER_INPUT_DATAGRAM_ID};
+use ambient_shared_types::events::{WINDOW_FOCUSED, WINDOW_KEYBOARD_INPUT, WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION, WINDOW_MOUSE_WHEEL};
 use ambient_std::unwrap_log_err;
 use ambient_window_types::VirtualKeyCode;
 

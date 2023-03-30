@@ -4,7 +4,6 @@ use crate::components::player_camera_id;
 
 use ambient_api::{
     components::core::{
-        self,
         app::{main_scene, window_logical_size},
         camera::*,
         physics::linear_velocity,

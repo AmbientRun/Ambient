@@ -6,7 +6,6 @@ use glam::*;
 
 use crate::{layout::FlowRow, text::Text, use_focus, Rectangle, UIBase, UIExt};
 use ambient_cb::{cb, Cb};
-use ambient_event_types::{WINDOW_KEYBOARD_INPUT, WINDOW_RECEIVED_CHARACTER};
 use ambient_guest_bridge::{
     components::{
         input::{event_keyboard_input, event_received_character, keycode},
@@ -17,6 +16,7 @@ use ambient_guest_bridge::{
     },
     window::set_cursor,
 };
+use ambient_shared_types::events::{WINDOW_KEYBOARD_INPUT, WINDOW_RECEIVED_CHARACTER};
 use ambient_window_types::{CursorIcon, VirtualKeyCode};
 
 use super::{Editor, EditorOpts};

@@ -16,7 +16,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
 ambient_api_macros = { workspace = true }
-ambient_event_types = { workspace = true }
+ambient_shared_types = { workspace = true }
 ambient_project = { workspace = true }
 
 anyhow = "1.0"

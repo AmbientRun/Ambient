@@ -107,7 +107,6 @@ dependencies = [
  "ambient_ecs",
  "ambient_editor_derive",
  "ambient_element",
- "ambient_event_types",
  "ambient_gizmos",
  "ambient_gpu",
  "ambient_input",
@@ -122,6 +121,7 @@ dependencies = [
  "ambient_project",
  "ambient_renderer",
  "ambient_rpc",
+ "ambient_shared_types",
  "ambient_sky",
  "ambient_std",
  "ambient_sys",
@@ -193,8 +193,8 @@ name = "ambient_api"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api_macros",
- "ambient_event_types",
  "ambient_project",
+ "ambient_shared_types",
  "anyhow",
  "byteorder",
  "data-encoding",
@@ -490,6 +490,7 @@ dependencies = [
 name = "ambient_ecs"
 version = "0.2.0-dev"
 dependencies = [
+ "ambient_shared_types",
  "ambient_std",
  "anyhow",
  "atomic_refcell",
@@ -549,7 +550,6 @@ dependencies = [
  "ambient_ecs",
  "ambient_ecs_editor",
  "ambient_element",
- "ambient_event_types",
  "ambient_gpu",
  "ambient_input",
  "ambient_intent",
@@ -562,6 +562,7 @@ dependencies = [
  "ambient_primitives",
  "ambient_renderer",
  "ambient_rpc",
+ "ambient_shared_types",
  "ambient_std",
  "ambient_sys",
  "ambient_terrain",
@@ -646,10 +647,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_event_types"
-version = "0.2.0-dev"
-
-[[package]]
 name = "ambient_friendly_id"
 version = "0.2.0-dev"
 dependencies = [
@@ -728,7 +725,7 @@ version = "0.2.0-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
- "ambient_event_types",
+ "ambient_shared_types",
  "ambient_std",
  "ambient_window_types",
  "glam 0.22.0",
@@ -1099,6 +1096,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_shared_types"
+version = "0.2.0-dev"
+
+[[package]]
 name = "ambient_sky"
 version = "0.2.0-dev"
 dependencies = [
@@ -1270,13 +1271,13 @@ dependencies = [
  "ambient_ecs",
  "ambient_editor_derive",
  "ambient_element",
- "ambient_event_types",
  "ambient_gpu",
  "ambient_input",
  "ambient_layout",
  "ambient_meshes",
  "ambient_rect",
  "ambient_renderer",
+ "ambient_shared_types",
  "ambient_std",
  "ambient_sys",
  "ambient_text",
@@ -1315,9 +1316,9 @@ dependencies = [
  "ambient_cb",
  "ambient_color",
  "ambient_element",
- "ambient_event_types",
  "ambient_guest_bridge",
  "ambient_math",
+ "ambient_shared_types",
  "ambient_sys",
  "ambient_time",
  "ambient_window_types",
@@ -1352,12 +1353,12 @@ dependencies = [
  "ambient_app",
  "ambient_core",
  "ambient_ecs",
- "ambient_event_types",
  "ambient_input",
  "ambient_network",
  "ambient_physics",
  "ambient_prefab",
  "ambient_project",
+ "ambient_shared_types",
  "ambient_std",
  "ambient_sys",
  "ambient_wasmtime_wasi",
@@ -1390,8 +1391,8 @@ dependencies = [
  "tokio",
  "wasi-common",
  "wasmtime",
- "wit-bindgen-core",
- "wit-bindgen-rust",
+ "wit-bindgen-core 0.4.0 (git+https://github.com/bytecodealliance/wit-bindgen.git?rev=7ec986ba6bab38b4ccf5a771200c689c77f1e404)",
+ "wit-bindgen-rust 0.4.0 (git+https://github.com/bytecodealliance/wit-bindgen.git?rev=7ec986ba6bab38b4ccf5a771200c689c77f1e404)",
  "wit-component",
 ]
 
@@ -8008,6 +8009,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "wit-bindgen-core"
+version = "0.4.0"
+source = "git+https://github.com/bytecodealliance/wit-bindgen.git?rev=7ec986ba6bab38b4ccf5a771200c689c77f1e404#7ec986ba6bab38b4ccf5a771200c689c77f1e404"
+dependencies = [
+ "anyhow",
+ "wit-component",
+ "wit-parser",
+]
+
+[[package]]
 name = "wit-bindgen-rust"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8015,8 +8026,20 @@ checksum = "efdf5b00935b7b52d0e56cae1960f8ac13019a285f5aa762ff6bd7139a5c28a2"
 dependencies = [
  "heck",
  "wasm-metadata",
- "wit-bindgen-core",
- "wit-bindgen-rust-lib",
+ "wit-bindgen-core 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wit-bindgen-rust-lib 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wit-component",
+]
+
+[[package]]
+name = "wit-bindgen-rust"
+version = "0.4.0"
+source = "git+https://github.com/bytecodealliance/wit-bindgen.git?rev=7ec986ba6bab38b4ccf5a771200c689c77f1e404#7ec986ba6bab38b4ccf5a771200c689c77f1e404"
+dependencies = [
+ "heck",
+ "wasm-metadata",
+ "wit-bindgen-core 0.4.0 (git+https://github.com/bytecodealliance/wit-bindgen.git?rev=7ec986ba6bab38b4ccf5a771200c689c77f1e404)",
+ "wit-bindgen-rust-lib 0.4.0 (git+https://github.com/bytecodealliance/wit-bindgen.git?rev=7ec986ba6bab38b4ccf5a771200c689c77f1e404)",
  "wit-component",
 ]
 
@@ -8027,7 +8050,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ab0a8f4b5fb1820b9d232beb122936425f72ec8fe6acb56e5d8782cfe55083da"
 dependencies = [
  "heck",
- "wit-bindgen-core",
+ "wit-bindgen-core 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "wit-bindgen-rust-lib"
+version = "0.4.0"
+source = "git+https://github.com/bytecodealliance/wit-bindgen.git?rev=7ec986ba6bab38b4ccf5a771200c689c77f1e404#7ec986ba6bab38b4ccf5a771200c689c77f1e404"
+dependencies = [
+ "heck",
+ "wit-bindgen-core 0.4.0 (git+https://github.com/bytecodealliance/wit-bindgen.git?rev=7ec986ba6bab38b4ccf5a771200c689c77f1e404)",
 ]
 
 [[package]]
@@ -8039,8 +8071,8 @@ dependencies = [
  "anyhow",
  "proc-macro2",
  "syn",
- "wit-bindgen-core",
- "wit-bindgen-rust",
+ "wit-bindgen-core 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wit-bindgen-rust 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "wit-component",
 ]
 

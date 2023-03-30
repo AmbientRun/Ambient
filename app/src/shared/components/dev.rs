@@ -1,7 +1,8 @@
 use ambient_ecs::{
-    primitive_component_definitions, ComponentDesc, ComponentEntry, ComponentRegistry, ComponentValue, DefaultValue, EntityId,
-    ExternalComponentAttributes, PrimitiveComponentType,
+    ComponentDesc, ComponentEntry, ComponentRegistry, ComponentValue, DefaultValue, EntityId, ExternalComponentAttributes,
+    PrimitiveComponentType,
 };
+use ambient_shared_types::primitive_component_definitions;
 use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 
 pub fn build_components_toml() -> toml_edit::Document {
