@@ -12,6 +12,8 @@ fn App(_hooks: &mut Hooks) -> Element {
 #[element_component]
 fn NewTodoItem(hooks: &mut Hooks) -> Element {
     let (text, set_text) = hooks.use_state("".to_string());
+    let text_is_empty = text.is_empty();
+
     FlowColumn::el([
         TextEditor::new(text.clone(), set_text.clone())
             .placeholder(Some("Enter todo name here"))
@@ -20,6 +22,7 @@ fn NewTodoItem(hooks: &mut Hooks) -> Element {
             messages::NewItem::new(text.clone()).send(message::client::Target::RemoteReliable);
             set_text(String::new());
         })
+        .disabled(text_is_empty)
         .el(),
     ])
     .with(space_between_items(), 10.)
