@@ -216,9 +216,7 @@ dependencies = [
  "anyhow",
  "proc-macro2",
  "quote",
- "serde",
  "syn",
- "toml 0.7.2",
 ]
 
 [[package]]
@@ -413,6 +411,7 @@ version = "0.2.0-dev"
 dependencies = [
  "ambient_ecs",
  "ambient_gpu",
+ "ambient_project_macro",
  "ambient_std",
  "ambient_sys",
  "bytemuck",
@@ -1020,6 +1019,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_project_macro"
+version = "0.2.0-dev"
+dependencies = [
+ "ambient_project_macro_common",
+ "proc-macro2",
+ "syn",
+]
+
+[[package]]
 name = "ambient_project_macro_common"
 version = "0.2.0-dev"
 dependencies = [
@@ -1030,6 +1038,7 @@ dependencies = [
  "quote",
  "serde",
  "syn",
+ "thiserror",
  "toml 0.7.2",
 ]
 

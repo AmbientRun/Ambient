@@ -1,0 +1,12 @@
+[package]
+name = "ambient_project_macro"
+version = { workspace = true }
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+ambient_project_macro_common = { path = "../../shared_crates/project_macro_common" }
+syn = { workspace = true }
+proc-macro2 = { workspace = true }

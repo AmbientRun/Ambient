@@ -8,15 +8,18 @@ use proc_macro2::TokenStream;
 use quote::quote;
 
 /// Converts a tree to a token stream.
-pub fn tree_to_token_stream<T: Clone + Debug>(
+pub fn tree_to_token_stream<
+    T: Clone + Debug,
+    F: Fn(&Context, TokenStream) -> TokenStream + Copy,
+>(
     // Current node of the tree (call with root)
     node: &TreeNode<T>,
     // The generation context
     context: &Context,
-    // The prelude to insert for namespaces
-    prelude: &TokenStream,
+    // The wrapper to apply around the components
+    wrapper: F,
     // The function to call when converting a subtree. Should be a wrapper around this function.
-    self_call: impl Fn(&TreeNode<T>, &Context, &TokenStream) -> anyhow::Result<TokenStream>,
+    self_call: impl Fn(&TreeNode<T>, &Context, F) -> anyhow::Result<TokenStream>,
     // The function to call when converting the Other case (i.e. the actual value)
     other_call: impl Fn(&str, &T, &Context) -> anyhow::Result<TokenStream>,
 ) -> anyhow::Result<TokenStream> {
@@ -26,14 +29,16 @@ pub fn tree_to_token_stream<T: Clone + Debug>(
             let children = ns
                 .children
                 .values()
-                .map(|child| self_call(child, context, prelude))
+                .map(|child| self_call(child, context, wrapper))
                 .collect::<Result<Vec<_>, _>>()?;
 
             Ok(if name.is_empty() {
-                quote! {
-                    #prelude
-                    #(#children)*
-                }
+                wrapper(
+                    context,
+                    quote! {
+                        #(#children)*
+                    },
+                )
             } else {
                 let name_ident: syn::Path = syn::parse_str(name)?;
                 let doc_comment_fragment = ns.namespace.as_ref().map(|n| {
@@ -46,11 +51,17 @@ pub fn tree_to_token_stream<T: Clone + Debug>(
                         #[doc = #doc_comment]
                     }
                 });
+
+                let wrapped = wrapper(
+                    context,
+                    quote! {
+                        #(#children)*
+                    },
+                );
                 quote! {
                     #doc_comment_fragment
                     pub mod #name_ident {
-                        #prelude
-                        #(#children)*
+                        #wrapped
                     }
                 }
             })

@@ -18,11 +18,12 @@ pub fn tree_to_token_stream(
     to_token_stream(
         concept_tree.root(),
         context,
-        &match context {
-            Context::Host => quote! {},
+        |context, ts| match context {
+            Context::Host => ts,
             Context::Guest { api_path, .. } => quote! {
                 use super::components;
                 use #api_path::prelude::*;
+                #ts
             },
         },
         concept_tree,
@@ -33,16 +34,16 @@ pub fn tree_to_token_stream(
 fn to_token_stream(
     node: &TreeNode<Concept>,
     context: &Context,
-    prelude: &TokenStream,
+    wrapper: impl Fn(&Context, TokenStream) -> TokenStream + Copy,
     concept_tree: &Tree<Concept>,
     components_tree: &Tree<Component>,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     util::tree_to_token_stream(
         node,
         context,
-        prelude,
-        |node, context, prelude| {
-            to_token_stream(node, context, prelude, concept_tree, components_tree)
+        wrapper,
+        |node, context, wrapper| {
+            to_token_stream(node, context, wrapper, concept_tree, components_tree)
         },
         |name, concept, context| {
             let make_concept =

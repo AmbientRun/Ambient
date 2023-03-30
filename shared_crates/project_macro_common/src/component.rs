@@ -15,10 +15,15 @@ pub fn tree_to_token_stream(
     to_token_stream(
         tree.root(),
         context,
-        &match context {
-            Context::Host => quote! {},
+        |context, ts| match context {
+            Context::Host => quote! {
+                ambient_ecs::components!("", {
+                    #ts
+                })
+            },
             Context::Guest { api_path, .. } => quote! {
                 use #api_path::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
+                #ts
             },
         },
         project_path,
@@ -28,14 +33,14 @@ pub fn tree_to_token_stream(
 fn to_token_stream(
     node: &TreeNode<Component>,
     context: &Context,
-    prelude: &TokenStream,
+    wrapper: impl Fn(&Context, TokenStream) -> TokenStream + Copy,
     project_path: IdentifierPath,
 ) -> anyhow::Result<TokenStream> {
     util::tree_to_token_stream(
         node,
         context,
-        prelude,
-        |node, context, prelude| to_token_stream(node, context, prelude, project_path),
+        wrapper,
+        |node, context, wrapper| to_token_stream(node, context, wrapper, project_path),
         |name, component, context| {
             let name_ident: syn::Path = syn::parse_str(name)?;
             let name_uppercase_ident: syn::Path = syn::parse_str(&name.to_ascii_uppercase())?;
@@ -49,10 +54,7 @@ fn to_token_stream(
 
             // Metadata
             if !component.attributes.is_empty() {
-                doc_comment += &format!(
-                    "\n\n*Attributes*: {}",
-                    component.attributes.clone().join(", ")
-                )
+                doc_comment += &format!("\n\n*Attributes*: {}", component.attributes.join(", "))
             }
             if let Some(default) = component.default.as_ref() {
                 doc_comment += &format!("\n\n*Suggested Default*: {default}")
@@ -63,11 +65,21 @@ fn to_token_stream(
                     .to_string();
             let doc_comment = doc_comment.trim();
 
-            Ok(quote! {
-                static #name_uppercase_ident: Lazy< Component< #component_ty > > = Lazy::new(|| __internal_get_component(#id));
-                #[doc = #doc_comment]
-                pub fn #name_ident() -> Component< #component_ty > { *#name_uppercase_ident }
-            })
+            match context {
+                Context::Host => {
+                    let attrs = &component.attributes;
+                    Ok(quote! {
+                        #[doc = #doc_comment]
+                        @[#(#attrs),*]
+                        #name_ident: #component_ty,
+                    })
+                }
+                Context::Guest { .. } => Ok(quote! {
+                    static #name_uppercase_ident: Lazy< Component< #component_ty > > = Lazy::new(|| __internal_get_component(#id));
+                    #[doc = #doc_comment]
+                    pub fn #name_ident() -> Component< #component_ty > { *#name_uppercase_ident }
+                }),
+            }
         },
     )
 }

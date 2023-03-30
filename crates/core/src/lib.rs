@@ -17,6 +17,7 @@ pub mod bounding;
 pub mod camera;
 pub mod gpu_ecs;
 pub mod hierarchy;
+pub mod manifest;
 pub mod player;
 pub mod transform;
 pub mod window;
