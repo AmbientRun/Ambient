@@ -214,7 +214,7 @@ pub mod server {
 }
 
 mod serde {
-    pub use ambient_project::message_serde::*;
+    pub use ambient_project_rt::message_serde::*;
 
     use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 

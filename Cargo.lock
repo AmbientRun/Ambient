@@ -193,7 +193,7 @@ name = "ambient_api"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api_macros",
- "ambient_project",
+ "ambient_project_rt",
  "ambient_shared_types",
  "anyhow",
  "byteorder",
@@ -1008,8 +1008,6 @@ version = "0.2.0-dev"
 dependencies = [
  "ambient_ecs",
  "ambient_shared_types",
- "byteorder",
- "glam 0.22.0",
  "paste",
  "proc-macro2",
  "quote",
@@ -1018,6 +1016,15 @@ dependencies = [
  "syn",
  "thiserror",
  "toml 0.7.2",
+]
+
+[[package]]
+name = "ambient_project_rt"
+version = "0.2.0-dev"
+dependencies = [
+ "byteorder",
+ "glam 0.22.0",
+ "thiserror",
 ]
 
 [[package]]
