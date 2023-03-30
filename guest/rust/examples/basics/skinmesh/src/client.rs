@@ -1,24 +1,81 @@
 use ambient_api::{
-    message::client::{MessageExt, Target},
-    player::KeyCode,
+    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
+    entity::{AnimationAction, AnimationController},
     prelude::*,
+};
+use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_guest_bridge::components::{
+    camera::aspect_ratio_from_window, prefab::prefab_from_url, primitives::quad,
+};
+use ambient_ui_components::{
+    prelude::{color, lookat_center, main_scene, scale, translation, Button, FlowColumn},
+    FocusRoot, UIExt,
 };
 
 #[main]
 pub fn main() {
-    on(event::FRAME, |_| {
-        let (delta, _) = player::get_raw_input_delta();
+    Entity::new()
+        .with_merge(make_perspective_infinite_reverse_camera())
+        .with(aspect_ratio_from_window(), EntityId::resources())
+        .with_default(main_scene())
+        .with(translation(), vec3(2., 2., 3.0))
+        .with(lookat_center(), vec3(0., 0., 1.))
+        .spawn();
 
-        if delta.keys.contains(&KeyCode::Key1) {
-            messages::SetController::new(1u32).send(Target::RemoteReliable);
-        }
+    Entity::new()
+        .with_merge(make_transformable())
+        .with_default(quad())
+        .with(scale(), Vec3::ONE * 10.)
+        .with(color(), vec4(0.5, 0.5, 0.5, 1.))
+        .spawn();
 
-        if delta.keys.contains(&KeyCode::Key2) {
-            messages::SetController::new(2u32).send(Target::RemoteReliable);
-        }
+    let unit_id = Entity::new()
+        .with_merge(make_transformable())
+        .with(
+            prefab_from_url(),
+            asset::url("assets/Peasant Man.fbx").unwrap(),
+        )
+        .spawn();
 
-        if delta.keys.contains(&KeyCode::Key3) {
-            messages::SetController::new(3u32).send(Target::RemoteReliable);
-        }
-    });
+    entity::set_animation_controller(
+        unit_id,
+        AnimationController {
+            actions: &[AnimationAction {
+                clip_url: &asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
+                looping: true,
+                weight: 1.,
+            }],
+            apply_base_pose: false,
+        },
+    );
+    App::el(unit_id).spawn_interactive()
+}
+
+#[element_component]
+fn App(_hooks: &mut Hooks, unit: EntityId) -> Element {
+    let anim_button = |name, anim| {
+        Button::new(name, move |_| {
+            entity::set_animation_controller(
+                unit,
+                AnimationController {
+                    actions: &[AnimationAction {
+                        clip_url: &asset::url(anim).unwrap(),
+                        looping: true,
+                        weight: 1.,
+                    }],
+                    apply_base_pose: false,
+                },
+            );
+        })
+        .el()
+    };
+    FocusRoot::el([FlowColumn::el([
+        anim_button(
+            "Robot Hip Hop Dance",
+            "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
+        ),
+        anim_button("Capoeira", "assets/Capoeira.fbx/animations/mixamo.com.anim"),
+    ])
+    .with_background(vec4(0., 0., 0., 0.9))
+    .with_padding_even(10.)])
 }
