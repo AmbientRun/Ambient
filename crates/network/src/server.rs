@@ -29,11 +29,11 @@ use bytes::Bytes;
 use flume::Sender;
 use futures::StreamExt;
 use once_cell::sync::OnceCell;
-use parking_lot::Mutex;
+use parking_lot::{Mutex, RwLock};
 use quinn::{Endpoint, RecvStream, SendStream};
 use tokio::{
     io::AsyncReadExt,
-    time::{interval, MissedTickBehavior},
+    time::{interval, MissedTickBehavior}, sync::Notify,
 };
 use tracing::{debug_span, Instrument};
 
@@ -336,11 +336,22 @@ impl GameServer {
             let state = state.clone();
             let world_stream_filter = world_stream_filter.clone();
 
+            let endpoint_allocated = Arc::new(RwLock::new(None));
+            let endpoint_allocated_notify = Arc::new(Notify::new());
+
             let on_endpoint_allocated = {
                 let assets = assets.clone();
+                let endpoint_allocated = endpoint_allocated.clone();
+                let endpoint_allocated_notify = endpoint_allocated_notify.clone();
+
                 Arc::new(move |allocated_endpoint: AllocatedEndpoint| {
                     log::debug!("Allocated proxy endpoint: {:?}", allocated_endpoint);
                     log::info!("Proxy endpoint allocated: {} Proxy sees this server as: {}", allocated_endpoint.allocated_endpoint, allocated_endpoint.external_endpoint);
+
+                    // mark that the endpoint is allocated so the controller can start pre-caching the assets
+                    *endpoint_allocated.write() = Some(true);
+                    endpoint_allocated_notify.notify_one();
+
                     // override the assets root url to point to proxy
                     // TODO: we might want to give different endpoints to different players (depending how they connect)
                     match AbsAssetUrl::parse(&allocated_endpoint.assets_root) {
@@ -365,6 +376,19 @@ impl GameServer {
             if let Err(err) = controller.allocate_endpoint().await {
                 log::warn!("Failed to allocate proxy endpoint: {}", err);
             }
+            tokio::spawn(async move {
+                loop {
+                    let allocated = endpoint_allocated.read().unwrap_or_default();
+                    if allocated {
+                        if let Err(err) = controller.pre_cache_assets("assets").await {
+                            log::warn!("Failed to pre-cache assets: {}", err);
+                        }
+                        break;
+                    } else {
+                        endpoint_allocated_notify.notified().await;
+                    }
+                }
+            });
         }
 
         loop {
