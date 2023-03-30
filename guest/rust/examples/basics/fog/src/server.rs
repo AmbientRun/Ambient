@@ -2,7 +2,6 @@ use ambient_api::{
     components::core::{
         app::main_scene,
         camera::{aspect_ratio_from_window, fog},
-        player::player,
         primitives::{cube, quad},
         rendering::{
             cast_shadows, color, fog_color, fog_density, fog_height_falloff, light_diffuse, sky,
@@ -11,6 +10,7 @@ use ambient_api::{
         transform::{lookat_center, rotation, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
+    message::server::MessageExt,
     prelude::*,
 };
 
@@ -58,45 +58,12 @@ pub fn main() {
             .with_default(cast_shadows())
             .spawn();
     }
-    query(player()).build().each_frame(move |ids| {
-        for (id, _) in ids {
-            let Some((delta, _)) = player::get_raw_input_delta(id) else { continue; };
 
-            let set_fog_density = |density| {
-                println!("Fog density: {density}");
-                entity::set_component(sun, fog_density(), density);
-            };
+    messages::SetFogDensity::subscribe(move |_, msg| {
+        entity::set_component(sun, fog_density(), msg.value);
+    });
 
-            let set_fog_height_falloff = |height_falloff| {
-                println!("Fog height_falloff: {height_falloff}");
-                entity::set_component(sun, fog_height_falloff(), height_falloff);
-            };
-
-            if delta.keys.contains(&player::KeyCode::Key1) {
-                set_fog_density(1.);
-            }
-            if delta.keys.contains(&player::KeyCode::Key2) {
-                set_fog_density(0.1);
-            }
-            if delta.keys.contains(&player::KeyCode::Key3) {
-                set_fog_density(0.01);
-            }
-            if delta.keys.contains(&player::KeyCode::Key4) {
-                set_fog_density(0.0);
-            }
-
-            if delta.keys.contains(&player::KeyCode::Q) {
-                set_fog_height_falloff(1.);
-            }
-            if delta.keys.contains(&player::KeyCode::W) {
-                set_fog_height_falloff(0.1);
-            }
-            if delta.keys.contains(&player::KeyCode::E) {
-                set_fog_height_falloff(0.01);
-            }
-            if delta.keys.contains(&player::KeyCode::R) {
-                set_fog_height_falloff(0.0);
-            }
-        }
+    messages::SetFogHeightFalloff::subscribe(move |_, msg| {
+        entity::set_component(sun, fog_height_falloff(), msg.value);
     });
 }

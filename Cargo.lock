@@ -1007,6 +1007,7 @@ name = "ambient_project"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_ecs",
+ "ambient_shared_types",
  "byteorder",
  "glam 0.22.0",
  "paste",

@@ -12,12 +12,12 @@ use ambient_api::{
         transform::{lookat_center, rotation, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
-    player::KeyCode,
+    message::server::{MessageExt, Source},
     prelude::*,
     rand,
 };
 
-use components::player_camera_ref;
+use components::{player_camera_ref, player_mouse_delta_x, player_movement_direction};
 
 #[main]
 pub fn main() {
@@ -63,39 +63,37 @@ pub fn main() {
         }
     });
 
-    query((player(), player_camera_ref()))
-        .build()
-        .each_frame(move |players| {
-            for (player_id, (_, camera_id)) in players {
-                let Some((delta, pressed)) = player::get_raw_input_delta(player_id) else { continue; };
+    messages::Input::subscribe(move |source, msg| {
+        let Source::Remote { user_id } = source else { return; };
+        let Some(player_id) = player::get_by_user_id(&user_id) else { return; };
 
-                let forward = entity::get_component(player_id, rotation()).unwrap() * Vec3::X;
-                let right = entity::get_component(player_id, rotation()).unwrap() * Vec3::Y;
-                let speed = 0.1;
-                let mut displace = Vec3::ZERO;
+        entity::add_component(player_id, player_movement_direction(), msg.direction);
+        entity::add_component(player_id, player_mouse_delta_x(), msg.mouse_delta_x);
+    });
 
-                if pressed.keys.contains(&KeyCode::W) {
-                    displace += forward * speed;
-                }
-                if pressed.keys.contains(&KeyCode::S) {
-                    displace -= forward * speed;
-                }
-                if pressed.keys.contains(&KeyCode::A) {
-                    displace -= right * speed;
-                }
-                if pressed.keys.contains(&KeyCode::D) {
-                    displace += right * speed;
-                }
-                displace.z = -0.1;
-                physics::move_character(player_id, displace, 0.01, frametime());
+    query((
+        player(),
+        player_camera_ref(),
+        player_movement_direction(),
+        player_mouse_delta_x(),
+        rotation(),
+    ))
+    .each_frame(move |players| {
+        for (player_id, (_, camera_id, direction, mouse_delta_x, rot)) in players {
+            let speed = 0.1;
 
-                entity::mutate_component(player_id, rotation(), |x| {
-                    *x *= Quat::from_rotation_z(delta.mouse_position.x * 0.01)
-                });
+            let displace = rot * (direction.normalize_or_zero() * speed).extend(-0.1);
+            physics::move_character(player_id, displace, 0.01, frametime());
 
-                let pos = entity::get_component(player_id, translation()).unwrap();
-                entity::set_component(camera_id, lookat_center(), pos);
-                entity::set_component(camera_id, translation(), pos - forward * 4. + Vec3::Z * 2.);
-            }
-        });
+            let rot = entity::mutate_component(player_id, rotation(), |x| {
+                *x *= Quat::from_rotation_z(mouse_delta_x * 0.01)
+            })
+            .unwrap_or_default();
+
+            let pos = entity::get_component(player_id, translation()).unwrap();
+            let forward = rot * Vec3::X;
+            entity::set_component(camera_id, lookat_center(), pos);
+            entity::set_component(camera_id, translation(), pos - forward * 4. + Vec3::Z * 2.);
+        }
+    });
 }

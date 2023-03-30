@@ -148,6 +148,7 @@ pub fn world_instance_resources(resources: AppResources) -> Entity {
         .with(ambient_core::time(), current_time)
         .with(ambient_core::dtime(), 0.)
         .with(gpu_world(), GpuWorld::new_arced(resources.assets))
+        .with_merge(ambient_input::resources())
         .with_merge(ambient_input::picking::resources())
         .with_merge(ambient_core::async_ecs::async_ecs_resources())
         .with(ambient_core::window::window_physical_size(), resources.window_physical_size)
@@ -547,7 +548,12 @@ impl App {
                     world.set(world.resource_entity(), self::fps_stats(), fps.clone()).unwrap();
                     if self.update_title_with_fps_stats {
                         if let Some(window) = &self.window {
-                            window.set_title(&format!("{} [{}, {} entities]", world.resource(window_title()), fps.dump_both(), world.len()));
+                            window.set_title(&format!(
+                                "{} [{}, {} entities]",
+                                world.resource(window_title()),
+                                fps.dump_both(),
+                                world.len()
+                            ));
                         }
                     }
                 }

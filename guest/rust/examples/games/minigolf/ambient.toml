@@ -13,6 +13,7 @@ player_ball = { type = "EntityId", name = "Player Ball", description = "Used to 
 player_restore_point = { type = "Vec3", name = "Player Restore Point", description = "A player's restore point" }
 player_stroke_count = { type = "U32", name = "Player Stroke Count", description = "A player's stroke count" }
 player_color = { type = "Vec4", name = "Player Color", description = "A player's color" }
+player_shoot_requested = { type = "Bool", name = "Player Shoot Requested", description = "Whether or not a player has requested to shoot the ball" }
 
 player_indicator = { type = "EntityId", name = "Player Indicator", description = "EntityId of a player's indicator" }
 player_indicator_arrow = { type = "EntityId", name = "Player Indicator Arrow", description = "EntityId of a player's indicator arrow" }
@@ -44,3 +45,11 @@ player_camera_pivot = [0.0, 0.0, 8.0]
 player_camera_position = [0.0, 0.0, 0.0]
 player_camera_radius = 15.0
 player_camera_rotation = [3.141592, 0.610865]
+
+[messages.input]
+name = "Input"
+description = "Player input"
+[messages.input.fields]
+camera_rotation = { type = "Vec2", name = "Camera Rotation", description = "The rotation (radians) to rotate the camera by" }
+camera_zoom = { type = "F32", name = "Camera Zoom", description = "The amount to zoom the camera by" }
+shoot = { type = "Bool", name = "Shoot", description = "Whether or not to shoot the ball" }

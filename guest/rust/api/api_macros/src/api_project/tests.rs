@@ -1117,7 +1117,7 @@ fn can_generate_message() {
         pub mod messages {
             use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
 
-            #[derive(Clone, Debug, PartialEq, Eq)]
+            #[derive(Clone, Debug)]
             #[doc = "**The Coolest Message Out There**: Proof that cool messages do exist."]
             pub struct MyCoolMessage {
                 pub test1: ambient_api2::global::Vec3,

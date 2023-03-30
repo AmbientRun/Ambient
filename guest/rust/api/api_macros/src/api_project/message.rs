@@ -89,7 +89,7 @@ fn to_token_stream(
                 .collect::<Result<Vec<_>, _>>()?;
 
             Ok(quote! {
-                #[derive(Clone, Debug, PartialEq, Eq)]
+                #[derive(Clone, Debug)]
                 #[doc = #doc_comment]
                 pub struct #struct_name {
                     #(#fields,)*

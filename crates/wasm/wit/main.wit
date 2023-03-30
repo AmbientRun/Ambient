@@ -6,8 +6,8 @@ world bindings {
     import event: pkg.event
 
     import client-message: pkg.client-message
+    import client-player: pkg.client-player
 
-    import server-player: pkg.server-player
     import server-physics: pkg.server-physics
     import server-asset: pkg.server-asset
     import server-message: pkg.server-message

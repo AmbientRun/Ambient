@@ -3,10 +3,11 @@ use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
 
 /// Describes the appearance of the mouse cursor.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, EnumString, Display)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, EnumString, Display, Default)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum CursorIcon {
     /// The platform-dependent default cursor.
+    #[default]
     Default,
     /// A simple crosshair.
     Crosshair,
@@ -59,12 +60,6 @@ pub enum CursorIcon {
     NwseResize,
     ColResize,
     RowResize,
-}
-
-impl Default for CursorIcon {
-    fn default() -> Self {
-        CursorIcon::Default
-    }
 }
 
 #[cfg(feature = "native")]

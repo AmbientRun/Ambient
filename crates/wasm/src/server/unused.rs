@@ -12,3 +12,12 @@ impl wit::client_message::Host for Bindings {
         unsupported()
     }
 }
+impl wit::client_player::Host for Bindings {
+    fn get_raw_input(&mut self) -> anyhow::Result<wit::client_player::RawInput> {
+        unsupported()
+    }
+
+    fn get_prev_raw_input(&mut self) -> anyhow::Result<wit::client_player::RawInput> {
+        unsupported()
+    }
+}

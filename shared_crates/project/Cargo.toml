@@ -20,6 +20,7 @@ glam = { workspace = true }
 [dev-dependencies]
 paste = { workspace = true }
 serde_json = { workspace = true }
+ambient_shared_types = { path = "../../shared_crates/shared_types" }
 
 [features]
 default = ["native"]

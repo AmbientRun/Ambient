@@ -1,33 +1,21 @@
 use std::f32::consts::PI;
 
-use crate::components::player_camera_id;
-
 use ambient_api::{
     components::core::{
-        app::{main_scene, window_logical_size},
-        camera::*,
         physics::linear_velocity,
         player::{player, user_id},
         primitives::cube,
         rendering,
         transform::*,
     },
-    concepts::{make_orthographic_camera, make_sphere, make_transformable},
-    player::KeyCode,
+    concepts::{make_sphere, make_transformable},
+    message::server::{MessageExt, Source},
     prelude::*,
 };
+use components::player_movement_direction;
 
-const X_BOUNDARY: f32 = 1.;
-const Y_BOUNDARY: f32 = 1.;
-
-const BALL_V_PER_FRAME: f32 = 0.01;
-const BALL_ACCELERATION: f32 = 0.05;
-const BALL_SPINNING: f32 = PI / 4.; // radians / ratio of paddle from the center (-0.5 - 0.5)
-const BALL_RADIUS: f32 = 0.1;
-const PADDLE_V_PER_FRAME: f32 = BALL_V_PER_FRAME * 2.;
-const PADDLE_LENGTH: f32 = 0.3;
-const PADDLE_WIDTH: f32 = 0.1;
-const SCREEN_PADDING: f32 = 0.2;
+mod constants;
+use constants::*;
 
 fn spawn_paddle(left: bool, color: Vec3) -> EntityId {
     let x = X_BOUNDARY + PADDLE_WIDTH / 2.;
@@ -69,52 +57,12 @@ pub fn main() {
         .with(rendering::color(), vec4(255., 255., 255., 1.))
         .spawn();
 
-    // When a player spawns, create a camera for them
-    spawn_query(user_id())
-        .requires(player())
-        .bind(move |players| {
-            for (player, player_user_id) in players {
-                let camera_entity_id = make_orthographic_camera()
-                    .with_default(main_scene())
-                    .with(user_id(), player_user_id)
-                    .spawn();
-                entity::add_component(player, player_camera_id(), camera_entity_id);
-            }
-        });
-
-    // Update camera so we have correct aspect ratio
-    change_query((player_camera_id(), window_logical_size()))
-        .track_change(window_logical_size())
-        .bind(move |windows| {
-            for (_, (camera_id, window)) in windows {
-                let window = window.as_vec2();
-                if window.x <= 0. || window.y <= 0. {
-                    continue;
-                }
-
-                let x_boundary = X_BOUNDARY + SCREEN_PADDING;
-                let y_boundary = Y_BOUNDARY + SCREEN_PADDING;
-                let (left, right, top, bottom) = if window.x < window.y {
-                    (
-                        -x_boundary,
-                        x_boundary,
-                        y_boundary * window.y / window.x,
-                        -y_boundary * window.y / window.x,
-                    )
-                } else {
-                    (
-                        -x_boundary * window.x / window.y,
-                        x_boundary * window.x / window.y,
-                        y_boundary,
-                        -y_boundary,
-                    )
-                };
-                entity::set_component(camera_id, orthographic_left(), left);
-                entity::set_component(camera_id, orthographic_right(), right);
-                entity::set_component(camera_id, orthographic_top(), top);
-                entity::set_component(camera_id, orthographic_bottom(), bottom);
-            }
-        });
+    // When a player spawns, create a camera and other components for them
+    spawn_query(player()).bind(move |players| {
+        for (player, _) in players {
+            entity::add_component(player, player_movement_direction(), 0.0);
+        }
+    });
 
     // When a player despawns, clean up their objects
     let player_objects_query = query(user_id()).build();
@@ -133,19 +81,24 @@ pub fn main() {
     });
 
     // Ball movement
-    query((linear_velocity(), translation()))
-        .build()
-        .each_frame(move |balls| {
-            for (id, (velocity, position)) in balls {
-                let new_position = position + velocity;
-                entity::set_component(id, translation(), new_position);
-                if new_position.y.abs() > Y_BOUNDARY - BALL_RADIUS / 2. {
-                    // bounce from top and bottom "walls"
-                    let new_velocity = vec3(velocity.x, -velocity.y, velocity.z);
-                    entity::set_component(id, linear_velocity(), new_velocity);
-                }
+    query((linear_velocity(), translation())).each_frame(move |balls| {
+        for (id, (velocity, position)) in balls {
+            let new_position = position + velocity;
+            entity::set_component(id, translation(), new_position);
+            if new_position.y.abs() > Y_BOUNDARY - BALL_RADIUS / 2. {
+                // bounce from top and bottom "walls"
+                let new_velocity = vec3(velocity.x, -velocity.y, velocity.z);
+                entity::set_component(id, linear_velocity(), new_velocity);
             }
-        });
+        }
+    });
+
+    messages::Input::subscribe(|source, msg| {
+        let Source::Remote { user_id } = source else { return; };
+        let Some(player_id) = player::get_by_user_id(&user_id) else { return; };
+
+        entity::set_component(player_id, player_movement_direction(), msg.direction);
+    });
 
     on(event::FRAME, move |_| {
         let players = entity::get_all(player());
@@ -158,16 +111,10 @@ pub fn main() {
         // handle players' input
         for (i, player) in players.into_iter().enumerate() {
             let paddle = paddles[i % 2];
-            let Some(input) = player::get_raw_input(player) else { continue; };
-            let keys = &input.keys;
+            let Some(direction) = entity::get_component(player, player_movement_direction()) else { continue; };
             let Some(mut paddle_position) = entity::get_component(paddle, translation()) else { continue; };
 
-            if keys.contains(&KeyCode::Up) {
-                paddle_position.y += PADDLE_V_PER_FRAME;
-            }
-            if keys.contains(&KeyCode::Down) {
-                paddle_position.y -= PADDLE_V_PER_FRAME;
-            }
+            paddle_position.y += direction * PADDLE_V_PER_FRAME;
             paddle_position.y = paddle_position.y.clamp(
                 PADDLE_LENGTH / 2. - Y_BOUNDARY,
                 Y_BOUNDARY - PADDLE_LENGTH / 2.,

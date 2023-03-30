@@ -12,6 +12,7 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
         let name = get_module_name(world, id);
         let (prefix, level) = match type_ {
             MessageType::Info => ("info", log::Level::Info),
+            MessageType::Warn => ("warn", log::Level::Warn),
             MessageType::Error => ("error", log::Level::Error),
             MessageType::Stdout => ("stdout", log::Level::Info),
             MessageType::Stderr => ("stderr", log::Level::Info),

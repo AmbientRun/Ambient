@@ -4,4 +4,10 @@ name = "Pong"
 version = "0.0.1"
 
 [components]
-player_camera_id = { type = "EntityId", name = "Player Camera Id", description = "EntityId of a player's camera" }
+player_movement_direction = { type = "F32", name = "Player Movement Direction", description = "Direction of player movement" }
+
+[messages.input]
+name = "Input"
+description = "Describes the input state of the player."
+[messages.input.fields]
+direction = { type = "F32", name = "Direction", description = "The movement direction of the player." }

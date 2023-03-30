@@ -130,6 +130,6 @@ fn git_revision() -> Option<String> {
     if s.len() == 2 {
         Some(s[0].to_string())
     } else {
-        Some(s.iter().skip(3).next()?[1..].to_string())
+        Some(s.get(3)?[1..].to_string())
     }
 }

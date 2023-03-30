@@ -1,21 +1,6 @@
 use super::Bindings;
 use crate::shared::{implementation::unsupported, wit};
 
-impl wit::server_player::Host for Bindings {
-    fn get_raw_input(
-        &mut self,
-        _player: wit::types::EntityId,
-    ) -> anyhow::Result<Option<wit::server_player::RawInput>> {
-        unsupported()
-    }
-
-    fn get_prev_raw_input(
-        &mut self,
-        _player: wit::types::EntityId,
-    ) -> anyhow::Result<Option<wit::server_player::RawInput>> {
-        unsupported()
-    }
-}
 impl wit::server_physics::Host for Bindings {
     fn apply_force(
         &mut self,
