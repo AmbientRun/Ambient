@@ -25,8 +25,8 @@ fn App(hooks: &mut Hooks) -> Element {
     let (list, set_list) = hooks.use_state(vec!["First".to_string(), "Second".to_string()]);
     let (minimal_list, set_minimal_list) =
         hooks.use_state(vec!["First".to_string(), "Second".to_string()]);
-    let row = |name, editor| FlowRow(vec![Text::el(name).with(min_width(), 110.), editor]).el();
-    FocusRoot(vec![FlowColumn(vec![
+    let row = |name, editor| FlowRow::el(vec![Text::el(name).with(min_width(), 110.), editor]);
+    FocusRoot::el([FlowColumn::el([
         row("TextEditor", TextEditor::new(text, set_text).el()),
         row(
             "F32Input",
@@ -74,11 +74,9 @@ fn App(hooks: &mut Hooks) -> Element {
             .el(),
         ),
     ])
-    .el()
     .with(width(), 200.)
     .with(space_between_items(), STREET)
     .with_padding_even(STREET)])
-    .el()
 }
 
 #[main]

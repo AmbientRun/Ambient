@@ -17,41 +17,29 @@ use ambient_ui_components::{
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
-    let background = |e| {
-        FlowRow(vec![e])
-            .el()
-            .with_background(vec4(1., 1., 1., 0.02))
-    };
-    FlowColumn(vec![
-        FlowRow(vec![Text::el("Basic")])
-            .el()
+    let background = |e| FlowRow::el([e]).with_background(vec4(1., 1., 1., 0.02));
+    FlowColumn::el([
+        FlowRow::el([Text::el("Basic")])
             .with_background(vec4(0.1, 0.1, 0.1, 1.))
             .with_default(fit_vertical_children())
             .with_default(fit_horizontal_children())
             .with_padding_even(10.),
-        FlowRow(vec![
-            Text::el("Spacing"),
-            Text::el("between"),
-            Text::el("items"),
-        ])
-        .el()
-        .with_background(vec4(0.1, 0.1, 0.1, 1.))
-        .with_default(fit_vertical_children())
-        .with_default(fit_horizontal_children())
-        .with_padding_even(10.)
-        .with(space_between_items(), 50.),
-        FlowRow(vec![Text::el("Break"), Text::el("line")])
-            .el()
+        FlowRow::el([Text::el("Spacing"), Text::el("between"), Text::el("items")])
+            .with_background(vec4(0.1, 0.1, 0.1, 1.))
+            .with_default(fit_vertical_children())
+            .with_default(fit_horizontal_children())
+            .with_padding_even(10.)
+            .with(space_between_items(), 50.),
+        FlowRow::el([Text::el("Break"), Text::el("line")])
             .with_background(vec4(0.1, 0.1, 0.1, 1.))
             .with_default(fit_vertical_children())
             .with_default(fit_horizontal_none())
             .with(width(), 50.)
             .with_padding_even(10.),
-        FlowRow(vec![
+        FlowRow::el([
             background(Text::el("Align")),
             background(Text::el("Center").with(font_size(), 30.)),
         ])
-        .el()
         .with_background(vec4(0.1, 0.1, 0.1, 1.))
         .with_default(fit_vertical_none())
         .with_default(fit_horizontal_none())
@@ -61,11 +49,10 @@ fn App(_hooks: &mut Hooks) -> Element {
         .with(height(), 70.)
         .with_padding_even(10.)
         .with(space_between_items(), 5.),
-        FlowRow(vec![
+        FlowRow::el([
             background(Text::el("Align")),
             background(Text::el("End").with(font_size(), 30.)),
         ])
-        .el()
         .with_background(vec4(0.1, 0.1, 0.1, 1.))
         .with_default(fit_vertical_none())
         .with_default(fit_horizontal_none())
@@ -76,7 +63,6 @@ fn App(_hooks: &mut Hooks) -> Element {
         .with_padding_even(10.)
         .with(space_between_items(), 5.),
     ])
-    .el()
     .with(space_between_items(), 5.)
     .with_padding_even(STREET)
 }

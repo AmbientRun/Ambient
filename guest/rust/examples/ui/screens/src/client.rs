@@ -12,76 +12,42 @@ use ambient_ui_components::{
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
     let (screen, set_screen) = hooks.use_state(None);
-    FocusRoot(vec![PageScreen(vec![
+    FocusRoot::el([PageScreen::el([
         ScreenContainer(screen).el(),
         Text::el("RootScreen"),
         Button::new("Open sub screen", move |_| {
-            set_screen(Some(
-                SubScreen {
-                    on_back: cb({
-                        let set_screen = set_screen.clone();
-                        move || {
-                            set_screen(None);
-                        }
-                    }),
+            set_screen(Some(SubScreen::el(cb({
+                let set_screen = set_screen.clone();
+                move || {
+                    set_screen(None);
                 }
-                .el(),
-            ))
+            }))))
         })
         .el(),
-    ])
-    .el()])
-    .el()
+    ])])
 }
 
 #[element_component]
 fn SubScreen(hooks: &mut Hooks, on_back: Cb<dyn Fn() + Sync + Send>) -> Element {
     let (screen, set_screen) = hooks.use_state(None);
     let (id, _) = hooks.use_state_with(|_| friendly_id());
-    PageScreen(vec![
+    PageScreen::el([
         ScreenContainer(screen).el(),
         Text::el(format!("SubScreen {id}")),
         Button::new("Back", move |_| on_back()).el(),
         Button::new("Open sub screen", {
             let set_screen = set_screen.clone();
             move |_| {
-                set_screen(Some(
-                    SubScreen {
-                        on_back: cb({
-                            let set_screen = set_screen.clone();
-                            move || {
-                                set_screen(None);
-                            }
-                        }),
+                set_screen(Some(SubScreen::el(cb({
+                    let set_screen = set_screen.clone();
+                    move || {
+                        set_screen(None);
                     }
-                    .el(),
-                ))
+                }))))
             }
         })
         .el(),
-        // Button::new("Prompt", {
-        //     let set_screen = set_screen.clone();
-        //     move |_| {
-        //         set_screen(Some(
-        //             Prompt::new("Testy", set_screen.clone(), |_, _| {}).el(),
-        //         ));
-        //     }
-        // })
-        // .el(),
-        // Button::new("Editor Prompt", move |_| {
-        //     set_screen(Some(
-        //         EditorPrompt::new(
-        //             "Testy",
-        //             "Something".to_string(),
-        //             set_screen.clone(),
-        //             |_, _| {},
-        //         )
-        //         .el(),
-        //     ));
-        // })
-        // .el(),
     ])
-    .el()
 }
 
 #[main]

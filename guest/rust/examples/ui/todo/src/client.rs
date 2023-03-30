@@ -13,8 +13,7 @@ use components::todo_item;
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
-    FocusRoot::el([FlowColumn(vec![NewTodoItem.el(), TodoItems.el()])
-        .el()
+    FocusRoot::el([FlowColumn::el([NewTodoItem.el(), TodoItems.el()])
         .with_padding_even(STREET)
         .with(space_between_items(), 10.)])
 }
