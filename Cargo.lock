@@ -105,6 +105,7 @@ dependencies = [
  "ambient_debugger",
  "ambient_decals",
  "ambient_ecs",
+ "ambient_ecs_editor",
  "ambient_editor_derive",
  "ambient_element",
  "ambient_gizmos",
@@ -448,7 +449,6 @@ version = "0.2.0-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
- "ambient_ecs_editor",
  "ambient_element",
  "ambient_element_component",
  "ambient_gizmos",

@@ -16,7 +16,6 @@ ambient_core = { path = "../core" }
 ambient_gizmos = { path = "../gizmos" }
 ambient_rpc = { path = "../rpc" }
 ambient_network = { path = "../network" }
-ambient_ecs_editor = { path = "../ecs_editor" }
 
 ambient_element = { path = "../../shared_crates/element" }
 ambient_element_component = { path = "../../shared_crates/element_component" }

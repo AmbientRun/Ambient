@@ -4,17 +4,21 @@ use ambient_app::{fps_stats, window_title, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_core::{
     runtime,
-    window::{window_ctl, WindowCtl},
+    window::{cursor_position, window_ctl, window_logical_size, window_physical_size, window_scale_factor, WindowCtl},
 };
 use ambient_debugger::Debugger;
-use ambient_ecs::{Entity, SystemGroup};
+use ambient_ecs::{Entity, EntityId, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_network::client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, UseOnce};
+use ambient_network::client::{
+    GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, GameClientWorld, UseOnce,
+};
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
-use ambient_ui::{use_window_physical_resolution, Dock, FocusRoot, StylesExt, Text, WindowSized};
-use glam::uvec2;
+use ambient_ui::{Button, Dock, FlowColumn, FocusRoot, MeasureSize, ScrollArea, StylesExt, Text, UIExt, WindowSized, STREET};
+use glam::{uvec2, vec4, Vec2};
 
 use crate::{cli::RunCli, shared};
+use ambient_ecs_editor::ECSEditor;
+use ambient_layout::{docking, padding, width, Borders};
 
 pub mod player;
 mod wasm;
@@ -67,8 +71,6 @@ fn MainApp(
     show_debug: bool,
     golden_image_test: Option<f32>,
 ) -> Element {
-    let resolution = use_window_physical_resolution(hooks);
-
     let update_network_stats = hooks.provide_context(GameClientNetworkStats::default);
     let update_server_stats = hooks.provide_context(GameClientServerStats::default);
     let (loaded, set_loaded) = hooks.use_state(false);
@@ -80,7 +82,6 @@ fn MainApp(
         WindowSized::el([GameClientView {
             server_addr,
             user_id,
-            resolution,
             on_disconnect: cb(move || {}),
             init_world: cb(UseOnce::new(Box::new(move |world, _render_target| {
                 wasm::initialize(world).unwrap();
@@ -110,7 +111,7 @@ fn MainApp(
             }),
             create_rpc_registry: cb(shared::create_server_rpc_registry),
             on_in_entities: None,
-            ui: Dock::el(vec![
+            inner: Dock::el(vec![
                 if loaded { GoldenImageTest::el(project_path, golden_image_test) } else { Element::new() },
                 GameView { show_debug }.el(),
             ]),
@@ -166,19 +167,74 @@ fn GoldenImageTest(hooks: &mut Hooks, project_path: Option<PathBuf>, golden_imag
 fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     let (state, _) = hooks.consume_context::<GameClient>().unwrap();
     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
+    let (show_ecs, set_show_ecs) = hooks.use_state(false);
+    let (ecs_size, set_ecs_size) = hooks.use_state(Vec2::ZERO);
 
-    if show_debug {
-        Debugger {
-            get_state: cb(move |cb| {
-                let mut game_state = state.game_state.lock();
-                let game_state = &mut *game_state;
-                cb(&mut game_state.renderer, &render_target.0, &mut game_state.world);
-            }),
+    const ECS_WIDTH: f32 = 600.;
+
+    hooks.use_frame({
+        let state = state.clone();
+        let render_target = render_target.clone();
+        move |world| {
+            let mut state = state.game_state.lock();
+            let scale_factor = *world.resource(window_scale_factor());
+            let mut mouse_pos = *world.resource(cursor_position());
+            mouse_pos.x -= ecs_size.x;
+            state.world.set_if_changed(EntityId::resources(), cursor_position(), mouse_pos).unwrap();
+            let size = uvec2(render_target.0.color_buffer.size.width, render_target.0.color_buffer.size.height);
+            state
+                .world
+                .set_if_changed(EntityId::resources(), window_logical_size(), (size.as_vec2() / scale_factor as f32).as_uvec2())
+                .unwrap();
+            state.world.set_if_changed(EntityId::resources(), window_physical_size(), size).unwrap();
+            state.world.set_if_changed(EntityId::resources(), window_scale_factor(), scale_factor).unwrap();
         }
-        .el()
-    } else {
-        Element::new()
-    }
+    });
+
+    Dock::el([
+        MeasureSize::el(
+            FlowColumn::el([
+                Button::new("ECS", move |_| set_show_ecs(!show_ecs)).el(),
+                if show_ecs {
+                    ScrollArea::el(
+                        ECSEditor {
+                            get_world: cb({
+                                let state = state.clone();
+                                move |res| {
+                                    let state = state.game_state.lock();
+                                    res(&state.world)
+                                }
+                            }),
+                            on_change: cb(|_, _| {}),
+                        }
+                        .el(),
+                    )
+                    .with(width(), ECS_WIDTH)
+                } else {
+                    Element::new()
+                },
+            ])
+            .with(docking(), ambient_layout::Docking::Left)
+            .with_background(vec4(0., 0., 0., 1.))
+            .with(padding(), Borders::even(STREET)),
+            set_ecs_size,
+        ),
+        if show_debug {
+            Debugger {
+                get_state: cb(move |cb| {
+                    let mut game_state = state.game_state.lock();
+                    let game_state = &mut *game_state;
+                    cb(&mut game_state.renderer, &render_target.0, &mut game_state.world);
+                }),
+            }
+            .el()
+            .with(docking(), ambient_layout::Docking::Bottom)
+            .with(padding(), Borders::even(STREET))
+        } else {
+            Element::new()
+        },
+        GameClientWorld.el(),
+    ])
 }
 
 fn systems() -> SystemGroup {

@@ -10,7 +10,7 @@ use ambient_guest_bridge::{
         rect::{background_color, border_radius},
         transform::{local_to_world, translation},
     },
-    ecs::{Component, EntityId},
+    ecs::EntityId,
     window::set_cursor,
 };
 use ambient_math::{interpolate, interpolate_clamped};
@@ -43,7 +43,7 @@ impl Slider {
         Self { value, on_change: Some(cb(on_change)), min: 0., max: 1., width: 100., logarithmic: false, round: None, suffix: None }
     }
     #[cfg(feature = "guest")]
-    pub fn new_for_entity_component(hooks: &mut Hooks, entity: EntityId, component: Component<f32>) -> Self {
+    pub fn new_for_entity_component(hooks: &mut Hooks, entity: EntityId, component: ambient_guest_bridge::ecs::Component<f32>) -> Self {
         use ambient_guest_bridge::api::entity;
         let rerender = hooks.use_rerender_signal();
         Self::new(entity::get_component(entity, component).unwrap_or_default(), move |value| {

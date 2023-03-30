@@ -1,4 +1,4 @@
-use ambient_ecs::{components, Component, ComponentValue, Debuggable, Description, MaybeResource, Name, Networked, Resource, World};
+use ambient_ecs::{components, Debuggable, Description, MaybeResource, Name, Networked, Resource, World};
 use ambient_std::math::interpolate;
 use glam::{uvec2, vec2, UVec2, Vec2};
 use winit::window::{CursorGrabMode, CursorIcon, Window};
@@ -30,21 +30,6 @@ pub fn get_window_sizes(window: &Window) -> (UVec2, UVec2, f64) {
     let size = uvec2(window.inner_size().width, window.inner_size().height);
     let sf = window.scale_factor();
     (size, (size.as_dvec2() / sf).as_uvec2(), sf)
-}
-
-pub fn mirror_window_components(src: &mut World, dst: &mut World) {
-    fn t<T>(src: &mut World, dst: &mut World, component: Component<T>)
-    where
-        T: ComponentValue + std::fmt::Debug + Copy + PartialEq,
-    {
-        let val = *src.resource(component);
-        dst.set_if_changed(dst.resource_entity(), component, val).unwrap();
-    }
-
-    t(src, dst, window_physical_size());
-    t(src, dst, window_logical_size());
-    t(src, dst, window_scale_factor());
-    t(src, dst, cursor_position());
 }
 
 /// Allows controlling the window
