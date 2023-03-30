@@ -411,6 +411,34 @@ impl<'a> Hooks<'a> {
         });
     }
 
+    /// This is the same as query(components).build().evaluate(), except it also listens to updates to those
+    /// entities and automatically re-runs the query
+    #[cfg(feature = "guest")]
+    pub fn use_query<Components: ambient_guest_bridge::api::ecs::ComponentsTuple + Copy + Clone + Sync + Send + 'static>(
+        &mut self,
+        components: Components,
+    ) -> Vec<(ambient_guest_bridge::ecs::EntityId, Components::Data)> {
+        use ambient_guest_bridge::api::prelude::{change_query, despawn_query, query, spawn_query};
+
+        let refresh = self.use_rerender_signal();
+        self.use_spawn(move |_| {
+            spawn_query(components).bind({
+                let refresh = refresh.clone();
+                move |_| refresh()
+            });
+            despawn_query(components).bind({
+                let refresh = refresh.clone();
+                move |_| refresh()
+            });
+            change_query(components).track_change(components).bind({
+                let refresh = refresh.clone();
+                move |_| refresh()
+            });
+            Box::new(|_| {})
+        });
+        query(components).build().evaluate()
+    }
+
     pub fn use_interval<F: Fn() + Sync + Send + 'static>(&mut self, seconds: f32, cb: F) {
         #[cfg(feature = "native")]
         self.use_spawn(move |world| {

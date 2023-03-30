@@ -22,45 +22,24 @@ fn App(_hooks: &mut Hooks) -> Element {
 #[element_component]
 fn NewTodoItem(hooks: &mut Hooks) -> Element {
     let (text, set_text) = hooks.use_state("".to_string());
-    FlowRow::el([
-        Button::new("New", {
-            let set_text = set_text.clone();
-            let text = text.clone();
-            move |_| {
-                messages::NewItem::new(text.clone()).send(message::client::Target::RemoteReliable);
-                set_text(String::new());
-            }
-        })
-        .el(),
-        TextEditor::new(text, set_text.clone())
+    FlowColumn::el([
+        TextEditor::new(text.clone(), set_text.clone())
             .placeholder(Some("Enter todo name here"))
             .el(),
+        Button::new("Create", move |_| {
+            messages::NewItem::new(text.clone()).send(message::client::Target::RemoteReliable);
+            set_text(String::new());
+        })
+        .el(),
     ])
     .with(space_between_items(), 10.)
 }
 
 #[element_component]
 fn TodoItems(hooks: &mut Hooks) -> Element {
-    let refresh = hooks.use_rerender_signal();
-    hooks.use_spawn(move |_| {
-        spawn_query(todo_item()).bind({
-            let refresh = refresh.clone();
-            move |_| refresh()
-        });
-        despawn_query(todo_item()).bind({
-            let refresh = refresh.clone();
-            move |_| refresh()
-        });
-        change_query(todo_item()).track_change(todo_item()).bind({
-            let refresh = refresh.clone();
-            move |_| refresh()
-        });
-        Box::new(|_| {})
-    });
+    let items = hooks.use_query(todo_item());
     FlowColumn::el(
-        query(todo_item())
-            .build()
-            .evaluate()
+        items
             .into_iter()
             .map(|(id, description)| {
                 FlowRow::el([
