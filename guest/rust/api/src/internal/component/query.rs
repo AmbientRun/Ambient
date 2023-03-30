@@ -52,7 +52,7 @@ pub enum QueryEvent {
     Despawn,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 /// An ECS query used to find entities in the world.
 pub struct GeneralQuery<Components: ComponentsTuple + Copy + Clone + 'static>(
     QueryImpl<Components>,
@@ -231,7 +231,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> EventQuery<Components
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 struct QueryImpl<Components: ComponentsTuple + Copy + Clone + 'static>(
     u64,
     PhantomData<Components>,
