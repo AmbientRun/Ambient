@@ -1,12 +1,26 @@
 extern crate proc_macro;
 
+use std::path::PathBuf;
+
+use anyhow::Context;
 use proc_macro::TokenStream;
 use proc_macro2::Span;
 
-mod api_project;
 mod main_macro;
 
-const MANIFEST: &str = include_str!("../ambient.toml");
+/// Generates global components and other boilerplate for the API crate.
+#[proc_macro]
+pub fn api_project(_input: TokenStream) -> TokenStream {
+    TokenStream::from(
+        ambient_project_macro_common::implementation(
+            (None, ambient_project_macro_common::MANIFEST.to_string()),
+            syn::Path::from(syn::Ident::new("crate", Span::call_site())),
+            true,
+            true,
+        )
+        .unwrap(),
+    )
+}
 
 /// Makes your `main()` function accessible to the WASM host, and generates `components` and `concept` modules for your project.
 ///
@@ -15,22 +29,18 @@ const MANIFEST: &str = include_str!("../ambient.toml");
 pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
     main_macro::main_impl(
         item.into(),
-        api_project::read_file("ambient.toml".to_string()).expect("Failed to load ambient.toml"),
+        read_file("ambient.toml".to_string()).expect("Failed to load ambient.toml"),
     )
     .unwrap()
     .into()
 }
 
-/// Generates global components and other boilerplate for the API crate.
-#[proc_macro]
-pub fn api_project(_input: TokenStream) -> TokenStream {
-    TokenStream::from(
-        api_project::implementation(
-            (None, MANIFEST.to_string()),
-            syn::Path::from(syn::Ident::new("crate", Span::call_site())),
-            true,
-            true,
-        )
-        .unwrap(),
-    )
+fn read_file(file_path: String) -> anyhow::Result<(Option<String>, String)> {
+    let file_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").context("no manifest dir")?)
+        .join(file_path);
+
+    Ok((
+        Some(format!("{}", file_path.display())),
+        std::fs::read_to_string(&file_path)?,
+    ))
 }

@@ -1,0 +1,26 @@
+[package]
+name = "ambient_project_macro_common"
+version = { workspace = true }
+rust-version = { workspace = true }
+edition = "2021"
+description = "Common implementation of a proc-macro that generates boilerplate from an `ambient.toml`."
+license = "MIT OR Apache-2.0"
+documentation = "https://docs.rs/ambient_project_macro"
+repository = "https://github.com/AmbientRun/Ambient"
+
+[dependencies]
+anyhow = "1.0"
+quote = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+syn = { version = "1.0", features = ["full"] }
+toml = "0.7.1"
+proc-macro2 = "1.0"
+
+ambient_project = { path = "../project" }
+
+[dev-dependencies]
+indoc = "2.0"
+
+[features]
+guest = ["ambient_project/guest"]
+native = ["ambient_project/native"]

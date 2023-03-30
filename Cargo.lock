@@ -212,6 +212,7 @@ name = "ambient_api_macros"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_project",
+ "ambient_project_macro_common",
  "anyhow",
  "proc-macro2",
  "quote",
@@ -1015,6 +1016,20 @@ dependencies = [
  "serde_json",
  "syn",
  "thiserror",
+ "toml 0.7.2",
+]
+
+[[package]]
+name = "ambient_project_macro_common"
+version = "0.2.0-dev"
+dependencies = [
+ "ambient_project",
+ "anyhow",
+ "indoc",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "syn",
  "toml 0.7.2",
 ]
 

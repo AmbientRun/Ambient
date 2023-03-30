@@ -20,6 +20,7 @@ toml = "0.7.1"
 proc-macro2 = "1.0"
 
 ambient_project = { workspace = true }
+ambient_project_macro_common = { workspace = true }
 
 [dev-dependencies]
 indoc = "2.0.0"

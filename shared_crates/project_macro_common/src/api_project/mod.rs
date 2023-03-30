@@ -1,7 +1,4 @@
-use std::path::PathBuf;
-
 use ambient_project::{IdentifierPathBuf, Manifest};
-use anyhow::Context;
 use quote::quote;
 
 use tree::Tree;
@@ -14,16 +11,6 @@ mod concept;
 mod message;
 mod tree;
 mod util;
-
-pub fn read_file(file_path: String) -> anyhow::Result<(Option<String>, String)> {
-    let file_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").context("no manifest dir")?)
-        .join(file_path);
-    let file_path_str = format!("{}", file_path.display());
-
-    let contents = std::fs::read_to_string(&file_path)?;
-
-    Ok((Some(file_path_str), contents))
-}
 
 pub fn implementation(
     (file_path, contents): (Option<String>, String),

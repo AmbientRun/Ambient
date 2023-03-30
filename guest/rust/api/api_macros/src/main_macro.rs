@@ -1,8 +1,6 @@
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
 
-use crate::api_project;
-
 pub fn main_impl(
     item: TokenStream,
     ambient_toml: (Option<String>, String),
@@ -16,7 +14,9 @@ pub fn main_impl(
     let spans = Span::call_site();
     let mut path = syn::Path::from(syn::Ident::new("ambient_api", spans));
     path.leading_colon = Some(syn::Token![::](spans));
-    let project_boilerplate = api_project::implementation(ambient_toml, path.clone(), false, true)?;
+
+    let project_boilerplate =
+        ambient_project_macro_common::implementation(ambient_toml, path.clone(), false, true)?;
 
     let call_expr = if is_async {
         quote! { #fn_name() }
