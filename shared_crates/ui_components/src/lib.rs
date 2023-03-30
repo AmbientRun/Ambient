@@ -22,6 +22,7 @@ pub mod default_theme;
 pub mod dropdown;
 pub mod editor;
 pub mod layout;
+pub mod prelude;
 pub mod prompt;
 pub mod screens;
 pub mod scroll_area;

@@ -1,6 +1,5 @@
 use ambient_api::prelude::*;
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_ui_components::{default_theme::STREET, text::Text, UIExt};
+use ambient_ui_components::prelude::*;
 
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {

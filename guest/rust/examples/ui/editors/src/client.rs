@@ -1,15 +1,5 @@
 use ambient_api::prelude::*;
-use ambient_cb::cb;
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::layout::{min_width, space_between_items, width};
-use ambient_ui_components::{
-    default_theme::STREET,
-    editor::{Editor, F32Input, ListEditor, MinimalListEditor, TextEditor},
-    layout::{FlowColumn, FlowRow},
-    select::DropdownSelect,
-    text::Text,
-    FocusRoot, UIExt,
-};
+use ambient_ui_components::prelude::*;
 use indexmap::IndexMap;
 
 #[element_component]

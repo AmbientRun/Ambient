@@ -1,19 +1,5 @@
 use ambient_api::prelude::*;
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::{
-    layout::{
-        align_horizontal_center, align_horizontal_end, align_vertical_center, align_vertical_end,
-        fit_horizontal_children, fit_horizontal_none, fit_vertical_children, fit_vertical_none,
-        height, space_between_items, width,
-    },
-    text::font_size,
-};
-use ambient_ui_components::{
-    default_theme::STREET,
-    layout::{FlowColumn, FlowRow},
-    text::Text,
-    UIExt,
-};
+use ambient_ui_components::prelude::*;
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {

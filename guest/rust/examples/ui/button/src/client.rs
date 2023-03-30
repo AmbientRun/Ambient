@@ -1,13 +1,5 @@
 use ambient_api::prelude::*;
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::layout::space_between_items;
-use ambient_ui_components::{
-    button::{Button, ButtonStyle},
-    default_theme::STREET,
-    layout::{FlowColumn, FlowRow},
-    text::Text,
-    UIExt,
-};
+use ambient_ui_components::prelude::*;
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {

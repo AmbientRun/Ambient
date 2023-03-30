@@ -1,13 +1,6 @@
 use ambient_api::prelude::*;
-use ambient_cb::{cb, Cb};
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_friendly_id::friendly_id;
-use ambient_ui_components::{
-    button::Button,
-    screens::{PageScreen, ScreenContainer},
-    text::Text,
-    FocusRoot,
-};
+use ambient_ui_components::prelude::*;
 
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {

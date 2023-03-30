@@ -1,14 +1,5 @@
 use ambient_api::prelude::*;
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::layout::{
-    docking_bottom, docking_left, fit_horizontal_none, fit_vertical_none, height, width,
-};
-use ambient_ui_components::{
-    default_theme::STREET,
-    layout::{Dock, FlowRow},
-    text::Text,
-    UIExt,
-};
+use ambient_ui_components::prelude::*;
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {

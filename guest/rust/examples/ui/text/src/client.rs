@@ -1,14 +1,5 @@
 use ambient_api::prelude::*;
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::{
-    layout::space_between_items, rendering::color, text::font_size,
-};
-use ambient_ui_components::{
-    default_theme::{StylesExt, STREET},
-    layout::{FlowColumn, Separator},
-    text::Text,
-    UIExt,
-};
+use ambient_ui_components::prelude::*;
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
