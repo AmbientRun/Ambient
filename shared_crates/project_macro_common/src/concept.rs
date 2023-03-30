@@ -380,3 +380,141 @@ impl std::fmt::Display for SemiprettyTokenStream {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::collections::BTreeMap;
+
+    use ambient_project::{Component, ComponentType, Concept, IdentifierPathBuf};
+
+    use crate::{tests::guest_context, tree::Tree};
+
+    #[test]
+    fn can_generate_nested_doc_comment_for_concepts() {
+        let component_tree = Tree::<Component>::new(
+            &BTreeMap::from_iter(
+                ["Bool", "F32", "I32", "String", "Vec3"]
+                    .into_iter()
+                    .enumerate()
+                    .map(|(idx, ty)| {
+                        (
+                            IdentifierPathBuf::new(format!("component{idx}")).unwrap(),
+                            Component {
+                                name: format!("Component {idx}"),
+                                description: "".to_string(),
+                                type_: ComponentType::String(ty.to_string()),
+                                attributes: vec![],
+                                default: None,
+                            }
+                            .into(),
+                        )
+                    }),
+            ),
+            false,
+        )
+        .unwrap();
+
+        let concept_tree = Tree::<Concept>::new(
+            &BTreeMap::from_iter([
+                (
+                    IdentifierPathBuf::new("concept0").unwrap(),
+                    Concept {
+                        name: String::new(),
+                        description: String::new(),
+                        extends: vec![],
+                        components: BTreeMap::from_iter([(
+                            IdentifierPathBuf::new("component0").unwrap(),
+                            toml::Value::Boolean(true),
+                        )]),
+                    }
+                    .into(),
+                ),
+                (
+                    IdentifierPathBuf::new("concept1").unwrap(),
+                    Concept {
+                        name: String::new(),
+                        description: String::new(),
+                        extends: vec![IdentifierPathBuf::new("concept0").unwrap()],
+                        components: BTreeMap::from_iter([(
+                            IdentifierPathBuf::new("component1").unwrap(),
+                            toml::Value::Float(3.14),
+                        )]),
+                    }
+                    .into(),
+                ),
+                (
+                    IdentifierPathBuf::new("concept2").unwrap(),
+                    Concept {
+                        name: String::new(),
+                        description: String::new(),
+                        extends: vec![],
+                        components: BTreeMap::from_iter([(
+                            IdentifierPathBuf::new("component2").unwrap(),
+                            toml::Value::Integer(3),
+                        )]),
+                    }
+                    .into(),
+                ),
+                (
+                    IdentifierPathBuf::new("concept3").unwrap(),
+                    Concept {
+                        name: String::new(),
+                        description: String::new(),
+                        extends: vec![
+                            IdentifierPathBuf::new("concept1").unwrap(),
+                            IdentifierPathBuf::new("concept2").unwrap(),
+                        ],
+                        components: BTreeMap::from_iter([
+                            (
+                                IdentifierPathBuf::new("component3").unwrap(),
+                                toml::Value::String("It's pi".to_string()),
+                            ),
+                            (
+                                IdentifierPathBuf::new("component4").unwrap(),
+                                toml::Value::Array(
+                                    (0..3).into_iter().map(toml::Value::Integer).collect(),
+                                ),
+                            ),
+                        ]),
+                    }
+                    .into(),
+                ),
+            ]),
+            false,
+        )
+        .unwrap();
+
+        let comment = super::generate_component_list_doc_comment(
+            &concept_tree,
+            &component_tree,
+            &guest_context(),
+            concept_tree
+                .get(IdentifierPathBuf::new("concept3").unwrap().as_path())
+                .unwrap(),
+        )
+        .unwrap();
+
+        assert_eq!(
+            comment,
+            indoc::indoc! {r#"
+            *Definition*:
+
+            ```
+            {
+              "component3": String = "It's pi".to_string(),
+              "component4": Vec3 = Vec3::new(0f32, 1f32, 2f32),
+              "concept1": { // Concept.
+                "component1": f32 = 3.14f32,
+                "concept0": { // Concept.
+                  "component0": bool = true,
+                },
+              },
+              "concept2": { // Concept.
+                "component2": i32 = 3i32,
+              },
+            }
+            ```
+        "#}
+        );
+    }
+}
