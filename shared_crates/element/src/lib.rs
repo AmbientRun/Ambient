@@ -225,8 +225,8 @@ pub fn ambient_system() -> SystemGroup {
 macro_rules! define_el_function_for_vec_element_newtype {
     ($type:ty) => {
         impl $type {
-            pub fn el(contents: impl Into<Vec<Element>>) -> Element {
-                Self(contents.into()).el()
+            pub fn el(contents: impl std::iter::IntoIterator<Item = Element>) -> Element {
+                Self(contents.into_iter().collect()).el()
             }
         }
     };

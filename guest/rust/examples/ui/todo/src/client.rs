@@ -31,21 +31,16 @@ fn NewTodoItem(hooks: &mut Hooks) -> Element {
 #[element_component]
 fn TodoItems(hooks: &mut Hooks) -> Element {
     let items = hooks.use_query(todo_item());
-    FlowColumn::el(
-        items
-            .into_iter()
-            .map(|(id, description)| {
-                FlowRow::el([
-                    Button::new(COLLECTION_DELETE_ICON, move |_| {
-                        messages::DeleteItem::new(id).send(message::client::Target::RemoteReliable)
-                    })
-                    .style(ButtonStyle::Flat)
-                    .el(),
-                    Text::el(description),
-                ])
+    FlowColumn::el(items.into_iter().map(|(id, description)| {
+        FlowRow::el([
+            Button::new(COLLECTION_DELETE_ICON, move |_| {
+                messages::DeleteItem::new(id).send(message::client::Target::RemoteReliable)
             })
-            .collect::<Vec<_>>(),
-    )
+            .style(ButtonStyle::Flat)
+            .el(),
+            Text::el(description),
+        ])
+    }))
     .with(space_between_items(), 10.)
 }
 
