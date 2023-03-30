@@ -37,7 +37,7 @@ pub async fn pipeline(ctx: &PipelineCtx) -> Vec<OutAsset> {
             };
 
             let root_node = AudioNode::Vorbis { url: content_url.to_string() };
-            let graph_url = ctx.write_file(&rel_path.with_extension("SOUND_GRAPH_EXTENSION"), save_audio_graph(root_node).unwrap()).await;
+            let graph_url = ctx.write_file(&rel_path.with_extension(SOUND_GRAPH_EXTENSION), save_audio_graph(root_node).unwrap()).await;
 
             Ok(vec![
                 OutAsset {
