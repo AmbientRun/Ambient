@@ -26,7 +26,7 @@ pub fn main() {
             false,
             format!("{source_reliable}: Hello, world from the server!"),
         )
-        .send(Target::RemoteTargetedUnreliable(user_id.clone()));
+        .send(Target::RemoteTargetedUnreliable(user_id));
 
         messages::Hello::new(
             true,

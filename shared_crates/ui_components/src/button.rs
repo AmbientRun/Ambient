@@ -34,6 +34,7 @@ use ambient_guest_bridge::{
     ecs::World,
     run_async,
 };
+use ambient_shared_types::events;
 use ambient_window_types::{CursorIcon, ModifiersState, VirtualKeyCode};
 
 #[derive(Clone, Debug)]
@@ -222,7 +223,7 @@ pub fn Button(
         }
         Box::new(|_| {})
     });
-    hooks.use_event(ambient_event_types::WINDOW_MOUSE_INPUT, {
+    hooks.use_event(events::WINDOW_MOUSE_INPUT, {
         let set_is_pressed = set_is_pressed.clone();
         let on_invoked = on_invoked.clone();
         let set_is_working = set_is_working.clone();
@@ -237,8 +238,10 @@ pub fn Button(
                     if hover && !disabled && is_pressed {
                         on_invoked.invoke(world, set_is_working.clone());
                     }
-                    set_is_pressed(false);
-                    is_pressed_immediate.store(false, Ordering::SeqCst);
+                    if is_pressed {
+                        set_is_pressed(false);
+                        is_pressed_immediate.store(false, Ordering::SeqCst);
+                    }
                 }
             }
         }
@@ -401,7 +404,7 @@ impl ElementComponent for Hotkey {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { on_is_pressed_changed, content, hotkey, hotkey_modifier, on_invoke } = *self;
         let (is_pressed, _) = hooks.use_state_with(|_| Arc::new(AtomicBool::new(false)));
-        hooks.use_event(ambient_event_types::WINDOW_KEYBOARD_INPUT, {
+        hooks.use_event(events::WINDOW_KEYBOARD_INPUT, {
             let is_pressed = is_pressed.clone();
             move |world, event| {
                 if let Some(pressed) = event.get(event_keyboard_input()) {
@@ -428,7 +431,7 @@ impl ElementComponent for Hotkey {
                 }
             }
         });
-        hooks.use_event(ambient_event_types::WINDOW_FOCUSED, {
+        hooks.use_event(events::WINDOW_FOCUSED, {
             move |_world, event| {
                 if let Some(_event) = event.get(event_focus_change()) {
                     is_pressed.store(false, Ordering::Relaxed);

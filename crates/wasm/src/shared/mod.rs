@@ -18,9 +18,11 @@ use ambient_ecs::{
 };
 use ambient_physics::{collider_loads, collisions, PxShapeUserData};
 use ambient_project::Identifier;
+use ambient_shared_types::events;
 use itertools::Itertools;
-pub use module::*;
 use physxx::{PxRigidActor, PxRigidActorRef, PxUserData};
+
+pub use module::*;
 
 mod internal {
     use ambient_ecs::{
@@ -179,10 +181,7 @@ pub fn systems() -> SystemGroup {
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("WASM module frame event");
                 // trigger frame event
-                run_all(
-                    world,
-                    &RunContext::new(world, ambient_event_types::FRAME, Entity::new()),
-                );
+                run_all(world, &RunContext::new(world, events::FRAME, Entity::new()));
             })),
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("WASM module collision event");
@@ -209,7 +208,7 @@ pub fn systems() -> SystemGroup {
                         world,
                         &RunContext::new(
                             world,
-                            ambient_event_types::COLLISION,
+                            events::COLLISION,
                             vec![ComponentEntry::new(ambient_ecs::ids(), ids)].into(),
                         ),
                     );
@@ -227,7 +226,7 @@ pub fn systems() -> SystemGroup {
                         world,
                         &RunContext::new(
                             world,
-                            ambient_event_types::COLLIDER_LOAD,
+                            events::COLLIDER_LOAD,
                             vec![ComponentEntry::new(ambient_ecs::id(), id)].into(),
                         ),
                     );
@@ -264,7 +263,7 @@ pub fn systems() -> SystemGroup {
 
                     let run_context = RunContext::new(
                         world,
-                        format!("{}/{}", ambient_event_types::MODULE_MESSAGE, name),
+                        format!("{}/{}", events::MODULE_MESSAGE, name),
                         entity,
                     );
 
@@ -372,7 +371,7 @@ fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
                         world,
                         module_id,
                         sms.clone(),
-                        &RunContext::new(world, ambient_event_types::MODULE_LOAD, Entity::new()),
+                        &RunContext::new(world, events::MODULE_LOAD, Entity::new()),
                     );
                     world.add_component(module_id, module_state(), sms).unwrap();
                 }
@@ -431,7 +430,7 @@ pub(crate) fn unload(world: &mut World, module_id: EntityId, reason: &str) {
         world,
         module_id,
         sms,
-        &RunContext::new(world, ambient_event_types::MODULE_UNLOAD, Entity::new()),
+        &RunContext::new(world, events::MODULE_UNLOAD, Entity::new()),
     );
 
     let spawned_entities = world

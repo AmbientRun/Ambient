@@ -32,7 +32,7 @@ fn NewTodoItem(hooks: &mut Hooks) -> Element {
             }
         })
         .el(),
-        TextEditor::new(text.clone(), set_text.clone())
+        TextEditor::new(text, set_text.clone())
             .placeholder(Some("Enter todo name here"))
             .el(),
     ])

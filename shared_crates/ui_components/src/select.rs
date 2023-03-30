@@ -9,12 +9,12 @@ use crate::{
     UIExt,
 };
 use ambient_cb::Cb;
-use ambient_event_types::WINDOW_MOUSE_INPUT;
 use ambient_guest_bridge::components::{
     input::event_mouse_input,
     layout::{margin_left, margin_top},
     rect::border_radius,
 };
+use ambient_shared_types::events::WINDOW_MOUSE_INPUT;
 use glam::Vec4;
 
 #[derive(Debug, Clone)]

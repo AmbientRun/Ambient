@@ -9,6 +9,8 @@ edition = "2021"
 
 [dependencies]
 ambient_std = { path = "../std" }
+ambient_shared_types = { path = "../../shared_crates/shared_types" }
+
 itertools = { workspace = true }
 serde = { workspace = true }
 thiserror = { workspace = true }

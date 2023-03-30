@@ -6,7 +6,6 @@ use glam::*;
 
 use crate::{layout::FlowRow, text::Text, use_focus, Rectangle, UIBase, UIExt};
 use ambient_cb::{cb, Cb};
-use ambient_event_types::{WINDOW_KEYBOARD_INPUT, WINDOW_RECEIVED_CHARACTER};
 use ambient_guest_bridge::{
     components::{
         input::{event_keyboard_input, event_received_character, keycode},
@@ -17,6 +16,7 @@ use ambient_guest_bridge::{
     },
     window::set_cursor,
 };
+use ambient_shared_types::events::{WINDOW_KEYBOARD_INPUT, WINDOW_RECEIVED_CHARACTER};
 use ambient_window_types::{CursorIcon, VirtualKeyCode};
 
 use super::{Editor, EditorOpts};
@@ -40,7 +40,15 @@ pub fn TextEditor(
     let intermediate_value = hooks.use_ref_with(|_| value.clone());
     let cursor_position = hooks.use_ref_with(|_| value.len());
     let rerender = hooks.use_rerender_signal();
-    *intermediate_value.lock() = value.clone();
+    {
+        let mut inter = intermediate_value.lock();
+        if *inter != value {
+            let mut cp = cursor_position.lock();
+            *cp = cp.min(value.len());
+        }
+        *inter = value.clone();
+    }
+
     hooks.use_spawn({
         let set_focused = set_focused.clone();
         move |_| {

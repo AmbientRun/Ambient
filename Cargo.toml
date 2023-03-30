@@ -146,8 +146,8 @@ wasmtime = { version = "7.0.0", features = ["component-model"] }
 # Use published versions of these crates when available, or pull them in ourselves
 wasi-common = { git = "https://github.com/bytecodealliance/preview2-prototyping.git", rev = "5836a6b0028f6fbdd094fbdd87df1ff4ca535168" }
 wasi-cap-std-sync = { git = "https://github.com/bytecodealliance/preview2-prototyping.git", rev = "5836a6b0028f6fbdd094fbdd87df1ff4ca535168" }
-wit-bindgen-core = "0.4.0"
-wit-bindgen-rust = "0.4.0"
+wit-bindgen-core = { git = "https://github.com/bytecodealliance/wit-bindgen.git", rev = "7ec986ba6bab38b4ccf5a771200c689c77f1e404" }
+wit-bindgen-rust = { git = "https://github.com/bytecodealliance/wit-bindgen.git", rev = "7ec986ba6bab38b4ccf5a771200c689c77f1e404" }
 wit-component = "0.7.3"
 
 [patch.crates-io]

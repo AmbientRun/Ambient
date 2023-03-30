@@ -2,7 +2,6 @@ use std::f32::consts::E;
 
 use ambient_cb::{cb, Cb};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_event_types::{WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION};
 use ambient_guest_bridge::{
     components::{
         app::cursor_position,
@@ -15,6 +14,7 @@ use ambient_guest_bridge::{
     window::set_cursor,
 };
 use ambient_math::{interpolate, interpolate_clamped};
+use ambient_shared_types::events::{WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION};
 use ambient_window_types::CursorIcon;
 use glam::{vec3, Vec4};
 
