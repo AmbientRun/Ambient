@@ -10,7 +10,7 @@ use ambient_guest_bridge::{
         rect::{background_color, border_radius},
         transform::{local_to_world, translation},
     },
-    ecs::EntityId,
+    ecs::{Component, EntityId},
     window::set_cursor,
 };
 use ambient_math::{interpolate, interpolate_clamped};
@@ -37,6 +37,20 @@ pub struct Slider {
     pub logarithmic: bool,
     pub round: Option<u32>,
     pub suffix: Option<&'static str>,
+}
+impl Slider {
+    pub fn new(value: f32, on_change: impl Fn(f32) + Sync + Send + 'static) -> Self {
+        Self { value, on_change: Some(cb(on_change)), min: 0., max: 1., width: 100., logarithmic: false, round: None, suffix: None }
+    }
+    #[cfg(feature = "guest")]
+    pub fn new_for_entity_component(hooks: &mut Hooks, entity: EntityId, component: Component<f32>) -> Self {
+        use ambient_guest_bridge::api::entity;
+        let rerender = hooks.use_rerender_signal();
+        Self::new(entity::get_component(entity, component).unwrap_or_default(), move |value| {
+            entity::set_component(entity, component, value);
+            rerender();
+        })
+    }
 }
 
 impl ElementComponent for Slider {
@@ -103,7 +117,7 @@ impl ElementComponent for Slider {
                         let (_, _, block_position) = world.get(block_id, local_to_world()).unwrap().to_scale_rotation_translation();
                         let block_width = world.get(block_id, width()).unwrap_or_default();
                         let position = world.resource(cursor_position());
-                        on_change_factor(interpolate_clamped(position.x, block_position.x, block_width, 0., 1.));
+                        on_change_factor(interpolate_clamped(position.x, block_position.x, block_position.x + block_width, 0., 1.));
                     }
                 }
             }
