@@ -14,7 +14,7 @@ use ambient_network::client::{
 };
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_ui::{Button, Dock, FlowColumn, FocusRoot, MeasureSize, ScrollArea, StylesExt, Text, UIExt, WindowSized, STREET};
-use glam::{uvec2, vec4, Vec2};
+use glam::{uvec2, vec4, Vec2, Vec4};
 
 use crate::{cli::RunCli, shared};
 use ambient_ecs_editor::ECSEditor;
@@ -192,33 +192,37 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     });
 
     Dock::el([
-        MeasureSize::el(
-            FlowColumn::el([
-                Button::new("ECS", move |_| set_show_ecs(!show_ecs)).el(),
-                if show_ecs {
-                    ScrollArea::el(
-                        ECSEditor {
-                            get_world: cb({
-                                let state = state.clone();
-                                move |res| {
-                                    let state = state.game_state.lock();
-                                    res(&state.world)
-                                }
-                            }),
-                            on_change: cb(|_, _| {}),
-                        }
-                        .el(),
-                    )
-                    .with(width(), ECS_WIDTH)
-                } else {
-                    Element::new()
-                },
-            ])
-            .with(docking(), ambient_layout::Docking::Left)
-            .with_background(vec4(0., 0., 0., 1.))
-            .with(padding(), Borders::even(STREET)),
-            set_ecs_size,
-        ),
+        if show_debug {
+            MeasureSize::el(
+                FlowColumn::el([
+                    Button::new("ECS", move |_| set_show_ecs(!show_ecs)).style(ambient_ui::ButtonStyle::Flat).toggled(show_ecs).el(),
+                    if show_ecs {
+                        ScrollArea::el(
+                            ECSEditor {
+                                get_world: cb({
+                                    let state = state.clone();
+                                    move |res| {
+                                        let state = state.game_state.lock();
+                                        res(&state.world)
+                                    }
+                                }),
+                                on_change: cb(|_, _| {}),
+                            }
+                            .el(),
+                        )
+                        .with(width(), ECS_WIDTH)
+                    } else {
+                        Element::new()
+                    },
+                ])
+                .with(docking(), ambient_layout::Docking::Left)
+                .with_background(vec4(0., 0., 0., 1.))
+                .with(padding(), Borders::even(STREET)),
+                set_ecs_size,
+            )
+        } else {
+            Element::new()
+        },
         if show_debug {
             Debugger {
                 get_state: cb(move |cb| {
@@ -233,7 +237,13 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
         } else {
             Element::new()
         },
-        GameClientWorld.el(),
+        if show_debug {
+            Dock::el([GameClientWorld.el()])
+                .with_background(Vec4::ONE)
+                .with(padding(), Borders { left: 1., top: 0., right: 0., bottom: 1. })
+        } else {
+            GameClientWorld.el()
+        },
     ])
 }
 
