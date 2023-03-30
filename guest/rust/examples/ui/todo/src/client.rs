@@ -41,26 +41,9 @@ fn NewTodoItem(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn TodoItems(hooks: &mut Hooks) -> Element {
-    let refresh = hooks.use_rerender_signal();
-    hooks.use_spawn(move |_| {
-        spawn_query(todo_item()).bind({
-            let refresh = refresh.clone();
-            move |_| refresh()
-        });
-        despawn_query(todo_item()).bind({
-            let refresh = refresh.clone();
-            move |_| refresh()
-        });
-        change_query(todo_item()).track_change(todo_item()).bind({
-            let refresh = refresh.clone();
-            move |_| refresh()
-        });
-        Box::new(|_| {})
-    });
+    let items = hooks.use_query(todo_item());
     FlowColumn::el(
-        query(todo_item())
-            .build()
-            .evaluate()
+        items
             .into_iter()
             .map(|(id, description)| {
                 FlowRow::el([
