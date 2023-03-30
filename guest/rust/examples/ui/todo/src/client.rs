@@ -22,19 +22,15 @@ fn App(_hooks: &mut Hooks) -> Element {
 #[element_component]
 fn NewTodoItem(hooks: &mut Hooks) -> Element {
     let (text, set_text) = hooks.use_state("".to_string());
-    FlowRow::el([
-        Button::new("New", {
-            let set_text = set_text.clone();
-            let text = text.clone();
-            move |_| {
-                messages::NewItem::new(text.clone()).send(message::client::Target::RemoteReliable);
-                set_text(String::new());
-            }
-        })
-        .el(),
+    FlowColumn::el([
         TextEditor::new(text.clone(), set_text.clone())
             .placeholder(Some("Enter todo name here"))
             .el(),
+        Button::new("Create", move |_| {
+            messages::NewItem::new(text.clone()).send(message::client::Target::RemoteReliable);
+            set_text(String::new());
+        })
+        .el(),
     ])
     .with(space_between_items(), 10.)
 }
