@@ -1,12 +1,15 @@
 use std::collections::BTreeMap;
 
-use super::{concept::generate_component_list_doc_comment, implementation, tree::Tree};
+use super::{concept::generate_component_list_doc_comment, implementation, tree::Tree, Context};
 use ambient_project::{Component, ComponentType, Concept, IdentifierPathBuf};
 use proc_macro2::Span;
 
-fn api_name() -> syn::Path {
+fn context() -> Context {
     let ident = syn::Ident::new("ambient_api2", Span::call_site());
-    ident.into()
+    Context::Guest {
+        api_path: ident.into(),
+        fully_qualified_path: true,
+    }
 }
 
 #[test]
@@ -93,7 +96,7 @@ fn can_generate_components_from_manifest_in_global_namespace() {
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        context(),
         true,
         true,
     )
@@ -132,7 +135,7 @@ fn can_accept_no_components() {
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        context(),
         false,
         true,
     )
@@ -193,7 +196,7 @@ fn can_generate_components_from_manifest() {
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        context(),
         false,
         true,
     )
@@ -241,7 +244,7 @@ fn can_generate_component_with_contained_type() {
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        context(),
         false,
         true,
     )
@@ -290,7 +293,7 @@ fn can_generate_components_from_manifest_with_org() {
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        context(),
         false,
         true,
     )
@@ -343,7 +346,7 @@ fn can_generate_components_with_documented_namespace_from_manifest() {
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        context(),
         false,
         true,
     )
@@ -366,7 +369,7 @@ fn will_error_on_undocumented_namespace() {
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        context(),
         false,
         true,
     );
@@ -567,7 +570,7 @@ fn can_generate_concepts_with_all_supported_types() {
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        context(),
         false,
         false,
     )
@@ -673,7 +676,7 @@ fn can_extend_with_multiple_concepts() {
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        context(),
         false,
         false,
     )
@@ -841,7 +844,7 @@ fn can_generate_concepts() {
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        context(),
         false,
         false,
     )
@@ -945,7 +948,7 @@ fn can_generate_concepts_with_documented_namespace_from_manifest() {
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        context(),
         false,
         false,
     )
@@ -1052,7 +1055,7 @@ fn can_generate_nested_doc_comment_for_concepts() {
     let comment = generate_component_list_doc_comment(
         &concept_tree,
         &component_tree,
-        &api_name(),
+        &context(),
         concept_tree
             .get(IdentifierPathBuf::new("concept3").unwrap().as_path())
             .unwrap(),
@@ -1156,7 +1159,7 @@ fn can_generate_message() {
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        context(),
         false,
         true,
     )

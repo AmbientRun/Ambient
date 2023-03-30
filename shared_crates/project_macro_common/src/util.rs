@@ -1,6 +1,9 @@
 use std::fmt::Debug;
 
-use super::tree::{TreeNode, TreeNodeInner};
+use super::{
+    tree::{TreeNode, TreeNodeInner},
+    Context,
+};
 use proc_macro2::TokenStream;
 use quote::quote;
 
@@ -8,14 +11,14 @@ use quote::quote;
 pub fn tree_to_token_stream<T: Clone + Debug>(
     // Current node of the tree (call with root)
     node: &TreeNode<T>,
-    // The name of the API
-    api_path: &syn::Path,
+    // The generation context
+    context: &Context,
     // The prelude to insert for namespaces
     prelude: &TokenStream,
     // The function to call when converting a subtree. Should be a wrapper around this function.
-    self_call: impl Fn(&TreeNode<T>, &syn::Path, &TokenStream) -> anyhow::Result<TokenStream>,
+    self_call: impl Fn(&TreeNode<T>, &Context, &TokenStream) -> anyhow::Result<TokenStream>,
     // The function to call when converting the Other case (i.e. the actual value)
-    other_call: impl Fn(&str, &T, &syn::Path) -> anyhow::Result<TokenStream>,
+    other_call: impl Fn(&str, &T, &Context) -> anyhow::Result<TokenStream>,
 ) -> anyhow::Result<TokenStream> {
     let name = node.path.last().map(|s| s.as_ref()).unwrap_or_default();
     match &node.inner {
@@ -23,7 +26,7 @@ pub fn tree_to_token_stream<T: Clone + Debug>(
             let children = ns
                 .children
                 .values()
-                .map(|child| self_call(child, api_path, prelude))
+                .map(|child| self_call(child, context, prelude))
                 .collect::<Result<Vec<_>, _>>()?;
 
             Ok(if name.is_empty() {
@@ -52,6 +55,6 @@ pub fn tree_to_token_stream<T: Clone + Debug>(
                 }
             })
         }
-        TreeNodeInner::Other(other) => other_call(name, other, api_path),
+        TreeNodeInner::Other(other) => other_call(name, other, context),
     }
 }

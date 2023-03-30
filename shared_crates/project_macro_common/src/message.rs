@@ -1,6 +1,7 @@
 use super::{
+    component::type_to_token_stream,
     tree::{Tree, TreeNode},
-    util,
+    util, Context,
 };
 use ambient_project::Message;
 use proc_macro2::{Span, TokenStream};
@@ -8,28 +9,31 @@ use quote::quote;
 
 pub fn tree_to_token_stream(
     message_tree: &Tree<Message>,
-    api_path: &syn::Path,
+    context: &Context,
 ) -> anyhow::Result<TokenStream> {
     to_token_stream(
         message_tree.root(),
-        api_path,
-        &quote! {
-            use #api_path::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
+        context,
+        &match context {
+            Context::Host => quote! {},
+            Context::Guest { api_path, .. } => quote! {
+                use #api_path::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
+            },
         },
     )
 }
 
 fn to_token_stream(
     node: &TreeNode<Message>,
-    api_path: &syn::Path,
+    context: &Context,
     prelude: &TokenStream,
 ) -> anyhow::Result<TokenStream> {
     util::tree_to_token_stream(
         node,
-        api_path,
+        context,
         prelude,
         to_token_stream,
-        |id, message, api_path| {
+        |id, message, context| {
             let doc_comment = format!("**{}**: {}", message.name, message.description);
 
             let struct_name = syn::Ident::new(
@@ -50,7 +54,7 @@ fn to_token_stream(
                 .iter()
                 .map(|f| {
                     let name = f.0;
-                    f.1.to_token_stream(api_path, true, false).map(|ty| {
+                    type_to_token_stream(f.1, context, false).map(|ty| {
                         quote! { pub #name: #ty }
                     })
                 })
@@ -61,7 +65,7 @@ fn to_token_stream(
                 .iter()
                 .map(|f| {
                     let name = f.0;
-                    f.1.to_token_stream(api_path, true, false).map(|ty| {
+                    type_to_token_stream(f.1, context, false).map(|ty| {
                         quote! { #name: impl Into<#ty> }
                     })
                 })
@@ -82,7 +86,7 @@ fn to_token_stream(
                 .iter()
                 .map(|f| {
                     let name = f.0;
-                    f.1.to_token_stream(api_path, true, true).map(|ty| {
+                    type_to_token_stream(f.1, context, true).map(|ty| {
                         quote! { #name: #ty ::deserialize_message_part(&mut input)? }
                     })
                 })

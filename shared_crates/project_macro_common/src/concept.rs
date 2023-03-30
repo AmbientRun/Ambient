@@ -1,25 +1,29 @@
 use super::{
+    component::type_to_token_stream,
     tree::{Tree, TreeNode},
-    util,
+    util, Context,
 };
 use ambient_project::{
     Component, ComponentType, Concept, Identifier, IdentifierPath, IdentifierPathBuf,
 };
-use anyhow::Context;
+use anyhow::Context as AnyhowContext;
 use proc_macro2::TokenStream;
 use quote::quote;
 
 pub fn tree_to_token_stream(
     concept_tree: &Tree<Concept>,
     components_tree: &Tree<Component>,
-    api_path: &syn::Path,
+    context: &Context,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     to_token_stream(
         concept_tree.root(),
-        api_path,
-        &quote! {
-            use super::components;
-            use #api_path::prelude::*;
+        context,
+        &match context {
+            Context::Host => quote! {},
+            Context::Guest { api_path, .. } => quote! {
+                use super::components;
+                use #api_path::prelude::*;
+            },
         },
         concept_tree,
         components_tree,
@@ -28,22 +32,22 @@ pub fn tree_to_token_stream(
 
 fn to_token_stream(
     node: &TreeNode<Concept>,
-    api_path: &syn::Path,
+    context: &Context,
     prelude: &TokenStream,
     concept_tree: &Tree<Concept>,
     components_tree: &Tree<Component>,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     util::tree_to_token_stream(
         node,
-        api_path,
+        context,
         prelude,
-        |node, api_path, prelude| {
-            to_token_stream(node, api_path, prelude, concept_tree, components_tree)
+        |node, context, prelude| {
+            to_token_stream(node, context, prelude, concept_tree, components_tree)
         },
-        |name, concept, api_path| {
+        |name, concept, context| {
             let make_concept =
-                generate_make(concept_tree, components_tree, api_path, name, concept)?;
-            let is_concept = generate_is(concept_tree, components_tree, api_path, name, concept)?;
+                generate_make(concept_tree, components_tree, context, name, concept)?;
+            let is_concept = generate_is(concept_tree, components_tree, context, name, concept)?;
             Ok(quote! {
                 #make_concept
                 #is_concept
@@ -55,7 +59,7 @@ fn to_token_stream(
 fn generate_make(
     concept_tree: &Tree<Concept>,
     component_tree: &Tree<Component>,
-    api_name: &syn::Path,
+    context: &Context,
     name: &str,
     concept: &Concept,
 ) -> anyhow::Result<TokenStream> {
@@ -63,7 +67,7 @@ fn generate_make(
         "Makes a *{}*.\n\n{}\n\n{}",
         concept.name,
         concept.description,
-        generate_component_list_doc_comment(concept_tree, component_tree, api_name, concept)?
+        generate_component_list_doc_comment(concept_tree, component_tree, context, concept)?
     );
     let make_ident = quote::format_ident!("make_{}", name);
 
@@ -115,7 +119,7 @@ fn generate_make(
 fn generate_is(
     concept_tree: &Tree<Concept>,
     component_tree: &Tree<Component>,
-    api_name: &syn::Path,
+    context: &Context,
     name: &str,
     concept: &Concept,
 ) -> anyhow::Result<TokenStream> {
@@ -123,7 +127,7 @@ fn generate_is(
         "Checks if the entity is a *{}*.\n\n{}\n\n{}",
         concept.name,
         concept.description,
-        generate_component_list_doc_comment(concept_tree, component_tree, api_name, concept)?,
+        generate_component_list_doc_comment(concept_tree, component_tree, context, concept)?,
     );
     let is_ident = quote::format_ident!("is_{}", name);
 
@@ -283,7 +287,7 @@ fn toml_array_f32_to_array_tokens(
 pub fn generate_component_list_doc_comment(
     concept_tree: &Tree<Concept>,
     component_tree: &Tree<Component>,
-    api_name: &syn::Path,
+    context: &Context,
     concept: &Concept,
 ) -> anyhow::Result<String> {
     let mut output = "*Definition*:\n\n```\n{\n".to_string();
@@ -291,7 +295,7 @@ pub fn generate_component_list_doc_comment(
     fn write_level(
         concepts: &Tree<Concept>,
         components: &Tree<Component>,
-        api_name: &syn::Path,
+        context: &Context,
         concept: &Concept,
         output: &mut String,
         level: usize,
@@ -309,7 +313,7 @@ pub fn generate_component_list_doc_comment(
             writeln!(
                 output,
                 "{padding}\"{component_path}\": {} = {},",
-                SemiprettyTokenStream(ty.to_token_stream(api_name, false, false)?),
+                SemiprettyTokenStream(type_to_token_stream(&ty, context, false)?),
                 SemiprettyTokenStream(toml_value_to_tokens(component_path.as_path(), &ty, value)?)
             )?;
         }
@@ -319,7 +323,7 @@ pub fn generate_component_list_doc_comment(
                 .with_context(|| format!("no definition found for {concept_path}"))?;
 
             writeln!(output, "{padding}\"{concept_path}\": {{ // Concept.")?;
-            write_level(concepts, components, api_name, concept, output, level + 1)?;
+            write_level(concepts, components, context, concept, output, level + 1)?;
             writeln!(output, "{padding}}},")?;
         }
 
@@ -329,7 +333,13 @@ pub fn generate_component_list_doc_comment(
     write_level(
         concept_tree,
         component_tree,
-        api_name,
+        &match context {
+            Context::Host => Context::Host,
+            Context::Guest { api_path, .. } => Context::Guest {
+                api_path: api_path.clone(),
+                fully_qualified_path: false,
+            },
+        },
         concept,
         &mut output,
         1,

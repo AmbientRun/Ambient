@@ -14,7 +14,10 @@ pub fn api_project(_input: TokenStream) -> TokenStream {
     TokenStream::from(
         ambient_project_macro_common::implementation(
             (None, ambient_project_macro_common::MANIFEST.to_string()),
-            syn::Path::from(syn::Ident::new("crate", Span::call_site())),
+            ambient_project_macro_common::Context::Guest {
+                api_path: syn::Path::from(syn::Ident::new("crate", Span::call_site())),
+                fully_qualified_path: true,
+            },
             true,
             true,
         )

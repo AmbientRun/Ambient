@@ -15,8 +15,15 @@ pub fn main_impl(
     let mut path = syn::Path::from(syn::Ident::new("ambient_api", spans));
     path.leading_colon = Some(syn::Token![::](spans));
 
-    let project_boilerplate =
-        ambient_project_macro_common::implementation(ambient_toml, path.clone(), false, true)?;
+    let project_boilerplate = ambient_project_macro_common::implementation(
+        ambient_toml,
+        ambient_project_macro_common::Context::Guest {
+            api_path: path.clone(),
+            fully_qualified_path: true,
+        },
+        false,
+        true,
+    )?;
 
     let call_expr = if is_async {
         quote! { #fn_name() }

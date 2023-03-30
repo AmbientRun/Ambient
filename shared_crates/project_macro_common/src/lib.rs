@@ -14,11 +14,19 @@ mod message;
 mod tree;
 mod util;
 
-pub const MANIFEST: &str = include_str!("../ambient.toml");
+pub const MANIFEST: &str = include_str!("../../../ambient.toml");
+
+pub enum Context {
+    Host,
+    Guest {
+        api_path: syn::Path,
+        fully_qualified_path: bool,
+    },
+}
 
 pub fn implementation(
     (file_path, contents): (Option<String>, String),
-    api_name: syn::Path,
+    context: Context,
     global_namespace: bool,
     validate_namespaces_documented: bool,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
@@ -31,13 +39,13 @@ pub fn implementation(
 
     let component_tree = Tree::new(&manifest.components, validate_namespaces_documented)?;
     let components_tokens =
-        component::tree_to_token_stream(&component_tree, &api_name, project_path.as_path())?;
+        component::tree_to_token_stream(&component_tree, &context, project_path.as_path())?;
 
     let concept_tree = Tree::new(&manifest.concepts, validate_namespaces_documented)?;
-    let concept_tokens = concept::tree_to_token_stream(&concept_tree, &component_tree, &api_name)?;
+    let concept_tokens = concept::tree_to_token_stream(&concept_tree, &component_tree, &context)?;
 
     let message_tree = Tree::new(&manifest.messages, validate_namespaces_documented)?;
-    let message_tokens = message::tree_to_token_stream(&message_tree, &api_name)?;
+    let message_tokens = message::tree_to_token_stream(&message_tree, &context)?;
 
     let manifest = file_path.map(
         |file_path| quote! { const _PROJECT_MANIFEST: &'static str = include_str!(#file_path); },
