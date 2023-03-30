@@ -45,7 +45,7 @@ pub fn start(
     let quic_interface_port = cli.host().unwrap().quic_interface_port;
     let server = runtime.block_on(async move {
         if let Some(port) = quic_interface_port {
-            return GameServer::new_with_port(port, false).await.context("failed to create game server with port").unwrap();
+            GameServer::new_with_port(port, false).await.context("failed to create game server with port").unwrap()
         } else {
             GameServer::new_with_port_in_range(QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10), false)
                 .await

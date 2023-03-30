@@ -60,7 +60,7 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
                     } else {
                         input.mouse_buttons.remove(&event.get(mouse_button()).unwrap().into());
                     }
-                } else if let Some(_) = event.get(event_mouse_motion()) {
+                } else if event.get(event_mouse_motion()).is_some() {
                     input.mouse_position = *world.resource(cursor_position());
                 } else if let Some(delta) = event.get(event_mouse_wheel()) {
                     input.mouse_wheel += match event.get(event_mouse_wheel_pixels()).unwrap() {

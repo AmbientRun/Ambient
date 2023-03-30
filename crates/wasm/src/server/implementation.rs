@@ -175,7 +175,7 @@ impl wit::server_message::Host for Bindings {
         data: Vec<u8>,
     ) -> anyhow::Result<()> {
         use wit::server_message::Target;
-        let module_id = self.id.clone();
+        let module_id = self.id;
         let world = self.world_mut();
 
         match target {

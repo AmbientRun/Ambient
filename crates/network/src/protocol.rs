@@ -16,7 +16,7 @@ pub struct ClientProtocol {
 }
 
 impl ClientProtocol {
-    pub async fn new(mut conn: Connection, player_id: String) -> Result<Self> {
+    pub async fn new(conn: Connection, player_id: String) -> Result<Self> {
         // Say who we are
         // The server will respond appropriately and return things such as
         // username (TODO)
@@ -30,10 +30,10 @@ impl ClientProtocol {
         let server_info: ServerInfo = rx.next().await?;
         // Great, the server knows who we are.
         // Two streams are opened
-        let mut diff_stream = IncomingStream::accept_incoming(&mut conn).await?;
+        let mut diff_stream = IncomingStream::accept_incoming(&conn).await?;
         diff_stream.next().await?;
 
-        let mut stat_stream = IncomingStream::accept_incoming(&mut conn).await?;
+        let mut stat_stream = IncomingStream::accept_incoming(&conn).await?;
         stat_stream.next().await?;
 
         log::debug!("Setup client side protocol");

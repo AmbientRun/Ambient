@@ -18,7 +18,7 @@ use crate::{
     intents::SelectMode,
     rpc::{rpc_select, SelectMethod},
 };
-use ambient_event_types::{WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION};
+use ambient_shared_types::events::{WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION};
 
 #[derive(Debug, Clone)]
 /// Handles the server communication for selecting objects

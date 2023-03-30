@@ -3,8 +3,8 @@ use std::sync::Arc;
 use ambient_app::{App, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_element::{ElementComponent, ElementComponentExt};
-use ambient_event_types::WINDOW_MOUSE_MOTION;
 use ambient_input::event_mouse_motion;
+use ambient_shared_types::events::WINDOW_MOUSE_MOTION;
 use ambient_ui::{padding, space_between_items, Borders, Button, Cb, FlowColumn, FlowRow, Text, STREET};
 use tracing_subscriber::EnvFilter;
 
