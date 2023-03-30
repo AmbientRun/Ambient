@@ -14,7 +14,9 @@ profiling = { version = "1.0.7", features = [
     "profile-with-puffin",
 ] } # TEMP: https://github.com/aclysma/profiling/pull/45
 tracing = "0.1.35"
-tracing-tree = { version = "0.2" }
+# tracing-tree = { version = "0.2" }
+# https://github.com/davidbarsky/tracing-tree/pull/56#issuecomment-1489148431
+tracing-tree = { git = "https://github.com/TmLev/tracing-tree" }
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
 tracing-log = { version = "0.1" }
 wgpu = "0.14.2"
