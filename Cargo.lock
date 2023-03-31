@@ -1026,6 +1026,7 @@ dependencies = [
 [[package]]
 name = "ambient_proxy"
 version = "0.1.0"
+source = "git+https://github.com/AmbientRun/AmbientProxy.git?rev=3944422629e0eeacde62080fbc5055593608395c#3944422629e0eeacde62080fbc5055593608395c"
 dependencies = [
  "anyhow",
  "axum",

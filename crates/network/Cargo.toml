@@ -18,7 +18,7 @@ ambient_ui = { path = "../ui" }
 ambient_renderer = { path = "../renderer" }
 ambient_element = { path = "../../shared_crates/element" }
 ambient_app = { path = "../app" }
-ambient_proxy = { path = "../../../AmbientProxy" }  # FIXME: refer to ambient_proxy crate on github
+ambient_proxy = { git = "https://github.com/AmbientRun/AmbientProxy.git", rev = "3944422629e0eeacde62080fbc5055593608395c" }
 
 itertools = { workspace = true }
 dashmap = { workspace = true }
