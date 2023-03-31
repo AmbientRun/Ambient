@@ -4,6 +4,16 @@ name = "Tic Tac Toe"
 version = "0.0.1"
 
 [components]
-cell = { type = "I32", name = "Cell", description = "The ID of the cell this player is in", attributes = [
-    "Debuggable",
-] }
+cells = { type = { type = "Vec", element_type = "EntityId" }, name = "Cells", description = "The cells in the game", attributes = ["Debuggable", "Networked"] }
+cell = { type = "I32", name = "Cell", description = "The ID of the cell this player is in", attributes = ["Debuggable", "Networked"] }
+owned_by = { type = "EntityId", name = "Owned By", description = "The ID of the player that owns this cell", attributes = ["Debuggable", "Networked"] }
+
+[messages.input]
+name = "Input"
+description = "The player's input"
+[messages.input.fields]
+up = { type = "Bool", name = "Up", description = "Whether the player is pressing the up key" }
+down = { type = "Bool", name = "Down", description = "Whether the player is pressing the down key" }
+left = { type = "Bool", name = "Left", description = "Whether the player is pressing the left key" }
+right = { type = "Bool", name = "Right", description = "Whether the player is pressing the right key" }
+capture = { type = "Bool", name = "Capture", description = "Whether the player is pressing the capture key" }

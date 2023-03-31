@@ -162,7 +162,7 @@ impl<Bindings: BindingsBound> ModuleStateInnerImpl<Bindings> {
         let (stdout_output, stdout_consumer) = WasiOutputStream::make(stdout_output);
         let (stderr_output, stderr_consumer) = WasiOutputStream::make(stderr_output);
         let mut store = wasmtime::Store::new(
-            &engine,
+            engine,
             WasmContext {
                 wasi: ambient_wasmtime_wasi::WasiCtxBuilder::new()
                     .stdout(stdout_output)
@@ -172,11 +172,11 @@ impl<Bindings: BindingsBound> ModuleStateInnerImpl<Bindings> {
             },
         );
 
-        let mut linker = wasmtime::component::Linker::<WasmContext<Bindings>>::new(&engine);
+        let mut linker = wasmtime::component::Linker::<WasmContext<Bindings>>::new(engine);
         ambient_wasmtime_wasi::add_to_linker(&mut linker, |x| &mut x.wasi)?;
         wit::Bindings::add_to_linker(&mut linker, |x| &mut x.bindings)?;
 
-        let component = wasmtime::component::Component::from_binary(&engine, component_bytecode)?;
+        let component = wasmtime::component::Component::from_binary(engine, component_bytecode)?;
 
         let (guest_bindings, guest_instance) =
             wit::Bindings::instantiate(&mut store, &component, &linker)?;

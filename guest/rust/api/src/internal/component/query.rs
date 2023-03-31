@@ -1,8 +1,7 @@
-use std::{future::Future, marker::PhantomData};
+use std::marker::PhantomData;
 
 use crate::{
-    event,
-    global::{on, on_async, EntityId, EventOk},
+    global::{on, CallbackReturn, EntityId, OkEmpty},
     internal::{component::ComponentsTuple, conversion::FromBindgen, wit},
     prelude::OnHandle,
 };
@@ -53,7 +52,7 @@ pub enum QueryEvent {
     Despawn,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 /// An ECS query used to find entities in the world.
 pub struct GeneralQuery<Components: ComponentsTuple + Copy + Clone + 'static>(
     QueryImpl<Components>,
@@ -74,19 +73,11 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> GeneralQuery<Componen
     }
 
     /// Consume this query and call `callback` (`fn`) each frame with the result of the query.
-    pub fn each_frame(
+    pub fn each_frame<R: CallbackReturn>(
         self,
-        callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static,
+        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + 'static,
     ) -> OnHandle {
         self.0.bind(callback)
-    }
-
-    /// Consume this query and call `callback` (`async fn`) each frame with the result of the query.
-    pub fn each_frame_async<R: Future<Output = ()>>(
-        self,
-        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + 'static,
-    ) -> OnHandle {
-        self.0.bind_async(callback)
     }
 }
 /// Build a [GeneralQuery] for the ECS. This is how you find entities in the game world.
@@ -111,6 +102,14 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> GeneralQueryBuilder<C
         GeneralQuery(QueryImpl::new(
             self.0.build_impl(&[], wit::component::QueryEvent::Frame),
         ))
+    }
+
+    /// Consume this query and call `callback` (`fn`) each frame with the result of the query.
+    pub fn each_frame<R: CallbackReturn>(
+        self,
+        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + 'static,
+    ) -> OnHandle {
+        self.build().each_frame(callback)
     }
 }
 
@@ -172,17 +171,11 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> ChangeQuery<Component
 
     /// Each time the components marked by [Self::track_change] change,
     /// the `callback` (`fn`) is called with the result of the query.
-    pub fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static) -> OnHandle {
-        self.build().bind(callback)
-    }
-
-    /// Each time the components marked by [Self::track_change] change,
-    /// the `callback` (`async fn`) is called with the result of the query.
-    pub fn bind_async<R: Future<Output = ()>>(
+    pub fn bind<R: CallbackReturn>(
         self,
-        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + 'static,
+        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + 'static,
     ) -> OnHandle {
-        self.build().bind_async(callback)
+        self.build().bind(callback)
     }
 
     fn build(self) -> QueryImpl<Components> {
@@ -220,17 +213,11 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> EventQuery<Components
 
     /// Each time the entity associated with `components` experiences the event,
     /// the `callback` (`fn`) is called with the result of the query.
-    pub fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static) -> OnHandle {
-        self.build().bind(callback)
-    }
-
-    /// Each time the entity associated with `components` experiences the event,
-    /// the `callback` (`async fn`) is called with the result of the query.
-    pub fn bind_async<R: Future<Output = ()>>(
+    pub fn bind<R: CallbackReturn>(
         self,
-        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + 'static,
+        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + 'static,
     ) -> OnHandle {
-        self.build().bind_async(callback)
+        self.build().bind(callback)
     }
 
     fn build(self) -> QueryImpl<Components> {
@@ -244,7 +231,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> EventQuery<Components
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 struct QueryImpl<Components: ComponentsTuple + Copy + Clone + 'static>(
     u64,
     PhantomData<Components>,
@@ -267,25 +254,16 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryImpl<Components>
             .collect()
     }
 
-    fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static) -> OnHandle {
-        on(event::FRAME, move |_| {
-            let results = self.evaluate();
-            if !results.is_empty() {
-                callback(results);
-            }
-            EventOk
-        })
-    }
-    fn bind_async<R: Future<Output = ()>>(
+    fn bind<R: CallbackReturn>(
         self,
-        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + 'static,
+        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + 'static,
     ) -> OnHandle {
-        on_async(event::FRAME, move |_| async move {
+        on(ambient_shared_types::events::FRAME, move |_| {
             let results = self.evaluate();
             if !results.is_empty() {
-                callback(results).await;
+                callback(results).into_result()?;
             }
-            EventOk
+            OkEmpty
         })
     }
 }

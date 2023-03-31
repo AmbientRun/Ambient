@@ -3,6 +3,5 @@ pub use crate::internal::component::{
         change_query, despawn_query, query, spawn_query, ChangeQuery, EventQuery, GeneralQuery,
         GeneralQueryBuilder, QueryEvent, UntrackedChangeQuery,
     },
-    Component, ComponentsTuple, Entity, SupportedValueGet, SupportedValueSet, UntypedComponent,
-    __internal_get_component,
+    Component, ComponentsTuple, Entity, SupportedValue, UntypedComponent, __internal_get_component,
 };

@@ -1,1 +1,1 @@
-pub use ambient_event_types::*;
+pub use ambient_shared_types::events::*;

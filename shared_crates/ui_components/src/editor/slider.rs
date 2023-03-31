@@ -2,7 +2,6 @@ use std::f32::consts::E;
 
 use ambient_cb::{cb, Cb};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_event_types::{WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION};
 use ambient_guest_bridge::{
     components::{
         app::cursor_position,
@@ -15,6 +14,7 @@ use ambient_guest_bridge::{
     window::set_cursor,
 };
 use ambient_math::{interpolate, interpolate_clamped};
+use ambient_shared_types::events::{WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION};
 use ambient_window_types::CursorIcon;
 use glam::{vec3, Vec4};
 
@@ -37,6 +37,20 @@ pub struct Slider {
     pub logarithmic: bool,
     pub round: Option<u32>,
     pub suffix: Option<&'static str>,
+}
+impl Slider {
+    pub fn new(value: f32, on_change: impl Fn(f32) + Sync + Send + 'static) -> Self {
+        Self { value, on_change: Some(cb(on_change)), min: 0., max: 1., width: 100., logarithmic: false, round: None, suffix: None }
+    }
+    #[cfg(feature = "guest")]
+    pub fn new_for_entity_component(hooks: &mut Hooks, entity: EntityId, component: ambient_guest_bridge::ecs::Component<f32>) -> Self {
+        use ambient_guest_bridge::api::entity;
+        let rerender = hooks.use_rerender_signal();
+        Self::new(entity::get_component(entity, component).unwrap_or_default(), move |value| {
+            entity::set_component(entity, component, value);
+            rerender();
+        })
+    }
 }
 
 impl ElementComponent for Slider {
@@ -103,7 +117,7 @@ impl ElementComponent for Slider {
                         let (_, _, block_position) = world.get(block_id, local_to_world()).unwrap().to_scale_rotation_translation();
                         let block_width = world.get(block_id, width()).unwrap_or_default();
                         let position = world.resource(cursor_position());
-                        on_change_factor(interpolate_clamped(position.x, block_position.x, block_width, 0., 1.));
+                        on_change_factor(interpolate_clamped(position.x, block_position.x, block_position.x + block_width, 0., 1.));
                     }
                 }
             }

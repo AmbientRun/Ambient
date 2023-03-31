@@ -5,7 +5,7 @@ use std::future::Future;
 pub fn run_async(_world: &ecs::World, future: impl Future<Output = ()> + Send + 'static) {
     ambient_api::prelude::run_async(async {
         future.await;
-        api::prelude::EventOk
+        api::prelude::OkEmpty
     });
 }
 pub async fn sleep(seconds: f32) {
@@ -13,9 +13,8 @@ pub async fn sleep(seconds: f32) {
 }
 
 pub mod ecs {
-    use ambient_api::ecs::SupportedValueGet;
     pub use ambient_api::{
-        ecs::{Component, SupportedValueSet as ComponentValue, UntypedComponent},
+        ecs::{Component, SupportedValue as ComponentValue, UntypedComponent},
         prelude::{Entity, EntityId},
     };
 
@@ -27,6 +26,9 @@ pub mod ecs {
         }
         pub fn despawn(&self, entity_id: EntityId) -> bool {
             ambient_api::entity::despawn(entity_id)
+        }
+        pub fn exists(&self, entity_id: EntityId) -> bool {
+            ambient_api::entity::exists(entity_id)
         }
         pub fn set<T: ComponentValue>(&self, entity_id: EntityId, component: Component<T>, value: T) -> Result<(), ECSError> {
             // TODO: set_component needs to return errors
@@ -43,17 +45,17 @@ pub mod ecs {
             ambient_api::entity::add_components(entity_id, components);
             Ok(())
         }
-        pub fn get<T: ComponentValue + SupportedValueGet>(&self, entity_id: EntityId, component: Component<T>) -> Result<T, ECSError> {
+        pub fn get<T: ComponentValue>(&self, entity_id: EntityId, component: Component<T>) -> Result<T, ECSError> {
             ambient_api::entity::get_component(entity_id, component).ok_or_else(|| ECSError::EntityDoesntHaveComponent)
         }
         // TODO: This should actually return &T
-        pub fn get_ref<T: ComponentValue + SupportedValueGet>(&self, entity_id: EntityId, component: Component<T>) -> Result<T, ECSError> {
+        pub fn get_ref<T: ComponentValue>(&self, entity_id: EntityId, component: Component<T>) -> Result<T, ECSError> {
             self.get(entity_id, component)
         }
-        pub fn has_component<T: SupportedValueGet>(&self, entity_id: EntityId, component: Component<T>) -> bool {
+        pub fn has_component<T: ComponentValue>(&self, entity_id: EntityId, component: Component<T>) -> bool {
             ambient_api::entity::has_component(entity_id, component)
         }
-        pub fn resource<T: ComponentValue + SupportedValueGet>(&self, component: Component<T>) -> T {
+        pub fn resource<T: ComponentValue>(&self, component: Component<T>) -> T {
             ambient_api::entity::get_component(ambient_api::entity::resources(), component).unwrap()
         }
     }

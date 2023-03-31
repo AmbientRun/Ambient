@@ -2,7 +2,7 @@ use core::fmt;
 use std::{num::NonZeroU32, ops::Deref, str::FromStr, sync::Arc};
 
 use ambient_core::{asset_cache, async_ecs::async_run, gpu, mesh, runtime, transform::*, window::window_scale_factor};
-use ambient_ecs::{components, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
+use ambient_ecs::{components, ensure_has_component, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
 use ambient_gpu::{mesh_buffer::GpuMesh, texture::Texture};
 use ambient_layout::{height, min_height, min_width, width};
 use ambient_renderer::{gpu_primitives_lod, gpu_primitives_mesh, material, primitives, renderer_shader, SharedMaterial};
@@ -12,7 +12,6 @@ use ambient_std::{
     cb,
     download_asset::{AssetResult, BytesFromUrl},
     mesh::*,
-    shapes::AABB,
     unwrap_log_warn,
 };
 use anyhow::Context;
@@ -20,7 +19,7 @@ use async_trait::async_trait;
 use glam::*;
 use glyph_brush::{
     ab_glyph::{Font, FontArc, PxScale, Rect},
-    BrushAction, BrushError, GlyphBrush, GlyphBrushBuilder, Section,
+    BrushAction, BrushError, GlyphBrush, GlyphBrushBuilder, GlyphCruncher, Section,
 };
 use log::info;
 use parking_lot::Mutex;
@@ -192,21 +191,9 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
     SystemGroup::new(
         "ui/text",
         vec![
-            query(text()).excl(font_family()).to_system(|q, world, qs, _| {
-                for (id, _) in q.collect_cloned(world, qs) {
-                    world.add_component(id, font_family(), FontFamily::Default.to_string()).unwrap();
-                }
-            }),
-            query(text()).excl(font_style()).to_system(|q, world, qs, _| {
-                for (id, _) in q.collect_cloned(world, qs) {
-                    world.add_component(id, font_style(), format!("{:?}", FontStyle::Regular)).unwrap();
-                }
-            }),
-            query(text()).excl(font_size()).to_system(|q, world, qs, _| {
-                for (id, _) in q.collect_cloned(world, qs) {
-                    world.add_component(id, font_size(), 12.).unwrap();
-                }
-            }),
+            ensure_has_component(text(), font_family(), FontFamily::Default.to_string()),
+            ensure_has_component(text(), font_style(), format!("{:?}", FontStyle::Regular)),
+            ensure_has_component(text(), font_size(), 12.),
             query(()).incl(text()).excl(renderer_shader()).spawned().to_system(move |q, world, qs, _| {
                 if !use_gpu {
                     return;
@@ -293,11 +280,20 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                     loop {
                         let process_result = {
                             let mut brush = glyph_brush.lock();
-                            brush.queue(Section::default().add_text(glyph_brush::Text::new(&text).with_scale(pt_size_to_px_scale(
+                            let section = Section::default().add_text(glyph_brush::Text::new(&text).with_scale(pt_size_to_px_scale(
                                 &*font,
                                 font_size,
                                 scale_factor,
-                            ))));
+                            )));
+                            if let Some(bounds) = brush.glyph_bounds(&section) {
+                                if world.has_component(id, width()) {
+                                    world.set_if_changed(id, width(), (bounds.max.x / scale_factor).max(min_width)).unwrap();
+                                }
+                                if world.has_component(id, height()) {
+                                    world.set_if_changed(id, height(), (bounds.max.y / scale_factor).max(min_height)).unwrap();
+                                }
+                            }
+                            brush.queue(section);
                             brush.process_queued(
                                 |rect, tex_data| {
                                     if !use_gpu {
@@ -326,12 +322,8 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                         };
                         match process_result {
                             Ok(BrushAction::Draw(vertices)) => {
-                                let has_verts = !vertices.is_empty();
                                 let cpu_mesh = mesh_from_glyph_vertices(vertices);
-                                let bounding = if has_verts { cpu_mesh.aabb().unwrap() } else { AABB::new(Vec3::ZERO, Vec3::ZERO) };
-                                let mut data = Entity::new()
-                                    .with(width(), (bounding.max.x / scale_factor).max(min_width))
-                                    .with(height(), (bounding.max.y / scale_factor).max(min_height));
+                                let mut data = Entity::new();
                                 if use_gpu {
                                     data.set(mesh(), GpuMesh::from_mesh(assets.clone(), &cpu_mesh));
                                 }

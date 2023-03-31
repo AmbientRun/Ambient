@@ -7,11 +7,12 @@ name = "ambient_api"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api_macros",
- "ambient_event_types",
  "ambient_project",
+ "ambient_shared_types",
  "anyhow",
  "byteorder",
  "data-encoding",
+ "futures",
  "glam",
  "once_cell",
  "paste",
@@ -79,10 +80,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_event_types"
-version = "0.2.0-dev"
-
-[[package]]
 name = "ambient_friendly_id"
 version = "0.2.0-dev"
 dependencies = [
@@ -121,6 +118,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_shared_types"
+version = "0.2.0-dev"
+
+[[package]]
 name = "ambient_time"
 version = "0.1.0"
 dependencies = [
@@ -135,9 +136,9 @@ dependencies = [
  "ambient_cb",
  "ambient_color",
  "ambient_element",
- "ambient_event_types",
  "ambient_guest_bridge",
  "ambient_math",
+ "ambient_shared_types",
  "ambient_time",
  "ambient_window_types",
  "closure",
@@ -219,8 +220,6 @@ name = "button"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
- "ambient_element",
- "ambient_guest_bridge",
  "ambient_ui_components",
 ]
 
@@ -269,8 +268,6 @@ name = "counter"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
- "ambient_element",
- "ambient_guest_bridge",
  "ambient_ui_components",
 ]
 
@@ -296,8 +293,6 @@ name = "dock_layout"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
- "ambient_element",
- "ambient_guest_bridge",
  "ambient_ui_components",
 ]
 
@@ -333,9 +328,6 @@ name = "editors"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
- "ambient_cb",
- "ambient_element",
- "ambient_guest_bridge",
  "ambient_ui_components",
  "indexmap",
 ]
@@ -360,8 +352,6 @@ name = "flow_layout"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
- "ambient_element",
- "ambient_guest_bridge",
  "ambient_ui_components",
 ]
 
@@ -370,6 +360,9 @@ name = "fog"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
+ "ambient_element",
+ "ambient_guest_bridge",
+ "ambient_ui_components",
 ]
 
 [[package]]
@@ -389,6 +382,7 @@ checksum = "13e2792b0ff0340399d58445b88fd9770e3489eff258a4cbc1523418f12abf84"
 dependencies = [
  "futures-channel",
  "futures-core",
+ "futures-executor",
  "futures-io",
  "futures-sink",
  "futures-task",
@@ -412,10 +406,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec90ff4d0fe1f57d600049061dc6bb68ed03c7d2fbd697274c41805dcb3f8608"
 
 [[package]]
+name = "futures-executor"
+version = "0.3.26"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e8de0a35a6ab97ec8869e32a2473f4b1324459e14c29275d14b10cb1fd19b50e"
+dependencies = [
+ "futures-core",
+ "futures-task",
+ "futures-util",
+]
+
+[[package]]
 name = "futures-io"
 version = "0.3.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bfb8371b6fb2aeb2d280374607aeabfc99d95c72edfe51692e42d3d7f0d08531"
+
+[[package]]
+name = "futures-macro"
+version = "0.3.26"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "95a73af87da33b5acf53acfebdc339fe592ecf5357ac7c0a7734ab9d8c876a70"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
 
 [[package]]
 name = "futures-sink"
@@ -438,6 +454,7 @@ dependencies = [
  "futures-channel",
  "futures-core",
  "futures-io",
+ "futures-macro",
  "futures-sink",
  "futures-task",
  "memchr",
@@ -534,15 +551,6 @@ name = "input"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
-]
-
-[[package]]
-name = "instant"
-version = "0.1.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a5bbe824c507c5da5956355e86a746d82e0e1464f65d862cc5e71da70e94b2c"
-dependencies = [
- "cfg-if",
 ]
 
 [[package]]
@@ -797,7 +805,8 @@ dependencies = [
 [[package]]
 name = "profiling"
 version = "1.0.7"
-source = "git+https://github.com/philpax/profiling.git#0167b1da12e301b2a19c90a02684527a0f54f935"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "74605f360ce573babfe43964cbe520294dcb081afbf8c108fc6e23036b4da2df"
 dependencies = [
  "profiling-procmacros",
  "puffin",
@@ -806,7 +815,8 @@ dependencies = [
 [[package]]
 name = "profiling-procmacros"
 version = "1.0.7"
-source = "git+https://github.com/philpax/profiling.git#0167b1da12e301b2a19c90a02684527a0f54f935"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7a1e2417ef905b8ad94215f8a607bd2d0f5d13d416d18dca4a530811e8a0674c"
 dependencies = [
  "quote",
  "syn",
@@ -814,12 +824,11 @@ dependencies = [
 
 [[package]]
 name = "puffin"
-version = "0.14.3"
+version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7b2c7a01f569fb03e2ff1f5376537f294001447bd23ce75ca51054fcd223fe4"
+checksum = "023514fb1e29a290a5c8237ceba94a30e4637be78df9f168ae991c1b957457e2"
 dependencies = [
  "byteorder",
- "instant",
  "once_cell",
 ]
 
@@ -885,8 +894,6 @@ name = "rect"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
- "ambient_element",
- "ambient_guest_bridge",
  "ambient_ui_components",
 ]
 
@@ -922,10 +929,7 @@ name = "screens"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
- "ambient_cb",
- "ambient_element",
  "ambient_friendly_id",
- "ambient_guest_bridge",
  "ambient_ui_components",
 ]
 
@@ -996,8 +1000,6 @@ name = "slider"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
- "ambient_element",
- "ambient_guest_bridge",
  "ambient_ui_components",
 ]
 
@@ -1052,8 +1054,6 @@ name = "text"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
- "ambient_element",
- "ambient_guest_bridge",
  "ambient_ui_components",
 ]
 
@@ -1106,6 +1106,14 @@ name = "tinyvec_macros"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
+
+[[package]]
+name = "todo"
+version = "0.2.0-dev"
+dependencies = [
+ "ambient_api",
+ "ambient_ui_components",
+]
 
 [[package]]
 name = "toml"

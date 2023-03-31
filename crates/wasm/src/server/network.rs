@@ -27,16 +27,18 @@ pub fn initialize(world: &mut World) {
         .insert(WASM_UNISTREAM_ID, Arc::new(on_unistream));
 }
 
+#[allow(clippy::ptr_arg)]
 fn on_datagram(state: SharedServerState, _asset_cache: AssetCache, user_id: &String, bytes: Bytes) {
     let mut state = state.lock();
-    let Some(world) = state.get_player_world_mut(&user_id) else {
+    let Some(world) = state.get_player_world_mut(user_id) else {
         log::warn!("Failed to find player world for {user_id} when processing datagram");
         return;
     };
 
-    log_network_result!(message::on_datagram(world, Some(user_id.clone()), bytes));
+    log_network_result!(message::on_datagram(world, Some(user_id.to_owned()), bytes));
 }
 
+#[allow(clippy::ptr_arg)]
 fn on_bistream(
     _state: SharedServerState,
     _asset_cache: AssetCache,
@@ -47,6 +49,7 @@ fn on_bistream(
     unimplemented!("Bistreams are not supported");
 }
 
+#[allow(clippy::ptr_arg)]
 fn on_unistream(
     state: SharedServerState,
     _asset_cache: AssetCache,
@@ -54,10 +57,10 @@ fn on_unistream(
     recv_stream: RecvStream,
 ) {
     let mut state = state.lock();
-    let Some(world) = state.get_player_world_mut(&user_id) else {
+    let Some(world) = state.get_player_world_mut(user_id) else {
         log::warn!("Failed to find player world for {user_id} when processing unistream");
         return;
     };
 
-    message::on_unistream(world, Some(user_id.clone()), recv_stream)
+    message::on_unistream(world, Some(user_id.to_owned()), recv_stream)
 }

@@ -91,7 +91,14 @@ fn setup_logging() -> anyhow::Result<()> {
             .with(filter)
             .with(env_filter)
             //
-            .with(tracing_tree::HierarchicalLayer::new(4).with_indent_lines(true).with_verbose_entry(true).with_verbose_exit(true))
+            .with(
+                tracing_tree::HierarchicalLayer::new(4)
+                    .with_indent_lines(true)
+                    .with_verbose_entry(true)
+                    .with_verbose_exit(true)
+                    .with_timer(tracing_tree::time::OffsetDateTime),
+                // .with_timer(tracing_tree::time::Uptime::from(std::time::Instant::now())),
+            )
             // .with(tracing_subscriber::fmt::Layer::new().pretty())
             .try_init()?;
 
@@ -156,16 +163,18 @@ fn main() -> anyhow::Result<()> {
         .transpose()?;
 
     if let Some(manifest) = manifest.as_ref() {
-        let project_name = manifest.project.name.as_deref().unwrap_or("project");
-        log::info!("Building {}", project_name);
-        runtime.block_on(ambient_build::build(
-            PhysicsKey.get(&assets),
-            &assets,
-            project_path.clone(),
-            manifest,
-            cli.project().map(|p| p.release).unwrap_or(false),
-        ));
-        log::info!("Done building {}", project_name);
+        if !cli.project().unwrap().no_build {
+            let project_name = manifest.project.name.as_deref().unwrap_or("project");
+            log::info!("Building {}", project_name);
+            runtime.block_on(ambient_build::build(
+                PhysicsKey.get(&assets),
+                &assets,
+                project_path.clone(),
+                manifest,
+                cli.project().map(|p| p.release).unwrap_or(false),
+            ));
+            log::info!("Done building {}", project_name);
+        }
     }
 
     // If this is just a build, exit now

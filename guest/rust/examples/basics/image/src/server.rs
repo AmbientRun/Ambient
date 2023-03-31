@@ -11,7 +11,7 @@ use ambient_api::{
 };
 
 #[main]
-pub async fn main() -> EventResult {
+pub fn main() {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
@@ -29,6 +29,4 @@ pub async fn main() -> EventResult {
             asset::url("assets/pipeline.json/0/mat.json").unwrap(),
         )
         .spawn();
-
-    EventOk
 }

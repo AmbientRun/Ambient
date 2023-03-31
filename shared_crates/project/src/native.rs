@@ -82,7 +82,7 @@ impl TryFrom<&ComponentType> for PrimitiveComponentType {
 
 #[cfg(test)]
 mod tests {
-    use ambient_ecs::primitive_component_definitions;
+    use ambient_shared_types::primitive_component_definitions;
 
     use crate::ComponentType;
 

@@ -27,9 +27,10 @@ use ambient_api::{
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     entity::resources,
-    player::MouseButton,
+    message::server::{MessageExt, Source},
     prelude::*,
 };
+use components::player_shoot_requested;
 use utils::CameraState;
 
 mod utils;
@@ -92,7 +93,7 @@ fn make_text() -> Entity {
 }
 
 #[main]
-pub async fn main() -> EventResult {
+pub fn main() {
     create_environment();
 
     // Set the initial next player hue.
@@ -185,6 +186,8 @@ pub async fn main() -> EventResult {
                         )
                         .spawn(),
                 );
+
+                entity::add_component(player, player_shoot_requested(), false);
             }
         });
 
@@ -199,7 +202,6 @@ pub async fn main() -> EventResult {
     // Update the flag every frame.
     query(translation())
         .requires(ball())
-        .build()
         .each_frame(move |balls| {
             let flag_origin = entity::get_component(flag, origin()).unwrap_or_default();
             let mut min_distance = std::f32::MAX;
@@ -223,19 +225,12 @@ pub async fn main() -> EventResult {
     // Update player cameras every frame.
     query(player_camera_state())
         .requires(active_camera())
-        .build()
-        .each_frame({
-            move |cameras| {
-                for (id, camera_state) in cameras {
-                    let camera_state = CameraState(camera_state);
-                    let (camera_translation, camera_rotation) = camera_state.get_transform();
-                    entity::set_component(id, translation(), camera_translation);
-                    entity::set_component(
-                        id,
-                        rotation(),
-                        camera_rotation * Quat::from_rotation_x(90.),
-                    );
-                }
+        .each_frame(move |cameras| {
+            for (id, camera_state) in cameras {
+                let camera_state = CameraState(camera_state);
+                let (camera_translation, camera_rotation) = camera_state.get_transform();
+                entity::set_component(id, translation(), camera_translation);
+                entity::set_component(id, rotation(), camera_rotation * Quat::from_rotation_x(90.));
             }
         });
 
@@ -255,6 +250,25 @@ pub async fn main() -> EventResult {
         }
     });
 
+    messages::Input::subscribe(|source, msg| {
+        let Source::Remote { user_id } = source else { return; };
+        let Some(user_id) = player::get_by_user_id(&user_id) else { return; };
+
+        if let Some(player_camera_state) = entity::get_component(user_id, player_camera_state()) {
+            let player_camera_state = CameraState(player_camera_state);
+
+            player_camera_state.zoom(msg.camera_zoom / 25.);
+            if msg.camera_rotation.length_squared() > 0. {
+                player_camera_state.rotate(msg.camera_rotation / 250.);
+            }
+
+            if msg.shoot {
+                entity::set_component(user_id, player_shoot_requested(), true);
+            }
+        }
+    });
+
+    // Update player ball each frame.
     query((
         player_ball(),
         player_text(),
@@ -262,9 +276,9 @@ pub async fn main() -> EventResult {
         player_indicator(),
         player_indicator_arrow(),
         player_camera_state(),
+        player_shoot_requested(),
     ))
     .requires(player())
-    .build()
     .each_frame(move |players| {
         for (
             player,
@@ -275,22 +289,16 @@ pub async fn main() -> EventResult {
                 player_indicator,
                 player_indicator_arrow,
                 player_camera_state,
+                player_shoot_requested,
             ),
         ) in players
         {
-            let Some((delta, new)) = player::get_raw_input_delta(player) else { continue; };
             let player_camera_state = CameraState(player_camera_state);
 
             let ball_position =
                 entity::get_component(player_ball, translation()).unwrap_or_default();
 
-            player_camera_state
-                .set_position(ball_position)
-                .zoom(delta.mouse_wheel / 25.);
-
-            if new.mouse_buttons.contains(&MouseButton::Right) {
-                player_camera_state.rotate(delta.mouse_position / 250.);
-            }
+            player_camera_state.set_position(ball_position);
 
             let can_shoot = entity::get_component(player_ball, linear_velocity())
                 .unwrap_or_default()
@@ -349,17 +357,21 @@ pub async fn main() -> EventResult {
                 );
             }
 
-            if new.mouse_buttons.contains(&MouseButton::Left) && can_shoot {
-                entity::set_component(player, player_restore_point(), ball_position);
-                entity::set_component(
-                    player_ball,
-                    linear_velocity(),
-                    camera_direction * 50. * force_multiplier,
-                );
-                let stroke_count =
-                    entity::get_component(player, player_stroke_count()).unwrap_or_default() + 1;
-                entity::set_component(player_text, text(), stroke_count.to_string());
-                entity::set_component(player, player_stroke_count(), stroke_count);
+            if player_shoot_requested {
+                if can_shoot {
+                    entity::set_component(player, player_restore_point(), ball_position);
+                    entity::set_component(
+                        player_ball,
+                        linear_velocity(),
+                        camera_direction * 50. * force_multiplier,
+                    );
+                    let stroke_count = entity::get_component(player, player_stroke_count())
+                        .unwrap_or_default()
+                        + 1;
+                    entity::set_component(player_text, text(), stroke_count.to_string());
+                    entity::set_component(player, player_stroke_count(), stroke_count);
+                }
+                entity::set_component(player, components::player_shoot_requested(), false);
             }
 
             // HACK: Artificially slow down ball until https://github.com/AmbientRun/Ambient/issues/182 is available
@@ -369,6 +381,4 @@ pub async fn main() -> EventResult {
             });
         }
     });
-
-    EventOk
 }

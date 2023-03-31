@@ -28,7 +28,7 @@ fn to_token_stream(
         node,
         api_path,
         prelude,
-        |node, api_path, prelude| to_token_stream(node, api_path, prelude),
+        to_token_stream,
         |id, message, api_path| {
             let doc_comment = format!("**{}**: {}", message.name, message.description);
 
@@ -89,7 +89,7 @@ fn to_token_stream(
                 .collect::<Result<Vec<_>, _>>()?;
 
             Ok(quote! {
-                #[derive(Clone, Debug, PartialEq, Eq)]
+                #[derive(Clone, Debug)]
                 #[doc = #doc_comment]
                 pub struct #struct_name {
                     #(#fields,)*

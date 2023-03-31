@@ -45,7 +45,7 @@ use selection_panel::*;
 use transform::*;
 
 use self::entity_browser::EntityBrowserScreen;
-use ambient_event_types::WINDOW_KEYBOARD_INPUT;
+use ambient_shared_types::events::WINDOW_KEYBOARD_INPUT;
 
 /// An editor can only be in one action at a time.
 /// They can be confirmed or aborted.

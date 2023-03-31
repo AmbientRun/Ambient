@@ -15,7 +15,7 @@ use closure::closure;
 use indexmap::IndexMap;
 use itertools::Itertools;
 
-use ambient_event_types::{WINDOW_KEYBOARD_INPUT, WINDOW_MOUSE_INPUT};
+use ambient_shared_types::events::{WINDOW_KEYBOARD_INPUT, WINDOW_MOUSE_INPUT};
 
 use crate::{
     button::{Button, ButtonStyle},

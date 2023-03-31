@@ -37,7 +37,7 @@ pub mod message_serde {
     where
         Self: Sized,
     {
-        /// Serialize this to a Vec<u8>.
+        /// Serialize this to a `Vec<u8>`.
         fn serialize_message_part(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError>;
         /// Deserialize this if possible.
         fn deserialize_message_part(input: &mut dyn Read) -> Result<Self, MessageSerdeError>;
@@ -309,14 +309,14 @@ pub mod message_serde {
         Ok(data)
     }
 
-    /// Implemented on all types that can be de/serialized from/to a Vec<u8>.
+    /// Implemented on all types that can be de/serialized from/to a `Vec<u8>`.
     pub trait Message: Sized {
         /// The identifier of this message.
         fn id() -> &'static str;
 
-        /// Serialize this to a Vec<u8>.
+        /// Serialize this to a `Vec<u8>`.
         fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError>;
-        /// Deserialize this from a u8 slice.
+        /// Deserialize this from a `u8` slice.
         fn deserialize_message(input: &[u8]) -> Result<Self, MessageSerdeError>;
     }
 }

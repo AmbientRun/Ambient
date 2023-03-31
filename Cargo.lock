@@ -106,9 +106,9 @@ dependencies = [
  "ambient_debugger",
  "ambient_decals",
  "ambient_ecs",
+ "ambient_ecs_editor",
  "ambient_editor_derive",
  "ambient_element",
- "ambient_event_types",
  "ambient_gizmos",
  "ambient_gpu",
  "ambient_input",
@@ -123,6 +123,7 @@ dependencies = [
  "ambient_project",
  "ambient_renderer",
  "ambient_rpc",
+ "ambient_shared_types",
  "ambient_sky",
  "ambient_std",
  "ambient_sys",
@@ -194,11 +195,12 @@ name = "ambient_api"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api_macros",
- "ambient_event_types",
  "ambient_project",
+ "ambient_shared_types",
  "anyhow",
  "byteorder",
  "data-encoding",
+ "futures",
  "glam 0.22.0",
  "once_cell",
  "paste",
@@ -242,7 +244,7 @@ dependencies = [
  "flume",
  "glam 0.22.0",
  "parking_lot",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "profiling",
  "puffin",
  "puffin_http",
  "thread-priority",
@@ -424,7 +426,7 @@ dependencies = [
  "ordered-float",
  "parking_lot",
  "paste",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "profiling",
  "serde",
  "tokio",
  "tracing",
@@ -448,7 +450,6 @@ version = "0.2.0-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
- "ambient_ecs_editor",
  "ambient_element",
  "ambient_element_component",
  "ambient_gizmos",
@@ -490,6 +491,7 @@ dependencies = [
 name = "ambient_ecs"
 version = "0.2.0-dev"
 dependencies = [
+ "ambient_shared_types",
  "ambient_std",
  "anyhow",
  "atomic_refcell",
@@ -506,7 +508,7 @@ dependencies = [
  "once_cell",
  "parking_lot",
  "paste",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "profiling",
  "rand 0.8.5",
  "reqwest",
  "serde",
@@ -549,7 +551,6 @@ dependencies = [
  "ambient_ecs",
  "ambient_ecs_editor",
  "ambient_element",
- "ambient_event_types",
  "ambient_gpu",
  "ambient_input",
  "ambient_intent",
@@ -562,6 +563,7 @@ dependencies = [
  "ambient_primitives",
  "ambient_renderer",
  "ambient_rpc",
+ "ambient_shared_types",
  "ambient_std",
  "ambient_sys",
  "ambient_terrain",
@@ -587,7 +589,7 @@ dependencies = [
  "ordered-float",
  "parking_lot",
  "physxx",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "profiling",
  "quinn",
  "serde",
  "serde_json",
@@ -629,7 +631,7 @@ dependencies = [
  "futures",
  "itertools",
  "parking_lot",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "profiling",
  "tokio",
  "tracing",
 ]
@@ -644,10 +646,6 @@ dependencies = [
  "quote",
  "syn",
 ]
-
-[[package]]
-name = "ambient_event_types"
-version = "0.2.0-dev"
 
 [[package]]
 name = "ambient_friendly_id"
@@ -673,7 +671,7 @@ dependencies = [
  "glam 0.22.0",
  "log",
  "once_cell",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "profiling",
  "serde",
  "wgpu 0.14.2",
 ]
@@ -728,7 +726,7 @@ version = "0.2.0-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
- "ambient_event_types",
+ "ambient_shared_types",
  "ambient_std",
  "ambient_window_types",
  "glam 0.22.0",
@@ -756,7 +754,7 @@ dependencies = [
  "itertools",
  "parking_lot",
  "pretty_assertions",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "profiling",
  "tokio",
  "tracing",
 ]
@@ -771,6 +769,7 @@ dependencies = [
  "glam 0.22.0",
  "itertools",
  "log",
+ "profiling",
  "serde",
 ]
 
@@ -921,7 +920,7 @@ dependencies = [
  "manual_future",
  "once_cell",
  "parking_lot",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "profiling",
  "quinn",
  "rand 0.8.5",
  "rustls",
@@ -962,7 +961,7 @@ dependencies = [
  "ordered-float",
  "parking_lot",
  "physxx",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "profiling",
  "rand 0.8.5",
  "serde",
  "serde_json",
@@ -1011,6 +1010,7 @@ name = "ambient_project"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_ecs",
+ "ambient_shared_types",
  "byteorder",
  "glam 0.22.0",
  "paste",
@@ -1095,7 +1095,7 @@ dependencies = [
  "log",
  "ordered-float",
  "parking_lot",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "profiling",
  "serde",
  "smallvec",
  "tracing",
@@ -1126,6 +1126,10 @@ dependencies = [
  "reqwest",
  "serde_json",
 ]
+
+[[package]]
+name = "ambient_shared_types"
+version = "0.2.0-dev"
 
 [[package]]
 name = "ambient_sky"
@@ -1176,7 +1180,7 @@ dependencies = [
  "parking_lot",
  "percent-encoding",
  "pin-project",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "profiling",
  "rand 0.8.5",
  "relative-path",
  "reqwest",
@@ -1249,7 +1253,7 @@ dependencies = [
  "ndarray",
  "parking_lot",
  "physxx",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "profiling",
  "quinn",
  "rand 0.8.5",
  "rand_pcg",
@@ -1299,13 +1303,13 @@ dependencies = [
  "ambient_ecs",
  "ambient_editor_derive",
  "ambient_element",
- "ambient_event_types",
  "ambient_gpu",
  "ambient_input",
  "ambient_layout",
  "ambient_meshes",
  "ambient_rect",
  "ambient_renderer",
+ "ambient_shared_types",
  "ambient_std",
  "ambient_sys",
  "ambient_text",
@@ -1344,9 +1348,9 @@ dependencies = [
  "ambient_cb",
  "ambient_color",
  "ambient_element",
- "ambient_event_types",
  "ambient_guest_bridge",
  "ambient_math",
+ "ambient_shared_types",
  "ambient_sys",
  "ambient_time",
  "ambient_window_types",
@@ -1381,12 +1385,12 @@ dependencies = [
  "ambient_app",
  "ambient_core",
  "ambient_ecs",
- "ambient_event_types",
  "ambient_input",
  "ambient_network",
  "ambient_physics",
  "ambient_prefab",
  "ambient_project",
+ "ambient_shared_types",
  "ambient_std",
  "ambient_sys",
  "ambient_wasmtime_wasi",
@@ -1409,7 +1413,7 @@ dependencies = [
  "parking_lot",
  "paste",
  "physxx",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "profiling",
  "quinn",
  "reqwest",
  "serde",
@@ -1419,8 +1423,8 @@ dependencies = [
  "tokio",
  "wasi-common",
  "wasmtime",
- "wit-bindgen-core",
- "wit-bindgen-rust",
+ "wit-bindgen-core 0.4.0 (git+https://github.com/bytecodealliance/wit-bindgen.git?rev=7ec986ba6bab38b4ccf5a771200c689c77f1e404)",
+ "wit-bindgen-rust 0.4.0 (git+https://github.com/bytecodealliance/wit-bindgen.git?rev=7ec986ba6bab38b4ccf5a771200c689c77f1e404)",
  "wit-component",
 ]
 
@@ -1492,7 +1496,7 @@ dependencies = [
  "once_cell",
  "ordered-float",
  "parking_lot",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "profiling",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
  "serde",
@@ -4817,6 +4821,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "num_threads"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2819ce041d2ee131036f4fc9d6ae7ae125a3a40e97ba64d04fe799ad9dabbb44"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "objc"
 version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5260,12 +5273,6 @@ checksum = "5d727cae5b39d21da60fa540906919ad737832fe0b1c165da3a34d6548c849d6"
 dependencies = [
  "unicode-ident",
 ]
-
-[[package]]
-name = "profiling"
-version = "1.0.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74605f360ce573babfe43964cbe520294dcb081afbf8c108fc6e23036b4da2df"
 
 [[package]]
 name = "profiling"
@@ -6552,6 +6559,8 @@ checksum = "cd0cbfecb4d19b5ea75bb31ad904eb5b9fa13f21079c3b92017ebdf4999a5890"
 dependencies = [
  "itoa",
  "js-sys",
+ "libc",
+ "num_threads",
  "serde",
  "time-core",
  "time-macros",
@@ -6878,11 +6887,11 @@ dependencies = [
 [[package]]
 name = "tracing-tree"
 version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "758e983ab7c54fee18403994507e7f212b9005e957ce7984996fac8d11facedb"
+source = "git+https://github.com/TmLev/tracing-tree#961c6f79d4af4f8629adf3df5fe104ffaf145d79"
 dependencies = [
  "atty",
  "nu-ansi-term",
+ "time",
  "tracing-core",
  "tracing-log",
  "tracing-subscriber",
@@ -7698,7 +7707,7 @@ dependencies = [
  "log",
  "naga 0.11.0",
  "parking_lot",
- "profiling 1.0.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "profiling",
  "raw-window-handle",
  "smallvec",
  "static_assertions",
@@ -7725,7 +7734,7 @@ dependencies = [
  "log",
  "naga 0.10.0",
  "parking_lot",
- "profiling 1.0.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "profiling",
  "raw-window-handle",
  "smallvec",
  "thiserror",
@@ -7748,7 +7757,7 @@ dependencies = [
  "log",
  "naga 0.11.0",
  "parking_lot",
- "profiling 1.0.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "profiling",
  "raw-window-handle",
  "smallvec",
  "thiserror",
@@ -7784,7 +7793,7 @@ dependencies = [
  "naga 0.10.0",
  "objc",
  "parking_lot",
- "profiling 1.0.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "profiling",
  "range-alloc",
  "raw-window-handle",
  "renderdoc-sys",
@@ -7826,7 +7835,7 @@ dependencies = [
  "naga 0.11.0",
  "objc",
  "parking_lot",
- "profiling 1.0.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "profiling",
  "range-alloc",
  "raw-window-handle",
  "renderdoc-sys",
@@ -8178,6 +8187,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "wit-bindgen-core"
+version = "0.4.0"
+source = "git+https://github.com/bytecodealliance/wit-bindgen.git?rev=7ec986ba6bab38b4ccf5a771200c689c77f1e404#7ec986ba6bab38b4ccf5a771200c689c77f1e404"
+dependencies = [
+ "anyhow",
+ "wit-component",
+ "wit-parser",
+]
+
+[[package]]
 name = "wit-bindgen-rust"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8185,8 +8204,20 @@ checksum = "efdf5b00935b7b52d0e56cae1960f8ac13019a285f5aa762ff6bd7139a5c28a2"
 dependencies = [
  "heck",
  "wasm-metadata",
- "wit-bindgen-core",
- "wit-bindgen-rust-lib",
+ "wit-bindgen-core 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wit-bindgen-rust-lib 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wit-component",
+]
+
+[[package]]
+name = "wit-bindgen-rust"
+version = "0.4.0"
+source = "git+https://github.com/bytecodealliance/wit-bindgen.git?rev=7ec986ba6bab38b4ccf5a771200c689c77f1e404#7ec986ba6bab38b4ccf5a771200c689c77f1e404"
+dependencies = [
+ "heck",
+ "wasm-metadata",
+ "wit-bindgen-core 0.4.0 (git+https://github.com/bytecodealliance/wit-bindgen.git?rev=7ec986ba6bab38b4ccf5a771200c689c77f1e404)",
+ "wit-bindgen-rust-lib 0.4.0 (git+https://github.com/bytecodealliance/wit-bindgen.git?rev=7ec986ba6bab38b4ccf5a771200c689c77f1e404)",
  "wit-component",
 ]
 
@@ -8197,7 +8228,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ab0a8f4b5fb1820b9d232beb122936425f72ec8fe6acb56e5d8782cfe55083da"
 dependencies = [
  "heck",
- "wit-bindgen-core",
+ "wit-bindgen-core 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "wit-bindgen-rust-lib"
+version = "0.4.0"
+source = "git+https://github.com/bytecodealliance/wit-bindgen.git?rev=7ec986ba6bab38b4ccf5a771200c689c77f1e404#7ec986ba6bab38b4ccf5a771200c689c77f1e404"
+dependencies = [
+ "heck",
+ "wit-bindgen-core 0.4.0 (git+https://github.com/bytecodealliance/wit-bindgen.git?rev=7ec986ba6bab38b4ccf5a771200c689c77f1e404)",
 ]
 
 [[package]]
@@ -8209,8 +8249,8 @@ dependencies = [
  "anyhow",
  "proc-macro2",
  "syn",
- "wit-bindgen-core",
- "wit-bindgen-rust",
+ "wit-bindgen-core 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wit-bindgen-rust 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "wit-component",
 ]
 

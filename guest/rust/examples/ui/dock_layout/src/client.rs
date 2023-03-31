@@ -1,25 +1,15 @@
 use ambient_api::prelude::*;
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::layout::{
-    docking_bottom, docking_left, fit_horizontal_none, fit_vertical_none, height, width,
-};
-use ambient_ui_components::{
-    default_theme::STREET,
-    layout::{Dock, FlowRow},
-    text::Text,
-    UIExt,
-};
+use ambient_ui_components::prelude::*;
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
     let background = |e| {
-        FlowRow(vec![e])
-            .el()
+        FlowRow::el([e])
             .with_background(vec4(1., 1., 1., 0.02))
             .with_default(fit_vertical_none())
             .with_default(fit_horizontal_none())
     };
-    Dock(vec![
+    Dock::el([
         background(Text::el("First"))
             .with(height(), 30.)
             .with_margin_even(10.),
@@ -30,14 +20,12 @@ fn App(_hooks: &mut Hooks) -> Element {
         background(Text::el("Third left"))
             .with_default(docking_left())
             .with(width(), 70.),
-        Dock(vec![background(Text::el("Fourth padding"))])
-            .el()
+        Dock::el([background(Text::el("Fourth padding"))])
             .with_padding_even(10.)
             .with(height(), 70.)
             .with_background(vec4(1., 1., 1., 0.02)),
         background(Text::el("Fill remainder")).with_margin_even(30.),
     ])
-    .el()
     .with_background(vec4(1., 1., 1., 0.02))
     .with_padding_even(STREET)
     .with(width(), 500.)
@@ -45,8 +33,6 @@ fn App(_hooks: &mut Hooks) -> Element {
 }
 
 #[main]
-pub async fn main() -> EventResult {
+pub fn main() {
     App.el().spawn_interactive();
-
-    EventOk
 }

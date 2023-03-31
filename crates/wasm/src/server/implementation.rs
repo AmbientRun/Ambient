@@ -3,7 +3,6 @@ use ambient_core::{
     player::{player, user_id},
 };
 use ambient_ecs::{query, EntityId, World};
-use ambient_input::{player_prev_raw_input, player_raw_input};
 use ambient_network::server::player_connection;
 use ambient_physics::{helpers::PhysicsObjectCollection, physx::character_controller};
 use ambient_std::{
@@ -22,29 +21,6 @@ use crate::shared::{
     wit,
 };
 
-impl wit::server_player::Host for Bindings {
-    fn get_raw_input(
-        &mut self,
-        player: wit::types::EntityId,
-    ) -> anyhow::Result<Option<wit::server_player::RawInput>> {
-        Ok(self
-            .world()
-            .get_cloned(player.from_bindgen(), player_raw_input())
-            .ok()
-            .into_bindgen())
-    }
-
-    fn get_prev_raw_input(
-        &mut self,
-        player: wit::types::EntityId,
-    ) -> anyhow::Result<Option<wit::server_player::RawInput>> {
-        Ok(self
-            .world()
-            .get_cloned(player.from_bindgen(), player_prev_raw_input())
-            .ok()
-            .into_bindgen())
-    }
-}
 impl wit::server_physics::Host for Bindings {
     fn apply_force(
         &mut self,
@@ -200,7 +176,7 @@ impl wit::server_message::Host for Bindings {
         data: Vec<u8>,
     ) -> anyhow::Result<()> {
         use wit::server_message::Target;
-        let module_id = self.id.clone();
+        let module_id = self.id;
         let world = self.world_mut();
 
         match target {

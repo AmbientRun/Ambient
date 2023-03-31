@@ -1,13 +1,12 @@
-use std::{collections::VecDeque, marker::PhantomData};
+use std::marker::PhantomData;
 
 use super::*;
 
 /// Events packed into a FIFO frame queue
 #[derive(Debug, Clone)]
 pub struct FramedEvents<T> {
-    events: VecDeque<Vec<T>>,
-    start_frame: usize,
-    history_size: usize,
+    events: Vec<Vec<T>>,
+    frame: usize,
 }
 impl<T> FramedEvents<T> {
     pub const HISTORY_SIZE: usize = 100;
@@ -16,35 +15,41 @@ impl<T> FramedEvents<T> {
         Self::new_with_history_size(Self::HISTORY_SIZE)
     }
     pub fn new_with_history_size(history_size: usize) -> Self {
-        Self { events: vec![Vec::new()].into(), start_frame: 0, history_size }
+        Self { events: (0..history_size).map(|_| Vec::new()).collect(), frame: 0 }
+    }
+    fn current_events_mut(&mut self) -> &mut Vec<T> {
+        self.events_mut(self.frame)
+    }
+    fn current_events(&self) -> &Vec<T> {
+        self.events(self.frame)
+    }
+    fn events(&self, frame: usize) -> &Vec<T> {
+        &self.events[frame % self.events.len()]
+    }
+    fn events_mut(&mut self, frame: usize) -> &mut Vec<T> {
+        let n_events = self.events.len();
+        &mut self.events[frame % n_events]
     }
     pub fn next_frame(&mut self) {
-        if self.events.len() < self.history_size {
-            self.events.push_back(Vec::new());
-        } else {
-            self.start_frame += 1;
-            let mut buf = self.events.pop_front().unwrap();
-            buf.clear(); // Re-use the same buffer, so that it's internal size is already allocated
-            self.events.push_back(buf);
-        }
+        self.frame += 1;
+        self.current_events_mut().clear();
     }
     pub fn add_event(&mut self, event: T) -> &T {
-        let index = self.events.len() - 1;
-        let buf = &mut self.events[index];
+        let buf = self.current_events_mut();
         buf.push(event);
         buf.last().unwrap()
     }
     pub fn add_events(&mut self, events: impl IntoIterator<Item = T>) {
-        let index = self.events.len() - 1;
-        let buf = &mut self.events[index];
-        buf.extend(events);
+        self.current_events_mut().extend(events);
+    }
+    pub fn frame_available(&self, frame: usize) -> bool {
+        frame >= self.frame.saturating_sub(self.events.len())
     }
     pub fn get(&self, id: DBEventId) -> Option<&T> {
-        if id.frame < self.start_frame {
+        if !self.frame_available(id.frame) {
             return None;
         }
-        let index = id.frame - self.start_frame;
-        self.events[index].get(id.index)
+        self.events[id.frame % self.events.len()].get(id.index)
     }
     /// Creates a reader and moves it to the end of the events
     pub fn reader(&self) -> FramedEventsReader<T> {
@@ -53,7 +58,7 @@ impl<T> FramedEvents<T> {
         reader
     }
     pub fn n_events(&self) -> usize {
-        self.events[self.events.len() - 1].len()
+        self.current_events().len()
     }
 }
 impl<T> Default for FramedEvents<T> {
@@ -72,8 +77,8 @@ impl<T> FramedEventsReader<T> {
         Self { frame: 0, index: 0, _type: PhantomData }
     }
     pub fn move_to_end(&mut self, events: &FramedEvents<T>) {
-        self.frame = events.start_frame + events.events.len() - 1;
-        self.index = events.events[events.events.len() - 1].len();
+        self.frame = events.frame;
+        self.index = events.current_events().len();
     }
     pub fn iter<'a>(&mut self, events: &'a FramedEvents<T>) -> FramedEventsIterator<'a, T> {
         let it = FramedEventsIterator { frame: self.frame, index: self.index, events };
@@ -95,22 +100,28 @@ pub struct FramedEventsIterator<'a, T> {
 impl<'a, T> Iterator for FramedEventsIterator<'a, T> {
     type Item = (DBEventId, &'a T);
     fn next(&mut self) -> Option<Self::Item> {
-        if self.frame < self.events.start_frame {
-            panic!("Trying to read old events that have already been discarded ({} < {})", self.frame, self.events.start_frame);
+        if !self.events.frame_available(self.frame) {
+            panic!(
+                "Trying to read old events that have already been discarded ({} < {})",
+                self.frame,
+                self.events.frame - self.events.events.len()
+            );
         }
-        let frame_index = self.frame - self.events.start_frame;
-        if let Some(buf) = self.events.events.get(frame_index) {
-            if let Some(event) = buf.get(self.index) {
-                let event_id = DBEventId { frame: self.frame, index: self.index };
-                self.index += 1;
-                Some((event_id, event))
-            } else {
-                self.frame += 1;
-                self.index = 0;
-                self.next()
+        if self.frame == self.events.frame {
+            if self.index >= self.events.current_events().len() {
+                return None;
             }
+        }
+
+        let buf = self.events.events(self.frame);
+        if let Some(event) = buf.get(self.index) {
+            let event_id = DBEventId { frame: self.frame, index: self.index };
+            self.index += 1;
+            Some((event_id, event))
         } else {
-            None
+            self.frame += 1;
+            self.index = 0;
+            self.next()
         }
     }
 }

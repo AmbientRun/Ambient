@@ -8,10 +8,7 @@ version = { workspace = true }
 
 [dependencies]
 ambient_api = {workspace = true}
-ambient_element = {workspace = true}
-ambient_guest_bridge = {workspace = true}
 ambient_ui_components = {workspace = true}
-ambient_cb = {workspace = true}
 indexmap = { version = "1", features = ["serde"] }
 
 [[bin]]

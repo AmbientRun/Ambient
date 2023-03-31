@@ -167,18 +167,19 @@ pub fn layout_systems() -> SystemGroup {
         vec![
             Box::new(guest_api::systems()),
             // For all "normal" components, i.e. non-layout components
-            query((width().changed(),)).excl(layout()).to_system(|q, world, qs, _| {
+            query((width().changed(),)).excl(layout()).to_system_with_name("layout/width_non_layout", |q, world, qs, _| {
                 for (id, _) in q.collect_cloned(world, qs) {
                     invalidate_parent_layout(world, id, Orientation::Horizontal);
                 }
             }),
-            query((height().changed(),)).excl(layout()).to_system(|q, world, qs, _| {
+            query((height().changed(),)).excl(layout()).to_system_with_name("layout/height_non_layout", |q, world, qs, _| {
                 for (id, _) in q.collect_cloned(world, qs) {
                     invalidate_parent_layout(world, id, Orientation::Vertical);
                 }
             }),
-            query((width().changed(), height().changed(), children().changed(), layout().changed())).optional_changed(parent()).to_system(
-                |q, world, qs, _| {
+            query((width().changed(), height().changed(), children().changed(), layout().changed()))
+                .optional_changed(parent())
+                .to_system_with_name("layout/main", |q, world, qs, _| {
                     let qs = qs.unwrap();
                     for _ in 0..100 {
                         let mut changed = false;
@@ -205,9 +206,9 @@ pub fn layout_systems() -> SystemGroup {
                         }
                     }
                     log::warn!("Layout ran the full 100 iterations");
-                },
-            ),
-            query_mut((mesh_to_local(),), (width().changed(), height().changed())).incl(mesh_to_local_from_size()).to_system(
+                }),
+            query_mut((mesh_to_local(),), (width().changed(), height().changed())).incl(mesh_to_local_from_size()).to_system_with_name(
+                "layout/mesh_to_local",
                 |q, world, qs, _| {
                     for (_, (mesh_to_local,), (&width, &height)) in q.iter(world, qs) {
                         *mesh_to_local = Mat4::from_scale(vec3(width, height, 1.));
@@ -216,24 +217,28 @@ pub fn layout_systems() -> SystemGroup {
             ),
             Box::new(screens_systems()),
             node_clickable_system(),
-            query_mut((gpu_ui_size(),), (width().changed(), height().changed())).to_system(|q, world, qs, _| {
-                for (_, (size,), (width, height)) in q.iter(world, qs) {
-                    *size = vec4(*width, *height, 0., 0.);
-                }
-            }),
+            query_mut((gpu_ui_size(),), (width().changed(), height().changed())).to_system_with_name(
+                "layout/gpu_ui_size",
+                |q, world, qs, _| {
+                    for (_, (size,), (width, height)) in q.iter(world, qs) {
+                        *size = vec4(*width, *height, 0., 0.);
+                    }
+                },
+            ),
         ],
     )
 }
 
 pub fn gpu_world_systems() -> SystemGroup<GpuWorldSyncEvent> {
     SystemGroup::new(
-        "ui/layout/gpu_world",
+        "layout/gpu_world",
         vec![Box::new(ComponentToGpuSystem::new(GpuComponentFormat::Vec4, gpu_ui_size(), gpu_components::ui_size()))],
     )
 }
 
 const Z_DELTA: f32 = -0.00001;
 
+#[profiling::function]
 fn dock_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
     let padding = world.get(id, padding()).unwrap_or(Borders::ZERO);
     let orientation = world.get(id, orientation()).unwrap_or(Orientation::Vertical);
@@ -320,6 +325,7 @@ fn dock_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
     }
 }
 
+#[profiling::function]
 fn flow_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
     let orientation = world.get(id, orientation()).unwrap_or(Orientation::Horizontal);
     let space_between_items = world.get(id, space_between_items()).unwrap_or(0.);
@@ -461,6 +467,7 @@ fn flow_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
     }
 }
 
+#[profiling::function]
 fn bookcase_layout(world: &mut World, id: EntityId, files: Vec<EntityId>) {
     let orientation = world.get(id, orientation()).unwrap_or(Orientation::Horizontal);
     let self_size = vec2(world.get(id, width()).unwrap_or(0.), world.get(id, height()).unwrap_or(0.));
@@ -507,6 +514,7 @@ fn bookcase_layout(world: &mut World, id: EntityId, files: Vec<EntityId>) {
     }
 }
 
+#[profiling::function]
 fn width_to_children(world: &mut World, id: EntityId, children: Vec<EntityId>) {
     let self_width = world.get(id, width()).unwrap_or(0.);
     for c in children {
@@ -535,16 +543,19 @@ fn invalidate_parent_layout(world: &mut World, id: EntityId, orientation: Orient
 }
 
 fn node_clickable_system() -> DynSystem {
-    query_mut((mouse_pickable(),), (width().changed(), height().changed())).to_system(|q, world, qs, _| {
-        for (_, (pickable,), (&width, &height)) in q.iter(world, qs) {
-            pickable.max = vec3(width, height, 0.0001);
-        }
-    })
+    query_mut((mouse_pickable(),), (width().changed(), height().changed())).to_system_with_name(
+        "layout/mouse_pickable",
+        |q, world, qs, _| {
+            for (_, (pickable,), (&width, &height)) in q.iter(world, qs) {
+                pickable.max = vec3(width, height, 0.0001);
+            }
+        },
+    )
 }
 
 fn screens_systems() -> SystemGroup {
     SystemGroup::new(
-        "ui/screens",
+        "layout/screens",
         vec![query((local_to_world().changed(), children().changed())).incl(screen()).to_system(|q, world, qs, _| {
             for (_, (ltw, children)) in q.collect_cloned(world, qs) {
                 let (_, _, pos) = ltw.to_scale_rotation_translation();

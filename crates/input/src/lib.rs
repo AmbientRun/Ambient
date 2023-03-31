@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
-use ambient_ecs::{components, world_events, Debuggable, Description, Entity, Name, Networked, Store, System, SystemGroup};
+use ambient_ecs::{components, world_events, Debuggable, Description, Entity, Name, Networked, Resource, Store, System, SystemGroup};
+use ambient_shared_types::events;
 use glam::{vec2, Vec2};
 use serde::{Deserialize, Serialize};
 use winit::event::ModifiersState;
@@ -42,9 +43,9 @@ components!("input", {
     @[Debuggable, Networked, Store, Name["Mouse button"], Description["The mouse button. 0=left, 1=right, 2=middle."]]
     mouse_button: u32,
 
-    @[Debuggable]
+    @[Debuggable, Resource]
     player_raw_input: PlayerRawInput,
-    @[Debuggable]
+    @[Debuggable, Resource]
     player_prev_raw_input: PlayerRawInput,
 });
 
@@ -55,6 +56,10 @@ pub fn init_all_components() {
 
 pub fn event_systems() -> SystemGroup<Event<'static, ()>> {
     SystemGroup::new("inputs", vec![Box::new(InputSystem::new())])
+}
+
+pub fn resources() -> Entity {
+    Entity::new().with_default(player_raw_input()).with_default(player_prev_raw_input())
 }
 
 #[derive(Debug)]
@@ -77,21 +82,20 @@ impl System<Event<'static, ()>> for InputSystem {
                     self.is_focused = focused;
                     world
                         .resource_mut(world_events())
-                        .add_event((ambient_event_types::WINDOW_FOCUSED.to_string(), Entity::new().with(event_focus_change(), focused)));
+                        .add_event((events::WINDOW_FOCUSED.to_string(), Entity::new().with(event_focus_change(), focused)));
                 }
                 WindowEvent::ReceivedCharacter(c) => {
                     world.resource_mut(world_events()).add_event((
-                        ambient_event_types::WINDOW_RECEIVED_CHARACTER.to_string(),
+                        events::WINDOW_RECEIVED_CHARACTER.to_string(),
                         Entity::new().with(event_received_character(), c.to_string()),
                     ));
                 }
 
                 WindowEvent::ModifiersChanged(mods) => {
                     self.modifiers = *mods;
-                    world.resource_mut(world_events()).add_event((
-                        ambient_event_types::WINDOW_MODIFIERS_CHANGED.to_string(),
-                        Entity::new().with(event_modifiers_change(), *mods),
-                    ));
+                    world
+                        .resource_mut(world_events())
+                        .add_event((events::WINDOW_MODIFIERS_CHANGED.to_string(), Entity::new().with(event_modifiers_change(), *mods)));
                 }
 
                 WindowEvent::KeyboardInput { input, .. } => {
@@ -107,12 +111,12 @@ impl System<Event<'static, ()>> for InputSystem {
                     if let Some(key) = input.virtual_keycode {
                         data.set(keycode(), ambient_window_types::VirtualKeyCode::from(key).to_string());
                     }
-                    world.resource_mut(world_events()).add_event((ambient_event_types::WINDOW_KEYBOARD_INPUT.to_string(), data));
+                    world.resource_mut(world_events()).add_event((events::WINDOW_KEYBOARD_INPUT.to_string(), data));
                 }
 
                 WindowEvent::MouseInput { state, button, .. } => {
                     world.resource_mut(world_events()).add_event((
-                        ambient_event_types::WINDOW_MOUSE_INPUT.to_string(),
+                        events::WINDOW_MOUSE_INPUT.to_string(),
                         Entity::new()
                             .with(
                                 event_mouse_input(),
@@ -127,7 +131,7 @@ impl System<Event<'static, ()>> for InputSystem {
 
                 WindowEvent::MouseWheel { delta, .. } => {
                     world.resource_mut(world_events()).add_event((
-                        ambient_event_types::WINDOW_MOUSE_WHEEL.to_string(),
+                        events::WINDOW_MOUSE_WHEEL.to_string(),
                         Entity::new()
                             .with(
                                 event_mouse_wheel(),
@@ -145,7 +149,7 @@ impl System<Event<'static, ()>> for InputSystem {
 
             Event::DeviceEvent { event: DeviceEvent::MouseMotion { delta }, .. } => {
                 world.resource_mut(world_events()).add_event((
-                    ambient_event_types::WINDOW_MOUSE_MOTION.to_string(),
+                    events::WINDOW_MOUSE_MOTION.to_string(),
                     Entity::new().with(event_mouse_motion(), vec2(delta.0 as f32, delta.1 as f32)),
                 ));
             }

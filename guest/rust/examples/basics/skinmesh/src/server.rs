@@ -2,7 +2,6 @@ use ambient_api::{
     components::core::{
         app::main_scene,
         camera::aspect_ratio_from_window,
-        player::player,
         prefab::prefab_from_url,
         primitives::quad,
         rendering::color,
@@ -10,13 +9,13 @@ use ambient_api::{
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     entity::{AnimationAction, AnimationController},
-    player::KeyCode,
+    message::server::MessageExt,
     prelude::*,
 };
 
 #[main]
-pub async fn main() -> EventResult {
-    let camera_id = Entity::new()
+pub fn main() {
+    Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
         .with_default(main_scene())
@@ -51,75 +50,62 @@ pub async fn main() -> EventResult {
         },
     );
 
-    query(player()).build().each_frame(move |players| {
-        for (player, _) in players {
-            let Some((delta, _)) = player::get_raw_input_delta(player) else { continue; };
+    messages::SetController::subscribe(move |_, msg| {
+        if msg.value == 1 {
+            entity::set_animation_controller(
+                unit_id,
+                AnimationController {
+                    actions: &[AnimationAction {
+                        clip_url: &asset::url(
+                            "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
+                        )
+                        .unwrap(),
+                        looping: true,
+                        weight: 1.,
+                    }],
+                    apply_base_pose: false,
+                },
+            );
+        }
 
-            let mut camera_position = entity::get_component(camera_id, lookat_center()).unwrap();
-            camera_position += vec3(delta.mouse_position.x, 0.0, delta.mouse_position.y) / 1024.0;
+        if msg.value == 2 {
+            entity::set_animation_controller(
+                unit_id,
+                AnimationController {
+                    actions: &[AnimationAction {
+                        clip_url: &asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim")
+                            .unwrap(),
+                        looping: true,
+                        weight: 1.,
+                    }],
+                    apply_base_pose: false,
+                },
+            );
+        }
 
-            entity::set_component(camera_id, lookat_center(), camera_position);
-
-            if delta.keys.contains(&KeyCode::Key1) {
-                entity::set_animation_controller(
-                    unit_id,
-                    AnimationController {
-                        actions: &[AnimationAction {
+        if msg.value == 3 {
+            entity::set_animation_controller(
+                unit_id,
+                AnimationController {
+                    actions: &[
+                        AnimationAction {
                             clip_url: &asset::url(
                                 "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
                             )
                             .unwrap(),
                             looping: true,
-                            weight: 1.,
-                        }],
-                        apply_base_pose: false,
-                    },
-                );
-            }
-
-            if delta.keys.contains(&KeyCode::Key2) {
-                entity::set_animation_controller(
-                    unit_id,
-                    AnimationController {
-                        actions: &[AnimationAction {
+                            weight: 0.5,
+                        },
+                        AnimationAction {
                             clip_url: &asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim")
                                 .unwrap(),
                             looping: true,
-                            weight: 1.,
-                        }],
-                        apply_base_pose: false,
-                    },
-                );
-            }
-
-            if delta.keys.contains(&KeyCode::Key3) {
-                entity::set_animation_controller(
-                    unit_id,
-                    AnimationController {
-                        actions: &[
-                            AnimationAction {
-                                clip_url: &asset::url(
-                                    "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
-                                )
-                                .unwrap(),
-                                looping: true,
-                                weight: 0.5,
-                            },
-                            AnimationAction {
-                                clip_url: &asset::url(
-                                    "assets/Capoeira.fbx/animations/mixamo.com.anim",
-                                )
-                                .unwrap(),
-                                looping: true,
-                                weight: 0.5,
-                            },
-                        ],
-                        apply_base_pose: false,
-                    },
-                );
-            }
+                            weight: 0.5,
+                        },
+                    ],
+                    apply_base_pose: false,
+                },
+            );
         }
     });
-
-    EventOk
 }

@@ -8,12 +8,12 @@ use std::{
 
 use once_cell::sync::Lazy;
 
-use crate::{global::EventResult, internal::component::Entity};
+use crate::{global::ResultEmpty, internal::component::Entity};
 use rand::random;
 
-type EventFuture = Pin<Box<dyn Future<Output = EventResult>>>;
-type EventCallbackFn = Box<dyn FnMut(&Entity) -> EventFuture>;
-type EventCallbackFnOnce = Box<dyn FnOnce(&Entity) -> EventFuture>;
+pub type EventFuture = Pin<Box<dyn Future<Output = ResultEmpty>>>;
+type EventCallbackFn = Box<dyn FnMut(&Entity) -> ResultEmpty>;
+type EventCallbackFnOnce = Box<dyn FnOnce(&Entity) -> ResultEmpty>;
 
 // the function is too general to be passed in directly
 #[allow(clippy::redundant_closure)]
@@ -28,7 +28,7 @@ static RAW_WAKER: RawWakerVTable = RawWakerVTable::new(
 pub(crate) struct Executor {
     waker: Waker,
     current: RefCell<Vec<EventFuture>>,
-    incoming: RefCell<Vec<Pin<Box<dyn Future<Output = EventResult>>>>>,
+    incoming: RefCell<Vec<Pin<Box<dyn Future<Output = ResultEmpty>>>>>,
     current_callbacks: RefCell<Callbacks>,
     incoming_callbacks: RefCell<Callbacks>,
     frame_state: RefCell<FrameState>,
@@ -76,20 +76,16 @@ impl Executor {
 
         // Dispatch all callbacks.
         {
-            let mut new_futures = vec![];
             let mut callbacks = self.current_callbacks.borrow_mut();
             if let Some(callbacks) = callbacks.on.get_mut(event_name) {
-                for (_, callback) in callbacks {
-                    new_futures.push(callback(components));
+                for callback in callbacks.values_mut() {
+                    callback(components).unwrap();
                 }
             }
 
             for (_, callback) in callbacks.once.remove(event_name).unwrap_or_default() {
-                new_futures.push(callback(components));
+                callback(components).unwrap();
             }
-
-            // This must be done as a separate step as `callback` could mutate `self.incoming`.
-            self.incoming.borrow_mut().append(&mut new_futures);
         }
 
         // Load all pending futures into current.

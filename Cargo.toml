@@ -10,12 +10,13 @@ rust-version = "1.67"
 
 [workspace.dependencies]
 aho-corasick = "0.7.20"
-# TEMP: https://github.com/aclysma/profiling/pull/45
-profiling = { git = "https://github.com/philpax/profiling.git", features = [
+profiling = { version = "1.0.7", features = [
     "profile-with-puffin",
-] }
+] } # TEMP: https://github.com/aclysma/profiling/pull/45
 tracing = "0.1.35"
-tracing-tree = { version = "0.2" }
+# tracing-tree = { version = "0.2" }
+# https://github.com/davidbarsky/tracing-tree/pull/56#issuecomment-1489148431
+tracing-tree = { git = "https://github.com/TmLev/tracing-tree" }
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
 tracing-log = { version = "0.1" }
 wgpu = "0.14.2"
@@ -147,6 +148,9 @@ wasmtime = { version = "7.0.0", features = ["component-model"] }
 # Use published versions of these crates when available, or pull them in ourselves
 wasi-common = { git = "https://github.com/bytecodealliance/preview2-prototyping.git", rev = "5836a6b0028f6fbdd094fbdd87df1ff4ca535168" }
 wasi-cap-std-sync = { git = "https://github.com/bytecodealliance/preview2-prototyping.git", rev = "5836a6b0028f6fbdd094fbdd87df1ff4ca535168" }
-wit-bindgen-core = "0.4.0"
-wit-bindgen-rust = "0.4.0"
+wit-bindgen-core = { git = "https://github.com/bytecodealliance/wit-bindgen.git", rev = "7ec986ba6bab38b4ccf5a771200c689c77f1e404" }
+wit-bindgen-rust = { git = "https://github.com/bytecodealliance/wit-bindgen.git", rev = "7ec986ba6bab38b4ccf5a771200c689c77f1e404" }
 wit-component = "0.7.3"
+
+[patch.crates-io]
+profiling = { git = "https://github.com/philpax/profiling.git" }

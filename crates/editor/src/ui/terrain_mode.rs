@@ -38,7 +38,7 @@ use glam::{vec3, Vec3, Vec3Swizzles, Vec4};
 use wgpu::{util::DeviceExt, BindGroup};
 
 use super::EditorPlayerInputHandler;
-use ambient_event_types::WINDOW_MOUSE_INPUT;
+use ambient_shared_types::events::WINDOW_MOUSE_INPUT;
 
 #[derive(Clone, Debug)]
 pub struct TerrainRaycastPicker {

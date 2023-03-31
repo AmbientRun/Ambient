@@ -2,7 +2,7 @@ use std::{cell::RefCell, future::Future, rc::Rc, task::Poll};
 
 use crate::{
     components, entity,
-    global::EventResult,
+    global::{OkEmpty, ResultEmpty},
     internal::{component::Entity, executor::EXECUTOR, wit},
 };
 
@@ -35,21 +35,28 @@ impl OnceHandle {
     }
 }
 
+/// A trait that abstracts over return types so that you can return an [ResultEmpty] or nothing.
+pub trait CallbackReturn {
+    #[doc(hidden)]
+    fn into_result(self) -> ResultEmpty;
+}
+impl CallbackReturn for ResultEmpty {
+    fn into_result(self) -> ResultEmpty {
+        self
+    }
+}
+impl CallbackReturn for () {
+    fn into_result(self) -> ResultEmpty {
+        OkEmpty
+    }
+}
+
 /// `on` calls `callback` every time `event` occurs.
 ///
 /// If you only want to be notified once, use [once].
 ///
 /// The `callback` is a `fn`. This can be a closure (e.g. `|args| { ... }`).
-pub fn on(event: &str, mut callback: impl FnMut(&Entity) -> EventResult + 'static) -> OnHandle {
-    on_async(event, move |args| std::future::ready(callback(args)))
-}
-
-/// `on_async` calls `callback` every time `event` occurs.
-///
-/// If you only want to be notified once, use [once_async].
-///
-/// The `callback` is a `async fn`. This can be a closure (e.g. `|args| async move { ... }`).
-pub fn on_async<R: Future<Output = EventResult> + 'static>(
+pub fn on<R: CallbackReturn>(
     event: &str,
     mut callback: impl FnMut(&Entity) -> R + 'static,
 ) -> OnHandle {
@@ -58,7 +65,7 @@ pub fn on_async<R: Future<Output = EventResult> + 'static>(
         event.to_string(),
         EXECUTOR.register_callback(
             event.to_string(),
-            Box::new(move |args| Box::pin(callback(args))),
+            Box::new(move |args| callback(args).into_result()),
         ),
     )
 }
@@ -68,28 +75,23 @@ pub fn on_async<R: Future<Output = EventResult> + 'static>(
 /// If you want to be notified every time the `event` occurs, use [on].
 ///
 /// The `callback` is a `fn`. This can be a closure (e.g. `|args| { ... }`).
-pub fn once(event: &str, callback: impl FnOnce(&Entity) -> EventResult + 'static) -> OnceHandle {
-    once_async(event, |args| std::future::ready(callback(args)))
-}
-
-/// `once_async` calls `callback` when `event` occurs, but only once.
-///
-/// If you want to be notified every time the `event` occurs, use [on_async].
-///
-/// The `callback` is a `async fn`. This can be a closure (e.g. `|args| async move { ... }`).
-pub fn once_async<R: Future<Output = EventResult> + 'static>(
+pub fn once<R: CallbackReturn>(
     event: &str,
     callback: impl FnOnce(&Entity) -> R + 'static,
 ) -> OnceHandle {
     wit::event::subscribe(event);
-    OnceHandle(event.to_string(), EXECUTOR.register_callback_once(
+    OnceHandle(
         event.to_string(),
-        Box::new(move |args| Box::pin(callback(args))),
-    ))
+        EXECUTOR.register_callback_once(
+            event.to_string(),
+            Box::new(move |args| callback(args).into_result()),
+        ),
+    )
 }
 
 /// Runs the given async block (`future`). This lets your module set up behaviour
-/// to run concurrently, like a long-running task.
+/// to run concurrently, like a long-running task. It can return either a [ResultEmpty] or
+/// nothing.
 ///
 /// This is similar to [tokio::spawn](https://docs.rs/tokio/latest/tokio/fn.spawn.html),
 /// as well as similar functions from other async runtimes.
@@ -100,11 +102,10 @@ pub fn once_async<R: Future<Output = EventResult> + 'static>(
 ///     notification::broadcast("a title", "hello!");
 ///     sleep(2.0).await;
 ///     notification::broadcast("a title", "hello to you too!");
-///     EventOk
 /// });
 /// ```
-pub fn run_async(future: impl Future<Output = EventResult> + 'static) {
-    EXECUTOR.spawn(Box::pin(future));
+pub fn run_async<R: CallbackReturn>(future: impl Future<Output = R> + 'static) {
+    EXECUTOR.spawn(Box::pin(async move { future.await.into_result() }));
 }
 
 /// Stops execution of this function until the provided `condition` is true.
