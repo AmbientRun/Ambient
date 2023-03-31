@@ -10,13 +10,13 @@ use quote::quote;
 /// Converts a tree to a token stream.
 pub fn tree_to_token_stream<
     T: Clone + Debug,
-    F: Fn(&Context, TokenStream) -> TokenStream + Copy,
+    F: Fn(&Context, &TreeNode<T>, TokenStream) -> TokenStream + Copy,
 >(
     // Current node of the tree (call with root)
     node: &TreeNode<T>,
     // The generation context
     context: &Context,
-    // The wrapper to apply around the components
+    // The wrapper to apply around the group of Others
     wrapper: F,
     // The function to call when converting a subtree. Should be a wrapper around this function.
     self_call: impl Fn(&TreeNode<T>, &Context, F) -> anyhow::Result<TokenStream>,
@@ -47,6 +47,7 @@ pub fn tree_to_token_stream<
                 } else {
                     wrapper(
                         context,
+                        &node,
                         quote! {
                             #(#others)*
                         },
@@ -75,6 +76,7 @@ pub fn tree_to_token_stream<
                 } else {
                     wrapper(
                         context,
+                        &node,
                         quote! {
                             #(#others)*
                         },

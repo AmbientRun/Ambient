@@ -1,5 +1,5 @@
 use super::{
-    tree::{Tree, TreeNode},
+    tree::{Tree, TreeNode, TreeNodeInner, TreeNodeNamespace},
     util, Context,
 };
 use ambient_project::{Component, ComponentType, IdentifierPath, IdentifierPathBuf};
@@ -12,28 +12,73 @@ pub fn tree_to_token_stream(
     context: &Context,
     project_path: IdentifierPath,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    to_token_stream(
+    let tree_output = to_token_stream(
         tree.root(),
         context,
-        |context, ts| match context {
-            Context::Host => quote! {
-                ambient_ecs::components!("", {
-                    #ts
-                })
-            },
+        |context, ns, ts| match context {
+            Context::Host => {
+                let namespace_path = IdentifierPath(ns.path.split_first().unwrap().1).to_string();
+                quote! {
+                    use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
+                    use ambient_ecs::{EntityId, Debuggable, Networked, Store, Resource, Name, Description};
+                    ambient_ecs::components!(#namespace_path, {
+                        #ts
+                    });
+                }
+            }
             Context::Guest { api_path, .. } => quote! {
                 use #api_path::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
                 #ts
             },
         },
         project_path,
-    )
+    )?;
+
+    let init_all_components = {
+        fn get_namespaces<'a>(
+            ns: &'a TreeNodeNamespace<Component>,
+            path: IdentifierPath<'a>,
+        ) -> Vec<IdentifierPath<'a>> {
+            let mut result = vec![];
+            if ns
+                .children
+                .iter()
+                .any(|child| matches!(child.1.inner, TreeNodeInner::Other(_)))
+            {
+                result.push(path);
+            }
+            for child in &ns.children {
+                match &child.1.inner {
+                    TreeNodeInner::Namespace(ns) => {
+                        result.append(&mut get_namespaces(ns, child.1.path.as_path()));
+                    }
+                    _ => {}
+                }
+            }
+            result
+        }
+
+        let namespaces = get_namespaces(tree.root_namespace(), IdentifierPath(&[]));
+
+        quote! {
+            fn init() {
+                #(
+                    #namespaces::init_components();
+                )*
+            }
+        }
+    };
+
+    Ok(quote! {
+        #tree_output
+        #init_all_components
+    })
 }
 
 fn to_token_stream(
     node: &TreeNode<Component>,
     context: &Context,
-    wrapper: impl Fn(&Context, TokenStream) -> TokenStream + Copy,
+    wrapper: impl Fn(&Context, &TreeNode<Component>, TokenStream) -> TokenStream + Copy,
     project_path: IdentifierPath,
 ) -> anyhow::Result<TokenStream> {
     util::tree_to_token_stream(
@@ -67,10 +112,16 @@ fn to_token_stream(
 
             match context {
                 Context::Host => {
-                    let attrs = &component.attributes;
+                    let attrs = component
+                        .attributes
+                        .iter()
+                        .map(|a| syn::Ident::new(a, proc_macro2::Span::call_site()));
+
+                    let description = &component.description;
+
                     Ok(quote! {
                         #[doc = #doc_comment]
-                        @[#(#attrs),*]
+                        @[#(#attrs,)* Name[#name], Description[#description]]
                         #name_ident: #component_ty,
                     })
                 }

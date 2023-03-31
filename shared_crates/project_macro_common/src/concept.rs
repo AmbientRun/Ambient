@@ -18,8 +18,13 @@ pub fn tree_to_token_stream(
     to_token_stream(
         concept_tree.root(),
         context,
-        |context, ts| match context {
-            Context::Host => ts,
+        |context, _ns, ts| match context {
+            Context::Host => quote! {
+                use super::components;
+                use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
+                use ambient_ecs::{EntityId, Entity};
+                #ts
+            },
             Context::Guest { api_path, .. } => quote! {
                 use super::components;
                 use #api_path::prelude::*;
@@ -34,7 +39,7 @@ pub fn tree_to_token_stream(
 fn to_token_stream(
     node: &TreeNode<Concept>,
     context: &Context,
-    wrapper: impl Fn(&Context, TokenStream) -> TokenStream + Copy,
+    wrapper: impl Fn(&Context, &TreeNode<Concept>, TokenStream) -> TokenStream + Copy,
     concept_tree: &Tree<Concept>,
     components_tree: &Tree<Component>,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
@@ -140,7 +145,7 @@ fn generate_is(
             let extend_ident = quote::format_ident!("is_{}", last.as_ref());
             let supers = namespaces.iter().map(|_| quote! { super });
             quote! {
-                #(#supers::)* #(#namespaces::)* #extend_ident(id)
+                #(#supers::)* #(#namespaces::)* #extend_ident
             }
         })
         .collect();
@@ -153,13 +158,25 @@ fn generate_is(
         .map(|p| quote! { #p() })
         .collect();
 
-    Ok(quote! {
-        #[doc = #is_comment]
-        pub fn #is_ident(id: EntityId) -> bool {
-            #(#extends && )* entity::has_components(id, &[
-                #(&#components),*
-            ])
-        }
+    Ok(match context {
+        Context::Host => quote! {
+            #[doc = #is_comment]
+            pub fn #is_ident(world: &ambient_ecs::World, id: EntityId) -> bool {
+                #(#extends(world, id) && )* world.has_components(id, &{
+                    let mut set = ambient_ecs::ComponentSet::new();
+                    #(set.insert(#components.desc());)*
+                    set
+                })
+            }
+        },
+        Context::Guest { .. } => quote! {
+            #[doc = #is_comment]
+            pub fn #is_ident(id: EntityId) -> bool {
+                #(#extends(id) && )* entity::has_components(id, &[
+                    #(&#components),*
+                ])
+            }
+        },
     })
 }
 

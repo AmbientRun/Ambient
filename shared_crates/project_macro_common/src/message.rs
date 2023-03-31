@@ -11,19 +11,23 @@ pub fn tree_to_token_stream(
     message_tree: &Tree<Message>,
     context: &Context,
 ) -> anyhow::Result<TokenStream> {
-    to_token_stream(message_tree.root(), context, |context, ts| match context {
-        Context::Host => ts,
-        Context::Guest { api_path, .. } => quote! {
-            use #api_path::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
-            #ts
+    to_token_stream(
+        message_tree.root(),
+        context,
+        |context, _ns, ts| match context {
+            Context::Host => ts,
+            Context::Guest { api_path, .. } => quote! {
+                use #api_path::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
+                #ts
+            },
         },
-    })
+    )
 }
 
 fn to_token_stream(
     node: &TreeNode<Message>,
     context: &Context,
-    wrapper: impl Fn(&Context, TokenStream) -> TokenStream + Copy,
+    wrapper: impl Fn(&Context, &TreeNode<Message>, TokenStream) -> TokenStream + Copy,
 ) -> anyhow::Result<TokenStream> {
     util::tree_to_token_stream(
         node,
