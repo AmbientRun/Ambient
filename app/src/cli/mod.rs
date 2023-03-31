@@ -50,10 +50,6 @@ pub enum Cli {
         /// The server to connect to; defaults to localhost
         host: Option<String>,
     },
-    /// Updates all WASM APIs with the core primitive components (not for users)
-    #[cfg(not(feature = "production"))]
-    #[command(hide = true)]
-    UpdateInterfaceComponents,
 }
 #[derive(Args, Clone)]
 pub struct RunCli {
@@ -109,8 +105,6 @@ impl Cli {
             Cli::Serve { .. } => None,
             Cli::View { .. } => None,
             Cli::Join { run_args, .. } => Some(run_args),
-            #[cfg(not(feature = "production"))]
-            Cli::UpdateInterfaceComponents => None,
         }
     }
     /// Extract project-relevant state only
@@ -122,8 +116,6 @@ impl Cli {
             Cli::Serve { project_args, .. } => Some(project_args),
             Cli::View { project_args, .. } => Some(project_args),
             Cli::Join { .. } => None,
-            #[cfg(not(feature = "production"))]
-            Cli::UpdateInterfaceComponents => None,
         }
     }
     /// Extract host-relevant state only
@@ -135,8 +127,6 @@ impl Cli {
             Cli::Serve { host_args, .. } => Some(host_args),
             Cli::View { .. } => None,
             Cli::Join { .. } => None,
-            #[cfg(not(feature = "production"))]
-            Cli::UpdateInterfaceComponents => None,
         }
     }
 }

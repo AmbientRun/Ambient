@@ -4,10 +4,7 @@ use ambient_core::{
     main_scene, mesh,
     transform::{local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation},
 };
-use ambient_ecs::{
-    components, query, Concept, Debuggable, DefaultValue, Description, Entity, EntityId, Name, Networked, RefConcept, Store, SystemGroup,
-    World,
-};
+use ambient_ecs::{components, query, Debuggable, DefaultValue, Description, Entity, EntityId, Name, Networked, Store, SystemGroup, World};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_gpu::mesh_buffer::GpuMesh;
 pub use ambient_meshes::UVSphereMesh;
@@ -66,17 +63,6 @@ components!("primitives", {
     @[Networked, Store]
     uv_sphere: UVSphereMesh,
 });
-
-pub fn concepts() -> Vec<Concept> {
-    vec![RefConcept {
-        id: "sphere",
-        name: "Sphere",
-        description: "A primitive sphere.",
-        extends: &[],
-        data: Entity::new().with(sphere(), ()).with(sphere_radius(), 0.5).with(sphere_sectors(), 36).with(sphere_stacks(), 18),
-    }
-    .to_owned()]
-}
 
 pub fn cube_data(assets: &AssetCache) -> Entity {
     let aabb = AABB { min: -Vec3::ONE * 0.5, max: Vec3::ONE * 0.5 };

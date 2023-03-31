@@ -1,5 +1,3 @@
-use ambient_ecs::Concept;
-
 pub(crate) fn init() -> anyhow::Result<()> {
     ambient_app::init_all_components();
     ambient_network::init_all_components();
@@ -14,17 +12,3 @@ pub(crate) fn init() -> anyhow::Result<()> {
 
     Ok(())
 }
-
-#[allow(dead_code)]
-fn concepts() -> Vec<Concept> {
-    [
-        // Comment to force line break
-        ambient_core::transform::concepts(),
-        ambient_primitives::concepts(),
-        ambient_core::camera::concepts(),
-    ]
-    .concat()
-}
-
-#[cfg(not(feature = "production"))]
-pub(crate) mod dev;

@@ -1,6 +1,6 @@
 use ambient_ecs::{
-    components, query, query_mut, Component, Concept, Debuggable, Description, ECSError, Entity, EntityId, Name, Networked, RefConcept,
-    Store, SystemGroup, World,
+    components, query, query_mut, Component, Debuggable, Description, ECSError, Entity, EntityId, Name, Networked, Store, SystemGroup,
+    World,
 };
 use ambient_std::{
     math::Line,
@@ -142,65 +142,6 @@ components!("camera", {
     ]
     shadows_far: f32,
 });
-
-pub fn concepts() -> Vec<Concept> {
-    vec![
-        RefConcept {
-            id: "camera",
-            name: "Camera",
-            description: "Base components for a camera. You will need other components to make a fully-functioning camera.",
-            extends: &["transformable"],
-            data: Entity::new()
-                .with(projection(), glam::Mat4::IDENTITY)
-                .with(projection_view(), glam::Mat4::IDENTITY)
-                .with(near(), 0.1)
-                .with_default(local_to_world())
-                .with_default(inv_local_to_world())
-                .with(active_camera(), 0.),
-        }
-        .to_owned(),
-        RefConcept {
-            id: "perspective_common_camera",
-            name: "Perspective Common Camera",
-            description:
-                "Base components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.",
-            extends: &["camera"],
-            data: Entity::new().with(aspect_ratio(), 1.0).with(fovy(), 1.0),
-        }
-        .to_owned(),
-        RefConcept {
-            id: "perspective_camera",
-            name: "Perspective Camera",
-            description: "A perspective camera.",
-            extends: &["perspective_common_camera"],
-            data: Entity::new().with(perspective(), ()).with(far(), 1_000.0),
-        }
-        .to_owned(),
-        RefConcept {
-            id: "perspective_infinite_reverse_camera",
-            name: "Perspective-Infinite-Reverse Camera",
-            description: "A perspective-infinite-reverse camera. This is recommended for most use-cases.",
-            extends: &["perspective_common_camera"],
-            data: Entity::new().with(perspective_infinite_reverse(), ()),
-        }
-        .to_owned(),
-        RefConcept {
-            id: "orthographic_camera",
-            name: "Orthographic Camera",
-            description: "An orthographic camera.",
-            extends: &["camera"],
-            data: Entity::new()
-                .with(orthographic(), ())
-                .with(orthographic_left(), -1.0)
-                .with(orthographic_right(), 1.0)
-                .with(orthographic_top(), 1.0)
-                .with(orthographic_bottom(), -1.0)
-                .with(near(), -1.)
-                .with(far(), 1.0),
-        }
-        .to_owned(),
-    ]
-}
 
 pub fn camera_systems() -> SystemGroup {
     SystemGroup::new(

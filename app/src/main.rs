@@ -134,24 +134,6 @@ fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    // If UIC: write components to disk, immediately exit
-    #[cfg(not(feature = "production"))]
-    if let Cli::UpdateInterfaceComponents = cli {
-        let toml = shared::components::dev::build_components_toml().to_string();
-
-        // Assume we are being run within the codebase.
-        for guest_path in std::fs::read_dir("guest/").unwrap().filter_map(Result::ok).map(|de| de.path()).filter(|de| de.is_dir()) {
-            let toml_path = if guest_path.file_name().unwrap_or_default() == "rust" {
-                guest_path.join("api").join("api_macros").join("ambient.toml")
-            } else {
-                guest_path.join("api").join("ambient.toml")
-            };
-            std::fs::write(&toml_path, &toml)?;
-            log::info!("Interface updated at {toml_path:?}");
-        }
-        return Ok(());
-    }
-
     // If a project was specified, assume that assets need to be built
     let manifest = cli
         .project()
