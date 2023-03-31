@@ -107,10 +107,8 @@ impl<'a, T> Iterator for FramedEventsIterator<'a, T> {
                 self.events.frame - self.events.events.len()
             );
         }
-        if self.frame == self.events.frame {
-            if self.index >= self.events.current_events().len() {
-                return None;
-            }
+        if self.frame == self.events.frame && self.index >= self.events.current_events().len() {
+            return None;
         }
 
         let buf = self.events.events(self.frame);

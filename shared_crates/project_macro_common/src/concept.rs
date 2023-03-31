@@ -455,7 +455,7 @@ mod tests {
                         extends: vec![IdentifierPathBuf::new("concept0").unwrap()],
                         components: BTreeMap::from_iter([(
                             IdentifierPathBuf::new("component1").unwrap(),
-                            toml::Value::Float(3.14),
+                            toml::Value::Float(4.56),
                         )]),
                     }
                     .into(),
@@ -489,9 +489,7 @@ mod tests {
                             ),
                             (
                                 IdentifierPathBuf::new("component4").unwrap(),
-                                toml::Value::Array(
-                                    (0..3).into_iter().map(toml::Value::Integer).collect(),
-                                ),
+                                toml::Value::Array((0..3).map(toml::Value::Integer).collect()),
                             ),
                         ]),
                     }
@@ -522,7 +520,7 @@ mod tests {
               "component3": String = "It's pi".to_string(),
               "component4": Vec3 = Vec3::new(0f32, 1f32, 2f32),
               "concept1": { // Concept.
-                "component1": f32 = 3.14f32,
+                "component1": f32 = 4.56f32,
                 "concept0": { // Concept.
                   "component0": bool = true,
                 },

@@ -60,7 +60,7 @@ pub fn TextEditor(
         }
     });
     hooks.use_multi_event(&[WINDOW_RECEIVED_CHARACTER, WINDOW_KEYBOARD_INPUT], {
-        let value = intermediate_value.clone();
+        let value = intermediate_value;
         let on_change = on_change.clone();
         let cursor_position = cursor_position.clone();
         move |_world, event| {
@@ -146,7 +146,7 @@ pub fn TextEditor(
     if focused {
         FlowRow::el([a, Cursor.el(), b])
     } else if value.is_empty() && !focused && placeholder.is_some() {
-        Text.el().with(text(), placeholder.clone().unwrap()).with(color(), vec4(1., 1., 1., 0.2))
+        Text.el().with(text(), placeholder.unwrap()).with(color(), vec4(1., 1., 1., 0.2))
     } else {
         FlowRow::el([a, b])
     }

@@ -245,7 +245,7 @@ mod tests {
         ];
 
         for [v1, v2] in versions.windows(2).map(|w| [&w[0], &w[1]]) {
-            if !(*v1 < *v2) {
+            if *v1 >= *v2 {
                 panic!("failed comparison: {v1} is not less than {v2}");
             }
         }

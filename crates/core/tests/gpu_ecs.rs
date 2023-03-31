@@ -1,3 +1,6 @@
+// We purposely hold a mutex to ensure that the tests run in series.
+#![allow(clippy::await_holding_lock)]
+
 use std::sync::Arc;
 
 use ambient_core::{
