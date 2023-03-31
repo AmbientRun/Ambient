@@ -182,7 +182,6 @@ impl ElementComponent for GameClientView {
 
         hooks.provide_context(|| GameClientRenderTarget(Arc::new(RenderTarget::new(gpu.clone(), uvec2(1, 1), None))));
         let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
-        println!("rerender gameclientview {:?}", render_target.0.color_buffer.size);
 
         let (connection_status, set_connection_status) = hooks.use_state("Connecting".to_string());
 
@@ -363,7 +362,6 @@ pub fn GameClientWorld(hooks: &mut Hooks) -> Element {
     MeasureSize::el(
         Image { texture: Some(Arc::new(render_target.0.color_buffer.create_view(&Default::default()))) }.el(),
         cb(move |size| {
-            println!("RESIZE {}", size);
             set_render_target(GameClientRenderTarget(Arc::new(RenderTarget::new(
                 gpu.clone(),
                 (size * scale_factor as f32).as_uvec2().max(UVec2::ONE),
