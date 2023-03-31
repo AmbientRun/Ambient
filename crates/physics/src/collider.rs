@@ -412,7 +412,7 @@ impl ColliderDef {
         match self.clone() {
             ColliderDef::Box { size, center } => Ok(Box::new(move |physics, scale| {
                 let size = size * scale;
-                let geometry = PxBoxGeometry::new(size.x / 2., size.y / 2., size.x / 2.);
+                let geometry = PxBoxGeometry::new(size.x / 2., size.y / 2., size.z / 2.);
                 let shape = PxShape::new(physics.physics, &geometry, &[&material], Some(true), None);
                 shape.set_local_pose(&PxTransform::from_translation(center * scale));
                 shape.set_user_data(PxShapeUserData {
