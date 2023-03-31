@@ -1,45 +1,84 @@
 use ambient_api::{
-    message::client::{MessageExt, Target},
+    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     prelude::*,
+};
+use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_guest_bridge::components::{
+    app::main_scene,
+    camera::{aspect_ratio_from_window, fog},
+    primitives::{cube, quad},
+    rendering::{
+        cast_shadows, color, fog_color, fog_density, fog_height_falloff, light_diffuse, sky, sun,
+    },
+    transform::{lookat_center, rotation, scale, translation},
+};
+use ambient_ui_components::{
+    editor::Slider,
+    layout::{FlowColumn, FlowRow},
+    text::Text,
+    FocusRoot, UIExt,
 };
 
 #[main]
 fn main() {
-    on(event::FRAME, |_| {
-        let (delta, _) = player::get_raw_input_delta();
+    Entity::new()
+        .with_merge(make_perspective_infinite_reverse_camera())
+        .with(aspect_ratio_from_window(), EntityId::resources())
+        .with_default(main_scene())
+        .with_default(fog())
+        .with(translation(), vec3(0., -5., 3.))
+        .with(lookat_center(), vec3(0., 0., 2.))
+        .spawn();
 
-        fn set_fog_density(val: f32) {
-            messages::SetFogDensity::new(val).send(Target::RemoteReliable);
-        }
+    let sun = Entity::new()
+        .with_merge(make_transformable())
+        .with_default(sun())
+        .with(rotation(), Quat::from_rotation_y(-1.))
+        .with_default(main_scene())
+        .with(light_diffuse(), Vec3::ONE)
+        .with(fog_color(), vec3(1., 1., 1.))
+        .with(fog_density(), 0.1)
+        .with(fog_height_falloff(), 0.01)
+        .spawn();
 
-        fn set_fog_height_falloff(val: f32) {
-            messages::SetFogHeightFalloff::new(val).send(Target::RemoteReliable);
-        }
+    Entity::new()
+        .with_merge(make_transformable())
+        .with_default(sky())
+        .spawn();
 
-        if delta.keys.contains(&player::KeyCode::Key1) {
-            set_fog_density(1.);
-        }
-        if delta.keys.contains(&player::KeyCode::Key2) {
-            set_fog_density(0.1);
-        }
-        if delta.keys.contains(&player::KeyCode::Key3) {
-            set_fog_density(0.01);
-        }
-        if delta.keys.contains(&player::KeyCode::Key4) {
-            set_fog_density(0.0);
-        }
+    Entity::new()
+        .with_merge(make_transformable())
+        .with_default(quad())
+        .with(scale(), Vec3::ONE * 1000.)
+        .with(color(), vec4(1., 0., 0., 1.))
+        .spawn();
 
-        if delta.keys.contains(&player::KeyCode::Q) {
-            set_fog_height_falloff(1.);
-        }
-        if delta.keys.contains(&player::KeyCode::W) {
-            set_fog_height_falloff(0.1);
-        }
-        if delta.keys.contains(&player::KeyCode::E) {
-            set_fog_height_falloff(0.01);
-        }
-        if delta.keys.contains(&player::KeyCode::R) {
-            set_fog_height_falloff(0.0);
-        }
-    });
+    for i in 0..10 {
+        Entity::new()
+            .with_merge(make_transformable())
+            .with_default(cube())
+            .with(translation(), vec3(0., 1. * (2f32).powi(i), 1.))
+            .with(scale(), Vec3::ONE * 2.)
+            .with(color(), vec4(0., 1., 0., 1.))
+            .with_default(cast_shadows())
+            .spawn();
+    }
+
+    App::el(sun).spawn_interactive();
+}
+
+#[element_component]
+fn App(hooks: &mut Hooks, sun: EntityId) -> Element {
+    FocusRoot::el([FlowColumn::el([
+        FlowRow::el([
+            Text::el("Fog density: "),
+            Slider::new_for_entity_component(hooks, sun, fog_density()).el(),
+        ]),
+        FlowRow::el([
+            Text::el("Fog height falloff: "),
+            Slider::new_for_entity_component(hooks, sun, fog_height_falloff()).el(),
+        ]),
+    ])
+    .with_background(vec4(0., 0., 0., 0.9))
+    .with_padding_even(10.)])
 }

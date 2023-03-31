@@ -77,6 +77,10 @@ pub struct ProjectCli {
     /// Build all the assets with full optimization; this will make debugging more difficult
     #[arg(short, long)]
     pub release: bool,
+
+    /// Avoid building the project
+    #[arg(long)]
+    pub no_build: bool,
 }
 #[derive(Args, Clone)]
 pub struct HostCli {

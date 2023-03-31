@@ -122,6 +122,8 @@ jobs:
             ${{ runner.os }}-golden-image-
       - name: Build
         run: cargo run --release -- --help
+      - name: Build golden image tests
+        run: node scripts/golden_image_tests.js --build
       - name: Run golden image tests
         run: node scripts/golden_image_tests.js
       - uses: actions/upload-artifact@v3

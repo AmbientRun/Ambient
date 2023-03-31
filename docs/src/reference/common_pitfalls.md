@@ -20,3 +20,8 @@ let color = rand::random::<Vec3>().extend(1.0);
 ### Fails to start on Linux (Error in Surface::configure: parent device is lost)
 
 If you're running Wayland, you may have to start ambient with: `WAYLAND_DISPLAY=wayland-1 ambient run`. See [this issue](https://github.com/gfx-rs/wgpu/issues/2519) for details.
+
+
+### Runtime error: import `...` has the wrong type
+
+This can occur when you have `.wasm` files in your `build` folder that are using an old version of the Ambient API. Delete the `build` folder and try again - this should force them to be regenerated.
