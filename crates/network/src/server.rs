@@ -40,6 +40,7 @@ use tracing::{debug_span, Instrument};
 
 use crate::{
     client_connection::ClientConnection,
+    connection::Connection,
     create_server,
     protocol::{ClientInfo, ServerInfo, ServerProtocol},
     NetworkError, RPC_BISTREAM_ID,

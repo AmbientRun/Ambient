@@ -276,14 +276,14 @@ pub async fn open_bincode_bi_stream_with_id<C: Connection>(conn: &C, id: u32) ->
     Ok((OutgoingStream::new(send), IncomingStream::new(recv)))
 }
 
-pub async fn next_bincode_bi_stream(conn: &quinn::Connection) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
+pub async fn next_bincode_bi_stream<C: Connection>(conn: &C) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
     let (send, recv) = conn.accept_bi().await?;
     let send = OutgoingStream::new(send);
     let recv = IncomingStream::new(recv);
     Ok((send, recv))
 }
 
-pub async fn send_datagram<C: crate::connection::Connection>(conn: &C, id: u32, mut payload: Vec<u8>) -> Result<(), NetworkError> {
+pub async fn send_datagram<C: Connection>(conn: &C, id: u32, mut payload: Vec<u8>) -> Result<(), NetworkError> {
     let mut bytes = Vec::new();
     byteorder::WriteBytesExt::write_u32::<byteorder::BigEndian>(&mut bytes, id)?;
     bytes.append(&mut payload);
