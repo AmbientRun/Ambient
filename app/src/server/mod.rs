@@ -43,14 +43,10 @@ pub fn start(
 ) -> u16 {
     log::info!("Creating server");
     let quic_interface_port = cli.host().unwrap().quic_interface_port;
-    let proxy_settings = if let Some(endpoint) = &cli.host().unwrap().proxy {
-        Some(ProxySettings {
-            endpoint: endpoint.clone(),
-            project_path: project_path.clone(),
-        })
-    } else {
-        None
-    };
+    let proxy_settings = cli.host().unwrap().proxy.as_ref().map(|endpoint| ProxySettings {
+        endpoint: endpoint.clone(),
+        project_path: project_path.clone(),
+    });
     let server = runtime.block_on(async move {
         if let Some(port) = quic_interface_port {
             GameServer::new_with_port(port, false, proxy_settings).await.context("failed to create game server with port").unwrap()

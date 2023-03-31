@@ -333,7 +333,6 @@ impl GameServer {
         let mut inactivity_interval = interval(Duration::from_secs_f32(5.));
         let mut last_active = ambient_sys::time::Instant::now();
 
-        // start proxy connection
         if let Some(proxy) = proxy {
             start_proxy_connection(proxy, state.clone(), world_stream_filter.clone(), assets.clone()).await;
         }
