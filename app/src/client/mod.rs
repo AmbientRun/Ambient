@@ -14,7 +14,7 @@ use ambient_network::client::{
 };
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_ui::{Button, Dock, FlowColumn, FocusRoot, MeasureSize, ScrollArea, StylesExt, Text, UIExt, WindowSized, STREET};
-use glam::{uvec2, vec4, Vec2, Vec4};
+use glam::{uvec2, vec4, Vec2};
 
 use crate::{cli::RunCli, shared};
 use ambient_ecs_editor::ECSEditor;
@@ -199,7 +199,10 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
         if show_debug {
             MeasureSize::el(
                 FlowColumn::el([
-                    Button::new("ECS", move |_| set_show_ecs(!show_ecs)).style(ambient_ui::ButtonStyle::Flat).toggled(show_ecs).el(),
+                    Button::new(if show_ecs { "\u{f137}" } else { "\u{f138}" }, move |_| set_show_ecs(!show_ecs))
+                        .style(ambient_ui::ButtonStyle::Flat)
+                        .toggled(show_ecs)
+                        .el(),
                     if show_ecs {
                         ScrollArea::el(
                             ECSEditor {
@@ -243,7 +246,7 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
         },
         if show_debug {
             Dock::el([GameClientWorld.el()])
-                .with_background(Vec4::ONE)
+                .with_background(vec4(0.2, 0.2, 0.2, 1.))
                 .with(padding(), Borders { left: 1., top: 0., right: 0., bottom: 1. })
         } else {
             GameClientWorld.el()
