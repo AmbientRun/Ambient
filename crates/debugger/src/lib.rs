@@ -54,7 +54,10 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
             Button::new("Dump Client World", {
                 let get_state = get_state.clone();
                 move |_world| {
-                    get_state(&mut |_, _, world| dump_world_hierarchy_to_tmp_file(world));
+                    get_state(&mut |_, _, world| {
+                        dump_world_hierarchy_to_tmp_file(world);
+                        world.dump_to_tmp_file();
+                    });
                 }
             })
             .hotkey_modifier(ModifiersState::SHIFT)
