@@ -9,11 +9,11 @@ rust-version = "1.67.0"
 ambient_api_macros = { path = "api/api_macros", version = "0.2.0-dev" }
 ambient_api = { path = "api", version = "0.2.0-dev" }
 
+ambient_project = { path = "../../shared_crates/project", version = "0.2.0-dev" }
+ambient_project_macro_common = { path = "../../shared_crates/project_macro_common", version = "0.2.0-dev" }
 ambient_project_rt = { path = "../../shared_crates/project_rt", version = "0.2.0-dev" }
 ambient_shared_types = { path = "../../shared_crates/shared_types", version = "0.2.0-dev" }
 
-ambient_project = { path = "../../shared_crates/project", default-features = false, features = ["guest"], version = "0.2.0-dev" }
-ambient_project_macro_common = { path = "../../shared_crates/project_macro_common", default-features = false, features = ["guest"], version = "0.2.0-dev" }
 ambient_element = { path = "../../shared_crates/element", default-features = false, features = ["guest"], version = "0.2.0-dev" }
 ambient_guest_bridge = { path = "../../shared_crates/guest_bridge", default-features = false, features = ["guest"], version = "0.2.0-dev" }
 ambient_ui_components = { path = "../../shared_crates/ui_components", default-features = false, features = ["guest"], version = "0.2.0-dev" }

@@ -467,10 +467,10 @@ pub fn spawn_module(
 ) -> EntityId {
     Entity::new()
         .with(ambient_core::name(), name.to_string())
+        .with(ambient_core::description(), description)
         .with_default(module())
         .with(module_enabled(), enabled)
         .with_default(module_errors())
-        .with(ambient_project::description(), description)
         .spawn(world)
 }
 

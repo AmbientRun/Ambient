@@ -24,6 +24,8 @@ pub use paste;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+pub mod generated;
+
 mod archetype;
 mod attributes;
 pub mod component;

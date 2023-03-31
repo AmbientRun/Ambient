@@ -119,6 +119,7 @@ dependencies = [
  "ambient_prefab",
  "ambient_primitives",
  "ambient_project",
+ "ambient_project_helpers",
  "ambient_renderer",
  "ambient_rpc",
  "ambient_shared_types",
@@ -348,6 +349,7 @@ dependencies = [
  "ambient_model_import",
  "ambient_physics",
  "ambient_project",
+ "ambient_project_helpers",
  "ambient_renderer",
  "ambient_rustc",
  "ambient_std",
@@ -411,7 +413,6 @@ version = "0.2.0-dev"
 dependencies = [
  "ambient_ecs",
  "ambient_gpu",
- "ambient_project_macro",
  "ambient_std",
  "ambient_sys",
  "bytemuck",
@@ -490,6 +491,7 @@ dependencies = [
 name = "ambient_ecs"
 version = "0.2.0-dev"
 dependencies = [
+ "ambient_project_macro",
  "ambient_shared_types",
  "ambient_std",
  "anyhow",
@@ -1006,7 +1008,6 @@ dependencies = [
 name = "ambient_project"
 version = "0.2.0-dev"
 dependencies = [
- "ambient_ecs",
  "ambient_shared_types",
  "paste",
  "proc-macro2",
@@ -1016,6 +1017,17 @@ dependencies = [
  "syn",
  "thiserror",
  "toml 0.7.2",
+]
+
+[[package]]
+name = "ambient_project_helpers"
+version = "0.2.0-dev"
+dependencies = [
+ "ambient_ecs",
+ "ambient_project",
+ "ambient_shared_types",
+ "paste",
+ "serde_json",
 ]
 
 [[package]]

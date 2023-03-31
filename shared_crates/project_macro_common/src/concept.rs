@@ -22,7 +22,7 @@ pub fn tree_to_token_stream(
             Context::Host => quote! {
                 use super::components;
                 use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
-                use ambient_ecs::{EntityId, Entity};
+                use crate::{EntityId, Entity};
                 #ts
             },
             Context::Guest { api_path, .. } => quote! {
@@ -161,9 +161,9 @@ fn generate_is(
     Ok(match context {
         Context::Host => quote! {
             #[doc = #is_comment]
-            pub fn #is_ident(world: &ambient_ecs::World, id: EntityId) -> bool {
+            pub fn #is_ident(world: &crate::World, id: EntityId) -> bool {
                 #(#extends(world, id) && )* world.has_components(id, &{
-                    let mut set = ambient_ecs::ComponentSet::new();
+                    let mut set = crate::ComponentSet::new();
                     #(set.insert(#components.desc());)*
                     set
                 })

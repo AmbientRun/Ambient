@@ -17,7 +17,6 @@ pub mod bounding;
 pub mod camera;
 pub mod gpu_ecs;
 pub mod hierarchy;
-pub mod manifest;
 pub mod player;
 pub mod transform;
 pub mod window;
@@ -25,6 +24,8 @@ pub mod window;
 components!("app", {
     @[Debuggable, Networked, Store, Name["Name"], Description["A human-friendly name for this entity."]]
     name: String,
+    @[Debuggable, Networked, Store, Name["Description"], Description["A human-friendly description for this entity."]]
+    description: String,
     @[Resource]
     runtime: RuntimeHandle,
     @[Resource]

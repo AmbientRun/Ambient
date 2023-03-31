@@ -1,17 +1,12 @@
 [package]
-name = "ambient_project"
+name = "ambient_project_helpers"
 version = { workspace = true }
 rust-version = { workspace = true }
 edition = "2021"
 
 [dependencies]
-quote = "1.0"
-syn = "1.0"
-proc-macro2 = "1.0"
-
-serde = { workspace = true }
-toml = { workspace = true }
-thiserror = { workspace = true }
+ambient_ecs = { path = "../ecs" }
+ambient_project = { path = "../../shared_crates/project" }
 
 [dev-dependencies]
 paste = { workspace = true }

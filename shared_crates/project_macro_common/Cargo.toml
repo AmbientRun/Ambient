@@ -21,7 +21,3 @@ ambient_project = { path = "../project" }
 
 [dev-dependencies]
 indoc = "2.0"
-
-[features]
-guest = ["ambient_project/guest"]
-native = ["ambient_project/native"]

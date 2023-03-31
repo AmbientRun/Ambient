@@ -19,7 +19,7 @@ ambient_physics = { path = "../physics" }
 ambient_std = { path = "../std" }
 ambient_wasmtime_wasi = { path = "../wasmtime_wasi" }
 
-ambient_project = { path = "../../shared_crates/project", features = ["native"] }
+ambient_project = { path = "../../shared_crates/project" }
 ambient_shared_types = { path = "../../shared_crates/shared_types" }
 ambient_window_types = { path = "../../shared_crates/window_types" }
 

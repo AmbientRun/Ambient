@@ -20,8 +20,8 @@ pub fn tree_to_token_stream(
                 let namespace_path = IdentifierPath(ns.path.split_first().unwrap().1).to_string();
                 quote! {
                     use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
-                    use ambient_ecs::{EntityId, Debuggable, Networked, Store, Resource, Name, Description};
-                    ambient_ecs::components!(#namespace_path, {
+                    use crate::{EntityId, Debuggable, Networked, Store, Resource, Name, Description};
+                    crate::components!(#namespace_path, {
                         #ts
                     });
                 }
@@ -50,11 +50,8 @@ pub fn tree_to_token_stream(
                         result.push(path);
                     }
                     for child in &ns.children {
-                        match &child.1.inner {
-                            TreeNodeInner::Namespace(ns) => {
-                                result.append(&mut get_namespaces(ns, child.1.path.as_path()));
-                            }
-                            _ => {}
+                        if let TreeNodeInner::Namespace(ns) = &child.1.inner {
+                            result.append(&mut get_namespaces(ns, child.1.path.as_path()));
                         }
                     }
                     result
