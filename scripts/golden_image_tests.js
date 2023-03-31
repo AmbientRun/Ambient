@@ -22,11 +22,7 @@ let samples = [
     ["guest/rust/examples/ui/text", 60],
 ]
 
-if (argv.length > 2) {
-    samples = samples.filter(([path]) => path.includes(argv[2]));
-}
-
-function process(jobs, nParallel = 5) {
+function process(nParallel, jobs) {
     return new Promise((resolve, reject) => {
         let running = 0;
         let index = 0;
@@ -54,12 +50,13 @@ function process(jobs, nParallel = 5) {
     });
 }
 
-async function run() {
+async function run(samples, build, nParallel) {
     console.time("time");
-    let errors = (await process(samples.map(([path, seconds], index) => async () => {
+    let errors = (await process(nParallel, samples.map(([path, seconds], index) => async () => {
         console.timeLog("time", path, "running..");
         try {
-            let res = await exec(`cargo run --release -- run ${path} --headless --golden-image-test ${seconds} --quic-interface-port ${9000 + index} --http-interface-port ${10000 + index}`);
+            const command = build ? `build ${path}` : `run ${path} --no-build --headless --golden-image-test ${seconds} --quic-interface-port ${9000 + index} --http-interface-port ${10000 + index}`;
+            let res = await exec(`cargo run --release -- ${command}`);
             console.timeLog("time", path, "\x1b[32mwas ok\x1b[0m");
         } catch (err) {
             console.timeLog("time", path, "\x1b[31mfailed\x1b[0m");
@@ -75,4 +72,13 @@ async function run() {
         exit(1);
     }
 }
-run();
+
+if (argv.length > 2) {
+    if (argv[2] == "--build") {
+        console.log('Building all samples...');
+        run(samples, true, 1);
+        return;
+    }
+    samples = samples.filter(([path]) => path.includes(argv[2]));
+}
+run(samples, false, 5);
