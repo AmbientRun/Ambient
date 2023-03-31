@@ -1,5 +1,5 @@
 [package]
-name = "ambient_project_helpers"
+name = "ambient_project_native"
 version = { workspace = true }
 rust-version = { workspace = true }
 edition = "2021"

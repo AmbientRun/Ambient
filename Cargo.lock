@@ -119,7 +119,7 @@ dependencies = [
  "ambient_prefab",
  "ambient_primitives",
  "ambient_project",
- "ambient_project_helpers",
+ "ambient_project_native",
  "ambient_renderer",
  "ambient_rpc",
  "ambient_shared_types",
@@ -349,7 +349,7 @@ dependencies = [
  "ambient_model_import",
  "ambient_physics",
  "ambient_project",
- "ambient_project_helpers",
+ "ambient_project_native",
  "ambient_renderer",
  "ambient_rustc",
  "ambient_std",
@@ -1020,17 +1020,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_project_helpers"
-version = "0.2.0-dev"
-dependencies = [
- "ambient_ecs",
- "ambient_project",
- "ambient_shared_types",
- "paste",
- "serde_json",
-]
-
-[[package]]
 name = "ambient_project_macro"
 version = "0.2.0-dev"
 dependencies = [
@@ -1052,6 +1041,17 @@ dependencies = [
  "syn",
  "thiserror",
  "toml 0.7.2",
+]
+
+[[package]]
+name = "ambient_project_native"
+version = "0.2.0-dev"
+dependencies = [
+ "ambient_ecs",
+ "ambient_project",
+ "ambient_shared_types",
+ "paste",
+ "serde_json",
 ]
 
 [[package]]
