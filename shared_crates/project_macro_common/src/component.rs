@@ -138,6 +138,7 @@ fn to_token_stream(
 }
 
 #[derive(Error, Debug)]
+#[allow(clippy::enum_variant_names)]
 pub enum TypeTokenStreamError {
     #[error("invalid primitive type")]
     InvalidPrimitiveType,

@@ -6,7 +6,6 @@ pub(crate) fn init() -> anyhow::Result<()> {
     ambient_decals::init_components();
     ambient_world_audio::init_components();
     ambient_primitives::init_components();
-    ambient_prefab::init_components();
     ambient_sky::init_components();
     ambient_water::init_components();
 

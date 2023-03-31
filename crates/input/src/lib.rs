@@ -1,11 +1,16 @@
 use std::collections::HashSet;
 
-use ambient_ecs::{components, world_events, Debuggable, Description, Entity, Name, Networked, Resource, Store, System, SystemGroup};
+use ambient_ecs::{components, world_events, Debuggable, Entity, Resource, System, SystemGroup};
 use ambient_shared_types::events;
 use glam::{vec2, Vec2};
 use serde::{Deserialize, Serialize};
 use winit::event::ModifiersState;
 pub use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, MouseButton, MouseScrollDelta, VirtualKeyCode, WindowEvent};
+
+pub use ambient_ecs::generated::components::core::input::{
+    event_focus_change, event_keyboard_input, event_mouse_input, event_mouse_motion, event_mouse_wheel, event_mouse_wheel_pixels,
+    event_received_character, keyboard_modifiers, keycode, mouse_button,
+};
 
 pub mod picking;
 
@@ -20,28 +25,7 @@ pub struct PlayerRawInput {
 }
 
 components!("input", {
-    @[Debuggable, Networked, Store, Name["Event received character"], Description["The window received a character."]]
-    event_received_character: String,
-    @[Debuggable, Networked, Store, Name["Event keyboard input"], Description["A keyboard key was pressed (true) or released (false). Will also contain a `keycode` component."]]
-    event_keyboard_input: bool,
-    @[Debuggable, Networked, Store, Name["Event mouse input"], Description["A mouse button was pressed (true) or released (false). Will also contain a `mouse_button` component."]]
-    event_mouse_input: bool,
-    @[Debuggable, Networked, Store, Name["Event mouse motion"], Description["The mouse was moved. The value represents the delta.\nUse `mouse_position` or `current_position` from `RawInput` to get the current position."]]
-    event_mouse_motion: Vec2,
-    @[Debuggable, Networked, Store, Name["Event mouse wheel"], Description["The mouse wheel moved. The value represents the delta."]]
-    event_mouse_wheel: Vec2,
-    @[Debuggable, Networked, Store, Name["Event mouse wheel"], Description["If true, the `mouse_wheel_event`'s value should be interpreted as pixels. If false, it should be interpreted as lines."]]
-    event_mouse_wheel_pixels: bool,
     event_modifiers_change: ModifiersState,
-    @[Debuggable, Networked, Store, Name["Event focus change"], Description["The window was focused or list its focus."]]
-    event_focus_change: bool,
-
-    @[Debuggable, Networked, Store, Name["Keycode"], Description["Keycode when a keyboard key was pressed."]]
-    keycode: String,
-    @[Debuggable, Networked, Store, Name["Keyboard modifiers"], Description["Modifiers active."]]
-    keyboard_modifiers: u32,
-    @[Debuggable, Networked, Store, Name["Mouse button"], Description["The mouse button. 0=left, 1=right, 2=middle."]]
-    mouse_button: u32,
 
     @[Debuggable, Resource]
     player_raw_input: PlayerRawInput,

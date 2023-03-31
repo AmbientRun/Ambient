@@ -59,7 +59,7 @@ pub use internal::{
 };
 
 pub mod message {
-    use ambient_ecs::{components, Debuggable, Description, EntityId, Name, Resource, World};
+    use ambient_ecs::{components, Debuggable, EntityId, Resource, World};
 
     #[derive(Clone, PartialEq, Debug)]
     pub enum Source {
@@ -92,19 +92,9 @@ pub mod message {
         });
     }
 
+    pub use ambient_ecs::generated::components::core::wasm::message::*;
+
     components!("wasm::message", {
-        @[Debuggable, Name["Source: Remote"], Description["This message came from the network with no specific source (likely the server)."]]
-        source_remote: (),
-
-        @[Debuggable, Name["Source: Remote (User ID)"], Description["This message came from this user."]]
-        source_remote_user_id: String,
-
-        @[Debuggable, Name["Source: Local"], Description["This message came from the specified module on this side."]]
-        source_local: EntityId,
-
-        @[Debuggable, Name["Data"], Description["The data payload of a message."]]
-        data: Vec<u8>,
-
         @[Debuggable, Resource]
         pending_messages: Vec<PendingMessage>,
     });

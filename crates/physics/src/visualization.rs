@@ -11,8 +11,8 @@ use ambient_core::{
     ui_scene,
 };
 use ambient_ecs::{
-    components, dont_store, ensure_has_component, ensure_has_component_with_default, query, Debuggable, Description, Entity, EntityId,
-    FnSystem, Name, Networked, SystemGroup, World,
+    components, dont_store, ensure_has_component, ensure_has_component_with_default, query, Entity, EntityId, FnSystem, Networked,
+    SystemGroup, World,
 };
 use ambient_gizmos::{gizmos, GizmoPrimitive};
 use ambient_std::line_hash;
@@ -24,17 +24,13 @@ use glam::{vec4, Vec3};
 use itertools::Itertools;
 use physxx::{PxActor, PxDebugLine, PxRenderBuffer, PxRigidActor, PxSceneRef, PxShape, PxShapeFlag, PxVisualizationParameter};
 
+pub use ambient_ecs::generated::components::core::physics::visualizing;
+
 components!("physics", {
     @[Networked]
     physx_viz_line: PxDebugLine,
     @[Networked]
     shape_primitives: Vec<GizmoPrimitive>,
-    @[
-        Networked, Debuggable,
-        Name["Visualizing"],
-        Description["If attached, the physics state of this object will be rendered for debugging purposes."]
-    ]
-    visualizing: (),
 });
 
 pub fn visualize_collider(world: &mut World, entity: EntityId, enabled: bool) -> Option<()> {

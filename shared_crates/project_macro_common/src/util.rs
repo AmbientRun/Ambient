@@ -76,7 +76,7 @@ pub fn tree_to_token_stream<
                 } else {
                     wrapper(
                         context,
-                        &node,
+                        node,
                         quote! {
                             #(#others)*
                         },

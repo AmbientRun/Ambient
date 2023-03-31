@@ -1,20 +1,13 @@
-use ambient_ecs::{components, Component, ComponentValue, Debuggable, Description, MaybeResource, Name, Networked, Resource, World};
+use ambient_ecs::{components, Component, ComponentValue, Description, Name, Resource, World};
 use ambient_std::math::interpolate;
 use glam::{uvec2, vec2, UVec2, Vec2};
 use winit::window::{CursorGrabMode, CursorIcon, Window};
 
+pub use ambient_ecs::generated::components::core::app::{cursor_position, window_logical_size, window_physical_size, window_scale_factor};
+
 components!("app", {
     @[Resource, Name["Window Control"], Description["Allows controlling the window from afar."]]
     window_ctl: flume::Sender<WindowCtl>,
-
-    @[MaybeResource, Debuggable, Networked, Name["Window scale factor"], Description["The DPI/pixel scale factor of the window.\nOn standard displays, this is 1, but it can be higher on high-DPI displays like Apple Retina displays."]]
-    window_scale_factor: f64,
-    @[MaybeResource, Debuggable, Networked, Name["Window logical size"], Description["The logical size is the physical size divided by the scale factor."]]
-    window_logical_size: UVec2,
-    @[MaybeResource, Debuggable, Networked, Name["Window physical size"], Description["The physical size is the actual number of pixels on the screen."]]
-    window_physical_size: UVec2,
-    @[MaybeResource, Debuggable, Networked, Name["Cursor position"], Description["Absolute mouse cursor position in screen-space."]]
-    cursor_position: Vec2,
 });
 
 pub fn screen_to_clip_space(world: &World, screen_pos: Vec2) -> Vec2 {

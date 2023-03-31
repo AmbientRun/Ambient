@@ -1,20 +1,13 @@
 use std::{collections::HashSet, fs::File, path::PathBuf};
 
-use ambient_ecs::{
-    components, query, Component, ComponentValue, Debuggable, Description, ECSError, EntityId, MaybeResource, Name, Networked, Store, World,
-};
+use ambient_ecs::{query, Component, ComponentValue, ECSError, EntityId, World};
 use ambient_std::{asset_cache::SyncAssetKeyExt, download_asset::AssetsCacheDir};
 use itertools::Itertools;
 use yaml_rust::YamlEmitter;
 
-use crate::{asset_cache, name};
+pub use ambient_ecs::generated::components::core::ecs::{children, parent};
 
-components!("ecs", {
-    @[Debuggable, Networked, Store, Name["Parent"], Description["The parent of this entity."]]
-    parent: EntityId,
-    @[Debuggable, Networked, Store, MaybeResource, Name["Children"], Description["The children of this entity."]]
-    children: Vec<EntityId>,
-});
+use crate::{asset_cache, name};
 
 pub fn despawn_recursive(world: &mut World, entity: EntityId) {
     if let Ok(children) = world.set(entity, children(), vec![]) {

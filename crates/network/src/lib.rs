@@ -5,23 +5,20 @@ use std::{
     time::Duration,
 };
 
-use ambient_ecs::{
-    components, query, Component, ComponentValue, Debuggable, Description, EntityId, Name, Networked, Serializable, Store, World,
-};
+use ambient_ecs::{query, Component, ComponentValue, EntityId, Networked, Serializable, Store, World};
 use ambient_rpc::{RpcError, RpcRegistry};
 use ambient_std::log_error;
 use bytes::Bytes;
 use futures::{Future, SinkExt, StreamExt};
-use quinn::{
-    ClientConfig, Connection, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, ServerConfig,
-    TransportConfig,
-};
+use quinn::{ClientConfig, Connection, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, ServerConfig, TransportConfig};
 use rand::Rng;
 use rustls::{Certificate, PrivateKey, RootCertStore};
 use serde::{de::DeserializeOwned, Serialize};
 use thiserror::Error;
 use tokio::io::AsyncWriteExt;
 use tokio_util::codec::{FramedRead, FramedWrite, LengthDelimitedCodec};
+
+pub use ambient_ecs::generated::components::core::network::{is_remote_entity, persistent_resources, synced_resources};
 
 pub type AsyncMutex<T> = tokio::sync::Mutex<T>;
 pub mod client;
@@ -39,32 +36,7 @@ pub const WASM_UNISTREAM_ID: u32 = 1;
 pub const PLAYER_INPUT_DATAGRAM_ID: u32 = 5;
 pub const WASM_DATAGRAM_ID: u32 = 6;
 
-components!("network", {
-    /// Works like `world.resource_entity` for server worlds, except it's also persisted to disk, and synchronized to clients
-    @[
-        Debuggable, Networked,
-        Name["Persistent resources"],
-        Description["If attached, this entity contains global resources that are persisted to disk and synchronized to clients."]
-    ]
-    persistent_resources: (),
-    /// Works like `world.resource_entity` for server worlds, except it's synchronized to clients. State is not persisted to disk.
-    @[
-        Debuggable, Networked,
-        Name["Synchronized resources"],
-        Description["If attached, this entity contains global resources that are synchronized to clients, but not persisted."]
-    ]
-    synced_resources: (),
-
-    @[
-        Debuggable, Networked,
-        Name["Is remote entity"],
-        Description["If attached, this entity was not spawned locally (e.g. if this is the client, it was spawned by the server)."]
-    ]
-    is_remote_entity: (),
-});
-
 pub fn init_all_components() {
-    init_components();
     client::init_components();
     server::init_components();
     client_game_state::init_components();

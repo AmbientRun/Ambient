@@ -54,7 +54,6 @@ use ambient_window_types::MouseButton;
 pub fn init_all_components() {
     layout::init_all_components();
     layout::init_gpu_components();
-    rect::init_components();
     text::init_components();
 }
 

@@ -125,6 +125,12 @@ name = "Name"
 description = "A human-friendly name for this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::app::description"]
+type = "String"
+name = "Description"
+description = "A human-friendly description for this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::app::project_name"]
 type = "String"
 name = "Project Name"
@@ -585,7 +591,7 @@ attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::layout::mesh_to_local_from_size"]
 type = "Empty"
-name = "Mest to local from size"
+name = "Mesh to local from size"
 description = "Update the `mesh_to_local` based on the width and height of this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
