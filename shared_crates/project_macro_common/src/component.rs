@@ -34,45 +34,50 @@ pub fn tree_to_token_stream(
         project_path,
     )?;
 
-    let init_all_components = {
-        fn get_namespaces<'a>(
-            ns: &'a TreeNodeNamespace<Component>,
-            path: IdentifierPath<'a>,
-        ) -> Vec<IdentifierPath<'a>> {
-            let mut result = vec![];
-            if ns
-                .children
-                .iter()
-                .any(|child| matches!(child.1.inner, TreeNodeInner::Other(_)))
-            {
-                result.push(path);
-            }
-            for child in &ns.children {
-                match &child.1.inner {
-                    TreeNodeInner::Namespace(ns) => {
-                        result.append(&mut get_namespaces(ns, child.1.path.as_path()));
+    match context {
+        Context::Host => {
+            let init_all_components = {
+                fn get_namespaces<'a>(
+                    ns: &'a TreeNodeNamespace<Component>,
+                    path: IdentifierPath<'a>,
+                ) -> Vec<IdentifierPath<'a>> {
+                    let mut result = vec![];
+                    if ns
+                        .children
+                        .iter()
+                        .any(|child| matches!(child.1.inner, TreeNodeInner::Other(_)))
+                    {
+                        result.push(path);
                     }
-                    _ => {}
+                    for child in &ns.children {
+                        match &child.1.inner {
+                            TreeNodeInner::Namespace(ns) => {
+                                result.append(&mut get_namespaces(ns, child.1.path.as_path()));
+                            }
+                            _ => {}
+                        }
+                    }
+                    result
                 }
-            }
-            result
+
+                let namespaces = get_namespaces(tree.root_namespace(), IdentifierPath(&[]));
+
+                quote! {
+                    fn init() {
+                        #(
+                            #namespaces::init_components();
+                        )*
+                    }
+                }
+            };
+
+            Ok(quote! {
+                #tree_output
+                #init_all_components
+            })
         }
-
-        let namespaces = get_namespaces(tree.root_namespace(), IdentifierPath(&[]));
-
-        quote! {
-            fn init() {
-                #(
-                    #namespaces::init_components();
-                )*
-            }
-        }
-    };
-
-    Ok(quote! {
-        #tree_output
-        #init_all_components
-    })
+        Context::Guest { .. } => Ok(tree_output),
+    }
 }
 
 fn to_token_stream(
