@@ -2,9 +2,9 @@ use std::{
     collections::HashMap,
     net::{IpAddr, Ipv4Addr, SocketAddr},
     ops::Range,
+    path::PathBuf,
     sync::Arc,
     time::Duration,
-    path::PathBuf,
 };
 
 use ambient_core::{
@@ -20,8 +20,9 @@ use ambient_proxy::client::{AllocatedEndpoint, Client};
 use ambient_rpc::RpcRegistry;
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
+    asset_url::{AbsAssetUrl, ProxyBaseUrlKey},
     fps_counter::{FpsCounter, FpsSample},
-    friendly_id, log_result, asset_url::{AbsAssetUrl, ProxyBaseUrlKey},
+    friendly_id, log_result,
 };
 use ambient_sys::time::{Instant, SystemTime};
 use anyhow::bail;
@@ -29,11 +30,11 @@ use bytes::Bytes;
 use flume::Sender;
 use futures::StreamExt;
 use once_cell::sync::OnceCell;
-use parking_lot::{Mutex, RwLock};
+use parking_lot::Mutex;
 use quinn::{Endpoint, RecvStream, SendStream};
 use tokio::{
     io::AsyncReadExt,
-    time::{interval, MissedTickBehavior}, sync::Notify,
+    time::{interval, MissedTickBehavior},
 };
 use tracing::{debug_span, Instrument};
 
@@ -402,33 +403,25 @@ impl GameServer {
 }
 
 async fn start_proxy_connection(proxy: Client, state: Arc<Mutex<ServerState>>, world_stream_filter: WorldStreamFilter, assets: AssetCache) {
-    let endpoint_allocated = Arc::new(RwLock::new(None));
-    let endpoint_allocated_notify = Arc::new(Notify::new());
-
     let on_endpoint_allocated = {
         let assets = assets.clone();
-        let endpoint_allocated = endpoint_allocated.clone();
-        let endpoint_allocated_notify = endpoint_allocated_notify.clone();
-
-        Arc::new(move |allocated_endpoint: AllocatedEndpoint| {
-            log::debug!("Allocated proxy endpoint: {:?}", allocated_endpoint);
-            log::info!("Proxy endpoint allocated: {} Proxy sees this server as: {}", allocated_endpoint.allocated_endpoint, allocated_endpoint.external_endpoint);
-
-            // mark that the endpoint is allocated so the controller can start pre-caching the assets
-            *endpoint_allocated.write() = Some(true);
-            endpoint_allocated_notify.notify_one();
+        Arc::new(move |AllocatedEndpoint { id, allocated_endpoint, external_endpoint, assets_root, .. }: AllocatedEndpoint| {
+            log::debug!("Allocated proxy endpoint. Allocation id: {}", id);
+            log::info!("Proxy sees this server as {}", external_endpoint);
+            log::info!("Proxy allocated an endpoint, available at {}", allocated_endpoint);
 
             // override the assets root url to point to proxy
-            // TODO: we might want to give different endpoints to different players (depending how they connect)
-            match AbsAssetUrl::parse(&allocated_endpoint.assets_root) {
+            // TODO: we might want to give different URLs to different players (depending on how they connect)
+            match AbsAssetUrl::parse(&assets_root) {
                 Ok(url) => {
-                    log::info!("Assets root url overridden to: {}", url);
+                    log::debug!("Assets root url overridden to: {}", url);
                     ProxyBaseUrlKey.insert(&assets, url);
-                },
-                Err(err) => log::warn!("Failed to parse assets root url ({}): {}", allocated_endpoint.assets_root, err),
+                }
+                Err(err) => log::warn!("Failed to parse assets root url ({}): {}", assets_root, err),
             }
         })
     };
+
     let on_player_connected = {
         let assets = assets.clone();
         Arc::new(move |_player_id, conn: ambient_proxy::client::ProxiedConnection| {
@@ -437,24 +430,17 @@ async fn start_proxy_connection(proxy: Client, state: Arc<Mutex<ServerState>>, w
         })
     };
 
+    // start and allocate endpoint
     let mut controller = proxy.start(on_endpoint_allocated, on_player_connected);
     log::info!("Allocating proxy endpoint");
     if let Err(err) = controller.allocate_endpoint().await {
         log::warn!("Failed to allocate proxy endpoint: {}", err);
     }
-    tokio::spawn(async move {
-        loop {
-            let allocated = endpoint_allocated.read().unwrap_or_default();
-            if allocated {
-                if let Err(err) = controller.pre_cache_assets("assets").await {
-                    log::warn!("Failed to pre-cache assets: {}", err);
-                }
-                break;
-            } else {
-                endpoint_allocated_notify.notified().await;
-            }
-        }
-    });
+
+    // pre-cache "assets" subdirectory
+    if let Err(err) = controller.pre_cache_assets("assets") {
+        log::warn!("Failed to pre-cache assets: {}", err);
+    }
 }
 
 /// Setup the protocol and enter the update loop for a new connected client
