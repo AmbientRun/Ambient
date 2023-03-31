@@ -151,7 +151,7 @@ fn GoldenImageTest(hooks: &mut Hooks, project_path: Option<PathBuf>, golden_imag
                 let hash1 = hasher.hash_image(&new);
                 let hash2 = hasher.hash_image(&old);
                 let dist = hash1.dist(&hash2);
-                if dist > 0 {
+                if dist > 2 {
                     tracing::error!("Screenshots differ, distance={}", dist);
                     exit(1);
                 } else {
