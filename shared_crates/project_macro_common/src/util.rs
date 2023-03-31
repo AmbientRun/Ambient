@@ -26,19 +26,37 @@ pub fn tree_to_token_stream<
     let name = node.path.last().map(|s| s.as_ref()).unwrap_or_default();
     match &node.inner {
         TreeNodeInner::Namespace(ns) => {
-            let children = ns
+            let (namespaces, others): (Vec<_>, Vec<_>) = ns
                 .children
                 .values()
+                .partition(|child| matches!(child.inner, TreeNodeInner::Namespace(_)));
+
+            let namespaces = namespaces
+                .into_iter()
+                .map(|child| self_call(child, context, wrapper))
+                .collect::<Result<Vec<_>, _>>()?;
+
+            let others = others
+                .into_iter()
                 .map(|child| self_call(child, context, wrapper))
                 .collect::<Result<Vec<_>, _>>()?;
 
             Ok(if name.is_empty() {
-                wrapper(
-                    context,
-                    quote! {
-                        #(#children)*
-                    },
-                )
+                let wrapped = if others.is_empty() {
+                    TokenStream::new()
+                } else {
+                    wrapper(
+                        context,
+                        quote! {
+                            #(#others)*
+                        },
+                    )
+                };
+
+                quote! {
+                    #(#namespaces)*
+                    #wrapped
+                }
             } else {
                 let name_ident: syn::Path = syn::parse_str(name)?;
                 let doc_comment_fragment = ns.namespace.as_ref().map(|n| {
@@ -52,15 +70,20 @@ pub fn tree_to_token_stream<
                     }
                 });
 
-                let wrapped = wrapper(
-                    context,
-                    quote! {
-                        #(#children)*
-                    },
-                );
+                let wrapped = if others.is_empty() {
+                    TokenStream::new()
+                } else {
+                    wrapper(
+                        context,
+                        quote! {
+                            #(#others)*
+                        },
+                    )
+                };
                 quote! {
                     #doc_comment_fragment
                     pub mod #name_ident {
+                        #(#namespaces)*
                         #wrapped
                     }
                 }

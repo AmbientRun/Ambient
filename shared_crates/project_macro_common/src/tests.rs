@@ -33,10 +33,8 @@ fn can_generate_components_from_manifest_in_global_namespace() {
         const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
         #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
         pub mod components {
-            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
             #[doc = "**Core**"]
             pub mod core {
-                use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
                 #[doc = "**App**"]
                 pub mod app {
                     use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
@@ -80,13 +78,10 @@ fn can_generate_components_from_manifest_in_global_namespace() {
         #[doc = r""]
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
-            use super :: components ;
-            use ambient_api2::prelude::*;
         }
         #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
         #[doc = r" as well as to other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
@@ -113,19 +108,15 @@ fn can_accept_no_components() {
         const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
         #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
         pub mod components {
-            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
         }
         #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
         #[doc = r""]
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
-            use super :: components ;
-            use ambient_api2::prelude::*;
         }
         #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
         #[doc = r" as well as to other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
@@ -180,13 +171,10 @@ fn can_generate_components_from_manifest() {
         #[doc = r""]
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
-            use super :: components ;
-            use ambient_api2::prelude::*;
         }
         #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
         #[doc = r" as well as to other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
@@ -228,13 +216,10 @@ fn can_generate_component_with_contained_type() {
         #[doc = r""]
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
-            use super :: components ;
-            use ambient_api2::prelude::*;
         }
         #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
         #[doc = r" as well as to other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
@@ -277,13 +262,10 @@ fn can_generate_components_from_manifest_with_org() {
         #[doc = r""]
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
-            use super :: components ;
-            use ambient_api2::prelude::*;
         }
         #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
         #[doc = r" as well as to other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
@@ -315,7 +297,6 @@ fn can_generate_components_with_documented_namespace_from_manifest() {
         const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
         #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
         pub mod components {
-            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
             #[doc = "**Namespace**: A Test Namespace"]
             pub mod ns {
                 use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
@@ -330,13 +311,10 @@ fn can_generate_components_with_documented_namespace_from_manifest() {
         #[doc = r""]
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
-            use super :: components ;
-            use ambient_api2::prelude::*;
         }
         #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
         #[doc = r" as well as to other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
@@ -560,7 +538,6 @@ fn can_generate_concepts_with_all_supported_types() {
         #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
         #[doc = r" as well as to other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
@@ -666,7 +643,6 @@ fn can_extend_with_multiple_concepts() {
         #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
         #[doc = r" as well as to other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
@@ -729,9 +705,7 @@ fn can_generate_concepts() {
         const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
         #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
         pub mod components {
-            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
             pub mod core {
-                use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
                 pub mod primitives {
                     use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
                     static SPHERE: Lazy< Component<()> > = Lazy::new(|| __internal_get_component("my_project::core::primitives::sphere"));
@@ -834,7 +808,6 @@ fn can_generate_concepts() {
         #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
         #[doc = r" as well as to other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
@@ -873,9 +846,7 @@ fn can_generate_concepts_with_documented_namespace_from_manifest() {
         const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
         #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
         pub mod components {
-            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
             pub mod core {
-                use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
                 pub mod transform {
                     use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
                     static ROTATION: Lazy< Component<ambient_api2::global::Quat> > = Lazy::new(|| __internal_get_component("my_project::core::transform::rotation"));
@@ -897,8 +868,6 @@ fn can_generate_concepts_with_documented_namespace_from_manifest() {
         #[doc = r""]
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
-            use super::components;
-            use ambient_api2::prelude::*;
             #[doc = "**Namespace**: A Test Namespace"]
             pub mod ns{
                 use super::components;
@@ -938,7 +907,6 @@ fn can_generate_concepts_with_documented_namespace_from_manifest() {
         #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
         #[doc = r" as well as to other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
@@ -973,14 +941,11 @@ fn can_generate_message() {
         const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
         #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
         pub mod components {
-            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
         }
         #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
         #[doc = r""]
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
-            use super :: components ;
-            use ambient_api2::prelude::*;
         }
         #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
         #[doc = r" as well as to other modules."]
