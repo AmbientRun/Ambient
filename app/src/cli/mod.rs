@@ -83,7 +83,7 @@ pub struct ProjectCli {
     pub release: bool,
 
     /// Avoid building the project
-    #[arg(short, long)]
+    #[arg(long)]
     pub no_build: bool,
 }
 #[derive(Args, Clone)]
