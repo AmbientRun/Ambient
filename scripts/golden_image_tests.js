@@ -81,4 +81,4 @@ if (argv.length > 2) {
     }
     samples = samples.filter(([path]) => path.includes(argv[2]));
 }
-run(samples, false, 5);
+run(samples, false, 10);
