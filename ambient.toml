@@ -1,4 +1,3 @@
-# The following file is auto-generated. Please do not change this file.
 [project]
 id = "runtime_components"
 name = "Runtime Components"
@@ -6,7 +5,7 @@ version = "0.2.0-dev"
 
 [components.core]
 name = "Core"
-description = "Contains all core components for the Ambient Runtime."
+description = "Contains all core components for the Ambient runtime."
 
 [components."core::app"]
 name = "App"
@@ -84,7 +83,7 @@ description = "Information attached to a message sent across WASM boundaries."
 type = "Vec2"
 name = "Cursor position"
 description = "Absolute mouse cursor position in screen-space."
-attributes = ["Debuggable", "Networked"]
+attributes = ["MaybeResource", "Debuggable", "Networked"]
 
 [components."core::app::dtime"]
 type = "F32"
@@ -164,13 +163,13 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "Uvec2"
 name = "Window logical size"
 description = "The logical size is the physical size divided by the scale factor."
-attributes = ["Debuggable", "Networked"]
+attributes = ["MaybeResource", "Debuggable", "Networked"]
 
 [components."core::app::window_physical_size"]
 type = "Uvec2"
 name = "Window physical size"
 description = "The physical size is the actual number of pixels on the screen."
-attributes = ["Debuggable", "Networked"]
+attributes = ["MaybeResource", "Debuggable", "Networked"]
 
 [components."core::app::window_scale_factor"]
 type = "F64"
@@ -178,7 +177,7 @@ name = "Window scale factor"
 description = """
 The DPI/pixel scale factor of the window.
 On standard displays, this is 1, but it can be higher on high-DPI displays like Apple Retina displays."""
-attributes = ["Debuggable", "Networked"]
+attributes = ["MaybeResource", "Debuggable", "Networked"]
 
 [components."core::camera::active_camera"]
 type = "F32"
@@ -304,7 +303,7 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = { type = "Vec", element_type = "EntityId" }
 name = "Children"
 description = "The children of this entity."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["Debuggable", "Networked", "Store", "MaybeResource"]
 
 [components."core::ecs::dont_despawn_on_unload"]
 type = "Empty"
@@ -660,7 +659,7 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "Bool"
 name = "Model animatable"
 description = "Controls whether this model can be animated."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["MaybeResource", "Debuggable", "Networked", "Store"]
 
 [components."core::model::model_from_url"]
 type = "String"
@@ -1137,7 +1136,7 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "Mat4"
 name = "Local to Parent"
 description = "Transformation from the entity's local space to the parent's space."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["Debuggable", "Networked", "Store", "MaybeResource"]
 
 [components."core::transform::local_to_world"]
 type = "Mat4"

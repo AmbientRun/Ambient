@@ -74,37 +74,24 @@ impl<'a> Debug for DebugWorldArchetypes<'a> {
     }
 }
 
-components!("ecs", {
-    @[
-        Networked, Store, Debuggable,
-        Name["ID"],
-        Description["The ID of the entity."]
-    ]
-    id: EntityId,
-    @[
-        Networked, Store, Debuggable,
-        Name["IDs"],
-        Description["A generic list of entity IDs, with no semantic meaning."]
-    ]
-    ids: Vec<EntityId>,
-    @[
-        Networked, Store, Debuggable,
-        Name["Don't store"],
-        Description["Indicates that this entity shouldn't be stored on disk."]
-    ]
-    dont_store: (),
-    @[
-        Store, Debuggable,
-        Name["Don't automatically despawn on module unload"],
-        Description["Indicates that this entity shouldn't be despawned when the module that spawned it unloads."]
-    ]
-    dont_despawn_on_unload: (),
-    @[
-        Resource,
-        Description["A global general event queue for this ecs World. Can be used to dispatch or listen to any kinds of events."]
-    ]
-    world_events: WorldEvents,
-});
+mod internal_components {
+    use crate::{components, Description, Resource, WorldEvents};
+
+    components!("ecs", {
+        @[
+            Resource,
+            Description["A global general event queue for this ecs World. Can be used to dispatch or listen to any kinds of events."]
+        ]
+        world_events: WorldEvents,
+    });
+}
+pub use generated::components::core::ecs::*;
+pub use internal_components::world_events;
+
+pub fn init_components() {
+    generated::components::init();
+    internal_components::init_components();
+}
 
 #[derive(Clone)]
 pub struct World {
