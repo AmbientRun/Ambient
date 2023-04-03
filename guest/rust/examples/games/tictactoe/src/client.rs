@@ -17,7 +17,7 @@ async fn main() {
     let cells =
         entity::get_component(entity::synchronized_resources(), components::cells()).unwrap();
 
-    on(event::FRAME, move |_| {
+    ambient_api::messages::Frame::subscribe(move |_, _| {
         process_input();
         process_colors(&cells);
     });

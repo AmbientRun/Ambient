@@ -1,4 +1,3 @@
-
 /// A mapping from enum names to Rust types. Instantiate this with a macro that takes `$(($value:ident, $type:ty)),*`.
 #[macro_export]
 macro_rules! primitive_component_definitions {
@@ -29,8 +28,6 @@ macro_rules! primitive_component_definitions {
 pub mod events {
     // This is a temporary module until structured events lands: https://github.com/AmbientRun/Ambient/issues/228
 
-    /// Fired each frame.
-    pub const FRAME: &str = "core/frame";
     /// Fired on a collision. Components will contain the `ids` of the objects.
     pub const COLLISION: &str = "core/collision";
     /// Fired when a collider is loaded. Components will contain the `id` of the object.

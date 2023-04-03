@@ -7,6 +7,7 @@ mod module;
 pub mod build;
 pub mod conversion;
 pub mod host_guest_state;
+pub mod message;
 pub mod wit;
 
 use std::sync::Arc;
@@ -18,6 +19,7 @@ use ambient_ecs::{
 };
 use ambient_physics::{collider_loads, collisions, PxShapeUserData};
 use ambient_project::Identifier;
+use ambient_project_rt::message_serde::Message;
 use ambient_shared_types::events;
 use itertools::Itertools;
 use physxx::{PxRigidActor, PxRigidActorRef, PxUserData};
@@ -58,47 +60,7 @@ pub use internal::{
     module_state, module_state_maker, remote_paired_id,
 };
 
-pub mod message {
-    use ambient_ecs::{components, Debuggable, EntityId, Resource, World};
-
-    #[derive(Clone, PartialEq, Debug)]
-    pub enum Source {
-        Network,
-        NetworkUserId(String),
-        Module(EntityId),
-    }
-
-    #[derive(Clone, PartialEq, Debug)]
-    pub struct PendingMessage {
-        /// If unspecified, this will broadcast to all modules
-        pub(super) module_id: Option<EntityId>,
-        pub(super) source: Source,
-        pub(super) name: String,
-        pub(super) data: Vec<u8>,
-    }
-
-    pub fn send(
-        world: &mut World,
-        module_id: Option<EntityId>,
-        source: Source,
-        name: String,
-        data: Vec<u8>,
-    ) {
-        world.resource_mut(pending_messages()).push(PendingMessage {
-            module_id,
-            source,
-            name,
-            data,
-        });
-    }
-
-    pub use ambient_ecs::generated::components::core::wasm::message::*;
-
-    components!("wasm::message", {
-        @[Debuggable, Resource]
-        pending_messages: Vec<PendingMessage>,
-    });
-}
+use crate::shared::message::ToSerialized;
 
 pub fn init_all_components() {
     internal::init_components();
@@ -171,7 +133,12 @@ pub fn systems() -> SystemGroup {
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("WASM module frame event");
                 // trigger frame event
-                run_all(world, &RunContext::new(world, events::FRAME, Entity::new()));
+                message::run(
+                    world,
+                    ambient_ecs::generated::messages::Frame::new()
+                        .to_serialized(None)
+                        .unwrap(),
+                );
             })),
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("WASM module collision event");
@@ -223,63 +190,13 @@ pub fn systems() -> SystemGroup {
                 }
             })),
             Box::new(FnSystem::new(move |world, _| {
-                use message::{PendingMessage, Source};
-
                 profiling::scope!("WASM module pending messages");
 
                 let pending_messages =
                     std::mem::take(world.resource_mut(message::pending_messages()));
 
-                for PendingMessage {
-                    module_id,
-                    source,
-                    name,
-                    data,
-                } in pending_messages
-                {
-                    let mut entity = Entity::new().with(message::data(), data.to_vec());
-
-                    let mut source_id = None;
-                    match &source {
-                        Source::Network => entity.set(message::source_remote(), ()),
-                        Source::NetworkUserId(user_id) => {
-                            entity.set(message::source_remote_user_id(), user_id.to_owned())
-                        }
-                        Source::Module(id) => {
-                            source_id = Some(*id);
-                            entity.set(message::source_local(), *id);
-                        }
-                    };
-
-                    let run_context = RunContext::new(
-                        world,
-                        format!("{}/{}", events::MODULE_MESSAGE, name),
-                        entity,
-                    );
-
-                    if let Some(module_id) = module_id {
-                        match world.get_cloned(module_id, module_state()) {
-                            Ok(state) => run(world, module_id, state, &run_context),
-                            Err(_) => {
-                                let module_name = world
-                                    .get_cloned(module_id, ambient_core::name())
-                                    .unwrap_or_default();
-
-                                world.resource(messenger()).as_ref()(
-                                    world, module_id, MessageType::Warn,
-                                    &format!("Received message for unloaded module {module_id} ({module_name}); message {name:?} from {source:?}")
-                                );
-                            }
-                        }
-                    } else {
-                        for (id, sms) in query(module_state()).collect_cloned(world, None) {
-                            if Some(id) == source_id {
-                                continue;
-                            }
-
-                            run(world, id, sms, &run_context)
-                        }
-                    }
+                for message in pending_messages {
+                    message::run(world, message);
                 }
             })),
         ],
@@ -355,7 +272,15 @@ fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
 
         async_run.run(move |world| {
             match result {
-                Ok(sms) => {
+                Ok(mut sms) => {
+                    // Subscribe the module to events that it should be aware of.
+                    sms.listen_to_event(format!(
+                        "{}/{}",
+                        events::MODULE_MESSAGE,
+                        ambient_ecs::generated::messages::Frame::id()
+                    ));
+                    sms.listen_to_event(events::MODULE_LOAD.to_owned());
+
                     // Run the initial startup event.
                     run(
                         world,
@@ -398,11 +323,8 @@ fn run(world: &mut World, id: EntityId, mut state: ModuleState, context: &RunCon
         format!("{} - {}", get_module_name(world, id), context.event_name)
     );
 
-    // If this is not a whitelisted event and it's not in the subscribed events,
-    // skip over it
-    if !["core/module_load", "core/frame"].contains(&context.event_name.as_str())
-        && !state.supports_event(&context.event_name)
-    {
+    // If it's not in the subscribed events, skip over it
+    if !state.supports_event(&context.event_name) {
         return;
     }
 

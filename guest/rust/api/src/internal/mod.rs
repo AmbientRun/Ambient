@@ -1,6 +1,7 @@
 pub(crate) mod component;
 pub(crate) mod conversion;
 pub(crate) mod executor;
+pub(crate) mod generated;
 pub(crate) mod wit;
 
 use crate::internal::{

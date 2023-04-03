@@ -10,6 +10,7 @@ edition = "2021"
 [dependencies]
 ambient_std = { path = "../std" }
 ambient_shared_types = { path = "../../shared_crates/shared_types" }
+ambient_project_rt = { path = "../../shared_crates/project_rt" }
 ambient_project_macro = { path = "../project_macro" }
 
 itertools = { workspace = true }

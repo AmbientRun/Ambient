@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use crate::{
-    global::{on, CallbackReturn, EntityId, OkEmpty},
+    global::{CallbackReturn, EntityId, OkEmpty},
     internal::{component::ComponentsTuple, conversion::FromBindgen, wit},
     prelude::OnHandle,
 };
@@ -258,7 +258,8 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryImpl<Components>
         self,
         callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + 'static,
     ) -> OnHandle {
-        on(ambient_shared_types::events::FRAME, move |_| {
+        use crate::message::MessageExt;
+        crate::messages::Frame::subscribe(move |_, _| {
             let results = self.evaluate();
             if !results.is_empty() {
                 callback(results).into_result()?;

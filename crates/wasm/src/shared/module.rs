@@ -75,6 +75,7 @@ struct WasmContext<Bindings: BindingsBound> {
 pub trait ModuleStateBehavior: Sync + Send {
     fn run(&mut self, world: &mut World, context: &RunContext) -> anyhow::Result<()>;
     fn drain_spawned_entities(&mut self) -> HashSet<EntityId>;
+    fn listen_to_event(&mut self, event_name: String);
     fn supports_event(&self, event_name: &str) -> bool;
 }
 
@@ -128,6 +129,10 @@ impl ModuleStateBehavior for ModuleState {
 
     fn drain_spawned_entities(&mut self) -> HashSet<EntityId> {
         self.inner.write().drain_spawned_entities()
+    }
+
+    fn listen_to_event(&mut self, event_name: String) {
+        self.inner.write().listen_to_event(event_name)
     }
 
     fn supports_event(&self, event_name: &str) -> bool {
@@ -224,6 +229,15 @@ impl<Bindings: BindingsBound> ModuleStateBehavior for ModuleStateInnerImpl<Bindi
 
     fn drain_spawned_entities(&mut self) -> HashSet<EntityId> {
         std::mem::take(&mut self.store.data_mut().bindings.base_mut().spawned_entities)
+    }
+
+    fn listen_to_event(&mut self, event_name: String) {
+        self.store
+            .data_mut()
+            .bindings
+            .base_mut()
+            .subscribed_events
+            .insert(event_name);
     }
 
     fn supports_event(&self, event_name: &str) -> bool {

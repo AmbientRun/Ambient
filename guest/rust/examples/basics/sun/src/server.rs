@@ -7,6 +7,7 @@ use ambient_api::{
         transform::{lookat_center, rotation, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
+    message::MessageExt,
     prelude::*,
 };
 
@@ -56,7 +57,7 @@ pub fn main() {
         .with(fog_density(), 0.)
         .spawn();
 
-    on(event::FRAME, move |_| {
+    ambient_api::messages::Frame::subscribe(move |_, _| {
         let rot = entity::get_component(sun, rotation()).unwrap();
         entity::set_component(sun, rotation(), rot * Quat::from_rotation_y(0.01));
     });

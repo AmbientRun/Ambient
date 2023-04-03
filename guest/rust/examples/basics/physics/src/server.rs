@@ -13,6 +13,7 @@ use ambient_api::{
         transform::{lookat_center, rotation, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
+    message::MessageExt,
     prelude::*,
 };
 
@@ -52,7 +53,7 @@ pub async fn main() {
         println!("Bonk! {:?} collided", c.get(ids()).unwrap());
     });
 
-    on(event::FRAME, move |_| {
+    ambient_api::messages::Frame::subscribe(move |_, _| {
         for hit in physics::raycast(Vec3::Z * 20., -Vec3::Z) {
             if hit.entity == cube {
                 println!("The raycast hit the cube: {hit:?}");

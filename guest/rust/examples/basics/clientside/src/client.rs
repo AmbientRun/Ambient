@@ -7,6 +7,7 @@ use ambient_api::{
         transform::{lookat_center, translation},
     },
     concepts::make_perspective_infinite_reverse_camera,
+    message::MessageExt,
     prelude::*,
 };
 use components::{grid_side_length, grid_x, grid_y};
@@ -26,7 +27,7 @@ pub async fn main() {
         .with(lookat_center(), vec3(0., 0., 0.))
         .spawn();
 
-    on(event::FRAME, move |_| {
+    ambient_api::messages::Frame::subscribe(move |_, _| {
         entity::set_component(
             id,
             translation(),

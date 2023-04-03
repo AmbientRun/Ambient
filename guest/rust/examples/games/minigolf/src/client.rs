@@ -6,7 +6,7 @@ use ambient_api::{
 
 #[main]
 fn main() {
-    on(event::FRAME, |_| {
+    ambient_api::messages::Frame::subscribe(move |_, _| {
         let (delta, input) = player::get_raw_input_delta();
 
         let camera_rotation = if input.mouse_buttons.contains(&MouseButton::Right) {

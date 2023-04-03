@@ -2,6 +2,7 @@ default interface server-message {
     use pkg.types.{entity-id}
 
     variant source {
+        runtime,
         remote(string),
         local(entity-id),
     }

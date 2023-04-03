@@ -42,8 +42,4 @@ pub use glam;
 pub use once_cell;
 pub use rand;
 
-// Hi there! This macro generates the components that are exposed to you as a Ambient API user.
-// We suggest that you look at the docs for this crate.
-// Your IDE should also tell you about the components present here and show their corresponding
-// doc comments.
-ambient_api_macros::api_project!();
+pub use internal::generated::*;

@@ -492,6 +492,7 @@ name = "ambient_ecs"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_project_macro",
+ "ambient_project_rt",
  "ambient_shared_types",
  "ambient_std",
  "anyhow",
@@ -1402,6 +1403,7 @@ dependencies = [
  "ambient_physics",
  "ambient_prefab",
  "ambient_project",
+ "ambient_project_rt",
  "ambient_shared_types",
  "ambient_std",
  "ambient_sys",

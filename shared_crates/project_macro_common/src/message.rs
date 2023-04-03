@@ -15,7 +15,12 @@ pub fn tree_to_token_stream(
         message_tree.root(),
         context,
         |context, _ns, ts| match context {
-            Context::Host => ts,
+            Context::Host => quote! {
+                use ambient_project_rt::message_serde::{Message, MessageSerde, MessageSerdeError};
+                use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
+                use crate::{EntityId, Entity};
+                #ts
+            },
             Context::Guest { api_path, .. } => quote! {
                 use #api_path::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
                 #ts

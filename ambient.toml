@@ -3,6 +3,8 @@ id = "runtime_components"
 name = "Runtime Components"
 version = "0.2.0-dev"
 
+# Components
+
 [components.core]
 name = "Core"
 description = "Contains all core components for the Ambient runtime."
@@ -1212,6 +1214,12 @@ name = "Data"
 description = "The data payload of a message."
 attributes = ["Debuggable"]
 
+[components."core::wasm::message::source_runtime"]
+type = "Empty"
+name = "Source: Runtime"
+description = "This message came from the Ambient runtime."
+attributes = ["Debuggable"]
+
 [components."core::wasm::message::source_local"]
 type = "EntityId"
 name = "Source: Local"
@@ -1229,6 +1237,8 @@ type = "String"
 name = "Source: Remote (User ID)"
 description = "This message came from this user."
 attributes = ["Debuggable"]
+
+# Concepts
 
 [concepts.transformable]
 name = "Transformable"
@@ -1301,3 +1311,9 @@ extends = ["camera"]
 "core::camera::orthographic_bottom" = -1.0
 "core::camera::near" = -1.0
 "core::camera::far" = 1.0
+
+# Messages
+[messages.frame]
+name = "Frame"
+description = "This is sent to all modules every frame."
+fields = {}

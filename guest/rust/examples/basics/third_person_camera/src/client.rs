@@ -6,7 +6,7 @@ use ambient_api::{
 
 #[main]
 fn main() {
-    on(event::FRAME, |_| {
+    ambient_api::messages::Frame::subscribe(move |_, _| {
         let (delta, pressed) = player::get_raw_input_delta();
 
         let mut displace = Vec2::ZERO;

@@ -6,7 +6,7 @@ use ambient_api::{
 
 #[main]
 pub fn main() {
-    on(event::FRAME, |_| {
+    ambient_api::messages::Frame::subscribe(move |_, _| {
         let (delta, _) = player::get_raw_input_delta();
 
         if delta.keys.contains(&KeyCode::Key1) {
