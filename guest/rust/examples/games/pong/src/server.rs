@@ -9,7 +9,6 @@ use ambient_api::{
         transform::*,
     },
     concepts::{make_sphere, make_transformable},
-    message::MessageExt,
     prelude::*,
 };
 use components::player_movement_direction;

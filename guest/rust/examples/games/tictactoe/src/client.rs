@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use ambient_api::{
     components::core::rendering::{color, outline},
-    message::{MessageExt, Target},
     player::KeyCode,
     prelude::*,
 };

@@ -1,8 +1,4 @@
-use ambient_api::{
-    message::{MessageExt, Target},
-    player::MouseButton,
-    prelude::*,
-};
+use ambient_api::{player::MouseButton, prelude::*};
 
 #[main]
 fn main() {

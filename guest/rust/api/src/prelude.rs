@@ -3,7 +3,9 @@ pub use crate::{
     ecs::{change_query, despawn_query, query, spawn_query, Component, Entity, QueryEvent},
     entity, event,
     global::*,
-    main, message, player,
+    main, message,
+    message::{Message, MessageExt, Source, Target},
+    player,
 };
 pub use anyhow::{anyhow, Context as AnyhowContext};
 pub use glam;

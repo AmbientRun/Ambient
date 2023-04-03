@@ -9,7 +9,6 @@ use ambient_api::{
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     entity::{AnimationAction, AnimationController},
-    message::MessageExt,
     prelude::*,
 };
 

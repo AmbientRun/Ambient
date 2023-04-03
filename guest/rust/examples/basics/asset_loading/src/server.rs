@@ -6,7 +6,6 @@ use ambient_api::{
         transform::{lookat_center, rotation, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
-    message::MessageExt,
     prelude::*,
 };
 

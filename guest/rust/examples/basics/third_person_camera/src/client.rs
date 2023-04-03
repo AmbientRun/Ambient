@@ -1,8 +1,4 @@
-use ambient_api::{
-    message::{MessageExt, Target},
-    player::KeyCode,
-    prelude::*,
-};
+use ambient_api::{player::KeyCode, prelude::*};
 
 #[main]
 fn main() {

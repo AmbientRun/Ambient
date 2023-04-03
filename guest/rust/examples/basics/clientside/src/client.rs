@@ -7,7 +7,6 @@ use ambient_api::{
         transform::{lookat_center, translation},
     },
     concepts::make_perspective_infinite_reverse_camera,
-    message::MessageExt,
     prelude::*,
 };
 use components::{grid_side_length, grid_x, grid_y};

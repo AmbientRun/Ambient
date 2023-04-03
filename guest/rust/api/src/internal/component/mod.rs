@@ -53,12 +53,12 @@ macro_rules! lazy_component {
 /// An [Entity] is a collection of components and associated values.
 ///
 /// Use the [spawn](Entity::spawn) method to insert the [Entity] into the world.
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Entity(pub(crate) HashMap<u32, wit::component::Value>);
 impl Entity {
     /// Creates a new `Entity`.
     pub fn new() -> Self {
-        Self(Default::default())
+        Self::default()
     }
 
     /// Returns true if this has `component`.

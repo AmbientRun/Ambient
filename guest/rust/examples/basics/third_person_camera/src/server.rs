@@ -12,7 +12,6 @@ use ambient_api::{
         transform::{lookat_center, rotation, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
-    message::MessageExt,
     prelude::*,
     rand,
 };

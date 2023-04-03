@@ -33,6 +33,7 @@ impl Source {
 
     #[cfg(feature = "server")]
     /// The user that sent this message, if any.
+    #[allow(clippy::needless_return)]
     pub fn remote_user_id(self) -> Option<String> {
         #[cfg(all(feature = "server", not(feature = "client")))]
         if let Source::Remote { user_id } = self {
@@ -178,6 +179,7 @@ pub fn send<T: Message>(target: Target, data: &T) {
 }
 
 /// Subscribes to a message.
+#[allow(clippy::collapsible_else_if)]
 pub fn subscribe<R: CallbackReturn, T: Message>(
     callback: impl FnMut(Source, T) -> R + 'static,
 ) -> OnHandle {

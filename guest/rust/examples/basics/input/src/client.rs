@@ -1,4 +1,4 @@
-use ambient_api::{message::MessageExt, prelude::*};
+use ambient_api::prelude::*;
 
 #[main]
 pub fn main() {

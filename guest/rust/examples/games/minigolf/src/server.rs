@@ -27,7 +27,6 @@ use ambient_api::{
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     entity::resources,
-    message::MessageExt,
     prelude::*,
 };
 use components::player_shoot_requested;
