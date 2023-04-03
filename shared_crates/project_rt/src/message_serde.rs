@@ -285,10 +285,13 @@ fn deserialize_array<T: MessageSerde>(input: &mut dyn Read) -> Result<Vec<T>, Me
 /// Implemented on all types that can be de/serialized from/to a `Vec<u8>`.
 pub trait Message: Sized {
     /// The identifier of this message.
+    #[doc(hidden)]
     fn id() -> &'static str;
 
     /// Serialize this to a `Vec<u8>`.
+    #[doc(hidden)]
     fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError>;
     /// Deserialize this from a `u8` slice.
+    #[doc(hidden)]
     fn deserialize_message(input: &[u8]) -> Result<Self, MessageSerdeError>;
 }
