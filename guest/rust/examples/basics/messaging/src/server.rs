@@ -4,15 +4,14 @@ use std::sync::{
 };
 
 use ambient_api::{
-    message::{MessageExt, Source, Target},
+    message::{MessageExt, Target},
     prelude::*,
 };
 
 #[main]
 pub fn main() {
-    #[cfg(all(feature = "server", not(feature = "client")))]
     messages::Hello::subscribe(|source, data| {
-        let Source::Remote { user_id } = source else { return; };
+        let Some(user_id) = source.remote_user_id() else { return; };
         println!("{user_id}: {:?}", data);
 
         let source_reliable = data.source_reliable;

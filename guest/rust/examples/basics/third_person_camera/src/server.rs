@@ -12,7 +12,7 @@ use ambient_api::{
         transform::{lookat_center, rotation, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
-    message::{MessageExt, Source},
+    message::MessageExt,
     prelude::*,
     rand,
 };
@@ -63,10 +63,8 @@ pub fn main() {
         }
     });
 
-    #[cfg(all(feature = "server", not(feature = "client")))]
     messages::Input::subscribe(move |source, msg| {
-        let Source::Remote { user_id } = source else { return; };
-        let Some(player_id) = player::get_by_user_id(&user_id) else { return; };
+        let Some(player_id) = source.remote_entity_id() else { return; };
 
         entity::add_component(player_id, player_movement_direction(), msg.direction);
         entity::add_component(player_id, player_mouse_delta_x(), msg.mouse_delta_x);

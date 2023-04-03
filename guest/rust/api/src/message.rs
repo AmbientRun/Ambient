@@ -26,6 +26,30 @@ pub enum Source {
     Local(EntityId),
 }
 impl Source {
+    /// Is this message from the runtime?
+    pub fn runtime(self) -> bool {
+        matches!(self, Source::Runtime)
+    }
+
+    #[cfg(feature = "server")]
+    /// The user that sent this message, if any.
+    pub fn remote_user_id(self) -> Option<String> {
+        #[cfg(all(feature = "server", not(feature = "client")))]
+        if let Source::Remote { user_id } = self {
+            return Some(user_id);
+        }
+
+        return None;
+    }
+
+    #[cfg(feature = "server")]
+    /// The entity ID of the player that sent this message, if any.
+    pub fn remote_entity_id(self) -> Option<EntityId> {
+        let Some(user_id) = self.remote_user_id() else { return None; };
+        let Some(player_id) = crate::player::get_by_user_id(&user_id) else { return None; };
+        Some(player_id)
+    }
+
     fn remote(e: &Entity) -> Option<Self> {
         #[cfg(all(feature = "client", not(feature = "server")))]
         if e.has(crate::components::core::wasm::message::source_remote()) {
@@ -40,6 +64,14 @@ impl Source {
 
         let _ = e;
         None
+    }
+
+    /// Is this message from another module on this side?
+    pub fn local(self) -> Option<EntityId> {
+        match self {
+            Source::Local(id) => Some(id),
+            _ => None,
+        }
     }
 }
 

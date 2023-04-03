@@ -1,5 +1,5 @@
 use ambient_api::{
-    message::{MessageExt, Source, Target},
+    message::{MessageExt, Target},
     prelude::*,
 };
 
@@ -7,7 +7,7 @@ use ambient_api::{
 pub fn main() {
     messages::Local::subscribe(move |source, data| {
         println!("{source:?}: {data:?}");
-        if let Source::Local(id) = source {
+        if let Some(id) = source.local() {
             messages::Local::new("Hi, back!").send(Target::Local(id));
         }
     });
