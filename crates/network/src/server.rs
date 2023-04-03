@@ -251,6 +251,7 @@ pub struct ProxySettings {
     pub endpoint: String,
     pub project_path: PathBuf,
     pub pre_cache_assets: bool,
+    pub project_id: String,
 }
 
 pub struct GameServer {
@@ -277,6 +278,7 @@ impl GameServer {
             let builder = ambient_proxy::client::builder()
                 .endpoint(endpoint.clone())
                 .proxy_server(settings.endpoint.clone())
+                .project_id(settings.project_id.clone())
                 .assets_path(assets_path)
                 .user_agent(APP_USER_AGENT.to_string());
             match builder.build().await {
