@@ -422,7 +422,7 @@ async fn start_proxy_connection(proxy: Client, settings: ProxySettings, state: A
         Arc::new(move |AllocatedEndpoint { id, allocated_endpoint, external_endpoint, assets_root, .. }: AllocatedEndpoint| {
             log::debug!("Allocated proxy endpoint. Allocation id: {}", id);
             log::info!("Proxy sees this server as {}", external_endpoint);
-            log::info!("Proxy allocated an endpoint, available at {}", allocated_endpoint);
+            log::info!("Proxy allocated an endpoint, use `ambient join {}` to join", allocated_endpoint);
 
             // override the assets root url to point to proxy
             // TODO: we might want to give different URLs to different players (depending on how they connect)
