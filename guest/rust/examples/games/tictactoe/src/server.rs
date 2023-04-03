@@ -8,7 +8,7 @@ use ambient_api::{
         transform::{lookat_center, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
-    message::server::{MessageExt, Source},
+    message::{MessageExt, Source},
     prelude::*,
 };
 
@@ -69,6 +69,7 @@ pub fn main() {
         }
     });
 
+    #[cfg(all(feature = "server", not(feature = "client")))]
     messages::Input::subscribe(move |source, msg| {
         let Source::Remote { user_id } = source else { return; };
         let Some(player_id) = player::get_by_user_id(&user_id) else { return; };

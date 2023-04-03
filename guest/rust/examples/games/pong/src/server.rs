@@ -9,7 +9,7 @@ use ambient_api::{
         transform::*,
     },
     concepts::{make_sphere, make_transformable},
-    message::server::{MessageExt, Source},
+    message::{MessageExt, Source},
     prelude::*,
 };
 use components::player_movement_direction;
@@ -93,6 +93,7 @@ pub fn main() {
         }
     });
 
+    #[cfg(all(feature = "server", not(feature = "client")))]
     messages::Input::subscribe(|source, msg| {
         let Source::Remote { user_id } = source else { return; };
         let Some(player_id) = player::get_by_user_id(&user_id) else { return; };

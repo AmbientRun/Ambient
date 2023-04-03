@@ -61,6 +61,11 @@ impl Entity {
         Self(Default::default())
     }
 
+    /// Returns true if this has `component`.
+    pub fn has<T: SupportedValue>(&self, component: Component<T>) -> bool {
+        self.0.contains_key(&component.index())
+    }
+
     /// Gets the data for `component` in this, if it exists.
     pub fn get<T: SupportedValue>(&self, component: Component<T>) -> Option<T> {
         T::from_result(self.0.get(&component.index())?.clone())

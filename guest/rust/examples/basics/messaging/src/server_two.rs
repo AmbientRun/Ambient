@@ -1,5 +1,5 @@
 use ambient_api::{
-    message::server::{MessageExt, Source, Target},
+    message::{MessageExt, Source, Target},
     prelude::*,
 };
 

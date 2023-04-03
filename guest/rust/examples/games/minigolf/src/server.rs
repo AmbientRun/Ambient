@@ -27,7 +27,7 @@ use ambient_api::{
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     entity::resources,
-    message::server::{MessageExt, Source},
+    message::{MessageExt, Source},
     prelude::*,
 };
 use components::player_shoot_requested;
@@ -250,6 +250,7 @@ pub fn main() {
         }
     });
 
+    #[cfg(all(feature = "server", not(feature = "client")))]
     messages::Input::subscribe(|source, msg| {
         let Source::Remote { user_id } = source else { return; };
         let Some(user_id) = player::get_by_user_id(&user_id) else { return; };

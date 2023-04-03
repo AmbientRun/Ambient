@@ -4,7 +4,7 @@ use ambient_api::{
         camera::{orthographic_bottom, orthographic_left, orthographic_right, orthographic_top},
     },
     concepts::make_orthographic_camera,
-    message::client::{MessageExt, Target},
+    message::{MessageExt, Target},
     player::KeyCode,
     prelude::*,
 };

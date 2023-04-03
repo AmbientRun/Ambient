@@ -1,5 +1,5 @@
 use ambient_api::{
-    message::client::{MessageExt, Target},
+    message::{MessageExt, Target},
     player::MouseButton,
     prelude::*,
 };

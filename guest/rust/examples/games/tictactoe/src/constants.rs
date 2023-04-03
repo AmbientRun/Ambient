@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use ambient_api::prelude::{vec4, Vec4};
 
 pub const SIZE: usize = 7;
