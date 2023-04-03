@@ -34,6 +34,7 @@ pub fn TextEditor(
     on_submit: Option<Cb<dyn Fn(String) + Sync + Send>>,
     password: bool,
     placeholder: Option<String>,
+    auto_focus: bool,
 ) -> Element {
     let (focused, set_focused) = use_focus(hooks);
     let (command, set_command) = hooks.use_state(false);
@@ -52,6 +53,9 @@ pub fn TextEditor(
     hooks.use_spawn({
         let set_focused = set_focused.clone();
         move |_| {
+            if auto_focus {
+                set_focused(true);
+            }
             Box::new(move |_| {
                 if focused {
                     set_focused(false);
@@ -167,7 +171,7 @@ pub fn TextEditor(
 
 impl TextEditor {
     pub fn new(value: String, on_change: Cb<dyn Fn(String) + Sync + Send>) -> Self {
-        Self { value, on_change, on_submit: None, password: false, placeholder: None }
+        Self { value, on_change, on_submit: None, password: false, placeholder: None, auto_focus: false }
     }
     pub fn on_submit(mut self, on_submit: impl Fn(String) + Sync + Send + 'static) -> Self {
         self.on_submit = Some(cb(on_submit));
@@ -179,6 +183,11 @@ impl TextEditor {
     }
     pub fn password(mut self) -> Self {
         self.password = true;
+        self
+    }
+    /// Focus the text box automatically when it's spawned
+    pub fn auto_focus(mut self) -> Self {
+        self.auto_focus = true;
         self
     }
 }
