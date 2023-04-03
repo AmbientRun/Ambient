@@ -19,7 +19,7 @@ fn NewTodoItem(hooks: &mut Hooks) -> Element {
             .placeholder(Some("Enter todo name here"))
             .el(),
         Button::new("Create", move |_| {
-            messages::NewItem::new(text.clone()).send(Target::ServerReliable);
+            messages::NewItem::new(text.clone()).send_server_reliable();
             set_text(String::new());
         })
         .disabled(text_is_empty)
@@ -34,7 +34,7 @@ fn TodoItems(hooks: &mut Hooks) -> Element {
     FlowColumn::el(items.into_iter().map(|(id, description)| {
         FlowRow::el([
             Button::new(COLLECTION_DELETE_ICON, move |_| {
-                messages::DeleteItem::new(id).send(Target::ServerReliable)
+                messages::DeleteItem::new(id).send_server_reliable()
             })
             .style(ButtonStyle::Flat)
             .el(),

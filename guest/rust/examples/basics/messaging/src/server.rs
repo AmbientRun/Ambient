@@ -17,19 +17,19 @@ pub fn main() {
             true,
             format!("{source_reliable}: Hello, world from the server!"),
         )
-        .send(Target::ClientTargetedReliable(user_id.clone()));
+        .send_client_targeted_reliable(user_id.clone());
 
         messages::Hello::new(
             false,
             format!("{source_reliable}: Hello, world from the server!"),
         )
-        .send(Target::ClientTargetedUnreliable(user_id));
+        .send_client_targeted_unreliable(user_id);
 
         messages::Hello::new(
             true,
             format!("{source_reliable}: Hello, world (everyone) from the server!"),
         )
-        .send(Target::ClientBroadcastReliable);
+        .send_client_broadcast_reliable();
     });
 
     let handled = Arc::new(AtomicBool::new(false));
@@ -43,7 +43,7 @@ pub fn main() {
     run_async(async move {
         while !handled.load(Ordering::SeqCst) {
             sleep(1.0).await;
-            messages::Local::new("Hello!").send(Target::LocalBroadcast);
+            messages::Local::new("Hello!").send_local_broadcast();
         }
     });
 }

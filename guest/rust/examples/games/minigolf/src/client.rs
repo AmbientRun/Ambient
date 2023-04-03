@@ -14,6 +14,6 @@ fn main() {
         let camera_zoom = delta.mouse_wheel;
         let shoot = delta.mouse_buttons.contains(&MouseButton::Left);
 
-        messages::Input::new(camera_rotation, camera_zoom, shoot).send(Target::ServerUnreliable);
+        messages::Input::new(camera_rotation, camera_zoom, shoot).send_server_unreliable();
     });
 }

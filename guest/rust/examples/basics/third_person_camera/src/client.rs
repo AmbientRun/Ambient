@@ -19,6 +19,6 @@ fn main() {
             displace.y += 1.0;
         }
 
-        messages::Input::new(displace, delta.mouse_position.x).send(Target::ServerReliable);
+        messages::Input::new(displace, delta.mouse_position.x).send_server_reliable();
     });
 }

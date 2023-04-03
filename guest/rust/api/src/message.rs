@@ -210,6 +210,64 @@ pub trait MessageExt: Message {
         self::send(target, self)
     }
 
+    /// Sends a message to every module on this side.
+    fn send_local_broadcast(&self) {
+        self.send(Target::LocalBroadcast)
+    }
+
+    /// Sends a message to a specific module on this side.
+    fn send_local(&self, module_id: EntityId) {
+        self.send(Target::Local(module_id))
+    }
+
+    #[cfg(feature = "client")]
+    /// Sends an unreliable message to the server.
+    ///
+    /// See [Target::ServerUnreliable] for specifics.
+    fn send_server_unreliable(&self) {
+        self.send(Target::ServerUnreliable)
+    }
+
+    #[cfg(feature = "client")]
+    /// Sends a reliable message to the server.
+    ///
+    /// See [Target::ServerReliable] for specifics.
+    fn send_server_reliable(&self) {
+        self.send(Target::ServerReliable)
+    }
+
+    #[cfg(feature = "server")]
+    /// Sends an unreliable message to all clients.
+    ///
+    /// See [Target::ClientBroadcastUnreliable] for specifics.
+    fn send_client_broadcast_unreliable(&self) {
+        self.send(Target::ClientBroadcastUnreliable)
+    }
+
+    #[cfg(feature = "server")]
+    /// Sends a reliable message to all clients.
+    ///
+    /// See [Target::ClientBroadcastReliable] for specifics.
+    fn send_client_broadcast_reliable(&self) {
+        self.send(Target::ClientBroadcastReliable)
+    }
+
+    #[cfg(feature = "server")]
+    /// Sends an unreliable message to a specific client.
+    ///
+    /// See [Target::ClientTargetedUnreliable] for specifics.
+    fn send_client_targeted_unreliable(&self, user_id: String) {
+        self.send(Target::ClientTargetedUnreliable(user_id))
+    }
+
+    #[cfg(feature = "server")]
+    /// Sends a reliable message to a specific client.
+    ///
+    /// See [Target::ClientTargetedReliable] for specifics.
+    fn send_client_targeted_reliable(&self, user_id: String) {
+        self.send(Target::ClientTargetedReliable(user_id))
+    }
+
     /// Subscribes to this [Message]. Wrapper around [self::subscribe].
     fn subscribe<R: CallbackReturn>(callback: impl FnMut(Source, Self) -> R + 'static) -> OnHandle {
         self::subscribe(callback)

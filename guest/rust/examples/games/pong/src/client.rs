@@ -28,7 +28,7 @@ fn main() {
             direction -= 1.0;
         }
 
-        messages::Input::new(direction).send(Target::ServerUnreliable);
+        messages::Input::new(direction).send_server_unreliable();
     });
 
     // Update camera so we have correct aspect ratio
