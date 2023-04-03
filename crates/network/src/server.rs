@@ -250,6 +250,7 @@ impl ServerState {
 pub struct ProxySettings {
     pub endpoint: String,
     pub project_path: PathBuf,
+    pub pre_cache_assets: bool,
 }
 
 pub struct GameServer {
@@ -257,7 +258,7 @@ pub struct GameServer {
     pub port: u16,
     /// Shuts down the server if there are no players
     pub use_inactivity_shutdown: bool,
-    proxy: Option<ambient_proxy::client::Client>,
+    proxy: Option<(ProxySettings, ambient_proxy::client::Client)>,
 }
 impl GameServer {
     pub async fn new_with_port(port: u16, use_inactivity_shutdown: bool, proxy_settings: Option<ProxySettings>) -> anyhow::Result<Self> {
@@ -265,10 +266,21 @@ impl GameServer {
 
         let endpoint = create_server(server_addr)?;
 
-        let proxy = if let Some(ProxySettings { endpoint: proxy_addr, project_path }) = proxy_settings {
-            let assets_path = project_path.join("build");
-            match ambient_proxy::client::Client::connect_using_endpoint(proxy_addr, assets_path, endpoint.clone()).await {
-                Ok(proxy_client) => Some(proxy_client),
+        let proxy = if let Some(settings) = proxy_settings {
+            static APP_USER_AGENT: &str = concat!(
+                env!("CARGO_PKG_NAME"),
+                "/",
+                env!("CARGO_PKG_VERSION"),
+            );
+
+            let assets_path = settings.project_path.join("build");
+            let builder = ambient_proxy::client::builder()
+                .endpoint(endpoint.clone())
+                .proxy_server(settings.endpoint.clone())
+                .assets_path(assets_path)
+                .user_agent(APP_USER_AGENT.to_string());
+            match builder.build().await {
+                Ok(proxy_client) => Some((settings, proxy_client)),
                 Err(err) => {
                     log::warn!("Failed to connect to proxy: {}", err);
                     None
@@ -333,8 +345,8 @@ impl GameServer {
         let mut inactivity_interval = interval(Duration::from_secs_f32(5.));
         let mut last_active = ambient_sys::time::Instant::now();
 
-        if let Some(proxy) = proxy {
-            start_proxy_connection(proxy, state.clone(), world_stream_filter.clone(), assets.clone()).await;
+        if let Some((proxy_settings, proxy)) = proxy {
+            start_proxy_connection(proxy, proxy_settings, state.clone(), world_stream_filter.clone(), assets.clone()).await;
         }
 
         loop {
@@ -402,7 +414,7 @@ impl GameServer {
     }
 }
 
-async fn start_proxy_connection(proxy: Client, state: Arc<Mutex<ServerState>>, world_stream_filter: WorldStreamFilter, assets: AssetCache) {
+async fn start_proxy_connection(proxy: Client, settings: ProxySettings, state: Arc<Mutex<ServerState>>, world_stream_filter: WorldStreamFilter, assets: AssetCache) {
     let on_endpoint_allocated = {
         let assets = assets.clone();
         Arc::new(move |AllocatedEndpoint { id, allocated_endpoint, external_endpoint, assets_root, .. }: AllocatedEndpoint| {
@@ -438,8 +450,10 @@ async fn start_proxy_connection(proxy: Client, state: Arc<Mutex<ServerState>>, w
     }
 
     // pre-cache "assets" subdirectory
-    if let Err(err) = controller.pre_cache_assets("assets") {
-        log::warn!("Failed to pre-cache assets: {}", err);
+    if settings.pre_cache_assets {
+        if let Err(err) = controller.pre_cache_assets("assets") {
+            log::warn!("Failed to pre-cache assets: {}", err);
+        }
     }
 }
 
