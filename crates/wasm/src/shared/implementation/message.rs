@@ -95,8 +95,8 @@ pub fn process_network_message(
         world,
         Some(module_id),
         match user_id {
-            Some(user_id) => message::Source::NetworkUserId(user_id),
-            None => message::Source::Network,
+            Some(user_id) => message::Source::Client(user_id),
+            None => message::Source::Server,
         },
         name,
         data,

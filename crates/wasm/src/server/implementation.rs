@@ -179,16 +179,16 @@ impl wit::server_message::Host for Bindings {
         let world = self.world_mut();
 
         match target {
-            Target::RemoteBroadcastUnreliable => {
+            Target::ClientBroadcastUnreliable => {
                 send_networked(world, None, module_id, name, data, false)
             }
-            Target::RemoteBroadcastReliable => {
+            Target::ClientBroadcastReliable => {
                 send_networked(world, None, module_id, name, data, true)
             }
-            Target::RemoteTargetedUnreliable(user_id) => {
+            Target::ClientTargetedUnreliable(user_id) => {
                 send_networked(world, Some(user_id), module_id, name, data, false)
             }
-            Target::RemoteTargetedReliable(user_id) => {
+            Target::ClientTargetedReliable(user_id) => {
                 send_networked(world, Some(user_id), module_id, name, data, true)
             }
             Target::LocalBroadcast => message::send_local(world, module_id, None, name, data),

@@ -14,11 +14,11 @@ pub enum Source {
     /// This message came from the runtime.
     Runtime,
     /// This message came from the corresponding serverside module.
-    #[cfg(all(feature = "client", not(feature = "server")))]
-    Remote,
+    #[cfg(feature = "client")]
+    Server,
     /// This message came from the corresponding clientside module and was sent from `user_id`.
-    #[cfg(all(feature = "server", not(feature = "client")))]
-    Remote {
+    #[cfg(feature = "server")]
+    Client {
         /// The user that sent this message.
         user_id: String,
     },
@@ -33,41 +33,47 @@ impl Source {
 
     #[cfg(feature = "server")]
     /// The user that sent this message, if any.
-    #[allow(clippy::needless_return)]
-    pub fn remote_user_id(self) -> Option<String> {
-        #[cfg(all(feature = "server", not(feature = "client")))]
-        if let Source::Remote { user_id } = self {
-            return Some(user_id);
+    pub fn client_user_id(self) -> Option<String> {
+        if let Source::Client { user_id } = self {
+            Some(user_id)
+        } else {
+            None
         }
-
-        return None;
     }
 
     #[cfg(feature = "server")]
     /// The entity ID of the player that sent this message, if any.
-    pub fn remote_entity_id(self) -> Option<EntityId> {
-        let Some(user_id) = self.remote_user_id() else { return None; };
+    pub fn client_entity_id(self) -> Option<EntityId> {
+        let Some(user_id) = self.client_user_id() else { return None; };
         let Some(player_id) = crate::player::get_by_user_id(&user_id) else { return None; };
         Some(player_id)
     }
 
-    fn remote(e: &Entity) -> Option<Self> {
-        #[cfg(all(feature = "client", not(feature = "server")))]
-        if e.has(crate::components::core::wasm::message::source_remote()) {
-            return Some(Source::Remote);
-        }
-        #[cfg(all(feature = "server", not(feature = "client")))]
-        if let Some(user_id) =
-            e.get(crate::components::core::wasm::message::source_remote_user_id())
-        {
-            return Some(Source::Remote { user_id });
+    fn from_entity(e: &Entity) -> Option<Self> {
+        if e.has(source_runtime()) {
+            return Some(Source::Runtime);
         }
 
-        let _ = e;
+        if let Some(module) = e.get(source_local()) {
+            return Some(Source::Local(module));
+        }
+
+        #[cfg(feature = "client")]
+        if e.has(crate::components::core::wasm::message::source_server()) {
+            return Some(Source::Server);
+        }
+
+        #[cfg(feature = "server")]
+        if let Some(user_id) =
+            e.get(crate::components::core::wasm::message::source_client_user_id())
+        {
+            return Some(Source::Client { user_id });
+        }
+
         None
     }
 
-    /// Is this message from another module on this side?
+    /// The module on this side that sent this message, if any.
     pub fn local(self) -> Option<EntityId> {
         match self {
             Source::Local(id) => Some(id),
@@ -89,31 +95,31 @@ pub enum Target {
     ///
     /// Not guaranteed to be received, and must be below one kilobyte.
     #[cfg(feature = "client")]
-    RemoteUnreliable,
+    ServerUnreliable,
     /// A reliable transmission to the server (guaranteed to be received).
     #[cfg(feature = "client")]
-    RemoteReliable,
+    ServerReliable,
 
     // Server
     /// An unreliable transmission to all clients.
     ///
     /// Not guaranteed to be received, and must be below one kilobyte.
     #[cfg(feature = "server")]
-    RemoteBroadcastUnreliable,
+    ClientBroadcastUnreliable,
     /// A reliable transmission to all clients (guaranteed to be received).
     #[cfg(feature = "server")]
-    RemoteBroadcastReliable,
+    ClientBroadcastReliable,
     /// An unreliable transmission to a specific client.
     ///
     /// Not guaranteed to be received, and must be below one kilobyte.
     #[cfg(feature = "server")]
-    RemoteTargetedUnreliable(
+    ClientTargetedUnreliable(
         /// The user to send to.
         String,
     ),
     /// A reliable transmission to a specific client (guaranteed to be received).
     #[cfg(feature = "server")]
-    RemoteTargetedReliable(
+    ClientTargetedReliable(
         /// The user to send to.
         String,
     ),
@@ -125,8 +131,8 @@ impl IntoBindgen for Target {
 
     fn into_bindgen(self) -> Self::Item {
         match self {
-            Target::RemoteUnreliable => Self::Item::RemoteUnreliable,
-            Target::RemoteReliable => Self::Item::RemoteReliable,
+            Target::ServerUnreliable => Self::Item::ServerUnreliable,
+            Target::ServerReliable => Self::Item::ServerReliable,
             Target::LocalBroadcast => Self::Item::LocalBroadcast,
             Target::Local(id) => Self::Item::Local(id.into_bindgen()),
             #[cfg(feature = "server")]
@@ -141,13 +147,13 @@ impl<'a> IntoBindgen for &'a Target {
 
     fn into_bindgen(self) -> Self::Item {
         match self {
-            Target::RemoteBroadcastUnreliable => Self::Item::RemoteBroadcastUnreliable,
-            Target::RemoteBroadcastReliable => Self::Item::RemoteBroadcastReliable,
-            Target::RemoteTargetedUnreliable(user_id) => {
-                Self::Item::RemoteTargetedUnreliable(user_id.as_str())
+            Target::ClientBroadcastUnreliable => Self::Item::ClientBroadcastUnreliable,
+            Target::ClientBroadcastReliable => Self::Item::ClientBroadcastReliable,
+            Target::ClientTargetedUnreliable(user_id) => {
+                Self::Item::ClientTargetedUnreliable(user_id.as_str())
             }
-            Target::RemoteTargetedReliable(user_id) => {
-                Self::Item::RemoteTargetedReliable(user_id.as_str())
+            Target::ClientTargetedReliable(user_id) => {
+                Self::Item::ClientTargetedReliable(user_id.as_str())
             }
             Target::LocalBroadcast => Self::Item::LocalBroadcast,
             Target::Local(id) => Self::Item::Local(id.into_bindgen()),
@@ -187,19 +193,9 @@ pub fn subscribe<R: CallbackReturn, T: Message>(
     on(
         &format!("{}/{}", event::MODULE_MESSAGE, T::id()),
         move |e| {
-            let source = if e.has(source_runtime()) {
-                Source::Runtime
-            } else if let Some(module) = e.get(source_local()) {
-                Source::Local(module)
-            } else {
-                if let Some(remote) = Source::remote(e) {
-                    remote
-                } else {
-                    panic!("No source available for incoming message");
-                }
-            };
-
-            let data = e.get(data()).expect("No data for incoming message");
+            let source =
+                Source::from_entity(e).context("No source available for incoming message")?;
+            let data = e.get(data()).context("No data for incoming message")?;
 
             callback(source, T::deserialize_message(&data)?).into_result()?;
             Ok(())
@@ -246,4 +242,5 @@ mod serde {
         }
     }
 }
+use anyhow::Context;
 pub use serde::*;

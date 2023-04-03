@@ -8,7 +8,7 @@ use ambient_api::prelude::*;
 #[main]
 pub fn main() {
     messages::Hello::subscribe(|source, data| {
-        let Some(user_id) = source.remote_user_id() else { return; };
+        let Some(user_id) = source.client_user_id() else { return; };
         println!("{user_id}: {:?}", data);
 
         let source_reliable = data.source_reliable;
@@ -17,19 +17,19 @@ pub fn main() {
             true,
             format!("{source_reliable}: Hello, world from the server!"),
         )
-        .send(Target::RemoteTargetedReliable(user_id.clone()));
+        .send(Target::ClientTargetedReliable(user_id.clone()));
 
         messages::Hello::new(
             false,
             format!("{source_reliable}: Hello, world from the server!"),
         )
-        .send(Target::RemoteTargetedUnreliable(user_id));
+        .send(Target::ClientTargetedUnreliable(user_id));
 
         messages::Hello::new(
             true,
             format!("{source_reliable}: Hello, world (everyone) from the server!"),
         )
-        .send(Target::RemoteBroadcastReliable);
+        .send(Target::ClientBroadcastReliable);
     });
 
     let handled = Arc::new(AtomicBool::new(false));

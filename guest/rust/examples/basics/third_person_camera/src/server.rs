@@ -63,7 +63,7 @@ pub fn main() {
     });
 
     messages::Input::subscribe(move |source, msg| {
-        let Some(player_id) = source.remote_entity_id() else { return; };
+        let Some(player_id) = source.client_entity_id() else { return; };
 
         entity::add_component(player_id, player_movement_direction(), msg.direction);
         entity::add_component(player_id, player_mouse_delta_x(), msg.mouse_delta_x);

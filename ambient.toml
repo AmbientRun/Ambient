@@ -1226,16 +1226,16 @@ name = "Source: Local"
 description = "This message came from the specified module on this side."
 attributes = ["Debuggable"]
 
-[components."core::wasm::message::source_remote"]
+[components."core::wasm::message::source_server"]
 type = "Empty"
-name = "Source: Remote"
-description = "This message came from the network with no specific source (likely the server)."
+name = "Source: Server"
+description = "This message came from the serverside."
 attributes = ["Debuggable"]
 
-[components."core::wasm::message::source_remote_user_id"]
+[components."core::wasm::message::source_client_user_id"]
 type = "String"
-name = "Source: Remote (User ID)"
-description = "This message came from this user."
+name = "Source: Client"
+description = "This message came from the clientside from this user."
 attributes = ["Debuggable"]
 
 # Concepts

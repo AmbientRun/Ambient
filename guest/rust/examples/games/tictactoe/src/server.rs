@@ -69,7 +69,7 @@ pub fn main() {
     });
 
     messages::Input::subscribe(move |source, msg| {
-        let Some(player_id) = source.remote_entity_id() else { return; };
+        let Some(player_id) = source.client_entity_id() else { return; };
         let Some(cell) = entity::get_component(player_id, components::cell()) else { return; };
 
         let size = SIZE as i32;

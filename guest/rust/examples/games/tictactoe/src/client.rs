@@ -37,7 +37,7 @@ fn process_input() {
         .into_iter()
         .any(|x| x)
     {
-        msg.send(Target::RemoteReliable);
+        msg.send(Target::ServerReliable);
     }
 }
 

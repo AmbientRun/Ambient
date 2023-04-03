@@ -250,7 +250,7 @@ pub fn main() {
     });
 
     messages::Input::subscribe(|source, msg| {
-        let Some(user_id) = source.remote_entity_id() else { return; };
+        let Some(user_id) = source.client_entity_id() else { return; };
 
         if let Some(player_camera_state) = entity::get_component(user_id, player_camera_state()) {
             let player_camera_state = CameraState(player_camera_state);

@@ -7,8 +7,8 @@ use ambient_api::prelude::*;
 
 #[main]
 pub fn main() {
-    messages::Hello::new(false, "Hello, world from the client!").send(Target::RemoteUnreliable);
-    messages::Hello::new(true, "Hello, world from the client!").send(Target::RemoteUnreliable);
+    messages::Hello::new(false, "Hello, world from the client!").send(Target::ServerUnreliable);
+    messages::Hello::new(true, "Hello, world from the client!").send(Target::ServerUnreliable);
 
     messages::Hello::subscribe(|source, data| {
         println!("{source:?}: {:?}", data);

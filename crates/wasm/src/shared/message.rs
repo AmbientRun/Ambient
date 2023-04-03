@@ -9,8 +9,8 @@ components!("wasm::message", {
 #[derive(Clone, PartialEq, Debug)]
 pub enum Source {
     Runtime,
-    Network,
-    NetworkUserId(String),
+    Server,
+    Client(String),
     Module(EntityId),
 }
 
@@ -71,8 +71,8 @@ pub(super) fn run(
     let mut source_id = None;
     match &source {
         Source::Runtime => entity.set(source_runtime(), ()),
-        Source::Network => entity.set(source_remote(), ()),
-        Source::NetworkUserId(user_id) => entity.set(source_remote_user_id(), user_id.to_owned()),
+        Source::Server => entity.set(source_server(), ()),
+        Source::Client(user_id) => entity.set(source_client_user_id(), user_id.to_owned()),
         Source::Module(id) => {
             source_id = Some(*id);
             entity.set(source_local(), *id);
