@@ -950,7 +950,7 @@ fn can_generate_message() {
         #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
         #[doc = r" as well as to other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
+            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError, ModuleMessage}};
 
             #[derive(Clone, Debug)]
             #[doc = "**The Coolest Message Out There**: Proof that cool messages do exist."]
@@ -986,6 +986,7 @@ fn can_generate_message() {
                     })
                 }
             }
+            impl ModuleMessage for MyCoolMessage {}
         }
     };
 
@@ -993,6 +994,70 @@ fn can_generate_message() {
         (Some("ambient.toml".to_string()), manifest.to_string()),
         guest_context(),
         false,
+        true,
+    )
+    .unwrap();
+
+    assert_eq!(result.to_string(), expected_output.to_string());
+}
+
+#[test]
+fn can_generate_runtime_message() {
+    let manifest = indoc::indoc! {r#"
+        [project]
+        id = "my_project"
+        name = "My Project"
+        version = "0.0.1"
+
+        [messages.my_cool_message]
+        name = "The Coolest Message Out There"
+        description = "Proof that cool messages do exist."
+        fields = {}
+    "#};
+
+    let expected_output = quote::quote! {
+        const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
+        #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
+        pub mod components {
+        }
+        #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
+        #[doc = r""]
+        #[doc = r" They do not have any runtime representation outside of the components that compose them."]
+        pub mod concepts {
+        }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
+        #[doc = r" as well as to other modules."]
+        pub mod messages {
+            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError, RuntimeMessage}};
+
+            #[derive(Clone, Debug)]
+            #[doc = "**The Coolest Message Out There**: Proof that cool messages do exist."]
+            pub struct MyCoolMessage { }
+            impl MyCoolMessage {
+                pub fn new( ) -> Self {
+                    Self { }
+                }
+            }
+            impl Message for MyCoolMessage {
+                fn id() -> &'static str {
+                    "my_cool_message"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self { })
+                }
+            }
+            impl RuntimeMessage for MyCoolMessage {}
+        }
+    };
+
+    let result = implementation(
+        (Some("ambient.toml".to_string()), manifest.to_string()),
+        guest_context(),
+        true,
         true,
     )
     .unwrap();

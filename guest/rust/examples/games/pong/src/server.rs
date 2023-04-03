@@ -98,7 +98,7 @@ pub fn main() {
         entity::set_component(player_id, player_movement_direction(), msg.direction);
     });
 
-    ambient_api::messages::Frame::subscribe(move |_, _| {
+    ambient_api::messages::Frame::subscribe(move |_| {
         let players = entity::get_all(player());
 
         // start the ball if we have 2 players and ball has no velocity

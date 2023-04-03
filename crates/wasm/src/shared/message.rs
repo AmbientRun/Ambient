@@ -26,7 +26,7 @@ pub struct SerializedMessage {
 pub trait ToSerialized {
     fn to_serialized(self, module_id: Option<EntityId>) -> anyhow::Result<SerializedMessage>;
 }
-impl<T: ambient_project_rt::message_serde::Message> ToSerialized for T {
+impl<T: ambient_project_rt::message_serde::RuntimeMessage> ToSerialized for T {
     fn to_serialized(self, module_id: Option<EntityId>) -> anyhow::Result<SerializedMessage> {
         Ok(SerializedMessage {
             module_id,

@@ -2,7 +2,7 @@ use ambient_api::{player::MouseButton, prelude::*};
 
 #[main]
 fn main() {
-    ambient_api::messages::Frame::subscribe(move |_, _| {
+    ambient_api::messages::Frame::subscribe(move |_| {
         let (delta, input) = player::get_raw_input_delta();
 
         let camera_rotation = if input.mouse_buttons.contains(&MouseButton::Right) {

@@ -203,8 +203,8 @@ pub fn subscribe<R: CallbackReturn, T: Message>(
     )
 }
 
-/// Adds helpers for sending/subscribing to [Message]s.
-pub trait MessageExt: Message {
+/// Implemented by all messages that can be sent between modules.
+pub trait ModuleMessage: Message {
     /// Sends this [Message] to `target`. Wrapper around [self::send].
     fn send(&self, target: Target) {
         self::send(target, self)
@@ -273,7 +273,14 @@ pub trait MessageExt: Message {
         self::subscribe(callback)
     }
 }
-impl<T: Message> MessageExt for T {}
+
+/// Implemented by all messages sent from the runtime.
+pub trait RuntimeMessage: Message {
+    /// Subscribes to this [Message]. Wrapper around [self::subscribe].
+    fn subscribe<R: CallbackReturn>(mut callback: impl FnMut(Self) -> R + 'static) -> OnHandle {
+        self::subscribe(move |_source, msg| callback(msg))
+    }
+}
 
 mod serde {
     pub use ambient_project_rt::message_serde::*;

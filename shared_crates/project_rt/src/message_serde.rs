@@ -295,3 +295,6 @@ pub trait Message: Sized {
     #[doc(hidden)]
     fn deserialize_message(input: &[u8]) -> Result<Self, MessageSerdeError>;
 }
+
+/// Implemented on all messages that come from the runtime.
+pub trait RuntimeMessage: Message {}

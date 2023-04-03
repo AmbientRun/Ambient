@@ -4,7 +4,7 @@ pub use crate::{
     entity, event,
     global::*,
     main, message,
-    message::{Message, MessageExt},
+    message::{Message, ModuleMessage, RuntimeMessage},
     player,
 };
 pub use anyhow::{anyhow, Context as AnyhowContext};

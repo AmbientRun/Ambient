@@ -2,7 +2,7 @@ use ambient_api::{player::KeyCode, prelude::*};
 
 #[main]
 pub fn main() {
-    ambient_api::messages::Frame::subscribe(move |_, _| {
+    ambient_api::messages::Frame::subscribe(move |_| {
         let (delta, _) = player::get_raw_input_delta();
 
         if delta.keys.contains(&KeyCode::Key1) {

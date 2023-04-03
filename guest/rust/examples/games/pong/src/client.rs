@@ -17,7 +17,7 @@ fn main() {
         .with_default(main_scene())
         .spawn();
 
-    ambient_api::messages::Frame::subscribe(move |_, _| {
+    ambient_api::messages::Frame::subscribe(move |_| {
         let input = player::get_raw_input();
         let mut direction = 0.0;
 

@@ -184,10 +184,10 @@ impl Element {
     /// This spawns the element tree and sets up listeners to automatically update it.
     #[cfg(feature = "guest")]
     pub fn spawn_interactive(self) {
-        use ambient_guest_bridge::api::{message::MessageExt, messages, prelude::OkEmpty};
+        use ambient_guest_bridge::api::{message::RuntimeMessage, messages, prelude::OkEmpty};
 
         let mut tree = self.spawn_tree();
-        messages::Frame::subscribe(move |_, _| {
+        messages::Frame::subscribe(move |_| {
             tree.update(&mut World);
             OkEmpty
         });

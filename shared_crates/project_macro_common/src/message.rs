@@ -10,19 +10,26 @@ use quote::quote;
 pub fn tree_to_token_stream(
     message_tree: &Tree<Message>,
     context: &Context,
+    is_api_manifest: bool,
 ) -> anyhow::Result<TokenStream> {
+    let runtime_message = if is_api_manifest {
+        quote! { RuntimeMessage }
+    } else {
+        quote! { ModuleMessage }
+    };
     to_token_stream(
         message_tree.root(),
+        is_api_manifest,
         context,
         |context, _ns, ts| match context {
             Context::Host => quote! {
-                use ambient_project_rt::message_serde::{Message, MessageSerde, MessageSerdeError};
+                use ambient_project_rt::message_serde::{Message, MessageSerde, MessageSerdeError, #runtime_message};
                 use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
                 use crate::{EntityId, Entity};
                 #ts
             },
             Context::Guest { api_path, .. } => quote! {
-                use #api_path::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
+                use #api_path::{prelude::*, message::{Message, MessageSerde, MessageSerdeError, #runtime_message}};
                 #ts
             },
         },
@@ -31,6 +38,7 @@ pub fn tree_to_token_stream(
 
 fn to_token_stream(
     node: &TreeNode<Message>,
+    is_api_manifest: bool,
     context: &Context,
     wrapper: impl Fn(&Context, &TreeNode<Message>, TokenStream) -> TokenStream + Copy,
 ) -> anyhow::Result<TokenStream> {
@@ -38,7 +46,7 @@ fn to_token_stream(
         node,
         context,
         wrapper,
-        to_token_stream,
+        |n, c, w| to_token_stream(n, is_api_manifest, c, w),
         |id, message, context| {
             let doc_comment = format!("**{}**: {}", message.name, message.description);
 
@@ -98,6 +106,12 @@ fn to_token_stream(
                 })
                 .collect::<Result<Vec<_>, _>>()?;
 
+            let message_impl = if is_api_manifest {
+                quote! { RuntimeMessage }
+            } else {
+                quote! { ModuleMessage }
+            };
+
             Ok(quote! {
                 #[derive(Clone, Debug)]
                 #[doc = #doc_comment]
@@ -126,6 +140,7 @@ fn to_token_stream(
                         })
                     }
                 }
+                impl #message_impl for #struct_name {}
             })
         },
     )

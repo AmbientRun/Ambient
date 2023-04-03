@@ -52,7 +52,7 @@ pub async fn main() {
         println!("Bonk! {:?} collided", c.get(ids()).unwrap());
     });
 
-    ambient_api::messages::Frame::subscribe(move |_, _| {
+    ambient_api::messages::Frame::subscribe(move |_| {
         for hit in physics::raycast(Vec3::Z * 20., -Vec3::Z) {
             if hit.entity == cube {
                 println!("The raycast hit the cube: {hit:?}");

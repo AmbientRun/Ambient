@@ -27,11 +27,11 @@ pub enum Context {
 pub fn implementation(
     (file_path, contents): (Option<String>, String),
     context: Context,
-    global_namespace: bool,
+    is_api_manifest: bool,
     validate_namespaces_documented: bool,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     let manifest: Manifest = toml::from_str(&contents)?;
-    let project_path = if !global_namespace {
+    let project_path = if !is_api_manifest {
         manifest.project_path()
     } else {
         IdentifierPathBuf::empty()
@@ -45,7 +45,7 @@ pub fn implementation(
     let concept_tokens = concept::tree_to_token_stream(&concept_tree, &component_tree, &context)?;
 
     let message_tree = Tree::new(&manifest.messages, validate_namespaces_documented)?;
-    let message_tokens = message::tree_to_token_stream(&message_tree, &context)?;
+    let message_tokens = message::tree_to_token_stream(&message_tree, &context, is_api_manifest)?;
 
     let manifest = file_path.map(
         |file_path| quote! { const _PROJECT_MANIFEST: &'static str = include_str!(#file_path); },
