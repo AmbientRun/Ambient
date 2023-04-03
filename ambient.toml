@@ -331,12 +331,6 @@ name = "ID"
 description = "The ID of the entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::ecs::ids"]
-type = { type = "Vec", element_type = "EntityId" }
-name = "IDs"
-description = "A generic list of entity IDs, with no semantic meaning."
-attributes = ["Debuggable", "Networked", "Store"]
-
 [components."core::ecs::parent"]
 type = "EntityId"
 name = "Parent"
@@ -1315,5 +1309,25 @@ extends = ["camera"]
 # Messages
 [messages.frame]
 name = "Frame"
-description = "This is sent to all modules every frame."
+description = "Sent to all modules every frame."
+fields = {}
+
+[messages.collision]
+name = "Collision"
+description = "Sent when a collision occurs."
+fields = { ids = { container_type = "Vec", element_type = "EntityId" } }
+
+[messages.collider_loads]
+name = "Collider Loads"
+description = "Sent when colliders load."
+fields = { ids = { container_type = "Vec", element_type = "EntityId" } }
+
+[messages.module_load]
+name = "Module Load"
+description = "Sent to a module when it loads."
+fields = {}
+
+[messages.module_unload]
+name = "Module Unload"
+description = "Sent to a module when it unloads."
 fields = {}

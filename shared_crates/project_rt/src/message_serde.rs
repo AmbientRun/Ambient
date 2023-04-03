@@ -48,20 +48,6 @@ impl MessageSerde for bool {
         }
     }
 }
-#[cfg(feature = "native")]
-impl MessageSerde for ambient_ecs::EntityId {
-    fn serialize_message_part(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
-        let (id0, id1) = self.to_u64s();
-        output.write_u64::<BigEndian>(id0)?;
-        output.write_u64::<BigEndian>(id1)?;
-        Ok(())
-    }
-
-    fn deserialize_message_part(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
-        let (id0, id1) = (input.read_u64::<BigEndian>()?, input.read_u64::<BigEndian>()?);
-        Ok(Self::from_u64s(id0, id1))
-    }
-}
 impl MessageSerde for f32 {
     fn serialize_message_part(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
         Ok(output.write_f32::<BigEndian>(*self)?)

@@ -2,7 +2,6 @@ use ambient_api::{
     components::core::{
         app::main_scene,
         camera::aspect_ratio_from_window,
-        ecs::ids,
         physics::{
             angular_velocity, box_collider, dynamic, linear_velocity, physics_controlled,
             visualizing,
@@ -47,9 +46,9 @@ pub async fn main() {
         .with(prefab_from_url(), asset::url("assets/Shape.glb").unwrap())
         .spawn();
 
-    on(event::COLLISION, |c| {
+    ambient_api::messages::Collision::subscribe(|msg| {
         // TODO: play a sound instead
-        println!("Bonk! {:?} collided", c.get(ids()).unwrap());
+        println!("Bonk! {:?} collided", msg.ids);
     });
 
     ambient_api::messages::Frame::subscribe(move |_| {

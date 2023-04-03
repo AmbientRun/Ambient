@@ -499,6 +499,7 @@ dependencies = [
  "atomic_refcell",
  "bit-set",
  "bit-vec",
+ "byteorder",
  "data-encoding",
  "derive_more",
  "downcast-rs",

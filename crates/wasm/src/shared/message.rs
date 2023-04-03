@@ -23,20 +23,6 @@ pub struct SerializedMessage {
     pub(super) data: Vec<u8>,
 }
 
-pub trait ToSerialized {
-    fn to_serialized(self, module_id: Option<EntityId>) -> anyhow::Result<SerializedMessage>;
-}
-impl<T: ambient_project_rt::message_serde::RuntimeMessage> ToSerialized for T {
-    fn to_serialized(self, module_id: Option<EntityId>) -> anyhow::Result<SerializedMessage> {
-        Ok(SerializedMessage {
-            module_id,
-            source: Source::Runtime,
-            name: T::id().to_string(),
-            data: self.serialize_message()?,
-        })
-    }
-}
-
 pub fn send(
     world: &mut World,
     module_id: Option<EntityId>,
@@ -94,9 +80,9 @@ pub(super) fn run(
                     .unwrap_or_default();
 
                 world.resource(messenger()).as_ref()(
-                world, module_id, MessageType::Warn,
-                &format!("Received message for unloaded module {module_id} ({module_name}); message {name:?} from {source:?}")
-            );
+                    world, module_id, MessageType::Warn,
+                    &format!("Received message for unloaded module {module_id} ({module_name}); message {name:?} from {source:?}")
+                );
             }
         }
     } else {
@@ -107,5 +93,22 @@ pub(super) fn run(
 
             super::run(world, id, sms, &run_context)
         }
+    }
+}
+
+pub trait RuntimeMessageExt {
+    fn run(self, world: &mut World, module_id: Option<EntityId>) -> anyhow::Result<()>;
+}
+impl<T: ambient_project_rt::message_serde::RuntimeMessage> RuntimeMessageExt for T {
+    fn run(self, world: &mut World, module_id: Option<EntityId>) -> anyhow::Result<()> {
+        Ok(run(
+            world,
+            SerializedMessage {
+                module_id,
+                source: Source::Runtime,
+                name: T::id().to_string(),
+                data: self.serialize_message()?,
+            },
+        ))
     }
 }

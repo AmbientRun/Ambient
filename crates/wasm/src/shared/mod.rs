@@ -14,7 +14,7 @@ use std::sync::Arc;
 
 use ambient_core::async_ecs::async_run;
 use ambient_ecs::{
-    dont_despawn_on_unload, query, world_events, ComponentEntry, Entity, EntityId, FnSystem,
+    dont_despawn_on_unload, generated::messages, query, world_events, Entity, EntityId, FnSystem,
     SystemGroup, World, WorldEventReader,
 };
 use ambient_physics::{collider_loads, collisions, PxShapeUserData};
@@ -60,7 +60,7 @@ pub use internal::{
     module_state, module_state_maker, remote_paired_id,
 };
 
-use crate::shared::message::ToSerialized;
+use crate::shared::message::RuntimeMessageExt;
 
 pub fn init_all_components() {
     internal::init_components();
@@ -133,12 +133,9 @@ pub fn systems() -> SystemGroup {
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("WASM module frame event");
                 // trigger frame event
-                message::run(
-                    world,
-                    ambient_ecs::generated::messages::Frame::new()
-                        .to_serialized(None)
-                        .unwrap(),
-                );
+                ambient_ecs::generated::messages::Frame::new()
+                    .run(world, None)
+                    .unwrap();
             })),
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("WASM module collision event");
@@ -161,14 +158,9 @@ pub fn systems() -> SystemGroup {
                         .flatten()
                         .collect_vec();
 
-                    run_all(
-                        world,
-                        &RunContext::new(
-                            world,
-                            events::COLLISION,
-                            vec![ComponentEntry::new(ambient_ecs::ids(), ids)].into(),
-                        ),
-                    );
+                    ambient_ecs::generated::messages::Collision::new(ids)
+                        .run(world, None)
+                        .unwrap();
                 }
             })),
             Box::new(FnSystem::new(move |world, _| {
@@ -178,16 +170,14 @@ pub fn systems() -> SystemGroup {
                     Some(collider_loads) => collider_loads.clone(),
                     None => return,
                 };
-                for id in collider_loads {
-                    run_all(
-                        world,
-                        &RunContext::new(
-                            world,
-                            events::COLLIDER_LOAD,
-                            vec![ComponentEntry::new(ambient_ecs::id(), id)].into(),
-                        ),
-                    );
+
+                if collider_loads.is_empty() {
+                    return;
                 }
+
+                ambient_ecs::generated::messages::ColliderLoads::new(collider_loads)
+                    .run(world, None)
+                    .unwrap();
             })),
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("WASM module pending messages");
@@ -273,22 +263,19 @@ fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
         async_run.run(move |world| {
             match result {
                 Ok(mut sms) => {
-                    // Subscribe the module to events that it should be aware of.
-                    sms.listen_to_event(format!(
-                        "{}/{}",
-                        events::MODULE_MESSAGE,
-                        ambient_ecs::generated::messages::Frame::id()
-                    ));
-                    sms.listen_to_event(events::MODULE_LOAD.to_owned());
+                    // Subscribe the module to messages that it should be aware of.
+                    let autosubscribe_messages =
+                        [messages::Frame::id(), messages::ModuleLoad::id()];
+                    for id in autosubscribe_messages {
+                        sms.listen_to_event(format!("{}/{}", events::MODULE_MESSAGE, id));
+                    }
+
+                    world.add_component(module_id, module_state(), sms).unwrap();
 
                     // Run the initial startup event.
-                    run(
-                        world,
-                        module_id,
-                        sms.clone(),
-                        &RunContext::new(world, events::MODULE_LOAD, Entity::new()),
-                    );
-                    world.add_component(module_id, module_state(), sms).unwrap();
+                    messages::ModuleLoad::new()
+                        .run(world, Some(module_id))
+                        .unwrap();
                 }
                 Err(err) => update_errors(world, &[(module_id, err)]),
             }
@@ -336,14 +323,13 @@ fn run(world: &mut World, id: EntityId, mut state: ModuleState, context: &RunCon
 }
 
 pub(crate) fn unload(world: &mut World, module_id: EntityId, reason: &str) {
-    let Ok(sms) = world.get_cloned(module_id, module_state()) else { return; };
+    if !world.has_component(module_id, module_state()) {
+        return;
+    }
 
-    run(
-        world,
-        module_id,
-        sms,
-        &RunContext::new(world, events::MODULE_UNLOAD, Entity::new()),
-    );
+    messages::ModuleUnload::new()
+        .run(world, Some(module_id))
+        .unwrap();
 
     let spawned_entities = world
         .get_mut(module_id, module_state())

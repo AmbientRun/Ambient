@@ -28,14 +28,6 @@ macro_rules! primitive_component_definitions {
 pub mod events {
     // This is a temporary module until structured events lands: https://github.com/AmbientRun/Ambient/issues/228
 
-    /// Fired on a collision. Components will contain the `ids` of the objects.
-    pub const COLLISION: &str = "core/collision";
-    /// Fired when a collider is loaded. Components will contain the `id` of the object.
-    pub const COLLIDER_LOAD: &str = "core/collider_load";
-    /// Fired when the module is loaded.
-    pub const MODULE_LOAD: &str = "core/module_load";
-    /// Fired when the module is unloaded.
-    pub const MODULE_UNLOAD: &str = "core/module_unload";
     /// The window gained or lost focus
     pub const WINDOW_FOCUSED: &str = "core/window_focused";
     /// The window received a character input
