@@ -17,6 +17,7 @@ fn NewTodoItem(hooks: &mut Hooks) -> Element {
     FlowColumn::el([
         TextEditor::new(text.clone(), set_text.clone())
             .placeholder(Some("Enter todo name here"))
+            .auto_focus()
             .el(),
         Button::new("Create", move |_| {
             messages::NewItem::new(text.clone()).send(message::client::Target::RemoteReliable);
