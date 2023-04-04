@@ -10,7 +10,7 @@ let samples = [
     ["guest/rust/examples/basics/image", 30],
     ["guest/rust/examples/basics/primitives", 30],
     ["guest/rust/examples/basics/raw_text", 30],
-    ["guest/rust/examples/basics/fog", 30],
+    ["guest/rust/examples/basics/fog", 60],
     ["guest/rust/examples/games/tictactoe", 30],
     ["guest/rust/examples/ui/button", 60],
     ["guest/rust/examples/ui/dock_layout", 60],
@@ -81,4 +81,4 @@ if (argv.length > 2) {
     }
     samples = samples.filter(([path]) => path.includes(argv[2]));
 }
-run(samples, false, 10);
+run(samples, false, 1);
