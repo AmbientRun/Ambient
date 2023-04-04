@@ -84,7 +84,7 @@ description = "Information attached to a message sent across WASM boundaries."
 [components."core::app::cursor_position"]
 type = "Vec2"
 name = "Cursor position"
-description = "Absolute mouse cursor position in screen-space."
+description = "Absolute mouse cursor position in screen-space. This is the _logical_ position. Multiply by the `window_scale_factor` to get the physical position."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
 [components."core::app::dtime"]
