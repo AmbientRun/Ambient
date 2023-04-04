@@ -16,7 +16,7 @@ use ambient_ecs::{
     components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent, Resource, System, SystemGroup, World,
     WorldStream, WorldStreamCompEvent, WorldStreamFilter,
 };
-use ambient_proxy::client::{AllocatedEndpoint, Client};
+use ambient_proxy::client::AllocatedEndpoint;
 use ambient_rpc::RpcRegistry;
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
@@ -259,7 +259,7 @@ pub struct GameServer {
     pub port: u16,
     /// Shuts down the server if there are no players
     pub use_inactivity_shutdown: bool,
-    proxy: Option<(ProxySettings, ambient_proxy::client::Client)>,
+    proxy_settings: Option<ProxySettings>,
 }
 impl GameServer {
     pub async fn new_with_port(port: u16, use_inactivity_shutdown: bool, proxy_settings: Option<ProxySettings>) -> anyhow::Result<Self> {
@@ -267,33 +267,8 @@ impl GameServer {
 
         let endpoint = create_server(server_addr)?;
 
-        let proxy = if let Some(settings) = proxy_settings {
-            static APP_USER_AGENT: &str = concat!(
-                env!("CARGO_PKG_NAME"),
-                "/",
-                env!("CARGO_PKG_VERSION"),
-            );
-
-            let assets_path = settings.project_path.join("build");
-            let builder = ambient_proxy::client::builder()
-                .endpoint(endpoint.clone())
-                .proxy_server(settings.endpoint.clone())
-                .project_id(settings.project_id.clone())
-                .assets_path(assets_path)
-                .user_agent(APP_USER_AGENT.to_string());
-            match builder.build().await {
-                Ok(proxy_client) => Some((settings, proxy_client)),
-                Err(err) => {
-                    log::warn!("Failed to connect to proxy: {}", err);
-                    None
-                }
-            }
-        } else {
-            None
-        };
-
         log::debug!("GameServer listening on port {}", port);
-        Ok(Self { endpoint, port, use_inactivity_shutdown, proxy })
+        Ok(Self { endpoint, port, use_inactivity_shutdown, proxy_settings })
     }
     pub async fn new_with_port_in_range(
         port_range: Range<u16>,
@@ -321,7 +296,7 @@ impl GameServer {
         create_shutdown_systems: Arc<dyn Fn() -> SystemGroup<ShutdownEvent> + Sync + Send>,
         is_sync_component: Arc<dyn Fn(ComponentDesc, WorldStreamCompEvent) -> bool + Sync + Send>,
     ) -> SharedServerState {
-        let Self { endpoint, proxy, .. } = self;
+        let Self { endpoint, proxy_settings, .. } = self;
         let assets = world.resource(asset_cache()).clone();
         let world_stream_filter = WorldStreamFilter::new(ArchetypeFilter::new().excl(no_sync()), is_sync_component);
         let state = Arc::new(Mutex::new(ServerState::new(
@@ -347,8 +322,14 @@ impl GameServer {
         let mut inactivity_interval = interval(Duration::from_secs_f32(5.));
         let mut last_active = ambient_sys::time::Instant::now();
 
-        if let Some((proxy_settings, proxy)) = proxy {
-            start_proxy_connection(proxy, proxy_settings, state.clone(), world_stream_filter.clone(), assets.clone()).await;
+        if let Some(proxy_settings) = proxy_settings {
+            let endpoint = endpoint.clone();
+            let state = state.clone();
+            let world_stream_filter = world_stream_filter.clone();
+            let assets = assets.clone();
+            tokio::spawn(async move {
+                start_proxy_connection(endpoint.clone(), proxy_settings, state.clone(), world_stream_filter.clone(), assets.clone()).await;
+            });
         }
 
         loop {
@@ -416,7 +397,7 @@ impl GameServer {
     }
 }
 
-async fn start_proxy_connection(proxy: Client, settings: ProxySettings, state: Arc<Mutex<ServerState>>, world_stream_filter: WorldStreamFilter, assets: AssetCache) {
+async fn start_proxy_connection(endpoint: Endpoint, settings: ProxySettings, state: Arc<Mutex<ServerState>>, world_stream_filter: WorldStreamFilter, assets: AssetCache) {
     let on_endpoint_allocated = {
         let assets = assets.clone();
         Arc::new(move |AllocatedEndpoint { id, allocated_endpoint, external_endpoint, assets_root, .. }: AllocatedEndpoint| {
@@ -442,6 +423,29 @@ async fn start_proxy_connection(proxy: Client, settings: ProxySettings, state: A
             log::debug!("Accepted connection via proxy");
             run_connection(conn.into(), state.clone(), world_stream_filter.clone(), assets.clone());
         })
+    };
+
+    static APP_USER_AGENT: &str = concat!(
+        env!("CARGO_PKG_NAME"),
+        "/",
+        env!("CARGO_PKG_VERSION"),
+    );
+
+    let assets_path = settings.project_path.join("build");
+    let builder = ambient_proxy::client::builder()
+        .endpoint(endpoint.clone())
+        .proxy_server(settings.endpoint.clone())
+        .project_id(settings.project_id.clone())
+        .assets_path(assets_path)
+        .user_agent(APP_USER_AGENT.to_string());
+
+    log::info!("Connecting to proxy server");
+    let proxy = match builder.build().await {
+        Ok(proxy_client) => proxy_client,
+        Err(err) => {
+            log::warn!("Failed to connect to proxy: {}", err);
+            return;
+        }
     };
 
     // start and allocate endpoint
