@@ -47,7 +47,7 @@ pub fn start(
     let proxy_settings = (!host_cli.no_proxy).then(|| {
         ProxySettings {
             // default to getting a proxy from the dims-web Google App Engine app
-            endpoint: host_cli.proxy.clone().unwrap_or("https://dims-web.ew.r.appspot.com/proxy".to_string()),
+            endpoint: host_cli.proxy.clone().unwrap_or("http://proxy.ambient.run/proxy".to_string()),
             project_path: project_path.clone(),
             pre_cache_assets: host_cli.proxy_pre_cache_assets,
             project_id: manifest.project.id.to_string(),
