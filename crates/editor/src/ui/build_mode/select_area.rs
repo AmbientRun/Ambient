@@ -40,14 +40,21 @@ impl ElementComponent for SelectArea {
                 });
             })
         });
-        hooks.use_multi_event(&[WINDOW_MOUSE_MOTION, WINDOW_MOUSE_INPUT], {
-            let set_dragging = set_dragging.clone();
-            let is_clicking = is_clicking.clone();
+
+        hooks.use_event(WINDOW_MOUSE_MOTION, {
             move |world, event| {
                 let scl = *world.resource(window_scale_factor()) as f32;
                 if let Some(position) = event.get(event_mouse_motion()) {
                     set_mouse_pos(position / scl);
-                } else if let Some(pressed) = event.get_ref(event_mouse_input()) {
+                }
+            }
+        });
+
+        hooks.use_event(WINDOW_MOUSE_INPUT, {
+            let set_dragging = set_dragging.clone();
+            let is_clicking = is_clicking.clone();
+            move |world, event| {
+                if let Some(pressed) = event.get_ref(event_mouse_input()) {
                     if !pressed {
                         let mut is_clicking = is_clicking.lock();
                         if !*is_clicking {

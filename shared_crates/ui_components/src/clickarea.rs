@@ -112,9 +112,9 @@ impl ElementComponent for ClickArea {
                 }
             }
         });
-        hooks.use_multi_event(&[WINDOW_MOUSE_INPUT, WINDOW_MOUSE_WHEEL], {
+        hooks.use_event(WINDOW_MOUSE_INPUT, {
             let id = id.clone();
-            let mouse_over_count = mouse_over_count;
+            let mouse_over_count = mouse_over_count.clone();
             move |world, event| {
                 if let Some(id) = *id.lock() {
                     if let Some(pressed) = event.get(event_mouse_input()) {
@@ -123,7 +123,17 @@ impl ElementComponent for ClickArea {
                                 handler(world, id, pressed.into(), event.get(mouse_button()).unwrap().into());
                             }
                         }
-                    } else if let Some(delta) = event.get(event_mouse_wheel()) {
+                    }
+                }
+            }
+        });
+
+        hooks.use_event(WINDOW_MOUSE_WHEEL, {
+            let id = id.clone();
+            let mouse_over_count = mouse_over_count.clone();
+            move |world, event| {
+                if let Some(id) = *id.lock() {
+                    if let Some(delta) = event.get(event_mouse_wheel()) {
                         if *mouse_over_count.lock() > 0 {
                             for handler in &on_mouse_wheel {
                                 handler(world, id, delta, event.get(event_mouse_wheel_pixels()).unwrap());
@@ -133,6 +143,7 @@ impl ElementComponent for ClickArea {
                 }
             }
         });
+
         inner.init(mouse_pickable_min(), Vec3::ZERO).init(mouse_pickable_max(), Vec3::ZERO).on_spawned(move |_, new_id, _| {
             *id.lock() = Some(new_id);
         })

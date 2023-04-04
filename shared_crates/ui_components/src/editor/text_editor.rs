@@ -63,8 +63,8 @@ pub fn TextEditor(
             })
         }
     });
-    hooks.use_multi_event(&[WINDOW_RECEIVED_CHARACTER, WINDOW_KEYBOARD_INPUT], {
-        let value = intermediate_value;
+    hooks.use_event(WINDOW_RECEIVED_CHARACTER, {
+        let value = intermediate_value.clone();
         let on_change = on_change.clone();
         let cursor_position = cursor_position.clone();
         move |_world, event| {
@@ -90,7 +90,15 @@ pub fn TextEditor(
                     *cursor_position.lock() += 1;
                     on_change.0(value.clone());
                 }
-            } else if let Some(pressed) = event.get(event_keyboard_input()) {
+            }
+        }
+    });
+    hooks.use_event(WINDOW_KEYBOARD_INPUT, {
+        let value = intermediate_value;
+        let on_change = on_change.clone();
+        let cursor_position = cursor_position.clone();
+        move |_world, event| {
+            if let Some(pressed) = event.get(event_keyboard_input()) {
                 if !focused {
                     return;
                 }

@@ -92,8 +92,9 @@ pub fn HighjackMouse(
             }
         })
     });
-    hooks.use_multi_event(&[WINDOW_MOUSE_MOTION, WINDOW_FOCUSED], {
-        let focused = focused;
+
+    hooks.use_event(WINDOW_MOUSE_MOTION, {
+        let focused = focused.clone();
         move |world, event| {
             if let Some(delta) = event.get_ref(event_mouse_motion()) {
                 let pos = {
@@ -105,7 +106,14 @@ pub fn HighjackMouse(
                 if focused.load(Ordering::Relaxed) {
                     on_mouse_move(world, pos, *delta);
                 }
-            } else if let Some(f) = event.get(event_focus_change()) {
+            }
+        }
+    });
+
+    hooks.use_event(WINDOW_FOCUSED, {
+        let focused = focused.clone();
+        move |world, event| {
+            if let Some(f) = event.get(event_focus_change()) {
                 let ctl = world.resource(window_ctl());
                 ctl.send(WindowCtl::ShowCursor(!f)).ok();
                 // window.set_cursor_visible(!f);
@@ -121,6 +129,7 @@ pub fn HighjackMouse(
             }
         }
     });
+
     WindowSized(vec![]).el().with_clickarea().on_mouse_down(move |_, _, button| on_click(button)).el().with(translation(), -Vec3::Z * 0.99)
 }
 
