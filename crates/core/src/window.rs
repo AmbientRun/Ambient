@@ -13,12 +13,12 @@ components!("app", {
     window_logical_size: UVec2,
     @[MaybeResource, Debuggable, Networked, Name["Window physical size"], Description["The physical size is the actual number of pixels on the screen."]]
     window_physical_size: UVec2,
-    @[MaybeResource, Debuggable, Networked, Name["Cursor position"], Description["Absolute mouse cursor position in screen-space."]]
+    @[MaybeResource, Debuggable, Networked, Name["Cursor position"], Description["Absolute mouse cursor position in screen-space. This is the _logical_ position. Multiply by the window_scale_factor to get the physical position."]]
     cursor_position: Vec2,
 });
 
 pub fn screen_to_clip_space(world: &World, screen_pos: Vec2) -> Vec2 {
-    let screen_size = *world.resource(window_physical_size());
+    let screen_size = *world.resource(window_logical_size());
     interpolate(screen_pos, Vec2::ZERO, screen_size.as_vec2(), vec2(-1., 1.), vec2(1., -1.))
 }
 pub fn get_mouse_clip_space_position(world: &World) -> Vec2 {

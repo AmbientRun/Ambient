@@ -604,7 +604,9 @@ impl App {
                 }
                 WindowEvent::CursorMoved { position, .. } => {
                     if self.window_focused {
-                        world.set(world.resource_entity(), cursor_position(), vec2(position.x as f32, position.y as f32)).unwrap();
+                        let p = vec2(position.x as f32, position.y as f32)
+                            / self.window.as_ref().map(|x| x.scale_factor() as f32).unwrap_or(1.);
+                        world.set(world.resource_entity(), cursor_position(), p).unwrap();
                     }
                 }
                 _ => {}
