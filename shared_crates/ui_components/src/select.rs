@@ -9,12 +9,13 @@ use crate::{
     UIExt,
 };
 use ambient_cb::Cb;
-use ambient_guest_bridge::components::{
-    input::event_mouse_input,
-    layout::{margin_left, margin_top},
-    rect::border_radius,
+use ambient_guest_bridge::{
+    components::{
+        layout::{margin_left, margin_top},
+        rect::border_radius,
+    },
+    messages,
 };
-use ambient_shared_types::events::WINDOW_MOUSE_INPUT;
 use glam::Vec4;
 
 #[derive(Debug, Clone)]
@@ -28,13 +29,11 @@ impl ElementComponent for DropdownSelect {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { content, on_select, items, inline } = *self;
         let (show, set_show) = hooks.use_state(false);
-        hooks.use_event(WINDOW_MOUSE_INPUT, {
+        hooks.use_runtime_message::<messages::WindowMouseInput>({
             let set_show = set_show.clone();
             move |_world, event| {
-                if let Some(pressed) = event.get(event_mouse_input()) {
-                    if show && !pressed {
-                        set_show(false);
-                    }
+                if show && !event.pressed {
+                    set_show(false);
                 }
             }
         });

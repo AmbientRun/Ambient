@@ -99,9 +99,9 @@ pub(super) fn run(
 pub trait RuntimeMessageExt {
     fn run(self, world: &mut World, module_id: Option<EntityId>) -> anyhow::Result<()>;
 }
-impl<T: ambient_project_rt::message_serde::RuntimeMessage> RuntimeMessageExt for T {
+impl<T: ambient_ecs::RuntimeMessage> RuntimeMessageExt for T {
     fn run(self, world: &mut World, module_id: Option<EntityId>) -> anyhow::Result<()> {
-        Ok(run(
+        run(
             world,
             SerializedMessage {
                 module_id,
@@ -109,6 +109,7 @@ impl<T: ambient_project_rt::message_serde::RuntimeMessage> RuntimeMessageExt for
                 name: T::id().to_string(),
                 data: self.serialize_message()?,
             },
-        ))
+        );
+        Ok(())
     }
 }

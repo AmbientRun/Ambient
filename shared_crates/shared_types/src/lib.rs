@@ -26,22 +26,6 @@ macro_rules! primitive_component_definitions {
 }
 
 pub mod events {
-    // This is a temporary module until structured events lands: https://github.com/AmbientRun/Ambient/issues/228
-
-    /// The window gained or lost focus
-    pub const WINDOW_FOCUSED: &str = "core/window_focused";
-    /// The window received a character input
-    pub const WINDOW_RECEIVED_CHARACTER: &str = "core/window_received_character";
-    /// The window received a character input
-    pub const WINDOW_MODIFIERS_CHANGED: &str = "core/window_modifiers_changed";
-    /// The window received a keyboard input
-    pub const WINDOW_KEYBOARD_INPUT: &str = "core/window_keyboard_input";
-    /// The window received a mouse button press or release
-    pub const WINDOW_MOUSE_INPUT: &str = "core/window_mouse_input";
-    /// The window received a mouse wheel change
-    pub const WINDOW_MOUSE_WHEEL: &str = "core/window_mouse_wheel";
-    /// The mouse cursor was moved
-    pub const WINDOW_MOUSE_MOTION: &str = "core/window_mouse_motion";
     /// A module message was received (prefix)
     pub const MODULE_MESSAGE: &str = "core/module_message";
 }

@@ -337,67 +337,6 @@ name = "Parent"
 description = "The parent of this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::input::event_focus_change"]
-type = "Bool"
-name = "Event focus change"
-description = "The window was focused or list its focus."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::input::event_keyboard_input"]
-type = "Bool"
-name = "Event keyboard input"
-description = "A keyboard key was pressed (true) or released (false). Will also contain a `keycode` component."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::input::event_mouse_input"]
-type = "Bool"
-name = "Event mouse input"
-description = "A mouse button was pressed (true) or released (false). Will also contain a `mouse_button` component."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::input::event_mouse_motion"]
-type = "Vec2"
-name = "Event mouse motion"
-description = """
-The mouse was moved. The value represents the delta.
-Use `mouse_position` or `current_position` from `RawInput` to get the current position."""
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::input::event_mouse_wheel"]
-type = "Vec2"
-name = "Event mouse wheel"
-description = "The mouse wheel moved. The value represents the delta."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::input::event_mouse_wheel_pixels"]
-type = "Bool"
-name = "Event mouse wheel"
-description = "If true, the `mouse_wheel_event`'s value should be interpreted as pixels. If false, it should be interpreted as lines."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::input::event_received_character"]
-type = "String"
-name = "Event received character"
-description = "The window received a character."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::input::keyboard_modifiers"]
-type = "U32"
-name = "Keyboard modifiers"
-description = "Modifiers active."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::input::keycode"]
-type = "String"
-name = "Keycode"
-description = "Keycode when a keyboard key was pressed."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::input::mouse_button"]
-type = "U32"
-name = "Mouse button"
-description = "The mouse button. 0=left, 1=right, 2=middle."
-attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::input::mouse_over"]
 type = "U32"
@@ -1331,3 +1270,38 @@ fields = {}
 name = "Module Unload"
 description = "Sent to a module when it unloads."
 fields = {}
+
+[messages.window_focus_change]
+name = "Window Focus Change"
+description = "Sent when the window gains or loses focus."
+fields = { focused = "Bool" }
+
+[messages.window_keyboard_character]
+name = "Window Keyboard Character"
+description = "Sent when the window receives a character from the keyboard."
+fields = { character = "String" }
+
+[messages.window_keyboard_modifiers_change]
+name = "Window Keyboard Modifiers Change"
+description = "Sent when the window's keyboard modifiers change."
+fields = { modifiers = "U32" }
+
+[messages.window_keyboard_input]
+name = "Window Keyboard Input"
+description = "Sent when the window receives a keyboard input."
+fields = { pressed = "Bool", modifiers = "U32", keycode = { type = "Option", element_type = "String" } }
+
+[messages.window_mouse_input]
+name = "Window Mouse Input"
+description = "Sent when the window receives a mouse input."
+fields = { pressed = "Bool", button = "U32" }
+
+[messages.window_mouse_wheel]
+name = "Window Mouse Wheel"
+description = "Sent when the window receives a mouse wheel input."
+fields = { delta = "Vec2", pixels = "Bool" }
+
+[messages.window_mouse_motion]
+name = "Window Mouse Motion"
+description = "Sent when the window receives a mouse motion input."
+fields = { delta = "Vec2" }

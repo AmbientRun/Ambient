@@ -15,11 +15,10 @@ use std::sync::Arc;
 use ambient_core::async_ecs::async_run;
 use ambient_ecs::{
     dont_despawn_on_unload, generated::messages, query, world_events, Entity, EntityId, FnSystem,
-    SystemGroup, World, WorldEventReader,
+    Message, SystemGroup, World, WorldEventReader,
 };
 use ambient_physics::{collider_loads, collisions, PxShapeUserData};
 use ambient_project::Identifier;
-use ambient_project_rt::message_serde::Message;
 use ambient_shared_types::events;
 use itertools::Itertools;
 use physxx::{PxRigidActor, PxRigidActorRef, PxUserData};
@@ -127,7 +126,15 @@ pub fn systems() -> SystemGroup {
                     .collect_vec();
 
                 for (name, data) in events {
-                    run_all(world, &RunContext::new(world, &name, data));
+                    message::run(
+                        world,
+                        message::SerializedMessage {
+                            module_id: None,
+                            source: message::Source::Runtime,
+                            name,
+                            data,
+                        },
+                    );
                 }
             })),
             Box::new(FnSystem::new(move |world, _| {
@@ -216,12 +223,6 @@ pub(crate) fn reload_all(world: &mut World) {
 
     for (module_id, bytecode) in modules {
         reload(world, module_id, bytecode);
-    }
-}
-
-fn run_all(world: &mut World, context: &RunContext) {
-    for (id, sms) in query(module_state()).collect_cloned(world, None) {
-        run(world, id, sms, context)
     }
 }
 

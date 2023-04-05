@@ -7,11 +7,11 @@ use std::{
 };
 
 use ambient_core::{transform::*, window::window_ctl, window::WindowCtl};
+use ambient_ecs::generated::messages;
 pub use ambient_ecs::{EntityId, SystemGroup, World};
 pub use ambient_editor_derive::ElementEditor;
 pub use ambient_element as element;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_input::{event_focus_change, event_mouse_motion};
 pub use ambient_std::{cb, Cb};
 use ambient_window_types::ModifiersState;
 use glam::*;
@@ -48,7 +48,6 @@ pub use tabs::*;
 pub use throbber::*;
 
 pub use self::image::*;
-use ambient_shared_types::events::{WINDOW_FOCUSED, WINDOW_MOUSE_MOTION};
 use ambient_window_types::MouseButton;
 
 pub fn init_all_components() {
@@ -93,41 +92,31 @@ pub fn HighjackMouse(
         })
     });
 
-    hooks.use_event(WINDOW_MOUSE_MOTION, {
+    hooks.use_runtime_message::<messages::WindowMouseMotion>({
         let focused = focused.clone();
         move |world, event| {
-            if let Some(delta) = event.get_ref(event_mouse_motion()) {
-                let pos = {
-                    let mut pos = position.lock();
-                    *pos += *delta;
-                    *pos
-                };
+            let delta = event.delta;
+            let pos = {
+                let mut pos = position.lock();
+                *pos += delta;
+                *pos
+            };
 
-                if focused.load(Ordering::Relaxed) {
-                    on_mouse_move(world, pos, *delta);
-                }
+            if focused.load(Ordering::Relaxed) {
+                on_mouse_move(world, pos, delta);
             }
         }
     });
 
-    hooks.use_event(WINDOW_FOCUSED, {
-        let focused = focused.clone();
-        move |world, event| {
-            if let Some(f) = event.get(event_focus_change()) {
-                let ctl = world.resource(window_ctl());
-                ctl.send(WindowCtl::ShowCursor(!f)).ok();
-                // window.set_cursor_visible(!f);
-                // Fails on android/IOS
-                ctl.send(WindowCtl::GrabCursor(if f {
-                    winit::window::CursorGrabMode::Locked
-                } else {
-                    winit::window::CursorGrabMode::None
-                }))
-                .ok();
+    hooks.use_runtime_message::<messages::WindowFocusChange>(move |world, event| {
+        let f = event.focused;
+        let ctl = world.resource(window_ctl());
+        ctl.send(WindowCtl::ShowCursor(!f)).ok();
+        // window.set_cursor_visible(!f);
+        // Fails on android/IOS
+        ctl.send(WindowCtl::GrabCursor(if f { winit::window::CursorGrabMode::Locked } else { winit::window::CursorGrabMode::None })).ok();
 
-                focused.store(f, Ordering::Relaxed);
-            }
-        }
+        focused.store(f, Ordering::Relaxed);
     });
 
     WindowSized(vec![]).el().with_clickarea().on_mouse_down(move |_, _, button| on_click(button)).el().with(translation(), -Vec3::Z * 0.99)

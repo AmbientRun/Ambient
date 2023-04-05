@@ -1,7 +1,10 @@
 pub use ambient_ecs as ecs;
 use std::{future::Future, time::Duration};
 
-pub use ecs::generated::components::core as components;
+pub use ecs::{
+    generated::{components::core as components, concepts, messages},
+    Message, RuntimeMessage,
+};
 
 pub fn run_async(world: &ecs::World, future: impl Future<Output = ()> + Send + 'static) {
     world.resource(ambient_core::runtime()).spawn(future);

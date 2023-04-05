@@ -41,6 +41,7 @@ mod primitive_component;
 mod query;
 mod serialization;
 mod stream;
+pub use ambient_project_rt::message_serde::*;
 pub use archetype::*;
 pub use attributes::*;
 pub use component::{Component, ComponentDesc, ComponentValue, ComponentValueBase};
@@ -73,7 +74,19 @@ impl<'a> Debug for DebugWorldArchetypes<'a> {
 }
 
 mod internal_components {
+    use super::Message;
+
     use crate::{components, Description, Resource, WorldEvents};
+
+    pub trait WorldEventsExt {
+        fn add_message<M: Message>(&mut self, message: M);
+    }
+
+    impl WorldEventsExt for WorldEvents {
+        fn add_message<M: Message>(&mut self, message: M) {
+            self.add_event((M::id().to_string(), message.serialize_message().unwrap()));
+        }
+    }
 
     components!("ecs", {
         @[
@@ -84,7 +97,7 @@ mod internal_components {
     });
 }
 pub use generated::components::core::ecs::*;
-pub use internal_components::world_events;
+pub use internal_components::{world_events, WorldEventsExt};
 
 pub fn init_components() {
     generated::components::init();
@@ -786,8 +799,8 @@ impl<'de> Deserialize<'de> for ComponentSet {
     }
 }
 
-pub type WorldEvents = FramedEvents<(String, Entity)>;
-pub type WorldEventReader = FramedEventsReader<(String, Entity)>;
+pub type WorldEvents = FramedEvents<(String, Vec<u8>)>;
+pub type WorldEventReader = FramedEventsReader<(String, Vec<u8>)>;
 
 #[derive(Debug)]
 pub struct WorldEventsSystem;
