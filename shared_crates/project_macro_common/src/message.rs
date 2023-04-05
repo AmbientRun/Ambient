@@ -1,6 +1,7 @@
 use super::{
+    component::type_to_token_stream,
     tree::{Tree, TreeNode},
-    util,
+    util, Context,
 };
 use ambient_project::Message;
 use proc_macro2::{Span, TokenStream};
@@ -8,28 +9,45 @@ use quote::quote;
 
 pub fn tree_to_token_stream(
     message_tree: &Tree<Message>,
-    api_path: &syn::Path,
+    context: &Context,
+    is_api_manifest: bool,
 ) -> anyhow::Result<TokenStream> {
+    let runtime_message = if is_api_manifest {
+        quote! { RuntimeMessage }
+    } else {
+        quote! { ModuleMessage }
+    };
     to_token_stream(
         message_tree.root(),
-        api_path,
-        &quote! {
-            use #api_path::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
+        is_api_manifest,
+        context,
+        |context, _ns, ts| match context {
+            Context::Host => quote! {
+                use ambient_project_rt::message_serde::{Message, MessageSerde, MessageSerdeError, #runtime_message};
+                use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
+                use crate::{EntityId, Entity};
+                #ts
+            },
+            Context::Guest { api_path, .. } => quote! {
+                use #api_path::{prelude::*, message::{Message, MessageSerde, MessageSerdeError, #runtime_message}};
+                #ts
+            },
         },
     )
 }
 
 fn to_token_stream(
     node: &TreeNode<Message>,
-    api_path: &syn::Path,
-    prelude: &TokenStream,
+    is_api_manifest: bool,
+    context: &Context,
+    wrapper: impl Fn(&Context, &TreeNode<Message>, TokenStream) -> TokenStream + Copy,
 ) -> anyhow::Result<TokenStream> {
     util::tree_to_token_stream(
         node,
-        api_path,
-        prelude,
-        to_token_stream,
-        |id, message, api_path| {
+        context,
+        wrapper,
+        |n, c, w| to_token_stream(n, is_api_manifest, c, w),
+        |id, message, context| {
             let doc_comment = format!("**{}**: {}", message.name, message.description);
 
             let struct_name = syn::Ident::new(
@@ -50,7 +68,7 @@ fn to_token_stream(
                 .iter()
                 .map(|f| {
                     let name = f.0;
-                    f.1.to_token_stream(api_path, true, false).map(|ty| {
+                    type_to_token_stream(f.1, context, false).map(|ty| {
                         quote! { pub #name: #ty }
                     })
                 })
@@ -61,7 +79,7 @@ fn to_token_stream(
                 .iter()
                 .map(|f| {
                     let name = f.0;
-                    f.1.to_token_stream(api_path, true, false).map(|ty| {
+                    type_to_token_stream(f.1, context, false).map(|ty| {
                         quote! { #name: impl Into<#ty> }
                     })
                 })
@@ -82,11 +100,17 @@ fn to_token_stream(
                 .iter()
                 .map(|f| {
                     let name = f.0;
-                    f.1.to_token_stream(api_path, true, true).map(|ty| {
+                    type_to_token_stream(f.1, context, true).map(|ty| {
                         quote! { #name: #ty ::deserialize_message_part(&mut input)? }
                     })
                 })
                 .collect::<Result<Vec<_>, _>>()?;
+
+            let message_impl = if is_api_manifest {
+                quote! { RuntimeMessage }
+            } else {
+                quote! { ModuleMessage }
+            };
 
             Ok(quote! {
                 #[derive(Clone, Debug)]
@@ -116,6 +140,7 @@ fn to_token_stream(
                         })
                     }
                 }
+                impl #message_impl for #struct_name {}
             })
         },
     )

@@ -29,7 +29,7 @@ pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, manife
         manifest.project.name.as_deref().unwrap_or_else(|| manifest.project.id.as_ref())
     );
 
-    ambient_ecs::ComponentRegistry::get_mut().add_external(ambient_project::all_defined_components(manifest, false).unwrap());
+    ambient_ecs::ComponentRegistry::get_mut().add_external(ambient_project_native::all_defined_components(manifest, false).unwrap());
 
     let build_path = path.join("build");
     let assets_path = path.join("assets");

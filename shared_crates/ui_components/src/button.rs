@@ -22,7 +22,6 @@ use ambient_cb::{cb, Callback, Cb};
 use ambient_color::Color;
 use ambient_guest_bridge::{
     components::{
-        input::{event_focus_change, event_keyboard_input, event_mouse_input, keyboard_modifiers, keycode},
         layout::{
             align_vertical_center, fit_horizontal_parent, height, margin_top, min_height, padding_bottom, padding_left, padding_right,
             padding_top, space_between_items,
@@ -32,9 +31,8 @@ use ambient_guest_bridge::{
         text::font_style,
     },
     ecs::World,
-    run_async,
+    messages, run_async,
 };
-use ambient_shared_types::events;
 use ambient_window_types::{CursorIcon, ModifiersState, VirtualKeyCode};
 
 #[derive(Clone, Debug)]
@@ -223,25 +221,24 @@ pub fn Button(
         }
         Box::new(|_| {})
     });
-    hooks.use_event(events::WINDOW_MOUSE_INPUT, {
+    hooks.use_runtime_message::<messages::WindowMouseInput>({
         let set_is_pressed = set_is_pressed.clone();
         let on_invoked = on_invoked.clone();
         let set_is_working = set_is_working.clone();
         move |world, event| {
-            if let Some(pressed) = event.get(event_mouse_input()) {
-                if pressed && hover {
-                    set_is_pressed(true);
-                    is_pressed_immediate.store(true, Ordering::SeqCst);
+            let pressed = event.pressed;
+            if pressed && hover {
+                set_is_pressed(true);
+                is_pressed_immediate.store(true, Ordering::SeqCst);
+            }
+            if !pressed {
+                let is_pressed = is_pressed_immediate.load(Ordering::SeqCst);
+                if hover && !disabled && is_pressed {
+                    on_invoked.invoke(world, set_is_working.clone());
                 }
-                if !pressed {
-                    let is_pressed = is_pressed_immediate.load(Ordering::SeqCst);
-                    if hover && !disabled && is_pressed {
-                        on_invoked.invoke(world, set_is_working.clone());
-                    }
-                    if is_pressed {
-                        set_is_pressed(false);
-                        is_pressed_immediate.store(false, Ordering::SeqCst);
-                    }
+                if is_pressed {
+                    set_is_pressed(false);
+                    is_pressed_immediate.store(false, Ordering::SeqCst);
                 }
             }
         }
@@ -404,38 +401,35 @@ impl ElementComponent for Hotkey {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { on_is_pressed_changed, content, hotkey, hotkey_modifier, on_invoke } = *self;
         let (is_pressed, _) = hooks.use_state_with(|_| Arc::new(AtomicBool::new(false)));
-        hooks.use_event(events::WINDOW_KEYBOARD_INPUT, {
+        hooks.use_runtime_message::<messages::WindowKeyboardInput>({
             let is_pressed = is_pressed.clone();
             move |world, event| {
-                if let Some(pressed) = event.get(event_keyboard_input()) {
-                    let modifiers = ModifiersState::from_bits(event.get(keyboard_modifiers()).unwrap()).unwrap();
+                let pressed = event.pressed;
+                let modifiers = ModifiersState::from_bits(event.modifiers).unwrap();
 
-                    // FIXME: get_ref returns `&T` on native, but `T` on guest
-                    if let Some(virtual_keycode) = event.get_ref(keycode()).and_then(|x| VirtualKeyCode::from_str(&x).ok()) {
-                        let shortcut_pressed = modifiers == hotkey_modifier && virtual_keycode == hotkey;
-                        if shortcut_pressed {
-                            on_invoke.0(world);
-                            if pressed {
-                                if let Some(on_is_pressed_changed) = on_is_pressed_changed.clone() {
-                                    on_is_pressed_changed.0(true);
-                                }
-                                is_pressed.store(true, Ordering::Relaxed);
-                            } else {
-                                if let Some(on_is_pressed_changed) = on_is_pressed_changed.clone() {
-                                    on_is_pressed_changed.0(false);
-                                }
-                                is_pressed.store(false, Ordering::Relaxed);
+                // FIXME: get_ref returns `&T` on native, but `T` on guest
+                if let Some(virtual_keycode) = event.keycode.as_deref().and_then(|x| VirtualKeyCode::from_str(x).ok()) {
+                    let shortcut_pressed = modifiers == hotkey_modifier && virtual_keycode == hotkey;
+                    if shortcut_pressed {
+                        on_invoke.0(world);
+                        if pressed {
+                            if let Some(on_is_pressed_changed) = on_is_pressed_changed.clone() {
+                                on_is_pressed_changed.0(true);
                             }
+                            is_pressed.store(true, Ordering::Relaxed);
+                        } else {
+                            if let Some(on_is_pressed_changed) = on_is_pressed_changed.clone() {
+                                on_is_pressed_changed.0(false);
+                            }
+                            is_pressed.store(false, Ordering::Relaxed);
                         }
                     }
                 }
             }
         });
-        hooks.use_event(events::WINDOW_FOCUSED, {
-            move |_world, event| {
-                if let Some(_event) = event.get(event_focus_change()) {
-                    is_pressed.store(false, Ordering::Relaxed);
-                }
+        hooks.use_runtime_message::<messages::WindowFocusChange>({
+            move |_world, _event| {
+                is_pressed.store(false, Ordering::Relaxed);
             }
         });
         content

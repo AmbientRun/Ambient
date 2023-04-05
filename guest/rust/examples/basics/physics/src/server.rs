@@ -2,7 +2,6 @@ use ambient_api::{
     components::core::{
         app::main_scene,
         camera::aspect_ratio_from_window,
-        ecs::ids,
         physics::{
             angular_velocity, box_collider, dynamic, linear_velocity, physics_controlled,
             visualizing,
@@ -47,12 +46,12 @@ pub async fn main() {
         .with(prefab_from_url(), asset::url("assets/Shape.glb").unwrap())
         .spawn();
 
-    on(event::COLLISION, |c| {
+    ambient_api::messages::Collision::subscribe(|msg| {
         // TODO: play a sound instead
-        println!("Bonk! {:?} collided", c.get(ids()).unwrap());
+        println!("Bonk! {:?} collided", msg.ids);
     });
 
-    on(event::FRAME, move |_| {
+    ambient_api::messages::Frame::subscribe(move |_| {
         for hit in physics::raycast(Vec3::Z * 20., -Vec3::Z) {
             if hit.entity == cube {
                 println!("The raycast hit the cube: {hit:?}");

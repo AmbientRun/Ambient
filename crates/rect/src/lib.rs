@@ -4,10 +4,7 @@ use ambient_core::{
     asset_cache, mesh,
     transform::{local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation},
 };
-use ambient_ecs::{
-    components, ensure_has_component, ensure_has_component_with_default, query, Debuggable, Description, Entity, Name, Networked, Store,
-    SystemGroup,
-};
+use ambient_ecs::{ensure_has_component, ensure_has_component_with_default, query, Entity, SystemGroup};
 use ambient_gpu::{
     gpu::GpuKey,
     shader_module::{BindGroupDesc, ShaderModule},
@@ -28,25 +25,9 @@ use ambient_std::{
 use glam::{vec4, Quat, UVec3, Vec3, Vec4};
 use wgpu::{BindGroup, BindGroupLayoutEntry};
 
-components!("rect", {
-    @[Debuggable, Networked, Store, Name["Background color"], Description["Background color of an entity with a `rect` component."]]
-    background_color: Vec4,
-    @[Debuggable, Networked, Store, Name["Border color"], Description["Border color of an entity with a `rect` component."]]
-    border_color: Vec4,
-    @[Debuggable, Networked, Store, Name["Border radius"], Description["Radius for each corner of an entity with a `rect` component.\n`x` = top-left, `y` = top-right, `z` = bottom-left, `w` = bottom-right."]]
-    border_radius: Vec4,
-    @[Debuggable, Networked, Store, Name["Border thickness"], Description["Border thickness of an entity with a `rect` component."]]
-    border_thickness: f32,
-    @[Debuggable, Networked, Store, Name["Rect"], Description["If attached to an entity, the entity will be converted to a UI rectangle, with optionally rounded corners and borders."]]
-    rect: (),
-
-    @[Debuggable, Networked, Store, Name["Line from"], Description["Start point of a line."]]
-    line_from: Vec3,
-    @[Debuggable, Networked, Store, Name["Line to"], Description["End point of a line."]]
-    line_to: Vec3,
-    @[Debuggable, Networked, Store, Name["Line width"], Description["Width of line."]]
-    line_width: f32,
-});
+pub use ambient_ecs::generated::components::core::rect::{
+    background_color, border_color, border_radius, border_thickness, line_from, line_to, line_width, rect,
+};
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, Default, bytemuck::Pod, bytemuck::Zeroable)]

@@ -5,22 +5,18 @@ use ambient_core::{
     ui_scene,
     window::{cursor_position, window_logical_size},
 };
-use ambient_ecs::{components, query, Debuggable, Description, Entity, EntityId, MaybeResource, Name, Networked, Store, SystemGroup};
+use ambient_ecs::{components, query, Debuggable, Entity, EntityId, MaybeResource, SystemGroup};
 use ambient_std::shapes::{RayIntersectable, AABB};
-use glam::{Vec2, Vec3};
+use glam::Vec2;
+
+pub use ambient_ecs::generated::components::core::input::{mouse_over, mouse_pickable_max, mouse_pickable_min};
 
 components!("input", {
     @[MaybeResource, Debuggable]
     picker_intersecting: Option<PickerIntersection>,
 
-    @[Debuggable, Networked, Store, Name["Mouse pickable min"], Description["This entity can be clicked by the mouse, and this component defines the min AABB bound of the click area."]]
-    mouse_pickable_min: Vec3,
-    @[Debuggable, Networked, Store, Name["Mouse pickable max"], Description["This entity can be clicked by the mouse, and this component defines the max AABB bound of the click area."]]
-    mouse_pickable_max: Vec3,
     @[Debuggable]
     mouse_pickable: AABB,
-    @[Debuggable, Networked, Store, Name["Mouse over"], Description["The number of mouse cursors that are currently over this entity."]]
-    mouse_over: u32,
 });
 
 #[derive(Debug, Clone, Copy)]

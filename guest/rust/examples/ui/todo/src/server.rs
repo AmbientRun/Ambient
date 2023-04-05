@@ -1,4 +1,4 @@
-use ambient_api::{message::server::MessageExt, prelude::*};
+use ambient_api::prelude::*;
 use components::todo_item;
 
 #[main]

@@ -1,0 +1,9 @@
+[package]
+name = "ambient_project_rt"
+version = { workspace = true }
+edition = "2021"
+
+[dependencies]
+byteorder = { workspace = true }
+glam = { workspace = true }
+thiserror = { workspace = true }

@@ -1,12 +1,10 @@
 use ambient_cb::{cb, Cb};
 use ambient_element::{Element, ElementComponent, Hooks};
 use ambient_guest_bridge::{
-    components::input::{
-        event_mouse_input, event_mouse_wheel, event_mouse_wheel_pixels, mouse_button, mouse_over, mouse_pickable_max, mouse_pickable_min,
-    },
+    components::input::{mouse_over, mouse_pickable_max, mouse_pickable_min},
     ecs::{EntityId, World},
+    messages,
 };
-use ambient_shared_types::events::{WINDOW_MOUSE_INPUT, WINDOW_MOUSE_WHEEL};
 use ambient_window_types::MouseButton;
 use glam::{Vec2, Vec3};
 
@@ -112,27 +110,34 @@ impl ElementComponent for ClickArea {
                 }
             }
         });
-        hooks.use_multi_event(&[WINDOW_MOUSE_INPUT, WINDOW_MOUSE_WHEEL], {
+
+        hooks.use_runtime_message::<messages::WindowMouseInput>({
             let id = id.clone();
-            let mouse_over_count = mouse_over_count;
+            let mouse_over_count = mouse_over_count.clone();
             move |world, event| {
                 if let Some(id) = *id.lock() {
-                    if let Some(pressed) = event.get(event_mouse_input()) {
-                        if *mouse_over_count.lock() > 0 {
-                            for handler in &on_mouse_input {
-                                handler(world, id, pressed.into(), event.get(mouse_button()).unwrap().into());
-                            }
-                        }
-                    } else if let Some(delta) = event.get(event_mouse_wheel()) {
-                        if *mouse_over_count.lock() > 0 {
-                            for handler in &on_mouse_wheel {
-                                handler(world, id, delta, event.get(event_mouse_wheel_pixels()).unwrap());
-                            }
+                    if *mouse_over_count.lock() > 0 {
+                        for handler in &on_mouse_input {
+                            handler(world, id, event.pressed.into(), event.button.into());
                         }
                     }
                 }
             }
         });
+
+        hooks.use_runtime_message::<messages::WindowMouseWheel>({
+            let id = id.clone();
+            move |world, event| {
+                if let Some(id) = *id.lock() {
+                    if *mouse_over_count.lock() > 0 {
+                        for handler in &on_mouse_wheel {
+                            handler(world, id, event.delta, event.pixels);
+                        }
+                    }
+                }
+            }
+        });
+
         inner.init(mouse_pickable_min(), Vec3::ZERO).init(mouse_pickable_max(), Vec3::ZERO).on_spawned(move |_, new_id, _| {
             *id.lock() = Some(new_id);
         })

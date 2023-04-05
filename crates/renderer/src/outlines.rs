@@ -5,7 +5,7 @@ use ambient_core::{
     gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent},
     hierarchy::children,
 };
-use ambient_ecs::{components, query, ArchetypeFilter, Component, Debuggable, Description, Name, Networked, Store, SystemGroup, World};
+use ambient_ecs::{query, ArchetypeFilter, Component, SystemGroup, World};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     mesh_buffer::MeshBuffer,
@@ -16,26 +16,13 @@ use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     include_file,
 };
-use glam::Vec4;
 use wgpu::{BindGroupLayoutEntry, BindingType, PrimitiveTopology, ShaderStages};
 
 use super::{FSMain, RendererCollectState, RendererResources, RendererTarget, ShaderModule, TreeRenderer, TreeRendererConfig};
 use crate::{bind_groups::BindGroups, RendererConfig};
 
-components!("rendering", {
-    @[
-        Networked, Store, Debuggable,
-        Name["Outline"],
-        Description["If attached, this entity will be rendered with an outline with the color specified."]
-    ]
-    outline: Vec4,
-    @[
-        Networked, Store, Debuggable,
-        Name["Outline (recursive)"],
-        Description["If attached, this entity and all of its children will be rendered with an outline with the color specified.\nYou do not need to attach `outline` if you have attached `outline_recursive`."]
-    ]
-    outline_recursive: Vec4,
-});
+pub use ambient_ecs::generated::components::core::rendering::{outline, outline_recursive};
+
 gpu_components! {
     outline() => outline: GpuComponentFormat::Vec4,
 }

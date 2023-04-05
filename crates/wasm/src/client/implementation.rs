@@ -21,7 +21,7 @@ impl wit::client_message::Host for Bindings {
         let world = self.world_mut();
 
         match target {
-            Target::RemoteUnreliable | Target::RemoteReliable => {
+            Target::ServerUnreliable | Target::ServerReliable => {
                 let connection = world
                     .resource(game_client())
                     .as_ref()
@@ -35,7 +35,7 @@ impl wit::client_message::Host for Bindings {
                     module_id,
                     &name,
                     &data,
-                    matches!(target, Target::RemoteReliable),
+                    matches!(target, Target::ServerReliable),
                 )
             }
             Target::LocalBroadcast => message::send_local(world, module_id, None, name, data),

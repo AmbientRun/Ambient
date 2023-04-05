@@ -1,7 +1,6 @@
 use std::collections::HashSet;
 
-use ambient_ecs::{components, world_events, Debuggable, Description, Entity, Name, Networked, Resource, Store, System, SystemGroup};
-use ambient_shared_types::events;
+use ambient_ecs::{components, generated::messages, world_events, Debuggable, Entity, Resource, System, SystemGroup, WorldEventsExt};
 use glam::{vec2, Vec2};
 use serde::{Deserialize, Serialize};
 use winit::event::ModifiersState;
@@ -20,28 +19,7 @@ pub struct PlayerRawInput {
 }
 
 components!("input", {
-    @[Debuggable, Networked, Store, Name["Event received character"], Description["The window received a character."]]
-    event_received_character: String,
-    @[Debuggable, Networked, Store, Name["Event keyboard input"], Description["A keyboard key was pressed (true) or released (false). Will also contain a `keycode` component."]]
-    event_keyboard_input: bool,
-    @[Debuggable, Networked, Store, Name["Event mouse input"], Description["A mouse button was pressed (true) or released (false). Will also contain a `mouse_button` component."]]
-    event_mouse_input: bool,
-    @[Debuggable, Networked, Store, Name["Event mouse motion"], Description["The mouse was moved. The value represents the delta.\nUse `mouse_position` or `current_position` from `RawInput` to get the current position."]]
-    event_mouse_motion: Vec2,
-    @[Debuggable, Networked, Store, Name["Event mouse wheel"], Description["The mouse wheel moved. The value represents the delta."]]
-    event_mouse_wheel: Vec2,
-    @[Debuggable, Networked, Store, Name["Event mouse wheel"], Description["If true, the `mouse_wheel_event`'s value should be interpreted as pixels. If false, it should be interpreted as lines."]]
-    event_mouse_wheel_pixels: bool,
     event_modifiers_change: ModifiersState,
-    @[Debuggable, Networked, Store, Name["Event focus change"], Description["The window was focused or list its focus."]]
-    event_focus_change: bool,
-
-    @[Debuggable, Networked, Store, Name["Keycode"], Description["Keycode when a keyboard key was pressed."]]
-    keycode: String,
-    @[Debuggable, Networked, Store, Name["Keyboard modifiers"], Description["Modifiers active."]]
-    keyboard_modifiers: u32,
-    @[Debuggable, Networked, Store, Name["Mouse button"], Description["The mouse button. 0=left, 1=right, 2=middle."]]
-    mouse_button: u32,
 
     @[Debuggable, Resource]
     player_raw_input: PlayerRawInput,
@@ -80,67 +58,44 @@ impl System<Event<'static, ()>> for InputSystem {
             Event::WindowEvent { event, .. } => match event {
                 &WindowEvent::Focused(focused) => {
                     self.is_focused = focused;
-                    world
-                        .resource_mut(world_events())
-                        .add_event((events::WINDOW_FOCUSED.to_string(), Entity::new().with(event_focus_change(), focused)));
+                    world.resource_mut(world_events()).add_message(messages::WindowFocusChange::new(focused));
                 }
                 WindowEvent::ReceivedCharacter(c) => {
-                    world.resource_mut(world_events()).add_event((
-                        events::WINDOW_RECEIVED_CHARACTER.to_string(),
-                        Entity::new().with(event_received_character(), c.to_string()),
-                    ));
+                    world.resource_mut(world_events()).add_message(messages::WindowKeyboardCharacter::new(c.to_string()));
                 }
 
                 WindowEvent::ModifiersChanged(mods) => {
                     self.modifiers = *mods;
-                    world
-                        .resource_mut(world_events())
-                        .add_event((events::WINDOW_MODIFIERS_CHANGED.to_string(), Entity::new().with(event_modifiers_change(), *mods)));
+                    world.resource_mut(world_events()).add_message(messages::WindowKeyboardModifiersChange::new(mods.bits()));
                 }
 
                 WindowEvent::KeyboardInput { input, .. } => {
-                    let mut data = Entity::new()
-                        .with(
-                            event_keyboard_input(),
-                            match input.state {
-                                ElementState::Pressed => true,
-                                ElementState::Released => false,
-                            },
-                        )
-                        .with(keyboard_modifiers(), self.modifiers.bits());
-                    if let Some(key) = input.virtual_keycode {
-                        data.set(keycode(), ambient_window_types::VirtualKeyCode::from(key).to_string());
-                    }
-                    world.resource_mut(world_events()).add_event((events::WINDOW_KEYBOARD_INPUT.to_string(), data));
+                    let keycode = input.virtual_keycode.map(|key| ambient_window_types::VirtualKeyCode::from(key).to_string());
+                    let modifiers = self.modifiers.bits();
+                    let pressed = match input.state {
+                        ElementState::Pressed => true,
+                        ElementState::Released => false,
+                    };
+                    world.resource_mut(world_events()).add_message(messages::WindowKeyboardInput::new(keycode, modifiers, pressed));
                 }
 
                 WindowEvent::MouseInput { state, button, .. } => {
-                    world.resource_mut(world_events()).add_event((
-                        events::WINDOW_MOUSE_INPUT.to_string(),
-                        Entity::new()
-                            .with(
-                                event_mouse_input(),
-                                match state {
-                                    ElementState::Pressed => true,
-                                    ElementState::Released => false,
-                                },
-                            )
-                            .with(mouse_button(), ambient_window_types::MouseButton::from(*button).into()),
+                    world.resource_mut(world_events()).add_message(messages::WindowMouseInput::new(
+                        ambient_window_types::MouseButton::from(*button),
+                        match state {
+                            ElementState::Pressed => true,
+                            ElementState::Released => false,
+                        },
                     ));
                 }
 
                 WindowEvent::MouseWheel { delta, .. } => {
-                    world.resource_mut(world_events()).add_event((
-                        events::WINDOW_MOUSE_WHEEL.to_string(),
-                        Entity::new()
-                            .with(
-                                event_mouse_wheel(),
-                                match *delta {
-                                    MouseScrollDelta::LineDelta(x, y) => vec2(x, y),
-                                    MouseScrollDelta::PixelDelta(p) => vec2(p.x as f32, p.y as f32),
-                                },
-                            )
-                            .with(event_mouse_wheel_pixels(), matches!(delta, MouseScrollDelta::PixelDelta(..))),
+                    world.resource_mut(world_events()).add_message(messages::WindowMouseWheel::new(
+                        match *delta {
+                            MouseScrollDelta::LineDelta(x, y) => vec2(x, y),
+                            MouseScrollDelta::PixelDelta(p) => vec2(p.x as f32, p.y as f32),
+                        },
+                        matches!(delta, MouseScrollDelta::PixelDelta(..)),
                     ));
                 }
 
@@ -148,10 +103,7 @@ impl System<Event<'static, ()>> for InputSystem {
             },
 
             Event::DeviceEvent { event: DeviceEvent::MouseMotion { delta }, .. } => {
-                world.resource_mut(world_events()).add_event((
-                    events::WINDOW_MOUSE_MOTION.to_string(),
-                    Entity::new().with(event_mouse_motion(), vec2(delta.0 as f32, delta.1 as f32)),
-                ));
+                world.resource_mut(world_events()).add_message(messages::WindowMouseMotion::new(vec2(delta.0 as f32, delta.1 as f32)));
             }
             _ => {}
         }

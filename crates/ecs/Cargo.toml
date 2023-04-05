@@ -10,6 +10,8 @@ edition = "2021"
 [dependencies]
 ambient_std = { path = "../std" }
 ambient_shared_types = { path = "../../shared_crates/shared_types" }
+ambient_project_rt = { path = "../../shared_crates/project_rt" }
+ambient_project_macro = { path = "../project_macro" }
 
 itertools = { workspace = true }
 serde = { workspace = true }
@@ -35,6 +37,7 @@ glam = { workspace = true }
 rand = { workspace = true }
 data-encoding = { workspace = true }
 tracing = { workspace = true }
+byteorder = { workspace = true }
 
 erased-serde = "0.3"
 

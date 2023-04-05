@@ -17,7 +17,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 [dependencies]
 ambient_api_macros = { workspace = true }
 ambient_shared_types = { workspace = true }
-ambient_project = { workspace = true }
+ambient_project_rt = { workspace = true }
 
 anyhow = "1.0"
 byteorder = "1.4"

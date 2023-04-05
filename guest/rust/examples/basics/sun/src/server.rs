@@ -56,7 +56,7 @@ pub fn main() {
         .with(fog_density(), 0.)
         .spawn();
 
-    on(event::FRAME, move |_| {
+    ambient_api::messages::Frame::subscribe(move |_| {
         let rot = entity::get_component(sun, rotation()).unwrap();
         entity::set_component(sun, rotation(), rot * Quat::from_rotation_y(0.01));
     });

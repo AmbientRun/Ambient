@@ -5,24 +5,15 @@ rust-version = { workspace = true }
 edition = "2021"
 
 [dependencies]
-ambient_ecs = { path = "../../crates/ecs", optional = true }
-
-quote = { version = "1.0", optional = true }
-syn = { version = "1.0", optional = true }
-proc-macro2 = { version = "1.0", optional = true }
+quote = "1.0"
+syn = "1.0"
+proc-macro2 = "1.0"
 
 serde = { workspace = true }
 toml = { workspace = true }
 thiserror = { workspace = true }
-byteorder = { workspace = true }
-glam = { workspace = true }
 
 [dev-dependencies]
 paste = { workspace = true }
 serde_json = { workspace = true }
 ambient_shared_types = { path = "../../shared_crates/shared_types" }
-
-[features]
-default = ["native"]
-native = ["dep:ambient_ecs"]
-guest = ["dep:quote", "dep:syn", "dep:proc-macro2"]

@@ -76,7 +76,7 @@ pub fn start(
 
     start_http_interface(runtime, &project_path, http_interface_port);
 
-    ComponentRegistry::get_mut().add_external(ambient_project::all_defined_components(manifest, false).unwrap());
+    ComponentRegistry::get_mut().add_external(ambient_project_native::all_defined_components(manifest, false).unwrap());
 
     let manifest = manifest.clone();
     runtime.spawn(async move {
