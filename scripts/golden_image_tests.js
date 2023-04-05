@@ -55,7 +55,7 @@ async function run(samples, build, nParallel) {
     let errors = (await process(nParallel, samples.map(([path, seconds], index) => async () => {
         console.timeLog("time", path, "running..");
         try {
-            const command = build ? `build ${path}` : `run ${path} --no-build --headless --golden-image-test ${seconds} --quic-interface-port ${9000 + index} --http-interface-port ${10000 + index}`;
+            const command = build ? `build ${path}` : `run ${path} --no-build --headless --no-proxy --golden-image-test ${seconds} --quic-interface-port ${9000 + index} --http-interface-port ${10000 + index}`;
             let res = await exec(`cargo run --release -- ${command}`);
             console.timeLog("time", path, "\x1b[32mwas ok\x1b[0m");
         } catch (err) {
