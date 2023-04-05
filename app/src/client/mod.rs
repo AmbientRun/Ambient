@@ -1,4 +1,4 @@
-use std::{collections::HashMap, net::SocketAddr, path::PathBuf, process::exit, time::Duration};
+use std::{collections::HashMap, net::SocketAddr, path::PathBuf, process::exit, sync::Arc, time::Duration};
 
 use ambient_app::{fps_stats, window_title, AppBuilder};
 use ambient_cameras::UICamera;
@@ -123,47 +123,54 @@ fn MainApp(
 #[element_component]
 fn GoldenImageTest(hooks: &mut Hooks, project_path: Option<PathBuf>, golden_image_test: Option<f32>) -> Element {
     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
-    let (run, set_run) = hooks.use_state(false); // we do it like this because the render_target context updates
+    let render_target_ref = hooks.use_ref_with(|_| render_target.clone());
+    *render_target_ref.lock() = render_target.clone();
+    let screenshot_path = project_path.unwrap_or(PathBuf::new()).join("screenshot.png");
+    let (old_screnshot, _) = hooks.use_state_with(|_| {
+        tracing::info!("Loading screenshot from {:?}", screenshot_path);
+        Some(Arc::new(image::open(&screenshot_path).ok()?))
+    });
+
+    let rt = hooks.world.resource(runtime()).clone();
+    // Check every 1 second if the golden image test matches
+    hooks.use_interval_deps(Duration::from_secs_f32(1.), false, render_target.0.color_buffer.id, {
+        let render_target = render_target.clone();
+        move |_| {
+            if let Some(old) = old_screnshot.clone() {
+                let render_target = render_target.clone();
+                rt.spawn(async move {
+                    log::info!("Comparing new and old screenshots");
+                    let new = render_target.0.color_buffer.reader().read_image().await.unwrap().into_rgba8();
+
+                    let hasher = image_hasher::HasherConfig::new().to_hasher();
+
+                    let hash1 = hasher.hash_image(&new);
+                    let hash2 = hasher.hash_image(&*old);
+                    let dist = hash1.dist(&hash2);
+                    if dist <= 2 {
+                        tracing::info!("Screenshots are identical, exiting");
+                        exit(0);
+                    } else {
+                        tracing::info!("Screenshot differ, distance={dist}");
+                    }
+                });
+            }
+        }
+    });
     hooks.use_spawn(move |world| {
         if let Some(seconds) = golden_image_test {
             world.resource(runtime()).spawn(async move {
                 tokio::time::sleep(Duration::from_secs_f32(seconds)).await;
-                set_run(true);
+                let render_target = render_target_ref.lock().clone();
+                tracing::info!("Saving screenshot to {:?}", screenshot_path);
+                let new = render_target.0.color_buffer.reader().read_image().await.unwrap().into_rgba8();
+                tracing::info!("Screenshot saved");
+                new.save(screenshot_path).unwrap();
+                exit(1);
             });
         }
         Box::new(|_| {})
     });
-    if run {
-        hooks.world.resource(runtime()).spawn(async move {
-            let screenshot = project_path.unwrap_or(PathBuf::new()).join("screenshot.png");
-            tracing::info!("Loading screenshot from {:?}", screenshot);
-            let old = image::open(&screenshot);
-            tracing::info!("Saving screenshot to {:?}", screenshot);
-            let new = render_target.0.color_buffer.reader().read_image().await.unwrap().into_rgba8();
-            tracing::info!("Screenshot saved");
-            new.save(screenshot).unwrap();
-
-            if let Ok(old) = old {
-                log::info!("Comparing screenshots");
-
-                let hasher = image_hasher::HasherConfig::new().to_hasher();
-
-                let hash1 = hasher.hash_image(&new);
-                let hash2 = hasher.hash_image(&old);
-                let dist = hash1.dist(&hash2);
-                if dist > 2 {
-                    tracing::error!("Screenshots differ, distance={}", dist);
-                    exit(1);
-                } else {
-                    tracing::info!("Screenshots are identical");
-                    exit(0);
-                }
-            } else {
-                tracing::info!("No old screenshot to compare to");
-                exit(1);
-            }
-        });
-    }
     Element::new()
 }
 

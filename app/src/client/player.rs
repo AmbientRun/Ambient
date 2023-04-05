@@ -26,7 +26,8 @@ pub fn systems_final() -> SystemGroup {
 pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
     const PIXELS_PER_LINE: f32 = 5.0;
 
-    let (has_focus, set_has_focus) = hooks.use_state(false);
+    // Assume window has focus
+    let (has_focus, set_has_focus) = hooks.use_state(true);
 
     hooks.use_multi_event(
         &[WINDOW_KEYBOARD_INPUT, WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION, WINDOW_MOUSE_WHEEL, WINDOW_FOCUSED],

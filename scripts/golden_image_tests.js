@@ -10,7 +10,7 @@ let samples = [
     ["guest/rust/examples/basics/image", 30],
     ["guest/rust/examples/basics/primitives", 30],
     ["guest/rust/examples/basics/raw_text", 30],
-    ["guest/rust/examples/basics/fog", 30],
+    ["guest/rust/examples/basics/fog", 60],
     ["guest/rust/examples/games/tictactoe", 30],
     ["guest/rust/examples/ui/button", 60],
     ["guest/rust/examples/ui/dock_layout", 60],
@@ -50,12 +50,12 @@ function process(nParallel, jobs) {
     });
 }
 
-async function run(samples, build, nParallel) {
+async function run(samples, just_build, no_build, nParallel) {
     console.time("time");
     let errors = (await process(nParallel, samples.map(([path, seconds], index) => async () => {
         console.timeLog("time", path, "running..");
         try {
-            const command = build ? `build ${path}` : `run ${path} --no-build --headless --no-proxy --golden-image-test ${seconds} --quic-interface-port ${9000 + index} --http-interface-port ${10000 + index}`;
+            const command = just_build ? `build ${path}` : `run ${path} ${no_build ? '--no-build' : ''} --headless --no-proxy --golden-image-test ${seconds} --quic-interface-port ${9000 + index} --http-interface-port ${10000 + index}`;
             let res = await exec(`cargo run --release -- ${command}`);
             console.timeLog("time", path, "\x1b[32mwas ok\x1b[0m");
         } catch (err) {
@@ -72,13 +72,16 @@ async function run(samples, build, nParallel) {
         exit(1);
     }
 }
-
-if (argv.length > 2) {
-    if (argv[2] == "--build") {
-        console.log('Building all samples...');
-        run(samples, true, 1);
-        return;
+let just_build = false;
+let no_build = false;
+for (let i = 2; i < argv.length; i++) {
+    if (argv[i] == "--build") {
+        just_build = true;
+    } else if (argv[i] == "--no-build") {
+        no_build = true;
+    } else {
+        samples = samples.filter(([path]) => path.includes(argv[i]));
     }
-    samples = samples.filter(([path]) => path.includes(argv[2]));
 }
-run(samples, false, 10);
+
+run(samples, just_build, no_build, just_build ? 1 : 5);
