@@ -3,7 +3,7 @@ use anyhow::{Context, Result};
 use futures::io::BufReader;
 use quinn::{Connection, RecvStream};
 
-use crate::{next_bincode_bi_stream, open_bincode_bi_stream, IncomingStream, NetworkError, OutgoingStream};
+use crate::{client_connection::ClientConnection, next_bincode_bi_stream, open_bincode_bi_stream, IncomingStream, NetworkError, OutgoingStream};
 
 #[derive(Debug)]
 pub struct ClientProtocol {
@@ -63,7 +63,7 @@ impl ClientProtocol {
 
 /// The server side protocol instantiation of the client communication
 pub struct ServerProtocol {
-    pub(crate) conn: Connection,
+    pub(crate) conn: ClientConnection,
 
     pub(crate) diff_stream: OutgoingStream,
     pub(crate) stat_stream: OutgoingStream,
@@ -71,7 +71,7 @@ pub struct ServerProtocol {
 }
 
 impl ServerProtocol {
-    pub async fn new(conn: Connection, server_info: ServerInfo) -> Result<Self, NetworkError> {
+    pub async fn new(conn: ClientConnection, server_info: ServerInfo) -> Result<Self, NetworkError> {
         // The client now sends the player id
         let (mut tx, mut rx) = next_bincode_bi_stream(&conn).await?;
 
