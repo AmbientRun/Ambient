@@ -6,7 +6,7 @@ use std::{
 };
 
 use ambient_ecs::{
-    components, query, Component, ComponentValue, Debuggable, Description, EntityId, Name, Networked, Serializable, Store, World,
+    components, query, Component, ComponentValue, Resource, Debuggable, Description, EntityId, Name, Networked, Serializable, Store, World,
 };
 use ambient_rpc::{RpcError, RpcRegistry};
 use ambient_std::log_error;
@@ -40,6 +40,13 @@ pub const PLAYER_INPUT_DATAGRAM_ID: u32 = 5;
 pub const WASM_DATAGRAM_ID: u32 = 6;
 
 components!("network", {
+    /// An absolute URL. It's used to load assets from the server.
+    @[
+        Debuggable, Networked, Resource,
+        Name["Absolute Asset Url"],
+        Description["AbsAssetUrl is a URL that is absolute, and can be used to load assets from the server."]
+    ]
+    abs_asset_url: String,
     /// Works like `world.resource_entity` for server worlds, except it's also persisted to disk, and synchronized to clients
     @[
         Debuggable, Networked,

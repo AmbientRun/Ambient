@@ -13,7 +13,7 @@ use ambient_ecs::{
 use ambient_network::{
     persistent_resources,
     server::{ForkingEvent, GameServer, ShutdownEvent, ProxySettings},
-    synced_resources,
+    synced_resources, abs_asset_url
 };
 use ambient_prefab::PrefabFromUrl;
 use ambient_std::{
@@ -72,8 +72,10 @@ pub fn start(
         .unwrap_or("localhost".to_string());
     log::info!("Created server, running at {public_host}:{port}");
     let http_interface_port = cli.host().unwrap().http_interface_port.unwrap_or(HTTP_INTERFACE_PORT);
-    ServerBaseUrlKey.insert(&assets, AbsAssetUrl::parse(format!("http://{public_host}:{http_interface_port}/content/")).unwrap());
 
+    // here the key is inserted into the asset cache
+    let key = AbsAssetUrl::parse(format!("http://{public_host}:{http_interface_port}/content/")).unwrap();
+    ServerBaseUrlKey.insert(&assets, key);
     start_http_interface(runtime, &project_path, http_interface_port);
 
     ComponentRegistry::get_mut().add_external(ambient_project::all_defined_components(manifest, false).unwrap());
@@ -89,6 +91,7 @@ pub fn start(
         let name = manifest.project.name.clone().unwrap_or_else(|| "Ambient".into());
         server_world.add_components(server_world.resource_entity(), Entity::new().with(project_name(), name)).unwrap();
 
+        Entity::new().with(synced_resources(), ()).with(abs_asset_url(), format!("http://{public_host}:{http_interface_port}/content/")).spawn(&mut server_world);
         Entity::new().with(synced_resources(), ()).with(dont_store(), ()).spawn(&mut server_world);
         // Note: this should not be reset every time the server is created. Remove this when it becomes possible to load/save worlds.
         Entity::new().with(persistent_resources(), ()).spawn(&mut server_world);
@@ -142,6 +145,8 @@ fn is_sync_component(component: ComponentDesc, _: WorldStreamCompEvent) -> bool 
 
 fn create_resources(assets: AssetCache) -> Entity {
     let mut server_resources = Entity::new().with(asset_cache(), assets.clone()).with(no_sync(), ()).with_default(world_events());
+    // let mut server_resources = Entity::new().with(synced_resources(), ()).with(asset_cache(), assets.clone())
+    // .with_default(world_events());
 
     ambient_physics::create_server_resources(&assets, &mut server_resources);
 

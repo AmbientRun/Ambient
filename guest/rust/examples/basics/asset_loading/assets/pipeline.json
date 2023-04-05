@@ -1,8 +1,16 @@
-{
-  "pipeline": {
-    "type": "Models",
-    "prefab_components": {
-      "asset_loading::is_the_best": false
+[
+    {
+        "pipeline": {
+          "type": "Models",
+          "prefab_components": {
+            "asset_loading::is_the_best": false
+          }
+        }
+    },
+    {
+        "pipeline": {
+            "type": "Audio"
+        }
     }
-  }
-}
+
+]
