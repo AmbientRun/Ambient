@@ -26,7 +26,7 @@ pub fn main() {
 }
 ```
 
-Take a look at the UI examples in https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui
+[See all UI examples here](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui)
 
 ## Layout
 
