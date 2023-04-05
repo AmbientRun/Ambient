@@ -24,8 +24,3 @@ macro_rules! primitive_component_definitions {
         );
     };
 }
-
-pub mod events {
-    /// A module message was received (prefix)
-    pub const MODULE_MESSAGE: &str = "core/module_message";
-}

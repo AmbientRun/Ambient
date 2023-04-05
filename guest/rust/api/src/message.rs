@@ -1,7 +1,6 @@
 use crate::{
     components::core::wasm::message::{data, source_local, source_runtime},
     ecs::Entity,
-    event,
     global::{on, CallbackReturn, EntityId, OnHandle},
 };
 
@@ -190,17 +189,13 @@ pub fn subscribe<R: CallbackReturn, T: Message>(
     callback: impl FnMut(Source, T) -> R + 'static,
 ) -> OnHandle {
     let mut callback = Box::new(callback);
-    on(
-        &format!("{}/{}", event::MODULE_MESSAGE, T::id()),
-        move |e| {
-            let source =
-                Source::from_entity(e).context("No source available for incoming message")?;
-            let data = e.get(data()).context("No data for incoming message")?;
+    on(T::id(), move |e| {
+        let source = Source::from_entity(e).context("No source available for incoming message")?;
+        let data = e.get(data()).context("No data for incoming message")?;
 
-            callback(source, T::deserialize_message(&data)?).into_result()?;
-            Ok(())
-        },
-    )
+        callback(source, T::deserialize_message(&data)?).into_result()?;
+        Ok(())
+    })
 }
 
 /// Implemented by all messages that can be sent between modules.

@@ -19,7 +19,6 @@ use ambient_ecs::{
 };
 use ambient_physics::{collider_loads, collisions, PxShapeUserData};
 use ambient_project::Identifier;
-use ambient_shared_types::events;
 use itertools::Itertools;
 use physxx::{PxRigidActor, PxRigidActorRef, PxUserData};
 
@@ -268,7 +267,7 @@ fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
                     let autosubscribe_messages =
                         [messages::Frame::id(), messages::ModuleLoad::id()];
                     for id in autosubscribe_messages {
-                        sms.listen_to_event(format!("{}/{}", events::MODULE_MESSAGE, id));
+                        sms.listen_to_event(id.to_string());
                     }
 
                     world.add_component(module_id, module_state(), sms).unwrap();

@@ -65,11 +65,7 @@ pub(super) fn run(
         }
     };
 
-    let run_context = RunContext::new(
-        world,
-        format!("{}/{}", ambient_shared_types::events::MODULE_MESSAGE, name),
-        entity,
-    );
+    let run_context = RunContext::new(world, name.clone(), entity);
 
     if let Some(module_id) = module_id {
         match world.get_cloned(module_id, module_state()) {

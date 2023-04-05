@@ -14,8 +14,6 @@ pub mod asset;
 pub mod ecs;
 /// Entity-related functionality, including manipulation, creation, removal, and search.
 pub mod entity;
-/// Event-related functionality, including sending events and standard events.
-pub mod event;
 /// Global functions and types for your convenience.
 pub mod global;
 /// Messaging to other modules and to the other side of the networking.

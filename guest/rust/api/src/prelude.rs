@@ -1,7 +1,7 @@
 pub use crate::{
     asset,
     ecs::{change_query, despawn_query, query, spawn_query, Component, Entity, QueryEvent},
-    entity, event,
+    entity,
     global::*,
     main, message,
     message::{Message, ModuleMessage, RuntimeMessage},
