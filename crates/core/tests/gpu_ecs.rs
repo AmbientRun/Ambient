@@ -40,6 +40,7 @@ struct TestCommon {
 
 impl TestCommon {
     async fn new() -> Self {
+        ambient_ecs::init_components();
         ambient_core::init_all_components();
         init_components();
         init_gpu_components();
@@ -110,7 +111,7 @@ static SERIAL_TEST: Mutex<()> = Mutex::new(());
 #[test]
 fn two_entities() {
     let _guard = SERIAL_TEST.lock();
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt::try_init().ok();
     let rt = Runtime::new().unwrap();
     rt.block_on(async {
         let mut test = TestCommon::new().await;
@@ -128,7 +129,7 @@ fn two_entities() {
 #[tokio::test]
 async fn gpu_ecs() {
     let _guard = SERIAL_TEST.lock();
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt::try_init().ok();
     let mut test = TestCommon::new().await;
 
     let _ignored = Entity::new().with(cpu_banana(), vec4(7., 7., 3., 7.)).spawn(&mut test.world);
@@ -159,7 +160,7 @@ async fn gpu_ecs() {
 #[tokio::test]
 async fn gpu_update_with_gpu_run() {
     let _guard = SERIAL_TEST.lock();
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt::try_init().ok();
     let mut test = TestCommon::new().await;
 
     let a = Entity::new().with(carrot(), vec4(7., 7., 3., 7.)).spawn(&mut test.world);
@@ -172,7 +173,7 @@ async fn gpu_update_with_gpu_run() {
 #[tokio::test]
 async fn gpu_update_with_gpu_ecs_update() {
     let _guard = SERIAL_TEST.lock();
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt::try_init().ok();
     let mut test = TestCommon::new().await;
 
     let a = Entity::new().with(carrot(), vec4(7., 7., 3., 7.)).spawn(&mut test.world);

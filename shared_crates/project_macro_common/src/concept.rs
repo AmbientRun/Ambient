@@ -308,7 +308,7 @@ pub fn generate_component_list_doc_comment(
     context: &Context,
     concept: &Concept,
 ) -> anyhow::Result<String> {
-    let mut output = "*Definition*:\n\n```\n{\n".to_string();
+    let mut output = "*Definition*:\n\n```ignore\n{\n".to_string();
 
     fn write_level(
         concepts: &Tree<Concept>,
@@ -515,7 +515,7 @@ mod tests {
             indoc::indoc! {r#"
             *Definition*:
 
-            ```
+            ```ignore
             {
               "component3": String = "It's pi".to_string(),
               "component4": Vec3 = Vec3::new(0f32, 1f32, 2f32),
