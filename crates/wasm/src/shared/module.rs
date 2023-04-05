@@ -251,7 +251,7 @@ impl<Bindings: BindingsBound> ModuleStateBehavior for ModuleStateInnerImpl<Bindi
             .data_mut()
             .bindings
             .base_mut()
-            .subscribed_events
+            .subscribed_messages
             .insert(event_name);
     }
 
@@ -260,7 +260,7 @@ impl<Bindings: BindingsBound> ModuleStateBehavior for ModuleStateInnerImpl<Bindi
             .data()
             .bindings
             .base()
-            .subscribed_events
+            .subscribed_messages
             .contains(event_name)
     }
 }

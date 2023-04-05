@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use crate::{
     global::{CallbackReturn, EntityId, OkEmpty},
     internal::{component::ComponentsTuple, conversion::FromBindgen, wit},
-    prelude::OnHandle,
+    message::Listener,
 };
 
 /// Creates a new [GeneralQueryBuilder] that will find entities that have the specified `components`
@@ -76,7 +76,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> GeneralQuery<Componen
     pub fn each_frame<R: CallbackReturn>(
         self,
         callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + 'static,
-    ) -> OnHandle {
+    ) -> Listener {
         self.0.bind(callback)
     }
 }
@@ -108,7 +108,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> GeneralQueryBuilder<C
     pub fn each_frame<R: CallbackReturn>(
         self,
         callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + 'static,
-    ) -> OnHandle {
+    ) -> Listener {
         self.build().each_frame(callback)
     }
 }
@@ -174,7 +174,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> ChangeQuery<Component
     pub fn bind<R: CallbackReturn>(
         self,
         callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + 'static,
-    ) -> OnHandle {
+    ) -> Listener {
         self.build().bind(callback)
     }
 
@@ -216,7 +216,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> EventQuery<Components
     pub fn bind<R: CallbackReturn>(
         self,
         callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + 'static,
-    ) -> OnHandle {
+    ) -> Listener {
         self.build().bind(callback)
     }
 
@@ -257,7 +257,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryImpl<Components>
     fn bind<R: CallbackReturn>(
         self,
         callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + 'static,
-    ) -> OnHandle {
+    ) -> Listener {
         use crate::message::RuntimeMessage;
         crate::messages::Frame::subscribe(move |_| {
             let results = self.evaluate();

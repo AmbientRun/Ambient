@@ -3,7 +3,7 @@ use std::{future::Future, task::Poll};
 use crate::{
     components, entity,
     global::{OkEmpty, ResultEmpty},
-    internal::{executor::EXECUTOR, wit},
+    internal::executor::EXECUTOR,
 };
 
 /// The time, relative to when the application started, in seconds.
@@ -15,15 +15,6 @@ pub fn time() -> f32 {
 /// The length of the previous frame, in seconds.
 pub fn frametime() -> f32 {
     entity::get_component(entity::resources(), components::core::app::dtime()).unwrap()
-}
-
-/// Handle to a "on" listener, which can be canceled by calling `.stop`
-pub struct OnHandle(String, u128);
-impl OnHandle {
-    /// Stops listening
-    pub fn stop(self) {
-        EXECUTOR.unregister_callback(&self.0, self.1);
-    }
 }
 
 /// A trait that abstracts over return types so that you can return an [ResultEmpty] or nothing.
@@ -40,23 +31,6 @@ impl CallbackReturn for () {
     fn into_result(self) -> ResultEmpty {
         OkEmpty
     }
-}
-
-/// `on` calls `callback` every time `event` occurs.
-///
-/// The `callback` is a `fn`. This can be a closure (e.g. `|args| { ... }`).
-pub(crate) fn on<R: CallbackReturn>(
-    event: &str,
-    mut callback: impl FnMut(&wit::guest::Source, &[u8]) -> R + 'static,
-) -> OnHandle {
-    wit::event::subscribe(event);
-    OnHandle(
-        event.to_string(),
-        EXECUTOR.register_callback(
-            event.to_string(),
-            Box::new(move |source, args| callback(source, args).into_result()),
-        ),
-    )
 }
 
 /// Runs the given async block (`future`). This lets your module set up behaviour

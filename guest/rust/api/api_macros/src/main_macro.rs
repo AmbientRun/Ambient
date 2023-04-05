@@ -70,8 +70,8 @@ mod tests {
                 use super::components;
                 use ::ambient_api::prelude::*;
             }
-            /// Auto-generated message definitions. Messages are used to communicate between the client and serverside,
-            /// as well as to other modules.
+            /// Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,
+            /// and with other modules.
             pub mod messages {
                 use ::ambient_api::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
             }

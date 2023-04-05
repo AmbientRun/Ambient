@@ -79,8 +79,8 @@ fn can_generate_components_from_manifest_in_global_namespace() {
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
         }
     };
@@ -114,8 +114,8 @@ fn can_accept_no_components() {
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
         }
     };
@@ -172,8 +172,8 @@ fn can_generate_components_from_manifest() {
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
         }
     };
@@ -217,8 +217,8 @@ fn can_generate_component_with_contained_type() {
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
         }
     };
@@ -263,8 +263,8 @@ fn can_generate_components_from_manifest_with_org() {
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
         }
     };
@@ -312,8 +312,8 @@ fn can_generate_components_with_documented_namespace_from_manifest() {
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
         }
     };
@@ -535,8 +535,8 @@ fn can_generate_concepts_with_all_supported_types() {
                 )
             }
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
         }
     };
@@ -640,8 +640,8 @@ fn can_extend_with_multiple_concepts() {
                 is_concept1(id) && is_concept2(id) && entity::has_components(id, &[&components::i32()])
             }
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
         }
     };
@@ -805,8 +805,8 @@ fn can_generate_concepts() {
                 ])
             }
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
         }
     };
@@ -904,8 +904,8 @@ fn can_generate_concepts_with_documented_namespace_from_manifest() {
                 }
             }
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
         }
     };
@@ -947,8 +947,8 @@ fn can_generate_message() {
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
             use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError, ModuleMessage}};
 
@@ -1025,8 +1025,8 @@ fn can_generate_runtime_message() {
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
             use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError, RuntimeMessage}};
 

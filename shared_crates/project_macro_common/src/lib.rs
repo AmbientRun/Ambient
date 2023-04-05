@@ -62,8 +62,8 @@ pub fn implementation(
         pub mod concepts {
             #concept_tokens
         }
-        /// Auto-generated message definitions. Messages are used to communicate between the client and serverside,
-        /// as well as to other modules.
+        /// Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,
+        /// and with other modules.
         pub mod messages {
             #message_tokens
         }

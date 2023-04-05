@@ -231,8 +231,8 @@ impl wit::component::Host for Bindings {
         )
     }
 }
-impl wit::event::Host for Bindings {
+impl wit::message::Host for Bindings {
     fn subscribe(&mut self, name: String) -> anyhow::Result<()> {
-        shared::implementation::event::subscribe(&mut self.base.subscribed_events, name)
+        shared::implementation::message::subscribe(&mut self.base.subscribed_messages, name)
     }
 }

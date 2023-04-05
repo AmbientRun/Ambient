@@ -11,11 +11,19 @@ use anyhow::Context;
 use bytes::Bytes;
 use quinn::RecvStream;
 
-use std::io::{Cursor, Read};
+use std::{
+    collections::HashSet,
+    io::{Cursor, Read},
+};
 
 use crate::shared::remote_paired_id;
 
 pub const MAX_STREAM_LENGTH: usize = 10 * 1024 * 1024;
+
+pub fn subscribe(subscribed_events: &mut HashSet<String>, name: String) -> anyhow::Result<()> {
+    subscribed_events.insert(name);
+    Ok(())
+}
 
 /// Reads an incoming datagram and dispatches to WASM
 pub fn on_datagram(world: &mut World, user_id: Option<String>, bytes: Bytes) -> anyhow::Result<()> {

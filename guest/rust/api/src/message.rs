@@ -1,6 +1,6 @@
 use crate::{
-    global::{on, CallbackReturn, EntityId, OnHandle},
-    internal::{conversion::FromBindgen, wit},
+    global::{CallbackReturn, EntityId},
+    internal::{conversion::FromBindgen, executor::EXECUTOR, wit},
 };
 
 #[cfg(any(feature = "client", feature = "server"))]
@@ -178,16 +178,33 @@ pub fn send<T: Message>(target: Target, data: &T) {
     let _ = (target, data);
 }
 
+/// Handle to a message listener that can be used to stop listening.
+pub struct Listener(String, u128);
+impl Listener {
+    /// Stops listening.
+    pub fn stop(self) {
+        EXECUTOR.unregister_callback(&self.0, self.1);
+    }
+}
+
 /// Subscribes to a message.
 #[allow(clippy::collapsible_else_if)]
 pub fn subscribe<R: CallbackReturn, T: Message>(
-    callback: impl FnMut(Source, T) -> R + 'static,
-) -> OnHandle {
-    let mut callback = Box::new(callback);
-    on(T::id(), move |source, data| {
-        callback(source.clone().from_bindgen(), T::deserialize_message(data)?).into_result()?;
-        Ok(())
-    })
+    mut callback: impl FnMut(Source, T) -> R + 'static,
+) -> Listener {
+    let id = T::id();
+    wit::message::subscribe(id);
+    Listener(
+        id.to_string(),
+        EXECUTOR.register_callback(
+            id.to_string(),
+            Box::new(move |source, data| {
+                callback(source.clone().from_bindgen(), T::deserialize_message(data)?)
+                    .into_result()?;
+                Ok(())
+            }),
+        ),
+    )
 }
 
 /// Implemented by all messages that can be sent between modules.
@@ -256,7 +273,7 @@ pub trait ModuleMessage: Message {
     }
 
     /// Subscribes to this [Message]. Wrapper around [self::subscribe].
-    fn subscribe<R: CallbackReturn>(callback: impl FnMut(Source, Self) -> R + 'static) -> OnHandle {
+    fn subscribe<R: CallbackReturn>(callback: impl FnMut(Source, Self) -> R + 'static) -> Listener {
         self::subscribe(callback)
     }
 }
@@ -264,7 +281,7 @@ pub trait ModuleMessage: Message {
 /// Implemented by all messages sent from the runtime.
 pub trait RuntimeMessage: Message {
     /// Subscribes to this [Message]. Wrapper around [self::subscribe].
-    fn subscribe<R: CallbackReturn>(mut callback: impl FnMut(Self) -> R + 'static) -> OnHandle {
+    fn subscribe<R: CallbackReturn>(mut callback: impl FnMut(Self) -> R + 'static) -> Listener {
         self::subscribe(move |_source, msg| callback(msg))
     }
 }

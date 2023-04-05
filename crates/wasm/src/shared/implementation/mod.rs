@@ -1,6 +1,5 @@
 pub mod component;
 pub mod entity;
-pub mod event;
 pub mod message;
 
 pub fn unsupported<T>() -> anyhow::Result<T> {
