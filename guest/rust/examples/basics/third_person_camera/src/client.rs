@@ -16,6 +16,7 @@ use components::player_camera_ref;
 fn main() {
     spawn_query((player(), user_id())).bind(move |players| {
         for (id, (_, user)) in players {
+            // First, we check if this player is the "local" player, and only then do we attach a camera
             if user == entity::get_component(entity::resources(), local_user_id()).unwrap() {
                 let camera = Entity::new()
                     .with_merge(make_perspective_infinite_reverse_camera())
