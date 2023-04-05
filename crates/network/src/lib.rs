@@ -40,11 +40,11 @@ pub const PLAYER_INPUT_DATAGRAM_ID: u32 = 5;
 pub const WASM_DATAGRAM_ID: u32 = 6;
 
 components!("network", {
-    /// An absolute URL. It's used to load assets from the server.
+    /// The absolute asset url, synced as a component between client and server for loading assets.
     @[
         Debuggable, Networked, Resource,
         Name["Absolute Asset Url"],
-        Description["AbsAssetUrl is a URL that is absolute, and can be used to load assets from the server."]
+        Description["URL that is absolute, and can be used to load assets from the client or server."]
     ]
     abs_asset_url: String,
     /// Works like `world.resource_entity` for server worlds, except it's also persisted to disk, and synchronized to clients

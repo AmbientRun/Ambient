@@ -146,7 +146,6 @@ fn is_sync_component(component: ComponentDesc, _: WorldStreamCompEvent) -> bool 
 fn create_resources(assets: AssetCache) -> Entity {
     let mut server_resources = Entity::new().with(asset_cache(), assets.clone()).with(no_sync(), ()).with_default(world_events());
     ambient_physics::create_server_resources(&assets, &mut server_resources);
-
     server_resources.merge(ambient_core::async_ecs::async_ecs_resources());
     server_resources.set(ambient_core::runtime(), RuntimeHandle::current());
 
