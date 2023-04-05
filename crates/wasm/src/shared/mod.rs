@@ -1,7 +1,6 @@
 pub(crate) mod bindings;
 pub(crate) mod implementation;
 
-mod borrowed_types;
 mod module;
 
 pub mod build;
@@ -60,6 +59,8 @@ pub use internal::{
 
 use crate::shared::message::RuntimeMessageExt;
 
+use self::message::Source;
+
 pub fn init_all_components() {
     internal::init_components();
     message::init_components();
@@ -74,24 +75,6 @@ pub enum MessageType {
     Error,
     Stdout,
     Stderr,
-}
-
-#[derive(Debug, Clone)]
-pub struct RunContext {
-    pub event_name: String,
-    pub event_data: Entity,
-    pub time: f32,
-}
-impl RunContext {
-    pub fn new(world: &World, event_name: impl Into<String>, event_data: Entity) -> Self {
-        let time = ambient_app::get_time_since_app_start(world).as_secs_f32();
-
-        Self {
-            event_name: event_name.into(),
-            event_data,
-            time,
-        }
-    }
 }
 
 pub fn systems() -> SystemGroup {
@@ -267,7 +250,7 @@ fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
                     let autosubscribe_messages =
                         [messages::Frame::id(), messages::ModuleLoad::id()];
                     for id in autosubscribe_messages {
-                        sms.listen_to_event(id.to_string());
+                        sms.listen_to_message(id.to_string());
                     }
 
                     world.add_component(module_id, module_state(), sms).unwrap();
@@ -304,18 +287,26 @@ fn update_errors(world: &mut World, errors: &[(EntityId, String)]) {
     }
 }
 
-fn run(world: &mut World, id: EntityId, mut state: ModuleState, context: &RunContext) {
+fn run(
+    world: &mut World,
+    id: EntityId,
+    mut state: ModuleState,
+    message_source: &Source,
+    message_name: &str,
+    message_data: &[u8],
+) {
     profiling::scope!(
         "run",
-        format!("{} - {}", get_module_name(world, id), context.event_name)
+        format!("{} - {}", get_module_name(world, id), message_name)
     );
 
     // If it's not in the subscribed events, skip over it
-    if !state.supports_event(&context.event_name) {
+    if !state.supports_message(message_name) {
         return;
     }
 
-    let result = run_and_catch_panics(|| state.run(world, context));
+    let result =
+        run_and_catch_panics(|| state.run(world, message_source, message_name, message_data));
 
     if let Err(message) = result {
         update_errors(world, &[(id, message)]);

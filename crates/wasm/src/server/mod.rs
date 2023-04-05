@@ -150,7 +150,7 @@ impl wit::component::Host for Bindings {
         &mut self,
         entity: wit::types::EntityId,
         index: u32,
-    ) -> anyhow::Result<Option<wit::component::ValueResult>> {
+    ) -> anyhow::Result<Option<wit::component::Value>> {
         shared::implementation::component::get_component(self.world(), entity, index)
     }
 
@@ -158,7 +158,7 @@ impl wit::component::Host for Bindings {
         &mut self,
         entity: wit::types::EntityId,
         index: u32,
-        value: wit::component::ValueResult,
+        value: wit::component::Value,
     ) -> anyhow::Result<()> {
         shared::implementation::component::add_component(self.world_mut(), entity, index, value)
     }
@@ -175,7 +175,7 @@ impl wit::component::Host for Bindings {
         &mut self,
         entity: wit::types::EntityId,
         index: u32,
-        value: wit::component::ValueResult,
+        value: wit::component::Value,
     ) -> anyhow::Result<()> {
         shared::implementation::component::set_component(self.world_mut(), entity, index, value)
     }
@@ -223,7 +223,7 @@ impl wit::component::Host for Bindings {
     fn query_eval(
         &mut self,
         query_index: u64,
-    ) -> anyhow::Result<Vec<(wit::types::EntityId, Vec<wit::component::ValueResult>)>> {
+    ) -> anyhow::Result<Vec<(wit::types::EntityId, Vec<wit::component::Value>)>> {
         shared::implementation::component::query_eval(
             unsafe { self.world_ref.world() },
             &mut self.base.query_states,

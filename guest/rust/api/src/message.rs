@@ -1,11 +1,10 @@
 use crate::{
-    components::core::wasm::message::{data, source_local, source_runtime},
-    ecs::Entity,
     global::{on, CallbackReturn, EntityId, OnHandle},
+    internal::{conversion::FromBindgen, wit},
 };
 
 #[cfg(any(feature = "client", feature = "server"))]
-use crate::internal::{conversion::IntoBindgen, wit};
+use crate::internal::conversion::IntoBindgen;
 
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug)]
 /// Where a message came from.
@@ -48,35 +47,31 @@ impl Source {
         Some(player_id)
     }
 
-    fn from_entity(e: &Entity) -> Option<Self> {
-        if e.has(source_runtime()) {
-            return Some(Source::Runtime);
-        }
-
-        if let Some(module) = e.get(source_local()) {
-            return Some(Source::Local(module));
-        }
-
-        #[cfg(feature = "client")]
-        if e.has(crate::components::core::wasm::message::source_server()) {
-            return Some(Source::Server);
-        }
-
-        #[cfg(feature = "server")]
-        if let Some(user_id) =
-            e.get(crate::components::core::wasm::message::source_client_user_id())
-        {
-            return Some(Source::Client { user_id });
-        }
-
-        None
-    }
-
     /// The module on this side that sent this message, if any.
     pub fn local(self) -> Option<EntityId> {
         match self {
             Source::Local(id) => Some(id),
             _ => None,
+        }
+    }
+}
+impl FromBindgen for wit::guest::Source {
+    type Item = Source;
+
+    fn from_bindgen(self) -> Self::Item {
+        match self {
+            wit::guest::Source::Runtime => Source::Runtime,
+            #[cfg(feature = "client")]
+            wit::guest::Source::Server => Source::Server,
+            #[cfg(feature = "server")]
+            wit::guest::Source::Client(user_id) => Source::Client { user_id },
+            wit::guest::Source::Local(entity_id) => Source::Local(entity_id.from_bindgen()),
+
+            // cover the other features
+            #[cfg(not(feature = "client"))]
+            wit::guest::Source::Server => unreachable!(),
+            #[cfg(not(feature = "server"))]
+            wit::guest::Source::Client(_user_id) => unreachable!(),
         }
     }
 }
@@ -189,11 +184,8 @@ pub fn subscribe<R: CallbackReturn, T: Message>(
     callback: impl FnMut(Source, T) -> R + 'static,
 ) -> OnHandle {
     let mut callback = Box::new(callback);
-    on(T::id(), move |e| {
-        let source = Source::from_entity(e).context("No source available for incoming message")?;
-        let data = e.get(data()).context("No data for incoming message")?;
-
-        callback(source, T::deserialize_message(&data)?).into_result()?;
+    on(T::id(), move |source, data| {
+        callback(source.clone().from_bindgen(), T::deserialize_message(data)?).into_result()?;
         Ok(())
     })
 }
@@ -302,5 +294,4 @@ mod serde {
         }
     }
 }
-use anyhow::Context;
 pub use serde::*;

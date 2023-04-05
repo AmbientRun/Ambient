@@ -8,11 +8,13 @@ use std::{
 
 use once_cell::sync::Lazy;
 
-use crate::{global::ResultEmpty, internal::component::Entity};
+use crate::global::ResultEmpty;
 use rand::random;
 
+use super::wit;
+
 pub type EventFuture = Pin<Box<dyn Future<Output = ResultEmpty>>>;
-type EventCallbackFn = Box<dyn FnMut(&Entity) -> ResultEmpty>;
+type EventCallbackFn = Box<dyn FnMut(&wit::guest::Source, &[u8]) -> ResultEmpty>;
 
 // the function is too general to be passed in directly
 #[allow(clippy::redundant_closure)]
@@ -49,7 +51,13 @@ impl Executor {
         }
     }
 
-    pub fn execute(&self, frame_state: FrameState, event_name: &str, components: &Entity) {
+    pub fn execute(
+        &self,
+        frame_state: FrameState,
+        source: wit::guest::Source,
+        message_name: String,
+        message_data: Vec<u8>,
+    ) {
         *self.frame_state.borrow_mut() = frame_state;
 
         // Load all pending callbacks.
@@ -69,9 +77,9 @@ impl Executor {
         // Dispatch all callbacks.
         {
             let mut callbacks = self.current_callbacks.borrow_mut();
-            if let Some(callbacks) = callbacks.on.get_mut(event_name) {
+            if let Some(callbacks) = callbacks.on.get_mut(&message_name) {
                 for callback in callbacks.values_mut() {
-                    callback(components).unwrap();
+                    callback(&source, &message_data).unwrap();
                 }
             }
         }

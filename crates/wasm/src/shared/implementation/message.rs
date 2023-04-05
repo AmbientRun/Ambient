@@ -3,7 +3,9 @@ use ambient_core::{
     runtime,
 };
 use ambient_ecs::{EntityId, World};
-use ambient_network::{log_network_result, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID, connection::Connection};
+use ambient_network::{
+    connection::Connection, log_network_result, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID,
+};
 
 use anyhow::Context;
 use bytes::Bytes;
@@ -118,7 +120,7 @@ pub fn send_local(
     message::send(
         world,
         module_id,
-        message::Source::Module(source_module_id),
+        message::Source::Local(source_module_id),
         name,
         data,
     );
@@ -161,11 +163,7 @@ fn send_datagram<C: Connection + 'static>(
     payload.extend_from_slice(data);
 
     world.resource(runtime()).spawn(async move {
-        ambient_network::send_datagram(
-            &connection,
-            WASM_DATAGRAM_ID,
-            payload,
-        ).await?;
+        ambient_network::send_datagram(&connection, WASM_DATAGRAM_ID, payload).await?;
 
         anyhow::Ok(())
     });

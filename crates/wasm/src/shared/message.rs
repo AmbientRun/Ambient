@@ -1,4 +1,3 @@
-pub use ambient_ecs::generated::components::core::wasm::message::*;
 use ambient_ecs::{components, Debuggable, EntityId, Resource, World};
 
 components!("wasm::message", {
@@ -11,7 +10,7 @@ pub enum Source {
     Runtime,
     Server,
     Client(String),
-    Module(EntityId),
+    Local(EntityId),
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -49,27 +48,18 @@ pub(super) fn run(
         data,
     }: SerializedMessage,
 ) {
-    use super::{messenger, module_state, MessageType, RunContext};
-    use ambient_ecs::{query, Entity};
+    use super::{messenger, module_state, MessageType};
+    use ambient_ecs::query;
 
-    let mut entity = Entity::new().with(self::data(), data.to_vec());
-
-    let mut source_id = None;
-    match &source {
-        Source::Runtime => entity.set(source_runtime(), ()),
-        Source::Server => entity.set(source_server(), ()),
-        Source::Client(user_id) => entity.set(source_client_user_id(), user_id.to_owned()),
-        Source::Module(id) => {
-            source_id = Some(*id);
-            entity.set(source_local(), *id);
-        }
+    let source_id = if let Source::Local(id) = &source {
+        Some(*id)
+    } else {
+        None
     };
-
-    let run_context = RunContext::new(world, name.clone(), entity);
 
     if let Some(module_id) = module_id {
         match world.get_cloned(module_id, module_state()) {
-            Ok(state) => super::run(world, module_id, state, &run_context),
+            Ok(state) => super::run(world, module_id, state, &source, &name, &data),
             Err(_) => {
                 let module_name = world
                     .get_cloned(module_id, ambient_core::name())
@@ -87,7 +77,7 @@ pub(super) fn run(
                 continue;
             }
 
-            super::run(world, id, sms, &run_context)
+            super::run(world, id, sms, &source, &name, &data)
         }
     }
 }

@@ -124,12 +124,12 @@ impl Entity {
 
     pub(crate) fn call_with<R>(
         &self,
-        callback: impl FnOnce(&Vec<(u32, wit::component::Value)>) -> R,
+        callback: impl FnOnce(&[(u32, &wit::component::Value)]) -> R,
     ) -> R {
         let data = self
             .0
             .iter()
-            .map(|(idx, val)| (*idx, val.clone()))
+            .map(|(idx, val)| (*idx, val))
             .collect::<Vec<_>>();
         callback(&data)
     }

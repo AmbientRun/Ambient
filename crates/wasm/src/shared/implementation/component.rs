@@ -34,9 +34,9 @@ macro_rules! define_component_types {
             world: &World,
             entity_id: EntityId,
             primitive_component: ambient_ecs::PrimitiveComponent,
-        ) -> Option<wit::component::ValueResult> {
+        ) -> Option<wit::component::Value> {
             use ambient_ecs::PrimitiveComponentType as PCT;
-            use wit::component::{ValueResult as VR, VecValueResult as VVR, OptionValueResult as OVR};
+            use wit::component::{Value as V, VecValue as VV, OptionValue as OV};
 
             fn get<T: IntoBindgen + Clone + Send + Sync + 'static>(
                 world: &World,
@@ -49,9 +49,9 @@ macro_rules! define_component_types {
             let c = primitive_component.desc;
             Some(match primitive_component.ty {
                 $(
-                PCT::$value            => VR::[<Type $value>](get::<$type>(world, entity_id, c)?),
-                PCT::[<Vec $value>]    => VR::TypeVec(VVR::[<Type $value>](get::<Vec<$type>>(world, entity_id, c)?),),
-                PCT::[<Option $value>] => VR::TypeOption(OVR::[<Type $value>](get::<Option<$type>>(world, entity_id, c)?),),
+                PCT::$value            => V::[<Type $value>](get::<$type>(world, entity_id, c)?),
+                PCT::[<Vec $value>]    => V::TypeVec(VV::[<Type $value>](get::<Vec<$type>>(world, entity_id, c)?),),
+                PCT::[<Option $value>] => V::TypeOption(OV::[<Type $value>](get::<Option<$type>>(world, entity_id, c)?),),
                 )*
             })
         }
@@ -60,9 +60,9 @@ macro_rules! define_component_types {
             world: &World,
             entity_accessor: &ambient_ecs::EntityAccessor,
             primitive_component: ambient_ecs::PrimitiveComponent,
-        ) -> Option<wit::component::ValueResult> {
+        ) -> Option<wit::component::Value> {
             use ambient_ecs::PrimitiveComponentType as PCT;
-            use wit::component::{ValueResult as VR, VecValueResult as VVR, OptionValueResult as OVR};
+            use wit::component::{Value as V, VecValue as VV, OptionValue as OV};
 
             fn get<T: IntoBindgen + Clone + Send + Sync + 'static>(
                 world: &World,
@@ -75,9 +75,9 @@ macro_rules! define_component_types {
             let c = primitive_component.desc;
             Some(match primitive_component.ty {
                 $(
-                PCT::$value            => VR::[<Type $value>](get::<$type>(world, entity_accessor, c).clone()),
-                PCT::[<Vec $value>]    => VR::TypeVec(VVR::[<Type $value>](get::<Vec<$type>>(world, entity_accessor, c).clone()),),
-                PCT::[<Option $value>] => VR::TypeOption(OVR::[<Type $value>](get::<Option<$type>>(world, entity_accessor, c).clone()),),
+                PCT::$value            => V::[<Type $value>](get::<$type>(world, entity_accessor, c).clone()),
+                PCT::[<Vec $value>]    => V::TypeVec(VV::[<Type $value>](get::<Vec<$type>>(world, entity_accessor, c).clone()),),
+                PCT::[<Option $value>] => V::TypeOption(OV::[<Type $value>](get::<Option<$type>>(world, entity_accessor, c).clone()),),
                 )*
             })
         }
@@ -86,16 +86,14 @@ macro_rules! define_component_types {
             world: &World,
             entity_id: wit::types::EntityId,
             index: u32,
-        ) -> anyhow::Result<Option<wit::component::ValueResult>> {
+        ) -> anyhow::Result<Option<wit::component::Value>> {
             let Some(primitive_component) = with_component_registry(|r| r.get_primitive_component(index)) else { return Ok(None); };
             Ok(read_primitive_component_from_world(world, entity_id.from_bindgen(), primitive_component))
         }
 
-        pub(crate) fn convert_entity_data_to_components(ed: &Entity) -> Vec<(u32, wit::component::ValueResult)> {
-            use wit::component::{
-                VecValueResult as VVR, OptionValueResult as OVR,
-                ValueResult as VR,
-            };
+        #[allow(dead_code)]
+        pub(crate) fn convert_entity_data_to_components(ed: &Entity) -> Vec<(u32, wit::component::Value)> {
+            use wit::component::{VecValue as VV, OptionValue as OV, Value as V};
 
             with_component_registry(|cr| {
                 ed.iter()
@@ -114,9 +112,9 @@ macro_rules! define_component_types {
 
                         let value = match primitive_component.ty {
                             $(
-                            PCT::$value            => VR::[<Type $value>](get::<$type>(cu)?),
-                            PCT::[<Vec $value>]    => VR::TypeVec(VVR::[<Type $value>](get::<Vec<$type>>(cu)?),),
-                            PCT::[<Option $value>] => VR::TypeOption(OVR::[<Type $value>](get::<Option<$type>>(cu)?),),
+                            PCT::$value            => V::[<Type $value>](get::<$type>(cu)?),
+                            PCT::[<Vec $value>]    => V::TypeVec(VV::[<Type $value>](get::<Vec<$type>>(cu)?),),
+                            PCT::[<Option $value>] => V::TypeOption(OV::[<Type $value>](get::<Option<$type>>(cu)?),),
                             )*
                         };
 
@@ -130,10 +128,7 @@ macro_rules! define_component_types {
         pub(crate) fn convert_components_to_entity_data(
             components: wit::entity::EntityData,
         ) -> Entity {
-            use wit::component::{
-                VecValueResult as VVR, OptionValueResult as OVR,
-                ValueResult as VR,
-            };
+            use wit::component::{VecValue as VV, OptionValue as OV, Value as V};
             with_component_registry(|cr| {
                 components
                     .into_iter()
@@ -143,9 +138,9 @@ macro_rules! define_component_types {
 
                         match (primitive_component.ty, value) {
                             $(
-                            (PCT::$value, VR::[<Type $value>](v))                              => Some(ComponentEntry::from_raw_parts(c, v.from_bindgen())),
-                            (PCT::[<Vec $value>], VR::TypeVec(VVR::[<Type $value>](v)))      => Some(ComponentEntry::from_raw_parts(c, v.from_bindgen())),
-                            (PCT::[<Option $value>], VR::TypeOption(OVR::[<Type $value>](v))) => Some(ComponentEntry::from_raw_parts(c, v.from_bindgen()))
+                            (PCT::$value, V::[<Type $value>](v))                              => Some(ComponentEntry::from_raw_parts(c, v.from_bindgen())),
+                            (PCT::[<Vec $value>], V::TypeVec(VV::[<Type $value>](v)))      => Some(ComponentEntry::from_raw_parts(c, v.from_bindgen())),
+                            (PCT::[<Option $value>], V::TypeOption(OV::[<Type $value>](v))) => Some(ComponentEntry::from_raw_parts(c, v.from_bindgen()))
                             ),*,
                             _ => None,
                         }
@@ -158,27 +153,24 @@ macro_rules! define_component_types {
             world: &mut World,
             entity_id: wit::types::EntityId,
             index: u32,
-            value: wit::component::ValueResult,
+            value: wit::component::Value,
         ) -> anyhow::Result<()> {
-            use wit::component::{
-                VecValueResult as VVR, OptionValueResult as OVR,
-                ValueResult as VR,
-            };
+            use wit::component::{VecValue as VV, OptionValue as OV, Value as V};
 
             let entity_id = entity_id.from_bindgen();
             match value {
                 $(
-                VR::[<Type $value >](value) => {
+                V::[<Type $value >](value) => {
                     if let Some(component) = get_component_type::<$type>(index) {
                         world.add_component(entity_id, component, value.from_bindgen())?;
                     }
                 }
-                VR::TypeVec(VVR::[<Type $value >](value)) => {
+                V::TypeVec(VV::[<Type $value >](value)) => {
                     if let Some(component) = get_component_type::<Vec<$type>>(index) {
                         world.add_component(entity_id, component, value.from_bindgen())?;
                     }
                 }
-                VR::TypeOption(OVR::[<Type $value >](value)) => {
+                V::TypeOption(OV::[<Type $value >](value)) => {
                     if let Some(component) = get_component_type::<Option<$type>>(index) {
                         world.add_component(entity_id, component, value.from_bindgen())?;
                     }
@@ -193,27 +185,24 @@ macro_rules! define_component_types {
             world: &mut World,
             entity_id: wit::types::EntityId,
             index: u32,
-            value: wit::component::ValueResult,
+            value: wit::component::Value,
         ) -> anyhow::Result<()> {
-            use wit::component::{
-                VecValueResult as VVR, OptionValueResult as OVR,
-                ValueResult as VR,
-            };
+            use wit::component::{VecValue as VV, OptionValue as OV, Value as V};
 
             let entity_id = entity_id.from_bindgen();
             match value {
                 $(
-                VR::[<Type $value >](value) => {
+                V::[<Type $value >](value) => {
                     if let Some(component) = get_component_type::<$type>(index) {
                         world.set(entity_id, component, value.from_bindgen())?;
                     }
                 }
-                VR::TypeVec(VVR::[<Type $value >](value)) => {
+                V::TypeVec(VV::[<Type $value >](value)) => {
                     if let Some(component) = get_component_type::<Vec<$type>>(index) {
                         world.set(entity_id, component, value.from_bindgen())?;
                     }
                 }
-                VR::TypeOption(OVR::[<Type $value >](value)) => {
+                V::TypeOption(OV::[<Type $value >](value)) => {
                     if let Some(component) = get_component_type::<Option<$type>>(index) {
                         world.set(entity_id, component, value.from_bindgen())?;
                     }
@@ -352,7 +341,7 @@ pub fn query_eval(
     world: &World,
     query_states: &mut QueryStateMap,
     query_index: u64,
-) -> anyhow::Result<Vec<(wit::types::EntityId, Vec<wit::component::ValueResult>)>> {
+) -> anyhow::Result<Vec<(wit::types::EntityId, Vec<wit::component::Value>)>> {
     let key = slotmap::DefaultKey::from(slotmap::KeyData::from_ffi(query_index));
 
     let (query, query_state, primitive_components) =

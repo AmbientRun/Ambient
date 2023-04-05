@@ -3,7 +3,7 @@ use std::{future::Future, task::Poll};
 use crate::{
     components, entity,
     global::{OkEmpty, ResultEmpty},
-    internal::{component::Entity, executor::EXECUTOR, wit},
+    internal::{executor::EXECUTOR, wit},
 };
 
 /// The time, relative to when the application started, in seconds.
@@ -47,14 +47,14 @@ impl CallbackReturn for () {
 /// The `callback` is a `fn`. This can be a closure (e.g. `|args| { ... }`).
 pub(crate) fn on<R: CallbackReturn>(
     event: &str,
-    mut callback: impl FnMut(&Entity) -> R + 'static,
+    mut callback: impl FnMut(&wit::guest::Source, &[u8]) -> R + 'static,
 ) -> OnHandle {
     wit::event::subscribe(event);
     OnHandle(
         event.to_string(),
         EXECUTOR.register_callback(
             event.to_string(),
-            Box::new(move |args| callback(args).into_result()),
+            Box::new(move |source, args| callback(source, args).into_result()),
         ),
     )
 }
