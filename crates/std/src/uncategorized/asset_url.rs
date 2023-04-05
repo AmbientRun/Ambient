@@ -29,6 +29,10 @@ impl SyncAssetKey<AbsAssetUrl> for ServerBaseUrlKey {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct ProxyBaseUrlKey;
+impl SyncAssetKey<AbsAssetUrl> for ProxyBaseUrlKey {}
+
 /// This is a thin wrapper around Url, which is guaranteed to always
 /// be an absolute url (including when pointing to a local file).
 ///

@@ -7,7 +7,7 @@ use ambient_network::server::player_connection;
 use ambient_physics::{helpers::PhysicsObjectCollection, physx::character_controller};
 use ambient_std::{
     asset_cache::SyncAssetKeyExt,
-    asset_url::{AssetUrl, ServerBaseUrlKey},
+    asset_url::{AssetUrl, ServerBaseUrlKey, ProxyBaseUrlKey},
     shapes::Ray,
 };
 use anyhow::Context;
@@ -163,7 +163,8 @@ impl wit::server_physics::Host for Bindings {
 }
 impl wit::server_asset::Host for Bindings {
     fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
-        let base_url = ServerBaseUrlKey.get(self.world().resource(asset_cache()));
+        let assets = self.world().resource(asset_cache());
+        let base_url = ProxyBaseUrlKey.try_get(assets).unwrap_or_else(|| ServerBaseUrlKey.get(assets));
         Ok(Some(AssetUrl::parse(path)?.resolve(&base_url)?.to_string()))
     }
 }
@@ -220,7 +221,14 @@ fn send_networked(
         .collect();
 
     for connection in connections {
-        message::send_networked(world, connection, module_id, &name, &data, reliable)?;
+        message::send_networked(
+            world,
+            connection,
+            module_id,
+            &name,
+            &data,
+            reliable,
+        )?;
     }
 
     Ok(())

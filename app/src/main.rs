@@ -170,7 +170,7 @@ fn main() -> anyhow::Result<()> {
             if !host.contains(':') {
                 host = format!("{host}:{QUIC_INTERFACE_PORT}");
             }
-            host.parse().with_context(|| format!("Invalid address for host {host}"))?
+            runtime.block_on(tokio::net::lookup_host(&host))?.next().ok_or_else(|| anyhow::anyhow!("No address found for host {host}"))?
         } else {
             format!("127.0.0.1:{QUIC_INTERFACE_PORT}").parse()?
         }

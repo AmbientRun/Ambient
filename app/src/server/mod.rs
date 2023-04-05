@@ -12,7 +12,7 @@ use ambient_ecs::{
 };
 use ambient_network::{
     persistent_resources,
-    server::{ForkingEvent, GameServer, ShutdownEvent},
+    server::{ForkingEvent, GameServer, ShutdownEvent, ProxySettings},
     synced_resources,
 };
 use ambient_prefab::PrefabFromUrl;
@@ -42,12 +42,22 @@ pub fn start(
     manifest: &ambient_project::Manifest,
 ) -> u16 {
     log::info!("Creating server");
-    let quic_interface_port = cli.host().unwrap().quic_interface_port;
+    let host_cli = cli.host().unwrap();
+    let quic_interface_port = host_cli.quic_interface_port;
+    let proxy_settings = (!host_cli.no_proxy).then(|| {
+        ProxySettings {
+            // default to getting a proxy from the dims-web Google App Engine app
+            endpoint: host_cli.proxy.clone().unwrap_or("http://proxy.ambient.run/proxy".to_string()),
+            project_path: project_path.clone(),
+            pre_cache_assets: host_cli.proxy_pre_cache_assets,
+            project_id: manifest.project.id.to_string(),
+        }
+    });
     let server = runtime.block_on(async move {
         if let Some(port) = quic_interface_port {
-            GameServer::new_with_port(port, false).await.context("failed to create game server with port").unwrap()
+            GameServer::new_with_port(port, false, proxy_settings).await.context("failed to create game server with port").unwrap()
         } else {
-            GameServer::new_with_port_in_range(QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10), false)
+            GameServer::new_with_port_in_range(QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10), false, proxy_settings)
                 .await
                 .context("failed to create game server with port in range")
                 .unwrap()
