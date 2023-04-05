@@ -112,7 +112,11 @@ fn MainApp(
             create_rpc_registry: cb(shared::create_server_rpc_registry),
             on_in_entities: None,
             inner: Dock::el(vec![
-                if loaded { GoldenImageTest::el(project_path, golden_image_test) } else { Element::new() },
+                if let Some(seconds) = golden_image_test.filter(|_| loaded) {
+                    GoldenImageTest::el(project_path, seconds)
+                } else {
+                    Element::new()
+                },
                 GameView { show_debug }.el(),
             ]),
         }
@@ -121,7 +125,7 @@ fn MainApp(
 }
 
 #[element_component]
-fn GoldenImageTest(hooks: &mut Hooks, project_path: Option<PathBuf>, golden_image_test: Option<f32>) -> Element {
+fn GoldenImageTest(hooks: &mut Hooks, project_path: Option<PathBuf>, seconds: f32) -> Element {
     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
     let render_target_ref = hooks.use_ref_with(|_| render_target.clone());
     *render_target_ref.lock() = render_target.clone();
@@ -158,17 +162,16 @@ fn GoldenImageTest(hooks: &mut Hooks, project_path: Option<PathBuf>, golden_imag
         }
     });
     hooks.use_spawn(move |world| {
-        if let Some(seconds) = golden_image_test {
-            world.resource(runtime()).spawn(async move {
-                tokio::time::sleep(Duration::from_secs_f32(seconds)).await;
-                let render_target = render_target_ref.lock().clone();
-                tracing::info!("Saving screenshot to {:?}", screenshot_path);
-                let new = render_target.0.color_buffer.reader().read_image().await.unwrap().into_rgba8();
-                tracing::info!("Screenshot saved");
-                new.save(screenshot_path).unwrap();
-                exit(1);
-            });
-        }
+        world.resource(runtime()).spawn(async move {
+            tokio::time::sleep(Duration::from_secs_f32(seconds)).await;
+            let render_target = render_target_ref.lock().clone();
+            tracing::info!("Saving screenshot to {:?}", screenshot_path);
+            let new = render_target.0.color_buffer.reader().read_image().await.unwrap().into_rgba8();
+            tracing::info!("Screenshot saved");
+            new.save(screenshot_path).unwrap();
+            exit(1);
+        });
+
         Box::new(|_| {})
     });
     Element::new()
