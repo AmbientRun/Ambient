@@ -17,6 +17,7 @@ pub struct BindingsBase {
 
 pub trait BindingsBound:
     wit::types::Host
+    + wit::asset::Host
     + wit::component::Host
     + wit::entity::Host
     + wit::event::Host
@@ -24,7 +25,6 @@ pub trait BindingsBound:
     + wit::client_player::Host
     + wit::server_message::Host
     + wit::server_physics::Host
-    + wit::server_asset::Host
     + Clone
     + Sync
     + Send

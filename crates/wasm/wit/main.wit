@@ -9,7 +9,7 @@ world bindings {
     import client-player: pkg.client-player
 
     import server-physics: pkg.server-physics
-    import server-asset: pkg.server-asset
+    import asset: pkg.asset
     import server-message: pkg.server-message
 
     export guest: pkg.guest

@@ -66,11 +66,7 @@ impl wit::server_physics::Host for Bindings {
         unsupported()
     }
 }
-impl wit::server_asset::Host for Bindings {
-    fn url(&mut self, _path: String) -> anyhow::Result<Option<String>> {
-        unsupported()
-    }
-}
+
 impl wit::server_message::Host for Bindings {
     fn send(
         &mut self,
