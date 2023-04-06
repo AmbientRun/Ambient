@@ -96,7 +96,7 @@ dependencies = [
  "flume",
  "glam",
  "parking_lot",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "profiling",
  "thread-priority",
  "tokio",
  "tracing",
@@ -169,7 +169,7 @@ dependencies = [
  "ordered-float",
  "parking_lot",
  "paste",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "profiling",
  "serde",
  "tokio",
  "tracing",
@@ -182,11 +182,15 @@ dependencies = [
 name = "ambient_ecs"
 version = "0.2.0-dev"
 dependencies = [
+ "ambient_project_macro",
+ "ambient_project_rt",
+ "ambient_shared_types",
  "ambient_std",
  "anyhow",
  "atomic_refcell",
  "bit-set",
  "bit-vec",
+ "byteorder",
  "data-encoding",
  "derive_more",
  "downcast-rs",
@@ -198,7 +202,7 @@ dependencies = [
  "once_cell",
  "parking_lot",
  "paste",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "profiling",
  "rand",
  "reqwest",
  "serde",
@@ -241,7 +245,7 @@ dependencies = [
  "futures",
  "itertools",
  "parking_lot",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "profiling",
  "tokio",
  "tracing",
 ]
@@ -256,10 +260,6 @@ dependencies = [
  "quote",
  "syn 1.0.109",
 ]
-
-[[package]]
-name = "ambient_event_types"
-version = "0.2.0-dev"
 
 [[package]]
 name = "ambient_friendly_id"
@@ -283,7 +283,7 @@ dependencies = [
  "glam",
  "log",
  "once_cell",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "profiling",
  "serde",
  "wgpu",
 ]
@@ -336,7 +336,7 @@ version = "0.2.0-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
- "ambient_event_types",
+ "ambient_shared_types",
  "ambient_std",
  "ambient_window_types",
  "glam",
@@ -356,6 +356,7 @@ dependencies = [
  "glam",
  "itertools",
  "log",
+ "profiling",
  "serde",
 ]
 
@@ -405,6 +406,50 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_project"
+version = "0.2.0-dev"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "serde",
+ "syn 1.0.109",
+ "thiserror",
+ "toml",
+]
+
+[[package]]
+name = "ambient_project_macro"
+version = "0.2.0-dev"
+dependencies = [
+ "ambient_project_macro_common",
+ "proc-macro2",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "ambient_project_macro_common"
+version = "0.2.0-dev"
+dependencies = [
+ "ambient_project",
+ "anyhow",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "syn 1.0.109",
+ "thiserror",
+ "toml",
+]
+
+[[package]]
+name = "ambient_project_rt"
+version = "0.2.0-dev"
+dependencies = [
+ "byteorder",
+ "glam",
+ "thiserror",
+]
+
+[[package]]
 name = "ambient_rect"
 version = "0.2.0-dev"
 dependencies = [
@@ -441,12 +486,16 @@ dependencies = [
  "log",
  "ordered-float",
  "parking_lot",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "profiling",
  "serde",
  "smallvec",
  "tracing",
  "wgpu",
 ]
+
+[[package]]
+name = "ambient_shared_types"
+version = "0.2.0-dev"
 
 [[package]]
 name = "ambient_std"
@@ -475,7 +524,7 @@ dependencies = [
  "parking_lot",
  "percent-encoding",
  "pin-project",
- "profiling 1.0.7 (git+https://github.com/philpax/profiling.git)",
+ "profiling",
  "rand",
  "relative-path",
  "reqwest",
@@ -553,13 +602,13 @@ dependencies = [
  "ambient_ecs",
  "ambient_editor_derive",
  "ambient_element",
- "ambient_event_types",
  "ambient_gpu",
  "ambient_input",
  "ambient_layout",
  "ambient_meshes",
  "ambient_rect",
  "ambient_renderer",
+ "ambient_shared_types",
  "ambient_std",
  "ambient_sys",
  "ambient_text",
@@ -594,9 +643,9 @@ dependencies = [
  "ambient_cb",
  "ambient_color",
  "ambient_element",
- "ambient_event_types",
  "ambient_guest_bridge",
  "ambient_math",
+ "ambient_shared_types",
  "ambient_sys",
  "ambient_time",
  "ambient_window_types",
@@ -2660,11 +2709,6 @@ name = "profiling"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "74605f360ce573babfe43964cbe520294dcb081afbf8c108fc6e23036b4da2df"
-
-[[package]]
-name = "profiling"
-version = "1.0.7"
-source = "git+https://github.com/philpax/profiling.git#0167b1da12e301b2a19c90a02684527a0f54f935"
 dependencies = [
  "profiling-procmacros",
  "puffin",
@@ -2673,7 +2717,8 @@ dependencies = [
 [[package]]
 name = "profiling-procmacros"
 version = "1.0.7"
-source = "git+https://github.com/philpax/profiling.git#0167b1da12e301b2a19c90a02684527a0f54f935"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7a1e2417ef905b8ad94215f8a607bd2d0f5d13d416d18dca4a530811e8a0674c"
 dependencies = [
  "quote",
  "syn 1.0.109",
@@ -2681,12 +2726,11 @@ dependencies = [
 
 [[package]]
 name = "puffin"
-version = "0.14.3"
+version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7b2c7a01f569fb03e2ff1f5376537f294001447bd23ce75ca51054fcd223fe4"
+checksum = "023514fb1e29a290a5c8237ceba94a30e4637be78df9f168ae991c1b957457e2"
 dependencies = [
  "byteorder",
- "instant",
  "once_cell",
 ]
 
@@ -3929,7 +3973,7 @@ dependencies = [
  "log",
  "naga",
  "parking_lot",
- "profiling 1.0.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "profiling",
  "raw-window-handle",
  "smallvec",
  "thiserror",
@@ -3965,7 +4009,7 @@ dependencies = [
  "naga",
  "objc",
  "parking_lot",
- "profiling 1.0.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "profiling",
  "range-alloc",
  "raw-window-handle",
  "renderdoc-sys",

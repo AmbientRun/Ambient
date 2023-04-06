@@ -1,0 +1,3 @@
+default interface asset {
+    url: func(path: string) -> option<string>
+}
