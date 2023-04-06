@@ -4,10 +4,7 @@ use ambient_core::{
 use ambient_ecs::{query, EntityId, World};
 use ambient_network::server::player_connection;
 use ambient_physics::{helpers::PhysicsObjectCollection, physx::character_controller};
-use ambient_std::{
-    asset_url::ASSETS_PROTOCOL_SCHEME,
-    shapes::Ray,
-};
+use ambient_std::shapes::Ray;
 use anyhow::Context;
 use itertools::Itertools;
 use physxx::{PxControllerCollisionFlag, PxControllerFilters};
@@ -157,11 +154,6 @@ impl wit::server_physics::Host for Bindings {
                 down: false,
             }),
         }
-    }
-}
-impl wit::server_asset::Host for Bindings {
-    fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
-        Ok(Some(format!("{}:/{}", ASSETS_PROTOCOL_SCHEME, path.trim_start_matches('/'))))
     }
 }
 impl wit::server_message::Host for Bindings {

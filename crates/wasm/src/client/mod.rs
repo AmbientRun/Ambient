@@ -161,7 +161,7 @@ impl wit::entity::Host for Bindings {
 
 impl wit::asset::Host for Bindings {
     fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
-        shared::implementation::asset::url(self.world_mut(), path)
+        shared::implementation::asset::url(path)
     }
 }
 

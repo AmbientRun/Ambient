@@ -13,7 +13,7 @@ use ambient_core::{
     project_name,
 };
 use ambient_ecs::{
-    components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent, Networked, Resource, System, SystemGroup, World,
+    components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent, Resource, System, SystemGroup, World,
     WorldStream, WorldStreamCompEvent, WorldStreamFilter,
 };
 use ambient_proxy::client::AllocatedEndpoint;
@@ -47,9 +47,6 @@ use crate::{
 };
 
 components!("network::server", {
-    /// Absolute URL for the content that can be used to load assets from the client or server async.
-    @[Networked, Resource]
-    content_base_url: String,
     @[Resource]
     bi_stream_handlers: BiStreamHandlers,
     @[Resource]
