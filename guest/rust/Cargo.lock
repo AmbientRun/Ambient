@@ -176,7 +176,6 @@ dependencies = [
  "ambient_shared_types",
  "ambient_time",
  "ambient_window_types",
- "closure",
  "convert_case",
  "futures",
  "glam",
@@ -306,12 +305,6 @@ version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
 ]
-
-[[package]]
-name = "closure"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6173fd61b610d15a7566dd7b7620775627441c4ab9dac8906e17cb93a24b782"
 
 [[package]]
 name = "convert_case"

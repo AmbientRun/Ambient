@@ -7,8 +7,7 @@ mod time;
 use std::{ops::Deref, sync::Arc};
 
 use ambient_cb::{cb, Cb};
-use ambient_element::{Element, ElementComponentExt};
-use closure::closure;
+use ambient_element::{to_owned, Element, ElementComponentExt};
 pub use collections::*;
 use parking_lot::Mutex;
 pub use primitives::*;
@@ -18,9 +17,7 @@ pub use text_editor::*;
 pub use time::*;
 
 use crate::{
-    button::{Button, ButtonStyle},
-    layout::FlowRow,
-    text::Text,
+    button::{Button, ButtonStyle}, layout::FlowRow, text::Text
 };
 
 #[derive(Clone, Debug)]
@@ -100,12 +97,29 @@ impl<T: Default + Editor + 'static> Editor for Option<T> {
     fn editor(self, on_change: ChangeCb<Self>, opts: EditorOpts) -> Element {
         if let Some(inner_value) = self {
             FlowRow(vec![
-                Button::new("\u{f056}", closure!(clone on_change, |_| on_change.0(None))).style(ButtonStyle::Flat).el(),
-                T::editor(inner_value, cb(closure!(clone on_change, |value| on_change.0(Some(value)))), opts),
+                Button::new("\u{f056}", {
+                    to_owned![on_change];
+                    move |_| on_change.0(None)
+                })
+                .style(ButtonStyle::Flat)
+                .el(),
+                T::editor(
+                    inner_value,
+                    cb({
+                        to_owned![on_change];
+                        move |value| on_change.0(Some(value))
+                    }),
+                    opts,
+                ),
             ])
             .el()
         } else {
-            Button::new("\u{f055}", closure!(clone on_change, |_| on_change.0(Some(T::default())))).style(ButtonStyle::Flat).el()
+            Button::new("\u{f055}", {
+                to_owned![on_change];
+                move |_| on_change.0(Some(T::default()))
+            })
+            .style(ButtonStyle::Flat)
+            .el()
         }
     }
 

@@ -1,39 +1,27 @@
 use std::{
-    fmt::Debug,
-    str::FromStr,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc,
-    },
+    fmt::Debug, str::FromStr, sync::{
+        atomic::{AtomicBool, Ordering}, Arc
+    }
 };
 
-use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_cb::{cb, Callback, Cb};
+use ambient_color::Color;
+use ambient_element::{element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_guest_bridge::{
+    components::{
+        layout::{
+            align_vertical_center, fit_horizontal_parent, height, margin_top, min_height, padding_bottom, padding_left, padding_right, padding_top, space_between_items
+        }, rect::{border_color, border_radius, border_thickness}, rendering::color, text::font_style
+    }, ecs::World, messages, run_async
+};
+use ambient_window_types::{CursorIcon, ModifiersState, VirtualKeyCode};
 use futures::{future::BoxFuture, Future, FutureExt};
 use glam::*;
 use parking_lot::Mutex;
 
 use crate::{
-    default_theme::{cutout_color, primary_color, secondary_color},
-    dropdown::Tooltip,
-    UIExt,
+    default_theme::{cutout_color, primary_color, secondary_color}, dropdown::Tooltip, layout::{FlowColumn, FlowRow}, text::Text, UIBase, UIElement, UIExt
 };
-use crate::{layout::FlowColumn, layout::FlowRow, text::Text, UIBase, UIElement};
-use ambient_cb::{cb, Callback, Cb};
-use ambient_color::Color;
-use ambient_guest_bridge::{
-    components::{
-        layout::{
-            align_vertical_center, fit_horizontal_parent, height, margin_top, min_height, padding_bottom, padding_left, padding_right,
-            padding_top, space_between_items,
-        },
-        rect::{border_color, border_radius, border_thickness},
-        rendering::color,
-        text::font_style,
-    },
-    ecs::World,
-    messages, run_async,
-};
-use ambient_window_types::{CursorIcon, ModifiersState, VirtualKeyCode};
 
 #[derive(Clone, Debug)]
 pub enum ButtonCb {
@@ -222,9 +210,7 @@ pub fn Button(
         Box::new(|_| {})
     });
     hooks.use_runtime_message::<messages::WindowMouseInput>({
-        let set_is_pressed = set_is_pressed.clone();
-        let on_invoked = on_invoked.clone();
-        let set_is_working = set_is_working.clone();
+        to_owned![set_is_pressed, on_invoked, set_is_working];
         move |world, event| {
             let pressed = event.pressed;
             if pressed && hover {
@@ -248,7 +234,7 @@ pub fn Button(
         .create_container(is_pressed, is_working, disabled, toggled, hover, hotkey, hotkey_modifier, tooltip, content)
         .with_clickarea()
         .on_mouse_enter({
-            let set_hover = set_hover.clone();
+            to_owned![set_hover];
             move |world, _| {
                 set_hover(true);
                 ambient_guest_bridge::window::set_cursor(world, CursorIcon::Hand);

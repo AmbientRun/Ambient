@@ -219,8 +219,7 @@ macro_rules! define_el_function_for_vec_element_newtype {
 #[cfg(feature = "native")]
 pub fn render_parented_with_component(world: &mut World, id: EntityId, handle: Component<ShareableElementTree>, mut element: Element) {
     use ambient_core::{
-        hierarchy::{children, parent},
-        transform::{local_to_parent, local_to_world},
+        hierarchy::{children, parent}, transform::{local_to_parent, local_to_world}
     };
     element = element.with(parent(), id);
     if !element.has_component(local_to_parent()) {
@@ -258,4 +257,13 @@ pub fn render_parented_with_component(world: &mut World, id: EntityId, handle: C
             world.add_component(id, local_to_world(), Default::default()).unwrap();
         }
     }
+}
+
+#[macro_export]
+/// Shorthand for `let x = x.to_owned();`
+macro_rules! to_owned {
+    ($($es:ident),+) => {$(
+        #[allow(unused_mut)]
+        let mut $es = $es.to_owned();
+    )*}
 }

@@ -1,18 +1,13 @@
 use ambient_cb::{cb, Cb};
 use ambient_element::{
-    define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent, ElementComponentExt, Hooks,
+    define_el_function_for_vec_element_newtype, element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks
 };
 use ambient_guest_bridge::{
     components::{
-        app::{ui_scene, window_logical_size, window_physical_size},
-        layout::{
-            gpu_ui_size, height, margin_bottom, margin_left, margin_right, margin_top, mesh_to_local_from_size, padding_bottom,
-            padding_left, padding_right, padding_top, width,
-        },
-        rect::{background_color, rect},
-        transform::{local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation},
-    },
-    messages,
+        app::{ui_scene, window_logical_size, window_physical_size}, layout::{
+            gpu_ui_size, height, margin_bottom, margin_left, margin_right, margin_top, mesh_to_local_from_size, padding_bottom, padding_left, padding_right, padding_top, width
+        }, rect::{background_color, rect}, transform::{local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation}
+    }, messages
 };
 use clickarea::ClickArea;
 use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
@@ -139,8 +134,7 @@ fn FocusResetter(hooks: &mut Hooks) -> Element {
     let (focused, set_focus) = hooks.consume_context::<Focus>().unwrap();
     let (reset_focus, set_reset_focus) = hooks.use_state(Focus(None));
     hooks.use_runtime_message::<messages::WindowMouseInput>({
-        let focused = focused.clone();
-        let set_reset_focus = set_reset_focus.clone();
+        to_owned![focused, set_reset_focus];
         move |_world, _event| {
             set_reset_focus(focused.clone());
         }

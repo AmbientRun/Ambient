@@ -1,9 +1,7 @@
 use ambient_cb::{cb, Cb};
-use ambient_element::{Element, ElementComponent, Hooks};
+use ambient_element::{to_owned, Element, ElementComponent, Hooks};
 use ambient_guest_bridge::{
-    components::input::{mouse_over, mouse_pickable_max, mouse_pickable_min},
-    ecs::{EntityId, World},
-    messages,
+    components::input::{mouse_over, mouse_pickable_max, mouse_pickable_min}, ecs::{EntityId, World}, messages
 };
 use ambient_window_types::MouseButton;
 use glam::{Vec2, Vec3};
@@ -85,8 +83,7 @@ impl ElementComponent for ClickArea {
         let id = hooks.use_ref_with(|_| None);
         let mouse_over_count = hooks.use_ref_with(|_| 0);
         hooks.use_frame({
-            let id = id.clone();
-            let mouse_over_count = mouse_over_count.clone();
+            to_owned![id, mouse_over_count];
             move |world| {
                 if let Some(id) = *id.lock() {
                     let next = world.get(id, mouse_over()).unwrap_or(0);
@@ -112,8 +109,7 @@ impl ElementComponent for ClickArea {
         });
 
         hooks.use_runtime_message::<messages::WindowMouseInput>({
-            let id = id.clone();
-            let mouse_over_count = mouse_over_count.clone();
+            to_owned![id, mouse_over_count];
             move |world, event| {
                 if let Some(id) = *id.lock() {
                     if *mouse_over_count.lock() > 0 {
@@ -126,7 +122,7 @@ impl ElementComponent for ClickArea {
         });
 
         hooks.use_runtime_message::<messages::WindowMouseWheel>({
-            let id = id.clone();
+            to_owned![id];
             move |world, event| {
                 if let Some(id) = *id.lock() {
                     if *mouse_over_count.lock() > 0 {
