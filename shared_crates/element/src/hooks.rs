@@ -45,7 +45,7 @@ pub struct Hooks<'a> {
 impl<'a> Hooks<'a> {
     /// Preserve state between rerenders.
     ///
-    /// The state can be mutated by the setter, which will re-render the origin [Element].
+    /// The state can be mutated by the setter, which will re-render the origin [Element](crate::Element).
     ///
     /// **Note**: The new value set by the returned setter won't be visible until the next
     /// re-render.
@@ -92,7 +92,7 @@ impl<'a> Hooks<'a> {
         )
     }
 
-    /// Provides a function that, when called, will cause this [Element] to be re-rendered.
+    /// Provides a function that, when called, will cause this [Element](crate::Element) to be re-rendered.
     // TODO: consider a more efficient implementation?
     pub fn use_rerender_signal(&mut self) -> Cb<dyn Fn() + Sync + Send> {
         let (_, signal) = self.use_state(());

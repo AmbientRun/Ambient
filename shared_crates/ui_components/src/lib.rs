@@ -38,8 +38,8 @@ pub fn UIBase(_: &mut Hooks) -> Element {
         .init(height(), 0.)
 }
 
-/// This only exists so that we can implement From<String> for Text, and then use it in
-/// for instance Button
+/// This only exists so that we can implement `From<String>` for [Text](text::Text), and then use it in
+/// for instance [Button](button::Button)
 pub struct UIElement(pub Element);
 impl From<Element> for UIElement {
     fn from(el: Element) -> Self {

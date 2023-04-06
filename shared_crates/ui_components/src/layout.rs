@@ -26,7 +26,7 @@ impl ElementComponent for WindowSized {
     }
 }
 
-/// See https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/layout?view=netdesktop-6.0#dock
+/// See <https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/layout?view=netdesktop-6.0#dock>
 #[derive(Debug, Clone)]
 pub struct Dock(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(Dock);
