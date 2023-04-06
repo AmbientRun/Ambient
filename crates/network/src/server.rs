@@ -460,8 +460,10 @@ async fn start_proxy_connection(endpoint: Endpoint, settings: ProxySettings, sta
 
     // pre-cache "assets" subdirectory
     if settings.pre_cache_assets {
-        if let Err(err) = controller.pre_cache_assets("assets") {
-            log::warn!("Failed to pre-cache assets: {}", err);
+        for subdir in ["assets", "client"] {
+            if let Err(err) = controller.pre_cache_assets(subdir) {
+                log::warn!("Failed to pre-cache assets: {}", err);
+            }
         }
     }
 }
