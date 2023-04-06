@@ -1,6 +1,6 @@
 use ambient_api::prelude::*;
 use ambient_ui_components::prelude::*;
-use components::todo_item;
+use components::{todo_item, todo_time};
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
@@ -31,8 +31,9 @@ fn NewTodoItem(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn TodoItems(hooks: &mut Hooks) -> Element {
-    let items = hooks.use_query(todo_item());
-    FlowColumn::el(items.into_iter().map(|(id, description)| {
+    let mut items = hooks.use_query((todo_item(), todo_time()));
+    items.sort_by_key(|(_, (_, time))| *time);
+    FlowColumn::el(items.into_iter().map(|(id, (description, _))| {
         FlowRow::el([
             Button::new(COLLECTION_DELETE_ICON, move |_| {
                 messages::DeleteItem::new(id).send_server_reliable()
