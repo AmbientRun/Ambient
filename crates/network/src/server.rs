@@ -20,7 +20,7 @@ use ambient_proxy::client::AllocatedEndpoint;
 use ambient_rpc::RpcRegistry;
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
-    asset_url::{AbsAssetUrl, ProxyBaseUrlKey},
+    asset_url::{AbsAssetUrl, ServerBaseUrlKey},
     fps_counter::{FpsCounter, FpsSample},
     friendly_id, log_result,
 };
@@ -30,7 +30,7 @@ use bytes::Bytes;
 use flume::Sender;
 use futures::StreamExt;
 use once_cell::sync::OnceCell;
-use parking_lot::Mutex;
+use parking_lot::{Mutex, RwLock};
 use quinn::{Endpoint, RecvStream, SendStream};
 use tokio::{
     io::AsyncReadExt,
@@ -348,7 +348,7 @@ impl GameServer {
 
 
                     log::debug!("Accepted connection");
-                    run_connection(conn.into(), state.clone(), world_stream_filter.clone(), assets.clone());
+                    run_connection(conn.into(), state.clone(), world_stream_filter.clone(), assets.clone(), ServerBaseUrlKey.get(&assets));
                 }
                 _ = sim_interval.tick() => {
                     fps_counter.frame_start();
@@ -398,19 +398,21 @@ impl GameServer {
 }
 
 async fn start_proxy_connection(endpoint: Endpoint, settings: ProxySettings, state: Arc<Mutex<ServerState>>, world_stream_filter: WorldStreamFilter, assets: AssetCache) {
+    // start with content base url being the same as for direct connections
+    let content_base_url = Arc::new(RwLock::new(ServerBaseUrlKey.get(&assets)));
+
     let on_endpoint_allocated = {
-        let assets = assets.clone();
+        let content_base_url = content_base_url.clone();
         Arc::new(move |AllocatedEndpoint { id, allocated_endpoint, external_endpoint, assets_root, .. }: AllocatedEndpoint| {
             log::debug!("Allocated proxy endpoint. Allocation id: {}", id);
             log::info!("Proxy sees this server as {}", external_endpoint);
             log::info!("Proxy allocated an endpoint, use `ambient join {}` to join", allocated_endpoint);
 
-            // override the assets root url to point to proxy
-            // TODO: we might want to give different URLs to different players (depending on how they connect)
+            // set the content base url to point to proxy provided value
             match AbsAssetUrl::parse(&assets_root) {
                 Ok(url) => {
-                    log::debug!("Assets root url overridden to: {}", url);
-                    ProxyBaseUrlKey.insert(&assets, url);
+                    log::debug!("Got content base root from proxy: {}", url);
+                    *content_base_url.write() = url;
                 }
                 Err(err) => log::warn!("Failed to parse assets root url ({}): {}", assets_root, err),
             }
@@ -419,9 +421,10 @@ async fn start_proxy_connection(endpoint: Endpoint, settings: ProxySettings, sta
 
     let on_player_connected = {
         let assets = assets.clone();
+        let content_base_url = content_base_url.clone();
         Arc::new(move |_player_id, conn: ambient_proxy::client::ProxiedConnection| {
             log::debug!("Accepted connection via proxy");
-            run_connection(conn.into(), state.clone(), world_stream_filter.clone(), assets.clone());
+            run_connection(conn.into(), state.clone(), world_stream_filter.clone(), assets.clone(), content_base_url.read().clone());
         })
     };
 
@@ -465,7 +468,7 @@ async fn start_proxy_connection(endpoint: Endpoint, settings: ProxySettings, sta
 
 /// Setup the protocol and enter the update loop for a new connected client
 #[tracing::instrument(skip_all)]
-fn run_connection(connection: ClientConnection, state: SharedServerState, world_stream_filter: WorldStreamFilter, assets: AssetCache) {
+fn run_connection(connection: ClientConnection, state: SharedServerState, world_stream_filter: WorldStreamFilter, assets: AssetCache, content_base_url: AbsAssetUrl) {
     let connection_id = friendly_id();
     let handle = Arc::new(OnceCell::new());
     handle
@@ -626,7 +629,7 @@ fn run_connection(connection: ClientConnection, state: SharedServerState, world_
                     let state = state.lock();
                     let instance = state.instances.get(MAIN_INSTANCE_ID).unwrap();
                     let world = &instance.world;
-                    ServerInfo { project_name: world.resource(project_name()).clone() }
+                    ServerInfo { project_name: world.resource(project_name()).clone(), content_base_url }
                 };
 
                 match client.run(connection, server_info).await {

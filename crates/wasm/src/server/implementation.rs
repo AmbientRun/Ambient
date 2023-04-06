@@ -1,13 +1,11 @@
 use ambient_core::{
-    asset_cache,
     player::{player, user_id},
 };
 use ambient_ecs::{query, EntityId, World};
 use ambient_network::server::player_connection;
 use ambient_physics::{helpers::PhysicsObjectCollection, physx::character_controller};
 use ambient_std::{
-    asset_cache::SyncAssetKeyExt,
-    asset_url::{AssetUrl, ServerBaseUrlKey, ProxyBaseUrlKey},
+    asset_url::ASSETS_PROTOCOL_SCHEME,
     shapes::Ray,
 };
 use anyhow::Context;
@@ -163,9 +161,7 @@ impl wit::server_physics::Host for Bindings {
 }
 impl wit::server_asset::Host for Bindings {
     fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
-        let assets = self.world().resource(asset_cache());
-        let base_url = ProxyBaseUrlKey.try_get(assets).unwrap_or_else(|| ServerBaseUrlKey.get(assets));
-        Ok(Some(AssetUrl::parse(path)?.resolve(&base_url)?.to_string()))
+        Ok(Some(format!("{}:/{}", ASSETS_PROTOCOL_SCHEME, path.trim_start_matches('/'))))
     }
 }
 impl wit::server_message::Host for Bindings {

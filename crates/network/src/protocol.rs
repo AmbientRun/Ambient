@@ -1,4 +1,5 @@
 use ambient_ecs::{ComponentRegistry, ExternalComponentDesc, WorldDiff};
+use ambient_std::asset_url::AbsAssetUrl;
 use anyhow::{Context, Result};
 use futures::io::BufReader;
 use quinn::{Connection, RecvStream};
@@ -122,10 +123,7 @@ impl std::fmt::Debug for ClientInfo {
 pub struct ServerInfo {
     /// The name of the project. Used by the client to figure out what to title its window. Defaults to "Ambient".
     pub project_name: String,
-}
 
-impl Default for ServerInfo {
-    fn default() -> Self {
-        Self { project_name: "Ambient".into() }
-    }
+    // Base url of the content server.
+    pub content_base_url: AbsAssetUrl,
 }
