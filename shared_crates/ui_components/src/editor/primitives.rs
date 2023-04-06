@@ -1,20 +1,16 @@
-use std::str::FromStr;
-use std::{fmt::Debug, time::Duration};
+use std::{fmt::Debug, str::FromStr, time::Duration};
 
 use ambient_cb::{cb, Cb};
-use ambient_element::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{define_el_function_for_vec_element_newtype, to_owned, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_guest_bridge::components::layout::margin_right;
 use convert_case::{Case, Casing};
 use glam::{Vec2, Vec3, Vec4};
 use itertools::Itertools;
 
-use crate::button::{Button, ButtonStyle};
-use crate::default_theme::STREET;
-use crate::layout::{FlowColumn, FlowRow};
-use crate::text::{FontAwesomeIcon, Text};
-use crate::use_focus_for_instance_id;
-
 use super::{ChangeCb, Editor, EditorOpts, TextEditor};
+use crate::{
+    button::{Button, ButtonStyle}, default_theme::STREET, layout::{FlowColumn, FlowRow}, text::{FontAwesomeIcon, Text}, use_focus_for_instance_id
+};
 
 #[derive(Debug, Clone)]
 pub struct ParseableInput<T: FromStr + Debug + std::fmt::Display + Clone + Sync + Send + 'static> {
@@ -253,8 +249,7 @@ impl<const C: usize, T: 'static + Clone + Debug + Editor + Send + Sync> ElementC
                     .enumerate()
                     .zip_eq(field_names)
                     .map(|((i, v), &name)| {
-                        let value = value.clone();
-                        let on_change = on_change.clone();
+                        to_owned![value, on_change];
                         EditorRow::el(
                             name,
                             v.clone().editor(
@@ -276,8 +271,7 @@ impl<const C: usize, T: 'static + Clone + Debug + Editor + Send + Sync> ElementC
                     .iter()
                     .enumerate()
                     .map(|(i, v)| {
-                        let value = value.clone();
-                        let on_change = on_change.clone();
+                        to_owned![value, on_change];
                         v.clone().editor(
                             cb(move |v| {
                                 let mut value = value.clone();

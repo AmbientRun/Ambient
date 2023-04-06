@@ -1,29 +1,22 @@
-use std::{self, str::FromStr};
-
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-
-use glam::*;
-
-use crate::{layout::FlowRow, text::Text, use_focus, Rectangle, UIBase, UIExt};
-use ambient_cb::{cb, Cb};
-use ambient_guest_bridge::{
-    components::{
-        layout::{height, min_height, min_width, width},
-        rendering::color,
-        text::text,
-        transform::translation,
-    },
-    messages,
-    window::set_cursor,
-};
-use ambient_window_types::{CursorIcon, VirtualKeyCode};
-
-use super::{Editor, EditorOpts};
-#[cfg(feature = "native")]
-use ambient_sys::time::Instant;
-use itertools::Itertools;
 #[cfg(feature = "guest")]
 use std::time::Instant;
+use std::{self, str::FromStr};
+
+use ambient_cb::{cb, Cb};
+use ambient_element::{element_component, to_owned, Element, ElementComponentExt, Hooks};
+use ambient_guest_bridge::{
+    components::{
+        layout::{height, min_height, min_width, width}, rendering::color, text::text, transform::translation
+    }, messages, window::set_cursor
+};
+#[cfg(feature = "native")]
+use ambient_sys::time::Instant;
+use ambient_window_types::{CursorIcon, VirtualKeyCode};
+use glam::*;
+use itertools::Itertools;
+
+use super::{Editor, EditorOpts};
+use crate::{layout::FlowRow, text::Text, use_focus, Rectangle, UIBase, UIExt};
 
 #[element_component]
 pub fn TextEditor(
@@ -50,7 +43,7 @@ pub fn TextEditor(
     }
 
     hooks.use_spawn({
-        let set_focused = set_focused.clone();
+        to_owned![set_focused];
         move |_| {
             if auto_focus {
                 set_focused(true);
@@ -63,9 +56,7 @@ pub fn TextEditor(
         }
     });
     hooks.use_runtime_message::<messages::WindowKeyboardCharacter>({
-        let value = intermediate_value.clone();
-        let on_change = on_change.clone();
-        let cursor_position = cursor_position.clone();
+        to_owned![intermediate_value, on_change, cursor_position];
         move |_world, event| {
             let c = event.character.chars().next().unwrap();
             if command || !focused {
@@ -73,17 +64,17 @@ pub fn TextEditor(
             }
             if c == '\u{7f}' || c == '\u{8}' {
                 if *cursor_position.lock() > 0 {
-                    let mut value = value.lock();
+                    let mut value = intermediate_value.lock();
                     value.remove(*cursor_position.lock() - 1);
                     *cursor_position.lock() -= 1;
                     on_change.0(value.clone());
                 }
             } else if c == '\r' {
                 if let Some(on_submit) = on_submit.clone() {
-                    on_submit.0(value.lock().clone());
+                    on_submit.0(intermediate_value.lock().clone());
                 }
             } else if c != '\t' && c != '\n' && c != '\r' {
-                let mut value = value.lock();
+                let mut value = intermediate_value.lock();
                 value.insert(*cursor_position.lock(), c);
                 *cursor_position.lock() += 1;
                 on_change.0(value.clone());
@@ -91,9 +82,7 @@ pub fn TextEditor(
         }
     });
     hooks.use_runtime_message::<messages::WindowKeyboardInput>({
-        let value = intermediate_value;
-        let on_change = on_change.clone();
-        let cursor_position = cursor_position.clone();
+        to_owned![intermediate_value, on_change, cursor_position];
         move |_world, event| {
             if !focused {
                 return;
@@ -114,7 +103,7 @@ pub fn TextEditor(
                         if command && pressed {
                             #[cfg(not(target_os = "unknown"))]
                             if let Some(paste) = ambient_guest_bridge::window::get_clipboard() {
-                                let mut value = value.lock();
+                                let mut value = intermediate_value.lock();
                                 value.insert_str(*cursor_position.lock(), &paste);
                                 *cursor_position.lock() += paste.len();
                                 on_change.0(value.clone());
@@ -128,7 +117,7 @@ pub fn TextEditor(
                         }
                     }
                     VirtualKeyCode::Right => {
-                        if pressed && *cursor_position.lock() < value.lock().len() {
+                        if pressed && *cursor_position.lock() < intermediate_value.lock().len() {
                             *cursor_position.lock() += 1;
                             rerender();
                         }

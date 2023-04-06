@@ -2,28 +2,20 @@ use std::{collections::HashMap, fmt::Debug, hash::Hash, ops::Deref, str::FromStr
 
 use ambient_cb::{cb, Cb};
 use ambient_color::Color;
-use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
     components::layout::{
-        fit_horizontal_none, fit_horizontal_parent, fit_vertical_parent, height, margin_right, margin_top, min_width, padding_bottom,
-        padding_top, space_between_items, width,
-    },
-    messages,
+        fit_horizontal_none, fit_horizontal_parent, fit_vertical_parent, height, margin_right, margin_top, min_width, padding_bottom, padding_top, space_between_items, width
+    }, messages
 };
 use ambient_window_types::VirtualKeyCode;
-use closure::closure;
 use indexmap::IndexMap;
 use itertools::Itertools;
 
-use crate::{
-    button::{Button, ButtonStyle},
-    default_theme::{StylesExt, COLLECTION_ADD_ICON, COLLECTION_DELETE_ICON, MOVE_DOWN_ICON, MOVE_UP_ICON, STREET},
-    dropdown::Dropdown,
-    layout::{FlowColumn, FlowRow},
-    use_focus, UIBase, UIExt,
-};
-
 use super::{Editor, EditorOpts};
+use crate::{
+    button::{Button, ButtonStyle}, default_theme::{StylesExt, COLLECTION_ADD_ICON, COLLECTION_DELETE_ICON, MOVE_DOWN_ICON, MOVE_UP_ICON, STREET}, dropdown::Dropdown, layout::{FlowColumn, FlowRow}, use_focus, UIBase, UIExt
+};
 
 #[element_component]
 pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static>(
@@ -40,26 +32,26 @@ pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 
                     .enumerate()
                     .map(|(i, item)| {
                         FlowRow(vec![
-                            Button::new(
-                                COLLECTION_DELETE_ICON,
-                                closure!(clone on_change, clone value, |_| {
+                            Button::new(COLLECTION_DELETE_ICON, {
+                                to_owned![on_change, value];
+                                move |_| {
                                     let mut value = value.clone();
                                     value.remove(i);
                                     on_change.0(value);
-                                }),
-                            )
+                                }
+                            })
                             .style(ButtonStyle::Flat)
                             .el()
                             .with(min_width(), button_size),
                             if i > 0 {
-                                Button::new(
-                                    MOVE_UP_ICON,
-                                    closure!(clone on_change, clone value, |_| {
+                                Button::new(MOVE_UP_ICON, {
+                                    to_owned![on_change, value];
+                                    move |_| {
                                         let mut value = value.clone();
                                         value.swap(i, i - 1);
                                         on_change.0(value);
-                                    }),
-                                )
+                                    }
+                                })
                                 .style(ButtonStyle::Flat)
                                 .el()
                                 .with(min_width(), button_size)
@@ -67,14 +59,14 @@ pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 
                                 UIBase.el().with(width(), button_size).with(height(), 1.)
                             },
                             if i < value.len() - 1 {
-                                Button::new(
-                                    MOVE_DOWN_ICON,
-                                    closure!(clone on_change, clone value, |_| {
+                                Button::new(MOVE_DOWN_ICON, {
+                                    to_owned![on_change, value];
+                                    move |_| {
                                         let mut value = value.clone();
                                         value.swap(i, i + 1);
                                         on_change.0(value);
-                                    }),
-                                )
+                                    }
+                                })
                                 .style(ButtonStyle::Flat)
                                 .el()
                                 .with(min_width(), button_size)
@@ -83,11 +75,14 @@ pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 
                             },
                             T::edit_or_view(
                                 item.clone(),
-                                Some(cb(closure!(clone value, clone on_change, |item| {
-                                    let mut value = value.clone();
-                                    value[i] = item;
-                                    on_change.0(value);
-                                }))),
+                                Some(cb({
+                                    to_owned![value, on_change];
+                                    move |item| {
+                                        let mut value = value.clone();
+                                        value[i] = item;
+                                        on_change.0(value);
+                                    }
+                                })),
                                 Default::default(),
                             ),
                         ])
@@ -96,14 +91,14 @@ pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 
                     .collect(),
             )
             .el(),
-            Button::new(
-                COLLECTION_ADD_ICON,
-                closure!(clone on_change, |_| {
+            Button::new(COLLECTION_ADD_ICON, {
+                to_owned![on_change];
+                move |_| {
                     let mut value = value.clone();
                     value.push(T::default());
                     on_change.0(value);
-                }),
-            )
+                }
+            })
             .style(ButtonStyle::Flat)
             .el(),
         ])
@@ -176,18 +171,24 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                         MinimalListEditorItem {
                             value: item.clone(),
                             on_change: on_change.clone().map(|on_change| -> Cb<dyn Fn(T) + Sync + Send> {
-                                cb(closure!(clone value, clone on_change, |item| {
-                                    let mut value = value.clone();
-                                    value[i] = item;
-                                    on_change.0(value);
-                                }))
+                                cb({
+                                    to_owned![value, on_change];
+                                    move |item| {
+                                        let mut value = value.clone();
+                                        value[i] = item;
+                                        on_change.0(value);
+                                    }
+                                })
                             }),
                             on_delete: on_change.clone().map(|on_change| -> Cb<dyn Fn() + Sync + Send> {
-                                cb(closure!(clone value, clone on_change, || {
-                                    let mut value = value.clone();
-                                    value.remove(i);
-                                    on_change.0(value);
-                                }))
+                                cb({
+                                    to_owned![value, on_change];
+                                    move || {
+                                        let mut value = value.clone();
+                                        value.remove(i);
+                                        on_change.0(value);
+                                    }
+                                })
                             }),
                             item_opts: item_opts.clone(),
                             item_editor: item_editor.clone(),
@@ -201,12 +202,12 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
             if let Some(on_change) = on_change {
                 if let Some(add_presets) = add_presets {
                     Dropdown {
-                        content: Button::new(
-                            add_title,
-                            closure!(clone set_add_action, |_| {
+                        content: Button::new(add_title, {
+                            to_owned![set_add_action];
+                            move |_| {
                                 set_add_action(true);
-                            }),
-                        )
+                            }
+                        })
                         .style(ButtonStyle::Flat)
                         .el(),
                         dropdown: FlowColumn(
@@ -215,11 +216,14 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                                 .map(move |item| {
                                     item_editor.0(item.clone(), None, Default::default())
                                         .with_clickarea()
-                                        .on_mouse_down(closure!(clone value, clone on_change, |_, _, _| {
-                                            let mut value = value.clone();
-                                            value.push(item.clone());
-                                            on_change.0(value);
-                                        }))
+                                        .on_mouse_down({
+                                            to_owned![value, on_change];
+                                            move |_, _, _| {
+                                                let mut value = value.clone();
+                                                value.push(item.clone());
+                                                on_change.0(value);
+                                            }
+                                        })
                                         .el()
                                         .with_margin_even(STREET)
                                 })
@@ -234,14 +238,14 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                     .el()
                     .with(margin_top(), STREET)
                 } else {
-                    Button::new(
-                        add_title,
-                        closure!(clone value, clone on_change, |_| {
+                    Button::new(add_title, {
+                        to_owned![value, on_change];
+                        move |_| {
                             let mut value = value.clone();
                             value.push(T::default());
                             on_change.0(value);
-                        }),
-                    )
+                        }
+                    })
                     .style(ButtonStyle::Flat)
                     .el()
                 }
@@ -322,34 +326,43 @@ impl<
                     .clone()
                     .into_iter()
                     .sorted_by_key(|(key, _)| key.clone())
-                    .map(closure!(clone value, clone on_change, |(key, item)| {
-                        FlowRow(vec![
-                            K::edit_or_view(
-                                key.clone(),
-                                on_change.clone().map(|on_change| -> Cb<dyn Fn(K) + Sync + Send> {
-                                    cb(closure!(clone key, clone on_change, clone value, |new_key| {
-                                        let mut value = value.clone();
-                                        let item = value.remove(&key).unwrap();
-                                        value.insert(new_key, item);
-                                        on_change.0(value);
-                                    }))
-                                }),
-                                Default::default(),
-                            ),
-                            V::edit_or_view(
-                                item,
-                                on_change.clone().map(|on_change| -> Cb<dyn Fn(V) + Sync + Send> {
-                                    cb(closure!(clone value, clone on_change, |item| {
-                                        let mut value = value.clone();
-                                        value.insert(key.clone(), item);
-                                        on_change.0(value);
-                                    }))
-                                }),
-                                Default::default(),
-                            ),
-                        ])
-                        .el()
-                    }))
+                    .map({
+                        to_owned![value, on_change];
+                        move |(key, item)| {
+                            FlowRow(vec![
+                                K::edit_or_view(
+                                    key.clone(),
+                                    on_change.clone().map(|on_change| -> Cb<dyn Fn(K) + Sync + Send> {
+                                        cb({
+                                            to_owned![key, on_change, value];
+                                            move |new_key| {
+                                                let mut value = value.clone();
+                                                let item = value.remove(&key).unwrap();
+                                                value.insert(new_key, item);
+                                                on_change.0(value);
+                                            }
+                                        })
+                                    }),
+                                    Default::default(),
+                                ),
+                                V::edit_or_view(
+                                    item,
+                                    on_change.clone().map(|on_change| -> Cb<dyn Fn(V) + Sync + Send> {
+                                        cb({
+                                            to_owned![value, on_change];
+                                            move |item| {
+                                                let mut value = value.clone();
+                                                value.insert(key.clone(), item);
+                                                on_change.0(value);
+                                            }
+                                        })
+                                    }),
+                                    Default::default(),
+                                ),
+                            ])
+                            .el()
+                        }
+                    })
                     .collect(),
             )
             .el(),

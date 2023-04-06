@@ -1,13 +1,12 @@
 use std::fmt::Debug;
 
-use crate::{
-    button::Button,
-    default_theme::STREET,
-    layout::{FlowColumn, FlowRow},
-};
 use ambient_cb::{cb, Cb};
-use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{to_owned, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{components::layout::space_between_items, ecs::ComponentValue};
+
+use crate::{
+    button::Button, default_theme::STREET, layout::{FlowColumn, FlowRow}
+};
 
 #[derive(Clone, Debug)]
 pub struct TabBar<T: ToString + PartialEq + Clone + Debug + Sync + Send + 'static> {
@@ -22,8 +21,7 @@ impl<T: ToString + PartialEq + Clone + Debug + Sync + Send + 'static> ElementCom
             tabs.into_iter()
                 .map(|tab| {
                     Button::new(tab.to_string(), {
-                        let on_change = on_change.clone();
-                        let tab = tab.clone();
+                        to_owned![on_change, tab];
                         move |_| on_change.0(tab.clone())
                     })
                     .toggled(tab == value)
