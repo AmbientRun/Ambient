@@ -1,22 +1,15 @@
-use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-
-use crate::{
-    button::{Button, ButtonStyle},
-    default_theme::{tooltip_background_color, SMALL_ROUNDING, STREET},
-    dropdown::Dropdown,
-    layout::{FlowColumn, FlowRow},
-    text::Text,
-    UIExt,
-};
 use ambient_cb::Cb;
+use ambient_element::{to_owned, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
     components::{
-        layout::{margin_left, margin_top},
-        rect::border_radius,
-    },
-    messages,
+        layout::{margin_left, margin_top}, rect::border_radius
+    }, messages
 };
 use glam::Vec4;
+
+use crate::{
+    button::{Button, ButtonStyle}, default_theme::{tooltip_background_color, SMALL_ROUNDING, STREET}, dropdown::Dropdown, layout::{FlowColumn, FlowRow}, text::Text, UIExt
+};
 
 #[derive(Debug, Clone)]
 pub struct DropdownSelect {
@@ -30,7 +23,7 @@ impl ElementComponent for DropdownSelect {
         let Self { content, on_select, items, inline } = *self;
         let (show, set_show) = hooks.use_state(false);
         hooks.use_runtime_message::<messages::WindowMouseInput>({
-            let set_show = set_show.clone();
+            to_owned![set_show];
             move |_world, event| {
                 if show && !event.pressed {
                     set_show(false);
@@ -39,7 +32,7 @@ impl ElementComponent for DropdownSelect {
         });
         Dropdown {
             content: Button::new(FlowRow(vec![content, Text::el("\u{f078}").with(margin_left(), 5.)]).el(), {
-                let set_show = set_show.clone();
+                to_owned![set_show];
                 move |_| set_show(!show)
             })
             .style(if inline { ButtonStyle::Inline } else { ButtonStyle::Regular })
@@ -50,7 +43,7 @@ impl ElementComponent for DropdownSelect {
                     .enumerate()
                     .map(move |(i, item)| {
                         Button::new(item, {
-                            let on_select = on_select.clone();
+                            to_owned![on_select];
                             move |_| {
                                 on_select.0(i);
                             }

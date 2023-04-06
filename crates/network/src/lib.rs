@@ -4,8 +4,8 @@ use std::{
     sync::Arc,
     time::Duration,
 };
-
 use ambient_ecs::{query, Component, ComponentValue, EntityId, Networked, Serializable, Store, World};
+
 use ambient_rpc::{RpcError, RpcRegistry};
 use ambient_std::log_error;
 use bytes::Bytes;
