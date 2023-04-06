@@ -1,12 +1,11 @@
-use std::collections::BTreeMap;
-
-use super::{concept::generate_component_list_doc_comment, implementation, tree::Tree};
-use ambient_project::{Component, ComponentType, Concept, IdentifierPathBuf};
+use super::{implementation, Context};
 use proc_macro2::Span;
 
-fn api_name() -> syn::Path {
-    let ident = syn::Ident::new("ambient_api2", Span::call_site());
-    ident.into()
+pub(crate) fn guest_context() -> Context {
+    Context::Guest {
+        api_path: syn::Ident::new("ambient_api2", Span::call_site()).into(),
+        fully_qualified_path: true,
+    }
 }
 
 #[test]
@@ -34,10 +33,8 @@ fn can_generate_components_from_manifest_in_global_namespace() {
         const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
         #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
         pub mod components {
-            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
             #[doc = "**Core**"]
             pub mod core {
-                use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
                 #[doc = "**App**"]
                 pub mod app {
                     use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
@@ -81,19 +78,16 @@ fn can_generate_components_from_manifest_in_global_namespace() {
         #[doc = r""]
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
-            use super :: components ;
-            use ambient_api2::prelude::*;
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        guest_context(),
         true,
         true,
     )
@@ -114,25 +108,21 @@ fn can_accept_no_components() {
         const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
         #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
         pub mod components {
-            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
         }
         #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
         #[doc = r""]
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
-            use super :: components ;
-            use ambient_api2::prelude::*;
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        guest_context(),
         false,
         true,
     )
@@ -181,19 +171,16 @@ fn can_generate_components_from_manifest() {
         #[doc = r""]
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
-            use super :: components ;
-            use ambient_api2::prelude::*;
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        guest_context(),
         false,
         true,
     )
@@ -229,19 +216,16 @@ fn can_generate_component_with_contained_type() {
         #[doc = r""]
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
-            use super :: components ;
-            use ambient_api2::prelude::*;
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        guest_context(),
         false,
         true,
     )
@@ -278,19 +262,16 @@ fn can_generate_components_from_manifest_with_org() {
         #[doc = r""]
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
-            use super :: components ;
-            use ambient_api2::prelude::*;
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        guest_context(),
         false,
         true,
     )
@@ -316,7 +297,6 @@ fn can_generate_components_with_documented_namespace_from_manifest() {
         const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
         #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
         pub mod components {
-            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
             #[doc = "**Namespace**: A Test Namespace"]
             pub mod ns {
                 use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
@@ -331,19 +311,16 @@ fn can_generate_components_with_documented_namespace_from_manifest() {
         #[doc = r""]
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
-            use super :: components ;
-            use ambient_api2::prelude::*;
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        guest_context(),
         false,
         true,
     )
@@ -366,7 +343,7 @@ fn will_error_on_undocumented_namespace() {
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        guest_context(),
         false,
         true,
     );
@@ -508,7 +485,7 @@ fn can_generate_concepts_with_all_supported_types() {
             use super::components;
             use ambient_api2::prelude::*;
             #[allow(clippy::approx_constant)]
-            #[doc = "Makes a *Everything*.\n\nEverywhere all at once\n\n*Definition*:\n\n```\n{\n  \"bool\": bool = true,\n  \"empty\": () = (),\n  \"entity_id\": EntityId = EntityId::from_base64(\"qmYJaglgRDwigkGXFFS9UQ\"),\n  \"f32\": f32 = 3.14f32,\n  \"f64\": f64 = 3.14159f64,\n  \"i32\": i32 = -4i32,\n  \"mat4\": Mat4 = Mat4::from_cols_array(&[1f32, 2f32, 3f32, 4f32, 5f32, 6f32, 7f32, 8f32, 9f32, 10f32, 11f32, 12f32, 13f32, 14f32, 15f32, 16f32]),\n  \"option_string1\": Option<String> = Some(\"The Answer Is\".to_string()),\n  \"option_string2\": Option<String> = None,\n  \"quat\": Quat = Quat::from_xyzw(1f32, -0.5f32, 0.3f32, -0.6f32),\n  \"string\": String = \"Everything\".to_string(),\n  \"u32\": u32 = 100000u32,\n  \"u64\": u64 = 18446744073709551610u64,\n  \"vec2\": Vec2 = Vec2::new(1f32, 2f32),\n  \"vec3\": Vec3 = Vec3::new(1f32, 2f32, 3f32),\n  \"vec4\": Vec4 = Vec4::new(1f32, 2f32, 3f32, 4f32),\n  \"vec_vec2\": Vec<Vec2> = vec![Vec2::new(1f32, 2f32), Vec2::new(3f32, 4f32)],\n}\n```\n"]
+            #[doc = "Makes a *Everything*.\n\nEverywhere all at once\n\n*Definition*:\n\n```ignore\n{\n  \"bool\": bool = true,\n  \"empty\": () = (),\n  \"entity_id\": EntityId = EntityId::from_base64(\"qmYJaglgRDwigkGXFFS9UQ\"),\n  \"f32\": f32 = 3.14f32,\n  \"f64\": f64 = 3.14159f64,\n  \"i32\": i32 = -4i32,\n  \"mat4\": Mat4 = Mat4::from_cols_array(&[1f32, 2f32, 3f32, 4f32, 5f32, 6f32, 7f32, 8f32, 9f32, 10f32, 11f32, 12f32, 13f32, 14f32, 15f32, 16f32]),\n  \"option_string1\": Option<String> = Some(\"The Answer Is\".to_string()),\n  \"option_string2\": Option<String> = None,\n  \"quat\": Quat = Quat::from_xyzw(1f32, -0.5f32, 0.3f32, -0.6f32),\n  \"string\": String = \"Everything\".to_string(),\n  \"u32\": u32 = 100000u32,\n  \"u64\": u64 = 18446744073709551610u64,\n  \"vec2\": Vec2 = Vec2::new(1f32, 2f32),\n  \"vec3\": Vec3 = Vec3::new(1f32, 2f32, 3f32),\n  \"vec4\": Vec4 = Vec4::new(1f32, 2f32, 3f32, 4f32),\n  \"vec_vec2\": Vec<Vec2> = vec![Vec2::new(1f32, 2f32), Vec2::new(3f32, 4f32)],\n}\n```\n"]
             pub fn make_everything() -> Entity {
                 Entity::new()
                     .with(components::bool(), true)
@@ -532,7 +509,7 @@ fn can_generate_concepts_with_all_supported_types() {
                     .with(components::vec4(), Vec4::new(1f32, 2f32, 3f32, 4f32))
                     .with(components::vec_vec2(), vec![Vec2::new(1f32, 2f32), Vec2::new(3f32, 4f32)])
             }
-            #[doc = "Checks if the entity is a *Everything*.\n\nEverywhere all at once\n\n*Definition*:\n\n```\n{\n  \"bool\": bool = true,\n  \"empty\": () = (),\n  \"entity_id\": EntityId = EntityId::from_base64(\"qmYJaglgRDwigkGXFFS9UQ\"),\n  \"f32\": f32 = 3.14f32,\n  \"f64\": f64 = 3.14159f64,\n  \"i32\": i32 = -4i32,\n  \"mat4\": Mat4 = Mat4::from_cols_array(&[1f32, 2f32, 3f32, 4f32, 5f32, 6f32, 7f32, 8f32, 9f32, 10f32, 11f32, 12f32, 13f32, 14f32, 15f32, 16f32]),\n  \"option_string1\": Option<String> = Some(\"The Answer Is\".to_string()),\n  \"option_string2\": Option<String> = None,\n  \"quat\": Quat = Quat::from_xyzw(1f32, -0.5f32, 0.3f32, -0.6f32),\n  \"string\": String = \"Everything\".to_string(),\n  \"u32\": u32 = 100000u32,\n  \"u64\": u64 = 18446744073709551610u64,\n  \"vec2\": Vec2 = Vec2::new(1f32, 2f32),\n  \"vec3\": Vec3 = Vec3::new(1f32, 2f32, 3f32),\n  \"vec4\": Vec4 = Vec4::new(1f32, 2f32, 3f32, 4f32),\n  \"vec_vec2\": Vec<Vec2> = vec![Vec2::new(1f32, 2f32), Vec2::new(3f32, 4f32)],\n}\n```\n"]
+            #[doc = "Checks if the entity is a *Everything*.\n\nEverywhere all at once\n\n*Definition*:\n\n```ignore\n{\n  \"bool\": bool = true,\n  \"empty\": () = (),\n  \"entity_id\": EntityId = EntityId::from_base64(\"qmYJaglgRDwigkGXFFS9UQ\"),\n  \"f32\": f32 = 3.14f32,\n  \"f64\": f64 = 3.14159f64,\n  \"i32\": i32 = -4i32,\n  \"mat4\": Mat4 = Mat4::from_cols_array(&[1f32, 2f32, 3f32, 4f32, 5f32, 6f32, 7f32, 8f32, 9f32, 10f32, 11f32, 12f32, 13f32, 14f32, 15f32, 16f32]),\n  \"option_string1\": Option<String> = Some(\"The Answer Is\".to_string()),\n  \"option_string2\": Option<String> = None,\n  \"quat\": Quat = Quat::from_xyzw(1f32, -0.5f32, 0.3f32, -0.6f32),\n  \"string\": String = \"Everything\".to_string(),\n  \"u32\": u32 = 100000u32,\n  \"u64\": u64 = 18446744073709551610u64,\n  \"vec2\": Vec2 = Vec2::new(1f32, 2f32),\n  \"vec3\": Vec3 = Vec3::new(1f32, 2f32, 3f32),\n  \"vec4\": Vec4 = Vec4::new(1f32, 2f32, 3f32, 4f32),\n  \"vec_vec2\": Vec<Vec2> = vec![Vec2::new(1f32, 2f32), Vec2::new(3f32, 4f32)],\n}\n```\n"]
             pub fn is_everything(id: EntityId) -> bool {
                 entity::has_components(
                     id,
@@ -558,16 +535,15 @@ fn can_generate_concepts_with_all_supported_types() {
                 )
             }
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        guest_context(),
         false,
         false,
     )
@@ -632,48 +608,47 @@ fn can_extend_with_multiple_concepts() {
             use ambient_api2::prelude::*;
 
             #[allow(clippy::approx_constant)]
-            #[doc = "Makes a *C1*.\n\n\n\n*Definition*:\n\n```\n{\n  \"f32\": f32 = 4f32,\n}\n```\n"]
+            #[doc = "Makes a *C1*.\n\n\n\n*Definition*:\n\n```ignore\n{\n  \"f32\": f32 = 4f32,\n}\n```\n"]
             pub fn make_concept1() -> Entity {
                 Entity::new().with(components::f32(), 4f32)
             }
-            #[doc = "Checks if the entity is a *C1*.\n\n\n\n*Definition*:\n\n```\n{\n  \"f32\": f32 = 4f32,\n}\n```\n"]
+            #[doc = "Checks if the entity is a *C1*.\n\n\n\n*Definition*:\n\n```ignore\n{\n  \"f32\": f32 = 4f32,\n}\n```\n"]
             pub fn is_concept1(id: EntityId) -> bool {
                 entity::has_components(id, &[&components::f32()])
             }
 
             #[allow(clippy::approx_constant)]
-            #[doc = "Makes a *C2*.\n\n\n\n*Definition*:\n\n```\n{\n  \"f64\": f64 = 8f64,\n}\n```\n"]
+            #[doc = "Makes a *C2*.\n\n\n\n*Definition*:\n\n```ignore\n{\n  \"f64\": f64 = 8f64,\n}\n```\n"]
             pub fn make_concept2() -> Entity {
                 Entity::new().with(components::f64(), 8f64)
             }
-            #[doc = "Checks if the entity is a *C2*.\n\n\n\n*Definition*:\n\n```\n{\n  \"f64\": f64 = 8f64,\n}\n```\n"]
+            #[doc = "Checks if the entity is a *C2*.\n\n\n\n*Definition*:\n\n```ignore\n{\n  \"f64\": f64 = 8f64,\n}\n```\n"]
             pub fn is_concept2(id: EntityId) -> bool {
                 entity::has_components(id, &[&components::f64()])
             }
 
             #[allow(clippy::approx_constant)]
-            #[doc = "Makes a *C3*.\n\n\n\n*Definition*:\n\n```\n{\n  \"i32\": i32 = 16i32,\n  \"concept1\": { // Concept.\n    \"f32\": f32 = 4f32,\n  },\n  \"concept2\": { // Concept.\n    \"f64\": f64 = 8f64,\n  },\n}\n```\n"]
+            #[doc = "Makes a *C3*.\n\n\n\n*Definition*:\n\n```ignore\n{\n  \"i32\": i32 = 16i32,\n  \"concept1\": { // Concept.\n    \"f32\": f32 = 4f32,\n  },\n  \"concept2\": { // Concept.\n    \"f64\": f64 = 8f64,\n  },\n}\n```\n"]
             pub fn make_concept3() -> Entity {
                 Entity::new()
                     .with_merge(make_concept1())
                     .with_merge(make_concept2())
                     .with(components::i32(), 16i32)
             }
-            #[doc = "Checks if the entity is a *C3*.\n\n\n\n*Definition*:\n\n```\n{\n  \"i32\": i32 = 16i32,\n  \"concept1\": { // Concept.\n    \"f32\": f32 = 4f32,\n  },\n  \"concept2\": { // Concept.\n    \"f64\": f64 = 8f64,\n  },\n}\n```\n"]
+            #[doc = "Checks if the entity is a *C3*.\n\n\n\n*Definition*:\n\n```ignore\n{\n  \"i32\": i32 = 16i32,\n  \"concept1\": { // Concept.\n    \"f32\": f32 = 4f32,\n  },\n  \"concept2\": { // Concept.\n    \"f64\": f64 = 8f64,\n  },\n}\n```\n"]
             pub fn is_concept3(id: EntityId) -> bool {
                 is_concept1(id) && is_concept2(id) && entity::has_components(id, &[&components::i32()])
             }
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        guest_context(),
         false,
         false,
     )
@@ -730,9 +705,7 @@ fn can_generate_concepts() {
         const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
         #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
         pub mod components {
-            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
             pub mod core {
-                use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
                 pub mod primitives {
                     use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
                     static SPHERE: Lazy< Component<()> > = Lazy::new(|| __internal_get_component("my_project::core::primitives::sphere"));
@@ -779,14 +752,14 @@ fn can_generate_concepts() {
             use ambient_api2::prelude::*;
 
             #[allow(clippy::approx_constant)]
-            #[doc = "Makes a *Colored Sphere*.\n\nA sphere with some color!\n\n*Definition*:\n\n```\n{\n  \"core::rendering::color\": Vec4 = Vec4::new(1f32, 1f32, 1f32, 1f32),\n  \"sphere\": { // Concept.\n    \"core::primitives::sphere\": () = (),\n    \"core::primitives::sphere_radius\": f32 = 0.5f32,\n    \"core::primitives::sphere_sectors\": u32 = 36u32,\n    \"core::primitives::sphere_stacks\": u32 = 18u32,\n    \"transformable\": { // Concept.\n      \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n      \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n      \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n    },\n  },\n}\n```\n"]
+            #[doc = "Makes a *Colored Sphere*.\n\nA sphere with some color!\n\n*Definition*:\n\n```ignore\n{\n  \"core::rendering::color\": Vec4 = Vec4::new(1f32, 1f32, 1f32, 1f32),\n  \"sphere\": { // Concept.\n    \"core::primitives::sphere\": () = (),\n    \"core::primitives::sphere_radius\": f32 = 0.5f32,\n    \"core::primitives::sphere_sectors\": u32 = 36u32,\n    \"core::primitives::sphere_stacks\": u32 = 18u32,\n    \"transformable\": { // Concept.\n      \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n      \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n      \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n    },\n  },\n}\n```\n"]
             pub fn make_colored_sphere() -> Entity {
                 Entity::new()
                     .with_merge(make_sphere())
                     .with(components::core::rendering::color(), Vec4::new(1f32, 1f32, 1f32, 1f32))
             }
 
-            #[doc = "Checks if the entity is a *Colored Sphere*.\n\nA sphere with some color!\n\n*Definition*:\n\n```\n{\n  \"core::rendering::color\": Vec4 = Vec4::new(1f32, 1f32, 1f32, 1f32),\n  \"sphere\": { // Concept.\n    \"core::primitives::sphere\": () = (),\n    \"core::primitives::sphere_radius\": f32 = 0.5f32,\n    \"core::primitives::sphere_sectors\": u32 = 36u32,\n    \"core::primitives::sphere_stacks\": u32 = 18u32,\n    \"transformable\": { // Concept.\n      \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n      \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n      \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n    },\n  },\n}\n```\n"]
+            #[doc = "Checks if the entity is a *Colored Sphere*.\n\nA sphere with some color!\n\n*Definition*:\n\n```ignore\n{\n  \"core::rendering::color\": Vec4 = Vec4::new(1f32, 1f32, 1f32, 1f32),\n  \"sphere\": { // Concept.\n    \"core::primitives::sphere\": () = (),\n    \"core::primitives::sphere_radius\": f32 = 0.5f32,\n    \"core::primitives::sphere_sectors\": u32 = 36u32,\n    \"core::primitives::sphere_stacks\": u32 = 18u32,\n    \"transformable\": { // Concept.\n      \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n      \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n      \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n    },\n  },\n}\n```\n"]
             pub fn is_colored_sphere(id: EntityId) -> bool {
                 is_sphere(id) && entity::has_components(id, &[
                     &components::core::rendering::color()
@@ -794,7 +767,7 @@ fn can_generate_concepts() {
             }
 
             #[allow(clippy::approx_constant)]
-            #[doc = "Makes a *Sphere*.\n\nA primitive sphere.\n\n*Definition*:\n\n```\n{\n  \"core::primitives::sphere\": () = (),\n  \"core::primitives::sphere_radius\": f32 = 0.5f32,\n  \"core::primitives::sphere_sectors\": u32 = 36u32,\n  \"core::primitives::sphere_stacks\": u32 = 18u32,\n  \"transformable\": { // Concept.\n    \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n    \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n    \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n  },\n}\n```\n"]
+            #[doc = "Makes a *Sphere*.\n\nA primitive sphere.\n\n*Definition*:\n\n```ignore\n{\n  \"core::primitives::sphere\": () = (),\n  \"core::primitives::sphere_radius\": f32 = 0.5f32,\n  \"core::primitives::sphere_sectors\": u32 = 36u32,\n  \"core::primitives::sphere_stacks\": u32 = 18u32,\n  \"transformable\": { // Concept.\n    \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n    \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n    \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n  },\n}\n```\n"]
             pub fn make_sphere() -> Entity {
                 Entity::new()
                     .with_merge(make_transformable())
@@ -804,7 +777,7 @@ fn can_generate_concepts() {
                     .with(components::core::primitives::sphere_stacks(), 18u32)
             }
 
-            #[doc = "Checks if the entity is a *Sphere*.\n\nA primitive sphere.\n\n*Definition*:\n\n```\n{\n  \"core::primitives::sphere\": () = (),\n  \"core::primitives::sphere_radius\": f32 = 0.5f32,\n  \"core::primitives::sphere_sectors\": u32 = 36u32,\n  \"core::primitives::sphere_stacks\": u32 = 18u32,\n  \"transformable\": { // Concept.\n    \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n    \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n    \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n  },\n}\n```\n"]
+            #[doc = "Checks if the entity is a *Sphere*.\n\nA primitive sphere.\n\n*Definition*:\n\n```ignore\n{\n  \"core::primitives::sphere\": () = (),\n  \"core::primitives::sphere_radius\": f32 = 0.5f32,\n  \"core::primitives::sphere_sectors\": u32 = 36u32,\n  \"core::primitives::sphere_stacks\": u32 = 18u32,\n  \"transformable\": { // Concept.\n    \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n    \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n    \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n  },\n}\n```\n"]
             pub fn is_sphere(id: EntityId) -> bool {
                 is_transformable(id) && entity::has_components(id, &[
                     &components::core::primitives::sphere(),
@@ -815,7 +788,7 @@ fn can_generate_concepts() {
             }
 
             #[allow(clippy::approx_constant)]
-            #[doc = "Makes a *Transformable*.\n\nCan be translated, rotated and scaled.\n\n*Definition*:\n\n```\n{\n  \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n  \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n  \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n}\n```\n"]
+            #[doc = "Makes a *Transformable*.\n\nCan be translated, rotated and scaled.\n\n*Definition*:\n\n```ignore\n{\n  \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n  \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n  \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n}\n```\n"]
             pub fn make_transformable() -> Entity {
                 Entity::new()
                     .with(components::core::transform::rotation(), Quat::from_xyzw(0f32, 0f32, 0f32, 1f32))
@@ -823,7 +796,7 @@ fn can_generate_concepts() {
                     .with(components::core::transform::translation(), Vec3::new(0f32, 0f32, 0f32))
             }
 
-            #[doc = "Checks if the entity is a *Transformable*.\n\nCan be translated, rotated and scaled.\n\n*Definition*:\n\n```\n{\n  \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n  \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n  \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n}\n```\n"]
+            #[doc = "Checks if the entity is a *Transformable*.\n\nCan be translated, rotated and scaled.\n\n*Definition*:\n\n```ignore\n{\n  \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n  \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n  \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n}\n```\n"]
             pub fn is_transformable(id: EntityId) -> bool {
                 entity::has_components(id, &[
                     &components::core::transform::rotation(),
@@ -832,16 +805,15 @@ fn can_generate_concepts() {
                 ])
             }
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        guest_context(),
         false,
         false,
     )
@@ -874,9 +846,7 @@ fn can_generate_concepts_with_documented_namespace_from_manifest() {
         const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
         #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
         pub mod components {
-            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
             pub mod core {
-                use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
                 pub mod transform {
                     use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
                     static ROTATION: Lazy< Component<ambient_api2::global::Quat> > = Lazy::new(|| __internal_get_component("my_project::core::transform::rotation"));
@@ -898,27 +868,25 @@ fn can_generate_concepts_with_documented_namespace_from_manifest() {
         #[doc = r""]
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
-            use super::components;
-            use ambient_api2::prelude::*;
             #[doc = "**Namespace**: A Test Namespace"]
             pub mod ns{
                 use super::components;
                 use ambient_api2::prelude::*;
 
                 #[allow(clippy::approx_constant)]
-                #[doc = "Makes a *Concept 2*.\n\nJust a transformable\n\n*Definition*:\n\n```\n{\n  \"ns::transformable\": { // Concept.\n    \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n    \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n    \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n  },\n}\n```\n"]
+                #[doc = "Makes a *Concept 2*.\n\nJust a transformable\n\n*Definition*:\n\n```ignore\n{\n  \"ns::transformable\": { // Concept.\n    \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n    \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n    \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n  },\n}\n```\n"]
                 pub fn make_concept2() -> Entity {
                     Entity::new()
                         .with_merge(super::ns::make_transformable())
                 }
 
-                #[doc = "Checks if the entity is a *Concept 2*.\n\nJust a transformable\n\n*Definition*:\n\n```\n{\n  \"ns::transformable\": { // Concept.\n    \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n    \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n    \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n  },\n}\n```\n"]
+                #[doc = "Checks if the entity is a *Concept 2*.\n\nJust a transformable\n\n*Definition*:\n\n```ignore\n{\n  \"ns::transformable\": { // Concept.\n    \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n    \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n    \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n  },\n}\n```\n"]
                 pub fn is_concept2(id: EntityId) -> bool {
                     super::ns::is_transformable(id) && entity::has_components(id, &[])
                 }
 
                 #[allow(clippy::approx_constant)]
-                #[doc = "Makes a *Transformable*.\n\nCan be translated, rotated and scaled.\n\n*Definition*:\n\n```\n{\n  \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n  \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n  \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n}\n```\n"]
+                #[doc = "Makes a *Transformable*.\n\nCan be translated, rotated and scaled.\n\n*Definition*:\n\n```ignore\n{\n  \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n  \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n  \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n}\n```\n"]
                 pub fn make_transformable() -> Entity {
                     Entity::new()
                         .with(components::core::transform::rotation(), Quat::from_xyzw(0f32, 0f32, 0f32, 1f32))
@@ -926,7 +894,7 @@ fn can_generate_concepts_with_documented_namespace_from_manifest() {
                         .with(components::core::transform::translation(), Vec3::new(0f32, 0f32, 0f32))
                 }
 
-                #[doc = "Checks if the entity is a *Transformable*.\n\nCan be translated, rotated and scaled.\n\n*Definition*:\n\n```\n{\n  \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n  \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n  \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n}\n```\n"]
+                #[doc = "Checks if the entity is a *Transformable*.\n\nCan be translated, rotated and scaled.\n\n*Definition*:\n\n```ignore\n{\n  \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n  \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n  \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n}\n```\n"]
                 pub fn is_transformable(id: EntityId) -> bool {
                     entity::has_components(id, &[
                         &components::core::transform::rotation(),
@@ -936,151 +904,21 @@ fn can_generate_concepts_with_documented_namespace_from_manifest() {
                 }
             }
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
         }
     };
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        guest_context(),
         false,
         false,
     )
     .unwrap();
 
     assert_eq!(result.to_string(), expected_output.to_string());
-}
-
-#[test]
-fn can_generate_nested_doc_comment_for_concepts() {
-    let component_tree = Tree::<Component>::new(
-        &BTreeMap::from_iter(
-            ["Bool", "F32", "I32", "String", "Vec3"]
-                .into_iter()
-                .enumerate()
-                .map(|(idx, ty)| {
-                    (
-                        IdentifierPathBuf::new(format!("component{idx}")).unwrap(),
-                        Component {
-                            name: format!("Component {idx}"),
-                            description: "".to_string(),
-                            type_: ComponentType::String(ty.to_string()),
-                            attributes: vec![],
-                            default: None,
-                        }
-                        .into(),
-                    )
-                }),
-        ),
-        false,
-    )
-    .unwrap();
-
-    let concept_tree = Tree::<Concept>::new(
-        &BTreeMap::from_iter([
-            (
-                IdentifierPathBuf::new("concept0").unwrap(),
-                Concept {
-                    name: String::new(),
-                    description: String::new(),
-                    extends: vec![],
-                    components: BTreeMap::from_iter([(
-                        IdentifierPathBuf::new("component0").unwrap(),
-                        toml::Value::Boolean(true),
-                    )]),
-                }
-                .into(),
-            ),
-            (
-                IdentifierPathBuf::new("concept1").unwrap(),
-                Concept {
-                    name: String::new(),
-                    description: String::new(),
-                    extends: vec![IdentifierPathBuf::new("concept0").unwrap()],
-                    components: BTreeMap::from_iter([(
-                        IdentifierPathBuf::new("component1").unwrap(),
-                        toml::Value::Float(3.14),
-                    )]),
-                }
-                .into(),
-            ),
-            (
-                IdentifierPathBuf::new("concept2").unwrap(),
-                Concept {
-                    name: String::new(),
-                    description: String::new(),
-                    extends: vec![],
-                    components: BTreeMap::from_iter([(
-                        IdentifierPathBuf::new("component2").unwrap(),
-                        toml::Value::Integer(3),
-                    )]),
-                }
-                .into(),
-            ),
-            (
-                IdentifierPathBuf::new("concept3").unwrap(),
-                Concept {
-                    name: String::new(),
-                    description: String::new(),
-                    extends: vec![
-                        IdentifierPathBuf::new("concept1").unwrap(),
-                        IdentifierPathBuf::new("concept2").unwrap(),
-                    ],
-                    components: BTreeMap::from_iter([
-                        (
-                            IdentifierPathBuf::new("component3").unwrap(),
-                            toml::Value::String("It's pi".to_string()),
-                        ),
-                        (
-                            IdentifierPathBuf::new("component4").unwrap(),
-                            toml::Value::Array(
-                                (0..3).into_iter().map(toml::Value::Integer).collect(),
-                            ),
-                        ),
-                    ]),
-                }
-                .into(),
-            ),
-        ]),
-        false,
-    )
-    .unwrap();
-
-    let comment = generate_component_list_doc_comment(
-        &concept_tree,
-        &component_tree,
-        &api_name(),
-        concept_tree
-            .get(IdentifierPathBuf::new("concept3").unwrap().as_path())
-            .unwrap(),
-    )
-    .unwrap();
-
-    assert_eq!(
-        comment,
-        indoc::indoc! {r#"
-            *Definition*:
-
-            ```
-            {
-              "component3": String = "It's pi".to_string(),
-              "component4": Vec3 = Vec3::new(0f32, 1f32, 2f32),
-              "concept1": { // Concept.
-                "component1": f32 = 3.14f32,
-                "concept0": { // Concept.
-                  "component0": bool = true,
-                },
-              },
-              "concept2": { // Concept.
-                "component2": i32 = 3i32,
-              },
-            }
-            ```
-        "#}
-    );
 }
 
 #[test]
@@ -1103,19 +941,16 @@ fn can_generate_message() {
         const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
         #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
         pub mod components {
-            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
         }
         #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
         #[doc = r""]
         #[doc = r" They do not have any runtime representation outside of the components that compose them."]
         pub mod concepts {
-            use super :: components ;
-            use ambient_api2::prelude::*;
         }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate between the client and serverside,"]
-        #[doc = r" as well as to other modules."]
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
         pub mod messages {
-            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError}};
+            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError, ModuleMessage}};
 
             #[derive(Clone, Debug)]
             #[doc = "**The Coolest Message Out There**: Proof that cool messages do exist."]
@@ -1151,13 +986,78 @@ fn can_generate_message() {
                     })
                 }
             }
+            impl ModuleMessage for MyCoolMessage {}
         }
     };
 
     let result = implementation(
         (Some("ambient.toml".to_string()), manifest.to_string()),
-        api_name(),
+        guest_context(),
         false,
+        true,
+    )
+    .unwrap();
+
+    assert_eq!(result.to_string(), expected_output.to_string());
+}
+
+#[test]
+fn can_generate_runtime_message() {
+    let manifest = indoc::indoc! {r#"
+        [project]
+        id = "my_project"
+        name = "My Project"
+        version = "0.0.1"
+
+        [messages.my_cool_message]
+        name = "The Coolest Message Out There"
+        description = "Proof that cool messages do exist."
+        fields = {}
+    "#};
+
+    let expected_output = quote::quote! {
+        const _PROJECT_MANIFEST: &'static str = include_str!("ambient.toml");
+        #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
+        pub mod components {
+        }
+        #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
+        #[doc = r""]
+        #[doc = r" They do not have any runtime representation outside of the components that compose them."]
+        pub mod concepts {
+        }
+        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
+        #[doc = r" and with other modules."]
+        pub mod messages {
+            use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError, RuntimeMessage}};
+
+            #[derive(Clone, Debug)]
+            #[doc = "**The Coolest Message Out There**: Proof that cool messages do exist."]
+            pub struct MyCoolMessage { }
+            impl MyCoolMessage {
+                pub fn new( ) -> Self {
+                    Self { }
+                }
+            }
+            impl Message for MyCoolMessage {
+                fn id() -> &'static str {
+                    "my_cool_message"
+                }
+                fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                    let mut output = vec![];
+                    Ok(output)
+                }
+                fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                    Ok(Self { })
+                }
+            }
+            impl RuntimeMessage for MyCoolMessage {}
+        }
+    };
+
+    let result = implementation(
+        (Some("ambient.toml".to_string()), manifest.to_string()),
+        guest_context(),
+        true,
         true,
     )
     .unwrap();

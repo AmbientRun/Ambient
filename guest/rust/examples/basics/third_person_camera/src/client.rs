@@ -6,7 +6,6 @@ use ambient_api::{
         transform::{lookat_center, rotation, translation},
     },
     concepts::make_perspective_infinite_reverse_camera,
-    message::client::{MessageExt, Target},
     player::KeyCode,
     prelude::*,
 };
@@ -41,7 +40,7 @@ fn main() {
         }
     });
 
-    on(event::FRAME, |_| {
+    ambient_api::messages::Frame::subscribe(move |_| {
         let (delta, pressed) = player::get_raw_input_delta();
 
         let mut displace = Vec2::ZERO;
@@ -58,6 +57,6 @@ fn main() {
             displace.y += 1.0;
         }
 
-        messages::Input::new(displace, delta.mouse_position.x).send(Target::RemoteReliable);
+        messages::Input::new(displace, delta.mouse_position.x).send_server_reliable();
     });
 }

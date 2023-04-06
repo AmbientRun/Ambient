@@ -26,7 +26,7 @@ pub async fn main() {
         .spawn();
     entity::wait_for_component(cube_id, spawned()).await;
 
-    on(event::FRAME, move |_| {
+    ambient_api::messages::Frame::subscribe(move |_| {
         entity::set_component(
             cube_id,
             rotation(),

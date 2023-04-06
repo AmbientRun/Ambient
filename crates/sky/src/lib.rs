@@ -5,7 +5,7 @@
 use std::sync::Arc;
 
 use ambient_core::{asset_cache, mesh, transform::translation};
-use ambient_ecs::{components, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
+use ambient_ecs::{components, query, Entity, SystemGroup};
 use ambient_gpu::{
     gpu::GpuKey,
     shader_module::{BindGroupDesc, Shader, ShaderModule},
@@ -22,10 +22,10 @@ use self::tree::*;
 
 mod tree;
 
+pub use ambient_ecs::generated::components::core::rendering::sky;
+
 components!("rendering", {
     cloud_state: CloudState,
-    @[Debuggable, Networked, Store, Name["Sky"], Description["Add a realistic skybox to the scene."]]
-    sky: (),
 });
 
 #[derive(Debug, Clone)]

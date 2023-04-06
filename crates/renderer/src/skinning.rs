@@ -8,7 +8,7 @@ use ambient_core::{
     gpu_ecs::{GpuComponentFormat, GpuWorldSyncEvent, MappedComponentToGpuSystem},
     transform::{inv_local_to_world, local_to_world},
 };
-use ambient_ecs::{components, query, Commands, Debuggable, Description, EntityId, Name, Networked, Store, SystemGroup};
+use ambient_ecs::{components, query, Commands, Networked, Store, SystemGroup};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     typed_buffer::TypedBuffer,
@@ -18,21 +18,11 @@ use glam::{vec4, Mat4};
 use itertools::Itertools;
 use parking_lot::Mutex;
 
+pub use ambient_ecs::generated::components::core::rendering::{joint_matrices, joints};
+
 components!("rendering", {
     @[Networked, Store]
     inverse_bind_matrices: Arc<Vec<glam::Mat4>>,
-    @[
-        Networked, Store, Debuggable,
-        Name["Joints"],
-        Description["Contains the joints that comprise this skinned mesh."]
-    ]
-    joints: Vec<EntityId>,
-    @[
-        Networked, Store, Debuggable,
-        Name["Joint Matrices"],
-        Description["Contains the matrices for each joint of this skinned mesh.\nThis should be used in combination with `joints`."]
-    ]
-    joint_matrices: Vec<glam::Mat4>,
 
     skin: Skin,
 

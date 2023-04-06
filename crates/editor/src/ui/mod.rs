@@ -273,7 +273,7 @@ fn TerrainMaterialEditor(hooks: &mut Hooks) -> Element {
         ScrollArea::el(
             FlowColumn::el([
                 FlowRow::el([
-                    CopyPasteButtons { value: value.clone(), on_change: set_value.clone() }.el().with(margin(), Borders::bottom(STREET)),
+                    CopyPasteButtons { value, on_change: set_value.clone() }.el().with(margin(), Borders::bottom(STREET)),
                     // SelectAndDownloadJsonAssetButton2::<TerrainMaterialDef> {
                     //     asset_type: AssetType::TerrainMaterial,
                     //     on_select_file: Cb::new({
@@ -356,7 +356,7 @@ fn NaturalLayersEditor(hooks: &mut Hooks) -> Element {
         ScrollArea::el(
             FlowColumn::el([
                 FlowRow::el([
-                    CopyPasteButtons { value: value.clone(), on_change: set_value.clone() }.el().with(margin(), Borders::bottom(STREET)),
+                    CopyPasteButtons { value, on_change: set_value.clone() }.el().with(margin(), Borders::bottom(STREET)),
                     // SelectAndDownloadJsonAssetButton2::<Vec<NaturalLayer>> {
                     //     asset_type: AssetType::Biomes,
                     //     on_select_file: Cb::new({

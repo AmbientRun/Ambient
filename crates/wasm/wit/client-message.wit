@@ -1,14 +1,9 @@
 default interface client-message {
     use pkg.types.{entity-id}
 
-    variant source {
-        remote,
-        local(entity-id),
-    }
-
     variant target {
-        remote-unreliable,
-        remote-reliable,
+        server-unreliable,
+        server-reliable,
         local-broadcast,
         local(entity-id),
     }

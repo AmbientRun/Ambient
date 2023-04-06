@@ -2,7 +2,7 @@ use core::fmt;
 use std::{num::NonZeroU32, ops::Deref, str::FromStr, sync::Arc};
 
 use ambient_core::{asset_cache, async_ecs::async_run, gpu, mesh, runtime, transform::*, window::window_scale_factor};
-use ambient_ecs::{components, ensure_has_component, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
+use ambient_ecs::{components, ensure_has_component, query, Debuggable, Entity, SystemGroup};
 use ambient_gpu::{mesh_buffer::GpuMesh, texture::Texture};
 use ambient_layout::{height, min_height, min_width, width};
 use ambient_renderer::{gpu_primitives_lod, gpu_primitives_mesh, material, primitives, renderer_shader, SharedMaterial};
@@ -29,17 +29,11 @@ use strum::EnumString;
 
 mod text_material;
 
+pub use ambient_ecs::generated::components::core::text::{font_family, font_size, font_style, text};
+
 components!("text", {
-    @[Debuggable, Networked, Store, Name["Text"], Description["Create a text mesh on this entity."]]
-    text: String,
     @[Debuggable]
     text_case: TextCase,
-    @[Debuggable, Networked, Store, Name["Font size"], Description["Size of the font."]]
-    font_size: f32,
-    @[Debuggable, Networked, Store, Name["Font style"], Description["One of Bold, BoldItalic, Medium, MediumItalic, Regular, Italic, Light or LightItalic."]]
-    font_style: String,
-    @[Debuggable, Networked, Store, Name["Font family"], Description["Font family to be used. Can either be 'Default', 'FontAwesome', 'FontAwesomeSolid', 'Code' or a url to a font."]]
-    font_family: String,
     font_arc: Arc<FontArc>,
 
     glyph_brush: Arc<Mutex<GlyphBrush<GlyphVertex>>>,

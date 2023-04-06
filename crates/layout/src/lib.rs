@@ -6,25 +6,19 @@ use ambient_core::{
 };
 use ambient_ecs::{components, query, query_mut, Debuggable, Description, DynSystem, EntityId, Name, Networked, Store, SystemGroup, World};
 use ambient_input::picking::mouse_pickable;
-use glam::{vec2, vec3, vec4, Mat4, Vec2, Vec4};
+use glam::{vec2, vec3, vec4, Mat4, Vec2};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
 pub mod guest_api;
 
+pub use ambient_ecs::generated::components::core::layout::{
+    gpu_ui_size, height, is_book_file, mesh_to_local_from_size, min_height, min_width, screen, space_between_items, width,
+};
+
 components!("layout", {
     @[Debuggable, Networked, Store, Name["Layout"], Description["The layout to apply to this entity's children."]]
     layout: Layout,
-    @[Debuggable, Networked, Store, Name["Mest to local from size"], Description["Update the `mesh_to_local` based on the width and height of this entity."]]
-    mesh_to_local_from_size: (),
-    @[Debuggable, Networked, Store, Name["Width"], Description["The width of a UI element."]]
-    width: f32,
-    @[Debuggable, Networked, Store, Name["Height"], Description["The height of a UI element."]]
-    height: f32,
-    @[Debuggable, Networked, Store, Name["Minimum width"], Description["The minimum width of a UI element."]]
-    min_width: f32,
-    @[Debuggable, Networked, Store, Name["Minimum height"], Description["The minimum height of a UI element."]]
-    min_height: f32,
     margin: Borders,
     padding: Borders,
     fit_vertical: Fit,
@@ -33,14 +27,6 @@ components!("layout", {
     orientation: Orientation,
     align_horizontal: Align,
     align_vertical: Align,
-    @[Debuggable, Networked, Store, Name["Space between items"], Description["Space between items in a layout."]]
-    space_between_items: f32,
-    @[Debuggable, Networked, Store, Name["Is book file"], Description["This is a file in a `layout_bookcase`."]]
-    is_book_file: (),
-    @[Debuggable, Networked, Store, Name["Screen"], Description["This entity will be treated as a screen. Used by the Screen ui component."]]
-    screen: (),
-    @[Debuggable, Networked, Store, Name["GPU UI size"], Description["Upload the width and height of this UI element to the GPU."]]
-    gpu_ui_size: Vec4,
 });
 gpu_components! {
     gpu_ui_size() => ui_size: GpuComponentFormat::Vec4,
@@ -48,7 +34,6 @@ gpu_components! {
 
 pub fn init_all_components() {
     init_components();
-    guest_api::init_components();
 }
 
 #[derive(Clone, Copy, Debug, Default)]

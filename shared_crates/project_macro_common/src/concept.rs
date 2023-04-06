@@ -1,25 +1,35 @@
 use super::{
+    component::type_to_token_stream,
     tree::{Tree, TreeNode},
-    util,
+    util, Context,
 };
 use ambient_project::{
     Component, ComponentType, Concept, Identifier, IdentifierPath, IdentifierPathBuf,
 };
-use anyhow::Context;
+use anyhow::Context as AnyhowContext;
 use proc_macro2::TokenStream;
 use quote::quote;
 
 pub fn tree_to_token_stream(
     concept_tree: &Tree<Concept>,
     components_tree: &Tree<Component>,
-    api_path: &syn::Path,
+    context: &Context,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     to_token_stream(
         concept_tree.root(),
-        api_path,
-        &quote! {
-            use super::components;
-            use #api_path::prelude::*;
+        context,
+        |context, _ns, ts| match context {
+            Context::Host => quote! {
+                use super::components;
+                use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
+                use crate::{EntityId, Entity};
+                #ts
+            },
+            Context::Guest { api_path, .. } => quote! {
+                use super::components;
+                use #api_path::prelude::*;
+                #ts
+            },
         },
         concept_tree,
         components_tree,
@@ -28,22 +38,22 @@ pub fn tree_to_token_stream(
 
 fn to_token_stream(
     node: &TreeNode<Concept>,
-    api_path: &syn::Path,
-    prelude: &TokenStream,
+    context: &Context,
+    wrapper: impl Fn(&Context, &TreeNode<Concept>, TokenStream) -> TokenStream + Copy,
     concept_tree: &Tree<Concept>,
     components_tree: &Tree<Component>,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     util::tree_to_token_stream(
         node,
-        api_path,
-        prelude,
-        |node, api_path, prelude| {
-            to_token_stream(node, api_path, prelude, concept_tree, components_tree)
+        context,
+        wrapper,
+        |node, context, wrapper| {
+            to_token_stream(node, context, wrapper, concept_tree, components_tree)
         },
-        |name, concept, api_path| {
+        |name, concept, context| {
             let make_concept =
-                generate_make(concept_tree, components_tree, api_path, name, concept)?;
-            let is_concept = generate_is(concept_tree, components_tree, api_path, name, concept)?;
+                generate_make(concept_tree, components_tree, context, name, concept)?;
+            let is_concept = generate_is(concept_tree, components_tree, context, name, concept)?;
             Ok(quote! {
                 #make_concept
                 #is_concept
@@ -55,7 +65,7 @@ fn to_token_stream(
 fn generate_make(
     concept_tree: &Tree<Concept>,
     component_tree: &Tree<Component>,
-    api_name: &syn::Path,
+    context: &Context,
     name: &str,
     concept: &Concept,
 ) -> anyhow::Result<TokenStream> {
@@ -63,7 +73,7 @@ fn generate_make(
         "Makes a *{}*.\n\n{}\n\n{}",
         concept.name,
         concept.description,
-        generate_component_list_doc_comment(concept_tree, component_tree, api_name, concept)?
+        generate_component_list_doc_comment(concept_tree, component_tree, context, concept)?
     );
     let make_ident = quote::format_ident!("make_{}", name);
 
@@ -115,7 +125,7 @@ fn generate_make(
 fn generate_is(
     concept_tree: &Tree<Concept>,
     component_tree: &Tree<Component>,
-    api_name: &syn::Path,
+    context: &Context,
     name: &str,
     concept: &Concept,
 ) -> anyhow::Result<TokenStream> {
@@ -123,7 +133,7 @@ fn generate_is(
         "Checks if the entity is a *{}*.\n\n{}\n\n{}",
         concept.name,
         concept.description,
-        generate_component_list_doc_comment(concept_tree, component_tree, api_name, concept)?,
+        generate_component_list_doc_comment(concept_tree, component_tree, context, concept)?,
     );
     let is_ident = quote::format_ident!("is_{}", name);
 
@@ -135,7 +145,7 @@ fn generate_is(
             let extend_ident = quote::format_ident!("is_{}", last.as_ref());
             let supers = namespaces.iter().map(|_| quote! { super });
             quote! {
-                #(#supers::)* #(#namespaces::)* #extend_ident(id)
+                #(#supers::)* #(#namespaces::)* #extend_ident
             }
         })
         .collect();
@@ -148,13 +158,25 @@ fn generate_is(
         .map(|p| quote! { #p() })
         .collect();
 
-    Ok(quote! {
-        #[doc = #is_comment]
-        pub fn #is_ident(id: EntityId) -> bool {
-            #(#extends && )* entity::has_components(id, &[
-                #(&#components),*
-            ])
-        }
+    Ok(match context {
+        Context::Host => quote! {
+            #[doc = #is_comment]
+            pub fn #is_ident(world: &crate::World, id: EntityId) -> bool {
+                #(#extends(world, id) && )* world.has_components(id, &{
+                    let mut set = crate::ComponentSet::new();
+                    #(set.insert(#components.desc());)*
+                    set
+                })
+            }
+        },
+        Context::Guest { .. } => quote! {
+            #[doc = #is_comment]
+            pub fn #is_ident(id: EntityId) -> bool {
+                #(#extends(id) && )* entity::has_components(id, &[
+                    #(&#components),*
+                ])
+            }
+        },
     })
 }
 
@@ -283,15 +305,15 @@ fn toml_array_f32_to_array_tokens(
 pub fn generate_component_list_doc_comment(
     concept_tree: &Tree<Concept>,
     component_tree: &Tree<Component>,
-    api_name: &syn::Path,
+    context: &Context,
     concept: &Concept,
 ) -> anyhow::Result<String> {
-    let mut output = "*Definition*:\n\n```\n{\n".to_string();
+    let mut output = "*Definition*:\n\n```ignore\n{\n".to_string();
 
     fn write_level(
         concepts: &Tree<Concept>,
         components: &Tree<Component>,
-        api_name: &syn::Path,
+        context: &Context,
         concept: &Concept,
         output: &mut String,
         level: usize,
@@ -309,7 +331,7 @@ pub fn generate_component_list_doc_comment(
             writeln!(
                 output,
                 "{padding}\"{component_path}\": {} = {},",
-                SemiprettyTokenStream(ty.to_token_stream(api_name, false, false)?),
+                SemiprettyTokenStream(type_to_token_stream(&ty, context, false)?),
                 SemiprettyTokenStream(toml_value_to_tokens(component_path.as_path(), &ty, value)?)
             )?;
         }
@@ -319,7 +341,7 @@ pub fn generate_component_list_doc_comment(
                 .with_context(|| format!("no definition found for {concept_path}"))?;
 
             writeln!(output, "{padding}\"{concept_path}\": {{ // Concept.")?;
-            write_level(concepts, components, api_name, concept, output, level + 1)?;
+            write_level(concepts, components, context, concept, output, level + 1)?;
             writeln!(output, "{padding}}},")?;
         }
 
@@ -329,7 +351,13 @@ pub fn generate_component_list_doc_comment(
     write_level(
         concept_tree,
         component_tree,
-        api_name,
+        &match context {
+            Context::Host => Context::Host,
+            Context::Guest { api_path, .. } => Context::Guest {
+                api_path: api_path.clone(),
+                fully_qualified_path: false,
+            },
+        },
         concept,
         &mut output,
         1,
@@ -368,5 +396,141 @@ impl std::fmt::Display for SemiprettyTokenStream {
             }
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::BTreeMap;
+
+    use ambient_project::{Component, ComponentType, Concept, IdentifierPathBuf};
+
+    use crate::{tests::guest_context, tree::Tree};
+
+    #[test]
+    fn can_generate_nested_doc_comment_for_concepts() {
+        let component_tree = Tree::<Component>::new(
+            &BTreeMap::from_iter(
+                ["Bool", "F32", "I32", "String", "Vec3"]
+                    .into_iter()
+                    .enumerate()
+                    .map(|(idx, ty)| {
+                        (
+                            IdentifierPathBuf::new(format!("component{idx}")).unwrap(),
+                            Component {
+                                name: format!("Component {idx}"),
+                                description: "".to_string(),
+                                type_: ComponentType::String(ty.to_string()),
+                                attributes: vec![],
+                                default: None,
+                            }
+                            .into(),
+                        )
+                    }),
+            ),
+            false,
+        )
+        .unwrap();
+
+        let concept_tree = Tree::<Concept>::new(
+            &BTreeMap::from_iter([
+                (
+                    IdentifierPathBuf::new("concept0").unwrap(),
+                    Concept {
+                        name: String::new(),
+                        description: String::new(),
+                        extends: vec![],
+                        components: BTreeMap::from_iter([(
+                            IdentifierPathBuf::new("component0").unwrap(),
+                            toml::Value::Boolean(true),
+                        )]),
+                    }
+                    .into(),
+                ),
+                (
+                    IdentifierPathBuf::new("concept1").unwrap(),
+                    Concept {
+                        name: String::new(),
+                        description: String::new(),
+                        extends: vec![IdentifierPathBuf::new("concept0").unwrap()],
+                        components: BTreeMap::from_iter([(
+                            IdentifierPathBuf::new("component1").unwrap(),
+                            toml::Value::Float(4.56),
+                        )]),
+                    }
+                    .into(),
+                ),
+                (
+                    IdentifierPathBuf::new("concept2").unwrap(),
+                    Concept {
+                        name: String::new(),
+                        description: String::new(),
+                        extends: vec![],
+                        components: BTreeMap::from_iter([(
+                            IdentifierPathBuf::new("component2").unwrap(),
+                            toml::Value::Integer(3),
+                        )]),
+                    }
+                    .into(),
+                ),
+                (
+                    IdentifierPathBuf::new("concept3").unwrap(),
+                    Concept {
+                        name: String::new(),
+                        description: String::new(),
+                        extends: vec![
+                            IdentifierPathBuf::new("concept1").unwrap(),
+                            IdentifierPathBuf::new("concept2").unwrap(),
+                        ],
+                        components: BTreeMap::from_iter([
+                            (
+                                IdentifierPathBuf::new("component3").unwrap(),
+                                toml::Value::String("It's pi".to_string()),
+                            ),
+                            (
+                                IdentifierPathBuf::new("component4").unwrap(),
+                                toml::Value::Array((0..3).map(toml::Value::Integer).collect()),
+                            ),
+                        ]),
+                    }
+                    .into(),
+                ),
+            ]),
+            false,
+        )
+        .unwrap();
+
+        let comment = super::generate_component_list_doc_comment(
+            &concept_tree,
+            &component_tree,
+            &guest_context(),
+            concept_tree
+                .get(IdentifierPathBuf::new("concept3").unwrap().as_path())
+                .unwrap(),
+        )
+        .unwrap();
+
+        assert_eq!(
+            comment,
+            indoc::indoc! {r#"
+            *Definition*:
+
+            ```ignore
+            {
+              "component3": String = "It's pi".to_string(),
+              "component4": Vec3 = Vec3::new(0f32, 1f32, 2f32),
+              "concept1": { // Concept.
+                "component1": f32 = 4.56f32,
+                "concept0": { // Concept.
+                  "component0": bool = true,
+                },
+              },
+              "concept2": { // Concept.
+                "component2": i32 = 3i32,
+              },
+            }
+            ```
+        "#}
+        );
     }
 }

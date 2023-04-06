@@ -1,12 +1,10 @@
 pub(crate) mod component;
 pub(crate) mod conversion;
 pub(crate) mod executor;
+pub(crate) mod generated;
 pub(crate) mod wit;
 
-use crate::internal::{
-    component::Entity,
-    executor::{FrameState, EXECUTOR},
-};
+use crate::internal::executor::{FrameState, EXECUTOR};
 
 extern "Rust" {
     fn main();
@@ -19,9 +17,8 @@ impl wit::guest::Guest for Guest {
         unsafe { main() };
     }
 
-    fn exec(time: f32, event_name: String, components: guest::Entity) {
-        let components = Entity(components.into_iter().collect());
-        EXECUTOR.execute(FrameState::new(time), event_name.as_str(), &components);
+    fn exec(time: f32, source: wit::guest::Source, message_name: String, message_data: Vec<u8>) {
+        EXECUTOR.execute(FrameState::new(time), source, message_name, message_data);
     }
 }
 

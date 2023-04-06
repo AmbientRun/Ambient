@@ -1,7 +1,6 @@
-use std::path::PathBuf;
+extern crate proc_macro;
 
 use ambient_project::{IdentifierPathBuf, Manifest};
-use anyhow::Context;
 use quote::quote;
 
 use tree::Tree;
@@ -15,24 +14,24 @@ mod message;
 mod tree;
 mod util;
 
-pub fn read_file(file_path: String) -> anyhow::Result<(Option<String>, String)> {
-    let file_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").context("no manifest dir")?)
-        .join(file_path);
-    let file_path_str = format!("{}", file_path.display());
+pub const MANIFEST: &str = include_str!("../../../ambient.toml");
 
-    let contents = std::fs::read_to_string(&file_path)?;
-
-    Ok((Some(file_path_str), contents))
+pub enum Context {
+    Host,
+    Guest {
+        api_path: syn::Path,
+        fully_qualified_path: bool,
+    },
 }
 
 pub fn implementation(
     (file_path, contents): (Option<String>, String),
-    api_name: syn::Path,
-    global_namespace: bool,
+    context: Context,
+    is_api_manifest: bool,
     validate_namespaces_documented: bool,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     let manifest: Manifest = toml::from_str(&contents)?;
-    let project_path = if !global_namespace {
+    let project_path = if !is_api_manifest {
         manifest.project_path()
     } else {
         IdentifierPathBuf::empty()
@@ -40,13 +39,13 @@ pub fn implementation(
 
     let component_tree = Tree::new(&manifest.components, validate_namespaces_documented)?;
     let components_tokens =
-        component::tree_to_token_stream(&component_tree, &api_name, project_path.as_path())?;
+        component::tree_to_token_stream(&component_tree, &context, project_path.as_path())?;
 
     let concept_tree = Tree::new(&manifest.concepts, validate_namespaces_documented)?;
-    let concept_tokens = concept::tree_to_token_stream(&concept_tree, &component_tree, &api_name)?;
+    let concept_tokens = concept::tree_to_token_stream(&concept_tree, &component_tree, &context)?;
 
     let message_tree = Tree::new(&manifest.messages, validate_namespaces_documented)?;
-    let message_tokens = message::tree_to_token_stream(&message_tree, &api_name)?;
+    let message_tokens = message::tree_to_token_stream(&message_tree, &context, is_api_manifest)?;
 
     let manifest = file_path.map(
         |file_path| quote! { const _PROJECT_MANIFEST: &'static str = include_str!(#file_path); },
@@ -63,8 +62,8 @@ pub fn implementation(
         pub mod concepts {
             #concept_tokens
         }
-        /// Auto-generated message definitions. Messages are used to communicate between the client and serverside,
-        /// as well as to other modules.
+        /// Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,
+        /// and with other modules.
         pub mod messages {
             #message_tokens
         }

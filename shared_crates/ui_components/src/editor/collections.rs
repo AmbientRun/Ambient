@@ -3,19 +3,17 @@ use std::{collections::HashMap, fmt::Debug, hash::Hash, ops::Deref, str::FromStr
 use ambient_cb::{cb, Cb};
 use ambient_color::Color;
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::{
-    input::{event_keyboard_input, event_mouse_input, keycode},
-    layout::{
+use ambient_guest_bridge::{
+    components::layout::{
         fit_horizontal_none, fit_horizontal_parent, fit_vertical_parent, height, margin_right, margin_top, min_width, padding_bottom,
         padding_top, space_between_items, width,
     },
+    messages,
 };
 use ambient_window_types::VirtualKeyCode;
 use closure::closure;
 use indexmap::IndexMap;
 use itertools::Itertools;
-
-use ambient_shared_types::events::{WINDOW_KEYBOARD_INPUT, WINDOW_MOUSE_INPUT};
 
 use crate::{
     button::{Button, ButtonStyle},
@@ -160,13 +158,12 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
         let Self { value, on_change, item_opts, add_presets, add_title, item_editor } = *self;
         let (add_action, set_add_action) = hooks.use_state(false);
         let has_on_change = on_change.is_some();
-        hooks.use_event(WINDOW_MOUSE_INPUT, {
+        hooks.use_runtime_message::<messages::WindowMouseInput>({
             let set_add_action = set_add_action.clone();
             move |_world, event| {
-                if let Some(pressed) = event.get(event_mouse_input()) {
-                    if pressed && has_on_change {
-                        set_add_action(false);
-                    }
+                let pressed = event.pressed;
+                if pressed && has_on_change {
+                    set_add_action(false);
                 }
             }
         });
@@ -268,17 +265,16 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { value, on_change, on_delete, item_opts, item_editor } = *self;
         let (focused, set_focused) = use_focus(hooks);
-        hooks.use_event(WINDOW_KEYBOARD_INPUT, move |_world, event| {
-            if let Some(pressed) = event.get(event_keyboard_input()) {
-                if !focused || !pressed {
-                    return;
-                }
-                if let Some(on_delete) = &on_delete {
-                    if let Some(keycode) = event.get_ref(keycode()).clone() {
-                        let keycode = VirtualKeyCode::from_str(&keycode).unwrap();
-                        if keycode == VirtualKeyCode::Back || keycode == VirtualKeyCode::Delete {
-                            on_delete.0();
-                        }
+        hooks.use_runtime_message::<messages::WindowKeyboardInput>(move |_world, event| {
+            let pressed = event.pressed;
+            if !focused || !pressed {
+                return;
+            }
+            if let Some(on_delete) = &on_delete {
+                if let Some(keycode) = event.keycode.clone() {
+                    let keycode = VirtualKeyCode::from_str(&keycode).unwrap();
+                    if keycode == VirtualKeyCode::Back || keycode == VirtualKeyCode::Delete {
+                        on_delete.0();
                     }
                 }
             }

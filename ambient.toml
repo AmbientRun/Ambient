@@ -1,12 +1,13 @@
-# The following file is auto-generated. Please do not change this file.
 [project]
 id = "runtime_components"
 name = "Runtime Components"
 version = "0.2.0-dev"
 
+# Components
+
 [components.core]
 name = "Core"
-description = "Contains all core components for the Ambient Runtime."
+description = "Contains all core components for the Ambient runtime."
 
 [components."core::app"]
 name = "App"
@@ -76,15 +77,11 @@ description = "Text rendering."
 name = "WASM"
 description = "Internal implementation details of WASM integration."
 
-[components."core::wasm::message"]
-name = "WASM messaging"
-description = "Information attached to a message sent across WASM boundaries."
-
 [components."core::app::cursor_position"]
 type = "Vec2"
 name = "Cursor position"
-description = "Absolute mouse cursor position in screen-space."
-attributes = ["Debuggable", "Networked"]
+description = "Absolute mouse cursor position in screen-space. This is the _logical_ position. Multiply by the `window_scale_factor` to get the physical position."
+attributes = ["MaybeResource", "Debuggable", "Networked"]
 
 [components."core::app::dtime"]
 type = "F32"
@@ -126,6 +123,12 @@ name = "Name"
 description = "A human-friendly name for this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::app::description"]
+type = "String"
+name = "Description"
+description = "A human-friendly description for this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::app::project_name"]
 type = "String"
 name = "Project Name"
@@ -164,13 +167,13 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "Uvec2"
 name = "Window logical size"
 description = "The logical size is the physical size divided by the scale factor."
-attributes = ["Debuggable", "Networked"]
+attributes = ["MaybeResource", "Debuggable", "Networked"]
 
 [components."core::app::window_physical_size"]
 type = "Uvec2"
 name = "Window physical size"
 description = "The physical size is the actual number of pixels on the screen."
-attributes = ["Debuggable", "Networked"]
+attributes = ["MaybeResource", "Debuggable", "Networked"]
 
 [components."core::app::window_scale_factor"]
 type = "F64"
@@ -178,7 +181,7 @@ name = "Window scale factor"
 description = """
 The DPI/pixel scale factor of the window.
 On standard displays, this is 1, but it can be higher on high-DPI displays like Apple Retina displays."""
-attributes = ["Debuggable", "Networked"]
+attributes = ["MaybeResource", "Debuggable", "Networked"]
 
 [components."core::camera::active_camera"]
 type = "F32"
@@ -304,7 +307,7 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = { type = "Vec", element_type = "EntityId" }
 name = "Children"
 description = "The children of this entity."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["Debuggable", "Networked", "Store", "MaybeResource"]
 
 [components."core::ecs::dont_despawn_on_unload"]
 type = "Empty"
@@ -324,79 +327,12 @@ name = "ID"
 description = "The ID of the entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::ecs::ids"]
-type = { type = "Vec", element_type = "EntityId" }
-name = "IDs"
-description = "A generic list of entity IDs, with no semantic meaning."
-attributes = ["Debuggable", "Networked", "Store"]
-
 [components."core::ecs::parent"]
 type = "EntityId"
 name = "Parent"
 description = "The parent of this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::input::event_focus_change"]
-type = "Bool"
-name = "Event focus change"
-description = "The window was focused or list its focus."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::input::event_keyboard_input"]
-type = "Bool"
-name = "Event keyboard input"
-description = "A keyboard key was pressed (true) or released (false). Will also contain a `keycode` component."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::input::event_mouse_input"]
-type = "Bool"
-name = "Event mouse input"
-description = "A mouse button was pressed (true) or released (false). Will also contain a `mouse_button` component."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::input::event_mouse_motion"]
-type = "Vec2"
-name = "Event mouse motion"
-description = """
-The mouse was moved. The value represents the delta.
-Use `mouse_position` or `current_position` from `RawInput` to get the current position."""
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::input::event_mouse_wheel"]
-type = "Vec2"
-name = "Event mouse wheel"
-description = "The mouse wheel moved. The value represents the delta."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::input::event_mouse_wheel_pixels"]
-type = "Bool"
-name = "Event mouse wheel"
-description = "If true, the `mouse_wheel_event`'s value should be interpreted as pixels. If false, it should be interpreted as lines."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::input::event_received_character"]
-type = "String"
-name = "Event received character"
-description = "The window received a character."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::input::keyboard_modifiers"]
-type = "U32"
-name = "Keyboard modifiers"
-description = "Modifiers active."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::input::keycode"]
-type = "String"
-name = "Keycode"
-description = "Keycode when a keyboard key was pressed."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::input::mouse_button"]
-type = "U32"
-name = "Mouse button"
-description = "The mouse button. 0=left, 1=right, 2=middle."
-attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::input::mouse_over"]
 type = "U32"
@@ -586,7 +522,7 @@ attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::layout::mesh_to_local_from_size"]
 type = "Empty"
-name = "Mest to local from size"
+name = "Mesh to local from size"
 description = "Update the `mesh_to_local` based on the width and height of this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
@@ -660,7 +596,7 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "Bool"
 name = "Model animatable"
 description = "Controls whether this model can be animated."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["MaybeResource", "Debuggable", "Networked", "Store"]
 
 [components."core::model::model_from_url"]
 type = "String"
@@ -1137,7 +1073,7 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "Mat4"
 name = "Local to Parent"
 description = "Transformation from the entity's local space to the parent's space."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["Debuggable", "Networked", "Store", "MaybeResource"]
 
 [components."core::transform::local_to_world"]
 type = "Mat4"
@@ -1201,29 +1137,7 @@ name = "Translation"
 description = "The translation/position of this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::wasm::message::data"]
-type = { type = "Vec", element_type = "U8" }
-name = "Data"
-description = "The data payload of a message."
-attributes = ["Debuggable"]
-
-[components."core::wasm::message::source_local"]
-type = "EntityId"
-name = "Source: Local"
-description = "This message came from the specified module on this side."
-attributes = ["Debuggable"]
-
-[components."core::wasm::message::source_remote"]
-type = "Empty"
-name = "Source: Remote"
-description = "This message came from the network with no specific source (likely the server)."
-attributes = ["Debuggable"]
-
-[components."core::wasm::message::source_remote_user_id"]
-type = "String"
-name = "Source: Remote (User ID)"
-description = "This message came from this user."
-attributes = ["Debuggable"]
+# Concepts
 
 [concepts.transformable]
 name = "Transformable"
@@ -1296,3 +1210,64 @@ extends = ["camera"]
 "core::camera::orthographic_bottom" = -1.0
 "core::camera::near" = -1.0
 "core::camera::far" = 1.0
+
+# Messages
+[messages.frame]
+name = "Frame"
+description = "Sent to all modules every frame."
+fields = {}
+
+[messages.collision]
+name = "Collision"
+description = "Sent when a collision occurs."
+fields = { ids = { container_type = "Vec", element_type = "EntityId" } }
+
+[messages.collider_loads]
+name = "Collider Loads"
+description = "Sent when colliders load."
+fields = { ids = { container_type = "Vec", element_type = "EntityId" } }
+
+[messages.module_load]
+name = "Module Load"
+description = "Sent to a module when it loads."
+fields = {}
+
+[messages.module_unload]
+name = "Module Unload"
+description = "Sent to a module when it unloads."
+fields = {}
+
+[messages.window_focus_change]
+name = "Window Focus Change"
+description = "Sent when the window gains or loses focus."
+fields = { focused = "Bool" }
+
+[messages.window_keyboard_character]
+name = "Window Keyboard Character"
+description = "Sent when the window receives a character from the keyboard."
+fields = { character = "String" }
+
+[messages.window_keyboard_modifiers_change]
+name = "Window Keyboard Modifiers Change"
+description = "Sent when the window's keyboard modifiers change."
+fields = { modifiers = "U32" }
+
+[messages.window_keyboard_input]
+name = "Window Keyboard Input"
+description = "Sent when the window receives a keyboard input."
+fields = { pressed = "Bool", modifiers = "U32", keycode = { type = "Option", element_type = "String" } }
+
+[messages.window_mouse_input]
+name = "Window Mouse Input"
+description = "Sent when the window receives a mouse input."
+fields = { pressed = "Bool", button = "U32" }
+
+[messages.window_mouse_wheel]
+name = "Window Mouse Wheel"
+description = "Sent when the window receives a mouse wheel input."
+fields = { delta = "Vec2", pixels = "Bool" }
+
+[messages.window_mouse_motion]
+name = "Window Mouse Motion"
+description = "Sent when the window receives a mouse motion input."
+fields = { delta = "Vec2" }

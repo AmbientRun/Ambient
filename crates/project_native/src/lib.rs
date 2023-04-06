@@ -1,14 +1,9 @@
 use ambient_ecs::{
-    components, Debuggable, ExternalComponentAttributes, ExternalComponentDesc,
-    ExternalComponentFlagAttributes, Networked, PrimitiveComponentType, Store,
+    ExternalComponentAttributes, ExternalComponentDesc, ExternalComponentFlagAttributes,
+    PrimitiveComponentType,
 };
 
-use crate::{ComponentType, IdentifierPathBuf, Manifest};
-
-components!("project", {
-    @[Networked, Store, Debuggable]
-    description: String,
-});
+use ambient_project::{ComponentType, IdentifierPathBuf, Manifest};
 
 pub fn all_defined_components(
     manifest: &Manifest,
@@ -36,7 +31,7 @@ pub fn all_defined_components(
             );
             Ok(ExternalComponentDesc {
                 path: full_path.to_string(),
-                ty: (&component.type_).try_into()?,
+                ty: component_type_to_primitive(&component.type_)?,
                 attributes: ExternalComponentAttributes {
                     name: Some(component.name.clone()),
                     description: Some(component.description.clone()),
@@ -49,32 +44,28 @@ pub fn all_defined_components(
         .collect::<Result<Vec<_>, _>>()
 }
 
-impl TryFrom<&ComponentType> for PrimitiveComponentType {
-    type Error = &'static str;
-
-    fn try_from(value: &ComponentType) -> Result<Self, Self::Error> {
-        match value {
-            ComponentType::String(ty) => PrimitiveComponentType::try_from(ty.as_str()),
-            ComponentType::ContainerType {
-                type_,
-                element_type,
-            } => {
-                let element_ty = element_type
-                    .as_deref()
-                    .map(PrimitiveComponentType::try_from)
-                    .transpose()?;
-                match element_ty {
-                    Some(element_ty) => match type_.as_str() {
-                        "Vec" => element_ty
-                            .to_vec_type()
-                            .ok_or("invalid element type for Vec"),
-                        "Option" => element_ty
-                            .to_option_type()
-                            .ok_or("invalid element type for Option"),
-                        _ => Err("invalid container type"),
-                    },
-                    None => PrimitiveComponentType::try_from(type_.as_str()),
-                }
+fn component_type_to_primitive(ty: &ComponentType) -> Result<PrimitiveComponentType, &'static str> {
+    match ty {
+        ComponentType::String(ty) => PrimitiveComponentType::try_from(ty.as_str()),
+        ComponentType::ContainerType {
+            type_,
+            element_type,
+        } => {
+            let element_ty = element_type
+                .as_deref()
+                .map(PrimitiveComponentType::try_from)
+                .transpose()?;
+            match element_ty {
+                Some(element_ty) => match type_.as_str() {
+                    "Vec" => element_ty
+                        .to_vec_type()
+                        .ok_or("invalid element type for Vec"),
+                    "Option" => element_ty
+                        .to_option_type()
+                        .ok_or("invalid element type for Option"),
+                    _ => Err("invalid container type"),
+                },
+                None => PrimitiveComponentType::try_from(type_.as_str()),
             }
         }
     }
@@ -84,7 +75,7 @@ impl TryFrom<&ComponentType> for PrimitiveComponentType {
 mod tests {
     use ambient_shared_types::primitive_component_definitions;
 
-    use crate::ComponentType;
+    use crate::{component_type_to_primitive, ComponentType};
 
     #[test]
     fn can_convert_component_types() {
@@ -110,10 +101,13 @@ mod tests {
                 }
             }
 
-            assert_eq!(PCT::try_from(&str_ty(ty)), Ok(pct_raw));
-            assert_eq!(PCT::try_from(&ct_str_ty(ty)), Ok(pct_raw));
-            assert_eq!(PCT::try_from(&ct_ty("Vec", ty)), Ok(pct_vec));
-            assert_eq!(PCT::try_from(&ct_ty("Option", ty)), Ok(pct_option));
+            assert_eq!(component_type_to_primitive(&str_ty(ty)), Ok(pct_raw));
+            assert_eq!(component_type_to_primitive(&ct_str_ty(ty)), Ok(pct_raw));
+            assert_eq!(component_type_to_primitive(&ct_ty("Vec", ty)), Ok(pct_vec));
+            assert_eq!(
+                component_type_to_primitive(&ct_ty("Option", ty)),
+                Ok(pct_option)
+            );
         }
 
         macro_rules! make_test_cases {

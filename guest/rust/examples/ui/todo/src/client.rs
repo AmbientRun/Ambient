@@ -1,4 +1,4 @@
-use ambient_api::{message::client::MessageExt, prelude::*};
+use ambient_api::prelude::*;
 use ambient_ui_components::prelude::*;
 use components::todo_item;
 
@@ -20,7 +20,7 @@ fn NewTodoItem(hooks: &mut Hooks) -> Element {
             .auto_focus()
             .el(),
         Button::new("Create", move |_| {
-            messages::NewItem::new(text.clone()).send(message::client::Target::RemoteReliable);
+            messages::NewItem::new(text.clone()).send_server_reliable();
             set_text(String::new());
         })
         .disabled(text_is_empty)
@@ -35,7 +35,7 @@ fn TodoItems(hooks: &mut Hooks) -> Element {
     FlowColumn::el(items.into_iter().map(|(id, description)| {
         FlowRow::el([
             Button::new(COLLECTION_DELETE_ICON, move |_| {
-                messages::DeleteItem::new(id).send(message::client::Target::RemoteReliable)
+                messages::DeleteItem::new(id).send_server_reliable()
             })
             .style(ButtonStyle::Flat)
             .el(),

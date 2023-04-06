@@ -8,9 +8,7 @@ use ambient_core::{
     main_scene, runtime,
     transform::{get_world_position, inv_local_to_world, local_to_world, mesh_to_world},
 };
-use ambient_ecs::{
-    components, query, ComponentDesc, Debuggable, Description, Entity, EntityId, MaybeResource, Name, Networked, Store, SystemGroup, World,
-};
+use ambient_ecs::{components, query, ComponentDesc, Debuggable, Entity, EntityId, MaybeResource, Networked, Store, SystemGroup, World};
 use ambient_gpu::mesh_buffer::GpuMeshFromUrl;
 use ambient_renderer::{
     color, gpu_primitives_lod, gpu_primitives_mesh,
@@ -45,6 +43,8 @@ use anyhow::Context;
 
 pub mod loading_material;
 
+pub use ambient_ecs::generated::components::core::model::{model_animatable, model_from_url, model_loaded};
+
 components!("model", {
     @[Networked, Store]
     animation_binder: HashMap<String, EntityId>,
@@ -52,20 +52,14 @@ components!("model", {
     animation_bind_id: String,
 
     model: Arc<Model>,
-    @[Debuggable, Networked, Store, Name["Model from URL"], Description["Load a model from the given URL or relative path."]]
-    model_from_url: String,
 
     @[Networked, Store]
     pbr_renderer_primitives_from_url: Vec<PbrRenderPrimitiveFromUrl>,
-    @[Debuggable, Networked, Store, MaybeResource, Name["Model animatable"], Description["Controls whether this model can be animated."]]
-    model_animatable: bool,
     @[Networked, Store, MaybeResource]
     model_skins: Vec<ModelSkin>,
     @[Networked, Store]
     model_skin_ix: usize,
 
-    @[Debuggable, Networked, Store, Name["Model loaded"], Description["If attached, this entity has a model attached to it."]]
-    model_loaded: (),
     @[Debuggable, Networked, Store]
     is_model_node: (),
 });

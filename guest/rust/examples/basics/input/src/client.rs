@@ -2,7 +2,7 @@ use ambient_api::prelude::*;
 
 #[main]
 pub fn main() {
-    on(event::FRAME, |_| {
+    ambient_api::messages::Frame::subscribe(move |_| {
         let (delta, _) = player::get_raw_input_delta();
 
         if !delta.keys.is_empty() {
