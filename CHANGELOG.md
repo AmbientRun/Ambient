@@ -43,7 +43,7 @@ This changelog is manually updated. While an effort will be made to keep the [Un
 - **API**: `player_camera` has been removed, and the components it instantiated are now directly exposed. See the `multiplayer` example to see what's changed.
 - **API**: The `Cargo.toml` has changed to enable clientside builds. Please look at the examples to see how to update your `Cargo.toml` appropriately.
 - **API**: `ChangeQuery` has been split into `UntrackedChangeQuery` and `ChangeQuery` to ensure that `track_change` is called before the query is built.
-- **API**: Events have been removed and replaced with the more general-purpose `message` API. Messages are now defined in `ambient.toml` and are structured.
+- **API**: Events have been removed and replaced with the more general-purpose `message` API. Messages are now defined in `ambient.toml` and are structured. Message subscriptions return handles that can be used to cancel their subscriptions.
 - **API**: `asset_url` has moved to `asset::url`.
 - **API**: `EventResult` and `EventOk` have been renamed to `ResultEmpty` and `OkEmpty` to better clarify their purpose.
 - **Physics**: Convex shapes are now used if a body is neither static or kinematic.
@@ -54,7 +54,6 @@ This changelog is manually updated. While an effort will be made to keep the [Un
 - **Ambient**: The default logging settings now better communicate what Ambient is doing at any given moment.
 - **Project**: Concept definitions in projects now support namespaces. Thanks to [@ArberSephirotheca](https://github.com/ArberSephirotheca) for implementing this in [#212](https://github.com/AmbientRun/Ambient/pull/212).
 - **API**: Concepts now include the components they use in their doc comments.
-- **API**: `on` and `once` now return handles that can be used to cancel their subscriptions.
 - **API**: `#[main]`-attributed functions no longer have to be `async` or return a `Result`.
 - **API**: `#[main]`-attributed functions, `on`, `once`, `Query::bind` and `run_async` can now return a `Result` or nothing.
 
