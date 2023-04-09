@@ -2,13 +2,17 @@ use std::collections::BTreeMap;
 
 use serde::Deserialize;
 
-use crate::{Component, Concept, Identifier, IdentifierPathBuf, Message, Version};
+use crate::{
+    CollisionResponse, Component, Concept, Identifier, IdentifierPathBuf, Layer, Message, Version,
+};
 
 #[derive(Deserialize, Clone, Debug, PartialEq)]
 pub struct Manifest {
     pub project: Project,
     #[serde(default)]
     pub build: Build,
+    #[serde(default)]
+    pub physics: Physics,
     #[serde(default)]
     pub components: BTreeMap<IdentifierPathBuf, NamespaceOr<Component>>,
     #[serde(default)]
@@ -61,6 +65,14 @@ impl Default for BuildRust {
     }
 }
 
+#[derive(Deserialize, Clone, Debug, PartialEq, Default)]
+pub struct Physics {
+    #[serde(default)]
+    pub layers: BTreeMap<IdentifierPathBuf, Layer>,
+    #[serde(default)]
+    pub collision_responses: Vec<CollisionResponse>,
+}
+
 #[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct Namespace {
     pub name: String,
@@ -110,8 +122,9 @@ mod tests {
     use std::collections::BTreeMap;
 
     use crate::{
-        Build, BuildRust, Component, ComponentType, Concept, Identifier, IdentifierPathBuf,
-        Manifest, Namespace, Project, Version, VersionSuffix,
+        Build, BuildRust, CollisionFilter, CollisionResponse, Component, ComponentType, Concept,
+        Identifier, IdentifierPathBuf, Layer, Manifest, Namespace, Physics, Project, Version,
+        VersionSuffix,
     };
 
     #[test]
@@ -148,6 +161,7 @@ mod tests {
                         feature_multibuild: vec!["client".to_string(), "server".to_string()]
                     }
                 },
+                physics: Default::default(),
                 components: BTreeMap::from_iter([(
                     IdentifierPathBuf::new("cell").unwrap(),
                     Component {
@@ -205,6 +219,7 @@ mod tests {
                         feature_multibuild: vec!["client".to_string()]
                     }
                 },
+                physics: Default::default(),
                 components: BTreeMap::new(),
                 concepts: BTreeMap::new(),
                 messages: BTreeMap::new(),
@@ -243,6 +258,7 @@ mod tests {
                         feature_multibuild: vec!["client".to_string(), "server".to_string()]
                     }
                 },
+                physics: Default::default(),
                 components: BTreeMap::from_iter([
                     (
                         IdentifierPathBuf::new("core").unwrap(),
@@ -315,6 +331,7 @@ mod tests {
                         feature_multibuild: vec!["client".to_string(), "server".to_string()]
                     }
                 },
+                physics: Default::default(),
                 components: BTreeMap::from_iter([
                     (
                         IdentifierPathBuf::new("core::transform::rotation").unwrap(),
@@ -407,6 +424,99 @@ mod tests {
                         .into()
                     )
                 ]),
+                messages: BTreeMap::new(),
+            })
+        )
+    }
+
+    #[test]
+    fn can_parse_physics_settings() {
+        const TOML: &str = r#"
+        [project]
+        id = "physics_example"
+        name = "Physics Example"
+        version = "0.0.1"
+
+        [physics]
+        collision_responses = [
+            { layer_a = "player", layer_b = "projectile", filter = "Block" },
+            { layer_a = "player", layer_b = "pickup", filter = "Overlap" },
+            { layer_a = "pickup", layer_b = "projectile", filter = "Ignore" }
+        ]
+
+        [physics.layers.player]
+        name = "Player"
+        description = "Layer for player collisions"
+
+        [physics.layers.projectile]
+        name = "Projectile"
+        description = "Layer for projectiles"
+
+        [physics.layers.pickup]
+        name = "Pick-Up"
+        description = "Layer for pick-ups"
+        "#;
+
+        assert_eq!(
+            Manifest::parse(TOML),
+            Ok(Manifest {
+                project: Project {
+                    id: Identifier::new("physics_example").unwrap(),
+                    name: Some("Physics Example".to_string()),
+                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    description: None,
+                    authors: vec![],
+                    organization: None
+                },
+                build: Build {
+                    rust: BuildRust {
+                        feature_multibuild: vec!["client".to_string(), "server".to_string()]
+                    }
+                },
+                physics: Physics {
+                    layers: BTreeMap::from_iter([
+                        (
+                            IdentifierPathBuf::new("player").unwrap(),
+                            Layer {
+                                name: "Player".to_string(),
+                                description: "Layer for player collisions".to_string(),
+                            }
+                        ),
+                        (
+                            IdentifierPathBuf::new("projectile").unwrap(),
+                            Layer {
+                                name: "Projectile".to_string(),
+                                description: "Layer for projectiles".to_string(),
+                            }
+                        ),
+                        (
+                            IdentifierPathBuf::new("pickup").unwrap(),
+                            Layer {
+                                name: "Pick-Up".to_string(),
+                                description: "Layer for pick-ups".to_string(),
+                            }
+                        )
+                    ]),
+                    collision_responses: vec![
+                        CollisionResponse {
+                            layer_a: IdentifierPathBuf::new("player").unwrap(),
+                            layer_b: IdentifierPathBuf::new("projectile").unwrap(),
+                            filter: CollisionFilter::Block
+                        },
+                        CollisionResponse {
+                            layer_a: IdentifierPathBuf::new("player").unwrap(),
+                            layer_b: IdentifierPathBuf::new("pickup").unwrap(),
+                            filter: CollisionFilter::Overlap
+                        },
+                        CollisionResponse {
+                            layer_a: IdentifierPathBuf::new("pickup").unwrap(),
+                            layer_b: IdentifierPathBuf::new("projectile").unwrap(),
+                            filter: CollisionFilter::Ignore
+                        }
+                    ]
+                },
+                components: BTreeMap::new(),
+                concepts: BTreeMap::new(),
                 messages: BTreeMap::new(),
             })
         )
