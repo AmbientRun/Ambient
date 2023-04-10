@@ -1,26 +1,26 @@
 use std::sync::Arc;
 
 use ambient_core::asset_cache;
-use ambient_ecs::{components, query, Debuggable, DynSystem, Entity, EntityId, FnSystem, Resource, SystemGroup, World};
+use ambient_ecs::{components, query, Debuggable, DynSystem, Entity, EntityId, FnSystem, Networked, Resource, SystemGroup, World};
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
 use ambient_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 use collider::{collider_shapes, collider_shapes_convex};
+use filtering::LayerInfo;
 use glam::{vec3, Mat4};
 use helpers::release_px_scene;
 use parking_lot::Mutex;
 use physx::{
-    actor_aggregate, articulation_cache, articulation_link, articulation_reduce_coordinate, character_controller, fixed_joint,
-    physics_shape, revolute_joint, rigid_actor, rigid_dynamic, rigid_static,
+    actor_aggregate, articulation_cache, articulation_link, articulation_reduce_coordinate, character_controller, fixed_joint, physics_shape, revolute_joint, rigid_actor, rigid_dynamic, rigid_static
 };
 use physxx::{
-    AsPxActor, PxContactPairHeader, PxControllerManagerRef, PxMaterial, PxPvdSceneFlag, PxRigidActor, PxRigidActorRef, PxSceneDesc,
-    PxSceneFlags, PxSceneRef, PxSimulationEventCallback, PxUserData,
+    AsPxActor, PxContactPairHeader, PxControllerManagerRef, PxMaterial, PxPvdSceneFlag, PxRigidActor, PxRigidActorRef, PxSceneDesc, PxSceneFlags, PxSceneRef, PxSimulationEventCallback, PxUserData
 };
 use serde::{Deserialize, Serialize};
 
 use crate::physx::PhysicsKey;
 
 pub mod collider;
+pub mod filtering;
 pub mod helpers;
 pub mod intersection;
 pub mod mesh;
@@ -33,6 +33,8 @@ pub use ambient_ecs::generated::components::core::physics::*;
 components!("physics", {
     @[Resource]
     main_physics_scene: PxSceneRef,
+    @[Debuggable, Networked, Resource]
+    main_physics_scene_layer_info: LayerInfo,
     @[Resource]
     picking_scene: PxSceneRef,
     @[Resource]
@@ -48,6 +50,7 @@ pub fn init_all_components() {
     init_components();
     physx::init_components();
     collider::init_components();
+    filtering::init_components();
     visualization::init_components();
 }
 

@@ -19,6 +19,7 @@ ambient_gizmos = { path = "../gizmos" }
 ambient_model = { path = "../model" }
 ambient_primitives = { path = "../primitives" }
 physxx = { path = "../../libs/physxx" }
+bitflags = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 glam = { workspace = true }
@@ -28,6 +29,7 @@ rand = { workspace = true }
 async-trait = { workspace = true }
 parking_lot = { workspace = true }
 tracing = { workspace = true }
+thiserror = { workspace = true }
 anyhow = { workspace = true }
 profiling = { workspace = true }
 ordered-float = { workspace = true }
