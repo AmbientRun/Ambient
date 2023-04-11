@@ -4,7 +4,11 @@ use anyhow::{Context, Result};
 use futures::io::BufReader;
 use quinn::{Connection, RecvStream};
 
-use crate::{client_connection::ClientConnection, next_bincode_bi_stream, open_bincode_bi_stream, IncomingStream, NetworkError, OutgoingStream};
+use crate::{
+    client_connection::ClientConnection, next_bincode_bi_stream, open_bincode_bi_stream, IncomingStream, NetworkError, OutgoingStream,
+};
+
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Debug)]
 pub struct ClientProtocol {
@@ -29,6 +33,10 @@ impl ClientProtocol {
         ComponentRegistry::get_mut().add_external(client_info.external_components.clone());
 
         let server_info: ServerInfo = rx.next().await?;
+        if server_info.version != VERSION {
+            anyhow::bail!("Server version mismatch: expected {}, got {}", VERSION, server_info.version);
+        }
+
         // Great, the server knows who we are.
         // Two streams are opened
         let mut diff_stream = IncomingStream::accept_incoming(&conn).await?;
@@ -126,4 +134,18 @@ pub struct ServerInfo {
 
     // Base url of the content server.
     pub content_base_url: AbsAssetUrl,
+
+    /// The version of the server. Used by the client to determine whether or not to keep connecting.
+    /// Defaults to the version of the crate.
+    pub version: String,
+}
+
+impl Default for ServerInfo {
+    fn default() -> Self {
+        Self {
+            project_name: "Ambient".into(),
+            content_base_url: AbsAssetUrl::parse("http://localhost:8999/content/").unwrap(),
+            version: VERSION.into(),
+        }
+    }
 }

@@ -534,6 +534,46 @@ fn can_generate_concepts_with_all_supported_types() {
                     ]
                 )
             }
+            #[doc = "Returns the components that comprise *Everything* as a tuple.\n\nEverywhere all at once\n\n*Definition*:\n\n```ignore\n{\n  \"bool\": bool = true,\n  \"empty\": () = (),\n  \"entity_id\": EntityId = EntityId::from_base64(\"qmYJaglgRDwigkGXFFS9UQ\"),\n  \"f32\": f32 = 3.14f32,\n  \"f64\": f64 = 3.14159f64,\n  \"i32\": i32 = -4i32,\n  \"mat4\": Mat4 = Mat4::from_cols_array(&[1f32, 2f32, 3f32, 4f32, 5f32, 6f32, 7f32, 8f32, 9f32, 10f32, 11f32, 12f32, 13f32, 14f32, 15f32, 16f32]),\n  \"option_string1\": Option<String> = Some(\"The Answer Is\".to_string()),\n  \"option_string2\": Option<String> = None,\n  \"quat\": Quat = Quat::from_xyzw(1f32, -0.5f32, 0.3f32, -0.6f32),\n  \"string\": String = \"Everything\".to_string(),\n  \"u32\": u32 = 100000u32,\n  \"u64\": u64 = 18446744073709551610u64,\n  \"vec2\": Vec2 = Vec2::new(1f32, 2f32),\n  \"vec3\": Vec3 = Vec3::new(1f32, 2f32, 3f32),\n  \"vec4\": Vec4 = Vec4::new(1f32, 2f32, 3f32, 4f32),\n  \"vec_vec2\": Vec<Vec2> = vec![Vec2::new(1f32, 2f32), Vec2::new(3f32, 4f32)],\n}\n```\n"]
+            pub fn everything() -> (
+                Component<bool>,
+                Component<()>,
+                Component<ambient_api2::global::EntityId>,
+                Component<f32>,
+                Component<f64>,
+                Component<i32>,
+                Component<ambient_api2::global::Mat4>,
+                Component< Option<String> >,
+                Component< Option<String> >,
+                Component<ambient_api2::global::Quat>,
+                Component<String>,
+                Component<u32>,
+                Component<u64>,
+                Component<ambient_api2::global::Vec2>,
+                Component<ambient_api2::global::Vec3>,
+                Component<ambient_api2::global::Vec4>,
+                Component< Vec<ambient_api2::global::Vec2> >
+            ) {
+                (
+                    components::bool(),
+                    components::empty(),
+                    components::entity_id(),
+                    components::f32(),
+                    components::f64(),
+                    components::i32(),
+                    components::mat4(),
+                    components::option_string1(),
+                    components::option_string2(),
+                    components::quat(),
+                    components::string(),
+                    components::u32(),
+                    components::u64(),
+                    components::vec2(),
+                    components::vec3(),
+                    components::vec4(),
+                    components::vec_vec2()
+                )
+            }
         }
         #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
         #[doc = r" and with other modules."]
@@ -616,6 +656,10 @@ fn can_extend_with_multiple_concepts() {
             pub fn is_concept1(id: EntityId) -> bool {
                 entity::has_components(id, &[&components::f32()])
             }
+            #[doc = "Returns the components that comprise *C1* as a tuple.\n\n\n\n*Definition*:\n\n```ignore\n{\n  \"f32\": f32 = 4f32,\n}\n```\n"]
+            pub fn concept1() -> (Component<f32>) {
+                (components::f32())
+            }
 
             #[allow(clippy::approx_constant)]
             #[doc = "Makes a *C2*.\n\n\n\n*Definition*:\n\n```ignore\n{\n  \"f64\": f64 = 8f64,\n}\n```\n"]
@@ -625,6 +669,10 @@ fn can_extend_with_multiple_concepts() {
             #[doc = "Checks if the entity is a *C2*.\n\n\n\n*Definition*:\n\n```ignore\n{\n  \"f64\": f64 = 8f64,\n}\n```\n"]
             pub fn is_concept2(id: EntityId) -> bool {
                 entity::has_components(id, &[&components::f64()])
+            }
+            #[doc = "Returns the components that comprise *C2* as a tuple.\n\n\n\n*Definition*:\n\n```ignore\n{\n  \"f64\": f64 = 8f64,\n}\n```\n"]
+            pub fn concept2() -> ( Component<f64>) {
+                (components::f64())
             }
 
             #[allow(clippy::approx_constant)]
@@ -638,6 +686,10 @@ fn can_extend_with_multiple_concepts() {
             #[doc = "Checks if the entity is a *C3*.\n\n\n\n*Definition*:\n\n```ignore\n{\n  \"i32\": i32 = 16i32,\n  \"concept1\": { // Concept.\n    \"f32\": f32 = 4f32,\n  },\n  \"concept2\": { // Concept.\n    \"f64\": f64 = 8f64,\n  },\n}\n```\n"]
             pub fn is_concept3(id: EntityId) -> bool {
                 is_concept1(id) && is_concept2(id) && entity::has_components(id, &[&components::i32()])
+            }
+            #[doc = "Returns the components that comprise *C3* as a tuple.\n\n\n\n*Definition*:\n\n```ignore\n{\n  \"i32\": i32 = 16i32,\n  \"concept1\": { // Concept.\n    \"f32\": f32 = 4f32,\n  },\n  \"concept2\": { // Concept.\n    \"f64\": f64 = 8f64,\n  },\n}\n```\n"]
+            pub fn concept3() -> (Component<f32>, Component<f64>, Component<i32>) {
+                (components::f32(), components::f64(), components::i32())
             }
         }
         #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
@@ -766,6 +818,29 @@ fn can_generate_concepts() {
                 ])
             }
 
+            #[doc = "Returns the components that comprise *Colored Sphere* as a tuple.\n\nA sphere with some color!\n\n*Definition*:\n\n```ignore\n{\n  \"core::rendering::color\": Vec4 = Vec4::new(1f32, 1f32, 1f32, 1f32),\n  \"sphere\": { // Concept.\n    \"core::primitives::sphere\": () = (),\n    \"core::primitives::sphere_radius\": f32 = 0.5f32,\n    \"core::primitives::sphere_sectors\": u32 = 36u32,\n    \"core::primitives::sphere_stacks\": u32 = 18u32,\n    \"transformable\": { // Concept.\n      \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n      \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n      \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n    },\n  },\n}\n```\n"]
+            pub fn colored_sphere() -> (
+                Component<ambient_api2::global::Quat>,
+                Component<ambient_api2::global::Vec3>,
+                Component<ambient_api2::global::Vec3>,
+                Component<()>,
+                Component<f32>,
+                Component<u32>,
+                Component<u32>,
+                Component<ambient_api2::global::Vec4>
+            ) {
+                (
+                    components::core::transform::rotation(),
+                    components::core::transform::scale(),
+                    components::core::transform::translation(),
+                    components::core::primitives::sphere(),
+                    components::core::primitives::sphere_radius(),
+                    components::core::primitives::sphere_sectors(),
+                    components::core::primitives::sphere_stacks(),
+                    components::core::rendering::color()
+                )
+            }
+
             #[allow(clippy::approx_constant)]
             #[doc = "Makes a *Sphere*.\n\nA primitive sphere.\n\n*Definition*:\n\n```ignore\n{\n  \"core::primitives::sphere\": () = (),\n  \"core::primitives::sphere_radius\": f32 = 0.5f32,\n  \"core::primitives::sphere_sectors\": u32 = 36u32,\n  \"core::primitives::sphere_stacks\": u32 = 18u32,\n  \"transformable\": { // Concept.\n    \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n    \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n    \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n  },\n}\n```\n"]
             pub fn make_sphere() -> Entity {
@@ -787,6 +862,27 @@ fn can_generate_concepts() {
                 ])
             }
 
+            #[doc = "Returns the components that comprise *Sphere* as a tuple.\n\nA primitive sphere.\n\n*Definition*:\n\n```ignore\n{\n  \"core::primitives::sphere\": () = (),\n  \"core::primitives::sphere_radius\": f32 = 0.5f32,\n  \"core::primitives::sphere_sectors\": u32 = 36u32,\n  \"core::primitives::sphere_stacks\": u32 = 18u32,\n  \"transformable\": { // Concept.\n    \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n    \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n    \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n  },\n}\n```\n"]
+            pub fn sphere() -> (
+                Component<ambient_api2::global::Quat>,
+                Component<ambient_api2::global::Vec3>,
+                Component<ambient_api2::global::Vec3>,
+                Component<()>,
+                Component<f32>,
+                Component<u32>,
+                Component<u32>
+            ) {
+                (
+                    components::core::transform::rotation(),
+                    components::core::transform::scale(),
+                    components::core::transform::translation(),
+                    components::core::primitives::sphere(),
+                    components::core::primitives::sphere_radius(),
+                    components::core::primitives::sphere_sectors(),
+                    components::core::primitives::sphere_stacks()
+                )
+            }
+
             #[allow(clippy::approx_constant)]
             #[doc = "Makes a *Transformable*.\n\nCan be translated, rotated and scaled.\n\n*Definition*:\n\n```ignore\n{\n  \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n  \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n  \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n}\n```\n"]
             pub fn make_transformable() -> Entity {
@@ -803,6 +899,15 @@ fn can_generate_concepts() {
                     &components::core::transform::scale(),
                     &components::core::transform::translation()
                 ])
+            }
+
+            #[doc = "Returns the components that comprise *Transformable* as a tuple.\n\nCan be translated, rotated and scaled.\n\n*Definition*:\n\n```ignore\n{\n  \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n  \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n  \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n}\n```\n"]
+            pub fn transformable() -> (Component<ambient_api2::global::Quat>, Component<ambient_api2::global::Vec3>, Component<ambient_api2::global::Vec3>) {
+                (
+                    components::core::transform::rotation(),
+                    components::core::transform::scale(),
+                    components::core::transform::translation()
+                )
             }
         }
         #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
@@ -885,6 +990,19 @@ fn can_generate_concepts_with_documented_namespace_from_manifest() {
                     super::ns::is_transformable(id) && entity::has_components(id, &[])
                 }
 
+                #[doc = "Returns the components that comprise *Concept 2* as a tuple.\n\nJust a transformable\n\n*Definition*:\n\n```ignore\n{\n  \"ns::transformable\": { // Concept.\n    \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n    \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n    \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n  },\n}\n```\n"]
+                pub fn concept2() -> (
+                    Component<ambient_api2::global::Quat>,
+                    Component<ambient_api2::global::Vec3>,
+                    Component<ambient_api2::global::Vec3>
+                ) {
+                    (
+                        components::core::transform::rotation(),
+                        components::core::transform::scale(),
+                        components::core::transform::translation()
+                    )
+                }
+
                 #[allow(clippy::approx_constant)]
                 #[doc = "Makes a *Transformable*.\n\nCan be translated, rotated and scaled.\n\n*Definition*:\n\n```ignore\n{\n  \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n  \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n  \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n}\n```\n"]
                 pub fn make_transformable() -> Entity {
@@ -901,6 +1019,19 @@ fn can_generate_concepts_with_documented_namespace_from_manifest() {
                         &components::core::transform::scale(),
                         &components::core::transform::translation()
                     ])
+                }
+
+                #[doc = "Returns the components that comprise *Transformable* as a tuple.\n\nCan be translated, rotated and scaled.\n\n*Definition*:\n\n```ignore\n{\n  \"core::transform::rotation\": Quat = Quat::from_xyzw(0f32, 0f32, 0f32, 1f32),\n  \"core::transform::scale\": Vec3 = Vec3::new(1f32, 1f32, 1f32),\n  \"core::transform::translation\": Vec3 = Vec3::new(0f32, 0f32, 0f32),\n}\n```\n"]
+                pub fn transformable() -> (
+                    Component<ambient_api2::global::Quat>,
+                    Component<ambient_api2::global::Vec3>,
+                    Component<ambient_api2::global::Vec3>
+                ) {
+                    (
+                        components::core::transform::rotation(),
+                        components::core::transform::scale(),
+                        components::core::transform::translation()
+                    )
                 }
             }
         }

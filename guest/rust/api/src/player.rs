@@ -1,3 +1,4 @@
+#[cfg(feature = "client")]
 use std::collections::HashSet;
 
 use once_cell::sync::Lazy;
@@ -5,11 +6,17 @@ use once_cell::sync::Lazy;
 use crate::{
     components::core::player::{player, user_id},
     ecs::{query, Component, GeneralQuery},
-    global::{EntityId, Vec2},
+    global::EntityId,
+};
+
+#[cfg(feature = "client")]
+use crate::{
+    global::Vec2,
     internal::{conversion::FromBindgen, wit},
 };
 
 #[allow(missing_docs)]
+#[cfg(feature = "client")]
 /// The code associated with a key on the keyboard.
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum KeyCode {
@@ -210,6 +217,7 @@ pub enum KeyCode {
     Paste,
     Cut,
 }
+#[cfg(feature = "client")]
 impl FromBindgen for wit::client_player::VirtualKeyCode {
     type Item = KeyCode;
 
@@ -382,6 +390,7 @@ impl FromBindgen for wit::client_player::VirtualKeyCode {
     }
 }
 
+#[cfg(feature = "client")]
 /// A button on the mouse.
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum MouseButton {
@@ -394,6 +403,7 @@ pub enum MouseButton {
     /// Other buttons
     Other(u16),
 }
+#[cfg(feature = "client")]
 impl FromBindgen for wit::client_player::MouseButton {
     type Item = MouseButton;
 
@@ -407,6 +417,7 @@ impl FromBindgen for wit::client_player::MouseButton {
     }
 }
 
+#[cfg(feature = "client")]
 /// The state of a player's raw input. Get these with [get_raw_input] or [get_prev_raw_input].
 #[derive(Clone, Debug, PartialEq)]
 pub struct RawInput {
@@ -419,6 +430,7 @@ pub struct RawInput {
     /// All of the mouse buttons being pressed this frame.
     pub mouse_buttons: HashSet<MouseButton>,
 }
+#[cfg(feature = "client")]
 impl FromBindgen for wit::client_player::RawInput {
     type Item = RawInput;
     fn from_bindgen(self) -> Self::Item {
@@ -435,6 +447,7 @@ impl FromBindgen for wit::client_player::RawInput {
     }
 }
 
+#[cfg(feature = "client")]
 /// The changes between the player's input state this update ([get_raw_input]) and their input state
 /// last update ([get_prev_raw_input]). Get this with [get_raw_input_delta] or [RawInput::delta].
 #[derive(Clone, Debug, PartialEq)]
@@ -452,6 +465,7 @@ pub struct RawInputDelta {
     /// All of the mouse buttons that were released this frame.
     pub mouse_buttons_released: HashSet<MouseButton>,
 }
+#[cfg(feature = "client")]
 impl RawInput {
     /// Returns whether or not each input has changed from `previous` to this [RawInput].
     pub fn delta(&self, previous: &RawInput) -> RawInputDelta {

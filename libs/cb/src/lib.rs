@@ -20,10 +20,10 @@ impl<T: ?Sized> Deref for CbDebuggable<T> {
 
 pub type Cb<T> = Arc<CbDebuggable<T>>;
 
-/// Helper for constructing a `Cb`.
+/// Helper for constructing a [Cb].
 ///
-/// This is just wrapping an Arc, and it only exists because Arc<dyn Fn..> doesn't implement Debug, so
-/// we're wrapping it with a Cb to avoid having to handle that in all structs that implement Debug
+/// This is just wrapping an `Arc`, and it only exists because `Arc<dyn Fn..>` doesn't implement Debug, so
+/// we're wrapping it with a `Cb` to avoid having to handle that in all structs that implement Debug
 pub fn cb<T>(f: T) -> Cb<T> {
     Arc::new(CbDebuggable(f))
 }
