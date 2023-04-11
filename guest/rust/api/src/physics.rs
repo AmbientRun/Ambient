@@ -6,29 +6,98 @@ use crate::{
     },
 };
 
-/// Applies a `force` (a [Vec3]) to all of the `entities` specified.
+/// Applies a `force` (a [Vec3]) to the `entity` (an [EntityId]) specified.
 ///
-/// `entities` can be anything that can be converted to an iterator, including a [Vec]
-/// and a normal array. You may want to use a function from [entity](crate::entity) to find entities.
-///
-/// `force` is a vector, which means it has both direction and magnitude. To push objects upwards
+/// `force` is a vector in world space, which means it has both direction and magnitude. To push objects upwards
 /// (positive Z) with strength 3,000, you would supply a force of `vec3(0.0, 0.0, 3_000.0)` or
 /// `Vec3::Z * 3_000.0` (either are equivalent.)
-pub fn apply_force(entities: impl IntoIterator<Item = EntityId>, force: Vec3) {
-    let entities: Vec<_> = entities.into_iter().map(|ent| ent.into_bindgen()).collect();
-    wit::server_physics::apply_force(&entities, force.into_bindgen())
+pub fn add_force(entity: EntityId, force: Vec3) {
+    wit::server_physics::add_force(entity.into_bindgen(), force.into_bindgen())
 }
 
-/// Applies a `force` (a [f32]) outwards to all entitities within `radius` of the `position`, with
+/// Applies an `impulse` (a [Vec3]) to the `entity` (an [EntityId]) specified.
+///
+/// `impulse` is a vector in world space, which means it has both direction and magnitude. To push objects upwards
+/// (positive Z) with strength 3,000, you would supply an impulse of `vec3(0.0, 0.0, 3_000.0)` or
+/// `Vec3::Z * 3_000.0` (either are equivalent.)
+pub fn add_impulse(entity: EntityId, impulse: Vec3) {
+    wit::server_physics::add_force(entity.into_bindgen(), impulse.into_bindgen())
+}
+
+/// Whether or not to apply a falloff to the strength of [add_radial_impulse].
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub enum FalloffRadius {
+    /// No falloff. The impulse will be of equal strength for all entities.
+    #[default]
+    None,
+    /// Applies a falloff to the strength of the impulse, so that it drops out the further out the object is,
+    /// until it reaches a strength of 0 at `falloff_radius`.
+    FalloffToZeroAt(f32),
+}
+impl From<FalloffRadius> for Option<f32> {
+    fn from(radius: FalloffRadius) -> Option<f32> {
+        match radius {
+            FalloffRadius::None => None,
+            FalloffRadius::FalloffToZeroAt(r) => Some(r),
+        }
+    }
+}
+
+/// Applies an `impulse` (a [f32]) outwards to all entitities within `radius` of the `position`, with
 /// an optional `falloff_radius`.
+pub fn add_radial_impulse(
+    position: Vec3,
+    impulse: f32,
+    radius: f32,
+    falloff_radius: FalloffRadius,
+) {
+    wit::server_physics::add_radial_impulse(
+        position.into_bindgen(),
+        impulse,
+        radius,
+        falloff_radius.into(),
+    )
+}
+
+/// Applies a `force` (a [Vec3]) at a given `position` (a [Vec3]) to the `entity` (an [EntityId]) specified.
 ///
-/// If `fallout_radius` is specified (e.g. `Some(5_000)`), the strength of the explosion
-/// will drop out the further out the object is, until it reaches a strength of 0 at `fallout_radius`.
+/// `force` is a vector in world space, which means it has both direction and magnitude. To push objects upwards
+/// (positive Z) with strength 3,000, you would supply a force of `vec3(0.0, 0.0, 3_000.0)` or
+/// `Vec3::Z * 3_000.0` (either are equivalent.)
 ///
-/// Otherwise, the force will be of equal strength for all entities.
-// TODO: consider making `fallout_radius` an enum, so the behaviour is explicit
-pub fn explode_bomb(position: Vec3, force: f32, radius: f32, falloff_radius: Option<f32>) {
-    wit::server_physics::explode_bomb(position.into_bindgen(), force, radius, falloff_radius)
+/// `position` is a position in world space, it typically should fall on the surface or interior of an object for
+/// realistic results.
+pub fn add_force_at_position(entity: EntityId, force: Vec3, position: Vec3) {
+    wit::server_physics::add_force_at_position(
+        entity.into_bindgen(),
+        force.into_bindgen(),
+        position.into_bindgen(),
+    )
+}
+
+/// Applies an `impulse` (a [Vec3]) at given `position` (a [Vec3]) to the `entity` (an [EntityId]) specified.
+///
+/// `impulse` is a vector in world space, which means it has both direction and magnitude. To push objects upwards
+/// (positive Z) with strength 3,000, you would supply an impulse of `vec3(0.0, 0.0, 3_000.0)` or
+/// `Vec3::Z * 3_000.0` (either are equivalent.)
+///
+/// `position` is a position in world space, it typically should fall on the surface or interior of an object for
+/// realistic results.
+pub fn add_impulse_at_position(entity: EntityId, impulse: Vec3, position: Vec3) {
+    wit::server_physics::add_impulse_at_position(
+        entity.into_bindgen(),
+        impulse.into_bindgen(),
+        position.into_bindgen(),
+    )
+}
+
+/// Gets the velocity (a [Vec3]) at a given `position` (a [Vec3]) of an `entity` (an [EntityId]) taking its
+/// angular velocity into account.
+///
+/// `position` is a position in world space, it typically should fall on the surface or interior of an object.
+pub fn get_velocity_at_position(entity: EntityId, position: Vec3) -> Vec3 {
+    wit::server_physics::get_velocity_at_position(entity.into_bindgen(), position.into_bindgen())
+        .from_bindgen()
 }
 
 /// Sets the gravity of the entire world to `gravity`. The default `gravity` is `vec3(0.0, 0.0, -9.82)`.
