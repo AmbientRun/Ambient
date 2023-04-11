@@ -16,11 +16,15 @@ ambient_core = { path = "../core" }
 ambient_ecs = { path = "../ecs" }
 ambient_world_audio = { path = "../world_audio" }
 ambient_physics = { path = "../physics" }
-ambient_project = { path = "../project" }
+ambient_project_native = { path = "../project_native" }
 ambient_rustc = { path = "../rustc" }
 ambient_decals = { path = "../decals" }
 ambient_wasm = { path = "../wasm" }
+
+ambient_project = { path = "../../shared_crates/project" }
+
 ambient_unity_parser = { path = "../../libs/unity_parser" }
+
 walkdir = { workspace = true }
 futures = { workspace = true }
 tokio = { workspace = true }

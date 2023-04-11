@@ -10,12 +10,16 @@
 - [Running](user/running.md)
 - [API](user/api.md)
 - [Debugging](user/debugging.md)
+- [Profiling](user/profiling.md)
 
 # Reference Guide
 
 - [Runtime](reference/runtime.md)
 - [Project](reference/project.md)
 - [Asset pipeline](reference/asset_pipeline.md)
+- [Networking](reference/networking.md)
+- [Animations](reference/animations.md)
+- [UI](reference/ui.md)
 - [Terminology](reference/terminology.md)
 - [Common pitfalls](reference/common_pitfalls.md)
 

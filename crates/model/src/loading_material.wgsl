@@ -3,7 +3,7 @@ struct LoadingMaterialParams {
   scale: f32,
 };
 
-@group(#MATERIAL_BIND_GROUP)
+@group(MATERIAL_BIND_GROUP)
 @binding(0)
 var<uniform> loading_params: LoadingMaterialParams;
 
@@ -15,8 +15,7 @@ fn get_material(in: MaterialInput) -> MaterialOutput {
     out.roughness = 0.3;
     out.metallic = 1.0;
 
-    let color = get_entity_color_or(in.entity_loc, vec4<f32>(1., 1., 1.,
-    1.));
+    let color = get_entity_color_or(in.entity_loc, vec4<f32>(1., 1., 1., 1.));
 
     out.opacity = progress;
     out.alpha_cutoff = 0.;

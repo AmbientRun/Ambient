@@ -8,20 +8,19 @@ use ambient_core::{
     mesh, runtime,
     transform::get_world_rotation,
 };
-use ambient_ecs::{
-    components, query_mut, Debuggable, Description, Entity, EntityId, MakeDefault, Name, Networked, Resource, Store, SystemGroup, World,
-};
+use ambient_ecs::{components, query_mut, Debuggable, Entity, EntityId, Resource, SystemGroup, World};
 use ambient_gpu::{
-    mesh_buffer::{get_mesh_buffer_types, GpuMesh},
-    shader_module::{BindGroupDesc, Shader, ShaderModule, ShaderModuleIdentifier},
+    mesh_buffer::GpuMesh,
+    shader_module::{BindGroupDesc, Shader, ShaderIdent, ShaderModule},
     wgsl_utils::wgsl_interpolate,
 };
 use ambient_std::{asset_cache::*, asset_url::AbsAssetUrl, cb, include_file, Cb};
 use derive_more::*;
 use downcast_rs::{impl_downcast, DowncastSync};
-use glam::{uvec4, UVec2, UVec4, Vec3, Vec4};
+use glam::{uvec4, UVec2, UVec4, Vec3};
 use serde::{Deserialize, Serialize};
 
+pub mod bind_groups;
 mod collect;
 mod culling;
 mod globals;
@@ -51,97 +50,34 @@ pub use target::*;
 pub use transparent_renderer::*;
 pub use tree_renderer::*;
 
-pub const MAX_PRIMITIVE_COUNT: usize = 20;
+pub const MAX_PRIMITIVE_COUNT: usize = 16;
+
+pub use ambient_ecs::generated::components::core::rendering::{
+    cast_shadows, color, double_sided, fog_color, fog_density, fog_height_falloff, light_ambient, light_diffuse, overlay,
+    pbr_material_from_url, sun, transparency_group,
+};
 
 components!("rendering", {
     @[Debuggable]
     primitives: Vec<RenderPrimitive>,
-    gpu_primitives: [GpuRenderPrimitive; MAX_PRIMITIVE_COUNT],
+
+    /// The (cpu) primitives are split into an SoA on the gpu side
+    gpu_primitives_mesh: [u32; MAX_PRIMITIVE_COUNT],
+    gpu_primitives_lod: [u32; MAX_PRIMITIVE_COUNT],
+
     renderer_shader: RendererShaderProducer,
     material: SharedMaterial,
-    @[
-        MakeDefault, Debuggable, Networked, Store,
-        Name["PBR material from URL"],
-        Description["Load a PBR material from the URL and attach it to this entity."]
-    ]
-    pbr_material_from_url: String,
     @[Resource]
     renderer_stats: String,
-    @[
-        MakeDefault, Debuggable, Networked, Store,
-        Name["Overlay"],
-        Description["If attached, this entity will be rendered with an overlay."]
-    ]
-    overlay: (),
-    @[
-        MakeDefault, Debuggable, Networked, Store,
-        Name["Color"],
-        Description["This entity will be tinted with the specified color if the color is not black."]
-    ]
-    color: Vec4,
-    @[
-        MakeDefault, Debuggable, Networked, Store,
-        Name["Double-sided"],
-        Description["If this is set, the entity will be rendered with double-sided rendering."]
-    ]
-    double_sided: bool,
-    @[
-        MakeDefault, Debuggable, Networked, Store,
-        Name["Cast shadows"],
-        Description["If attached, this entity will cast shadows."]
-    ]
-    cast_shadows: (),
-    @[
-        Debuggable, Networked, Store,
-        Name["Sun"],
-        Description["Marks this entity as a sun (i.e. its rotation will be used to control the global light direction).\nThe entity with the highest `sun` value takes precedence."]
-    ]
-    sun: f32,
-    @[
-        Debuggable, Networked, Store,
-        Name["Light diffuse"],
-        Description["The diffuse light color of the `sun`."]
-    ]
-    light_diffuse: Vec3,
-    @[
-        Debuggable, Networked, Store,
-        Name["Light ambient"],
-        Description["The ambient light color of the `sun`."]
-    ]
-    light_ambient: Vec3,
-    @[
-        Debuggable, Networked, Store,
-        Name["Fog color"],
-        Description["The color of the fog for this `sun`."]
-    ]
-    fog_color: Vec3,
-    @[
-        Debuggable, Networked, Store,
-        Name["Fog height fall-off"],
-        Description["The height at which the fog will fall off (i.e. stop being visible) for this `sun`."]
-    ]
-    fog_height_falloff: f32,
-    @[
-        Debuggable, Networked, Store,
-        Name["Fog density"],
-        Description["The density of the fog for this `sun`."]
-    ]
-    fog_density: f32,
-    @[
-        Debuggable, Networked, Store,
-        Name["Transparency group"],
-        Description["Controls when this transparent object will be rendered. Transparent objects are sorted by `(transparency_group, z-depth)`."]
-    ]
-    transparency_group: i32,
 });
 gpu_components! {
     color() => color: GpuComponentFormat::Vec4,
-    primitives() => primitives: GpuComponentFormat::UVec4Array20,
+    gpu_primitives_mesh() => gpu_primitives_mesh: GpuComponentFormat::Mat4,
+    gpu_primitives_lod() => gpu_primitives_lod: GpuComponentFormat::Mat4,
 }
 pub fn init_all_components() {
     init_components();
     init_gpu_components();
-    outlines::init_components();
     outlines::init_gpu_components();
     culling::init_gpu_components();
     lod::init_components();
@@ -194,14 +130,14 @@ pub fn systems() -> SystemGroup {
                     }
                 },
             ),
-            query_mut((gpu_primitives(),), (primitives().changed(),)).to_system(|q, world, qs, _| {
-                for (id, (gpu_primitives,), (primitives,)) in q.iter(world, qs) {
+            query_mut((gpu_primitives_mesh(), gpu_primitives_lod()), (primitives().changed(),)).to_system(|q, world, qs, _| {
+                for (id, (p_mesh, p_lod), (primitives,)) in q.iter(world, qs) {
                     if primitives.len() > MAX_PRIMITIVE_COUNT {
                         log::warn!("Entity {} has more than {MAX_PRIMITIVE_COUNT} primitives", id);
                     }
                     for (i, p) in primitives.iter().enumerate().take(MAX_PRIMITIVE_COUNT) {
-                        gpu_primitives[i].mesh = p.mesh.index() as u32;
-                        gpu_primitives[i].lod = p.lod as u32;
+                        p_mesh[i] = p.mesh.index() as u32;
+                        p_lod[i] = p.lod as u32;
                     }
                 }
             }),
@@ -216,7 +152,8 @@ pub fn gpu_world_systems() -> SystemGroup<GpuWorldSyncEvent> {
         vec![
             Box::new(outlines::gpu_world_systems()),
             Box::new(ComponentToGpuSystem::new(GpuComponentFormat::Vec4, color(), gpu_components::color())),
-            Box::new(ComponentToGpuSystem::new(GpuComponentFormat::UVec4Array20, gpu_primitives(), gpu_components::primitives())),
+            Box::new(ComponentToGpuSystem::new(GpuComponentFormat::Mat4, gpu_primitives_mesh(), gpu_components::gpu_primitives_mesh())),
+            Box::new(ComponentToGpuSystem::new(GpuComponentFormat::Mat4, gpu_primitives_lod(), gpu_components::gpu_primitives_lod())),
             Box::new(lod::gpu_world_system()),
             Box::new(skinning::gpu_world_systems()),
         ],
@@ -287,7 +224,7 @@ where
 }
 
 /// No bind groups
-pub fn get_defs_module(_: &AssetCache) -> ShaderModule {
+pub fn get_defs_module() -> Arc<ShaderModule> {
     let iter = [("PI", PI)].iter();
     #[cfg(not(target_os = "unknown"))]
     let iter = iter.map(|(k, v)| format!("let {k}: f32 = {v};\n"));
@@ -296,26 +233,45 @@ pub fn get_defs_module(_: &AssetCache) -> ShaderModule {
 
     let iter = iter.chain([wgsl_interpolate(), include_file!("polyfill.wgsl")]).collect::<String>();
 
-    ShaderModule::from_str("Definitions", iter)
+    Arc::new(ShaderModule::new("defs", iter))
 }
 
-pub fn get_resources_module() -> ShaderModule {
-    let idents = vec![
-        ShaderModuleIdentifier::constant("MESH_METADATA_BINDING", MESH_METADATA_BINDING),
-        ShaderModuleIdentifier::constant("MESH_NORMAL_BINDING", MESH_NORMAL_BINDING),
-        ShaderModuleIdentifier::constant("MESH_TANGENT_BINDING", MESH_TANGENT_BINDING),
-        ShaderModuleIdentifier::constant("MESH_POSITION_BINDING", MESH_POSITION_BINDING),
-        ShaderModuleIdentifier::constant("MESH_TEXCOORD0_BINDING", MESH_TEXCOORD0_BINDING),
-        ShaderModuleIdentifier::constant("MESH_JOINT_BINDING", MESH_JOINT_BINDING),
-        ShaderModuleIdentifier::constant("MESH_WEIGHT_BINDING", MESH_WEIGHT_BINDING),
-        ShaderModuleIdentifier::constant("SKINS_BINDING", SKINS_BINDING),
-        ShaderModuleIdentifier::bind_group(get_resources_layout()),
-    ];
-
-    ShaderModule::new("Resources", include_file!("resources.wgsl"), idents)
+pub fn get_mesh_meta_module(bind_group_offset: u32) -> Arc<ShaderModule> {
+    Arc::new(
+        ShaderModule::new("mesh_meta", include_file!("mesh_meta.wgsl"))
+            .with_ident(ShaderIdent::constant("MESH_METADATA_BINDING", bind_group_offset + MESH_METADATA_BINDING))
+            .with_binding_desc(get_mesh_meta_layout(bind_group_offset)),
+    )
 }
 
-pub fn primitives_layout() -> BindGroupDesc {
+pub fn get_mesh_data_module(bind_group_offset: u32) -> Arc<ShaderModule> {
+    Arc::new(
+        ShaderModule::new("mesh_data", include_file!("mesh_data.wgsl"))
+            .with_ident(ShaderIdent::constant("MESH_BASE_BINDING", bind_group_offset + MESH_BASE_BINDING))
+            .with_ident(ShaderIdent::constant("MESH_SKIN_BINDING", bind_group_offset + MESH_SKIN_BINDING))
+            .with_ident(ShaderIdent::constant("SKINS_BINDING", bind_group_offset + SKINS_BINDING))
+            .with_binding_desc(get_mesh_data_layout(bind_group_offset))
+            .with_dependency(get_mesh_meta_module(bind_group_offset)),
+    )
+}
+
+pub fn primitives_layout() -> BindGroupDesc<'static> {
+    BindGroupDesc {
+        entries: vec![wgpu::BindGroupLayoutEntry {
+            binding: 0,
+            visibility: wgpu::ShaderStages::VERTEX_FRAGMENT,
+            ty: wgpu::BindingType::Buffer {
+                ty: wgpu::BufferBindingType::Storage { read_only: true },
+                has_dynamic_offset: false,
+                min_binding_size: None,
+            },
+            count: None,
+        }],
+        label: PRIMITIVES_BIND_GROUP.into(),
+    }
+}
+
+pub fn get_common_layout() -> BindGroupDesc<'static> {
     BindGroupDesc {
         entries: vec![wgpu::BindGroupLayoutEntry {
             binding: 0,
@@ -332,51 +288,57 @@ pub fn primitives_layout() -> BindGroupDesc {
 }
 
 /// Includes entity locs
-pub fn get_common_module(_: &AssetCache) -> ShaderModule {
-    // let primtives_layout = ;
-    ShaderModule::new("Common", include_file!("renderer_common.wgsl"), vec![primitives_layout().into()])
-}
-
-/// Contains scene globals and shadow maps
-pub fn get_globals_module(_assets: &AssetCache, shadow_cascades: u32) -> ShaderModule {
-    ShaderModule::new(
-        "Globals",
-        include_file!("globals.wgsl"),
-        vec![ShaderModuleIdentifier::constant("SHADOW_CASCADES", shadow_cascades), globals_layout().into()],
+pub fn get_common_module(_: &AssetCache) -> Arc<ShaderModule> {
+    Arc::new(
+        ShaderModule::new("renderer_common", include_file!("renderer_common.wgsl"))
+            .with_binding_desc(get_common_layout())
+            .with_dependency(get_mesh_data_module(GLOBALS_BIND_GROUP_SIZE)),
     )
 }
 
-pub fn get_forward_modules(assets: &AssetCache, shadow_cascades: u32) -> [ShaderModule; 7] {
-    [
-        get_mesh_buffer_types(),
-        get_defs_module(assets),
-        get_resources_module(),
+/// Contains scene globals and shadow maps
+pub fn get_globals_module(_assets: &AssetCache, shadow_cascades: u32) -> Arc<ShaderModule> {
+    Arc::new(
+        ShaderModule::new("globals", include_file!("globals.wgsl"))
+            .with_ident(ShaderIdent::constant("SHADOW_CASCADES", shadow_cascades))
+            .with_binding_desc(globals_layout()),
+    )
+}
+
+pub fn get_forward_modules(assets: &AssetCache, shadow_cascades: u32) -> Vec<Arc<ShaderModule>> {
+    vec![
+        get_defs_module(),
+        get_mesh_data_module(GLOBALS_BIND_GROUP_SIZE),
         get_globals_module(assets, shadow_cascades),
         GpuWorldShaderModuleKey { read_only: true }.get(assets),
         get_common_module(assets),
-        get_mesh_buffer_types(),
     ]
 }
 
-pub fn get_overlay_modules(assets: &AssetCache, shadow_cascades: u32) -> [ShaderModule; 3] {
-    [get_mesh_buffer_types(), get_defs_module(assets), get_globals_module(assets, shadow_cascades)]
+pub fn get_overlay_modules(assets: &AssetCache, shadow_cascades: u32) -> Vec<Arc<ShaderModule>> {
+    vec![get_defs_module(), get_globals_module(assets, shadow_cascades), get_mesh_data_module(GLOBALS_BIND_GROUP_SIZE)]
 }
 
 pub struct MaterialShader {
     pub id: String,
-    pub shader: ShaderModule,
+    pub shader: Arc<ShaderModule>,
 }
 
 pub trait Material: Debug + Sync + Send + DowncastSync {
     fn id(&self) -> &str;
+
     fn name(&self) -> &str {
         self.id()
     }
+
     fn update(&self, _: &World) {}
-    fn bind(&self) -> &wgpu::BindGroup;
+
+    fn bind_group(&self) -> &wgpu::BindGroup;
+
     fn transparent(&self) -> Option<bool> {
         None
     }
+
     fn double_sided(&self) -> Option<bool> {
         None
     }
@@ -425,9 +387,6 @@ pub struct RendererShader {
     pub transparency_group: i32,
 }
 impl RendererShader {
-    pub fn material_layout(&self) -> &Arc<wgpu::BindGroupLayout> {
-        self.shader.get_bind_group_layout_by_name(MATERIAL_BIND_GROUP).unwrap()
-    }
     fn get_fs_main_name(&self, main: FSMain) -> &str {
         match main {
             FSMain::Forward => &self.fs_forward_main,

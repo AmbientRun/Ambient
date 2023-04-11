@@ -2,7 +2,7 @@ use ambient_core::async_ecs::async_run;
 use std::sync::Arc;
 
 use ambient_core::{asset_cache, main_scene, mesh, runtime};
-use ambient_ecs::{components, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
+use ambient_ecs::{components, query, Entity, SystemGroup};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::{BindGroupDesc, ShaderModule},
@@ -24,9 +24,9 @@ use wgpu::BindGroup;
 
 pub(crate) static OLD_CONTENT_SERVER_URL: &str = "https://fra1.digitaloceanspaces.com/dims-content/";
 
+pub use ambient_ecs::generated::components::core::rendering::water;
+
 components!("rendering", {
-    @[Debuggable, Networked, Store, Name["Water"], Description["Add a realistic water plane to this entity."]]
-    water: (),
     water_normals: Arc<Texture>,
 });
 
@@ -73,29 +73,34 @@ pub fn systems() -> SystemGroup {
     )
 }
 
+fn get_water_layout() -> BindGroupDesc<'static> {
+    BindGroupDesc {
+        entries: vec![wgpu::BindGroupLayoutEntry {
+            binding: 0,
+            visibility: wgpu::ShaderStages::FRAGMENT,
+            ty: wgpu::BindingType::Texture {
+                sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                view_dimension: wgpu::TextureViewDimension::D2,
+                multisampled: false,
+            },
+            count: None,
+        }],
+        label: MATERIAL_BIND_GROUP.into(),
+    }
+}
+
 #[derive(Debug)]
 pub struct WaterMaterialShaderKey;
 impl SyncAssetKey<Arc<MaterialShader>> for WaterMaterialShaderKey {
     fn load(&self, _assets: AssetCache) -> Arc<MaterialShader> {
         Arc::new(MaterialShader {
             id: "water_shader".to_string(),
-            shader: ShaderModule::new(
-                "Scattering",
-                [include_str!("../../sky/src/atmospheric_scattering.wgsl"), include_str!("water.wgsl")].concat(),
-                vec![BindGroupDesc {
-                    entries: vec![wgpu::BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Texture {
-                            sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                            view_dimension: wgpu::TextureViewDimension::D2,
-                            multisampled: false,
-                        },
-                        count: None,
-                    }],
-                    label: MATERIAL_BIND_GROUP.into(),
-                }
-                .into()],
+            shader: Arc::new(
+                ShaderModule::new(
+                    "water_scattering",
+                    [include_str!("../../sky/src/atmospheric_scattering.wgsl"), include_str!("water.wgsl")].concat(),
+                )
+                .with_binding_desc(get_water_layout()),
             ),
         })
     }
@@ -130,7 +135,7 @@ pub struct WaterMaterial {
 impl WaterMaterial {
     pub fn new(assets: AssetCache, normals: Arc<Texture>) -> Self {
         let gpu = GpuKey.get(&assets);
-        let layout = WaterMaterialShaderKey.get(&assets).shader.first_layout(&assets);
+        let layout = get_water_layout().get(&assets);
 
         Self {
             id: friendly_id(),
@@ -147,7 +152,7 @@ impl WaterMaterial {
     }
 }
 impl Material for WaterMaterial {
-    fn bind(&self) -> &BindGroup {
+    fn bind_group(&self) -> &BindGroup {
         &self.bind_group
     }
 

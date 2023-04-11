@@ -7,7 +7,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_element = { path = "../element" }
 ambient_ui = { path = "../ui" }
 ambient_ecs = { path = "../ecs" }
 ambient_std = { path = "../std" }
@@ -15,11 +14,13 @@ ambient_renderer = { path = "../renderer" }
 ambient_gpu = { path = "../gpu" }
 ambient_core = { path = "../core" }
 ambient_gizmos = { path = "../gizmos" }
-ambient_element_component = { path = "../element_component" }
 ambient_rpc = { path = "../rpc" }
 ambient_network = { path = "../network" }
-ambient_ecs_editor = { path = "../ecs_editor" }
-ambient_window_types = { path = "../window_types" }
+
+ambient_element = { path = "../../shared_crates/element" }
+ambient_element_component = { path = "../../shared_crates/element_component" }
+ambient_window_types = { path = "../../shared_crates/window_types" }
+
 winit = { workspace = true }
 glam = { workspace = true }
 wgpu = { workspace = true }

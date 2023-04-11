@@ -11,7 +11,6 @@ ambient_sys = { path = "../sys" }
 ambient_app = { path = "../app" }
 ambient_meshes = { path = "../meshes" }
 ambient_core = { path = "../core" }
-ambient_element = { path = "../element" }
 ambient_ui = { path = "../ui" }
 ambient_ecs = { path = "../ecs" }
 ambient_network = { path = "../network" }
@@ -32,9 +31,13 @@ ambient_decals = { path = "../decals" }
 ambient_world_audio = { path = "../world_audio" }
 ambient_terrain = { path = "../terrain" }
 ambient_naturals = { path = "../naturals" }
-ambient_window_types = { path = "../window_types" }
-ambient_event_types = { path = "../event_types" }
+
 physxx = { path = "../../libs/physxx" }
+
+ambient_element = { path = "../../shared_crates/element" }
+ambient_window_types = { path = "../../shared_crates/window_types" }
+ambient_shared_types = { path = "../../shared_crates/shared_types" }
+
 glam = { workspace = true }
 itertools = { workspace = true }
 ordered-float = { workspace = true }

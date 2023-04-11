@@ -23,7 +23,7 @@ async fn init(app: &mut App) {
     let world = &mut app.world;
     let assets = world.resource(asset_cache()).clone();
 
-    Quad.el().set(scale(), Vec3::ONE * 20.).spawn_static(world);
+    Quad.el().with(scale(), Vec3::ONE * 20.).spawn_static(world);
 
     let asset_pipelines = vec![
         {
@@ -100,7 +100,7 @@ async fn init(app: &mut App) {
     // "Regular" spawning
     for (i, model_def) in model_defs.iter().enumerate() {
         let xy = vec2(i as f32 * 3., 0.);
-        Cube.el().set(translation(), xy.extend(-0.9)).set(color(), vec4(0.3, 0.3, 0.3, 1.)).spawn_static(world);
+        Cube.el().with(translation(), xy.extend(-0.9)).with(color(), vec4(0.3, 0.3, 0.3, 1.)).spawn_static(world);
         let model = model_def.get(&assets).await.unwrap();
         let entity = model.spawn(world, &Default::default());
         world.add_component(entity, translation(), xy.extend(0.1)).unwrap();
@@ -109,7 +109,7 @@ async fn init(app: &mut App) {
     // Attaching
     for (i, mod_def) in model_defs.iter().enumerate() {
         let xy = vec2(i as f32 * 3., 3.);
-        Cube.el().set(translation(), xy.extend(-0.9)).set(color(), vec4(0.3, 0.3, 0.3, 1.)).spawn_static(world);
+        Cube.el().with(translation(), xy.extend(-0.9)).with(color(), vec4(0.3, 0.3, 0.3, 1.)).spawn_static(world);
         Entity::new().with(model_from_url(), mod_def.0.to_string()).with(translation(), xy.extend(0.1)).spawn(world);
     }
 

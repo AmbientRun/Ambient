@@ -1,6 +1,6 @@
 use ambient_app::AppBuilder;
 use ambient_cameras::UICamera;
-use ambient_core::{async_ecs::async_run, camera::active_camera};
+use ambient_core::async_ecs::async_run;
 use ambient_ecs::{Entity, World};
 use ambient_ecs_editor::ECSEditor;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
@@ -26,12 +26,9 @@ impl ElementComponent for ECSEditorUIWorld {
 }
 
 fn init(world: &mut World) {
-    Group(vec![
-        UICamera.el().set(active_camera(), 0.),
-        FocusRoot(vec![WindowSized(vec![ScrollArea::el(ECSEditorUIWorld.el().memoize_subtree(""))]).el()]).el(),
-    ])
-    .el()
-    .spawn_interactive(world);
+    Group(vec![UICamera.el(), FocusRoot(vec![WindowSized(vec![ScrollArea::el(ECSEditorUIWorld.el().memoize_subtree(""))]).el()]).el()])
+        .el()
+        .spawn_interactive(world);
 }
 
 #[tokio::main]

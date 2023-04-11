@@ -24,6 +24,8 @@ pub use paste;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+pub mod generated;
+
 mod archetype;
 mod attributes;
 pub mod component;
@@ -31,7 +33,6 @@ mod component_entry;
 mod component_registry;
 mod component_ser;
 mod component_traits;
-mod concept;
 mod entity;
 mod events;
 mod index;
@@ -40,13 +41,13 @@ mod primitive_component;
 mod query;
 mod serialization;
 mod stream;
+pub use ambient_project_rt::message_serde::*;
 pub use archetype::*;
 pub use attributes::*;
 pub use component::{Component, ComponentDesc, ComponentValue, ComponentValueBase};
 pub use component_entry::*;
 pub use component_registry::*;
 pub use component_ser::*;
-pub use concept::*;
 pub use entity::*;
 pub use events::*;
 pub use index::*;
@@ -72,37 +73,36 @@ impl<'a> Debug for DebugWorldArchetypes<'a> {
     }
 }
 
-components!("ecs", {
-    @[
-        Networked, Store, Debuggable,
-        Name["ID"],
-        Description["The ID of the entity."]
-    ]
-    id: EntityId,
-    @[
-        Networked, Store, Debuggable,
-        Name["IDs"],
-        Description["A generic list of entity IDs, with no semantic meaning."]
-    ]
-    ids: Vec<EntityId>,
-    @[
-        Networked, Store, Debuggable,
-        Name["Don't store"],
-        Description["Indicates that this entity shouldn't be stored on disk."]
-    ]
-    dont_store: (),
-    @[
-        Store, Debuggable,
-        Name["Don't automatically despawn on module unload"],
-        Description["Indicates that this entity shouldn't be despawned when the module that spawned it unloads."]
-    ]
-    dont_despawn_on_unload: (),
-    @[
-        Resource,
-        Description["A global general event queue for this ecs World. Can be used to dispatch or listen to any kinds of events."]
-    ]
-    world_events: WorldEvents,
-});
+mod internal_components {
+    use super::Message;
+
+    use crate::{components, Description, Resource, WorldEvents};
+
+    pub trait WorldEventsExt {
+        fn add_message<M: Message>(&mut self, message: M);
+    }
+
+    impl WorldEventsExt for WorldEvents {
+        fn add_message<M: Message>(&mut self, message: M) {
+            self.add_event((M::id().to_string(), message.serialize_message().unwrap()));
+        }
+    }
+
+    components!("ecs", {
+        @[
+            Resource,
+            Description["A global general event queue for this ecs World. Can be used to dispatch or listen to any kinds of events."]
+        ]
+        world_events: WorldEvents,
+    });
+}
+pub use generated::components::core::ecs::*;
+pub use internal_components::{world_events, WorldEventsExt};
+
+pub fn init_components() {
+    generated::components::init();
+    internal_components::init_components();
+}
 
 #[derive(Clone)]
 pub struct World {
@@ -799,8 +799,8 @@ impl<'de> Deserialize<'de> for ComponentSet {
     }
 }
 
-pub type WorldEvents = FramedEvents<(String, Entity)>;
-pub type WorldEventReader = FramedEventsReader<(String, Entity)>;
+pub type WorldEvents = FramedEvents<(String, Vec<u8>)>;
+pub type WorldEventReader = FramedEventsReader<(String, Vec<u8>)>;
 
 #[derive(Debug)]
 pub struct WorldEventsSystem;

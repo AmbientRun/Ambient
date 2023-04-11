@@ -4,9 +4,8 @@ use ambient_core::gpu_ecs::{GpuWorldShaderModuleKey, ENTITIES_BIND_GROUP};
 use ambient_ecs::{EntityId, World};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
-    mesh_buffer::get_mesh_buffer_types,
     multi_buffer::TypedMultiBuffer,
-    shader_module::{BindGroupDesc, ComputePipeline, Shader, ShaderModule, ShaderModuleIdentifier},
+    shader_module::{BindGroupDesc, ComputePipeline, Shader, ShaderIdent, ShaderModule},
     typed_buffer::TypedBuffer,
 };
 use ambient_std::{
@@ -15,9 +14,11 @@ use ambient_std::{
 };
 use glam::{uvec2, UVec2, UVec3};
 use parking_lot::Mutex;
-use wgpu::{BindGroupLayout, BindGroupLayoutEntry, BindingType, BufferBindingType, ShaderStages};
+use wgpu::{BindGroupEntry, BindGroupLayout, BindGroupLayoutEntry, BindingType, BufferBindingType, ShaderStages};
 
-use super::{get_defs_module, get_resources_module, DrawIndexedIndirect, PrimitiveIndex, RESOURCES_BIND_GROUP};
+use crate::{get_mesh_meta_module, GLOBALS_BIND_GROUP};
+
+use super::{get_defs_module, DrawIndexedIndirect, PrimitiveIndex};
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, Default, bytemuck::Pod, bytemuck::Zeroable)]
@@ -161,27 +162,22 @@ impl RendererCollect {
         };
 
         let layout = layout_desc.load(assets.clone());
-        let shader = Shader::from_modules(
+        let shader = Shader::new(
             assets,
             "collect",
-            &[
-                get_defs_module(assets),
-                get_mesh_buffer_types(),
-                get_resources_module(),
-                GpuWorldShaderModuleKey { read_only: true }.get(assets),
-                ShaderModule::new(
-                    "RendererCollect",
-                    include_file!("collect.wgsl"),
-                    vec![
-                        layout_desc.into(),
-                        ShaderModuleIdentifier::constant("COLLECT_WORKGROUP_SIZE", COLLECT_WORKGROUP_SIZE),
-                        ShaderModuleIdentifier::constant("COLLECT_CHUNK_SIZE", COLLECT_CHUNK_SIZE),
-                    ],
-                ),
-            ],
-        );
+            &[GLOBALS_BIND_GROUP, ENTITIES_BIND_GROUP, "RendererCollect.layout"],
+            &ShaderModule::new("RendererCollect", include_file!("collect.wgsl"))
+                .with_ident(ShaderIdent::constant("COLLECT_WORKGROUP_SIZE", COLLECT_WORKGROUP_SIZE))
+                .with_ident(ShaderIdent::constant("COLLECT_CHUNK_SIZE", COLLECT_CHUNK_SIZE))
+                .with_binding_desc(layout_desc)
+                .with_dependency(get_defs_module())
+                .with_dependency(get_mesh_meta_module(0))
+                .with_dependency(GpuWorldShaderModuleKey { read_only: true }.get(assets)),
+        )
+        .unwrap();
 
         let pipeline = shader.to_compute_pipeline(&gpu, "main");
+
         Self { gpu, pipeline, layout, assets: assets.clone() }
     }
 
@@ -192,7 +188,7 @@ impl RendererCollect {
         &self,
         encoder: &mut wgpu::CommandEncoder,
         _post_submit: &mut Vec<Box<dyn FnOnce() + Send + Send>>,
-        resources_bind_group: &wgpu::BindGroup,
+        mesh_meta_bind_group: &wgpu::BindGroup,
         entities_bind_group: &wgpu::BindGroup,
         input_primitives: &TypedMultiBuffer<CollectPrimitive>,
         output: &mut RendererCollectState,
@@ -202,6 +198,7 @@ impl RendererCollect {
         if primitives_count == 0 {
             return;
         }
+
         output.commands.resize(primitives_count as u64, true);
         let counts = vec![0; material_layouts.len()];
         output.counts.fill(&counts, |_| {});
@@ -211,11 +208,11 @@ impl RendererCollect {
             label: None,
             layout: &self.layout,
             entries: &[
-                wgpu::BindGroupEntry { binding: 0, resource: output.params.buffer().as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 1, resource: input_primitives.buffer().as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 2, resource: output.commands.buffer().as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 3, resource: output.counts.buffer().as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 4, resource: output.material_layouts.buffer().as_entire_binding() },
+                BindGroupEntry { binding: 0, resource: output.params.buffer().as_entire_binding() },
+                BindGroupEntry { binding: 1, resource: input_primitives.buffer().as_entire_binding() },
+                BindGroupEntry { binding: 2, resource: output.commands.buffer().as_entire_binding() },
+                BindGroupEntry { binding: 3, resource: output.counts.buffer().as_entire_binding() },
+                BindGroupEntry { binding: 4, resource: output.material_layouts.buffer().as_entire_binding() },
             ],
         });
 
@@ -223,11 +220,10 @@ impl RendererCollect {
             let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: Some("Collect") });
             cpass.set_pipeline(self.pipeline.pipeline());
 
-            for (name, group) in [(RESOURCES_BIND_GROUP, resources_bind_group), (ENTITIES_BIND_GROUP, entities_bind_group)] {
-                let id = self.pipeline.get_bind_group_index_by_name(name).unwrap();
-                cpass.set_bind_group(id, group, &[]);
+            for (i, bind_group) in [mesh_meta_bind_group, entities_bind_group, &bind_group].iter().enumerate() {
+                cpass.set_bind_group(i as _, bind_group, &[]);
             }
-            cpass.set_bind_group(2, &bind_group, &[]);
+
             let count = (primitives_count as f32 / COLLECT_WORKGROUP_SIZE as f32).ceil() as u32;
             let width = if count < COLLECT_CHUNK_SIZE { count } else { COLLECT_CHUNK_SIZE };
             let height = (count as f32 / COLLECT_CHUNK_SIZE as f32).ceil() as u32;
@@ -240,7 +236,7 @@ impl RendererCollect {
 
             let buffs = CollectCountStagingBuffersKey.get(&self.assets);
             let staging = buffs.take_buffer(output.counts.len());
-            encoder.copy_buffer_to_buffer(output.counts.buffer(), 0, staging.buffer(), 0, output.counts.size());
+            encoder.copy_buffer_to_buffer(output.counts.buffer(), 0, staging.buffer(), 0, output.counts.byte_size());
             let counts_res = output.counts_cpu.clone();
             let runtime = RuntimeKey.get(&self.assets);
             _post_submit.push(Box::new(move || {

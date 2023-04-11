@@ -1,0 +1,13 @@
+[project]
+id = "pong"
+name = "Pong"
+version = "0.0.1"
+
+[components]
+player_movement_direction = { type = "F32", name = "Player Movement Direction", description = "Direction of player movement" }
+
+[messages.input]
+name = "Input"
+description = "Describes the input state of the player."
+[messages.input.fields]
+direction = { type = "F32", name = "Direction", description = "The movement direction of the player." }

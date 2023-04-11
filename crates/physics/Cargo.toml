@@ -9,10 +9,9 @@ edition = "2021"
 
 [dependencies]
 ambient_ecs = { path = "../ecs" }
-ambient_element = { path = "../element" }
 ambient_ui = { path = "../ui" }
 ambient_std = { path = "../std" }
-ambient_editor_derive = { path = "../editor_derive" }
+ambient_editor_derive = { path = "../../shared_crates/editor_derive" }
 ambient_core = { path = "../core" }
 ambient_meshes = { path = "../meshes" }
 ambient_network = { path = "../network" }
@@ -41,3 +40,4 @@ ambient_app = { path = "../app" }
 ambient_renderer = { path = "../renderer" }
 ambient_primitives = { path = "../primitives" }
 ambient_cameras = { path = "../cameras" }
+ambient_element = { path = "../../shared_crates/element" }

@@ -7,10 +7,15 @@ rust-version = {workspace = true}
 version = {workspace = true}
 
 [dependencies]
-ambient_api = {path = "../../../api"}
+ambient_api = {workspace = true}
 
 [[bin]]
-name = "skinmesh_server"
+name = "client_skinmesh"
+path = "src/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "server_skinmesh"
 path = "src/server.rs"
 required-features = ["server"]
 

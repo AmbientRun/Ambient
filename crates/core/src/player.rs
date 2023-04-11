@@ -1,25 +1,6 @@
-use ambient_ecs::{components, query, Debuggable, Description, EntityId, Name, Networked, Resource, Store, World};
+use ambient_ecs::{query, EntityId, World};
 
-components!("player", {
-    @[
-        Networked, Store, Debuggable,
-        Name["Player"],
-        Description["This entity is a player.\nNote that this is a logical construct; a player's body may be separate from the player itself."]
-    ]
-    player: (),
-    @[
-        Networked, Store, Debuggable,
-        Name["User ID"],
-        Description["An identifier attached to all things owned by a user, and supplied by the user.\nThis can be attached to more than just the player; by convention, it is also attached to related entities, including their camera and body."]
-    ]
-    user_id: String,
-    @[
-        Networked, Store, Resource, Debuggable,
-        Name["Local user ID"],
-        Description["The user ID of the local player."]
-    ]
-    local_user_id: String,
-});
+pub use ambient_ecs::generated::components::core::player::{local_user_id, player, user_id};
 
 pub fn get_player_by_user_id(world: &World, user_id: &str) -> Option<EntityId> {
     query(self::user_id()).incl(player()).iter(world, None).find_map(|(id, uid)| if uid == user_id { Some(id) } else { None })

@@ -8,12 +8,10 @@ use ambient_core::{
     main_scene, runtime,
     transform::{get_world_position, inv_local_to_world, local_to_world, mesh_to_world},
 };
-use ambient_ecs::{
-    components, query, ComponentDesc, Debuggable, Description, Entity, EntityId, MaybeResource, Name, Networked, Store, SystemGroup, World,
-};
+use ambient_ecs::{components, query, ComponentDesc, Debuggable, Entity, EntityId, MaybeResource, Networked, Store, SystemGroup, World};
 use ambient_gpu::mesh_buffer::GpuMeshFromUrl;
 use ambient_renderer::{
-    color, gpu_primitives,
+    color, gpu_primitives_lod, gpu_primitives_mesh,
     materials::{
         flat_material::{get_flat_shader, FlatMaterialKey},
         pbr_material::get_pbr_shader,
@@ -45,6 +43,8 @@ use anyhow::Context;
 
 pub mod loading_material;
 
+pub use ambient_ecs::generated::components::core::model::{model_animatable, model_from_url, model_loaded};
+
 components!("model", {
     @[Networked, Store]
     animation_binder: HashMap<String, EntityId>,
@@ -52,20 +52,14 @@ components!("model", {
     animation_bind_id: String,
 
     model: Arc<Model>,
-    @[Debuggable, Networked, Store, Name["Model from URL"], Description["Load a model from the given URL or relative path."]]
-    model_from_url: String,
 
     @[Networked, Store]
     pbr_renderer_primitives_from_url: Vec<PbrRenderPrimitiveFromUrl>,
-    @[Debuggable, Networked, Store, MaybeResource, Name["Model animatable"], Description["Controls whether this model can be animated."]]
-    model_animatable: bool,
     @[Networked, Store, MaybeResource]
     model_skins: Vec<ModelSkin>,
     @[Networked, Store]
     model_skin_ix: usize,
 
-    @[Debuggable, Networked, Store, Name["Model loaded"], Description["If attached, this entity has a model attached to it."]]
-    model_loaded: (),
     @[Debuggable, Networked, Store]
     is_model_node: (),
 });
@@ -94,7 +88,8 @@ async fn internal_spawn_models_from_defs(
                 lod: 0,
             }],
         )
-        .with_default(gpu_primitives())
+        .with_default(gpu_primitives_mesh())
+        .with_default(gpu_primitives_lod())
         .with(color(), vec4(0.0, 0.5, 1.0, 1.0))
         .with(main_scene(), ())
         .with_default(local_to_world())
@@ -221,15 +216,18 @@ fn remove_model(world: &mut World, entity: EntityId) {
         });
         world.set(entity, children(), childs).ok();
     }
+
     let mut components: Vec<ComponentDesc> = vec![
         primitives().desc(),
-        gpu_primitives().desc(),
+        gpu_primitives_mesh().desc(),
+        gpu_primitives_lod().desc(),
         animation_binder().desc(),
         local_bounding_aabb().desc(),
         world_bounding_aabb().desc(),
         world_bounding_sphere().desc(),
         model_loaded().desc(),
     ];
+
     components.retain(|&comp| world.has_component_ref(entity, comp));
     world.remove_components(entity, components).ok();
 }

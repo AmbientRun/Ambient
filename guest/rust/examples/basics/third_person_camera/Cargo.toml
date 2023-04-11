@@ -7,10 +7,15 @@ rust-version = {workspace = true}
 version = {workspace = true}
 
 [dependencies]
-ambient_api = {path = "../../../api"}
+ambient_api = {workspace = true}
 
 [[bin]]
-name = "third_person_camera_server"
+name = "client_third_person_camera"
+path = "src/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "server_third_person_camera"
 path = "src/server.rs"
 required-features = ["server"]
 

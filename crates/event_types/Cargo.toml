@@ -1,8 +1,0 @@
-[package]
-name = "ambient_event_types"
-version = { workspace = true }
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]

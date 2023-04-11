@@ -239,38 +239,73 @@ impl<T: ComponentValue> ComponentsTupleAppend<T> for () {
 }
 
 #[derive(Debug, Clone)]
+struct ArchetypesQueryState {
+    archetypes: Vec<usize>,
+    archetype_index: usize,
+}
+impl ArchetypesQueryState {
+    fn new() -> Self {
+        Self { archetypes: Vec::new(), archetype_index: 0 }
+    }
+    fn update_archetypes(&mut self, world: &World, filter: &ArchetypeFilter) {
+        for i in self.archetype_index..world.archetypes.len() {
+            if filter.matches(&world.archetypes[i].active_components) {
+                self.archetypes.push(i);
+            }
+        }
+        self.archetype_index = world.archetypes.len();
+    }
+}
+
+#[derive(Debug, Clone)]
+pub(super) struct ChangeReaders(SparseVec<SparseVec<FramedEventsReader<EntityId>>>);
+impl ChangeReaders {
+    pub(super) fn get(&mut self, arch: usize, comp: usize) -> &mut FramedEventsReader<EntityId> {
+        let a = self.0.get_mut_or_insert_with(arch, SparseVec::new);
+        a.get_mut_or_insert_with(comp, FramedEventsReader::new)
+    }
+}
+#[derive(Debug, Clone)]
+struct MoveinReaders(SparseVec<FramedEventsReader<EntityId>>);
+impl MoveinReaders {
+    pub(super) fn get(&mut self, arch: usize) -> &mut FramedEventsReader<EntityId> {
+        self.0.get_mut_or_insert_with(arch, FramedEventsReader::new)
+    }
+}
+#[derive(Debug, Clone)]
+struct MoveoutReaders(SparseVec<FramedEventsReader<(EntityId, Entity)>>);
+impl MoveoutReaders {
+    pub(super) fn get(&mut self, arch: usize) -> &mut FramedEventsReader<(EntityId, Entity)> {
+        self.0.get_mut_or_insert_with(arch, FramedEventsReader::new)
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct QueryState {
     inited: bool,
-    change_readers: SparseVec<SparseVec<FramedEventsReader<EntityId>>>,
-    movein_readers: SparseVec<FramedEventsReader<EntityId>>,
-    moveout_readers: SparseVec<FramedEventsReader<(EntityId, Entity)>>,
+    pub(super) change_readers: ChangeReaders,
+    movein_readers: MoveinReaders,
+    moveout_readers: MoveoutReaders,
     ticker: u64,
     entered: HashSet<EntityId>,
     world_version: u64,
     entities: Vec<EntityAccessor>,
+
+    archetypes: ArchetypesQueryState,
 }
 impl QueryState {
     pub fn new() -> Self {
         Self {
             inited: false,
-            change_readers: SparseVec::new(),
-            movein_readers: SparseVec::new(),
-            moveout_readers: SparseVec::new(),
+            change_readers: ChangeReaders(SparseVec::new()),
+            movein_readers: MoveinReaders(SparseVec::new()),
+            moveout_readers: MoveoutReaders(SparseVec::new()),
             ticker: 0,
             entered: Default::default(),
             world_version: 0,
             entities: Vec::new(),
+            archetypes: ArchetypesQueryState::new(),
         }
-    }
-    pub(super) fn get_change_reader(&mut self, arch: usize, comp: usize) -> &mut FramedEventsReader<EntityId> {
-        let a = self.change_readers.get_mut_or_insert_with(arch, SparseVec::new);
-        a.get_mut_or_insert_with(comp, FramedEventsReader::new)
-    }
-    pub(super) fn get_movein_reader(&mut self, arch: usize) -> &mut FramedEventsReader<EntityId> {
-        self.movein_readers.get_mut_or_insert_with(arch, FramedEventsReader::new)
-    }
-    pub(super) fn get_moveout_reader(&mut self, arch: usize) -> &mut FramedEventsReader<(EntityId, Entity)> {
-        self.moveout_readers.get_mut_or_insert_with(arch, FramedEventsReader::new)
     }
     pub(super) fn prepare_for_query(&mut self, world: &World) {
         self.ticker = world.query_ticker.0.fetch_add(1, Ordering::SeqCst) + 1;
@@ -385,21 +420,21 @@ impl Query {
     }
     fn get_changed(&self, world: &World, state: &mut QueryState, components: &Vec<ComponentDesc>) {
         if !state.inited && !world.ignore_query_inits {
-            for arch in self.filter.iter_by_archetypes(&world.archetypes) {
+            for arch in state.archetypes.archetypes.iter().map(|i| &world.archetypes[*i]) {
                 for comp in components {
                     if let Some(arch_comp) = arch.components.get(comp.index() as _) {
                         let events = &*arch_comp.changes.borrow();
-                        let read = state.get_change_reader(arch.id, comp.index() as _);
+                        let read = state.change_readers.get(arch.id, comp.index() as _);
                         read.move_to_end(events);
                     }
                 }
             }
             return;
         }
-        for arch in self.filter.iter_by_archetypes(&world.archetypes) {
+        for arch in state.archetypes.archetypes.iter().map(|i| &world.archetypes[*i]) {
             for comp in components {
                 if let Some(arch_comp) = arch.components.get(comp.index() as _) {
-                    let read = state.get_change_reader(arch.id, comp.index() as _);
+                    let read = state.change_readers.get(arch.id, comp.index() as _);
                     let events = &*arch_comp.changes.borrow();
                     for (_, &entity_id) in read.iter(events) {
                         if let Some(loc) = world.locs.get(&entity_id) {
@@ -425,8 +460,8 @@ impl Query {
             return;
         }
         state.entities.clear();
-        for arch in self.filter.iter_by_archetypes(&world.archetypes) {
-            let read = state.get_movein_reader(arch.id);
+        for arch in state.archetypes.archetypes.iter().map(|i| &world.archetypes[*i]) {
+            let read = state.movein_readers.get(arch.id);
             for (_, id) in read.iter(&arch.movein_events) {
                 if let Some(loc) = world.locs.get(id) {
                     if loc.archetype == arch.id && state.entered.insert(*id) {
@@ -437,7 +472,7 @@ impl Query {
                     }
                 }
             }
-            let read = state.get_moveout_reader(arch.id);
+            let read = state.moveout_readers.get(arch.id);
             for (_, (id, _)) in read.iter(&arch.moveout_events) {
                 if !self.filter.matches_entity(world, *id) {
                     state.entered.remove(id);
@@ -451,8 +486,8 @@ impl Query {
         }
 
         state.entities.clear();
-        for arch in self.filter.iter_by_archetypes(&world.archetypes) {
-            let read = state.get_moveout_reader(arch.id);
+        for arch in state.archetypes.archetypes.iter().map(|i| &world.archetypes[*i]) {
+            let read = state.moveout_readers.get(arch.id);
             for (event_id, (id, _)) in read.iter(&arch.moveout_events) {
                 let next_matched = if let Some(loc) = world.locs.get(id) {
                     self.filter.matches(&world.archetypes[loc.archetype].active_components)
@@ -470,17 +505,30 @@ impl Query {
         if state.inited || world.ignore_query_inits {
             return false;
         }
-        for arch in self.filter.iter_by_archetypes(&world.archetypes) {
-            let read_in = state.get_movein_reader(arch.id);
+        for arch in state.archetypes.archetypes.iter().map(|i| &world.archetypes[*i]) {
+            let read_in = state.movein_readers.get(arch.id);
             read_in.move_to_end(&arch.movein_events);
-            let read_out = state.get_moveout_reader(arch.id);
+            let read_out = state.moveout_readers.get(arch.id);
             read_out.move_to_end(&arch.moveout_events);
         }
         true
     }
-    pub fn iter<'a>(&self, world: &'a World, state: Option<&'a mut QueryState>) -> Box<dyn Iterator<Item = EntityAccessor> + 'a> {
+    pub fn iter<'a>(&self, world: &'a World, mut state: Option<&'a mut QueryState>) -> Box<dyn Iterator<Item = EntityAccessor> + 'a> {
+        if let Some(state) = &mut state {
+            state.archetypes.update_archetypes(world, &self.filter);
+        }
         if let QueryEvent::Frame = &self.event {
-            return Box::new(self.filter.iter_entities(world));
+            if let Some(state) = state {
+                return Box::new(
+                    state
+                        .archetypes
+                        .archetypes
+                        .iter()
+                        .flat_map(|i| world.archetypes[*i].entity_indices_to_ids.iter().map(move |&id| EntityAccessor::World { id })),
+                );
+            } else {
+                return Box::new(self.filter.iter_entities(world));
+            }
         }
 
         let state = state.expect("Spawn/despawn/change queries must have a query state");
@@ -504,8 +552,16 @@ impl Query {
         self,
         update: F,
     ) -> Box<dyn System<E> + Sync + Send> {
+        self.to_system_with_name("Unknown system", update)
+    }
+    pub fn to_system_with_name<F: Fn(&Self, &mut World, &mut QueryState, &E) + Send + Sync + 'static, E: 'static>(
+        self,
+        name: &'static str,
+        update: F,
+    ) -> Box<dyn System<E> + Sync + Send> {
         let mut state = QueryState::new();
         Box::new(FnSystem(Box::new(move |world, event| {
+            profiling::scope!(name);
             update(&self, world, &mut state, event);
         })))
     }
@@ -895,11 +951,15 @@ pub fn ensure_has_component<X: ComponentValue + 'static, T: ComponentValue + Clo
     ensure_this_component_too: Component<T>,
     value: T,
 ) -> DynSystem {
-    query(if_has_component).excl(ensure_this_component_too).to_system(move |q, world, qs, _| {
-        for (id, _) in q.collect_cloned(world, qs) {
-            world.add_component(id, ensure_this_component_too, value.clone()).unwrap();
-        }
-    })
+    Query::new(ArchetypeFilter::new().incl(if_has_component).excl(ensure_this_component_too)).to_system_with_name(
+        "ensure_has_component",
+        move |q, world, qs, _| {
+            let ids = q.iter(world, Some(qs)).map(|ea| ea.id()).collect_vec();
+            for id in ids {
+                world.add_component(id, ensure_this_component_too, value.clone()).unwrap();
+            }
+        },
+    )
 }
 
 pub fn ensure_has_component_with_default<X: ComponentValue + 'static, T: ComponentValue + Default + Clone + 'static>(
@@ -917,9 +977,12 @@ pub fn ensure_has_component_with_make_default<X: ComponentValue + 'static, T: Co
     let default =
         Entity::from_iter([ensure_this_component_too.attribute::<MakeDefault>().unwrap().make_default(ensure_this_component_too.desc())]);
 
-    query(if_has_component).excl(ensure_this_component_too).to_system(move |q, world, qs, _| {
-        for (id, _) in q.collect_cloned(world, qs) {
-            world.add_components(id, default.clone()).unwrap();
-        }
-    })
+    query(if_has_component).excl(ensure_this_component_too).to_system_with_name(
+        "ensure_has_component_with_make_default",
+        move |q, world, qs, _| {
+            for (id, _) in q.collect_cloned(world, qs) {
+                world.add_components(id, default.clone()).unwrap();
+            }
+        },
+    )
 }

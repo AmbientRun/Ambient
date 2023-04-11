@@ -572,5 +572,5 @@ pub fn AxisButtons(_: &mut Hooks, axis: AxisFlags, set_axis: Cb<dyn Fn(AxisFlags
         .el(),
     ])
     .el()
-    .set(space_between_items(), STREET)
+    .with(space_between_items(), STREET)
 }

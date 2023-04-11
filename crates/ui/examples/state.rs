@@ -2,10 +2,8 @@ use std::sync::Arc;
 
 use ambient_app::{App, AppBuilder};
 use ambient_cameras::UICamera;
-use ambient_core::camera::active_camera;
+use ambient_ecs::generated::messages;
 use ambient_element::{ElementComponent, ElementComponentExt};
-use ambient_event_types::WINDOW_MOUSE_MOTION;
-use ambient_input::event_mouse_motion;
 use ambient_ui::{padding, space_between_items, Borders, Button, Cb, FlowColumn, FlowRow, Text, STREET};
 use tracing_subscriber::EnvFilter;
 
@@ -19,7 +17,7 @@ impl ElementComponent for A {
     fn render(self: Box<Self>, _: &mut ambient_element::Hooks) -> ambient_element::Element {
         let Self { value, set_value } = *self;
         FlowRow::el([
-            Text::el(value.to_string()).set(padding(), Borders::even(STREET)),
+            Text::el(value.to_string()).with(padding(), Borders::even(STREET)),
             Button::new("+1", {
                 let set_value = set_value.clone();
                 move |_| set_value(value + 1.0)
@@ -27,7 +25,7 @@ impl ElementComponent for A {
             .el(),
             Button::new("-1", move |_| set_value(value - 1.0)).el(),
         ])
-        .set(space_between_items(), STREET)
+        .with(space_between_items(), STREET)
     }
 }
 
@@ -64,10 +62,8 @@ impl ElementComponent for B {
         let (shared, _) = hooks.use_state(self.shared.clone());
         let keepalive = DroppedClosure;
 
-        hooks.use_event(WINDOW_MOUSE_MOTION, move |_world, event| {
-            if let Some(_event) = event.get_ref(event_mouse_motion()) {
-                let _val = &keepalive;
-            }
+        hooks.use_runtime_message::<messages::WindowMouseMotion>(move |_world, _event| {
+            let _val = &keepalive;
         });
 
         Text::el(shared.0.to_string())
@@ -99,14 +95,14 @@ impl ElementComponent for Main {
                 // B { shared }.el(),
             ])
         }
-        .set(space_between_items(), STREET)
+        .with(space_between_items(), STREET)
     }
 }
 
 async fn init(app: &mut App) {
     let world = &mut app.world;
     Main.el().spawn_interactive(world);
-    UICamera.el().set(active_camera(), 0.).spawn_interactive(world);
+    UICamera.el().spawn_interactive(world);
 }
 
 fn main() {

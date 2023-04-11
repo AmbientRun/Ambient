@@ -6,18 +6,22 @@ use ambient_std::{
 };
 use std::sync::Arc;
 
+mod conversion;
+mod implementation;
+mod network;
+mod unused;
+
 pub fn initialize(
     world: &mut World,
     messenger: Arc<dyn Fn(&World, EntityId, shared::MessageType, &str) + Send + Sync>,
 ) -> anyhow::Result<()> {
-    shared::initialize(
-        world,
-        messenger,
-        Bindings {
-            base: Default::default(),
-            world_ref: Default::default(),
-        },
-    )?;
+    shared::initialize(world, messenger, |id| Bindings {
+        base: Default::default(),
+        world_ref: Default::default(),
+        id,
+    })?;
+
+    network::initialize(world);
 
     Ok(())
 }
@@ -65,6 +69,7 @@ pub fn systems() -> SystemGroup {
 struct Bindings {
     base: shared::bindings::BindingsBase,
     world_ref: shared::bindings::WorldRef,
+    id: EntityId,
 }
 impl Bindings {
     pub fn world(&self) -> &World {
@@ -153,6 +158,13 @@ impl wit::entity::Host for Bindings {
         shared::implementation::entity::get_all(self.world_mut(), index)
     }
 }
+
+impl wit::asset::Host for Bindings {
+    fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
+        shared::implementation::asset::url(self.world_mut(), path)
+    }
+}
+
 impl wit::component::Host for Bindings {
     fn get_index(&mut self, id: String) -> anyhow::Result<Option<u32>> {
         shared::implementation::component::get_index(id)
@@ -162,7 +174,7 @@ impl wit::component::Host for Bindings {
         &mut self,
         entity: wit::types::EntityId,
         index: u32,
-    ) -> anyhow::Result<Option<wit::component::ValueResult>> {
+    ) -> anyhow::Result<Option<wit::component::Value>> {
         shared::implementation::component::get_component(self.world(), entity, index)
     }
 
@@ -170,7 +182,7 @@ impl wit::component::Host for Bindings {
         &mut self,
         entity: wit::types::EntityId,
         index: u32,
-        value: wit::component::ValueResult,
+        value: wit::component::Value,
     ) -> anyhow::Result<()> {
         shared::implementation::component::add_component(self.world_mut(), entity, index, value)
     }
@@ -187,7 +199,7 @@ impl wit::component::Host for Bindings {
         &mut self,
         entity: wit::types::EntityId,
         index: u32,
-        value: wit::component::ValueResult,
+        value: wit::component::Value,
     ) -> anyhow::Result<()> {
         shared::implementation::component::set_component(self.world_mut(), entity, index, value)
     }
@@ -235,7 +247,7 @@ impl wit::component::Host for Bindings {
     fn query_eval(
         &mut self,
         query_index: u64,
-    ) -> anyhow::Result<Vec<(wit::types::EntityId, Vec<wit::component::ValueResult>)>> {
+    ) -> anyhow::Result<Vec<(wit::types::EntityId, Vec<wit::component::Value>)>> {
         shared::implementation::component::query_eval(
             unsafe { self.world_ref.world() },
             &mut self.base.query_states,
@@ -243,142 +255,8 @@ impl wit::component::Host for Bindings {
         )
     }
 }
-impl wit::event::Host for Bindings {
+impl wit::message::Host for Bindings {
     fn subscribe(&mut self, name: String) -> anyhow::Result<()> {
-        shared::implementation::event::subscribe(&mut self.base.subscribed_events, name)
-    }
-
-    fn send(&mut self, name: String, data: wit::entity::EntityData) -> anyhow::Result<()> {
-        shared::implementation::event::send(
-            self.world_mut(),
-            name,
-            shared::implementation::component::convert_components_to_entity_data(data),
-        )
-    }
-}
-
-fn unsupported<T>() -> anyhow::Result<T> {
-    anyhow::bail!("This function is not supported on this side of the API. Please report this if you were able to access this function.")
-}
-
-impl wit::server_player::Host for Bindings {
-    fn get_raw_input(
-        &mut self,
-        _player: wit::types::EntityId,
-    ) -> anyhow::Result<Option<wit::server_player::RawInput>> {
-        unsupported()
-    }
-
-    fn get_prev_raw_input(
-        &mut self,
-        _player: wit::types::EntityId,
-    ) -> anyhow::Result<Option<wit::server_player::RawInput>> {
-        unsupported()
-    }
-}
-
-impl wit::server_physics::Host for Bindings {
-    fn add_force(
-        &mut self,
-        _entity: wit::types::EntityId,
-        _force: wit::types::Vec3,
-    ) -> anyhow::Result<()> {
-        unsupported()
-    }
-
-    fn add_impulse(
-        &mut self,
-        _entity: wit::types::EntityId,
-        _force: wit::types::Vec3,
-    ) -> anyhow::Result<()> {
-        unsupported()
-    }
-
-    fn add_radial_impulse(
-        &mut self,
-        _position: wit::types::Vec3,
-        _impulse: f32,
-        _radius: f32,
-        _falloff_radius: Option<f32>,
-    ) -> anyhow::Result<()> {
-        unsupported()
-    }
-
-    fn add_force_at_position(
-        &mut self,
-        _entity: wit::types::EntityId,
-        _force: wit::types::Vec3,
-        _position: wit::types::Vec3,
-    ) -> anyhow::Result<()> {
-        unsupported()
-    }
-
-    fn add_impulse_at_position(
-        &mut self,
-        _entity: wit::types::EntityId,
-        _force: wit::types::Vec3,
-        _position: wit::types::Vec3,
-    ) -> anyhow::Result<()> {
-        unsupported()
-    }
-
-    fn get_velocity_at_position(
-        &mut self,
-        _entity: wit::types::EntityId,
-        _position: wit::types::Vec3,
-    ) -> anyhow::Result<wit::types::Vec3> {
-        unsupported()
-    }
-
-    fn set_gravity(&mut self, _gravity: wit::types::Vec3) -> anyhow::Result<()> {
-        unsupported()
-    }
-
-    fn unfreeze(&mut self, _entity: wit::types::EntityId) -> anyhow::Result<()> {
-        unsupported()
-    }
-
-    fn freeze(&mut self, _entity: wit::types::EntityId) -> anyhow::Result<()> {
-        unsupported()
-    }
-
-    fn start_motor(&mut self, _entity: wit::types::EntityId, _velocity: f32) -> anyhow::Result<()> {
-        unsupported()
-    }
-
-    fn stop_motor(&mut self, _entity: wit::types::EntityId) -> anyhow::Result<()> {
-        unsupported()
-    }
-
-    fn raycast_first(
-        &mut self,
-        _origin: wit::types::Vec3,
-        _direction: wit::types::Vec3,
-    ) -> anyhow::Result<Option<(wit::types::EntityId, f32)>> {
-        unsupported()
-    }
-
-    fn raycast(
-        &mut self,
-        _origin: wit::types::Vec3,
-        _direction: wit::types::Vec3,
-    ) -> anyhow::Result<Vec<(wit::types::EntityId, f32)>> {
-        unsupported()
-    }
-
-    fn move_character(
-        &mut self,
-        _entity: wit::types::EntityId,
-        _displacement: wit::types::Vec3,
-        _min_dist: f32,
-        _elapsed_time: f32,
-    ) -> anyhow::Result<wit::server_physics::CharacterCollision> {
-        unsupported()
-    }
-}
-
-impl wit::server_asset::Host for Bindings {
-    fn url(&mut self, _path: String) -> anyhow::Result<Option<String>> {
-        unsupported()
+        shared::implementation::message::subscribe(&mut self.base.subscribed_messages, name)
     }
 }

@@ -24,16 +24,39 @@ pub fn add_impulse(entity: EntityId, impulse: Vec3) {
     wit::server_physics::add_force(entity.into_bindgen(), impulse.into_bindgen())
 }
 
+/// Whether or not to apply a falloff to the strength of [add_radial_impulse].
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub enum FalloffRadius {
+    /// No falloff. The impulse will be of equal strength for all entities.
+    #[default]
+    None,
+    /// Applies a falloff to the strength of the impulse, so that it drops out the further out the object is,
+    /// until it reaches a strength of 0 at `falloff_radius`.
+    FalloffToZeroAt(f32),
+}
+impl From<FalloffRadius> for Option<f32> {
+    fn from(radius: FalloffRadius) -> Option<f32> {
+        match radius {
+            FalloffRadius::None => None,
+            FalloffRadius::FalloffToZeroAt(r) => Some(r),
+        }
+    }
+}
+
 /// Applies an `impulse` (a [f32]) outwards to all entitities within `radius` of the `position`, with
 /// an optional `falloff_radius`.
-///
-/// If `fallout_radius` is specified (e.g. `Some(5_000)`), the strength of the explosion
-/// will drop out the further out the object is, until it reaches a strength of 0 at `fallout_radius`.
-///
-/// Otherwise, the impulse will be of equal strength for all entities.
-// TODO: consider making `fallout_radius` an enum, so the behaviour is explicit
-pub fn add_radial_impulse(position: Vec3, impulse: f32, radius: f32, falloff_radius: Option<f32>) {
-    wit::server_physics::add_radial_impulse(position.into_bindgen(), impulse, radius, falloff_radius)
+pub fn add_radial_impulse(
+    position: Vec3,
+    impulse: f32,
+    radius: f32,
+    falloff_radius: FalloffRadius,
+) {
+    wit::server_physics::add_radial_impulse(
+        position.into_bindgen(),
+        impulse,
+        radius,
+        falloff_radius.into(),
+    )
 }
 
 /// Applies a `force` (a [Vec3]) at a given `position` (a [Vec3]) to the `entity` (an [EntityId]) specified.
@@ -44,11 +67,7 @@ pub fn add_radial_impulse(position: Vec3, impulse: f32, radius: f32, falloff_rad
 ///
 /// `position` is a position in world space, it typically should fall on the surface or interior of an object for
 /// realistic results.
-pub fn add_force_at_position(
-    entity: EntityId,
-    force: Vec3,
-    position: Vec3,
-) {
+pub fn add_force_at_position(entity: EntityId, force: Vec3, position: Vec3) {
     wit::server_physics::add_force_at_position(
         entity.into_bindgen(),
         force.into_bindgen(),
@@ -64,11 +83,7 @@ pub fn add_force_at_position(
 ///
 /// `position` is a position in world space, it typically should fall on the surface or interior of an object for
 /// realistic results.
-pub fn add_impulse_at_position(
-    entity: EntityId,
-    impulse: Vec3,
-    position: Vec3,
-) {
+pub fn add_impulse_at_position(entity: EntityId, impulse: Vec3, position: Vec3) {
     wit::server_physics::add_impulse_at_position(
         entity.into_bindgen(),
         impulse.into_bindgen(),

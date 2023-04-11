@@ -10,13 +10,12 @@ use ambient_core::{
     runtime,
 };
 use ambient_ecs::{query, World};
-use ambient_ecs_editor::ECSEditor;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_gizmos::{gizmos, GizmoPrimitive};
-use ambient_network::client::{GameClient, GameRpcArgs};
+use ambient_network::{client::GameClient, server::RpcArgs as ServerRpcArgs};
 use ambient_renderer::{RenderTarget, Renderer};
 use ambient_rpc::RpcRegistry;
-use ambient_std::{asset_cache::SyncAssetKeyExt, cb, color::Color, download_asset::AssetsCacheDir, line_hash, Cb};
+use ambient_std::{asset_cache::SyncAssetKeyExt, color::Color, download_asset::AssetsCacheDir, line_hash, Cb};
 use ambient_ui::{
     fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit, FlowColumn, FlowRow, Image, UIExt,
 };
@@ -25,7 +24,7 @@ use glam::Vec3;
 
 type GetDebuggerState = Cb<dyn Fn(&mut dyn FnMut(&mut Renderer, &RenderTarget, &mut World)) + Sync + Send>;
 
-pub async fn rpc_dump_world_hierarchy(args: GameRpcArgs, _: ()) -> Option<String> {
+pub async fn rpc_dump_world_hierarchy(args: ServerRpcArgs, _: ()) -> Option<String> {
     let mut res = Vec::new();
     let mut state = args.state.lock();
     let world = state.get_player_world_mut(&args.user_id)?;
@@ -33,27 +32,16 @@ pub async fn rpc_dump_world_hierarchy(args: GameRpcArgs, _: ()) -> Option<String
     Some(String::from_utf8(res).unwrap())
 }
 
-pub fn register_rpcs(reg: &mut RpcRegistry<GameRpcArgs>) {
+pub fn register_server_rpcs(reg: &mut RpcRegistry<ServerRpcArgs>) {
     reg.register(rpc_dump_world_hierarchy);
 }
 
 #[element_component]
 pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
     let (show_shadows, set_show_shadows) = hooks.use_state(false);
-    let (show_ecs, set_show_ecs) = hooks.use_state(false);
     let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
     FlowColumn::el([
         FlowRow(vec![
-            Button::new("Show entities", {
-                move |_| {
-                    set_show_ecs(!show_ecs);
-                }
-            })
-            .toggled(show_ecs)
-            .hotkey_modifier(ModifiersState::SHIFT)
-            .hotkey(VirtualKeyCode::F1)
-            .style(ButtonStyle::Flat)
-            .el(),
             Button::new("Dump UI World", {
                 move |world| {
                     dump_world_hierarchy_to_tmp_file(world);
@@ -66,7 +54,10 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
             Button::new("Dump Client World", {
                 let get_state = get_state.clone();
                 move |_world| {
-                    get_state(&mut |_, _, world| dump_world_hierarchy_to_tmp_file(world));
+                    get_state(&mut |_, _, world| {
+                        dump_world_hierarchy_to_tmp_file(world);
+                        world.dump_to_tmp_file();
+                    });
                 }
             })
             .hotkey_modifier(ModifiersState::SHIFT)
@@ -167,18 +158,11 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
             ShaderDebug { get_state: get_state.clone() }.el(),
         ])
         .el()
-        .set(space_between_items(), 5.),
+        .with(space_between_items(), 5.),
         if show_shadows { ShadowMapsViz { get_state: get_state.clone() }.el() } else { Element::new() },
-        if show_ecs {
-            ECSEditor { get_world: cb(move |res| get_state(&mut move |_, _, world| res(world))), on_change: cb(|_, _| {}) }
-                .el()
-                .set(height(), 200.)
-        } else {
-            Element::new()
-        },
     ])
     .with_background(Color::rgba(0., 0., 0., 1.).into())
-    .set(fit_horizontal(), Fit::Parent)
+    .with(fit_horizontal(), Fit::Parent)
 }
 
 #[element_component]
@@ -191,7 +175,7 @@ fn ShadowMapsViz(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
         n_cascades
     });
     FlowRow::el((0..shadow_cascades).map(|i| ShadowMapViz { get_state: get_state.clone(), cascade: i }.el()).collect::<Vec<_>>())
-        .set(space_between_items(), 5.)
+        .with(space_between_items(), 5.)
         .with_background(Color::rgb(0.0, 0., 0.3).into())
 }
 
@@ -211,7 +195,7 @@ fn ShadowMapViz(hooks: &mut Hooks, get_state: GetDebuggerState, cascade: u32) ->
         });
         tex.unwrap()
     });
-    Image { texture }.el().set(width(), 200.).set(height(), 200.)
+    Image { texture }.el().with(width(), 200.).with(height(), 200.)
 }
 
 #[element_component]

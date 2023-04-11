@@ -65,7 +65,7 @@ impl ElementComponent for EntityBrowser {
                     .collect(),
             )
             .el()
-            .set(space_between_items(), STREET),
+            .with(space_between_items(), STREET),
             FlowColumn(
                 entities
                     .into_iter()
@@ -77,9 +77,9 @@ impl ElementComponent for EntityBrowser {
                     .collect_vec(),
             )
             .el()
-            .set(space_between_items(), STREET),
+            .with(space_between_items(), STREET),
         ])
-        .set(space_between_items(), STREET)
+        .with(space_between_items(), STREET)
     }
 }
 
@@ -105,7 +105,7 @@ impl ElementComponent for EntityBrowserScreen {
                         .el(),
                         Button::new("Advanced", move |_| set_advanced(!advanced)).toggled(advanced).el(),
                     ])
-                    .set(space_between_items(), STREET),
+                    .with(space_between_items(), STREET),
                     if advanced {
                         ECSEditor {
                             get_world: cb({
@@ -133,11 +133,11 @@ impl ElementComponent for EntityBrowserScreen {
                         .el()
                     },
                 ])
-                .set(space_between_items(), STREET)
-                .set(fit_horizontal(), Fit::Parent),
+                .with(space_between_items(), STREET)
+                .with(fit_horizontal(), Fit::Parent),
             )
             .el()
-            .set(fit_horizontal(), Fit::Parent),
+            .with(fit_horizontal(), Fit::Parent),
         )
         .el()
     }

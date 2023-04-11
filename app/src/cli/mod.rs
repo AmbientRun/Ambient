@@ -50,10 +50,6 @@ pub enum Cli {
         /// The server to connect to; defaults to localhost
         host: Option<String>,
     },
-    /// Updates all WASM APIs with the core primitive components (not for users)
-    #[cfg(not(feature = "production"))]
-    #[command(hide = true)]
-    UpdateInterfaceComponents,
 }
 #[derive(Args, Clone)]
 pub struct RunCli {
@@ -67,7 +63,7 @@ pub struct RunCli {
 
     /// Take a screenshot after N seconds, compare it to the existing one and then exit with an exit code of 1 if they are different
     #[arg(long)]
-    pub screenshot_test: Option<f32>,
+    pub golden_image_test: Option<f32>,
 
     /// The user ID to join this server with
     #[clap(short, long)]
@@ -81,6 +77,10 @@ pub struct ProjectCli {
     /// Build all the assets with full optimization; this will make debugging more difficult
     #[arg(short, long)]
     pub release: bool,
+
+    /// Avoid building the project
+    #[arg(long)]
+    pub no_build: bool,
 }
 #[derive(Args, Clone)]
 pub struct HostCli {
@@ -89,6 +89,26 @@ pub struct HostCli {
     /// Defaults to localhost
     #[arg(long)]
     pub public_host: Option<String>,
+
+    /// Defaults to 8889
+    #[arg(long)]
+    pub http_interface_port: Option<u16>,
+
+    /// Defaults to 9000
+    #[arg(long)]
+    pub quic_interface_port: Option<u16>,
+
+    /// Don't use proxy for NAT traversal
+    #[arg(long)]
+    pub no_proxy: bool,
+
+    /// AmbientProxy address to use for NAT traversal
+    #[arg(long)]
+    pub proxy: Option<String>,
+
+    /// Pre-cache assets on the proxy
+    #[arg(long)]
+    pub proxy_pre_cache_assets: bool,
 }
 
 impl Cli {
@@ -101,8 +121,6 @@ impl Cli {
             Cli::Serve { .. } => None,
             Cli::View { .. } => None,
             Cli::Join { run_args, .. } => Some(run_args),
-            #[cfg(not(feature = "production"))]
-            Cli::UpdateInterfaceComponents => None,
         }
     }
     /// Extract project-relevant state only
@@ -114,8 +132,6 @@ impl Cli {
             Cli::Serve { project_args, .. } => Some(project_args),
             Cli::View { project_args, .. } => Some(project_args),
             Cli::Join { .. } => None,
-            #[cfg(not(feature = "production"))]
-            Cli::UpdateInterfaceComponents => None,
         }
     }
     /// Extract host-relevant state only
@@ -127,8 +143,6 @@ impl Cli {
             Cli::Serve { host_args, .. } => Some(host_args),
             Cli::View { .. } => None,
             Cli::Join { .. } => None,
-            #[cfg(not(feature = "production"))]
-            Cli::UpdateInterfaceComponents => None,
         }
     }
 }

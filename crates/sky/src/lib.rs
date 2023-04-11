@@ -5,7 +5,7 @@
 use std::sync::Arc;
 
 use ambient_core::{asset_cache, mesh, transform::translation};
-use ambient_ecs::{components, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
+use ambient_ecs::{components, query, Entity, SystemGroup};
 use ambient_gpu::{
     gpu::GpuKey,
     shader_module::{BindGroupDesc, Shader, ShaderModule},
@@ -22,10 +22,10 @@ use self::tree::*;
 
 mod tree;
 
+pub use ambient_ecs::generated::components::core::rendering::sky;
+
 components!("rendering", {
     cloud_state: CloudState,
-    @[Debuggable, Networked, Store, Name["Sky"], Description["Add a realistic skybox to the scene."]]
-    sky: (),
 });
 
 #[derive(Debug, Clone)]
@@ -69,7 +69,8 @@ pub fn systems() -> SystemGroup {
                         .with(overlay(), ())
                         .with(mesh(), QuadMeshKey.get(&assets))
                         .with(primitives(), vec![])
-                        .with_default(gpu_primitives())
+                        .with_default(gpu_primitives_mesh())
+                        .with_default(gpu_primitives_lod())
                         .with(translation(), vec3(0.0, 0.0, -1.0));
                     world.add_components(id, data).unwrap();
                 }
@@ -129,7 +130,6 @@ pub struct CloudMaterial {
 impl CloudMaterial {
     pub fn new(assets: AssetCache, state: &CloudState) -> Self {
         let gpu = GpuKey.get(&assets);
-        let shader = CloudShaderKey { shadow_cascades: 1 }.get(&assets);
 
         let cloud_buffer = TypedBuffer::new(
             gpu.clone(),
@@ -142,7 +142,7 @@ impl CloudMaterial {
         Self {
             id: friendly_id(),
             bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
-                layout: shader.material_layout(),
+                layout: &get_cloud_shader_layout().get(&assets),
                 entries: &[wgpu::BindGroupEntry { binding: 0, resource: cloud_buffer.buffer().as_entire_binding() }],
                 label: Some("CloudMaterial.bind_group"),
             }),
@@ -152,7 +152,7 @@ impl CloudMaterial {
 }
 
 impl Material for CloudMaterial {
-    fn bind(&self) -> &BindGroup {
+    fn bind_group(&self) -> &BindGroup {
         &self.bind_group
     }
 
@@ -161,8 +161,24 @@ impl Material for CloudMaterial {
     }
 }
 
-pub fn get_scatter_module() -> ShaderModule {
-    ShaderModule::from_str("Scatter", include_file!("atmospheric_scattering.wgsl"))
+pub fn get_scatter_module() -> Arc<ShaderModule> {
+    Arc::new(ShaderModule::new("Scatter", include_file!("atmospheric_scattering.wgsl")))
+}
+
+fn get_cloud_shader_layout() -> BindGroupDesc<'static> {
+    BindGroupDesc {
+        entries: vec![wgpu::BindGroupLayoutEntry {
+            binding: 0,
+            visibility: wgpu::ShaderStages::FRAGMENT,
+            ty: wgpu::BindingType::Buffer {
+                ty: wgpu::BufferBindingType::Storage { read_only: true },
+                has_dynamic_offset: false,
+                min_binding_size: None,
+            },
+            count: None,
+        }],
+        label: MATERIAL_BIND_GROUP.into(),
+    }
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -172,31 +188,22 @@ pub struct CloudShaderKey {
 
 impl SyncAssetKey<Arc<RendererShader>> for CloudShaderKey {
     fn load(&self, assets: AssetCache) -> Arc<RendererShader> {
-        let layout = BindGroupDesc {
-            entries: vec![wgpu::BindGroupLayoutEntry {
-                binding: 0,
-                visibility: wgpu::ShaderStages::FRAGMENT,
-                ty: wgpu::BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Storage { read_only: true },
-                    has_dynamic_offset: false,
-                    min_binding_size: None,
-                },
-                count: None,
-            }],
-            label: MATERIAL_BIND_GROUP.into(),
-        };
+        let layout = get_cloud_shader_layout();
 
         let shader = include_file!("clouds.wgsl");
 
         let id = "cloud shader".to_string();
         Arc::new(RendererShader {
-            shader: Shader::from_modules(
+            shader: Shader::new(
                 &assets,
-                id.clone(),
-                get_overlay_modules(&assets, self.shadow_cascades)
-                    .iter()
-                    .chain([&get_scatter_module(), &ShaderModule::new("Clouds", shader, vec![layout.into()])]),
-            ),
+                "clouds",
+                &[GLOBALS_BIND_GROUP, MATERIAL_BIND_GROUP],
+                &ShaderModule::new("clouds", shader)
+                    .with_binding_desc(layout)
+                    .with_dependencies(get_overlay_modules(&assets, self.shadow_cascades))
+                    .with_dependency(get_scatter_module()),
+            )
+            .unwrap(),
             id,
             vs_main: "vs_main".to_string(),
             fs_forward_main: "fs_forward_main".to_string(),

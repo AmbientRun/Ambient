@@ -1,19 +1,18 @@
-use ambient_api::prelude::*;
+use ambient_api::{
+    components::core::{
+        app::main_scene,
+        camera::aspect_ratio_from_window,
+        player::player,
+        primitives::cube,
+        rendering::color,
+        transform::{lookat_center, translation},
+    },
+    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
+    prelude::*,
+};
 
 #[main]
-pub async fn main() -> EventResult {
-    use ambient_api::{
-        components::core::{
-            app::main_scene,
-            camera::aspect_ratio_from_window,
-            player::player,
-            primitives::cube,
-            rendering::color,
-            transform::{lookat_center, translation},
-        },
-        concepts::{make_perspective_infinite_reverse_camera, make_transformable},
-    };
-
+pub fn main() {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
@@ -33,6 +32,4 @@ pub async fn main() -> EventResult {
                 .spawn();
         }
     });
-
-    EventOk
 }

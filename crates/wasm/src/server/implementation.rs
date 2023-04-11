@@ -1,43 +1,17 @@
-use ambient_core::asset_cache;
-use ambient_input::{player_prev_raw_input, player_raw_input};
+use ambient_core::player::{player, user_id};
+use ambient_ecs::{query, EntityId, World};
+use ambient_network::server::player_connection;
 use ambient_physics::physx::character_controller;
-use ambient_std::{
-    asset_cache::SyncAssetKeyExt,
-    asset_url::{AssetUrl, ServerBaseUrlKey},
-    shapes::Ray,
-};
+use ambient_std::shapes::Ray;
 use anyhow::Context;
 use physxx::{PxControllerCollisionFlag, PxControllerFilters};
 
 use super::Bindings;
 use crate::shared::{
     conversion::{FromBindgen, IntoBindgen},
+    implementation::message,
     wit,
 };
-
-impl wit::server_player::Host for Bindings {
-    fn get_raw_input(
-        &mut self,
-        player: wit::types::EntityId,
-    ) -> anyhow::Result<Option<wit::server_player::RawInput>> {
-        Ok(self
-            .world()
-            .get_cloned(player.from_bindgen(), player_raw_input())
-            .ok()
-            .into_bindgen())
-    }
-
-    fn get_prev_raw_input(
-        &mut self,
-        player: wit::types::EntityId,
-    ) -> anyhow::Result<Option<wit::server_player::RawInput>> {
-        Ok(self
-            .world()
-            .get_cloned(player.from_bindgen(), player_prev_raw_input())
-            .ok()
-            .into_bindgen())
-    }
-}
 
 impl wit::server_physics::Host for Bindings {
     fn add_force(
@@ -243,9 +217,61 @@ impl wit::server_physics::Host for Bindings {
     }
 }
 
-impl wit::server_asset::Host for Bindings {
-    fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
-        let base_url = ServerBaseUrlKey.get(self.world().resource(asset_cache()));
-        Ok(Some(AssetUrl::parse(path)?.resolve(&base_url)?.to_string()))
+impl wit::server_message::Host for Bindings {
+    fn send(
+        &mut self,
+        target: wit::server_message::Target,
+        name: String,
+        data: Vec<u8>,
+    ) -> anyhow::Result<()> {
+        use wit::server_message::Target;
+        let module_id = self.id;
+        let world = self.world_mut();
+
+        match target {
+            Target::ClientBroadcastUnreliable => {
+                send_networked(world, None, module_id, name, data, false)
+            }
+            Target::ClientBroadcastReliable => {
+                send_networked(world, None, module_id, name, data, true)
+            }
+            Target::ClientTargetedUnreliable(user_id) => {
+                send_networked(world, Some(user_id), module_id, name, data, false)
+            }
+            Target::ClientTargetedReliable(user_id) => {
+                send_networked(world, Some(user_id), module_id, name, data, true)
+            }
+            Target::LocalBroadcast => message::send_local(world, module_id, None, name, data),
+            Target::Local(id) => {
+                message::send_local(world, module_id, Some(id.from_bindgen()), name, data)
+            }
+        }
     }
+}
+
+fn send_networked(
+    world: &World,
+    target_user_id: Option<String>,
+    module_id: EntityId,
+    name: String,
+    data: Vec<u8>,
+    reliable: bool,
+) -> anyhow::Result<()> {
+    let connections: Vec<_> = query((user_id(), player_connection()))
+        .incl(player())
+        .iter(world, None)
+        .filter(|(_, (uid, _))| {
+            target_user_id
+                .as_ref()
+                .map(|tuid| tuid == *uid)
+                .unwrap_or(true)
+        })
+        .map(|(_, (_, connection))| connection.clone())
+        .collect();
+
+    for connection in connections {
+        message::send_networked(world, connection, module_id, &name, &data, reliable)?;
+    }
+
+    Ok(())
 }

@@ -1,19 +1,22 @@
-use std::{borrow::Cow, sync::Arc};
+use std::sync::Arc;
 
 use ambient_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
-use wgpu::{BindGroupLayoutDescriptor, BindGroupLayoutEntry, PipelineLayoutDescriptor, ShaderStages, TextureSampleType};
+use wgpu::{BindGroupLayoutDescriptor, BindGroupLayoutEntry, FilterMode, PipelineLayoutDescriptor, ShaderStages, TextureSampleType};
+
+use crate::shader_module::{Shader, ShaderIdent, ShaderModule};
 
 use super::gpu::{Gpu, GpuKey};
 
 #[derive(Debug, Clone)]
 pub struct BlitterKey {
     pub format: wgpu::ColorTargetState,
-    pub linear: bool,
+    pub min_filter: FilterMode,
+    pub gamma_correction: Option<f32>,
 }
+
 impl SyncAssetKey<Arc<Blitter>> for BlitterKey {
     fn load(&self, assets: AssetCache) -> Arc<Blitter> {
-        let gpu = GpuKey.get(&assets);
-        Arc::new(Blitter::new(gpu, self))
+        Arc::new(Blitter::new(&assets, self))
     }
 }
 
@@ -23,12 +26,24 @@ pub struct Blitter {
     gpu: Arc<Gpu>,
 }
 impl Blitter {
-    pub fn new(gpu: Arc<Gpu>, conf: &BlitterKey) -> Self {
+    pub fn new(assets: &AssetCache, conf: &BlitterKey) -> Self {
+        let gpu = GpuKey.get(assets);
+
         log::debug!("Creating blitter: {conf:#?}");
-        let shader = gpu.device.create_shader_module(wgpu::ShaderModuleDescriptor {
-            label: Some("Blitter.shader"),
-            source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!("blit.wgsl"))),
-        });
+        let colorspace = if let Some(gamma) = conf.gamma_correction {
+            let inv_gamma = 1.0 / gamma;
+            format!("vec4<f32>(pow(color.xyz, vec3<f32>({inv_gamma})), color.w)")
+        } else {
+            "color".to_string()
+        };
+
+        let shader = Shader::new(
+            assets,
+            "blitter",
+            &[],
+            &ShaderModule::new("blitter", include_str!("blit.wgsl")).with_ident(ShaderIdent::raw("COLORSPACE_EXPR", colorspace)),
+        )
+        .unwrap();
 
         let bind_group_layout = gpu.device.create_bind_group_layout(&BindGroupLayoutDescriptor {
             label: Some("blitter.bind_group_layout"),
@@ -76,13 +91,14 @@ impl Blitter {
             address_mode_v: wgpu::AddressMode::ClampToEdge,
             address_mode_w: wgpu::AddressMode::ClampToEdge,
             mag_filter: wgpu::FilterMode::Linear,
-            min_filter: if conf.linear { wgpu::FilterMode::Linear } else { wgpu::FilterMode::Nearest },
+            min_filter: conf.min_filter,
             mipmap_filter: wgpu::FilterMode::Nearest,
             ..Default::default()
         });
 
         Self { pipeline, sampler, gpu }
     }
+
     pub fn run(&self, encoder: &mut wgpu::CommandEncoder, source: &wgpu::TextureView, target: &wgpu::TextureView) {
         let bind_group_layout = self.pipeline.get_bind_group_layout(0);
 
@@ -104,6 +120,7 @@ impl Blitter {
             })],
             depth_stencil_attachment: None,
         });
+
         rpass.set_pipeline(&self.pipeline);
         rpass.set_bind_group(0, &bind_group, &[]);
         rpass.draw(0..4, 0..1);

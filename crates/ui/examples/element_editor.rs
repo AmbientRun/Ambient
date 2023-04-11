@@ -1,6 +1,5 @@
 use ambient_app::{App, AppBuilder};
 use ambient_cameras::UICamera;
-use ambient_core::camera::active_camera;
 use ambient_editor_derive::ElementEditor;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
 use ambient_ui::*;
@@ -60,7 +59,7 @@ impl ElementComponent for Example {
         FocusRoot(vec![ScrollArea(
             FlowColumn(vec![MyStruct::editor(state.clone(), set_state, Default::default()), Text::el(format!("{state:#?}"))])
                 .el()
-                .set(space_between_items(), STREET),
+                .with(space_between_items(), STREET),
         )
         .el()])
         .el()
@@ -69,7 +68,7 @@ impl ElementComponent for Example {
 
 async fn init(app: &mut App) {
     let world = &mut app.world;
-    Group(vec![UICamera.el().set(active_camera(), 0.), Example.el()]).el().spawn_interactive(world);
+    Group(vec![UICamera.el(), Example.el()]).el().spawn_interactive(world);
 }
 
 fn main() {

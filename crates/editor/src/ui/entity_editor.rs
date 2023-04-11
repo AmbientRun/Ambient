@@ -1,18 +1,17 @@
 use std::{sync::Arc, time::Duration};
 
-use ambient_animation::{animation_errors, animation_retargeting, loop_animation};
+use ambient_animation::{animation_errors, animation_retargeting};
 use ambient_core::{
     name, runtime, snap_to_ground, tags,
     transform::{scale, translation},
 };
-use ambient_decals::decal;
 use ambient_ecs::{
     with_component_registry, Component, ComponentDesc, ComponentEntry, ComponentValue, Entity, EntityId, PrimitiveComponentType, World,
 };
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_intent::client_push_intent;
 use ambient_network::{client::GameClient, hooks::use_remote_component};
-use ambient_physics::collider::{character_controller_height, character_controller_radius, collider, collider_type, mass};
+use ambient_physics::collider::{character_controller_height, character_controller_radius, collider_type, mass};
 use ambient_std::{cb, Cb};
 use ambient_ui::{
     align_horizontal, align_vertical,
@@ -65,7 +64,7 @@ pub fn EntityEditor(hooks: &mut Hooks, entity_id: EntityId) -> Element {
                 }),
             }
             .el()
-            .set(fit_horizontal(), Fit::Parent),
+            .with(fit_horizontal(), Fit::Parent),
             // if let Some(translation) = translation {
             //     Button::new("Teleport to entity", {
             //         move |_| {
@@ -82,7 +81,7 @@ pub fn EntityEditor(hooks: &mut Hooks, entity_id: EntityId) -> Element {
             // },
         ])
         .el()
-        .set(space_between_items(), STREET)
+        .with(space_between_items(), STREET)
     } else {
         Text::el("No such entity")
     }
@@ -264,7 +263,7 @@ fn EntityComponentsEditor(_hooks: &mut Hooks, value: Entity, on_change: Cb<dyn F
             ])
             .collect_vec(),
     )
-    .set(space_between_items(), STREET)
+    .with(space_between_items(), STREET)
 }
 
 #[profiling::function]
@@ -285,12 +284,12 @@ fn ComponentEditor<T: ComponentValue + Editor + std::fmt::Debug + Clone + Sync +
     .style(ButtonStyle::Flat)
     .tooltip("Delete")
     .el()
-    .set(margin(), Borders::right(STREET));
+    .with(margin(), Borders::right(STREET));
 
     FlowRow(vec![
         ScreenContainer(screen).el(),
         remove,
-        Text::el(&display_name).set(margin(), Borders::right(STREET)),
+        Text::el(&display_name).with(margin(), Borders::right(STREET)),
         FlowRow(vec![if inline {
             T::editor(
                 value,
@@ -322,10 +321,10 @@ fn ComponentEditor<T: ComponentValue + Editor + std::fmt::Debug + Clone + Sync +
             .el()
         }])
         .el()
-        .set(align_horizontal(), Align::End)
-        .set(fit_horizontal(), Fit::Parent),
+        .with(align_horizontal(), Align::End)
+        .with(fit_horizontal(), Fit::Parent),
     ])
     .el()
-    .set(align_vertical(), Align::Center)
-    .set(fit_horizontal(), Fit::Parent)
+    .with(align_vertical(), Align::Center)
+    .with(fit_horizontal(), Fit::Parent)
 }

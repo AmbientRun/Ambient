@@ -11,9 +11,9 @@ use ambient_ecs::{
     WorldStreamCompEvent,
 };
 use ambient_network::{
-    bi_stream_handlers, datagram_handlers, persistent_resources,
-    server::{ForkingEvent, GameServer, ShutdownEvent},
-    synced_resources, uni_stream_handlers,
+    persistent_resources,
+    server::{ForkingEvent, GameServer, ShutdownEvent, ProxySettings},
+    synced_resources, server::content_base_url
 };
 use ambient_prefab::PrefabFromUrl;
 use ambient_std::{
@@ -42,11 +42,26 @@ pub fn start(
     manifest: &ambient_project::Manifest,
 ) -> u16 {
     log::info!("Creating server");
+    let host_cli = cli.host().unwrap();
+    let quic_interface_port = host_cli.quic_interface_port;
+    let proxy_settings = (!host_cli.no_proxy).then(|| {
+        ProxySettings {
+            // default to getting a proxy from the dims-web Google App Engine app
+            endpoint: host_cli.proxy.clone().unwrap_or("http://proxy.ambient.run/proxy".to_string()),
+            project_path: project_path.clone(),
+            pre_cache_assets: host_cli.proxy_pre_cache_assets,
+            project_id: manifest.project.id.to_string(),
+        }
+    });
     let server = runtime.block_on(async move {
-        GameServer::new_with_port_in_range(QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10), false)
-            .await
-            .context("failed to create game server with port in range")
-            .unwrap()
+        if let Some(port) = quic_interface_port {
+            GameServer::new_with_port(port, false, proxy_settings).await.context("failed to create game server with port").unwrap()
+        } else {
+            GameServer::new_with_port_in_range(QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10), false, proxy_settings)
+                .await
+                .context("failed to create game server with port in range")
+                .unwrap()
+        }
     });
     let port = server.port;
 
@@ -56,11 +71,14 @@ pub fn start(
         .or_else(|| local_ip_address::local_ip().ok().map(|x| x.to_string()))
         .unwrap_or("localhost".to_string());
     log::info!("Created server, running at {public_host}:{port}");
-    ServerBaseUrlKey.insert(&assets, AbsAssetUrl::parse(format!("http://{public_host}:{HTTP_INTERFACE_PORT}/content/")).unwrap());
+    let http_interface_port = cli.host().unwrap().http_interface_port.unwrap_or(HTTP_INTERFACE_PORT);
 
-    start_http_interface(runtime, &project_path);
+    // here the key is inserted into the asset cache
+    let key = format!("http://{public_host}:{http_interface_port}/content/");
+    ServerBaseUrlKey.insert(&assets, AbsAssetUrl::parse(&key).unwrap());
+    start_http_interface(runtime, &project_path, http_interface_port);
 
-    ComponentRegistry::get_mut().add_external(manifest.all_defined_components(false).unwrap());
+    ComponentRegistry::get_mut().add_external(ambient_project_native::all_defined_components(manifest, false).unwrap());
 
     let manifest = manifest.clone();
     runtime.spawn(async move {
@@ -73,7 +91,8 @@ pub fn start(
         let name = manifest.project.name.clone().unwrap_or_else(|| "Ambient".into());
         server_world.add_components(server_world.resource_entity(), Entity::new().with(project_name(), name)).unwrap();
 
-        Entity::new().with(synced_resources(), ()).with(dont_store(), ()).spawn(&mut server_world);
+
+        Entity::new().with(synced_resources(), ()).with(content_base_url(), key).with(dont_store(), ()).spawn(&mut server_world);
         // Note: this should not be reset every time the server is created. Remove this when it becomes possible to load/save worlds.
         Entity::new().with(persistent_resources(), ()).spawn(&mut server_world);
 
@@ -109,9 +128,7 @@ fn systems(_world: &mut World) -> SystemGroup {
             Box::new(WorldEventsSystem),
             Box::new(ambient_core::camera::camera_systems()),
             Box::new(ambient_physics::server_systems()),
-            Box::new(shared::player::server_systems()),
             Box::new(wasm::systems()),
-            Box::new(shared::player::server_systems_final()),
         ],
     )
 }
@@ -128,9 +145,7 @@ fn is_sync_component(component: ComponentDesc, _: WorldStreamCompEvent) -> bool 
 
 fn create_resources(assets: AssetCache) -> Entity {
     let mut server_resources = Entity::new().with(asset_cache(), assets.clone()).with(no_sync(), ()).with_default(world_events());
-
     ambient_physics::create_server_resources(&assets, &mut server_resources);
-
     server_resources.merge(ambient_core::async_ecs::async_ecs_resources());
     server_resources.set(ambient_core::runtime(), RuntimeHandle::current());
 
@@ -140,31 +155,38 @@ fn create_resources(assets: AssetCache) -> Entity {
     server_resources.set(dtime(), 1. / 60.);
 
     let mut bistream_handlers = HashMap::new();
-    ambient_network::register_rpc_bi_stream_handler(&mut bistream_handlers, shared::create_rpc_registry());
-    server_resources.set(bi_stream_handlers(), bistream_handlers);
+    ambient_network::server::register_rpc_bi_stream_handler(&mut bistream_handlers, shared::create_server_rpc_registry());
+    server_resources.set(ambient_network::server::bi_stream_handlers(), bistream_handlers);
 
     let unistream_handlers = HashMap::new();
-    server_resources.set(uni_stream_handlers(), unistream_handlers);
+    server_resources.set(ambient_network::server::uni_stream_handlers(), unistream_handlers);
 
-    let mut dgram_handlers = HashMap::new();
-    shared::player::register_datagram_handler(&mut dgram_handlers);
-    server_resources.set(datagram_handlers(), dgram_handlers);
+    let dgram_handlers = HashMap::new();
+    server_resources.set(ambient_network::server::datagram_handlers(), dgram_handlers);
 
     server_resources
 }
 
 pub const HTTP_INTERFACE_PORT: u16 = 8999;
 pub const QUIC_INTERFACE_PORT: u16 = 9000;
-
-fn start_http_interface(runtime: &tokio::runtime::Runtime, project_path: &Path) {
+fn start_http_interface(runtime: &tokio::runtime::Runtime, project_path: &Path, http_interface_port: u16) {
     let router = Router::new()
         .route("/ping", get(|| async move { "ok" }))
         .nest_service("/content", get_service(ServeDir::new(project_path.join("build"))).handle_error(handle_error))
         .layer(CorsLayer::new().allow_origin(tower_http::cors::Any).allow_methods(vec![Method::GET]).allow_headers(tower_http::cors::Any));
 
+    let serve = |addr| async move {
+        axum::Server::try_bind(&addr)?.serve(router.into_make_service()).await?;
+
+        Ok::<_, anyhow::Error>(())
+    };
+
     runtime.spawn(async move {
-        let addr = SocketAddr::from(([0, 0, 0, 0], HTTP_INTERFACE_PORT));
-        axum::Server::bind(&addr).serve(router.into_make_service()).await.unwrap();
+        let addr = SocketAddr::from(([0, 0, 0, 0], http_interface_port));
+
+        if let Err(err) = serve(addr).await {
+            tracing::error!("Failed to start server on: {addr}\n\n{err:?}");
+        }
     });
 }
 

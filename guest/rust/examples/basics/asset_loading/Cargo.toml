@@ -7,7 +7,13 @@ rust-version = {workspace = true}
 version = {workspace = true}
 
 [dependencies]
-ambient_api = {path = "../../../api"}
+ambient_api = {workspace = true}
+
+[[bin]]
+name = "asset_loading_client"
+path = "src/client.rs"
+required-features = ["client"]
+
 
 [[bin]]
 name = "asset_loading_server"

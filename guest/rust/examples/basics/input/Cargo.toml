@@ -7,12 +7,12 @@ rust-version = {workspace = true}
 version = {workspace = true}
 
 [dependencies]
-ambient_api = {path = "../../../api"}
+ambient_api = {workspace = true}
 
 [[bin]]
-name = "input_server"
-path = "src/server.rs"
-required-features = ["server"]
+name = "input_client"
+path = "src/client.rs"
+required-features = ["client"]
 
 [features]
 client = ["ambient_api/client"]

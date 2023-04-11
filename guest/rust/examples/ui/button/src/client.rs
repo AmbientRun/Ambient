@@ -1,14 +1,5 @@
 use ambient_api::prelude::*;
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::{layout::space_between_items, transform::translation};
-use ambient_ui_components::{
-    button::{Button, ButtonStyle},
-    default_theme::STREET,
-    layout::{FlowColumn, FlowRow},
-    setup_ui_camera,
-    text::Text,
-    UIExt,
-};
+use ambient_ui_components::prelude::*;
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
@@ -35,7 +26,7 @@ fn App(_hooks: &mut Hooks) -> Element {
                 .el(),
         ])
         .el()
-        .set(space_between_items(), STREET)
+        .with(space_between_items(), STREET)
         .with_padding_even(STREET),
         FlowColumn(vec![
             Button::new("Regular toggled", |_| {}).toggled(true).el(),
@@ -57,7 +48,7 @@ fn App(_hooks: &mut Hooks) -> Element {
                 .el(),
         ])
         .el()
-        .set(space_between_items(), STREET)
+        .with(space_between_items(), STREET)
         .with_padding_even(STREET),
         FlowColumn(vec![
             Button::new("Regular disabled", |_| {}).disabled(true).el(),
@@ -79,19 +70,16 @@ fn App(_hooks: &mut Hooks) -> Element {
                 .el(),
         ])
         .el()
-        .set(space_between_items(), STREET)
+        .with(space_between_items(), STREET)
         .with_padding_even(STREET),
         Button::new("\u{f1e2}", |_| {}).el(),
     ])
     .el()
-    .set(space_between_items(), STREET)
-    .set(translation(), vec3(100., 100., 0.))
+    .with(space_between_items(), STREET)
+    .with_padding_even(STREET)
 }
 
 #[main]
-pub async fn main() -> EventResult {
-    setup_ui_camera();
+pub fn main() {
     App.el().spawn_interactive();
-
-    EventOk
 }

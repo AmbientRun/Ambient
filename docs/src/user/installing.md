@@ -17,13 +17,13 @@ Ambient can be installed through `cargo install`, which will download and build 
 To install the latest released version from Git, run the following:
 
 ```sh
-cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.1.1
+cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.1.1 ambient
 ```
 
 To install the latest version on the `main` branch, run the following:
 
 ```sh
-cargo install --git https://github.com/AmbientRun/Ambient.git
+cargo install --git https://github.com/AmbientRun/Ambient.git ambient
 ```
 
 Note that if you are running a project outside of the `guest/rust` workspace, it is likely that the published version of the API will be incompatible with `main`, and you will need to specify the dependency manually.

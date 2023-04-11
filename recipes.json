@@ -3,10 +3,22 @@
         "cmd": "cargo run -p ambient"
     },
     "third-person-camera-release": {
-        "cmd": "cargo run --release -- run guest/rust/examples/third_person_camera"
+        "cmd": "cargo run --features profile --release -- run ./guest/rust/examples/basics/third_person_camera"
     },
     "third-person-camera": {
-        "cmd": "cargo run -- run guest/rust/examples/third_person_camera"
+        "cmd": "cargo run -- run ./guest/rust/examples/basics/third_person_camera"
+    },
+    "minigolf": {
+        "cmd": "cargo run -- run ./guest/rust/examples/games/minigolf"
+    },
+    "tictactoe": {
+        "cmd": "cargo run -- run ./guest/rust/examples/games/tictactoe"
+    },
+    "fog": {
+        "cmd": "cargo run -- run ./guest/rust/examples/basics/fog/"
+    },
+    "skinmesh": {
+        "cmd": "cargo run -- run ./guest/rust/examples/basics/skinmesh"
     },
     "debug-third-person-camera": {
         "cmd": "cargo build -p ambient",
@@ -16,27 +28,37 @@
                 "adapter": "rust",
                 "args": [
                     "run",
-                    "./guest/rust/examples/third_person_camera"
+                    "./guest/rust/examples/basics/third_person_camera"
                 ]
             }
         }
     },
-    "build-web": {
-        "cmd": "wasm-pack build web --dev",
+    "debug-minigolf": {
+        "cmd": "cargo build -p ambient",
         "components": {
-            "qf": {
-                "compiler": "cargo"
+            "dap": {
+                "program": "./target/debug/ambient",
+                "adapter": "rust",
+                "args": [
+                    "run",
+                    "./guest/rust/examples/games/minigolf"
+                ]
+            }
+        }
+    },
+    "debug-pbr": {
+        "cmd": "cargo build -p ambient_renderer --example pbr",
+        "components": {
+            "dap": {
+                "program": "./target/debug/examples/pbr",
+                "adapter": "rust"
             }
         }
     },
     "check-tests": {
         "cmd": "cargo check --workspace --tests --examples"
     },
-    "run-web": {
-        "cmd": "npm run start --open",
-        "cwd": "www",
-        "env": {
-            "RUST_LOG": "info"
-        }
+    "test": {
+        "cmd": "cargo nextest run --workspace"
     }
 }

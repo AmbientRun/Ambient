@@ -13,3 +13,4 @@ glam = { workspace = true }
 itertools = { workspace = true }
 log = { workspace = true }
 serde = { workspace = true }
+profiling = { workspace = true }

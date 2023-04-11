@@ -4,16 +4,13 @@ use ambient_core::{
     main_scene, mesh,
     transform::{local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation},
 };
-use ambient_ecs::{
-    components, query, Concept, Debuggable, DefaultValue, Description, Entity, EntityId, Name, Networked, RefConcept, Store, SystemGroup,
-    World,
-};
+use ambient_ecs::{components, query, Entity, EntityId, Networked, Store, SystemGroup, World};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_gpu::mesh_buffer::GpuMesh;
 pub use ambient_meshes::UVSphereMesh;
 use ambient_meshes::{UnitCubeMeshKey, UnitQuadMeshKey};
 use ambient_renderer::{
-    color, gpu_primitives, material,
+    color, gpu_primitives_lod, gpu_primitives_mesh, material,
     materials::flat_material::{get_flat_shader, FlatMaterialKey},
     primitives, renderer_shader,
 };
@@ -25,58 +22,12 @@ use ambient_std::{
 };
 use glam::{vec3, Mat4, Quat, Vec3, Vec4};
 
-components!("primitives", {
-    @[
-        Networked, Store, Debuggable,
-        Name["Cube"],
-        Description["If attached to an entity, the entity will be converted to a cube primitive.\nThe cube is unit-sized (i.e. 0.5 metres out to each side)."]
-    ]
-    cube: (),
-    @[
-        Networked, Store, Debuggable,
-        Name["Quad"],
-        Description["If attached to an entity, the entity will be converted to a quad primitive.\nThe quad is unit-sized on the XY axes, and flat on the Z axis (i.e. 0.5 metres out to the XY axes)."]
-    ]
-    quad: (),
+pub use ambient_ecs::generated::components::core::primitives::{cube, quad, sphere, sphere_radius, sphere_sectors, sphere_stacks};
 
-    @[
-        Networked, Store, Debuggable,
-        Name["Sphere"],
-        Description["If attached to an entity alongside the other `sphere_*` components, the entity will be converted to a sphere primitive.\nTo easily instantiate a unit-diameter `sphere`, consider using the `sphere` concept (e.g. `make_sphere`)."]
-    ]
-    sphere: (),
-    @[
-        Networked, Store, DefaultValue<_>[0.5], Debuggable,
-        Name["Sphere radius"],
-        Description["Set the radius of a `sphere` entity."]
-    ]
-    sphere_radius: f32,
-    @[
-        Networked, Store, DefaultValue<_>[36], Debuggable,
-        Name["Sphere sectors"],
-        Description["Set the longitudinal sectors of a `sphere` entity."]
-    ]
-    sphere_sectors: u32,
-    @[
-        Networked, Store, DefaultValue<_>[18], Debuggable,
-        Name["Sphere stacks"],
-        Description["Set the latitudinal stacks of a `sphere` entity."]
-    ]
-    sphere_stacks: u32,
+components!("primitives", {
     @[Networked, Store]
     uv_sphere: UVSphereMesh,
 });
-
-pub fn concepts() -> Vec<Concept> {
-    vec![RefConcept {
-        id: "sphere",
-        name: "Sphere",
-        description: "A primitive sphere.",
-        extends: &[],
-        data: Entity::new().with(sphere(), ()).with(sphere_radius(), 0.5).with(sphere_sectors(), 36).with(sphere_stacks(), 18),
-    }
-    .to_owned()]
-}
 
 pub fn cube_data(assets: &AssetCache) -> Entity {
     let aabb = AABB { min: -Vec3::ONE * 0.5, max: Vec3::ONE * 0.5 };
@@ -88,7 +39,8 @@ pub fn cube_data(assets: &AssetCache) -> Entity {
         .with(renderer_shader(), cb(get_flat_shader))
         .with(material(), FlatMaterialKey::white().get(assets))
         .with(primitives(), vec![])
-        .with_default(gpu_primitives())
+        .with_default(gpu_primitives_mesh())
+        .with_default(gpu_primitives_lod())
         .with(color(), Vec4::ONE)
         .with(main_scene(), ())
         .with(local_bounding_aabb(), aabb)
@@ -106,7 +58,8 @@ pub fn quad_data(assets: &AssetCache) -> Entity {
         .with(renderer_shader(), cb(get_flat_shader))
         .with(material(), FlatMaterialKey::white().get(assets))
         .with(primitives(), vec![])
-        .with_default(gpu_primitives())
+        .with_default(gpu_primitives_mesh())
+        .with_default(gpu_primitives_lod())
         .with(color(), Vec4::ONE)
         .with(main_scene(), ())
         .with(local_bounding_aabb(), aabb)
@@ -124,7 +77,8 @@ pub fn sphere_data(assets: &AssetCache, sphere: &UVSphereMesh) -> Entity {
         .with(renderer_shader(), cb(get_flat_shader))
         .with(material(), FlatMaterialKey::white().get(assets))
         .with(primitives(), vec![])
-        .with_default(gpu_primitives())
+        .with_default(gpu_primitives_mesh())
+        .with_default(gpu_primitives_lod())
         .with(color(), Vec4::ONE)
         .with(main_scene(), ())
         .with(local_bounding_aabb(), bound_sphere.to_aabb())
@@ -211,9 +165,9 @@ impl ElementComponent for BoxLine {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         let d = self.to - self.from;
         Cube.el()
-            .set(translation(), self.from)
-            .set(rotation(), Quat::from_rotation_arc(Vec3::X, d.normalize()))
-            .set(scale(), vec3(d.length(), self.thickness, self.thickness))
+            .with(translation(), self.from)
+            .with(rotation(), Quat::from_rotation_arc(Vec3::X, d.normalize()))
+            .with(scale(), vec3(d.length(), self.thickness, self.thickness))
             .init(mesh_to_local(), Mat4::from_scale_rotation_translation(Vec3::ONE * 0.5, Quat::IDENTITY, vec3(0.5, 0., 0.)))
     }
 }

@@ -14,10 +14,14 @@ async fn init(app: &mut App) {
     let grey = FlatMaterial::new(assets.clone(), vec4(0.5, 0.5, 0.5, 1.), Some(false));
     let transparent = SharedMaterial::new(FlatMaterial::new(assets, vec4(0., 1., 0., 0.5), Some(true)));
 
-    Cube.el().set(material(), SharedMaterial::new(grey)).spawn_static(world);
-    Quad.el().set(material(), SharedMaterial::new(red)).set(scale(), vec3(2., 2., 1.)).spawn_static(world);
-    Cube.el().set(material(), transparent.clone()).set(translation(), vec3(0., 0., 2.)).set(scale(), vec3(0.2, 2., 1.)).spawn_static(world);
-    Cube.el().set(material(), transparent).set(translation(), vec3(4., 0., 0.)).spawn_static(world);
+    Cube.el().with(material(), SharedMaterial::new(grey)).spawn_static(world);
+    Quad.el().with(material(), SharedMaterial::new(red)).with(scale(), vec3(2., 2., 1.)).spawn_static(world);
+    Cube.el()
+        .with(material(), transparent.clone())
+        .with(translation(), vec3(0., 0., 2.))
+        .with(scale(), vec3(0.2, 2., 1.))
+        .spawn_static(world);
+    Cube.el().with(material(), transparent).with(translation(), vec3(4., 0., 0.)).spawn_static(world);
 
     ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
         .with(active_camera(), 0.)

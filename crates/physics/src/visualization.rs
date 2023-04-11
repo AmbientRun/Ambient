@@ -4,29 +4,33 @@ use crate::{
     physx::{physics_shape, rigid_actor},
     picking_scene, trigger_areas_scene,
 };
-use ambient_core::transform::get_world_transform;
-use ambient_ecs::{
-    components, dont_store, query, Debuggable, Description, Entity, EntityId, FnSystem, Name, Networked, SystemGroup, World,
+use ambient_core::{
+    camera::Camera,
+    main_scene,
+    transform::{get_world_transform, local_to_world},
+    ui_scene,
 };
-use ambient_element::{ElementComponentExt, ElementTree};
+use ambient_ecs::{
+    components, dont_store, ensure_has_component, ensure_has_component_with_default, query, Entity, EntityId, FnSystem, Networked,
+    SystemGroup, World,
+};
 use ambient_gizmos::{gizmos, GizmoPrimitive};
-use ambient_primitives::BoxLine;
 use ambient_std::line_hash;
-use glam::Vec3;
+use ambient_ui::{
+    background_color,
+    rect::{line_from, line_to, line_width},
+};
+use glam::{vec4, Vec3};
 use itertools::Itertools;
 use physxx::{PxActor, PxDebugLine, PxRenderBuffer, PxRigidActor, PxSceneRef, PxShape, PxShapeFlag, PxVisualizationParameter};
+
+pub use ambient_ecs::generated::components::core::physics::visualizing;
 
 components!("physics", {
     @[Networked]
     physx_viz_line: PxDebugLine,
     @[Networked]
     shape_primitives: Vec<GizmoPrimitive>,
-    @[
-        Networked, Debuggable,
-        Name["Visualizing"],
-        Description["If attached, the physics state of this object will be rendered for debugging purposes."]
-    ]
-    visualizing: (),
 });
 
 pub fn visualize_collider(world: &mut World, entity: EntityId, enabled: bool) -> Option<()> {
@@ -149,9 +153,24 @@ pub fn client_systems() -> SystemGroup {
     SystemGroup::new(
         "visualization/client",
         vec![
-            query((physx_viz_line().changed(),)).to_system(|q, world, qs, _| {
-                for (id, (line,)) in q.collect_cloned(world, qs) {
-                    ElementTree::render(world, id, BoxLine { from: line.pos0, to: line.pos1, thickness: 0.01 }.el());
+            ensure_has_component_with_default(physx_viz_line(), line_from()),
+            ensure_has_component_with_default(physx_viz_line(), line_to()),
+            ensure_has_component(physx_viz_line(), line_width(), 1.),
+            ensure_has_component(physx_viz_line(), background_color(), vec4(1., 0., 0., 1.)),
+            ensure_has_component_with_default(physx_viz_line(), ui_scene()),
+            ensure_has_component_with_default(physx_viz_line(), local_to_world()),
+            query((physx_viz_line(),)).to_system(|q, world, qs, _| {
+                if let Some(world_cam) = Camera::get_active(world, main_scene(), None) {
+                    if let Some(ui_cam) = Camera::get_active(world, ui_scene(), None) {
+                        let mat = ui_cam.projection_view().inverse() * world_cam.projection_view();
+
+                        for (id, (line,)) in q.collect_cloned(world, qs) {
+                            let from = mat.project_point3(line.pos0);
+                            let to = mat.project_point3(line.pos1);
+                            world.set_if_changed(id, line_from(), from).unwrap();
+                            world.set_if_changed(id, line_to(), to).unwrap();
+                        }
+                    }
                 }
             }),
             query((shape_primitives(),)).to_system(|q, world, qs, _| {

@@ -2,21 +2,25 @@ use std::{
     collections::HashMap,
     net::{IpAddr, Ipv4Addr, SocketAddr},
     ops::Range,
+    path::PathBuf,
     sync::Arc,
     time::Duration,
 };
 
 use ambient_core::{
     asset_cache, no_sync,
-    player::{get_player_by_user_id, player},
+    player::{get_player_by_user_id, player, user_id},
     project_name,
 };
 use ambient_ecs::{
-    components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent, System, SystemGroup, World, WorldStream,
-    WorldStreamCompEvent, WorldStreamFilter,
+    components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent, Networked, Resource, System, SystemGroup,
+    World, WorldStream, WorldStreamCompEvent, WorldStreamFilter,
 };
+use ambient_proxy::client::AllocatedEndpoint;
+use ambient_rpc::RpcRegistry;
 use ambient_std::{
-    asset_cache::AssetCache,
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    asset_url::{AbsAssetUrl, ProxyBaseUrlKey},
     fps_counter::{FpsCounter, FpsSample},
     friendly_id, log_result,
 };
@@ -27,8 +31,7 @@ use flume::Sender;
 use futures::StreamExt;
 use once_cell::sync::OnceCell;
 use parking_lot::Mutex;
-use quinn::{Endpoint, Incoming, NewConnection, RecvStream, SendStream};
-use serde::{Deserialize, Serialize};
+use quinn::{Endpoint, RecvStream, SendStream};
 use tokio::{
     io::AsyncReadExt,
     time::{interval, MissedTickBehavior},
@@ -36,16 +39,32 @@ use tokio::{
 use tracing::{debug_span, Instrument};
 
 use crate::{
-    bi_stream_handlers, create_server, datagram_handlers,
-    protocol::{ClientInfo, ServerProtocol},
-    uni_stream_handlers, NetworkError,
+    client_connection::ClientConnection,
+    connection::Connection,
+    create_server,
+    protocol::{ClientInfo, ServerInfo, ServerProtocol},
+    NetworkError, RPC_BISTREAM_ID,
 };
 
-components!("network", {
+components!("network::server", {
+    /// Absolute URL for the content that can be used to load assets from the client or server async.
+    @[Networked, Resource]
+    content_base_url: String,
+    @[Resource]
+    bi_stream_handlers: BiStreamHandlers,
+    @[Resource]
+    uni_stream_handlers: UniStreamHandlers,
+    @[Resource]
+    datagram_handlers: DatagramHandlers,
+
     player_entity_stream: Sender<Vec<u8>>,
-    player_event_stream: Sender<Vec<u8>>,
     player_stats_stream: Sender<FpsSample>,
+    player_connection: ClientConnection,
 });
+
+pub type BiStreamHandlers = HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, SendStream, RecvStream) + Sync + Send>>;
+pub type UniStreamHandlers = HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, RecvStream) + Sync + Send>>;
+pub type DatagramHandlers = HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, Bytes) + Sync + Send>>;
 
 #[derive(Debug, Clone, Copy)]
 pub struct ForkingEvent;
@@ -62,19 +81,50 @@ pub struct WorldInstance {
     pub systems: SystemGroup,
 }
 
-pub fn create_player_entity_data(
-    user_id: &str,
-    entities_tx: Sender<Vec<u8>>,
-    events_tx: Sender<Vec<u8>>,
-    stats_tx: Sender<FpsSample>,
-) -> Entity {
+#[derive(Clone)]
+pub struct RpcArgs {
+    pub state: SharedServerState,
+    pub user_id: String,
+}
+impl RpcArgs {
+    pub fn get_player(&self, world: &World) -> Option<EntityId> {
+        get_player_entity(world, &self.user_id)
+    }
+}
+
+pub fn get_player_entity(world: &World, target_user_id: &str) -> Option<EntityId> {
+    query((user_id(), player())).iter(world, None).find(|(_, (uid, _))| uid.as_str() == target_user_id).map(|kv| kv.0)
+}
+
+pub fn create_player_entity_data(user_id: &str, entities_tx: Sender<Vec<u8>>, stats_tx: Sender<FpsSample>) -> Entity {
     Entity::new()
         .with(ambient_core::player::player(), ())
         .with(ambient_core::player::user_id(), user_id.to_string())
         .with(player_entity_stream(), entities_tx)
         .with(player_stats_stream(), stats_tx)
-        .with(player_event_stream(), events_tx)
         .with_default(dont_store())
+}
+
+pub fn register_rpc_bi_stream_handler(handlers: &mut BiStreamHandlers, rpc_registry: RpcRegistry<RpcArgs>) {
+    handlers.insert(
+        RPC_BISTREAM_ID,
+        Arc::new(move |state, _assets, user_id, mut send, recv| {
+            let state = state;
+            let user_id = user_id.to_string();
+            let rpc_registry = rpc_registry.clone();
+            tokio::spawn(async move {
+                let try_block = || async {
+                    let req = recv.read_to_end(100_000_000).await?;
+                    let args = RpcArgs { state, user_id: user_id.to_string() };
+                    let resp = rpc_registry.run_req(args, &req).await?;
+                    send.write_all(&resp).await?;
+                    send.finish().await?;
+                    Ok(()) as Result<(), NetworkError>
+                };
+                log_result!(try_block().await);
+            });
+        }),
+    );
 }
 
 impl WorldInstance {
@@ -199,25 +249,37 @@ impl ServerState {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct ProxySettings {
+    pub endpoint: String,
+    pub project_path: PathBuf,
+    pub pre_cache_assets: bool,
+    pub project_id: String,
+}
+
 pub struct GameServer {
-    _endpoint: Endpoint,
-    incoming: Incoming,
+    endpoint: Endpoint,
     pub port: u16,
     /// Shuts down the server if there are no players
     pub use_inactivity_shutdown: bool,
+    proxy_settings: Option<ProxySettings>,
 }
 impl GameServer {
-    pub async fn new_with_port(port: u16, use_inactivity_shutdown: bool) -> anyhow::Result<Self> {
+    pub async fn new_with_port(port: u16, use_inactivity_shutdown: bool, proxy_settings: Option<ProxySettings>) -> anyhow::Result<Self> {
         let server_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port);
 
-        let (endpoint, incoming) = create_server(server_addr)?;
+        let endpoint = create_server(server_addr)?;
 
         log::debug!("GameServer listening on port {}", port);
-        Ok(Self { _endpoint: endpoint, incoming, port, use_inactivity_shutdown })
+        Ok(Self { endpoint, port, use_inactivity_shutdown, proxy_settings })
     }
-    pub async fn new_with_port_in_range(port_range: Range<u16>, use_inactivity_shutdown: bool) -> anyhow::Result<Self> {
+    pub async fn new_with_port_in_range(
+        port_range: Range<u16>,
+        use_inactivity_shutdown: bool,
+        proxy_settings: Option<ProxySettings>,
+    ) -> anyhow::Result<Self> {
         for port in port_range {
-            match Self::new_with_port(port, use_inactivity_shutdown).await {
+            match Self::new_with_port(port, use_inactivity_shutdown, proxy_settings.clone()).await {
                 Ok(server) => {
                     return Ok(server);
                 }
@@ -237,7 +299,7 @@ impl GameServer {
         create_shutdown_systems: Arc<dyn Fn() -> SystemGroup<ShutdownEvent> + Sync + Send>,
         is_sync_component: Arc<dyn Fn(ComponentDesc, WorldStreamCompEvent) -> bool + Sync + Send>,
     ) -> SharedServerState {
-        let Self { mut incoming, .. } = self;
+        let Self { endpoint, proxy_settings, .. } = self;
         let assets = world.resource(asset_cache()).clone();
         let world_stream_filter = WorldStreamFilter::new(ArchetypeFilter::new().excl(no_sync()), is_sync_component);
         let state = Arc::new(Mutex::new(ServerState::new(
@@ -263,10 +325,20 @@ impl GameServer {
         let mut inactivity_interval = interval(Duration::from_secs_f32(5.));
         let mut last_active = ambient_sys::time::Instant::now();
 
+        if let Some(proxy_settings) = proxy_settings {
+            let endpoint = endpoint.clone();
+            let state = state.clone();
+            let world_stream_filter = world_stream_filter.clone();
+            let assets = assets.clone();
+            tokio::spawn(async move {
+                start_proxy_connection(endpoint.clone(), proxy_settings, state.clone(), world_stream_filter.clone(), assets.clone()).await;
+            });
+        }
+
         loop {
             tracing::debug_span!("Listening for incoming connections");
             tokio::select! {
-                Some(conn) = incoming.next() => {
+                Some(conn) = endpoint.accept() => {
                     log::debug!("Received connection");
 
                     let conn = match conn.await {
@@ -279,7 +351,7 @@ impl GameServer {
 
 
                     log::debug!("Accepted connection");
-                    run_connection(conn, state.clone(), world_stream_filter.clone(), assets.clone());
+                    run_connection(conn.into(), state.clone(), world_stream_filter.clone(), assets.clone());
                 }
                 _ = sim_interval.tick() => {
                     fps_counter.frame_start();
@@ -328,9 +400,77 @@ impl GameServer {
     }
 }
 
+async fn start_proxy_connection(
+    endpoint: Endpoint,
+    settings: ProxySettings,
+    state: Arc<Mutex<ServerState>>,
+    world_stream_filter: WorldStreamFilter,
+    assets: AssetCache,
+) {
+    let on_endpoint_allocated = {
+        let assets = assets.clone();
+        Arc::new(move |AllocatedEndpoint { id, allocated_endpoint, external_endpoint, assets_root, .. }: AllocatedEndpoint| {
+            log::debug!("Allocated proxy endpoint. Allocation id: {}", id);
+            log::info!("Proxy sees this server as {}", external_endpoint);
+            log::info!("Proxy allocated an endpoint, use `ambient join {}` to join", allocated_endpoint);
+
+            // override the assets root url to point to proxy
+            // TODO: we might want to give different URLs to different players (depending on how they connect)
+            match AbsAssetUrl::parse(&assets_root) {
+                Ok(url) => {
+                    log::debug!("Assets root url overridden to: {}", url);
+                    ProxyBaseUrlKey.insert(&assets, url);
+                }
+                Err(err) => log::warn!("Failed to parse assets root url ({}): {}", assets_root, err),
+            }
+        })
+    };
+
+    let on_player_connected = {
+        let assets = assets.clone();
+        Arc::new(move |_player_id, conn: ambient_proxy::client::ProxiedConnection| {
+            log::debug!("Accepted connection via proxy");
+            run_connection(conn.into(), state.clone(), world_stream_filter.clone(), assets.clone());
+        })
+    };
+
+    static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
+
+    let assets_path = settings.project_path.join("build");
+    let builder = ambient_proxy::client::builder()
+        .endpoint(endpoint.clone())
+        .proxy_server(settings.endpoint.clone())
+        .project_id(settings.project_id.clone())
+        .assets_path(assets_path)
+        .user_agent(APP_USER_AGENT.to_string());
+
+    log::info!("Connecting to proxy server");
+    let proxy = match builder.build().await {
+        Ok(proxy_client) => proxy_client,
+        Err(err) => {
+            log::warn!("Failed to connect to proxy: {}", err);
+            return;
+        }
+    };
+
+    // start and allocate endpoint
+    let mut controller = proxy.start(on_endpoint_allocated, on_player_connected);
+    log::info!("Allocating proxy endpoint");
+    if let Err(err) = controller.allocate_endpoint().await {
+        log::warn!("Failed to allocate proxy endpoint: {}", err);
+    }
+
+    // pre-cache "assets" subdirectory
+    if settings.pre_cache_assets {
+        if let Err(err) = controller.pre_cache_assets("assets") {
+            log::warn!("Failed to pre-cache assets: {}", err);
+        }
+    }
+}
+
 /// Setup the protocol and enter the update loop for a new connected client
 #[tracing::instrument(skip_all)]
-fn run_connection(connection: NewConnection, state: SharedServerState, world_stream_filter: WorldStreamFilter, assets: AssetCache) {
+fn run_connection(connection: ClientConnection, state: SharedServerState, world_stream_filter: WorldStreamFilter, assets: AssetCache) {
     let connection_id = friendly_id();
     let handle = Arc::new(OnceCell::new());
     handle
@@ -339,7 +479,8 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
             tokio::spawn(async move {
                 let (diffs_tx, diffs_rx) = flume::unbounded();
                 let (stats_tx, stats_rx) = flume::unbounded();
-                let (events_tx, events_rx) = flume::unbounded();
+
+                let new_player_connection = connection.clone();
 
                 let on_init = |client: ClientInfo| {
                     let user_id = &client.user_id;
@@ -380,13 +521,16 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
                     log::debug!("[{}] Init diff sent", user_id);
 
                     if !reconnecting {
-                        instance.spawn_player(create_player_entity_data(user_id, diffs_tx.clone(), events_tx.clone(), stats_tx.clone()));
+                        instance.spawn_player(
+                            create_player_entity_data(user_id, diffs_tx.clone(), stats_tx.clone())
+                                .with(player_connection(), new_player_connection.clone()),
+                        );
                         log::info!("[{}] Player spawned", user_id);
                     } else {
                         let entity = get_player_by_user_id(&instance.world, user_id).unwrap();
                         instance.world.set(entity, player_entity_stream(), diffs_tx.clone()).unwrap();
                         instance.world.set(entity, player_stats_stream(), stats_tx.clone()).unwrap();
-                        instance.world.set(entity, player_event_stream(), events_tx.clone()).unwrap();
+                        instance.world.set(entity, player_connection(), new_player_connection.clone()).unwrap();
                         log::info!("[{}] Player reconnected", user_id);
                     }
                 };
@@ -449,9 +593,7 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
                     }
                 };
 
-                let on_datagram = |user_id: &String, mut bytes: Bytes| {
-                    let data = bytes.split_off(4);
-                    let handler_id = u32::from_be_bytes(bytes[0..4].try_into().unwrap());
+                let on_datagram = |user_id: &String, handler_id: u32, bytes: Bytes| {
                     let state = state.clone();
                     let handler = {
                         let state = state.lock();
@@ -466,7 +608,7 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
                     };
                     match handler {
                         Some(handler) => {
-                            handler(state, assets.clone(), user_id, data);
+                            handler(state, assets.clone(), user_id, bytes);
                         }
                         None => {
                             log::error!("No such datagram handler: {:?}", handler_id);
@@ -477,7 +619,6 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
                 let client = ClientInstance {
                     diffs_rx,
                     stats_rx,
-                    events_rx,
                     on_init: &on_init,
                     on_bi_stream: &on_bi_stream,
                     on_uni_stream: &on_uni_stream,
@@ -490,7 +631,7 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
                     let state = state.lock();
                     let instance = state.instances.get(MAIN_INSTANCE_ID).unwrap();
                     let world = &instance.world;
-                    ServerInfo { project_name: world.resource(project_name()).clone() }
+                    ServerInfo { project_name: world.resource(project_name()).clone(), ..Default::default() }
                 };
 
                 match client.run(connection, server_info).await {
@@ -517,10 +658,9 @@ fn run_connection(connection: NewConnection, state: SharedServerState, world_str
 struct ClientInstance<'a> {
     diffs_rx: flume::Receiver<Vec<u8>>,
     stats_rx: flume::Receiver<FpsSample>,
-    events_rx: flume::Receiver<Vec<u8>>,
 
     on_init: &'a (dyn Fn(ClientInfo) + Send + Sync),
-    on_datagram: &'a (dyn Fn(&String, Bytes) + Send + Sync),
+    on_datagram: &'a (dyn Fn(&String, u32, Bytes) + Send + Sync),
     on_bi_stream: &'a (dyn Fn(&String, u32, SendStream, RecvStream) + Send + Sync),
     on_uni_stream: &'a (dyn Fn(&String, u32, RecvStream) + Send + Sync),
     on_disconnect: &'a (dyn Fn(&Option<String>) + Send + Sync),
@@ -538,14 +678,13 @@ impl<'a> Drop for ClientInstance<'a> {
 
 impl<'a> ClientInstance<'a> {
     #[tracing::instrument(skip_all)]
-    pub async fn run(mut self, conn: NewConnection, server_info: ServerInfo) -> Result<(), NetworkError> {
+    pub async fn run(mut self, conn: ClientConnection, server_info: ServerInfo) -> Result<(), NetworkError> {
         log::debug!("Connecting to client");
         let mut proto = ServerProtocol::new(conn, server_info).await?;
 
         log::debug!("Client loop starting");
         let mut entities_rx = self.diffs_rx.stream();
         let mut stats_rx = self.stats_rx.stream();
-        let mut events_rx = self.events_rx.stream();
 
         tokio::task::block_in_place(|| {
             (self.on_init)(proto.client_info().clone());
@@ -560,50 +699,31 @@ impl<'a> ClientInstance<'a> {
                     proto.diff_stream.send_bytes(msg).instrument(span).await?;
                 }
                 Some(msg) = stats_rx.next() => {
-                    let span =tracing::debug_span!("stats");
+                    let span = tracing::debug_span!("stats");
                     proto.stat_stream.send(&msg).instrument(span).await?;
                 }
 
-                Some(msg) = events_rx.next() => {
-                    let span =tracing::debug_span!("server_event");
-                    let mut stream = proto.connection().open_uni().instrument(span).await?;
-
-                    stream.write(&msg).await?;
+                Ok(mut datagram) = proto.conn.read_datagram() => {
+                    let _span = tracing::debug_span!("datagram").entered();
+                    let data = datagram.split_off(4);
+                    let handler_id = u32::from_be_bytes(datagram[0..4].try_into().unwrap());
+                    tokio::task::block_in_place(|| (self.on_datagram)(&user_id, handler_id, data))
                 }
-                Some(Ok(datagram)) = proto.conn.datagrams.next() => {
-                    let _span =tracing::debug_span!("datagram").entered();
-                    tokio::task::block_in_place(|| (self.on_datagram)(&user_id, datagram))
-                }
-                Some(Ok((tx, mut rx))) = proto.conn.bi_streams.next() => {
+                Ok((tx, mut rx)) = proto.conn.accept_bi() => {
                     let span = tracing::debug_span!("bistream");
                     let stream_id = rx.read_u32().instrument(span).await;
                     if let Ok(stream_id) = stream_id {
-                        // tracing::debug!("Read stream id: {stream_id}");
                         tokio::task::block_in_place(|| { (self.on_bi_stream)(&user_id, stream_id, tx, rx); })
                     }
                 }
-                Some(Ok(mut rx)) = proto.conn.uni_streams.next() => {
+                Ok(mut rx) = proto.conn.accept_uni() => {
                     let span = tracing::debug_span!("unistream");
                     let stream_id = rx.read_u32().instrument(span).await;
                     if let Ok(stream_id) = stream_id {
-                        // tracing::debug!("Read stream id: {stream_id}");
                         tokio::task::block_in_place(|| { (self.on_uni_stream)(&user_id, stream_id,  rx); })
                     }
                 }
             }
         }
-    }
-}
-
-/// Miscellaneous information about the server that needs to be sent to the client during the handshake.
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ServerInfo {
-    /// The name of the project. Used by the client to figure out what to title its window. Defaults to "Ambient".
-    pub project_name: String,
-}
-
-impl Default for ServerInfo {
-    fn default() -> Self {
-        Self { project_name: "Ambient".into() }
     }
 }

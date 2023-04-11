@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use ambient_app::{gpu, App, AppBuilder};
 use ambient_cameras::UICamera;
-use ambient_core::camera::active_camera;
 use ambient_element::{ElementComponentExt, ElementTree};
 use ambient_gpu::texture::Texture;
 use ambient_ui::{
@@ -22,11 +21,11 @@ async fn init(app: &mut App) {
             )),
         }
         .el()
-        .set(width(), 200.)
-        .set(height(), 200.),
+        .with(width(), 200.)
+        .with(height(), 200.),
     );
 
-    UICamera.el().set(active_camera(), 0.).spawn_interactive(world);
+    UICamera.el().spawn_interactive(world);
 }
 
 fn main() {

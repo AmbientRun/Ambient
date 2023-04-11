@@ -1,18 +1,20 @@
 use std::sync::Arc;
 
-use ambient_core::{asset_cache, mesh};
-use ambient_ecs::{
-    components, ensure_has_component_with_default, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup,
+use ambient_core::{
+    asset_cache, mesh,
+    transform::{local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation},
 };
+use ambient_ecs::{ensure_has_component, ensure_has_component_with_default, query, Entity, SystemGroup};
 use ambient_gpu::{
     gpu::GpuKey,
     shader_module::{BindGroupDesc, ShaderModule},
     typed_buffer::TypedBuffer,
 };
-use ambient_meshes::UIRectMeshKey;
+use ambient_layout::{gpu_ui_size, height, mesh_to_local_from_size, width};
+use ambient_meshes::{UIRectMeshKey, UnitQuadMeshKey};
 use ambient_renderer::{
-    gpu_primitives, material, primitives, renderer_shader, Material, MaterialShader, RendererConfig, RendererShader, SharedMaterial,
-    StandardShaderKey, MATERIAL_BIND_GROUP,
+    gpu_primitives_lod, gpu_primitives_mesh, material, primitives, renderer_shader, Material, MaterialShader, RendererConfig,
+    RendererShader, SharedMaterial, StandardShaderKey, MATERIAL_BIND_GROUP,
 };
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
@@ -20,21 +22,12 @@ use ambient_std::{
     color::Color,
     friendly_id, include_file,
 };
-use glam::{vec4, UVec3, Vec4};
-use wgpu::BindGroup;
+use glam::{vec4, Quat, UVec3, Vec3, Vec4};
+use wgpu::{BindGroup, BindGroupLayoutEntry};
 
-components!("rect", {
-    @[Debuggable, Networked, Store, Name["Background color"], Description["Background color of an entity with a `rect` component."]]
-    background_color: Vec4,
-    @[Debuggable, Networked, Store, Name["Border color"], Description["Border color of an entity with a `rect` component."]]
-    border_color: Vec4,
-    @[Debuggable, Networked, Store, Name["Border radius"], Description["Radius for each corner of an entity with a `rect` component.\n`x` = top-left, `y` = top-right, `z` = bottom-left, `w` = bottom-right."]]
-    border_radius: Vec4,
-    @[Debuggable, Networked, Store, Name["Border thickness"], Description["Border thickness of an entity with a `rect` component."]]
-    border_thickness: f32,
-    @[Debuggable, Networked, Store, Name["Rect"], Description["If attached to an entity, the entity will be converted to a UI rectangle, with optionally rounded corners and borders."]]
-    rect: (),
-});
+pub use ambient_ecs::generated::components::core::rect::{
+    background_color, border_color, border_radius, border_thickness, line_from, line_to, line_width, rect,
+};
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, Default, bytemuck::Pod, bytemuck::Zeroable)]
@@ -64,15 +57,47 @@ pub fn systems() -> SystemGroup {
     SystemGroup::new(
         "ui/rect",
         vec![
+            query((line_from().changed(), line_to().changed(), line_width().changed())).to_system(|q, world, qs, _| {
+                for (id, (from, to, line_width)) in q.collect_cloned(world, qs) {
+                    let dir = (to - from).normalize();
+                    world
+                        .add_components(
+                            id,
+                            Entity::new()
+                                .with(translation(), (from + to) / 2.)
+                                .with(rotation(), Quat::from_rotation_arc(Vec3::X, dir))
+                                .with_default(rect())
+                                .with(width(), (from - to).length())
+                                .with(height(), line_width),
+                        )
+                        .unwrap();
+                }
+            }),
             ensure_has_component_with_default(rect(), primitives()),
-            ensure_has_component_with_default(rect(), gpu_primitives()),
+            ensure_has_component_with_default(rect(), gpu_ui_size()),
+            ensure_has_component_with_default(rect(), mesh_to_local()),
+            ensure_has_component_with_default(rect(), mesh_to_world()),
+            ensure_has_component_with_default(rect(), local_to_world()),
+            ensure_has_component(rect(), scale(), Vec3::ONE),
+            ensure_has_component_with_default(rect(), mesh_to_local_from_size()),
+            ensure_has_component_with_default(rect(), gpu_primitives_mesh()),
+            ensure_has_component_with_default(rect(), gpu_primitives_lod()),
             query(()).incl(rect()).excl(mesh()).to_system(|q, world, qs, _| {
                 let assets = world.resource(asset_cache()).clone();
                 for (id, _) in q.collect_cloned(world, qs) {
                     world
                         .add_components(
                             id,
-                            Entity::new().with(mesh(), UIRectMeshKey.get(&assets)).with(renderer_shader(), cb(get_rect_shader)),
+                            Entity::new()
+                                .with(
+                                    mesh(),
+                                    if world.has_component(id, line_from()) {
+                                        UnitQuadMeshKey.get(&assets)
+                                    } else {
+                                        UIRectMeshKey.get(&assets)
+                                    },
+                                )
+                                .with(renderer_shader(), cb(get_rect_shader)),
                         )
                         .unwrap();
                 }
@@ -113,27 +138,22 @@ pub struct RectMaterialShaderKey;
 impl SyncAssetKey<Arc<MaterialShader>> for RectMaterialShaderKey {
     fn load(&self, _assets: AssetCache) -> Arc<MaterialShader> {
         Arc::new(MaterialShader {
-            shader: ShaderModule::new(
-                "RectMaterial",
-                include_file!("rect.wgsl"),
-                vec![BindGroupDesc {
-                    entries: vec![wgpu::BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Buffer {
-                            ty: wgpu::BufferBindingType::Uniform,
-                            has_dynamic_offset: false,
-                            min_binding_size: None,
-                        },
-                        count: None,
-                    }],
-                    label: MATERIAL_BIND_GROUP.into(),
-                }
-                .into()],
-            ),
+            shader: Arc::new(ShaderModule::new("RectMaterial", include_file!("rect.wgsl")).with_binding_desc(get_rect_layout())),
 
             id: "rect_material_shader".to_string(),
         })
+    }
+}
+
+fn get_rect_layout() -> BindGroupDesc<'static> {
+    BindGroupDesc {
+        entries: vec![BindGroupLayoutEntry {
+            binding: 0,
+            visibility: wgpu::ShaderStages::FRAGMENT,
+            ty: wgpu::BindingType::Buffer { ty: wgpu::BufferBindingType::Uniform, has_dynamic_offset: false, min_binding_size: None },
+            count: None,
+        }],
+        label: MATERIAL_BIND_GROUP.into(),
     }
 }
 
@@ -170,13 +190,15 @@ pub struct RectMaterial {
 impl RectMaterial {
     pub fn new(assets: AssetCache, params: RectMaterialParams) -> Self {
         let gpu = GpuKey.get(&assets);
-        let layout = RectMaterialShaderKey.get(&assets).shader.first_layout(&assets);
+        let layout = get_rect_layout().get(&assets);
+
         let buffer = TypedBuffer::new_init(
             gpu.clone(),
             "RectMaterial.buffer",
             wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             &[params],
         );
+
         Self {
             id: friendly_id(),
             bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
@@ -191,13 +213,15 @@ impl RectMaterial {
         }
     }
 }
+
 impl std::fmt::Debug for RectMaterial {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("RectMaterial").field("id", &self.id).finish()
     }
 }
+
 impl Material for RectMaterial {
-    fn bind(&self) -> &BindGroup {
+    fn bind_group(&self) -> &BindGroup {
         &self.bind_group
     }
     fn id(&self) -> &str {

@@ -10,7 +10,7 @@ use ambient_gpu::{
 use ambient_meshes::QuadMeshKey;
 use ambient_model_import::model_crate::ModelCrate;
 use ambient_renderer::{
-    gpu_primitives, material,
+    gpu_primitives_lod, gpu_primitives_mesh, material,
     materials::flat_material::{get_flat_shader, FlatMaterial},
     primitives, renderer_shader, Material, MaterialShader, SharedMaterial, StandardShaderKey, MATERIAL_BIND_GROUP,
 };
@@ -23,16 +23,18 @@ use ambient_std::{
 use glam::*;
 use wgpu::BindGroup;
 
+fn get_custom_material_layout() -> BindGroupDesc<'static> {
+    BindGroupDesc { entries: vec![], label: MATERIAL_BIND_GROUP.into() }
+}
+
 #[derive(Clone, Debug)]
 pub struct CustomMaterialShaderKey;
 impl SyncAssetKey<Arc<MaterialShader>> for CustomMaterialShaderKey {
     fn load(&self, _assets: AssetCache) -> Arc<MaterialShader> {
         Arc::new(MaterialShader {
             id: "custom_material_shader".to_string(),
-            shader: ShaderModule::new(
-                "CustomMaterial",
-                include_str!("material.wgsl"),
-                vec![BindGroupDesc { entries: vec![], label: MATERIAL_BIND_GROUP.into() }.into()],
+            shader: Arc::new(
+                ShaderModule::new("CustomMaterial", include_str!("material.wgsl")).with_binding_desc(get_custom_material_layout()),
             ),
         })
     }
@@ -45,7 +47,8 @@ pub struct CustomMaterial {
 impl CustomMaterial {
     pub fn new(assets: AssetCache) -> Self {
         let gpu = GpuKey.get(&assets);
-        let layout = CustomMaterialShaderKey.get(&assets).shader.first_layout(&assets);
+        let layout = get_custom_material_layout().get(&assets);
+
         Self {
             id: friendly_id(),
             bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
@@ -62,7 +65,7 @@ impl std::fmt::Debug for CustomMaterial {
     }
 }
 impl Material for CustomMaterial {
-    fn bind(&self) -> &BindGroup {
+    fn bind_group(&self) -> &BindGroup {
         &self.bind_group
     }
     fn id(&self) -> &str {
@@ -96,7 +99,8 @@ async fn init(app: &mut App) {
         .with(renderer_shader(), cb(get_flat_shader))
         .with(material(), SharedMaterial::new(grey))
         .with(primitives(), vec![])
-        .with_default(gpu_primitives())
+        .with_default(gpu_primitives_mesh())
+        .with_default(gpu_primitives_lod())
         .with_default(local_to_world())
         .with_default(mesh_to_world())
         .with(scale(), vec3(20., 20., 1.))

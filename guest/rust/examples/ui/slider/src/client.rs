@@ -1,12 +1,5 @@
 use ambient_api::prelude::*;
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::layout::space_between_items;
-use ambient_ui_components::{
-    default_theme::STREET,
-    editor::{IntegerSlider, Slider},
-    layout::FlowColumn,
-    setup_ui_camera, FocusRoot, UIExt,
-};
+use ambient_ui_components::prelude::*;
 
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
@@ -48,14 +41,11 @@ fn App(hooks: &mut Hooks) -> Element {
         }
         .el(),
     ])])
-    .set(space_between_items(), STREET)
+    .with(space_between_items(), STREET)
     .with_padding_even(STREET)
 }
 
 #[main]
-pub async fn main() -> EventResult {
-    setup_ui_camera();
+pub fn main() {
     App.el().spawn_interactive();
-
-    EventOk
 }

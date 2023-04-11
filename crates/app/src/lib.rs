@@ -148,6 +148,7 @@ pub fn world_instance_resources(resources: AppResources) -> Entity {
         .with(ambient_core::time(), current_time)
         .with(ambient_core::dtime(), 0.)
         .with(gpu_world(), GpuWorld::new_arced(resources.assets))
+        .with_merge(ambient_input::resources())
         .with_merge(ambient_input::picking::resources())
         .with_merge(ambient_core::async_ecs::async_ecs_resources())
         .with(ambient_core::window::window_physical_size(), resources.window_physical_size)
@@ -168,6 +169,7 @@ pub struct AppBuilder {
     pub main_renderer: bool,
     pub examples_systems: bool,
     pub headless: Option<UVec2>,
+    pub update_title_with_fps_stats: bool,
 }
 
 pub trait AsyncInit<'a> {
@@ -197,6 +199,7 @@ impl AppBuilder {
             main_renderer: true,
             examples_systems: false,
             headless: None,
+            update_title_with_fps_stats: true,
         }
     }
     pub fn simple() -> Self {
@@ -243,6 +246,11 @@ impl AppBuilder {
         self
     }
 
+    pub fn update_title_with_fps_stats(mut self, value: bool) -> Self {
+        self.update_title_with_fps_stats = value;
+        self
+    }
+
     pub async fn build(self) -> anyhow::Result<App> {
         crate::init_all_components();
         let (window, event_loop) = if self.headless.is_some() {
@@ -276,10 +284,17 @@ impl AppBuilder {
                 "0.0.0.0:{}",
                 std::env::var("PUFFIN_PORT").ok().and_then(|port| port.parse::<u16>().ok()).unwrap_or(puffin_http::DEFAULT_PORT)
             );
-            let server = puffin_http::Server::new(&puffin_addr)?;
-            tracing::debug!("Puffin server running on {}", puffin_addr);
-            puffin::set_scopes_on(true);
-            server
+            match puffin_http::Server::new(&puffin_addr) {
+                Ok(server) => {
+                    tracing::debug!("Puffin server running on {}", puffin_addr);
+                    puffin::set_scopes_on(true);
+                    Some(server)
+                }
+                Err(err) => {
+                    tracing::error!("Failed to start puffin server: {:?}", err);
+                    None
+                }
+            }
         };
 
         #[cfg(not(target_os = "unknown"))]
@@ -354,6 +369,7 @@ impl AppBuilder {
             _puffin: puffin_server,
             modifiers: Default::default(),
             ctl_rx,
+            update_title_with_fps_stats: self.update_title_with_fps_stats,
         })
     }
 
@@ -396,10 +412,11 @@ pub struct App {
     event_loop: Option<EventLoop<()>>,
     fps: FpsCounter,
     #[cfg(feature = "profile")]
-    _puffin: puffin_http::Server,
+    _puffin: Option<puffin_http::Server>,
     modifiers: ModifiersState,
 
     window_focused: bool,
+    update_title_with_fps_stats: bool,
 }
 
 impl std::fmt::Debug for App {
@@ -445,7 +462,10 @@ impl App {
                     control_flow,
                 );
             } else if let Some(event) = event.to_static() {
+                // tracing::info!("Handling event: {event:?}");
                 self.handle_static_event(&event, control_flow);
+            } else {
+                tracing::error!("Failed to convert event to static")
             }
         });
     }
@@ -514,6 +534,11 @@ impl App {
                                 window.set_cursor_icon(icon);
                             }
                         }
+                        WindowCtl::SetTitle(title) => {
+                            if let Some(window) = &self.window {
+                                window.set_title(&title);
+                            }
+                        }
                     }
                 }
 
@@ -528,8 +553,15 @@ impl App {
 
                 if let Some(fps) = self.fps.frame_next() {
                     world.set(world.resource_entity(), self::fps_stats(), fps.clone()).unwrap();
-                    if let Some(window) = &self.window {
-                        window.set_title(&format!("{} [{}, {} entities]", world.resource(window_title()), fps.dump_both(), world.len()));
+                    if self.update_title_with_fps_stats {
+                        if let Some(window) = &self.window {
+                            window.set_title(&format!(
+                                "{} [{}, {} entities]",
+                                world.resource(window_title()),
+                                fps.dump_both(),
+                                world.len()
+                            ));
+                        }
                     }
                 }
 
@@ -579,7 +611,9 @@ impl App {
                 }
                 WindowEvent::CursorMoved { position, .. } => {
                     if self.window_focused {
-                        world.set(world.resource_entity(), cursor_position(), vec2(position.x as f32, position.y as f32)).unwrap();
+                        let p = vec2(position.x as f32, position.y as f32)
+                            / self.window.as_ref().map(|x| x.scale_factor() as f32).unwrap_or(1.);
+                        world.set(world.resource_entity(), cursor_position(), p).unwrap();
                     }
                 }
                 _ => {}

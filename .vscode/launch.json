@@ -7,7 +7,9 @@
             "name": "ambient [debug]",
             "cargo": {
                 "args": [
-                    "build"
+                    "build",
+                    "--features",
+                    "profile"
                 ],
                 "filter": {
                     "name": "ambient",
@@ -21,34 +23,7 @@
             },
             "args": [
                 "run",
-                "guest/rust/examples/ui/slider",
-            ],
-            "cwd": "${workspaceFolder}",
-            "sourceLanguages": [
-                "rust"
-            ]
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "ambient third_person [debug]",
-            "cargo": {
-                "args": [
-                    "build"
-                ],
-                "filter": {
-                    "name": "ambient",
-                    "kind": "bin"
-                }
-            },
-            "env": {
-                "RUST_LOG": "info,wgpu=warn,naga=warn,quinn=warn,sentry=debug,sentry-anyhow=debug,sentry-core=debug,fbxcel=error",
-                "AMBIENT_DISABLE_TIMEOUT": "true",
-                "AMBIENT_DEBUGGER": "true"
-            },
-            "args": [
-                "run",
-                "guest/rust/examples/basics/third_person_camera",
+                "guest/rust/examples/basics/fog",
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [
@@ -62,7 +37,9 @@
             "cargo": {
                 "args": [
                     "build",
-                    "--release"
+                    "--release",
+                    "--features",
+                    "profile"
                 ],
                 "filter": {
                     "name": "ambient",
@@ -75,6 +52,32 @@
             },
             "args": [],
             "cwd": "${workspaceFolder}",
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Example 'crates/ambient_renderer/lod'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "-p",
+                    "ambient_renderer",
+                    "--example",
+                    "lod"
+                ],
+                "filter": {
+                    "name": "lod",
+                    "kind": "example"
+                }
+            },
+            "env": {
+                "RUST_LOG": "info,wgpu=warn,naga=warn,quinn=warn,sentry=debug,sentry-anyhow=debug,sentry-core=debug,fbxcel=error",
+                "AMBIENT_DISABLE_TIMEOUT": "true"
+            },
+            "args": [],
             "sourceLanguages": [
                 "rust"
             ]

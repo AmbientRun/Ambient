@@ -1,9 +1,8 @@
 use std::{str::FromStr, sync::Arc, time::Duration};
 
 use ambient_core::{asset_cache, async_ecs::async_run, runtime, window::get_mouse_clip_space_position};
-use ambient_ecs::{Component, ComponentValue, EntityId};
+use ambient_ecs::{generated::messages, Component, ComponentValue, EntityId};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_input::{event_keyboard_input, keycode};
 use ambient_intent::{client_push_intent, rpc_undo_head_exact};
 use ambient_network::client::GameClient;
 use ambient_sys::task::RuntimeHandle;
@@ -45,7 +44,6 @@ use selection_panel::*;
 use transform::*;
 
 use self::entity_browser::EntityBrowserScreen;
-use ambient_event_types::WINDOW_KEYBOARD_INPUT;
 
 /// An editor can only be in one action at a time.
 /// They can be confirmed or aborted.
@@ -156,27 +154,26 @@ impl ElementComponent for EditorBuildMode {
 
             hooks.use_interval_deps(Duration::from_millis(2000), true, selection.clone(), update_targets);
         }
-        hooks.use_event(WINDOW_KEYBOARD_INPUT, move |_world, event| {
-            if let Some(pressed) = event.get(event_keyboard_input()) {
-                if let Some(keycode) = event.get_ref(keycode()) {
-                    let keycode = VirtualKeyCode::from_str(keycode).unwrap();
-                    match keycode {
-                        VirtualKeyCode::LShift => {
-                            if pressed {
-                                set_select_mode(SelectMode::Add);
-                            } else {
-                                set_select_mode(SelectMode::Set);
-                            }
+        hooks.use_runtime_message::<messages::WindowKeyboardInput>(move |_world, event| {
+            let pressed = event.pressed;
+            if let Some(keycode) = event.keycode.as_deref() {
+                let keycode = VirtualKeyCode::from_str(keycode).unwrap();
+                match keycode {
+                    VirtualKeyCode::LShift => {
+                        if pressed {
+                            set_select_mode(SelectMode::Add);
+                        } else {
+                            set_select_mode(SelectMode::Set);
                         }
-                        VirtualKeyCode::LControl => {
-                            if pressed {
-                                set_select_mode(SelectMode::Remove);
-                            } else {
-                                set_select_mode(SelectMode::Set);
-                            }
-                        }
-                        _ => {}
                     }
+                    VirtualKeyCode::LControl => {
+                        if pressed {
+                            set_select_mode(SelectMode::Remove);
+                        } else {
+                            set_select_mode(SelectMode::Set);
+                        }
+                    }
+                    _ => {}
                 }
             }
         });
@@ -190,11 +187,11 @@ impl ElementComponent for EditorBuildMode {
             if !selection.is_empty() {
                 SelectionPanel { selection: selection.clone(), set_selection: set_selection.clone() }
                     .el()
-                    .set(width(), 300.)
-                    .set(docking(), Docking::Right)
+                    .with(width(), 300.)
+                    .with(docking(), Docking::Right)
                     .floating_panel()
-                    .set(margin(), Borders::even(STREET))
-                    .set(padding(), Borders::even(STREET))
+                    .with(margin(), Borders::even(STREET))
+                    .with(padding(), Borders::even(STREET))
             } else {
                 Element::new()
             },
@@ -309,12 +306,12 @@ impl ElementComponent for EditorBuildMode {
             })
                 .el()
                 .floating_panel()
-                .set(docking(), Docking::Top)
-                .set(space_between_items(), STREET)
-                .set(margin(), Borders::even(STREET))
-                .set(padding(), Borders::even(STREET)),
+                .with(docking(), Docking::Top)
+                .with(space_between_items(), STREET)
+                .with(margin(), Borders::even(STREET))
+                .with(padding(), Borders::even(STREET)),
             GenerateTerrainButton.el()
-                .set(margin(), Borders::even(STREET)),
+                .with(margin(), Borders::even(STREET)),
             SelectArea.el(),
         ])
             .el()
@@ -417,6 +414,6 @@ impl ElementComponent for TransformControls {
                 .el(),
             ]);
         }
-        FlowRow(items).el().set(space_between_items(), STREET)
+        FlowRow(items).el().with(space_between_items(), STREET)
     }
 }

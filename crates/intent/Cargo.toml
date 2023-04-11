@@ -13,8 +13,8 @@ ambient_ecs = { path = "../ecs" }
 ambient_network = { path = "../network" }
 ambient_rpc = { path = "../rpc" }
 ambient_ui = { path = "../ui" }
-ambient_editor_derive = { path = "../editor_derive" }
-ambient_element = { path = "../element" }
+ambient_editor_derive = { path = "../../shared_crates/editor_derive" }
+ambient_element = { path = "../../shared_crates/element" }
 tracing = { workspace = true }
 itertools = { workspace = true }
 tokio = { workspace = true }

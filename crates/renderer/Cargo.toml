@@ -32,13 +32,14 @@ tracing = { workspace = true }
 
 [dev-dependencies]
 ambient_app = { path = "../app" }
-ambient_element = { path = "../element" }
+ambient_element = { path = "../../shared_crates/element" }
 ambient_gizmos = { path = "../gizmos" }
 ambient_model_import = { path = "../model_import" }
 ambient_cameras = { path = "../cameras" }
 ambient_primitives = { path = "../primitives" }
 env_logger = { workspace = true }
 winit = { workspace = true }
+tracing-subscriber = { workspace = true }
 
 [features]
 hotload-includes = ['ambient_std/hotload-includes']

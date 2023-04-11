@@ -42,8 +42,7 @@ var<storage> brushPositions: IVec2Buffer;
 var<storage> brushWeights: F32Buffer;
 
 fn get_height(coord: vec2<i32>) -> f32 {
-    return textureLoad(heightmap, coord, #ROCK_LAYER).r +
-    textureLoad(heightmap, coord, #SOIL_LAYER).r;
+    return textureLoad(heightmap, coord, ROCK_LAYER).r + textureLoad(heightmap, coord, SOIL_LAYER).r;
 }
 
 fn get_gradient_and_height(pos: vec2<f32>) -> vec3<f32> {
@@ -69,13 +68,13 @@ fn get_gradient_and_height(pos: vec2<f32>) -> vec3<f32> {
 }
 
 fn texInc(cell: vec2<i32>, value: f32) {
-    let val = textureLoad(heightmap, cell, #SOIL_LAYER).r;
-    textureStore(heightmap, cell, #SOIL_LAYER, vec4<f32>(max(0., val + value), 0., 0., 0.));
+    let val = textureLoad(heightmap, cell, SOIL_LAYER).r;
+    textureStore(heightmap, cell, SOIL_LAYER, vec4<f32>(max(0., val + value), 0., 0., 0.));
 }
 
 
-#TERRAIN_FUNCS
-#GET_HARDNESS
+TERRAIN_FUNCS
+GET_HARDNESS
 
 @compute
 @workgroup_size(32)
@@ -101,11 +100,11 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
         // Update the droplet's direction and position (move position 1 unit regardless of speed)
         dir = dir * (1. - params.inertia) - gradient_and_height.xy * params.inertia;
 
-        if (length(dir) < 0.00001) {
+        if length(dir) < 0.00001 {
             dir = normalize(vec2<f32>(randomPositions.data[(id.x + u32(lifetime)) % arrayLength(&randomPositions.data)] - size.xy / 2));
         }
 
-        if (node.x < params.border_size || node.x > mapSize - params.border_size || node.y < params.border_size || node.y > mapSize - params.border_size) {
+        if node.x < params.border_size || node.x > mapSize - params.border_size || node.y < params.border_size || node.y > mapSize - params.border_size {
             break;
         }
 
@@ -119,13 +118,13 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
         // Calculate the droplet's sediment capacity (higher when moving fast down a slope and contains lots of water)
         let capacity = max(-deltaHeight, params.min_slope) * vel * water * params.capacity;
 
-        let hardness = get_hardness(node, newHeight + f32(#TERRAIN_BASE));
+        let hardness = get_hardness(node, newHeight + f32(TERRAIN_BASE));
 
         // If carrying more sediment than capacity, or if flowing uphill:
-        if (sediment > capacity || deltaHeight > 0.) {
+        if sediment > capacity || deltaHeight > 0. {
             // If moving uphill (deltaHeight > 0) try fill up to the current height, otherwise deposit a fraction of the excess sediment
             var amountToDeposit: f32;
-            if (deltaHeight > 0.) {
+            if deltaHeight > 0. {
                 amountToDeposit = min(deltaHeight, sediment);
             } else {
                 amountToDeposit = (sediment - capacity) * params.deposition;
@@ -138,8 +137,7 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
             texInc(node + vec2<i32>(1, 0), amountToDeposit * cellOffset.x * (1. - cellOffset.y));
             texInc(node + vec2<i32>(0, 1), amountToDeposit * (1. - cellOffset.x) * cellOffset.y);
             texInc(node + vec2<i32>(1, 1), amountToDeposit * cellOffset.x * cellOffset.y);
-        }
-        else {
+        } else {
             // Erode a fraction of the droplet's current carry capacity.
             // Clamp the erosion to the change in height so that it doesn't dig a hole in the terrain behind the droplet
 
@@ -149,12 +147,12 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
                 let erodePos = node + brushPositions.data[i];
 
                 let weightedErodeAmount = amountToErode * brushWeights.data[i];
-                let current_soil = textureLoad(heightmap, erodePos, #SOIL_LAYER).r;
-                if (current_soil > 0.) {
-                    textureStore(heightmap, erodePos, #SOIL_LAYER, vec4<f32>(max(0., current_soil - weightedErodeAmount), 0., 0., 0.));
+                let current_soil = textureLoad(heightmap, erodePos, SOIL_LAYER).r;
+                if current_soil > 0. {
+                    textureStore(heightmap, erodePos, SOIL_LAYER, vec4<f32>(max(0., current_soil - weightedErodeAmount), 0., 0., 0.));
                 } else {
-                    let current_rock = textureLoad(heightmap, erodePos, #ROCK_LAYER).r;
-                    textureStore(heightmap, erodePos, #ROCK_LAYER, vec4<f32>(max(0., current_rock - weightedErodeAmount), 0., 0., 0.));
+                    let current_rock = textureLoad(heightmap, erodePos, ROCK_LAYER).r;
+                    textureStore(heightmap, erodePos, ROCK_LAYER, vec4<f32>(max(0., current_rock - weightedErodeAmount), 0., 0., 0.));
                 }
                 sediment = sediment + weightedErodeAmount;
             }
@@ -165,5 +163,4 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
         vel = sqrt(max(0., vel * vel + deltaHeight * gravity));
         water = water * (1. - params.evaporation);
     }
-
 }

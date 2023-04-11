@@ -1,15 +1,22 @@
 use std::{collections::HashMap, f32::consts::PI, fmt::Debug, ops::Deref, sync::Arc};
 
 use ambient_core::{
-    asset_cache, async_ecs::async_run, runtime, transform::{rotation, scale, translation}
+    asset_cache,
+    async_ecs::async_run,
+    runtime,
+    transform::{rotation, scale, translation},
 };
 use ambient_ecs::{
-    components, query, Component, ComponentQuery, ComponentValueBase, Debuggable, DefaultValue, Description, Entity, EntityId, MakeDefault, Name, Networked, QueryEvent, QueryState, Store, SystemGroup, TypedReadQuery, World
+    components, query, Component, ComponentQuery, ComponentValueBase, Debuggable, Entity, EntityId, MakeDefault, Networked, QueryEvent,
+    QueryState, Store, SystemGroup, TypedReadQuery, World,
 };
 use ambient_editor_derive::ElementEditor;
 use ambient_model::model_from_url;
 use ambient_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt}, asset_url::{AbsAssetUrl, ColliderAssetType, TypedAssetUrl}, download_asset::{AssetError, JsonFromUrl}, events::EventDispatcher
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt},
+    asset_url::{AbsAssetUrl, ColliderAssetType, TypedAssetUrl},
+    download_asset::{AssetError, JsonFromUrl},
+    events::EventDispatcher,
 };
 use ambient_ui::Editable;
 use anyhow::Context;
@@ -18,42 +25,25 @@ use futures::future::try_join_all;
 use glam::{vec3, Mat4, Quat, Vec3};
 use itertools::Itertools;
 use physxx::{
-    AsPxActor, AsPxRigidActor, PxActor, PxActorFlag, PxBase, PxBoxGeometry, PxControllerDesc, PxControllerShapeDesc, PxConvexMeshGeometry, PxGeometry, PxMaterial, PxMeshScale, PxPlaneGeometry, PxRigidActor, PxRigidBody, PxRigidBodyFlag, PxRigidDynamicRef, PxRigidStaticRef, PxShape, PxShapeFlag, PxSphereGeometry, PxTransform, PxTriangleMeshGeometry, PxUserData
+    AsPxActor, AsPxRigidActor, PxActor, PxActorFlag, PxBase, PxBoxGeometry, PxControllerDesc, PxControllerShapeDesc, PxConvexMeshGeometry,
+    PxGeometry, PxMaterial, PxMeshScale, PxPlaneGeometry, PxRigidActor, PxRigidBody, PxRigidBodyFlag, PxRigidDynamicRef, PxRigidStaticRef,
+    PxShape, PxShapeFlag, PxSphereGeometry, PxTransform, PxTriangleMeshGeometry, PxUserData,
 };
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    main_controller_manager, make_physics_static, mesh::{PhysxGeometry, PhysxGeometryFromUrl}, physx::{
-        angular_velocity, character_controller, contact_offset, linear_velocity, physics, physics_controlled, physics_shape, rest_offset, rigid_actor, Physics
-    }, wood_physics_material, ColliderScene, PxActorUserData, PxShapeUserData, PxWoodMaterialKey
+    main_controller_manager, make_physics_static,
+    mesh::{PhysxGeometry, PhysxGeometryFromUrl},
+    physx::{
+        angular_velocity, character_controller, contact_offset, linear_velocity, physics, physics_controlled, physics_shape, rest_offset,
+        rigid_actor, Physics,
+    },
+    wood_physics_material, ColliderScene, PxActorUserData, PxShapeUserData, PxWoodMaterialKey,
 };
 
-components!("physics", {
-    @[
-        Debuggable, Networked, Store,
-        Name["Plane collider"],
-        Description["If attached, this entity will have a plane physics collider."]
-    ]
-    plane_collider: (),
-    @[
-        Debuggable, Networked, Store,
-        Name["Box collider"],
-        Description["If attached, this entity will have a box physics collider.\n`x, y, z` is the size of the box."]
-    ]
-    box_collider: Vec3,
-    @[
-        Debuggable, Networked, Store,
-        Name["Sphere collider"],
-        Description["If attached, this entity will have a sphere physics collider.\nThe value corresponds to the radius of the sphere."]
-    ]
-    sphere_collider: f32,
-    @[
-        Debuggable, Networked, Store,
-        Name["Collider from URL"],
-        Description["This entity will load its physics collider from the URL.\nThe value is the URL to load from."]
-    ]
-    collider_from_url: String,
+pub use ambient_ecs::generated::components::core::physics::*;
 
+components!("physics", {
     @[MakeDefault, Networked, Store, Debuggable]
     collider: ColliderDef,
     @[MakeDefault, Editable, Networked, Store, Debuggable]
@@ -61,46 +51,6 @@ components!("physics", {
     collider_shapes: Vec<PxShape>,
     collider_shapes_convex: Vec<PxShape>,
     on_collider_loaded: EventDispatcher<dyn Fn(&mut World, EntityId) + Sync + Send>,
-
-    @[
-        Debuggable, Networked, Store,
-        Name["Dynamic"],
-        Description["If this is true, the entity will be dynamic (i.e. be able to move). Otherwise, it will be static."]
-    ]
-    dynamic: bool,
-    @[
-        Debuggable, Networked, Store,
-        Name["Kinematic"],
-        Description["If attached, and this entity is dynamic, this entity will also be kinematic (i.e. unable to be affected by other entities motion). Otherwise, it will receive forces normally."]
-    ]
-    kinematic: (),
-    @[
-        Debuggable, Editable, Networked, Store,
-        DefaultValue<_>[1.0],
-        Name["Mass"],
-        Description["The mass of this entity, measured in kilograms."]
-    ]
-    mass: f32,
-    @[
-        Debuggable, Editable, Networked, Store,
-        DefaultValue<_>[1.0],
-        Name["Density"],
-        Description["The density of this entity.\nThis is used to update the `mass` when the entity is rescaled."]
-    ]
-    density: f32,
-
-    @[
-        Debuggable, MakeDefault, Networked, Store,
-        Name["Character controller height"],
-        Description["The height of the physics character controller attached to this entity.\nIf an entity has both this and a `character_controller_radius`, it will be given a physical character collider."]
-    ]
-    character_controller_height: f32,
-    @[
-        Debuggable, MakeDefault, Networked, Store,
-        Name["Character controller radius"],
-        Description["The radius of the physics character controller attached to this entity.\nIf an entity has both this and a `character_controller_height`, it will be given a physical character collider."]
-    ]
-    character_controller_radius: f32,
 });
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, ElementEditor)]
@@ -412,7 +362,7 @@ impl ColliderDef {
         match self.clone() {
             ColliderDef::Box { size, center } => Ok(Box::new(move |physics, scale| {
                 let size = size * scale;
-                let geometry = PxBoxGeometry::new(size.x / 2., size.y / 2., size.x / 2.);
+                let geometry = PxBoxGeometry::new(size.x / 2., size.y / 2., size.z / 2.);
                 let shape = PxShape::new(physics.physics, &geometry, &[&material], Some(true), None);
                 shape.set_local_pose(&PxTransform::from_translation(center * scale));
                 shape.set_user_data(PxShapeUserData {

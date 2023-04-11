@@ -31,7 +31,9 @@ use ambient_physics::{
     physx::{character_controller, physics, physics_shape, rigid_static, Physics},
     PxActorUserData, PxShapeUserData,
 };
-use ambient_renderer::{cast_shadows, color, gpu_primitives, lod::cpu_lod, material, primitives, renderer_shader, SharedMaterial};
+use ambient_renderer::{
+    cast_shadows, color, gpu_primitives_lod, gpu_primitives_mesh, lod::cpu_lod, material, primitives, renderer_shader, SharedMaterial,
+};
 use ambient_std::{
     asset_cache::{Asset, AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
@@ -258,7 +260,7 @@ pub fn client_systems() -> SystemGroup {
                         world,
                         id,
                         element_tree(),
-                        Group(vec![Terrain { state: state.clone(), heightmap_position: pos.xy() }.el().set_default(local_to_parent())])
+                        Group(vec![Terrain { state: state.clone(), heightmap_position: pos.xy() }.el().with_default(local_to_parent())])
                             .el(),
                     );
                 }
@@ -413,26 +415,27 @@ pub enum TerrainLayers {
 
 pub fn wgsl_terrain_preprocess(source: impl Into<String>) -> String {
     wgsl_terrain_consts(source)
-        .replace("#TERRAIN_FUNCS", &wgsl_terrain_consts(include_str!("terrain_funcs.wgsl")))
-        .replace("#GET_HARDNESS", &wgsl_terrain_consts(include_str!("brushes/get_hardness.wgsl")))
+        .replace("TERRAIN_FUNCS", &wgsl_terrain_consts(include_str!("terrain_funcs.wgsl")))
+        .replace("GET_HARDNESS", &wgsl_terrain_consts(include_str!("brushes/get_hardness.wgsl")))
 }
+
 fn wgsl_terrain_consts(source: impl Into<String>) -> String {
     let source: String = source.into();
     source
-        .replace("#ROCK_LAYER", &(TerrainLayers::Rock as usize).to_string())
-        .replace("#SOIL_LAYER", &(TerrainLayers::Soil as usize).to_string())
-        .replace("#SEDIMENT_LAYER", &(TerrainLayers::Sediment as usize).to_string())
-        .replace("#WATER_LAYER", &(TerrainLayers::Water as usize).to_string())
-        .replace("#WATER_OUTFLOW_L_LAYER", &(TerrainLayers::WaterOutflowL as usize).to_string())
-        .replace("#WATER_OUTFLOW_R_LAYER", &(TerrainLayers::WaterOutflowR as usize).to_string())
-        .replace("#WATER_OUTFLOW_T_LAYER", &(TerrainLayers::WaterOutflowT as usize).to_string())
-        .replace("#WATER_OUTFLOW_B_LAYER", &(TerrainLayers::WaterOutflowB as usize).to_string())
-        .replace("#WATER_VELOCITY_X_LAYER", &(TerrainLayers::WaterVelocityX as usize).to_string())
-        .replace("#WATER_VELOCITY_Y_LAYER", &(TerrainLayers::WaterVelocityY as usize).to_string())
-        .replace("#HARDNESS_LAYER", &(TerrainLayers::Hardness as usize).to_string())
-        .replace("#HARDNESS_STRATA_AMOUNT_LAYER", &(TerrainLayers::HardnessStrataAmount as usize).to_string())
-        .replace("#HARDNESS_STRATA_WAVELENGTH_LAYER", &(TerrainLayers::HardnessStrataWavelength as usize).to_string())
-        .replace("#TERRAIN_BASE", &TERRAIN_BASE.to_string())
+        .replace("ROCK_LAYER", &(TerrainLayers::Rock as usize).to_string())
+        .replace("SOIL_LAYER", &(TerrainLayers::Soil as usize).to_string())
+        .replace("SEDIMENT_LAYER", &(TerrainLayers::Sediment as usize).to_string())
+        .replace("WATER_LAYER", &(TerrainLayers::Water as usize).to_string())
+        .replace("WATER_OUTFLOW_L_LAYER", &(TerrainLayers::WaterOutflowL as usize).to_string())
+        .replace("WATER_OUTFLOW_R_LAYER", &(TerrainLayers::WaterOutflowR as usize).to_string())
+        .replace("WATER_OUTFLOW_T_LAYER", &(TerrainLayers::WaterOutflowT as usize).to_string())
+        .replace("WATER_OUTFLOW_B_LAYER", &(TerrainLayers::WaterOutflowB as usize).to_string())
+        .replace("WATER_VELOCITY_X_LAYER", &(TerrainLayers::WaterVelocityX as usize).to_string())
+        .replace("WATER_VELOCITY_Y_LAYER", &(TerrainLayers::WaterVelocityY as usize).to_string())
+        .replace("HARDNESS_LAYER", &(TerrainLayers::Hardness as usize).to_string())
+        .replace("HARDNESS_STRATA_AMOUNT_LAYER", &(TerrainLayers::HardnessStrataAmount as usize).to_string())
+        .replace("HARDNESS_STRATA_WAVELENGTH_LAYER", &(TerrainLayers::HardnessStrataWavelength as usize).to_string())
+        .replace("TERRAIN_BASE", &TERRAIN_BASE.to_string())
 }
 
 #[derive(Debug, Clone)]
@@ -758,26 +761,27 @@ impl ElementComponent for Terrain {
         let aabb = AABB { min: vec3(0., 0., height_min), max: vec3(size_in_meters, size_in_meters, height_max) };
         let bound_sphere = aabb.to_sphere();
         Element::new()
-            .set(terrain(), ())
+            .with(terrain(), ())
             .init_default(terrain_cell())
-            .set(renderer_shader(), cb(|assets, config| TerrainShaderKey { shadow_cascades: config.shadow_cascades }.get(assets)))
-            .set(material(), terrain_material)
-            .set(primitives(), vec![])
-            .set_default(gpu_primitives())
-            .set(main_scene(), ())
-            .set(mesh(), lod_meshes[0].clone())
-            .set(terrain_lods(), lod_meshes.clone())
-            .set(terrain_lod_factor(), lod_factor)
-            .set(terrain_cell_diagonal(), cell_diagonal)
-            .set(cpu_lod(), 0_usize)
-            .set(terrain_cell_bounding(), bound_sphere)
-            .set(local_bounding_aabb(), aabb)
-            .set(world_bounding_aabb(), aabb)
-            .set(world_bounding_sphere(), bound_sphere)
-            .set(color(), Vec4::ONE)
-            .set_default(cast_shadows())
-            .set_default(local_to_parent())
-            .set_default(local_to_world())
+            .with(renderer_shader(), cb(|assets, config| TerrainShaderKey { shadow_cascades: config.shadow_cascades }.get(assets)))
+            .with(material(), terrain_material)
+            .with(primitives(), vec![])
+            .with_default(gpu_primitives_mesh())
+            .with_default(gpu_primitives_lod())
+            .with(main_scene(), ())
+            .with(mesh(), lod_meshes[0].clone())
+            .with(terrain_lods(), lod_meshes.clone())
+            .with(terrain_lod_factor(), lod_factor)
+            .with(terrain_cell_diagonal(), cell_diagonal)
+            .with(cpu_lod(), 0_usize)
+            .with(terrain_cell_bounding(), bound_sphere)
+            .with(local_bounding_aabb(), aabb)
+            .with(world_bounding_aabb(), aabb)
+            .with(world_bounding_sphere(), bound_sphere)
+            .with(color(), Vec4::ONE)
+            .with_default(cast_shadows())
+            .with_default(local_to_parent())
+            .with_default(local_to_world())
             .init_default(mesh_to_world())
     }
 }

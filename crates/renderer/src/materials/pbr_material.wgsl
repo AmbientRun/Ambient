@@ -6,23 +6,23 @@ struct PbrMaterialParams {
     roughness: f32,
 };
 
-@group(#MATERIAL_BIND_GROUP)
+@group(MATERIAL_BIND_GROUP)
 @binding(0)
 var<uniform> pbr_params: PbrMaterialParams;
 
-@group(#MATERIAL_BIND_GROUP)
+@group(MATERIAL_BIND_GROUP)
 @binding(1)
 var base_color_sampler: sampler;
 
-@group(#MATERIAL_BIND_GROUP)
+@group(MATERIAL_BIND_GROUP)
 @binding(2)
 var base_color_texture: texture_2d<f32>;
 
-@group(#MATERIAL_BIND_GROUP)
+@group(MATERIAL_BIND_GROUP)
 @binding(3)
 var normal_texture: texture_2d<f32>;
 
-@group(#MATERIAL_BIND_GROUP)
+@group(MATERIAL_BIND_GROUP)
 @binding(4)
 var metallic_roughness: texture_2d<f32>;
 

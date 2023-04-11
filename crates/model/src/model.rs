@@ -12,7 +12,7 @@ use ambient_core::{
 };
 use ambient_ecs::{query, ComponentDesc, Entity, EntityId, World};
 use ambient_renderer::{
-    cast_shadows, color, gpu_primitives,
+    cast_shadows, color, gpu_primitives_lod, gpu_primitives_mesh,
     lod::cpu_lod_visible,
     primitives,
     skinning::{self, Skin, SkinsBuffer, SkinsBufferKey},
@@ -463,7 +463,8 @@ impl Model {
         }
 
         if self.0.has_component(node, primitives()) {
-            ed.set(gpu_primitives(), Default::default());
+            ed.set(gpu_primitives_mesh(), Default::default());
+            ed.set(gpu_primitives_lod(), Default::default());
             if !ed.contains(color()) {
                 ed.set(color(), Vec4::ONE);
             }

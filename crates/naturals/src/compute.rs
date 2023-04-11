@@ -152,8 +152,8 @@ impl NaturalsPipeline {
                     [
                         &wgsl_interpolate(),
                         &wgsl_terrain_preprocess(include_file!("naturals.wgsl"))
-                            .replace("#NATURALS_MAX_ENTITIES", &NATURALS_MAX_ENTITIES.to_string())
-                            .replace("#WORKGROUP_SIZE", &WORKGROUP_SIZE.to_string()),
+                            .replace("NATURALS_MAX_ENTITIES", &NATURALS_MAX_ENTITIES.to_string())
+                            .replace("WORKGROUP_SIZE", &WORKGROUP_SIZE.to_string()),
                     ]
                     .into_iter()
                     .join("\n"),

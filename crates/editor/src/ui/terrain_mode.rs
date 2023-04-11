@@ -6,13 +6,12 @@ use ambient_core::{
     window::get_mouse_clip_space_position,
 };
 use ambient_decals::DecalShaderKey;
-use ambient_ecs::{query, ArchetypeFilter};
+use ambient_ecs::{generated::messages, query, ArchetypeFilter};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::{BindGroupDesc, ShaderModule},
 };
-use ambient_input::{event_mouse_input, mouse_button};
 use ambient_intent::client_push_intent;
 use ambient_network::client::GameClient;
 use ambient_physics::{
@@ -38,7 +37,6 @@ use glam::{vec3, Vec3, Vec3Swizzles, Vec4};
 use wgpu::{util::DeviceExt, BindGroup};
 
 use super::EditorPlayerInputHandler;
-use ambient_event_types::WINDOW_MOUSE_INPUT;
 
 #[derive(Clone, Debug)]
 pub struct TerrainRaycastPicker {
@@ -68,10 +66,10 @@ impl ElementComponent for TerrainRaycastPicker {
             let assets = ui_world.resource(asset_cache());
             let new_vis_brush_id = Cube
                 .el()
-                .set(color(), Vec4::ONE)
-                .set(translation(), Vec3::Z)
-                .set(scale(), Vec3::ONE)
-                .set(
+                .with(color(), Vec4::ONE)
+                .with(translation(), Vec3::Z)
+                .with(scale(), Vec3::ONE)
+                .with(
                     renderer_shader(),
                     cb(|assets, config| {
                         DecalShaderKey {
@@ -82,7 +80,7 @@ impl ElementComponent for TerrainRaycastPicker {
                         .get(assets)
                     }),
                 )
-                .set(material(), SharedMaterial::new(BrushCursorMaterial::new(assets)))
+                .with(material(), SharedMaterial::new(BrushCursorMaterial::new(assets)))
                 .spawn_static(&mut game_state.lock().world);
 
             set_vis_brush_id(Some(new_vis_brush_id));
@@ -90,13 +88,11 @@ impl ElementComponent for TerrainRaycastPicker {
                 game_state.lock().world.despawn(new_vis_brush_id);
             })
         });
-        hooks.use_event(WINDOW_MOUSE_INPUT, {
+        hooks.use_runtime_message::<messages::WindowMouseInput>({
             let set_mousedown = set_mousedown.clone();
             move |_world, event| {
-                if let Some(pressed) = event.get(event_mouse_input()) {
-                    if !pressed && MouseButton::from(event.get(mouse_button()).unwrap()) == action_button {
-                        set_mousedown(None);
-                    }
+                if !event.pressed && MouseButton::from(event.button) == action_button {
+                    set_mousedown(None);
                 }
             }
         });
@@ -166,7 +162,7 @@ impl ElementComponent for TerrainRaycastPicker {
             .on_mouse_enter(closure!(clone set_mouseover, |_, _| { set_mouseover(true) }))
             .on_mouse_leave(closure!(clone set_mouseover, |_, _| { set_mouseover(false); }))
             .on_mouse_down(closure!(clone set_mousedown, |_, _, button| {
-                if mouseover && button == action_button.into() {
+                if mouseover && button == action_button {
                     set_mousedown(Some(target_position.unwrap_or_default()));
                 }
             }))
@@ -199,29 +195,26 @@ impl Default for BrushCursorMaterialParams {
     }
 }
 
+fn get_brush_cursor_layout() -> BindGroupDesc<'static> {
+    BindGroupDesc {
+        entries: vec![wgpu::BindGroupLayoutEntry {
+            binding: 0,
+            visibility: wgpu::ShaderStages::FRAGMENT,
+            ty: wgpu::BindingType::Buffer { ty: wgpu::BufferBindingType::Uniform, has_dynamic_offset: false, min_binding_size: None },
+            count: None,
+        }],
+        label: MATERIAL_BIND_GROUP.into(),
+    }
+}
+
 #[derive(Debug)]
 pub struct BrushCursorShaderMaterialKey;
 impl SyncAssetKey<Arc<MaterialShader>> for BrushCursorShaderMaterialKey {
     fn load(&self, _assets: AssetCache) -> Arc<MaterialShader> {
         Arc::new(MaterialShader {
             id: "BrushCursorShaderMaterial".to_string(),
-            shader: ShaderModule::new(
-                "BrushCursor",
-                [include_str!("brush_cursor.wgsl")].concat(),
-                vec![BindGroupDesc {
-                    entries: vec![wgpu::BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Buffer {
-                            ty: wgpu::BufferBindingType::Uniform,
-                            has_dynamic_offset: false,
-                            min_binding_size: None,
-                        },
-                        count: None,
-                    }],
-                    label: MATERIAL_BIND_GROUP.into(),
-                }
-                .into()],
+            shader: Arc::new(
+                ShaderModule::new("BrushCursor", [include_str!("brush_cursor.wgsl")].concat()).with_binding_desc(get_brush_cursor_layout()),
             ),
         })
     }
@@ -237,7 +230,8 @@ pub struct BrushCursorMaterial {
 impl BrushCursorMaterial {
     pub fn new(assets: &AssetCache) -> Self {
         let gpu = GpuKey.get(assets);
-        let layout = BrushCursorShaderMaterialKey.get(assets).shader.first_layout(assets);
+        let layout = get_brush_cursor_layout().get(assets);
+
         let buffer = gpu.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("BrushCursorMaterial.buffer"),
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
@@ -268,7 +262,7 @@ impl BrushCursorMaterial {
     }
 }
 impl Material for BrushCursorMaterial {
-    fn bind(&self) -> &BindGroup {
+    fn bind_group(&self) -> &BindGroup {
         &self.bind_group
     }
 
@@ -331,7 +325,7 @@ impl ElementComponent for EditorTerrainMode {
                 .el(),
             ])
             .el()
-            .set(space_between_items(), STREET),
+            .with(space_between_items(), STREET),
         ];
         if let Brush::Raise | Brush::Lower | Brush::Flatten = brush {
             items.push(
@@ -350,7 +344,7 @@ impl ElementComponent for EditorTerrainMode {
                     .el(),
                 ])
                 .el()
-                .set(space_between_items(), STREET),
+                .with(space_between_items(), STREET),
             );
             items.push(
                 FlowRow(vec![
@@ -368,7 +362,7 @@ impl ElementComponent for EditorTerrainMode {
                     .el(),
                 ])
                 .el()
-                .set(space_between_items(), STREET),
+                .with(space_between_items(), STREET),
             );
             items.push(Separator { vertical: true }.el());
             items.push(
@@ -401,7 +395,7 @@ impl ElementComponent for EditorTerrainMode {
         }
 
         WindowSized(vec![
-            FlowColumn::el([FlowRow(items).el().floating_panel().keyboard().set(margin(), Borders::even(STREET))]),
+            FlowColumn::el([FlowRow(items).el().floating_panel().keyboard().with(margin(), Borders::even(STREET))]),
             Group(vec![WindowSized(
                 TerrainRaycastPicker {
                     filter: RaycastFilter {
@@ -421,7 +415,7 @@ impl ElementComponent for EditorTerrainMode {
             )
             .el()])
             .el()
-            .set(translation(), vec3(0., 0., -10.0)),
+            .with(translation(), vec3(0., 0., -10.0)),
         ])
         .el()
     }

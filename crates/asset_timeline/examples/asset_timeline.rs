@@ -3,7 +3,7 @@ use std::{sync::Arc, time::Duration};
 use ambient_app::{App, AppBuilder};
 use ambient_asset_timeline::LocalAssetTimelineVisualizer;
 use ambient_cameras::UICamera;
-use ambient_core::{asset_cache, camera::active_camera, runtime};
+use ambient_core::{asset_cache, runtime};
 use ambient_ecs::World;
 use ambient_element::{ElementComponentExt, Group};
 use ambient_std::asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt};
@@ -87,7 +87,7 @@ async fn init(app: &mut App) {
     let world = &mut app.world;
     // load_model(world);
     Group(vec![
-        UICamera.el().set(active_camera(), 0.),
+        UICamera.el(),
         FocusRoot(vec![WindowSized(vec![
             Button::new("Load asset", |world| {
                 load_asset(world);

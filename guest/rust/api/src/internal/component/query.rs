@@ -1,10 +1,9 @@
-use std::{future::Future, marker::PhantomData};
+use std::marker::PhantomData;
 
 use crate::{
-    event,
-    global::{on, on_async, EntityId, EventOk},
+    global::{CallbackReturn, EntityId, OkEmpty},
     internal::{component::ComponentsTuple, conversion::FromBindgen, wit},
-    prelude::OnHandle,
+    message::Listener,
 };
 
 /// Creates a new [GeneralQueryBuilder] that will find entities that have the specified `components`
@@ -23,8 +22,8 @@ pub fn query<Components: ComponentsTuple + Copy + Clone + 'static>(
 /// change.
 pub fn change_query<Components: ComponentsTuple + Copy + Clone + 'static>(
     components: Components,
-) -> ChangeQuery<Components> {
-    ChangeQuery::create(components)
+) -> UntrackedChangeQuery<Components> {
+    UntrackedChangeQuery::create(components)
 }
 
 /// Creates a new [EventQuery] that will find entities that have the specified `components`
@@ -53,7 +52,7 @@ pub enum QueryEvent {
     Despawn,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 /// An ECS query used to find entities in the world.
 pub struct GeneralQuery<Components: ComponentsTuple + Copy + Clone + 'static>(
     QueryImpl<Components>,
@@ -74,19 +73,11 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> GeneralQuery<Componen
     }
 
     /// Consume this query and call `callback` (`fn`) each frame with the result of the query.
-    pub fn each_frame(
+    pub fn each_frame<R: CallbackReturn>(
         self,
-        callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static,
-    ) -> OnHandle {
+        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + 'static,
+    ) -> Listener {
         self.0.bind(callback)
-    }
-
-    /// Consume this query and call `callback` (`async fn`) each frame with the result of the query.
-    pub fn each_frame_async<R: Future<Output = ()>>(
-        self,
-        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + 'static,
-    ) -> OnHandle {
-        self.0.bind_async(callback)
     }
 }
 /// Build a [GeneralQuery] for the ECS. This is how you find entities in the game world.
@@ -112,31 +103,60 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> GeneralQueryBuilder<C
             self.0.build_impl(&[], wit::component::QueryEvent::Frame),
         ))
     }
+
+    /// Consume this query and call `callback` (`fn`) each frame with the result of the query.
+    pub fn each_frame<R: CallbackReturn>(
+        self,
+        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + 'static,
+    ) -> Listener {
+        self.build().each_frame(callback)
+    }
 }
 
-/// An ECS query that calls a callback when entities containing components
-/// marked with [ChangeQuery::track_change] have those components change.
-pub struct ChangeQuery<Components: ComponentsTuple + Copy + Clone + 'static>(
+/// An ECS query that will call a callback when entities containing components
+/// marked with [Self::track_change] have those components change. This type
+/// represents a query that has not had any components marked for tracking yet.
+///
+/// Note that this cannot be built without calling [Self::track_change]
+/// at least once.
+pub struct UntrackedChangeQuery<Components: ComponentsTuple + Copy + Clone + 'static>(
     QueryBuilderImpl<Components>,
     Vec<u32>,
 );
-impl<Components: ComponentsTuple + Copy + Clone + 'static> ChangeQuery<Components> {
-    /// Creates a new [ChangeQuery] that will find entities that have the specified `components`
-    /// that will call its bound function when components marked by [track_change](Self::track_change)
-    /// change.
+impl<Components: ComponentsTuple + Copy + Clone + 'static> UntrackedChangeQuery<Components> {
+    /// Creates a new query that will find entities that have the specified `components`.
+    /// It will call its bound function when components marked by [Self::track_change] change.
     pub fn create(components: Components) -> Self {
         Self(QueryBuilderImpl::new(components.as_indices()), vec![])
     }
 
+    /// The query will return results when these components change values.
+    ///
+    /// This converts this type to a [ChangeQuery], which can be used to bind a callback.
+    pub fn track_change(self, changes: impl ComponentsTuple) -> ChangeQuery<Components> {
+        let cqwt = ChangeQuery(self);
+        cqwt.track_change(changes)
+    }
+}
+
+/// A partially-built ECS query that calls a callback when entities containing components
+/// marked with [Self::track_change] have those components change.
+///
+/// This cannot be constructed without first going through [UntrackedChangeQuery] or
+/// [change_query].
+pub struct ChangeQuery<Components: ComponentsTuple + Copy + Clone + 'static>(
+    UntrackedChangeQuery<Components>,
+);
+impl<Components: ComponentsTuple + Copy + Clone + 'static> ChangeQuery<Components> {
     /// The entities must include the components in `requires`.
     pub fn requires(mut self, requires: impl ComponentsTuple) -> Self {
-        self.0.requires(requires);
+        self.0 .0.requires(requires);
         self
     }
 
     /// The entities must not include the components in `exclude`.
     pub fn excludes(mut self, excludes: impl ComponentsTuple) -> Self {
-        self.0.excludes(excludes);
+        self.0 .0.excludes(excludes);
         self
     }
 
@@ -145,33 +165,24 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> ChangeQuery<Component
     /// Note that this does *not* implicitly [requires](Self::requires) the components; this allows you to track
     /// changes for entities that do not have all of the tracked components.
     pub fn track_change(mut self, changes: impl ComponentsTuple) -> Self {
-        self.1.extend_from_slice(&changes.as_indices());
+        self.0 .1.extend_from_slice(&changes.as_indices());
         self
     }
 
     /// Each time the components marked by [Self::track_change] change,
     /// the `callback` (`fn`) is called with the result of the query.
-    pub fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static) -> OnHandle {
+    pub fn bind<R: CallbackReturn>(
+        self,
+        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + 'static,
+    ) -> Listener {
         self.build().bind(callback)
     }
 
-    /// Each time the components marked by [Self::track_change] change,
-    /// the `callback` (`async fn`) is called with the result of the query.
-    pub fn bind_async<R: Future<Output = ()>>(
-        self,
-        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + 'static,
-    ) -> OnHandle {
-        self.build().bind_async(callback)
-    }
-
     fn build(self) -> QueryImpl<Components> {
-        assert!(
-            !self.1.is_empty(),
-            "No components specified for tracking. Did you call `ChangeQuery::track_change`?"
-        );
         QueryImpl::new(
             self.0
-                .build_impl(&self.1, wit::component::QueryEvent::Frame),
+                 .0
+                .build_impl(&self.0 .1, wit::component::QueryEvent::Frame),
         )
     }
 }
@@ -202,17 +213,11 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> EventQuery<Components
 
     /// Each time the entity associated with `components` experiences the event,
     /// the `callback` (`fn`) is called with the result of the query.
-    pub fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static) -> OnHandle {
-        self.build().bind(callback)
-    }
-
-    /// Each time the entity associated with `components` experiences the event,
-    /// the `callback` (`async fn`) is called with the result of the query.
-    pub fn bind_async<R: Future<Output = ()>>(
+    pub fn bind<R: CallbackReturn>(
         self,
-        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + 'static,
-    ) -> OnHandle {
-        self.build().bind_async(callback)
+        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + 'static,
+    ) -> Listener {
+        self.build().bind(callback)
     }
 
     fn build(self) -> QueryImpl<Components> {
@@ -226,7 +231,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> EventQuery<Components
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 struct QueryImpl<Components: ComponentsTuple + Copy + Clone + 'static>(
     u64,
     PhantomData<Components>,
@@ -249,25 +254,17 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryImpl<Components>
             .collect()
     }
 
-    fn bind(self, callback: impl Fn(Vec<(EntityId, Components::Data)>) + 'static) -> OnHandle {
-        on(event::FRAME, move |_| {
-            let results = self.evaluate();
-            if !results.is_empty() {
-                callback(results);
-            }
-            EventOk
-        })
-    }
-    fn bind_async<R: Future<Output = ()>>(
+    fn bind<R: CallbackReturn>(
         self,
-        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + Copy + 'static,
-    ) -> OnHandle {
-        on_async(event::FRAME, move |_| async move {
+        callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + 'static,
+    ) -> Listener {
+        use crate::message::RuntimeMessage;
+        crate::messages::Frame::subscribe(move |_| {
             let results = self.evaluate();
             if !results.is_empty() {
-                callback(results).await;
+                callback(results).into_result()?;
             }
-            EventOk
+            OkEmpty
         })
     }
 }

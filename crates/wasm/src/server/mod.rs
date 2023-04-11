@@ -3,21 +3,21 @@ use ambient_ecs::{query, EntityId, FnSystem, SystemGroup, World};
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
 use std::sync::Arc;
 
-mod conversion;
 mod implementation;
+mod network;
+mod unused;
 
 pub fn initialize(
     world: &mut World,
     messenger: Arc<dyn Fn(&World, EntityId, shared::MessageType, &str) + Send + Sync>,
 ) -> anyhow::Result<()> {
-    shared::initialize(
-        world,
-        messenger,
-        Bindings {
-            base: Default::default(),
-            world_ref: Default::default(),
-        },
-    )?;
+    shared::initialize(world, messenger, |id| Bindings {
+        base: Default::default(),
+        world_ref: Default::default(),
+        id,
+    })?;
+
+    network::initialize(world);
 
     Ok(())
 }
@@ -42,8 +42,7 @@ pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
         vec![Box::new(FnSystem::new(move |world, _| {
             let modules = query(()).incl(shared::module()).collect_ids(world, None);
             for module_id in modules {
-                let errors = shared::unload(world, module_id, "shutting down");
-                shared::update_errors(world, &errors);
+                shared::unload(world, module_id, "shutting down");
             }
         }))],
     )
@@ -53,6 +52,7 @@ pub fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
 struct Bindings {
     base: shared::bindings::BindingsBase,
     world_ref: shared::bindings::WorldRef,
+    id: EntityId,
 }
 impl Bindings {
     pub fn world(&self) -> &World {
@@ -141,6 +141,13 @@ impl wit::entity::Host for Bindings {
         shared::implementation::entity::get_all(self.world_mut(), index)
     }
 }
+
+impl wit::asset::Host for Bindings {
+    fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
+        shared::implementation::asset::url(self.world_mut(), path)
+    }
+}
+
 impl wit::component::Host for Bindings {
     fn get_index(&mut self, id: String) -> anyhow::Result<Option<u32>> {
         shared::implementation::component::get_index(id)
@@ -150,7 +157,7 @@ impl wit::component::Host for Bindings {
         &mut self,
         entity: wit::types::EntityId,
         index: u32,
-    ) -> anyhow::Result<Option<wit::component::ValueResult>> {
+    ) -> anyhow::Result<Option<wit::component::Value>> {
         shared::implementation::component::get_component(self.world(), entity, index)
     }
 
@@ -158,7 +165,7 @@ impl wit::component::Host for Bindings {
         &mut self,
         entity: wit::types::EntityId,
         index: u32,
-        value: wit::component::ValueResult,
+        value: wit::component::Value,
     ) -> anyhow::Result<()> {
         shared::implementation::component::add_component(self.world_mut(), entity, index, value)
     }
@@ -175,7 +182,7 @@ impl wit::component::Host for Bindings {
         &mut self,
         entity: wit::types::EntityId,
         index: u32,
-        value: wit::component::ValueResult,
+        value: wit::component::Value,
     ) -> anyhow::Result<()> {
         shared::implementation::component::set_component(self.world_mut(), entity, index, value)
     }
@@ -223,7 +230,7 @@ impl wit::component::Host for Bindings {
     fn query_eval(
         &mut self,
         query_index: u64,
-    ) -> anyhow::Result<Vec<(wit::types::EntityId, Vec<wit::component::ValueResult>)>> {
+    ) -> anyhow::Result<Vec<(wit::types::EntityId, Vec<wit::component::Value>)>> {
         shared::implementation::component::query_eval(
             unsafe { self.world_ref.world() },
             &mut self.base.query_states,
@@ -231,16 +238,8 @@ impl wit::component::Host for Bindings {
         )
     }
 }
-impl wit::event::Host for Bindings {
+impl wit::message::Host for Bindings {
     fn subscribe(&mut self, name: String) -> anyhow::Result<()> {
-        shared::implementation::event::subscribe(&mut self.base.subscribed_events, name)
-    }
-
-    fn send(&mut self, name: String, data: wit::entity::EntityData) -> anyhow::Result<()> {
-        shared::implementation::event::send(
-            self.world_mut(),
-            name,
-            shared::implementation::component::convert_components_to_entity_data(data),
-        )
+        shared::implementation::message::subscribe(&mut self.base.subscribed_messages, name)
     }
 }
