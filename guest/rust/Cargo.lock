@@ -1066,6 +1066,7 @@ name = "skinmesh"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
+ "ambient_ui_components",
 ]
 
 [[package]]

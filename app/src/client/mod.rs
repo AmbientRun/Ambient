@@ -268,6 +268,7 @@ fn systems() -> SystemGroup {
     SystemGroup::new(
         "client",
         vec![
+            Box::new(ambient_prefab::systems()),
             Box::new(ambient_decals::client_systems()),
             Box::new(ambient_primitives::systems()),
             Box::new(ambient_sky::systems()),
