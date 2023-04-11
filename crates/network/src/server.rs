@@ -13,8 +13,8 @@ use ambient_core::{
     project_name,
 };
 use ambient_ecs::{
-    components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent, Networked, Resource, System, SystemGroup, World,
-    WorldStream, WorldStreamCompEvent, WorldStreamFilter,
+    components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent, Networked, Resource, System, SystemGroup,
+    World, WorldStream, WorldStreamCompEvent, WorldStreamFilter,
 };
 use ambient_proxy::client::AllocatedEndpoint;
 use ambient_rpc::RpcRegistry;
@@ -400,7 +400,13 @@ impl GameServer {
     }
 }
 
-async fn start_proxy_connection(endpoint: Endpoint, settings: ProxySettings, state: Arc<Mutex<ServerState>>, world_stream_filter: WorldStreamFilter, assets: AssetCache) {
+async fn start_proxy_connection(
+    endpoint: Endpoint,
+    settings: ProxySettings,
+    state: Arc<Mutex<ServerState>>,
+    world_stream_filter: WorldStreamFilter,
+    assets: AssetCache,
+) {
     let on_endpoint_allocated = {
         let assets = assets.clone();
         Arc::new(move |AllocatedEndpoint { id, allocated_endpoint, external_endpoint, assets_root, .. }: AllocatedEndpoint| {
@@ -428,11 +434,7 @@ async fn start_proxy_connection(endpoint: Endpoint, settings: ProxySettings, sta
         })
     };
 
-    static APP_USER_AGENT: &str = concat!(
-        env!("CARGO_PKG_NAME"),
-        "/",
-        env!("CARGO_PKG_VERSION"),
-    );
+    static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
     let assets_path = settings.project_path.join("build");
     let builder = ambient_proxy::client::builder()
@@ -629,7 +631,7 @@ fn run_connection(connection: ClientConnection, state: SharedServerState, world_
                     let state = state.lock();
                     let instance = state.instances.get(MAIN_INSTANCE_ID).unwrap();
                     let world = &instance.world;
-                    ServerInfo { project_name: world.resource(project_name()).clone() }
+                    ServerInfo { project_name: world.resource(project_name()).clone(), ..Default::default() }
                 };
 
                 match client.run(connection, server_info).await {
