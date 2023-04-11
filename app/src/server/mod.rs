@@ -7,12 +7,13 @@ use std::{
 
 use ambient_core::{app_start_time, asset_cache, dtime, no_sync, project_name, time};
 use ambient_ecs::{
-    world_events, ComponentDesc, ComponentRegistry, Entity, Networked, SystemGroup, World, WorldEventsSystem,
+    dont_store, world_events, ComponentDesc, ComponentRegistry, Entity, Networked, SystemGroup, World, WorldEventsSystem,
     WorldStreamCompEvent,
 };
 use ambient_network::{
     persistent_resources,
     server::{ForkingEvent, GameServer, ShutdownEvent, ProxySettings},
+    synced_resources,
 };
 use ambient_prefab::PrefabFromUrl;
 use ambient_std::{
@@ -90,6 +91,7 @@ pub fn start(
         let name = manifest.project.name.clone().unwrap_or_else(|| "Ambient".into());
         server_world.add_components(server_world.resource_entity(), Entity::new().with(project_name(), name)).unwrap();
 
+        Entity::new().with(synced_resources(), ()).with(dont_store(), ()).spawn(&mut server_world);
         // Note: this should not be reset every time the server is created. Remove this when it becomes possible to load/save worlds.
         Entity::new().with(persistent_resources(), ()).spawn(&mut server_world);
 
