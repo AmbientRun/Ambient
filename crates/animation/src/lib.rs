@@ -321,6 +321,7 @@ fn test_animation() {
     use ambient_core::transform::{self, translation};
     use glam::vec3;
 
+    ambient_ecs::init_components();
     transform::init_components();
 
     let mut int = AnimationTrackInterpolator::new();

@@ -1,24 +1,23 @@
 pub(crate) mod bindings;
 pub(crate) mod implementation;
 
-mod borrowed_types;
 mod module;
 
 pub mod build;
 pub mod conversion;
 pub mod host_guest_state;
+pub mod message;
 pub mod wit;
 
 use std::sync::Arc;
 
 use ambient_core::async_ecs::async_run;
 use ambient_ecs::{
-    dont_despawn_on_unload, query, world_events, ComponentEntry, Entity, EntityId, FnSystem,
-    SystemGroup, World, WorldEventReader,
+    dont_despawn_on_unload, generated::messages, query, world_events, Entity, EntityId, FnSystem,
+    Message, SystemGroup, World, WorldEventReader,
 };
 use ambient_physics::{collider_loads, collisions, PxShapeUserData};
 use ambient_project::Identifier;
-use ambient_shared_types::events;
 use itertools::Itertools;
 use physxx::{PxRigidActor, PxRigidActorRef, PxUserData};
 
@@ -58,57 +57,9 @@ pub use internal::{
     module_state, module_state_maker, remote_paired_id,
 };
 
-pub mod message {
-    use ambient_ecs::{components, Debuggable, Description, EntityId, Name, Resource, World};
+use crate::shared::message::RuntimeMessageExt;
 
-    #[derive(Clone, PartialEq, Debug)]
-    pub enum Source {
-        Network,
-        NetworkUserId(String),
-        Module(EntityId),
-    }
-
-    #[derive(Clone, PartialEq, Debug)]
-    pub struct PendingMessage {
-        /// If unspecified, this will broadcast to all modules
-        pub(super) module_id: Option<EntityId>,
-        pub(super) source: Source,
-        pub(super) name: String,
-        pub(super) data: Vec<u8>,
-    }
-
-    pub fn send(
-        world: &mut World,
-        module_id: Option<EntityId>,
-        source: Source,
-        name: String,
-        data: Vec<u8>,
-    ) {
-        world.resource_mut(pending_messages()).push(PendingMessage {
-            module_id,
-            source,
-            name,
-            data,
-        });
-    }
-
-    components!("wasm::message", {
-        @[Debuggable, Name["Source: Remote"], Description["This message came from the network with no specific source (likely the server)."]]
-        source_remote: (),
-
-        @[Debuggable, Name["Source: Remote (User ID)"], Description["This message came from this user."]]
-        source_remote_user_id: String,
-
-        @[Debuggable, Name["Source: Local"], Description["This message came from the specified module on this side."]]
-        source_local: EntityId,
-
-        @[Debuggable, Name["Data"], Description["The data payload of a message."]]
-        data: Vec<u8>,
-
-        @[Debuggable, Resource]
-        pending_messages: Vec<PendingMessage>,
-    });
-}
+use self::message::Source;
 
 pub fn init_all_components() {
     internal::init_components();
@@ -124,24 +75,6 @@ pub enum MessageType {
     Error,
     Stdout,
     Stderr,
-}
-
-#[derive(Debug, Clone)]
-pub struct RunContext {
-    pub event_name: String,
-    pub event_data: Entity,
-    pub time: f32,
-}
-impl RunContext {
-    pub fn new(world: &World, event_name: impl Into<String>, event_data: Entity) -> Self {
-        let time = ambient_app::get_time_since_app_start(world).as_secs_f32();
-
-        Self {
-            event_name: event_name.into(),
-            event_data,
-            time,
-        }
-    }
 }
 
 pub fn systems() -> SystemGroup {
@@ -175,13 +108,23 @@ pub fn systems() -> SystemGroup {
                     .collect_vec();
 
                 for (name, data) in events {
-                    run_all(world, &RunContext::new(world, &name, data));
+                    message::run(
+                        world,
+                        message::SerializedMessage {
+                            module_id: None,
+                            source: message::Source::Runtime,
+                            name,
+                            data,
+                        },
+                    );
                 }
             })),
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("WASM module frame event");
                 // trigger frame event
-                run_all(world, &RunContext::new(world, events::FRAME, Entity::new()));
+                ambient_ecs::generated::messages::Frame::new()
+                    .run(world, None)
+                    .unwrap();
             })),
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("WASM module collision event");
@@ -204,14 +147,9 @@ pub fn systems() -> SystemGroup {
                         .flatten()
                         .collect_vec();
 
-                    run_all(
-                        world,
-                        &RunContext::new(
-                            world,
-                            events::COLLISION,
-                            vec![ComponentEntry::new(ambient_ecs::ids(), ids)].into(),
-                        ),
-                    );
+                    ambient_ecs::generated::messages::Collision::new(ids)
+                        .run(world, None)
+                        .unwrap();
                 }
             })),
             Box::new(FnSystem::new(move |world, _| {
@@ -221,75 +159,23 @@ pub fn systems() -> SystemGroup {
                     Some(collider_loads) => collider_loads.clone(),
                     None => return,
                 };
-                for id in collider_loads {
-                    run_all(
-                        world,
-                        &RunContext::new(
-                            world,
-                            events::COLLIDER_LOAD,
-                            vec![ComponentEntry::new(ambient_ecs::id(), id)].into(),
-                        ),
-                    );
+
+                if collider_loads.is_empty() {
+                    return;
                 }
+
+                ambient_ecs::generated::messages::ColliderLoads::new(collider_loads)
+                    .run(world, None)
+                    .unwrap();
             })),
             Box::new(FnSystem::new(move |world, _| {
-                use message::{PendingMessage, Source};
-
                 profiling::scope!("WASM module pending messages");
 
                 let pending_messages =
                     std::mem::take(world.resource_mut(message::pending_messages()));
 
-                for PendingMessage {
-                    module_id,
-                    source,
-                    name,
-                    data,
-                } in pending_messages
-                {
-                    let mut entity = Entity::new().with(message::data(), data.to_vec());
-
-                    let mut source_id = None;
-                    match &source {
-                        Source::Network => entity.set(message::source_remote(), ()),
-                        Source::NetworkUserId(user_id) => {
-                            entity.set(message::source_remote_user_id(), user_id.to_owned())
-                        }
-                        Source::Module(id) => {
-                            source_id = Some(*id);
-                            entity.set(message::source_local(), *id);
-                        }
-                    };
-
-                    let run_context = RunContext::new(
-                        world,
-                        format!("{}/{}", events::MODULE_MESSAGE, name),
-                        entity,
-                    );
-
-                    if let Some(module_id) = module_id {
-                        match world.get_cloned(module_id, module_state()) {
-                            Ok(state) => run(world, module_id, state, &run_context),
-                            Err(_) => {
-                                let module_name = world
-                                    .get_cloned(module_id, ambient_core::name())
-                                    .unwrap_or_default();
-
-                                world.resource(messenger()).as_ref()(
-                                    world, module_id, MessageType::Warn,
-                                    &format!("Received message for unloaded module {module_id} ({module_name}); message {name:?} from {source:?}")
-                                );
-                            }
-                        }
-                    } else {
-                        for (id, sms) in query(module_state()).collect_cloned(world, None) {
-                            if Some(id) == source_id {
-                                continue;
-                            }
-
-                            run(world, id, sms, &run_context)
-                        }
-                    }
+                for message in pending_messages {
+                    message::run(world, message);
                 }
             })),
         ],
@@ -319,12 +205,6 @@ pub(crate) fn reload_all(world: &mut World) {
 
     for (module_id, bytecode) in modules {
         reload(world, module_id, bytecode);
-    }
-}
-
-fn run_all(world: &mut World, context: &RunContext) {
-    for (id, sms) in query(module_state()).collect_cloned(world, None) {
-        run(world, id, sms, context)
     }
 }
 
@@ -365,15 +245,20 @@ fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
 
         async_run.run(move |world| {
             match result {
-                Ok(sms) => {
-                    // Run the initial startup event.
-                    run(
-                        world,
-                        module_id,
-                        sms.clone(),
-                        &RunContext::new(world, events::MODULE_LOAD, Entity::new()),
-                    );
+                Ok(mut sms) => {
+                    // Subscribe the module to messages that it should be aware of.
+                    let autosubscribe_messages =
+                        [messages::Frame::id(), messages::ModuleLoad::id()];
+                    for id in autosubscribe_messages {
+                        sms.listen_to_message(id.to_string());
+                    }
+
                     world.add_component(module_id, module_state(), sms).unwrap();
+
+                    // Run the initial startup event.
+                    messages::ModuleLoad::new()
+                        .run(world, Some(module_id))
+                        .unwrap();
                 }
                 Err(err) => update_errors(world, &[(module_id, err)]),
             }
@@ -402,21 +287,26 @@ fn update_errors(world: &mut World, errors: &[(EntityId, String)]) {
     }
 }
 
-fn run(world: &mut World, id: EntityId, mut state: ModuleState, context: &RunContext) {
+fn run(
+    world: &mut World,
+    id: EntityId,
+    mut state: ModuleState,
+    message_source: &Source,
+    message_name: &str,
+    message_data: &[u8],
+) {
     profiling::scope!(
         "run",
-        format!("{} - {}", get_module_name(world, id), context.event_name)
+        format!("{} - {}", get_module_name(world, id), message_name)
     );
 
-    // If this is not a whitelisted event and it's not in the subscribed events,
-    // skip over it
-    if !["core/module_load", "core/frame"].contains(&context.event_name.as_str())
-        && !state.supports_event(&context.event_name)
-    {
+    // If it's not in the subscribed events, skip over it
+    if !state.supports_message(message_name) {
         return;
     }
 
-    let result = run_and_catch_panics(|| state.run(world, context));
+    let result =
+        run_and_catch_panics(|| state.run(world, message_source, message_name, message_data));
 
     if let Err(message) = result {
         update_errors(world, &[(id, message)]);
@@ -424,14 +314,13 @@ fn run(world: &mut World, id: EntityId, mut state: ModuleState, context: &RunCon
 }
 
 pub(crate) fn unload(world: &mut World, module_id: EntityId, reason: &str) {
-    let Ok(sms) = world.get_cloned(module_id, module_state()) else { return; };
+    if !world.has_component(module_id, module_state()) {
+        return;
+    }
 
-    run(
-        world,
-        module_id,
-        sms,
-        &RunContext::new(world, events::MODULE_UNLOAD, Entity::new()),
-    );
+    messages::ModuleUnload::new()
+        .run(world, Some(module_id))
+        .unwrap();
 
     let spawned_entities = world
         .get_mut(module_id, module_state())
@@ -467,10 +356,10 @@ pub fn spawn_module(
 ) -> EntityId {
     Entity::new()
         .with(ambient_core::name(), name.to_string())
+        .with(ambient_core::description(), description)
         .with_default(module())
         .with(module_enabled(), enabled)
         .with_default(module_errors())
-        .with(ambient_project::description(), description)
         .spawn(world)
 }
 

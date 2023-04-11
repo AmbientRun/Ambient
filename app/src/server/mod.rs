@@ -12,8 +12,8 @@ use ambient_ecs::{
 };
 use ambient_network::{
     persistent_resources,
-    server::{ForkingEvent, GameServer, ShutdownEvent},
-    synced_resources,
+    server::{ForkingEvent, GameServer, ShutdownEvent, ProxySettings},
+    synced_resources, server::content_base_url
 };
 use ambient_prefab::PrefabFromUrl;
 use ambient_std::{
@@ -42,12 +42,22 @@ pub fn start(
     manifest: &ambient_project::Manifest,
 ) -> u16 {
     log::info!("Creating server");
-    let quic_interface_port = cli.host().unwrap().quic_interface_port;
+    let host_cli = cli.host().unwrap();
+    let quic_interface_port = host_cli.quic_interface_port;
+    let proxy_settings = (!host_cli.no_proxy).then(|| {
+        ProxySettings {
+            // default to getting a proxy from the dims-web Google App Engine app
+            endpoint: host_cli.proxy.clone().unwrap_or("http://proxy.ambient.run/proxy".to_string()),
+            project_path: project_path.clone(),
+            pre_cache_assets: host_cli.proxy_pre_cache_assets,
+            project_id: manifest.project.id.to_string(),
+        }
+    });
     let server = runtime.block_on(async move {
         if let Some(port) = quic_interface_port {
-            GameServer::new_with_port(port, false).await.context("failed to create game server with port").unwrap()
+            GameServer::new_with_port(port, false, proxy_settings).await.context("failed to create game server with port").unwrap()
         } else {
-            GameServer::new_with_port_in_range(QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10), false)
+            GameServer::new_with_port_in_range(QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10), false, proxy_settings)
                 .await
                 .context("failed to create game server with port in range")
                 .unwrap()
@@ -62,11 +72,13 @@ pub fn start(
         .unwrap_or("localhost".to_string());
     log::info!("Created server, running at {public_host}:{port}");
     let http_interface_port = cli.host().unwrap().http_interface_port.unwrap_or(HTTP_INTERFACE_PORT);
-    ServerBaseUrlKey.insert(&assets, AbsAssetUrl::parse(format!("http://{public_host}:{http_interface_port}/content/")).unwrap());
 
+    // here the key is inserted into the asset cache
+    let key = format!("http://{public_host}:{http_interface_port}/content/");
+    ServerBaseUrlKey.insert(&assets, AbsAssetUrl::parse(&key).unwrap());
     start_http_interface(runtime, &project_path, http_interface_port);
 
-    ComponentRegistry::get_mut().add_external(ambient_project::all_defined_components(manifest, false).unwrap());
+    ComponentRegistry::get_mut().add_external(ambient_project_native::all_defined_components(manifest, false).unwrap());
 
     let manifest = manifest.clone();
     runtime.spawn(async move {
@@ -79,7 +91,8 @@ pub fn start(
         let name = manifest.project.name.clone().unwrap_or_else(|| "Ambient".into());
         server_world.add_components(server_world.resource_entity(), Entity::new().with(project_name(), name)).unwrap();
 
-        Entity::new().with(synced_resources(), ()).with(dont_store(), ()).spawn(&mut server_world);
+
+        Entity::new().with(synced_resources(), ()).with(content_base_url(), key).with(dont_store(), ()).spawn(&mut server_world);
         // Note: this should not be reset every time the server is created. Remove this when it becomes possible to load/save worlds.
         Entity::new().with(persistent_resources(), ()).spawn(&mut server_world);
 
@@ -132,9 +145,7 @@ fn is_sync_component(component: ComponentDesc, _: WorldStreamCompEvent) -> bool 
 
 fn create_resources(assets: AssetCache) -> Entity {
     let mut server_resources = Entity::new().with(asset_cache(), assets.clone()).with(no_sync(), ()).with_default(world_events());
-
     ambient_physics::create_server_resources(&assets, &mut server_resources);
-
     server_resources.merge(ambient_core::async_ecs::async_ecs_resources());
     server_resources.set(ambient_core::runtime(), RuntimeHandle::current());
 

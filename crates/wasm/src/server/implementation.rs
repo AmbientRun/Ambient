@@ -1,15 +1,10 @@
 use ambient_core::{
-    asset_cache,
     player::{player, user_id},
 };
 use ambient_ecs::{query, EntityId, World};
 use ambient_network::server::player_connection;
 use ambient_physics::{helpers::PhysicsObjectCollection, physx::character_controller};
-use ambient_std::{
-    asset_cache::SyncAssetKeyExt,
-    asset_url::{AssetUrl, ServerBaseUrlKey},
-    shapes::Ray,
-};
+use ambient_std::shapes::Ray;
 use anyhow::Context;
 use itertools::Itertools;
 use physxx::{PxControllerCollisionFlag, PxControllerFilters};
@@ -161,12 +156,7 @@ impl wit::server_physics::Host for Bindings {
         }
     }
 }
-impl wit::server_asset::Host for Bindings {
-    fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
-        let base_url = ServerBaseUrlKey.get(self.world().resource(asset_cache()));
-        Ok(Some(AssetUrl::parse(path)?.resolve(&base_url)?.to_string()))
-    }
-}
+
 impl wit::server_message::Host for Bindings {
     fn send(
         &mut self,
@@ -179,16 +169,16 @@ impl wit::server_message::Host for Bindings {
         let world = self.world_mut();
 
         match target {
-            Target::RemoteBroadcastUnreliable => {
+            Target::ClientBroadcastUnreliable => {
                 send_networked(world, None, module_id, name, data, false)
             }
-            Target::RemoteBroadcastReliable => {
+            Target::ClientBroadcastReliable => {
                 send_networked(world, None, module_id, name, data, true)
             }
-            Target::RemoteTargetedUnreliable(user_id) => {
+            Target::ClientTargetedUnreliable(user_id) => {
                 send_networked(world, Some(user_id), module_id, name, data, false)
             }
-            Target::RemoteTargetedReliable(user_id) => {
+            Target::ClientTargetedReliable(user_id) => {
                 send_networked(world, Some(user_id), module_id, name, data, true)
             }
             Target::LocalBroadcast => message::send_local(world, module_id, None, name, data),
@@ -220,7 +210,14 @@ fn send_networked(
         .collect();
 
     for connection in connections {
-        message::send_networked(world, connection, module_id, &name, &data, reliable)?;
+        message::send_networked(
+            world,
+            connection,
+            module_id,
+            &name,
+            &data,
+            reliable,
+        )?;
     }
 
     Ok(())

@@ -3,15 +3,12 @@ use std::sync::{
     Arc,
 };
 
-use ambient_api::{
-    message::server::{MessageExt, Source, Target},
-    prelude::*,
-};
+use ambient_api::prelude::*;
 
 #[main]
 pub fn main() {
     messages::Hello::subscribe(|source, data| {
-        let Source::Remote { user_id } = source else { return; };
+        let Some(user_id) = source.client_user_id() else { return; };
         println!("{user_id}: {:?}", data);
 
         let source_reliable = data.source_reliable;
@@ -20,19 +17,19 @@ pub fn main() {
             true,
             format!("{source_reliable}: Hello, world from the server!"),
         )
-        .send(Target::RemoteTargetedReliable(user_id.clone()));
+        .send_client_targeted_reliable(user_id.clone());
 
         messages::Hello::new(
             false,
             format!("{source_reliable}: Hello, world from the server!"),
         )
-        .send(Target::RemoteTargetedUnreliable(user_id));
+        .send_client_targeted_unreliable(user_id);
 
         messages::Hello::new(
             true,
             format!("{source_reliable}: Hello, world (everyone) from the server!"),
         )
-        .send(Target::RemoteBroadcastReliable);
+        .send_client_broadcast_reliable();
     });
 
     let handled = Arc::new(AtomicBool::new(false));
@@ -46,7 +43,7 @@ pub fn main() {
     run_async(async move {
         while !handled.load(Ordering::SeqCst) {
             sleep(1.0).await;
-            messages::Local::new("Hello!").send(Target::LocalBroadcast);
+            messages::Local::new("Hello!").send_local_broadcast();
         }
     });
 }

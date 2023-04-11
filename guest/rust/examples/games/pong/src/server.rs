@@ -9,7 +9,6 @@ use ambient_api::{
         transform::*,
     },
     concepts::{make_sphere, make_transformable},
-    message::server::{MessageExt, Source},
     prelude::*,
 };
 use components::player_movement_direction;
@@ -94,13 +93,12 @@ pub fn main() {
     });
 
     messages::Input::subscribe(|source, msg| {
-        let Source::Remote { user_id } = source else { return; };
-        let Some(player_id) = player::get_by_user_id(&user_id) else { return; };
+        let Some(player_id) = source.client_entity_id() else { return; };
 
         entity::set_component(player_id, player_movement_direction(), msg.direction);
     });
 
-    on(event::FRAME, move |_| {
+    ambient_api::messages::Frame::subscribe(move |_| {
         let players = entity::get_all(player());
 
         // start the ball if we have 2 players and ball has no velocity

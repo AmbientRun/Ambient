@@ -2,6 +2,7 @@ use std::{
     collections::HashMap,
     net::{IpAddr, Ipv4Addr, SocketAddr},
     ops::Range,
+    path::PathBuf,
     sync::Arc,
     time::Duration,
 };
@@ -12,12 +13,14 @@ use ambient_core::{
     project_name,
 };
 use ambient_ecs::{
-    components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent, Resource, System, SystemGroup, World,
-    WorldStream, WorldStreamCompEvent, WorldStreamFilter,
+    components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent, Networked, Resource, System, SystemGroup,
+    World, WorldStream, WorldStreamCompEvent, WorldStreamFilter,
 };
+use ambient_proxy::client::AllocatedEndpoint;
 use ambient_rpc::RpcRegistry;
 use ambient_std::{
-    asset_cache::AssetCache,
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    asset_url::{AbsAssetUrl, ProxyBaseUrlKey},
     fps_counter::{FpsCounter, FpsSample},
     friendly_id, log_result,
 };
@@ -28,7 +31,7 @@ use flume::Sender;
 use futures::StreamExt;
 use once_cell::sync::OnceCell;
 use parking_lot::Mutex;
-use quinn::{Endpoint, RecvStream, SendStream, Connection};
+use quinn::{Endpoint, RecvStream, SendStream};
 use tokio::{
     io::AsyncReadExt,
     time::{interval, MissedTickBehavior},
@@ -36,12 +39,17 @@ use tokio::{
 use tracing::{debug_span, Instrument};
 
 use crate::{
+    client_connection::ClientConnection,
+    connection::Connection,
     create_server,
     protocol::{ClientInfo, ServerInfo, ServerProtocol},
     NetworkError, RPC_BISTREAM_ID,
 };
 
 components!("network::server", {
+    /// Absolute URL for the content that can be used to load assets from the client or server async.
+    @[Networked, Resource]
+    content_base_url: String,
     @[Resource]
     bi_stream_handlers: BiStreamHandlers,
     @[Resource]
@@ -51,7 +59,7 @@ components!("network::server", {
 
     player_entity_stream: Sender<Vec<u8>>,
     player_stats_stream: Sender<FpsSample>,
-    player_connection: quinn::Connection,
+    player_connection: ClientConnection,
 });
 
 pub type BiStreamHandlers = HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, SendStream, RecvStream) + Sync + Send>>;
@@ -241,24 +249,37 @@ impl ServerState {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct ProxySettings {
+    pub endpoint: String,
+    pub project_path: PathBuf,
+    pub pre_cache_assets: bool,
+    pub project_id: String,
+}
+
 pub struct GameServer {
     endpoint: Endpoint,
     pub port: u16,
     /// Shuts down the server if there are no players
     pub use_inactivity_shutdown: bool,
+    proxy_settings: Option<ProxySettings>,
 }
 impl GameServer {
-    pub async fn new_with_port(port: u16, use_inactivity_shutdown: bool) -> anyhow::Result<Self> {
+    pub async fn new_with_port(port: u16, use_inactivity_shutdown: bool, proxy_settings: Option<ProxySettings>) -> anyhow::Result<Self> {
         let server_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port);
 
         let endpoint = create_server(server_addr)?;
 
         log::debug!("GameServer listening on port {}", port);
-        Ok(Self { endpoint, port, use_inactivity_shutdown })
+        Ok(Self { endpoint, port, use_inactivity_shutdown, proxy_settings })
     }
-    pub async fn new_with_port_in_range(port_range: Range<u16>, use_inactivity_shutdown: bool) -> anyhow::Result<Self> {
+    pub async fn new_with_port_in_range(
+        port_range: Range<u16>,
+        use_inactivity_shutdown: bool,
+        proxy_settings: Option<ProxySettings>,
+    ) -> anyhow::Result<Self> {
         for port in port_range {
-            match Self::new_with_port(port, use_inactivity_shutdown).await {
+            match Self::new_with_port(port, use_inactivity_shutdown, proxy_settings.clone()).await {
                 Ok(server) => {
                     return Ok(server);
                 }
@@ -278,7 +299,7 @@ impl GameServer {
         create_shutdown_systems: Arc<dyn Fn() -> SystemGroup<ShutdownEvent> + Sync + Send>,
         is_sync_component: Arc<dyn Fn(ComponentDesc, WorldStreamCompEvent) -> bool + Sync + Send>,
     ) -> SharedServerState {
-        let Self { endpoint, .. } = self;
+        let Self { endpoint, proxy_settings, .. } = self;
         let assets = world.resource(asset_cache()).clone();
         let world_stream_filter = WorldStreamFilter::new(ArchetypeFilter::new().excl(no_sync()), is_sync_component);
         let state = Arc::new(Mutex::new(ServerState::new(
@@ -304,6 +325,16 @@ impl GameServer {
         let mut inactivity_interval = interval(Duration::from_secs_f32(5.));
         let mut last_active = ambient_sys::time::Instant::now();
 
+        if let Some(proxy_settings) = proxy_settings {
+            let endpoint = endpoint.clone();
+            let state = state.clone();
+            let world_stream_filter = world_stream_filter.clone();
+            let assets = assets.clone();
+            tokio::spawn(async move {
+                start_proxy_connection(endpoint.clone(), proxy_settings, state.clone(), world_stream_filter.clone(), assets.clone()).await;
+            });
+        }
+
         loop {
             tracing::debug_span!("Listening for incoming connections");
             tokio::select! {
@@ -320,7 +351,7 @@ impl GameServer {
 
 
                     log::debug!("Accepted connection");
-                    run_connection(conn, state.clone(), world_stream_filter.clone(), assets.clone());
+                    run_connection(conn.into(), state.clone(), world_stream_filter.clone(), assets.clone());
                 }
                 _ = sim_interval.tick() => {
                     fps_counter.frame_start();
@@ -369,9 +400,77 @@ impl GameServer {
     }
 }
 
+async fn start_proxy_connection(
+    endpoint: Endpoint,
+    settings: ProxySettings,
+    state: Arc<Mutex<ServerState>>,
+    world_stream_filter: WorldStreamFilter,
+    assets: AssetCache,
+) {
+    let on_endpoint_allocated = {
+        let assets = assets.clone();
+        Arc::new(move |AllocatedEndpoint { id, allocated_endpoint, external_endpoint, assets_root, .. }: AllocatedEndpoint| {
+            log::debug!("Allocated proxy endpoint. Allocation id: {}", id);
+            log::info!("Proxy sees this server as {}", external_endpoint);
+            log::info!("Proxy allocated an endpoint, use `ambient join {}` to join", allocated_endpoint);
+
+            // override the assets root url to point to proxy
+            // TODO: we might want to give different URLs to different players (depending on how they connect)
+            match AbsAssetUrl::parse(&assets_root) {
+                Ok(url) => {
+                    log::debug!("Assets root url overridden to: {}", url);
+                    ProxyBaseUrlKey.insert(&assets, url);
+                }
+                Err(err) => log::warn!("Failed to parse assets root url ({}): {}", assets_root, err),
+            }
+        })
+    };
+
+    let on_player_connected = {
+        let assets = assets.clone();
+        Arc::new(move |_player_id, conn: ambient_proxy::client::ProxiedConnection| {
+            log::debug!("Accepted connection via proxy");
+            run_connection(conn.into(), state.clone(), world_stream_filter.clone(), assets.clone());
+        })
+    };
+
+    static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
+
+    let assets_path = settings.project_path.join("build");
+    let builder = ambient_proxy::client::builder()
+        .endpoint(endpoint.clone())
+        .proxy_server(settings.endpoint.clone())
+        .project_id(settings.project_id.clone())
+        .assets_path(assets_path)
+        .user_agent(APP_USER_AGENT.to_string());
+
+    log::info!("Connecting to proxy server");
+    let proxy = match builder.build().await {
+        Ok(proxy_client) => proxy_client,
+        Err(err) => {
+            log::warn!("Failed to connect to proxy: {}", err);
+            return;
+        }
+    };
+
+    // start and allocate endpoint
+    let mut controller = proxy.start(on_endpoint_allocated, on_player_connected);
+    log::info!("Allocating proxy endpoint");
+    if let Err(err) = controller.allocate_endpoint().await {
+        log::warn!("Failed to allocate proxy endpoint: {}", err);
+    }
+
+    // pre-cache "assets" subdirectory
+    if settings.pre_cache_assets {
+        if let Err(err) = controller.pre_cache_assets("assets") {
+            log::warn!("Failed to pre-cache assets: {}", err);
+        }
+    }
+}
+
 /// Setup the protocol and enter the update loop for a new connected client
 #[tracing::instrument(skip_all)]
-fn run_connection(connection: Connection, state: SharedServerState, world_stream_filter: WorldStreamFilter, assets: AssetCache) {
+fn run_connection(connection: ClientConnection, state: SharedServerState, world_stream_filter: WorldStreamFilter, assets: AssetCache) {
     let connection_id = friendly_id();
     let handle = Arc::new(OnceCell::new());
     handle
@@ -532,7 +631,7 @@ fn run_connection(connection: Connection, state: SharedServerState, world_stream
                     let state = state.lock();
                     let instance = state.instances.get(MAIN_INSTANCE_ID).unwrap();
                     let world = &instance.world;
-                    ServerInfo { project_name: world.resource(project_name()).clone() }
+                    ServerInfo { project_name: world.resource(project_name()).clone(), ..Default::default() }
                 };
 
                 match client.run(connection, server_info).await {
@@ -579,7 +678,7 @@ impl<'a> Drop for ClientInstance<'a> {
 
 impl<'a> ClientInstance<'a> {
     #[tracing::instrument(skip_all)]
-    pub async fn run(mut self, conn: Connection, server_info: ServerInfo) -> Result<(), NetworkError> {
+    pub async fn run(mut self, conn: ClientConnection, server_info: ServerInfo) -> Result<(), NetworkError> {
         log::debug!("Connecting to client");
         let mut proto = ServerProtocol::new(conn, server_info).await?;
 

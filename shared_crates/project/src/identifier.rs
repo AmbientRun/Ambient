@@ -1,5 +1,7 @@
 use std::{fmt::Display, ops::Deref};
 
+use proc_macro2::TokenStream;
+use quote::{ToTokens, TokenStreamExt};
 use serde::{Deserialize, Serialize};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -25,6 +27,11 @@ impl<'a> Deref for IdentifierPath<'a> {
 
     fn deref(&self) -> &Self::Target {
         self.0
+    }
+}
+impl<'a> ToTokens for IdentifierPath<'a> {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append_separated(self.0.iter(), quote::quote! {::})
     }
 }
 
@@ -79,6 +86,11 @@ impl Deref for IdentifierPathBuf {
 impl FromIterator<Identifier> for IdentifierPathBuf {
     fn from_iter<T: IntoIterator<Item = Identifier>>(iter: T) -> Self {
         Self(iter.into_iter().collect())
+    }
+}
+impl ToTokens for IdentifierPathBuf {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        self.as_path().to_tokens(tokens)
     }
 }
 
@@ -137,6 +149,14 @@ impl AsRef<str> for Identifier {
 impl Display for Identifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&self.0)
+    }
+}
+impl ToTokens for Identifier {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(syn::Ident::new(
+            self.as_ref(),
+            proc_macro2::Span::call_site(),
+        ))
     }
 }
 

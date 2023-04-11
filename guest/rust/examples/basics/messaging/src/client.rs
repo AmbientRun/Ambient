@@ -3,15 +3,12 @@ use std::sync::{
     Arc,
 };
 
-use ambient_api::{
-    message::client::{MessageExt, Target},
-    prelude::*,
-};
+use ambient_api::prelude::*;
 
 #[main]
 pub fn main() {
-    messages::Hello::new(false, "Hello, world from the client!").send(Target::RemoteUnreliable);
-    messages::Hello::new(true, "Hello, world from the client!").send(Target::RemoteUnreliable);
+    messages::Hello::new(false, "Hello, world from the client!").send_server_unreliable();
+    messages::Hello::new(true, "Hello, world from the client!").send_server_unreliable();
 
     messages::Hello::subscribe(|source, data| {
         println!("{source:?}: {:?}", data);
@@ -28,7 +25,7 @@ pub fn main() {
     run_async(async move {
         while !handled.load(Ordering::SeqCst) {
             sleep(1.0).await;
-            messages::Local::new("Hello!").send(Target::LocalBroadcast);
+            messages::Local::new("Hello!").send_local_broadcast()
         }
     });
 }

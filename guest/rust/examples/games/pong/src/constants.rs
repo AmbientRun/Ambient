@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::f32::consts::PI;
 
 pub const X_BOUNDARY: f32 = 1.;

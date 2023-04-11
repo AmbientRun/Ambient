@@ -3,17 +3,27 @@ use ambient_core::{
     runtime,
 };
 use ambient_ecs::{EntityId, World};
-use ambient_network::{log_network_result, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID};
+use ambient_network::{
+    connection::Connection, log_network_result, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID,
+};
 
 use anyhow::Context;
 use bytes::Bytes;
-use quinn::{Connection, RecvStream};
+use quinn::RecvStream;
 
-use std::io::{Cursor, Read};
+use std::{
+    collections::HashSet,
+    io::{Cursor, Read},
+};
 
 use crate::shared::remote_paired_id;
 
 pub const MAX_STREAM_LENGTH: usize = 10 * 1024 * 1024;
+
+pub fn subscribe(subscribed_events: &mut HashSet<String>, name: String) -> anyhow::Result<()> {
+    subscribed_events.insert(name);
+    Ok(())
+}
 
 /// Reads an incoming datagram and dispatches to WASM
 pub fn on_datagram(world: &mut World, user_id: Option<String>, bytes: Bytes) -> anyhow::Result<()> {
@@ -95,8 +105,8 @@ pub fn process_network_message(
         world,
         Some(module_id),
         match user_id {
-            Some(user_id) => message::Source::NetworkUserId(user_id),
-            None => message::Source::Network,
+            Some(user_id) => message::Source::Client(user_id),
+            None => message::Source::Server,
         },
         name,
         data,
@@ -118,7 +128,7 @@ pub fn send_local(
     message::send(
         world,
         module_id,
-        message::Source::Module(source_module_id),
+        message::Source::Local(source_module_id),
         name,
         data,
     );
@@ -127,9 +137,9 @@ pub fn send_local(
 }
 
 /// Sends a message over the network for the specified module
-pub fn send_networked(
+pub fn send_networked<C: Connection + 'static>(
     world: &World,
-    connection: Connection,
+    connection: C,
     module_id: EntityId,
     name: &str,
     data: &[u8],
@@ -139,12 +149,13 @@ pub fn send_networked(
         send_unistream(world, connection, module_id, name, data);
         Ok(())
     } else {
-        send_datagram(connection, module_id, name, data)
+        send_datagram(world, connection, module_id, name, data)
     }
 }
 
-fn send_datagram(
-    connection: Connection,
+fn send_datagram<C: Connection + 'static>(
+    world: &World,
+    connection: C,
     module_id: EntityId,
     name: &str,
     data: &[u8],
@@ -159,16 +170,18 @@ fn send_datagram(
 
     payload.extend_from_slice(data);
 
-    Ok(ambient_network::send_datagram(
-        &connection,
-        WASM_DATAGRAM_ID,
-        payload,
-    )?)
+    world.resource(runtime()).spawn(async move {
+        ambient_network::send_datagram(&connection, WASM_DATAGRAM_ID, payload).await?;
+
+        anyhow::Ok(())
+    });
+
+    Ok(())
 }
 
-fn send_unistream(
+fn send_unistream<C: Connection + 'static>(
     world: &World,
-    connection: Connection,
+    connection: C,
     module_id: EntityId,
     name: &str,
     data: &[u8],

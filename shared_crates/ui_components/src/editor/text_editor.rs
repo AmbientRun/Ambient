@@ -1,30 +1,22 @@
-use std::{self, str::FromStr};
-
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-
-use glam::*;
-
-use crate::{layout::FlowRow, text::Text, use_focus, Rectangle, UIBase, UIExt};
-use ambient_cb::{cb, Cb};
-use ambient_guest_bridge::{
-    components::{
-        input::{event_keyboard_input, event_received_character, keycode},
-        layout::{height, min_height, min_width, width},
-        rendering::color,
-        text::text,
-        transform::translation,
-    },
-    window::set_cursor,
-};
-use ambient_shared_types::events::{WINDOW_KEYBOARD_INPUT, WINDOW_RECEIVED_CHARACTER};
-use ambient_window_types::{CursorIcon, VirtualKeyCode};
-
-use super::{Editor, EditorOpts};
-#[cfg(feature = "native")]
-use ambient_sys::time::Instant;
-use itertools::Itertools;
 #[cfg(feature = "guest")]
 use std::time::Instant;
+use std::{self, str::FromStr};
+
+use ambient_cb::{cb, Cb};
+use ambient_element::{element_component, to_owned, Element, ElementComponentExt, Hooks};
+use ambient_guest_bridge::{
+    components::{
+        layout::{height, min_height, min_width, width}, rendering::color, text::text, transform::translation
+    }, messages, window::set_cursor
+};
+#[cfg(feature = "native")]
+use ambient_sys::time::Instant;
+use ambient_window_types::{CursorIcon, VirtualKeyCode};
+use glam::*;
+use itertools::Itertools;
+
+use super::{Editor, EditorOpts};
+use crate::{layout::FlowRow, text::Text, use_focus, Rectangle, UIBase, UIExt};
 
 #[element_component]
 pub fn TextEditor(
@@ -34,6 +26,7 @@ pub fn TextEditor(
     on_submit: Option<Cb<dyn Fn(String) + Sync + Send>>,
     password: bool,
     placeholder: Option<String>,
+    auto_focus: bool,
 ) -> Element {
     let (focused, set_focused) = use_focus(hooks);
     let (command, set_command) = hooks.use_state(false);
@@ -50,8 +43,11 @@ pub fn TextEditor(
     }
 
     hooks.use_spawn({
-        let set_focused = set_focused.clone();
+        to_owned![set_focused];
         move |_| {
+            if auto_focus {
+                set_focused(true);
+            }
             Box::new(move |_| {
                 if focused {
                     set_focused(false);
@@ -59,74 +55,74 @@ pub fn TextEditor(
             })
         }
     });
-    hooks.use_multi_event(&[WINDOW_RECEIVED_CHARACTER, WINDOW_KEYBOARD_INPUT], {
-        let value = intermediate_value.clone();
-        let on_change = on_change.clone();
-        let cursor_position = cursor_position.clone();
+    hooks.use_runtime_message::<messages::WindowKeyboardCharacter>({
+        to_owned![intermediate_value, on_change, cursor_position];
         move |_world, event| {
-            if let Some(c) = event.get_ref(event_received_character()) {
-                let c = c.chars().next().unwrap();
-                if command || !focused {
-                    return;
-                }
-                if c == '\u{7f}' || c == '\u{8}' {
-                    if *cursor_position.lock() > 0 {
-                        let mut value = value.lock();
-                        value.remove(*cursor_position.lock() - 1);
-                        *cursor_position.lock() -= 1;
-                        on_change.0(value.clone());
-                    }
-                } else if c == '\r' {
-                    if let Some(on_submit) = on_submit.clone() {
-                        on_submit.0(value.lock().clone());
-                    }
-                } else if c != '\t' && c != '\n' && c != '\r' {
-                    let mut value = value.lock();
-                    value.insert(*cursor_position.lock(), c);
-                    *cursor_position.lock() += 1;
+            let c = event.character.chars().next().unwrap();
+            if command || !focused {
+                return;
+            }
+            if c == '\u{7f}' || c == '\u{8}' {
+                if *cursor_position.lock() > 0 {
+                    let mut value = intermediate_value.lock();
+                    value.remove(*cursor_position.lock() - 1);
+                    *cursor_position.lock() -= 1;
                     on_change.0(value.clone());
                 }
-            } else if let Some(pressed) = event.get(event_keyboard_input()) {
-                if !focused {
-                    return;
+            } else if c == '\r' {
+                if let Some(on_submit) = on_submit.clone() {
+                    on_submit.0(intermediate_value.lock().clone());
                 }
-                if let Some(kc) = event.get_ref(keycode()) {
-                    // FIXME: get_ref returns `&T` on native, but `T` on guest
-                    let kc = VirtualKeyCode::from_str(&kc).unwrap();
-                    match kc {
-                        VirtualKeyCode::LWin => {
-                            #[cfg(target_os = "macos")]
-                            set_command(pressed);
-                        }
-                        VirtualKeyCode::LControl => {
-                            #[cfg(not(target_os = "macos"))]
-                            set_command(pressed);
-                        }
-                        VirtualKeyCode::V => {
-                            if command && pressed {
-                                #[cfg(not(target_os = "unknown"))]
-                                if let Some(paste) = ambient_guest_bridge::window::get_clipboard() {
-                                    let mut value = value.lock();
-                                    value.insert_str(*cursor_position.lock(), &paste);
-                                    *cursor_position.lock() += paste.len();
-                                    on_change.0(value.clone());
-                                }
-                            }
-                        }
-                        VirtualKeyCode::Left => {
-                            if pressed && *cursor_position.lock() > 0 {
-                                *cursor_position.lock() -= 1;
-                                rerender();
-                            }
-                        }
-                        VirtualKeyCode::Right => {
-                            if pressed && *cursor_position.lock() < value.lock().len() {
-                                *cursor_position.lock() += 1;
-                                rerender();
-                            }
-                        }
-                        _ => {}
+            } else if c != '\t' && c != '\n' && c != '\r' {
+                let mut value = intermediate_value.lock();
+                value.insert(*cursor_position.lock(), c);
+                *cursor_position.lock() += 1;
+                on_change.0(value.clone());
+            }
+        }
+    });
+    hooks.use_runtime_message::<messages::WindowKeyboardInput>({
+        to_owned![intermediate_value, on_change, cursor_position];
+        move |_world, event| {
+            if !focused {
+                return;
+            }
+            let pressed = event.pressed;
+            if let Some(kc) = event.keycode.as_deref() {
+                let kc = VirtualKeyCode::from_str(kc).unwrap();
+                match kc {
+                    VirtualKeyCode::LWin => {
+                        #[cfg(target_os = "macos")]
+                        set_command(pressed);
                     }
+                    VirtualKeyCode::LControl => {
+                        #[cfg(not(target_os = "macos"))]
+                        set_command(pressed);
+                    }
+                    VirtualKeyCode::V => {
+                        if command && pressed {
+                            #[cfg(not(target_os = "unknown"))]
+                            if let Some(paste) = ambient_guest_bridge::window::get_clipboard() {
+                                let mut value = intermediate_value.lock();
+                                value.insert_str(*cursor_position.lock(), &paste);
+                                *cursor_position.lock() += paste.len();
+                                on_change.0(value.clone());
+                            }
+                        }
+                    }
+                    VirtualKeyCode::Left => {
+                        if pressed && *cursor_position.lock() > 0 {
+                            *cursor_position.lock() -= 1;
+                            rerender();
+                        }
+                    }
+                    VirtualKeyCode::Right => {
+                        if pressed && *cursor_position.lock() < intermediate_value.lock().len() {
+                            *cursor_position.lock() += 1;
+                            rerender();
+                        }
+                    }
+                    _ => {}
                 }
             }
         }
@@ -146,7 +142,7 @@ pub fn TextEditor(
     if focused {
         FlowRow::el([a, Cursor.el(), b])
     } else if value.is_empty() && !focused && placeholder.is_some() {
-        Text.el().with(text(), placeholder.clone().unwrap()).with(color(), vec4(1., 1., 1., 0.2))
+        Text.el().with(text(), placeholder.unwrap()).with(color(), vec4(1., 1., 1., 0.2))
     } else {
         FlowRow::el([a, b])
     }
@@ -167,7 +163,7 @@ pub fn TextEditor(
 
 impl TextEditor {
     pub fn new(value: String, on_change: Cb<dyn Fn(String) + Sync + Send>) -> Self {
-        Self { value, on_change, on_submit: None, password: false, placeholder: None }
+        Self { value, on_change, on_submit: None, password: false, placeholder: None, auto_focus: false }
     }
     pub fn on_submit(mut self, on_submit: impl Fn(String) + Sync + Send + 'static) -> Self {
         self.on_submit = Some(cb(on_submit));
@@ -179,6 +175,11 @@ impl TextEditor {
     }
     pub fn password(mut self) -> Self {
         self.password = true;
+        self
+    }
+    /// Focus the text box automatically when it's spawned
+    pub fn auto_focus(mut self) -> Self {
+        self.auto_focus = true;
         self
     }
 }

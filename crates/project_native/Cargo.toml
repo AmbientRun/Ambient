@@ -1,0 +1,14 @@
+[package]
+name = "ambient_project_native"
+version = { workspace = true }
+rust-version = { workspace = true }
+edition = "2021"
+
+[dependencies]
+ambient_ecs = { path = "../ecs" }
+ambient_project = { path = "../../shared_crates/project" }
+
+[dev-dependencies]
+paste = { workspace = true }
+serde_json = { workspace = true }
+ambient_shared_types = { path = "../../shared_crates/shared_types" }

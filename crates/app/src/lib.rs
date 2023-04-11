@@ -284,10 +284,17 @@ impl AppBuilder {
                 "0.0.0.0:{}",
                 std::env::var("PUFFIN_PORT").ok().and_then(|port| port.parse::<u16>().ok()).unwrap_or(puffin_http::DEFAULT_PORT)
             );
-            let server = puffin_http::Server::new(&puffin_addr)?;
-            tracing::debug!("Puffin server running on {}", puffin_addr);
-            puffin::set_scopes_on(true);
-            server
+            match puffin_http::Server::new(&puffin_addr) {
+                Ok(server) => {
+                    tracing::debug!("Puffin server running on {}", puffin_addr);
+                    puffin::set_scopes_on(true);
+                    Some(server)
+                }
+                Err(err) => {
+                    tracing::error!("Failed to start puffin server: {:?}", err);
+                    None
+                }
+            }
         };
 
         #[cfg(not(target_os = "unknown"))]
@@ -405,7 +412,7 @@ pub struct App {
     event_loop: Option<EventLoop<()>>,
     fps: FpsCounter,
     #[cfg(feature = "profile")]
-    _puffin: puffin_http::Server,
+    _puffin: Option<puffin_http::Server>,
     modifiers: ModifiersState,
 
     window_focused: bool,
@@ -604,7 +611,9 @@ impl App {
                 }
                 WindowEvent::CursorMoved { position, .. } => {
                     if self.window_focused {
-                        world.set(world.resource_entity(), cursor_position(), vec2(position.x as f32, position.y as f32)).unwrap();
+                        let p = vec2(position.x as f32, position.y as f32)
+                            / self.window.as_ref().map(|x| x.scale_factor() as f32).unwrap_or(1.);
+                        world.set(world.resource_entity(), cursor_position(), p).unwrap();
                     }
                 }
                 _ => {}

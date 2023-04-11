@@ -14,8 +14,6 @@ pub mod asset;
 pub mod ecs;
 /// Entity-related functionality, including manipulation, creation, removal, and search.
 pub mod entity;
-/// Event-related functionality, including sending events and standard events.
-pub mod event;
 /// Global functions and types for your convenience.
 pub mod global;
 /// Messaging to other modules and to the other side of the networking.
@@ -42,8 +40,4 @@ pub use glam;
 pub use once_cell;
 pub use rand;
 
-// Hi there! This macro generates the components that are exposed to you as a Ambient API user.
-// We suggest that you look at the docs for this crate.
-// Your IDE should also tell you about the components present here and show their corresponding
-// doc comments.
-ambient_api_macros::api_project!();
+pub use internal::generated::*;

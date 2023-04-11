@@ -158,6 +158,13 @@ impl wit::entity::Host for Bindings {
         shared::implementation::entity::get_all(self.world_mut(), index)
     }
 }
+
+impl wit::asset::Host for Bindings {
+    fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
+        shared::implementation::asset::url(self.world_mut(), path)
+    }
+}
+
 impl wit::component::Host for Bindings {
     fn get_index(&mut self, id: String) -> anyhow::Result<Option<u32>> {
         shared::implementation::component::get_index(id)
@@ -167,7 +174,7 @@ impl wit::component::Host for Bindings {
         &mut self,
         entity: wit::types::EntityId,
         index: u32,
-    ) -> anyhow::Result<Option<wit::component::ValueResult>> {
+    ) -> anyhow::Result<Option<wit::component::Value>> {
         shared::implementation::component::get_component(self.world(), entity, index)
     }
 
@@ -175,7 +182,7 @@ impl wit::component::Host for Bindings {
         &mut self,
         entity: wit::types::EntityId,
         index: u32,
-        value: wit::component::ValueResult,
+        value: wit::component::Value,
     ) -> anyhow::Result<()> {
         shared::implementation::component::add_component(self.world_mut(), entity, index, value)
     }
@@ -192,7 +199,7 @@ impl wit::component::Host for Bindings {
         &mut self,
         entity: wit::types::EntityId,
         index: u32,
-        value: wit::component::ValueResult,
+        value: wit::component::Value,
     ) -> anyhow::Result<()> {
         shared::implementation::component::set_component(self.world_mut(), entity, index, value)
     }
@@ -240,7 +247,7 @@ impl wit::component::Host for Bindings {
     fn query_eval(
         &mut self,
         query_index: u64,
-    ) -> anyhow::Result<Vec<(wit::types::EntityId, Vec<wit::component::ValueResult>)>> {
+    ) -> anyhow::Result<Vec<(wit::types::EntityId, Vec<wit::component::Value>)>> {
         shared::implementation::component::query_eval(
             unsafe { self.world_ref.world() },
             &mut self.base.query_states,
@@ -248,8 +255,8 @@ impl wit::component::Host for Bindings {
         )
     }
 }
-impl wit::event::Host for Bindings {
+impl wit::message::Host for Bindings {
     fn subscribe(&mut self, name: String) -> anyhow::Result<()> {
-        shared::implementation::event::subscribe(&mut self.base.subscribed_events, name)
+        shared::implementation::message::subscribe(&mut self.base.subscribed_messages, name)
     }
 }

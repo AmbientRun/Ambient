@@ -134,24 +134,6 @@ fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    // If UIC: write components to disk, immediately exit
-    #[cfg(not(feature = "production"))]
-    if let Cli::UpdateInterfaceComponents = cli {
-        let toml = shared::components::dev::build_components_toml().to_string();
-
-        // Assume we are being run within the codebase.
-        for guest_path in std::fs::read_dir("guest/").unwrap().filter_map(Result::ok).map(|de| de.path()).filter(|de| de.is_dir()) {
-            let toml_path = if guest_path.file_name().unwrap_or_default() == "rust" {
-                guest_path.join("api").join("api_macros").join("ambient.toml")
-            } else {
-                guest_path.join("api").join("ambient.toml")
-            };
-            std::fs::write(&toml_path, &toml)?;
-            log::info!("Interface updated at {toml_path:?}");
-        }
-        return Ok(());
-    }
-
     // If a project was specified, assume that assets need to be built
     let manifest = cli
         .project()
@@ -163,16 +145,18 @@ fn main() -> anyhow::Result<()> {
         .transpose()?;
 
     if let Some(manifest) = manifest.as_ref() {
-        let project_name = manifest.project.name.as_deref().unwrap_or("project");
-        log::info!("Building {}", project_name);
-        runtime.block_on(ambient_build::build(
-            PhysicsKey.get(&assets),
-            &assets,
-            project_path.clone(),
-            manifest,
-            cli.project().map(|p| p.release).unwrap_or(false),
-        ));
-        log::info!("Done building {}", project_name);
+        if !cli.project().unwrap().no_build {
+            let project_name = manifest.project.name.as_deref().unwrap_or("project");
+            log::info!("Building {}", project_name);
+            runtime.block_on(ambient_build::build(
+                PhysicsKey.get(&assets),
+                &assets,
+                project_path.clone(),
+                manifest,
+                cli.project().map(|p| p.release).unwrap_or(false),
+            ));
+            log::info!("Done building {}", project_name);
+        }
     }
 
     // If this is just a build, exit now
@@ -186,7 +170,7 @@ fn main() -> anyhow::Result<()> {
             if !host.contains(':') {
                 host = format!("{host}:{QUIC_INTERFACE_PORT}");
             }
-            host.parse().with_context(|| format!("Invalid address for host {host}"))?
+            runtime.block_on(tokio::net::lookup_host(&host))?.next().ok_or_else(|| anyhow::anyhow!("No address found for host {host}"))?
         } else {
             format!("127.0.0.1:{QUIC_INTERFACE_PORT}").parse()?
         }

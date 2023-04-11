@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
 use ambient_ecs::{
-    components, ensure_has_component, query, query_mut, Concept, Debuggable, Description, ECSError, Entity, EntityId, FrameEvent,
-    MakeDefault, MaybeResource, Name, Networked, QueryState, RefConcept, Store, System, SystemGroup, World,
+    components, ensure_has_component, query, query_mut, Debuggable, ECSError, EntityId, FrameEvent, Networked, QueryState, Store, System,
+    SystemGroup, World,
 };
 use glam::*;
 
@@ -15,99 +15,12 @@ use crate::{
     player::local_user_id,
 };
 
-fn vec3_one() -> Vec3 {
-    Vec3::ONE
-}
+pub use ambient_ecs::generated::components::core::transform::{
+    cylindrical_billboard_z, euler_rotation, inv_local_to_world, local_to_parent, local_to_world, lookat_center, lookat_up, mesh_to_local,
+    mesh_to_world, reset_scale, rotation, scale, spherical_billboard, translation,
+};
 
 components!("transform", {
-    @[
-        MakeDefault, Debuggable, Networked, Store,
-        Name["Translation"],
-        Description["The translation/position of this entity."]
-    ]
-    translation: Vec3,
-    @[
-        MakeDefault[vec3_one], Debuggable, Networked, Store,
-        Name["Scale"],
-        Description["The scale of this entity."]
-    ]
-    scale: Vec3,
-    @[
-        Debuggable, Networked, Store,
-        Name["Rotation"],
-        Description["The rotation of this entity."]
-    ]
-    rotation: Quat,
-    @[
-        MakeDefault, Debuggable, Networked, Store,
-        Name["Euler rotation"],
-        Description["The Euler rotation of this entity in ZYX order."]
-    ]
-    euler_rotation: Vec3,
-    @[
-        Debuggable, Networked, Store,
-        Name["Look-at center"],
-        Description["The position that this entity should be looking at."]
-    ]
-    lookat_center: Vec3,
-    @[
-        Debuggable, Networked, Store,
-        Name["Look-at up"],
-        Description["When combined with `lookat_center`, the up vector for this entity."]
-    ]
-    lookat_up: Vec3,
-
-    @[
-        Debuggable, Networked, Store,
-        Name["Local to World"],
-        Description["Transformation from the entity's local space to worldspace."]
-    ]
-    local_to_world: Mat4,
-    @[
-        Debuggable, Networked, Store,
-        Name["Inverse Local to World"],
-        Description["Converts a world position to a local position.\nThis is automatically updated."]
-    ]
-    inv_local_to_world: Mat4,
-
-    @[
-        Debuggable, Networked, Store, MaybeResource,
-        Name["Local to Parent"],
-        Description["Transformation from the entity's local space to the parent's space."]
-    ]
-    local_to_parent: Mat4,
-    @[
-        Debuggable, Networked, Store,
-        Name["Mesh to Local"],
-        Description["Transformation from mesh-space to the entity's local space."]
-    ]
-    mesh_to_local: Mat4,
-    @[
-        Debuggable, Networked, Store,
-        Name["Mesh to World"],
-        Description["Transformation from mesh-space to world space.\nThis is automatically updated when `mesh_to_local` and `local_to_world` change."]
-    ]
-    mesh_to_world: Mat4,
-    @[
-        Debuggable, Networked, Store,
-        Name["Spherical billboard"],
-        Description["If attached, this ensures that this entity is always aligned with the camera."]
-    ]
-    spherical_billboard: (),
-    @[
-        Debuggable, Networked, Store,
-        Name["Cylindrical billboard Z"],
-        Description["If attached, this ensures this entity is always aligned with the camera, except on the Z-axis.\nThis is useful for decorations that the player will be looking at from roughly the same altitude."]
-    ]
-    cylindrical_billboard_z: (),
-
-    @[
-        Debuggable, Networked, Store,
-        Name["Reset scale"],
-        Description["If attached to a transform hierarchy, the scale will be reset at that point, with only rotation/translation considered."]
-    ]
-    reset_scale: (),
-
     // FBX
     @[Debuggable, Networked, Store]
     fbx_complex_transform: (),
@@ -127,17 +40,6 @@ components!("transform", {
 
 gpu_components! {
     mesh_to_world() => mesh_to_world: GpuComponentFormat::Mat4,
-}
-
-pub fn concepts() -> Vec<Concept> {
-    vec![RefConcept {
-        id: "transformable",
-        name: "Transformable",
-        description: "Can be translated, rotated and scaled.",
-        extends: &[],
-        data: Entity::new().with(translation(), Vec3::ZERO).with(rotation(), Quat::IDENTITY).with(scale(), Vec3::ONE),
-    }
-    .to_owned()]
 }
 
 #[derive(Debug)]

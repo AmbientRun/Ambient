@@ -4,7 +4,6 @@ use ambient_api::{
         camera::{orthographic_bottom, orthographic_left, orthographic_right, orthographic_top},
     },
     concepts::make_orthographic_camera,
-    message::client::{MessageExt, Target},
     player::KeyCode,
     prelude::*,
 };
@@ -18,7 +17,7 @@ fn main() {
         .with_default(main_scene())
         .spawn();
 
-    on(event::FRAME, |_| {
+    ambient_api::messages::Frame::subscribe(move |_| {
         let input = player::get_raw_input();
         let mut direction = 0.0;
 
@@ -29,7 +28,7 @@ fn main() {
             direction -= 1.0;
         }
 
-        messages::Input::new(direction).send(Target::RemoteUnreliable);
+        messages::Input::new(direction).send_server_unreliable();
     });
 
     // Update camera so we have correct aspect ratio

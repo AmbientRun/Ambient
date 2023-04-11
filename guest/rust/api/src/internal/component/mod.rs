@@ -53,12 +53,17 @@ macro_rules! lazy_component {
 /// An [Entity] is a collection of components and associated values.
 ///
 /// Use the [spawn](Entity::spawn) method to insert the [Entity] into the world.
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Entity(pub(crate) HashMap<u32, wit::component::Value>);
 impl Entity {
     /// Creates a new `Entity`.
     pub fn new() -> Self {
-        Self(Default::default())
+        Self::default()
+    }
+
+    /// Returns true if this has `component`.
+    pub fn has<T: SupportedValue>(&self, component: Component<T>) -> bool {
+        self.0.contains_key(&component.index())
     }
 
     /// Gets the data for `component` in this, if it exists.
@@ -119,12 +124,12 @@ impl Entity {
 
     pub(crate) fn call_with<R>(
         &self,
-        callback: impl FnOnce(&Vec<(u32, wit::component::Value)>) -> R,
+        callback: impl FnOnce(&[(u32, &wit::component::Value)]) -> R,
     ) -> R {
         let data = self
             .0
             .iter()
-            .map(|(idx, val)| (*idx, val.clone()))
+            .map(|(idx, val)| (*idx, val))
             .collect::<Vec<_>>();
         callback(&data)
     }

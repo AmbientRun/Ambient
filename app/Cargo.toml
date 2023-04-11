@@ -25,6 +25,7 @@ ambient_model_import = { path = "../crates/model_import" }
 ambient_network = { path = "../crates/network" }
 ambient_prefab = { path = "../crates/prefab" }
 ambient_physics = { path = "../crates/physics" }
+ambient_project_native = { path = "../crates/project_native" }
 ambient_primitives = { path = "../crates/primitives" }
 ambient_renderer = { path = "../crates/renderer" }
 ambient_rpc = { path = "../crates/rpc" }
@@ -36,6 +37,7 @@ ambient_ui = { path = "../crates/ui" }
 ambient_world_audio = { path = "../crates/world_audio" }
 ambient_sky = { path = "../crates/sky" }
 ambient_water = { path = "../crates/water" }
+ambient_ecs_editor = { path = "../crates/ecs_editor" }
 
 ambient_editor_derive = { path = "../shared_crates/editor_derive" }
 ambient_element = { path = "../shared_crates/element" }

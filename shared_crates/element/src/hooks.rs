@@ -13,7 +13,8 @@ use ambient_cb::{cb, Cb};
 use ambient_core::runtime;
 #[cfg(feature = "native")]
 use ambient_guest_bridge::ecs::{world_events, ComponentQuery, FrameEvent, QueryState, TypedReadQuery};
-use ambient_guest_bridge::ecs::{ComponentValue, Entity, World};
+use ambient_guest_bridge::ecs::{ComponentValue, World};
+use ambient_guest_bridge::RuntimeMessage;
 #[cfg(feature = "native")]
 use ambient_sys::task;
 use as_any::Downcast;
@@ -44,7 +45,7 @@ pub struct Hooks<'a> {
 impl<'a> Hooks<'a> {
     /// Preserve state between rerenders.
     ///
-    /// The state can be mutated by the setter, which will re-render the origin [Element].
+    /// The state can be mutated by the setter, which will re-render the origin [Element](crate::Element).
     ///
     /// **Note**: The new value set by the returned setter won't be visible until the next
     /// re-render.
@@ -91,7 +92,7 @@ impl<'a> Hooks<'a> {
         )
     }
 
-    /// Provides a function that, when called, will cause this [Element] to be re-rendered.
+    /// Provides a function that, when called, will cause this [Element](crate::Element) to be re-rendered.
     // TODO: consider a more efficient implementation?
     pub fn use_rerender_signal(&mut self) -> Cb<dyn Fn() + Sync + Send> {
         let (_, signal) = self.use_state(());
@@ -162,41 +163,35 @@ impl<'a> Hooks<'a> {
         }
     }
 
-    pub fn use_event(&mut self, event_name: &str, func: impl Fn(&mut World, &Entity) + Sync + Send + 'static) {
+    pub fn use_runtime_message<T: RuntimeMessage>(&mut self, func: impl Fn(&mut World, &T) + Sync + Send + 'static) {
         #[cfg(feature = "native")]
         {
             let reader = self.use_ref_with(|world| world.resource(world_events()).reader());
-            let event_name = event_name.to_string();
+            let event_name = T::id().to_string();
             self.use_frame(move |world| {
                 let mut reader = reader.lock();
-                let events = reader.iter(world.resource(world_events())).map(|(_, event)| event.clone()).collect_vec();
-                for (name, event) in events {
-                    if name == event_name {
-                        func(world, &event);
-                    }
+                let events = reader
+                    .iter(world.resource(world_events()))
+                    .filter(|(_, (name, _))| *name == event_name)
+                    .map(|(_, (_, event))| event.clone())
+                    .collect_vec();
+
+                for event in events {
+                    let event = T::deserialize_message(&event).unwrap();
+                    func(world, &event);
                 }
             })
         }
         #[cfg(feature = "guest")]
         {
-            use ambient_guest_bridge::api::global::*;
             let handler = self.use_ref_with(|_| None);
             *handler.lock() = Some(cb(func));
-            self.use_effect(event_name.to_string(), move |_, _| {
-                let listener = on(event_name, move |data| {
-                    (handler.lock().as_ref().unwrap())(&mut World, data);
-                    ambient_guest_bridge::api::prelude::OkEmpty
+            self.use_effect((), move |_, _| {
+                let listener = T::subscribe(move |event| {
+                    (handler.lock().as_ref().unwrap())(&mut World, &event);
                 });
                 Box::new(|_| listener.stop())
             });
-        }
-    }
-
-    pub fn use_multi_event(&mut self, event_names: &[&str], func: impl Fn(&mut World, &Entity) + Sync + Send + 'static) {
-        let func = Arc::new(func);
-        for event_name in event_names {
-            let func = func.clone();
-            self.use_event(event_name, move |w, d| func(w, d));
         }
     }
 

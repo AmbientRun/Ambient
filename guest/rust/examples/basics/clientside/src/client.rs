@@ -26,7 +26,7 @@ pub async fn main() {
         .with(lookat_center(), vec3(0., 0., 0.))
         .spawn();
 
-    on(event::FRAME, move |_| {
+    ambient_api::messages::Frame::subscribe(move |_| {
         entity::set_component(
             id,
             translation(),

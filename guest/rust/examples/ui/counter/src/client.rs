@@ -4,19 +4,12 @@ use ambient_ui_components::prelude::*;
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
     let (count, set_count) = hooks.use_state(0);
-    hooks.use_spawn(move |_| {
-        run_async(async move {
-            let mut count = 0;
-            loop {
-                sleep(0.5).await;
-                count += 1;
-                set_count(count);
-            }
-        });
-        Box::new(|_| {})
-    });
-    println!("{count}");
-    Text::el(format!("We've counted to {count} now")).with_padding_even(STREET)
+    FlowColumn::el([
+        Text::el(format!("We've counted to {count} now")),
+        Button::new("Increase", move |_| set_count(count + 1)).el(),
+    ])
+    .with_padding_even(STREET)
+    .with(space_between_items(), STREET)
 }
 
 #[main]

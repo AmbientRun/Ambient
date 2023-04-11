@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use ambient_api::{
     components::core::rendering::{color, outline},
-    message::client::{MessageExt, Target},
     player::KeyCode,
     prelude::*,
 };
@@ -17,7 +16,7 @@ async fn main() {
     let cells =
         entity::get_component(entity::synchronized_resources(), components::cells()).unwrap();
 
-    on(event::FRAME, move |_| {
+    ambient_api::messages::Frame::subscribe(move |_| {
         process_input();
         process_colors(&cells);
     });
@@ -38,7 +37,7 @@ fn process_input() {
         .into_iter()
         .any(|x| x)
     {
-        msg.send(Target::RemoteReliable);
+        msg.send_server_reliable();
     }
 }
 

@@ -77,8 +77,6 @@ jobs:
         with:
           command: nextest
           args: run --workspace
-      - name: Run guest/rust/api/api_macros tests
-        run: cd guest/rust/api/api_macros && cargo nextest run
       # Provides a history of the cache content builds over build to make troubleshooting easier
       - name: Display target directory content
         run: tree --du -h target
@@ -122,8 +120,10 @@ jobs:
             ${{ runner.os }}-golden-image-
       - name: Build
         run: cargo run --release -- --help
+      - name: Build golden image tests
+        run: node scripts/golden_image_tests.js --build
       - name: Run golden image tests
-        run: node scripts/golden_image_tests.js
+        run: node scripts/golden_image_tests.js --no-build
       - uses: actions/upload-artifact@v3
         if: always()
         with:

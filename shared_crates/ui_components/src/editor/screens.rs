@@ -1,18 +1,13 @@
-use crate::{
-    button::{Button, ButtonStyle},
-    default_theme::{StylesExt, STREET},
-    layout::{FlowColumn, FlowRow},
-    screens::{DialogScreen, ScreenContainer},
-    scroll_area::ScrollArea,
-    text::Text,
-};
+use std::fmt::Debug;
+
+use ambient_cb::{cb, Cb};
+use ambient_element::{element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_guest_bridge::components::layout::{align_vertical_center, space_between_items};
 
 use super::{ChangeCb, Editor, EditorOpts};
-use ambient_cb::{cb, Cb};
-use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::layout::{align_vertical_center, space_between_items};
-use closure::closure;
-use std::fmt::Debug;
+use crate::{
+    button::{Button, ButtonStyle}, default_theme::{StylesExt, STREET}, layout::{FlowColumn, FlowRow}, screens::{DialogScreen, ScreenContainer}, scroll_area::ScrollArea, text::Text
+};
 
 /// Delegates a type editor to edit in a new `screen`
 #[derive(Debug, Clone)]
@@ -38,15 +33,21 @@ impl<T: Debug + Clone + Sync + Send + 'static + Editor> ElementComponent for Off
                         value: value.clone(),
                         title: title.clone(),
                         edit: on_confirm.is_some(),
-                        on_confirm: cb(closure!(clone on_confirm, clone set_screen, |value| {
-                            if let Some(on_confirm) = on_confirm.as_ref() {
-                                on_confirm(value);
+                        on_confirm: cb({
+                            to_owned![on_confirm, set_screen];
+                            move |value| {
+                                if let Some(on_confirm) = on_confirm.as_ref() {
+                                    on_confirm(value);
+                                }
+                                set_screen(None);
                             }
-                            set_screen(None);
-                        })),
-                        on_cancel: cb(closure!(clone set_screen, || {
-                            set_screen(None);
-                        })),
+                        }),
+                        on_cancel: cb({
+                            to_owned![set_screen];
+                            move || {
+                                set_screen(None);
+                            }
+                        }),
                         editor: editor.clone(),
                         opts: opts.clone(),
                     }
