@@ -74,7 +74,7 @@ pub fn start(
 
     // here the key is inserted into the asset cache
     let key = format!("http://{public_host}:{http_interface_port}/content/");
-    ServerBaseUrlKey.insert(&assets, AbsAssetUrl::parse(&key).unwrap());
+    ServerBaseUrlKey.insert(&assets, AbsAssetUrl::parse(key).unwrap());
     start_http_interface(runtime, &project_path, http_interface_port);
 
     ComponentRegistry::get_mut().add_external(ambient_project_native::all_defined_components(manifest, false).unwrap());

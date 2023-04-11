@@ -27,13 +27,17 @@ pub const ASSETS_PROTOCOL_SCHEME: &str = "ambient-assets";
 pub struct ServerBaseUrlKey;
 impl SyncAssetKey<AbsAssetUrl> for ServerBaseUrlKey {
     fn load(&self, _assets: AssetCache) -> AbsAssetUrl {
-        AbsAssetUrl::parse("http://localhost:8999").unwrap()
+        AbsAssetUrl::parse("http://localhost:8999/content/").unwrap()
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct ContentBaseUrlKey;
-impl SyncAssetKey<AbsAssetUrl> for ContentBaseUrlKey {}
+impl SyncAssetKey<AbsAssetUrl> for ContentBaseUrlKey {
+    fn load(&self, assets: AssetCache) -> AbsAssetUrl {
+        ServerBaseUrlKey.load(assets)
+    }
+}
 
 /// This is a thin wrapper around Url, which is guaranteed to always
 /// be an absolute url (including when pointing to a local file).
@@ -93,6 +97,11 @@ impl AbsAssetUrl {
             Self(Url::from_directory_path(path).unwrap())
         }
     }
+
+    pub fn from_asset_key(key: impl AsRef<str>) -> Self {
+        Self(Url::parse(&format!("{}:/{}", ASSETS_PROTOCOL_SCHEME, key.as_ref().trim_start_matches('/'))).unwrap())
+    }
+
     pub fn relative_cache_path(&self) -> String {
         self.0.to_string().replace("://", "/").replace(':', "_")
     }
@@ -178,7 +187,7 @@ impl AbsAssetUrl {
     }
     fn to_download_url_with_base(&self, base: &Self) -> anyhow::Result<Url> {
         if self.0.scheme() == ASSETS_PROTOCOL_SCHEME {
-            Ok(base.join(self.0.path().trim_start_matches('/'))?.0.clone())
+            Ok(base.join(self.0.path().trim_start_matches('/'))?.0)
         } else {
             Ok(self.0.clone())
         }
