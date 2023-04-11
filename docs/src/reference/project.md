@@ -55,12 +55,12 @@ The components section contains custom components defined by the project. Compon
 
 This is a TOML table, where the keys are the component IDs (`IdentifierPath`), and the values are the component definitions.
 
-| Property      | Type                   | Description                                                                                                                     |
-| ------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `type`        | `ComponentType`        | _Required_. The type of the component.                                                                                          |
-| `name`        | `String`               | _Required_. A human-readable name for the component.                                                                            |
-| `description` | `String`               | _Required_. A human-readable description of the component.                                                                      |
-| `attributes`  | `ComponentAttribute[]` | _Optional_. An array of attributes for the component. Must be one of: Debuggable, Networked, Resource, MaybeResource, or Store. |
+| Property      | Type                   | Description                                                |
+| ------------- | ---------------------- | ---------------------------------------------------------- |
+| `type`        | `ComponentType`        | _Required_. The type of the component.                     |
+| `name`        | `String`               | _Required_. A human-readable name for the component.       |
+| `description` | `String`               | _Required_. A human-readable description of the component. |
+| `attributes`  | `ComponentAttribute[]` | _Optional_. An array of attributes for the component.      |
 
 A `ComponentType` is either:
 
@@ -85,7 +85,7 @@ A `ComponentType` is either:
   - `Vec3`
   - `Vec4`
 
-- a contained type of the form `{ type: "Vec", inner: ComponentType }` or `{ type: "Option", inner: ComponentType }`
+- a contained type of the form `{ type = "Vec", element_type = ComponentType }` or `{ type = "Option", element_type = ComponentType }`
   - Note that `Vec` and `Option` are the only supported container types, and `inner` must be a primitive `ComponentType` (that is, you cannot have nested contained types).
 
 A `ComponentAttribute` is a string that can be one of the following:
