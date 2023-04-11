@@ -54,9 +54,12 @@ fn to_token_stream(
             let make_concept =
                 generate_make(concept_tree, components_tree, context, name, concept)?;
             let is_concept = generate_is(concept_tree, components_tree, context, name, concept)?;
+            let concept_fn =
+                generate_concept(concept_tree, components_tree, context, name, concept)?;
             Ok(quote! {
                 #make_concept
                 #is_concept
+                #concept_fn
             })
         },
     )
@@ -177,6 +180,78 @@ fn generate_is(
                 ])
             }
         },
+    })
+}
+
+fn generate_concept(
+    concept_tree: &Tree<Concept>,
+    component_tree: &Tree<Component>,
+    context: &Context,
+    name: &str,
+    concept: &Concept,
+) -> anyhow::Result<TokenStream> {
+    let fn_comment = format!(
+        "Returns the components that comprise *{}* as a tuple.\n\n{}\n\n{}",
+        concept.name,
+        concept.description,
+        generate_component_list_doc_comment(concept_tree, component_tree, context, concept)?,
+    );
+    let fn_ident = quote::format_ident!("{}", name);
+
+    let components_prefix = Identifier::new("components").map_err(anyhow::Error::msg)?;
+
+    fn concept_to_component<'a>(
+        concept_tree: &'a Tree<Concept>,
+        component_tree: &'a Tree<Component>,
+        concept: &'a Concept,
+    ) -> anyhow::Result<Vec<(IdentifierPath<'a>, &'a Component)>> {
+        let mut result = vec![];
+
+        for concept_path in &concept.extends {
+            result.append(&mut concept_to_component(
+                concept_tree,
+                component_tree,
+                concept_tree.get(concept_path.as_path()).with_context(|| {
+                    format!(
+                        "there is no concept defined at `{}`",
+                        concept_path.as_path()
+                    )
+                })?,
+            )?);
+        }
+
+        for component_path in concept.components.keys() {
+            let path = component_path.as_path();
+            result.push((
+                path,
+                component_tree.get(path).with_context(|| {
+                    format!(
+                        "there is no component defined at `{}`",
+                        component_path.as_path()
+                    )
+                })?,
+            ));
+        }
+
+        Ok(result)
+    }
+
+    let components = concept_to_component(concept_tree, component_tree, concept)?;
+    let component_fns = components
+        .iter()
+        .map(|c| build_component_path(&components_prefix, c.0))
+        .map(|p| quote! { #p() });
+
+    let fn_ret = components
+        .iter()
+        .map(|c| Ok(type_to_token_stream(&c.1.type_, context, false)?))
+        .collect::<anyhow::Result<Vec<_>>>()?;
+
+    Ok(quote! {
+        #[doc = #fn_comment]
+        pub fn #fn_ident() -> (#(Component<#fn_ret>),*) {
+           (#(#component_fns),*)
+        }
     })
 }
 
