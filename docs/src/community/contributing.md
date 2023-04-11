@@ -78,6 +78,36 @@ impl Ray {
 
 so that you can provide Rust-specific features. Where possible, try to avoid exposing the WIT types to the user, and try to keep as much functionality in WIT to ensure other guest languages can benefit from it.
 
+## Adding a new supported component type
+
+Components and their values are the core unit of data exchange in Ambient. We try to keep to a core set of types as adding more types results in some amount of bloat (especially with the amount of code generated); however, adding a new type is often the best way to represent a specific kind of data.
+
+To do so, you will need to update the following files:
+
+### Core definitions
+
+- `crates/wasm/wit/component.wit`: Add the new type to the three `value` enums.
+- `shared_crates/shared_types/src/lib.rs`: Add the new type to the `primitive_component_definitions` definition.
+
+### Code generation
+
+- `shared_crates/project_macro_common/src/component.rs`: Specify how to generate the type definition for `convert_primitive_type_to_rust_type`.
+- `shared_crates/project_macro_common/src/concept.rs`: Specify how to generate Rust code for a value of the type from TOML in `toml_value_to_tokens_primitive`.
+
+### Runtime support
+
+- `shared_crates/project_rt/src/message_serde.rs`: Specify how to serialize and deserialize the type to a binary stream.
+
+### Utilities
+
+- `crates/wasm/src/shared/conversion.rs`: Add `IntoBindgen`/`FromBindgen` implementations if appropriate.
+- `guest/rust/api/src/internal/conversion.rs`: Add `IntoBindgen`/`FromBindgen` implementations if appropriate.
+
+### Documentation
+
+- `CHANGELOG.md`: Document the addition of the new supported type.
+- `docs/src/reference/ambient.sample.toml`: Document the new type in the sample TOML file.
+
 ## Golden image tests
 
 The golden image tests run on the CI and produce a `screenshot.png`, which is compared to the one in the repository.
