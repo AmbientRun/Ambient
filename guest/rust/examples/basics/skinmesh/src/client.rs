@@ -1,16 +1,12 @@
 use ambient_api::{
+    components::core::{
+        camera::aspect_ratio_from_window, prefab::prefab_from_url, primitives::quad,
+    },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     entity::{AnimationAction, AnimationController},
     prelude::*,
 };
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::{
-    camera::aspect_ratio_from_window, prefab::prefab_from_url, primitives::quad,
-};
-use ambient_ui_components::{
-    prelude::{color, lookat_center, main_scene, scale, translation, Button, FlowColumn},
-    FocusRoot, UIExt,
-};
+use ambient_ui_components::prelude::*;
 
 #[main]
 pub fn main() {
@@ -37,45 +33,59 @@ pub fn main() {
         )
         .spawn();
 
-    entity::set_animation_controller(
-        unit_id,
-        AnimationController {
-            actions: &[AnimationAction {
-                clip_url: &asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
-                looping: true,
-                weight: 1.,
-            }],
-            apply_base_pose: false,
-        },
-    );
     App::el(unit_id).spawn_interactive()
 }
 
 #[element_component]
-fn App(_hooks: &mut Hooks, unit: EntityId) -> Element {
-    let anim_button = |name, anim| {
-        Button::new(name, move |_| {
-            entity::set_animation_controller(
-                unit,
-                AnimationController {
-                    actions: &[AnimationAction {
-                        clip_url: &asset::url(anim).unwrap(),
+fn App(hooks: &mut Hooks, unit: EntityId) -> Element {
+    const START: (&str, &str) = (
+        "Robot Hip Hop Dance",
+        "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
+    );
+    const END: (&str, &str) = ("Capoeira", "assets/Capoeira.fbx/animations/mixamo.com.anim");
+
+    let (weight, set_weight) = hooks.use_state(0.0f32);
+    hooks.use_effect(weight, move |_, weight| {
+        entity::set_animation_controller(
+            unit,
+            AnimationController {
+                actions: &[
+                    AnimationAction {
+                        clip_url: &asset::url(START.1).unwrap(),
                         looping: true,
-                        weight: 1.,
-                    }],
-                    apply_base_pose: false,
-                },
-            );
-        })
-        .el()
-    };
-    FocusRoot::el([FlowColumn::el([
-        anim_button(
-            "Robot Hip Hop Dance",
-            "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
-        ),
-        anim_button("Capoeira", "assets/Capoeira.fbx/animations/mixamo.com.anim"),
+                        weight: 1. - *weight,
+                    },
+                    AnimationAction {
+                        clip_url: &asset::url(END.1).unwrap(),
+                        looping: true,
+                        weight: *weight,
+                    },
+                ],
+                apply_base_pose: false,
+            },
+        );
+
+        Box::new(|_| {})
+    });
+
+    FocusRoot::el([FlowRow::el([
+        Text::el(START.0),
+        Slider {
+            value: weight,
+            on_change: Some(cb(move |weight| {
+                set_weight(weight);
+            })),
+            min: 0.,
+            max: 1.,
+            width: 100.,
+            logarithmic: false,
+            round: Some(2),
+            suffix: None,
+        }
+        .el(),
+        Text::el(END.0),
     ])
+    .with(space_between_items(), 4.0)
     .with_background(vec4(0., 0., 0., 0.9))
     .with_padding_even(10.)])
 }
