@@ -299,9 +299,8 @@ pub fn main() {
             player_camera_state.set_position(ball_position);
 
             let can_shoot = {
-                let lv = entity::get_component(player_ball, linear_velocity())
-                .unwrap_or_default();
-                lv.xy().length_squared() < 1.0 && lv.z.abs() < f32::EPSILON * 100.0
+                let lv = entity::get_component(player_ball, linear_velocity()).unwrap_or_default();
+                lv.xy().length_squared() < 1.0 && !is_vertically_moving(lv)
             };
 
             let force_multiplier = {
@@ -377,7 +376,7 @@ pub fn main() {
             physics::add_force(player_ball, {
                 let lv = entity::get_component(player_ball, linear_velocity()).unwrap_or_default();
                 let lvl = lv.length();
-                if lvl > 0.0 {
+                if lvl > 0.0 && !is_vertically_moving(lv) {
                     -65.0 * frametime() * lv.xy().extend(0.0) * (1.0 / lvl)
                 } else {
                     Vec3::ZERO
@@ -385,4 +384,9 @@ pub fn main() {
             });
         }
     });
+}
+
+
+fn is_vertically_moving(linear_velocity: Vec3) -> bool {
+    linear_velocity.z.abs() > 0.1
 }
