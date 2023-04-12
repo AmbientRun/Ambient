@@ -1,5 +1,7 @@
 # Campfire
 
+> because sometimes you need help changing the ambience
+
 Campfire is a tool for working with this repository. It offers several subtools for common developer operations.
 
 It is implemented in Rust to benefit from the Cargo tooling and easy cross-platform compatibility.

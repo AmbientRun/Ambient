@@ -11,13 +11,7 @@ pub enum Cli {
     Doc,
     /// Example-related functionality
     #[command(subcommand)]
-    Example(Example),
-}
-
-#[derive(Parser, Clone)]
-pub enum Example {
-    /// Clean all example build artifacts
-    Clean,
+    Example(example::Example),
 }
 
 fn main() -> anyhow::Result<()> {

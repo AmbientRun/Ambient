@@ -1,10 +1,22 @@
 use std::path::{Path, PathBuf};
 
-use crate::Example;
+use clap::Parser;
+
+#[derive(Parser, Clone)]
+pub enum Example {
+    /// Clean all example build artifacts
+    Clean,
+    /// Run an example
+    Run {
+        /// The name of the example to run
+        example: String,
+    },
+}
 
 pub(crate) fn main(ex: &Example) -> anyhow::Result<()> {
     match ex {
         Example::Clean => clean()?,
+        Example::Run { example } => run(&example)?,
     }
 
     Ok(())
@@ -22,6 +34,31 @@ fn clean() -> anyhow::Result<()> {
         log::info!("Removed build directory for {}.", example_path.display());
     }
     log::info!("Done cleaning examples.");
+    Ok(())
+}
+
+fn run(name: &str) -> anyhow::Result<()> {
+    let example_path = all_examples()?
+        .into_iter()
+        .find(|p| p.ends_with(name))
+        .ok_or_else(|| anyhow::anyhow!("no example found with name {}", name))?;
+
+    log::info!("Running example {}...", example_path.display());
+    run_project(&example_path)
+}
+
+fn run_project(project: &Path) -> anyhow::Result<()> {
+    run_ambient(&["run", project.to_string_lossy().as_ref()])
+}
+
+fn run_ambient(args: &[&str]) -> anyhow::Result<()> {
+    // TODO: consider running other versions of Ambient
+    std::process::Command::new("cargo")
+        .args(&["run", "-p", "ambient"])
+        .args(args)
+        .spawn()?
+        .wait()?;
+
     Ok(())
 }
 
