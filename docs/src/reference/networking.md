@@ -30,8 +30,8 @@ If on 0.2 or above, consult the [messaging](https://github.com/AmbientRun/Ambien
 
 ## Proxy
 
-Since 0.2 Ambient will use NAT traversal proxy. Check [AmbientProxy repository](https://github.com/AmbientRun/AmbientProxy) for more details about the proxy itself.
+Since 0.2, Ambient will establish a connection to a NAT traversal proxy by default (this can be turned off with `--no-proxy`). This proxy allows users to connect to an Ambient server, even when the server is behind NAT or similar. Check the [AmbientProxy repository](https://github.com/AmbientRun/AmbientProxy) for more details about the proxy itself.
 
-The Ambient server-side (the one hosting the game when started with `run` or `serve`) connects to proxy using QUIC through the `quinn` library and allocates a proxy endpoint. In response the proxy provides the endpoint details as well as URL for asset downloading. The allocated proxy endpoint can be used by players to connect (`ambient join ...`) to the game server running behind a NAT.
+The Ambient server (i.e. Ambient when started with `run` or `serve`) connects to the proxy using QUIC (using the `quinn` library) and allocates a proxy endpoint. In response, the proxy provides the endpoint's details as well as an URL for asset downloading. The allocated proxy endpoint can be used by players to connect (`ambient join ...`) to the game server, even if it is running behind a NAT.
 
-Communication between the proxy and players uses exactly the same protocols as with direct connection to the Ambient server.
+Communication between the proxy and players uses the same protocol as with a direct connection to the Ambient server; the only difference is the proxy acting as an intermediary.
