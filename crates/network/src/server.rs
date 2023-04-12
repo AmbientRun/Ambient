@@ -13,7 +13,7 @@ use ambient_core::{
     project_name,
 };
 use ambient_ecs::{
-    components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent, Networked, Resource, System, SystemGroup,
+    components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent, Resource, System, SystemGroup,
     World, WorldStream, WorldStreamCompEvent, WorldStreamFilter,
 };
 use ambient_proxy::client::AllocatedEndpoint;

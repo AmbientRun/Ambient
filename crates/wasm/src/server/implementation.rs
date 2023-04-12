@@ -2,7 +2,7 @@ use ambient_core::player::{player, user_id};
 use ambient_ecs::{query, EntityId, World};
 use ambient_network::server::player_connection;
 use ambient_physics::physx::character_controller;
-use ambient_std::shapes::Ray;
+use ambient_std::{shapes::Ray, asset_url::AbsAssetUrl};
 use anyhow::Context;
 use physxx::{PxControllerCollisionFlag, PxControllerFilters};
 
