@@ -27,3 +27,11 @@ Our plan is to introduce clientside and shared logic that can be used for user-d
 The Ambient runtime supports messaging from the client to the server and vice versa through structured messages. These messages are defined ahead of time in `ambient.toml` and made accessible to code that consumes that `ambient.toml`. This messaging can be reliable (QUIC unistream) or unreliable (QUIC datagram). Developers can use this to define their networked behavior, including customized prediction.
 
 If on 0.2 or above, consult the [messaging](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/messaging) example to see how to use the messaging functionality.
+
+## Proxy
+
+Since 0.2 Ambient will use NAT traversal proxy. Check [AmbientProxy repository](https://github.com/AmbientRun/AmbientProxy) for more details about the proxy itself.
+
+The Ambient server-side (the one hosting the game when started with `run` or `serve`) connects to proxy using QUIC through the `quinn` library and allocates a proxy endpoint. In response the proxy provides the endpoint details as well as URL for asset downloading. The allocated proxy endpoint can be used by players to connect (`ambient join ...`) to the game server running behind a NAT.
+
+Communication between the proxy and players uses exactly the same protocols as with direct connection to the Ambient server.
