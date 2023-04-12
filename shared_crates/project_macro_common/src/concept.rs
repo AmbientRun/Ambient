@@ -22,7 +22,7 @@ pub fn tree_to_token_stream(
             Context::Host => quote! {
                 use super::components;
                 use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
-                use crate::{EntityId, Entity};
+                use crate::{EntityId, Entity, Component};
                 #ts
             },
             Context::Guest { api_path, .. } => quote! {
