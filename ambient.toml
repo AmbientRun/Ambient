@@ -1242,6 +1242,11 @@ name = "Window Focus Change"
 description = "Sent when the window gains or loses focus."
 fields = { focused = "Bool" }
 
+[messages.window_close]
+name = "Window Close"
+description = "Sent when the window is closed."
+fields = {}
+
 [messages.window_keyboard_character]
 name = "Window Keyboard Character"
 description = "Sent when the window receives a character from the keyboard."

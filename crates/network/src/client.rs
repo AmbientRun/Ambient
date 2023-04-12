@@ -9,11 +9,17 @@ use std::{
 
 use ambient_app::window_title;
 use ambient_core::{asset_cache, gpu, runtime, window::window_scale_factor};
-use ambient_ecs::{components, world_events, Entity, Resource, SystemGroup, World, WorldDiff};
+use ambient_ecs::{components, generated::messages, world_events, Entity, Resource, SystemGroup, World, WorldDiff};
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
-use ambient_std::{asset_cache::{AssetCache, SyncAssetKeyExt}, cb, fps_counter::FpsSample, to_byte_unit, CallbackFn, Cb, asset_url::ContentBaseUrlKey};
+use ambient_std::{
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    asset_url::ContentBaseUrlKey,
+    cb,
+    fps_counter::FpsSample,
+    to_byte_unit, CallbackFn, Cb,
+};
 use ambient_ui::{Button, Centered, FlowColumn, FlowRow, Image, MeasureSize, Text, Throbber};
 use anyhow::Context;
 use bytes::Bytes;
@@ -198,6 +204,17 @@ impl ElementComponent for GameClientView {
         // The game client will be set once a connection establishes
         let (game_client, set_game_client) = hooks.use_state(None as Option<GameClient>);
 
+        // Subscribe to window close events
+        hooks.use_runtime_message::<messages::WindowClose>({
+            let game_client = game_client.clone();
+            move |_, _| {
+                if let Some(game_client) = game_client.as_ref() {
+                    game_client.connection.close(0u32.into(), b"User window was closed");
+                }
+            }
+        });
+
+        // Run game logic
         {
             let game_state = game_state.clone();
             let render_target = render_target.clone();
