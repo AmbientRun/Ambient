@@ -11,15 +11,16 @@ pub enum Example {
         /// The name of the example to run
         example: String,
     },
+    /// Run all the examples in order
+    RunAll,
 }
 
 pub(crate) fn main(ex: &Example) -> anyhow::Result<()> {
     match ex {
-        Example::Clean => clean()?,
-        Example::Run { example } => run(&example)?,
+        Example::Clean => clean(),
+        Example::Run { example } => run(&example),
+        Example::RunAll => run_all(),
     }
-
-    Ok(())
 }
 
 fn clean() -> anyhow::Result<()> {
@@ -45,6 +46,15 @@ fn run(name: &str) -> anyhow::Result<()> {
 
     log::info!("Running example {}...", example_path.display());
     run_project(&example_path)
+}
+
+fn run_all() -> anyhow::Result<()> {
+    for example_path in all_examples()? {
+        log::info!("Running example {}...", example_path.display());
+        run_project(&example_path)?;
+    }
+
+    Ok(())
 }
 
 fn run_project(project: &Path) -> anyhow::Result<()> {
