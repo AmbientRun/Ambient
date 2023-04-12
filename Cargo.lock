@@ -1069,13 +1069,14 @@ dependencies = [
 
 [[package]]
 name = "ambient_proxy"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "88b475751bc5ae812d651df49b24f595c9acb086b51df175679a385b33e58db6"
+checksum = "5f2cfb95db9b2f70ab424a9a683b2aaf30f81ead8b73bd275f3d0951f3df1b6f"
 dependencies = [
  "anyhow",
  "bincode",
  "bytes",
+ "flate2",
  "flume",
  "futures",
  "parking_lot",
@@ -6976,7 +6977,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
  "cfg-if",
- "rand 0.8.5",
+ "rand 0.7.3",
  "static_assertions",
 ]
 
