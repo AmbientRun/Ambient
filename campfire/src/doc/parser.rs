@@ -1,11 +1,8 @@
 use std::fmt::Display;
 
-use rustdoc_types::{
-    Crate, Enum as RdEnum, GenericArg, GenericArgs, Id, Item, ItemEnum, Path as RdPath,
-    Struct as RdStruct, StructKind, Type as RdType, VariantKind,
-};
+use rustdoc_types as rdt;
 
-use super::helpers::*;
+use super::{context::Context, helpers::ItemHelpers};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Field {
@@ -33,14 +30,15 @@ pub enum Type {
     Entity,
 }
 impl Type {
-    pub fn convert_item(krate: &Crate, item: &Item) -> Type {
+    pub fn convert_item(ctx: &Context, source_crate: &rdt::Crate, item: &rdt::Item) -> Type {
         match &item.inner {
-            ItemEnum::Struct(s) => Type::Struct(Struct {
+            rdt::ItemEnum::Struct(s) => Type::Struct(Struct {
                 name: item.name.clone().unwrap(),
-                fields: convert_struct_fields(krate, s),
+                fields: convert_struct_fields(ctx, source_crate, s),
             }),
-            ItemEnum::Enum(e) => Type::Enum(Enum::convert(
-                krate,
+            rdt::ItemEnum::Enum(e) => Type::Enum(Enum::convert(
+                ctx,
+                source_crate,
                 item.name.clone().unwrap(),
                 &item.attrs,
                 e,
@@ -49,13 +47,21 @@ impl Type {
         }
     }
 
-    fn convert_type(krate: &Crate, value: &RdType) -> Type {
+    fn convert_type(ctx: &Context, source_crate: &rdt::Crate, value: &rdt::Type) -> Type {
         match value {
-            RdType::ResolvedPath(p) => {
+            rdt::Type::ResolvedPath(p) => {
                 if p.name == "Vec" {
-                    Type::List(Box::new(Self::get_first_type_from_generic(krate, p)))
+                    Type::List(Box::new(Self::get_first_type_from_generic(
+                        ctx,
+                        source_crate,
+                        p,
+                    )))
                 } else if p.name == "Option" {
-                    Type::Option(Box::new(Self::get_first_type_from_generic(krate, p)))
+                    Type::Option(Box::new(Self::get_first_type_from_generic(
+                        ctx,
+                        source_crate,
+                        p,
+                    )))
                 } else if p.name == "String" {
                     Type::String
                 } else if p.name == "AssetUrl" {
@@ -69,34 +75,38 @@ impl Type {
                 } else if p.name == "Entity" {
                     Type::Entity
                 } else if p.name == "Box" {
-                    Self::get_first_type_from_generic(krate, p)
+                    Self::get_first_type_from_generic(ctx, source_crate, p)
                 } else {
-                    let (krate, item) = p.get(krate);
-                    Self::convert_item(krate, item)
+                    let (krate, item) = ctx.get_by_path(source_crate, p).expect("no item found");
+                    Self::convert_item(ctx, krate, item)
                 }
             }
-            // RdType::DynTrait(_) => todo!(),
-            // RdType::Generic(_) => todo!(),
-            RdType::Primitive(p) => Type::Primitive(p.clone()),
-            // RdType::FunctionPointer(_) => todo!(),
-            // RdType::Tuple(_) => todo!(),
-            // RdType::Slice(_) => todo!(),
-            // RdType::Array { type_, len } => todo!(),
-            // RdType::ImplTrait(_) => todo!(),
-            // RdType::Infer => todo!(),
-            // RdType::BorrowedRef { lifetime, mutable, type_ } => todo!(),
-            // RdType::QualifiedPath { name, args, self_type, trait_ } => todo!(),
+            // rdt::Type::DynTrait(_) => todo!(),
+            // rdt::Type::Generic(_) => todo!(),
+            rdt::Type::Primitive(p) => Type::Primitive(p.clone()),
+            // rdt::Type::FunctionPointer(_) => todo!(),
+            // rdt::Type::Tuple(_) => todo!(),
+            // rdt::Type::Slice(_) => todo!(),
+            // rdt::Type::Array { type_, len } => todo!(),
+            // rdt::Type::ImplTrait(_) => todo!(),
+            // rdt::Type::Infer => todo!(),
+            // rdt::Type::BorrowedRef { lifetime, mutable, type_ } => todo!(),
+            // rdt::Type::QualifiedPath { name, args, self_type, trait_ } => todo!(),
             _ => unimplemented!("unsupported type {value:?}"),
         }
     }
 
-    fn get_first_type_from_generic(krate: &Crate, p: &RdPath) -> Type {
-        match p.args.as_ref().unwrap().as_ref() {
-            GenericArgs::AngleBracketed { args, .. } => match &args[0] {
-                GenericArg::Lifetime(_) => todo!(),
-                GenericArg::Type(t) => Self::convert_type(krate, t),
-                GenericArg::Const(_) => todo!(),
-                GenericArg::Infer => todo!(),
+    fn get_first_type_from_generic(
+        ctx: &Context,
+        source_crate: &rdt::Crate,
+        path: &rdt::Path,
+    ) -> Type {
+        match path.args.as_ref().unwrap().as_ref() {
+            rdt::GenericArgs::AngleBracketed { args, .. } => match &args[0] {
+                rdt::GenericArg::Lifetime(_) => todo!(),
+                rdt::GenericArg::Type(t) => Self::convert_type(ctx, source_crate, t),
+                rdt::GenericArg::Const(_) => todo!(),
+                rdt::GenericArg::Infer => todo!(),
             },
             _ => unimplemented!(),
         }
@@ -134,27 +144,33 @@ pub struct Enum {
     pub variants: Vec<(String, String, Option<Type>)>,
 }
 impl Enum {
-    fn convert(krate: &Crate, name: String, attrs: &[String], value: &RdEnum) -> Self {
-        let make_variant = |id: &Id| {
-            let item = id.get(krate);
+    fn convert(
+        ctx: &Context,
+        source_crate: &rdt::Crate,
+        name: String,
+        attrs: &[String],
+        value: &rdt::Enum,
+    ) -> Self {
+        let make_variant = |id: &rdt::Id| {
+            let item = source_crate.index.get(id).expect("invalid id");
             let variant = item.inner.to_variant().unwrap();
             let ty = match &variant.kind {
-                VariantKind::Plain => None,
-                VariantKind::Tuple(t) => {
+                rdt::VariantKind::Plain => None,
+                rdt::VariantKind::Tuple(t) => {
                     assert_eq!(t.len(), 1);
                     // Get the first non-hidden field
                     let item = t
                         .iter()
                         .find_map(|o| o.as_ref())
-                        .map(|id| id.get(krate))
+                        .map(|id| source_crate.index.get(id).expect("invalid id"))
                         .unwrap();
                     // Get its inner type from the pub struct field
                     let ty = item.inner.to_struct_field_type().unwrap();
-                    Some(Type::convert_type(krate, ty))
+                    Some(Type::convert_type(ctx, source_crate, ty))
                 }
-                VariantKind::Struct { fields, .. } => Some(Type::Struct(Struct {
+                rdt::VariantKind::Struct { fields, .. } => Some(Type::Struct(Struct {
                     name: name.clone(),
-                    fields: convert_plain_fields(krate, fields),
+                    fields: convert_plain_fields(ctx, source_crate, &fields),
                 })),
             };
 
@@ -180,19 +196,19 @@ impl Enum {
     }
 }
 
-fn convert_struct_fields(krate: &Crate, strukt: &RdStruct) -> Vec<Field> {
+fn convert_struct_fields(ctx: &Context, krate: &rdt::Crate, strukt: &rdt::Struct) -> Vec<Field> {
     match &strukt.kind {
-        StructKind::Unit => todo!(),
-        StructKind::Tuple(_) => todo!(),
-        StructKind::Plain { fields, .. } => convert_plain_fields(krate, fields),
+        rdt::StructKind::Unit => todo!(),
+        rdt::StructKind::Tuple(_) => todo!(),
+        rdt::StructKind::Plain { fields, .. } => convert_plain_fields(ctx, krate, fields),
     }
 }
 
-fn convert_plain_fields(krate: &Crate, fields: &[Id]) -> Vec<Field> {
+fn convert_plain_fields(ctx: &Context, krate: &rdt::Crate, fields: &[rdt::Id]) -> Vec<Field> {
     fields
         .iter()
-        .flat_map(|i| {
-            let field = i.get(krate);
+        .flat_map(|id| {
+            let field = krate.index.get(id).expect("invalid id");
             let ty = field.inner.to_struct_field_type()?;
             let docs = field
                 .docs
@@ -203,7 +219,7 @@ fn convert_plain_fields(krate: &Crate, fields: &[Id]) -> Vec<Field> {
             Some(Field {
                 docs,
                 name: field.name.clone().unwrap(),
-                ty: Type::convert_type(krate, ty),
+                ty: Type::convert_type(ctx, krate, ty),
                 default,
             })
         })

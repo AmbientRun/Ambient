@@ -11,6 +11,8 @@ pub enum Cli {
 }
 
 fn main() -> anyhow::Result<()> {
+    simplelog::SimpleLogger::init(simplelog::LevelFilter::Info, Default::default())?;
+
     let cli = Cli::parse();
 
     match cli {

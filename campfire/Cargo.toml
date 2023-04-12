@@ -6,8 +6,9 @@ edition = "2021"
 [dependencies]
 anyhow = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
-once_cell = { workspace = true }
+log = { workspace = true }
 serde_json = { workspace = true }
 
 rustdoc-json = "0.8.0"
 rustdoc-types = "0.20.0"
+simplelog = "0.12.1"
