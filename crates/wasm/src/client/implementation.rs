@@ -1,5 +1,7 @@
+use ambient_core::asset_cache;
 use ambient_input::{player_prev_raw_input, player_raw_input};
 use ambient_network::client::game_client;
+use ambient_std::asset_url::AbsAssetUrl;
 use anyhow::Context;
 
 use super::Bindings;
@@ -60,5 +62,13 @@ impl wit::client_player::Host for Bindings {
             .resource(player_prev_raw_input())
             .clone()
             .into_bindgen())
+    }
+}
+
+impl wit::asset::Host for Bindings {
+    fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
+        let assets = self.world().resource(asset_cache()).clone();
+        let asset_url = AbsAssetUrl::from_asset_key(path);
+        asset_url.to_download_url(&assets).map(|url| Some(url.to_string()))
     }
 }

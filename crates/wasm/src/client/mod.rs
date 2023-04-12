@@ -159,12 +159,6 @@ impl wit::entity::Host for Bindings {
     }
 }
 
-impl wit::asset::Host for Bindings {
-    fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
-        shared::implementation::asset::url(self.world_mut(), path)
-    }
-}
-
 impl wit::component::Host for Bindings {
     fn get_index(&mut self, id: String) -> anyhow::Result<Option<u32>> {
         shared::implementation::component::get_index(id)

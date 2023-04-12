@@ -13,7 +13,7 @@ use ambient_ecs::{components, world_events, Entity, Resource, SystemGroup, World
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
-use ambient_std::{asset_cache::AssetCache, cb, fps_counter::FpsSample, to_byte_unit, CallbackFn, Cb};
+use ambient_std::{asset_cache::{AssetCache, SyncAssetKeyExt}, cb, fps_counter::FpsSample, to_byte_unit, CallbackFn, Cb, asset_url::ContentBaseUrlKey};
 use ambient_ui::{Button, Centered, FlowColumn, FlowRow, Image, MeasureSize, Text, Throbber};
 use anyhow::Context;
 use bytes::Bytes;
@@ -231,7 +231,11 @@ impl ElementComponent for GameClientView {
                             let game_client =
                                 GameClient::new(conn, Arc::new(create_rpc_registry()), game_state.clone(), client_info.user_id);
 
-                            game_state.lock().world.add_resource(self::game_client(), Some(game_client.clone()));
+                            let world = &mut game_state.lock().world;
+                            world.add_resource(self::game_client(), Some(game_client.clone()));
+
+                            let assets = world.resource(asset_cache());
+                            ContentBaseUrlKey.insert(assets, server_info.content_base_url);
 
                             // Update parent client
                             set_game_client(Some(game_client.clone()));

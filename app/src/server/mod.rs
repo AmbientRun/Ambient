@@ -13,7 +13,7 @@ use ambient_ecs::{
 use ambient_network::{
     persistent_resources,
     server::{ForkingEvent, GameServer, ShutdownEvent, ProxySettings},
-    synced_resources, server::content_base_url
+    synced_resources,
 };
 use ambient_prefab::PrefabFromUrl;
 use ambient_std::{
@@ -75,7 +75,7 @@ pub fn start(
 
     // here the key is inserted into the asset cache
     let key = format!("http://{public_host}:{http_interface_port}/content/");
-    ServerBaseUrlKey.insert(&assets, AbsAssetUrl::parse(&key).unwrap());
+    ServerBaseUrlKey.insert(&assets, AbsAssetUrl::parse(key).unwrap());
     start_http_interface(runtime, &project_path, http_interface_port);
 
     ComponentRegistry::get_mut().add_external(ambient_project_native::all_defined_components(manifest, false).unwrap());
@@ -91,8 +91,7 @@ pub fn start(
         let name = manifest.project.name.clone().unwrap_or_else(|| "Ambient".into());
         server_world.add_components(server_world.resource_entity(), Entity::new().with(project_name(), name)).unwrap();
 
-
-        Entity::new().with(synced_resources(), ()).with(content_base_url(), key).with(dont_store(), ()).spawn(&mut server_world);
+        Entity::new().with(synced_resources(), ()).with(dont_store(), ()).spawn(&mut server_world);
         // Note: this should not be reset every time the server is created. Remove this when it becomes possible to load/save worlds.
         Entity::new().with(persistent_resources(), ()).spawn(&mut server_world);
 
