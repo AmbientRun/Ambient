@@ -118,7 +118,7 @@ The `screenshots.zip` will show what image the CI produced.
 
 ## Releasing
 
-1. Run `cargo run --example main -p generate-docs` and `cargo run -- update-interface-components` to update the documentation from the codebase.
+1. Run `cargo run -p campfire doc` to update the documentation from the codebase.
 2. Update workspace versions in:
    - `Cargo.toml`
    - `docs/src/installing.md`

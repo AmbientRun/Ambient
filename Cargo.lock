@@ -148,12 +148,10 @@ dependencies = [
  "local-ip-address",
  "log",
  "parking_lot",
- "paste",
  "rusty-hook",
  "serde",
  "serde_json",
  "tokio",
- "toml_edit",
  "tower-http 0.3.5",
  "tracing",
  "tracing-log",
@@ -1962,6 +1960,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "campfire"
+version = "0.2.0-dev"
+dependencies = [
+ "anyhow",
+ "clap 4.1.8",
+ "once_cell",
+ "rustdoc-json",
+ "rustdoc-types",
+ "serde_json",
+]
+
+[[package]]
 name = "cap-fs-ext"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3228,17 +3238,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c31b6d751ae2c7f11320402d34e41349dd1016f8d5d45e48c4312bc8625af50c"
 dependencies = [
  "byteorder",
-]
-
-[[package]]
-name = "generate-docs"
-version = "0.2.0-dev"
-dependencies = [
- "anyhow",
- "once_cell",
- "rustdoc-json",
- "rustdoc-types",
- "serde_json",
 ]
 
 [[package]]
