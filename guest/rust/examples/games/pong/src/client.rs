@@ -13,6 +13,11 @@ use constants::*;
 
 #[main]
 fn main() {
+
+    let mut bgm = audio::load_sound(asset::url("assets/Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg").unwrap());
+
+    bgm.looping(true).scale(0.2).play();
+
     let camera_id = make_orthographic_camera()
         .with_default(main_scene())
         .spawn();
