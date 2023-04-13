@@ -41,6 +41,19 @@
             "cwd": "${workspaceFolder}/examples/basics/clientside"
         },
         {
+            "name": "basics/first_person_camera",
+            "type": "lldb",
+            "request": "launch",
+            "program": "ambient",
+            "args": [
+                "run"
+            ],
+            "initCommands": [
+                "settings set plugin.jit-loader.gdb.enable on"
+            ],
+            "cwd": "${workspaceFolder}/examples/basics/first_person_camera"
+        },
+        {
             "name": "basics/fog",
             "type": "lldb",
             "request": "launch",

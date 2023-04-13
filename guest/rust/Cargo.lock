@@ -400,6 +400,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "first_person_camera"
+version = "0.2.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "flow_layout"
 version = "0.2.0-dev"
 dependencies = [
