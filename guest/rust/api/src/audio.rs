@@ -1,11 +1,8 @@
 use crate::internal::wit;
 
-/// Load audio
-pub fn new_sound(name: &str) -> Audio {
-    Audio {
-        name: name.to_string(),
-        url: "".to_string(),
-    }
+/// Add sound to the audio library in the world you call this
+pub fn add_sound(name: &str, url: String) {
+    wit::audio::add_track(name, &url);
 }
 
 /// Play audio
@@ -44,28 +41,5 @@ impl AudioQuery {
     /// Play the audio
     pub fn play(&mut self) {
         wit::audio::play(&self.name, self.looping, self.amp);
-    }
-}
-
-/// The audio container, used to load audio and add it to the world
-pub struct Audio {
-    /// The name of the audio
-    name: String,
-    /// The url of the audio
-    url: String,
-}
-
-impl Audio {
-
-    /// Set the url of the audio
-    pub fn from(&mut self, url: String) -> &mut Self {
-        self.url = url;
-        self
-    }
-
-    /// Add the audio to the world
-    pub fn add(&mut self) {
-        println!("add audio to world");
-        wit::audio::add_track(&self.name, &self.url);
     }
 }
