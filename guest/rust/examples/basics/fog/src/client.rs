@@ -1,23 +1,18 @@
 use ambient_api::{
+    components::core::{
+        app::main_scene,
+        camera::{aspect_ratio_from_window, fog},
+        primitives::{cube, quad},
+        rendering::{
+            cast_shadows, color, fog_color, fog_density, fog_height_falloff, light_diffuse, sky,
+            sun,
+        },
+        transform::{lookat_center, rotation, scale, translation},
+    },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     prelude::*,
 };
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::{
-    app::main_scene,
-    camera::{aspect_ratio_from_window, fog},
-    primitives::{cube, quad},
-    rendering::{
-        cast_shadows, color, fog_color, fog_density, fog_height_falloff, light_diffuse, sky, sun,
-    },
-    transform::{lookat_center, rotation, scale, translation},
-};
-use ambient_ui_components::{
-    editor::Slider,
-    layout::{FlowColumn, FlowRow},
-    text::Text,
-    FocusRoot, UIExt,
-};
+use ambient_ui_components::prelude::*;
 
 #[main]
 fn main() {
