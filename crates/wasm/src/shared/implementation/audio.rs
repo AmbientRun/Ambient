@@ -4,7 +4,6 @@ use ambient_audio::{AudioFromUrl}; //  track::TrackDecodeStream, Source
 use ambient_ecs::{World};
 use ambient_core::{asset_cache, async_ecs::async_run, runtime};
 use ambient_world_audio::{audio_sender, AudioMessage}; // audio_tracks,
-use std::sync::{Arc};
 
 pub(crate) fn add_track(world: &World, url: String) -> anyhow::Result<()> {
     let assets = world.resource(asset_cache()).clone();
