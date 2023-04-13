@@ -47,7 +47,19 @@ pub fn initialize(world: &mut World, project_path: PathBuf, manifest: &ambient_p
             let description = if is_sole_module { description } else { format!("{description} ({name})") };
 
             let id = spawn_module(world, &name, description, true);
-            modules_to_entity_ids.insert((target, name.as_ref().strip_prefix(target).unwrap_or(name.as_ref()).to_string()), id);
+            modules_to_entity_ids.insert(
+                (
+                    target,
+                    // Support `client_module`, `module_client` and `module`
+                    name.as_ref()
+                        .strip_prefix(target)
+                        .or_else(|| name.as_ref().strip_suffix(target))
+                        .unwrap_or(name.as_ref())
+                        .trim_matches('_')
+                        .to_string(),
+                ),
+                id,
+            );
 
             if target == "client" {
                 let relative_path = path.strip_prefix(&build_dir)?;
