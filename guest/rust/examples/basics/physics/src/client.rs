@@ -6,6 +6,6 @@ pub fn main() {
 
     messages::Bonk::subscribe(|source, data| {
         // TODO: play sound here
-        println!("{source:?}: {:?}", data);
+        println!("[{source:?}] sent a msg => {:?}", data);
     });
 }
