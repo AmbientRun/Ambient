@@ -23,7 +23,7 @@
             },
             "args": [
                 "run",
-                "guest/rust/examples/basics/fog",
+                "guest/rust/examples/basics/transparency",
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [

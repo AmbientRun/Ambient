@@ -1,24 +1,20 @@
 use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
+    collections::{HashMap, HashSet}, sync::Arc
 };
 
 use ambient_ecs::{query, ArchetypeFilter, EntityId, FramedEventsReader, QueryState, World};
 use ambient_gpu::{
-    gpu::Gpu,
-    multi_buffer::{MultiBufferSizeStrategy, SubBufferId, TypedMultiBuffer},
-    shader_module::{GraphicsPipeline, GraphicsPipelineInfo},
+    gpu::Gpu, multi_buffer::{MultiBufferSizeStrategy, SubBufferId, TypedMultiBuffer}, shader_module::{GraphicsPipeline, GraphicsPipelineInfo}
 };
+use ambient_std::asset_cache::AssetCache;
 use glam::{uvec2, UVec2};
 use itertools::Itertools;
 use wgpu::DepthBiasState;
 
 use super::{
-    double_sided, lod::cpu_lod_visible, primitives, CollectPrimitive, DrawIndexedIndirect, FSMain, PrimitiveIndex, RendererCollectState,
-    RendererResources, RendererShader, SharedMaterial,
+    double_sided, lod::cpu_lod_visible, primitives, CollectPrimitive, DrawIndexedIndirect, FSMain, PrimitiveIndex, RendererCollectState, RendererResources, RendererShader, SharedMaterial
 };
-use crate::{bind_groups::BindGroups, RendererConfig};
-use ambient_std::asset_cache::AssetCache;
+use crate::{bind_groups::BindGroups, is_transparent, RendererConfig};
 
 pub struct TreeRendererConfig {
     pub gpu: Arc<Gpu>,
@@ -203,9 +199,8 @@ impl TreeRenderer {
         shader: &Arc<RendererShader>,
         material: &SharedMaterial,
     ) -> Option<(String, String)> {
-        if (!material.transparent().unwrap_or(shader.transparent) || !self.config.opaque_only)
-            && world.get(id, cpu_lod_visible()).unwrap_or(true)
-        {
+        let transparent = is_transparent(world, id, material, shader);
+        if (!transparent || !self.config.opaque_only) && world.get(id, cpu_lod_visible()).unwrap_or(true) {
             let config = &self.config;
             let double_sided = world.get(id, double_sided()).unwrap_or(material.double_sided().unwrap_or(shader.double_sided));
             let shader_id = format!("{}-{}", shader.id, double_sided);
