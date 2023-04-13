@@ -6,12 +6,13 @@ The client is compiled using the `wasm32-unknown-unknown` toolchain into a `.was
 
 ## Build Prerequisites
 
-  - [wasm-pack](https://rustwasm.github.io/wasm-pack/)
-  - [wasm-bindgen](https://github.com/rustwasm/wasm-bindgen)
-  - Node `>= v.19`
-  - WebGPU supported web browser (Chrome Canary)
+- [wasm-pack](https://rustwasm.github.io/wasm-pack/)
+- [wasm-bindgen](https://github.com/rustwasm/wasm-bindgen)
+- Node `>= v.19`
+- WebGPU supported web browser (Chrome Canary)
 
 ## Setup
+
 ```sh
 cd www
 
@@ -31,6 +32,7 @@ wasm-pack build client
 ```
 
 ## Running
+
 ```
 cd www
 
