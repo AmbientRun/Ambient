@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use ambient_audio::{hrtf::HrtfLib, Attenuation, AudioEmitter, AudioListener, AudioMixer, Source, track::Track}; // , Sound
+use ambient_audio::{hrtf::HrtfLib, Attenuation, AudioEmitter, AudioListener, AudioMixer, Source}; // , Sound, track::Track
 use ambient_ecs::{components, query, EntityId, Resource, World};
 use ambient_element::ElementComponentExt;
 use ambient_std::{cb, Cb};
@@ -16,8 +16,6 @@ use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
 
 components!("audio", {
-    @[Resource]
-    audio_tracks: std::collections::HashMap<String, Arc<Track>>,
     @[Resource]
     hrtf_lib: Arc<HrtfLib>,
     audio_emitter: Arc<Mutex<AudioEmitter>>,

@@ -283,8 +283,8 @@ impl wit::asset::Host for Bindings {
 }
 
 impl wit::audio::Host for Bindings {
-    fn add_track(&mut self, name: String, url: String) -> anyhow::Result<()> {
-        crate::shared::implementation::audio::add_track(self.world_mut(), name, url)
+    fn add_track(&mut self, url: String) -> anyhow::Result<()> {
+        crate::shared::implementation::audio::add_track(self.world_mut(), url)
     }
 
     fn play(&mut self, name: String, looping: bool, amp: f32) -> anyhow::Result<()> {

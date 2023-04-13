@@ -1,20 +1,17 @@
 use crate::internal::wit;
 
 /// Add sound to the audio library in the world you call this
-pub fn add_sound(name: &str, url: String) {
-    wit::audio::add_track(name, &url);
-}
-
-/// Play audio
-pub fn get(name: &str) -> AudioQuery {
+pub fn load_sound(url: String) -> AudioQuery {
+    wit::audio::add_track(&url);
     AudioQuery {
-        name: name.to_string(),
+        name: url,
         looping: false,
         amp: 1.0,
     }
 }
 
 /// The audio query, used to play audio
+#[derive(Clone, Debug)]
 pub struct AudioQuery {
     /// The name of the audio
     pub name: String,
