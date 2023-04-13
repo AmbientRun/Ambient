@@ -130,7 +130,7 @@ jobs:
           name: screenshots
           path: guest/rust/examples/*/*/screenshot.png
 
-  build-doc:
+  build-api-and-doc:
     runs-on: ubuntu-20.04
 
     steps:
@@ -138,6 +138,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Check that guest/rust's documentation is well-formed
         run: cd guest/rust && RUSTDOCFLAGS="-Dwarnings" cargo doc --workspace --all-features --no-deps
+      - name: Check that guest/rust builds under all configurations
+        run: cd guest/rust && ./api/check.sh
 
   build:
     strategy:

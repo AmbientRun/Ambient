@@ -110,7 +110,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_math"
-version = "0.1.0"
+version = "0.2.0-dev"
 dependencies = [
  "glam",
  "rand",
@@ -158,7 +158,7 @@ version = "0.2.0-dev"
 
 [[package]]
 name = "ambient_time"
-version = "0.1.0"
+version = "0.2.0-dev"
 dependencies = [
  "itertools",
  "thiserror",
@@ -397,6 +397,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "59a98bbaacea1c0eb6a0876280051b892eb73594fd90cf3b20e9c817029c57d2"
 dependencies = [
  "toml 0.5.11",
+]
+
+[[package]]
+name = "first_person_camera"
+version = "0.2.0-dev"
+dependencies = [
+ "ambient_api",
 ]
 
 [[package]]

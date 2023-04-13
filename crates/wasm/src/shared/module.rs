@@ -274,7 +274,11 @@ impl WasiOutputStream {
         let (tx, rx) = flume::unbounded();
         (
             Box::new(Self(tx)),
-            WasiOutputStreamConsumer { rx, outputter },
+            WasiOutputStreamConsumer {
+                rx,
+                outputter,
+                buffer: String::new(),
+            },
         )
     }
 }
@@ -290,9 +294,7 @@ impl wasi_common::OutputStream for WasiOutputStream {
     }
 
     async fn write(&mut self, buf: &[u8]) -> Result<u64, wasi_common::Error> {
-        let msg = std::str::from_utf8(buf)
-            .map_err(|e| wasi_common::Error::trap(e.into()))?
-            .trim();
+        let msg = std::str::from_utf8(buf).map_err(|e| wasi_common::Error::trap(e.into()))?;
         self.0
             .send(msg.to_string())
             .map_err(|e| wasi_common::Error::trap(e.into()))?;
@@ -303,11 +305,19 @@ impl wasi_common::OutputStream for WasiOutputStream {
 struct WasiOutputStreamConsumer {
     rx: flume::Receiver<String>,
     outputter: Box<dyn Fn(&World, &str) + Sync + Send>,
+    buffer: String,
 }
 impl WasiOutputStreamConsumer {
-    fn process_incoming(&self, world: &World) {
+    fn process_incoming(&mut self, world: &World) {
         for msg in self.rx.drain() {
-            (self.outputter)(world, &msg);
+            self.buffer += &msg;
+        }
+
+        if self.buffer.contains('\n') {
+            for line in self.buffer.lines() {
+                (self.outputter)(world, line);
+            }
+            self.buffer.clear();
         }
     }
 }
