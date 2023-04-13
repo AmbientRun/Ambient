@@ -1,12 +1,9 @@
-use ambient_core::{
-    player::{player, user_id},
-};
+use ambient_core::player::{player, user_id};
 use ambient_ecs::{query, EntityId, World};
 use ambient_network::server::player_connection;
-use ambient_physics::{helpers::PhysicsObjectCollection, physx::character_controller};
+use ambient_physics::physx::character_controller;
 use ambient_std::shapes::Ray;
 use anyhow::Context;
-use itertools::Itertools;
 use physxx::{PxControllerCollisionFlag, PxControllerFilters};
 
 use super::Bindings;
@@ -17,23 +14,38 @@ use crate::shared::{
 };
 
 impl wit::server_physics::Host for Bindings {
-    fn apply_force(
+    fn add_force(
         &mut self,
-        entities: Vec<wit::types::EntityId>,
+        entity: wit::types::EntityId,
         force: wit::types::Vec3,
     ) -> anyhow::Result<()> {
-        let collection = PhysicsObjectCollection::from_entities(
+        let _ = ambient_physics::helpers::add_force(
             self.world_mut(),
-            &entities.iter().map(|id| id.from_bindgen()).collect_vec(),
+            entity.from_bindgen(),
+            force.from_bindgen(),
+            Some(physxx::PxForceMode::Force),
         );
-        collection.apply_force(self.world_mut(), |_| force.from_bindgen());
         Ok(())
     }
 
-    fn explode_bomb(
+    fn add_impulse(
+        &mut self,
+        entity: wit::types::EntityId,
+        force: wit::types::Vec3,
+    ) -> anyhow::Result<()> {
+        let _ = ambient_physics::helpers::add_force(
+            self.world_mut(),
+            entity.from_bindgen(),
+            force.from_bindgen(),
+            Some(physxx::PxForceMode::Impulse),
+        );
+        Ok(())
+    }
+
+    fn add_radial_impulse(
         &mut self,
         position: wit::types::Vec3,
-        force: f32,
+        impulse: f32,
         radius: f32,
         falloff_radius: Option<f32>,
     ) -> anyhow::Result<()> {
@@ -43,8 +55,56 @@ impl wit::server_physics::Host for Bindings {
             position,
             radius,
         )
-        .apply_force_explosion(self.world_mut(), position, force, falloff_radius);
+        .add_radial_impulse(self.world_mut(), position, impulse, falloff_radius);
         Ok(())
+    }
+
+    fn add_force_at_position(
+        &mut self,
+        entity: wit::types::EntityId,
+        force: wit::types::Vec3,
+        position: wit::types::Vec3,
+    ) -> anyhow::Result<()> {
+        let _ = ambient_physics::helpers::add_force_at_position(
+            self.world_mut(),
+            entity.from_bindgen(),
+            force.from_bindgen(),
+            position.from_bindgen(),
+            Some(physxx::PxForceMode::Force),
+        );
+        Ok(())
+    }
+
+    fn add_impulse_at_position(
+        &mut self,
+        entity: wit::types::EntityId,
+        force: wit::types::Vec3,
+        position: wit::types::Vec3,
+    ) -> anyhow::Result<()> {
+        let _ = ambient_physics::helpers::add_force_at_position(
+            self.world_mut(),
+            entity.from_bindgen(),
+            force.from_bindgen(),
+            position.from_bindgen(),
+            Some(physxx::PxForceMode::Impulse),
+        );
+        Ok(())
+    }
+
+    fn get_velocity_at_position(
+        &mut self,
+        entity: wit::types::EntityId,
+        position: wit::types::Vec3,
+    ) -> anyhow::Result<wit::types::Vec3> {
+        let mut result = glam::Vec3::default();
+        if let Ok(velocity) = ambient_physics::helpers::get_velocity_at_position(
+            self.world_mut(),
+            entity.from_bindgen(),
+            position.from_bindgen(),
+        ) {
+            result = velocity;
+        }
+        Ok(result.into_bindgen())
     }
 
     fn set_gravity(&mut self, gravity: wit::types::Vec3) -> anyhow::Result<()> {
@@ -210,14 +270,7 @@ fn send_networked(
         .collect();
 
     for connection in connections {
-        message::send_networked(
-            world,
-            connection,
-            module_id,
-            &name,
-            &data,
-            reliable,
-        )?;
+        message::send_networked(world, connection, module_id, &name, &data, reliable)?;
     }
 
     Ok(())

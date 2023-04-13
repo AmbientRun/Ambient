@@ -2,21 +2,55 @@ use super::Bindings;
 use crate::shared::{implementation::unsupported, wit};
 
 impl wit::server_physics::Host for Bindings {
-    fn apply_force(
+    fn add_force(
         &mut self,
-        _entities: Vec<wit::types::EntityId>,
+        _entity: wit::types::EntityId,
         _force: wit::types::Vec3,
     ) -> anyhow::Result<()> {
         unsupported()
     }
 
-    fn explode_bomb(
+    fn add_impulse(
+        &mut self,
+        _entity: wit::types::EntityId,
+        _force: wit::types::Vec3,
+    ) -> anyhow::Result<()> {
+        unsupported()
+    }
+
+    fn add_radial_impulse(
         &mut self,
         _position: wit::types::Vec3,
-        _force: f32,
+        _impulse: f32,
         _radius: f32,
         _falloff_radius: Option<f32>,
     ) -> anyhow::Result<()> {
+        unsupported()
+    }
+
+    fn add_force_at_position(
+        &mut self,
+        _entity: wit::types::EntityId,
+        _force: wit::types::Vec3,
+        _position: wit::types::Vec3,
+    ) -> anyhow::Result<()> {
+        unsupported()
+    }
+
+    fn add_impulse_at_position(
+        &mut self,
+        _entity: wit::types::EntityId,
+        _force: wit::types::Vec3,
+        _position: wit::types::Vec3,
+    ) -> anyhow::Result<()> {
+        unsupported()
+    }
+
+    fn get_velocity_at_position(
+        &mut self,
+        _entity: wit::types::EntityId,
+        _position: wit::types::Vec3,
+    ) -> anyhow::Result<wit::types::Vec3> {
         unsupported()
     }
 

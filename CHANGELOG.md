@@ -23,6 +23,7 @@ This changelog is manually updated. While an effort will be made to keep the [Un
 - **API**: Added `physics::move_character` function to correctly move character controllers. This is used by the third-person camera example.
 - **API**: `Uvec2`/`Uvec3`/`Uvec4`/`U8` can now be used for component values.
 - **API**: A new `message` API has been added to allow for sending messages between client and server WASM, and from one WASM module to another.
+- **Physics**: `physics::{add_impulse, add_force_at_position, add_impulse_at_position, get_velocity_at_position}` have been added.
 - **Client**: The client's window title is now automatically changed to the name of the project running on the server. Thanks to [@MavethGH](https://github.com/MavethGH) for implementing this in [#178](https://github.com/AmbientRun/Ambient/pull/178).
 - **Client**: Added a basic headless mode to enable automatic CI testing of projects.
 - **Client**: Added `Dump UI World` button to inspect the state of the UI. Thanks to [@owenpalmer](https://github.com/owenpalmer) for implementing this in [#216](https://github.com/AmbientRun/Ambient/pull/216).
@@ -46,6 +47,9 @@ This changelog is manually updated. While an effort will be made to keep the [Un
 - **API**: Events have been removed and replaced with the more general-purpose `message` API. Messages are now defined in `ambient.toml` and are structured. Message subscriptions return handles that can be used to cancel their subscriptions.
 - **API**: `asset_url` has moved to `asset::url`.
 - **API**: `EventResult` and `EventOk` have been renamed to `ResultEmpty` and `OkEmpty` to better clarify their purpose.
+- **API**: The physics API has been revamped to better encode the physics engine's capabilities.
+  - `physics::apply_force` is now `physics::add_force`.
+  - `physics::explode_bomb` is now `physics::add_radial_impulse`, and takes a `FalloffRadius` enum.
 - **Physics**: Convex shapes are now used if a body is neither static or kinematic.
 
 #### Non-breaking

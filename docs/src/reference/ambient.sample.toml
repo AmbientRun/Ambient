@@ -28,6 +28,7 @@ feature-multibuild = ["client", "server"]
 
 #
 # Custom components defined by this project.
+# Components are used to store data on entities.
 #
 [components]
 # Inline tables can be used.
@@ -44,14 +45,20 @@ type = "I32"
 name = "Cool Component 2"
 description = "A cool component 2"
 # At time of writing, supported attributes are:
-#   Debuggable, Networked, Resource, Store
+#   Debuggable: this component can have its debug value printed, especially in ECS dumps
+#   Networked: this component is networked
+#   Resource: this component will only ever be used as a resource; will error if attached to an entity
+#   MaybeResource: this component can be used as a resource or as a component; necessary if treating this component as a resource
+#   Store: this component's value should be persisted when the world is saved
 attributes = ["Debuggable"]
 # Namespaces are also supported:
 "cool::component" = { type = "I32", name = "Cool Component", description = "A cool component", attributes = ["Debuggable"] }
 
 #
 # Custom concepts defined by this project.
+# Concepts are used to define a set of components that can be attached to an entity.
 #
+[concepts]
 [concepts.concept1]
 # The name of the concept.
 name = "Concept 1"
@@ -70,3 +77,18 @@ description = "The successor"
 extends = ["concept1"]
 [concepts.concept2.components]
 cool_component2 = 1
+
+#
+# Custom messages defined by this project.
+# Messages are used to communicate between client and server.
+#
+[messages]
+[messages.input]
+# The name of the message.
+name = "Input"
+# The description of the message.
+description = "Describes the input state of the player."
+[messages.input.fields]
+# Each field in the message must have a type, name and description. The supported types are the same as for components.
+direction = { type = "Vec2", name = "Direction", description = "The movement direction of the player." }
+mouse_delta_x = { type = "F32", name = "Mouse delta X", description = "The mouse delta X." }
