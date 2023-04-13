@@ -13,8 +13,8 @@ use physx::{
     physics_shape, revolute_joint, rigid_actor, rigid_dynamic, rigid_static,
 };
 use physxx::{
-    AsPxActor, PxContactPairHeader, PxControllerManagerRef, PxMaterial, PxPvdSceneFlag, PxRigidActor, PxRigidActorRef, PxSceneDesc,
-    PxSceneFlags, PxSceneRef, PxSimulationEventCallback, PxUserData,
+    AsPxActor, PxContactPairHeader, PxControllerManagerRef, PxMaterial, PxPvdSceneFlag, PxRigidActor, PxSceneDesc, PxSceneFlags,
+    PxSceneRef, PxSimulationEventCallback, PxUserData,
 };
 use serde::{Deserialize, Serialize};
 
@@ -42,7 +42,7 @@ components!("physics", {
     @[Resource]
     wood_physics_material: PxMaterial,
     @[Debuggable, Resource]
-    collisions: Arc<Mutex<Vec<(PxRigidActorRef, PxRigidActorRef)>>>,
+    collisions: Arc<Mutex<Vec<(EntityId, EntityId)>>>,
 });
 pub fn init_all_components() {
     init_components();
@@ -67,7 +67,11 @@ pub fn create_server_resources(assets: &AssetCache, server_resources: &mut Entit
         main_scene_desc.set_simulation_event_callbacks(PxSimulationEventCallback {
             collision_callback: Some(Box::new(move |header: &PxContactPairHeader| {
                 if let (Some(a), Some(b)) = (header.actors[0], header.actors[1]) {
-                    collisions.lock().push((a, b));
+                    let a = a.borrow_shapes().get(0).and_then(|s| s.get_user_data::<PxShapeUserData>()).map(|ud| ud.entity);
+                    let b = b.borrow_shapes().get(0).and_then(|s| s.get_user_data::<PxShapeUserData>()).map(|ud| ud.entity);
+                    if let (Some(a), Some(b)) = (a, b) {
+                        collisions.lock().push((a, b));
+                    }
                 }
             })),
         });

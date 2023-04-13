@@ -10,6 +10,11 @@ version = {workspace = true}
 ambient_api = {workspace = true}
 
 [[bin]]
+name = "physics_client"
+path = "src/client.rs"
+required-features = ["client"]
+
+[[bin]]
 name = "physics_server"
 path = "src/server.rs"
 required-features = ["server"]

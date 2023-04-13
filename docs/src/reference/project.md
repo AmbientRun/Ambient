@@ -10,7 +10,9 @@ All `.wasm` components in the `build/{client, server}` directory will be loaded 
 
 This means any `.wasm` that implements the Ambient [WIT interface](https://github.com/AmbientRun/Ambient/tree/main/crates/wasm/wit) and targets WASI snapshot 2 (or uses an adapter that targets WASI snapshot 2) should run within Ambient.
 
-As a convenience for Rust users, Ambient will automatically build a `Cargo.toml` at the root of your project, if present, as `wasm32-wasi` for the features specified in `build.rust.feature-multibuild` in `ambient.toml` (defaults to `client` and `server`). The default new project template will create `client.rs` and `server.rs` files, with a `Cargo.toml` preconfigured with targets for both. The resulting WASM bytecode files are then converted to components and placed in `build/{client, server}`.
+As a convenience for Rust users, Ambient will automatically build a `Cargo.toml` at the root of your project, if present, as `wasm32-wasi` for the features specified in `build.rust.feature-multibuild` in `ambient.toml` (defaults to `client` and `server`).
+
+The default new project template will create `client.rs` and `server.rs` files, with a `Cargo.toml` preconfigured with targets for both. The resulting WASM bytecode files are then converted to components and placed in `build/{client, server}`.
 
 The process it takes is equivalent to these commands:
 
@@ -55,12 +57,12 @@ The components section contains custom components defined by the project. Compon
 
 This is a TOML table, where the keys are the component IDs (`IdentifierPath`), and the values are the component definitions.
 
-| Property      | Type                   | Description                                                                                                                     |
-| ------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `type`        | `ComponentType`        | _Required_. The type of the component.                                                                                          |
-| `name`        | `String`               | _Required_. A human-readable name for the component.                                                                            |
-| `description` | `String`               | _Required_. A human-readable description of the component.                                                                      |
-| `attributes`  | `ComponentAttribute[]` | _Optional_. An array of attributes for the component. Must be one of: Debuggable, Networked, Resource, MaybeResource, or Store. |
+| Property      | Type                   | Description                                                |
+| ------------- | ---------------------- | ---------------------------------------------------------- |
+| `type`        | `ComponentType`        | _Required_. The type of the component.                     |
+| `name`        | `String`               | _Required_. A human-readable name for the component.       |
+| `description` | `String`               | _Required_. A human-readable description of the component. |
+| `attributes`  | `ComponentAttribute[]` | _Optional_. An array of attributes for the component.      |
 
 A `ComponentType` is either:
 
@@ -85,8 +87,8 @@ A `ComponentType` is either:
   - `Vec3`
   - `Vec4`
 
-- a contained type of the form `{ type: "Vec", inner: ComponentType }` or `{ type: "Option", inner: ComponentType }`
-  - Note that `Vec` and `Option` are the only supported container types, and `inner` must be a primitive `ComponentType` (that is, you cannot have nested contained types).
+- a contained type of the form `{ type = "Vec", element_type = ComponentType }` or `{ type = "Option", element_type = ComponentType }`
+  - Note that `Vec` and `Option` are the only supported container types, and `element_type` must be a primitive `ComponentType` (that is, you cannot have nested contained types).
 
 A `ComponentAttribute` is a string that can be one of the following:
 
@@ -100,7 +102,7 @@ A `ComponentAttribute` is a string that can be one of the following:
 
 The concepts section contains custom concepts defined by the project. Concepts are used to define a set of components that can be attached to an entity.
 
-This is a TOML table, where the keys are the concept IDs (`IdentifierPath`), and the values are the concept definitions.
+This is a TOML table, where the keys are the concept IDs (`Identifier`), and the values are the concept definitions.
 
 | Property      | Type                       | Description                                                                                                                    |
 | ------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
@@ -115,7 +117,7 @@ The `components` is an object where the keys are `IdentifierPath`s of components
 
 The messages section contains custom messages defined by the project. Messages are used to communicate between client and server.
 
-This is a TOML table, where the keys are the message IDs (`IdentifierPath`), and the values are the message definitions.
+This is a TOML table, where the keys are the message IDs (`Identifier`), and the values are the message definitions.
 
 | Property      | Type                             | Description                                                                                                     |
 | ------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------- |

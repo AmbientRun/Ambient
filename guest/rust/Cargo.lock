@@ -1274,6 +1274,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "transparency"
+version = "0.2.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "unicase"
 version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

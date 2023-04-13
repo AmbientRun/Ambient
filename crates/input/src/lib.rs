@@ -69,6 +69,10 @@ impl System<Event<'static, ()>> for InputSystem {
                     world.resource_mut(world_events()).add_message(messages::WindowKeyboardModifiersChange::new(mods.bits()));
                 }
 
+                WindowEvent::CloseRequested => {
+                    world.resource_mut(world_events()).add_message(messages::WindowClose::new());
+                }
+
                 WindowEvent::KeyboardInput { input, .. } => {
                     let keycode = input.virtual_keycode.map(|key| ambient_window_types::VirtualKeyCode::from(key).to_string());
                     let modifiers = self.modifiers.bits();

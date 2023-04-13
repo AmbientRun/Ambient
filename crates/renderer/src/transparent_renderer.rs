@@ -3,18 +3,15 @@ use std::{collections::HashMap, sync::Arc};
 use ambient_core::transform::local_to_world;
 use ambient_ecs::{query, ArchetypeFilter, EntityId, QueryState, World};
 use ambient_gpu::{
-    gpu::Gpu,
-    mesh_buffer::{MeshBuffer, MeshMetadata},
-    shader_module::{GraphicsPipeline, GraphicsPipelineInfo, DEPTH_FORMAT},
-    typed_buffer::TypedBuffer,
+    gpu::Gpu, mesh_buffer::{MeshBuffer, MeshMetadata}, shader_module::{GraphicsPipeline, GraphicsPipelineInfo, DEPTH_FORMAT}, typed_buffer::TypedBuffer
 };
+use ambient_std::asset_cache::AssetCache;
 use glam::{Mat4, UVec4, Vec3};
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
 
 use super::{double_sided, get_gpu_primitive_id, primitives, FSMain, RendererResources, RendererShader, SharedMaterial};
-use crate::{bind_groups::BindGroups, transparency_group, RendererConfig};
-use ambient_std::asset_cache::AssetCache;
+use crate::{bind_groups::BindGroups, is_transparent, transparency_group, RendererConfig};
 
 pub struct TransparentRendererConfig {
     pub gpu: Arc<Gpu>,
@@ -77,7 +74,7 @@ impl TransparentRenderer {
             }
             for (primitive_index, primitive) in primitives.iter().enumerate() {
                 let primitive_shader = (primitive.shader)(&self.config.assets, &self.config.renderer_config);
-                let transparent = primitive.material.transparent().unwrap_or(primitive_shader.transparent);
+                let transparent = is_transparent(world, id, &primitive.material, &primitive_shader);
                 if transparent || self.config.render_opaque {
                     let config = self.config.clone();
                     let double_sided =

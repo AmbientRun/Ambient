@@ -1,18 +1,11 @@
 use std::{f32::consts::PI, fmt::Debug, sync::Arc};
 
 use ambient_core::{
-    asset_cache,
-    async_ecs::async_run,
-    gpu_components,
-    gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldShaderModuleKey, GpuWorldSyncEvent},
-    mesh, runtime,
-    transform::get_world_rotation,
+    asset_cache, async_ecs::async_run, gpu_components, gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldShaderModuleKey, GpuWorldSyncEvent}, mesh, runtime, transform::get_world_rotation
 };
 use ambient_ecs::{components, query_mut, Debuggable, Entity, EntityId, Resource, SystemGroup, World};
 use ambient_gpu::{
-    mesh_buffer::GpuMesh,
-    shader_module::{BindGroupDesc, Shader, ShaderIdent, ShaderModule},
-    wgsl_utils::wgsl_interpolate,
+    mesh_buffer::GpuMesh, shader_module::{BindGroupDesc, Shader, ShaderIdent, ShaderModule}, wgsl_utils::wgsl_interpolate
 };
 use ambient_std::{asset_cache::*, asset_url::AbsAssetUrl, cb, include_file, Cb};
 use derive_more::*;
@@ -53,8 +46,7 @@ pub use tree_renderer::*;
 pub const MAX_PRIMITIVE_COUNT: usize = 16;
 
 pub use ambient_ecs::generated::components::core::rendering::{
-    cast_shadows, color, double_sided, fog_color, fog_density, fog_height_falloff, light_ambient, light_diffuse, overlay,
-    pbr_material_from_url, sun, transparency_group,
+    cast_shadows, color, double_sided, fog_color, fog_density, fog_height_falloff, light_ambient, light_diffuse, overlay, pbr_material_from_url, sun, transparency_group
 };
 
 components!("rendering", {
@@ -411,4 +403,8 @@ pub struct DrawIndexedIndirect {
     pub base_index: u32,
     pub vertex_offset: i32,
     pub base_instance: u32,
+}
+
+fn is_transparent(world: &World, id: EntityId, material: &SharedMaterial, shader: &RendererShader) -> bool {
+    world.get(id, transparency_group()).is_ok() || material.transparent().unwrap_or(shader.transparent)
 }

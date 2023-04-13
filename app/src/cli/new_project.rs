@@ -110,6 +110,8 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
         include_template!(".cargo/config.toml"),
         // .vscode
         include_template!(".vscode/settings.json"),
+        include_template!(".vscode/launch.json"),
+        include_template!(".vscode/extensions.json"),
         // src
         include_template!("src/client.rs"),
         include_template!("src/server.rs"),

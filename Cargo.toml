@@ -139,6 +139,7 @@ toml_edit = "0.19.3"
 arboard = "3.2.0"
 noise = { version = "0.7.0", default-features = false }
 russimp = { version = "1.0.6", features = ['prebuilt'] }
+colored = "2.0.0"
 
 #
 # WASM dependencies. Should be able to move off these once this all begins to stabilise a little.

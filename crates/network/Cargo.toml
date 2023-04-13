@@ -18,7 +18,7 @@ ambient_ui = { path = "../ui" }
 ambient_renderer = { path = "../renderer" }
 ambient_element = { path = "../../shared_crates/element" }
 ambient_app = { path = "../app" }
-ambient_proxy = "0.1"
+ambient_proxy = "0.2"
 
 itertools = { workspace = true }
 dashmap = { workspace = true }
@@ -40,6 +40,7 @@ manual_future = { workspace = true }
 tracing = { workspace = true }
 once_cell = { workspace = true }
 byteorder = { workspace = true }
+colored = { workspace = true }
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 async-trait = { workspace = true }

@@ -1,12 +1,8 @@
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
-use ambient_core::asset_cache;
 use ambient_ecs::{EntityId, SystemGroup, World};
 use ambient_project::Identifier;
-use ambient_std::{
-    asset_cache::SyncAssetKeyExt,
-    asset_url::{AssetUrl, ServerBaseUrlKey, ProxyBaseUrlKey},
-};
+use ambient_std::asset_url::ASSETS_PROTOCOL_SCHEME;
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
 use ambient_wasm::shared::{
     client_bytecode_from_url, get_module_name, module_bytecode, remote_paired_id, spawn_module, MessageType, ModuleBytecode,
@@ -51,15 +47,23 @@ pub fn initialize(world: &mut World, project_path: PathBuf, manifest: &ambient_p
             let description = if is_sole_module { description } else { format!("{description} ({name})") };
 
             let id = spawn_module(world, &name, description, true);
-            modules_to_entity_ids.insert((target, name.as_ref().strip_prefix(target).unwrap_or(name.as_ref()).to_string()), id);
+            modules_to_entity_ids.insert(
+                (
+                    target,
+                    // Support `client_module`, `module_client` and `module`
+                    name.as_ref()
+                        .strip_prefix(target)
+                        .or_else(|| name.as_ref().strip_suffix(target))
+                        .unwrap_or(name.as_ref())
+                        .trim_matches('_')
+                        .to_string(),
+                ),
+                id,
+            );
 
             if target == "client" {
                 let relative_path = path.strip_prefix(&build_dir)?;
-
-                let assets = world.resource(asset_cache());
-                let base_url = ProxyBaseUrlKey.try_get(assets).unwrap_or_else(|| ServerBaseUrlKey.get(assets));
-                let bytecode_url = AssetUrl::parse(&relative_path.to_string_lossy())?.resolve(&base_url)?.to_string();
-
+                let bytecode_url = format!("{}:/{}", ASSETS_PROTOCOL_SCHEME, relative_path.to_string_lossy());
                 world.add_component(id, client_bytecode_from_url(), bytecode_url)?;
             } else {
                 let bytecode = std::fs::read(path)?;
