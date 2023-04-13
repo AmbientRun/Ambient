@@ -1,0 +1,4 @@
+default interface audio {
+    add-track: func(name: string, url: string)
+    play: func(name: string, looping: bool, amp: float32)
+}

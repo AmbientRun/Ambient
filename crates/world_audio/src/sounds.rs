@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use ambient_audio::{hrtf::HrtfLib, Attenuation, AudioEmitter, AudioListener, AudioMixer, Sound, Source};
+use ambient_audio::{hrtf::HrtfLib, Attenuation, AudioEmitter, AudioListener, AudioMixer, Source, track::Track}; // , Sound
 use ambient_ecs::{components, query, EntityId, Resource, World};
 use ambient_element::ElementComponentExt;
 use ambient_std::{cb, Cb};
@@ -17,13 +17,20 @@ use serde::{Deserialize, Serialize};
 
 components!("audio", {
     @[Resource]
+    audio_tracks: std::collections::HashMap<String, Arc<Track>>,
+    @[Resource]
     hrtf_lib: Arc<HrtfLib>,
     audio_emitter: Arc<Mutex<AudioEmitter>>,
     audio_listener: Arc<Mutex<AudioListener>>,
-
     @[Resource]
-    audio_mixer: AudioMixer,
+    audio_sender: Arc<Mutex<std::sync::mpsc::Sender<AudioMessage>>>,
+    @[Resource]
+    audio_mixer: Arc<Mutex<AudioMixer>>,
 });
+
+pub enum AudioMessage {
+    Track(Arc<ambient_audio::track::Track>, bool, f32)
+}
 
 /// TODO: hook this into the Attenuation inside ambient_audio
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, DerefMut, Deref, From, Into)]
@@ -70,12 +77,13 @@ fn get_audio_listener(world: &World) -> anyhow::Result<&Arc<Mutex<AudioListener>
 }
 
 /// Makes a sound source emit from the entity
-pub fn play_sound_on_entity<S: 'static + Source>(world: &World, id: EntityId, source: S) -> anyhow::Result<Sound> {
-    let hrtf_lib = world.resource(hrtf_lib());
-    let mixer = world.resource(audio_mixer());
-    let emitter = world.get_ref(id, audio_emitter()).context("No audio emitter on entity")?;
+pub fn play_sound_on_entity<S: 'static + Source>(world: &World, id: EntityId, _source: S) -> anyhow::Result<()> {
+    let _hrtf_lib = world.resource(hrtf_lib());
+    let _mixer = world.resource(audio_mixer());
+    let _emitter = world.get_ref(id, audio_emitter()).context("No audio emitter on entity")?;
 
-    let listener = get_audio_listener(world)?;
+    let _listener = get_audio_listener(world)?;
 
-    Ok(mixer.play(source.spatial(hrtf_lib, listener.clone(), emitter.clone())))
+    // Ok(mixer.play(source.spatial(hrtf_lib, listener.clone(), emitter.clone())))
+    Ok(())
 }

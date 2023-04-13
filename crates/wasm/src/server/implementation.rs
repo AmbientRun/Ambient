@@ -281,3 +281,13 @@ impl wit::asset::Host for Bindings {
         Ok(Some(AbsAssetUrl::from_asset_key(path).to_string()))
     }
 }
+
+impl wit::audio::Host for Bindings {
+    fn add_track(&mut self, name: String, url: String) -> anyhow::Result<()> {
+        crate::shared::implementation::audio::add_track(self.world_mut(), name, url)
+    }
+
+    fn play(&mut self, name: String, looping: bool, amp: f32) -> anyhow::Result<()> {
+        crate::shared::implementation::audio::play(self.world_mut(), name, looping, amp)
+    }
+}

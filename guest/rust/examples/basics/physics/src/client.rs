@@ -2,10 +2,16 @@ use ambient_api::prelude::*;
 
 #[main]
 pub fn main() {
-    // TODO: load sound in client
+
+    audio::new_sound("bonk").from(asset::url("assets/bonk.ogg").unwrap()).add();
 
     messages::Bonk::subscribe(|source, data| {
-        // TODO: play sound here
         println!("[{source:?}] sent a msg => {:?}", data);
+        let mut amp = (data.vel.x.abs() / 5.0).powf(2.0)
+        + (data.vel.y.abs() / 5.0).powf(2.0)
+        + (data.vel.z.abs() / 5.0).powf(2.0);
+        amp = amp.sqrt().clamp(0.0, 1.0);
+        amp = amp * amp;
+        audio::get("bonk").looping(false).scale(amp).play();
     });
 }
