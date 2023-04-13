@@ -130,7 +130,7 @@ pub fn main() {
                         < PADDLE_LENGTH / 2. + BALL_RADIUS / 2.
                     {
                         // bounce from the paddle
-
+                        messages::Ping::new("").send_client_broadcast_reliable();
                         // accelerate a bit
                         let new_v_len = (velocity.x.powi(2) + velocity.y.powi(2)).sqrt()
                             * (1. + BALL_ACCELERATION);
