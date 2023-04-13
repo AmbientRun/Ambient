@@ -13,6 +13,8 @@ pub enum Example {
     },
     /// Run all the examples in order
     RunAll,
+    /// Check all the examples
+    CheckAll,
 }
 
 pub(crate) fn main(ex: &Example) -> anyhow::Result<()> {
@@ -20,6 +22,7 @@ pub(crate) fn main(ex: &Example) -> anyhow::Result<()> {
         Example::Clean => clean(),
         Example::Run { example } => run(&example),
         Example::RunAll => run_all(),
+        Example::CheckAll => check_all(),
     }
 }
 
@@ -52,6 +55,35 @@ fn run_all() -> anyhow::Result<()> {
     for example_path in all_examples()? {
         log::info!("Running example {}...", example_path.display());
         run_project(&example_path)?;
+    }
+
+    Ok(())
+}
+
+fn check_all() -> anyhow::Result<()> {
+    // Rust
+    {
+        let root_path = Path::new("guest/rust");
+        log::info!("Checking Rust examples...");
+
+        for features in ["", "client", "server", "client,server"] {
+            log::info!("Checking Rust examples with features `{}`...", features);
+
+            let mut command = std::process::Command::new("cargo");
+            command.current_dir(root_path);
+            command.args(&["clippy"]);
+            command.env("RUSTFLAGS", "-Dwarnings");
+
+            if !features.is_empty() {
+                command.args(&["--features", features]);
+            }
+
+            if !command.spawn()?.wait()?.success() {
+                anyhow::bail!("Failed to check Rust examples with features {}.", features);
+            }
+        }
+
+        log::info!("Checked Rust examples.");
     }
 
     Ok(())
