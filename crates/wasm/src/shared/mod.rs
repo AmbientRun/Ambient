@@ -16,18 +16,17 @@ use ambient_ecs::{
     dont_despawn_on_unload, generated::messages, query, world_events, Entity, EntityId, FnSystem,
     Message, SystemGroup, World, WorldEventReader,
 };
-use ambient_physics::{collider_loads, collisions, PxShapeUserData};
+use ambient_physics::{collider_loads, collisions};
 use ambient_project::Identifier;
 use itertools::Itertools;
-use physxx::{PxRigidActor, PxRigidActorRef, PxUserData};
-
 pub use module::*;
 
 mod internal {
+    use std::sync::Arc;
+
     use ambient_ecs::{
         components, Debuggable, Description, EntityId, Networked, Resource, Store, World,
     };
-    use std::sync::Arc;
 
     use super::{MessageType, ModuleBytecode, ModuleErrors, ModuleState, ModuleStateArgs};
 
@@ -57,9 +56,8 @@ pub use internal::{
     module_state, module_state_maker, remote_paired_id,
 };
 
-use crate::shared::message::RuntimeMessageExt;
-
 use self::message::Source;
+use crate::shared::message::RuntimeMessageExt;
 
 pub fn init_all_components() {
     internal::init_components();
@@ -134,20 +132,7 @@ pub fn systems() -> SystemGroup {
                     None => return,
                 };
                 for (a, b) in collisions.into_iter() {
-                    let select_entity = |px: PxRigidActorRef| {
-                        px.get_shapes()
-                            .into_iter()
-                            .next()
-                            .and_then(|shape| shape.get_user_data::<PxShapeUserData>())
-                            .map(|ud| ud.entity)
-                    };
-
-                    let ids = [select_entity(a), select_entity(b)]
-                        .into_iter()
-                        .flatten()
-                        .collect_vec();
-
-                    ambient_ecs::generated::messages::Collision::new(ids)
+                    ambient_ecs::generated::messages::Collision::new(vec![a, b])
                         .run(world, None)
                         .unwrap();
                 }

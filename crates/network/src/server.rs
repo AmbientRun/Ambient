@@ -13,8 +13,8 @@ use ambient_core::{
     project_name,
 };
 use ambient_ecs::{
-    components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent, Resource, System, SystemGroup,
-    World, WorldStream, WorldStreamCompEvent, WorldStreamFilter,
+    components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent, Resource, System, SystemGroup, World,
+    WorldStream, WorldStreamCompEvent, WorldStreamFilter,
 };
 use ambient_proxy::client::AllocatedEndpoint;
 use ambient_rpc::RpcRegistry;
@@ -45,6 +45,7 @@ use crate::{
     protocol::{ClientInfo, ServerInfo, ServerProtocol},
     NetworkError, RPC_BISTREAM_ID,
 };
+use colored::Colorize;
 
 components!("network::server", {
     @[Resource]
@@ -412,7 +413,7 @@ async fn start_proxy_connection(
         Arc::new(move |AllocatedEndpoint { id, allocated_endpoint, external_endpoint, assets_root, .. }: AllocatedEndpoint| {
             log::debug!("Allocated proxy endpoint. Allocation id: {}", id);
             log::info!("Proxy sees this server as {}", external_endpoint);
-            log::info!("Proxy allocated an endpoint, use `ambient join {}` to join", allocated_endpoint);
+            log::info!("Proxy allocated an endpoint, use `{}` to join", format!("ambient join {}", allocated_endpoint).bright_green());
 
             // set the content base url to point to proxy provided value
             match AbsAssetUrl::parse(&assets_root) {
@@ -472,7 +473,13 @@ async fn start_proxy_connection(
 
 /// Setup the protocol and enter the update loop for a new connected client
 #[tracing::instrument(skip_all)]
-fn run_connection(connection: ClientConnection, state: SharedServerState, world_stream_filter: WorldStreamFilter, assets: AssetCache, content_base_url: AbsAssetUrl) {
+fn run_connection(
+    connection: ClientConnection,
+    state: SharedServerState,
+    world_stream_filter: WorldStreamFilter,
+    assets: AssetCache,
+    content_base_url: AbsAssetUrl,
+) {
     let connection_id = friendly_id();
     let handle = Arc::new(OnceCell::new());
     handle

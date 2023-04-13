@@ -1,11 +1,13 @@
 use std::{
-    ffi::{c_void, CStr, CString}, ptr::null_mut
+    ffi::{c_void, CStr, CString},
+    ptr::null_mut,
 };
 
 use glam::Vec3;
 
 use crate::{
-    to_glam_vec3, to_physx_vec3, AsPxBase, PxBaseRef, PxConstraintRef, PxGeometry, PxMaterial, PxPhysicsRef, PxSceneRef, PxShape, PxTransform, PxUserData
+    to_glam_vec3, to_physx_vec3, AsPxBase, PxBaseRef, PxConstraintRef, PxGeometry, PxMaterial, PxPhysicsRef, PxSceneRef, PxShape,
+    PxTransform, PxUserData,
 };
 
 pub trait AsPxActor: Sync + Send + AsPxBase {
@@ -103,6 +105,9 @@ pub trait PxRigidActor {
     fn detach_shape(&self, shape: &PxShape, wake_on_lost_touch: bool);
     fn get_nb_shapes(&self) -> u32;
     fn get_shapes(&self) -> Vec<PxShape>;
+    /// This returns a list of shapes, but it doesn't increment the refcount for each shape. This means
+    /// that the shapes cannot be stored, and will only be valid as long as the rigid actor is valid.
+    fn borrow_shapes(&self) -> Vec<PxShape>;
     fn set_global_pose(&self, pose: &PxTransform, autowake: bool);
     fn get_global_pose(&self) -> PxTransform;
     fn get_constraints(&self) -> Vec<PxConstraintRef>;
@@ -118,21 +123,21 @@ impl<T: AsPxRigidActor + 'static> PxRigidActor for T {
     fn get_nb_shapes(&self) -> u32 {
         unsafe { physx_sys::PxRigidActor_getNbShapes(self.as_rigid_actor().0) }
     }
-    fn get_shapes(&self) -> Vec<PxShape> {
+    fn borrow_shapes(&self) -> Vec<PxShape> {
         let capacity = self.get_nb_shapes();
         let mut buffer: Vec<*mut physx_sys::PxShape> = Vec::with_capacity(capacity as usize);
         unsafe {
             let len = physx_sys::PxRigidActor_getShapes(self.as_rigid_actor().0, buffer.as_mut_ptr() as *mut *mut _, capacity, 0);
             buffer.set_len(len as usize);
         }
-        buffer
-            .into_iter()
-            .map(|x| {
-                let mut s = PxShape(x);
-                s.acquire_reference();
-                s
-            })
-            .collect()
+        buffer.into_iter().map(|x| PxShape(x, 0)).collect()
+    }
+    fn get_shapes(&self) -> Vec<PxShape> {
+        let mut shapes = self.borrow_shapes();
+        for shape in &mut shapes {
+            shape.acquire_reference();
+        }
+        shapes
     }
     fn set_global_pose(&self, pose: &PxTransform, autowake: bool) {
         unsafe {
@@ -370,7 +375,9 @@ impl PxRigidDynamicRef {
         unsafe { physx_sys::PxRigidDynamic_wakeUp_mut(self.0) }
     }
     pub fn set_kinematic_target(&self, destination: &PxTransform) {
-        unsafe { physx_sys::PxRigidDynamic_setKinematicTarget_mut(self.0, &destination.0); }
+        unsafe {
+            physx_sys::PxRigidDynamic_setKinematicTarget_mut(self.0, &destination.0);
+        }
     }
 }
 impl AsPxBase for PxRigidDynamicRef {

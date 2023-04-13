@@ -8,6 +8,7 @@ let samples = [
     ["guest/rust/examples/basics/async", 30],
     ["guest/rust/examples/basics/input", 30],
     ["guest/rust/examples/basics/image", 30],
+    ["guest/rust/examples/basics/transparency", 30],
     ["guest/rust/examples/basics/primitives", 30],
     ["guest/rust/examples/basics/raw_text", 30],
     ["guest/rust/examples/basics/fog", 60],
@@ -56,7 +57,9 @@ async function run(samples, just_build, no_build, nParallel) {
         console.timeLog("time", path, "running..");
         try {
             const command = just_build ? `build ${path}` : `run ${path} ${no_build ? '--no-build' : ''} --headless --no-proxy --golden-image-test ${seconds} --quic-interface-port ${9000 + index} --http-interface-port ${10000 + index}`;
-            let res = await exec(`cargo run --release -- ${command}`);
+            let fullCommand = `cargo run --release -- ${command}`;
+            console.timeLog("time", path, fullCommand);
+            let res = await exec(fullCommand);
             console.timeLog("time", path, "\x1b[32mwas ok\x1b[0m");
         } catch (err) {
             console.timeLog("time", path, "\x1b[31mfailed\x1b[0m");
