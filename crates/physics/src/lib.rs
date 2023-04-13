@@ -9,10 +9,12 @@ use glam::{vec3, Mat4};
 use helpers::release_px_scene;
 use parking_lot::Mutex;
 use physx::{
-    actor_aggregate, articulation_cache, articulation_link, articulation_reduce_coordinate, character_controller, fixed_joint, physics_shape, revolute_joint, rigid_actor, rigid_dynamic, rigid_static
+    actor_aggregate, articulation_cache, articulation_link, articulation_reduce_coordinate, character_controller, fixed_joint,
+    physics_shape, revolute_joint, rigid_actor, rigid_dynamic, rigid_static,
 };
 use physxx::{
-    AsPxActor, PxContactPairHeader, PxControllerManagerRef, PxMaterial, PxPvdSceneFlag, PxRigidActor, PxSceneDesc, PxSceneFlags, PxSceneRef, PxSimulationEventCallback, PxUserData
+    AsPxActor, PxContactPairHeader, PxControllerManagerRef, PxMaterial, PxPvdSceneFlag, PxRigidActor, PxSceneDesc, PxSceneFlags,
+    PxSceneRef, PxSimulationEventCallback, PxUserData,
 };
 use serde::{Deserialize, Serialize};
 
@@ -65,8 +67,8 @@ pub fn create_server_resources(assets: &AssetCache, server_resources: &mut Entit
         main_scene_desc.set_simulation_event_callbacks(PxSimulationEventCallback {
             collision_callback: Some(Box::new(move |header: &PxContactPairHeader| {
                 if let (Some(a), Some(b)) = (header.actors[0], header.actors[1]) {
-                    let a = a.get_shapes().get(0).and_then(|s| s.get_user_data::<PxShapeUserData>()).map(|ud| ud.entity);
-                    let b = b.get_shapes().get(0).and_then(|s| s.get_user_data::<PxShapeUserData>()).map(|ud| ud.entity);
+                    let a = a.borrow_shapes().get(0).and_then(|s| s.get_user_data::<PxShapeUserData>()).map(|ud| ud.entity);
+                    let b = b.borrow_shapes().get(0).and_then(|s| s.get_user_data::<PxShapeUserData>()).map(|ud| ud.entity);
                     if let (Some(a), Some(b)) = (a, b) {
                         collisions.lock().push((a, b));
                     }
