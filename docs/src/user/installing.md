@@ -44,7 +44,7 @@ apt-get install -y \
 
 ## Installing via asdf (Linux, Macos)
 
-Thanks to [@jtakakura](https://github.com/jtakakura), Ambient can also be installed using [asdf](https://asdf-vm.com/) by running `asdf plugin add ambient`. For more details visit https://github.com/jtakakura/asdf-ambient.
+Thanks to [@jtakakura](https://github.com/jtakakura), Ambient can also be installed using [asdf](https://asdf-vm.com/) by running `asdf plugin add ambient`. For more details, visit <https://github.com/jtakakura/asdf-ambient>.
 
 ## Running on headless Linux/Ubuntu
 
