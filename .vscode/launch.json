@@ -23,7 +23,7 @@
             },
             "args": [
                 "run",
-                "guest/rust/examples/basics/transparency",
+                "guest/rust/examples/basics/skinmesh",
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [
