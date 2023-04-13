@@ -649,7 +649,6 @@ dependencies = [
  "ambient_sys",
  "ambient_time",
  "ambient_window_types",
- "closure",
  "convert_case 0.6.0",
  "futures",
  "glam",
