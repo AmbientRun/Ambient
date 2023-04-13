@@ -221,7 +221,8 @@ impl<Bindings: BindingsBound> ModuleStateBehavior for ModuleStateInnerImpl<Bindi
         self.store.data_mut().bindings.set_world(world);
 
         let time = ambient_app::get_time_since_app_start(world).as_secs_f32();
-        self.guest_bindings.guest().call_exec(
+
+        let result = self.guest_bindings.guest().call_exec(
             &mut self.store,
             time,
             match message_source {
@@ -232,14 +233,14 @@ impl<Bindings: BindingsBound> ModuleStateBehavior for ModuleStateInnerImpl<Bindi
             },
             message_name,
             message_data,
-        )?;
+        );
 
         self.store.data_mut().bindings.clear_world();
 
         self.stdout_consumer.process_incoming(world);
         self.stderr_consumer.process_incoming(world);
 
-        Ok(())
+        result
     }
 
     fn drain_spawned_entities(&mut self) -> HashSet<EntityId> {
