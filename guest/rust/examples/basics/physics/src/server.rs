@@ -47,8 +47,9 @@ pub async fn main() {
         .spawn();
 
     ambient_api::messages::Collision::subscribe(|msg| {
-        // TODO: play a sound instead
-        println!("Bonk! {:?} collided", msg.ids);
+        messages::Bonk::new(
+            format!("Bonk! {:?} collided", msg.ids)
+        ).send_client_broadcast_reliable();
     });
 
     ambient_api::messages::Frame::subscribe(move |_| {
