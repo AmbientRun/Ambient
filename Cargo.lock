@@ -1971,6 +1971,7 @@ dependencies = [
  "rustdoc-types",
  "serde_json",
  "simplelog",
+ "toml_edit",
 ]
 
 [[package]]

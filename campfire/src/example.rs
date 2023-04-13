@@ -17,8 +17,8 @@ pub enum Example {
     CheckAll,
 }
 
-pub(crate) fn main(ex: &Example) -> anyhow::Result<()> {
-    match ex {
+pub(crate) fn main(args: &Example) -> anyhow::Result<()> {
+    match args {
         Example::Clean => clean(),
         Example::Run { example } => run(&example),
         Example::RunAll => run_all(),
