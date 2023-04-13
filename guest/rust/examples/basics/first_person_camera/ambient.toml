@@ -1,0 +1,22 @@
+[project]
+id = "first_person_camera"
+name = "First person camera"
+version = "0.0.1"
+
+[components]
+player_head_ref = { type = "EntityId", name = "Player head ref", description = "The player's head.", attributes = [
+    "Debuggable",
+] }
+player_movement_direction = { type = "Vec2", name = "Player movement direction", description = "The player's movement direction.", attributes = [
+    "Debuggable",
+] }
+player_mouse_delta = { type = "Vec2", name = "Player mouse delta", description = "The player's mouse delta.", attributes = [
+    "Debuggable",
+] }
+
+[messages.input]
+name = "Input"
+description = "Describes the input state of the player."
+[messages.input.fields]
+direction = { type = "Vec2", name = "Direction", description = "The movement direction of the player." }
+mouse_delta = { type = "Vec2", name = "Mouse delta", description = "The mouse delta." }
