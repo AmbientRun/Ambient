@@ -1433,7 +1433,6 @@ dependencies = [
  "ambient_shared_types",
  "ambient_std",
  "ambient_sys",
- "ambient_wasmtime_wasi",
  "ambient_window_types",
  "anyhow",
  "async-trait",
@@ -1445,6 +1444,7 @@ dependencies = [
  "flume",
  "fs_extra",
  "glam 0.22.0",
+ "host",
  "indexmap",
  "indoc",
  "itertools",
@@ -1461,24 +1461,12 @@ dependencies = [
  "serde_json",
  "slotmap",
  "tokio",
+ "wasi-cap-std-sync",
  "wasi-common",
  "wasmtime",
  "wit-bindgen-core 0.4.0 (git+https://github.com/bytecodealliance/wit-bindgen.git?rev=7ec986ba6bab38b4ccf5a771200c689c77f1e404)",
  "wit-bindgen-rust 0.4.0 (git+https://github.com/bytecodealliance/wit-bindgen.git?rev=7ec986ba6bab38b4ccf5a771200c689c77f1e404)",
  "wit-component",
-]
-
-[[package]]
-name = "ambient_wasmtime_wasi"
-version = "0.2.0-dev"
-dependencies = [
- "anyhow",
- "cap-rand",
- "cap-std",
- "pollster",
- "wasi-cap-std-sync",
- "wasi-common",
- "wasmtime",
 ]
 
 [[package]]
@@ -2023,13 +2011,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "cap-net-ext"
+version = "1.0.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "12eb3ab6abfc0e1b81b2a0f4cd14e09f96e59459a47a1442bf144bdc63dfc50a"
+dependencies = [
+ "cap-primitives",
+ "cap-std",
+ "rustix 0.37.11",
+]
+
+[[package]]
 name = "cap-primitives"
 version = "1.0.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6e1b2aadbde9f86e045e309df5d707600254d45eda76df251a7b840f81681d72"
 dependencies = [
  "ambient-authority",
- "fs-set-times 0.19.1",
+ "fs-set-times",
  "io-extras",
  "io-lifetimes",
  "ipnet",
@@ -3167,17 +3166,6 @@ dependencies = [
 
 [[package]]
 name = "fs-set-times"
-version = "0.18.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "857cf27edcb26c2a36d84b2954019573d335bb289876113aceacacdca47a4fd4"
-dependencies = [
- "io-lifetimes",
- "rustix 0.36.12",
- "windows-sys 0.45.0",
-]
-
-[[package]]
-name = "fs-set-times"
 version = "0.19.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7833d0f115a013d51c55950a3b09d30e4b057be9961b709acb9b5b17a1108861"
@@ -3895,6 +3883,26 @@ name = "hexf-parse"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
+
+[[package]]
+name = "host"
+version = "0.0.0"
+source = "git+https://github.com/AmbientRun/preview2-prototyping.git?branch=sync#442afa46152899c0ba4f3efa62714f6ddf76a495"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "cap-net-ext",
+ "cap-rand",
+ "cap-std",
+ "clap 4.2.1",
+ "pollster",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "wasi-cap-std-sync",
+ "wasi-common",
+ "wasmtime",
+]
 
 [[package]]
 name = "hound"
@@ -7276,43 +7284,47 @@ checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
 [[package]]
 name = "wasi-cap-std-sync"
 version = "0.0.0"
-source = "git+https://github.com/bytecodealliance/preview2-prototyping.git?rev=5836a6b0028f6fbdd094fbdd87df1ff4ca535168#5836a6b0028f6fbdd094fbdd87df1ff4ca535168"
+source = "git+https://github.com/AmbientRun/preview2-prototyping.git?branch=sync#442afa46152899c0ba4f3efa62714f6ddf76a495"
 dependencies = [
  "anyhow",
  "async-trait",
  "cap-fs-ext",
+ "cap-net-ext",
  "cap-rand",
  "cap-std",
  "cap-time-ext",
- "fs-set-times 0.18.1",
+ "fs-set-times",
  "io-extras",
  "io-lifetimes",
+ "ipnet",
  "is-terminal",
  "once_cell",
- "rustix 0.36.12",
+ "rustix 0.37.11",
  "system-interface",
  "tracing",
  "wasi-common",
- "windows-sys 0.45.0",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
 name = "wasi-common"
 version = "0.0.0"
-source = "git+https://github.com/bytecodealliance/preview2-prototyping.git?rev=5836a6b0028f6fbdd094fbdd87df1ff4ca535168#5836a6b0028f6fbdd094fbdd87df1ff4ca535168"
+source = "git+https://github.com/AmbientRun/preview2-prototyping.git?branch=sync#442afa46152899c0ba4f3efa62714f6ddf76a495"
 dependencies = [
  "anyhow",
  "async-trait",
  "bitflags",
  "cap-fs-ext",
+ "cap-net-ext",
  "cap-rand",
  "cap-std",
  "io-extras",
- "rustix 0.36.12",
+ "ipnet",
+ "rustix 0.37.11",
  "system-interface",
  "thiserror",
  "tracing",
- "windows-sys 0.45.0",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]

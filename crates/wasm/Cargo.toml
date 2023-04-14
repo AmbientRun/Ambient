@@ -17,7 +17,6 @@ ambient_network = { path = "../network" }
 ambient_prefab = { path = "../prefab" }
 ambient_physics = { path = "../physics" }
 ambient_std = { path = "../std" }
-ambient_wasmtime_wasi = { path = "../wasmtime_wasi" }
 
 ambient_project = { path = "../../shared_crates/project" }
 ambient_shared_types = { path = "../../shared_crates/shared_types" }
@@ -51,7 +50,9 @@ slotmap = { workspace = true }
 tokio = { workspace = true }
 
 wasmtime = { workspace = true }
+wasmtime-wasi = { workspace = true }
 wasi-common = { workspace = true }
+wasi-cap-std-sync = { workspace = true }
 wit-component = { workspace = true }
 
 [target.'cfg(windows)'.build-dependencies]
