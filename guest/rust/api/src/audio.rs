@@ -22,21 +22,24 @@ pub struct AudioTrack {
 }
 
 impl AudioTrack {
-
     /// Set whether or not the audio should loop
-    pub fn looping(&mut self, looping: bool) -> &mut Self {
-        self.looping = looping;
-        self
+    pub fn looping(&self, looping: bool) -> Self {
+        Self {
+            looping,
+            ..self.clone()
+        }
     }
 
     /// Set the volume of the audio
-    pub fn scale(&mut self, amp: f32) -> &mut Self {
-        self.amp = amp;
-        self
+    pub fn scale(&self, amp: f32) -> Self {
+        Self {
+            amp,
+            ..self.clone()
+        }
     }
 
     /// Play the audio
-    pub fn play(&mut self) {
+    pub fn play(&self) {
         wit::audio::play(&self.name, self.looping, self.amp);
     }
 }
