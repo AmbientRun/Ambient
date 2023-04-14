@@ -1,20 +1,18 @@
 # Audio
 
-Ambient now has some very basic audio functions including sound playback, looping and volome control.
+Ambient has basic audio functionality including sound playback, looping and volume control.
 
 ## Usage
 
 To use audio, you need to put the audio files into the `assets` folder, and then edit the `pipeline.json`.
 
-Check the [physics example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/physics), especially the `assets` folder to see how this is done.
+Check the `assets` folder in the [physics example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/physics) to see how this is done.
 
-Audio should be loaded and played in `client.rs`. Thus, `messages` can be useful to trigger sound effect in some cases.
-
-> Hint: for messages, you need to edit the `ambient.toml`.
+Audio should be loaded and played in clientside WASM/`client.rs` (the API is not supported on the server). [Messages](project.md#messages--messages) can be used by the server to tell the client to play a sound effect.
 
 ## Caveat
 
-So far we support `wav`, `mp3` and `ogg`, but if you use `wav`/`mp3`, it will be converted to `ogg` and you should use `ogg` in your code inside the client main function.
+At present, we support `wav`, `mp3` and `ogg` through `ffmpeg`. Note that if a non-`ogg` format is used, it will be converted to `ogg`, and you will need to use the `ogg` extension in your code.
 
 ```rust
 // "src/client.rs" in the "pong" example

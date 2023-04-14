@@ -117,6 +117,8 @@ The `components` is an object where the keys are `IdentifierPath`s of components
 
 The messages section contains custom messages defined by the project. Messages are used to communicate between client and server.
 
+For an example of how to use messages, see the [messaging example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/messaging).
+
 This is a TOML table, where the keys are the message IDs (`Identifier`), and the values are the message definitions.
 
 | Property      | Type                             | Description                                                                                                     |
