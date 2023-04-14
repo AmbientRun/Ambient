@@ -29,7 +29,7 @@ fn main() {
 
     let mut balldrop = audio::load(asset::url("assets/ball-drop.ogg").unwrap());
 
-    messages::Hit::subscribe(move |source, data| {
+    messages::Hit::subscribe(move |_source, data| {
         let ball = data.ball;
         let vel = entity::get_component(ball, linear_velocity()).unwrap();
         let mut amp = (vel.x.abs() / 5.0).powf(2.0)
@@ -40,7 +40,7 @@ fn main() {
         ballhit.looping(false).scale(amp).play();
     });
 
-    messages::Bonk::subscribe(move |source, data| {
+    messages::Bonk::subscribe(move |_source, data| {
         let ball = data.ball;
         let vel = entity::get_component(ball, linear_velocity()).unwrap();
         let mut amp = (vel.x.abs() / 5.0).powf(2.0)
