@@ -1,12 +1,4 @@
-use ambient_api::{
-    player::MouseButton,
-    prelude::*,
-    components::core::{
-        physics::{
-            linear_velocity
-        }
-    }
-};
+use ambient_api::{components::core::physics::linear_velocity, player::MouseButton, prelude::*};
 
 #[main]
 fn main() {
@@ -33,8 +25,8 @@ fn main() {
         let ball = data.ball;
         let vel = entity::get_component(ball, linear_velocity()).unwrap();
         let mut amp = (vel.x.abs() / 5.0).powf(2.0)
-        + (vel.y.abs() / 5.0).powf(2.0)
-        + (vel.z.abs() / 5.0).powf(2.0);
+            + (vel.y.abs() / 5.0).powf(2.0)
+            + (vel.z.abs() / 5.0).powf(2.0);
         amp = amp.sqrt().clamp(0.0, 1.0);
         amp = amp * amp;
         ballhit.looping(false).scale(amp).play();
@@ -44,8 +36,8 @@ fn main() {
         let ball = data.ball;
         let vel = entity::get_component(ball, linear_velocity()).unwrap();
         let mut amp = (vel.x.abs() / 5.0).powf(2.0)
-        + (vel.y.abs() / 5.0).powf(2.0)
-        + (vel.z.abs() / 5.0).powf(2.0);
+            + (vel.y.abs() / 5.0).powf(2.0)
+            + (vel.z.abs() / 5.0).powf(2.0);
         amp = amp.sqrt().clamp(0.0, 1.0);
         amp = amp * amp;
         balldrop.looping(false).scale(amp).play();
