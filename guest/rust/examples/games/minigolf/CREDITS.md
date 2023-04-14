@@ -2,4 +2,4 @@
 
 This example was constructed using [Kenney's Minigolf Kit](https://www.kenney.nl/assets/minigolf-kit).
 
-`ball.ogg`: https://freesound.org/people/juskiddink/sounds/108615/
+Audio edited from https://freesound.org/people/jrhodesza/sounds/367147/
