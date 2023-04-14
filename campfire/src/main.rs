@@ -20,7 +20,7 @@ pub enum Cli {
 
 fn main() -> anyhow::Result<()> {
     if !std::path::Path::new("ambient.toml").exists() {
-        anyhow::bail!("ambient.toml not found. Please run this from the root of the Ambient repository (preferably using `cargo run -p campfire`).");
+        anyhow::bail!("ambient.toml not found. Please run this from the root of the Ambient repository (preferably using `cargo campfire`).");
     }
 
     simplelog::SimpleLogger::init(simplelog::LevelFilter::Info, Default::default())?;
