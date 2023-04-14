@@ -24,6 +24,9 @@ pub mod message;
 /// Player-specific functionality.
 pub mod player;
 
+/// Helper functions for the camera
+pub mod camera;
+
 /// Physics-related functionality, including applying forces, changing physical properties, and more.
 #[cfg(feature = "server")]
 pub mod physics;
