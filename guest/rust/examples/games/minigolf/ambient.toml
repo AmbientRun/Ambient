@@ -53,3 +53,13 @@ description = "Player input"
 camera_rotation = { type = "Vec2", name = "Camera Rotation", description = "The rotation (radians) to rotate the camera by" }
 camera_zoom = { type = "F32", name = "Camera Zoom", description = "The amount to zoom the camera by" }
 shoot = { type = "Bool", name = "Shoot", description = "Whether or not to shoot the ball" }
+
+[messages.hit]
+name = "Hit"
+description = "Hit."
+fields = { ball = "EntityId" }
+
+[messages.bonk]
+name = "Bonk"
+description = "Collision between two objects."
+fields = { ball = "EntityId" }
