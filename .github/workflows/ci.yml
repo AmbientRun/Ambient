@@ -182,7 +182,9 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-          - os: windows-latest
+          # We run out of storage space when trying to build and run the project on Windows.
+          # It would be nice to fix this at some point.
+          # - os: windows-latest
           - os: ubuntu-20.04
 
     runs-on: ${{ matrix.os }}
