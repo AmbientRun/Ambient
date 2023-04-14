@@ -1,21 +1,21 @@
 [package]
-name = "physics"
+name = "first_person_camera"
 
 edition = "2021"
 publish = false
-rust-version = {workspace = true}
-version = {workspace = true}
+rust-version = { workspace = true }
+version = { workspace = true }
 
 [dependencies]
-ambient_api = {workspace = true}
+ambient_api = { workspace = true }
 
 [[bin]]
-name = "physics_client"
+name = "client_first_person_camera"
 path = "src/client.rs"
 required-features = ["client"]
 
 [[bin]]
-name = "physics_server"
+name = "server_first_person_camera"
 path = "src/server.rs"
 required-features = ["server"]
 
