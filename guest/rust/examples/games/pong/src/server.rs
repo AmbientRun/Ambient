@@ -86,6 +86,7 @@ pub fn main() {
             entity::set_component(id, translation(), new_position);
             if new_position.y.abs() > Y_BOUNDARY - BALL_RADIUS / 2. {
                 // bounce from top and bottom "walls"
+                messages::Ping::new().send_client_broadcast_reliable();
                 let new_velocity = vec3(velocity.x, -velocity.y, velocity.z);
                 entity::set_component(id, linear_velocity(), new_velocity);
             }
