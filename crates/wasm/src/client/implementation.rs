@@ -94,8 +94,8 @@ impl wit::audio::Host for Bindings {
 
 impl wit::camera::Host for Bindings {
     fn screen_ray(&mut self, clip_space_pos: wit::types::Vec2) -> anyhow::Result<wit::types::Ray> {
-        let user_id = self.world().resource_opt(local_user_id()).unwrap();
-        let camera = get_active_camera(&self.world(), main_scene(), Some(user_id)).unwrap();
+        let user_id = self.world().resource_opt(local_user_id()).context("No local user id")?;
+        let camera = get_active_camera(&self.world(), main_scene(), Some(user_id)).context("No active camera")?;
         let proj_view = self.world().get(camera, projection_view()).ok();
         let inv_proj_view = proj_view.unwrap_or(Mat4::IDENTITY).inverse();
         let a = inv_proj_view.project_point3(clip_space_pos.from_bindgen().extend(1.));
