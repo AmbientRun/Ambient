@@ -237,3 +237,8 @@ impl wit::message::Host for Bindings {
         shared::implementation::message::subscribe(&mut self.base.subscribed_messages, name)
     }
 }
+impl wit::player::Host for Bindings {
+    fn get_by_user_id(&mut self, user_id: String) -> anyhow::Result<Option<wit::types::EntityId>> {
+        shared::implementation::player::get_by_user_id(self.world(), user_id)
+    }
+}

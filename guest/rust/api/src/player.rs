@@ -1,19 +1,10 @@
 #[cfg(feature = "client")]
 use std::collections::HashSet;
 
-use once_cell::sync::Lazy;
-
-use crate::{
-    components::core::player::{player, user_id},
-    ecs::{query, Component, GeneralQuery},
-    global::EntityId,
-};
+use crate::{global::EntityId, internal::conversion::FromBindgen, internal::wit};
 
 #[cfg(feature = "client")]
-use crate::{
-    global::Vec2,
-    internal::{conversion::FromBindgen, wit},
-};
+use crate::global::Vec2;
 
 #[allow(missing_docs)]
 #[cfg(feature = "client")]
@@ -506,17 +497,7 @@ pub fn get_raw_input_delta() -> (RawInputDelta, RawInput) {
     (c.delta(&p), c)
 }
 
-static PLAYER_USER_ID_QUERY: Lazy<GeneralQuery<Component<String>>> =
-    Lazy::new(|| query(user_id()).requires(player()).build());
-
 /// Helper function for getting a player entity by their user ID.
 pub fn get_by_user_id(user_id: &str) -> Option<EntityId> {
-    // TODO: Consider a more efficient implementation, including
-    // - running this on the host
-    // - setting up a map of user IDs to player entities updated by queries
-    PLAYER_USER_ID_QUERY
-        .evaluate()
-        .into_iter()
-        .find(|(_, uid)| uid == user_id)
-        .map(|(id, _)| id)
+    wit::player::get_by_user_id(user_id).from_bindgen()
 }

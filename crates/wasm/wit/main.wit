@@ -6,6 +6,7 @@ world bindings {
     import component: pkg.component
     import entity: pkg.entity
     import message: pkg.message
+    import player: pkg.player
 
     import client-message: pkg.client-message
     import client-player: pkg.client-player

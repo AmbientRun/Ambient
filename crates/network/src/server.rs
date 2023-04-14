@@ -9,7 +9,7 @@ use std::{
 
 use ambient_core::{
     asset_cache, no_sync,
-    player::{get_player_by_user_id, player, user_id},
+    player::{get_by_user_id, player},
     project_name,
 };
 use ambient_ecs::{
@@ -86,12 +86,8 @@ pub struct RpcArgs {
 }
 impl RpcArgs {
     pub fn get_player(&self, world: &World) -> Option<EntityId> {
-        get_player_entity(world, &self.user_id)
+        get_by_user_id(world, &self.user_id)
     }
-}
-
-pub fn get_player_entity(world: &World, target_user_id: &str) -> Option<EntityId> {
-    query((user_id(), player())).iter(world, None).find(|(_, (uid, _))| uid.as_str() == target_user_id).map(|kv| kv.0)
 }
 
 pub fn create_player_entity_data(user_id: &str, entities_tx: Sender<Vec<u8>>, stats_tx: Sender<FpsSample>) -> Entity {
@@ -131,7 +127,7 @@ impl WorldInstance {
         ed.spawn(&mut self.world)
     }
     pub fn despawn_player(&mut self, user_id: &str) -> Option<Entity> {
-        self.world.despawn(get_player_by_user_id(&self.world, user_id)?)
+        self.world.despawn(get_by_user_id(&self.world, user_id)?)
     }
     pub fn broadcast_diffs(&mut self) {
         let diff = self.world_stream.next_diff(&self.world);
@@ -536,7 +532,7 @@ fn run_connection(
                         );
                         log::info!("[{}] Player spawned", user_id);
                     } else {
-                        let entity = get_player_by_user_id(&instance.world, user_id).unwrap();
+                        let entity = get_by_user_id(&instance.world, user_id).unwrap();
                         instance.world.set(entity, player_entity_stream(), diffs_tx.clone()).unwrap();
                         instance.world.set(entity, player_stats_stream(), stats_tx.clone()).unwrap();
                         instance.world.set(entity, player_connection(), new_player_connection.clone()).unwrap();
