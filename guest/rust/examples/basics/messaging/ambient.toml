@@ -7,6 +7,8 @@ version = "0.0.1"
 name = "Hello"
 description = "Sent when a client joins the server, then sent back from the server"
 fields = { text = "String", source_reliable = "Bool" }
+# see all the supported types here:
+# https://ambientrun.github.io/Ambient/reference/project.html#components--components
 
 [messages.local]
 name = "Local"

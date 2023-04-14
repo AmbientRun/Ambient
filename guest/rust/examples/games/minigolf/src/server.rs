@@ -266,6 +266,11 @@ pub fn main() {
         }
     });
 
+    ambient_api::messages::Collision::subscribe(move |msg| {
+        // TODO: change msg.ids[0] to the bouncing ball
+        messages::Bonk::new(msg.ids[0]).send_client_broadcast_reliable();
+    });
+
     // Update player ball each frame.
     query((
         player_ball(),
@@ -363,6 +368,7 @@ pub fn main() {
                         linear_velocity(),
                         camera_direction * 50. * force_multiplier,
                     );
+                    messages::Hit::new(player_ball).send_client_broadcast_reliable();
                     let stroke_count = entity::get_component(player, player_stroke_count())
                         .unwrap_or_default()
                         + 1;

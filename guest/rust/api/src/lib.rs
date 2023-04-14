@@ -8,6 +8,9 @@
 #![deny(missing_docs)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
+
+/// Audio functions, loading sound and playback.
+pub mod audio;
 /// Asset-related functionality, including retrieval of assets and where to find them.
 pub mod asset;
 /// ECS-related functionality not directly related to entities.

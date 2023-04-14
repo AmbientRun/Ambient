@@ -13,6 +13,14 @@ use constants::*;
 
 #[main]
 fn main() {
+    let bgm = audio::load(asset::url("assets/Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg").unwrap());
+    let ping = audio::load(asset::url("assets/ping.ogg").unwrap());
+    bgm.looping(true).scale(0.2).play();
+
+    messages::Ping::subscribe(move |_, _| {
+        ping.looping(false).scale(0.9).play();
+    });
+
     let camera_id = make_orthographic_camera()
         .with_default(main_scene())
         .spawn();

@@ -86,6 +86,7 @@ pub fn main() {
             entity::set_component(id, translation(), new_position);
             if new_position.y.abs() > Y_BOUNDARY - BALL_RADIUS / 2. {
                 // bounce from top and bottom "walls"
+                messages::Ping::new().send_client_broadcast_reliable();
                 let new_velocity = vec3(velocity.x, -velocity.y, velocity.z);
                 entity::set_component(id, linear_velocity(), new_velocity);
             }
@@ -130,7 +131,7 @@ pub fn main() {
                         < PADDLE_LENGTH / 2. + BALL_RADIUS / 2.
                     {
                         // bounce from the paddle
-
+                        messages::Ping::new().send_client_broadcast_reliable();
                         // accelerate a bit
                         let new_v_len = (velocity.x.powi(2) + velocity.y.powi(2)).sqrt()
                             * (1. + BALL_ACCELERATION);

@@ -46,9 +46,9 @@ pub async fn main() {
         .with(prefab_from_url(), asset::url("assets/Shape.glb").unwrap())
         .spawn();
 
-    ambient_api::messages::Collision::subscribe(move |_msg| {
-        let pos = entity::get_component(cube, translation()).unwrap();
-        messages::Bonk::new(pos, "bonk detected").send_client_broadcast_reliable();
+    ambient_api::messages::Collision::subscribe(move |msg| {
+        println!("Bonk! {:?} collided", msg.ids);
+        messages::Bonk::new(cube).send_client_broadcast_reliable();
     });
 
     ambient_api::messages::Frame::subscribe(move |_| {
