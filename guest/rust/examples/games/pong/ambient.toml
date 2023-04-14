@@ -15,4 +15,4 @@ direction = { type = "F32", name = "Direction", description = "The movement dire
 [messages.ping]
 name = "Ping"
 description = "Time to ping sound."
-fields = { val = "String" }
+fields = {}

@@ -140,6 +140,7 @@ dependencies = [
  "clap 4.1.8",
  "convert_case 0.6.0",
  "env_logger 0.10.0",
+ "flume",
  "futures",
  "git-version",
  "glam 0.22.0",

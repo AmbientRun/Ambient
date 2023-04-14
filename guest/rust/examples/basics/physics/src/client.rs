@@ -3,7 +3,7 @@ use ambient_api::prelude::*;
 #[main]
 pub fn main() {
 
-    let mut bonk = audio::load_sound(asset::url("assets/bonk.ogg").unwrap());
+    let mut bonk = audio::load(asset::url("assets/bonk.ogg").unwrap());
 
     messages::Bonk::subscribe(move |source, data| {
         println!("[{source:?}] sent a msg => {:?}", data);

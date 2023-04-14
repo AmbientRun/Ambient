@@ -14,8 +14,8 @@ use constants::*;
 #[main]
 fn main() {
 
-    let mut bgm = audio::load_sound(asset::url("assets/Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg").unwrap());
-    let mut ping = audio::load_sound(asset::url("assets/ping.ogg").unwrap());
+    let mut bgm = audio::load(asset::url("assets/Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg").unwrap());
+    let mut ping = audio::load(asset::url("assets/ping.ogg").unwrap());
     bgm.looping(true).scale(0.2).play();
 
     messages::Ping::subscribe(move |_, _| {
