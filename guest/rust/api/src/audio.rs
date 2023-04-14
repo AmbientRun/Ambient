@@ -1,16 +1,16 @@
 use crate::internal::wit;
 
-/// Add sound to the audio library in the world you call this
+/// Load an audio file from `url`, and return an [AudioTrack] that can be used to play the audio.
 pub fn load(url: String) -> AudioTrack {
     wit::audio::load(&url);
     AudioTrack {
         name: url,
         looping: false,
-        amp: 1.0,
+        volume: 1.0,
     }
 }
 
-/// The audio query, used to play audio
+/// Represents an audio track that can be played.
 #[derive(Clone, Debug)]
 pub struct AudioTrack {
     /// The name of the audio
@@ -18,11 +18,11 @@ pub struct AudioTrack {
     /// Whether or not the audio should loop
     pub looping: bool,
     /// The volume of the audio
-    pub amp: f32,
+    pub volume: f32,
 }
 
 impl AudioTrack {
-    /// Set whether or not the audio should loop
+    /// Set whether or not the track should loop.
     pub fn looping(&self, looping: bool) -> Self {
         Self {
             looping,
@@ -30,16 +30,16 @@ impl AudioTrack {
         }
     }
 
-    /// Set the volume of the audio
-    pub fn scale(&self, amp: f32) -> Self {
+    /// Set the volume of the track.
+    pub fn volume(&self, volume: f32) -> Self {
         Self {
-            amp,
+            volume,
             ..self.clone()
         }
     }
 
-    /// Play the audio
+    /// Play the track.
     pub fn play(&self) {
-        wit::audio::play(&self.name, self.looping, self.amp);
+        wit::audio::play(&self.name, self.looping, self.volume);
     }
 }

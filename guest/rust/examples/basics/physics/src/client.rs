@@ -12,6 +12,6 @@ pub fn main() {
             + (vel.z.abs() / 5.0).powf(2.0);
         amp = amp.sqrt().clamp(0.0, 1.0);
         amp = amp * amp;
-        bonk.looping(false).scale(amp).play();
+        bonk.looping(false).volume(amp).play();
     });
 }

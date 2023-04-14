@@ -8,20 +8,20 @@
 #![deny(missing_docs)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
-
-/// Audio functions, loading sound and playback.
-pub mod audio;
-/// Asset-related functionality, including retrieval of assets and where to find them.
+/// Retrieval of assets and where to find them.
 pub mod asset;
+/// Audio functionality, including loading sounds and playback.
+#[cfg(feature = "client")]
+pub mod audio;
 /// ECS-related functionality not directly related to entities.
 pub mod ecs;
-/// Entity-related functionality, including manipulation, creation, removal, and search.
+/// Manipulation, creation, removal, search and more for entities.
 pub mod entity;
 /// Global functions and types for your convenience.
 pub mod global;
 /// Messaging to other modules and to the other side of the networking.
 pub mod message;
-/// Player-related functionality.
+/// Player-specific functionality.
 pub mod player;
 
 /// Physics-related functionality, including applying forces, changing physical properties, and more.

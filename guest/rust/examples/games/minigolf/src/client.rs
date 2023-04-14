@@ -29,7 +29,7 @@ fn main() {
             + (vel.z.abs() / 5.0).powf(2.0);
         amp = amp.sqrt().clamp(0.0, 1.0);
         amp = amp * amp;
-        ballhit.looping(false).scale(amp).play();
+        ballhit.looping(false).volume(amp).play();
     });
 
     messages::Bonk::subscribe(move |_source, data| {
@@ -40,6 +40,6 @@ fn main() {
             + (vel.z.abs() / 5.0).powf(2.0);
         amp = amp.sqrt().clamp(0.0, 1.0);
         amp = amp * amp;
-        balldrop.looping(false).scale(amp).play();
+        balldrop.looping(false).volume(amp).play();
     });
 }
