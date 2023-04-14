@@ -8,12 +8,39 @@ This changelog is manually updated. While an effort will be made to keep the [Un
 
 ## Unreleased (YYYY-MM-DD)
 
+<!--
+### Added
+
+#### Headline features
+
+#### Other
+
+#### Examples
+
+### Changed
+
+#### Breaking
+
+#### Non-breaking
+
+### Fixed
+
+### Community PRs to internals
+
+These PRs are not directly user-facing, but improve the development experience. They're just as appreciated!
+
+### Removed
+-->
+
+## Version 0.2.0 (unreleased, YYYY-MM-DD)
+
 ### Added
 
 #### Headline features
 
 - **API**: Guest code can now **create and interact with UI**. See [the UI examples](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui).
 - **API**: Guest code can now **run on the client**. See [the `clientside` example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/clientside).
+- **API**: Clientside guest code can now play **basic audio**. See [the `pong` example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/pong).
 - **Server**: By default, a proxy URL is generated for the server on startup. This can be used to access a running server from anywhere on the internet, making it easy to share your work with others. To turn this off, specify `--no-proxy` on the server command line.
 <!-- - **Client**: The client can now **run on the web**. -->
 
@@ -22,7 +49,7 @@ This changelog is manually updated. While an effort will be made to keep the [Un
 - **API**: Kinematic bodies are now exposed. This is used by the minigolf example to provide its moving obstacles.
 - **API**: Added `physics::move_character` function to correctly move character controllers. This is used by the third-person camera example.
 - **API**: `Uvec2`/`Uvec3`/`Uvec4`/`U8` can now be used for component values.
-- **API**: A new `message` API has been added to allow for sending messages between client and server WASM, and from one WASM module to another.
+- **API**: A new `message` API has been added to allow for sending messages between client and server WASM, and from one WASM module to another. Messages are defined in `ambient.toml` and are structured. Message subscriptions return handles that can be used to cancel their subscriptions.
 - **Physics**: `physics::{add_impulse, add_force_at_position, add_impulse_at_position, get_velocity_at_position}` have been added.
 - **Client**: The client's window title is now automatically changed to the name of the project running on the server. Thanks to [@MavethGH](https://github.com/MavethGH) for implementing this in [#178](https://github.com/AmbientRun/Ambient/pull/178).
 - **Client**: Added a basic headless mode to enable automatic CI testing of projects.
@@ -41,10 +68,8 @@ This changelog is manually updated. While an effort will be made to keep the [Un
 #### Breaking
 
 - **Client**: `--debug` is now `--debugger`, but it can also be accessed through the `AMBIENT_DEBUGGER` env variable.
-- **API**: `player_camera` has been removed, and the components it instantiated are now directly exposed. See the `multiplayer` example to see what's changed.
 - **API**: The `Cargo.toml` has changed to enable clientside builds. Please look at the examples to see how to update your `Cargo.toml` appropriately.
 - **API**: `ChangeQuery` has been split into `UntrackedChangeQuery` and `ChangeQuery` to ensure that `track_change` is called before the query is built.
-- **API**: Events have been removed and replaced with the more general-purpose `message` API. Messages are now defined in `ambient.toml` and are structured. Message subscriptions return handles that can be used to cancel their subscriptions.
 - **API**: `asset_url` has moved to `asset::url`.
 - **API**: `EventResult` and `EventOk` have been renamed to `ResultEmpty` and `OkEmpty` to better clarify their purpose.
 - **API**: The physics API has been revamped to better encode the physics engine's capabilities.
@@ -83,7 +108,10 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **Ambient**: The presentation of the license in the repository was improved. Thanks to [@C-BJ](https://github.com/C-BJ) for [#201](https://github.com/AmbientRun/Ambient/pull/201) and [#203](https://github.com/AmbientRun/Ambient/pull/203).
 - **Ambient**: The book and build CI workflows now only run when relevant files are updated. Thanks to [@C-BJ](https://github.com/C-BJ) for implementing this in [#202](https://github.com/AmbientRun/Ambient/pull/202).
 
-<!-- ### Removed -->
+### Removed
+
+- **API**: `player_camera` has been removed, and the components it instantiated are now directly exposed. See the `multiplayer` example to see what's changed.
+- **API**: Events have been removed and replaced with the more general-purpose `message` API.
 
 ## Version 0.1.1 (2023-02-22)
 
