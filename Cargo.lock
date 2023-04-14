@@ -140,6 +140,7 @@ dependencies = [
  "clap 4.2.1",
  "convert_case 0.6.0",
  "env_logger 0.10.0",
+ "flume",
  "futures",
  "git-version",
  "glam 0.22.0",
@@ -1423,6 +1424,7 @@ version = "0.2.0-dev"
 dependencies = [
  "ambient_animation",
  "ambient_app",
+ "ambient_audio",
  "ambient_core",
  "ambient_ecs",
  "ambient_input",
@@ -1435,6 +1437,7 @@ dependencies = [
  "ambient_sys",
  "ambient_wasmtime_wasi",
  "ambient_window_types",
+ "ambient_world_audio",
  "anyhow",
  "async-trait",
  "byteorder",

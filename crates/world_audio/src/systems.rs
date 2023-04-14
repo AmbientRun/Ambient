@@ -13,9 +13,7 @@ use crate::{audio_emitter, audio_listener, audio_mixer, hrtf_lib};
 pub fn setup_audio(world: &mut World, mixer: AudioMixer) -> anyhow::Result<()> {
     let hrtf = Arc::new(HrtfLib::load(Cursor::new(include_bytes!("../IRC_1002_C.bin")))?);
     world.add_resource(hrtf_lib(), hrtf);
-
     world.add_resource(audio_mixer(), mixer);
-
     Ok(())
 }
 
