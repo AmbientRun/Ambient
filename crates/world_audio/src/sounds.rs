@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use ambient_audio::{hrtf::HrtfLib, Attenuation, AudioEmitter, AudioListener, AudioMixer, Source};
+use ambient_audio::{hrtf::HrtfLib, Attenuation, AudioEmitter, AudioListener, AudioMixer, Source, Sound};
 use ambient_ecs::{components, query, EntityId, Resource, World};
 use ambient_element::ElementComponentExt;
 use ambient_std::{cb, Cb};
@@ -23,7 +23,7 @@ components!("audio", {
     @[Resource]
     audio_sender: Arc<flume::Sender<AudioMessage>>,
     @[Resource]
-    audio_mixer: Arc<Mutex<AudioMixer>>,
+    audio_mixer: AudioMixer,
 });
 
 pub enum AudioMessage {
@@ -75,13 +75,12 @@ fn get_audio_listener(world: &World) -> anyhow::Result<&Arc<Mutex<AudioListener>
 }
 
 /// Makes a sound source emit from the entity
-pub fn play_sound_on_entity<S: 'static + Source>(world: &World, id: EntityId, _source: S) -> anyhow::Result<()> {
-    let _hrtf_lib = world.resource(hrtf_lib());
-    let _mixer = world.resource(audio_mixer());
-    let _emitter = world.get_ref(id, audio_emitter()).context("No audio emitter on entity")?;
+pub fn play_sound_on_entity<S: 'static + Source>(world: &World, id: EntityId, source: S) -> anyhow::Result<Sound> {
+    let hrtf_lib = world.resource(hrtf_lib());
+    let mixer = world.resource(audio_mixer());
+    let emitter = world.get_ref(id, audio_emitter()).context("No audio emitter on entity")?;
 
-    let _listener = get_audio_listener(world)?;
+    let listener = get_audio_listener(world)?;
 
-    // Ok(mixer.play(source.spatial(hrtf_lib, listener.clone(), emitter.clone())))
-    Ok(())
+    Ok(mixer.play(source.spatial(hrtf_lib, listener.clone(), emitter.clone())))
 }
