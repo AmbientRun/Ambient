@@ -1,6 +1,6 @@
 use ambient_api::{
     components::core::{
-        app::{main_scene, window_physical_size},
+        app::{main_scene, window_logical_size},
     },
     camera::screen_ray,
     prelude::*
@@ -11,7 +11,7 @@ pub fn main() {
     ambient_api::messages::Frame::subscribe(move |_| {
         let input = player::get_raw_input();
 
-        let window_size = entity::get_component(entity::resources(), window_physical_size()).unwrap();
+        let window_size = entity::get_component(entity::resources(), window_logical_size()).unwrap();
 
         // Calculate normalized device coordinates
         let ndc_x = (2.0 * input.mouse_position.x / window_size.x as f32) - 1.0;
