@@ -1,5 +1,4 @@
-const WASI_SNAPSHOT_PREVIEW1: &[u8] =
-    include_bytes!("../../../wasmtime_wasi/wasi_snapshot_preview1.wasm");
+const WASI_SNAPSHOT_PREVIEW1: &[u8] = include_bytes!("../../wasi_snapshot_preview1.command.wasm");
 
 pub fn componentize(wasm_bytecode: &[u8]) -> anyhow::Result<Vec<u8>> {
     wit_component::ComponentEncoder::default()

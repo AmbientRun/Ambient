@@ -65,7 +65,7 @@ impl<'de> Deserialize<'de> for ModuleBytecode {
 pub struct ModuleErrors(pub Vec<String>);
 
 struct WasmContext<Bindings: BindingsBound> {
-    wasi: ambient_wasmtime_wasi::WasiCtx,
+    wasi: wasmtime_wasi::WasiCtx,
     bindings: Bindings,
 }
 
@@ -180,7 +180,7 @@ impl<Bindings: BindingsBound> ModuleStateInnerImpl<Bindings> {
         let mut store = wasmtime::Store::new(
             engine,
             WasmContext {
-                wasi: ambient_wasmtime_wasi::WasiCtxBuilder::new()
+                wasi: wasi_cap_std_sync::WasiCtxBuilder::new()
                     .stdout(stdout_output)
                     .stderr(stderr_output)
                     .build(),
@@ -189,7 +189,7 @@ impl<Bindings: BindingsBound> ModuleStateInnerImpl<Bindings> {
         );
 
         let mut linker = wasmtime::component::Linker::<WasmContext<Bindings>>::new(engine);
-        ambient_wasmtime_wasi::add_to_linker(&mut linker, |x| &mut x.wasi)?;
+        wasmtime_wasi::command::add_to_linker(&mut linker, |x| &mut x.wasi)?;
         wit::Bindings::add_to_linker(&mut linker, |x| &mut x.bindings)?;
 
         let component = wasmtime::component::Component::from_binary(engine, component_bytecode)?;
