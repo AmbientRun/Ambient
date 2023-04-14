@@ -11,7 +11,6 @@ use ambient_api::{
     },
     concepts::{make_sphere, make_transformable},
     prelude::*,
-    rand,
 };
 
 use components::{player_mouse_delta_x, player_movement_direction};
@@ -41,7 +40,7 @@ pub fn main() {
                 Entity::new()
                     .with_merge(make_transformable())
                     .with_default(cube())
-                    .with(color(), rand::random::<Vec3>().extend(1.0))
+                    .with(color(), Vec4::ONE)
                     .with(character_controller_height(), 2.)
                     .with(character_controller_radius(), 0.5)
                     .with_default(physics_controlled())

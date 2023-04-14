@@ -6,4 +6,4 @@ version = "0.0.1"
 [messages.bonk]
 name = "Bonk"
 description = "Collision between two objects."
-fields = { pos = "Vec3", text = "String" }
+fields = { cube = "EntityId" }

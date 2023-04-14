@@ -16,6 +16,7 @@ pub struct BindingsBase {
 
 pub trait BindingsBound:
     wit::types::Host
+    + wit::audio::Host
     + wit::asset::Host
     + wit::component::Host
     + wit::entity::Host
