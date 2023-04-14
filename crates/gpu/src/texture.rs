@@ -125,6 +125,7 @@ impl Texture {
                 format,
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::RENDER_ATTACHMENT,
                 label,
+                view_formats: &[]
             },
         );
         texture.write(image.as_raw());
@@ -147,6 +148,7 @@ impl Texture {
                 format,
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
                 label,
+                view_formats: &[]
             },
             &img.into_vec(),
         )
@@ -177,6 +179,7 @@ impl Texture {
                 format,
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::RENDER_ATTACHMENT,
                 label,
+                view_formats: &[]
             },
         );
         for (layer, img) in data.into_iter().enumerate() {
@@ -224,6 +227,7 @@ impl Texture {
                 format: wgpu::TextureFormat::R32Float,
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
                 label: Some("texture"),
+                view_formats: &[]
             },
             bytemuck::cast_slice(data.as_slice().unwrap()),
         )
@@ -282,6 +286,7 @@ impl Texture {
                 format: wgpu::TextureFormat::Rgba8Unorm,
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
                 label: Some("Texture.new_single_color_texture"),
+                view_formats: &[]
             },
             bytemuck::cast_slice(&[color.x as u8, color.y as u8, color.z as u8, color.w as u8]),
         )
@@ -298,6 +303,7 @@ impl Texture {
                 format: wgpu::TextureFormat::Rgba8Unorm,
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
                 label: Some("default_texture"),
+                view_formats: &[]
             },
             bytemuck::cast_slice(
                 &colors.into_iter().flat_map(|color| vec![color.x as u8, color.y as u8, color.z as u8, color.w as u8]).collect_vec(),

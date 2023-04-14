@@ -56,6 +56,7 @@ impl ShadowsRenderer {
                     | wgpu::TextureUsages::TEXTURE_BINDING
                     | wgpu::TextureUsages::COPY_SRC
                     | wgpu::TextureUsages::COPY_DST,
+                view_formats: &[]
             },
         ));
 
