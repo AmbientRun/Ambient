@@ -12,7 +12,7 @@ rustup target add --toolchain stable wasm32-wasi
 
 ## Installing from Git
 
-Ambient can be installed through `cargo install`, which will download and build the repository. Our current minimum supported Rust version is 1.67.0, as we use recently-stabilised standard library features.
+Ambient can be installed through `cargo install`, which will download and build the repository. Our current minimum supported Rust version is <!-- rust-version-begin !-->1.67<!-- rust-version-end !-->, as we use recently-stabilised standard library features.
 
 To install the latest released version from Git, run the following:
 
@@ -44,7 +44,7 @@ apt-get install -y \
 
 ## Installing via asdf (Linux, Macos)
 
-Thanks to [@jtakakura](https://github.com/jtakakura), Ambient can also be installed using [asdf](https://asdf-vm.com/) by running `asdf plugin add ambient`. For more details visit https://github.com/jtakakura/asdf-ambient.
+Thanks to [@jtakakura](https://github.com/jtakakura), Ambient can also be installed using [asdf](https://asdf-vm.com/) by running `asdf plugin add ambient`. For more details, visit <https://github.com/jtakakura/asdf-ambient>.
 
 ## Running on headless Linux/Ubuntu
 

@@ -392,7 +392,6 @@ pub fn main() {
     });
 }
 
-
 fn is_vertically_moving(linear_velocity: Vec3) -> bool {
     linear_velocity.z.abs() > 0.1
 }

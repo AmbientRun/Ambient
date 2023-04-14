@@ -149,12 +149,10 @@ dependencies = [
  "local-ip-address",
  "log",
  "parking_lot",
- "paste",
  "rusty-hook",
  "serde",
  "serde_json",
  "tokio",
- "toml_edit",
  "tower-http",
  "tracing",
  "tracing-log",
@@ -2002,6 +2000,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "campfire"
+version = "0.2.0-dev"
+dependencies = [
+ "anyhow",
+ "clap 4.2.1",
+ "log",
+ "rustdoc-json",
+ "rustdoc-types",
+ "serde_json",
+ "simplelog",
+ "toml_edit",
+]
+
+[[package]]
 name = "cap-fs-ext"
 version = "1.0.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3308,17 +3320,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c31b6d751ae2c7f11320402d34e41349dd1016f8d5d45e48c4312bc8625af50c"
 dependencies = [
  "byteorder",
-]
-
-[[package]]
-name = "generate-docs"
-version = "0.2.0-dev"
-dependencies = [
- "anyhow",
- "once_cell",
- "rustdoc-json",
- "rustdoc-types",
- "serde_json",
 ]
 
 [[package]]
@@ -6386,6 +6387,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "238abfbb77c1915110ad968465608b68e869e0772622c9656714e73e5a1a522f"
 
 [[package]]
+name = "simplelog"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "acee08041c5de3d5048c8b3f6f13fafb3026b24ba43c6a695a0c76179b844369"
+dependencies = [
+ "log",
+ "termcolor",
+ "time",
+]
+
+[[package]]
 name = "slab"
 version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6675,9 +6687,9 @@ checksum = "8ae9980cab1db3fceee2f6c6f643d5d8de2997c58ee8d25fb0cc8a9e9e7348e5"
 
 [[package]]
 name = "termcolor"
-version = "1.2.0"
+version = "1.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be55cf8942feac5c765c2c993422806843c9a9a45d4d5c407ad6dd2ea95eb9b6"
+checksum = "bab24d30b911b2376f3a13cc2cd443142f0c81dda04c118693e35b3835757755"
 dependencies = [
  "winapi-util",
 ]
