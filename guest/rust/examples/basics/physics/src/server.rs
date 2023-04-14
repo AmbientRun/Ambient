@@ -47,8 +47,8 @@ pub async fn main() {
         .spawn();
 
     ambient_api::messages::Collision::subscribe(move |msg| {
-        let vel = entity::get_component(cube, linear_velocity()).unwrap();
-        messages::Bonk::new(vel).send_client_broadcast_reliable();
+        // let vel = entity::get_component(cube, linear_velocity()).unwrap();
+        messages::Bonk::new(cube).send_client_broadcast_reliable();
     });
 
     ambient_api::messages::Frame::subscribe(move |_| {

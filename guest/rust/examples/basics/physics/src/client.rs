@@ -1,4 +1,11 @@
-use ambient_api::prelude::*;
+use ambient_api::{
+    prelude::*,
+    components::core::{
+        physics::{
+            linear_velocity
+        }
+    }
+};
 
 #[main]
 pub fn main() {
@@ -6,10 +13,11 @@ pub fn main() {
     let mut bonk = audio::load(asset::url("assets/bonk.ogg").unwrap());
 
     messages::Bonk::subscribe(move |source, data| {
-        println!("[{source:?}] sent a msg => {:?}", data);
-        let mut amp = (data.vel.x.abs() / 5.0).powf(2.0)
-        + (data.vel.y.abs() / 5.0).powf(2.0)
-        + (data.vel.z.abs() / 5.0).powf(2.0);
+        let cube = data.cube;
+        let vel = entity::get_component(cube, linear_velocity()).unwrap();
+        let mut amp = (vel.x.abs() / 5.0).powf(2.0)
+        + (vel.y.abs() / 5.0).powf(2.0)
+        + (vel.z.abs() / 5.0).powf(2.0);
         amp = amp.sqrt().clamp(0.0, 1.0);
         amp = amp * amp;
         bonk.looping(false).scale(amp).play();
