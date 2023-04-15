@@ -4,4 +4,16 @@ name = "tangent"
 version = "0.0.1"
 
 [components]
+debug_lines = {type = {type = "Vec", element_type = "Vec3"}, name = "Debug Lines", description = "Debug lines (orig, dest)", attributes = ["Networked"]}
+debug_messages = {type = {type = "Vec", element_type = "String"}, name = "Debug Messages", description = "Debug messages", attributes = ["Networked"]}
+
 player_vehicle = {type = "EntityId", name = "Player Vehicle", description = "The player's vehicle", attributes = ["Networked"]}
+
+last_distances = {type = {type = "Vec", element_type = "F32"}, name = "Last Distances", description = "Distances from the ground for each vehicle probe", attributes = ["Networked"]}
+vehicle = {type = "EntityId", name = "Vehicle", description = "A vehicle (and its driver)", attributes = ["Networked"]}
+
+input_jump = {type = "Bool", name = "Jump", description = "Jump", attributes = ["Networked"]}
+input_reset = {type = "Bool", name = "Reset", description = "Reset", attributes = ["Networked"]}
+
+[messages]
+input = {name = "Input", description = "Input", fields = {jump = "Bool", reset = "Bool"}}
