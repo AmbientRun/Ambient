@@ -1,13 +1,12 @@
 use ambient_api::{
     components::core::{
         app::main_scene,
-        camera::aspect_ratio_from_window,
         primitives::{quad, cube},
-        transform::{lookat_center, translation},
+        transform::translation,
         physics::plane_collider,
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
-    physics::{raycast_first},
+    concepts::make_transformable,
+    physics::raycast_first,
     prelude::*,
 };
 
@@ -24,7 +23,7 @@ pub async fn main() -> ResultEmpty {
         .with_default(cube())
         .spawn();
 
-    messages::Input::subscribe(move |source, msg| {
+    messages::Input::subscribe(move |_source, msg| {
         if let Some(hit) = raycast_first(msg.ray_origin, msg.ray_dir.normalize()) {
             // Set position of cube to the raycast hit position
             entity::set_component(cube_id, translation(), hit.position);
