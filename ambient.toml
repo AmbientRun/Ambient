@@ -2,3 +2,6 @@
 id = "tangent"
 name = "tangent"
 version = "0.0.1"
+
+[components]
+player_vehicle = {type = "EntityId", name = "Player Vehicle", description = "The player's vehicle", attributes = ["Networked"]}

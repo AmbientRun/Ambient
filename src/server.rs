@@ -3,30 +3,56 @@ use std::f32::consts::PI;
 use ambient_api::{
     components::core::{
         app::main_scene,
-        camera::aspect_ratio_from_window,
-        rendering::{fog_density, light_diffuse, sky, sun, water},
-        transform::{lookat_center, rotation, scale, translation},
+        physics::{angular_velocity, linear_velocity},
+        player::player as player_component,
+        prefab::prefab_from_url,
+        rendering::{cast_shadows, fog_density, light_diffuse, sky, sun, water},
+        transform::{rotation, scale, translation},
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
+    concepts::make_transformable,
+    messages::Frame,
     prelude::*,
 };
+use components::player_vehicle;
 
 #[main]
 pub fn main() {
-    Entity::new()
-        .with_merge(make_perspective_infinite_reverse_camera())
-        .with(aspect_ratio_from_window(), EntityId::resources())
-        .with_default(main_scene())
-        .with(translation(), vec3(5., 5., 2.))
-        .with(lookat_center(), vec3(0., 0., 1.))
-        .spawn();
-
     Entity::new()
         .with_merge(make_transformable())
         .with_default(water())
         .with(scale(), Vec3::ONE * 2000.)
         .spawn();
 
+    make_sun();
+
+    spawn_query(player_component()).bind(|players| {
+        for (player, ()) in players {
+            let vehicle = Entity::new()
+                .with_merge(make_transformable())
+                .with(
+                    prefab_from_url(),
+                    asset::url("assets/models/raceCarWhite.glb").unwrap(),
+                )
+                .with_default(cast_shadows())
+                .with_default(linear_velocity())
+                .with_default(angular_velocity())
+                .with(translation(), vec3(0., 0., 5.))
+                .spawn();
+
+            entity::add_component(player, player_vehicle(), vehicle);
+        }
+    });
+
+    despawn_query(player_component()).bind(|players| {
+        for (player, ()) in players {
+            if let Some(vehicle) = entity::get_component(player, player_vehicle()) {
+                entity::despawn(vehicle);
+            }
+        }
+    });
+}
+
+fn make_sun() {
     Entity::new()
         .with_merge(make_transformable())
         .with_default(sky())
@@ -41,7 +67,7 @@ pub fn main() {
         .with(fog_density(), 0.0)
         .spawn();
 
-    ambient_api::messages::Frame::subscribe(move |_| {
+    Frame::subscribe(move |_| {
         // How long a full cycle takes.
         const HALF_DAY_LENGTH: f32 = 30.0;
 

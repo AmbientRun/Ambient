@@ -1,0 +1,17 @@
+{
+  "pipeline": {
+    "type": "Models",
+    "collider": {
+      "type": "FromModel"
+    },
+    "transforms": [
+      {
+        "type": "Center"
+      },
+      {
+        "type": "RotateZ",
+        "deg": 180.0
+      }
+    ]
+  }
+}
