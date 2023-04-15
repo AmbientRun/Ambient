@@ -3,7 +3,7 @@ use std::f32::consts::PI;
 use ambient_api::{
     components::core::{
         app::main_scene,
-        physics::{angular_velocity, linear_velocity},
+        physics::{angular_velocity, dynamic, linear_velocity, physics_controlled, plane_collider},
         player::player as player_component,
         prefab::prefab_from_url,
         rendering::{cast_shadows, fog_density, light_diffuse, sky, sun, water},
@@ -17,12 +17,7 @@ use components::player_vehicle;
 
 #[main]
 pub fn main() {
-    Entity::new()
-        .with_merge(make_transformable())
-        .with_default(water())
-        .with(scale(), Vec3::ONE * 2000.)
-        .spawn();
-
+    make_water();
     make_sun();
 
     spawn_query(player_component()).bind(|players| {
@@ -31,7 +26,7 @@ pub fn main() {
                 .with_merge(make_transformable())
                 .with(
                     prefab_from_url(),
-                    asset::url("assets/models/raceCarWhite.glb").unwrap(),
+                    asset::url("assets/models/dynamic/raceCarWhite.glb").unwrap(),
                 )
                 .with_default(cast_shadows())
                 .with_default(linear_velocity())
@@ -50,6 +45,17 @@ pub fn main() {
             }
         }
     });
+}
+
+fn make_water() {
+    Entity::new()
+        .with_merge(make_transformable())
+        .with_default(water())
+        .with_default(physics_controlled())
+        .with_default(plane_collider())
+        .with(dynamic(), false)
+        .with(scale(), Vec3::ONE * 2000.)
+        .spawn();
 }
 
 fn make_sun() {

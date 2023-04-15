@@ -29,7 +29,7 @@ pub fn main() {
         let Some(vehicle_position) = entity::get_component(vehicle_id, translation()) else { return; };
         let Some(vehicle_rotation) = entity::get_component(vehicle_id, rotation()) else { return; };
 
-        let camera_position = vehicle_position + CAMERA_OFFSET;
+        let camera_position = vehicle_position + vehicle_rotation * CAMERA_OFFSET;
         entity::set_component(camera_id, translation(), camera_position);
         entity::set_component(
             camera_id,

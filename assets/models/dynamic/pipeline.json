@@ -4,6 +4,7 @@
     "collider": {
       "type": "FromModel"
     },
+    "collider_type": "Dynamic",
     "transforms": [
       {
         "type": "Center"
