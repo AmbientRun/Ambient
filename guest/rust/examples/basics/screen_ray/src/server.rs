@@ -1,6 +1,5 @@
 use ambient_api::{
     components::core::{
-        app::main_scene,
         primitives::{quad, cube},
         transform::translation,
         physics::plane_collider,
