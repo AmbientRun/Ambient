@@ -1,3 +1,4 @@
+#[cfg(feature = "client")]
 use crate::{
     global::{Vec2, Ray, EntityId},
     internal::{
