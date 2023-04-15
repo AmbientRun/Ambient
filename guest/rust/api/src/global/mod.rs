@@ -7,29 +7,14 @@ pub use runtime::*;
 mod entity_id;
 pub use entity_id::*;
 
+mod shapes;
+pub use shapes::*;
+
 use crate::internal::{conversion::FromBindgen, wit};
 
 // Re-exports from other crates.
 pub use futures::{Future, FutureExt};
 pub use glam::{f32::*, u32::*, Vec2Swizzles, Vec3Swizzles, Vec4Swizzles};
-
-/// Ray represented by an origin and a direction
-pub struct Ray {
-    /// Origin of the ray
-    pub origin: Vec3,
-    /// Direction of the ray
-    pub dir: Vec3,
-}
-
-impl FromBindgen for wit::types::Ray {
-    type Item = Ray;
-    fn from_bindgen(self) -> Self::Item {
-        Ray {
-            origin: self.origin.from_bindgen(),
-            dir: self.dir.from_bindgen(),
-        }
-    }
-}
 
 /// In Rust, functions that can fail are expected to return a [Result] type.
 /// [ResultEmpty] is a [Result] type that has no value and can accept
