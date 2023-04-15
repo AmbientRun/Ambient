@@ -1,13 +1,24 @@
 use ambient_api::{
     components::core::{
         app::{main_scene, window_logical_size},
+        transform::{lookat_center, translation},
+        camera::aspect_ratio_from_window,
     },
     camera::screen_ray,
+    concepts::{make_perspective_infinite_reverse_camera},
     prelude::*
 };
 
 #[main]
 pub fn main() {
+    let camera = Entity::new()
+        .with_merge(make_perspective_infinite_reverse_camera())
+        .with(aspect_ratio_from_window(), EntityId::resources())
+        .with_default(main_scene())
+        .with(translation(), Vec3::ONE * 5.)
+        .with(lookat_center(), vec3(0., 0., 0.))
+        .spawn();
+
     ambient_api::messages::Frame::subscribe(move |_| {
         let input = player::get_raw_input();
 
@@ -18,7 +29,7 @@ pub fn main() {
         let ndc_y = 1.0 - (2.0 * input.mouse_position.y / window_size.y as f32);
 
         let ndc = vec2(ndc_x, ndc_y);
-        let ray = screen_ray(ndc);
+        let ray = screen_ray(camera, ndc);
 
         // Send screen ray to server
         messages::Input{
