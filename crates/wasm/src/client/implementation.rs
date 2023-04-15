@@ -12,13 +12,8 @@ use crate::shared::{
 };
 
 use ambient_core::{
-    camera::{get_active_camera, screen_ray, projection_view},
-    main_scene,
-    player::local_user_id,
+    camera::screen_ray,
 };
-
-use ambient_std::shapes::Ray;
-use glam::Mat4;
 
 impl wit::client_message::Host for Bindings {
     fn send(
