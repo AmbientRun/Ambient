@@ -26,19 +26,6 @@ pub fn main() {
         .with(lookat_center(), vec3(0., 0., 1.))
         .spawn();
 
-    Entity::new()
-        .with_merge(make_transformable())
-        .with(text(), "Hello world".to_string())
-        .with(color(), vec4(1., 1., 1., 1.))
-        .with(translation(), vec3(0., 0., 1.0))
-        .with(rotation(), Quat::from_rotation_x(-90.0f32.to_radians()))
-        .with(scale(), Vec3::ONE * 0.05)
-        .with_default(local_to_world())
-        .with_default(mesh_to_local())
-        .with_default(mesh_to_world())
-        .with_default(main_scene())
-        .spawn();
-
     spawn_query(vehicle()).bind(move |vehicles| {
         for (id, _) in vehicles {
             let hud_id = Entity::new()
