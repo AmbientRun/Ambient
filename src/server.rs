@@ -5,7 +5,7 @@ use ambient_api::{
         app::main_scene,
         model::model_from_url,
         physics::{
-            angular_velocity, box_collider, dynamic, linear_velocity, physics_controlled,
+            angular_velocity, box_collider, density, dynamic, linear_velocity, physics_controlled,
             plane_collider,
         },
         player::player as player_component,
@@ -17,6 +17,9 @@ use ambient_api::{
     prelude::*,
 };
 
+// How long a full cycle takes.
+const HALF_DAY_LENGTH: f32 = 30.0;
+
 const X_DISTANCE: f32 = 0.1;
 const Y_DISTANCE: f32 = 0.4;
 const OFFSETS: [(f32, f32); 4] = [
@@ -26,11 +29,16 @@ const OFFSETS: [(f32, f32); 4] = [
     (-X_DISTANCE, Y_DISTANCE),
 ];
 
-const K_P: f32 = 50.0;
-const K_D: f32 = -500.0;
+const K_P: f32 = 250.0;
+const K_D: f32 = -1000.0;
 
-const TARGET: f32 = 5.0;
+const TARGET: f32 = 3.0;
 const MAX_STRENGTH: f32 = 10.0;
+const INPUT_FORWARD_STRENGTH_OFFSET: f32 = 0.12;
+const INPUT_SIDE_STRENGTH_OFFSET: f32 = 0.4;
+
+const DENSITY: f32 = 10.0;
+const SLOWDOWN_STRENGTH: f32 = 0.75;
 
 #[main]
 pub fn main() {
@@ -68,9 +76,6 @@ fn make_sun() {
         .spawn();
 
     Frame::subscribe(move |_| {
-        // How long a full cycle takes.
-        const HALF_DAY_LENGTH: f32 = 30.0;
-
         entity::set_component(
             sun,
             rotation(),
@@ -91,6 +96,7 @@ fn vehicle_creation_and_destruction() {
                 .with(dynamic(), true)
                 .with(components::vehicle(), player_id)
                 .with(translation(), vec3(0., 0., 2.0))
+                .with(density(), DENSITY)
                 .with(components::last_distances(), OFFSETS.map(|_| 0.0).to_vec())
                 .with(components::debug_messages(), vec![])
                 .with(components::debug_lines(), vec![])
@@ -101,6 +107,7 @@ fn vehicle_creation_and_destruction() {
                 .with(box_collider(), Vec3::new(0.6, 1.0, 0.2))
                 .spawn();
             entity::add_component(player_id, components::player_vehicle(), vehicle_id);
+            entity::add_component(player_id, components::input_direction(), Vec2::ZERO);
             entity::add_component(player_id, components::input_jump(), false);
             entity::add_component(player_id, components::input_reset(), false);
         }
@@ -116,6 +123,7 @@ fn vehicle_creation_and_destruction() {
 
     messages::Input::subscribe(|source, input| {
         if let Some(player) = source.client_entity_id() {
+            entity::set_component(player, components::input_direction(), input.direction);
             entity::set_component(player, components::input_jump(), input.jump);
             entity::set_component(player, components::input_reset(), input.reset);
         }
@@ -127,6 +135,9 @@ fn vehicle_processing() {
         for (vehicle_id, driver_id) in vehicles {
             let freeze =
                 entity::get_component(driver_id, components::input_jump()).unwrap_or_default();
+
+            let direction =
+                entity::get_component(driver_id, components::input_direction()).unwrap_or_default();
 
             let vehicle_position = match entity::get_component(vehicle_id, translation()) {
                 Some(vehicle_position) => vehicle_position,
@@ -167,7 +178,11 @@ fn vehicle_processing() {
                     let error_distance = TARGET - hit.distance;
                     let p = K_P * error_distance;
                     let d = K_D * delta_distance;
-                    let strength = ((p + d) * frametime()).clamp(-0.1, MAX_STRENGTH);
+                    let mut strength = (p + d) * frametime();
+                    if direction.y * offset.y > 0.0 {
+                        strength += INPUT_FORWARD_STRENGTH_OFFSET * MAX_STRENGTH;
+                    }
+                    let strength = strength.clamp(-0.1, MAX_STRENGTH);
 
                     let force = -probe_direction * strength;
                     let position = vehicle_position + vehicle_rotation * offset;
@@ -190,6 +205,12 @@ fn vehicle_processing() {
             entity::set_component(vehicle_id, components::debug_messages(), msgs);
             entity::set_component(vehicle_id, components::debug_lines(), lines);
 
+            physics::add_force_at_position(
+                vehicle_id,
+                vehicle_rotation * (Vec3::X * -direction.x) * INPUT_SIDE_STRENGTH_OFFSET,
+                vehicle_position + vehicle_rotation * -Y_DISTANCE * Vec3::Y,
+            );
+
             if entity::get_component(driver_id, components::input_reset()).unwrap_or_default() {
                 entity::set_component(vehicle_id, translation(), Vec3::Z * 7.0);
                 entity::set_component(vehicle_id, rotation(), Quat::IDENTITY);
@@ -199,6 +220,13 @@ fn vehicle_processing() {
                 entity::set_component(vehicle_id, linear_velocity(), Vec3::ZERO);
                 entity::set_component(vehicle_id, angular_velocity(), Vec3::ZERO);
             }
+
+            // Apply a constant slowdown force
+            physics::add_force(
+                vehicle_id,
+                -entity::get_component(vehicle_id, linear_velocity()).unwrap_or_default()
+                    * SLOWDOWN_STRENGTH,
+            );
         }
     });
 }

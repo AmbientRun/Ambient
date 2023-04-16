@@ -2,6 +2,7 @@ use ambient_api::{
     components::core::{
         app::main_scene,
         camera::aspect_ratio_from_window,
+        physics::linear_velocity,
         player::local_user_id,
         transform::{lookat_center, rotation, translation},
     },
@@ -24,7 +25,7 @@ pub fn main() {
         .spawn();
 
     Frame::subscribe(move |_| {
-        const CAMERA_OFFSET: Vec3 = vec3(-1., 2.5, 0.5);
+        const CAMERA_OFFSET: Vec3 = vec3(-0.5, 2.5, 0.5);
 
         let player_id = local_entity_id();
         let Some(vehicle_id) = entity::get_component(player_id, player_vehicle()) else { return; };
@@ -39,11 +40,28 @@ pub fn main() {
             camera_position + vehicle_rotation * -Vec3::Y,
         );
 
-        let (delta, input) = player::get_raw_input_delta();
-        messages::Input::new(
-            input.keys.contains(&KeyCode::Space),
-            input.keys.contains(&KeyCode::R),
-        )
+        let input = player::get_raw_input();
+        let direction = {
+            let mut direction = Vec2::ZERO;
+            if input.keys.contains(&KeyCode::W) {
+                direction.y += 1.;
+            }
+            if input.keys.contains(&KeyCode::S) {
+                direction.y -= 1.;
+            }
+            if input.keys.contains(&KeyCode::A) {
+                direction.x -= 1.;
+            }
+            if input.keys.contains(&KeyCode::D) {
+                direction.x += 1.;
+            }
+            direction
+        };
+        messages::Input {
+            direction,
+            jump: input.keys.contains(&KeyCode::Space),
+            reset: input.keys.contains(&KeyCode::R),
+        }
         .send_server_unreliable();
     });
 
@@ -57,7 +75,12 @@ fn DebugUI(hooks: &mut Hooks) -> Element {
 
     FlowColumn::el(messages.into_iter().map(|(id, msgs)| {
         FlowColumn::el([
-            Text::el(format!("{}", id)).section_style(),
+            Text::el(format!(
+                "{} ({})",
+                id,
+                entity::get_component(id, linear_velocity()).unwrap_or_default()
+            ))
+            .section_style(),
             FlowColumn::el(
                 msgs.into_iter()
                     .map(|s| Text::el(s).with(color(), vec4(1., 1., 1., 1.))),
