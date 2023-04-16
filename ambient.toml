@@ -17,7 +17,6 @@ vehicle_hud = {type = "EntityId", name = "Vehicle HUD", description = "The HUD f
 
 input_direction = {type = "Vec2", name = "Input Direction", description = "Input direction"}
 input_jump = {type = "Bool", name = "Jump", description = "Jump"}
-input_reset = {type = "Bool", name = "Reset", description = "Reset"}
 
 [messages]
-input = {name = "Input", description = "Input", fields = {direction = "Vec2", jump = "Bool", reset = "Bool"}}
+input = {name = "Input", description = "Input", fields = {direction = "Vec2", jump = "Bool"}}

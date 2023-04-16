@@ -132,7 +132,6 @@ fn vehicle_creation_and_destruction() {
             entity::add_component(player_id, components::player_vehicle(), vehicle_id);
             entity::add_component(player_id, components::input_direction(), Vec2::ZERO);
             entity::add_component(player_id, components::input_jump(), false);
-            entity::add_component(player_id, components::input_reset(), false);
         }
     });
 
@@ -148,7 +147,6 @@ fn vehicle_creation_and_destruction() {
         if let Some(player) = source.client_entity_id() {
             entity::set_component(player, components::input_direction(), input.direction);
             entity::set_component(player, components::input_jump(), input.jump);
-            entity::set_component(player, components::input_reset(), input.reset);
         }
     });
 }

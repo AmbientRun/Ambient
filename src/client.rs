@@ -130,7 +130,6 @@ pub fn main() {
         messages::Input {
             direction,
             jump: input.keys.contains(&KeyCode::Space),
-            reset: input.keys.contains(&KeyCode::R),
         }
         .send_server_unreliable();
     });
