@@ -179,6 +179,7 @@ fn vehicle_processing() {
                 physics::add_force(vehicle_id, vehicle_rotation * Vec3::Z * INPUT_JUMP_STRENGTH);
             };
 
+            let mut avg_distance = 0.0;
             for (index, offset) in OFFSETS.iter().enumerate() {
                 let offset = Vec2::from(*offset).extend(0.0);
 
@@ -223,6 +224,7 @@ fn vehicle_processing() {
                     let position = vehicle_position + vehicle_rotation * offset;
                     physics::add_force_at_position(vehicle_id, force, position);
 
+                    avg_distance = (avg_distance + new_distance) / 2.0;
                     last_distances[index] = new_distance;
                 }
             }
@@ -235,11 +237,14 @@ fn vehicle_processing() {
                 .powi(3)
                 .max(0.0);
 
+            let distance_correction = 1.0 - ((TARGET - avg_distance).abs() / TARGET).clamp(0.0, 1.0);
+
             physics::add_force_at_position(
                 vehicle_id,
                 vehicle_rotation
                     * (Vec3::Y * direction.y.abs())
                     * pitch_correction
+                    * distance_correction
                     * -if direction.y > 0. {
                         INPUT_FORWARD_FORCE
                     } else {
