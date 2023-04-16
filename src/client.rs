@@ -14,7 +14,7 @@ use ambient_api::{
 use ambient_ui_components::prelude::*;
 use components::{player_vehicle, vehicle, vehicle_hud};
 
-const CAMERA_OFFSET: Vec3 = vec3(0.5, 2.5, 0.5);
+const CAMERA_OFFSET: Vec3 = vec3(0.5, 1.8, 0.6);
 const RENDER_DEBUG: bool = false;
 
 #[main]

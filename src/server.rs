@@ -18,7 +18,7 @@ use ambient_api::{
 };
 
 // How long a full cycle takes.
-const HALF_DAY_LENGTH: f32 = 30.0;
+const HALF_DAY_LENGTH: f32 = 5. * 60.0;
 
 const X_DISTANCE: f32 = 0.1;
 const Y_DISTANCE: f32 = 0.4;
@@ -31,18 +31,20 @@ const OFFSETS: [(f32, f32); 4] = [
 
 const K_P: f32 = 150.0;
 const K_D: f32 = -400.0;
-const TARGET: f32 = 3.0;
+const TARGET: f32 = 4.0;
 const MAX_STRENGTH: f32 = 10.0;
 
 const INPUT_FORWARD_FORCE: f32 = 20.0;
 const INPUT_BACKWARD_FORCE: f32 = -4.0;
 const INPUT_SIDE_FORCE: f32 = 0.8;
+const INPUT_PITCH_STRENGTH: f32 = 10.0;
+const INPUT_TURNING_STRENGTH: f32 = 20.0;
 
 const DENSITY: f32 = 10.0;
-const SLOWDOWN_STRENGTH: f32 = 0.75;
+const SLOWDOWN_STRENGTH: f32 = 0.9;
 
 const ANGULAR_SLOWDOWN_DELAY: f32 = 0.25;
-const ANGULAR_SLOWDOWN_STRENGTH: f32 = 0.2;
+const ANGULAR_SLOWDOWN_STRENGTH: f32 = 0.3;
 
 #[main]
 pub fn main() {
@@ -171,6 +173,22 @@ fn vehicle_processing() {
                     continue;
                 }
 
+                let turning_strength_offset = if offset.y < 0.0 {
+                    if offset.x * direction.x < 0.0 {
+                        INPUT_TURNING_STRENGTH
+                    } else {
+                        0.0
+                    }
+                } else {
+                    0.0
+                };
+                let pitch_strength_offset = if offset.y < 0.0 {
+                    direction.y * -INPUT_PITCH_STRENGTH
+                } else {
+                    0.0
+                };
+                let strength_offset = turning_strength_offset + pitch_strength_offset;
+
                 if let Some(hit) = physics::raycast(probe_start, probe_direction)
                     .into_iter()
                     .find(|h| h.entity != vehicle_id)
@@ -182,7 +200,8 @@ fn vehicle_processing() {
                     let error_distance = TARGET - hit.distance;
                     let p = K_P * error_distance;
                     let d = K_D * delta_distance;
-                    let strength = ((p + d) * frametime()).clamp(-0.1, MAX_STRENGTH);
+                    let strength =
+                        ((p + d + strength_offset) * frametime()).clamp(-0.1, MAX_STRENGTH);
 
                     let force = -probe_direction * strength;
                     let position = vehicle_position + vehicle_rotation * offset;
