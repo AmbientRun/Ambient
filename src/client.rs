@@ -50,7 +50,7 @@ pub fn main() {
                 .with_default(main_scene())
                 .with(text(), "0".to_string())
                 .with(color(), vec4(1., 1., 1., 1.))
-                .with(translation(), vec3(0.5, 0., 0.3))
+                .with(translation(), vec3(0.35, 0., 0.3))
                 .with(
                     rotation(),
                     Quat::from_rotation_z(25.0f32.to_radians())
@@ -79,6 +79,15 @@ pub fn main() {
                 });
             }
         });
+
+    // HACK: despawn all wheels on spawn
+    spawn_query(name()).bind(|entities| {
+        for (id, name) in entities {
+            if name.starts_with("wheel") {
+                entity::despawn(id);
+            }
+        }
+    });
 
     Frame::subscribe(move |_| {
         let player_id = local_entity_id();
