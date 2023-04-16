@@ -46,6 +46,9 @@ const SLOWDOWN_STRENGTH: f32 = 0.9;
 const ANGULAR_SLOWDOWN_DELAY: f32 = 0.25;
 const ANGULAR_SLOWDOWN_STRENGTH: f32 = 0.3;
 
+const SPAWN_POSITION: Vec3 = vec3(800., -670., 120.);
+const SPAWN_RADIUS: f32 = 20.0;
+
 #[main]
 pub fn main() {
     make_water();
@@ -63,7 +66,7 @@ fn make_water() {
         .with_default(physics_controlled())
         .with_default(plane_collider())
         .with(dynamic(), false)
-        .with(scale(), Vec3::ONE * 2000.)
+        .with(scale(), Vec3::ONE * 4000.)
         .spawn();
 }
 
@@ -89,7 +92,7 @@ fn make_sun() {
 fn make_track() {
     Entity::new()
         .with_merge(make_transformable())
-        .with(translation(), vec3(-2500., 2500., -300.0))
+        .with(translation(), vec3(-3500., 3500., -300.0))
         .with(scale(), Vec3::ONE * 1.0)
         .with(
             prefab_from_url(),
@@ -109,7 +112,7 @@ fn vehicle_creation_and_destruction() {
                 .with_default(physics_controlled())
                 .with(dynamic(), true)
                 .with(components::vehicle(), player_id)
-                .with(translation(), vec3(0.0, 0.0, 6.0))
+                .with(translation(), SPAWN_POSITION + random::<Vec2>().extend(0.0) * SPAWN_RADIUS)
                 .with(density(), DENSITY)
                 .with(components::last_distances(), OFFSETS.map(|_| 0.0).to_vec())
                 .with(components::debug_messages(), vec![])
