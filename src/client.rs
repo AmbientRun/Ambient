@@ -1,7 +1,7 @@
 use ambient_api::{
     components::core::{
         app::main_scene,
-        camera::{aspect_ratio_from_window, fog},
+        camera::{aspect_ratio_from_window, fog, fovy},
         physics::linear_velocity,
         player::local_user_id,
         transform::{lookat_center, rotation, translation},
@@ -87,6 +87,8 @@ pub fn main() {
         let Some(vehicle_rotation) = entity::get_component(vehicle_id, rotation()) else { return; };
         let Some(vehicle_linear_velocity) = entity::get_component(vehicle_id, linear_velocity()) else { return; };
 
+        let kph = vehicle_linear_velocity.dot(vehicle_rotation * -Vec3::Y) * 3.6;
+
         if let Some(vehicle_hud) = entity::get_component(vehicle_id, vehicle_hud()) {
             let last_jump_time =
                 entity::get_component(vehicle_id, components::last_jump_time()).unwrap_or_default();
@@ -96,7 +98,7 @@ pub fn main() {
                 text(),
                 format!(
                     "{:.1}\n{:.1}s",
-                    vehicle_linear_velocity.dot(vehicle_rotation * -Vec3::Y) * 3.6,
+                    kph,
                     common::JUMP_TIMEOUT - (time() - last_jump_time).min(common::JUMP_TIMEOUT),
                 ),
             );
@@ -109,6 +111,7 @@ pub fn main() {
             lookat_center(),
             camera_position + vehicle_rotation * -Vec3::Y,
         );
+        entity::set_component(camera_id, fovy(), 0.9 + (kph.abs() / 300.0).clamp(0.0, 1.0));
 
         let input = player::get_raw_input();
         let direction = {
