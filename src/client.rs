@@ -1,7 +1,7 @@
 use ambient_api::{
     components::core::{
         app::main_scene,
-        camera::aspect_ratio_from_window,
+        camera::{aspect_ratio_from_window, fog},
         physics::linear_velocity,
         player::local_user_id,
         transform::{lookat_center, rotation, translation},
@@ -25,6 +25,7 @@ pub fn main() {
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
         .with_default(main_scene())
+        .with_default(fog())
         .with(translation(), vec3(5., 5., 2.))
         .with(lookat_center(), vec3(0., 0., 1.))
         .spawn();

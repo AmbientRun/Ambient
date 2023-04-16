@@ -1,5 +1,3 @@
-use std::f32::consts::PI;
-
 use ambient_api::{
     components::core::{
         app::main_scene,
@@ -14,14 +12,11 @@ use ambient_api::{
         transform::{rotation, scale, translation},
     },
     concepts::make_transformable,
-    messages::Frame,
     prelude::*,
 };
+use ambient_ui_components::prelude::{fog_color, fog_height_falloff};
 
 mod common;
-
-// How long a full cycle takes.
-const HALF_DAY_LENGTH: f32 = 5. * 60.0;
 
 const X_DISTANCE: f32 = 0.1;
 const Y_DISTANCE: f32 = 0.4;
@@ -78,22 +73,17 @@ fn make_sun() {
         .with_default(sky())
         .spawn();
 
-    let sun = Entity::new()
+    Entity::new()
         .with_merge(make_transformable())
         .with_default(sun())
         .with_default(rotation())
         .with_default(main_scene())
         .with(light_diffuse(), Vec3::ONE)
-        .with(fog_density(), 0.0)
+        .with(fog_color(), vec3(0.88, 0.37, 0.34))
+        .with(fog_density(), 0.01)
+        .with(fog_height_falloff(), 0.1)
+        .with(rotation(), Quat::from_rotation_y(190.0f32.to_radians()))
         .spawn();
-
-    Frame::subscribe(move |_| {
-        entity::set_component(
-            sun,
-            rotation(),
-            Quat::from_rotation_y(PI + PI * (time() * PI / HALF_DAY_LENGTH).sin().abs()),
-        );
-    });
 }
 
 fn make_track() {
