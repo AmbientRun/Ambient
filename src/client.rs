@@ -14,6 +14,8 @@ use ambient_api::{
 use ambient_ui_components::prelude::*;
 use components::{player_vehicle, vehicle, vehicle_hud};
 
+mod common;
+
 const CAMERA_OFFSET: Vec3 = vec3(0.5, 1.8, 0.6);
 const RENDER_DEBUG: bool = false;
 
@@ -85,12 +87,16 @@ pub fn main() {
         let Some(vehicle_linear_velocity) = entity::get_component(vehicle_id, linear_velocity()) else { return; };
 
         if let Some(vehicle_hud) = entity::get_component(vehicle_id, vehicle_hud()) {
+            let last_jump_time =
+                entity::get_component(vehicle_id, components::last_jump_time()).unwrap_or_default();
+
             entity::set_component(
                 vehicle_hud,
                 text(),
                 format!(
-                    "{:.1}",
-                    vehicle_linear_velocity.dot(vehicle_rotation * -Vec3::Y) * 3.6
+                    "{:.1}\n{:.1}s",
+                    vehicle_linear_velocity.dot(vehicle_rotation * -Vec3::Y) * 3.6,
+                    common::JUMP_TIMEOUT - (time() - last_jump_time).min(common::JUMP_TIMEOUT),
                 ),
             );
         }

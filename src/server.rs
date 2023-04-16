@@ -1,4 +1,4 @@
-use std::{cell::RefCell, f32::consts::PI, rc::Rc};
+use std::f32::consts::PI;
 
 use ambient_api::{
     components::core::{
@@ -17,6 +17,8 @@ use ambient_api::{
     prelude::*,
 };
 
+mod common;
+
 // How long a full cycle takes.
 const HALF_DAY_LENGTH: f32 = 5. * 60.0;
 
@@ -34,11 +36,13 @@ const K_D: f32 = -400.0;
 const TARGET: f32 = 4.0;
 const MAX_STRENGTH: f32 = 10.0;
 
-const INPUT_FORWARD_FORCE: f32 = 20.0;
+const INPUT_FORWARD_FORCE: f32 = 30.0;
 const INPUT_BACKWARD_FORCE: f32 = -4.0;
 const INPUT_SIDE_FORCE: f32 = 0.8;
+
 const INPUT_PITCH_STRENGTH: f32 = 10.0;
 const INPUT_TURNING_STRENGTH: f32 = 20.0;
+const INPUT_JUMP_STRENGTH: f32 = 600.0;
 
 const DENSITY: f32 = 10.0;
 const SLOWDOWN_STRENGTH: f32 = 0.9;
@@ -106,12 +110,15 @@ fn vehicle_creation_and_destruction() {
                 .with(components::last_distances(), OFFSETS.map(|_| 0.0).to_vec())
                 .with(components::debug_messages(), vec![])
                 .with(components::debug_lines(), vec![])
+                .with(components::last_jump_time(), 0.0)
+                .with(components::last_slowdown_time(), 0.0)
                 .with(
                     model_from_url(),
                     asset::url("assets/models/dynamic/raceCarWhite.glb/models/main.json").unwrap(),
                 )
                 .with(box_collider(), Vec3::new(0.6, 1.0, 0.2))
                 .spawn();
+
             entity::add_component(player_id, components::player_vehicle(), vehicle_id);
             entity::add_component(player_id, components::input_direction(), Vec2::ZERO);
             entity::add_component(player_id, components::input_jump(), false);
@@ -137,13 +144,8 @@ fn vehicle_creation_and_destruction() {
 }
 
 fn vehicle_processing() {
-    let last_slowdown = Rc::new(RefCell::new(time()));
-
     query(components::vehicle()).each_frame(move |vehicles| {
         for (vehicle_id, driver_id) in vehicles {
-            let freeze =
-                entity::get_component(driver_id, components::input_jump()).unwrap_or_default();
-
             let direction =
                 entity::get_component(driver_id, components::input_direction()).unwrap_or_default();
 
@@ -162,6 +164,16 @@ fn vehicle_processing() {
 
             let mut last_distances =
                 entity::get_component(vehicle_id, components::last_distances()).unwrap();
+
+            if entity::get_component(driver_id, components::input_jump()).unwrap_or_default()
+                && time()
+                    - entity::get_component(vehicle_id, components::last_jump_time())
+                        .unwrap_or_default()
+                    > common::JUMP_TIMEOUT
+            {
+                entity::set_component(vehicle_id, components::last_jump_time(), time());
+                physics::add_force(vehicle_id, vehicle_rotation * Vec3::Z * INPUT_JUMP_STRENGTH);
+            };
 
             for (index, offset) in OFFSETS.iter().enumerate() {
                 let offset = Vec2::from(*offset).extend(0.0);
@@ -205,9 +217,7 @@ fn vehicle_processing() {
 
                     let force = -probe_direction * strength;
                     let position = vehicle_position + vehicle_rotation * offset;
-                    if !freeze {
-                        physics::add_force_at_position(vehicle_id, force, position);
-                    }
+                    physics::add_force_at_position(vehicle_id, force, position);
 
                     last_distances[index] = new_distance;
                 }
@@ -237,11 +247,6 @@ fn vehicle_processing() {
                 entity::set_component(vehicle_id, rotation(), Quat::IDENTITY);
             }
 
-            if freeze {
-                entity::set_component(vehicle_id, linear_velocity(), Vec3::ZERO);
-                entity::set_component(vehicle_id, angular_velocity(), Vec3::ZERO);
-            }
-
             // Apply a constant slowdown force
             physics::add_force(
                 vehicle_id,
@@ -249,11 +254,15 @@ fn vehicle_processing() {
                     * SLOWDOWN_STRENGTH,
             );
 
-            if time() - *last_slowdown.borrow() > ANGULAR_SLOWDOWN_DELAY {
+            if time()
+                - entity::get_component(vehicle_id, components::last_slowdown_time())
+                    .unwrap_or_default()
+                > ANGULAR_SLOWDOWN_DELAY
+            {
                 entity::mutate_component(vehicle_id, angular_velocity(), |av| {
                     *av -= *av * ANGULAR_SLOWDOWN_STRENGTH;
                 });
-                *last_slowdown.borrow_mut() = time();
+                entity::set_component(vehicle_id, components::last_slowdown_time(), time());
             }
         }
     });
