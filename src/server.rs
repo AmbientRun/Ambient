@@ -1,4 +1,4 @@
-use std::f32::consts::PI;
+use std::{cell::RefCell, f32::consts::PI, rc::Rc};
 
 use ambient_api::{
     components::core::{
@@ -34,11 +34,14 @@ const K_D: f32 = -1000.0;
 
 const TARGET: f32 = 3.0;
 const MAX_STRENGTH: f32 = 10.0;
-const INPUT_FORWARD_STRENGTH_OFFSET: f32 = 0.12;
-const INPUT_SIDE_STRENGTH_OFFSET: f32 = 0.4;
+const INPUT_FORWARD_FORCE: f32 = 10.0;
+const INPUT_SIDE_FORCE: f32 = 0.8;
 
 const DENSITY: f32 = 10.0;
 const SLOWDOWN_STRENGTH: f32 = 0.75;
+
+const ANGULAR_SLOWDOWN_DELAY: f32 = 0.25;
+const ANGULAR_SLOWDOWN_STRENGTH: f32 = 0.2;
 
 #[main]
 pub fn main() {
@@ -131,7 +134,9 @@ fn vehicle_creation_and_destruction() {
 }
 
 fn vehicle_processing() {
-    query(components::vehicle()).each_frame(|vehicles| {
+    let last_slowdown = Rc::new(RefCell::new(time()));
+
+    query(components::vehicle()).each_frame(move |vehicles| {
         for (vehicle_id, driver_id) in vehicles {
             let freeze =
                 entity::get_component(driver_id, components::input_jump()).unwrap_or_default();
@@ -178,11 +183,7 @@ fn vehicle_processing() {
                     let error_distance = TARGET - hit.distance;
                     let p = K_P * error_distance;
                     let d = K_D * delta_distance;
-                    let mut strength = (p + d) * frametime();
-                    if direction.y * offset.y > 0.0 {
-                        strength += INPUT_FORWARD_STRENGTH_OFFSET * MAX_STRENGTH;
-                    }
-                    let strength = strength.clamp(-0.1, MAX_STRENGTH);
+                    let strength = ((p + d) * frametime()).clamp(-0.1, MAX_STRENGTH);
 
                     let force = -probe_direction * strength;
                     let position = vehicle_position + vehicle_rotation * offset;
@@ -207,7 +208,13 @@ fn vehicle_processing() {
 
             physics::add_force_at_position(
                 vehicle_id,
-                vehicle_rotation * (Vec3::X * -direction.x) * INPUT_SIDE_STRENGTH_OFFSET,
+                vehicle_rotation * (Vec3::Y * -direction.y) * INPUT_FORWARD_FORCE,
+                vehicle_position + vehicle_rotation * Y_DISTANCE * Vec3::Y,
+            );
+
+            physics::add_force_at_position(
+                vehicle_id,
+                vehicle_rotation * (Vec3::X * -direction.x) * INPUT_SIDE_FORCE,
                 vehicle_position + vehicle_rotation * -Y_DISTANCE * Vec3::Y,
             );
 
@@ -227,6 +234,13 @@ fn vehicle_processing() {
                 -entity::get_component(vehicle_id, linear_velocity()).unwrap_or_default()
                     * SLOWDOWN_STRENGTH,
             );
+
+            if time() - *last_slowdown.borrow() > ANGULAR_SLOWDOWN_DELAY {
+                entity::mutate_component(vehicle_id, angular_velocity(), |av| {
+                    *av -= *av * ANGULAR_SLOWDOWN_STRENGTH;
+                });
+                *last_slowdown.borrow_mut() = time();
+            }
         }
     });
 }
