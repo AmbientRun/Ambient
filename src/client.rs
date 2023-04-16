@@ -6,13 +6,15 @@ use ambient_api::{
         player::local_user_id,
         transform::{lookat_center, rotation, translation},
     },
-    concepts::make_perspective_infinite_reverse_camera,
+    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     messages::Frame,
     player::KeyCode,
     prelude::*,
 };
 use ambient_ui_components::prelude::*;
-use components::player_vehicle;
+use components::{player_vehicle, vehicle, vehicle_hud};
+
+const CAMERA_OFFSET: Vec3 = vec3(0.5, 2.5, 0.5);
 
 #[main]
 pub fn main() {
@@ -24,13 +26,77 @@ pub fn main() {
         .with(lookat_center(), vec3(0., 0., 1.))
         .spawn();
 
-    Frame::subscribe(move |_| {
-        const CAMERA_OFFSET: Vec3 = vec3(-0.5, 2.5, 0.5);
+    Entity::new()
+        .with_merge(make_transformable())
+        .with(text(), "Hello world".to_string())
+        .with(color(), vec4(1., 1., 1., 1.))
+        .with(translation(), vec3(0., 0., 1.0))
+        .with(rotation(), Quat::from_rotation_x(-90.0f32.to_radians()))
+        .with(scale(), Vec3::ONE * 0.05)
+        .with_default(local_to_world())
+        .with_default(mesh_to_local())
+        .with_default(mesh_to_world())
+        .with_default(main_scene())
+        .spawn();
 
+    spawn_query(vehicle()).bind(move |vehicles| {
+        for (id, _) in vehicles {
+            let hud_id = Entity::new()
+                .with_merge(make_transformable())
+                .with_default(local_to_world())
+                .with_default(local_to_parent())
+                .with_default(mesh_to_local())
+                .with_default(mesh_to_world())
+                .with_default(main_scene())
+                .with(text(), "0".to_string())
+                .with(color(), vec4(1., 1., 1., 1.))
+                .with(translation(), vec3(0.5, 0., 0.3))
+                .with(
+                    rotation(),
+                    Quat::from_rotation_z(25.0f32.to_radians())
+                        * Quat::from_rotation_x(-65.0f32.to_radians()),
+                )
+                .with(scale(), Vec3::ONE * 0.005)
+                .with(font_size(), 48.0)
+                .with(parent(), id)
+                .spawn();
+
+            entity::add_component(id, vehicle_hud(), hud_id);
+            entity::add_component_if_required(id, children(), vec![]);
+            entity::mutate_component(id, children(), |children| {
+                children.push(hud_id);
+            });
+        }
+    });
+
+    despawn_query(vehicle_hud())
+        .requires(vehicle())
+        .bind(move |vehicles| {
+            for (vehicle_id, hud_id) in vehicles {
+                entity::despawn(hud_id);
+                entity::mutate_component(vehicle_id, children(), |children| {
+                    children.retain(|&c| c != hud_id);
+                });
+            }
+        });
+
+    Frame::subscribe(move |_| {
         let player_id = local_entity_id();
         let Some(vehicle_id) = entity::get_component(player_id, player_vehicle()) else { return; };
         let Some(vehicle_position) = entity::get_component(vehicle_id, translation()) else { return; };
         let Some(vehicle_rotation) = entity::get_component(vehicle_id, rotation()) else { return; };
+        let Some(vehicle_linear_velocity) = entity::get_component(vehicle_id, linear_velocity()) else { return; };
+
+        if let Some(vehicle_hud) = entity::get_component(vehicle_id, vehicle_hud()) {
+            entity::set_component(
+                vehicle_hud,
+                text(),
+                format!(
+                    "{:.1}",
+                    vehicle_linear_velocity.dot(vehicle_rotation * -Vec3::Y) * 3.6
+                ),
+            );
+        }
 
         let camera_position = vehicle_position + vehicle_rotation * CAMERA_OFFSET;
         entity::set_component(camera_id, translation(), camera_position);

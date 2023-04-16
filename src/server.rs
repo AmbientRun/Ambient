@@ -34,7 +34,8 @@ const K_D: f32 = -1000.0;
 
 const TARGET: f32 = 3.0;
 const MAX_STRENGTH: f32 = 10.0;
-const INPUT_FORWARD_FORCE: f32 = 10.0;
+const INPUT_FORWARD_FORCE: f32 = 20.0;
+const INPUT_BACKWARD_FORCE: f32 = -4.0;
 const INPUT_SIDE_FORCE: f32 = 0.8;
 
 const DENSITY: f32 = 10.0;
@@ -208,7 +209,13 @@ fn vehicle_processing() {
 
             physics::add_force_at_position(
                 vehicle_id,
-                vehicle_rotation * (Vec3::Y * -direction.y) * INPUT_FORWARD_FORCE,
+                vehicle_rotation
+                    * (Vec3::Y * direction.y.abs())
+                    * -if direction.y > 0. {
+                        INPUT_FORWARD_FORCE
+                    } else {
+                        INPUT_BACKWARD_FORCE
+                    },
                 vehicle_position + vehicle_rotation * Y_DISTANCE * Vec3::Y,
             );
 
