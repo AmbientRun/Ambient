@@ -9,6 +9,7 @@ use ambient_api::{
             plane_collider,
         },
         player::player as player_component,
+        prefab::prefab_from_url,
         rendering::{cast_shadows, fog_density, light_diffuse, sky, sun, water},
         transform::{rotation, scale, translation},
     },
@@ -16,6 +17,7 @@ use ambient_api::{
     messages::Frame,
     prelude::*,
 };
+use ambient_ui_components::prelude::pbr_material_from_url;
 
 mod common;
 
@@ -54,6 +56,7 @@ const ANGULAR_SLOWDOWN_STRENGTH: f32 = 0.3;
 pub fn main() {
     make_water();
     make_sun();
+    make_track();
 
     vehicle_creation_and_destruction();
     vehicle_processing();
@@ -94,6 +97,18 @@ fn make_sun() {
     });
 }
 
+fn make_track() {
+    Entity::new()
+        .with_merge(make_transformable())
+        .with(translation(), vec3(-2500., 2500., -300.0))
+        .with(scale(), Vec3::ONE * 1.0)
+        .with(
+            prefab_from_url(),
+            asset::url("assets/models/static/map.glb").unwrap(),
+        )
+        .spawn();
+}
+
 fn vehicle_creation_and_destruction() {
     spawn_query(player_component()).bind(|players| {
         for (player_id, ()) in players {
@@ -105,7 +120,7 @@ fn vehicle_creation_and_destruction() {
                 .with_default(physics_controlled())
                 .with(dynamic(), true)
                 .with(components::vehicle(), player_id)
-                .with(translation(), vec3(0., 0., 2.0))
+                .with(translation(), vec3(575., -2250., 100.))
                 .with(density(), DENSITY)
                 .with(components::last_distances(), OFFSETS.map(|_| 0.0).to_vec())
                 .with(components::debug_messages(), vec![])
