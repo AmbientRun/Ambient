@@ -27,12 +27,12 @@ const OFFSETS: [(f32, f32); 4] = [
     (-X_DISTANCE, Y_DISTANCE),
 ];
 
-const K_P: f32 = 150.0;
-const K_D: f32 = -300.0;
-const TARGET: f32 = 4.0;
-const MAX_STRENGTH: f32 = 10.0;
+const K_P: f32 = 300.0;
+const K_D: f32 = -600.0;
+const TARGET: f32 = 6.0;
+const MAX_STRENGTH: f32 = 25.0;
 
-const INPUT_FORWARD_FORCE: f32 = 40.0;
+const INPUT_FORWARD_FORCE: f32 = 80.0;
 const INPUT_BACKWARD_FORCE: f32 = -4.0;
 const INPUT_SIDE_FORCE: f32 = 0.8;
 
@@ -41,10 +41,10 @@ const INPUT_TURNING_STRENGTH: f32 = 20.0;
 const INPUT_JUMP_STRENGTH: f32 = 800.0;
 
 const DENSITY: f32 = 10.0;
-const SLOWDOWN_STRENGTH: f32 = 0.9;
+const SLOWDOWN_STRENGTH: f32 = 0.8;
 
 const ANGULAR_SLOWDOWN_DELAY: f32 = 0.25;
-const ANGULAR_SLOWDOWN_STRENGTH: f32 = 0.3;
+const ANGULAR_SLOWDOWN_STRENGTH: f32 = 0.4;
 
 const SPAWN_POSITION: Vec3 = vec3(800., -670., 120.);
 const SPAWN_RADIUS: f32 = 20.0;
