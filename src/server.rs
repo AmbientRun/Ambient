@@ -17,7 +17,6 @@ use ambient_api::{
     messages::Frame,
     prelude::*,
 };
-use ambient_ui_components::prelude::pbr_material_from_url;
 
 mod common;
 
@@ -34,17 +33,17 @@ const OFFSETS: [(f32, f32); 4] = [
 ];
 
 const K_P: f32 = 150.0;
-const K_D: f32 = -400.0;
+const K_D: f32 = -300.0;
 const TARGET: f32 = 4.0;
 const MAX_STRENGTH: f32 = 10.0;
 
-const INPUT_FORWARD_FORCE: f32 = 30.0;
+const INPUT_FORWARD_FORCE: f32 = 40.0;
 const INPUT_BACKWARD_FORCE: f32 = -4.0;
 const INPUT_SIDE_FORCE: f32 = 0.8;
 
 const INPUT_PITCH_STRENGTH: f32 = 10.0;
 const INPUT_TURNING_STRENGTH: f32 = 20.0;
-const INPUT_JUMP_STRENGTH: f32 = 600.0;
+const INPUT_JUMP_STRENGTH: f32 = 800.0;
 
 const DENSITY: f32 = 10.0;
 const SLOWDOWN_STRENGTH: f32 = 0.9;
@@ -120,7 +119,7 @@ fn vehicle_creation_and_destruction() {
                 .with_default(physics_controlled())
                 .with(dynamic(), true)
                 .with(components::vehicle(), player_id)
-                .with(translation(), vec3(575., -2250., 100.))
+                .with(translation(), vec3(0.0, 0.0, 6.0))
                 .with(density(), DENSITY)
                 .with(components::last_distances(), OFFSETS.map(|_| 0.0).to_vec())
                 .with(components::debug_messages(), vec![])
@@ -239,10 +238,18 @@ fn vehicle_processing() {
             }
             entity::set_component(vehicle_id, components::last_distances(), last_distances);
 
+            let pitch_correction = vehicle_rotation
+                .to_euler(glam::EulerRot::YXZ)
+                .1
+                .cos()
+                .powi(3)
+                .max(0.0);
+
             physics::add_force_at_position(
                 vehicle_id,
                 vehicle_rotation
                     * (Vec3::Y * direction.y.abs())
+                    * pitch_correction
                     * -if direction.y > 0. {
                         INPUT_FORWARD_FORCE
                     } else {
