@@ -15,6 +15,7 @@ use ambient_ui_components::prelude::*;
 use components::{player_vehicle, vehicle, vehicle_hud};
 
 const CAMERA_OFFSET: Vec3 = vec3(0.5, 2.5, 0.5);
+const RENDER_DEBUG: bool = false;
 
 #[main]
 pub fn main() {
@@ -127,8 +128,10 @@ pub fn main() {
         .send_server_unreliable();
     });
 
-    DebugUI.el().spawn_interactive();
-    DebugLines.el().spawn_interactive();
+    if RENDER_DEBUG {
+        DebugUI.el().spawn_interactive();
+        DebugLines.el().spawn_interactive();
+    }
 }
 
 #[element_component]
@@ -137,12 +140,7 @@ fn DebugUI(hooks: &mut Hooks) -> Element {
 
     FlowColumn::el(messages.into_iter().map(|(id, msgs)| {
         FlowColumn::el([
-            Text::el(format!(
-                "{} ({})",
-                id,
-                entity::get_component(id, linear_velocity()).unwrap_or_default()
-            ))
-            .section_style(),
+            Text::el(format!("{}", id,)).section_style(),
             FlowColumn::el(
                 msgs.into_iter()
                     .map(|s| Text::el(s).with(color(), vec4(1., 1., 1., 1.))),

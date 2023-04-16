@@ -161,8 +161,6 @@ fn vehicle_processing() {
             let mut last_distances =
                 entity::get_component(vehicle_id, components::last_distances()).unwrap();
 
-            let mut msgs = vec![];
-            let mut lines = vec![];
             for (index, offset) in OFFSETS.iter().enumerate() {
                 let offset = Vec2::from(*offset).extend(0.0);
 
@@ -192,20 +190,10 @@ fn vehicle_processing() {
                         physics::add_force_at_position(vehicle_id, force, position);
                     }
 
-                    lines.push(position);
-                    lines.push(position + 5.0 * force);
-
-                    msgs.push(format!(
-                        "n{:.02}, d{:.02}, e{:.02}, dt*clamp({:.02} + {:.02}) = s{:.02}",
-                        new_distance, delta_distance, error_distance, p, d, strength
-                    ));
-
                     last_distances[index] = new_distance;
                 }
             }
             entity::set_component(vehicle_id, components::last_distances(), last_distances);
-            entity::set_component(vehicle_id, components::debug_messages(), msgs);
-            entity::set_component(vehicle_id, components::debug_lines(), lines);
 
             physics::add_force_at_position(
                 vehicle_id,
