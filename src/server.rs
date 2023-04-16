@@ -112,7 +112,10 @@ fn vehicle_creation_and_destruction() {
                 .with_default(physics_controlled())
                 .with(dynamic(), true)
                 .with(components::vehicle(), player_id)
-                .with(translation(), SPAWN_POSITION + random::<Vec2>().extend(0.0) * SPAWN_RADIUS)
+                .with(
+                    translation(),
+                    SPAWN_POSITION + random::<Vec2>().extend(0.0) * SPAWN_RADIUS,
+                )
                 .with(density(), DENSITY)
                 .with(components::last_distances(), OFFSETS.map(|_| 0.0).to_vec())
                 .with(components::debug_messages(), vec![])
@@ -240,7 +243,8 @@ fn vehicle_processing() {
                 .powi(3)
                 .max(0.0);
 
-            let distance_correction = 1.0 - ((TARGET - avg_distance).abs() / TARGET).clamp(0.0, 1.0);
+            let distance_correction =
+                1.0 - ((TARGET - avg_distance).abs() / TARGET).clamp(0.0, 1.0);
 
             physics::add_force_at_position(
                 vehicle_id,
@@ -262,8 +266,8 @@ fn vehicle_processing() {
                 vehicle_position + vehicle_rotation * -Y_DISTANCE * Vec3::Y,
             );
 
-            if entity::get_component(driver_id, components::input_reset()).unwrap_or_default() {
-                entity::set_component(vehicle_id, translation(), Vec3::Z * 7.0);
+            if (vehicle_rotation * Vec3::Z).dot(Vec3::Z) < -0.4 {
+                entity::mutate_component(vehicle_id, translation(), |t| *t += Vec3::Z * 7.0);
                 entity::set_component(vehicle_id, rotation(), Quat::IDENTITY);
             }
 
