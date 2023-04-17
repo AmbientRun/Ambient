@@ -3,7 +3,7 @@ use ambient_api::{components::core::physics::linear_velocity, player::MouseButto
 #[main]
 fn main() {
     ambient_api::messages::Frame::subscribe(move |_| {
-        let (delta, input) = player::get_raw_input_delta();
+        let (delta, _input) = player::get_raw_input_delta();
 
         let camera_rotation = delta.mouse_position;
 
