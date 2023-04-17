@@ -1,7 +1,6 @@
-use ambient_core::{asset_cache, player::local_user_id};
+use ambient_core::player::local_user_id;
 use ambient_input::{player_prev_raw_input, player_raw_input};
 use ambient_network::client::game_client;
-use ambient_std::asset_url::AbsAssetUrl;
 use anyhow::Context;
 
 use super::Bindings;
@@ -48,22 +47,6 @@ impl wit::client_message::Host for Bindings {
     }
 }
 impl wit::client_player::Host for Bindings {
-    fn get_raw_input(&mut self) -> anyhow::Result<wit::client_player::RawInput> {
-        Ok(self
-            .world()
-            .resource(player_raw_input())
-            .clone()
-            .into_bindgen())
-    }
-
-    fn get_prev_raw_input(&mut self) -> anyhow::Result<wit::client_player::RawInput> {
-        Ok(self
-            .world()
-            .resource(player_prev_raw_input())
-            .clone()
-            .into_bindgen())
-    }
-
     fn get_local(&mut self) -> anyhow::Result<wit::types::EntityId> {
         crate::shared::implementation::player::get_by_user_id(
             self.world(),
@@ -73,23 +56,20 @@ impl wit::client_player::Host for Bindings {
         .unwrap()
     }
 }
-
-impl wit::asset::Host for Bindings {
-    fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
-        let assets = self.world().resource(asset_cache()).clone();
-        let asset_url = AbsAssetUrl::from_asset_key(path);
-        asset_url
-            .to_download_url(&assets)
-            .map(|url| Some(url.to_string()))
-    }
-}
-
-impl wit::audio::Host for Bindings {
-    fn load(&mut self, url: String) -> anyhow::Result<()> {
-        crate::shared::implementation::audio::load(self.world_mut(), url)
+impl wit::client_input::Host for Bindings {
+    fn get(&mut self) -> anyhow::Result<wit::client_input::Input> {
+        Ok(self
+            .world()
+            .resource(player_raw_input())
+            .clone()
+            .into_bindgen())
     }
 
-    fn play(&mut self, name: String, looping: bool, amp: f32) -> anyhow::Result<()> {
-        crate::shared::implementation::audio::play(self.world_mut(), name, looping, amp)
+    fn get_previous(&mut self) -> anyhow::Result<wit::client_input::Input> {
+        Ok(self
+            .world()
+            .resource(player_prev_raw_input())
+            .clone()
+            .into_bindgen())
     }
 }

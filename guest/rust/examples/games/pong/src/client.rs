@@ -4,7 +4,6 @@ use ambient_api::{
         camera::{orthographic_bottom, orthographic_left, orthographic_right, orthographic_top},
     },
     concepts::make_orthographic_camera,
-    player::KeyCode,
     prelude::*,
 };
 
@@ -26,7 +25,7 @@ fn main() {
         .spawn();
 
     ambient_api::messages::Frame::subscribe(move |_| {
-        let input = player::get_raw_input();
+        let input = input::get();
         let mut direction = 0.0;
 
         if input.keys.contains(&KeyCode::Up) {

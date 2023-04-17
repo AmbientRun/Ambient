@@ -2,7 +2,7 @@ use ambient_core::player::{player, user_id};
 use ambient_ecs::{query, EntityId, World};
 use ambient_network::server::player_connection;
 use ambient_physics::physx::character_controller;
-use ambient_std::{shapes::Ray, asset_url::AbsAssetUrl};
+use ambient_std::shapes::Ray;
 use anyhow::Context;
 use physxx::{PxControllerCollisionFlag, PxControllerFilters};
 
@@ -274,20 +274,4 @@ fn send_networked(
     }
 
     Ok(())
-}
-
-impl wit::asset::Host for Bindings {
-    fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
-        Ok(Some(AbsAssetUrl::from_asset_key(path).to_string()))
-    }
-}
-
-impl wit::audio::Host for Bindings {
-    fn load(&mut self, url: String) -> anyhow::Result<()> {
-        crate::shared::implementation::audio::load(self.world_mut(), url)
-    }
-
-    fn play(&mut self, name: String, looping: bool, amp: f32) -> anyhow::Result<()> {
-        crate::shared::implementation::audio::play(self.world_mut(), name, looping, amp)
-    }
 }

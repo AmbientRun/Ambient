@@ -1,9 +1,9 @@
-use ambient_api::{components::core::physics::linear_velocity, player::MouseButton, prelude::*};
+use ambient_api::{components::core::physics::linear_velocity, prelude::*};
 
 #[main]
 fn main() {
     ambient_api::messages::Frame::subscribe(move |_| {
-        let (delta, input) = player::get_raw_input_delta();
+        let (delta, input) = input::get_delta();
 
         let camera_rotation = if input.mouse_buttons.contains(&MouseButton::Right) {
             delta.mouse_position

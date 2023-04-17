@@ -12,7 +12,10 @@ pub use glam;
 pub use rand::prelude::*;
 
 #[cfg(feature = "client")]
-pub use crate::audio;
+pub use crate::{
+    audio,
+    input::{self, KeyCode, MouseButton},
+};
 
 #[cfg(feature = "server")]
 pub use crate::physics;

@@ -13,15 +13,16 @@ impl wit::client_message::Host for Bindings {
     }
 }
 impl wit::client_player::Host for Bindings {
-    fn get_raw_input(&mut self) -> anyhow::Result<wit::client_player::RawInput> {
-        unsupported()
-    }
-
-    fn get_prev_raw_input(&mut self) -> anyhow::Result<wit::client_player::RawInput> {
-        unsupported()
-    }
-
     fn get_local(&mut self) -> anyhow::Result<wit::types::EntityId> {
+        unsupported()
+    }
+}
+impl wit::client_input::Host for Bindings {
+    fn get(&mut self) -> anyhow::Result<wit::client_input::Input> {
+        unsupported()
+    }
+
+    fn get_previous(&mut self) -> anyhow::Result<wit::client_input::Input> {
         unsupported()
     }
 }

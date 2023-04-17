@@ -1,9 +1,9 @@
-use ambient_api::{player::KeyCode, prelude::*};
+use ambient_api::prelude::*;
 
 #[main]
 fn main() {
     ambient_api::messages::Frame::subscribe(move |_| {
-        let (_, pressed) = player::get_raw_input_delta();
+        let pressed = input::get();
 
         let mut displace = Vec2::ZERO;
         if pressed.keys.contains(&KeyCode::W) {

@@ -259,3 +259,21 @@ impl wit::player::Host for Bindings {
         shared::implementation::player::get_by_user_id(self.world(), user_id)
     }
 }
+impl wit::asset::Host for Bindings {
+    fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
+        let assets = self.world().resource(asset_cache()).clone();
+        let asset_url = AbsAssetUrl::from_asset_key(path);
+        asset_url
+            .to_download_url(&assets)
+            .map(|url| Some(url.to_string()))
+    }
+}
+impl wit::audio::Host for Bindings {
+    fn load(&mut self, url: String) -> anyhow::Result<()> {
+        crate::shared::implementation::audio::load(self.world_mut(), url)
+    }
+
+    fn play(&mut self, name: String, looping: bool, amp: f32) -> anyhow::Result<()> {
+        crate::shared::implementation::audio::play(self.world_mut(), name, looping, amp)
+    }
+}

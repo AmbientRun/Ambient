@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use ambient_api::{
     components::core::rendering::{color, outline},
-    player::KeyCode,
     prelude::*,
 };
 use palette::FromColor;
@@ -23,7 +22,7 @@ async fn main() {
 }
 
 fn process_input() {
-    let (delta, _) = player::get_raw_input_delta();
+    let (delta, _) = input::get_delta();
     let keys = &delta.keys;
     let msg = messages::Input {
         left: keys.contains(&KeyCode::Left) || keys.contains(&KeyCode::A),

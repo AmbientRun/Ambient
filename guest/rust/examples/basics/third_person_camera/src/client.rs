@@ -6,7 +6,6 @@ use ambient_api::{
         transform::{lookat_center, rotation, translation},
     },
     concepts::make_perspective_infinite_reverse_camera,
-    player::KeyCode,
     prelude::*,
 };
 use components::player_camera_ref;
@@ -41,7 +40,7 @@ fn main() {
     });
 
     ambient_api::messages::Frame::subscribe(move |_| {
-        let (delta, pressed) = player::get_raw_input_delta();
+        let (delta, pressed) = input::get_delta();
 
         let mut displace = Vec2::ZERO;
         if pressed.keys.contains(&KeyCode::W) {

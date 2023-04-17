@@ -1,7 +1,7 @@
 use crate::shared::{conversion::IntoBindgen, wit};
 
 impl IntoBindgen for ambient_input::PlayerRawInput {
-    type Item = wit::client_player::RawInput;
+    type Item = wit::client_input::Input;
 
     fn into_bindgen(self) -> Self::Item {
         Self::Item {
@@ -19,7 +19,7 @@ impl IntoBindgen for ambient_input::PlayerRawInput {
 }
 
 impl IntoBindgen for ambient_input::VirtualKeyCode {
-    type Item = wit::client_player::VirtualKeyCode;
+    type Item = wit::client_input::VirtualKeyCode;
 
     fn into_bindgen(self) -> Self::Item {
         match self {
@@ -191,7 +191,7 @@ impl IntoBindgen for ambient_input::VirtualKeyCode {
 }
 
 impl IntoBindgen for ambient_input::MouseButton {
-    type Item = wit::client_player::MouseButton;
+    type Item = wit::client_input::MouseButton;
 
     fn into_bindgen(self) -> Self::Item {
         match self {
@@ -204,7 +204,7 @@ impl IntoBindgen for ambient_input::MouseButton {
 }
 
 impl IntoBindgen for ambient_window_types::VirtualKeyCode {
-    type Item = wit::client_player::VirtualKeyCode;
+    type Item = wit::client_input::VirtualKeyCode;
 
     fn into_bindgen(self) -> Self::Item {
         match self {
@@ -376,7 +376,7 @@ impl IntoBindgen for ambient_window_types::VirtualKeyCode {
 }
 
 impl IntoBindgen for ambient_window_types::MouseButton {
-    type Item = wit::client_player::MouseButton;
+    type Item = wit::client_input::MouseButton;
 
     fn into_bindgen(self) -> Self::Item {
         match self {

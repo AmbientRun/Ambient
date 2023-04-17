@@ -19,6 +19,9 @@ pub mod ecs;
 pub mod entity;
 /// Global functions and types for your convenience.
 pub mod global;
+/// Input retrieval and manipulation.
+#[cfg(feature = "client")]
+pub mod input;
 /// Messaging to other modules and to the other side of the networking.
 pub mod message;
 /// Player-specific functionality.

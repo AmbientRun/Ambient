@@ -1,6 +1,7 @@
 use crate::shared::{self, wit};
 use ambient_ecs::{query, EntityId, FnSystem, SystemGroup, World};
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
+use ambient_std::asset_url::AbsAssetUrl;
 use std::sync::Arc;
 
 mod implementation;
@@ -240,5 +241,19 @@ impl wit::message::Host for Bindings {
 impl wit::player::Host for Bindings {
     fn get_by_user_id(&mut self, user_id: String) -> anyhow::Result<Option<wit::types::EntityId>> {
         shared::implementation::player::get_by_user_id(self.world(), user_id)
+    }
+}
+impl wit::asset::Host for Bindings {
+    fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
+        Ok(Some(AbsAssetUrl::from_asset_key(path).to_string()))
+    }
+}
+impl wit::audio::Host for Bindings {
+    fn load(&mut self, url: String) -> anyhow::Result<()> {
+        crate::shared::implementation::audio::load(self.world_mut(), url)
+    }
+
+    fn play(&mut self, name: String, looping: bool, amp: f32) -> anyhow::Result<()> {
+        crate::shared::implementation::audio::play(self.world_mut(), name, looping, amp)
     }
 }
