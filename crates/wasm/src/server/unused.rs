@@ -20,4 +20,8 @@ impl wit::client_player::Host for Bindings {
     fn get_prev_raw_input(&mut self) -> anyhow::Result<wit::client_player::RawInput> {
         unsupported()
     }
+
+    fn get_local(&mut self) -> anyhow::Result<wit::types::EntityId> {
+        unsupported()
+    }
 }

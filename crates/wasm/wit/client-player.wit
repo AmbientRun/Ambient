@@ -1,4 +1,4 @@
-default interface server-player {
+default interface client-player {
     use pkg.types.{vec2, entity-id}
 
     enum virtual-key-code {
@@ -217,4 +217,5 @@ default interface server-player {
 
     get-raw-input: func() -> raw-input
     get-prev-raw-input: func() -> raw-input
+    get-local: func() -> entity-id
 }
