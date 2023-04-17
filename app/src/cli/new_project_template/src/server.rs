@@ -10,7 +10,7 @@ use ambient_api::{
 };
 
 #[main]
-pub async fn main() -> ResultEmpty {
+pub fn main() {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
@@ -25,6 +25,4 @@ pub async fn main() -> ResultEmpty {
         .spawn();
 
     println!("Hello, Ambient!");
-
-    OkEmpty
 }
