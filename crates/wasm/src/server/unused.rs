@@ -23,7 +23,11 @@ impl wit::client_player::Host for Bindings {
 }
 
 impl wit::camera::Host for Bindings {
-    fn screen_ray(&mut self, _camera: wit::types::EntityId, _clip_space_pos: wit::types::Vec2) -> anyhow::Result<wit::types::Ray> {
+    fn screen_ray(
+        &mut self,
+        _camera: wit::types::EntityId,
+        _clip_space_pos: wit::types::Vec2,
+    ) -> anyhow::Result<wit::types::Ray> {
         unsupported()
     }
 }

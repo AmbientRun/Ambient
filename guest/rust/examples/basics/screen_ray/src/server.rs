@@ -1,16 +1,15 @@
 use ambient_api::{
     components::core::{
-        primitives::{quad, cube},
-        transform::translation,
         physics::plane_collider,
+        primitives::{cube, quad},
+        transform::translation,
     },
     concepts::make_transformable,
-    physics::raycast_first,
     prelude::*,
 };
 
 #[main]
-pub async fn main() -> ResultEmpty {
+pub fn main() {
     Entity::new()
         .with_merge(make_transformable())
         .with_default(quad())
@@ -23,11 +22,9 @@ pub async fn main() -> ResultEmpty {
         .spawn();
 
     messages::Input::subscribe(move |_source, msg| {
-        if let Some(hit) = raycast_first(msg.ray_origin, msg.ray_dir.normalize()) {
+        if let Some(hit) = physics::raycast_first(msg.ray_origin, msg.ray_dir) {
             // Set position of cube to the raycast hit position
             entity::set_component(cube_id, translation(), hit.position);
         }
     });
-
-    OkEmpty
 }

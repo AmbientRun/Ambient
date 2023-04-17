@@ -11,9 +11,7 @@ use crate::shared::{
     wit,
 };
 
-use ambient_core::{
-    camera::screen_ray,
-};
+use ambient_core::camera::screen_ray;
 
 impl wit::client_message::Host for Bindings {
     fn send(
@@ -73,7 +71,9 @@ impl wit::asset::Host for Bindings {
     fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
         let assets = self.world().resource(asset_cache()).clone();
         let asset_url = AbsAssetUrl::from_asset_key(path);
-        asset_url.to_download_url(&assets).map(|url| Some(url.to_string()))
+        asset_url
+            .to_download_url(&assets)
+            .map(|url| Some(url.to_string()))
     }
 }
 
@@ -88,8 +88,16 @@ impl wit::audio::Host for Bindings {
 }
 
 impl wit::camera::Host for Bindings {
-    fn screen_ray(&mut self, camera: wit::types::EntityId, clip_space_pos: wit::types::Vec2) -> anyhow::Result<wit::types::Ray> {
-        let mut ray = screen_ray(self.world(), camera.from_bindgen(), clip_space_pos.from_bindgen())?;
+    fn screen_ray(
+        &mut self,
+        camera: wit::types::EntityId,
+        clip_space_pos: wit::types::Vec2,
+    ) -> anyhow::Result<wit::types::Ray> {
+        let mut ray = screen_ray(
+            self.world(),
+            camera.from_bindgen(),
+            clip_space_pos.from_bindgen(),
+        )?;
         ray.dir *= -1.;
         Ok(ray.into_bindgen())
     }
