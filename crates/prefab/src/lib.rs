@@ -2,9 +2,7 @@ use std::{collections::HashMap, sync::Arc};
 
 use ambient_core::{asset_cache, async_ecs::async_run, hierarchy::children, runtime};
 use ambient_decals::decal;
-use ambient_ecs::{
-    components, query, query_mut, Debuggable, Description, DeserWorldWithWarnings, EntityId, Name, Networked, Store, SystemGroup, World,
-};
+use ambient_ecs::{query, query_mut, DeserWorldWithWarnings, EntityId, SystemGroup, World};
 use ambient_model::model_from_url;
 use ambient_physics::collider::collider;
 use ambient_std::{
@@ -16,20 +14,7 @@ use ambient_std::{
 use anyhow::Context;
 use async_trait::async_trait;
 
-components!("prefab", {
-    @[
-        Debuggable, Networked, Store,
-        Name["Prefab from URL"],
-        Description["Load and attach a prefab from a URL or relative path.\nWhen loaded, the components from this prefab will add to or replace the existing components for the entity."]
-    ]
-    prefab_from_url: String,
-    @[
-        Debuggable,
-        Name["Spawned"],
-        Description["If attached, this entity was built from a prefab that has finished spawning."]
-    ]
-    spawned: (),
-});
+pub use ambient_ecs::generated::components::core::prefab::{prefab_from_url, spawned};
 
 pub fn systems() -> SystemGroup {
     SystemGroup::new(

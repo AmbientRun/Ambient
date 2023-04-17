@@ -35,8 +35,9 @@ For alternative installation options, go to the [documentation on installing](ht
 | Feature                 | Status | Notes                                                                                                                                                                                                                              |
 | ----------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | ECS                     | ✅     | Single-threaded.                                                                                                                                                                                                                   |
-| WASM API                | ✅     | Rust is the only supported guest language right now, and WASM can only be used on the server. We are working on clientside WASM; see [this issue](https://github.com/AmbientRun/Ambient/issues/6).                                 |
-| Multiplayer/networking  | ✅     | Multiplayer is server-authoritative without any prediction or compensation. See [this issue](https://github.com/AmbientRun/Ambient/issues/150).                                                                                    |
+| WASM API                | ✅     | Rust is the only supported guest language right now, and WASM can be used on both the client and the server.                                                                                                                       |
+| UI API                  | ✅     | Element UI, our React-inspired UI library, can be used in Rust WASM guests. See the [examples](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui).                                                            |
+| Multiplayer/networking  | ✅     | Multiplayer is server-authoritative without any prediction or compensation. See [our documentation](https://ambientrun.github.io/Ambient/reference/networking.html).                                                               |
 | GPU-driven renderer     | ✅     |                                                                                                                                                                                                                                    |
 | FBX & glTF loading      | ✅     |                                                                                                                                                                                                                                    |
 | Physics (through PhysX) | ✅     | Using PhysX 4.1. PhysX 5 support is tracked in [this issue](https://github.com/AmbientRun/Ambient/issues/155).                                                                                                                     |
@@ -46,12 +47,11 @@ For alternative installation options, go to the [documentation on installing](ht
 | Decals                  | ✅     |                                                                                                                                                                                                                                    |
 | GPU culling and LoD     | ✅     |                                                                                                                                                                                                                                    |
 | Multi-platform          | ✅     | Windows, Mac, and Linux so far. x86-64 and ARM64 are actively supported; other platforms may also work, but require testing.                                                                                                       |
+| Audio                   | ✅     | Load sound, playback, looping, scale amp are supported. More featues on the way. |
 | Run on Web              | 🚧     | See [this issue](https://github.com/AmbientRun/Ambient/issues/151).                                                                                                                                                                |
 | Multithreading API      | 🚧     | Multithreading is already used internally, but we want to expose multithreading functionality within the WASM API. This may be explicit (i.e. task- or thread-spawning) or implicit (WASM modules being scheduled across threads). |
-| UI API                  | 🚧     | A React-like UI library already exists in the repo, and we're working on exposing it through the WASM API. See [this issue](https://github.com/AmbientRun/Ambient/issues/40).                                                      |
 | Custom shaders          | 🚧     | Custom shaders are supported by the renderer, but are not yet exposed in the API. See [this issue](https://github.com/AmbientRun/Ambient/issues/98).                                                                               |
 | Hot-reloading assets    | 🚧     | See [this issue](https://github.com/AmbientRun/Ambient/issues/12).                                                                                                                                                                 |
-| Audio                   | 🚧     | Audio is supported, but not currently exposed. See [this issue](https://github.com/AmbientRun/Ambient/issues/76).                                                                                                                  |
 | ECS save/load           | 🚧     | For loading, [see this issue](https://github.com/AmbientRun/Ambient/issues/71).                                                                                                                                                    |
 
 ## Examples
@@ -82,8 +82,8 @@ Please talk with us on Discord beforehand if you'd like to contribute a larger p
 
 Licensed under either of
 
- * Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
- * MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+- Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+- MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
 
 at your option.
 

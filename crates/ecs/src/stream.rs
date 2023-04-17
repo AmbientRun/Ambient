@@ -341,7 +341,7 @@ impl WorldStream {
             if self.filter.arch_filter.matches(&arch.active_components) {
                 for arch_comp in arch.components.iter() {
                     if (self.filter.component_filter)(arch_comp.component, WorldStreamCompEvent::Set) {
-                        let reader = self.changed_qs.get_change_reader(arch.id, arch_comp.component.index() as _);
+                        let reader = self.changed_qs.change_readers.get(arch.id, arch_comp.component.index() as _);
 
                         for (_, &entity_id) in reader.iter(&*arch_comp.changes.borrow()) {
                             if let Some(loc) = world.entity_loc(entity_id) {

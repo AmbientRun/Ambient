@@ -5,6 +5,7 @@ resolver = "2"
 
 [workspace.package]
 version = "0.2.0-dev"
+rust-version = "1.67"
 
 [workspace.dependencies]
 ambient_sys = { path = "../crates/sys", features = [
@@ -19,7 +20,6 @@ ambient_cameras = { path = "../crates/cameras/" }
 ambient_renderer = { path = "../crates/renderer/" }
 ambient_element = { path = "../shared_crates/element/" }
 
-
 anyhow = "1.0"
 glam = { version = "0.22", features = ["rand", "bytemuck"] }
 futures = "0.3"
@@ -31,7 +31,11 @@ wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 tracing-web = "0.1"
 time = { version = "0.3", features = ["wasm-bindgen"] }
-chrono = { version = "0.4", features = ["wasmbind"] }
+chrono = { version = "0.4", default-features = false, features = [
+    "serde",
+    "clock",
+    "wasmbind",
+] }
 
 getrandom = { version = "0.2.8", features = ["js"] }
 web-sys = { version = "0.3.61", features = [

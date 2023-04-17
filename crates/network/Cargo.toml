@@ -18,13 +18,14 @@ ambient_ui = { path = "../ui" }
 ambient_renderer = { path = "../renderer" }
 ambient_element = { path = "../../shared_crates/element" }
 ambient_app = { path = "../app" }
+ambient_proxy = "0.2"
+
 itertools = { workspace = true }
 dashmap = { workspace = true }
 serde = { workspace = true }
 futures = { workspace = true }
 rand = { workspace = true }
 thiserror = { workspace = true }
-# Note: can't be in workspace as it stops wasm from compiling
 bincode = { workspace = true }
 glam = { workspace = true }
 winit = { workspace = true }
@@ -38,8 +39,11 @@ anyhow = { workspace = true }
 manual_future = { workspace = true }
 tracing = { workspace = true }
 once_cell = { workspace = true }
+byteorder = { workspace = true }
+colored = { workspace = true }
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
+async-trait = { workspace = true }
 quinn = { workspace = true }
 rustls = { workspace = true }
 tokio-util = "0.7"

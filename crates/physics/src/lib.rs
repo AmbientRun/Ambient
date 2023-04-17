@@ -1,13 +1,11 @@
 use std::sync::Arc;
 
 use ambient_core::asset_cache;
-use ambient_ecs::{
-    components, query, Debuggable, Description, DynSystem, Entity, EntityId, FnSystem, Name, Networked, Resource, Store, SystemGroup, World,
-};
+use ambient_ecs::{components, query, Debuggable, DynSystem, Entity, EntityId, FnSystem, Resource, SystemGroup, World};
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
 use ambient_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 use collider::{collider_shapes, collider_shapes_convex};
-use glam::{vec3, Mat4, Vec3};
+use glam::{vec3, Mat4};
 use helpers::release_px_scene;
 use parking_lot::Mutex;
 use physx::{
@@ -15,8 +13,8 @@ use physx::{
     physics_shape, revolute_joint, rigid_actor, rigid_dynamic, rigid_static,
 };
 use physxx::{
-    AsPxActor, PxContactPairHeader, PxControllerManagerRef, PxMaterial, PxPvdSceneFlag, PxRigidActor, PxRigidActorRef, PxSceneDesc,
-    PxSceneFlags, PxSceneRef, PxSimulationEventCallback, PxUserData,
+    AsPxActor, PxContactPairHeader, PxControllerManagerRef, PxMaterial, PxPvdSceneFlag, PxRigidActor, PxSceneDesc, PxSceneFlags,
+    PxSceneRef, PxSimulationEventCallback, PxUserData,
 };
 use serde::{Deserialize, Serialize};
 
@@ -30,6 +28,8 @@ pub mod physx;
 pub mod rc_asset;
 pub mod visualization;
 
+pub use ambient_ecs::generated::components::core::physics::*;
+
 components!("physics", {
     @[Resource]
     main_physics_scene: PxSceneRef,
@@ -42,38 +42,7 @@ components!("physics", {
     @[Resource]
     wood_physics_material: PxMaterial,
     @[Debuggable, Resource]
-    collisions: Arc<Mutex<Vec<(PxRigidActorRef, PxRigidActorRef)>>>,
-
-    @[
-        Debuggable, Networked, Store,
-        Name["Unit velocity"],
-        Description["The velocity of a character/unit."]
-    ]
-    unit_velocity: Vec3,
-    @[
-        Debuggable, Networked, Store,
-        Name["Unit mass"],
-        Description["The mass of a character/unit."]
-    ]
-    unit_mass: f32,
-    @[
-        Debuggable, Networked, Store,
-        Name["Unit yaw"],
-        Description["The yaw of a character/unit."]
-    ]
-    unit_yaw: f32,
-    @[
-        Debuggable, Networked, Store, Resource,
-        Name["Collider loads"],
-        Description["Contains all colliders that were loaded in this physics tick."]
-    ]
-    collider_loads: Vec<EntityId>,
-    @[
-        Debuggable, Networked, Store, Resource,
-        Name["Make physics static"],
-        Description["All physics objects will be made static when loaded."]
-    ]
-    make_physics_static: bool,
+    collisions: Arc<Mutex<Vec<(EntityId, EntityId)>>>,
 });
 pub fn init_all_components() {
     init_components();
@@ -98,7 +67,11 @@ pub fn create_server_resources(assets: &AssetCache, server_resources: &mut Entit
         main_scene_desc.set_simulation_event_callbacks(PxSimulationEventCallback {
             collision_callback: Some(Box::new(move |header: &PxContactPairHeader| {
                 if let (Some(a), Some(b)) = (header.actors[0], header.actors[1]) {
-                    collisions.lock().push((a, b));
+                    let a = a.borrow_shapes().get(0).and_then(|s| s.get_user_data::<PxShapeUserData>()).map(|ud| ud.entity);
+                    let b = b.borrow_shapes().get(0).and_then(|s| s.get_user_data::<PxShapeUserData>()).map(|ud| ud.entity);
+                    if let (Some(a), Some(b)) = (a, b) {
+                        collisions.lock().push((a, b));
+                    }
                 }
             })),
         });

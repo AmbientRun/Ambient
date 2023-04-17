@@ -8,7 +8,7 @@ use ambient_core::{game_mode, runtime, transform::translation, GameMode};
 use ambient_ecs::{Entity, EntityId};
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Group, Hooks, Setter};
 use ambient_intent::{rpc_redo, rpc_undo_head, IntentHistoryVisualizer};
-use ambient_naturals::{get_default_natural_layers, natural_layers, NaturalLayer, NaturalsPreset};
+use ambient_naturals::{get_default_natural_layers, natural_layers, NaturalsPreset};
 use ambient_network::{
     client::GameClient,
     hooks::{use_remote_persisted_resource, use_remote_player_component},
@@ -21,13 +21,13 @@ use ambient_physics::make_physics_static;
 use ambient_std::{cb, color::Color, Cb};
 use ambient_terrain::{
     brushes::{Brush, BrushShape, BrushSize, BrushSmoothness, BrushStrength, HydraulicErosionConfig},
-    terrain_material_def, TerrainMaterialDef,
+    terrain_material_def,
 };
 use ambient_ui::{
     command_modifier, height,
     layout::{docking, space_between_items, width, Borders, Docking},
-    margin, use_window_logical_resolution, Button, Editor, FlowColumn, FlowRow, FontAwesomeIcon, Hotkey, Rectangle, ScreenContainer,
-    ScrollArea, Separator, StylesExt, Text, UIExt, WindowSized, STREET,
+    margin, use_window_logical_resolution, Button, FlowColumn, FlowRow, FontAwesomeIcon, Hotkey, Rectangle, ScreenContainer, ScrollArea,
+    Separator, StylesExt, Text, UIExt, WindowSized, STREET,
 };
 use ambient_window_types::{ModifiersState, VirtualKeyCode};
 use build_mode::*;
@@ -273,7 +273,7 @@ fn TerrainMaterialEditor(hooks: &mut Hooks) -> Element {
         ScrollArea::el(
             FlowColumn::el([
                 FlowRow::el([
-                    CopyPasteButtons { value: value.clone(), on_change: set_value.clone() }.el().with(margin(), Borders::bottom(STREET)),
+                    CopyPasteButtons { value, on_change: set_value.clone() }.el().with(margin(), Borders::bottom(STREET)),
                     // SelectAndDownloadJsonAssetButton2::<TerrainMaterialDef> {
                     //     asset_type: AssetType::TerrainMaterial,
                     //     on_select_file: Cb::new({
@@ -356,7 +356,7 @@ fn NaturalLayersEditor(hooks: &mut Hooks) -> Element {
         ScrollArea::el(
             FlowColumn::el([
                 FlowRow::el([
-                    CopyPasteButtons { value: value.clone(), on_change: set_value.clone() }.el().with(margin(), Borders::bottom(STREET)),
+                    CopyPasteButtons { value, on_change: set_value.clone() }.el().with(margin(), Borders::bottom(STREET)),
                     // SelectAndDownloadJsonAssetButton2::<Vec<NaturalLayer>> {
                     //     asset_type: AssetType::Biomes,
                     //     on_select_file: Cb::new({

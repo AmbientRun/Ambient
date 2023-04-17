@@ -39,6 +39,9 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
         .replace("{{id}}", id.as_ref())
         .replace("{{name}}", name);
 
+    #[cfg(not(feature = "production"))]
+    log::info!("Ambient git version: {}", git_version::git_version!());
+
     let cargo_toml = {
         // Special-case creating an example in guest/rust/examples so that it "Just Works".
         let segments = project_path.iter().collect::<Vec<_>>();
@@ -61,13 +64,11 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
                 format!("ambient_api = \"{}\"", env!("CARGO_PKG_VERSION")),
                 #[cfg(not(feature = "production"))]
                 {
-                    let rev = git_version::git_version!()
-                        .split('-')
-                        .skip(3)
-                        .next()
-                        .unwrap_or_default()[1..]
-                        .to_string();
-                    format!("ambient_api = {{ git = \"https://github.com/AmbientRun/Ambient.git\", rev = \"{}\" }}", rev)
+                    if let Some(rev) = git_revision() {
+                        format!("ambient_api = {{ git = \"https://github.com/AmbientRun/Ambient.git\", rev = \"{}\" }}", rev)
+                    } else {
+                        format!("ambient_api = \"{}\"", env!("CARGO_PKG_VERSION"))
+                    }
                 },
                 false,
             ),
@@ -109,6 +110,8 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
         include_template!(".cargo/config.toml"),
         // .vscode
         include_template!(".vscode/settings.json"),
+        include_template!(".vscode/launch.json"),
+        include_template!(".vscode/extensions.json"),
         // src
         include_template!("src/client.rs"),
         include_template!("src/server.rs"),
@@ -122,4 +125,13 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
     log::info!("Project \"{name}\" with id `{id}` created at {project_path:?}");
 
     Ok(())
+}
+
+fn git_revision() -> Option<String> {
+    let s = git_version::git_version!().split('-').collect::<Vec<_>>();
+    if s.len() == 2 {
+        Some(s[0].to_string())
+    } else {
+        Some(s.get(3)?[1..].to_string())
+    }
 }

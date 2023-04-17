@@ -21,9 +21,11 @@ pub mod player;
 pub mod transform;
 pub mod window;
 
+pub use ambient_ecs::generated::components::core::app::{
+    description, dtime, main_scene, map_seed, name, project_name, selectable, snap_to_ground, tags, ui_scene,
+};
+
 components!("app", {
-    @[Debuggable, Networked, Store, Name["Name"], Description["A human-friendly name for this entity."]]
-    name: String,
     @[Resource]
     runtime: RuntimeHandle,
     @[Resource]
@@ -31,57 +33,19 @@ components!("app", {
     @[Debuggable]
     mesh: Arc<GpuMesh>,
 
-    @[
-        Debuggable, Networked, Store,
-        Name["Main scene"],
-        Description["If attached, this entity belongs to the main scene."]
-    ]
-    main_scene: (),
-    @[
-        Debuggable, Networked, Store,
-        Name["UI scene"],
-        Description["If attached, this entity belongs to the UI scene."]
-    ]
-    ui_scene: (),
     @[Resource]
     asset_cache: AssetCache,
-    @[
-        Debuggable, Networked, Store,
-        Name["Map seed"],
-        Description["A random number seed for this map."]
-    ]
-    map_seed: u64,
-    @[
-        Debuggable, Networked, Store,
-        Name["Snap to ground"],
-        Description["This object should automatically be moved with the terrain if the terrain is changed.\nThe value is the offset from the terrain."]
-    ]
-    snap_to_ground: f32,
-    @[
-        Debuggable, Networked, Store,
-        Name["Selectable"],
-        Description["If attached, this object can be selected in the editor."]
-    ]
-    selectable: (),
     @[
         Debuggable, Networked, Store, Resource,
         Name["Session start time"],
         Description["When the current server session was started."]
     ]
     session_start: DateTime<Utc>,
-    @[
-        Debuggable, Networked, Store,
-        Name["Tags"],
-        Description["Tags for categorizing this entity."]
-    ]
-    tags: Vec<String>,
     @[Debuggable, Networked, Store]
     game_mode: GameMode,
 
     @[Resource, Debuggable]
     time: Duration,
-    @[Resource, Debuggable, Name["Delta Time"], Description["How long the previous tick took in seconds.\nAlso known as frametime."]]
-    dtime: f32,
     @[Resource, Debuggable]
     app_start_time: Duration,
     @[Resource, Debuggable]
@@ -92,20 +56,11 @@ components!("app", {
     /// Generic component that indicates the entity shouldn't be sent over network
     @[Debuggable, Networked, Store]
     no_sync: (),
-
-    @[
-        Resource, Debuggable,
-        Name["Project Name"],
-        Description["The name of the project, from the manifest.\nDefaults to \"Ambient\"."]
-    ]
-    project_name: String,
 });
 
 pub fn init_all_components() {
     init_components();
-    player::init_components();
     window::init_components();
-    hierarchy::init_components();
     async_ecs::init_components();
     gpu_ecs::init_components();
     camera::init_components();

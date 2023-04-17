@@ -1,13 +1,18 @@
 world bindings {
     import types: pkg.types
 
+    import audio: pkg.audio
+    import asset: pkg.asset
     import component: pkg.component
     import entity: pkg.entity
-    import event: pkg.event
+    import message: pkg.message
+    import player: pkg.player
 
-    import server-player: pkg.server-player
+    import client-message: pkg.client-message
+    import client-player: pkg.client-player
+
     import server-physics: pkg.server-physics
-    import server-asset: pkg.server-asset
+    import server-message: pkg.server-message
 
     export guest: pkg.guest
 }

@@ -7,8 +7,12 @@ default interface server-physics {
         down: bool,
     }
 
-    apply-force: func(entities: list<entity-id>, force: vec3)
-    explode-bomb: func(position: vec3, force: float32, radius: float32, falloff-radius: option<float32>)
+    add-force: func(entity: entity-id, force: vec3)
+    add-impulse: func(entity: entity-id, impulse: vec3)
+    add-radial-impulse: func(position: vec3, impulse: float32, radius: float32, falloff-radius: option<float32>)
+    add-force-at-position: func(entity: entity-id, force: vec3, position: vec3)
+    add-impulse-at-position: func(entity: entity-id, impulse: vec3, position: vec3)
+    get-velocity-at-position: func(entity: entity-id, position: vec3) -> vec3
     set-gravity: func(gravity: vec3)
     unfreeze: func(entity: entity-id)
     freeze: func(entity: entity-id)

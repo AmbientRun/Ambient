@@ -1,12 +1,5 @@
 use ambient_api::prelude::*;
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::layout::space_between_items;
-use ambient_ui_components::{
-    default_theme::STREET,
-    editor::{IntegerSlider, Slider},
-    layout::FlowColumn,
-    FocusRoot, UIExt,
-};
+use ambient_ui_components::prelude::*;
 
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
@@ -53,8 +46,6 @@ fn App(hooks: &mut Hooks) -> Element {
 }
 
 #[main]
-pub async fn main() -> EventResult {
+pub fn main() {
     App.el().spawn_interactive();
-
-    EventOk
 }

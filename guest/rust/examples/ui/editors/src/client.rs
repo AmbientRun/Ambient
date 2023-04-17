@@ -1,15 +1,5 @@
 use ambient_api::prelude::*;
-use ambient_cb::cb;
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::layout::{min_width, space_between_items, width};
-use ambient_ui_components::{
-    default_theme::STREET,
-    editor::{Editor, F32Input, ListEditor, MinimalListEditor, TextEditor},
-    layout::{FlowColumn, FlowRow},
-    select::DropdownSelect,
-    text::Text,
-    FocusRoot, UIExt,
-};
+use ambient_ui_components::prelude::*;
 use indexmap::IndexMap;
 
 #[element_component]
@@ -25,8 +15,8 @@ fn App(hooks: &mut Hooks) -> Element {
     let (list, set_list) = hooks.use_state(vec!["First".to_string(), "Second".to_string()]);
     let (minimal_list, set_minimal_list) =
         hooks.use_state(vec!["First".to_string(), "Second".to_string()]);
-    let row = |name, editor| FlowRow(vec![Text::el(name).with(min_width(), 110.), editor]).el();
-    FocusRoot(vec![FlowColumn(vec![
+    let row = |name, editor| FlowRow::el(vec![Text::el(name).with(min_width(), 110.), editor]);
+    FocusRoot::el([FlowColumn::el([
         row("TextEditor", TextEditor::new(text, set_text).el()),
         row(
             "F32Input",
@@ -74,16 +64,12 @@ fn App(hooks: &mut Hooks) -> Element {
             .el(),
         ),
     ])
-    .el()
     .with(width(), 200.)
     .with(space_between_items(), STREET)
     .with_padding_even(STREET)])
-    .el()
 }
 
 #[main]
-pub async fn main() -> EventResult {
+pub fn main() {
     App.el().spawn_interactive();
-
-    EventOk
 }

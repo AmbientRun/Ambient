@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use serde::Deserialize;
 
-use crate::{Component, Concept, Identifier, IdentifierPathBuf, Version};
+use crate::{Component, Concept, Identifier, IdentifierPathBuf, Message, Version};
 
 #[derive(Deserialize, Clone, Debug, PartialEq)]
 pub struct Manifest {
@@ -13,6 +13,8 @@ pub struct Manifest {
     pub components: BTreeMap<IdentifierPathBuf, NamespaceOr<Component>>,
     #[serde(default)]
     pub concepts: BTreeMap<IdentifierPathBuf, NamespaceOr<Concept>>,
+    #[serde(default)]
+    pub messages: BTreeMap<IdentifierPathBuf, NamespaceOr<Message>>,
 }
 impl Manifest {
     pub fn parse(manifest: &str) -> Result<Self, toml::de::Error> {
@@ -170,6 +172,7 @@ mod tests {
                     }
                     .into()
                 )]),
+                messages: BTreeMap::new(),
             })
         )
     }
@@ -204,6 +207,7 @@ mod tests {
                 },
                 components: BTreeMap::new(),
                 concepts: BTreeMap::new(),
+                messages: BTreeMap::new(),
             })
         )
     }
@@ -269,6 +273,7 @@ mod tests {
                     )
                 ]),
                 concepts: BTreeMap::new(),
+                messages: BTreeMap::new(),
             })
         )
     }
@@ -402,6 +407,7 @@ mod tests {
                         .into()
                     )
                 ]),
+                messages: BTreeMap::new(),
             })
         )
     }

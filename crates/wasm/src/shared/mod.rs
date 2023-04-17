@@ -1,70 +1,78 @@
 pub(crate) mod bindings;
-mod borrowed_types;
+pub(crate) mod implementation;
+
+mod module;
+
 pub mod build;
 pub mod conversion;
 pub mod host_guest_state;
-pub(crate) mod implementation;
-mod module;
+pub mod message;
 pub mod wit;
 
 use std::sync::Arc;
 
+use ambient_core::async_ecs::async_run;
 use ambient_ecs::{
-    components, dont_despawn_on_unload, query, world_events, ComponentEntry, Debuggable,
-    Description, Entity, EntityId, FnSystem, Networked, Resource, Store, SystemGroup, World,
-    WorldEventReader,
+    dont_despawn_on_unload, generated::messages, query, world_events, Entity, EntityId, FnSystem,
+    Message, SystemGroup, World, WorldEventReader,
 };
-use ambient_physics::{collider_loads, collisions, PxShapeUserData};
+use ambient_physics::{collider_loads, collisions};
 use ambient_project::Identifier;
 use itertools::Itertools;
 pub use module::*;
-use physxx::{PxRigidActor, PxRigidActorRef, PxUserData};
 
-components!("wasm::shared", {
-    @[Networked, Store, Debuggable]
-    module: (),
-    module_state: ModuleState,
-    @[Store, Description["Bytecode of a WASM component; if attached, will be run."]]
-    module_bytecode: ModuleBytecode,
-    @[Networked, Store, Debuggable, Description["Asset URL for the bytecode of a clientside WASM component."]]
-    client_bytecode_from_url: String,
-    @[Networked, Store, Debuggable]
-    module_enabled: bool,
-    @[Networked, Store, Debuggable]
-    module_errors: ModuleErrors,
+mod internal {
+    use std::sync::Arc;
 
-    @[Resource, Description["Used to signal messages from the WASM host/runtime."]]
-    messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
-    @[Resource]
-    module_state_maker: Arc<dyn Fn(ModuleStateArgs<'_>) -> anyhow::Result<ModuleState> + Sync + Send>,
-});
+    use ambient_ecs::{
+        components, Debuggable, Description, EntityId, Networked, Resource, Store, World,
+    };
+
+    use super::{MessageType, ModuleBytecode, ModuleErrors, ModuleState, ModuleStateArgs};
+
+    components!("wasm::shared", {
+        @[Networked, Store, Debuggable]
+        module: (),
+        module_state: ModuleState,
+        @[Store, Description["Bytecode of a WASM component; if attached, will be run."]]
+        module_bytecode: ModuleBytecode,
+        @[Networked, Store, Debuggable, Description["Asset URL for the bytecode of a clientside WASM component."]]
+        client_bytecode_from_url: String,
+        @[Networked, Store, Debuggable]
+        module_enabled: bool,
+        @[Networked, Store, Debuggable]
+        module_errors: ModuleErrors,
+        @[Networked, Debuggable, Description["The ID of the module on the \"other side\" of this module, if available. (e.g. serverside module to clientside module)."]]
+        remote_paired_id: EntityId,
+
+        @[Resource, Description["Used to signal messages from the WASM host/runtime."]]
+        messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
+        @[Resource]
+        module_state_maker: Arc<dyn Fn(ModuleStateArgs<'_>) -> anyhow::Result<ModuleState> + Sync + Send>,
+    });
+}
+pub use internal::{
+    client_bytecode_from_url, messenger, module, module_bytecode, module_enabled, module_errors,
+    module_state, module_state_maker, remote_paired_id,
+};
+
+use self::message::Source;
+use crate::shared::message::RuntimeMessageExt;
+
+pub fn init_all_components() {
+    internal::init_components();
+    message::init_components();
+}
 
 pub const MAXIMUM_ERROR_COUNT: usize = 5;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum MessageType {
     Info,
+    Warn,
     Error,
     Stdout,
     Stderr,
-}
-
-#[derive(Debug, Clone)]
-pub struct RunContext {
-    pub event_name: String,
-    pub event_data: Entity,
-    pub time: f32,
-}
-impl RunContext {
-    pub fn new(world: &World, event_name: &str, event_data: Entity) -> Self {
-        let time = ambient_app::get_time_since_app_start(world).as_secs_f32();
-
-        Self {
-            event_name: event_name.to_string(),
-            event_data,
-            time,
-        }
-    }
 }
 
 pub fn systems() -> SystemGroup {
@@ -98,13 +106,23 @@ pub fn systems() -> SystemGroup {
                     .collect_vec();
 
                 for (name, data) in events {
-                    run_all(world, &RunContext::new(world, &name, data));
+                    message::run(
+                        world,
+                        message::SerializedMessage {
+                            module_id: None,
+                            source: message::Source::Runtime,
+                            name,
+                            data,
+                        },
+                    );
                 }
             })),
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("WASM module frame event");
                 // trigger frame event
-                run_all(world, &RunContext::new(world, "core/frame", Entity::new()));
+                ambient_ecs::generated::messages::Frame::new()
+                    .run(world, None)
+                    .unwrap();
             })),
             Box::new(FnSystem::new(move |world, _| {
                 profiling::scope!("WASM module collision event");
@@ -114,27 +132,9 @@ pub fn systems() -> SystemGroup {
                     None => return,
                 };
                 for (a, b) in collisions.into_iter() {
-                    let select_entity = |px: PxRigidActorRef| {
-                        px.get_shapes()
-                            .into_iter()
-                            .next()
-                            .and_then(|shape| shape.get_user_data::<PxShapeUserData>())
-                            .map(|ud| ud.entity)
-                    };
-
-                    let ids = [select_entity(a), select_entity(b)]
-                        .into_iter()
-                        .flatten()
-                        .collect_vec();
-
-                    run_all(
-                        world,
-                        &RunContext::new(
-                            world,
-                            "core/collision",
-                            vec![ComponentEntry::new(ambient_ecs::ids(), ids)].into(),
-                        ),
-                    );
+                    ambient_ecs::generated::messages::Collision::new(vec![a, b])
+                        .run(world, None)
+                        .unwrap();
                 }
             })),
             Box::new(FnSystem::new(move |world, _| {
@@ -144,15 +144,23 @@ pub fn systems() -> SystemGroup {
                     Some(collider_loads) => collider_loads.clone(),
                     None => return,
                 };
-                for id in collider_loads {
-                    run_all(
-                        world,
-                        &RunContext::new(
-                            world,
-                            "core/collider_load",
-                            vec![ComponentEntry::new(ambient_ecs::id(), id)].into(),
-                        ),
-                    );
+
+                if collider_loads.is_empty() {
+                    return;
+                }
+
+                ambient_ecs::generated::messages::ColliderLoads::new(collider_loads)
+                    .run(world, None)
+                    .unwrap();
+            })),
+            Box::new(FnSystem::new(move |world, _| {
+                profiling::scope!("WASM module pending messages");
+
+                let pending_messages =
+                    std::mem::take(world.resource_mut(message::pending_messages()));
+
+                for message in pending_messages {
+                    message::run(world, message);
                 }
             })),
         ],
@@ -162,13 +170,14 @@ pub fn systems() -> SystemGroup {
 pub fn initialize<Bindings: bindings::BindingsBound + 'static>(
     world: &mut World,
     messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
-    bindings: Bindings,
+    bindings: fn(EntityId) -> Bindings,
 ) -> anyhow::Result<()> {
     world.add_resource(self::messenger(), messenger);
     world.add_resource(
         self::module_state_maker(),
         ModuleState::create_state_maker(bindings),
     );
+    world.add_resource(message::pending_messages(), vec![]);
 
     Ok(())
 }
@@ -184,83 +193,119 @@ pub(crate) fn reload_all(world: &mut World) {
     }
 }
 
-pub fn run_all(world: &mut World, context: &RunContext) {
-    let errors: Vec<(EntityId, String)> = query(module_state())
-        .collect_cloned(world, None)
-        .into_iter()
-        .flat_map(|(id, sms)| run(world, id, sms, context))
-        .collect();
-
-    update_errors(world, &errors);
-}
-
 fn reload(world: &mut World, module_id: EntityId, bytecode: Option<ModuleBytecode>) {
-    let mut errors = unload(world, module_id, "reloading");
+    unload(world, module_id, "reloading");
 
     if let Some(bytecode) = bytecode {
         if !bytecode.0.is_empty() {
-            load(world, module_id, &bytecode.0, &mut errors);
+            load(world, module_id, &bytecode.0);
         }
     }
-
-    update_errors(world, &errors);
 }
 
-#[allow(clippy::too_many_arguments)]
-fn load(
-    world: &mut World,
-    module_id: EntityId,
-    component_bytecode: &[u8],
-    errors: &mut Vec<(EntityId, String)>,
-) {
+fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
     let messenger = world.resource(messenger()).clone();
     let module_state_maker = world.resource(module_state_maker()).clone();
-    let result = run_and_catch_panics(|| {
-        module_state_maker(module::ModuleStateArgs {
-            component_bytecode,
-            stdout_output: Box::new({
-                let messenger = messenger.clone();
-                move |world, msg| {
-                    messenger(world, module_id, MessageType::Stdout, msg);
+
+    let async_run = world.resource(async_run()).clone();
+    let component_bytecode = component_bytecode.to_vec();
+
+    // Spawn the module on another thread to ensure that it does not block the main thread during compilation.
+    std::thread::spawn(move || {
+        let result = run_and_catch_panics(|| {
+            module_state_maker(module::ModuleStateArgs {
+                component_bytecode: &component_bytecode,
+                stdout_output: Box::new({
+                    let messenger = messenger.clone();
+                    move |world, msg| {
+                        messenger(world, module_id, MessageType::Stdout, msg);
+                    }
+                }),
+                stderr_output: Box::new(move |world, msg| {
+                    messenger(world, module_id, MessageType::Stderr, msg);
+                }),
+                id: module_id,
+            })
+        });
+
+        async_run.run(move |world| {
+            match result {
+                Ok(mut sms) => {
+                    // Subscribe the module to messages that it should be aware of.
+                    let autosubscribe_messages =
+                        [messages::Frame::id(), messages::ModuleLoad::id()];
+                    for id in autosubscribe_messages {
+                        sms.listen_to_message(id.to_string());
+                    }
+
+                    world.add_component(module_id, module_state(), sms).unwrap();
+
+                    // Run the initial startup event.
+                    messages::ModuleLoad::new()
+                        .run(world, Some(module_id))
+                        .unwrap();
                 }
-            }),
-            stderr_output: Box::new(move |world, msg| {
-                messenger(world, module_id, MessageType::Stderr, msg);
-            }),
-        })
+                Err(err) => update_errors(world, &[(module_id, err)]),
+            }
+        });
     });
+}
 
-    match result {
-        Ok(sms) => {
-            // Run the initial startup event.
-            errors.extend(run(
-                world,
-                module_id,
-                sms.clone(),
-                &RunContext::new(world, "core/module_load", Entity::new()),
-            ));
+fn update_errors(world: &mut World, errors: &[(EntityId, String)]) {
+    let messenger = world.resource(messenger()).clone();
+    for (id, err) in errors {
+        messenger(
+            world,
+            *id,
+            MessageType::Error,
+            &format!("Runtime error: {}", err),
+        );
 
-            world.add_component(module_id, module_state(), sms).unwrap();
+        if let Ok(module_errors) = world.get_mut(*id, module_errors()) {
+            let error_stream = &mut module_errors.0;
+
+            error_stream.push(err.clone());
+            if error_stream.len() > MAXIMUM_ERROR_COUNT {
+                unload(world, *id, "too many errors");
+            }
         }
-        Err(err) => errors.push((module_id, err)),
     }
 }
 
-pub(crate) fn unload(
+fn run(
     world: &mut World,
-    module_id: EntityId,
-    reason: &str,
-) -> Vec<(EntityId, String)> {
-    let Ok(sms) = world.get_cloned(module_id, module_state()) else { return vec![]; };
+    id: EntityId,
+    mut state: ModuleState,
+    message_source: &Source,
+    message_name: &str,
+    message_data: &[u8],
+) {
+    profiling::scope!(
+        "run",
+        format!("{} - {}", get_module_name(world, id), message_name)
+    );
 
-    let errors = run(
-        world,
-        module_id,
-        sms,
-        &RunContext::new(world, "core/module_unload", Entity::new()),
-    )
-    .into_iter()
-    .collect_vec();
+    // If it's not in the subscribed events, skip over it
+    if !state.supports_message(message_name) {
+        return;
+    }
+
+    let result =
+        run_and_catch_panics(|| state.run(world, message_source, message_name, message_data));
+
+    if let Err(message) = result {
+        update_errors(world, &[(id, message)]);
+    }
+}
+
+pub(crate) fn unload(world: &mut World, module_id: EntityId, reason: &str) {
+    if !world.has_component(module_id, module_state()) {
+        return;
+    }
+
+    messages::ModuleUnload::new()
+        .run(world, Some(module_id))
+        .unwrap();
 
     let spawned_entities = world
         .get_mut(module_id, module_state())
@@ -286,54 +331,6 @@ pub(crate) fn unload(
         MessageType::Info,
         &format!("Unloaded (reason: {reason})"),
     );
-
-    errors
-}
-
-pub(crate) fn update_errors(world: &mut World, errors: &[(EntityId, String)]) {
-    let messenger = world.resource(messenger()).clone();
-    for (id, err) in errors {
-        messenger(
-            world,
-            *id,
-            MessageType::Error,
-            &format!("Runtime error: {}", err),
-        );
-
-        if let Ok(module_errors) = world.get_mut(*id, module_errors()) {
-            let error_stream = &mut module_errors.0;
-
-            error_stream.push(err.clone());
-            if error_stream.len() > MAXIMUM_ERROR_COUNT {
-                unload(world, *id, "too many errors");
-            }
-        }
-    }
-}
-
-fn run(
-    world: &mut World,
-    id: EntityId,
-    mut state: ModuleState,
-    context: &RunContext,
-) -> Option<(EntityId, String)> {
-    profiling::scope!(
-        "run",
-        format!("{} - {}", get_module_name(world, id), context.event_name)
-    );
-
-    // If this is not a whitelisted event and it's not in the subscribed events,
-    // skip over it
-    if !["core/module_load", "core/frame"].contains(&context.event_name.as_str())
-        && !state.supports_event(&context.event_name)
-    {
-        return None;
-    }
-
-    let result = run_and_catch_panics(|| state.run(world, context));
-    world.set(id, module_state(), state).ok();
-
-    result.err().map(|err| (id, err))
 }
 
 pub fn spawn_module(
@@ -341,15 +338,14 @@ pub fn spawn_module(
     name: &Identifier,
     description: String,
     enabled: bool,
-) -> anyhow::Result<EntityId> {
-    let ed = Entity::new()
+) -> EntityId {
+    Entity::new()
         .with(ambient_core::name(), name.to_string())
+        .with(ambient_core::description(), description)
         .with_default(module())
         .with(module_enabled(), enabled)
         .with_default(module_errors())
-        .with(ambient_project::description(), description);
-
-    Ok(ed.spawn(world))
+        .spawn(world)
 }
 
 pub fn get_module_name(world: &World, id: EntityId) -> Identifier {

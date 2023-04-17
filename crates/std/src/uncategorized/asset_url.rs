@@ -21,11 +21,21 @@ use crate::{
     Cb,
 };
 
+pub const ASSETS_PROTOCOL_SCHEME: &str = "ambient-assets";
+
 #[derive(Debug, Clone)]
 pub struct ServerBaseUrlKey;
 impl SyncAssetKey<AbsAssetUrl> for ServerBaseUrlKey {
     fn load(&self, _assets: AssetCache) -> AbsAssetUrl {
-        AbsAssetUrl::parse("http://localhost:8999").unwrap()
+        AbsAssetUrl::parse("http://localhost:8999/content/").unwrap()
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct ContentBaseUrlKey;
+impl SyncAssetKey<AbsAssetUrl> for ContentBaseUrlKey {
+    fn load(&self, assets: AssetCache) -> AbsAssetUrl {
+        ServerBaseUrlKey.load(assets)
     }
 }
 
@@ -87,6 +97,11 @@ impl AbsAssetUrl {
             Self(Url::from_directory_path(path).unwrap())
         }
     }
+
+    pub fn from_asset_key(key: impl AsRef<str>) -> Self {
+        Self(Url::parse(&format!("{}:/{}", ASSETS_PROTOCOL_SCHEME, key.as_ref().trim_start_matches('/'))).unwrap())
+    }
+
     pub fn relative_cache_path(&self) -> String {
         self.0.to_string().replace("://", "/").replace(':', "_")
     }
@@ -170,18 +185,28 @@ impl AbsAssetUrl {
         segs.next()?; // discard
         segs.next()
     }
+    fn to_download_url_with_base(&self, base: &Self) -> anyhow::Result<Url> {
+        if self.0.scheme() == ASSETS_PROTOCOL_SCHEME {
+            Ok(base.join(self.0.path().trim_start_matches('/'))?.0)
+        } else {
+            Ok(self.0.clone())
+        }
+    }
+    pub fn to_download_url(&self, assets: &AssetCache) -> anyhow::Result<Url> {
+        self.to_download_url_with_base(&ContentBaseUrlKey.get(assets))
+    }
     pub async fn download_bytes(&self, assets: &AssetCache) -> anyhow::Result<Vec<u8>> {
         if let Some(path) = self.to_file_path()? {
             Ok(ambient_sys::fs::read(path).await.context(format!("Failed to read file at: {:}", self.0))?)
         } else {
-            Ok(download(assets, self.0.clone(), |resp| async { Ok(resp.bytes().await?) }).await?.to_vec())
+            Ok(download(assets, self.to_download_url(assets)?, |resp| async { Ok(resp.bytes().await?) }).await?.to_vec())
         }
     }
     pub async fn download_string(&self, assets: &AssetCache) -> anyhow::Result<String> {
         if let Some(path) = self.to_file_path()? {
             Ok(ambient_sys::fs::read_to_string(path).await.context(format!("Failed to read file at: {:}", self.0))?)
         } else {
-            Ok(download(assets, self.0.clone(), |resp| async { Ok(resp.text().await?) }).await?)
+            Ok(download(assets, self.to_download_url(assets)?, |resp| async { Ok(resp.text().await?) }).await?)
         }
     }
     pub async fn download_json<T: 'static + Send + DeserializeOwned>(&self, assets: &AssetCache) -> anyhow::Result<T> {
@@ -189,7 +214,7 @@ impl AbsAssetUrl {
             let content: Vec<u8> = ambient_sys::fs::read(path).await.context(format!("Failed to read file at: {:}", self.0))?;
             Ok(serde_json::from_slice(&content)?)
         } else {
-            Ok(download(assets, self.0.clone(), |resp| async { Ok(resp.json::<T>().await?) }).await?)
+            Ok(download(assets, self.to_download_url(assets)?, |resp| async { Ok(resp.json::<T>().await?) }).await?)
         }
     }
     pub async fn download_toml<T: DeserializeOwned>(&self, assets: &AssetCache) -> anyhow::Result<T> {
@@ -220,6 +245,21 @@ fn test_abs_asset_url() {
     assert_eq!(AbsAssetUrl::parse("http://t.c/hello/").unwrap().as_file().to_string(), "http://t.c/hello");
 
     assert_eq!(AbsAssetUrl::parse("http://t.c/a/b/c.png").unwrap().last_dir_name(), Some("b"));
+}
+
+#[test]
+fn test_abs_asset_url_join() {
+    assert_eq!(AbsAssetUrl::parse("http://t.c/a/b/c.png").unwrap().join("d.png").unwrap().to_string(), "http://t.c/a/b/d.png");
+    assert_eq!(AbsAssetUrl::parse("http://t.c/a/b/c.png/").unwrap().join("d.png").unwrap().to_string(), "http://t.c/a/b/c.png/d.png");
+    assert_eq!(AbsAssetUrl::parse(format!("{}:/a/b/c.png", ASSETS_PROTOCOL_SCHEME)).unwrap().join("d.png").unwrap().to_string(), format!("{}:/a/b/d.png", ASSETS_PROTOCOL_SCHEME));
+    assert_eq!(AbsAssetUrl::parse(format!("{}:/a/b/c.png/", ASSETS_PROTOCOL_SCHEME)).unwrap().join("d.png").unwrap().to_string(), format!("{}:/a/b/c.png/d.png", ASSETS_PROTOCOL_SCHEME));
+}
+
+#[test]
+fn test_abs_asset_url_to_download_url() {
+    let base_url = AbsAssetUrl::parse("http://t.c/content/").unwrap();
+    assert_eq!(AbsAssetUrl::parse(format!("{}:/a/b/c.png", ASSETS_PROTOCOL_SCHEME)).unwrap().to_download_url_with_base(&base_url).unwrap().to_string(), "http://t.c/content/a/b/c.png");
+    assert_eq!(AbsAssetUrl::parse("http://t.c/content/a/b/c.png").unwrap().to_download_url_with_base(&base_url).unwrap().to_string(), "http://t.c/content/a/b/c.png");
 }
 
 /// This is either an absolute url (which can also be an absolute file:// url),
@@ -260,7 +300,7 @@ impl AssetUrl {
     }
     pub fn join(&self, path: impl AsRef<str>) -> Result<Self, url::ParseError> {
         match self {
-            AssetUrl::Absolute(url) => Ok(Self::Absolute(AbsAssetUrl(url.0.join(path.as_ref())?))),
+            AssetUrl::Absolute(url) => Ok(Self::Absolute(url.join(path)?)),
             AssetUrl::Relative(p) => Ok(Self::Relative(
                 // The Url::join method has some intricacies so we want these to behave the same
                 Url::parse(&format!("http://localhost/{}", p.as_str())).unwrap().join(path.as_ref())?.path()[1..].into(),

@@ -1,13 +1,18 @@
 pub use crate::{
     asset,
     ecs::{change_query, despawn_query, query, spawn_query, Component, Entity, QueryEvent},
-    entity, event,
+    entity,
     global::*,
-    main, player,
+    main, message,
+    message::{Message, ModuleMessage, RuntimeMessage},
+    player,
 };
 pub use anyhow::{anyhow, Context as AnyhowContext};
 pub use glam;
 pub use rand::prelude::*;
+
+#[cfg(feature = "client")]
+pub use crate::audio;
 
 #[cfg(feature = "server")]
 pub use crate::physics;

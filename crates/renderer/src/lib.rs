@@ -1,25 +1,16 @@
 use std::{f32::consts::PI, fmt::Debug, sync::Arc};
 
 use ambient_core::{
-    asset_cache,
-    async_ecs::async_run,
-    gpu_components,
-    gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldShaderModuleKey, GpuWorldSyncEvent},
-    mesh, runtime,
-    transform::get_world_rotation,
+    asset_cache, async_ecs::async_run, gpu_components, gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldShaderModuleKey, GpuWorldSyncEvent}, mesh, runtime, transform::get_world_rotation
 };
-use ambient_ecs::{
-    components, query_mut, Debuggable, Description, Entity, EntityId, MakeDefault, Name, Networked, Resource, Store, SystemGroup, World,
-};
+use ambient_ecs::{components, query_mut, Debuggable, Entity, EntityId, Resource, SystemGroup, World};
 use ambient_gpu::{
-    mesh_buffer::GpuMesh,
-    shader_module::{BindGroupDesc, Shader, ShaderIdent, ShaderModule},
-    wgsl_utils::wgsl_interpolate,
+    mesh_buffer::GpuMesh, shader_module::{BindGroupDesc, Shader, ShaderIdent, ShaderModule}, wgsl_utils::wgsl_interpolate
 };
 use ambient_std::{asset_cache::*, asset_url::AbsAssetUrl, cb, include_file, Cb};
 use derive_more::*;
 use downcast_rs::{impl_downcast, DowncastSync};
-use glam::{uvec4, UVec2, UVec4, Vec3, Vec4};
+use glam::{uvec4, UVec2, UVec4, Vec3};
 use serde::{Deserialize, Serialize};
 
 pub mod bind_groups;
@@ -54,6 +45,10 @@ pub use tree_renderer::*;
 
 pub const MAX_PRIMITIVE_COUNT: usize = 16;
 
+pub use ambient_ecs::generated::components::core::rendering::{
+    cast_shadows, color, double_sided, fog_color, fog_density, fog_height_falloff, light_ambient, light_diffuse, overlay, pbr_material_from_url, sun, transparency_group
+};
+
 components!("rendering", {
     @[Debuggable]
     primitives: Vec<RenderPrimitive>,
@@ -64,80 +59,8 @@ components!("rendering", {
 
     renderer_shader: RendererShaderProducer,
     material: SharedMaterial,
-    @[
-        MakeDefault, Debuggable, Networked, Store,
-        Name["PBR material from URL"],
-        Description["Load a PBR material from the URL and attach it to this entity."]
-    ]
-    pbr_material_from_url: String,
     @[Resource]
     renderer_stats: String,
-    @[
-        MakeDefault, Debuggable, Networked, Store,
-        Name["Overlay"],
-        Description["If attached, this entity will be rendered with an overlay."]
-    ]
-    overlay: (),
-    @[
-        MakeDefault, Debuggable, Networked, Store,
-        Name["Color"],
-        Description["This entity will be tinted with the specified color if the color is not black."]
-    ]
-    color: Vec4,
-    @[
-        MakeDefault, Debuggable, Networked, Store,
-        Name["Double-sided"],
-        Description["If this is set, the entity will be rendered with double-sided rendering."]
-    ]
-    double_sided: bool,
-    @[
-        MakeDefault, Debuggable, Networked, Store,
-        Name["Cast shadows"],
-        Description["If attached, this entity will cast shadows."]
-    ]
-    cast_shadows: (),
-    @[
-        Debuggable, Networked, Store,
-        Name["Sun"],
-        Description["Marks this entity as a sun (i.e. its rotation will be used to control the global light direction).\nThe entity with the highest `sun` value takes precedence."]
-    ]
-    sun: f32,
-    @[
-        Debuggable, Networked, Store,
-        Name["Light diffuse"],
-        Description["The diffuse light color of the `sun`."]
-    ]
-    light_diffuse: Vec3,
-    @[
-        Debuggable, Networked, Store,
-        Name["Light ambient"],
-        Description["The ambient light color of the `sun`."]
-    ]
-    light_ambient: Vec3,
-    @[
-        Debuggable, Networked, Store,
-        Name["Fog color"],
-        Description["The color of the fog for this `sun`."]
-    ]
-    fog_color: Vec3,
-    @[
-        Debuggable, Networked, Store,
-        Name["Fog height fall-off"],
-        Description["The height at which the fog will fall off (i.e. stop being visible) for this `sun`."]
-    ]
-    fog_height_falloff: f32,
-    @[
-        Debuggable, Networked, Store,
-        Name["Fog density"],
-        Description["The density of the fog for this `sun`."]
-    ]
-    fog_density: f32,
-    @[
-        Debuggable, Networked, Store,
-        Name["Transparency group"],
-        Description["Controls when this transparent object will be rendered. Transparent objects are sorted by `(transparency_group, z-depth)`."]
-    ]
-    transparency_group: i32,
 });
 gpu_components! {
     color() => color: GpuComponentFormat::Vec4,
@@ -147,7 +70,6 @@ gpu_components! {
 pub fn init_all_components() {
     init_components();
     init_gpu_components();
-    outlines::init_components();
     outlines::init_gpu_components();
     culling::init_gpu_components();
     lod::init_components();
@@ -481,4 +403,8 @@ pub struct DrawIndexedIndirect {
     pub base_index: u32,
     pub vertex_offset: i32,
     pub base_instance: u32,
+}
+
+fn is_transparent(world: &World, id: EntityId, material: &SharedMaterial, shader: &RendererShader) -> bool {
+    world.get(id, transparency_group()).is_ok() || material.transparent().unwrap_or(shader.transparent)
 }

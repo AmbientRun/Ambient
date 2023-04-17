@@ -2,7 +2,7 @@ use ambient_core::async_ecs::async_run;
 use std::sync::Arc;
 
 use ambient_core::{asset_cache, main_scene, mesh, runtime};
-use ambient_ecs::{components, query, Debuggable, Description, Entity, Name, Networked, Store, SystemGroup};
+use ambient_ecs::{components, query, Entity, SystemGroup};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::{BindGroupDesc, ShaderModule},
@@ -24,9 +24,9 @@ use wgpu::BindGroup;
 
 pub(crate) static OLD_CONTENT_SERVER_URL: &str = "https://fra1.digitaloceanspaces.com/dims-content/";
 
+pub use ambient_ecs::generated::components::core::rendering::water;
+
 components!("rendering", {
-    @[Debuggable, Networked, Store, Name["Water"], Description["Add a realistic water plane to this entity."]]
-    water: (),
     water_normals: Arc<Texture>,
 });
 

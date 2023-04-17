@@ -1,18 +1,11 @@
 use std::f32::consts::E;
 
 use ambient_cb::{cb, Cb};
-use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_event_types::{WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION};
+use ambient_element::{to_owned, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
     components::{
-        app::cursor_position,
-        input::{event_mouse_input, event_mouse_motion},
-        layout::{height, space_between_items, width},
-        rect::{background_color, border_radius},
-        transform::{local_to_world, translation},
-    },
-    ecs::EntityId,
-    window::set_cursor,
+        app::cursor_position, layout::{height, space_between_items, width}, rect::{background_color, border_radius}, transform::{local_to_world, translation}
+    }, ecs::EntityId, messages, window::set_cursor
 };
 use ambient_math::{interpolate, interpolate_clamped};
 use ambient_window_types::CursorIcon;
@@ -20,11 +13,7 @@ use glam::{vec3, Vec4};
 
 use super::Editor;
 use crate::{
-    default_theme::{primary_color, STREET},
-    editor::EditorOpts,
-    layout::FlowRow,
-    text::Text,
-    Rectangle, UIBase, UIExt,
+    default_theme::{primary_color, STREET}, editor::EditorOpts, layout::FlowRow, text::Text, Rectangle, UIBase, UIExt
 };
 
 #[derive(Clone, Debug)]
@@ -37,6 +26,20 @@ pub struct Slider {
     pub logarithmic: bool,
     pub round: Option<u32>,
     pub suffix: Option<&'static str>,
+}
+impl Slider {
+    pub fn new(value: f32, on_change: impl Fn(f32) + Sync + Send + 'static) -> Self {
+        Self { value, on_change: Some(cb(on_change)), min: 0., max: 1., width: 100., logarithmic: false, round: None, suffix: None }
+    }
+    #[cfg(feature = "guest")]
+    pub fn new_for_entity_component(hooks: &mut Hooks, entity: EntityId, component: ambient_guest_bridge::ecs::Component<f32>) -> Self {
+        use ambient_guest_bridge::api::entity;
+        let rerender = hooks.use_rerender_signal();
+        Self::new(entity::get_component(entity, component).unwrap_or_default(), move |value| {
+            entity::set_component(entity, component, value);
+            rerender();
+        })
+    }
 }
 
 impl ElementComponent for Slider {
@@ -88,22 +91,25 @@ impl ElementComponent for Slider {
         let block_left_offset = if block_left_offset.is_nan() || block_left_offset.is_infinite() { 0. } else { block_left_offset };
 
         let dragging = hooks.use_ref_with(|_| false);
-        hooks.use_multi_event(&[WINDOW_MOUSE_INPUT, WINDOW_MOUSE_MOTION], {
+        hooks.use_runtime_message::<messages::WindowMouseInput>({
             let dragging = dragging.clone();
-            let block_id = block_id.clone();
-            move |world, event| {
+            move |_, event| {
+                if !event.pressed {
+                    *dragging.lock() = false;
+                }
+            }
+        });
+
+        hooks.use_runtime_message::<messages::WindowMouseMotion>({
+            to_owned![dragging, block_id];
+            move |world, _event| {
                 if let Some(on_change_factor) = &on_change_factor {
-                    if let Some(pressed) = event.get(event_mouse_input()) {
-                        if !pressed {
-                            *dragging.lock() = false;
-                        }
-                    }
-                    if *dragging.lock() && event.get_ref(event_mouse_motion()).is_some() {
+                    if *dragging.lock() {
                         let block_id = *block_id.lock();
                         let (_, _, block_position) = world.get(block_id, local_to_world()).unwrap().to_scale_rotation_translation();
                         let block_width = world.get(block_id, width()).unwrap_or_default();
                         let position = world.resource(cursor_position());
-                        on_change_factor(interpolate_clamped(position.x, block_position.x, block_width, 0., 1.));
+                        on_change_factor(interpolate_clamped(position.x, block_position.x, block_position.x + block_width, 0., 1.));
                     }
                 }
             }

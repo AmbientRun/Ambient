@@ -2,7 +2,6 @@ use ambient_api::{
     components::core::{
         app::main_scene,
         camera::aspect_ratio_from_window,
-        ecs::ids,
         physics::{
             angular_velocity, box_collider, dynamic, linear_velocity, physics_controlled,
             visualizing,
@@ -17,7 +16,7 @@ use ambient_api::{
 };
 
 #[main]
-pub async fn main() -> EventResult {
+pub async fn main() {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
@@ -47,19 +46,17 @@ pub async fn main() -> EventResult {
         .with(prefab_from_url(), asset::url("assets/Shape.glb").unwrap())
         .spawn();
 
-    on(event::COLLISION, |c| {
-        // TODO: play a sound instead
-        println!("Bonk! {:?} collided", c.get(ids()).unwrap());
-        EventOk
+    ambient_api::messages::Collision::subscribe(move |msg| {
+        println!("Bonk! {:?} collided", msg.ids);
+        messages::Bonk::new(cube).send_client_broadcast_reliable();
     });
 
-    on(event::FRAME, move |_| {
+    ambient_api::messages::Frame::subscribe(move |_| {
         for hit in physics::raycast(Vec3::Z * 20., -Vec3::Z) {
             if hit.entity == cube {
                 println!("The raycast hit the cube: {hit:?}");
             }
         }
-        EventOk
     });
 
     loop {

@@ -1,63 +1,51 @@
-use ambient_core::asset_cache;
-use ambient_input::{player_prev_raw_input, player_raw_input};
-use ambient_physics::{helpers::PhysicsObjectCollection, physx::character_controller};
-use ambient_std::{
-    asset_cache::SyncAssetKeyExt,
-    asset_url::{AssetUrl, ServerBaseUrlKey},
-    shapes::Ray,
-};
+use ambient_core::player::{player, user_id};
+use ambient_ecs::{query, EntityId, World};
+use ambient_network::server::player_connection;
+use ambient_physics::physx::character_controller;
+use ambient_std::{shapes::Ray, asset_url::AbsAssetUrl};
 use anyhow::Context;
-use itertools::Itertools;
 use physxx::{PxControllerCollisionFlag, PxControllerFilters};
 
 use super::Bindings;
 use crate::shared::{
     conversion::{FromBindgen, IntoBindgen},
+    implementation::message,
     wit,
 };
 
-impl wit::server_player::Host for Bindings {
-    fn get_raw_input(
-        &mut self,
-        player: wit::types::EntityId,
-    ) -> anyhow::Result<Option<wit::server_player::RawInput>> {
-        Ok(self
-            .world()
-            .get_cloned(player.from_bindgen(), player_raw_input())
-            .ok()
-            .into_bindgen())
-    }
-
-    fn get_prev_raw_input(
-        &mut self,
-        player: wit::types::EntityId,
-    ) -> anyhow::Result<Option<wit::server_player::RawInput>> {
-        Ok(self
-            .world()
-            .get_cloned(player.from_bindgen(), player_prev_raw_input())
-            .ok()
-            .into_bindgen())
-    }
-}
-
 impl wit::server_physics::Host for Bindings {
-    fn apply_force(
+    fn add_force(
         &mut self,
-        entities: Vec<wit::types::EntityId>,
+        entity: wit::types::EntityId,
         force: wit::types::Vec3,
     ) -> anyhow::Result<()> {
-        let collection = PhysicsObjectCollection::from_entities(
+        let _ = ambient_physics::helpers::add_force(
             self.world_mut(),
-            &entities.iter().map(|id| id.from_bindgen()).collect_vec(),
+            entity.from_bindgen(),
+            force.from_bindgen(),
+            Some(physxx::PxForceMode::Force),
         );
-        collection.apply_force(self.world_mut(), |_| force.from_bindgen());
         Ok(())
     }
 
-    fn explode_bomb(
+    fn add_impulse(
+        &mut self,
+        entity: wit::types::EntityId,
+        force: wit::types::Vec3,
+    ) -> anyhow::Result<()> {
+        let _ = ambient_physics::helpers::add_force(
+            self.world_mut(),
+            entity.from_bindgen(),
+            force.from_bindgen(),
+            Some(physxx::PxForceMode::Impulse),
+        );
+        Ok(())
+    }
+
+    fn add_radial_impulse(
         &mut self,
         position: wit::types::Vec3,
-        force: f32,
+        impulse: f32,
         radius: f32,
         falloff_radius: Option<f32>,
     ) -> anyhow::Result<()> {
@@ -67,8 +55,56 @@ impl wit::server_physics::Host for Bindings {
             position,
             radius,
         )
-        .apply_force_explosion(self.world_mut(), position, force, falloff_radius);
+        .add_radial_impulse(self.world_mut(), position, impulse, falloff_radius);
         Ok(())
+    }
+
+    fn add_force_at_position(
+        &mut self,
+        entity: wit::types::EntityId,
+        force: wit::types::Vec3,
+        position: wit::types::Vec3,
+    ) -> anyhow::Result<()> {
+        let _ = ambient_physics::helpers::add_force_at_position(
+            self.world_mut(),
+            entity.from_bindgen(),
+            force.from_bindgen(),
+            position.from_bindgen(),
+            Some(physxx::PxForceMode::Force),
+        );
+        Ok(())
+    }
+
+    fn add_impulse_at_position(
+        &mut self,
+        entity: wit::types::EntityId,
+        force: wit::types::Vec3,
+        position: wit::types::Vec3,
+    ) -> anyhow::Result<()> {
+        let _ = ambient_physics::helpers::add_force_at_position(
+            self.world_mut(),
+            entity.from_bindgen(),
+            force.from_bindgen(),
+            position.from_bindgen(),
+            Some(physxx::PxForceMode::Impulse),
+        );
+        Ok(())
+    }
+
+    fn get_velocity_at_position(
+        &mut self,
+        entity: wit::types::EntityId,
+        position: wit::types::Vec3,
+    ) -> anyhow::Result<wit::types::Vec3> {
+        let mut result = glam::Vec3::default();
+        if let Ok(velocity) = ambient_physics::helpers::get_velocity_at_position(
+            self.world_mut(),
+            entity.from_bindgen(),
+            position.from_bindgen(),
+        ) {
+            result = velocity;
+        }
+        Ok(result.into_bindgen())
     }
 
     fn set_gravity(&mut self, gravity: wit::types::Vec3) -> anyhow::Result<()> {
@@ -181,9 +217,77 @@ impl wit::server_physics::Host for Bindings {
     }
 }
 
-impl wit::server_asset::Host for Bindings {
+impl wit::server_message::Host for Bindings {
+    fn send(
+        &mut self,
+        target: wit::server_message::Target,
+        name: String,
+        data: Vec<u8>,
+    ) -> anyhow::Result<()> {
+        use wit::server_message::Target;
+        let module_id = self.id;
+        let world = self.world_mut();
+
+        match target {
+            Target::ClientBroadcastUnreliable => {
+                send_networked(world, None, module_id, name, data, false)
+            }
+            Target::ClientBroadcastReliable => {
+                send_networked(world, None, module_id, name, data, true)
+            }
+            Target::ClientTargetedUnreliable(user_id) => {
+                send_networked(world, Some(user_id), module_id, name, data, false)
+            }
+            Target::ClientTargetedReliable(user_id) => {
+                send_networked(world, Some(user_id), module_id, name, data, true)
+            }
+            Target::LocalBroadcast => message::send_local(world, module_id, None, name, data),
+            Target::Local(id) => {
+                message::send_local(world, module_id, Some(id.from_bindgen()), name, data)
+            }
+        }
+    }
+}
+
+fn send_networked(
+    world: &World,
+    target_user_id: Option<String>,
+    module_id: EntityId,
+    name: String,
+    data: Vec<u8>,
+    reliable: bool,
+) -> anyhow::Result<()> {
+    let connections: Vec<_> = query((user_id(), player_connection()))
+        .incl(player())
+        .iter(world, None)
+        .filter(|(_, (uid, _))| {
+            target_user_id
+                .as_ref()
+                .map(|tuid| tuid == *uid)
+                .unwrap_or(true)
+        })
+        .map(|(_, (_, connection))| connection.clone())
+        .collect();
+
+    for connection in connections {
+        message::send_networked(world, connection, module_id, &name, &data, reliable)?;
+    }
+
+    Ok(())
+}
+
+impl wit::asset::Host for Bindings {
     fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
-        let base_url = ServerBaseUrlKey.get(self.world().resource(asset_cache()));
-        Ok(Some(AssetUrl::parse(path)?.resolve(&base_url)?.to_string()))
+        Ok(Some(AbsAssetUrl::from_asset_key(path).to_string()))
+    }
+}
+
+impl wit::audio::Host for Bindings {
+    fn load(&mut self, url: String) -> anyhow::Result<()> {
+        crate::shared::implementation::audio::load(self.world_mut(), url)
+    }
+
+    fn play(&mut self, name: String, looping: bool, amp: f32) -> anyhow::Result<()> {
+        crate::shared::implementation::audio::play(self.world_mut(), name, looping, amp)
     }
 }

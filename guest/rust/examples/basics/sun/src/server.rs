@@ -11,7 +11,7 @@ use ambient_api::{
 };
 
 #[main]
-pub async fn main() -> EventResult {
+pub fn main() {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
@@ -56,11 +56,8 @@ pub async fn main() -> EventResult {
         .with(fog_density(), 0.)
         .spawn();
 
-    on(event::FRAME, move |_| {
+    ambient_api::messages::Frame::subscribe(move |_| {
         let rot = entity::get_component(sun, rotation()).unwrap();
         entity::set_component(sun, rotation(), rot * Quat::from_rotation_y(0.01));
-        EventOk
     });
-
-    EventOk
 }

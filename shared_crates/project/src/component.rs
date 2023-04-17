@@ -12,12 +12,13 @@ pub struct Component {
     pub default: Option<toml::Value>,
 }
 
-#[derive(Deserialize, Clone, Debug, PartialEq)]
+#[derive(Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(untagged)]
 pub enum ComponentType {
     String(String),
     ContainerType {
         #[serde(rename = "type")]
+        #[serde(alias = "container_type")]
         type_: String,
         #[serde(skip_serializing_if = "Option::is_none")]
         element_type: Option<String>,

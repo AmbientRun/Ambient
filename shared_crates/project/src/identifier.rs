@@ -1,5 +1,7 @@
 use std::{fmt::Display, ops::Deref};
 
+use proc_macro2::TokenStream;
+use quote::{ToTokens, TokenStreamExt};
 use serde::{Deserialize, Serialize};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -25,6 +27,11 @@ impl<'a> Deref for IdentifierPath<'a> {
 
     fn deref(&self) -> &Self::Target {
         self.0
+    }
+}
+impl<'a> ToTokens for IdentifierPath<'a> {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append_separated(self.0.iter(), quote::quote! {::})
     }
 }
 
@@ -81,6 +88,11 @@ impl FromIterator<Identifier> for IdentifierPathBuf {
         Self(iter.into_iter().collect())
     }
 }
+impl ToTokens for IdentifierPathBuf {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        self.as_path().to_tokens(tokens)
+    }
+}
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Identifier(pub(super) String);
@@ -105,7 +117,7 @@ impl Identifier {
 
         if !id
             .chars()
-            .all(|c| c.is_ascii_lowercase() || c.is_numeric() || c == '_')
+            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_')
         {
             return Err("identifier must be snake-case ASCII");
         }
@@ -139,6 +151,14 @@ impl Display for Identifier {
         f.write_str(&self.0)
     }
 }
+impl ToTokens for Identifier {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(syn::Ident::new(
+            self.as_ref(),
+            proc_macro2::Span::call_site(),
+        ))
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -147,7 +167,6 @@ mod tests {
     #[test]
     fn can_validate_identifiers() {
         use Identifier as I;
-        use IdentifierPathBuf as IP;
 
         assert_eq!(I::new(""), Err("identifier must not be empty"));
         assert_eq!(
@@ -179,6 +198,12 @@ mod tests {
             I::new("cool_component_00"),
             Ok(I("cool_component_00".to_string()))
         );
+    }
+
+    #[test]
+    fn can_validate_identifier_paths() {
+        use Identifier as I;
+        use IdentifierPathBuf as IP;
 
         assert_eq!(
             IP::new("my::cool_component_00"),

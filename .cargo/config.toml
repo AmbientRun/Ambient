@@ -14,3 +14,6 @@ rustflags = [
 [target.'cfg(target_os = "unknown")']
 # This enables native webgpu bindings
 rustflags = ["--cfg=web_sys_unstable_apis"]
+
+[alias]
+campfire = "run --package campfire --"

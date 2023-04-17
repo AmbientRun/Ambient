@@ -1,6 +1,13 @@
 default interface guest {
-    use pkg.component.{entity}
+    use pkg.types.{entity-id}
+
+    variant source {
+        runtime,
+        local(entity-id),
+        server,
+        client(string),
+    }
 
     init: func()
-    exec: func(time: float32, event-name: string, event-data: entity)
+    exec: func(time: float32, message-source: source, message-name: string, message-data: list<u8>)
 }

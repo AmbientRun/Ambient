@@ -10,7 +10,7 @@ use ambient_api::{
 };
 
 #[main]
-pub async fn main() -> EventResult {
+pub async fn main() {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
@@ -26,15 +26,11 @@ pub async fn main() -> EventResult {
         .spawn();
     entity::wait_for_component(cube_id, spawned()).await;
 
-    on(event::FRAME, move |_| {
+    ambient_api::messages::Frame::subscribe(move |_| {
         entity::set_component(
             cube_id,
             rotation(),
             Quat::from_axis_angle(Vec3::X, time().sin()),
         );
-
-        EventOk
     });
-
-    EventOk
 }

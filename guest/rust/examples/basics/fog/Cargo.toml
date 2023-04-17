@@ -3,16 +3,17 @@ name = "fog"
 
 edition = "2021"
 publish = false
-rust-version = { workspace = true }
-version = { workspace = true }
+rust-version = {workspace = true}
+version = {workspace = true}
 
 [dependencies]
-ambient_api = { workspace = true }
+ambient_api = {workspace = true}
+ambient_ui_components = {workspace = true}
 
 [[bin]]
-name = "fog_server"
-path = "src/server.rs"
-required-features = ["server"]
+name = "client_fog"
+path = "src/client.rs"
+required-features = ["client"]
 
 [features]
 client = ["ambient_api/client"]

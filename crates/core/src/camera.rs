@@ -1,7 +1,4 @@
-use ambient_ecs::{
-    components, query, query_mut, Component, Concept, Debuggable, Description, ECSError, Entity, EntityId, Name, Networked, RefConcept,
-    Store, SystemGroup, World,
-};
+use ambient_ecs::{components, query, query_mut, Component, ECSError, Entity, EntityId, SystemGroup, World};
 use ambient_std::{
     math::Line,
     shapes::{BoundingBox, Plane, Ray, AABB},
@@ -9,6 +6,12 @@ use ambient_std::{
 use glam::{vec3, Mat4, Vec2, Vec3, Vec3Swizzles};
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
+
+pub use ambient_ecs::generated::components::core::camera::{
+    active_camera, aspect_ratio, aspect_ratio_from_window, far, fog, fovy, near, orthographic, orthographic_bottom,
+    orthographic_from_window, orthographic_left, orthographic_right, orthographic_top, perspective, perspective_infinite_reverse,
+    projection, projection_view, shadows_far,
+};
 
 use crate::{
     transform::{inv_local_to_world, local_to_world},
@@ -26,181 +29,7 @@ pub struct OrthographicRect {
 components!("camera", {
     // Orthographic
     orthographic_rect: OrthographicRect,
-    @[
-        Networked, Store, Debuggable,
-        Name["Orthographic projection"],
-        Description["If attached, this camera will use a standard orthographic projection matrix.\nEnsure that the `orthographic_` components are set, including `left`, right`, `top` and `bottom`, as well as `near` and `far`."]
-    ]
-    orthographic: (),
-    @[
-        Networked, Store, Debuggable,
-        Name["Orthographic left"],
-        Description["The left bound for this `orthographic` camera."]
-    ]
-    orthographic_left: f32,
-    @[
-        Networked, Store, Debuggable,
-        Name["Orthographic right"],
-        Description["The right bound for this `orthographic` camera."]
-    ]
-    orthographic_right: f32,
-    @[
-        Networked, Store, Debuggable,
-        Name["Orthographic top"],
-        Description["The top bound for this `orthographic` camera."]
-    ]
-    orthographic_top: f32,
-    @[
-        Networked, Store, Debuggable,
-        Name["Orthographic bottom"],
-        Description["The bottom bound for this `orthographic` camera."]
-    ]
-    orthographic_bottom: f32,
-    @[
-        Networked, Store, Debuggable,
-        Name["Orthographic from window"],
-        Description["The bounds of this orthographic camera will be updated to match the window automatically. Should point to an entity with a `window_logical_size` component."]
-    ]
-    orthographic_from_window: EntityId,
-
-
-    // Perspective
-    @[
-        Networked, Store, Debuggable,
-        Name["Perspective-infinite-reverse projection"],
-        Description["If attached, this camera will use a perspective-infinite-reverse projection matrix.\nThis is well-suited for rendering large worlds as it has no far plane. Ensure `near` is set."]
-    ]
-    perspective_infinite_reverse: (),
-    @[
-        Networked, Store, Debuggable,
-        Name["Perspective projection"],
-        Description["If attached, this camera will use a standard perspective projection matrix.\nEnsure that `near` and `far` are set."]
-    ]
-    perspective: (),
-
-    // Properties
-    @[
-        Networked, Store, Debuggable,
-        Name["Near plane"],
-        Description["The near plane of this camera, measured in meters."]
-    ]
-    near: f32,
-    @[
-        Networked, Store, Debuggable,
-        Name["Far plane"],
-        Description["The far plane of this camera, measured in meters."]
-    ]
-    far: f32,
-    @[
-        Networked, Store, Debuggable,
-        Name["Field of View Y"],
-        Description["The field of view of this camera in the Y/vertical direction, measured in radians."]
-    ]
-    fovy: f32,
-    @[
-        Networked, Store, Debuggable,
-        Name["Aspect ratio"],
-        Description["The aspect ratio of this camera.\nIf `aspect_ratio_from_window` is set, this will be automatically updated to match the window."]
-    ]
-    aspect_ratio: f32,
-    @[
-        Networked, Store, Debuggable,
-        Name["Aspect ratio from window"],
-        Description["If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window. Should point to an entity with a `window_physical_size` component."]
-    ]
-    aspect_ratio_from_window: EntityId,
-    @[
-        Networked, Store, Debuggable,
-        Name["Projection"],
-        Description["The projection matrix of this camera.\nThis can be driven by other components, including `perspective` and `perspective_infinite_reverse`."]
-    ]
-    projection: glam::Mat4,
-    @[
-        Networked, Store, Debuggable,
-        Name["Projection-view"],
-        Description["The composition of the projection and view (inverse-local-to-world) matrices."]
-    ]
-    projection_view: glam::Mat4,
-    @[
-        Networked, Store, Debuggable,
-        Name["Active camera"],
-        Description["The camera with the highest `active_camera` value will be used for rendering. Cameras are also filtered by the `user_id`.\nIf there's no `user_id`, the camera is considered global and potentially applies to all users (if its `active_camera` value is high enough)."]
-    ]
-    active_camera: f32,
-    @[
-        Networked, Store, Debuggable,
-        Name["Fog"],
-        Description["If attached, this camera will see/render fog."]
-    ]
-    fog: (),
-
-    // Shadows
-    @[
-        Networked, Store, Debuggable,
-        Name["Shadows far plane"],
-        Description["The far plane for the shadow camera, measured in meters."]
-    ]
-    shadows_far: f32,
 });
-
-pub fn concepts() -> Vec<Concept> {
-    vec![
-        RefConcept {
-            id: "camera",
-            name: "Camera",
-            description: "Base components for a camera. You will need other components to make a fully-functioning camera.",
-            extends: &["transformable"],
-            data: Entity::new()
-                .with(projection(), glam::Mat4::IDENTITY)
-                .with(projection_view(), glam::Mat4::IDENTITY)
-                .with(near(), 0.1)
-                .with_default(local_to_world())
-                .with_default(inv_local_to_world())
-                .with(active_camera(), 0.),
-        }
-        .to_owned(),
-        RefConcept {
-            id: "perspective_common_camera",
-            name: "Perspective Common Camera",
-            description:
-                "Base components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.",
-            extends: &["camera"],
-            data: Entity::new().with(aspect_ratio(), 1.0).with(fovy(), 1.0),
-        }
-        .to_owned(),
-        RefConcept {
-            id: "perspective_camera",
-            name: "Perspective Camera",
-            description: "A perspective camera.",
-            extends: &["perspective_common_camera"],
-            data: Entity::new().with(perspective(), ()).with(far(), 1_000.0),
-        }
-        .to_owned(),
-        RefConcept {
-            id: "perspective_infinite_reverse_camera",
-            name: "Perspective-Infinite-Reverse Camera",
-            description: "A perspective-infinite-reverse camera. This is recommended for most use-cases.",
-            extends: &["perspective_common_camera"],
-            data: Entity::new().with(perspective_infinite_reverse(), ()),
-        }
-        .to_owned(),
-        RefConcept {
-            id: "orthographic_camera",
-            name: "Orthographic Camera",
-            description: "An orthographic camera.",
-            extends: &["camera"],
-            data: Entity::new()
-                .with(orthographic(), ())
-                .with(orthographic_left(), -1.0)
-                .with(orthographic_right(), 1.0)
-                .with(orthographic_top(), 1.0)
-                .with(orthographic_bottom(), -1.0)
-                .with(near(), -1.)
-                .with(far(), 1.0),
-        }
-        .to_owned(),
-    ]
-}
 
 pub fn camera_systems() -> SystemGroup {
     SystemGroup::new(

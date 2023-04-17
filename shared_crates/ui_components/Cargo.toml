@@ -15,7 +15,7 @@ ambient_color = { path = "../../libs/color" }
 ambient_math = { path = "../../libs/math" }
 ambient_time = { path = "../../libs/time" }
 ambient_window_types = { path = "../window_types" }
-ambient_event_types = { path = "../event_types" }
+ambient_shared_types = { path = "../shared_types" }
 
 # Host only
 ambient_sys = { path = "../../crates/sys", optional = true }
@@ -27,10 +27,9 @@ parking_lot = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 rand = { workspace = true }
-closure = { workspace = true }
 indexmap = { workspace = true }
 convert_case = { workspace = true }
 
 [features]
-native = ["ambient_window_types/native", "ambient_sys"]
-guest = ["ambient_guest_bridge/guest"]
+native = ["ambient_element/native", "ambient_window_types/native", "ambient_sys"]
+guest = ["ambient_element/guest","ambient_guest_bridge/guest"]

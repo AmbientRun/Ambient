@@ -6,13 +6,12 @@ use ambient_core::{
     window::get_mouse_clip_space_position,
 };
 use ambient_decals::DecalShaderKey;
-use ambient_ecs::{query, ArchetypeFilter};
+use ambient_ecs::{generated::messages, query, ArchetypeFilter};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::{BindGroupDesc, ShaderModule},
 };
-use ambient_input::{event_mouse_input, mouse_button};
 use ambient_intent::client_push_intent;
 use ambient_network::client::GameClient;
 use ambient_physics::{
@@ -38,7 +37,6 @@ use glam::{vec3, Vec3, Vec3Swizzles, Vec4};
 use wgpu::{util::DeviceExt, BindGroup};
 
 use super::EditorPlayerInputHandler;
-use ambient_event_types::WINDOW_MOUSE_INPUT;
 
 #[derive(Clone, Debug)]
 pub struct TerrainRaycastPicker {
@@ -90,13 +88,11 @@ impl ElementComponent for TerrainRaycastPicker {
                 game_state.lock().world.despawn(new_vis_brush_id);
             })
         });
-        hooks.use_event(WINDOW_MOUSE_INPUT, {
+        hooks.use_runtime_message::<messages::WindowMouseInput>({
             let set_mousedown = set_mousedown.clone();
             move |_world, event| {
-                if let Some(pressed) = event.get(event_mouse_input()) {
-                    if !pressed && MouseButton::from(event.get(mouse_button()).unwrap()) == action_button {
-                        set_mousedown(None);
-                    }
+                if !event.pressed && MouseButton::from(event.button) == action_button {
+                    set_mousedown(None);
                 }
             }
         });
@@ -166,7 +162,7 @@ impl ElementComponent for TerrainRaycastPicker {
             .on_mouse_enter(closure!(clone set_mouseover, |_, _| { set_mouseover(true) }))
             .on_mouse_leave(closure!(clone set_mouseover, |_, _| { set_mouseover(false); }))
             .on_mouse_down(closure!(clone set_mousedown, |_, _, button| {
-                if mouseover && button == action_button.into() {
+                if mouseover && button == action_button {
                     set_mousedown(Some(target_position.unwrap_or_default()));
                 }
             }))

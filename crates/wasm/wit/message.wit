@@ -1,0 +1,5 @@
+default interface event {
+    use pkg.component.{entity}
+
+    subscribe: func(name: string)
+}

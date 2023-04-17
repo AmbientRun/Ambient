@@ -1,17 +1,13 @@
 use ambient_cb::{cb, Cb};
 use ambient_element::{
-    define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent, ElementComponentExt, Hooks,
+    define_el_function_for_vec_element_newtype, element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks
 };
-use ambient_event_types::WINDOW_MOUSE_INPUT;
-use ambient_guest_bridge::components::{
-    app::{ui_scene, window_logical_size, window_physical_size},
-    input::event_mouse_input,
-    layout::{
-        gpu_ui_size, height, margin_bottom, margin_left, margin_right, margin_top, mesh_to_local_from_size, padding_bottom, padding_left,
-        padding_right, padding_top, width,
-    },
-    rect::{background_color, rect},
-    transform::{local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation},
+use ambient_guest_bridge::{
+    components::{
+        app::{ui_scene, window_logical_size, window_physical_size}, layout::{
+            gpu_ui_size, height, margin_bottom, margin_left, margin_right, margin_top, mesh_to_local_from_size, padding_bottom, padding_left, padding_right, padding_top, width
+        }, rect::{background_color, rect}, transform::{local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation}
+    }, messages
 };
 use clickarea::ClickArea;
 use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
@@ -22,6 +18,7 @@ pub mod default_theme;
 pub mod dropdown;
 pub mod editor;
 pub mod layout;
+pub mod prelude;
 pub mod prompt;
 pub mod screens;
 pub mod scroll_area;
@@ -41,8 +38,8 @@ pub fn UIBase(_: &mut Hooks) -> Element {
         .init(height(), 0.)
 }
 
-/// This only exists so that we can implement From<String> for Text, and then use it in
-/// for instance Button
+/// This only exists so that we can implement `From<String>` for [Text](text::Text), and then use it in
+/// for instance [Button](button::Button)
 pub struct UIElement(pub Element);
 impl From<Element> for UIElement {
     fn from(el: Element) -> Self {
@@ -136,13 +133,10 @@ impl ElementComponent for FocusRoot {
 fn FocusResetter(hooks: &mut Hooks) -> Element {
     let (focused, set_focus) = hooks.consume_context::<Focus>().unwrap();
     let (reset_focus, set_reset_focus) = hooks.use_state(Focus(None));
-    hooks.use_event(WINDOW_MOUSE_INPUT, {
-        let focused = focused.clone();
-        let set_reset_focus = set_reset_focus.clone();
-        move |_world, event| {
-            if let Some(_event) = event.get_ref(event_mouse_input()) {
-                set_reset_focus(focused.clone());
-            }
+    hooks.use_runtime_message::<messages::WindowMouseInput>({
+        to_owned![focused, set_reset_focus];
+        move |_world, _event| {
+            set_reset_focus(focused.clone());
         }
     });
     if focused == reset_focus && focused.0.is_some() {

@@ -1,4 +1,4 @@
-use ambient_core::player::get_player_by_user_id;
+use ambient_core::player::get_by_user_id;
 use ambient_core::{
     self, selectable, snap_to_ground,
     transform::{get_world_transform, rotation, scale, translation},
@@ -478,7 +478,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
         intent_select_undo(),
         |ctx, (new_selection, select)| {
             let world = ctx.world;
-            let player_entity = get_player_by_user_id(world, ctx.user_id).context("No player with that user_id found")?;
+            let player_entity = get_by_user_id(world, ctx.user_id).context("No player with that user_id found")?;
             let selection = world.get_mut(player_entity, selection()).context("Selection missing")?;
 
             let old_selection = selection.clone();
@@ -502,7 +502,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
         },
         |ctx, prev_selection| {
             let world = ctx.world;
-            if let Some(player_entity) = get_player_by_user_id(world, ctx.user_id) {
+            if let Some(player_entity) = get_by_user_id(world, ctx.user_id) {
                 world.set(player_entity, selection(), prev_selection).ok();
             }
             Ok(())
@@ -522,7 +522,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
                 world.spawn_with_id(entity_id, data);
             });
 
-            let player_entity = get_player_by_user_id(world, user_id).context("Player not found")?;
+            let player_entity = get_by_user_id(world, user_id).context("Player not found")?;
             let old_selection = world.get_ref(player_entity, selection()).cloned().context("Failed to get selection")?;
 
             // Set the player selection to the spawned object
@@ -537,7 +537,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
             let world = ctx.world;
             world.despawn(id);
             if select {
-                if let Some(player_entity) = get_player_by_user_id(world, &user_id) {
+                if let Some(player_entity) = get_by_user_id(world, &user_id) {
                     world.set(player_entity, selection(), old_selection).ok();
                 }
             }
@@ -550,7 +550,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
         intent_duplicate_undo(),
         |ctx, IntentDuplicate { entities, new_uids, select }| {
             let world = ctx.world;
-            let player_entity = get_player_by_user_id(world, ctx.user_id).context("Player not found")?;
+            let player_entity = get_by_user_id(world, ctx.user_id).context("Player not found")?;
 
             for (id, new_id) in entities.iter().zip(new_uids.iter()) {
                 let data = world.clone_entity(*id)?.serializable();
@@ -578,7 +578,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
         intent_delete_undo(),
         |ctx, entities| {
             let world = ctx.world;
-            let player_entity = get_player_by_user_id(world, ctx.user_id).context("Player not found")?;
+            let player_entity = get_by_user_id(world, ctx.user_id).context("Player not found")?;
             let old = World::from_entities(world, entities.clone(), true);
 
             for &id in entities.iter() {
@@ -596,7 +596,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
         |ctx, (entities, old_selection)| {
             let world = ctx.world;
             let _ids = entities.spawn_into_world(world, None);
-            if let Some(player_entity) = get_player_by_user_id(world, ctx.user_id) {
+            if let Some(player_entity) = get_by_user_id(world, ctx.user_id) {
                 world.set(player_entity, selection(), old_selection).ok();
             }
             Ok(())

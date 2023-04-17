@@ -5,13 +5,16 @@ const { exit } = require("process");
 const { argv } = require('node:process');
 
 let samples = [
-    ["guest/rust/examples/basics/async", 1],
-    ["guest/rust/examples/basics/input", 1],
-    ["guest/rust/examples/basics/image", 3],
-    ["guest/rust/examples/basics/primitives", 1],
-    ["guest/rust/examples/basics/raw_text", 1],
-    ["guest/rust/examples/basics/fog", 1],
-    ["guest/rust/examples/games/tictactoe", 1],
+    ["guest/rust/examples/basics/async", 30],
+    ["guest/rust/examples/basics/input", 30],
+    ["guest/rust/examples/basics/image", 30],
+    ["guest/rust/examples/basics/transparency", 30],
+    ["guest/rust/examples/basics/primitives", 30],
+    ["guest/rust/examples/basics/raw_text", 30],
+    ["guest/rust/examples/basics/fog", 60],
+    ["guest/rust/examples/basics/first_person_camera", 60],
+    ["guest/rust/examples/basics/third_person_camera", 60],
+    ["guest/rust/examples/games/tictactoe", 30],
     ["guest/rust/examples/ui/button", 60],
     ["guest/rust/examples/ui/dock_layout", 60],
     ["guest/rust/examples/ui/editors", 60],
@@ -22,11 +25,7 @@ let samples = [
     ["guest/rust/examples/ui/text", 60],
 ]
 
-if (argv.length > 2) {
-    samples = samples.filter(([path]) => path.includes(argv[2]));
-}
-
-function process(jobs, nParallel = 5) {
+function process(nParallel, jobs) {
     return new Promise((resolve, reject) => {
         let running = 0;
         let index = 0;
@@ -54,12 +53,15 @@ function process(jobs, nParallel = 5) {
     });
 }
 
-async function run() {
+async function run(samples, just_build, no_build, nParallel) {
     console.time("time");
-    let errors = (await process(samples.map(([path, seconds], index) => async () => {
+    let errors = (await process(nParallel, samples.map(([path, seconds], index) => async () => {
         console.timeLog("time", path, "running..");
         try {
-            let res = await exec(`cargo run --release -- run ${path} --headless --golden-image-test ${seconds} --quic-interface-port ${9000 + index} --http-interface-port ${10000 + index}`);
+            const command = just_build ? `build ${path}` : `run ${path} ${no_build ? '--no-build' : ''} --headless --no-proxy --golden-image-test ${seconds} --quic-interface-port ${9000 + index} --http-interface-port ${10000 + index}`;
+            let fullCommand = `cargo run --release -- ${command}`;
+            console.timeLog("time", path, fullCommand);
+            let res = await exec(fullCommand);
             console.timeLog("time", path, "\x1b[32mwas ok\x1b[0m");
         } catch (err) {
             console.timeLog("time", path, "\x1b[31mfailed\x1b[0m");
@@ -75,4 +77,16 @@ async function run() {
         exit(1);
     }
 }
-run();
+let just_build = false;
+let no_build = false;
+for (let i = 2; i < argv.length; i++) {
+    if (argv[i] == "--build") {
+        just_build = true;
+    } else if (argv[i] == "--no-build") {
+        no_build = true;
+    } else {
+        samples = samples.filter(([path]) => path.includes(argv[i]));
+    }
+}
+
+run(samples, just_build, no_build, just_build ? 1 : 5);

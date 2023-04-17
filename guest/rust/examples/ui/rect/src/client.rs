@@ -1,17 +1,9 @@
 use ambient_api::prelude::*;
-use ambient_element::{element_component, Element, ElementComponentExt, Group, Hooks};
-use ambient_guest_bridge::components::{
-    layout::{height, space_between_items, width},
-    rect::{
-        background_color, border_color, border_radius, border_thickness, line_from, line_to,
-        line_width,
-    },
-};
-use ambient_ui_components::{default_theme::STREET, layout::FlowColumn, Line, Rectangle, UIExt};
+use ambient_ui_components::prelude::*;
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {
-    Group(vec![
+    Group::el([
         FlowColumn::el([
             Rectangle.el(),
             Rectangle
@@ -41,12 +33,9 @@ fn App(_hooks: &mut Hooks) -> Element {
             .with(line_width(), 10.)
             .with(background_color(), vec4(0., 0., 1., 1.)),
     ])
-    .el()
 }
 
 #[main]
-pub async fn main() -> EventResult {
+pub fn main() {
     App.el().spawn_interactive();
-
-    EventOk
 }
