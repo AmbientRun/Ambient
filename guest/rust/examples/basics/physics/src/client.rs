@@ -2,7 +2,7 @@ use ambient_api::{components::core::physics::linear_velocity, prelude::*};
 
 #[main]
 pub fn main() {
-    let bonk = audio::load(asset::url("assets/bonk.ogg").unwrap());
+    let bonk = audio::load(asset::url("assets/bonk.wav").unwrap());
 
     messages::Bonk::subscribe(move |_source, data| {
         let cube = data.cube;
