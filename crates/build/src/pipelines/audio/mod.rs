@@ -143,22 +143,31 @@ where
     let mss = MediaSourceStream::new(Box::new(std::io::Cursor::new(buf)), Default::default());
     let meta_opts = MetadataOptions::default();
     let fmt_opts = FormatOptions::default();
-    let probed = symphonia::default::get_probe().format(&hint, mss, &fmt_opts, &meta_opts).expect("unsupported format");
+    let probed = symphonia::default::get_probe().format(&hint, mss, &fmt_opts, &meta_opts).context("Failed to probe audio format")?;
     let mut format = probed.format;
-    let track = format.tracks().iter().find(|t| t.codec_params.codec != CODEC_TYPE_NULL).expect("no supported audio trackes");
+    let track = format.tracks().iter().find(|t| t.codec_params.codec != CODEC_TYPE_NULL).context("Failed to select default audio track")?;
     let dec_opts = DecoderOptions::default();
-    let mut decoder = symphonia::default::get_codecs().make(&track.codec_params, &dec_opts).expect("unsupported codec");
+    let mut decoder = symphonia::default::get_codecs().make(&track.codec_params, &dec_opts).context("Failed to create audio decoder")?;
 
     let stream_serial: i32 = rand::random();
-    let sampling_rate = decoder.codec_params().sample_rate.unwrap();
-    let channels: u8 = decoder.codec_params().channels.unwrap().bits().try_into().unwrap();
+
+    let sampling_rate: NonZeroU32 = decoder
+        .codec_params()
+        .sample_rate
+        .context("Expected audio to have sample rate")?
+        .try_into()
+        .context("Audio must have >0 sampling rate")?;
+
+    let channels = decoder.codec_params().channels.context("Audio does not have any channels")?.bits();
+    let channels: NonZeroU8 = (channels as u8).try_into().context("Audio must have >0 channels")?;
+
     let bitrate = VorbisBitrateManagementStrategy::QualityVbr { target_quality: 0.9 };
 
     let mut encoder = VorbisEncoder::new(
         stream_serial,
-        [("", ""); 0], // no tags,
-        NonZeroU32::new(sampling_rate).unwrap(),
-        NonZeroU8::new(channels).unwrap(),
+        [("", ""); 0], // no tags
+        sampling_rate,
+        channels,
         bitrate,
         None,
         Vec::new(),
