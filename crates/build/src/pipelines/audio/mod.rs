@@ -149,12 +149,13 @@ where
     let dec_opts = DecoderOptions::default();
     let mut decoder = symphonia::default::get_codecs().make(&track.codec_params, &dec_opts).expect("unsupported codec");
 
+    let stream_serial: i32 = rand::random();
     let sampling_rate = decoder.codec_params().sample_rate.unwrap();
     let channels: u8 = decoder.codec_params().channels.unwrap().bits().try_into().unwrap();
     let bitrate = VorbisBitrateManagementStrategy::QualityVbr { target_quality: 0.9 };
 
     let mut encoder = VorbisEncoder::new(
-        0,             // TODO randomly generate this
+        stream_serial,
         [("", ""); 0], // no tags,
         NonZeroU32::new(sampling_rate).unwrap(),
         NonZeroU8::new(channels).unwrap(),

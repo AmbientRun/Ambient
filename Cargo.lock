@@ -364,6 +364,7 @@ dependencies = [
  "itertools",
  "log",
  "parking_lot",
+ "rand 0.8.5",
  "relative-path",
  "serde",
  "serde_json",
