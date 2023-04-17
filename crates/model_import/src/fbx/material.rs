@@ -205,6 +205,8 @@ impl FbxVideo {
                 image::ImageFormat::Tga
             } else if self.filename.to_lowercase().ends_with(".bmp") {
                 image::ImageFormat::Bmp
+            } else if self.filename.to_lowercase().ends_with(".dds") {
+                image::ImageFormat::Dds
             } else {
                 panic!("Unsupported texture format: {:?}", self.filename)
             };
