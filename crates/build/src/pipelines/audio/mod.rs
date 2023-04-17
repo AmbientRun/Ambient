@@ -122,7 +122,7 @@ async fn symphonia_convert(ext: &str, input: Vec<u8>) -> anyhow::Result<Vec<u8>>
         .context("Audio must have >0 sampling rate")?;
 
     // retrieve the channel count from the input file
-    let channels = decoder.codec_params().channels.context("Audio does not have any channels")?.bits();
+    let channels = decoder.codec_params().channels.context("Audio does not have any channels")?.count();
     let channels: NonZeroU8 = (channels as u8).try_into().context("Audio must have >0 channels")?;
 
     // select a bitrate
