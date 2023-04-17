@@ -16,7 +16,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use components::{player_head_ref, player_mouse_delta, player_movement_direction};
+use components::{player_head_ref, player_movement_direction};
 use std::f32::consts::PI;
 
 #[main]
@@ -69,30 +69,24 @@ pub fn main() {
         let Some(player_id) = source.client_entity_id() else { return; };
 
         entity::add_component(player_id, player_movement_direction(), msg.direction);
-        entity::add_component(player_id, player_mouse_delta(), msg.mouse_delta);
+
+        entity::mutate_component(player_id, rotation(), |x| {
+            *x = Quat::from_rotation_z(msg.mouse_position.x * 0.01);
+        })
+        .unwrap_or_default();
+        if let Some(head) = entity::get_component(player_id, player_head_ref()) {
+            entity::mutate_component(head, rotation(), |x| {
+                *x = Quat::from_rotation_x(msg.mouse_position.y * 0.01);
+            });
+        }
     });
 
-    query((
-        player(),
-        player_head_ref(),
-        player_movement_direction(),
-        player_mouse_delta(),
-        rotation(),
-    ))
-    .each_frame(move |players| {
-        for (player_id, (_, head, direction, mouse_delta, rot)) in players {
+    query((player(), player_movement_direction(), rotation())).each_frame(move |players| {
+        for (player_id, (_, direction, rot)) in players {
             let speed = 0.1;
 
             let displace = rot * (direction.normalize_or_zero() * speed).extend(-0.1);
             physics::move_character(player_id, displace, 0.01, frametime());
-
-            entity::mutate_component(player_id, rotation(), |x| {
-                *x *= Quat::from_rotation_z(mouse_delta.x * 0.01);
-            })
-            .unwrap_or_default();
-            entity::mutate_component(head, rotation(), |x| {
-                *x *= Quat::from_rotation_x(mouse_delta.y * 0.01);
-            });
         }
     });
 }
