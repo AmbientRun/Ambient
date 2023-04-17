@@ -1,3 +1,7 @@
+//! Used to implement all the server-specific host functions.
+//!
+//! If implementing a trait that is also available on the client, it should go in [super].
+
 use ambient_core::player::{player, user_id};
 use ambient_ecs::{query, EntityId, World};
 use ambient_network::server::player_connection;
@@ -6,7 +10,7 @@ use ambient_std::shapes::Ray;
 use anyhow::Context;
 use physxx::{PxControllerCollisionFlag, PxControllerFilters};
 
-use super::Bindings;
+use super::super::Bindings;
 use crate::shared::{
     conversion::{FromBindgen, IntoBindgen},
     implementation::message,

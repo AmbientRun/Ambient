@@ -15,17 +15,20 @@ pub struct BindingsBase {
 }
 
 pub trait BindingsBound:
+    // Shared
     wit::types::Host
-    + wit::audio::Host
     + wit::asset::Host
     + wit::component::Host
     + wit::entity::Host
     + wit::message::Host
     + wit::player::Host
+    // Client
+    + wit::client_audio::Host
     + wit::client_message::Host
     + wit::client_player::Host
     + wit::client_input::Host
-    + wit::camera::Host
+    + wit::client_camera::Host
+    // Server
     + wit::server_message::Host
     + wit::server_physics::Host
     + Clone

@@ -1,4 +1,4 @@
-default interface camera {
+default interface client-camera {
     use pkg.types.{vec2, ray, entity-id}
 
     screen-ray: func(camera: entity-id, clip-space-pos: vec2) -> ray

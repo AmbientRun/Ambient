@@ -1,17 +1,17 @@
 world bindings {
     import types: pkg.types
 
-    import audio: pkg.audio
     import asset: pkg.asset
     import component: pkg.component
     import entity: pkg.entity
     import message: pkg.message
     import player: pkg.player
 
+    import client-audio: pkg.client-audio
     import client-message: pkg.client-message
     import client-player: pkg.client-player
     import client-input: pkg.client-input
-    import camera: pkg.camera
+    import client-camera: pkg.client-camera
 
     import server-physics: pkg.server-physics
     import server-message: pkg.server-message

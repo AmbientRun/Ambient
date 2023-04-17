@@ -1,5 +1,5 @@
 pub use crate::{
-    asset, camera,
+    asset,
     ecs::{change_query, despawn_query, query, spawn_query, Component, Entity, QueryEvent},
     entity,
     global::*,
@@ -13,7 +13,7 @@ pub use rand::prelude::*;
 
 #[cfg(feature = "client")]
 pub use crate::{
-    audio,
+    audio, camera,
     input::{self, KeyCode, MouseButton},
 };
 

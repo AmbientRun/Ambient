@@ -1,6 +1,13 @@
-use ambient_core::player::local_user_id;
+//! Used to implement all the client-specific host functions.
+//!
+//! If implementing a trait that is also available on the server, it should go in [super].
+
+use ambient_audio::AudioFromUrl;
+use ambient_core::{asset_cache, async_ecs::async_run, player::local_user_id, runtime};
 use ambient_input::{player_prev_raw_input, player_raw_input};
 use ambient_network::client::game_client;
+use ambient_std::{asset_cache::AsyncAssetKeyExt, asset_url::AbsAssetUrl};
+use ambient_world_audio::{audio_sender, AudioMessage};
 use anyhow::Context;
 
 use super::Bindings;
@@ -75,7 +82,7 @@ impl wit::client_input::Host for Bindings {
             .into_bindgen())
     }
 }
-impl wit::camera::Host for Bindings {
+impl wit::client_camera::Host for Bindings {
     fn screen_ray(
         &mut self,
         camera: wit::types::EntityId,
@@ -88,5 +95,44 @@ impl wit::camera::Host for Bindings {
         )?;
         ray.dir *= -1.;
         Ok(ray.into_bindgen())
+    }
+}
+impl wit::client_audio::Host for Bindings {
+    fn load(&mut self, url: String) -> anyhow::Result<()> {
+        let assets = self.world().resource(asset_cache()).clone();
+        let asset_url = AbsAssetUrl::from_asset_key(url).to_string();
+        let audio_url = AudioFromUrl {
+            url: AbsAssetUrl::parse(asset_url).context("Failed to parse audio url")?,
+        };
+        let _track = audio_url.peek(&assets);
+        Ok(())
+    }
+
+    fn play(&mut self, name: String, looping: bool, amp: f32) -> anyhow::Result<()> {
+        let world = self.world();
+        let assets = world.resource(asset_cache()).clone();
+
+        let asset_url = AbsAssetUrl::from_asset_key(name).to_string();
+        let audio_url = AudioFromUrl {
+            url: AbsAssetUrl::parse(asset_url).context("Failed to parse audio url")?,
+        };
+
+        let runtime = world.resource(runtime()).clone();
+        let async_run = world.resource(async_run()).clone();
+        runtime.spawn(async move {
+            let track = audio_url.get(&assets).await;
+            async_run.run(move |world| {
+                match track {
+                    Ok(track) => {
+                        let sender = world.resource(audio_sender());
+                        sender
+                            .send(AudioMessage::Track(track, looping, amp))
+                            .unwrap();
+                    }
+                    Err(e) => log::error!("{e:?}"),
+                };
+            });
+        });
+        Ok(())
     }
 }

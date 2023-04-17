@@ -1,4 +1,3 @@
-#[cfg(feature = "client")]
 use crate::{
     global::{EntityId, Ray, Vec2},
     internal::{
@@ -7,8 +6,8 @@ use crate::{
     },
 };
 
-/// Converts normalized mouse coordinates to a [Ray] in world space
-#[cfg(feature = "client")]
+/// Converts normalized mouse coordinates to a [Ray] in world space.
 pub fn screen_ray(camera: EntityId, screen_space_pos: Vec2) -> Ray {
-    wit::camera::screen_ray(camera.into_bindgen(), screen_space_pos.into_bindgen()).from_bindgen()
+    wit::client_camera::screen_ray(camera.into_bindgen(), screen_space_pos.into_bindgen())
+        .from_bindgen()
 }

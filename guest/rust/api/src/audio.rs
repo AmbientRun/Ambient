@@ -2,7 +2,7 @@ use crate::internal::wit;
 
 /// Load an audio file from `url`, and return an [AudioTrack] that can be used to play the audio.
 pub fn load(url: String) -> AudioTrack {
-    wit::audio::load(&url);
+    wit::client_audio::load(&url);
     AudioTrack {
         name: url,
         looping: false,
@@ -40,6 +40,6 @@ impl AudioTrack {
 
     /// Play the track.
     pub fn play(&self) {
-        wit::audio::play(&self.name, self.looping, self.volume);
+        wit::client_audio::play(&self.name, self.looping, self.volume);
     }
 }

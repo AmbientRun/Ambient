@@ -1,3 +1,5 @@
+//! Used to stub out all the unused host functions on the clientside.
+
 use super::Bindings;
 use crate::shared::{implementation::unsupported, wit};
 
@@ -100,7 +102,6 @@ impl wit::server_physics::Host for Bindings {
         unsupported()
     }
 }
-
 impl wit::server_message::Host for Bindings {
     fn send(
         &mut self,
