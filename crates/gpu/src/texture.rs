@@ -633,6 +633,7 @@ mod tests {
                 format: wgpu::TextureFormat::Rgba8UnormSrgb,
                 usage: wgpu::TextureUsages::COPY_SRC,
                 label: None,
+                view_formats: &[]
             },
             bytemuck::cast_slice(&[255, 255, 255, 255]),
         );

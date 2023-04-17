@@ -462,6 +462,7 @@ impl TerrainState {
                     | wgpu::TextureUsages::COPY_SRC
                     | wgpu::TextureUsages::STORAGE_BINDING,
                 label: Some("heightmap"),
+                view_formats: &[]
             },
         ));
 
@@ -479,6 +480,7 @@ impl TerrainState {
                     | wgpu::TextureUsages::STORAGE_BINDING
                     | wgpu::TextureUsages::RENDER_ATTACHMENT,
                 label: Some("normalmap"),
+                view_formats: &[]
             },
         ));
         FillerKey { format: normalmap.format }.get(&assets).run(
