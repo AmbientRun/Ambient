@@ -30,7 +30,7 @@ pub async fn pipeline(ctx: &PipelineCtx) -> Vec<OutAsset> {
                     tracing::info!("Processing {ext:?} file");
                     // Make sure to take the contents, to avoid having both the input and output in
                     // memory at once
-                    let contents = symphonia_convert(ext, std::io::Cursor::new(contents)).await?;
+                    let contents = symphonia_convert(ext, contents).await?;
                     ctx.write_file(rel_path.with_extension("ogg"), contents).await
                 }
                 other => anyhow::bail!("Audio filetype {:?} is not yet supported", other.unwrap_or_default()),
@@ -117,10 +117,7 @@ where
 }
 
 #[tracing::instrument(level = "info", skip(input))]
-async fn symphonia_convert<A>(ext: &str, input: A) -> anyhow::Result<Vec<u8>>
-where
-    A: 'static + Send + AsyncRead,
-{
+async fn symphonia_convert(ext: &str, input: Vec<u8>) -> anyhow::Result<Vec<u8>> {
     use std::num::{NonZeroU32, NonZeroU8};
 
     use symphonia::core::{
@@ -137,10 +134,8 @@ where
     let mut hint = Hint::new();
     hint.with_extension(ext);
 
-    let mut buf = Vec::new();
-    let mut input = Box::pin(input);
-    input.read_to_end(&mut buf).await.unwrap();
-    let mss = MediaSourceStream::new(Box::new(std::io::Cursor::new(buf)), Default::default());
+    let media_source = Box::new(std::io::Cursor::new(input));
+    let mss = MediaSourceStream::new(media_source, Default::default());
     let meta_opts = MetadataOptions::default();
     let fmt_opts = FormatOptions::default();
     let probed = symphonia::default::get_probe().format(&hint, mss, &fmt_opts, &meta_opts).context("Failed to probe audio format")?;
