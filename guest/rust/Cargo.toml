@@ -13,6 +13,6 @@ ambient_project = {path = "../../shared_crates/project", version = "0.2.0-dev"}
 ambient_project_macro_common = {path = "../../shared_crates/project_macro_common", version = "0.2.0-dev"}
 ambient_project_rt = {path = "../../shared_crates/project_rt", version = "0.2.0-dev"}
 ambient_shared_types = {path = "../../shared_crates/shared_types", version = "0.2.0-dev"}
-ambient_ui_components = {path = "../../shared_crates/ui_components", default-features = false, features = ["guest"], version = "0.2.0-dev"}
+ambient_ui_components = {path = "../../shared_crates/ui_components", version = "0.2.0-dev"}
 
 ambient_friendly_id = {path = "../../libs/friendly_id", version = "0.2.0-dev"}
