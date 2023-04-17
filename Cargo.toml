@@ -6,8 +6,8 @@ publish = false
 version = "0.0.1"
 
 [dependencies]
-ambient_api = {git = "https://github.com/AmbientRun/Ambient.git", rev = "0a74cf96"}
-ambient_ui_components = {git = "https://github.com/AmbientRun/Ambient.git", features = ["guest"], rev = "0a74cf96"}
+ambient_api = {path = "../Ambient/guest/rust/api"}
+ambient_ui_components = {path = "../Ambient/shared_crates/ui_components"}
 
 [[bin]]
 name = "client_tangent"

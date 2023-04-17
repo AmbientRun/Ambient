@@ -3,12 +3,10 @@ use ambient_api::{
         app::main_scene,
         camera::{aspect_ratio_from_window, fog, fovy},
         physics::linear_velocity,
-        player::local_user_id,
         transform::{lookat_center, rotation, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     messages::Frame,
-    player::KeyCode,
     prelude::*,
 };
 use ambient_ui_components::prelude::*;
@@ -101,7 +99,7 @@ pub fn main() {
     });
 
     Frame::subscribe(move |_| {
-        let player_id = local_entity_id();
+        let player_id = player::get_local();
         let Some(vehicle_id) = entity::get_component(player_id, player_vehicle()) else { return; };
         let Some(vehicle_position) = entity::get_component(vehicle_id, translation()) else { return; };
         let Some(vehicle_rotation) = entity::get_component(vehicle_id, rotation()) else { return; };
@@ -117,7 +115,7 @@ pub fn main() {
         let kph = speed_kph(vehicle_linear_velocity, vehicle_rotation);
         entity::set_component(camera_id, fovy(), 0.9 + (kph.abs() / 300.0).clamp(0.0, 1.0));
 
-        let input = player::get_raw_input();
+        let input = input::get();
         let direction = {
             let mut direction = Vec2::ZERO;
             if input.keys.contains(&KeyCode::W) {
@@ -188,10 +186,4 @@ fn DebugLines(hooks: &mut Hooks) -> Element {
             })
             .collect::<Vec<_>>()
     }))
-}
-
-// TODO: add to API
-fn local_entity_id() -> EntityId {
-    player::get_by_user_id(&entity::get_component(entity::resources(), local_user_id()).unwrap())
-        .unwrap()
 }
