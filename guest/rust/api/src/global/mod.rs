@@ -7,6 +7,9 @@ pub use runtime::*;
 mod entity_id;
 pub use entity_id::*;
 
+mod shapes;
+pub use shapes::*;
+
 // Re-exports from other crates.
 pub use futures::{Future, FutureExt};
 pub use glam::{f32::*, u32::*, Vec2Swizzles, Vec3Swizzles, Vec4Swizzles};

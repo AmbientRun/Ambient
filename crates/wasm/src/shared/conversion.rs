@@ -4,6 +4,7 @@ use ambient_animation as animation;
 use ambient_ecs::EntityId;
 use ambient_std::asset_url::TypedAssetUrl;
 use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
+use ambient_std::shapes::Ray;
 
 use super::wit;
 
@@ -175,6 +176,26 @@ impl FromBindgen for wit::types::Mat4 {
             self.z.from_bindgen(),
             self.w.from_bindgen(),
         )
+    }
+}
+
+impl IntoBindgen for Ray {
+    type Item = wit::types::Ray;
+    fn into_bindgen(self) -> Self::Item {
+        wit::types::Ray {
+            origin: self.origin.into_bindgen(),
+            dir: self.dir.into_bindgen(),
+        }
+    }
+}
+
+impl FromBindgen for wit::types::Ray {
+    type Item = Ray;
+    fn from_bindgen(self) -> Self::Item {
+        Ray {
+            origin: self.origin.from_bindgen(),
+            dir: self.dir.from_bindgen(),
+        }
     }
 }
 

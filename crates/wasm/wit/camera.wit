@@ -1,0 +1,5 @@
+default interface camera {
+    use pkg.types.{vec2, ray, entity-id}
+
+    screen-ray: func(camera: entity-id, clip-space-pos: vec2) -> ray
+}
