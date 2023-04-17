@@ -26,11 +26,11 @@ pub async fn pipeline(ctx: &PipelineCtx) -> Vec<OutAsset> {
 
             let content_url = match file.extension().as_deref() {
                 Some("ogg") => ctx.write_file(&rel_path, contents).await,
-                ext @ Some("wav" | "mp3") => {
+                Some(ext @ "wav") | Some(ext @ "mp3") => {
                     tracing::info!("Processing {ext:?} file");
                     // Make sure to take the contents, to avoid having both the input and output in
                     // memory at once
-                    let contents = symphonia_convert(std::io::Cursor::new(contents)).await?;
+                    let contents = symphonia_convert(ext, std::io::Cursor::new(contents)).await?;
                     ctx.write_file(rel_path.with_extension("ogg"), contents).await
                 }
                 other => anyhow::bail!("Audio filetype {:?} is not yet supported", other.unwrap_or_default()),
@@ -117,7 +117,7 @@ where
 }
 
 #[tracing::instrument(level = "info", skip(input))]
-async fn symphonia_convert<A>(input: A) -> anyhow::Result<Vec<u8>>
+async fn symphonia_convert<A>(ext: &str, input: A) -> anyhow::Result<Vec<u8>>
 where
     A: 'static + Send + AsyncRead,
 {
@@ -134,13 +134,15 @@ where
 
     use vorbis_rs::{VorbisBitrateManagementStrategy, VorbisEncoder};
 
+    let mut hint = Hint::new();
+    hint.with_extension(ext);
+
     let mut buf = Vec::new();
     let mut input = Box::pin(input);
     input.read_to_end(&mut buf).await.unwrap();
     let mss = MediaSourceStream::new(Box::new(std::io::Cursor::new(buf)), Default::default());
     let meta_opts = MetadataOptions::default();
     let fmt_opts = FormatOptions::default();
-    let hint = Hint::default();
     let probed = symphonia::default::get_probe().format(&hint, mss, &fmt_opts, &meta_opts).expect("unsupported format");
     let mut format = probed.format;
     let track = format.tracks().iter().find(|t| t.codec_params.codec != CODEC_TYPE_NULL).expect("no supported audio trackes");
