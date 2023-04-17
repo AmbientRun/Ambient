@@ -12,14 +12,19 @@ Audio should be loaded and played in clientside WASM/`client.rs` (the API is not
 
 ## Caveat
 
-At present, we support `wav`, `mp3` and `ogg` through `ffmpeg`. Note that if a non-`ogg` format is used, it will be converted to `ogg`, and you will need to use the `ogg` extension in your code.
+At present, we support `wav`, `mp3` and `ogg` through `ffmpeg`. Note that if a non-`ogg` format is used, it will be converted to `ogg`.
+
+
+You can decide whether to use the `ogg` extension in your code or keep the original one. Both will work.
 
 ```rust
 // "src/client.rs" in the "pong" example
 #[main]
 pub fn main() {
-    // if your audio file is "bgm.wav", you still need to use "ogg" here
+    // if your audio file is "bgm.wav", you can use "ogg" here
     let bgm = audio::load(asset::url("assets/bgm.ogg").unwrap());
+    // the alternative is also fine
+    // let bgm = audio::load(asset::url("assets/bgm.wav").unwrap());
     bgm.looping(true).scale(0.2).play();
 }
 ```
