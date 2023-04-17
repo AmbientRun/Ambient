@@ -1,10 +1,6 @@
-use std::process::Stdio;
-
 use ambient_std::asset_url::AssetType;
 use ambient_world_audio::AudioNode;
 use anyhow::Context;
-use futures::FutureExt;
-use tokio::io::{AsyncRead, AsyncReadExt};
 use tracing::{info_span, Instrument};
 
 use super::{
@@ -71,49 +67,6 @@ pub async fn pipeline(ctx: &PipelineCtx) -> Vec<OutAsset> {
 
 fn save_audio_graph(root: AudioNode) -> anyhow::Result<Vec<u8>> {
     Ok(serde_json::to_string_pretty(&root).context("Invalid sound graph")?.into_bytes())
-}
-
-#[tracing::instrument(level = "info", skip(input))]
-async fn ffmpeg_convert<A>(input: A) -> anyhow::Result<Vec<u8>>
-where
-    A: 'static + Send + AsyncRead,
-{
-    let mut child = tokio::process::Command::new("ffmpeg")
-        .args(["-i", "pipe:", "-f", "ogg", "pipe:1"])
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .spawn()
-        .context("Failed to execute ffmpeg")?;
-
-    tracing::info!("Writing to stdin");
-
-    let mut stdin = child.stdin.take().expect("no stdin");
-    let mut stdout = child.stdout.take().expect("no stdout");
-
-    let input = tokio::task::spawn(async move {
-        tokio::pin!(input);
-        tokio::io::copy(&mut input, &mut stdin).await.context("Failed to write to stdin")
-    })
-    .map(|v| v.unwrap());
-
-    let output = async move {
-        let mut output = Vec::new();
-        stdout.read_to_end(&mut output).await.unwrap();
-        Ok(output)
-    };
-
-    let status = async { child.wait().await.context("Failed to wait for ffmpeg") };
-
-    tracing::info!("Waiting for ffmpeg to complete");
-    let (_, output, status) = tokio::try_join!(input, output, status)?;
-
-    if !status.success() {
-        anyhow::bail!("FFMPEG conversion failed")
-    }
-
-    tracing::info!("Converted to vorbis of {} kb", output.len() as f32 / 1000.0);
-
-    Ok(output)
 }
 
 #[tracing::instrument(level = "info", skip(input))]
@@ -222,6 +175,6 @@ async fn symphonia_convert(ext: &str, input: Vec<u8>) -> anyhow::Result<Vec<u8>>
 
     // finish encoding
     let output = encoder.finish()?;
-    tracing::info!("Decoded {} samples", output.len());
+    tracing::info!("Encoded {} samples", output.len());
     Ok(output)
 }
