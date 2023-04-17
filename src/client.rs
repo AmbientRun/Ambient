@@ -12,7 +12,7 @@ use ambient_api::{
     prelude::*,
 };
 use ambient_ui_components::prelude::*;
-use components::{player_vehicle, vehicle, vehicle_hud};
+use components::{last_jump_time, player_vehicle, vehicle, vehicle_hud};
 
 mod common;
 
@@ -80,29 +80,32 @@ pub fn main() {
         }
     });
 
+    query((
+        vehicle_hud(),
+        rotation(),
+        linear_velocity(),
+        last_jump_time(),
+    ))
+    .each_frame(|huds| {
+        for (_, (hud_id, rot, lv, ljt)) in huds {
+            entity::set_component(
+                hud_id,
+                text(),
+                format!(
+                    "{:.1}\n{:.1}s",
+                    speed_kph(lv, rot),
+                    common::JUMP_TIMEOUT - (time() - ljt).min(common::JUMP_TIMEOUT),
+                ),
+            );
+        }
+    });
+
     Frame::subscribe(move |_| {
         let player_id = local_entity_id();
         let Some(vehicle_id) = entity::get_component(player_id, player_vehicle()) else { return; };
         let Some(vehicle_position) = entity::get_component(vehicle_id, translation()) else { return; };
         let Some(vehicle_rotation) = entity::get_component(vehicle_id, rotation()) else { return; };
         let Some(vehicle_linear_velocity) = entity::get_component(vehicle_id, linear_velocity()) else { return; };
-
-        let kph = vehicle_linear_velocity.dot(vehicle_rotation * -Vec3::Y) * 3.6;
-
-        if let Some(vehicle_hud) = entity::get_component(vehicle_id, vehicle_hud()) {
-            let last_jump_time =
-                entity::get_component(vehicle_id, components::last_jump_time()).unwrap_or_default();
-
-            entity::set_component(
-                vehicle_hud,
-                text(),
-                format!(
-                    "{:.1}\n{:.1}s",
-                    kph,
-                    common::JUMP_TIMEOUT - (time() - last_jump_time).min(common::JUMP_TIMEOUT),
-                ),
-            );
-        }
 
         let camera_position = vehicle_position + vehicle_rotation * CAMERA_OFFSET;
         entity::set_component(camera_id, translation(), camera_position);
@@ -111,6 +114,7 @@ pub fn main() {
             lookat_center(),
             camera_position + vehicle_rotation * -Vec3::Y,
         );
+        let kph = speed_kph(vehicle_linear_velocity, vehicle_rotation);
         entity::set_component(camera_id, fovy(), 0.9 + (kph.abs() / 300.0).clamp(0.0, 1.0));
 
         let input = player::get_raw_input();
@@ -141,6 +145,10 @@ pub fn main() {
         DebugUI.el().spawn_interactive();
         DebugLines.el().spawn_interactive();
     }
+}
+
+fn speed_kph(linear_velocity: Vec3, rotation: Quat) -> f32 {
+    linear_velocity.dot(rotation * -Vec3::Y) * 3.6
 }
 
 #[element_component]
