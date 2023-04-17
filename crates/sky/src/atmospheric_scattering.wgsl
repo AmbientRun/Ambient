@@ -16,10 +16,6 @@ struct CloudBuffer {
 @binding(0)
 var<storage> cloud_buffer: CloudBuffer;
 
-struct CloudBuffer {
-    clouds: array<Node>,
-};
-
 fn sphere_intersect(pos: vec3<f32>, dir: vec3<f32>, r: f32) -> vec2<f32> {
     let a = dot(dir, dir);
     let b = 2.0 * dot(dir, pos);
@@ -44,13 +40,13 @@ fn cube_intersect(origin: f32, size: f32, ray_o: vec3<f32>, dir: vec3<f32>) -> f
     let t1 = (-size - origin) * inv_dir;
     let t2 = (size - origin) * inv_dir;
 
-    let tmin = min(t1, t2);
-    let tmax = max(t1, t2);
+    var tmin = min(t1, t2);
+    var tmax = max(t1, t2);
 
-    let tmin = max(tmin.x, max(tmin.y, tmin.z));
-    let tmax = min(tmax.x, min(tmax.y, tmax.z));
+    let bestMin = max(tmin.x, max(tmin.y, tmin.z));
+    let bestMax = min(tmax.x, min(tmax.y, tmax.z));
 
-    return f32(tmax > 0.) * (tmax - tmin);
+    return f32(bestMax > 0.) * (bestMax - bestMin);
 }
 
 // Returns the distance along the ray, or < 0
@@ -84,9 +80,8 @@ fn scattering(depth: f32, pos: vec3<f32>, dir: vec3<f32>) -> vec3<f32> {
     // How likely is light from the sun to scatter to us
     let phase_ray = max(3.0 / (16.0 * PI) * (1.0 + uu), 0.);
     // 3 / (16pi) * cos2()
-    let phase_mie = max((3.0 / (8.0 * PI)) * ((1.0 - gg) * (1.0 + uu)) / ((2.0 + gg) * pow(1.0 + gg - 2.0 * g * u, 1.5)), 0.);
-
-    let phase_mie = phase_mie * f32(allow_mie);
+    var phase_mie = max((3.0 / (8.0 * PI)) * ((1.0 - gg) * (1.0 + uu)) / ((2.0 + gg) * pow(1.0 + gg - 2.0 * g * u, 1.5)), 0.);
+    phase_mie = phase_mie * f32(allow_mie);
 
     // Accumulation of scattered light
     var total_ray = vec3<f32>(0.);
