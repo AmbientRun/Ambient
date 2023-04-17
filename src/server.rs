@@ -46,7 +46,7 @@ const SLOWDOWN_STRENGTH: f32 = 0.8;
 const ANGULAR_SLOWDOWN_DELAY: f32 = 0.25;
 const ANGULAR_SLOWDOWN_STRENGTH: f32 = 0.4;
 
-const SPAWN_POSITION: Vec3 = vec3(800., -670., 120.);
+const SPAWN_POSITION: Vec3 = vec3(800., -670., 5.);
 const SPAWN_RADIUS: f32 = 20.0;
 
 #[main]
