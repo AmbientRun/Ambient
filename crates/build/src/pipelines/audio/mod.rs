@@ -131,21 +131,36 @@ async fn symphonia_convert(ext: &str, input: Vec<u8>) -> anyhow::Result<Vec<u8>>
 
     use vorbis_rs::{VorbisBitrateManagementStrategy, VorbisEncoder};
 
+    // this symphonia decoding code is largely based on symphonia's examples:
+    // https://github.com/pdeljanov/Symphonia/blob/master/symphonia/examples
+
+    // hint symphonia about what format this file might be
     let mut hint = Hint::new();
     hint.with_extension(ext);
 
+    // create a media source stream with default options
     let media_source = Box::new(std::io::Cursor::new(input));
     let mss = MediaSourceStream::new(media_source, Default::default());
+
+    // use default metadata and format reader options
     let meta_opts = MetadataOptions::default();
     let fmt_opts = FormatOptions::default();
+
+    // probe the audio file for its params
     let probed = symphonia::default::get_probe().format(&hint, mss, &fmt_opts, &meta_opts).context("Failed to probe audio format")?;
     let mut format = probed.format;
+
+    // find the default audio track for this file
     let track = format.tracks().iter().find(|t| t.codec_params.codec != CODEC_TYPE_NULL).context("Failed to select default audio track")?;
+
+    // init an audio decoder with default options
     let dec_opts = DecoderOptions::default();
     let mut decoder = symphonia::default::get_codecs().make(&track.codec_params, &dec_opts).context("Failed to create audio decoder")?;
 
+    // randomize an ogg stream serial number
     let stream_serial: i32 = rand::random();
 
+    // retrieve the sampling rate from the input file
     let sampling_rate: NonZeroU32 = decoder
         .codec_params()
         .sample_rate
@@ -153,11 +168,14 @@ async fn symphonia_convert(ext: &str, input: Vec<u8>) -> anyhow::Result<Vec<u8>>
         .try_into()
         .context("Audio must have >0 sampling rate")?;
 
+    // retrieve the channel count from the input file
     let channels = decoder.codec_params().channels.context("Audio does not have any channels")?.bits();
     let channels: NonZeroU8 = (channels as u8).try_into().context("Audio must have >0 channels")?;
 
+    // select a bitrate
     let bitrate = VorbisBitrateManagementStrategy::QualityVbr { target_quality: 0.9 };
 
+    // create the ogg Vorbis encoder
     let mut encoder = VorbisEncoder::new(
         stream_serial,
         [("", ""); 0], // no tags
@@ -168,24 +186,33 @@ async fn symphonia_convert(ext: &str, input: Vec<u8>) -> anyhow::Result<Vec<u8>>
         Vec::new(),
     )?;
 
+    // process all packets in the input file
     let result = loop {
+        // read the next packet
         let packet = match format.next_packet() {
             Ok(packet) => packet,
             Err(err) => break err,
         };
 
+        // decode the packet's samples
         let decoded = match decoder.decode(&packet) {
             Ok(buf) => buf,
             Err(err) => break err,
         };
 
+        // convert the decoded samples to f32 samples
         let mut block = decoded.make_equivalent::<f32>();
         decoded.convert(&mut block);
+
+        // get the samples as &[&[f32]]
         let planes = block.planes();
         let plane_samples = planes.planes();
+
+        // feed the samples into the encoder
         encoder.encode_audio_block(plane_samples)?;
     };
 
+    // process the error returned by the loop
     match result {
         // "end of stream" is non-fatal, ignore it
         Error::IoError(err) if err.kind() == std::io::ErrorKind::UnexpectedEof && err.to_string() == "end of stream" => {}
@@ -193,6 +220,7 @@ async fn symphonia_convert(ext: &str, input: Vec<u8>) -> anyhow::Result<Vec<u8>>
         err => return Err(err.into()),
     }
 
+    // finish encoding
     let output = encoder.finish()?;
     tracing::info!("Decoded {} samples", output.len());
     Ok(output)
