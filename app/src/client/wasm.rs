@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
+use ambient_audio::Source;
 use ambient_ecs::{EntityId, SystemGroup, World};
 use ambient_wasm::shared::{get_module_name, MessageType};
+use ambient_world_audio::{audio_sender, AudioMessage};
 use flume::{Receiver, Sender};
-use ambient_world_audio::{AudioMessage, audio_sender};
-use ambient_audio::Source;
 
 pub fn systems() -> SystemGroup {
     ambient_wasm::client::systems()
@@ -28,19 +28,20 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
 
     std::thread::spawn(move || {
         let stream = ambient_audio::AudioStream::new().unwrap();
+        let mut sounds = std::collections::HashMap::new();
         while let Ok(message) = rx.recv() {
             match message {
-                AudioMessage::Track(t, looping, amp) => {
-                    match looping {
-                        true => {
-                            let sound = stream.mixer().play(t.decode().repeat().gain(amp.clamp(0.0, 1.0)));
-                            sound.wait();
-                        }
-                        false => {
-                            let sound = stream.mixer().play(t.decode().gain(amp.clamp(0.0, 1.0)));
-                            sound.wait();
-                        }
-                    }
+                AudioMessage::Track(t, looping, amp, url) => {
+                    let sound = match looping {
+                        true => stream.mixer().play(t.decode().repeat().gain(amp.clamp(0.0, 1.0))),
+                        false => stream.mixer().play(t.decode().gain(amp.clamp(0.0, 1.0))),
+                    };
+                    sounds.insert(url, sound);
+                }
+                AudioMessage::Stop(url) => {
+                    let sound = sounds.get(&url).unwrap();
+                    stream.mixer().stop(sound);
+                    sounds.remove(&url).unwrap();
                 }
             }
         }

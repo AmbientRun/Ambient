@@ -42,4 +42,9 @@ impl AudioTrack {
     pub fn play(&self) {
         wit::audio::play(&self.name, self.looping, self.volume);
     }
+
+    /// Stop the track.
+    pub fn stop(&self) {
+        wit::audio::stop(&self.name);
+    }
 }

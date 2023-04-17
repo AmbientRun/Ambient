@@ -1,4 +1,5 @@
 default interface audio {
     load: func(url: string)
     play: func(name: string, looping: bool, amp: float32)
+    stop: func(name: string)
 }

@@ -16,6 +16,7 @@ fn main() {
     let bgm = audio::load(asset::url("assets/Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg").unwrap());
     let ping = audio::load(asset::url("assets/ping.ogg").unwrap());
     bgm.looping(true).volume(0.2).play();
+    let mut is_playing = true;
 
     messages::Ping::subscribe(move |_, _| {
         ping.looping(false).volume(0.9).play();
@@ -26,7 +27,7 @@ fn main() {
         .spawn();
 
     ambient_api::messages::Frame::subscribe(move |_| {
-        let input = player::get_raw_input();
+        let (delta, input) = player::get_raw_input_delta();
         let mut direction = 0.0;
 
         if input.keys.contains(&KeyCode::Up) {
@@ -34,6 +35,15 @@ fn main() {
         }
         if input.keys.contains(&KeyCode::Down) {
             direction -= 1.0;
+        }
+
+        if delta.keys.contains(&KeyCode::P) {
+            if is_playing {
+                bgm.stop();
+            } else {
+                bgm.play();
+            }
+            is_playing = !is_playing;
         }
 
         messages::Input::new(direction).send_server_unreliable();
