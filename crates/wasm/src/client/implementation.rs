@@ -10,6 +10,8 @@ use crate::shared::{
     wit,
 };
 
+use ambient_core::camera::screen_ray;
+
 impl wit::client_message::Host for Bindings {
     fn send(
         &mut self,
@@ -71,5 +73,20 @@ impl wit::client_input::Host for Bindings {
             .resource(player_prev_raw_input())
             .clone()
             .into_bindgen())
+    }
+}
+impl wit::camera::Host for Bindings {
+    fn screen_ray(
+        &mut self,
+        camera: wit::types::EntityId,
+        clip_space_pos: wit::types::Vec2,
+    ) -> anyhow::Result<wit::types::Ray> {
+        let mut ray = screen_ray(
+            self.world(),
+            camera.from_bindgen(),
+            clip_space_pos.from_bindgen(),
+        )?;
+        ray.dir *= -1.;
+        Ok(ray.into_bindgen())
     }
 }

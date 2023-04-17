@@ -53,4 +53,9 @@ default interface types {
         z: vec4,
         w: vec4,
     }
+
+    record ray {
+        origin: vec3,
+        dir: vec3,
+    }
 }
