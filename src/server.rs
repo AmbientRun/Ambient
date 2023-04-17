@@ -29,10 +29,10 @@ const OFFSETS: [(f32, f32); 4] = [
 
 const K_P: f32 = 300.0;
 const K_D: f32 = -600.0;
-const TARGET: f32 = 6.0;
+const TARGET: f32 = 2.5;
 const MAX_STRENGTH: f32 = 25.0;
 
-const INPUT_FORWARD_FORCE: f32 = 80.0;
+const INPUT_FORWARD_FORCE: f32 = 50.0;
 const INPUT_BACKWARD_FORCE: f32 = -4.0;
 const INPUT_SIDE_FORCE: f32 = 0.8;
 
