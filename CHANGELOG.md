@@ -51,7 +51,10 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **API**: `Uvec2`/`Uvec3`/`Uvec4`/`U8` can now be used for component values.
 - **API**: A new `message` API has been added to allow for sending messages between client and server WASM, and from one WASM module to another. Messages are defined in `ambient.toml` and are structured. Message subscriptions return handles that can be used to cancel their subscriptions.
 - **API**: A new `camera` API has been added on the client for operations that involve the camera, including `screen_ray` for calculating a ray from the camera through a screen position. Thanks to [@owenpalmer](https://github.com/owenpalmer) for implementing this in [#316](https://github.com/AmbientRun/Ambient/pull/316).
-- **Physics**: `physics::{add_impulse, add_force_at_position, add_impulse_at_position, get_velocity_at_position}` have been added.
+- **API**: A new `input` API has been added for retrieving input and manipulating the cursor (including changing its icon, visibility and lock state).
+- **API**: `physics::{add_impulse, add_force_at_position, add_impulse_at_position, get_velocity_at_position}` have been added.
+- **API**: Added `create_revolute_joint` to the `physics` API.
+- **Physics**: A `collider_loaded` component will now be automatically attached to an entity once its collider has finished loading.
 - **Client**: The client's window title is now automatically changed to the name of the project running on the server. Thanks to [@MavethGH](https://github.com/MavethGH) for implementing this in [#178](https://github.com/AmbientRun/Ambient/pull/178).
 - **Client**: Added a basic headless mode to enable automatic CI testing of projects.
 - **Client**: Added `Dump UI World` button to inspect the state of the UI. Thanks to [@owenpalmer](https://github.com/owenpalmer) for implementing this in [#216](https://github.com/AmbientRun/Ambient/pull/216).
@@ -87,8 +90,6 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **API**: Concepts now include the components they use in their doc comments.
 - **API**: `#[main]`-attributed functions no longer have to be `async` or return a `Result`.
 - **API**: `#[main]`-attributed functions, `on`, `once`, `Query::bind` and `run_async` can now return a `Result` or nothing.
-- **API**: Added `create_revolute_join` to the physics api.
-- **Physics**: There's now a `collider_loaded` component which is applied to an entity once the collider has finished loading.
 
 ### Fixed
 
