@@ -88,6 +88,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **API**: `#[main]`-attributed functions no longer have to be `async` or return a `Result`.
 - **API**: `#[main]`-attributed functions, `on`, `once`, `Query::bind` and `run_async` can now return a `Result` or nothing.
 - **API**: Added `create_revolute_join` to the physics api.
+- **Physics**: There's now a `collider_loaded` component which is applied to an entity once the collider has finished loading.
 
 ### Fixed
 

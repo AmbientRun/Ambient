@@ -173,6 +173,7 @@ pub fn server_systems() -> SystemGroup {
                     let entry =
                         by_collider.entry(format!("{collider_def:?}-{density}")).or_insert_with(|| (collider_def, density, Vec::new()));
                     entry.2.push(id);
+                    world.remove_component(id, collider_loaded()).ok();
                 }
                 if by_collider.is_empty() {
                     return;
@@ -207,8 +208,15 @@ pub fn server_systems() -> SystemGroup {
                                         shape.set_flag(PxShapeFlag::VISUALIZATION, false);
                                     }
 
-                                    world.add_component(id, collider_shapes(), shapes).unwrap();
-                                    world.add_component(id, collider_shapes_convex(), convex).unwrap();
+                                    world
+                                        .add_components(
+                                            id,
+                                            Entity::new()
+                                                .with(collider_shapes(), shapes)
+                                                .with(collider_shapes_convex(), convex)
+                                                .with(collider_loaded(), ()),
+                                        )
+                                        .unwrap();
                                 }
                             }
                         });
