@@ -198,12 +198,15 @@ pub fn update_actor_entity_transforms(world: &mut World, actor: PxRigidActorRef)
 pub fn create_revolute_joint(world: &mut World, id0: EntityId, transform1: Mat4, id1: EntityId, transform0: Mat4) {
     let actor0 = get_actor(world, id0).and_then(|x| x.to_rigid_actor());
     let actor1 = get_actor(world, id1).and_then(|x| x.to_rigid_actor());
+    if actor0.is_none() && actor1.is_none() {
+        return;
+    }
     let (_, rot0, pos0) = transform0.to_scale_rotation_translation();
     let (_, rot1, pos1) = transform1.to_scale_rotation_translation();
 
     let joint = PxRevoluteJointRef::new(PxPhysicsRef::get(), actor0, &PxTransform::new(pos0, rot0), actor1, &PxTransform::new(pos1, rot1));
-    world.add_component(id0, revolute_joint(), joint).unwrap();
-    world.add_component(id1, revolute_joint(), joint).unwrap();
+    world.add_component(id0, revolute_joint(), joint).ok();
+    world.add_component(id1, revolute_joint(), joint).ok();
 }
 
 pub fn get_entity_revolute_joint(world: &World, id: EntityId) -> Option<PxRevoluteJointRef> {
