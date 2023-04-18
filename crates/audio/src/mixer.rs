@@ -1,12 +1,17 @@
 use std::{
-    future::Future, sync::{Arc, Weak}, task::Poll, thread, time::Duration
+    future::Future,
+    sync::{Arc, Weak},
+    task::Poll,
+    thread,
+    time::Duration,
 };
 
 use parking_lot::Mutex;
 use slotmap::{new_key_type, SlotMap};
 
 use crate::{
-    signal::{AsyncSignal, BlockingSignal, Signal}, Frame, SampleConversion, SampleRate, Source
+    signal::{AsyncSignal, BlockingSignal, Signal},
+    Frame, SampleConversion, SampleRate, Source,
 };
 
 new_key_type! {
@@ -23,7 +28,7 @@ struct PlayingSound {
 
 /// Handle to a playing sound
 pub struct Sound {
-    id: SoundId,
+    pub id: SoundId,
     mixer: AudioMixer,
 }
 
@@ -146,6 +151,10 @@ impl AudioMixer {
             id,
             mixer: self.clone(),
         }
+    }
+
+    pub fn stop(&self, key: SoundId) {
+        self.inner.sources.lock().remove(key);
     }
 
     fn notify_sound_waiters(&self, id: SoundId) {

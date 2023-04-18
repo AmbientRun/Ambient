@@ -1,4 +1,7 @@
 default interface client-audio {
     load: func(url: string)
-    play: func(name: string, looping: bool, amp: float32)
+    play: func(name: string, looping: bool, amp: float32, uid: u32)
+    stop: func(name: string)
+    stop-by-id: func(uid: u32)
+    set-amp: func(name: string, amp: float32)
 }

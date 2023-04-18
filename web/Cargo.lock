@@ -324,9 +324,9 @@ dependencies = [
  "ambient_layout",
  "ambient_rect",
  "ambient_renderer",
+ "ambient_shared_types",
  "ambient_sys",
  "ambient_text",
- "ambient_window_types",
  "arboard",
 ]
 
@@ -338,7 +338,6 @@ dependencies = [
  "ambient_ecs",
  "ambient_shared_types",
  "ambient_std",
- "ambient_window_types",
  "glam",
  "serde",
  "serde_json",
@@ -496,6 +495,12 @@ dependencies = [
 [[package]]
 name = "ambient_shared_types"
 version = "0.2.0-dev"
+dependencies = [
+ "bitflags",
+ "serde",
+ "strum",
+ "winit",
+]
 
 [[package]]
 name = "ambient_std"
@@ -613,7 +618,6 @@ dependencies = [
  "ambient_sys",
  "ambient_text",
  "ambient_ui_components",
- "ambient_window_types",
  "anyhow",
  "arboard",
  "async-trait",
@@ -648,7 +652,6 @@ dependencies = [
  "ambient_shared_types",
  "ambient_sys",
  "ambient_time",
- "ambient_window_types",
  "convert_case 0.6.0",
  "futures",
  "glam",
@@ -685,16 +688,6 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
-]
-
-[[package]]
-name = "ambient_window_types"
-version = "0.2.0-dev"
-dependencies = [
- "bitflags",
- "serde",
- "strum",
- "winit",
 ]
 
 [[package]]

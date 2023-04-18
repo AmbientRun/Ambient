@@ -145,7 +145,8 @@ impl wit::client_camera::Host for Bindings {
 }
 impl wit::client_audio::Host for Bindings {
     fn load(&mut self, url: String) -> anyhow::Result<()> {
-        let assets = self.world().resource(asset_cache()).clone();
+        let world = self.world();
+        let assets = world.resource(asset_cache()).clone();
         let asset_url = AbsAssetUrl::from_asset_key(url).to_string();
         let audio_url = AudioFromUrl {
             url: AbsAssetUrl::parse(asset_url).context("Failed to parse audio url")?,
@@ -154,15 +155,13 @@ impl wit::client_audio::Host for Bindings {
         Ok(())
     }
 
-    fn play(&mut self, name: String, looping: bool, amp: f32) -> anyhow::Result<()> {
+    fn play(&mut self, url: String, looping: bool, amp: f32, uid: u32) -> anyhow::Result<()> {
         let world = self.world();
         let assets = world.resource(asset_cache()).clone();
-
-        let asset_url = AbsAssetUrl::from_asset_key(name).to_string();
+        let asset_url = AbsAssetUrl::from_asset_key(url).to_string();
         let audio_url = AudioFromUrl {
-            url: AbsAssetUrl::parse(asset_url).context("Failed to parse audio url")?,
+            url: AbsAssetUrl::parse(asset_url.clone()).context("Failed to parse audio url")?,
         };
-
         let runtime = world.resource(runtime()).clone();
         let async_run = world.resource(async_run()).clone();
         runtime.spawn(async move {
@@ -172,11 +171,56 @@ impl wit::client_audio::Host for Bindings {
                     Ok(track) => {
                         let sender = world.resource(audio_sender());
                         sender
-                            .send(AudioMessage::Track(track, looping, amp))
+                            .send(AudioMessage::Track(
+                                track,
+                                looping,
+                                amp,
+                                asset_url.replace("ambient-assets:/", ""),
+                                uid,
+                            ))
                             .unwrap();
                     }
                     Err(e) => log::error!("{e:?}"),
                 };
+            });
+        });
+        Ok(())
+    }
+
+    fn stop(&mut self, url: String) -> anyhow::Result<()> {
+        let world = self.world();
+        let runtime = world.resource(runtime()).clone();
+        let async_run = world.resource(async_run()).clone();
+        runtime.spawn(async move {
+            async_run.run(move |world| {
+                let sender = world.resource(audio_sender());
+                sender.send(AudioMessage::Stop(url)).unwrap();
+            });
+        });
+        Ok(())
+    }
+
+    fn set_amp(&mut self, url: String, amp: f32) -> anyhow::Result<()> {
+        let world = self.world();
+        let runtime = world.resource(runtime()).clone();
+        let async_run = world.resource(async_run()).clone();
+        runtime.spawn(async move {
+            async_run.run(move |world| {
+                let sender = world.resource(audio_sender());
+                sender.send(AudioMessage::UpdateVolume(url, amp)).unwrap();
+            });
+        });
+        Ok(())
+    }
+
+    fn stop_by_id(&mut self, uid: u32) -> anyhow::Result<()> {
+        let world = self.world();
+        let runtime = world.resource(runtime()).clone();
+        let async_run = world.resource(async_run()).clone();
+        runtime.spawn(async move {
+            async_run.run(move |world| {
+                let sender = world.resource(audio_sender());
+                sender.send(AudioMessage::StopById(uid)).unwrap();
             });
         });
         Ok(())
