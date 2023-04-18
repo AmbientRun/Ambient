@@ -553,6 +553,18 @@ impl CursorLockGuard {
     pub fn unlock(&mut self) {
         self.set_locked(false);
     }
+
+    /// Helper that will unlock if `Escape` has been pressed, and lock if anything else is pressed.
+    ///
+    /// Returns whether or not the cursor is currently locked.
+    pub fn auto_unlock_on_escape(&mut self, input: &Input) -> bool {
+        if input.keys.contains(&KeyCode::Escape) {
+            self.unlock();
+        } else if !input.keys.is_empty() || !input.mouse_buttons.is_empty() {
+            self.lock();
+        }
+        self.is_locked()
+    }
 }
 impl Drop for CursorLockGuard {
     fn drop(&mut self) {

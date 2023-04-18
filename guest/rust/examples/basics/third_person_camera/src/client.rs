@@ -39,20 +39,24 @@ fn main() {
         }
     });
 
+    let mut cursor_lock = input::CursorLockGuard::new(true);
     ambient_api::messages::Frame::subscribe(move |_| {
-        let (delta, pressed) = input::get_delta();
+        let (delta, input) = input::get_delta();
+        if !cursor_lock.auto_unlock_on_escape(&input) {
+            return;
+        }
 
         let mut displace = Vec2::ZERO;
-        if pressed.keys.contains(&KeyCode::W) {
+        if input.keys.contains(&KeyCode::W) {
             displace.x += 1.0;
         }
-        if pressed.keys.contains(&KeyCode::S) {
+        if input.keys.contains(&KeyCode::S) {
             displace.x -= 1.0;
         }
-        if pressed.keys.contains(&KeyCode::A) {
+        if input.keys.contains(&KeyCode::A) {
             displace.y -= 1.0;
         }
-        if pressed.keys.contains(&KeyCode::D) {
+        if input.keys.contains(&KeyCode::D) {
             displace.y += 1.0;
         }
 

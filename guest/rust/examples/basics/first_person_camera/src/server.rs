@@ -16,8 +16,8 @@ use ambient_api::{
     prelude::*,
 };
 
-use components::{player_head_ref, player_movement_direction};
-use std::f32::consts::PI;
+use components::{player_head_ref, player_movement_direction, player_pitch, player_yaw};
+use std::f32::consts::{PI, TAU};
 
 #[main]
 pub fn main() {
@@ -48,6 +48,7 @@ pub fn main() {
                 .with_default(local_to_parent())
                 .with(rotation(), Quat::from_rotation_x(PI / 2.))
                 .spawn();
+
             entity::add_components(
                 id,
                 Entity::new()
@@ -58,7 +59,9 @@ pub fn main() {
                     .with(character_controller_radius(), 0.5)
                     .with_default(physics_controlled())
                     .with(player_head_ref(), head)
-                    .with(children(), vec![head]),
+                    .with(children(), vec![head])
+                    .with(player_pitch(), 0.0)
+                    .with(player_yaw(), 0.0),
             );
         }
     });
@@ -68,14 +71,18 @@ pub fn main() {
 
         entity::add_component(player_id, player_movement_direction(), msg.direction);
 
-        entity::mutate_component(player_id, rotation(), |x| {
-            *x = Quat::from_rotation_z(msg.mouse_position.x * 0.01);
+        let yaw = entity::mutate_component(player_id, player_yaw(), |yaw| {
+            *yaw = (*yaw + msg.mouse_delta.x * 0.01) % TAU;
         })
         .unwrap_or_default();
-        if let Some(head) = entity::get_component(player_id, player_head_ref()) {
-            entity::mutate_component(head, rotation(), |x| {
-                *x = Quat::from_rotation_x(msg.mouse_position.y * 0.01);
-            });
+        let pitch = entity::mutate_component(player_id, player_pitch(), |pitch| {
+            *pitch = (*pitch + msg.mouse_delta.y * 0.01).clamp(-PI / 3., PI / 3.);
+        })
+        .unwrap_or_default();
+
+        entity::set_component(player_id, rotation(), Quat::from_rotation_z(yaw));
+        if let Some(head_id) = entity::get_component(player_id, player_head_ref()) {
+            entity::set_component(head_id, rotation(), Quat::from_rotation_x(PI / 2. + pitch));
         }
     });
 

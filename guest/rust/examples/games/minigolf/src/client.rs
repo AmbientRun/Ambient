@@ -2,19 +2,19 @@ use ambient_api::{components::core::physics::linear_velocity, prelude::*};
 
 #[main]
 fn main() {
+    let mut cursor_lock = input::CursorLockGuard::new(true);
     ambient_api::messages::Frame::subscribe(move |_| {
         let (delta, input) = input::get_delta();
+        if !cursor_lock.auto_unlock_on_escape(&input) {
+            return;
+        }
 
-        let camera_rotation = if input.mouse_buttons.contains(&MouseButton::Right) {
-            delta.mouse_position
-        } else {
-            Vec2::ZERO
-        };
-
-        let camera_zoom = delta.mouse_wheel;
-        let shoot = delta.mouse_buttons.contains(&MouseButton::Left);
-
-        messages::Input::new(camera_rotation, camera_zoom, shoot).send_server_unreliable();
+        messages::Input {
+            camera_rotation: delta.mouse_position,
+            camera_zoom: delta.mouse_wheel,
+            shoot: delta.mouse_buttons.contains(&MouseButton::Left),
+        }
+        .send_server_unreliable();
     });
 
     let ballhit = audio::load(asset::url("assets/ball-hit.ogg").unwrap());

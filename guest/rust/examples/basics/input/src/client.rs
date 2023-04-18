@@ -2,8 +2,12 @@ use ambient_api::prelude::*;
 
 #[main]
 pub fn main() {
+    let mut cursor_lock = input::CursorLockGuard::new(true);
     ambient_api::messages::Frame::subscribe(move |_| {
-        let (delta, _) = input::get_delta();
+        let (delta, input) = input::get_delta();
+        if !cursor_lock.auto_unlock_on_escape(&input) {
+            return;
+        }
 
         if !delta.keys.is_empty() {
             println!("Pressed the keys {:?}", delta.keys);
