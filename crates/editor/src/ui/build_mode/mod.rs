@@ -15,7 +15,7 @@ use ambient_std::{
     asset_url::{select_asset, AssetType},
     cb, friendly_id, Cb,
 };
-use ambient_ui::{
+use ambient_ui_native::{
     command_modifier,
     layout::{docking, width, Docking},
     margin, padding, space_between_items, Borders, Button, ButtonStyle, Dock, FlowRow, Hotkey, ScreenContainer, Separator, StylesExt,

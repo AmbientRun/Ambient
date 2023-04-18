@@ -5,7 +5,7 @@ use ambient_cameras::UICamera;
 use ambient_core::camera::active_camera;
 use ambient_renderer::color;
 use ambient_sys::time::Instant;
-use ambient_ui::{
+use ambient_ui_native::{
     element::{element_component, Element, ElementComponentExt, Group, Hooks},
     font_size, padding, space_between_items, Borders, Button, FlowColumn, FocusRoot, Separator, StylesExt, Text, TextEditor, UIExt,
 };

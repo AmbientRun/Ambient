@@ -24,7 +24,7 @@ ordered-float = { workspace = true }
 dashmap = { workspace = true }
 derivative = { workspace = true }
 
-ambient_ui = { path = "../ui/" }
+ambient_ui_native = { path = "../ui_native/" }
 cpal = "0.14.1"
 lewton = "0.10.2"
 hound = "3.4.0"

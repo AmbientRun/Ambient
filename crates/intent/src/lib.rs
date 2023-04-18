@@ -15,7 +15,7 @@ use ambient_network::{
     unwrap_log_network_err,
 };
 use ambient_rpc::RpcRegistry;
-use ambient_ui::{FlowColumn, StylesExt, Text};
+use ambient_ui_native::{FlowColumn, StylesExt, Text};
 use chrono::{DateTime, Utc};
 use itertools::Itertools;
 use logic::{create_intent, push_intent, redo_intent, undo_head, undo_head_exact};

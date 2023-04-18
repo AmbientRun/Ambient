@@ -82,7 +82,7 @@ where
     }
 }
 
-/// Adds the `Editable` attribute to multiple components where depending on `ambient_ui` is not
+/// Adds the `Editable` attribute to multiple components where depending on `ambient_ui_native` is not
 /// possible.
 pub fn hydrate_editable() {
     fn set<T: ComponentValue + Editor>(component: Component<T>) {

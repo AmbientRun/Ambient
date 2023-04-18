@@ -28,7 +28,7 @@ use ambient_terrain::{
     brushes::{Brush, BrushShape, BrushSize, BrushSmoothness, BrushStrength, HydraulicErosionConfig, TerrainBrushStroke},
     intent_terrain_stroke, terrain_world_cell,
 };
-use ambient_ui::{
+use ambient_ui_native::{
     margin, space_between_items, Borders, Button, FlowColumn, FlowRow, FontAwesomeIcon, Separator, Slider, StylesExt, Text, UIBase, UIExt,
     WindowSized, STREET,
 };

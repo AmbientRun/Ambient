@@ -23,7 +23,7 @@ use ambient_terrain::{
     brushes::{Brush, BrushShape, BrushSize, BrushSmoothness, BrushStrength, HydraulicErosionConfig},
     terrain_material_def,
 };
-use ambient_ui::{
+use ambient_ui_native::{
     command_modifier, height,
     layout::{docking, space_between_items, width, Borders, Docking},
     margin, use_window_logical_resolution, Button, FlowColumn, FlowRow, FontAwesomeIcon, Hotkey, Rectangle, ScreenContainer, ScrollArea,

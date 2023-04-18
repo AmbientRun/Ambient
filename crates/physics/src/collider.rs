@@ -18,7 +18,7 @@ use ambient_std::{
     download_asset::{AssetError, JsonFromUrl},
     events::EventDispatcher,
 };
-use ambient_ui::Editable;
+use ambient_ui_native::Editable;
 use anyhow::Context;
 use async_trait::async_trait;
 use futures::future::try_join_all;

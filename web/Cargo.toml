@@ -15,7 +15,7 @@ ambient_core = { path = "../crates/core" }
 ambient_std = { path = "../crates/std" }
 ambient_ecs = { path = "../crates/ecs" }
 ambient_app = { path = "../crates/app" }
-ambient_ui = { path = "../crates/ui" }
+ambient_ui_native = { path = "../crates/ui_native" }
 ambient_cameras = { path = "../crates/cameras/" }
 ambient_renderer = { path = "../crates/renderer/" }
 ambient_element = { path = "../shared_crates/element/" }

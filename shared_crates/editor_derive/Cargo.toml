@@ -18,5 +18,5 @@ proc-macro-crate = { workspace = true }
 convert_case = { workspace = true }
 
 [dev-dependencies]
-ambient_ui = { path = "../../crates/ui" }
+ambient_ui_native = { path = "../../crates/ui_native" }
 pretty_assertions = "1.3"

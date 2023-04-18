@@ -13,7 +13,7 @@ use ambient_network::client::{
     GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, GameClientWorld, UseOnce,
 };
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
-use ambient_ui::{Button, Dock, FlowColumn, FocusRoot, MeasureSize, ScrollArea, StylesExt, Text, UIExt, WindowSized, STREET};
+use ambient_ui_native::{Button, Dock, FlowColumn, FocusRoot, MeasureSize, ScrollArea, StylesExt, Text, UIExt, WindowSized, STREET};
 use glam::{uvec2, vec4, Vec2};
 
 use crate::{cli::RunCli, shared};
@@ -220,7 +220,7 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
             MeasureSize::el(
                 FlowColumn::el([
                     Button::new(if show_ecs { "\u{f137}" } else { "\u{f138}" }, move |_| set_show_ecs(!show_ecs))
-                        .style(ambient_ui::ButtonStyle::Flat)
+                        .style(ambient_ui_native::ButtonStyle::Flat)
                         .toggled(show_ecs)
                         .el(),
                     if show_ecs {

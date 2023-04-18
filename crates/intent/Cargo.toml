@@ -12,7 +12,7 @@ ambient_std = { path = "../std" }
 ambient_ecs = { path = "../ecs" }
 ambient_network = { path = "../network" }
 ambient_rpc = { path = "../rpc" }
-ambient_ui = { path = "../ui" }
+ambient_ui_native = { path = "../ui_native" }
 ambient_editor_derive = { path = "../../shared_crates/editor_derive" }
 ambient_element = { path = "../../shared_crates/element" }
 tracing = { workspace = true }

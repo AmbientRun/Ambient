@@ -9,7 +9,7 @@ use ambient_std::{
     shapes::{Plane, Ray, RayIntersectable},
     Cb,
 };
-use ambient_ui::{space_between_items, Button, FlowRow, HighjackMouse, Hotkey, Separator, STREET};
+use ambient_ui_native::{space_between_items, Button, FlowRow, HighjackMouse, Hotkey, Separator, STREET};
 use ambient_window_types::MouseButton;
 use ambient_window_types::{ModifiersState, VirtualKeyCode};
 use anyhow::Context;

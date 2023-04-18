@@ -6,7 +6,7 @@ use ambient_std::{
     asset_url::{AnimationAssetType, ModelAssetType, TypedAssetUrl},
 };
 use ambient_sys::time::SystemTime;
-use ambient_ui::Editable;
+use ambient_ui_native::Editable;
 use convert_case::{Case, Casing};
 use derive_more::Display;
 use serde::{Deserialize, Serialize};
