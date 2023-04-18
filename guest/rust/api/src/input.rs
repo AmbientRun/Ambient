@@ -415,7 +415,7 @@ pub struct Input {
     pub keys: HashSet<KeyCode>,
     /// The current position of the mouse.
     pub mouse_position: Vec2,
-    /// The movement of the mouse since the last frame. Note that this is not affected by cursor locking, unlike [mouse_position].
+    /// The movement of the mouse since the last frame. Note that this is not affected by cursor locking, unlike [Self::mouse_position].
     ///
     /// Use this for any kind of movement that should be relative to the mouse's position, such as camera rotation.
     pub mouse_delta: Vec2,
@@ -511,7 +511,7 @@ pub fn set_cursor_visible(visible: bool) {
 
 /// Sets the cursor's lock state. If set, the cursor will not be able to move outside of the window.
 ///
-/// You may want to combine this with [set_cursor_visible].
+/// You may want to combine this with [set_cursor_visible] or use [CursorLockGuard] instead.
 pub fn set_cursor_lock(locked: bool) {
     wit::client_input::set_cursor_lock(locked);
 }
@@ -544,12 +544,12 @@ impl CursorLockGuard {
         self.locked
     }
 
-    /// Helper that calls [set_lock] with `true`.
+    /// Helper that calls [Self::set_locked] with `true`.
     pub fn lock(&mut self) {
         self.set_locked(true);
     }
 
-    /// Helper that calls [set_lock] with `false`.
+    /// Helper that calls [Self::set_locked] with `false`.
     pub fn unlock(&mut self) {
         self.set_locked(false);
     }
