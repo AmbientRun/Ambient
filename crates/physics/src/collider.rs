@@ -188,7 +188,7 @@ pub fn server_systems() -> SystemGroup {
                         let collider_spawner = match collider_def.spawner(assets, density).await {
                             Ok(collider_spawner) => collider_spawner,
                             Err(err) => {
-                                tracing::warn!("Failed to load collider: {:#}", err);
+                                tracing::warn!("Failed to load collider {:?}: {:#}", collider_def, err);
                                 return;
                             }
                         };
@@ -368,32 +368,39 @@ impl ColliderDef {
     pub async fn spawner(&self, assets: AssetCache, density: f32) -> Result<ColliderSpawner, AssetError> {
         let material = PxWoodMaterialKey.get(&assets);
         match self.clone() {
-            ColliderDef::Box { size, center } => Ok(Box::new(move |physics, scale| {
-                let size = size * scale;
-                let geometry = PxBoxGeometry::new(size.x / 2., size.y / 2., size.z / 2.);
-                let shape = PxShape::new(physics.physics, &geometry, &[&material], Some(true), None);
-                shape.set_local_pose(&PxTransform::from_translation(center * scale));
-                shape.set_user_data(PxShapeUserData {
-                    entity: EntityId::null(),
-                    density,
-                    base_pose: Mat4::from_scale_rotation_translation(size / scale, Default::default(), center * scale),
-                });
-                (vec![shape.clone()], vec![shape])
-            })),
-            ColliderDef::Sphere { radius, center } => Ok(Box::new(move |physics, scale| {
-                if radius <= 0. {
-                    return (vec![], vec![]);
+            ColliderDef::Box { size, center } => {
+                if !(size.x > 0. && size.y > 0. && size.z > 0.) {
+                    return Err(anyhow::anyhow!("Box collider size has to be more than zero in each dimension. size={}", size).into());
                 }
-                let geometry = PxSphereGeometry::new(radius * scale.x);
-                let shape = PxShape::new(physics.physics, &geometry, &[&material], Some(true), None);
-                shape.set_local_pose(&PxTransform::from_translation(center * scale));
-                shape.set_user_data(PxShapeUserData {
-                    entity: EntityId::null(),
-                    density,
-                    base_pose: Mat4::from_scale_rotation_translation(Vec3::splat(radius), Default::default(), center * scale),
-                });
-                (vec![shape.clone()], vec![shape])
-            })),
+                Ok(Box::new(move |physics, scale| {
+                    let size = size * scale;
+                    let geometry = PxBoxGeometry::new(size.x / 2., size.y / 2., size.z / 2.);
+                    let shape = PxShape::new(physics.physics, &geometry, &[&material], Some(true), None);
+                    shape.set_local_pose(&PxTransform::from_translation(center * scale));
+                    shape.set_user_data(PxShapeUserData {
+                        entity: EntityId::null(),
+                        density,
+                        base_pose: Mat4::from_scale_rotation_translation(size / scale, Default::default(), center * scale),
+                    });
+                    (vec![shape.clone()], vec![shape])
+                }))
+            }
+            ColliderDef::Sphere { radius, center } => {
+                if radius <= 0. {
+                    return Err(anyhow::anyhow!("Collider radius must be more than zero").into());
+                }
+                Ok(Box::new(move |physics, scale| {
+                    let geometry = PxSphereGeometry::new(radius * scale.x);
+                    let shape = PxShape::new(physics.physics, &geometry, &[&material], Some(true), None);
+                    shape.set_local_pose(&PxTransform::from_translation(center * scale));
+                    shape.set_user_data(PxShapeUserData {
+                        entity: EntityId::null(),
+                        density,
+                        base_pose: Mat4::from_scale_rotation_translation(Vec3::splat(radius), Default::default(), center * scale),
+                    });
+                    (vec![shape.clone()], vec![shape])
+                }))
+            }
             ColliderDef::Plane => Ok(Box::new(move |physics, _scale| {
                 let geometry = PxPlaneGeometry::new();
                 let shape = PxShape::new(physics.physics, &geometry, &[&material], Some(true), None);
