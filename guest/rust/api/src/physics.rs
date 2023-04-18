@@ -129,7 +129,7 @@ pub fn stop_motor(entity: EntityId) {
 }
 
 /// Creates a revolute joint. entity0 or entity1 can either be `EntityId::null()` to bind this to the world frame.
-pub fn crate_revolute_joint(
+pub fn create_revolute_joint(
     entity0: EntityId,
     transform0: Mat4,
     entity1: EntityId,
