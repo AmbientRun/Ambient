@@ -1,11 +1,15 @@
 use std::{
-    self, fmt::{self, Debug}, iter::Flatten
+    self,
+    fmt::{self, Debug},
+    iter::Flatten,
 };
 
 use ambient_std::sparse_vec::SparseVec;
 use itertools::Itertools;
 use serde::{
-    de::{self, DeserializeSeed, MapAccess, Visitor}, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer
+    de::{self, DeserializeSeed, MapAccess, Visitor},
+    ser::SerializeMap,
+    Deserialize, Deserializer, Serialize, Serializer,
 };
 
 use super::{with_component_registry, Component, ComponentValue, ECSError, EntityId, World};
@@ -199,7 +203,7 @@ impl Default for Entity {
 }
 impl Debug for Entity {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut out = f.debug_struct("EntityData");
+        let mut out = f.debug_struct("Entity");
         for entry in self.content.iter() {
             out.field(&entry.desc().path(), &entry.as_debug());
         }
