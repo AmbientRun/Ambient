@@ -11,6 +11,5 @@ fields = { text = "String", source_reliable = "Bool" }
 # https://ambientrun.github.io/Ambient/reference/project.html#components--components
 
 [messages.local]
-name = "Local"
 description = "Sent until it's acknowledged"
 fields = { text = "String" }

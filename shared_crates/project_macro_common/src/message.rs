@@ -48,7 +48,11 @@ fn to_token_stream(
         wrapper,
         |n, c, w| to_token_stream(n, is_api_manifest, c, w),
         |id, message, context| {
-            let doc_comment = format!("**{}**: {}", message.name, message.description);
+            let doc_comment = if let Some(desc) = &message.description {
+                format!("**{}**: {}", id, desc)
+            } else {
+                format!("**{}**", id)
+            };
 
             let struct_name = syn::Ident::new(
                 &id.split('_')

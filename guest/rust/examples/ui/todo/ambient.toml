@@ -4,12 +4,10 @@ name = "todo"
 version = "0.0.1"
 
 [messages.new_item]
-name = "New item"
 description = "Add a new todo item"
 fields = { description = "String" }
 
 [messages.delete_item]
-name = "Delete item"
 description = "Remove todo item"
 fields = { id = "EntityId" }
 

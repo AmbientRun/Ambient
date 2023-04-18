@@ -63,8 +63,8 @@ impl Default for BuildRust {
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct Namespace {
-    pub name: String,
-    pub description: String,
+    pub name: Option<String>,
+    pub description: Option<String>,
 }
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]
@@ -151,8 +151,8 @@ mod tests {
                 components: BTreeMap::from_iter([(
                     IdentifierPathBuf::new("cell").unwrap(),
                     Component {
-                        name: "Cell".to_string(),
-                        description: "The ID of the cell this player is in".to_string(),
+                        name: Some("Cell".to_string()),
+                        description: Some("The ID of the cell this player is in".to_string()),
                         type_: ComponentType::String("I32".to_string()),
                         attributes: vec!["Store".to_string()],
                         default: None,
@@ -162,8 +162,8 @@ mod tests {
                 concepts: BTreeMap::from_iter([(
                     IdentifierPathBuf::new("cell").unwrap(),
                     Concept {
-                        name: "Cell".to_string(),
-                        description: "A cell object".to_string(),
+                        name: Some("Cell".to_string()),
+                        description: Some("A cell object".to_string()),
                         extends: vec![],
                         components: BTreeMap::from_iter([(
                             IdentifierPathBuf::new("cell").unwrap(),
@@ -221,10 +221,10 @@ mod tests {
         version = "0.0.1"
 
         [components]
-        "core" = { name = "Core", description = "" }
-        "core::app" = { name = "App", description = "" }
+        "core" = { name = "Core" }
+        "core::app" = { name = "App" }
 
-        "core::app::main_scene" = { name = "Main Scene", description = "", type = "Empty" }
+        "core::app::main_scene" = { name = "Main Scene", type = "Empty" }
         "#;
 
         assert_eq!(
@@ -247,24 +247,24 @@ mod tests {
                     (
                         IdentifierPathBuf::new("core").unwrap(),
                         Namespace {
-                            name: "Core".to_string(),
-                            description: String::new()
+                            name: Some("Core".to_string()),
+                            description: None
                         }
                         .into()
                     ),
                     (
                         IdentifierPathBuf::new("core::app").unwrap(),
                         Namespace {
-                            name: "App".to_string(),
-                            description: String::new()
+                            name: Some("App".to_string()),
+                            description: None
                         }
                         .into()
                     ),
                     (
                         IdentifierPathBuf::new("core::app::main_scene").unwrap(),
                         Component {
-                            name: "Main Scene".to_string(),
-                            description: "".to_string(),
+                            name: Some("Main Scene".to_string()),
+                            description: None,
                             type_: ComponentType::String("Empty".to_string()),
                             attributes: vec![],
                             default: None,
@@ -319,8 +319,8 @@ mod tests {
                     (
                         IdentifierPathBuf::new("core::transform::rotation").unwrap(),
                         Component {
-                            name: "Rotation".to_string(),
-                            description: "".to_string(),
+                            name: Some("Rotation".to_string()),
+                            description: Some("".to_string()),
                             type_: ComponentType::String("Quat".to_string()),
                             attributes: vec![],
                             default: None,
@@ -330,8 +330,8 @@ mod tests {
                     (
                         IdentifierPathBuf::new("core::transform::scale").unwrap(),
                         Component {
-                            name: "Scale".to_string(),
-                            description: "".to_string(),
+                            name: Some("Scale".to_string()),
+                            description: Some("".to_string()),
                             type_: ComponentType::String("Vec3".to_string()),
                             attributes: vec![],
                             default: None,
@@ -341,8 +341,8 @@ mod tests {
                     (
                         IdentifierPathBuf::new("core::transform::spherical_billboard").unwrap(),
                         Component {
-                            name: "Spherical billboard".to_string(),
-                            description: "".to_string(),
+                            name: Some("Spherical billboard".to_string()),
+                            description: Some("".to_string()),
                             type_: ComponentType::String("Empty".to_string()),
                             attributes: vec![],
                             default: None,
@@ -352,8 +352,8 @@ mod tests {
                     (
                         IdentifierPathBuf::new("core::transform::translation").unwrap(),
                         Component {
-                            name: "Translation".to_string(),
-                            description: "".to_string(),
+                            name: Some("Translation".to_string()),
+                            description: Some("".to_string()),
                             type_: ComponentType::String("Vec3".to_string()),
                             attributes: vec![],
                             default: None,
@@ -365,16 +365,16 @@ mod tests {
                     (
                         IdentifierPathBuf::new("ns").unwrap(),
                         Namespace {
-                            name: "Namespace".to_string(),
-                            description: "A Test Namespace".to_string()
+                            name: Some("Namespace".to_string()),
+                            description: Some("A Test Namespace".to_string())
                         }
                         .into()
                     ),
                     (
                         IdentifierPathBuf::new("ns::transformable").unwrap(),
                         Concept {
-                            name: "Transformable".to_string(),
-                            description: "Can be translated, rotated and scaled.".to_string(),
+                            name: Some("Transformable".to_string()),
+                            description: Some("Can be translated, rotated and scaled.".to_string()),
                             extends: vec![],
                             components: BTreeMap::from_iter([
                                 (

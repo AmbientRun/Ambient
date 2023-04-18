@@ -4,8 +4,6 @@ name = "screen_ray"
 version = "0.0.1"
 
 [messages.input]
-name = "Input"
-description = ""
 [messages.input.fields]
 ray_origin = { type = "Vec3", name = "", description = "" }
 ray_dir = { type = "Vec3", name = "", description = "" }

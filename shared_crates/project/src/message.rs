@@ -6,7 +6,6 @@ use crate::{ComponentType, Identifier};
 
 #[derive(Clone, PartialEq, Eq, Debug, Deserialize)]
 pub struct Message {
-    pub name: String,
-    pub description: String,
+    pub description: Option<String>,
     pub fields: BTreeMap<Identifier, ComponentType>,
 }

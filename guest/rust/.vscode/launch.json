@@ -158,6 +158,19 @@
             "cwd": "${workspaceFolder}/examples/basics/raw_text"
         },
         {
+            "name": "basics/screen_ray",
+            "type": "lldb",
+            "request": "launch",
+            "program": "ambient",
+            "args": [
+                "run"
+            ],
+            "initCommands": [
+                "settings set plugin.jit-loader.gdb.enable on"
+            ],
+            "cwd": "${workspaceFolder}/examples/basics/screen_ray"
+        },
+        {
             "name": "basics/skinmesh",
             "type": "lldb",
             "request": "launch",

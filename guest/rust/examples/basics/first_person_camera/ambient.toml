@@ -12,7 +12,6 @@ player_movement_direction = { type = "Vec2", name = "Player movement direction",
 ] }
 
 [messages.input]
-name = "Input"
 description = "Describes the input state of the player."
 [messages.input.fields]
 direction = { type = "Vec2", name = "Direction", description = "The movement direction of the player." }
