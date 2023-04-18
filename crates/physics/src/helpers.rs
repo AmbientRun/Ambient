@@ -201,6 +201,11 @@ pub fn create_revolute_joint(world: &mut World, id0: EntityId, transform1: Mat4,
     if actor0.is_none() && actor1.is_none() {
         anyhow::bail!("Neither entity has a rigid actor");
     }
+    if !actor0.map(|x| x.to_rigid_dynamic().is_some()).unwrap_or_default()
+        && !actor1.map(|x| x.to_rigid_dynamic().is_some()).unwrap_or_default()
+    {
+        anyhow::bail!("At least one actor has to be dynamic");
+    }
     let (_, rot0, pos0) = transform0.to_scale_rotation_translation();
     let (_, rot1, pos1) = transform1.to_scale_rotation_translation();
 
