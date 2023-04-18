@@ -5,7 +5,7 @@ use ambient_ecs::{generated::messages, query_mut, SystemGroup, World};
 use ambient_element::{element_component, Element, Hooks};
 use ambient_input::{player_prev_raw_input, player_raw_input, PlayerRawInput};
 use ambient_network::client::game_client;
-use ambient_window_types::VirtualKeyCode;
+use ambient_shared_types::VirtualKeyCode;
 
 pub fn systems_final() -> SystemGroup {
     SystemGroup::new(

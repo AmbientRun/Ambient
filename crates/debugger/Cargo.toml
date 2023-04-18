@@ -19,7 +19,7 @@ ambient_network = { path = "../network" }
 
 ambient_element = { path = "../../shared_crates/element" }
 ambient_element_component = { path = "../../shared_crates/element_component" }
-ambient_window_types = { path = "../../shared_crates/window_types" }
+ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] }
 
 winit = { workspace = true }
 glam = { workspace = true }

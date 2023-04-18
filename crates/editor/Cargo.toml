@@ -35,8 +35,7 @@ ambient_naturals = { path = "../naturals" }
 physxx = { path = "../../libs/physxx" }
 
 ambient_element = { path = "../../shared_crates/element" }
-ambient_window_types = { path = "../../shared_crates/window_types" }
-ambient_shared_types = { path = "../../shared_crates/shared_types" }
+ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] }
 
 glam = { workspace = true }
 itertools = { workspace = true }

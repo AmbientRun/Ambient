@@ -114,7 +114,7 @@ impl ElementComponent for SelectArea {
             .el()
             .with_clickarea()
             .on_mouse_down(closure!(clone set_dragging, clone is_clicking, |world, id, button| {
-                if button != ambient_window_types::MouseButton::Left {
+                if button != ambient_shared_types::MouseButton::Left {
                     return;
                 }
 

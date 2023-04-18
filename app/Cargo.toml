@@ -42,8 +42,7 @@ ambient_ecs_editor = { path = "../crates/ecs_editor" }
 ambient_editor_derive = { path = "../shared_crates/editor_derive" }
 ambient_element = { path = "../shared_crates/element" }
 ambient_project = { path = "../shared_crates/project" }
-ambient_window_types = { path = "../shared_crates/window_types" }
-ambient_shared_types = { path = "../shared_crates/shared_types" }
+ambient_shared_types = { path = "../shared_crates/shared_types", features = ["native"] }
 
 tracing-tree = { workspace = true, optional = true }
 tracing-subscriber = { workspace = true, optional = true }

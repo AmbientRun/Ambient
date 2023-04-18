@@ -10,12 +10,12 @@ pub mod picking;
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct PlayerRawInput {
-    pub keys: HashSet<ambient_window_types::VirtualKeyCode>,
+    pub keys: HashSet<ambient_shared_types::VirtualKeyCode>,
     pub mouse_position: Vec2,
     /// cursor position is _not_ the sum of mouse_deltas; mouse_delta is
     pub cursor_position: Vec2,
     pub mouse_wheel: f32,
-    pub mouse_buttons: HashSet<ambient_window_types::MouseButton>,
+    pub mouse_buttons: HashSet<ambient_shared_types::MouseButton>,
 }
 
 components!("input", {
@@ -74,7 +74,7 @@ impl System<Event<'static, ()>> for InputSystem {
                 }
 
                 WindowEvent::KeyboardInput { input, .. } => {
-                    let keycode = input.virtual_keycode.map(|key| ambient_window_types::VirtualKeyCode::from(key).to_string());
+                    let keycode = input.virtual_keycode.map(|key| ambient_shared_types::VirtualKeyCode::from(key).to_string());
                     let modifiers = self.modifiers.bits();
                     let pressed = match input.state {
                         ElementState::Pressed => true,
@@ -85,7 +85,7 @@ impl System<Event<'static, ()>> for InputSystem {
 
                 WindowEvent::MouseInput { state, button, .. } => {
                     world.resource_mut(world_events()).add_message(messages::WindowMouseInput::new(
-                        ambient_window_types::MouseButton::from(*button),
+                        ambient_shared_types::MouseButton::from(*button),
                         match state {
                             ElementState::Pressed => true,
                             ElementState::Released => false,

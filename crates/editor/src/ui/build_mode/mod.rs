@@ -5,12 +5,13 @@ use ambient_ecs::{generated::messages, Component, ComponentValue, EntityId};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_intent::{client_push_intent, rpc_undo_head_exact};
 use ambient_network::client::GameClient;
+use ambient_shared_types::MouseButton;
 use ambient_sys::task::RuntimeHandle;
-use ambient_window_types::MouseButton;
 use derive_more::Display;
 use futures_signals::signal::SignalExt;
 use itertools::Itertools;
 
+use ambient_shared_types::VirtualKeyCode;
 use ambient_std::{
     asset_url::{select_asset, AssetType},
     cb, friendly_id, Cb,
@@ -21,7 +22,6 @@ use ambient_ui::{
     margin, padding, space_between_items, Borders, Button, ButtonStyle, Dock, FlowRow, Hotkey, ScreenContainer, Separator, StylesExt,
     STREET,
 };
-use ambient_window_types::VirtualKeyCode;
 use tokio::time::sleep;
 
 use super::{terrain_mode::GenerateTerrainButton, EditorPlayerInputHandler, EditorPrefs};

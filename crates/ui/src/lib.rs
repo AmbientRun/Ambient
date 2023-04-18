@@ -12,8 +12,8 @@ pub use ambient_ecs::{EntityId, SystemGroup, World};
 pub use ambient_editor_derive::ElementEditor;
 pub use ambient_element as element;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_shared_types::ModifiersState;
 pub use ambient_std::{cb, Cb};
-use ambient_window_types::ModifiersState;
 use glam::*;
 use parking_lot::Mutex;
 use winit::window::CursorGrabMode;
@@ -48,7 +48,7 @@ pub use tabs::*;
 pub use throbber::*;
 
 pub use self::image::*;
-use ambient_window_types::MouseButton;
+use ambient_shared_types::MouseButton;
 
 pub fn init_all_components() {
     layout::init_all_components();

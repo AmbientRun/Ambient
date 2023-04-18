@@ -11,7 +11,7 @@ use ambient_guest_bridge::{
 };
 #[cfg(feature = "native")]
 use ambient_sys::time::Instant;
-use ambient_window_types::{CursorIcon, VirtualKeyCode};
+use ambient_shared_types::{CursorIcon, VirtualKeyCode};
 use glam::*;
 use itertools::Itertools;
 

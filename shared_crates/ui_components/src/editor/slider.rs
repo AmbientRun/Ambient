@@ -4,16 +4,26 @@ use ambient_cb::{cb, Cb};
 use ambient_element::{to_owned, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
     components::{
-        app::cursor_position, layout::{height, space_between_items, width}, rect::{background_color, border_radius}, transform::{local_to_world, translation}
-    }, ecs::EntityId, messages, window::set_cursor
+        app::cursor_position,
+        layout::{height, space_between_items, width},
+        rect::{background_color, border_radius},
+        transform::{local_to_world, translation},
+    },
+    ecs::EntityId,
+    messages,
+    window::set_cursor,
 };
 use ambient_math::{interpolate, interpolate_clamped};
-use ambient_window_types::CursorIcon;
+use ambient_shared_types::CursorIcon;
 use glam::{vec3, Vec4};
 
 use super::Editor;
 use crate::{
-    default_theme::{primary_color, STREET}, editor::EditorOpts, layout::FlowRow, text::Text, Rectangle, UIBase, UIExt
+    default_theme::{primary_color, STREET},
+    editor::EditorOpts,
+    layout::FlowRow,
+    text::Text,
+    Rectangle, UIBase, UIExt,
 };
 
 #[derive(Clone, Debug)]

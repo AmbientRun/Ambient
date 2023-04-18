@@ -20,6 +20,7 @@ use ambient_physics::{
 };
 use ambient_primitives::Cube;
 use ambient_renderer::{color, material, renderer_shader, Material, MaterialShader, SharedMaterial, MATERIAL_BIND_GROUP};
+use ambient_shared_types::{MouseButton, VirtualKeyCode};
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     cb, friendly_id,
@@ -32,7 +33,6 @@ use ambient_ui::{
     margin, space_between_items, Borders, Button, FlowColumn, FlowRow, FontAwesomeIcon, Separator, Slider, StylesExt, Text, UIBase, UIExt,
     WindowSized, STREET,
 };
-use ambient_window_types::{MouseButton, VirtualKeyCode};
 use glam::{vec3, Vec3, Vec3Swizzles, Vec4};
 use wgpu::{util::DeviceExt, BindGroup};
 
@@ -51,7 +51,7 @@ pub struct TerrainRaycastPicker {
 }
 impl ElementComponent for TerrainRaycastPicker {
     fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> Element {
-        let action_button = ambient_window_types::MouseButton::Left;
+        let action_button = ambient_shared_types::MouseButton::Left;
 
         let Self { filter, layer, brush, brush_size, brush_strength, brush_smoothness, brush_shape, erosion_config } = *self;
         let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();

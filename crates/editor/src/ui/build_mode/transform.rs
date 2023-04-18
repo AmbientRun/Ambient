@@ -4,14 +4,13 @@ use ambient_core::{runtime, transform::get_world_transform, window::cursor_posit
 use ambient_ecs::{EntityId, World};
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Group, Hooks};
 use ambient_network::client::GameClient;
+use ambient_shared_types::{ModifiersState, MouseButton, VirtualKeyCode};
 use ambient_std::{
     cb,
     shapes::{Plane, Ray, RayIntersectable},
     Cb,
 };
 use ambient_ui::{space_between_items, Button, FlowRow, HighjackMouse, Hotkey, Separator, STREET};
-use ambient_window_types::MouseButton;
-use ambient_window_types::{ModifiersState, VirtualKeyCode};
 use anyhow::Context;
 use glam::{vec3, Mat4, Quat, Vec2, Vec3, Vec3Swizzles};
 use itertools::Itertools;
@@ -108,7 +107,7 @@ fn initial_transforms(hooks: &mut Hooks, game_client: &GameClient, targets: Arc<
 pub(super) fn PlaceController(
     hooks: &mut Hooks,
     targets: Arc<[EntityId]>,
-    on_click: Cb<dyn Fn(ambient_window_types::MouseButton) + Sync + Send>,
+    on_click: Cb<dyn Fn(ambient_shared_types::MouseButton) + Sync + Send>,
 ) -> Element {
     assert_ne!(targets.len(), 0);
     let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
@@ -129,7 +128,7 @@ pub(super) fn PlaceController(
         on_click: {
             let action = action.clone();
             cb(move |button| {
-                if button != ambient_window_types::MouseButton::Left {
+                if button != ambient_shared_types::MouseButton::Left {
                     return;
                 }
                 if let Some(action) = action.upgrade() {
@@ -268,7 +267,7 @@ impl ElementComponent for TranslationController {
                 on_click: {
                     let action = action.clone();
                     cb(move |button| {
-                        if button != ambient_window_types::MouseButton::Left {
+                        if button != ambient_shared_types::MouseButton::Left {
                             return;
                         }
 

@@ -1,7 +1,13 @@
 use std::{num::NonZeroU32, sync::Arc};
 
 use ambient_core::{
-    asset_cache, bounding::world_bounding_sphere, camera::shadow_cameras_from_world, hierarchy::{dump_world_hierarchy, dump_world_hierarchy_to_tmp_file}, main_scene, player::local_user_id, runtime
+    asset_cache,
+    bounding::world_bounding_sphere,
+    camera::shadow_cameras_from_world,
+    hierarchy::{dump_world_hierarchy, dump_world_hierarchy_to_tmp_file},
+    main_scene,
+    player::local_user_id,
+    runtime,
 };
 use ambient_ecs::{query, World};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
@@ -9,11 +15,11 @@ use ambient_gizmos::{gizmos, GizmoPrimitive};
 use ambient_network::{client::GameClient, server::RpcArgs as ServerRpcArgs};
 use ambient_renderer::{RenderTarget, Renderer};
 use ambient_rpc::RpcRegistry;
+use ambient_shared_types::{ModifiersState, VirtualKeyCode};
 use ambient_std::{asset_cache::SyncAssetKeyExt, color::Color, download_asset::AssetsCacheDir, line_hash, Cb};
 use ambient_ui::{
-    fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit, FlowColumn, FlowRow, Image, UIExt
+    fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit, FlowColumn, FlowRow, Image, UIExt,
 };
-use ambient_window_types::{ModifiersState, VirtualKeyCode};
 use glam::Vec3;
 
 type GetDebuggerState = Cb<dyn Fn(&mut dyn FnMut(&mut Renderer, &RenderTarget, &mut World)) + Sync + Send>;

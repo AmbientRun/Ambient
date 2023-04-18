@@ -18,6 +18,7 @@ use ambient_network::{
     unwrap_log_network_err,
 };
 use ambient_physics::make_physics_static;
+use ambient_shared_types::{ModifiersState, VirtualKeyCode};
 use ambient_std::{cb, color::Color, Cb};
 use ambient_terrain::{
     brushes::{Brush, BrushShape, BrushSize, BrushSmoothness, BrushStrength, HydraulicErosionConfig},
@@ -29,7 +30,6 @@ use ambient_ui::{
     margin, use_window_logical_resolution, Button, FlowColumn, FlowRow, FontAwesomeIcon, Hotkey, Rectangle, ScreenContainer, ScrollArea,
     Separator, StylesExt, Text, UIExt, WindowSized, STREET,
 };
-use ambient_window_types::{ModifiersState, VirtualKeyCode};
 use build_mode::*;
 use glam::{vec3, Vec3};
 use image::{DynamicImage, ImageOutputFormat, RgbImage};

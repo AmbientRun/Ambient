@@ -8,7 +8,7 @@ use ambient_guest_bridge::{
         fit_horizontal_none, fit_horizontal_parent, fit_vertical_parent, height, margin_right, margin_top, min_width, padding_bottom, padding_top, space_between_items, width
     }, messages
 };
-use ambient_window_types::VirtualKeyCode;
+use ambient_shared_types::VirtualKeyCode;
 use indexmap::IndexMap;
 use itertools::Itertools;
 

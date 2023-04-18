@@ -14,7 +14,6 @@ ambient_cb = { path = "../../libs/cb" }
 ambient_color = { path = "../../libs/color" }
 ambient_math = { path = "../../libs/math" }
 ambient_time = { path = "../../libs/time" }
-ambient_window_types = { path = "../window_types" }
 ambient_shared_types = { path = "../shared_types" }
 
 # Host only
@@ -31,5 +30,5 @@ indexmap = { workspace = true }
 convert_case = { workspace = true }
 
 [features]
-native = ["ambient_element/native", "ambient_window_types/native", "ambient_sys"]
+native = ["ambient_element/native", "ambient_shared_types/native", "ambient_sys"]
 guest = ["ambient_element/guest", "ambient_guest_bridge/guest"]

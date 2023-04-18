@@ -16,7 +16,7 @@ pub async fn sleep(seconds: f32) {
 pub mod window {
     use ambient_core::window::{window_ctl, WindowCtl};
     use ambient_ecs::World;
-    use ambient_window_types::CursorIcon;
+    use ambient_shared_types::CursorIcon;
 
     pub fn set_cursor(world: &World, cursor: CursorIcon) {
         world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(cursor.into())).ok();

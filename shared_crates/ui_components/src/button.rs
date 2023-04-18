@@ -14,7 +14,7 @@ use ambient_guest_bridge::{
         }, rect::{border_color, border_radius, border_thickness}, rendering::color, text::font_style
     }, ecs::World, messages, run_async
 };
-use ambient_window_types::{CursorIcon, ModifiersState, VirtualKeyCode};
+use ambient_shared_types::{CursorIcon, ModifiersState, VirtualKeyCode};
 use futures::{future::BoxFuture, Future, FutureExt};
 use glam::*;
 use parking_lot::Mutex;

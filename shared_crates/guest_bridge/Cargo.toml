@@ -20,7 +20,7 @@ ambient_sys = { path = "../../crates/sys", optional = true }
 ambient_api = { path = "../../guest/rust/api", optional = true }
 
 # Shared
-ambient_window_types = { path = "../window_types" }
+ambient_shared_types = { path = "../shared_types" }
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 arboard = { workspace = true, optional = true}
@@ -36,6 +36,6 @@ native = [
   "dep:ambient_input",
   "dep:ambient_sys",
   "dep:arboard",
-  "ambient_window_types/native"
+  "ambient_shared_types/native"
 ]
 guest = ["dep:ambient_api"]

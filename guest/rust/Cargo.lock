@@ -105,7 +105,7 @@ name = "ambient_guest_bridge"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
- "ambient_window_types",
+ "ambient_shared_types",
 ]
 
 [[package]]
@@ -155,6 +155,11 @@ dependencies = [
 [[package]]
 name = "ambient_shared_types"
 version = "0.2.0-dev"
+dependencies = [
+ "bitflags",
+ "serde",
+ "strum",
+]
 
 [[package]]
 name = "ambient_time"
@@ -175,7 +180,6 @@ dependencies = [
  "ambient_math",
  "ambient_shared_types",
  "ambient_time",
- "ambient_window_types",
  "convert_case",
  "futures",
  "glam",
@@ -185,15 +189,6 @@ dependencies = [
  "rand",
  "serde",
  "serde_json",
-]
-
-[[package]]
-name = "ambient_window_types"
-version = "0.2.0-dev"
-dependencies = [
- "bitflags",
- "serde",
- "strum",
 ]
 
 [[package]]

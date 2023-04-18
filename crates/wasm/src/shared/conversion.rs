@@ -3,8 +3,8 @@ use ambient_sys::time::SystemTime;
 use ambient_animation as animation;
 use ambient_ecs::EntityId;
 use ambient_std::asset_url::TypedAssetUrl;
-use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 use ambient_std::shapes::Ray;
+use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 
 use super::wit;
 

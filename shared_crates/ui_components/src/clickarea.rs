@@ -3,7 +3,7 @@ use ambient_element::{to_owned, Element, ElementComponent, Hooks};
 use ambient_guest_bridge::{
     components::input::{mouse_over, mouse_pickable_max, mouse_pickable_min}, ecs::{EntityId, World}, messages
 };
-use ambient_window_types::MouseButton;
+use ambient_shared_types::MouseButton;
 use glam::{Vec2, Vec3};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
